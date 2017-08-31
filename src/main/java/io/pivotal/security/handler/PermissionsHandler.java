@@ -35,7 +35,7 @@ public class PermissionsHandler {
     this.credentialNameDataService = credentialNameDataService;
   }
 
-  public PermissionsView getPermissions(UserContext userContext, String name) {
+  public PermissionsView getPermissions(String name, UserContext userContext) {
     final CredentialName credentialName = credentialNameDataService.findOrThrow(name);
 
     if (!permissionService.hasPermission(userContext.getAclUser(), name, READ_ACL)) {
@@ -48,8 +48,11 @@ public class PermissionsHandler {
     );
   }
 
-  public PermissionsView setPermissions(UserContext userContext, String name,
-      List<PermissionEntry> permissionEntryList) {
+  public PermissionsView setPermissions(
+      String name,
+      UserContext userContext,
+      List<PermissionEntry> permissionEntryList
+  ) {
     final CredentialName credentialName = credentialNameDataService.find(name);
 
     // We need to verify that the credential exists in case ACL enforcement is off
@@ -70,7 +73,7 @@ public class PermissionsHandler {
         permissionsDataService.getAccessControlList(credentialName));
   }
 
-  public void deletePermissionEntry(UserContext userContext, String credentialName, String actor) {
+  public void deletePermissionEntry(String credentialName, String actor, UserContext userContext) {
     if (!permissionService.hasPermission(userContext.getAclUser(), credentialName, WRITE_ACL)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }

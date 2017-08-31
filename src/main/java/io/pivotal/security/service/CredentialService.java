@@ -49,15 +49,15 @@ public class CredentialService {
   }
 
   public CredentialView save(
-      UserContext userContext,
-      List<EventAuditRecordParameters> auditRecordParameters,
       String credentialName,
-      boolean isOverwrite,
       String type,
-      StringGenerationParameters generationParameters,
       CredentialValue credentialValue,
+      StringGenerationParameters generationParameters,
       List<PermissionEntry> accessControlEntries,
-      PermissionEntry currentUserPermissionEntry
+      boolean isOverwrite,
+      UserContext userContext,
+      PermissionEntry currentUserPermissionEntry,
+      List<EventAuditRecordParameters> auditRecordParameters
   ) {
     Credential existingCredential = credentialDataService.findMostRecent(credentialName);
 

@@ -84,7 +84,7 @@ public class PermissionsControllerTest {
     PermissionsView permissionsView = new PermissionsView(
         "test_credential_name", newArrayList());
 
-    when(permissionsHandler.getPermissions(any(UserContext.class), eq("test_credential_name")))
+    when(permissionsHandler.getPermissions(eq("test_credential_name"), any(UserContext.class)))
         .thenReturn(permissionsView);
 
     mockMvc.perform(get("/api/v1/permissions?credential_name=test_credential_name"))
@@ -123,7 +123,7 @@ public class PermissionsControllerTest {
         "}";
 
     when(permissionsHandler
-        .setPermissions(any(UserContext.class), any(String.class), any(List.class)))
+        .setPermissions(any(String.class), any(UserContext.class), any(List.class)))
         .thenReturn(JsonTestHelper.deserialize(expectedResponse, PermissionsView.class));
 
     MockHttpServletRequestBuilder request = post("/api/v1/permissions")
@@ -136,8 +136,8 @@ public class PermissionsControllerTest {
 
     ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
     verify(permissionsHandler, times(1)).setPermissions(
-        any(UserContext.class),
         eq("test-credential-name"),
+        any(UserContext.class),
         captor.capture()
     );
 
@@ -179,6 +179,6 @@ public class PermissionsControllerTest {
         .andExpect(content().string(""));
 
     verify(permissionsHandler, times(1))
-        .deletePermissionEntry(any(UserContext.class), eq("test-name"), eq("test-actor"));
+        .deletePermissionEntry(eq("test-name"), eq("test-actor"), any(UserContext.class));
   }
 }

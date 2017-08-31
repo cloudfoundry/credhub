@@ -89,14 +89,15 @@ public class RegenerateService {
     }
 
     return credentialService.save(
-        userContext,
-        auditRecordParameters,
         generateRequest.getName(),
-        generateRequest.isOverwrite(),
         generateRequest.getType(),
-        generationParameters,
         credentialValue,
+        generationParameters,
         generateRequest.getAdditionalPermissions(),
-        currentUserPermissionEntry);
+        generateRequest.isOverwrite(),
+        userContext,
+        currentUserPermissionEntry,
+        auditRecordParameters
+    );
   }
 }

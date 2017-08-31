@@ -25,7 +25,7 @@ public class JsonInterpolationService {
   public Map<String, Object> interpolateCredHubReferences(
       UserContext userContext,
       Map<String, Object> servicesMap,
-      List<EventAuditRecordParameters> eventAuditRecordParametersList
+      List<EventAuditRecordParameters> auditRecordParameters
   ) {
 
     for (Object serviceProperties : servicesMap.values()) {
@@ -53,9 +53,9 @@ public class JsonInterpolationService {
         String credentialName = getCredentialNameFromRef((String) credhubRef);
 
         Credential credential = credentialHandler.getMostRecentCredentialVersion(
+            credentialName,
             userContext,
-            eventAuditRecordParametersList,
-            credentialName
+            auditRecordParameters
         );
 
         if (credential instanceof JsonCredential) {

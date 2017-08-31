@@ -72,23 +72,25 @@ public class SetRequestHandlerTest {
     CredentialView credentialView = mock(CredentialView.class);
 
     when(credentialService.save(
-        userContext,
-        eventAuditRecordParameters,
         "government",
-        false,
         "password",
-        generationParameters,
         password,
+        generationParameters,
         accessControlEntries,
-        currentEntry))
+        false,
+        userContext,
+        currentEntry,
+        eventAuditRecordParameters
+    ))
         .thenReturn(credentialView);
 
     final CredentialView returnValue = subject
         .handle(
-            userContext,
-            eventAuditRecordParameters,
             setRequest,
-            currentEntry);
+            userContext,
+            currentEntry,
+            eventAuditRecordParameters
+        );
 
     assertThat(returnValue, equalTo(credentialView));
   }
@@ -111,23 +113,25 @@ public class SetRequestHandlerTest {
     CredentialView credentialView = mock(CredentialView.class);
 
     when(credentialService.save(
-        userContext,
-        eventAuditRecordParameters,
         "captain",
-        false,
         "user",
-        null,
         userCredentialValue,
+        null,
         accessControlEntries,
-        currentEntry))
+        false,
+        userContext,
+        currentEntry,
+        eventAuditRecordParameters
+    ))
         .thenReturn(credentialView);
 
     final CredentialView returnValue = subject
         .handle(
-            userContext,
-            eventAuditRecordParameters,
             setRequest,
-            currentEntry);
+            userContext,
+            currentEntry,
+            eventAuditRecordParameters
+        );
 
     assertThat(returnValue, equalTo(credentialView));
   }
@@ -151,23 +155,25 @@ public class SetRequestHandlerTest {
     CredentialView credentialView = mock(CredentialView.class);
 
     when(credentialService.save(
-        userContext,
-        eventAuditRecordParameters,
         "captain",
-        false,
         "certificate",
-        null,
         certificateValue,
+        null,
         accessControlEntries,
-        currentEntry))
+        false,
+        userContext,
+        currentEntry,
+        eventAuditRecordParameters
+    ))
         .thenReturn(credentialView);
 
     final CredentialView returnValue = subject
         .handle(
-            userContext,
-            eventAuditRecordParameters,
             setRequest,
-            currentEntry);
+            userContext,
+            currentEntry,
+            eventAuditRecordParameters
+        );
 
     assertThat(returnValue, equalTo(credentialView));
   }
@@ -208,37 +214,38 @@ public class SetRequestHandlerTest {
     ArgumentCaptor<CredentialValue> credentialValueArgumentCaptor = ArgumentCaptor.forClass(CredentialValue.class);
 
     when(credentialService.save(
-        eq(userContext),
-        eq(eventAuditRecordParameters),
         eq("captain"),
-        eq(false),
         eq("certificate"),
-        eq(null),
         any(),
+        eq(null),
         eq(accessControlEntries),
-        eq(currentEntry)
+        eq(false),
+        eq(userContext),
+        eq(currentEntry),
+        eq(eventAuditRecordParameters)
     ))
         .thenReturn(credentialView);
 
     final CredentialView returnValue = subject
         .handle(
-            userContext,
-            eventAuditRecordParameters,
             setRequest,
-            currentEntry);
+            userContext,
+            currentEntry,
+            eventAuditRecordParameters
+        );
 
     assertThat(returnValue, equalTo(credentialView));
 
     verify(credentialService).save(
-        eq(userContext),
-        eq(eventAuditRecordParameters),
         eq("captain"),
-        eq(false),
         eq("certificate"),
-        eq(null),
         credentialValueArgumentCaptor.capture(),
+        eq(null),
         eq(accessControlEntries),
-        eq(currentEntry)
+        eq(false),
+        eq(userContext),
+        eq(currentEntry),
+        eq(eventAuditRecordParameters)
     );
     assertThat(credentialValueArgumentCaptor.getValue(), samePropertyValuesAs(expectedCredentialValue));
   }

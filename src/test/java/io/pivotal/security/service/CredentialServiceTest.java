@@ -106,15 +106,16 @@ public class CredentialServiceTest {
     when(permissionService.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE))
         .thenReturn(true);
     subject.save(
-        userContext,
-        auditRecordParameters,
         CREDENTIAL_NAME,
-        false,
         "user",
-        generationParameters,
         credentialValue,
+        generationParameters,
         accessControlEntries,
-        currentUserPermissions);
+        false,
+        userContext,
+        currentUserPermissions,
+        auditRecordParameters
+    );
   }
 
   @Test
@@ -123,15 +124,16 @@ public class CredentialServiceTest {
     when(permissionService.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE))
         .thenReturn(true);
     subject.save(
-        userContext,
-        auditRecordParameters,
         CREDENTIAL_NAME,
-        false,
         "password",
-        generationParameters,
         credentialValue,
+        generationParameters,
         accessControlEntries,
-        currentUserPermissions);
+        false,
+        userContext,
+        currentUserPermissions,
+        auditRecordParameters
+    );
 
     assertThat(auditRecordParameters.get(0).getAuditingOperationCode(), equalTo(CREDENTIAL_ACCESS));
     assertThat(auditRecordParameters.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
@@ -146,15 +148,16 @@ public class CredentialServiceTest {
         .thenReturn(true);
 
     subject.save(
-        userContext,
-        auditRecordParameters,
         CREDENTIAL_NAME,
-        true,
         "password",
-        generationParameters,
         credentialValue,
+        generationParameters,
         accessControlEntries,
-        currentUserPermissions);
+        true,
+        userContext,
+        currentUserPermissions,
+        auditRecordParameters
+    );
 
     assertThat(auditRecordParameters.get(0).getAuditingOperationCode(), equalTo(CREDENTIAL_UPDATE));
     assertThat(auditRecordParameters.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
@@ -172,15 +175,16 @@ public class CredentialServiceTest {
     try {
 
       subject.save(
-          userContext,
-          auditRecordParameters,
           CREDENTIAL_NAME,
-          true,
           "password",
-          generationParameters,
           credentialValue,
+          generationParameters,
           accessControlEntries,
-          currentUserPermissions);
+          true,
+          userContext,
+          currentUserPermissions,
+          auditRecordParameters
+      );
     } catch (InvalidAclOperationException e) {
       assertThat(e.getMessage(), equalTo("error.acl.invalid_update_operation"));
     }
@@ -191,15 +195,16 @@ public class CredentialServiceTest {
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
     when(permissionService.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE)).thenReturn(true);
     subject.save(
-        userContext,
-        auditRecordParameters,
         CREDENTIAL_NAME,
-        false,
         "password",
-        generationParameters,
         credentialValue,
+        generationParameters,
         accessControlEntries,
-        currentUserPermissions);
+        false,
+        userContext,
+        currentUserPermissions,
+        auditRecordParameters
+    );
 
     verify(permissionService)
         .hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE);
@@ -210,15 +215,16 @@ public class CredentialServiceTest {
     when(credentialDataService.save(any(Credential.class)))
         .thenReturn(new PasswordCredential().setEncryptor(encryptor));
     subject.save(
-        userContext,
-        auditRecordParameters,
         CREDENTIAL_NAME,
-        false,
         "password",
-        generationParameters,
         credentialValue,
+        generationParameters,
         accessControlEntries,
-        currentUserPermissions);
+        false,
+        userContext,
+        currentUserPermissions,
+        auditRecordParameters
+    );
 
     verify(permissionService, times(0))
         .hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE);
@@ -234,15 +240,16 @@ public class CredentialServiceTest {
     accessControlEntries
         .add(new PermissionEntry("some_actor", Arrays.asList(PermissionOperation.READ_ACL)));
     subject.save(
-        userContext,
-        auditRecordParameters,
         CREDENTIAL_NAME,
-        false,
         "password",
-        generationParameters,
         credentialValue,
+        generationParameters,
         accessControlEntries,
-        currentUserPermissions);
+        false,
+        userContext,
+        currentUserPermissions,
+        auditRecordParameters
+    );
 
     verify(permissionService)
         .hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE_ACL);
@@ -258,15 +265,16 @@ public class CredentialServiceTest {
 
     try {
       subject.save(
-          userContext,
-          auditRecordParameters,
           CREDENTIAL_NAME,
-          false,
           "password",
-          generationParameters,
           credentialValue,
+          generationParameters,
           accessControlEntries,
-          currentUserPermissions);
+          false,
+          userContext,
+          currentUserPermissions,
+          auditRecordParameters
+      );
     } catch (PermissionException pe) {
       assertThat(pe.getMessage(), equalTo("error.credential.invalid_access"));
     }
@@ -277,15 +285,16 @@ public class CredentialServiceTest {
     when(credentialDataService.save(any(Credential.class)))
         .thenReturn(new PasswordCredential().setEncryptor(encryptor));
     subject.save(
-        userContext,
-        auditRecordParameters,
         CREDENTIAL_NAME,
-        false,
         "password",
-        generationParameters,
         credentialValue,
+        generationParameters,
         accessControlEntries,
-        currentUserPermissions);
+        false,
+        userContext,
+        currentUserPermissions,
+        auditRecordParameters
+    );
 
     assertThat(accessControlEntries, hasItem(
         samePropertyValuesAs(
@@ -304,15 +313,16 @@ public class CredentialServiceTest {
         .thenReturn(true);
 
     subject.save(
-        userContext,
-        auditRecordParameters,
         CREDENTIAL_NAME,
-        true,
         "password",
-        generationParameters,
         credentialValue,
+        generationParameters,
         accessControlEntries,
-        currentUserPermissions);
+        true,
+        userContext,
+        currentUserPermissions,
+        auditRecordParameters
+    );
 
     assertThat(accessControlEntries, hasSize(0));
   }
@@ -331,15 +341,16 @@ public class CredentialServiceTest {
         generationParameters)).thenReturn(newVersion);
 
     subject.save(
-        userContext,
-        auditRecordParameters,
         CREDENTIAL_NAME,
-        true,
         "password",
-        generationParameters,
         credentialValue,
+        generationParameters,
         accessControlEntries,
-        currentUserPermissions);
+        true,
+        userContext,
+        currentUserPermissions,
+        auditRecordParameters
+    );
 
     verify(credentialDataService).save(newVersion);
   }
@@ -350,15 +361,16 @@ public class CredentialServiceTest {
     when(credentialDataService.save(any(Credential.class))).thenReturn(credential);
 
     subject.save(
-        userContext,
-        auditRecordParameters,
         CREDENTIAL_NAME,
-        true,
         "password",
-        generationParameters,
         credentialValue,
+        generationParameters,
         accessControlEntries,
-        currentUserPermissions);
+        true,
+        userContext,
+        currentUserPermissions,
+        auditRecordParameters
+    );
 
     verify(permissionsDataService)
         .saveAccessControlEntries(credential.getCredentialName(), accessControlEntries);
@@ -377,15 +389,16 @@ public class CredentialServiceTest {
     ));
 
     subject.save(
-        userContext,
-        auditRecordParameters,
         CREDENTIAL_NAME,
-        true,
         "password",
-        generationParameters,
         credentialValue,
+        generationParameters,
         accessControlEntries,
-        currentUserPermissions);
+        true,
+        userContext,
+        currentUserPermissions,
+        auditRecordParameters
+    );
 
     assertThat(auditRecordParameters, hasItem(
         samePropertyValuesAs(

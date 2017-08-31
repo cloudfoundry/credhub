@@ -141,7 +141,7 @@ public class CredentialsController {
     eventAuditLogService.auditEvents(requestUuid, userContext, (eventAuditRecordParametersList) -> {
       eventAuditRecordParametersList.add(new EventAuditRecordParameters(CREDENTIAL_DELETE, credentialName));
 
-      credentialHandler.deleteCredential(userContext, credentialName);
+      credentialHandler.deleteCredential(credentialName, userContext);
 
       return true;
     });
@@ -154,7 +154,7 @@ public class CredentialsController {
       RequestUuid requestUuid,
       UserContext userContext) {
     return eventAuditLogService.auditEvents(requestUuid, userContext, eventAuditRecordParametersList -> {
-      Credential credentialVersion = credentialHandler.getCredentialVersion(userContext, eventAuditRecordParametersList, id);
+      Credential credentialVersion = credentialHandler.getCredentialVersion(id, userContext, eventAuditRecordParametersList);
       return CredentialView.fromEntity(credentialVersion);
     });
   }
@@ -173,10 +173,10 @@ public class CredentialsController {
     return eventAuditLogService.auditEvents(requestUuid, userContext, eventAuditRecordParametersList -> {
       List<Credential> credentials;
       if (current) {
-        Credential credential = credentialHandler.getMostRecentCredentialVersion(userContext, eventAuditRecordParametersList, credentialName);
+        Credential credential = credentialHandler.getMostRecentCredentialVersion(credentialName, userContext, eventAuditRecordParametersList);
         credentials = singletonList(credential);
       } else {
-        credentials = credentialHandler.getAllCredentialVersions(userContext, eventAuditRecordParametersList, credentialName);
+        credentials = credentialHandler.getAllCredentialVersions(credentialName, userContext, eventAuditRecordParametersList);
       }
       return DataResponse.fromEntity(credentials);
     });
@@ -295,8 +295,12 @@ public class CredentialsController {
       List<EventAuditRecordParameters> auditRecordParameters,
       PermissionEntry currentUserPermissionEntry
   ) {
-    return setRequestHandler.handle(userContext, auditRecordParameters, requestBody,
-        currentUserPermissionEntry);
+    return setRequestHandler.handle(
+        requestBody,
+        userContext,
+        currentUserPermissionEntry,
+        auditRecordParameters
+    );
   }
 
   private boolean readRegenerateFlagFrom(String requestString) {

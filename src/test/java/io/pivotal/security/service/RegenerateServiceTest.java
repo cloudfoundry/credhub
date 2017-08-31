@@ -79,15 +79,16 @@ public class RegenerateServiceTest {
           .thenReturn(credentialOfUnsupportedType);
       when(credentialService
           .save(
-              eq(userContext),
-              eq(auditRecordParameters),
               eq("password"),
-              eq(true),
               anyString(),
-              isA(StringGenerationParameters.class),
               isA(CredentialValue.class),
+              isA(StringGenerationParameters.class),
               anyList(),
-              any(PermissionEntry.class)))
+              eq(true),
+              eq(userContext),
+              any(PermissionEntry.class),
+              eq(auditRecordParameters)
+          ))
           .thenReturn(mock(CredentialView.class));
       credentialOfUnsupportedType = new JsonCredential();
       subject = new RegenerateService(credentialDataService, credentialService,
@@ -123,15 +124,16 @@ public class RegenerateServiceTest {
 
             verify(credentialService)
                 .save(
-                    eq(userContext),
-                    eq(auditRecordParameters),
                     eq("password"),
-                    eq(true),
                     eq("password"),
-                    isA(StringGenerationParameters.class),
                     isA(StringCredentialValue.class),
+                    isA(StringGenerationParameters.class),
                     eq(Collections.emptyList()),
-                    eq(currentUser));
+                    eq(true),
+                    eq(userContext),
+                    eq(currentUser),
+                    eq(auditRecordParameters)
+                );
           });
 
         });
@@ -186,15 +188,16 @@ public class RegenerateServiceTest {
 
             verify(credentialService)
                 .save(
-                    eq(userContext),
-                    eq(auditRecordParameters),
                     eq("user"),
-                    eq(true),
                     eq("user"),
-                    isA(StringGenerationParameters.class),
                     isA(UserCredentialValue.class),
+                    isA(StringGenerationParameters.class),
                     eq(Collections.emptyList()),
-                    eq(currentUser));
+                    eq(true),
+                    eq(userContext),
+                    eq(currentUser),
+                    eq(auditRecordParameters)
+                );
           });
         });
 
@@ -237,15 +240,16 @@ public class RegenerateServiceTest {
           it("should generate a new ssh key pair", () -> {
             verify(credentialService)
                 .save(
-                    eq(userContext),
-                    eq(auditRecordParameters),
                     eq("ssh"),
-                    eq(true),
                     eq("ssh"),
-                    eq(null),
                     isA(SshCredentialValue.class),
+                    eq(null),
                     eq(Collections.emptyList()),
-                    eq(currentUser));
+                    eq(true),
+                    eq(userContext),
+                    eq(currentUser),
+                    eq(auditRecordParameters)
+                );
           });
         });
 
@@ -267,15 +271,16 @@ public class RegenerateServiceTest {
           it("should generate a new rsa key pair", () -> {
             verify(credentialService)
                 .save(
-                    eq(userContext),
-                    eq(auditRecordParameters),
                     eq("rsa"),
-                    eq(true),
                     eq("rsa"),
-                    eq(null),
                     isA(RsaCredentialValue.class),
+                    eq(null),
                     eq(Collections.emptyList()),
-                    eq(currentUser));
+                    eq(true),
+                    eq(userContext),
+                    eq(currentUser),
+                    eq(auditRecordParameters)
+                );
           });
         });
       });

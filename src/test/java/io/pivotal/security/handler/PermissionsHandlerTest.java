@@ -75,8 +75,8 @@ public class PermissionsHandlerTest {
         .thenReturn(new CredentialName(CREDENTIAL_NAME));
 
     PermissionsView response = subject.getPermissions(
-        userContext,
-        CREDENTIAL_NAME
+        CREDENTIAL_NAME,
+        userContext
     );
     assertThat(response.getCredentialName(), equalTo(CREDENTIAL_NAME));
   }
@@ -98,8 +98,8 @@ public class PermissionsHandlerTest {
         .thenReturn(accessControlList);
 
     PermissionsView response = subject.getPermissions(
-        userContext,
-        CREDENTIAL_NAME
+        CREDENTIAL_NAME,
+        userContext
     );
 
     verify(permissionService, times(1))
@@ -147,7 +147,7 @@ public class PermissionsHandlerTest {
     when(credentialNameDataService.find(CREDENTIAL_NAME))
         .thenReturn(credentialName);
 
-    PermissionsView response = subject.setPermissions(userContext, CREDENTIAL_NAME, accessControlList);
+    PermissionsView response = subject.setPermissions(CREDENTIAL_NAME, userContext, accessControlList);
 
     List<PermissionEntry> accessControlEntries = response.getPermissions();
 
@@ -174,7 +174,7 @@ public class PermissionsHandlerTest {
         .thenReturn(true);
 
     try {
-      subject.setPermissions(userContext, CREDENTIAL_NAME, emptyList());
+      subject.setPermissions(CREDENTIAL_NAME, userContext, emptyList());
       fail("should throw");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
@@ -192,7 +192,7 @@ public class PermissionsHandlerTest {
         .thenReturn(false);
 
     try {
-      subject.setPermissions(userContext, CREDENTIAL_NAME, Arrays.asList(
+      subject.setPermissions(CREDENTIAL_NAME, userContext, Arrays.asList(
           new PermissionEntry(ACTOR_NAME, Arrays.asList(READ)))
       );
     } catch (InvalidAclOperationException e) {
@@ -211,7 +211,7 @@ public class PermissionsHandlerTest {
         .thenReturn(null);
 
     try {
-      subject.setPermissions(userContext, CREDENTIAL_NAME, emptyList());
+      subject.setPermissions(CREDENTIAL_NAME, userContext, emptyList());
       fail("should throw");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
@@ -228,7 +228,7 @@ public class PermissionsHandlerTest {
     when(permissionService.validAclUpdateOperation(userContext, ACTOR_NAME))
         .thenReturn(true);
 
-    subject.deletePermissionEntry( userContext, CREDENTIAL_NAME, ACTOR_NAME);
+    subject.deletePermissionEntry(CREDENTIAL_NAME, ACTOR_NAME, userContext);
 
     verify(permissionsDataService, times(1)).deleteAccessControlEntry(
         CREDENTIAL_NAME, ACTOR_NAME);
@@ -242,7 +242,7 @@ public class PermissionsHandlerTest {
         .thenReturn(false);
 
     try {
-      subject.deletePermissionEntry(userContext, CREDENTIAL_NAME, ACTOR_NAME);
+      subject.deletePermissionEntry(CREDENTIAL_NAME, ACTOR_NAME, userContext);
     } catch( InvalidAclOperationException iaoe ){
       assertThat(iaoe.getMessage(), equalTo("error.acl.invalid_update_operation"));
     }
@@ -258,7 +258,7 @@ public class PermissionsHandlerTest {
         .thenReturn(false);
 
     try {
-      subject.deletePermissionEntry(userContext, CREDENTIAL_NAME, ACTOR_NAME);
+      subject.deletePermissionEntry(CREDENTIAL_NAME, ACTOR_NAME, userContext);
       fail("should throw");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
@@ -273,7 +273,7 @@ public class PermissionsHandlerTest {
         .thenReturn(true);
 
     try {
-      subject.deletePermissionEntry(userContext, CREDENTIAL_NAME, ACTOR_NAME);
+      subject.deletePermissionEntry(CREDENTIAL_NAME, ACTOR_NAME, userContext);
       fail("should throw");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));

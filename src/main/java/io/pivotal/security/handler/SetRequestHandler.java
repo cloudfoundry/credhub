@@ -31,11 +31,12 @@ public class SetRequestHandler {
     this.certificateAuthorityService = certificateAuthorityService;
   }
 
-  public CredentialView handle(UserContext userContext,
-      List<EventAuditRecordParameters> eventAuditRecordParameters,
+  public CredentialView handle(
       BaseCredentialSetRequest setRequest,
-      PermissionEntry currentEntry) {
-
+      UserContext userContext,
+      PermissionEntry currentEntry,
+      List<EventAuditRecordParameters> eventAuditRecordParameters
+  ) {
     StringGenerationParameters generationParameters = null;
 
     if (setRequest instanceof PasswordSetRequest) {
@@ -61,14 +62,15 @@ public class SetRequestHandler {
     }
 
     return credentialService.save(
-        userContext,
-        eventAuditRecordParameters,
         setRequest.getName(),
-        setRequest.isOverwrite(),
         setRequest.getType(),
-        generationParameters,
         setRequest.getCredentialValue(),
+        generationParameters,
         setRequest.getAdditionalPermissions(),
-        currentEntry);
+        setRequest.isOverwrite(),
+        userContext,
+        currentEntry,
+        eventAuditRecordParameters
+    );
   }
 }

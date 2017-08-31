@@ -47,14 +47,15 @@ public class GenerateRequestHandler {
     }
 
     return credentialService.save(
-        userContext,
-        auditRecordParameters,
         requestBody.getName(),
-        requestBody.isOverwrite(),
         requestBody.getType(),
-        generationParameters,
         value,
+        generationParameters,
         requestBody.getAdditionalPermissions(),
-        currentUserPermissionEntry);
+        requestBody.isOverwrite(),
+        userContext,
+        currentUserPermissionEntry,
+        auditRecordParameters
+    );
   }
 }

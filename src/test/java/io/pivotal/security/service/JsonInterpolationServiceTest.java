@@ -89,7 +89,7 @@ public class JsonInterpolationServiceTest {
 
       doReturn(
           passwordCredential
-      ).when(credentialHandler).getMostRecentCredentialVersion(userContext, eventAuditRecordParameters,"/password_cred");
+      ).when(credentialHandler).getMostRecentCredentialVersion("/password_cred", userContext, eventAuditRecordParameters);
 
       try {
         subject.interpolateCredHubReferences(userContext, deserialize(inputJson, Map.class), eventAuditRecordParameters);
@@ -250,15 +250,15 @@ public class JsonInterpolationServiceTest {
 
     doReturn(
         jsonCredential
-    ).when(credentialHandler).getMostRecentCredentialVersion(userContext, newArrayList(), "/cred1");
+    ).when(credentialHandler).getMostRecentCredentialVersion("/cred1", userContext, newArrayList());
 
     doReturn(
         jsonCredential1
-    ).when(credentialHandler).getMostRecentCredentialVersion(userContext, newArrayList(), "/cred2");
+    ).when(credentialHandler).getMostRecentCredentialVersion("/cred2", userContext, newArrayList());
 
     doReturn(
         jsonCredential2
-    ).when(credentialHandler).getMostRecentCredentialVersion(userContext, newArrayList(), "/cred3");
+    ).when(credentialHandler).getMostRecentCredentialVersion("/cred3", userContext, newArrayList());
 
     response = subject.interpolateCredHubReferences(userContext, inputJson, eventAuditRecordParameters);
   }

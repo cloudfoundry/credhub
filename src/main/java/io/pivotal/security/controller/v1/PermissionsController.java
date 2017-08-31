@@ -61,7 +61,7 @@ public class PermissionsController {
       );
       eventAuditRecordParametersList.add(eventAuditRecordParameters);
 
-      final PermissionsView response = permissionsHandler.getPermissions(userContext, credentialName);
+      final PermissionsView response = permissionsHandler.getPermissions(credentialName, userContext);
 
       eventAuditRecordParameters.setCredentialName(response.getCredentialName());
 
@@ -83,8 +83,8 @@ public class PermissionsController {
           accessEntriesRequest.getPermissions())
       );
       return permissionsHandler.setPermissions(
-          userContext,
           accessEntriesRequest.getCredentialName(),
+          userContext,
           accessEntriesRequest.getPermissions()
       );
     });
@@ -110,7 +110,7 @@ public class PermissionsController {
           operationList
       ));
 
-      permissionsHandler.deletePermissionEntry(userContext, credentialName, actor);
+      permissionsHandler.deletePermissionEntry(credentialName, actor, userContext);
 
       return true;
     });

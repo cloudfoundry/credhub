@@ -27,7 +27,7 @@ public class CredentialHandler {
     this.permissionService = permissionService;
   }
 
-  public void deleteCredential(UserContext userContext, String credentialName) {
+  public void deleteCredential(String credentialName, UserContext userContext) {
     if (!permissionService.hasPermission(userContext.getAclUser(), credentialName, DELETE)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
@@ -40,9 +40,9 @@ public class CredentialHandler {
   }
 
   public List<Credential> getAllCredentialVersions(
+      String credentialName,
       UserContext userContext,
-      List<EventAuditRecordParameters> auditRecordParametersList,
-      String credentialName
+      List<EventAuditRecordParameters> auditRecordParametersList
   ) {
     EventAuditRecordParameters auditRecordParameters = new EventAuditRecordParameters(AuditingOperationCode.CREDENTIAL_ACCESS, credentialName);
     auditRecordParametersList.add(auditRecordParameters);
@@ -58,36 +58,35 @@ public class CredentialHandler {
   }
 
   public Credential getMostRecentCredentialVersion(
+      String credentialName,
       UserContext userContext,
-      List<EventAuditRecordParameters> auditRecordParametersList,
-      String credentialName
+      List<EventAuditRecordParameters> auditRecordParametersList
   ) {
     Credential credential = getVersionByIdentifier(
+        credentialName,
         userContext,
         auditRecordParametersList,
-        credentialName,
         credentialDataService::findMostRecent
     );
     return credential;
   }
 
   public Credential getCredentialVersion(
-      UserContext userContext,
-      List<EventAuditRecordParameters> auditRecordParametersList,
-      String credentialUuid
+      String credentialUuid, UserContext userContext,
+      List<EventAuditRecordParameters> auditRecordParametersList
   ) {
     return getVersionByIdentifier(
+        credentialUuid,
         userContext,
         auditRecordParametersList,
-        credentialUuid,
         credentialDataService::findByUuid
     );
   }
 
   private Credential getVersionByIdentifier(
+      String identifier,
       UserContext userContext,
       List<EventAuditRecordParameters> auditRecordParametersList,
-      String identifier,
       Function<String, Credential> getFn
   ) {
     EventAuditRecordParameters eventAuditRecordParameters = new EventAuditRecordParameters(
