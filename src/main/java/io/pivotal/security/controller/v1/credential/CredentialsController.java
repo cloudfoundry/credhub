@@ -279,7 +279,7 @@ public class CredentialsController {
         .readValue(requestString, CredentialRegenerateRequest.class);
 
     return regenerateService
-        .performRegenerate(userContext, parametersList, requestBody, currentUserPermissionEntry);
+        .performRegenerate(requestBody.getName(), userContext, currentUserPermissionEntry, parametersList);
   }
 
   private CredentialView auditedHandlePutRequest(

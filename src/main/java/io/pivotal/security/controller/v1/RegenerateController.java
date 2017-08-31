@@ -25,31 +25,33 @@ import java.io.IOException;
     path = RegenerateController.API_V1_REGENERATE,
     produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class RegenerateController {
-  public static final String API_V1_REGENERATE = "api/v1/regenerate";
+  static final String API_V1_REGENERATE = "api/v1/regenerate";
 
   private static final Logger LOGGER = LogManager.getLogger(RegenerateController.class);
   private final EventAuditLogService eventAuditLogService;
   private RegenerateService regenerateService;
 
   @Autowired
-  public RegenerateController(RegenerateService regenerateService,
-                              EventAuditLogService eventAuditLogService) {
+  public RegenerateController(
+      RegenerateService regenerateService,
+      EventAuditLogService eventAuditLogService
+  ) {
     this.regenerateService = regenerateService;
     this.eventAuditLogService = eventAuditLogService;
   }
 
   @RequestMapping(path = "", method = RequestMethod.POST)
   @ResponseStatus(HttpStatus.OK)
-  // Since regeneration, by definition, never tries to create a new credential, there is no need for
-  // us to detect a failed creation and retry the operation
-  public CredentialView regenerate(UserContext userContext,
-                                   RequestUuid requestUuid,
-                                   PermissionEntry currentUserPermissionEntry,
-                                   @RequestBody CredentialRegenerateRequest requestBody) throws IOException {
+  public CredentialView regenerate(
+      UserContext userContext,
+      RequestUuid requestUuid,
+      PermissionEntry currentUserPermissionEntry,
+      @RequestBody CredentialRegenerateRequest requestBody
+  ) throws IOException {
     return eventAuditLogService
-        .auditEvents(requestUuid, userContext, (parametersList -> {
+        .auditEvents(requestUuid, userContext, (auditRecordParameters -> {
           return regenerateService
-              .performRegenerate(userContext, parametersList, requestBody, currentUserPermissionEntry);
+              .performRegenerate(requestBody.getName(), userContext, currentUserPermissionEntry, auditRecordParameters);
         }));
   }
 }

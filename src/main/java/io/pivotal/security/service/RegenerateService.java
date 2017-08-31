@@ -9,7 +9,6 @@ import io.pivotal.security.domain.CredentialValueFactory;
 import io.pivotal.security.domain.PasswordCredential;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.request.BaseCredentialGenerateRequest;
-import io.pivotal.security.request.CredentialRegenerateRequest;
 import io.pivotal.security.request.PasswordGenerateRequest;
 import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.StringGenerationParameters;
@@ -56,13 +55,14 @@ public class RegenerateService {
   }
 
   public CredentialView performRegenerate(
+      String credentialName,
       UserContext userContext,
-      List<EventAuditRecordParameters> parametersList,
-      CredentialRegenerateRequest requestBody,
-      PermissionEntry currentUserPermissionEntry) {
-    Credential credential = credentialDataService.findMostRecent(requestBody.getName());
+      PermissionEntry currentUserPermissionEntry,
+      List<EventAuditRecordParameters> auditRecordParameters
+  ) {
+    Credential credential = credentialDataService.findMostRecent(credentialName);
     if (credential == null) {
-      parametersList.add(new EventAuditRecordParameters(CREDENTIAL_UPDATE, requestBody.getName()));
+      auditRecordParameters.add(new EventAuditRecordParameters(CREDENTIAL_UPDATE, credentialName));
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
@@ -71,7 +71,7 @@ public class RegenerateService {
         .get();
 
     if (credential instanceof PasswordCredential && ((PasswordCredential) credential).getGenerationParameters() == null) {
-      parametersList.add(new EventAuditRecordParameters(CREDENTIAL_UPDATE, requestBody.getName()));
+      auditRecordParameters.add(new EventAuditRecordParameters(CREDENTIAL_UPDATE, credentialName));
     }
 
     final BaseCredentialGenerateRequest generateRequest = regeneratable
@@ -90,7 +90,7 @@ public class RegenerateService {
 
     return credentialService.save(
         userContext,
-        parametersList,
+        auditRecordParameters,
         generateRequest.getName(),
         generateRequest.isOverwrite(),
         generateRequest.getType(),
