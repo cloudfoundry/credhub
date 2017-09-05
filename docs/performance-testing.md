@@ -87,7 +87,7 @@ A single credential is set or retrieved in the get and set request tests. The in
 | Interpolate | 1  | 500 | 1 | 1 | 50 | 25000
 |             | 2  | 500 | 1 | 1 | 50 | 25000
 |             | 4  | 500 | 1 | 1 | 50 | 25000
-|             | 10 | 500 | 1 | 1 | TBD | TBD
+|             | 10 | 500 | 1 | 1 | 100 | 50000
 
 #### Results
 
@@ -96,12 +96,12 @@ A single credential is set or retrieved in the get and set request tests. The in
 | 1  | ![GET1](https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/GET_1_instance.png) | ![SET1](https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/SET_1_instance.png) | ![INTERPOLATE1](https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/INTERPOLATE_1_instance.png) |
 | 2  | ![GET2](https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/GET_2_instance.png) | | ![INTERPOLATE2](https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/INTERPOLATE_2_instance.png) |
 | 4  | ![GET4](https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/GET_4_instance.png) | | ![INTERPOLATE4](https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/INTERPOLATE_4_instance.png) |
-| 10 | ![GET10](https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/GET_10_instance.png) | | |
+| 10 | ![GET10](https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/GET_10_instance.png) | | ![INTERPOLATE10](https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/INTERPOLATE_10_instance.png) |
 
 
 #### 10 instance result
 
-At this stage, the database cannot serve most requests from Credhub as it gets bottle-necked by its connection pool. Hence the maximum throughput in the case of 10 instances is not very different from the of 4 isntance.
+At this stage, the database cannot serve most requests from Credhub as it gets bottle-necked by its connection pool. Hence the maximum throughput in the case of 10 instances is not very different from the of 4 instances.
 
 ## How to build your own Headroom Plot
 
