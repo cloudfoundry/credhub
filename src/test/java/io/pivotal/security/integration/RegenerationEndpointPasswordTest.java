@@ -12,6 +12,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -37,6 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 @Transactional
+@TestPropertySource(properties = "security.authorization.acls.enabled=true")
 public class RegenerationEndpointPasswordTest {
 
   private static final String API_V1_DATA_ENDPOINT = "/api/v1/data";
@@ -118,5 +121,21 @@ public class RegenerationEndpointPasswordTest {
         .andExpect(jsonPath("$.type").value("password"));
 
     auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/picard", "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", API_V1_REGENERATE_ENDPOINT, 200);
+  }
+
+  @Test
+  public void passwordRegeneration_withoutWritePermissionShouldFail() throws Exception {
+    MockHttpServletRequestBuilder regeneratePasswordRequest = post(API_V1_REGENERATE_ENDPOINT)
+        .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        //language=JSON
+        .content("{\n"
+            + "  \"name\" : \"picard\"\n"
+            + "}");
+
+    this.mockMvc.perform(regeneratePasswordRequest)
+        .andDo(print())
+        .andExpect(status().isForbidden());
   }
 }
