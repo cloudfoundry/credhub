@@ -80,7 +80,7 @@ A single credential is set or retrieved in the get and set request tests. The in
 |             | 2  | 500 | 1 | 1 | 60 | 30000
 |             | 4  | 500 | 1 | 1 | 60 | 30000
 |             | 10 | 500 | 1 | 1 | 120 | 60000
-| Set         | 1  | 500 | 1 | 1 | 35 | 17500
+| Set         | 1  | 500 | 1 | 1 | 40 | 20000
 |             | 2  | 500 | 1 | 1 | TBD | TBD
 |             | 4  | 500 | 1 | 1 | TBD | TBD
 |             | 10 | 500 | 1 | 1 | TBD | TBD
