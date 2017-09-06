@@ -82,7 +82,7 @@ A single credential is set or retrieved in the get and set request tests. The in
 |             | 10 | 500 | 1 | 1 | 120 | 60000
 | Set         | 1  | 500 | 1 | 1 | 40 | 20000
 |             | 2  | 500 | 1 | 1 | 40 | 20000
-|             | 4  | 500 | 1 | 1 | TBD | TBD
+|             | 4  | 500 | 1 | 1 | 40 | 20000
 |             | 10 | 500 | 1 | 1 | TBD | TBD
 | Interpolate | 1  | 500 | 1 | 1 | 50 | 25000
 |             | 2  | 500 | 1 | 1 | 50 | 25000
@@ -95,7 +95,7 @@ A single credential is set or retrieved in the get and set request tests. The in
 |------|-----|------|-----|
 | 1  | ![GET1](https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/GET_1_instance.png) | ![SET1](https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/SET_1_instance.png) | ![INTERPOLATE1](https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/INTERPOLATE_1_instance.png) |
 | 2  | ![GET2](https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/GET_2_instance.png) | ![SET2](https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/SET_2_instance.png) | ![INTERPOLATE2](https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/INTERPOLATE_2_instance.png) |
-| 4  | ![GET4](https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/GET_4_instance.png) | | ![INTERPOLATE4](https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/INTERPOLATE_4_instance.png) |
+| 4  | ![GET4](https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/GET_4_instance.png) | ![SET4](https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/SET_4_instance.png) | ![INTERPOLATE4](https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/INTERPOLATE_4_instance.png) |
 | 10 | ![GET10](https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/GET_10_instance.png) | | ![INTERPOLATE10](https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/INTERPOLATE_10_instance.png) |
 
 
