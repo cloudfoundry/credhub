@@ -33,7 +33,7 @@ The performance test consists of sending requests at gradually increasing levels
 | CredHub Max Heap Size | 7 GB       |
 | Database TLS Enabled  | False      |
 | CredHub ACLs Enabled  | False      |
-| CredHub Version       | 1.3.1      |
+| CredHub Version       | 1.3.0      |
 
 
 #### Database Instance
