@@ -1,10 +1,9 @@
 package io.pivotal.security.data;
 
+import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.domain.CertificateCredential;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.credential.CertificateCredentialValue;
-import io.pivotal.security.util.CertificateReader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -23,7 +22,7 @@ public class CertificateAuthorityService {
     if (CertificateCredential.class.isInstance(mostRecent)) {
       CertificateCredential certificateCredential = (CertificateCredential) mostRecent;
 
-      if (!new CertificateReader(certificateCredential.getCertificate()).isCa()) {
+      if (!certificateCredential.getParsedCertificate().isCa()) {
         throw new ParameterizedValidationException("error.cert_not_ca");
       }
 

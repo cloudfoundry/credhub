@@ -15,7 +15,7 @@ public class CertificateCredentialRegeneratable implements Regeneratable {
   @Override
   public BaseCredentialGenerateRequest createGenerateRequest(Credential credential) {
     CertificateCredential certificateCredential = (CertificateCredential) credential;
-    CertificateReader reader = new CertificateReader(certificateCredential.getCertificate());
+    CertificateReader reader = certificateCredential.getParsedCertificate();
 
     if (!reader.isValid() || (isEmpty(certificateCredential.getCaName()) && !reader.isSelfSigned())) {
       throw new ParameterizedValidationException(

@@ -1,10 +1,10 @@
 package io.pivotal.security.data;
 
-import io.pivotal.security.config.BouncyCastleProviderConfiguration;
 import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.domain.CertificateCredential;
 import io.pivotal.security.domain.PasswordCredential;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.util.CertificateReader;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,8 +34,6 @@ public class CertificateAuthorityServiceTest {
 
     credentialDataService = mock(CredentialDataService.class);
     certificateAuthorityService = new CertificateAuthorityService(credentialDataService);
-
-    new BouncyCastleProviderConfiguration().bouncyCastleProvider();
   }
 
   @Test
@@ -51,8 +49,11 @@ public class CertificateAuthorityServiceTest {
 
   @Test
   public void findMostRecent_givenExistingCa_returnsTheCa() {
+    CertificateReader certificateReader = mock(CertificateReader.class);
     when(credentialDataService.findMostRecent("my-ca-name")).thenReturn(certificateCredential);
     when(certificateCredential.getPrivateKey()).thenReturn("my-key");
+    when(certificateCredential.getParsedCertificate()).thenReturn(certificateReader);
+    when(certificateReader.isCa()).thenReturn(true);
     when(certificateCredential.getCertificate()).thenReturn(SELF_SIGNED_CA_CERT);
 
     assertThat(certificateAuthorityService.findMostRecent("my-ca-name"),
@@ -74,6 +75,7 @@ public class CertificateAuthorityServiceTest {
   @Test
   public void findMostRecent_whenCertificateIsNotACa_throwsException() {
     CertificateCredential notACertificateAuthority = mock(CertificateCredential.class);
+    when(notACertificateAuthority.getParsedCertificate()).thenReturn(mock(CertificateReader.class));
     when(notACertificateAuthority.getCertificate()).thenReturn(SIMPLE_SELF_SIGNED_TEST_CERT);
     when(notACertificateAuthority.getCertificate()).thenReturn(SIMPLE_SELF_SIGNED_TEST_CERT);
     when(credentialDataService.findMostRecent("just-a-certificate"))

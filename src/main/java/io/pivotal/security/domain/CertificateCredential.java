@@ -3,14 +3,20 @@ package io.pivotal.security.domain;
 import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.entity.CertificateCredentialData;
 import io.pivotal.security.service.Encryption;
+import io.pivotal.security.util.CertificateReader;
+import org.apache.commons.lang3.StringUtils;
 
 public class CertificateCredential extends Credential<CertificateCredential> {
 
   private CertificateCredentialData delegate;
+  private CertificateReader parsedCertificate;
 
   public CertificateCredential(CertificateCredentialData delegate) {
     super(delegate);
     this.delegate = delegate;
+    if(StringUtils.isNotEmpty(delegate.getCertificate())) {
+      this.parsedCertificate = new CertificateReader(delegate.getCertificate());
+    }
   }
 
   public CertificateCredential(String name) {
@@ -28,6 +34,11 @@ public class CertificateCredential extends Credential<CertificateCredential> {
     this.setCertificate(certificate.getCertificate());
     this.setPrivateKey(certificate.getPrivateKey());
     this.setCaName(certificate.getCaName());
+    this.parsedCertificate = new CertificateReader(certificate.getCertificate());
+  }
+
+  public CertificateReader getParsedCertificate() {
+    return this.parsedCertificate;
   }
 
   public String getCa() {
