@@ -1,4 +1,4 @@
-# <img src="docs/images/logo.png" alt="CredHub"><br/>
+# <div align="center"><img src="docs/images/logo.png" alt="CredHub"></div>
 
 [![slack.cloudfoundry.org](https://slack.cloudfoundry.org/badge.svg)](https://slack.cloudfoundry.org)
 

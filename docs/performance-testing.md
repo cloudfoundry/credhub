@@ -95,10 +95,10 @@ A single credential is set or retrieved in the get and set request tests. The in
 
 #### 10 instance result
 
-At this stage, the database cannot serve most requests from Credhub as it gets bottle-necked by its connection pool. Hence the maximum throughput in the case of 10 instances is not very different from the of 4 instances.
+At this stage, the database cannot serve most requests from CredHub as it gets bottle-necked by its connection pool. Hence the maximum throughput in the case of 10 instances is not very different from the of 4 instances.
 
 ## How to build your own Headroom Plot
 
-The tools required to performance test the Credhub performance setup are available [here.](https://github.com/cloudfoundry-incubator/credhub-perf-release)
+The tools required to performance test the CredHub performance setup are available [here.](https://github.com/cloudfoundry-incubator/credhub-perf-release)
 
 Follow the instructions provided in the [README](https://github.com/cloudfoundry-incubator/credhub-performance/blob/master/README.md) to both run the tests and process the test output into Headroom Plots.
