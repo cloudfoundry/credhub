@@ -163,6 +163,7 @@ public class CredentialsController {
   @ResponseStatus(HttpStatus.OK)
   public DataResponse getCredential(
       @RequestParam(value = "name") String credentialName,
+      @RequestParam(value = "versions", required = false) Integer numberOfVersions,
       @RequestParam(value = "current", required = false, defaultValue = "false") boolean current,
       RequestUuid requestUuid,
       UserContext userContext) {
@@ -176,8 +177,13 @@ public class CredentialsController {
         Credential credential = credentialHandler.getMostRecentCredentialVersion(credentialName, userContext, eventAuditRecordParametersList);
         credentials = singletonList(credential);
       } else {
-        credentials = credentialHandler.getAllCredentialVersions(credentialName, userContext, eventAuditRecordParametersList);
+        if (numberOfVersions != null){
+          credentials = credentialHandler.getNCredentialVersions(credentialName, userContext, eventAuditRecordParametersList, numberOfVersions);
+        } else {
+          credentials = credentialHandler.getAllCredentialVersions(credentialName, userContext, eventAuditRecordParametersList);
+        }
       }
+
       return DataResponse.fromEntity(credentials);
     });
   }

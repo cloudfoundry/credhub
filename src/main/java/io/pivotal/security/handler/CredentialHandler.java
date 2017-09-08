@@ -39,6 +39,16 @@ public class CredentialHandler {
     }
   }
 
+  public List<Credential> getNCredentialVersions(
+      String credentialName,
+      UserContext userContext,
+      List<EventAuditRecordParameters> auditRecordParametersList,
+      Integer numberOfVersions
+  ) {
+    List<Credential> credentials = getAllCredentialVersions(credentialName, userContext, auditRecordParametersList);
+    return credentials.subList(0, numberOfVersions);
+  }
+
   public List<Credential> getAllCredentialVersions(
       String credentialName,
       UserContext userContext,

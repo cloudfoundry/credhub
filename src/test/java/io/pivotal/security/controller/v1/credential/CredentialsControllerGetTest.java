@@ -227,6 +227,43 @@ public class CredentialsControllerGetTest {
   }
 
   @Test
+  public void gettingACredential_byName_withCurrentSetToFalse_andNumberOfVersions_returnsTheSpecifiedNumberOfVersions() throws Exception {
+    UUID uuid = UUID.randomUUID();
+
+    Instant credential1Instant = Instant.ofEpochSecond(1400000001L);
+    Instant credential2Instant = Instant.ofEpochSecond(1400000002L);
+    Instant credential3Instant = Instant.ofEpochSecond(1400000003L);
+
+    ValueCredential valueCredential1 = new ValueCredential(CREDENTIAL_NAME)
+        .setEncryptor(encryptor)
+        .setUuid(uuid)
+        .setVersionCreatedAt(credential1Instant);
+    ValueCredential valueCredential2 = new ValueCredential(CREDENTIAL_NAME)
+        .setEncryptor(encryptor)
+        .setUuid(uuid)
+        .setVersionCreatedAt(credential2Instant);
+    ValueCredential valueCredential3 = new ValueCredential(CREDENTIAL_NAME)
+        .setEncryptor(encryptor)
+        .setUuid(uuid)
+        .setVersionCreatedAt(credential3Instant);
+
+    doReturn(CREDENTIAL_VALUE).when(encryptor).decrypt(any());
+
+    doReturn(
+        newArrayList(valueCredential1, valueCredential2, valueCredential3)
+    ).when(credentialDataService).findAllByName(CREDENTIAL_NAME);
+
+    mockMvc.perform(get("/api/v1/data?current=false&name=" + CREDENTIAL_NAME + "&versions=2")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+        .andExpect(jsonPath("$.data", hasSize(equalTo(2))))
+        .andExpect(jsonPath("$.data[0].version_created_at", equalTo(credential1Instant.toString())))
+        .andExpect(jsonPath("$.data[1].version_created_at", equalTo(credential2Instant.toString())));
+  }
+
+  @Test
   public void gettingACredential_byName_returnsAnErrorWhenTheNameIsNotGiven() throws Exception {
     final MockHttpServletRequestBuilder get = get("/api/v1/data?name=")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
