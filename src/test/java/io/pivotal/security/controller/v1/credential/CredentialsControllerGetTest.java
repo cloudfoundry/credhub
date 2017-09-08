@@ -250,8 +250,8 @@ public class CredentialsControllerGetTest {
     doReturn(CREDENTIAL_VALUE).when(encryptor).decrypt(any());
 
     doReturn(
-        newArrayList(valueCredential1, valueCredential2, valueCredential3)
-    ).when(credentialDataService).findAllByName(CREDENTIAL_NAME);
+        newArrayList(valueCredential1, valueCredential2)
+    ).when(credentialDataService).findNByName(CREDENTIAL_NAME, 2);
 
     mockMvc.perform(get("/api/v1/data?current=false&name=" + CREDENTIAL_NAME + "&versions=2")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)

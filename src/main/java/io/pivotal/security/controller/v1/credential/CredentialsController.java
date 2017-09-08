@@ -177,11 +177,8 @@ public class CredentialsController {
         Credential credential = credentialHandler.getMostRecentCredentialVersion(credentialName, userContext, eventAuditRecordParametersList);
         credentials = singletonList(credential);
       } else {
-        if (numberOfVersions != null){
-          credentials = credentialHandler.getNCredentialVersions(credentialName, userContext, eventAuditRecordParametersList, numberOfVersions);
-        } else {
-          credentials = credentialHandler.getAllCredentialVersions(credentialName, userContext, eventAuditRecordParametersList);
-        }
+        credentials = credentialHandler.getNCredentialVersions(credentialName, numberOfVersions,
+            userContext, eventAuditRecordParametersList);
       }
 
       return DataResponse.fromEntity(credentials);

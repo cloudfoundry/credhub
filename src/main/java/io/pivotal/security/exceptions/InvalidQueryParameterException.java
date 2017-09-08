@@ -8,7 +8,7 @@ public class InvalidQueryParameterException extends RuntimeException {
     this.queryParameter = queryParameter;
   }
 
-  public String getMissingQueryParameter() {
+  public String getInvalidQueryParameter() {
     return queryParameter;
   }
 }

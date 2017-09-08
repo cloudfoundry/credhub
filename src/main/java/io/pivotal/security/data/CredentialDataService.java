@@ -37,18 +37,6 @@ public class CredentialDataService {
   private final JdbcTemplate jdbcTemplate;
   private final EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
   private final CredentialFactory credentialFactory;
-  private static final String findMatchingNameQuery =
-      " select name.name, credential.version_created_at from ("
-          + "   select"
-          + "     max(version_created_at) as version_created_at,"
-          + "     credential_name_uuid"
-          + "   from credential group by credential_name_uuid"
-          + " ) as credential inner join ("
-          + "   select * from credential_name"
-          + "     where lower(name) like lower(?)"
-          + " ) as name"
-          + " on credential.credential_name_uuid = name.uuid"
-          + " order by version_created_at desc";
 
   @Autowired
   protected CredentialDataService(
@@ -82,12 +70,14 @@ public class CredentialDataService {
       credentialData.setCredentialName(credentialNameDataService.save(credentialName));
     } else {
       Credential existingCredential = findMostRecent(credentialName.getName());
-      if (existingCredential != null && !existingCredential.getCredentialType().equals(credentialData.getCredentialType())) {
+      if (existingCredential != null && !existingCredential.getCredentialType()
+          .equals(credentialData.getCredentialType())) {
         throw new ParameterizedValidationException("error.type_mismatch");
       }
     }
 
-    return (Z) credentialFactory.makeCredentialFromEntity(credentialRepository.saveAndFlush(credentialData));
+    return (Z) credentialFactory
+        .makeCredentialFromEntity(credentialRepository.saveAndFlush(credentialData));
   }
 
   public List<String> findAllPaths() {
@@ -128,7 +118,8 @@ public class CredentialDataService {
   }
 
   public Credential findByUuid(String uuid) {
-    return credentialFactory.makeCredentialFromEntity(credentialRepository.findOneByUuid(UUID.fromString(uuid)));
+    return credentialFactory
+        .makeCredentialFromEntity(credentialRepository.findOneByUuid(UUID.fromString(uuid)));
   }
 
   public List<String> findAllCertificateCredentialsByCaName(String caName) {
@@ -155,8 +146,24 @@ public class CredentialDataService {
   public List<Credential> findAllByName(String name) {
     CredentialName credentialName = credentialNameDataService.find(name);
 
-    return credentialName != null ? credentialFactory.makeCredentialsFromEntities(credentialRepository.findAllByCredentialNameUuid(credentialName.getUuid()))
+    return credentialName != null ? credentialFactory.makeCredentialsFromEntities(
+        credentialRepository.findAllByCredentialNameUuid(credentialName.getUuid()))
         : newArrayList();
+  }
+
+  public List<Credential> findNByName(String name, int numberOfVersions) {
+    CredentialName credentialName = credentialNameDataService.find(name);
+
+    if (credentialName != null) {
+      List<CredentialData> credentialVersions = credentialRepository
+          .findAllByCredentialNameUuid(credentialName.getUuid())
+          .stream()
+          .limit(numberOfVersions)
+          .collect(Collectors.toList());
+      return credentialFactory.makeCredentialsFromEntities(credentialVersions);
+    } else {
+      return newArrayList();
+    }
   }
 
   public Long count() {
@@ -174,16 +181,28 @@ public class CredentialDataService {
   }
 
   public Slice<Credential> findEncryptedWithAvailableInactiveKey() {
-    final Slice<CredentialData> credentialDataSlice = credentialRepository.findByEncryptionKeyUuidIn(
-        encryptionKeyCanaryMapper.getCanaryUuidsWithKnownAndInactiveKeys(),
-        new PageRequest(0, BATCH_SIZE)
-    );
-    return new SliceImpl(credentialFactory.makeCredentialsFromEntities(credentialDataSlice.getContent()));
+    final Slice<CredentialData> credentialDataSlice = credentialRepository
+        .findByEncryptionKeyUuidIn(
+            encryptionKeyCanaryMapper.getCanaryUuidsWithKnownAndInactiveKeys(),
+            new PageRequest(0, BATCH_SIZE)
+        );
+    return new SliceImpl(
+        credentialFactory.makeCredentialsFromEntities(credentialDataSlice.getContent()));
   }
 
   private List<FindCredentialResult> findMatchingName(String nameLike) {
-    final List<FindCredentialResult> query = jdbcTemplate.query(
-        findMatchingNameQuery,
+    final List<FindCredentialResult> credentialResults = jdbcTemplate.query(
+        " select name.name, credential.version_created_at from ("
+            + "   select"
+            + "     max(version_created_at) as version_created_at,"
+            + "     credential_name_uuid"
+            + "   from credential group by credential_name_uuid"
+            + " ) as credential inner join ("
+            + "   select * from credential_name"
+            + "     where lower(name) like lower(?)"
+            + " ) as name"
+            + " on credential.credential_name_uuid = name.uuid"
+            + " order by version_created_at desc",
         new Object[]{nameLike},
         (rowSet, rowNum) -> {
           final Instant versionCreatedAt = Instant
@@ -192,6 +211,6 @@ public class CredentialDataService {
           return new FindCredentialResult(versionCreatedAt, name);
         }
     );
-    return query;
+    return credentialResults;
   }
 }

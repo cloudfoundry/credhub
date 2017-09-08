@@ -65,7 +65,7 @@ public class ExceptionHandlers {
   @ExceptionHandler(InvalidQueryParameterException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ResponseError handleInvalidParameterException(InvalidQueryParameterException e) {
-    return constructError(e.getMessage(), e.getMissingQueryParameter());
+    return constructError(e.getMessage(), e.getInvalidQueryParameter());
   }
 
   @ExceptionHandler(MissingServletRequestParameterException.class)

@@ -7,6 +7,7 @@ import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.SshCredential;
 import io.pivotal.security.exceptions.EntryNotFoundException;
+import io.pivotal.security.exceptions.InvalidQueryParameterException;
 import io.pivotal.security.service.PermissionService;
 import org.junit.Before;
 import org.junit.Test;
@@ -174,7 +175,7 @@ public class CredentialHandlerTest {
   }
 
   @Test
-  public void getCredentialVersions_whenTheCredentialDoesNotExist_throwsException() {
+  public void getAllCredentialVersions_whenTheCredentialDoesNotExist_throwsException() {
     when(credentialDataService.findAllByName(CREDENTIAL_NAME))
         .thenReturn(emptyList());
     when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
@@ -190,19 +191,34 @@ public class CredentialHandlerTest {
   }
 
   @Test
-  public void getCredentialVersions_whenTheCredentialDoesNotExist_setsCorrectAuditingParameter() {
+  public void getAllCredentialVersions_whenTheCredentialDoesNotExist_setsCorrectAuditingParameter() {
     List<EventAuditRecordParameters> auditRecordParametersList = newArrayList();
 
     when(credentialDataService.findAllByName(CREDENTIAL_NAME))
         .thenReturn(emptyList());
 
     try {
-      subject.getAllCredentialVersions(CREDENTIAL_NAME, userContext, auditRecordParametersList
-      );
+      subject.getAllCredentialVersions(CREDENTIAL_NAME, userContext, auditRecordParametersList);
       fail("should throw exception");
     } catch (EntryNotFoundException e) {
       assertThat(auditRecordParametersList, hasSize(1));
       assertThat(auditRecordParametersList.get(0).getAuditingOperationCode(), equalTo(CREDENTIAL_ACCESS));
+    }
+  }
+
+  @Test
+  public void getNCredentialVersions_whenTheNumberOfCredentialsIsNegative_throws() {
+    List<EventAuditRecordParameters> auditRecordParametersList = newArrayList();
+
+    when(credentialDataService.findAllByName(CREDENTIAL_NAME))
+        .thenReturn(emptyList());
+
+    try {
+      subject.getNCredentialVersions(CREDENTIAL_NAME, -1, userContext, auditRecordParametersList);
+      fail("should throw exception");
+    } catch (InvalidQueryParameterException e) {
+      assertThat(e.getInvalidQueryParameter(), equalTo("versions"));
+      assertThat(e.getMessage(), equalTo("error.invalid_query_parameter"));
     }
   }
 

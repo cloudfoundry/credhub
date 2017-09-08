@@ -107,7 +107,8 @@ public class CredentialDataServiceTest {
 
     assertNotNull(savedCredential);
 
-    PasswordCredential savedPasswordCredential = (PasswordCredential) subject.findMostRecent("/my-credential");
+    PasswordCredential savedPasswordCredential = (PasswordCredential) subject
+        .findMostRecent("/my-credential");
     CredentialData credentialData = credentialRepository.findOneByUuid(savedCredential.getUuid());
 
     assertThat(savedPasswordCredential.getName(), equalTo(credential.getName()));
@@ -130,8 +131,10 @@ public class CredentialDataServiceTest {
 
     subject.save(credential);
 
-    PasswordCredential savedPasswordCredential = (PasswordCredential) subject.findMostRecent("/my-credential-2");
-    CredentialData credentialData = credentialRepository.findOneByUuid(savedPasswordCredential.getUuid());
+    PasswordCredential savedPasswordCredential = (PasswordCredential) subject
+        .findMostRecent("/my-credential-2");
+    CredentialData credentialData = credentialRepository
+        .findOneByUuid(savedPasswordCredential.getUuid());
 
     assertThat(credentialData.getCredentialName().getName(), equalTo("/my-credential-2"));
     assertThat(credentialData.getEncryptedValue(), equalTo("irynas-ninja-skills".getBytes()));
@@ -160,7 +163,8 @@ public class CredentialDataServiceTest {
 
   @Test
   public void save_givenANewCredential_generatesTheUuid() {
-    SshCredential credential = new SshCredential("/my-credential-2").setPublicKey("fake-public-key");
+    SshCredential credential = new SshCredential("/my-credential-2")
+        .setPublicKey("fake-public-key");
     SshCredential savedCredential = subject.save(credential);
 
     UUID generatedUuid = savedCredential.getUuid();
@@ -201,7 +205,8 @@ public class CredentialDataServiceTest {
 
   @Test
   public void delete_onACredentialName_deletesAllCredentialsWithTheName() {
-    CredentialName credentialName = credentialNameDataService.save(new CredentialName("/my-credential"));
+    CredentialName credentialName = credentialNameDataService
+        .save(new CredentialName("/my-credential"));
 
     PasswordCredentialData credentialData = new PasswordCredentialData();
     credentialData.setCredentialName(credentialName);
@@ -225,7 +230,8 @@ public class CredentialDataServiceTest {
 
   @Test
   public void delete_givenACredentialNameCasedDifferentlyFromTheActual_shouldBeCaseInsensitive() {
-    CredentialName credentialName = credentialNameDataService.save(new CredentialName("/my-credential"));
+    CredentialName credentialName = credentialNameDataService
+        .save(new CredentialName("/my-credential"));
 
     PasswordCredentialData credential = new PasswordCredentialData();
     credential.setCredentialName(credentialName);
@@ -304,7 +310,8 @@ public class CredentialDataServiceTest {
     PasswordCredential oneByUuid = (PasswordCredential) subject
         .findByUuid(savedCredential.getUuid().toString());
     assertThat(oneByUuid.getName(), equalTo("/my-credential"));
-    assertThat(passwordCredentialData.getEncryptedValue(), equalTo("credential-password".getBytes()));
+    assertThat(passwordCredentialData.getEncryptedValue(),
+        equalTo("credential-password".getBytes()));
   }
 
   @Test
@@ -468,6 +475,55 @@ public class CredentialDataServiceTest {
   }
 
   @Test
+  public void findNByName_whenProvidedANameAndCount_findsCountMatchingCredentials() {
+    PasswordCredential credential1 = savePassword(2000000000123L, "/secret1");
+    PasswordCredential credential2 = savePassword(4000000000123L, "/seCret1");
+    PasswordCredential credential3 = savePassword(4000000000123L, "/secret1");
+    savePassword(3000000000123L, "/Secret2");
+
+    List<Credential> credentials = subject.findNByName("/Secret1", 2);
+    assertThat(
+        credentials,
+        containsInAnyOrder(
+            hasProperty("uuid", equalTo(credential1.getUuid())),
+            hasProperty("uuid", equalTo(credential2.getUuid()))
+        )
+    );
+
+    credentials = subject.findNByName("Secret1", 3);
+    assertThat("prepends slash to search if missing",
+        credentials,
+        containsInAnyOrder(
+            hasProperty("uuid", equalTo(credential1.getUuid())),
+            hasProperty("uuid", equalTo(credential2.getUuid())),
+            hasProperty("uuid", equalTo(credential3.getUuid()))
+        )
+    );
+
+    assertThat("returns empty list when no credential matches",
+        subject.findNByName("does/NOT/exist", 12), empty());
+  }
+
+  @Test
+  public void findNByName_whenAskedForTooManyVersions_returnsAllVersions() {
+    PasswordCredential credential1 = savePassword(2000000000123L, "/secret1");
+
+    List<Credential> credentials = subject.findNByName("/Secret1", 2);
+
+    assertThat(credentials.size(), equalTo(1));
+    assertThat(credentials.get(0).getUuid(), equalTo(credential1.getUuid()));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void findNByName_whenAskedForANegativeNumberOfVersions_throws() {
+    PasswordCredential credential1 = savePassword(2000000000123L, "/secret1");
+
+    List<Credential> credentials = subject.findNByName("/Secret1", -2);
+
+    assertThat(credentials.size(), equalTo(0));
+  }
+
+  @Test
   public void findEncryptedWithAvailableInactiveKeys() {
     UUID oldCanaryUuid = EncryptionCanaryHelper.addCanary(encryptionKeyCanaryDataService)
         .getUuid();
@@ -488,7 +544,8 @@ public class CredentialDataServiceTest {
         "ANOTHER", unknownCanaryUuid);
 
     final Slice<Credential> credentials = subject.findEncryptedWithAvailableInactiveKey();
-    List<UUID> credentialUuids = credentials.getContent().stream().map(credential -> credential.getUuid())
+    List<UUID> credentialUuids = credentials.getContent().stream()
+        .map(credential -> credential.getUuid())
         .collect(Collectors.toList());
 
     assertThat(credentialUuids, not(contains(credentialEncryptedWithActiveKey.getUuid())));
@@ -562,7 +619,8 @@ public class CredentialDataServiceTest {
 
 
   private void setupTestFixtureForFindMostRecent() {
-    CredentialName credentialName = credentialNameDataService.save(new CredentialName("/my-CREDENTIAL"));
+    CredentialName credentialName = credentialNameDataService
+        .save(new CredentialName("/my-CREDENTIAL"));
 
     namedPasswordCredential1 = new PasswordCredentialData();
     namedPasswordCredential1.setCredentialName(credentialName);
