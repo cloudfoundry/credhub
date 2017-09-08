@@ -11,8 +11,9 @@ import org.springframework.stereotype.Component;
 @Aspect
 public class CredentialNameAspect {
   @Around(
-      "execution(* io.pivotal.security.repository.CredentialNameRepository.*ByNameIgnoreCase(String))"
-          + "&& args(name)"
+      "(execution(* io.pivotal.security.repository.CredentialNameRepository.*ByNameIgnoreCase(String)) && args(name)) " +
+          "|| " +
+          "(execution(* io.pivotal.security.repository.CertificateCredentialRepository.*IgnoreCase(String)) && args(name))"
   )
   public Object addLeadingSlash(ProceedingJoinPoint joinPoint, String name) throws Throwable {
     name = StringUtils.prependIfMissing(name, "/");
