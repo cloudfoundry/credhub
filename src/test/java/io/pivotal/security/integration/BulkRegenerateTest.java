@@ -28,6 +28,7 @@ import java.util.List;
 import static com.google.common.collect.Lists.newArrayList;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -88,7 +89,7 @@ public class BulkRegenerateTest {
         .andExpect(status().isOk())
         .andReturn().getResponse().getContentAsString();
 
-    originalCA= (new JSONObject(generateCAResult)).getString("value");
+    originalCA = (new JSONObject(generateCAResult)).getString("value");
 
     MockHttpServletRequestBuilder generateOtherCARequest = post(API_V1_DATA_ENDPOINT)
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -107,7 +108,7 @@ public class BulkRegenerateTest {
         .andDo(print())
         .andExpect(status().isOk())
         .andReturn().getResponse().getContentAsString();
-    otherCA= (new JSONObject(otherCAResult)).getString("value");
+    otherCA = (new JSONObject(otherCAResult)).getString("value");
 
     MockHttpServletRequestBuilder generateCertSignedByOriginalCARequest = post(API_V1_DATA_ENDPOINT)
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -120,13 +121,20 @@ public class BulkRegenerateTest {
             + "  \"parameters\" : {\n"
             + "\"ca\": \"/ca-to-rotate\",\n"
             + "\"common_name\": \"cert to regenerate\"\n"
-            + "}}");
+            + "},"
+            + "\"overwrite\": true"
+            + "}");
 
     String certSignedByOriginalCAResult = this.mockMvc.perform(generateCertSignedByOriginalCARequest)
         .andDo(print())
         .andExpect(status().isOk())
         .andReturn().getResponse().getContentAsString();
     assertThat((new JSONObject(certSignedByOriginalCAResult)).getString("value"), notNullValue());
+
+    // generate another version of /cert-to-generate
+    this.mockMvc.perform(generateCertSignedByOriginalCARequest)
+        .andDo(print())
+        .andExpect(status().isOk());
 
     MockHttpServletRequestBuilder generateCertAlsoSignedByOriginalCARequest = post(API_V1_DATA_ENDPOINT)
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -186,6 +194,7 @@ public class BulkRegenerateTest {
     final JSONArray regeneratedCredentials = (new JSONObject(regenerateCertificatesResult)).getJSONArray("regenerated_credentials");
     final List<String> result = Arrays.asList(regeneratedCredentials.getString(0), regeneratedCredentials.getString(1));
 
+    assertThat(regeneratedCredentials.length(), equalTo(2));
     assertThat(result, containsInAnyOrder("/cert-to-regenerate", "/cert-to-regenerate-as-well"));
   }
 

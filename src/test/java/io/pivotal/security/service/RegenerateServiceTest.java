@@ -28,6 +28,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -279,6 +280,28 @@ public class RegenerateServiceTest {
   public void performRegenerateBySigner_regeneratesCertificatesSignedByGivenSigner(){
     when(credentialDataService.findAllCertificateCredentialsByCaName("/some-signer-name")).thenReturn(
         Collections.singletonList("cert1"));
+
+    CertificateCredential credential = mock(CertificateCredential.class);
+    when(credential.getCredentialType()).thenReturn("certificate");
+    final CertificateReader reader = mock(CertificateReader.class);
+    when(credential.getParsedCertificate()).thenReturn(reader);
+    when(credential.getCaName()).thenReturn("mock_ca");
+    when(credential.getName()).thenReturn("cert1");
+    when(reader.isValid()).thenReturn(true);
+
+    when(credentialDataService.findMostRecent("cert1")).thenReturn(credential);
+
+    subject.performBulkRegenerate("/some-signer-name", mock(UserContext.class),
+        mock(PermissionEntry.class), new ArrayList<EventAuditRecordParameters>());
+
+    verify(credentialService).save(eq("cert1"), eq("certificate"), any(CredentialValue.class), any(
+        StringGenerationParameters.class), anyList(), eq(true), any(UserContext.class), any(PermissionEntry.class), anyList());
+  }
+
+  @Test
+  public void performRegenerateBySigner_regeneratesEachCredentialOnlyOnce() {
+    when(credentialDataService.findAllCertificateCredentialsByCaName("/some-signer-name")).thenReturn(
+        Arrays.asList("cert1", "cert1", "cert1"));
 
     CertificateCredential credential = mock(CertificateCredential.class);
     when(credential.getCredentialType()).thenReturn("certificate");

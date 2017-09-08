@@ -25,6 +25,7 @@ import io.pivotal.security.view.CredentialView;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -110,12 +111,13 @@ public class RegenerateService {
   ) {
     BulkRegenerateResults results = new BulkRegenerateResults();
     List<String> certificateNames = credentialDataService.findAllCertificateCredentialsByCaName(signerName);
-    for (String name : certificateNames) {
+    final HashSet<String> credentialNamesSet = new HashSet<>(certificateNames);
+    for (String name : credentialNamesSet) {
       this.performRegenerate(name, userContext, currentUserPermissionEntry,
           auditRecordParameters);
     }
 
-    results.setRegeneratedCredentials(certificateNames);
+    results.setRegeneratedCredentials(credentialNamesSet);
     return results;
   }
 }
