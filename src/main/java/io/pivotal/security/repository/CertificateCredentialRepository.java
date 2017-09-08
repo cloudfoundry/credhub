@@ -7,5 +7,5 @@ import java.util.List;
 import java.util.UUID;
 
 public interface CertificateCredentialRepository extends JpaRepository<CertificateCredentialData, UUID> {
-  List<CertificateCredentialData> findAllCertificateCredentialDataByCaName (String caName);
+  List<CertificateCredentialData> findAllCertificateCredentialDataByCaNameIgnoreCase(String caName);
 }

@@ -123,7 +123,7 @@ public class CredentialDataService {
   }
 
   public List<String> findAllCertificateCredentialsByCaName(String caName) {
-    List<CertificateCredentialData> certificates = certificateCredentialRepository.findAllCertificateCredentialDataByCaName(caName);
+    List<CertificateCredentialData> certificates = certificateCredentialRepository.findAllCertificateCredentialDataByCaNameIgnoreCase(caName);
     return certificates.stream().map((certificateData) -> certificateData.getName()).collect(
         Collectors.toList());
   }

@@ -577,6 +577,17 @@ public class CredentialDataServiceTest {
     assertThat(certificates, not(hasItem("/cert2")));
   }
 
+  @Test
+  public void findAllCertificateCredentialsByCaName_isCaseInsensitive() {
+    CertificateCredential caCert = saveCertificate(2000000000123L, "/ca-cert");
+    CertificateCredential cert1 = saveCertificateByCa(2000000000125L, "/cert1", "/ca-cert");
+    CertificateCredential cert2 = saveCertificateByCa(2000000000126L, "/cert2", "/ca-cert");
+
+    List<String> certificates = subject.findAllCertificateCredentialsByCaName("/ca-CERT");
+    assertThat(certificates, containsInAnyOrder(equalTo("/cert1"),
+        equalTo("/cert2")));
+
+  }
 
   private PasswordCredential savePassword(long timeMillis, String name, UUID canaryUuid) {
     fakeTimeSetter.accept(timeMillis);
