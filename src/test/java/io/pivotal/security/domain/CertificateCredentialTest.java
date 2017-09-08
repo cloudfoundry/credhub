@@ -1,5 +1,6 @@
 package io.pivotal.security.domain;
 
+import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.entity.CertificateCredentialData;
 import io.pivotal.security.service.Encryption;
 import org.junit.Before;
@@ -79,5 +80,16 @@ public class CertificateCredentialTest {
 
     subject.setCaName(null);
     assertThat(subject.getCaName(), equalTo(null));
+  }
+
+  @Test
+  public void CertificateCredential_withMissingCertificateValue_shouldNotError() {
+    final CertificateCredentialValue certificateCredentialValue = new CertificateCredentialValue("someCa", "", "my-priv", "/aCaName");
+    final CertificateCredential certificateCredential = new CertificateCredential(certificateCredentialValue, encryptor);
+
+    assertThat(certificateCredential.getCa(), equalTo("someCa"));
+    assertThat(certificateCredential.getCertificate(), equalTo(""));
+    assertThat(certificateCredential.getPrivateKey(), equalTo("my-priv"));
+    assertThat(certificateCredential.getCaName(), equalTo("/aCaName"));
   }
 }
