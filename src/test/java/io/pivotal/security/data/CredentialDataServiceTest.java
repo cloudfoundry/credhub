@@ -476,9 +476,9 @@ public class CredentialDataServiceTest {
 
   @Test
   public void findNByName_whenProvidedANameAndCount_findsCountMatchingCredentials() {
-    PasswordCredential credential1 = savePassword(2000000000123L, "/secret1");
-    PasswordCredential credential2 = savePassword(4000000000123L, "/seCret1");
-    PasswordCredential credential3 = savePassword(4000000000123L, "/secret1");
+    PasswordCredential credential1 = savePassword(2000000000125L, "/secret1");
+    PasswordCredential credential2 = savePassword(2000000000124L, "/seCret1");
+    PasswordCredential credential3 = savePassword(2000000000123L, "/secret1");
     savePassword(3000000000123L, "/Secret2");
 
     List<Credential> credentials = subject.findNByName("/Secret1", 2);

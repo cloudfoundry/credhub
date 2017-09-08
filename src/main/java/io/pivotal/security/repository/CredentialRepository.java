@@ -20,7 +20,7 @@ public interface CredentialRepository extends JpaRepository<CredentialData, UUID
 
   Slice<CredentialData> findByEncryptionKeyUuidIn(List<UUID> encryptionKeyUuids, Pageable page);
 
-  List<CredentialData> findAllByCredentialNameUuid(UUID uuid);
+  List<CredentialData> findAllByCredentialNameUuidOrderByVersionCreatedAtDesc(UUID uuid);
 
   CredentialData findFirstByCredentialNameUuidOrderByVersionCreatedAtDesc(UUID uuid);
 }

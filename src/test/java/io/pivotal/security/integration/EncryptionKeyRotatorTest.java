@@ -202,7 +202,7 @@ public class EncryptionKeyRotatorTest {
 
     final PasswordCredentialData firstEncryption =
         (PasswordCredentialData) credentialRepository
-            .findAllByCredentialNameUuid(credentialName.getUuid()).get(0);
+            .findAllByCredentialNameUuidOrderByVersionCreatedAtDesc(credentialName.getUuid()).get(0);
 
     final byte[] firstEncryptedValue = firstEncryption.getEncryptedValue().clone();
     final byte[] firstEncryptedGenParams = firstEncryption.getEncryptedGenerationParameters()
@@ -214,7 +214,7 @@ public class EncryptionKeyRotatorTest {
 
     final PasswordCredentialData secondEncryption =
         (PasswordCredentialData) credentialRepository
-            .findAllByCredentialNameUuid(credentialName.getUuid()).get(0);
+            .findAllByCredentialNameUuidOrderByVersionCreatedAtDesc(credentialName.getUuid()).get(0);
     assertThat(firstEncryptedValue,
         not(equalTo(secondEncryption.getEncryptedValue())));
     assertThat(firstEncryptedGenParams,
@@ -251,7 +251,7 @@ public class EncryptionKeyRotatorTest {
 
     final byte[] firstEncryption =
         credentialRepository
-            .findAllByCredentialNameUuid(credentialName.getUuid()).get(0).getEncryptedValue()
+            .findAllByCredentialNameUuidOrderByVersionCreatedAtDesc(credentialName.getUuid()).get(0).getEncryptedValue()
             .clone();
 
     setActiveKey(1);
@@ -260,7 +260,7 @@ public class EncryptionKeyRotatorTest {
 
     final CertificateCredentialData secondEncryption =
         (CertificateCredentialData) credentialRepository
-            .findAllByCredentialNameUuid(credentialName.getUuid()).get(0);
+            .findAllByCredentialNameUuidOrderByVersionCreatedAtDesc(credentialName.getUuid()).get(0);
     assertThat(firstEncryption, not(equalTo(secondEncryption.getEncryptedValue())));
 
     final MockHttpServletRequestBuilder get = get("/api/v1/data?name=" + certificateName)

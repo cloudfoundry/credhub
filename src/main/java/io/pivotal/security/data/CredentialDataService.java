@@ -147,7 +147,7 @@ public class CredentialDataService {
     CredentialName credentialName = credentialNameDataService.find(name);
 
     return credentialName != null ? credentialFactory.makeCredentialsFromEntities(
-        credentialRepository.findAllByCredentialNameUuid(credentialName.getUuid()))
+        credentialRepository.findAllByCredentialNameUuidOrderByVersionCreatedAtDesc(credentialName.getUuid()))
         : newArrayList();
   }
 
@@ -156,7 +156,7 @@ public class CredentialDataService {
 
     if (credentialName != null) {
       List<CredentialData> credentialVersions = credentialRepository
-          .findAllByCredentialNameUuid(credentialName.getUuid())
+          .findAllByCredentialNameUuidOrderByVersionCreatedAtDesc(credentialName.getUuid())
           .stream()
           .limit(numberOfVersions)
           .collect(Collectors.toList());
