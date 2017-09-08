@@ -20,6 +20,7 @@ import io.pivotal.security.service.regeneratables.Regeneratable;
 import io.pivotal.security.service.regeneratables.RsaCredentialRegeneratable;
 import io.pivotal.security.service.regeneratables.SshCredentialRegeneratable;
 import io.pivotal.security.service.regeneratables.UserCredentialRegeneratable;
+import io.pivotal.security.view.BulkRegenerateResults;
 import io.pivotal.security.view.CredentialView;
 import org.springframework.stereotype.Service;
 
@@ -99,5 +100,22 @@ public class RegenerateService {
         currentUserPermissionEntry,
         auditRecordParameters
     );
+  }
+
+  public BulkRegenerateResults performBulkRegenerate(
+      String signerName,
+      UserContext userContext,
+      PermissionEntry currentUserPermissionEntry,
+      List<EventAuditRecordParameters> auditRecordParameters
+  ) {
+    BulkRegenerateResults results = new BulkRegenerateResults();
+    List<String> certificateNames = credentialDataService.findAllCertificateCredentialsByCaName(signerName);
+    for (String name : certificateNames) {
+      this.performRegenerate(name, userContext, currentUserPermissionEntry,
+          auditRecordParameters);
+    }
+
+    results.setRegeneratedCredentials(certificateNames);
+    return results;
   }
 }

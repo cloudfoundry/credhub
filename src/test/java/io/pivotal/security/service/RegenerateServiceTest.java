@@ -1,6 +1,5 @@
 package io.pivotal.security.service;
 
-import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.credential.CredentialValue;
@@ -9,6 +8,7 @@ import io.pivotal.security.credential.SshCredentialValue;
 import io.pivotal.security.credential.StringCredentialValue;
 import io.pivotal.security.credential.UserCredentialValue;
 import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.domain.CertificateCredential;
 import io.pivotal.security.domain.JsonCredential;
 import io.pivotal.security.domain.PasswordCredential;
 import io.pivotal.security.domain.RsaCredential;
@@ -21,38 +21,32 @@ import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.RsaGenerationParameters;
 import io.pivotal.security.request.SshGenerationParameters;
 import io.pivotal.security.request.StringGenerationParameters;
-import io.pivotal.security.view.CredentialView;
+import io.pivotal.security.util.CertificateReader;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.itThrows;
-import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyList;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(Spectrum.class)
+@RunWith(JUnit4.class)
 public class RegenerateServiceTest {
 
   private CredentialDataService credentialDataService;
   private RegenerateService subject;
 
-  private PasswordCredential passwordCredential;
-  private UserCredential userCredential;
-  private SshCredential sshCredential;
-  private RsaCredential rsaCredential;
-  private JsonCredential credentialOfUnsupportedType;
   private StringGenerationParameters expectedParameters;
   private List<EventAuditRecordParameters> auditRecordParameters;
   private CredentialService credentialService;
@@ -62,246 +56,244 @@ public class RegenerateServiceTest {
 
   public UserContext userContext;
 
-  {
-    beforeEach(() -> {
-      credentialDataService = mock(CredentialDataService.class);
-      passwordCredential = mock(PasswordCredential.class);
-      userCredential = mock(UserCredential.class);
-      sshCredential = mock(SshCredential.class);
-      rsaCredential = mock(RsaCredential.class);
-      auditRecordParameters = newArrayList();
-      credentialService = mock(CredentialService.class);
-      generatorService = mock(GeneratorService.class);
-      userContext = mock(UserContext.class);
-      currentUser = mock(PermissionEntry.class);
+  @Before
+  public void beforeEach() {
+    credentialDataService = mock(CredentialDataService.class);
+    auditRecordParameters = newArrayList();
+    credentialService = mock(CredentialService.class);
+    generatorService = mock(GeneratorService.class);
+    userContext = mock(UserContext.class);
+    currentUser = mock(PermissionEntry.class);
 
-      when(credentialDataService.findMostRecent(eq("unsupported")))
-          .thenReturn(credentialOfUnsupportedType);
-      when(credentialService
-          .save(
-              eq("password"),
-              anyString(),
-              isA(CredentialValue.class),
-              isA(StringGenerationParameters.class),
-              anyList(),
-              eq(true),
-              eq(userContext),
-              any(PermissionEntry.class),
-              eq(auditRecordParameters)
-          ))
-          .thenReturn(mock(CredentialView.class));
-      credentialOfUnsupportedType = new JsonCredential();
-      subject = new RegenerateService(credentialDataService, credentialService,
-          generatorService);
-    });
+    subject = new RegenerateService(credentialDataService, credentialService,
+        generatorService);
+  }
 
-    describe("#performRegenerate", () -> {
-      describe("password", () -> {
-        beforeEach(() -> {
-          when(credentialDataService.findMostRecent(eq("password")))
-              .thenReturn(passwordCredential);
-          CredentialRegenerateRequest passwordGenerateRequest = new CredentialRegenerateRequest();
-          passwordGenerateRequest.setName("password");
-          expectedParameters = new StringGenerationParameters()
-              .setExcludeLower(true)
-              .setExcludeUpper(true)
-              .setLength(20);
-          when(passwordCredential.getName()).thenReturn("password");
-          when(passwordCredential.getCredentialType()).thenReturn("password");
-          when(passwordCredential.getGenerationParameters())
-              .thenReturn(expectedParameters);
-          when(generatorService.generatePassword(eq(expectedParameters)))
-              .thenReturn(mock(StringCredentialValue.class));
+  @Test
+  public void performRegenerateByName_shouldRegenerateAPassword() {
+    PasswordCredential passwordCredential = mock(PasswordCredential.class);
+    StringCredentialValue newPassword = mock(StringCredentialValue.class);
+    when(credentialDataService.findMostRecent(eq("password")))
+        .thenReturn(passwordCredential);
+    CredentialRegenerateRequest passwordGenerateRequest = new CredentialRegenerateRequest();
+    passwordGenerateRequest.setName("password");
+    expectedParameters = new StringGenerationParameters()
+        .setExcludeLower(true)
+        .setExcludeUpper(true)
+        .setLength(20);
+    when(passwordCredential.getName()).thenReturn("password");
+    when(passwordCredential.getCredentialType()).thenReturn("password");
+    when(passwordCredential.getGenerationParameters())
+        .thenReturn(expectedParameters);
+    when(generatorService.generatePassword(eq(expectedParameters)))
+        .thenReturn(newPassword);
 
-          subject
-              .performRegenerate(passwordGenerateRequest.getName(), userContext,
-                  currentUser, auditRecordParameters
-              );
-        });
+    subject
+        .performRegenerate(passwordGenerateRequest.getName(), userContext,
+            currentUser, auditRecordParameters
+        );
 
-        describe("when regenerating password", () -> {
-          it("should generate a new password", () -> {
+    verify(credentialService)
+        .save(
+            eq("password"),
+            eq("password"),
+            eq(newPassword),
+            eq(expectedParameters),
+            eq(Collections.emptyList()),
+            eq(true),
+            eq(userContext),
+            eq(currentUser),
+            eq(auditRecordParameters)
+        );
+  }
 
-            verify(credentialService)
-                .save(
-                    eq("password"),
-                    eq("password"),
-                    isA(StringCredentialValue.class),
-                    isA(StringGenerationParameters.class),
-                    eq(Collections.emptyList()),
-                    eq(true),
-                    eq(userContext),
-                    eq(currentUser),
-                    eq(auditRecordParameters)
-                );
-          });
+  @Test
+  public void performRegenerateByName_onANonGeneratedPassword_failsToRegenerate() {
+    PasswordCredential passwordCredential = mock(PasswordCredential.class);
+    when(credentialDataService.findMostRecent(eq("password"))).thenReturn(passwordCredential);
+    when(passwordCredential.getName()).thenReturn("password");
+    when(passwordCredential.getCredentialType()).thenReturn("password");
+    when(passwordCredential.getGenerationParameters()).thenReturn(null);
 
-        });
+    CredentialRegenerateRequest passwordGenerateRequest = new CredentialRegenerateRequest();
+    passwordGenerateRequest.setName("password");
 
-        describe("when regenerating password not generated by us", () -> {
-          beforeEach(() -> {
-            when(passwordCredential.getGenerationParameters())
-                .thenReturn(null);
-          });
+    try {
+      subject
+          .performRegenerate(passwordGenerateRequest.getName(), userContext, currentUser, auditRecordParameters);
+    } catch (ParameterizedValidationException e) {
+      assertThat(e.getMessage(), equalTo("error.cannot_regenerate_non_generated_password"));
+    }
+  }
 
-          itThrowsWithMessage(
-              "it returns an error",
-              ParameterizedValidationException.class,
-              "error.cannot_regenerate_non_generated_password",
-              () -> {
-                CredentialRegenerateRequest passwordGenerateRequest = new CredentialRegenerateRequest();
-                passwordGenerateRequest.setName("password");
+  @Test
+  public void performRegenerateByName_regeneratesAUser() {
+    UserCredential userCredential = mock(UserCredential.class);
+    UserCredentialValue newUser = mock(UserCredentialValue.class);
+    when(credentialDataService.findMostRecent(eq("user"))).thenReturn(userCredential);
+    CredentialRegenerateRequest userGenerateRequest = new CredentialRegenerateRequest();
+    userGenerateRequest.setName("user");
+    expectedParameters = new StringGenerationParameters()
+        .setExcludeLower(true)
+        .setExcludeUpper(true)
+        .setLength(20)
+        .setUsername("Darth Vader");
+    when(userCredential.getName()).thenReturn("user");
+    when(userCredential.getCredentialType()).thenReturn("user");
+    when(userCredential.getGenerationParameters())
+        .thenReturn(expectedParameters);
+    when(userCredential.getUsername()).thenReturn("Darth Vader");
+    when(generatorService.generateUser(eq("Darth Vader"), eq(expectedParameters)))
+        .thenReturn(newUser);
 
-                subject
-                    .performRegenerate(passwordGenerateRequest.getName(), userContext, currentUser, auditRecordParameters);
-              });
-        });
-      });
+    subject
+        .performRegenerate(userGenerateRequest.getName(), userContext,
+            currentUser, auditRecordParameters
+        );
 
-      describe("user", () -> {
-        beforeEach(() -> {
-          when(credentialDataService.findMostRecent(eq("user")))
-              .thenReturn(userCredential);
-          CredentialRegenerateRequest userGenerateRequest = new CredentialRegenerateRequest();
-          userGenerateRequest.setName("user");
-          expectedParameters = new StringGenerationParameters()
-              .setExcludeLower(true)
-              .setExcludeUpper(true)
-              .setLength(20)
-              .setUsername("Darth Vader");
-          when(userCredential.getName()).thenReturn("user");
-          when(userCredential.getCredentialType()).thenReturn("user");
-          when(userCredential.getGenerationParameters())
-              .thenReturn(expectedParameters);
-          when(userCredential.getUsername()).thenReturn("Darth Vader");
-          when(generatorService.generateUser(eq("Darth Vader"), eq(expectedParameters)))
-              .thenReturn(mock(UserCredentialValue.class));
+    verify(credentialService)
+        .save(
+            eq("user"),
+            eq("user"),
+            eq(newUser),
+            eq(expectedParameters),
+            eq(Collections.emptyList()),
+            eq(true),
+            eq(userContext),
+            eq(currentUser),
+            eq(auditRecordParameters)
+        );
+  }
 
-          subject
-              .performRegenerate(userGenerateRequest.getName(), userContext,
-                  currentUser, auditRecordParameters
-              );
-        });
+  @Test
+  public void performRegenerate_onNonGeneratedUser_failsToRegenerate() {
+    UserCredential userCredential = mock(UserCredential.class);
+    when(credentialDataService.findMostRecent(eq("user"))).thenReturn(userCredential);
+    when(userCredential.getName()).thenReturn("user");
+    when(userCredential.getCredentialType()).thenReturn("user");
+    when(userCredential.getUsername()).thenReturn("Darth Vader");
+    when(userCredential.getGenerationParameters()).thenReturn(null);
 
-        describe("when regenerating user", () -> {
-          it("should generate a new password for the credential", () -> {
+    CredentialRegenerateRequest userGenerateRequest = new CredentialRegenerateRequest();
+    userGenerateRequest.setName("user");
 
-            verify(credentialService)
-                .save(
-                    eq("user"),
-                    eq("user"),
-                    isA(UserCredentialValue.class),
-                    isA(StringGenerationParameters.class),
-                    eq(Collections.emptyList()),
-                    eq(true),
-                    eq(userContext),
-                    eq(currentUser),
-                    eq(auditRecordParameters)
-                );
-          });
-        });
+    try {
+      subject
+          .performRegenerate(userGenerateRequest.getName(), userContext, currentUser, auditRecordParameters);
+    } catch (ParameterizedValidationException e) {
+      assertThat(e.getMessage(), equalTo("error.cannot_regenerate_non_generated_user"));
+    }
+  }
 
-        describe("when regenerating user not generated by us", () -> {
-          beforeEach(() -> {
-            when(userCredential.getGenerationParameters())
-                .thenReturn(null);
-          });
+  @Test
+  public void performRegenerate_regeneratesACertificate() {
+    final CertificateCredential certificateCredential = mock(CertificateCredential.class);
+    when(credentialDataService.findMostRecent("certificate")).thenReturn(certificateCredential);
 
-          itThrowsWithMessage(
-              "it returns an error",
-              ParameterizedValidationException.class,
-              "error.cannot_regenerate_non_generated_user",
-              () -> {
-                CredentialRegenerateRequest userGenerateRequest = new CredentialRegenerateRequest();
-                userGenerateRequest.setName("user");
+  }
 
-                subject
-                    .performRegenerate(userGenerateRequest.getName(), userContext, currentUser, auditRecordParameters);
-              });
-        });
-      });
+  @Test
+  public void performRegenerate_regeneratesSshCredential() {
+    SshCredential sshCredential = mock(SshCredential.class);
+    SshCredentialValue regeneratedSsh = mock(SshCredentialValue.class);
+    when(credentialDataService.findMostRecent(eq("ssh")))
+        .thenReturn(sshCredential);
+    CredentialRegenerateRequest sshRegenerateRequest = new CredentialRegenerateRequest();
+    sshRegenerateRequest.setName("ssh");
+    when(sshCredential.getName()).thenReturn("ssh");
+    when(sshCredential.getCredentialType()).thenReturn("ssh");
 
-      describe("ssh & rsa", () -> {
-        describe("when regenerating ssh", () -> {
-          beforeEach(() -> {
-            when(credentialDataService.findMostRecent(eq("ssh")))
-                .thenReturn(sshCredential);
-            CredentialRegenerateRequest sshRegenerateRequest = new CredentialRegenerateRequest();
-            sshRegenerateRequest.setName("ssh");
-            when(sshCredential.getName()).thenReturn("ssh");
-            when(sshCredential.getCredentialType()).thenReturn("ssh");
-            when(generatorService.generateSshKeys(any(SshGenerationParameters.class)))
-                .thenReturn(mock(SshCredentialValue.class));
+    when(generatorService.generateSshKeys(any(SshGenerationParameters.class)))
+        .thenReturn(regeneratedSsh);
 
-            subject
-                .performRegenerate(sshRegenerateRequest.getName(), userContext, currentUser, auditRecordParameters);
-          });
+    subject
+        .performRegenerate(sshRegenerateRequest.getName(), userContext, currentUser, auditRecordParameters);
 
-          it("should generate a new ssh key pair", () -> {
-            verify(credentialService)
-                .save(
-                    eq("ssh"),
-                    eq("ssh"),
-                    isA(SshCredentialValue.class),
-                    eq(null),
-                    eq(Collections.emptyList()),
-                    eq(true),
-                    eq(userContext),
-                    eq(currentUser),
-                    eq(auditRecordParameters)
-                );
-          });
-        });
+    verify(credentialService)
+        .save(
+            eq("ssh"),
+            eq("ssh"),
+            eq(regeneratedSsh),
+            eq(null),
+            eq(Collections.emptyList()),
+            eq(true),
+            eq(userContext),
+            eq(currentUser),
+            eq(auditRecordParameters)
+        );
+  }
 
-        describe("when regenerating rsa", () -> {
-          beforeEach(() -> {
-            when(credentialDataService.findMostRecent(eq("rsa")))
-                .thenReturn(rsaCredential);
-            CredentialRegenerateRequest rsaRegenerateRequest = new CredentialRegenerateRequest();
-            rsaRegenerateRequest.setName("rsa");
-            when(rsaCredential.getName()).thenReturn("rsa");
-            when(rsaCredential.getCredentialType()).thenReturn("rsa");
-            when(generatorService.generateRsaKeys(any(RsaGenerationParameters.class)))
-                .thenReturn(mock(RsaCredentialValue.class));
+  @Test
+  public void performRegenerate_regeneratesRsaCredential() {
+    RsaCredential rsaCredential = mock(RsaCredential.class);
+    RsaCredentialValue regeneratedRsa = mock(RsaCredentialValue.class);
 
-            subject
-                .performRegenerate(rsaRegenerateRequest.getName(), userContext, currentUser, auditRecordParameters);
-          });
+    when(credentialDataService.findMostRecent(eq("rsa")))
+        .thenReturn(rsaCredential);
+    CredentialRegenerateRequest rsaRegenerateRequest = new CredentialRegenerateRequest();
+    rsaRegenerateRequest.setName("rsa");
+    when(rsaCredential.getName()).thenReturn("rsa");
+    when(rsaCredential.getCredentialType()).thenReturn("rsa");
+    when(generatorService.generateRsaKeys(any(RsaGenerationParameters.class)))
+        .thenReturn(regeneratedRsa);
 
-          it("should generate a new rsa key pair", () -> {
-            verify(credentialService)
-                .save(
-                    eq("rsa"),
-                    eq("rsa"),
-                    isA(RsaCredentialValue.class),
-                    eq(null),
-                    eq(Collections.emptyList()),
-                    eq(true),
-                    eq(userContext),
-                    eq(currentUser),
-                    eq(auditRecordParameters)
-                );
-          });
-        });
-      });
+    subject
+        .performRegenerate(rsaRegenerateRequest.getName(), userContext, currentUser, auditRecordParameters);
 
-      describe("when regenerating a credential that does not exist", () -> {
-        itThrows("an exception", EntryNotFoundException.class, () -> {
-          CredentialRegenerateRequest passwordGenerateRequest = new CredentialRegenerateRequest();
-          passwordGenerateRequest.setName("missing_entry");
+    verify(credentialService)
+        .save(
+            eq("rsa"),
+            eq("rsa"),
+            eq(regeneratedRsa),
+            eq(null),
+            eq(Collections.emptyList()),
+            eq(true),
+            eq(userContext),
+            eq(currentUser),
+            eq(auditRecordParameters)
+        );
+  }
 
-          subject.performRegenerate(passwordGenerateRequest.getName(), userContext, currentUser, auditRecordParameters);
-        });
-      });
+  @Test(expected = EntryNotFoundException.class)
+  public void performRegenerate_whenRegeneratingANonExistentCredential_throwsAnException() {
 
-      describe("when attempting regenerate of non-regeneratable type", () -> {
-        itThrows("an exception", ParameterizedValidationException.class, () -> {
-          CredentialRegenerateRequest passwordGenerateRequest = new CredentialRegenerateRequest();
-          passwordGenerateRequest.setName("unsupported");
+    CredentialRegenerateRequest passwordGenerateRequest = new CredentialRegenerateRequest();
+    passwordGenerateRequest.setName("missing_entry");
 
-          subject.performRegenerate(passwordGenerateRequest.getName(), userContext, currentUser, auditRecordParameters);
-        });
-      });
-    });
+    subject.performRegenerate(passwordGenerateRequest.getName(), userContext, currentUser, auditRecordParameters);
+  }
+
+  @Test(expected = ParameterizedValidationException.class)
+  public void performRegenerate_whenRegeneratingANonRegeneratableType_throwsAnException() {
+    JsonCredential credentialOfUnsupportedType = new JsonCredential();
+    when(credentialDataService.findMostRecent(eq("unsupported")))
+        .thenReturn(credentialOfUnsupportedType);
+
+    CredentialRegenerateRequest passwordGenerateRequest = new CredentialRegenerateRequest();
+    passwordGenerateRequest.setName("unsupported");
+
+    subject.performRegenerate(passwordGenerateRequest.getName(), userContext, currentUser, auditRecordParameters);
+  }
+
+  @Test
+  public void performRegenerateBySigner_regeneratesCertificatesSignedByGivenSigner(){
+    when(credentialDataService.findAllCertificateCredentialsByCaName("/some-signer-name")).thenReturn(
+        Collections.singletonList("cert1"));
+
+    CertificateCredential credential = mock(CertificateCredential.class);
+    when(credential.getCredentialType()).thenReturn("certificate");
+    final CertificateReader reader = mock(CertificateReader.class);
+    when(credential.getParsedCertificate()).thenReturn(reader);
+    when(credential.getCaName()).thenReturn("mock_ca");
+    when(credential.getName()).thenReturn("cert1");
+    when(reader.isValid()).thenReturn(true);
+
+    when(credentialDataService.findMostRecent("cert1")).thenReturn(credential);
+
+    subject.performBulkRegenerate("/some-signer-name", mock(UserContext.class),
+        mock(PermissionEntry.class), new ArrayList<EventAuditRecordParameters>());
+
+    verify(credentialService).save(eq("cert1"), eq("certificate"), any(CredentialValue.class), any(
+        StringGenerationParameters.class), anyList(), eq(true), any(UserContext.class), any(PermissionEntry.class), anyList());
   }
 }

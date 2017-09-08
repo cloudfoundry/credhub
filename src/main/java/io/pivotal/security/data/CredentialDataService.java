@@ -2,9 +2,11 @@ package io.pivotal.security.data;
 
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.CredentialFactory;
+import io.pivotal.security.entity.CertificateCredentialData;
 import io.pivotal.security.entity.CredentialData;
 import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.repository.CertificateCredentialRepository;
 import io.pivotal.security.repository.CredentialRepository;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.view.FindCredentialResult;
@@ -30,6 +32,7 @@ import static io.pivotal.security.repository.CredentialRepository.BATCH_SIZE;
 public class CredentialDataService {
 
   private final CredentialRepository credentialRepository;
+  private final CertificateCredentialRepository certificateCredentialRepository;
   private final CredentialNameDataService credentialNameDataService;
   private final JdbcTemplate jdbcTemplate;
   private final EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
@@ -50,12 +53,14 @@ public class CredentialDataService {
   @Autowired
   protected CredentialDataService(
       CredentialRepository credentialRepository,
+      CertificateCredentialRepository certificateCredentialRepository,
       CredentialNameDataService credentialNameDataService,
       JdbcTemplate jdbcTemplate,
       EncryptionKeyCanaryMapper encryptionKeyCanaryMapper,
       CredentialFactory credentialFactory
   ) {
     this.credentialRepository = credentialRepository;
+    this.certificateCredentialRepository = certificateCredentialRepository;
     this.credentialNameDataService = credentialNameDataService;
     this.jdbcTemplate = jdbcTemplate;
     this.encryptionKeyCanaryMapper = encryptionKeyCanaryMapper;
@@ -124,6 +129,12 @@ public class CredentialDataService {
 
   public Credential findByUuid(String uuid) {
     return credentialFactory.makeCredentialFromEntity(credentialRepository.findOneByUuid(UUID.fromString(uuid)));
+  }
+
+  public List<String> findAllCertificateCredentialsByCaName(String caName) {
+    List<CertificateCredentialData> certificates = certificateCredentialRepository.findAllCertificateCredentialDataByCaName(caName);
+    return certificates.stream().map((certificateData) -> certificateData.getName()).collect(
+        Collectors.toList());
   }
 
   public List<FindCredentialResult> findContainingName(String name) {

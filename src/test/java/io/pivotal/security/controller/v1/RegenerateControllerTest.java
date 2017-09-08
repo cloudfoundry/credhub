@@ -58,7 +58,7 @@ public class RegenerateControllerTest {
 
   @Test
   public void POST_regeneratesThePassword_andPersistsAnAuditEntry() throws Exception {
-    mockMvc.perform(makeValidPostRequest()).andDo(print()).andExpect(status().isOk());
+    mockMvc.perform(makeRegenerateRequest()).andDo(print()).andExpect(status().isOk());
 
     Mockito.verify(regenerateService).performRegenerate(eq("picard"), any(UserContext.class), any(PermissionEntry.class), any());
     Mockito.verify(eventAuditLogService).auditEvents(any(RequestUuid.class), org.mockito.Matchers.argThat(
@@ -66,13 +66,33 @@ public class RegenerateControllerTest {
     ), any());
   }
 
-  private MockHttpServletRequestBuilder makeValidPostRequest() {
+  @Test
+  public void POST_withSignedBy_regeneratesAllCertificatesSignedByCA_andPersistsAnAuditEntry() throws Exception {
+    mockMvc.perform(makeBulkRegenerateRequest()).andDo(print()).andExpect(status().isOk());
+
+    Mockito.verify(regenerateService).performBulkRegenerate(eq("/some-ca"), any(UserContext.class), any(PermissionEntry.class), any());
+    Mockito.verify(eventAuditLogService).auditEvents(any(RequestUuid.class), org.mockito.Matchers.argThat(
+        org.hamcrest.Matchers.hasProperty("userId", org.hamcrest.Matchers.equalTo("df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"))
+    ), any());
+  }
+
+  private MockHttpServletRequestBuilder makeRegenerateRequest() {
     return post("/api/v1/regenerate")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON)
         .content("{\n"
             + "  \"name\" : \"picard\"\n"
+            + "}");
+  }
+
+  private MockHttpServletRequestBuilder makeBulkRegenerateRequest() {
+    return post("/api/v1/bulk-regenerate")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\n"
+            + "  \"signed_by\" : \"/some-ca\"\n"
             + "}");
   }
 }

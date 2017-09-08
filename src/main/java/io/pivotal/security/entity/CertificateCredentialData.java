@@ -35,6 +35,10 @@ public class CertificateCredentialData extends CredentialData<CertificateCredent
     super(name);
   }
 
+  public String getName() {
+    return super.getCredentialName().getName();
+  }
+
   public String getCa() {
     return ca;
   }

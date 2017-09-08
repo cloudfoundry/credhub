@@ -49,6 +49,7 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
@@ -500,6 +501,25 @@ public class CredentialDataServiceTest {
             credential1Newer.getUuid()));
   }
 
+  @Test
+  public void findAllCertificateCredentialsByCaName_returnsCertificatesSignedByTheCa() {
+    CertificateCredential caCert = saveCertificate(2000000000123L, "/ca-cert");
+    CertificateCredential cert1 = saveCertificateByCa(2000000000125L, "/cert1", "/ca-cert");
+    CertificateCredential cert2 = saveCertificateByCa(2000000000126L, "/cert2", "/ca-cert");
+
+    CertificateCredential caCert2 = saveCertificate(2000000000124L, "/ca-cert2");
+    CertificateCredential cert3 = saveCertificateByCa(2000000000127L, "/cert3", "/ca-cert2");
+
+    List<String> certificates = subject.findAllCertificateCredentialsByCaName("/ca-cert");
+    assertThat(certificates, containsInAnyOrder(equalTo("/cert1"),
+        equalTo("/cert2")));
+    assertThat(certificates, not(hasItem("/cert3")));
+    certificates = subject.findAllCertificateCredentialsByCaName("/ca-cert2");
+    assertThat(certificates, hasItem("/cert3"));
+    assertThat(certificates, not(hasItem("/cert1")));
+    assertThat(certificates, not(hasItem("/cert2")));
+  }
+
 
   private PasswordCredential savePassword(long timeMillis, String name, UUID canaryUuid) {
     fakeTimeSetter.accept(timeMillis);
@@ -515,6 +535,29 @@ public class CredentialDataServiceTest {
 
   private PasswordCredential savePassword(long timeMillis, String credentialName) {
     return savePassword(timeMillis, credentialName, activeCanaryUuid);
+  }
+
+  private CertificateCredential saveCertificate(long timeMillis, String name, String caName, UUID canaryUuid) {
+    fakeTimeSetter.accept(timeMillis);
+    CredentialName credentialName = credentialNameDataService.find(name);
+    if (credentialName == null) {
+      credentialName = credentialNameDataService.save(new CredentialName(name));
+    }
+    CertificateCredentialData credentialObject = new CertificateCredentialData();
+    credentialObject.setCredentialName(credentialName);
+    credentialObject.setEncryptionKeyUuid(canaryUuid);
+    if (caName != null){
+      credentialObject.setCaName(caName);
+    }
+    return subject.save(credentialObject);
+  }
+
+  private CertificateCredential saveCertificate(long timeMillis, String credentialName) {
+    return saveCertificate(timeMillis, credentialName, null, activeCanaryUuid);
+  }
+
+  private CertificateCredential saveCertificateByCa(long timeMillis, String credentialName, String caName) {
+    return saveCertificate(timeMillis, credentialName, caName, activeCanaryUuid);
   }
 
 
