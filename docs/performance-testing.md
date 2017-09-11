@@ -102,6 +102,7 @@ At this stage, the database cannot serve most requests from CredHub as it gets b
 The various values used for Requests/Step, Min Concurrency, Max Concurrency and Step Size for each type of request was determined experimenting with different values and combinations of parameters to arrive at an understandable configuration that scaled easily across multiple instances to demonstrate CredHub's vertical scaling performance.
 Here is an example of a couple of instances where poor choice of parameters lead to obscure results which resulted in us updating our run parameters.
 
+|------|-----|
 | ![BAD1](https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/BAD1.png) | ![BAD2](https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/BAD2.png) |
 | ![BAD3](https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/BAD3.png) | ![BAD4](https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/BAD4.png) |
 
