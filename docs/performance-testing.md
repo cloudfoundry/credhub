@@ -97,6 +97,14 @@ A single credential is set or retrieved in the get and set request tests. The in
 
 At this stage, the database cannot serve most requests from CredHub as it gets bottle-necked by its connection pool. Hence the maximum throughput in the case of 10 instances is not very different from the of 4 instances.
 
+#### Determining Performance Parameters
+
+The various values used for Requests/Step, Min Concurrency, Max Concurrency and Step Size for each type of request was determined experimenting with different values and combinations of parameters to arrive at an understandable configuration that scaled easily across multiple instances to demonstrate CredHub's vertical scaling performance.
+Here is an example of a couple of instances where poor choice of parameters lead to obscure results which resulted in us updating our run parameters.
+
+| ![BAD1](https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/BAD1.png) | ![BAD2](https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/BAD2.png) |
+| ![BAD3](https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/BAD3.png) | ![BAD4](https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/BAD4.png) |
+
 ## How to build your own Headroom Plot
 
 The tools required to performance test the CredHub performance setup are available [here.](https://github.com/cloudfoundry-incubator/credhub-perf-release)
