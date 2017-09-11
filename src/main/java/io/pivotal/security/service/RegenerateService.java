@@ -8,9 +8,11 @@ import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.CredentialValueFactory;
 import io.pivotal.security.domain.PasswordCredential;
 import io.pivotal.security.exceptions.EntryNotFoundException;
+import io.pivotal.security.exceptions.PermissionException;
 import io.pivotal.security.request.BaseCredentialGenerateRequest;
 import io.pivotal.security.request.PasswordGenerateRequest;
 import io.pivotal.security.request.PermissionEntry;
+import io.pivotal.security.request.PermissionOperation;
 import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.request.UserGenerateRequest;
 import io.pivotal.security.service.regeneratables.CertificateCredentialRegeneratable;
@@ -39,14 +41,17 @@ public class RegenerateService {
   private Map<String, Supplier<Regeneratable>> regeneratableTypes;
   private CredentialService credentialService;
   private GeneratorService generatorService;
+  private final PermissionService permissionService;
 
   RegenerateService(
       CredentialDataService credentialDataService,
       CredentialService credentialService,
-      GeneratorService generatorService) {
+      GeneratorService generatorService,
+      PermissionService permissionService) {
     this.credentialDataService = credentialDataService;
     this.credentialService = credentialService;
     this.generatorService = generatorService;
+    this.permissionService = permissionService;
 
     this.regeneratableTypes = new HashMap<>();
     this.regeneratableTypes.put("password", PasswordCredentialRegeneratable::new);
@@ -109,8 +114,13 @@ public class RegenerateService {
       PermissionEntry currentUserPermissionEntry,
       List<EventAuditRecordParameters> auditRecordParameters
   ) {
+    if (!permissionService.hasPermission(userContext.getAclUser(), signerName, PermissionOperation.READ)) {
+      throw new PermissionException("error.credential.invalid_access");
+    }
+
     BulkRegenerateResults results = new BulkRegenerateResults();
     List<String> certificateNames = credentialDataService.findAllCertificateCredentialsByCaName(signerName);
+
     final HashSet<String> credentialNamesSet = new HashSet<>(certificateNames);
     for (String name : credentialNamesSet) {
       this.performRegenerate(name, userContext, currentUserPermissionEntry,

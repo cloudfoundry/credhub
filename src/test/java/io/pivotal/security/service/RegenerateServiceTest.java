@@ -16,14 +16,18 @@ import io.pivotal.security.domain.SshCredential;
 import io.pivotal.security.domain.UserCredential;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.exceptions.PermissionException;
 import io.pivotal.security.request.CredentialRegenerateRequest;
 import io.pivotal.security.request.PermissionEntry;
+import io.pivotal.security.request.PermissionOperation;
 import io.pivotal.security.request.RsaGenerationParameters;
 import io.pivotal.security.request.SshGenerationParameters;
 import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.util.CertificateReader;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -54,6 +58,7 @@ public class RegenerateServiceTest {
   private PermissionEntry currentUser;
 
   private GeneratorService generatorService;
+  private PermissionService permissionService;
 
   public UserContext userContext;
 
@@ -65,9 +70,10 @@ public class RegenerateServiceTest {
     generatorService = mock(GeneratorService.class);
     userContext = mock(UserContext.class);
     currentUser = mock(PermissionEntry.class);
+    permissionService = mock(PermissionService.class);
 
     subject = new RegenerateService(credentialDataService, credentialService,
-        generatorService);
+        generatorService, permissionService);
   }
 
   @Test
@@ -190,7 +196,6 @@ public class RegenerateServiceTest {
   public void performRegenerate_regeneratesACertificate() {
     final CertificateCredential certificateCredential = mock(CertificateCredential.class);
     when(credentialDataService.findMostRecent("certificate")).thenReturn(certificateCredential);
-
   }
 
   @Test
@@ -277,9 +282,10 @@ public class RegenerateServiceTest {
   }
 
   @Test
-  public void performRegenerateBySigner_regeneratesCertificatesSignedByGivenSigner(){
+  public void performBulkRegenerate_regeneratesCertificatesSignedByGivenSigner(){
     when(credentialDataService.findAllCertificateCredentialsByCaName("/some-signer-name")).thenReturn(
         Collections.singletonList("cert1"));
+    when(permissionService.hasPermission(any(), eq("/some-signer-name"), eq(PermissionOperation.READ))).thenReturn(true);
 
     CertificateCredential credential = mock(CertificateCredential.class);
     when(credential.getCredentialType()).thenReturn("certificate");
@@ -292,16 +298,17 @@ public class RegenerateServiceTest {
     when(credentialDataService.findMostRecent("cert1")).thenReturn(credential);
 
     subject.performBulkRegenerate("/some-signer-name", mock(UserContext.class),
-        mock(PermissionEntry.class), new ArrayList<EventAuditRecordParameters>());
+        mock(PermissionEntry.class), new ArrayList<>());
 
     verify(credentialService).save(eq("cert1"), eq("certificate"), any(CredentialValue.class), any(
         StringGenerationParameters.class), anyList(), eq(true), any(UserContext.class), any(PermissionEntry.class), anyList());
   }
 
   @Test
-  public void performRegenerateBySigner_regeneratesEachCredentialOnlyOnce() {
+  public void performBulkRegenerate_regeneratesEachCredentialOnlyOnce() {
     when(credentialDataService.findAllCertificateCredentialsByCaName("/some-signer-name")).thenReturn(
         Arrays.asList("cert1", "cert1", "cert1"));
+    when(permissionService.hasPermission(any(), eq("/some-signer-name"), eq(PermissionOperation.READ))).thenReturn(true);
 
     CertificateCredential credential = mock(CertificateCredential.class);
     when(credential.getCredentialType()).thenReturn("certificate");
@@ -314,9 +321,24 @@ public class RegenerateServiceTest {
     when(credentialDataService.findMostRecent("cert1")).thenReturn(credential);
 
     subject.performBulkRegenerate("/some-signer-name", mock(UserContext.class),
-        mock(PermissionEntry.class), new ArrayList<EventAuditRecordParameters>());
+        mock(PermissionEntry.class), new ArrayList<>());
 
     verify(credentialService).save(eq("cert1"), eq("certificate"), any(CredentialValue.class), any(
         StringGenerationParameters.class), anyList(), eq(true), any(UserContext.class), any(PermissionEntry.class), anyList());
+  }
+
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
+
+  @Test
+  public void performBulkRegenerate_whenUserHasReadPermissions_throwsPermissionException() throws PermissionException {
+    String user = "test-user";
+    String caName = "/some-signer-name";
+    when(userContext.getAclUser()).thenReturn(user);
+    when(permissionService.hasPermission(eq(user), eq("/some-signer-name"), eq(PermissionOperation.READ))).thenReturn(false);
+
+    thrown.expect(PermissionException.class);
+    thrown.expectMessage("error.credential.invalid_access");
+    subject.performBulkRegenerate(caName, userContext, mock(PermissionEntry.class), newArrayList());
   }
 }
