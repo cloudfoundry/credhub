@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Mockito.doReturn;
@@ -131,7 +132,7 @@ public class CredentialsControllerErrorHandlingSetTest {
     auditingHelper.verifyAuditing(
         CREDENTIAL_UPDATE,
         CREDENTIAL_NAME.toUpperCase(),
-        "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
+        UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
         "/api/v1/data",
         400
     );

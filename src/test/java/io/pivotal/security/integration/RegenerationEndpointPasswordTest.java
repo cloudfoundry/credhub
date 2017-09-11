@@ -22,6 +22,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -120,7 +121,7 @@ public class RegenerationEndpointPasswordTest {
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
         .andExpect(jsonPath("$.type").value("password"));
 
-    auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/picard", "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", API_V1_REGENERATE_ENDPOINT, 200);
+    auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/picard", UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, API_V1_REGENERATE_ENDPOINT, 200);
   }
 
   @Test

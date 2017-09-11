@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_DELETE;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
@@ -124,7 +125,7 @@ public class CredentialsControllerDeleteTest {
 
     verify(credentialDataService, times(1)).delete(CREDENTIAL_NAME.toUpperCase());
 
-    auditingHelper.verifyAuditing(CREDENTIAL_DELETE, CREDENTIAL_NAME.toUpperCase(), "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 204);
+    auditingHelper.verifyAuditing(CREDENTIAL_DELETE, CREDENTIAL_NAME.toUpperCase(), UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 204);
   }
 
   @Test
@@ -140,6 +141,6 @@ public class CredentialsControllerDeleteTest {
 
     verify(credentialDataService, times(1)).delete(CREDENTIAL_NAME);
 
-    auditingHelper.verifyAuditing(CREDENTIAL_DELETE, CREDENTIAL_NAME, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 204);
+    auditingHelper.verifyAuditing(CREDENTIAL_DELETE, CREDENTIAL_NAME, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 204);
   }
 }

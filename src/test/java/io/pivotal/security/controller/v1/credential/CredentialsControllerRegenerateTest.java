@@ -35,6 +35,7 @@ import java.util.function.Consumer;
 
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -126,7 +127,7 @@ public class CredentialsControllerRegenerateTest {
     assertThat(newPassword.getPassword(), not(equalTo("original-credential")));
     assertThat(newPassword.getGenerationParameters().isExcludeNumber(), equalTo(true));
 
-    auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/my-password", "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 200);
+    auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/my-password", UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 200);
   }
 
   @Test
@@ -159,7 +160,7 @@ public class CredentialsControllerRegenerateTest {
     assertThat(originalCredential.getPublicKey(), not(equalTo(newRsa.getPublicKey())));
     assertThat(originalCredential.getPrivateKey(), not(equalTo(newRsa.getPrivateKey())));
 
-    auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/my-rsa", "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 200);
+    auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/my-rsa", UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 200);
   }
 
   @Test
@@ -191,7 +192,7 @@ public class CredentialsControllerRegenerateTest {
     assertThat(newSsh.getPrivateKey(), not(equalTo(originalCredential.getPrivateKey())));
     assertThat(newSsh.getPublicKey(), not(equalTo(originalCredential.getPublicKey())));
 
-    auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/my-ssh", "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 200);
+    auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/my-ssh", UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 200);
   }
 
   @Test
@@ -230,7 +231,7 @@ public class CredentialsControllerRegenerateTest {
     assertThat(newUser.getGenerationParameters().isExcludeNumber(), equalTo(true));
     assertThat(newUser.getUsername(), equalTo(originalCredential.getUsername()));
 
-    auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/the-user", "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 200);
+    auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/the-user", UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 200);
   }
 
   @Test
@@ -249,7 +250,7 @@ public class CredentialsControllerRegenerateTest {
         .andExpect(status().isNotFound())
         .andExpect(content().json(notFoundJson));
 
-    auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/my-password", "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 404);
+    auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/my-password", UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 404);
   }
 
   @Test
@@ -274,7 +275,7 @@ public class CredentialsControllerRegenerateTest {
     mockMvc.perform(request)
         .andExpect(content().json(cannotRegenerateJson));
 
-    auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/my-password", "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 400);
+    auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/my-password", UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 400);
   }
 
   @Test

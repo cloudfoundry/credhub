@@ -30,6 +30,7 @@ import java.util.function.Consumer;
 
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_FIND;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
@@ -98,7 +99,7 @@ public class CredentialsControllerFindTest {
   public void findCredentials_byNameLike_whenSearchTermContainsNoSlash_persistsAnAuditEntry() throws Exception {
     findCredentialsByNameLike();
 
-    auditingHelper.verifyAuditing(CREDENTIAL_FIND, null, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 200);
+    auditingHelper.verifyAuditing(CREDENTIAL_FIND, null, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 200);
   }
 
   @Test
@@ -180,7 +181,7 @@ public class CredentialsControllerFindTest {
 
     mockMvc.perform(request);
 
-    auditingHelper.verifyAuditing(CREDENTIAL_FIND, null, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 200);
+    auditingHelper.verifyAuditing(CREDENTIAL_FIND, null, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 200);
   }
 
   @Test

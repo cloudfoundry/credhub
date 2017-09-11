@@ -29,6 +29,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.util.List;
 
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static java.util.Collections.emptyList;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -137,7 +138,7 @@ public class AuditTest {
 
     EventAuditRecord eventAuditRecord = eventAuditRecordRepository.findAll(sortByDate).get(0);
     assertThat(eventAuditRecord.getCredentialName(), equalTo("/TEST/SECRET"));
-    assertThat(eventAuditRecord.getActor(), equalTo("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"));
+    assertThat(eventAuditRecord.getActor(), equalTo(UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID));
   }
 
   @Test
@@ -164,7 +165,7 @@ public class AuditTest {
 
     EventAuditRecord eventAuditRecord = eventAuditRecordRepository.findAll(sortByDate).get(0);
     assertThat(eventAuditRecord.isSuccess(), equalTo(false));
-    assertThat(eventAuditRecord.getActor(), equalTo("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"));
+    assertThat(eventAuditRecord.getActor(), equalTo(UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID));
   }
 
   @Test
@@ -278,7 +279,7 @@ public class AuditTest {
     assertThat(captor.getValue(), containsString("cs4Label=httpStatusCode cs4=500"));
 
     auditingHelper.verifyAuditing(
-        "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
+        UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
         "/api/v1/data",
         500,
         emptyList()

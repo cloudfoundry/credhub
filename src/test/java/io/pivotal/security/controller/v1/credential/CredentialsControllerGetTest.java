@@ -37,6 +37,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.request.PermissionOperation.READ;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
@@ -129,7 +130,7 @@ public class CredentialsControllerGetTest {
         .andExpect(jsonPath("$.data[0]" + ".id").value(uuid.toString()))
         .andExpect(jsonPath("$.data[0]" + ".version_created_at").value(FROZEN_TIME.toString()));
 
-    auditingHelper.verifyAuditing(CREDENTIAL_ACCESS, CREDENTIAL_NAME, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 200);
+    auditingHelper.verifyAuditing(CREDENTIAL_ACCESS, CREDENTIAL_NAME, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 200);
   }
 
   @Test
@@ -172,7 +173,7 @@ public class CredentialsControllerGetTest {
     auditingHelper.verifyAuditing(
         CREDENTIAL_ACCESS,
         CREDENTIAL_NAME,
-        "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
+        UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
         "/api/v1/data",
         404
     );
@@ -304,7 +305,7 @@ public class CredentialsControllerGetTest {
     auditingHelper.verifyAuditing(
         CREDENTIAL_ACCESS,
         CREDENTIAL_NAME,
-        "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
+        UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
         "/api/v1/data/" + uuid.toString(),
         200);
   }

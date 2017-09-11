@@ -35,7 +35,9 @@ import static io.pivotal.security.request.PermissionOperation.READ;
 import static io.pivotal.security.request.PermissionOperation.READ_ACL;
 import static io.pivotal.security.request.PermissionOperation.WRITE;
 import static io.pivotal.security.request.PermissionOperation.WRITE_ACL;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static io.pivotal.security.util.CertificateStringConstants.SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT;
 import static io.pivotal.security.util.X509TestUtil.cert;
@@ -96,7 +98,7 @@ public class PermissionAndCredentialTest {
         .content(requestBody));
     assertAclSuccessfullyCreatedAndAudited(
         result,
-        "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
+        UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
         UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
   }
 
@@ -114,7 +116,7 @@ public class PermissionAndCredentialTest {
         .content(requestBody));
     assertAclSuccessfullyCreatedAndAudited(
         result,
-        "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
+        UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
         UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
   }
 
@@ -132,7 +134,7 @@ public class PermissionAndCredentialTest {
         .contentType(APPLICATION_JSON)
         .content(requestBody));
 
-    assertAclSuccessfullyCreatedAndAudited(result, "uaa-client:credhub_test", UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
+    assertAclSuccessfullyCreatedAndAudited(result, UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID, UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
   }
 
   @Test
@@ -148,7 +150,7 @@ public class PermissionAndCredentialTest {
         .contentType(APPLICATION_JSON)
         .content(requestBody));
 
-    assertAclSuccessfullyCreatedAndAudited(result, "uaa-client:credhub_test", UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
+    assertAclSuccessfullyCreatedAndAudited(result, UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID, UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
   }
 
   @Test
@@ -210,7 +212,7 @@ public class PermissionAndCredentialTest {
         .contentType(APPLICATION_JSON)
         .content(requestBody));
 
-    assertCreatorAndExtraAclSuccessfullyCreatedAndAudited(result, "uaa-client:credhub_test", UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
+    assertCreatorAndExtraAclSuccessfullyCreatedAndAudited(result, UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID, UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
   }
 
   @Test
@@ -232,7 +234,7 @@ public class PermissionAndCredentialTest {
         .contentType(APPLICATION_JSON)
         .content(requestBody));
 
-    assertCreatorAndExtraAclSuccessfullyCreatedAndAudited(result, "uaa-client:credhub_test", UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
+    assertCreatorAndExtraAclSuccessfullyCreatedAndAudited(result, UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID, UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
   }
 
   @Test
@@ -454,10 +456,10 @@ public class PermissionAndCredentialTest {
     assertThat(acl.getCredentialName(), equalTo("/test-password"));
     assertThat(acl.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
-            new PermissionEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
+            new PermissionEntry(UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
                 asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
         samePropertyValuesAs(
-            new PermissionEntry("uaa-client:credhub_test",
+            new PermissionEntry(UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID,
                 asList(READ, WRITE)))));
   }
 
@@ -466,7 +468,7 @@ public class PermissionAndCredentialTest {
         new EventAuditRecordParameters(CREDENTIAL_ACCESS, "/test-password")
     );
     auditingHelper.verifyAuditing(
-        "uaa-client:credhub_test",
+        UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID,
         "/api/v1/data",
         200,
         auditRecordParameters
@@ -486,13 +488,13 @@ public class PermissionAndCredentialTest {
     assertThat(acl.getCredentialName(), equalTo("/test-password"));
     assertThat(acl.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
-            new PermissionEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
+            new PermissionEntry(UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
                 asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
         samePropertyValuesAs(
             new PermissionEntry(MTLS_APP_GUID,
                 asList(WRITE))),
         samePropertyValuesAs(
-            new PermissionEntry("uaa-client:credhub_test",
+            new PermissionEntry(UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID,
                 asList(READ, WRITE, DELETE)))));
   }
 
@@ -500,12 +502,12 @@ public class PermissionAndCredentialTest {
     List<EventAuditRecordParameters> auditRecordParameters = newArrayList(
         new EventAuditRecordParameters(CREDENTIAL_UPDATE, "/test-password"),
         new EventAuditRecordParameters(ACL_UPDATE, "/test-password", WRITE, MTLS_APP_GUID),
-        new EventAuditRecordParameters(ACL_UPDATE, "/test-password", READ, "uaa-client:credhub_test"),
-        new EventAuditRecordParameters(ACL_UPDATE, "/test-password", WRITE, "uaa-client:credhub_test"),
-        new EventAuditRecordParameters(ACL_UPDATE, "/test-password", DELETE, "uaa-client:credhub_test")
+        new EventAuditRecordParameters(ACL_UPDATE, "/test-password", READ, UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID),
+        new EventAuditRecordParameters(ACL_UPDATE, "/test-password", WRITE, UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID),
+        new EventAuditRecordParameters(ACL_UPDATE, "/test-password", DELETE, UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID)
     );
     auditingHelper.verifyAuditing(
-        "uaa-client:credhub_test",
+        UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID,
         "/api/v1/data",
         200,
         auditRecordParameters

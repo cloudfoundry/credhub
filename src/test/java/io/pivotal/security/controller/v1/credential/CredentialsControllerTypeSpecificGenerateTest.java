@@ -75,6 +75,7 @@ import static io.pivotal.security.request.PermissionOperation.READ;
 import static io.pivotal.security.request.PermissionOperation.READ_ACL;
 import static io.pivotal.security.request.PermissionOperation.WRITE;
 import static io.pivotal.security.request.PermissionOperation.WRITE_ACL;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static io.pivotal.security.util.MultiJsonPathMatcher.multiJsonPath;
 import static java.util.Arrays.asList;
@@ -405,13 +406,13 @@ public class CredentialsControllerTypeSpecificGenerateTest {
 
     mockMvc.perform(request);
 
-    auditingHelper.verifyAuditing("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 200, newArrayList(
+    auditingHelper.verifyAuditing(UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 200, newArrayList(
         new EventAuditRecordParameters(CREDENTIAL_UPDATE, CREDENTIAL_NAME),
-        new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, READ, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"),
-        new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, WRITE, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"),
-        new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, DELETE, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"),
-        new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, READ_ACL, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"),
-        new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, WRITE_ACL, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d")
+        new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, READ, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID),
+        new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, WRITE, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID),
+        new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, DELETE, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID),
+        new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, READ_ACL, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID),
+        new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, WRITE_ACL, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID)
     ));
   }
 
@@ -434,7 +435,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
     assertThat(acl.getCredentialName(), equalTo(CREDENTIAL_NAME));
     assertThat(acl.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
-            new PermissionEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
+            new PermissionEntry(UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
                 asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL)))));
   }
 
@@ -479,7 +480,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
     auditingHelper.verifyAuditing(
         CREDENTIAL_UPDATE,
         CREDENTIAL_NAME,
-        "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
+        UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
         "/api/v1/data",
         200
     );
@@ -516,7 +517,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
 
     mockMvc.perform(request);
 
-    auditingHelper.verifyAuditing(CREDENTIAL_ACCESS, CREDENTIAL_NAME, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 200);
+    auditingHelper.verifyAuditing(CREDENTIAL_ACCESS, CREDENTIAL_NAME, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 200);
   }
 
   private MockHttpServletRequestBuilder createGenerateNewCredentialRequest() {

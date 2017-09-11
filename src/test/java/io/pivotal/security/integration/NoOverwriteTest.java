@@ -36,7 +36,9 @@ import static io.pivotal.security.request.PermissionOperation.READ;
 import static io.pivotal.security.request.PermissionOperation.READ_ACL;
 import static io.pivotal.security.request.PermissionOperation.WRITE;
 import static io.pivotal.security.request.PermissionOperation.WRITE_ACL;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -118,8 +120,8 @@ public class NoOverwriteTest {
             "thread2", UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
         .get(winningValue);
     String winningActor = ImmutableMap
-        .of("thread1", "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
-            "thread2", "uaa-client:credhub_test")
+        .of("thread1", UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
+            "thread2", UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID)
         .get(winningValue);
 
     MvcResult result = mockMvc.perform(get("/api/v1/permissions?credential_name=" + CREDENTIAL_NAME)
@@ -180,10 +182,10 @@ public class NoOverwriteTest {
     String winningResponse;
 
     if (winningPassword.matches("\\d+")) {
-      winningActor = "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d";
+      winningActor = UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
       winningResponse = response1.getContentAsString();
     } else {
-      winningActor = "uaa-client:credhub_test";
+      winningActor = UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID;
       winningResponse = response2.getContentAsString();
     }
 

@@ -27,6 +27,7 @@ import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -59,57 +60,69 @@ public class BulkRegenerateTest {
   private EventAuditRecordRepository eventAuditRecordRepository;
 
   private MockMvc mockMvc;
-  private String originalCA;
-  private String otherCA;
   private AuditingHelper auditingHelper;
 
   @Before
   public void beforeEach() throws Exception {
+
     mockMvc = MockMvcBuilders
         .webAppContextSetup(webApplicationContext)
         .apply(springSecurity())
         .build();
     auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
 
-    MockHttpServletRequestBuilder generateCAToRotateRequest = post(API_V1_DATA_ENDPOINT)
+    generateCACredentials();
+
+    generateSignedCertificates();
+
+
+  }
+
+  @Test
+  public void regeneratingCertificatesSignedByCA_shouldRegenerateCertificates() throws Exception {
+    MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
         .content("{\n"
-            + "  \"name\" : \"/ca-to-rotate\",\n"
-            + "  \"type\" : \"certificate\",\n"
-            + "  \"parameters\" : {\n"
-            + "\"is_ca\": true,\n"
-            + "\"common_name\": \"original ca\"\n"
-            + "}}");
+            + "  \"signed_by\" : \"/ca-to-rotate\"\n"
+            + "}");
 
-    String generateCAResult = this.mockMvc.perform(generateCAToRotateRequest)
+    String regenerateCertificatesResult = this.mockMvc.perform(regenerateCertificatesRequest)
         .andDo(print())
         .andExpect(status().isOk())
         .andReturn().getResponse().getContentAsString();
 
-    originalCA = (new JSONObject(generateCAResult)).getString("value");
+    final JSONArray regeneratedCredentials = (new JSONObject(regenerateCertificatesResult)).getJSONArray("regenerated_credentials");
+    final List<String> result = Arrays.asList(regeneratedCredentials.getString(0), regeneratedCredentials.getString(1));
 
-    MockHttpServletRequestBuilder generateOtherCARequest = post(API_V1_DATA_ENDPOINT)
+    assertThat(regeneratedCredentials.length(), equalTo(2));
+    assertThat(result, containsInAnyOrder("/cert-to-regenerate", "/cert-to-regenerate-as-well"));
+  }
+
+  @Test
+  public void regenerating_PersistsAnAuditEntry() throws Exception {
+    MockHttpServletRequestBuilder request = post(API_V1_BULK_REGENERATE_ENDPOINT)
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        //language=JSON
         .content("{\n"
-            + "  \"name\" : \"/other-ca\",\n"
-            + "  \"type\" : \"certificate\",\n"
-            + "  \"parameters\" : {\n"
-            + "\"is_ca\": true,\n"
-            + "\"common_name\": \"other ca\"\n"
-            + "}}");
+            + "  \"signed_by\" : \"/ca-to-rotate\"\n"
+            + "}");
 
-    String otherCAResult = this.mockMvc.perform(generateOtherCARequest)
-        .andDo(print())
+    mockMvc.perform(request)
         .andExpect(status().isOk())
-        .andReturn().getResponse().getContentAsString();
-    otherCA = (new JSONObject(otherCAResult)).getString("value");
+        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON));
 
+    auditingHelper.verifyAuditing(UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/bulk-regenerate", 200, newArrayList(
+        new EventAuditRecordParameters(CREDENTIAL_UPDATE, "/cert-to-regenerate-as-well"),
+        new EventAuditRecordParameters(CREDENTIAL_UPDATE, "/cert-to-regenerate")
+    ));
+  }
+
+
+  private void generateSignedCertificates() throws Exception {
     MockHttpServletRequestBuilder generateCertSignedByOriginalCARequest = post(API_V1_DATA_ENDPOINT)
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
@@ -175,46 +188,42 @@ public class BulkRegenerateTest {
     assertThat((new JSONObject(certSignedByOtherCAResult)).getString("value"), notNullValue());
   }
 
-  @Test
-  public void regeneratingCertificatesSignedByCA_shouldRegenerateCertificates() throws Exception {
-    MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
+  private void generateCACredentials() throws Exception {
+    MockHttpServletRequestBuilder generateCAToRotateRequest = post(API_V1_DATA_ENDPOINT)
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
         .content("{\n"
-            + "  \"signed_by\" : \"/ca-to-rotate\"\n"
-            + "}");
+            + "  \"name\" : \"/ca-to-rotate\",\n"
+            + "  \"type\" : \"certificate\",\n"
+            + "  \"parameters\" : {\n"
+            + "\"is_ca\": true,\n"
+            + "\"common_name\": \"original ca\"\n"
+            + "}}");
 
-    String regenerateCertificatesResult = this.mockMvc.perform(regenerateCertificatesRequest)
+    this.mockMvc.perform(generateCAToRotateRequest)
         .andDo(print())
         .andExpect(status().isOk())
         .andReturn().getResponse().getContentAsString();
 
-    final JSONArray regeneratedCredentials = (new JSONObject(regenerateCertificatesResult)).getJSONArray("regenerated_credentials");
-    final List<String> result = Arrays.asList(regeneratedCredentials.getString(0), regeneratedCredentials.getString(1));
-
-    assertThat(regeneratedCredentials.length(), equalTo(2));
-    assertThat(result, containsInAnyOrder("/cert-to-regenerate", "/cert-to-regenerate-as-well"));
-  }
-
-  @Test
-  public void regenerating_PersistsAnAuditEntry() throws Exception {
-    MockHttpServletRequestBuilder request = post(API_V1_BULK_REGENERATE_ENDPOINT)
+    MockHttpServletRequestBuilder generateOtherCARequest = post(API_V1_DATA_ENDPOINT)
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
+        //language=JSON
         .content("{\n"
-            + "  \"signed_by\" : \"/ca-to-rotate\"\n"
-            + "}");
+            + "  \"name\" : \"/other-ca\",\n"
+            + "  \"type\" : \"certificate\",\n"
+            + "  \"parameters\" : {\n"
+            + "\"is_ca\": true,\n"
+            + "\"common_name\": \"other ca\"\n"
+            + "}}");
 
-    mockMvc.perform(request)
+    this.mockMvc.perform(generateOtherCARequest)
+        .andDo(print())
         .andExpect(status().isOk())
-        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON));
-
-    auditingHelper.verifyAuditing("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/bulk-regenerate", 200, newArrayList(
-        new EventAuditRecordParameters(CREDENTIAL_UPDATE, "/cert-to-regenerate-as-well"),
-        new EventAuditRecordParameters(CREDENTIAL_UPDATE, "/cert-to-regenerate")
-    ));
+        .andReturn().getResponse().getContentAsString();
   }
+
 }

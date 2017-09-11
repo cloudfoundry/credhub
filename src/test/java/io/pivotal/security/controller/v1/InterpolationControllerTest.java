@@ -29,6 +29,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.helper.JsonTestHelper.parse;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -117,7 +118,7 @@ public class InterpolationControllerTest {
     mockMvc.perform(makeValidPostRequest()).andExpect(status().isOk());
 
     auditingHelper
-        .verifyAuditing("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/interpolate",
+        .verifyAuditing(UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/interpolate",
             200, Lists
                 .newArrayList(
                     new EventAuditRecordParameters(CREDENTIAL_ACCESS, "/cred1"),

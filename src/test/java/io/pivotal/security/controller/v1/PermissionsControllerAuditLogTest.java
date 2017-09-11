@@ -29,6 +29,7 @@ import java.util.List;
 
 import static io.pivotal.security.audit.AuditingOperationCode.ACL_ACCESS;
 import static io.pivotal.security.request.PermissionOperation.READ_ACL;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -74,7 +75,7 @@ public class PermissionsControllerAuditLogTest {
       .apply(springSecurity())
       .build();
     PermissionEntry ace = new PermissionEntry(
-        "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
+        UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
         Arrays.asList(READ_ACL));
     when(permissionsDataService.getAccessControlList(eq(CRED1)))
         .thenReturn(Arrays.asList(ace));

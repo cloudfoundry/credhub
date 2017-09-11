@@ -34,7 +34,9 @@ import static io.pivotal.security.request.PermissionOperation.READ;
 import static io.pivotal.security.request.PermissionOperation.READ_ACL;
 import static io.pivotal.security.request.PermissionOperation.WRITE;
 import static io.pivotal.security.request.PermissionOperation.WRITE_ACL;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -125,7 +127,7 @@ public class PermissionsEndpointTest {
     assertThat(permission.getCredentialName(), equalTo(credentialName));
     assertThat(permission.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
-            new PermissionEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
+            new PermissionEntry(UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
                 asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
         samePropertyValuesAs(
             new PermissionEntry("dan", asList(READ)))
@@ -152,7 +154,7 @@ public class PermissionsEndpointTest {
     assertThat(permission.getCredentialName(), equalTo(credentialName));
     assertThat(permission.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
-            new PermissionEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
+            new PermissionEntry(UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
         samePropertyValuesAs(
             new PermissionEntry("dan", asList(READ)))
     ));
@@ -243,7 +245,7 @@ public class PermissionsEndpointTest {
         .andExpect(status().isNoContent());
 
     auditingHelper.verifyAuditing(
-        "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
+        UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
         "/api/v1/permissions",
         204,
         newArrayList(new EventAuditRecordParameters(ACL_DELETE, credentialName, READ, "dan"))
@@ -282,15 +284,15 @@ public class PermissionsEndpointTest {
         .andExpect(status().is4xxClientError());
 
     auditingHelper.verifyAuditing(
-        "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
+        UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
         "/api/v1/permissions",
         400,
         newArrayList(
-            new EventAuditRecordParameters(ACL_DELETE, credentialName, WRITE_ACL, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"),
-            new EventAuditRecordParameters(ACL_DELETE, credentialName, WRITE, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"),
-            new EventAuditRecordParameters(ACL_DELETE, credentialName, READ_ACL, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"),
-            new EventAuditRecordParameters(ACL_DELETE, credentialName, READ, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"),
-            new EventAuditRecordParameters(ACL_DELETE, credentialName, DELETE, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d")
+            new EventAuditRecordParameters(ACL_DELETE, credentialName, WRITE_ACL, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID),
+            new EventAuditRecordParameters(ACL_DELETE, credentialName, WRITE, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID),
+            new EventAuditRecordParameters(ACL_DELETE, credentialName, READ_ACL, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID),
+            new EventAuditRecordParameters(ACL_DELETE, credentialName, READ, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID),
+            new EventAuditRecordParameters(ACL_DELETE, credentialName, DELETE, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID)
         )
     );
   }
@@ -320,7 +322,7 @@ public class PermissionsEndpointTest {
         .andExpect(status().isNotFound());
 
     auditingHelper.verifyAuditing(
-        "uaa-client:credhub_test",
+        UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID,
         "/api/v1/permissions",
         404,
         newArrayList(new EventAuditRecordParameters(ACL_DELETE, credentialName, READ, "dan"))
@@ -383,7 +385,7 @@ public class PermissionsEndpointTest {
     assertThat(acl.getCredentialName(), equalTo(credentialName));
     assertThat(acl.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
-            new PermissionEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
+            new PermissionEntry(UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
         samePropertyValuesAs(
             new PermissionEntry("dan", asList(READ, WRITE))),
         samePropertyValuesAs(
@@ -391,7 +393,7 @@ public class PermissionsEndpointTest {
     ));
 
     auditingHelper.verifyAuditing(
-        "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
+        UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
         "/api/v1/permissions",
         200,
         newArrayList(
@@ -444,7 +446,7 @@ public class PermissionsEndpointTest {
     assertThat(acl.getCredentialName(), equalTo(credentialName));
     assertThat(acl.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
-            new PermissionEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
+            new PermissionEntry(UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
         samePropertyValuesAs(
             new PermissionEntry("dan", asList(READ, WRITE, DELETE)))
     ));
@@ -453,7 +455,7 @@ public class PermissionsEndpointTest {
     assertThat(eventAuditRecordRepository.count(), equalTo(4L + initialCount));
 
     auditingHelper.verifyAuditing(
-        "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
+        UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
         "/api/v1/permissions",
         200,
         newArrayList(
@@ -490,7 +492,7 @@ public class PermissionsEndpointTest {
         .andExpect(jsonPath("$.error").value(expectedError));
 
     auditingHelper.verifyAuditing(
-        "uaa-client:credhub_test",
+        UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID,
         "/api/v1/permissions",
         404,
         newArrayList(
@@ -528,12 +530,12 @@ public class PermissionsEndpointTest {
         .andExpect(jsonPath("$.error").value(expectedError));
 
     auditingHelper.verifyAuditing(
-        "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
+        UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
         "/api/v1/permissions",
         400,
         newArrayList(
-            new EventAuditRecordParameters(ACL_UPDATE, credentialName, READ, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"),
-            new EventAuditRecordParameters(ACL_UPDATE, credentialName, WRITE, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"),
+            new EventAuditRecordParameters(ACL_UPDATE, credentialName, READ, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID),
+            new EventAuditRecordParameters(ACL_UPDATE, credentialName, WRITE, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID),
             new EventAuditRecordParameters(ACL_UPDATE, credentialName, DELETE, "isobel")
         )
     );
@@ -565,13 +567,13 @@ public class PermissionsEndpointTest {
     assertThat(acl.getPermissions(), hasSize(2));
     assertThat(acl.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
-            new PermissionEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
+            new PermissionEntry(UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
         samePropertyValuesAs(
             new PermissionEntry("dan", singletonList(READ)))
     ));
 
     auditingHelper.verifyAuditing(
-        "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
+        UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
         "/api/v1/permissions",
         200,
         newArrayList(
@@ -630,7 +632,7 @@ public class PermissionsEndpointTest {
         .andExpect(jsonPath("$.error", equalTo(expectedError)));
 
     auditingHelper.verifyAuditing(
-        "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
+        UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
         "/api/v1/permissions",
         404,
         newArrayList(
@@ -667,7 +669,7 @@ public class PermissionsEndpointTest {
   }
 
   private void verifyAudit(AuditingOperationCode operation, String credentialName, int statusCode) {
-    auditingHelper.verifyAuditing(operation, credentialName, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/permissions", statusCode);
+    auditingHelper.verifyAuditing(operation, credentialName, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/permissions", statusCode);
   }
 
   private void seedCredential() throws Exception {
