@@ -100,7 +100,14 @@ At this stage, the database cannot serve most requests from CredHub as it gets b
 #### Determining Performance Parameters
 
 The various values used for Requests/Step, Min Concurrency, Max Concurrency and Step Size for each type of request was determined experimenting with different values and combinations of parameters to arrive at an understandable configuration that scaled easily across multiple instances to demonstrate CredHub's vertical scaling performance.
-Here is an example of a couple of instances where poor choice of parameters lead to obscure results which resulted in us updating our run parameters.
+
+
+Here is an example of a couple of instances where poor choice of parameters lead to obscure results which resulted in us updating our run parameters. Sometimes graphs that might seem like bad graphs occurs because of a few outlier data points and don't need a change in parameters but preferably another run with the same parameters to hopefully rid them. 
+Having said that, there are occasions when the results seem entirely unpredictable and seemingly absurd. In our experience this usually happens when the system is testing with parameters that cause the underlying system to throttle which very negatively impacts performance. This leads to heavy clustering of data point in the middle of the graph accompanied with what would to be very poor performance wrt lesser values.
+
+
+A relatively certain way of determining consistently good parameters is to start at small values of max concurrency (eg. 20) and increasing it in steps of 5 and running performance tests against a single CredHub instance. Keep repeating this exercise until the performance seems to fall consistently for almost every run.  
+This method though tedious, ensures accurate test parameters are observed. 500 requests per step is a reasonable balance between guaranteeing accurate results per step while ensuring the test does not take too much time in itself. It is recommended to not keep the requests/step too high as it negatively impacts the performance and is not demonstrative of the nature of load CredHub will experience.
 
 | Bad Config |  Outlier Data Point |
 |------|-----|
