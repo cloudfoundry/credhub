@@ -38,7 +38,7 @@ import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 public class RegenerateService {
 
   private CredentialDataService credentialDataService;
-  private Map<String, Supplier<Regeneratable>> regeneratableTypes;
+  private Map<String, Supplier<Regeneratable>> regeneratableTypeProducers;
   private CredentialService credentialService;
   private GeneratorService generatorService;
   private final PermissionService permissionService;
@@ -53,12 +53,12 @@ public class RegenerateService {
     this.generatorService = generatorService;
     this.permissionService = permissionService;
 
-    this.regeneratableTypes = new HashMap<>();
-    this.regeneratableTypes.put("password", PasswordCredentialRegeneratable::new);
-    this.regeneratableTypes.put("user", UserCredentialRegeneratable::new);
-    this.regeneratableTypes.put("ssh", SshCredentialRegeneratable::new);
-    this.regeneratableTypes.put("rsa", RsaCredentialRegeneratable::new);
-    this.regeneratableTypes.put("certificate", CertificateCredentialRegeneratable::new);
+    this.regeneratableTypeProducers = new HashMap<>();
+    this.regeneratableTypeProducers.put("password", PasswordCredentialRegeneratable::new);
+    this.regeneratableTypeProducers.put("user", UserCredentialRegeneratable::new);
+    this.regeneratableTypeProducers.put("ssh", SshCredentialRegeneratable::new);
+    this.regeneratableTypeProducers.put("rsa", RsaCredentialRegeneratable::new);
+    this.regeneratableTypeProducers.put("certificate", CertificateCredentialRegeneratable::new);
   }
 
   public CredentialView performRegenerate(
@@ -71,9 +71,12 @@ public class RegenerateService {
     if (credential == null) {
       auditRecordParameters.add(new EventAuditRecordParameters(CREDENTIAL_UPDATE, credentialName));
       throw new EntryNotFoundException("error.credential.invalid_access");
+    } else if (!permissionService.hasPermission(userContext.getAclUser(), credentialName, PermissionOperation.WRITE)){
+      auditRecordParameters.add(new EventAuditRecordParameters(CREDENTIAL_UPDATE, credentialName));
+      throw new PermissionException("error.credential.invalid_access");
     }
 
-    Regeneratable regeneratable = regeneratableTypes
+    Regeneratable regeneratable = regeneratableTypeProducers
         .getOrDefault(credential.getCredentialType(), NotRegeneratable::new)
         .get();
 

@@ -2,11 +2,9 @@ package io.pivotal.security.data;
 
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.CredentialFactory;
-import io.pivotal.security.entity.CertificateCredentialData;
 import io.pivotal.security.entity.CredentialData;
 import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.repository.CertificateCredentialRepository;
 import io.pivotal.security.repository.CredentialRepository;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.view.FindCredentialResult;
@@ -32,7 +30,6 @@ import static io.pivotal.security.repository.CredentialRepository.BATCH_SIZE;
 public class CredentialDataService {
 
   private final CredentialRepository credentialRepository;
-  private final CertificateCredentialRepository certificateCredentialRepository;
   private final CredentialNameDataService credentialNameDataService;
   private final JdbcTemplate jdbcTemplate;
   private final EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
@@ -41,14 +38,12 @@ public class CredentialDataService {
   @Autowired
   protected CredentialDataService(
       CredentialRepository credentialRepository,
-      CertificateCredentialRepository certificateCredentialRepository,
       CredentialNameDataService credentialNameDataService,
       JdbcTemplate jdbcTemplate,
       EncryptionKeyCanaryMapper encryptionKeyCanaryMapper,
       CredentialFactory credentialFactory
   ) {
     this.credentialRepository = credentialRepository;
-    this.certificateCredentialRepository = certificateCredentialRepository;
     this.credentialNameDataService = credentialNameDataService;
     this.jdbcTemplate = jdbcTemplate;
     this.encryptionKeyCanaryMapper = encryptionKeyCanaryMapper;
@@ -123,9 +118,7 @@ public class CredentialDataService {
   }
 
   public List<String> findAllCertificateCredentialsByCaName(String caName) {
-    List<CertificateCredentialData> certificates = certificateCredentialRepository.findAllCertificateCredentialDataByCaNameIgnoreCase(caName);
-    return certificates.stream().map((certificateData) -> certificateData.getName()).collect(
-        Collectors.toList());
+    return this.findCertificateNamesByCaName(caName);
   }
 
   public List<FindCredentialResult> findContainingName(String name) {
@@ -212,5 +205,15 @@ public class CredentialDataService {
         }
     );
     return credentialResults;
+  }
+
+  private List<String> findCertificateNamesByCaName(String caName){
+    String query = "select distinct credential_name.name from "
+        + "credential_name, credential, certificate_credential "
+        + "where credential_name.uuid=credential.credential_name_uuid "
+        + "and credential.uuid=certificate_credential.uuid "
+        + "and lower(certificate_credential.ca_name) "
+        + "like lower(?)";
+    return jdbcTemplate.queryForList(query, String.class, caName);
   }
 }

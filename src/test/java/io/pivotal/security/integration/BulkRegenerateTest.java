@@ -74,16 +74,19 @@ public class BulkRegenerateTest {
 
   @Before
   public void beforeEach() throws Exception {
-
     mockMvc = MockMvcBuilders
         .webAppContextSetup(webApplicationContext)
         .apply(springSecurity())
         .build();
     auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
 
-    generateCACredentials();
+    generateCA("/ca-to-rotate", "original ca");
+    generateCA("/other-ca", "other ca");
 
-    generateSignedCertificates();
+    generateSignedCertificate("/cert-to-regenerate", "cert to regenerate", "/ca-to-rotate");
+    generateSignedCertificate("/cert-to-regenerate", "cert to regenerate", "/ca-to-rotate");
+    generateSignedCertificate("/cert-to-regenerate-as-well", "cert to regenerate as well", "/ca-to-rotate");
+    generateSignedCertificate("/cert-not-to-regenerate", "cert not to regenerate", "/other-ca");
   }
 
   @Test
@@ -140,6 +143,9 @@ public class BulkRegenerateTest {
     mockMvc.perform(revokeCaReadAccess)
         .andExpect(status().isNoContent());
 
+    assertThat(credentialDataService.findAllByName("/cert-to-regenerate").size(), equalTo(2));
+    assertThat(credentialDataService.findAllByName("/cert-to-regenerate-as-well").size(), equalTo(1));
+
     MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
         .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
         .accept(APPLICATION_JSON)
@@ -157,92 +163,76 @@ public class BulkRegenerateTest {
     assertThat(credentialDataService.findAllByName("/cert-to-regenerate-as-well").size(), equalTo(1));
   }
 
-  private void generateSignedCertificates() throws Exception {
-    MockHttpServletRequestBuilder generateCertSignedByOriginalCARequest = post(API_V1_DATA_ENDPOINT)
+  @Test
+  public void regeneratingCertificatesSignedByCA_whenUserCannotWriteToOneOfTheCertificates_shouldFailAndNotRotateAnyCertificates()
+      throws Exception {
+    //revoke write access to second certificate
+    MockHttpServletRequestBuilder revokeWriteAccessRequest =
+        delete(API_V1_PERMISSION_ENDPOINT + "?credential_name=/cert-to-regenerate&actor=" +
+            UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID)
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON);
+
+    mockMvc.perform(revokeWriteAccessRequest)
+        .andExpect(status().isNoContent());
+
+    MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
+        .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
         .content("{\n"
-            + "  \"name\" : \"/cert-to-regenerate\",\n"
-            + "  \"type\" : \"certificate\",\n"
-            + "  \"parameters\" : {\n"
-            + "\"ca\": \"/ca-to-rotate\",\n"
-            + "\"common_name\": \"cert to regenerate\"\n"
-            + "},"
-            + "\"overwrite\": true,"
-            + "\"additional_permissions\": [{"
-            + "\"actor\": \"" + UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID + "\",\n"
-            + "\"operations\": [\"write\"]\n"
-            + "}]"
+            + "  \"signed_by\" : \"/ca-to-rotate\"\n"
             + "}");
 
-    String certSignedByOriginalCAResult = this.mockMvc.perform(generateCertSignedByOriginalCARequest)
-        .andDo(print())
-        .andExpect(status().isOk())
-        .andReturn().getResponse().getContentAsString();
-    assertThat((new JSONObject(certSignedByOriginalCAResult)).getString("value"), notNullValue());
+    mockMvc.perform(regenerateCertificatesRequest)
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.error", IsEqual.equalTo("The request could not be completed because the credential does not exist or you do not have sufficient authorization.")));
 
-    // generate another version of /cert-to-generate
-    this.mockMvc.perform(generateCertSignedByOriginalCARequest)
-        .andDo(print())
-        .andExpect(status().isOk());
-
-    MockHttpServletRequestBuilder generateCertAlsoSignedByOriginalCARequest = post(API_V1_DATA_ENDPOINT)
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        //language=JSON
-        .content("{\n"
-            + "  \"name\" : \"/cert-to-regenerate-as-well\",\n"
-            + "  \"type\" : \"certificate\",\n"
-            + "  \"parameters\" : {\n"
-            + "\"ca\": \"/ca-to-rotate\",\n"
-            + "\"common_name\": \"cert to regenerate as well\"\n"
-            + "},\n"
-            +  "\"additional_permissions\": [{"
-            + "\"actor\": \"" + UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID + "\",\n"
-            + "\"operations\": [\"write\"]\n"
-            + "}]}");
-
-    String certAlsoSignedByOriginalCAResult = this.mockMvc.perform(generateCertAlsoSignedByOriginalCARequest)
-        .andDo(print())
-        .andExpect(status().isOk())
-        .andReturn().getResponse().getContentAsString();
-    assertThat((new JSONObject(certAlsoSignedByOriginalCAResult)).getString("value"), notNullValue());
-
-    MockHttpServletRequestBuilder generateCertSignedByOtherCARequest = post(API_V1_DATA_ENDPOINT)
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        //language=JSON
-        .content("{\n"
-            + "  \"name\" : \"/cert-not-to-regenerate\",\n"
-            + "  \"type\" : \"certificate\",\n"
-            + "  \"parameters\" : {\n"
-            + "\"ca\": \"/other-ca\",\n"
-            + "\"common_name\": \"cert not to regenerate\"\n"
-            + "}}");
-
-    String certSignedByOtherCAResult = this.mockMvc.perform(generateCertSignedByOtherCARequest)
-        .andDo(print())
-        .andExpect(status().isOk())
-        .andReturn().getResponse().getContentAsString();
-    assertThat((new JSONObject(certSignedByOtherCAResult)).getString("value"), notNullValue());
+    assertThat(credentialDataService.findAllByName("/cert-to-regenerate").size(), equalTo(2));
+    assertThat(credentialDataService.findAllByName("/cert-to-regenerate-as-well").size(), equalTo(1));
   }
 
-  private void generateCACredentials() throws Exception {
+  @Test
+  public void regeneratingCertificatesSignedByCA_whenUserCannotWriteToAllOfTheCertificates_shouldFailAndNotRotateAnyCertificates()
+      throws Exception {
+    //revoke read access to ca
+    MockHttpServletRequestBuilder revokeCaReadAccess = delete(API_V1_PERMISSION_ENDPOINT + "?credential_name=/cert-to-regenerate-as-well&actor=" + UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID)
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON);
+
+    mockMvc.perform(revokeCaReadAccess)
+        .andExpect(status().isNoContent());
+
+    MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
+        .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        //language=JSON
+        .content("{\n"
+            + "  \"signed_by\" : \"/ca-to-rotate\"\n"
+            + "}");
+
+    mockMvc.perform(regenerateCertificatesRequest)
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.error", IsEqual.equalTo("The request could not be completed because the credential does not exist or you do not have sufficient authorization.")));
+
+    assertThat(credentialDataService.findAllByName("/cert-to-regenerate").size(), equalTo(2));
+    assertThat(credentialDataService.findAllByName("/cert-to-regenerate-as-well").size(), equalTo(1));
+  }
+
+  private void generateCA(String caName, String caCommonName) throws Exception {
     MockHttpServletRequestBuilder generateCAToRotateRequest = post(API_V1_DATA_ENDPOINT)
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
         .content("{\n"
-            + "  \"name\" : \"/ca-to-rotate\",\n"
+            + "  \"name\" : \"" + caName + "\",\n"
             + "  \"type\" : \"certificate\",\n"
             + "  \"parameters\" : {\n"
             + "     \"is_ca\": true,\n"
-            + "     \"common_name\": \"original ca\"\n"
+            + "     \"common_name\": \"" + caCommonName + "\"\n"
             + "   },\n"
             + "\"additional_permissions\": [{"
             + "   \"actor\": \"" + UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID + "\",\n"
@@ -253,24 +243,33 @@ public class BulkRegenerateTest {
         .andDo(print())
         .andExpect(status().isOk())
         .andReturn().getResponse().getContentAsString();
+  }
 
-    MockHttpServletRequestBuilder generateOtherCARequest = post(API_V1_DATA_ENDPOINT)
+  private void generateSignedCertificate(String certificateName, String certificatCN, String signingCA) throws Exception {
+    MockHttpServletRequestBuilder generateCertSignedByOriginalCARequest = post(API_V1_DATA_ENDPOINT)
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
         .content("{\n"
-            + "  \"name\" : \"/other-ca\",\n"
+            + "  \"name\" : \"" + certificateName + "\",\n"
             + "  \"type\" : \"certificate\",\n"
             + "  \"parameters\" : {\n"
-            + "\"is_ca\": true,\n"
-            + "\"common_name\": \"other ca\"\n"
-            + "}}");
+            + "\"ca\": \"" + signingCA + "\",\n"
+            + "\"common_name\": \"" + certificatCN + "\"\n"
+            + "},"
+            + "\"overwrite\": true,"
+            + "\"additional_permissions\": [{"
+            + "\"actor\": \"" + UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID + "\",\n"
+            + "\"operations\": [\"write\"]\n"
+            + "}]"
+            + "}");
 
-    this.mockMvc.perform(generateOtherCARequest)
+    String certGenerationResult = this.mockMvc.perform(generateCertSignedByOriginalCARequest)
         .andDo(print())
         .andExpect(status().isOk())
         .andReturn().getResponse().getContentAsString();
+    assertThat((new JSONObject(certGenerationResult)).getString("value"), notNullValue());
   }
 
 }
