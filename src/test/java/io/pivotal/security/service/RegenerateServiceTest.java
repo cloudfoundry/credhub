@@ -41,6 +41,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyList;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -71,6 +72,10 @@ public class RegenerateServiceTest {
     userContext = mock(UserContext.class);
     currentUser = mock(PermissionEntry.class);
     permissionService = mock(PermissionService.class);
+
+    when(userContext.getAclUser()).thenReturn("expected user");
+    when(permissionService.hasPermission(eq("expected user"), anyString(), any(PermissionOperation.class)))
+        .thenReturn(true);
 
     subject = new RegenerateService(credentialDataService, credentialService,
         generatorService, permissionService);
@@ -297,7 +302,7 @@ public class RegenerateServiceTest {
 
     when(credentialDataService.findMostRecent("cert1")).thenReturn(credential);
 
-    subject.performBulkRegenerate("/some-signer-name", mock(UserContext.class),
+    subject.performBulkRegenerate("/some-signer-name", userContext,
         mock(PermissionEntry.class), new ArrayList<>());
 
     verify(credentialService).save(eq("cert1"), eq("certificate"), any(CredentialValue.class), any(
@@ -320,7 +325,7 @@ public class RegenerateServiceTest {
 
     when(credentialDataService.findMostRecent("cert1")).thenReturn(credential);
 
-    subject.performBulkRegenerate("/some-signer-name", mock(UserContext.class),
+    subject.performBulkRegenerate("/some-signer-name", userContext,
         mock(PermissionEntry.class), new ArrayList<>());
 
     verify(credentialService).save(eq("cert1"), eq("certificate"), any(CredentialValue.class), any(
