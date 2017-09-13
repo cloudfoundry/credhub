@@ -216,6 +216,36 @@ public class BulkRegenerateTest {
   }
 
   @Test
+  public void regeneratingByCA_PersistsAnAuditEntry_whenRegenerationFails() throws Exception {
+    //revoke write access to second certificate
+    MockHttpServletRequestBuilder revokeWriteAccessRequest =
+        delete(API_V1_PERMISSION_ENDPOINT + "?credential_name=/cert-to-regenerate&actor=" +
+            UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID)
+            .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+            .accept(APPLICATION_JSON);
+
+    mockMvc.perform(revokeWriteAccessRequest)
+        .andExpect(status().isNoContent());
+
+    MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
+        .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        //language=JSON
+        .content("{\n"
+            + "  \"signed_by\" : \"/ca-to-rotate\"\n"
+            + "}");
+
+    mockMvc.perform(regenerateCertificatesRequest)
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.error", IsEqual.equalTo("The request could not be completed because the credential does not exist or you do not have sufficient authorization.")));
+
+    auditingHelper.verifyAuditing(UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID, "/api/v1/bulk-regenerate", 403, newArrayList(
+        new EventAuditRecordParameters(CREDENTIAL_UPDATE, "/cert-to-regenerate-as-well"),
+        new EventAuditRecordParameters(CREDENTIAL_UPDATE, "/cert-to-regenerate")
+    ));
+  }
+  @Test
   public void regeneratingCertificatesSignedByCA_whenUserCannotWriteToAllOfTheCertificates_shouldFailAndNotRotateAnyCertificates()
       throws Exception {
     //revoke read access to ca
