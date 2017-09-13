@@ -3,13 +3,18 @@ package io.pivotal.security.integration;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.entity.EncryptionKeyCanary;
 import io.pivotal.security.helper.AuditingHelper;
+import io.pivotal.security.repository.EncryptionKeyCanaryRepository;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.util.DatabaseProfileResolver;
+import org.flywaydb.core.Flyway;
+import org.flywaydb.core.api.MigrationVersion;
 import org.hamcrest.core.IsEqual;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,7 +26,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.util.Arrays;
@@ -49,7 +53,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
-@Transactional
 @TestPropertySource(properties = "security.authorization.acls.enabled=true")
 public class BulkRegenerateTest {
 
@@ -69,11 +72,19 @@ public class BulkRegenerateTest {
   @Autowired
   private CredentialDataService credentialDataService;
 
+  @Autowired
+  private Flyway flyway;
+
+  @Autowired
+  private EncryptionKeyCanaryRepository encryptionKeyCanaryRepository;
+
   private MockMvc mockMvc;
   private AuditingHelper auditingHelper;
+  private List<EncryptionKeyCanary> canaries;
 
   @Before
   public void beforeEach() throws Exception {
+    canaries = encryptionKeyCanaryRepository.findAll();
     mockMvc = MockMvcBuilders
         .webAppContextSetup(webApplicationContext)
         .apply(springSecurity())
@@ -88,6 +99,17 @@ public class BulkRegenerateTest {
     generateSignedCertificate("/cert-to-regenerate-as-well", "cert to regenerate as well", "/ca-to-rotate");
     generateSignedCertificate("/cert-not-to-regenerate", "cert not to regenerate", "/other-ca");
   }
+
+  @After
+  public void afterEach() {
+    flyway.clean();
+    flyway.setTarget(MigrationVersion.LATEST);
+    flyway.migrate();
+
+    encryptionKeyCanaryRepository.save(canaries);
+    encryptionKeyCanaryRepository.flush();
+  }
+
 
   @Test
   public void regeneratingCertificatesSignedByCA_shouldRegenerateCertificates() throws Exception {
