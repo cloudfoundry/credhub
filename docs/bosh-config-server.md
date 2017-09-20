@@ -49,9 +49,7 @@ To prevent name collisions between deployments, the BOSH Director performs autom
 
 #### Property Accessors
 
-CredHub credentials may contain multiple components in the response value, depending on [type][4]. If you wish to use only a single component of a complex credential, you can do so using a dot syntax, like `((api-tls.certificate))`. This will return only the value of the `certificate` key from the `api-tls` credential object.
-
-[4]:../credential-types.md
+CredHub credentials may contain multiple components in the response value, depending on [type](./credential-types.md). If you wish to use only a single component of a complex credential, you can do so using a dot syntax, like `((api-tls.certificate))`. This will return only the value of the `certificate` key from the `api-tls` credential object.
 
 #### Pinning to Credential IDs
 
@@ -63,4 +61,4 @@ The process to enable the config server integration is documented [here.][1] You
 
 [1]:https://github.com/pivotal-cf/credhub-release/blob/master/docs/bosh-install-with-credhub.md
 [2]:https://github.com/pivotal-cf/credhub-release/tree/master/sample-manifests
-[3]:https://github.com/pivotal-danjahner/bosh-deployment/blob/patch-2/credhub.yml
+[3]:https://github.com/cloudfoundry/bosh-deployment/blob/master/credhub.yml
