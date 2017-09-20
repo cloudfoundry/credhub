@@ -93,8 +93,7 @@ public class CredentialsControllerErrorHandlingSetTest {
     mockMvc.perform(request)
         .andExpect(status().isBadRequest())
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-        .andExpect(jsonPath("$.error").value(expectedError))
-        .andExpect(jsonPath("$.message").value(expectedError));
+        .andExpect(jsonPath("$.error").value(expectedError));
   }
 
   @Test

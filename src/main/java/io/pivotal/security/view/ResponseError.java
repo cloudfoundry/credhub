@@ -14,7 +14,4 @@ public class ResponseError {
   public String getError() {
     return error;
   }
-  public String getMessage() {
-    return error;
-  }
 }
