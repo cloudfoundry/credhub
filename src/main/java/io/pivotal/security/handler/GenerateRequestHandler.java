@@ -43,7 +43,7 @@ public class GenerateRequestHandler {
     }
 
     if (requestBody instanceof UserGenerateRequest) {
-      generationParameters = ((UserGenerateRequest) requestBody).getPasswordGenerationParameters();
+      generationParameters = ((UserGenerateRequest) requestBody).getUserCredentialGenerationParameters();
     }
 
     return credentialService.save(

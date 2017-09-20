@@ -14,7 +14,10 @@ public class UserGenerateRequest extends BaseCredentialGenerateRequest {
     super.validate();
   }
 
-  public StringGenerationParameters getPasswordGenerationParameters() {
+  public StringGenerationParameters getUserCredentialGenerationParameters() {
+    if(value.getUsername() != null){
+      passwordGenerationParameters.setUsername(value.getUsername());
+    }
     return passwordGenerationParameters;
   }
 

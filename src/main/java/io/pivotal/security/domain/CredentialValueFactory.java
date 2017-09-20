@@ -50,7 +50,7 @@ public class CredentialValueFactory {
         break;
       case user:
         final StringGenerationParameters userGenerationParameters = ((UserGenerateRequest) requestBody)
-            .getPasswordGenerationParameters();
+            .getUserCredentialGenerationParameters();
         final String userName = ((UserGenerateRequest) requestBody).getUserName();
         credentialValue = generatorService.generateUser(userName, userGenerationParameters);
         break;

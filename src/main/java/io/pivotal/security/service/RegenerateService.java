@@ -95,7 +95,7 @@ public class RegenerateService {
       generationParameters = ((PasswordGenerateRequest) generateRequest).getGenerationParameters();
     }
     if (generateRequest instanceof UserGenerateRequest) {
-      generationParameters = ((UserGenerateRequest) generateRequest).getPasswordGenerationParameters();
+      generationParameters = ((UserGenerateRequest) generateRequest).getUserCredentialGenerationParameters();
     }
 
     return credentialService.save(
