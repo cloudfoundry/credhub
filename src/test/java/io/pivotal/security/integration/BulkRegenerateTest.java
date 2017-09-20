@@ -273,6 +273,20 @@ public class BulkRegenerateTest {
     assertThat(credentialDataService.findAllByName("/cert-to-regenerate-as-well").size(), equalTo(1));
   }
 
+  @Test
+  public void regeneratingCertificatesSignedByCA_whenSignedByIsMissing_returns400() throws Exception {
+    MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
+        .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        //language=JSON
+        .content("{}");
+
+    mockMvc.perform(regenerateCertificatesRequest)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error", IsEqual.equalTo("You must specify a signing CA. Please update and retry your request.")));
+  }
+
   private void generateCA(String caName, String caCommonName) throws Exception {
     MockHttpServletRequestBuilder generateCAToRotateRequest = post(API_V1_DATA_ENDPOINT)
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)

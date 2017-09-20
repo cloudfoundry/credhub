@@ -8,7 +8,7 @@ import javax.validation.constraints.NotNull;
 @SuppressWarnings("unused")
 public class BulkRegenerateRequest {
 
-  @NotNull
+  @NotNull(message = "error.missing_signed_by")
   private String signedBy;
 
   public BulkRegenerateRequest() {

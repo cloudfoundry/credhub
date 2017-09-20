@@ -19,6 +19,7 @@ import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -92,6 +93,12 @@ public class ExceptionHandlers {
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
   public ResponseError handleUnrecognizedPropertyException(UnrecognizedPropertyException exception) {
     return constructError("error.invalid_json_key", exception.getPropertyName());
+  }
+
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+  public ResponseError handleMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
+    return constructError(exception.getBindingResult().getAllErrors().get(0).getDefaultMessage());
   }
 
   @ExceptionHandler({HttpMessageNotReadableException.class, InvalidJsonException.class, InvalidFormatException.class})
