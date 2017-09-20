@@ -37,7 +37,7 @@ The config server integration intends to solve the above issues, which will simp
 
 #### Interpolation
 
-The BOSH Director has been updated to perform interpolation of credential values into manifests that use the `((variables))` syntax. When the Director encounters a variable using this syntax, it will make requests to CredHub to retrieve the credential value. If the credential does not exist and the release or manifest contains generation properties, the value will be automatically generated. More information on generation properties can be [found here.](../credential-types.md#enabling-credhub-automatic-generation-in-releases)
+The BOSH Director has been updated to perform interpolation of credential values into manifests that use the `((variables))` syntax. When the Director encounters a variable using this syntax, it will make requests to CredHub to retrieve the credential value. If the credential does not exist and the release or manifest contains generation properties, the value will be automatically generated. More information on generation properties can be [found here.](./credential-types.md#enabling-credhub-automatic-generation-in-releases)
 
 <img src="images/director-retrieve.png">
 
