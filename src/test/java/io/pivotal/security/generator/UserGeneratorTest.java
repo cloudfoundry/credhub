@@ -27,7 +27,7 @@ public class UserGeneratorTest {
     PasswordCredentialGenerator passwordGenerator = mock(PasswordCredentialGenerator.class);
     CryptSaltFactory cryptSaltFactory = mock(CryptSaltFactory.class);
 
-    passwordParameters = mock(StringGenerationParameters.class);
+    passwordParameters = new StringGenerationParameters();
 
     subject = new UserGenerator(usernameGenerator, passwordGenerator, cryptSaltFactory);
 
@@ -42,7 +42,8 @@ public class UserGeneratorTest {
 
   @Test
   public void generateCredential_givenAUsernameAndPasswordParameters_generatesUserWithUsernameAndGeneratedPassword() {
-    final UserCredentialValue user = subject.generateCredential("test-user", passwordParameters);
+    passwordParameters.setUsername("test-user");
+    final UserCredentialValue user = subject.generateCredential(passwordParameters);
 
     assertThat(user.getUsername(), equalTo("test-user"));
     assertThat(user.getPassword(), equalTo("fake-generated-password"));
@@ -51,7 +52,7 @@ public class UserGeneratorTest {
 
   @Test
   public void generateCredential_givenNoUsernameAndPasswordParameters_generatesUserWithGeneratedUsernameAndPassword() {
-    final UserCredentialValue user = subject.generateCredential(null, passwordParameters);
+    final UserCredentialValue user = subject.generateCredential(passwordParameters);
 
     assertThat(user.getUsername(), equalTo("fake-generated-username"));
     assertThat(user.getPassword(), equalTo("fake-generated-password"));

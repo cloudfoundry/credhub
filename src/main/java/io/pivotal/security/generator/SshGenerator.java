@@ -1,5 +1,7 @@
 package io.pivotal.security.generator;
 
+import io.pivotal.security.request.BaseCredentialGenerateRequest;
+import io.pivotal.security.request.SshGenerateRequest;
 import io.pivotal.security.request.SshGenerationParameters;
 import io.pivotal.security.credential.SshCredentialValue;
 import io.pivotal.security.util.CertificateFormatter;
@@ -11,7 +13,8 @@ import java.security.KeyPair;
 import java.security.interfaces.RSAPublicKey;
 
 @Component
-public class SshGenerator implements CredentialGenerator<SshGenerationParameters, SshCredentialValue> {
+public class SshGenerator implements
+    CredentialGenerator<SshGenerationParameters, SshCredentialValue> {
 
   private LibcryptoRsaKeyPairGenerator keyGenerator;
 
@@ -35,5 +38,12 @@ public class SshGenerator implements CredentialGenerator<SshGenerationParameters
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+  }
+
+  @Override
+  public SshCredentialValue generateCredential(BaseCredentialGenerateRequest requestBody) {
+    final SshGenerationParameters sshGenerationParameters = ((SshGenerateRequest) requestBody)
+        .getGenerationParameters();
+    return this.generateCredential(sshGenerationParameters);
   }
 }

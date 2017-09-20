@@ -10,8 +10,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class PassayStringCredentialGenerator implements
-    CredentialGenerator<StringGenerationParameters, StringCredentialValue> {
+public class PassayStringCredentialGenerator {
 
   public static final int DEFAULT_LENGTH = 30;
   public static final int MIN_LENGTH = 4;
@@ -23,13 +22,13 @@ public class PassayStringCredentialGenerator implements
     this.passwordGenerator = passwordGenerator;
   }
 
-  @Override
   public StringCredentialValue generateCredential(StringGenerationParameters parameters) {
     int passwordLength = normalizedLength(parameters.getLength());
 
     List<CharacterRule> characterRules = CharacterRuleProvider.getCharacterRules(parameters);
 
-    return new StringCredentialValue(passwordGenerator.generatePassword(passwordLength, characterRules));
+    return new StringCredentialValue(
+        passwordGenerator.generatePassword(passwordLength, characterRules));
   }
 
   private int normalizedLength(int length) {

@@ -11,7 +11,6 @@ import io.pivotal.security.credential.StringCredentialValue;
 import io.pivotal.security.credential.UserCredentialValue;
 import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.domain.CertificateCredential;
-import io.pivotal.security.domain.CertificateParameters;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.PasswordCredential;
@@ -20,7 +19,7 @@ import io.pivotal.security.domain.SshCredential;
 import io.pivotal.security.domain.UserCredential;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.generator.CertificateGenerator;
-import io.pivotal.security.generator.PassayStringCredentialGenerator;
+import io.pivotal.security.generator.PasswordCredentialGenerator;
 import io.pivotal.security.generator.RsaGenerator;
 import io.pivotal.security.generator.SshGenerator;
 import io.pivotal.security.generator.UserGenerator;
@@ -28,10 +27,9 @@ import io.pivotal.security.helper.AuditingHelper;
 import io.pivotal.security.helper.JsonTestHelper;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
+import io.pivotal.security.request.BaseCredentialGenerateRequest;
 import io.pivotal.security.request.DefaultCredentialGenerateRequest;
 import io.pivotal.security.request.PermissionEntry;
-import io.pivotal.security.request.RsaGenerationParameters;
-import io.pivotal.security.request.SshGenerationParameters;
 import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -130,7 +128,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
   private CurrentTimeProvider mockCurrentTimeProvider;
 
   @MockBean
-  private PassayStringCredentialGenerator passwordGenerator;
+  private PasswordCredentialGenerator passwordGenerator;
 
   @MockBean
   private CertificateGenerator certificateGenerator;
@@ -306,19 +304,19 @@ public class CredentialsControllerTypeSpecificGenerateTest {
         .apply(springSecurity())
         .build();
 
-    when(passwordGenerator.generateCredential(any(StringGenerationParameters.class)))
+    when(passwordGenerator.generateCredential(any(BaseCredentialGenerateRequest.class)))
         .thenReturn(new StringCredentialValue(FAKE_PASSWORD));
 
-    when(certificateGenerator.generateCredential(any(CertificateParameters.class)))
+    when(certificateGenerator.generateCredential(any(BaseCredentialGenerateRequest.class)))
         .thenReturn(new CertificateCredentialValue(CA, CERTIFICATE, PRIVATE_KEY, null));
 
-    when(sshGenerator.generateCredential(any(SshGenerationParameters.class)))
+    when(sshGenerator.generateCredential(any(BaseCredentialGenerateRequest.class)))
         .thenReturn(new SshCredentialValue(PUBLIC_KEY, PRIVATE_KEY, null));
 
-    when(rsaGenerator.generateCredential(any(RsaGenerationParameters.class)))
+    when(rsaGenerator.generateCredential(any(BaseCredentialGenerateRequest.class)))
         .thenReturn(new RsaCredentialValue(PUBLIC_KEY, PRIVATE_KEY));
 
-    when(userGenerator.generateCredential(any(String.class), any(StringGenerationParameters.class)))
+    when(userGenerator.generateCredential(any(BaseCredentialGenerateRequest.class)))
         .thenReturn(new UserCredentialValue(USERNAME, FAKE_PASSWORD, fakeSalt));
 
     auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);

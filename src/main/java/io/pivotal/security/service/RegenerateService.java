@@ -5,10 +5,15 @@ import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.credential.CredentialValue;
 import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.domain.Credential;
-import io.pivotal.security.domain.CredentialValueFactory;
 import io.pivotal.security.domain.PasswordCredential;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.PermissionException;
+import io.pivotal.security.generator.CertificateGenerator;
+import io.pivotal.security.generator.CredentialGenerator;
+import io.pivotal.security.generator.PasswordCredentialGenerator;
+import io.pivotal.security.generator.RsaGenerator;
+import io.pivotal.security.generator.SshGenerator;
+import io.pivotal.security.generator.UserGenerator;
 import io.pivotal.security.request.BaseCredentialGenerateRequest;
 import io.pivotal.security.request.PasswordGenerateRequest;
 import io.pivotal.security.request.PermissionEntry;
@@ -40,18 +45,32 @@ public class RegenerateService {
   private CredentialDataService credentialDataService;
   private Map<String, Supplier<Regeneratable>> regeneratableTypeProducers;
   private CredentialService credentialService;
-  private GeneratorService generatorService;
   private final PermissionService permissionService;
+  private PasswordCredentialGenerator passwordCredentialGenerator;
+  private UserGenerator userGenerator;
+  private SshGenerator sshGenerator;
+  private RsaGenerator rsaGenerator;
+  private CertificateGenerator certificateGenerator;
+  private Map<String, CredentialGenerator> credentialGenerators;
 
   RegenerateService(
       CredentialDataService credentialDataService,
       CredentialService credentialService,
-      GeneratorService generatorService,
-      PermissionService permissionService) {
+      PermissionService permissionService,
+      PasswordCredentialGenerator passwordCredentialGenerator,
+      UserGenerator userGenerator,
+      SshGenerator sshGenerator,
+      RsaGenerator rsaGenerator,
+      CertificateGenerator certificateGenerator) {
     this.credentialDataService = credentialDataService;
     this.credentialService = credentialService;
-    this.generatorService = generatorService;
     this.permissionService = permissionService;
+    this.credentialService = credentialService;
+    this.passwordCredentialGenerator = passwordCredentialGenerator;
+    this.userGenerator = userGenerator;
+    this.sshGenerator = sshGenerator;
+    this.rsaGenerator = rsaGenerator;
+    this.certificateGenerator = certificateGenerator;
 
     this.regeneratableTypeProducers = new HashMap<>();
     this.regeneratableTypeProducers.put("password", PasswordCredentialRegeneratable::new);
@@ -59,6 +78,13 @@ public class RegenerateService {
     this.regeneratableTypeProducers.put("ssh", SshCredentialRegeneratable::new);
     this.regeneratableTypeProducers.put("rsa", RsaCredentialRegeneratable::new);
     this.regeneratableTypeProducers.put("certificate", CertificateCredentialRegeneratable::new);
+
+    this.credentialGenerators = new HashMap<>();
+    this.credentialGenerators.put("password", this.passwordCredentialGenerator);
+    this.credentialGenerators.put("user", this.userGenerator);
+    this.credentialGenerators.put("ssh", this.sshGenerator);
+    this.credentialGenerators.put("rsa", this.rsaGenerator);
+    this.credentialGenerators.put("certificate", this.certificateGenerator);
   }
 
   public CredentialView performRegenerate(
@@ -87,8 +113,7 @@ public class RegenerateService {
     final BaseCredentialGenerateRequest generateRequest = regeneratable
         .createGenerateRequest(credential);
 
-    final CredentialValue credentialValue = CredentialValueFactory
-        .generateValue(generateRequest, generatorService);
+    final CredentialValue credentialValue = credentialGenerators.get(generateRequest.getType()).generateCredential(generateRequest);
 
     StringGenerationParameters generationParameters = null;
     if (generateRequest instanceof PasswordGenerateRequest) {
