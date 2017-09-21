@@ -27,8 +27,8 @@ import io.pivotal.security.helper.AuditingHelper;
 import io.pivotal.security.helper.JsonTestHelper;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
-import io.pivotal.security.request.BaseCredentialGenerateRequest;
 import io.pivotal.security.request.DefaultCredentialGenerateRequest;
+import io.pivotal.security.request.GenerationParameters;
 import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.util.CurrentTimeProvider;
@@ -304,19 +304,19 @@ public class CredentialsControllerTypeSpecificGenerateTest {
         .apply(springSecurity())
         .build();
 
-    when(passwordGenerator.generateCredential(any(BaseCredentialGenerateRequest.class)))
+    when(passwordGenerator.generateCredential(any(GenerationParameters.class)))
         .thenReturn(new StringCredentialValue(FAKE_PASSWORD));
 
-    when(certificateGenerator.generateCredential(any(BaseCredentialGenerateRequest.class)))
+    when(certificateGenerator.generateCredential(any(GenerationParameters.class)))
         .thenReturn(new CertificateCredentialValue(CA, CERTIFICATE, PRIVATE_KEY, null));
 
-    when(sshGenerator.generateCredential(any(BaseCredentialGenerateRequest.class)))
+    when(sshGenerator.generateCredential(any(GenerationParameters.class)))
         .thenReturn(new SshCredentialValue(PUBLIC_KEY, PRIVATE_KEY, null));
 
-    when(rsaGenerator.generateCredential(any(BaseCredentialGenerateRequest.class)))
+    when(rsaGenerator.generateCredential(any(GenerationParameters.class)))
         .thenReturn(new RsaCredentialValue(PUBLIC_KEY, PRIVATE_KEY));
 
-    when(userGenerator.generateCredential(any(BaseCredentialGenerateRequest.class)))
+    when(userGenerator.generateCredential(any(GenerationParameters.class)))
         .thenReturn(new UserCredentialValue(USERNAME, FAKE_PASSWORD, fakeSalt));
 
     auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);

@@ -1,5 +1,7 @@
 package io.pivotal.security.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class DefaultCredentialGenerateRequest extends BaseCredentialGenerateRequest {
 
   private Object parameters;
@@ -13,6 +15,7 @@ public class DefaultCredentialGenerateRequest extends BaseCredentialGenerateRequ
   }
 
   @Override
+  @JsonIgnore
   public GenerationParameters getDomainGenerationParameters() {
     return null;
   }

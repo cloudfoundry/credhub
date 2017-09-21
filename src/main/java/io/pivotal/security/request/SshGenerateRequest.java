@@ -1,5 +1,6 @@
 package io.pivotal.security.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class SshGenerateRequest extends BaseCredentialGenerateRequest {
@@ -19,6 +20,7 @@ public class SshGenerateRequest extends BaseCredentialGenerateRequest {
   }
 
   @Override
+  @JsonIgnore
   public GenerationParameters getDomainGenerationParameters() {
     return generationParameters;
   }

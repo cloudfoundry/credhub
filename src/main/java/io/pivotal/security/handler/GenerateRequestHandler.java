@@ -63,8 +63,7 @@ public class GenerateRequestHandler {
       List<EventAuditRecordParameters> auditRecordParameters
   ) {
 
-    CredentialValue value = credentialGenerators.get(requestBody.getType())
-        .generateCredential(requestBody);
+    CredentialValue value = generateCredential(requestBody);
 
     StringGenerationParameters generationParameters = null;
     if (requestBody instanceof PasswordGenerateRequest) {
@@ -87,5 +86,10 @@ public class GenerateRequestHandler {
         currentUserPermissionEntry,
         auditRecordParameters
     );
+  }
+
+  private CredentialValue generateCredential(BaseCredentialGenerateRequest requestBody) {
+    CredentialGenerator generator = credentialGenerators.get(requestBody.getType());
+    return generator.generateCredential(requestBody.getDomainGenerationParameters());
   }
 }

@@ -3,7 +3,7 @@ package io.pivotal.security.generator;
 import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.data.CertificateAuthorityService;
 import io.pivotal.security.domain.CertificateGenerationParameters;
-import io.pivotal.security.request.BaseCredentialGenerateRequest;
+import io.pivotal.security.request.GenerationParameters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -13,8 +13,7 @@ import java.security.cert.X509Certificate;
 import static io.pivotal.security.util.CertificateFormatter.pemOf;
 
 @Component
-public class CertificateGenerator implements
-    CredentialGenerator<CertificateGenerationParameters, CertificateCredentialValue> {
+public class CertificateGenerator implements CredentialGenerator<CertificateCredentialValue> {
 
   private final LibcryptoRsaKeyPairGenerator keyGenerator;
   private final SignedCertificateGenerator signedCertificateGenerator;
@@ -33,7 +32,8 @@ public class CertificateGenerator implements
   }
 
   @Override
-  public CertificateCredentialValue generateCredential(CertificateGenerationParameters params) {
+  public CertificateCredentialValue generateCredential(GenerationParameters p) {
+    CertificateGenerationParameters params = (CertificateGenerationParameters) p;
     try {
       KeyPair keyPair = keyGenerator.generateKeyPair(params.getKeyLength());
       X509Certificate cert;
@@ -55,10 +55,5 @@ public class CertificateGenerator implements
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-  }
-
-  @Override
-  public CertificateCredentialValue generateCredential(BaseCredentialGenerateRequest requestBody) {
-    return generateCredential((CertificateGenerationParameters) requestBody.getDomainGenerationParameters());
   }
 }

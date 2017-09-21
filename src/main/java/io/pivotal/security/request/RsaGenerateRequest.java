@@ -1,5 +1,6 @@
 package io.pivotal.security.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class RsaGenerateRequest extends BaseCredentialGenerateRequest {
@@ -19,8 +20,9 @@ public class RsaGenerateRequest extends BaseCredentialGenerateRequest {
   }
 
   @Override
+  @JsonIgnore
   public GenerationParameters getDomainGenerationParameters() {
-    return generationParameters;
+    return getGenerationParameters();
   }
 
   @Override

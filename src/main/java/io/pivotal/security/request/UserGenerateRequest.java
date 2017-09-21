@@ -1,5 +1,6 @@
 package io.pivotal.security.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class UserGenerateRequest extends BaseCredentialGenerateRequest {
@@ -10,8 +11,9 @@ public class UserGenerateRequest extends BaseCredentialGenerateRequest {
   private UsernameValue value = new UsernameValue();
 
   @Override
+  @JsonIgnore
   public GenerationParameters getDomainGenerationParameters() {
-    return passwordGenerationParameters;
+    return getUserCredentialGenerationParameters();
   }
 
   @Override

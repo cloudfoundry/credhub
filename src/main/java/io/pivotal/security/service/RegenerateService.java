@@ -113,7 +113,7 @@ public class RegenerateService {
     final BaseCredentialGenerateRequest generateRequest = regeneratable
         .createGenerateRequest(credential);
 
-    final CredentialValue credentialValue = credentialGenerators.get(generateRequest.getType()).generateCredential(generateRequest);
+    final CredentialValue credentialValue = generateCredential(generateRequest);
 
     StringGenerationParameters generationParameters = null;
     if (generateRequest instanceof PasswordGenerateRequest) {
@@ -157,5 +157,10 @@ public class RegenerateService {
 
     results.setRegeneratedCredentials(credentialNamesSet);
     return results;
+  }
+
+  private CredentialValue generateCredential(BaseCredentialGenerateRequest generateRequest) {
+    CredentialGenerator generator = credentialGenerators.get(generateRequest.getType());
+    return generator.generateCredential(generateRequest.getDomainGenerationParameters());
   }
 }

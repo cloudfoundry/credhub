@@ -1,9 +1,8 @@
 package io.pivotal.security.generator;
 
-import io.pivotal.security.request.BaseCredentialGenerateRequest;
-import io.pivotal.security.request.SshGenerateRequest;
-import io.pivotal.security.request.SshGenerationParameters;
 import io.pivotal.security.credential.SshCredentialValue;
+import io.pivotal.security.request.GenerationParameters;
+import io.pivotal.security.request.SshGenerationParameters;
 import io.pivotal.security.util.CertificateFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -13,8 +12,7 @@ import java.security.KeyPair;
 import java.security.interfaces.RSAPublicKey;
 
 @Component
-public class SshGenerator implements
-    CredentialGenerator<SshGenerationParameters, SshCredentialValue> {
+public class SshGenerator implements CredentialGenerator<SshCredentialValue> {
 
   private LibcryptoRsaKeyPairGenerator keyGenerator;
 
@@ -24,10 +22,11 @@ public class SshGenerator implements
   }
 
   @Override
-  public SshCredentialValue generateCredential(SshGenerationParameters parameters) {
+  public SshCredentialValue generateCredential(GenerationParameters p) {
+    SshGenerationParameters params = (SshGenerationParameters) p;
     try {
-      final KeyPair keyPair = keyGenerator.generateKeyPair(parameters.getKeyLength());
-      String sshComment = parameters.getSshComment();
+      final KeyPair keyPair = keyGenerator.generateKeyPair(params.getKeyLength());
+      String sshComment = params.getSshComment();
       String sshCommentMessage = StringUtils.isEmpty(sshComment) ? "" : " " + sshComment;
 
       String publicKey =
@@ -38,12 +37,5 @@ public class SshGenerator implements
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-  }
-
-  @Override
-  public SshCredentialValue generateCredential(BaseCredentialGenerateRequest requestBody) {
-    final SshGenerationParameters sshGenerationParameters = ((SshGenerateRequest) requestBody)
-        .getGenerationParameters();
-    return this.generateCredential(sshGenerationParameters);
   }
 }
