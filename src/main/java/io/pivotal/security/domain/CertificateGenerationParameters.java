@@ -5,9 +5,6 @@ import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.request.CertificateGenerationRequestParameters;
 import io.pivotal.security.request.GenerationParameters;
 import io.pivotal.security.util.CertificateReader;
-import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.asn1.x500.X500NameBuilder;
-import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
@@ -16,7 +13,25 @@ import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.springframework.util.StringUtils;
 
-import static io.pivotal.security.request.CertificateGenerationRequestParameters.*;
+import java.util.List;
+import javax.security.auth.x500.X500Principal;
+
+import static com.google.common.collect.Lists.newArrayList;
+import static io.pivotal.security.request.CertificateGenerationRequestParameters.CLIENT_AUTH;
+import static io.pivotal.security.request.CertificateGenerationRequestParameters.CODE_SIGNING;
+import static io.pivotal.security.request.CertificateGenerationRequestParameters.CRL_SIGN;
+import static io.pivotal.security.request.CertificateGenerationRequestParameters.DATA_ENCIPHERMENT;
+import static io.pivotal.security.request.CertificateGenerationRequestParameters.DECIPHER_ONLY;
+import static io.pivotal.security.request.CertificateGenerationRequestParameters.DIGITAL_SIGNATURE;
+import static io.pivotal.security.request.CertificateGenerationRequestParameters.EMAIL_PROTECTION;
+import static io.pivotal.security.request.CertificateGenerationRequestParameters.ENCIPHER_ONLY;
+import static io.pivotal.security.request.CertificateGenerationRequestParameters.KEY_AGREEMENT;
+import static io.pivotal.security.request.CertificateGenerationRequestParameters.KEY_CERT_SIGN;
+import static io.pivotal.security.request.CertificateGenerationRequestParameters.KEY_ENCIPHERMENT;
+import static io.pivotal.security.request.CertificateGenerationRequestParameters.NON_REPUDIATION;
+import static io.pivotal.security.request.CertificateGenerationRequestParameters.SERVER_AUTH;
+import static io.pivotal.security.request.CertificateGenerationRequestParameters.TIMESTAMPING;
+import static org.apache.commons.lang3.StringUtils.join;
 
 public class CertificateGenerationParameters implements GenerationParameters{
 
@@ -26,7 +41,7 @@ public class CertificateGenerationParameters implements GenerationParameters{
   private String caName;
   private boolean isCa = false;
 
-  private X500Name x500Name;
+  private X500Principal x500Principal;
   private GeneralNames alternativeNames;
 
   private ExtendedKeyUsage extendedKeyUsage;
@@ -35,7 +50,7 @@ public class CertificateGenerationParameters implements GenerationParameters{
 
   public CertificateGenerationParameters(CertificateGenerationRequestParameters generationParameters) {
     this.keyUsage = buildKeyUsage(generationParameters);
-    this.x500Name = buildDn(generationParameters);
+    this.x500Principal = buildDn(generationParameters);
     this.alternativeNames = buildAlternativeNames(generationParameters);
     this.extendedKeyUsage = buildExtendedKeyUsage(generationParameters);
     this.caName = generationParameters.getCaName();
@@ -48,7 +63,7 @@ public class CertificateGenerationParameters implements GenerationParameters{
 
   public CertificateGenerationParameters(CertificateReader certificateReader, String caName){
     this.keyUsage = certificateReader.getKeyUsage();
-    this.x500Name = certificateReader.getSubjectName();
+    this.x500Principal = certificateReader.getSubjectName();
     this.alternativeNames = certificateReader.getAlternativeNames();
     this.extendedKeyUsage = certificateReader.getExtendedKeyUsage();
     this.caName = caName;
@@ -78,8 +93,8 @@ public class CertificateGenerationParameters implements GenerationParameters{
     return isCa;
   }
 
-  public X500Name getX500Name() {
-    return x500Name;
+  public X500Principal getX500Principal() {
+    return x500Principal;
   }
 
   public GeneralNames getAlternativeNames() {
@@ -135,33 +150,32 @@ public class CertificateGenerationParameters implements GenerationParameters{
     return new KeyUsage(bitmask);
   }
 
-  private X500Name buildDn(CertificateGenerationRequestParameters params) {
-    if (this.x500Name != null) {
-      return this.x500Name;
+  private X500Principal buildDn(CertificateGenerationRequestParameters params) {
+    if (this.x500Principal != null) {
+      return this.x500Principal;
     }
 
-    X500NameBuilder builder = new X500NameBuilder();
+    List<String> rdns = newArrayList();
 
+    if (!StringUtils.isEmpty(params.getLocality())) {
+      rdns.add("L=" + params.getLocality());
+    }
     if (!StringUtils.isEmpty(params.getOrganization())) {
-      builder.addRDN(BCStyle.O, params.getOrganization());
+      rdns.add("O=" + params.getOrganization());
     }
     if (!StringUtils.isEmpty(params.getState())) {
-      builder.addRDN(BCStyle.ST, params.getState());
+      rdns.add("ST=" + params.getState());
     }
     if (!StringUtils.isEmpty(params.getCountry())) {
-      builder.addRDN(BCStyle.C, params.getCountry());
-    }
-    if (!StringUtils.isEmpty(params.getCommonName())) {
-      builder.addRDN(BCStyle.CN, params.getCommonName());
+      rdns.add("C=" + params.getCountry());
     }
     if (!StringUtils.isEmpty(params.getOrganizationUnit())) {
-      builder.addRDN(BCStyle.OU, params.getOrganizationUnit());
+      rdns.add("OU=" + params.getOrganizationUnit());
     }
-    if (!StringUtils.isEmpty(params.getLocality())) {
-      builder.addRDN(BCStyle.L, params.getLocality());
+    if (!StringUtils.isEmpty(params.getCommonName())) {
+      rdns.add("CN=" + params.getCommonName());
     }
-
-    return builder.build();
+    return new X500Principal(join(rdns, ","));
   }
 
   private GeneralNames buildAlternativeNames(CertificateGenerationRequestParameters params) {

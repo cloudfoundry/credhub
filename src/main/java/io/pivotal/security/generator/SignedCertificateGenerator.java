@@ -3,18 +3,14 @@ package io.pivotal.security.generator;
 import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.domain.CertificateGenerationParameters;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
-import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.Extension;
-import org.bouncycastle.asn1.x509.GeneralName;
-import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
-import org.bouncycastle.cert.X509ExtensionUtils;
-import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
+import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
@@ -32,6 +28,7 @@ import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -39,6 +36,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
+import javax.security.auth.x500.X500Principal;
 
 import static io.pivotal.security.util.StringUtil.UTF_8;
 import static org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils.parseExtensionValue;
@@ -48,7 +46,7 @@ public class SignedCertificateGenerator {
 
   private final DateTimeProvider timeProvider;
   private final RandomSerialNumberGenerator serialNumberGenerator;
-  private final X509ExtensionUtils x509ExtensionUtils;
+  private final JcaX509ExtensionUtils jcaX509ExtensionUtils;
   private JcaContentSignerBuilder jcaContentSignerBuilder;
   private JcaX509CertificateConverter jcaX509CertificateConverter;
   private final BouncyCastleProvider jceProvider;
@@ -57,23 +55,29 @@ public class SignedCertificateGenerator {
   SignedCertificateGenerator(
       DateTimeProvider timeProvider,
       RandomSerialNumberGenerator serialNumberGenerator,
-      X509ExtensionUtils x509ExtensionUtils,
       JcaContentSignerBuilder jcaContentSignerBuilder,
       JcaX509CertificateConverter jcaX509CertificateConverter,
       BouncyCastleProvider jceProvider
   ) throws Exception {
     this.timeProvider = timeProvider;
     this.serialNumberGenerator = serialNumberGenerator;
-    this.x509ExtensionUtils = x509ExtensionUtils;
+    this.jcaX509ExtensionUtils = new JcaX509ExtensionUtils();
     this.jcaContentSignerBuilder = jcaContentSignerBuilder;
     this.jcaX509CertificateConverter = jcaX509CertificateConverter;
     this.jceProvider = jceProvider;
   }
 
   X509Certificate getSelfSigned(KeyPair keyPair, CertificateGenerationParameters params) throws Exception {
-    SubjectKeyIdentifier keyIdentifier = getSubjectKeyIdentifierFromKeyInfo(getKeyInfoFromKeyPair(keyPair));
+    SubjectKeyIdentifier keyIdentifier = getSubjectKeyIdentifierFromKeyInfo(keyPair.getPublic());
 
-    return getSignedByIssuer(params.getX500Name(), keyPair.getPrivate(), keyPair, params, keyIdentifier, null);
+    return getSignedByIssuer(
+        null,
+        keyPair.getPrivate(),
+        params.getX500Principal(),
+        keyIdentifier,
+        keyPair,
+        params
+    );
   }
 
   X509Certificate getSignedByIssuer(
@@ -81,43 +85,40 @@ public class SignedCertificateGenerator {
       CertificateGenerationParameters params,
       CertificateCredentialValue ca
   ) throws Exception {
-
+    X509Certificate caCertificate = getX509Certificate(ca);
     return getSignedByIssuer(
-        getSubjectNameFrom(ca),
-        getPrivateKeyFrom(ca),
-        keyPair,
-        params,
-        getSubjectKeyIdentifierFrom(ca),
-        getSerialNumberFrom(ca)
+        caCertificate, getPrivateKeyFrom(ca.getPrivateKey()), getSubjectNameFrom(caCertificate),
+        getSubjectKeyIdentifierFrom(caCertificate), keyPair,
+        params
     );
   }
 
   private X509Certificate getSignedByIssuer(
-      X500Name issuerDn,
+      X509Certificate issuerCertificate,
       PrivateKey issuerKey,
-      KeyPair keyPair,
-      CertificateGenerationParameters params,
+      X500Principal issuerDn,
       SubjectKeyIdentifier caSubjectKeyIdentifier,
-      BigInteger caSerialNumber) throws Exception {
+      KeyPair keyPair,
+      CertificateGenerationParameters params) throws Exception {
     Instant now = timeProvider.getNow().toInstant();
-    SubjectPublicKeyInfo publicKeyInfo = getKeyInfoFromKeyPair(keyPair);
 
     BigInteger certificateSerialNumber = serialNumberGenerator.generate();
-    caSerialNumber = caSerialNumber != null ? caSerialNumber : certificateSerialNumber;
+    BigInteger caSerialNumber =
+        issuerCertificate != null ? issuerCertificate.getSerialNumber() : certificateSerialNumber;
 
-    final X509v3CertificateBuilder certificateBuilder = new X509v3CertificateBuilder(
+    final JcaX509v3CertificateBuilder certificateBuilder = new JcaX509v3CertificateBuilder(
         issuerDn,
         certificateSerialNumber,
         Date.from(now),
         Date.from(now.plus(Duration.ofDays(params.getDuration()))),
-        params.getX500Name(),
-        publicKeyInfo
+        params.getX500Principal(),
+        keyPair.getPublic()
     );
 
     certificateBuilder.addExtension(
         Extension.subjectKeyIdentifier,
         false,
-        getSubjectKeyIdentifierFromKeyInfo(publicKeyInfo));
+        getSubjectKeyIdentifierFromKeyInfo(keyPair.getPublic()));
     if (params.getAlternativeNames() != null) {
       certificateBuilder
           .addExtension(Extension.subjectAlternativeName, false, params.getAlternativeNames());
@@ -133,11 +134,9 @@ public class SignedCertificateGenerator {
     }
 
     if (caSubjectKeyIdentifier.getKeyIdentifier() != null) {
-      AuthorityKeyIdentifier authorityKeyIdentifier =
-          new AuthorityKeyIdentifier(
-              caSubjectKeyIdentifier.getKeyIdentifier(),
-              new GeneralNames(new GeneralName(issuerDn)),
-              caSerialNumber);
+      PublicKey issuerPublicKey = issuerCertificate != null ? issuerCertificate.getPublicKey() : keyPair.getPublic();
+      AuthorityKeyIdentifier authorityKeyIdentifier = jcaX509ExtensionUtils
+          .createAuthorityKeyIdentifier(issuerPublicKey, issuerDn, caSerialNumber);
 
       certificateBuilder
           .addExtension(Extension.authorityKeyIdentifier, false, authorityKeyIdentifier);
@@ -153,41 +152,27 @@ public class SignedCertificateGenerator {
     return jcaX509CertificateConverter.getCertificate(holder);
   }
 
-  private SubjectKeyIdentifier getSubjectKeyIdentifierFromKeyInfo(SubjectPublicKeyInfo publicKeyInfo) {
-    return x509ExtensionUtils.createSubjectKeyIdentifier(publicKeyInfo);
+  private SubjectKeyIdentifier getSubjectKeyIdentifierFromKeyInfo(PublicKey publicKey) {
+    return jcaX509ExtensionUtils.createSubjectKeyIdentifier(publicKey);
   }
 
-  private SubjectPublicKeyInfo getKeyInfoFromKeyPair(KeyPair keyPair) {
-    return SubjectPublicKeyInfo
-        .getInstance(keyPair.getPublic().getEncoded());
+  private X500Principal getSubjectNameFrom(X509Certificate certificate) throws IOException, CertificateException {
+    return new X500Principal(certificate.getSubjectDN().getName());
   }
 
-  private X500Name getSubjectNameFrom(CertificateCredentialValue ca) throws IOException, CertificateException {
-    X509Certificate certificate = getX509Certificate(ca);
-    return new X500Name(certificate.getSubjectDN().getName());
-  }
-
-  private PrivateKey getPrivateKeyFrom(CertificateCredentialValue ca)
+  private PrivateKey getPrivateKeyFrom(String privateKeyPem)
       throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
-    PEMParser pemParser = new PEMParser(new StringReader(ca.getPrivateKey()));
+    PEMParser pemParser = new PEMParser(new StringReader(privateKeyPem));
     PEMKeyPair pemKeyPair = (PEMKeyPair) pemParser.readObject();
     PrivateKeyInfo privateKeyInfo = pemKeyPair.getPrivateKeyInfo();
     return new JcaPEMKeyConverter().getPrivateKey(privateKeyInfo);
   }
 
-  private SubjectKeyIdentifier getSubjectKeyIdentifierFrom(CertificateCredentialValue ca) throws Exception {
-    X509Certificate certificate = getX509Certificate(ca);
-
+  private SubjectKeyIdentifier getSubjectKeyIdentifierFrom(X509Certificate certificate) throws Exception {
     byte[] extensionValue = certificate.getExtensionValue(Extension.subjectKeyIdentifier.getId());
     return extensionValue == null ?
         new SubjectKeyIdentifier(null) :
         SubjectKeyIdentifier.getInstance(parseExtensionValue(extensionValue));
-  }
-
-  private BigInteger getSerialNumberFrom(CertificateCredentialValue ca) throws Exception {
-    X509Certificate certificate = getX509Certificate(ca);
-
-    return certificate.getSerialNumber();
   }
 
   private X509Certificate getX509Certificate(CertificateCredentialValue ca) throws CertificateException {

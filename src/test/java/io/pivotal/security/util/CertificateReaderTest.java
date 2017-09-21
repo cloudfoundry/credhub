@@ -69,7 +69,7 @@ public class CertificateReaderTest {
   @Test
   public void givenASelfSignedCertificate_setsCertificateFieldsCorrectly() {
     final String distinguishedName =
-        "O=test-org,ST=Jupiter,C=MilkyWay,CN=test-common-name,OU=test-org-unit,L=Europa";
+        "O=test-org, ST=Jupiter, C=MilkyWay, CN=test-common-name, OU=test-org-unit, L=Europa";
     final GeneralNames generalNames = new GeneralNames(
         new GeneralName(GeneralName.dNSName, "SolarSystem"));
 
@@ -92,7 +92,7 @@ public class CertificateReaderTest {
     CertificateReader certificateReader = new CertificateReader(SIMPLE_SELF_SIGNED_TEST_CERT);
 
     assertThat(certificateReader.getSubjectName().toString(), equalTo(
-        "CN=test.example.com,OU=app:b67446e5-b2b0-4648-a0d0-772d3d399dcb,L=exampletown")
+        "CN=test.example.com, OU=app:b67446e5-b2b0-4648-a0d0-772d3d399dcb, L=exampletown")
     );
     assertThat(certificateReader.getKeyLength(), equalTo(2048));
     assertThat(certificateReader.getAlternativeNames(), equalTo(null));
@@ -134,7 +134,7 @@ public class CertificateReaderTest {
   @Test
   public void returnsParametersCorrectly() {
     final String distinguishedName =
-        "O=test-org,ST=Jupiter,C=MilkyWay,CN=test-common-name,OU=test-org-unit,L=Europa";
+        "O=test-org, ST=Jupiter, C=MilkyWay, CN=test-common-name, OU=test-org-unit, L=Europa";
     final GeneralNames generalNames = new GeneralNames(
         new GeneralName(GeneralName.dNSName, "SolarSystem"));
 

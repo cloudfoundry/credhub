@@ -1,6 +1,5 @@
 package io.pivotal.security.util;
 
-import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
 import org.bouncycastle.asn1.x509.Extension;
@@ -18,6 +17,7 @@ import java.security.SignatureException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
+import javax.security.auth.x500.X500Principal;
 
 import static io.pivotal.security.util.StringUtil.UTF_8;
 import static java.lang.Math.toIntExact;
@@ -27,7 +27,7 @@ public class CertificateReader {
 
   private final X509Certificate certificate;
   private final X509CertificateHolder certificateHolder;
-  private X500Name subjectName;
+  private X500Principal subjectName;
 
   public CertificateReader(String pemString) {
     try {
@@ -63,8 +63,8 @@ public class CertificateReader {
     return ExtendedKeyUsage.fromExtensions(certificateHolder.getExtensions());
   }
 
-  public X500Name getSubjectName() {
-    subjectName = new X500Name(certificate.getSubjectDN().getName());
+  public X500Principal getSubjectName() {
+    subjectName = new X500Principal(certificate.getSubjectDN().getName());
     return subjectName;
   }
 
@@ -79,7 +79,7 @@ public class CertificateReader {
   public boolean isSelfSigned() {
     final String issuerName = certificate.getIssuerDN().getName();
 
-    if (!issuerName.equals(getSubjectName().toString())) {
+    if (!issuerName.equals(certificate.getSubjectDN().toString())) {
       return false;
     } else {
       try {
