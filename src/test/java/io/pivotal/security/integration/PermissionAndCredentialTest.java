@@ -39,8 +39,8 @@ import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIA
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
+import static io.pivotal.security.util.CertificateReader.getCertificate;
 import static io.pivotal.security.util.CertificateStringConstants.SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT;
-import static io.pivotal.security.util.X509TestUtil.cert;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -162,7 +162,7 @@ public class PermissionAndCredentialTest {
         "}";
 
     final ResultActions result = mockMvc.perform(put("/api/v1/data")
-        .with(x509(cert(SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT)))
+        .with(x509(getCertificate(SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT)))
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content(requestBody));
@@ -181,7 +181,7 @@ public class PermissionAndCredentialTest {
         "}";
 
     final ResultActions result = mockMvc.perform(post("/api/v1/data")
-        .with(x509(cert(SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT)))
+        .with(x509(getCertificate(SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT)))
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content(requestBody));

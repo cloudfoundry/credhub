@@ -22,8 +22,8 @@ import org.springframework.web.context.WebApplicationContext;
 
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
+import static io.pivotal.security.util.CertificateReader.getCertificate;
 import static io.pivotal.security.util.CertificateStringConstants.SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT;
-import static io.pivotal.security.util.X509TestUtil.cert;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.x509;
@@ -76,7 +76,7 @@ public class CredentialAclEnforcementTest {
   public void GET_byCredentialName_whenTheUserDoesntHavePermissionToReadCredential_returns404()
       throws Exception {
     final MockHttpServletRequestBuilder get = get("/api/v1/data?name=" + CREDENTIAL_NAME)
-        .with(x509(cert(SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT)));
+        .with(x509(getCertificate(SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT)));
     String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
     mockMvc.perform(get)
         .andDo(print())
@@ -100,7 +100,7 @@ public class CredentialAclEnforcementTest {
   public void GET_byId_whenTheUserDoesntHavePermissionToReadCredential_returns404()
       throws Exception {
     final MockHttpServletRequestBuilder get = get("/api/v1/data/" + uuid)
-        .with(x509(cert(SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT)));
+        .with(x509(getCertificate(SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT)));
     String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
     mockMvc.perform(get)
         .andDo(print())

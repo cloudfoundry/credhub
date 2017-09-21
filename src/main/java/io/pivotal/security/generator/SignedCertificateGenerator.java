@@ -2,7 +2,6 @@ package io.pivotal.security.generator;
 
 import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.domain.CertificateGenerationParameters;
-import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.Extension;
@@ -12,9 +11,6 @@ import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.openssl.PEMKeyPair;
-import org.bouncycastle.openssl.PEMParser;
-import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,16 +19,13 @@ import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.StringReader;
 import java.math.BigInteger;
 import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.security.spec.InvalidKeySpecException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
@@ -83,11 +76,12 @@ public class SignedCertificateGenerator {
   X509Certificate getSignedByIssuer(
       KeyPair keyPair,
       CertificateGenerationParameters params,
-      CertificateCredentialValue ca
-  ) throws Exception {
-    X509Certificate caCertificate = getX509Certificate(ca);
+      X509Certificate caCertificate,
+      PrivateKey caPrivateKey) throws Exception {
     return getSignedByIssuer(
-        caCertificate, getPrivateKeyFrom(ca.getPrivateKey()), getSubjectNameFrom(caCertificate),
+        caCertificate,
+        caPrivateKey,
+        getSubjectNameFrom(caCertificate),
         getSubjectKeyIdentifierFrom(caCertificate), keyPair,
         params
     );
@@ -158,14 +152,6 @@ public class SignedCertificateGenerator {
 
   private X500Principal getSubjectNameFrom(X509Certificate certificate) throws IOException, CertificateException {
     return new X500Principal(certificate.getSubjectDN().getName());
-  }
-
-  private PrivateKey getPrivateKeyFrom(String privateKeyPem)
-      throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
-    PEMParser pemParser = new PEMParser(new StringReader(privateKeyPem));
-    PEMKeyPair pemKeyPair = (PEMKeyPair) pemParser.readObject();
-    PrivateKeyInfo privateKeyInfo = pemKeyPair.getPrivateKeyInfo();
-    return new JcaPEMKeyConverter().getPrivateKey(privateKeyInfo);
   }
 
   private SubjectKeyIdentifier getSubjectKeyIdentifierFrom(X509Certificate certificate) throws Exception {

@@ -31,12 +31,12 @@ import java.util.UUID;
 
 import static io.pivotal.security.util.AuthConstants.INVALID_SCOPE_KEY_JWT;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
+import static io.pivotal.security.util.CertificateReader.getCertificate;
 import static io.pivotal.security.util.CertificateStringConstants.SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT;
 import static io.pivotal.security.util.CertificateStringConstants.SELF_SIGNED_CERT_WITH_NO_CLIENT_AUTH_EXT;
 import static io.pivotal.security.util.CertificateStringConstants.TEST_CERT_WITHOUT_ORGANIZATION_UNIT;
 import static io.pivotal.security.util.CertificateStringConstants.TEST_CERT_WITH_INVALID_ORGANIZATION_UNIT_PREFIX;
 import static io.pivotal.security.util.CertificateStringConstants.TEST_CERT_WITH_INVALID_UUID_IN_ORGANIZATION_UNIT;
-import static io.pivotal.security.util.X509TestUtil.cert;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.any;
@@ -153,7 +153,7 @@ public class AuthConfigurationTest {
     setupDataEndpointMocks();
 
     final MockHttpServletRequestBuilder post = post(dataApiPath)
-        .with(x509(cert(SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT)))
+        .with(x509(getCertificate(SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT)))
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON)
         .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
@@ -172,7 +172,7 @@ public class AuthConfigurationTest {
     setupDataEndpointMocks();
 
     final MockHttpServletRequestBuilder post = post(dataApiPath)
-        .with(x509(cert(SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT)))
+        .with(x509(getCertificate(SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT)))
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON)
         .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
@@ -196,7 +196,7 @@ public class AuthConfigurationTest {
     setupDataEndpointMocks();
 
     final MockHttpServletRequestBuilder post = post(dataApiPath)
-        .with(x509(cert(TEST_CERT_WITH_INVALID_UUID_IN_ORGANIZATION_UNIT)))
+        .with(x509(getCertificate(TEST_CERT_WITH_INVALID_UUID_IN_ORGANIZATION_UNIT)))
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON)
         .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
@@ -215,7 +215,7 @@ public class AuthConfigurationTest {
     setupDataEndpointMocks();
 
     final MockHttpServletRequestBuilder post = post(dataApiPath)
-        .with(x509(cert(TEST_CERT_WITH_INVALID_ORGANIZATION_UNIT_PREFIX)))
+        .with(x509(getCertificate(TEST_CERT_WITH_INVALID_ORGANIZATION_UNIT_PREFIX)))
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON)
         .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
@@ -233,7 +233,7 @@ public class AuthConfigurationTest {
     setupDataEndpointMocks();
 
     final MockHttpServletRequestBuilder post = post(dataApiPath)
-        .with(x509(cert(TEST_CERT_WITHOUT_ORGANIZATION_UNIT)))
+        .with(x509(getCertificate(TEST_CERT_WITHOUT_ORGANIZATION_UNIT)))
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON)
         .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
@@ -253,13 +253,10 @@ public class AuthConfigurationTest {
     setupDataEndpointMocks();
 
     final MockHttpServletRequestBuilder post = post(dataApiPath)
-        .with(x509(cert(SELF_SIGNED_CERT_WITH_NO_CLIENT_AUTH_EXT)))
+        .with(x509(getCertificate(SELF_SIGNED_CERT_WITH_NO_CLIENT_AUTH_EXT)))
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON)
         .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
-
-    final String expectedError = "The provided authentication mechanism does not provide a "
-        + "valid identity. Please contact your system administrator.";
 
     mockMvc.perform(post)
         .andDo(org.springframework.test.web.servlet.result.MockMvcResultHandlers.print())

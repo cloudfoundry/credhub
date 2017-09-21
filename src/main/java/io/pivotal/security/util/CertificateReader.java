@@ -13,7 +13,9 @@ import org.bouncycastle.openssl.PEMParser;
 import java.io.ByteArrayInputStream;
 import java.io.StringReader;
 import java.security.InvalidKeyException;
+import java.security.NoSuchProviderException;
 import java.security.SignatureException;
+import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
@@ -39,6 +41,13 @@ public class CertificateReader {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public static X509Certificate getCertificate(String pemString)
+      throws CertificateException, NoSuchProviderException {
+    return (X509Certificate) CertificateFactory
+        .getInstance("X.509", BouncyCastleProvider.PROVIDER_NAME)
+        .generateCertificate(new ByteArrayInputStream(pemString.getBytes(UTF_8)));
   }
 
   public boolean isValid() {

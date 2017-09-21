@@ -4,6 +4,8 @@ import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.data.CertificateAuthorityService;
 import io.pivotal.security.domain.CertificateGenerationParameters;
 import io.pivotal.security.request.GenerationParameters;
+import io.pivotal.security.util.CertificateReader;
+import io.pivotal.security.util.PrivateKeyReader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -48,7 +50,13 @@ public class CertificateGenerator implements CredentialGenerator<CertificateCred
             .findMostRecent(params.getCaName());
         caCertificate = ca.getCertificate();
         caName = params.getCaName();
-        cert = signedCertificateGenerator.getSignedByIssuer(keyPair, params, ca);
+
+        cert = signedCertificateGenerator.getSignedByIssuer(
+            keyPair,
+            params,
+            CertificateReader.getCertificate(caCertificate),
+            PrivateKeyReader.getPrivateKey(ca.getPrivateKey())
+          );
       }
 
       return new CertificateCredentialValue(caCertificate, pemOf(cert), privatePem, caName);

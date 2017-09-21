@@ -57,6 +57,7 @@ public class CertificateGeneratorTest {
   private X500Name rootCaDn;
   private X500Name signeeDn;
   private KeyPair rootCaKeyPair;
+  private X509Certificate rootCaX509Certificate;
   private CertificateCredentialValue rootCa;
 
   private CertificateGenerationParameters inputParameters;
@@ -79,7 +80,7 @@ public class CertificateGeneratorTest {
     rootCaKeyPair = fakeKeyPairGenerator.generate();
     X509CertificateHolder caX509CertHolder = makeCert(rootCaKeyPair, rootCaKeyPair.getPrivate(),
         rootCaDn, rootCaDn, true);
-    X509Certificate rootCaX509Certificate = new JcaX509CertificateConverter()
+    rootCaX509Certificate = new JcaX509CertificateConverter()
         .setProvider(BouncyCastleProvider.PROVIDER_NAME).getCertificate(caX509CertHolder);
     rootCa = new CertificateCredentialValue(
         null,
@@ -131,7 +132,7 @@ public class CertificateGeneratorTest {
 
     when(
         signedCertificateGenerator
-            .getSignedByIssuer(childCertificateKeyPair, params, rootCa)
+            .getSignedByIssuer(childCertificateKeyPair, params, rootCaX509Certificate, rootCaKeyPair.getPrivate())
     ).thenReturn(childX509Certificate);
 
     CertificateCredentialValue certificate = subject.generateCredential(
@@ -174,7 +175,7 @@ public class CertificateGeneratorTest {
 
     when(
         signedCertificateGenerator
-            .getSignedByIssuer(childCertificateKeyPair, inputParameters, intermediateCa)
+            .getSignedByIssuer(childCertificateKeyPair, inputParameters, intermediateX509Certificate, intermediateCaKeyPair.getPrivate())
     ).thenReturn(childX509Certificate);
 
 
@@ -266,7 +267,7 @@ public class CertificateGeneratorTest {
 
     when(
         signedCertificateGenerator
-            .getSignedByIssuer(childCertificateKeyPair, inputParameters, rootCa)
+            .getSignedByIssuer(childCertificateKeyPair, inputParameters, rootCaX509Certificate, rootCaKeyPair.getPrivate())
     ).thenReturn(childX509Certificate);
   }
 
