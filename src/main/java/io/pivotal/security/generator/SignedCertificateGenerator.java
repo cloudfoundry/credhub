@@ -1,6 +1,5 @@
 package io.pivotal.security.generator;
 
-import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.domain.CertificateGenerationParameters;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
@@ -17,21 +16,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.auditing.DateTimeProvider;
 import org.springframework.stereotype.Component;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 import javax.security.auth.x500.X500Principal;
 
-import static io.pivotal.security.util.StringUtil.UTF_8;
 import static org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils.parseExtensionValue;
 
 @Component
@@ -159,11 +155,5 @@ public class SignedCertificateGenerator {
     return extensionValue == null ?
         new SubjectKeyIdentifier(null) :
         SubjectKeyIdentifier.getInstance(parseExtensionValue(extensionValue));
-  }
-
-  private X509Certificate getX509Certificate(CertificateCredentialValue ca) throws CertificateException {
-    return (X509Certificate) CertificateFactory
-        .getInstance("X.509", jceProvider)
-        .generateCertificate(new ByteArrayInputStream(ca.getCertificate().getBytes(UTF_8)));
   }
 }
