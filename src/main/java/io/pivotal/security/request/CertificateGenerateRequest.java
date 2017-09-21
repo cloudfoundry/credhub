@@ -2,40 +2,44 @@ package io.pivotal.security.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.pivotal.security.domain.CertificateParameters;
+import io.pivotal.security.domain.CertificateGenerationParameters;
 
 public class CertificateGenerateRequest extends BaseCredentialGenerateRequest {
 
   @JsonProperty("parameters")
-  private CertificateGenerationParameters generationParameters;
+  private CertificateGenerationRequestParameters requestGenerationParameters;
 
   @JsonIgnore
-  private CertificateParameters certificateParameters;
+  private CertificateGenerationParameters certificateGenerationParameters;
 
-  public CertificateGenerationParameters getGenerationParameters() {
-    if (generationParameters == null) {
-      generationParameters = new CertificateGenerationParameters();
+  public CertificateGenerationRequestParameters getGenerationRequestParameters() {
+    if (requestGenerationParameters == null) {
+      requestGenerationParameters = new CertificateGenerationRequestParameters();
     }
-    return generationParameters;
+    return requestGenerationParameters;
   }
 
-  public void setGenerationParameters(CertificateGenerationParameters generationParameters) {
-    this.generationParameters = generationParameters;
+  @SuppressWarnings("unused")
+  public void setRequestGenerationParameters(CertificateGenerationRequestParameters requestGenerationParameters) {
+    this.requestGenerationParameters = requestGenerationParameters;
+  }
+
+  @Override
+  public GenerationParameters getDomainGenerationParameters() {
+    if (certificateGenerationParameters == null) {
+      certificateGenerationParameters = new CertificateGenerationParameters(requestGenerationParameters);
+    }
+    return certificateGenerationParameters;
   }
 
   @Override
   public void validate() {
     super.validate();
 
-    getGenerationParameters().validate();
+    getGenerationRequestParameters().validate();
   }
 
-  public CertificateParameters getCertificateParameters() {
-    return certificateParameters;
-  }
-
-  public void setCertificateParameters(
-      CertificateParameters certificateParameters) {
-    this.certificateParameters = certificateParameters;
+  public void setCertificateGenerationParameters(CertificateGenerationParameters certificateGenerationParameters) {
+    this.certificateGenerationParameters = certificateGenerationParameters;
   }
 }

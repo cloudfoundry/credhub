@@ -11,4 +11,9 @@ public class DefaultCredentialGenerateRequest extends BaseCredentialGenerateRequ
   public void setParameters(Object parameters) {
     this.parameters = parameters;
   }
+
+  @Override
+  public GenerationParameters getDomainGenerationParameters() {
+    return null;
+  }
 }

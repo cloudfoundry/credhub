@@ -12,7 +12,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT;
 
 @JsonInclude(NON_DEFAULT)
-public class StringGenerationParameters {
+public class StringGenerationParameters implements GenerationParameters{
 
   // Value Parameters
   @JsonProperty(access = Access.WRITE_ONLY)

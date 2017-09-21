@@ -19,6 +19,11 @@ public class PasswordGenerateRequest extends BaseCredentialGenerateRequest {
   }
 
   @Override
+  public GenerationParameters getDomainGenerationParameters() {
+    return generationParameters;
+  }
+
+  @Override
   public void validate() {
     super.validate();
 

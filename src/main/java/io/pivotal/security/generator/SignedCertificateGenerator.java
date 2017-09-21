@@ -1,7 +1,7 @@
 package io.pivotal.security.generator;
 
 import io.pivotal.security.credential.CertificateCredentialValue;
-import io.pivotal.security.domain.CertificateParameters;
+import io.pivotal.security.domain.CertificateGenerationParameters;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
@@ -70,7 +70,7 @@ public class SignedCertificateGenerator {
     this.jceProvider = jceProvider;
   }
 
-  X509Certificate getSelfSigned(KeyPair keyPair, CertificateParameters params) throws Exception {
+  X509Certificate getSelfSigned(KeyPair keyPair, CertificateGenerationParameters params) throws Exception {
     SubjectKeyIdentifier keyIdentifier = getSubjectKeyIdentifierFromKeyInfo(getKeyInfoFromKeyPair(keyPair));
 
     return getSignedByIssuer(params.getX500Name(), keyPair.getPrivate(), keyPair, params, keyIdentifier, null);
@@ -78,7 +78,7 @@ public class SignedCertificateGenerator {
 
   X509Certificate getSignedByIssuer(
       KeyPair keyPair,
-      CertificateParameters params,
+      CertificateGenerationParameters params,
       CertificateCredentialValue ca
   ) throws Exception {
 
@@ -96,7 +96,7 @@ public class SignedCertificateGenerator {
       X500Name issuerDn,
       PrivateKey issuerKey,
       KeyPair keyPair,
-      CertificateParameters params,
+      CertificateGenerationParameters params,
       SubjectKeyIdentifier caSubjectKeyIdentifier,
       BigInteger caSerialNumber) throws Exception {
     Instant now = timeProvider.getNow().toInstant();

@@ -2,10 +2,8 @@ package io.pivotal.security.generator;
 
 import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.data.CertificateAuthorityService;
-import io.pivotal.security.domain.CertificateParameters;
+import io.pivotal.security.domain.CertificateGenerationParameters;
 import io.pivotal.security.request.BaseCredentialGenerateRequest;
-import io.pivotal.security.request.CertificateGenerateRequest;
-import io.pivotal.security.request.CertificateGenerationParameters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +14,7 @@ import static io.pivotal.security.util.CertificateFormatter.pemOf;
 
 @Component
 public class CertificateGenerator implements
-    CredentialGenerator<CertificateParameters, CertificateCredentialValue> {
+    CredentialGenerator<CertificateGenerationParameters, CertificateCredentialValue> {
 
   private final LibcryptoRsaKeyPairGenerator keyGenerator;
   private final SignedCertificateGenerator signedCertificateGenerator;
@@ -35,7 +33,7 @@ public class CertificateGenerator implements
   }
 
   @Override
-  public CertificateCredentialValue generateCredential(CertificateParameters params) {
+  public CertificateCredentialValue generateCredential(CertificateGenerationParameters params) {
     try {
       KeyPair keyPair = keyGenerator.generateKeyPair(params.getKeyLength());
       X509Certificate cert;
@@ -61,13 +59,6 @@ public class CertificateGenerator implements
 
   @Override
   public CertificateCredentialValue generateCredential(BaseCredentialGenerateRequest requestBody) {
-    final CertificateGenerateRequest certificateRequest = (CertificateGenerateRequest) requestBody;
-    if (certificateRequest.getCertificateParameters() == null) {
-      final CertificateGenerationParameters certificateGenerationParameters = certificateRequest
-          .getGenerationParameters();
-      return this.generateCredential(new CertificateParameters(certificateGenerationParameters));
-    } else {
-      return this.generateCredential(certificateRequest.getCertificateParameters());
-    }
+    return generateCredential((CertificateGenerationParameters) requestBody.getDomainGenerationParameters());
   }
 }

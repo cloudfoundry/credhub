@@ -1,7 +1,7 @@
 package io.pivotal.security.service.regeneratables;
 
 import io.pivotal.security.domain.CertificateCredential;
-import io.pivotal.security.domain.CertificateParameters;
+import io.pivotal.security.domain.CertificateGenerationParameters;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.request.BaseCredentialGenerateRequest;
@@ -22,13 +22,13 @@ public class CertificateCredentialRegeneratable implements Regeneratable {
           "error.cannot_regenerate_non_generated_certificate");
     }
 
-    CertificateParameters certificateParameters = new CertificateParameters(reader,
+    CertificateGenerationParameters certificateGenerationParameters = new CertificateGenerationParameters(reader,
         certificateCredential.getCaName());
 
     CertificateGenerateRequest generateRequest = new CertificateGenerateRequest();
     generateRequest.setName(certificateCredential.getName());
     generateRequest.setType(certificateCredential.getCredentialType());
-    generateRequest.setCertificateParameters(certificateParameters);
+    generateRequest.setCertificateGenerationParameters(certificateGenerationParameters);
     generateRequest.setOverwrite(true);
     return generateRequest;
   }

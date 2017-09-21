@@ -10,6 +10,11 @@ public class UserGenerateRequest extends BaseCredentialGenerateRequest {
   private UsernameValue value = new UsernameValue();
 
   @Override
+  public GenerationParameters getDomainGenerationParameters() {
+    return passwordGenerationParameters;
+  }
+
+  @Override
   public void validate() {
     super.validate();
   }

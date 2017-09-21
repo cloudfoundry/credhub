@@ -15,7 +15,7 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 @JsonInclude(NON_DEFAULT)
-public class CertificateGenerationParameters {
+public class CertificateGenerationRequestParameters {
 
   public static final String SERVER_AUTH = "server_auth";
   public static final String CLIENT_AUTH = "client_auth";
@@ -66,35 +66,35 @@ public class CertificateGenerationParameters {
   private int TEN_YEARS = 3650;
   private int ONE_DAY = 1;
 
-  public CertificateGenerationParameters() {
+  public CertificateGenerationRequestParameters() {
   }
 
-  public CertificateGenerationParameters setCommonName(String commonName) {
+  public CertificateGenerationRequestParameters setCommonName(String commonName) {
     this.commonName = commonName;
     return this;
   }
 
-  public CertificateGenerationParameters setOrganization(String organization) {
+  public CertificateGenerationRequestParameters setOrganization(String organization) {
     this.organization = organization;
     return this;
   }
 
-  public CertificateGenerationParameters setOrganizationUnit(String organizationUnit) {
+  public CertificateGenerationRequestParameters setOrganizationUnit(String organizationUnit) {
     this.organizationUnit = organizationUnit;
     return this;
   }
 
-  public CertificateGenerationParameters setLocality(String locality) {
+  public CertificateGenerationRequestParameters setLocality(String locality) {
     this.locality = locality;
     return this;
   }
 
-  public CertificateGenerationParameters setState(String state) {
+  public CertificateGenerationRequestParameters setState(String state) {
     this.state = state;
     return this;
   }
 
-  public CertificateGenerationParameters setCountry(String country) {
+  public CertificateGenerationRequestParameters setCountry(String country) {
     this.country = country;
     return this;
   }
@@ -103,7 +103,7 @@ public class CertificateGenerationParameters {
     return keyLength;
   }
 
-  public CertificateGenerationParameters setKeyLength(int keyLength) {
+  public CertificateGenerationRequestParameters setKeyLength(int keyLength) {
     this.keyLength = keyLength;
     return this;
   }
@@ -112,7 +112,7 @@ public class CertificateGenerationParameters {
     return duration;
   }
 
-  public CertificateGenerationParameters setDuration(int duration) {
+  public CertificateGenerationRequestParameters setDuration(int duration) {
     this.duration = duration;
     return this;
   }
@@ -123,7 +123,7 @@ public class CertificateGenerationParameters {
   }
 
   @JsonProperty("ca")
-  public CertificateGenerationParameters setCaName(String caName) {
+  public CertificateGenerationRequestParameters setCaName(String caName) {
     this.caName = caName;
     return this;
   }
@@ -133,7 +133,7 @@ public class CertificateGenerationParameters {
   }
 
   @JsonProperty("self_sign")
-  public CertificateGenerationParameters setSelfSigned(boolean selfSigned) {
+  public CertificateGenerationRequestParameters setSelfSigned(boolean selfSigned) {
     this.selfSigned = selfSigned;
     return this;
   }
@@ -142,7 +142,7 @@ public class CertificateGenerationParameters {
     return isCa;
   }
 
-  public CertificateGenerationParameters setIsCa(boolean isCa) {
+  public CertificateGenerationRequestParameters setIsCa(boolean isCa) {
     this.isCa = isCa;
     return this;
   }
@@ -151,7 +151,7 @@ public class CertificateGenerationParameters {
     return alternativeNames == null ? null : alternativeNames.clone();
   }
 
-  public CertificateGenerationParameters setAlternativeNames(String[] alternativeNames) {
+  public CertificateGenerationRequestParameters setAlternativeNames(String[] alternativeNames) {
     this.alternativeNames = alternativeNames == null ? null : alternativeNames.clone();
     return this;
   }
@@ -160,7 +160,7 @@ public class CertificateGenerationParameters {
     return extendedKeyUsage == null ? null: extendedKeyUsage.clone();
   }
 
-  public CertificateGenerationParameters setExtendedKeyUsage(String[] extendedKeyUsage) {
+  public CertificateGenerationRequestParameters setExtendedKeyUsage(String[] extendedKeyUsage) {
     this.extendedKeyUsage = extendedKeyUsage == null ? null: extendedKeyUsage.clone();
     return this;
   }
@@ -169,7 +169,7 @@ public class CertificateGenerationParameters {
     return keyUsage == null ? null : keyUsage.clone();
   }
 
-  public CertificateGenerationParameters setKeyUsage(String[] keyUsage) {
+  public CertificateGenerationRequestParameters setKeyUsage(String[] keyUsage) {
     this.keyUsage = keyUsage == null ? null : keyUsage.clone();
     return this;
   }

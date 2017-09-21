@@ -6,7 +6,7 @@ import io.pivotal.security.credential.RsaCredentialValue;
 import io.pivotal.security.credential.SshCredentialValue;
 import io.pivotal.security.credential.StringCredentialValue;
 import io.pivotal.security.data.CredentialDataService;
-import io.pivotal.security.domain.CertificateParameters;
+import io.pivotal.security.domain.CertificateGenerationParameters;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.PasswordCredential;
@@ -113,7 +113,7 @@ public class CredentialsControllerGenerateTest {
     when(rsaGenerator.generateCredential(any(RsaGenerationParameters.class)))
         .thenReturn(new RsaCredentialValue(PUBLIC_KEY, PRIVATE_KEY));
 
-    when(certificateGenerator.generateCredential(any(CertificateParameters.class)))
+    when(certificateGenerator.generateCredential(any(CertificateGenerationParameters.class)))
         .thenReturn(new CertificateCredentialValue("ca_cert", CERT, PRIVATE_KEY, null));
   }
 

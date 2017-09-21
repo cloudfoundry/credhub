@@ -2,8 +2,8 @@ package io.pivotal.security.generator;
 
 import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.data.CertificateAuthorityService;
-import io.pivotal.security.domain.CertificateParameters;
-import io.pivotal.security.request.CertificateGenerationParameters;
+import io.pivotal.security.domain.CertificateGenerationParameters;
+import io.pivotal.security.request.CertificateGenerationRequestParameters;
 import io.pivotal.security.util.CertificateFormatter;
 import io.pivotal.security.util.CurrentTimeProvider;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -59,8 +59,8 @@ public class CertificateGeneratorTest {
   private KeyPair rootCaKeyPair;
   private CertificateCredentialValue rootCa;
 
-  private CertificateParameters inputParameters;
-  private CertificateGenerationParameters generationParameters;
+  private CertificateGenerationParameters inputParameters;
+  private CertificateGenerationRequestParameters generationParameters;
   private X509Certificate childX509Certificate;
 
   @Before
@@ -87,14 +87,14 @@ public class CertificateGeneratorTest {
         CertificateFormatter.pemOf(rootCaKeyPair.getPrivate()),
         null);
 
-    generationParameters = new CertificateGenerationParameters();
+    generationParameters = new CertificateGenerationRequestParameters();
     generationParameters.setOrganization("foo");
     generationParameters.setState("bar");
     generationParameters.setCaName("my-ca-name");
     generationParameters.setCountry("mars");
     generationParameters.setDuration(365);
 
-    inputParameters = new CertificateParameters(generationParameters);
+    inputParameters = new CertificateGenerationParameters(generationParameters);
   }
 
   @Test
@@ -127,7 +127,7 @@ public class CertificateGeneratorTest {
     setupMocksForRootCA(childCertificateKeyPair);
 
     generationParameters.setKeyLength(4096);
-    CertificateParameters params = new CertificateParameters(generationParameters);
+    CertificateGenerationParameters params = new CertificateGenerationParameters(generationParameters);
 
     when(
         signedCertificateGenerator
@@ -199,7 +199,7 @@ public class CertificateGeneratorTest {
 
     generationParameters.setCaName(null);
     generationParameters.setSelfSigned(true);
-    inputParameters = new CertificateParameters(generationParameters);
+    inputParameters = new CertificateGenerationParameters(generationParameters);
     when(keyGenerator.generateKeyPair(anyInt())).thenReturn(rootCaKeyPair);
     when(signedCertificateGenerator.getSelfSigned(rootCaKeyPair, inputParameters))
         .thenReturn(certificate);

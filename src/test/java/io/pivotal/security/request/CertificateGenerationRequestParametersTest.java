@@ -11,13 +11,13 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
 @RunWith(JUnit4.class)
-public class CertificateGenerationParametersTest {
+public class CertificateGenerationRequestParametersTest {
 
-  private CertificateGenerationParameters subject;
+  private CertificateGenerationRequestParameters subject;
 
   @Before
   public void beforeEach() {
-    subject = new CertificateGenerationParameters();
+    subject = new CertificateGenerationRequestParameters();
     subject.setCommonName("test");
     subject.setSelfSigned(true);
   }

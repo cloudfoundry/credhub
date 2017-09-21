@@ -2,7 +2,8 @@ package io.pivotal.security.domain;
 
 import com.google.common.net.InetAddresses;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.request.CertificateGenerationParameters;
+import io.pivotal.security.request.CertificateGenerationRequestParameters;
+import io.pivotal.security.request.GenerationParameters;
 import io.pivotal.security.util.CertificateReader;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
@@ -15,9 +16,9 @@ import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.springframework.util.StringUtils;
 
-import static io.pivotal.security.request.CertificateGenerationParameters.*;
+import static io.pivotal.security.request.CertificateGenerationRequestParameters.*;
 
-public class CertificateParameters {
+public class CertificateGenerationParameters implements GenerationParameters{
 
   private int keyLength;
   private int duration;
@@ -32,7 +33,7 @@ public class CertificateParameters {
 
   private KeyUsage keyUsage;
 
-  public CertificateParameters(CertificateGenerationParameters generationParameters) {
+  public CertificateGenerationParameters(CertificateGenerationRequestParameters generationParameters) {
     this.keyUsage = buildKeyUsage(generationParameters);
     this.x500Name = buildDn(generationParameters);
     this.alternativeNames = buildAlternativeNames(generationParameters);
@@ -45,7 +46,7 @@ public class CertificateParameters {
   }
 
 
-  public CertificateParameters(CertificateReader certificateReader, String caName){
+  public CertificateGenerationParameters(CertificateReader certificateReader, String caName){
     this.keyUsage = certificateReader.getKeyUsage();
     this.x500Name = certificateReader.getSubjectName();
     this.alternativeNames = certificateReader.getAlternativeNames();
@@ -93,7 +94,7 @@ public class CertificateParameters {
     return keyUsage;
   }
 
-  private KeyUsage buildKeyUsage(CertificateGenerationParameters keyUsageList) {
+  private KeyUsage buildKeyUsage(CertificateGenerationRequestParameters keyUsageList) {
     if (keyUsageList.getKeyUsage() == null){
       return null;
     }
@@ -134,7 +135,7 @@ public class CertificateParameters {
     return new KeyUsage(bitmask);
   }
 
-  private X500Name buildDn(CertificateGenerationParameters params) {
+  private X500Name buildDn(CertificateGenerationRequestParameters params) {
     if (this.x500Name != null) {
       return this.x500Name;
     }
@@ -163,7 +164,7 @@ public class CertificateParameters {
     return builder.build();
   }
 
-  private GeneralNames buildAlternativeNames(CertificateGenerationParameters params) {
+  private GeneralNames buildAlternativeNames(CertificateGenerationRequestParameters params) {
     String[] alternativeNamesList = params.getAlternativeNames();
     if (alternativeNamesList == null){
       return null;
@@ -180,7 +181,7 @@ public class CertificateParameters {
     return builder.build();
   }
 
-  private ExtendedKeyUsage buildExtendedKeyUsage(CertificateGenerationParameters params) {
+  private ExtendedKeyUsage buildExtendedKeyUsage(CertificateGenerationRequestParameters params) {
     String[] extendedKeyUsageList = params.getExtendedKeyUsage();
     if (extendedKeyUsageList == null){
       return null;
