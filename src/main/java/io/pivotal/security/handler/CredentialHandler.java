@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.function.Function;
 
 import static io.pivotal.security.request.PermissionOperation.DELETE;
 import static io.pivotal.security.request.PermissionOperation.READ;
@@ -88,29 +87,16 @@ public class CredentialHandler {
     return credential;
   }
 
-  public Credential getCredentialVersion(
-      String credentialUuid, UserContext userContext,
-      List<EventAuditRecordParameters> auditRecordParametersList
-  ) {
-    return getVersionByIdentifier(
-        credentialUuid,
-        userContext,
-        auditRecordParametersList,
-        credentialDataService::findByUuid
-    );
-  }
-
-  private Credential getVersionByIdentifier(
-      String identifier,
+  public Credential getCredentialVersionByUUID(
+      String credentialUUID,
       UserContext userContext,
-      List<EventAuditRecordParameters> auditRecordParametersList,
-      Function<String, Credential> getFn
+      List<EventAuditRecordParameters> auditRecordParametersList
   ) {
     EventAuditRecordParameters eventAuditRecordParameters = new EventAuditRecordParameters(
         AuditingOperationCode.CREDENTIAL_ACCESS
     );
 
-    Credential credential = getFn.apply(identifier);
+    Credential credential = credentialDataService.findByUuid(credentialUUID);
 
     if (credential != null) {
       eventAuditRecordParameters.setCredentialName(credential.getName());

@@ -154,7 +154,7 @@ public class CredentialsController {
       RequestUuid requestUuid,
       UserContext userContext) {
     return eventAuditLogService.auditEvents(requestUuid, userContext, eventAuditRecordParametersList -> {
-      Credential credentialVersion = credentialHandler.getCredentialVersion(id, userContext, eventAuditRecordParametersList);
+      Credential credentialVersion = credentialHandler.getCredentialVersionByUUID(id, userContext, eventAuditRecordParametersList);
       return CredentialView.fromEntity(credentialVersion);
     });
   }
