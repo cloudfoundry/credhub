@@ -150,6 +150,41 @@ public class CredentialsControllerGetTest {
         .andExpect(
             jsonPath("$.error").value(expectedError1)
         );
+
+    auditingHelper.verifyAuditing(
+        CREDENTIAL_ACCESS,
+        "/invalid_name",
+        UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
+        "/api/v1/data",
+        404
+    );
+  }
+
+  @Test
+  public void gettingACredential_byName_whenTheCredentialDoesNotExist_andCurrentIsSetToTrue_returnsNotFound() throws Exception {
+    doReturn(true)
+        .when(permissionService)
+        .hasPermission(any(String.class), any(String.class), eq(READ));
+
+    final MockHttpServletRequestBuilder get1 = get("/api/v1/data?name=invalid_name&current=true")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON);
+
+    String expectedError1 = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
+    mockMvc.perform(get1)
+        .andExpect(status().isNotFound())
+        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+        .andExpect(
+            jsonPath("$.error").value(expectedError1)
+        );
+
+    auditingHelper.verifyAuditing(
+        CREDENTIAL_ACCESS,
+        "/invalid_name",
+        UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
+        "/api/v1/data",
+        404
+    );
   }
 
   @Test
@@ -189,7 +224,7 @@ public class CredentialsControllerGetTest {
 
     doReturn(CREDENTIAL_VALUE).when(encryptor).decrypt(any());
 
-    doReturn(credential).when(credentialDataService).findMostRecent(CREDENTIAL_NAME);
+    doReturn(Arrays.asList(credential)).when(credentialDataService).findNByName(CREDENTIAL_NAME, 1);
 
     mockMvc.perform(get("/api/v1/data?current=true&name=" + CREDENTIAL_NAME)
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -198,7 +233,7 @@ public class CredentialsControllerGetTest {
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
         .andExpect(jsonPath("$.data", hasSize(1)));
 
-    verify(credentialDataService).findMostRecent(CREDENTIAL_NAME);
+    verify(credentialDataService).findNByName(CREDENTIAL_NAME, 1);
   }
 
   @Test

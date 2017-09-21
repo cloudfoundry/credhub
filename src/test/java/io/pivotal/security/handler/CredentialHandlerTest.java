@@ -15,6 +15,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -224,8 +225,8 @@ public class CredentialHandlerTest {
 
   @Test
   public void getMostRecentCredentialVersion_whenTheCredentialExists_returnsDataResponse() {
-    when(credentialDataService.findMostRecent(CREDENTIAL_NAME))
-        .thenReturn(version1);
+    when(credentialDataService.findNByName(CREDENTIAL_NAME, 1))
+        .thenReturn(Arrays.asList(version1));
     when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(true);
 
@@ -241,8 +242,8 @@ public class CredentialHandlerTest {
   @Test
   public void getMostRecentCredentialVersion_whenTheCredentialExists_setsCorrectAuditingParameters() {
     List<EventAuditRecordParameters> auditRecordParametersList = newArrayList();
-    when(credentialDataService.findMostRecent(CREDENTIAL_NAME))
-        .thenReturn(version1);
+    when(credentialDataService.findNByName(CREDENTIAL_NAME, 1))
+        .thenReturn(Arrays.asList(version1));
     when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(true);
 

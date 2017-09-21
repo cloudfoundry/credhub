@@ -27,6 +27,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.Arrays;
+
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.helper.JsonTestHelper.parse;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
@@ -83,12 +85,12 @@ public class InterpolationControllerTest {
     when(jsonCredential1.getName()).thenReturn("/cred2");
 
     doReturn(
-        jsonCredential
-    ).when(mockCredentialDataService).findMostRecent("/cred1");
+        Arrays.asList(jsonCredential)
+    ).when(mockCredentialDataService).findNByName("/cred1", 1);
 
     doReturn(
-        jsonCredential1
-    ).when(mockCredentialDataService).findMostRecent("/cred2");
+        Arrays.asList(jsonCredential1)
+    ).when(mockCredentialDataService).findNByName("/cred2", 1);
 
     mockMvc.perform(makeValidPostRequest()).andDo(print()).andExpect(status().isOk())
         .andExpect(jsonPath("$.pp-config-server[0].credentials.secret1")
@@ -108,12 +110,12 @@ public class InterpolationControllerTest {
     when(jsonCredential1.getName()).thenReturn("/cred2");
 
     doReturn(
-        jsonCredential
-    ).when(mockCredentialDataService).findMostRecent("/cred1");
+        Arrays.asList(jsonCredential)
+    ).when(mockCredentialDataService).findNByName("/cred1", 1);
 
     doReturn(
-        jsonCredential1
-    ).when(mockCredentialDataService).findMostRecent("/cred2");
+        Arrays.asList(jsonCredential1)
+    ).when(mockCredentialDataService).findNByName("/cred2", 1);
 
     mockMvc.perform(makeValidPostRequest()).andExpect(status().isOk());
 
@@ -132,8 +134,8 @@ public class InterpolationControllerTest {
     doReturn("something").when(valueCredential).getValue();
 
     doReturn(
-        valueCredential
-    ).when(mockCredentialDataService).findMostRecent("/cred1");
+        Arrays.asList(valueCredential)
+    ).when(mockCredentialDataService).findNByName("/cred1", 1);
 
     String expectedMessage = "The credential '/cred1' is not the expected type. A credhub-ref credential must be of type 'JSON'.";
 

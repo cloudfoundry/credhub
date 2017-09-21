@@ -83,12 +83,8 @@ public class CredentialHandler {
       UserContext userContext,
       List<EventAuditRecordParameters> auditRecordParametersList
   ) {
-    Credential credential = getVersionByIdentifier(
-        credentialName,
-        userContext,
-        auditRecordParametersList,
-        credentialDataService::findMostRecent
-    );
+    Credential credential = getNCredentialVersions(credentialName, 1, userContext, auditRecordParametersList).get(0);
+
     return credential;
   }
 
