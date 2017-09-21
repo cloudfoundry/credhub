@@ -1,35 +1,11 @@
 package io.pivotal.security.generator;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static com.greghaskins.spectrum.Spectrum.let;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.data.CertificateAuthorityService;
 import io.pivotal.security.domain.CertificateParameters;
 import io.pivotal.security.request.CertificateGenerationParameters;
 import io.pivotal.security.util.CertificateFormatter;
 import io.pivotal.security.util.CurrentTimeProvider;
-import java.math.BigInteger;
-import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.cert.X509Certificate;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Date;
-import java.util.function.Supplier;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.Extension;
@@ -42,9 +18,32 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
-@RunWith(Spectrum.class)
+import java.math.BigInteger;
+import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Date;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+@RunWith(JUnit4.class)
 public class CertificateGeneratorTest {
 
   private CertificateGenerator subject;
@@ -70,175 +69,154 @@ public class CertificateGeneratorTest {
   private CertificateGenerationParameters generationParameters;
   private X509Certificate childX509Certificate;
 
-  {
-    beforeEach(() -> {
-      keyGenerator = mock(LibcryptoRsaKeyPairGenerator.class);
-      signedCertificateGenerator = mock(SignedCertificateGenerator.class);
-      certificateAuthorityService = mock(CertificateAuthorityService.class);
+  @Before
+  public void beforeEach() throws Exception {
+    keyGenerator = mock(LibcryptoRsaKeyPairGenerator.class);
+    signedCertificateGenerator = mock(SignedCertificateGenerator.class);
+    certificateAuthorityService = mock(CertificateAuthorityService.class);
 
-      subject = new CertificateGenerator(keyGenerator, signedCertificateGenerator,
-          certificateAuthorityService);
+    subject = new CertificateGenerator(keyGenerator, signedCertificateGenerator,
+        certificateAuthorityService);
 
-      fakeKeyPairGenerator = new FakeKeyPairGenerator();
+    fakeKeyPairGenerator = new FakeKeyPairGenerator();
 
-      rootCaDn = new X500Name("O=foo,ST=bar,C=root");
-      signeeDn = new X500Name("O=foo,ST=bar,C=mars");
-      rootCaKeyPair = fakeKeyPairGenerator.generate();
-      X509CertificateHolder caX509CertHolder = makeCert(rootCaKeyPair, rootCaKeyPair.getPrivate(),
-          rootCaDn, rootCaDn, true);
-      rootCaX509Certificate = new JcaX509CertificateConverter()
-          .setProvider(BouncyCastleProvider.PROVIDER_NAME).getCertificate(caX509CertHolder);
-      rootCa = new CertificateCredentialValue(
-          null,
-          CertificateFormatter.pemOf(rootCaX509Certificate),
-          CertificateFormatter.pemOf(rootCaKeyPair.getPrivate()),
-          null);
+    rootCaDn = new X500Name("O=foo,ST=bar,C=root");
+    signeeDn = new X500Name("O=foo,ST=bar,C=mars");
+    rootCaKeyPair = fakeKeyPairGenerator.generate();
+    X509CertificateHolder caX509CertHolder = makeCert(rootCaKeyPair, rootCaKeyPair.getPrivate(),
+        rootCaDn, rootCaDn, true);
+    rootCaX509Certificate = new JcaX509CertificateConverter()
+        .setProvider(BouncyCastleProvider.PROVIDER_NAME).getCertificate(caX509CertHolder);
+    rootCa = new CertificateCredentialValue(
+        null,
+        CertificateFormatter.pemOf(rootCaX509Certificate),
+        CertificateFormatter.pemOf(rootCaKeyPair.getPrivate()),
+        null);
 
-      generationParameters = new CertificateGenerationParameters();
-      generationParameters.setOrganization("foo");
-      generationParameters.setState("bar");
-      generationParameters.setCaName("my-ca-name");
-      generationParameters.setCountry("mars");
-      generationParameters.setDuration(365);
+    generationParameters = new CertificateGenerationParameters();
+    generationParameters.setOrganization("foo");
+    generationParameters.setState("bar");
+    generationParameters.setCaName("my-ca-name");
+    generationParameters.setCountry("mars");
+    generationParameters.setDuration(365);
 
-      inputParameters = new CertificateParameters(generationParameters);
-    });
+    inputParameters = new CertificateParameters(generationParameters);
+  }
 
-    describe("when CA exists", () -> {
-      final Supplier<KeyPair> childCertificateKeyPair = let(() -> fakeKeyPairGenerator.generate());
+  @Test
+  public void whenCAExists_andItIsARootCA_aValidChildCertificateIsGenerated() throws Exception {
+    final KeyPair childCertificateKeyPair = setupKeyPair();
+    setupMocksForRootCA(childCertificateKeyPair);
 
-      describe("and it is a root CA", () -> {
-        beforeEach(() -> {
-          when(certificateAuthorityService.findMostRecent("my-ca-name")).thenReturn(rootCa);
+    CertificateCredentialValue certificateSignedByRoot = subject
+        .generateCredential(inputParameters);
 
-          when(keyGenerator.generateKeyPair(anyInt())).thenReturn(childCertificateKeyPair.get());
+    assertThat(certificateSignedByRoot.getCa(),
+        equalTo(rootCa.getCertificate()));
 
-          X509CertificateHolder childCertificateHolder = generateChildCertificateSignedByCa(
-              childCertificateKeyPair.get(),
-              rootCaKeyPair.getPrivate(),
-              rootCaDn
-          );
+    assertThat(certificateSignedByRoot.getPrivateKey(),
+        equalTo(CertificateFormatter.pemOf(childCertificateKeyPair.getPrivate())));
 
-          childX509Certificate = new JcaX509CertificateConverter()
-              .setProvider(BouncyCastleProvider.PROVIDER_NAME)
-              .getCertificate(childCertificateHolder);
+    assertThat(certificateSignedByRoot.getCertificate(),
+        equalTo(CertificateFormatter.pemOf(childX509Certificate)));
 
-          when(
-              signedCertificateGenerator
-                  .getSignedByIssuer(childCertificateKeyPair.get(), inputParameters, rootCa)
-          ).thenReturn(childX509Certificate);
-        });
+    assertThat(certificateSignedByRoot.getCaName(), equalTo("my-ca-name"));
 
-        it("generates a valid childCertificate", () -> {
-          CertificateCredentialValue certificateSignedByRoot = subject.generateCredential(inputParameters);
+    verify(keyGenerator, times(1)).generateKeyPair(2048);
 
-          assertThat(certificateSignedByRoot.getCa(),
-              equalTo(rootCa.getCertificate()));
+  }
 
-          assertThat(certificateSignedByRoot.getPrivateKey(),
-              equalTo(CertificateFormatter.pemOf(childCertificateKeyPair.get().getPrivate())));
+  @Test
+  public void whenCAExists_andItIsARootCA_aValidChildCertificateIsGeneratedWithTheProvidedKeyLength()
+      throws Exception {
+    final KeyPair childCertificateKeyPair = setupKeyPair();
+    setupMocksForRootCA(childCertificateKeyPair);
 
-          assertThat(certificateSignedByRoot.getCertificate(),
-              equalTo(CertificateFormatter.pemOf(childX509Certificate)));
+    generationParameters.setKeyLength(4096);
+    CertificateParameters params = new CertificateParameters(generationParameters);
 
-          assertThat(certificateSignedByRoot.getCaName(), equalTo("my-ca-name"));
+    when(
+        signedCertificateGenerator
+            .getSignedByIssuer(childCertificateKeyPair, params, rootCa)
+    ).thenReturn(childX509Certificate);
 
-          verify(keyGenerator, times(1)).generateKeyPair(2048);
-        });
+    CertificateCredentialValue certificate = subject.generateCredential(
+        params);
 
-        it("generates a valid childCertificate when a key length is given", () -> {
-          generationParameters.setKeyLength(4096);
-          CertificateParameters params = new CertificateParameters(generationParameters);
+    assertThat(certificate, notNullValue());
+    verify(keyGenerator, times(1)).generateKeyPair(4096);
+  }
 
-          when(
-              signedCertificateGenerator
-                  .getSignedByIssuer(childCertificateKeyPair.get(), params, rootCa)
-          ).thenReturn(childX509Certificate);
+  @Test
+  public void whenCAExists_andItIsAIntermediateCA_aValidChildCertificateIsGenerated()
+      throws Exception {
+    final KeyPair childCertificateKeyPair = setupKeyPair();
 
-          CertificateCredentialValue certificate = subject.generateCredential(
-              params);
+    intermediateCaDn = new X500Name("O=foo,ST=bar,C=intermediate");
+    intermediateCaKeyPair = fakeKeyPairGenerator.generate();
+    X509CertificateHolder intermediateCaCertificateHolder = makeCert(intermediateCaKeyPair,
+        rootCaKeyPair.getPrivate(), rootCaDn, intermediateCaDn, true);
+    intermediateX509Certificate = new JcaX509CertificateConverter()
+        .setProvider(BouncyCastleProvider.PROVIDER_NAME)
+        .getCertificate(intermediateCaCertificateHolder);
+    intermediateCa = new CertificateCredentialValue(
+        null,
+        CertificateFormatter.pemOf(intermediateX509Certificate),
+        CertificateFormatter.pemOf(intermediateCaKeyPair.getPrivate()),
+        null);
+    when(certificateAuthorityService.findMostRecent("my-ca-name")).thenReturn(intermediateCa);
 
-          assertThat(certificate, notNullValue());
-          verify(keyGenerator, times(1)).generateKeyPair(4096);
-        });
-      });
+    when(keyGenerator.generateKeyPair(anyInt())).thenReturn(childCertificateKeyPair);
 
-      describe("and it is an intermediate CA", () -> {
-        beforeEach(() -> {
-          intermediateCaDn = new X500Name("O=foo,ST=bar,C=intermediate");
-          intermediateCaKeyPair = fakeKeyPairGenerator.generate();
-          X509CertificateHolder intermediateCaCertificateHolder = makeCert(intermediateCaKeyPair,
-              rootCaKeyPair.getPrivate(), rootCaDn, intermediateCaDn, true);
-          intermediateX509Certificate = new JcaX509CertificateConverter()
-              .setProvider(BouncyCastleProvider.PROVIDER_NAME)
-              .getCertificate(intermediateCaCertificateHolder);
-          intermediateCa = new CertificateCredentialValue(
-              null,
-              CertificateFormatter.pemOf(intermediateX509Certificate),
-              CertificateFormatter.pemOf(intermediateCaKeyPair.getPrivate()),
-              null);
-          when(certificateAuthorityService.findMostRecent("my-ca-name")).thenReturn(intermediateCa);
+    X509CertificateHolder childCertificateHolder = generateChildCertificateSignedByCa(
+        childCertificateKeyPair,
+        intermediateCaKeyPair.getPrivate(),
+        intermediateCaDn
+    );
 
-          when(keyGenerator.generateKeyPair(anyInt())).thenReturn(childCertificateKeyPair.get());
+    childX509Certificate = new JcaX509CertificateConverter()
+        .setProvider(BouncyCastleProvider.PROVIDER_NAME)
+        .getCertificate(childCertificateHolder);
 
-          X509CertificateHolder childCertificateHolder = generateChildCertificateSignedByCa(
-              childCertificateKeyPair.get(),
-              intermediateCaKeyPair.getPrivate(),
-              intermediateCaDn
-          );
+    when(
+        signedCertificateGenerator
+            .getSignedByIssuer(childCertificateKeyPair, inputParameters, intermediateCa)
+    ).thenReturn(childX509Certificate);
 
-          childX509Certificate = new JcaX509CertificateConverter()
-              .setProvider(BouncyCastleProvider.PROVIDER_NAME)
-              .getCertificate(childCertificateHolder);
 
-          when(
-              signedCertificateGenerator
-                  .getSignedByIssuer(childCertificateKeyPair.get(), inputParameters, intermediateCa)
-          ).thenReturn(childX509Certificate);
-        });
+    CertificateCredentialValue certificateSignedByIntermediate = subject.generateCredential(inputParameters);
 
-        it("generates a valid childCertificate", () -> {
-          CertificateCredentialValue certificateSignedByIntermediate = subject.generateCredential(inputParameters);
+    assertThat(certificateSignedByIntermediate.getCa(),
+        equalTo(intermediateCa.getCertificate()));
 
-          assertThat(certificateSignedByIntermediate.getCa(),
-              equalTo(intermediateCa.getCertificate()));
+    assertThat(certificateSignedByIntermediate.getPrivateKey(),
+        equalTo(CertificateFormatter.pemOf(childCertificateKeyPair.getPrivate())));
 
-          assertThat(certificateSignedByIntermediate.getPrivateKey(),
-              equalTo(CertificateFormatter.pemOf(childCertificateKeyPair.get().getPrivate())));
+    assertThat(certificateSignedByIntermediate.getCertificate(),
+        equalTo(CertificateFormatter.pemOf(childX509Certificate)));
 
-          assertThat(certificateSignedByIntermediate.getCertificate(),
-              equalTo(CertificateFormatter.pemOf(childX509Certificate)));
+    verify(keyGenerator, times(1)).generateKeyPair(2048);
+  }
 
-          verify(keyGenerator, times(1)).generateKeyPair(2048);
-        });
-      });
-    });
+  @Test
+  public void whenSelfSignIsTrue_itGeneratesAValidSelfSignedCertificate() throws Exception {
+    final X509Certificate certificate = new JcaX509CertificateConverter().setProvider(BouncyCastleProvider.PROVIDER_NAME)
+            .getCertificate(generateX509SelfSignedCert());
 
-    describe("when the selfSign flag is set", () -> {
-      final Supplier<X509Certificate> certificate = let(() ->
-          new JcaX509CertificateConverter().setProvider(BouncyCastleProvider.PROVIDER_NAME)
-              .getCertificate(generateX509SelfSignedCert())
-      );
+    generationParameters.setCaName(null);
+    generationParameters.setSelfSigned(true);
+    inputParameters = new CertificateParameters(generationParameters);
+    when(keyGenerator.generateKeyPair(anyInt())).thenReturn(rootCaKeyPair);
+    when(signedCertificateGenerator.getSelfSigned(rootCaKeyPair, inputParameters))
+        .thenReturn(certificate);
 
-      beforeEach(() -> {
-        generationParameters.setCaName(null);
-        generationParameters.setSelfSigned(true);
-        inputParameters = new CertificateParameters(generationParameters);
-        when(keyGenerator.generateKeyPair(anyInt())).thenReturn(rootCaKeyPair);
-        when(signedCertificateGenerator.getSelfSigned(rootCaKeyPair, inputParameters))
-            .thenReturn(certificate.get());
-      });
-
-      it("generates a valid self-signed certificate", () -> {
-        CertificateCredentialValue certificateCredential = subject.generateCredential(inputParameters);
-        assertThat(certificateCredential.getPrivateKey(),
-            equalTo(CertificateFormatter.pemOf(rootCaKeyPair.getPrivate())));
-        assertThat(certificateCredential.getCertificate(),
-            equalTo(CertificateFormatter.pemOf(certificate.get())));
-        assertThat(certificateCredential.getCa(), nullValue());
-        verify(signedCertificateGenerator, times(1)).getSelfSigned(rootCaKeyPair, inputParameters);
-      });
-    });
+    CertificateCredentialValue certificateCredential = subject.generateCredential(inputParameters);
+    assertThat(certificateCredential.getPrivateKey(),
+        equalTo(CertificateFormatter.pemOf(rootCaKeyPair.getPrivate())));
+    assertThat(certificateCredential.getCertificate(),
+        equalTo(CertificateFormatter.pemOf(certificate)));
+    assertThat(certificateCredential.getCa(), nullValue());
+    verify(signedCertificateGenerator, times(1)).getSelfSigned(rootCaKeyPair, inputParameters);
   }
 
   private X509CertificateHolder generateX509SelfSignedCert() throws Exception {
@@ -277,5 +255,28 @@ public class CertificateGeneratorTest {
     x509v3CertificateBuilder
         .addExtension(Extension.basicConstraints, true, new BasicConstraints(isCa));
     return x509v3CertificateBuilder.build(contentSigner);
+  }
+
+  private void setupMocksForRootCA(KeyPair childCertificateKeyPair) throws Exception {
+    when(certificateAuthorityService.findMostRecent("my-ca-name")).thenReturn(rootCa);
+    when(keyGenerator.generateKeyPair(anyInt())).thenReturn(childCertificateKeyPair);
+    X509CertificateHolder childCertificateHolder = generateChildCertificateSignedByCa(
+        childCertificateKeyPair,
+        rootCaKeyPair.getPrivate(),
+        rootCaDn
+    );
+
+    childX509Certificate = new JcaX509CertificateConverter()
+        .setProvider(BouncyCastleProvider.PROVIDER_NAME)
+        .getCertificate(childCertificateHolder);
+
+    when(
+        signedCertificateGenerator
+            .getSignedByIssuer(childCertificateKeyPair, inputParameters, rootCa)
+    ).thenReturn(childX509Certificate);
+  }
+
+  private KeyPair setupKeyPair() throws NoSuchProviderException, NoSuchAlgorithmException {
+    return fakeKeyPairGenerator.generate();
   }
 }
