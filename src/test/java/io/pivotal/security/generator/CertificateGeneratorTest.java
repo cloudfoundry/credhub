@@ -58,12 +58,6 @@ public class CertificateGeneratorTest {
   private X500Name signeeDn;
   private KeyPair rootCaKeyPair;
   private CertificateCredentialValue rootCa;
-  private X509Certificate rootCaX509Certificate;
-
-  private X500Name intermediateCaDn;
-  private KeyPair intermediateCaKeyPair;
-  private CertificateCredentialValue intermediateCa;
-  private X509Certificate intermediateX509Certificate;
 
   private CertificateParameters inputParameters;
   private CertificateGenerationParameters generationParameters;
@@ -85,7 +79,7 @@ public class CertificateGeneratorTest {
     rootCaKeyPair = fakeKeyPairGenerator.generate();
     X509CertificateHolder caX509CertHolder = makeCert(rootCaKeyPair, rootCaKeyPair.getPrivate(),
         rootCaDn, rootCaDn, true);
-    rootCaX509Certificate = new JcaX509CertificateConverter()
+    X509Certificate rootCaX509Certificate = new JcaX509CertificateConverter()
         .setProvider(BouncyCastleProvider.PROVIDER_NAME).getCertificate(caX509CertHolder);
     rootCa = new CertificateCredentialValue(
         null,
@@ -152,14 +146,14 @@ public class CertificateGeneratorTest {
       throws Exception {
     final KeyPair childCertificateKeyPair = setupKeyPair();
 
-    intermediateCaDn = new X500Name("O=foo,ST=bar,C=intermediate");
-    intermediateCaKeyPair = fakeKeyPairGenerator.generate();
+    X500Name intermediateCaDn = new X500Name("O=foo,ST=bar,C=intermediate");
+    KeyPair intermediateCaKeyPair = fakeKeyPairGenerator.generate();
     X509CertificateHolder intermediateCaCertificateHolder = makeCert(intermediateCaKeyPair,
         rootCaKeyPair.getPrivate(), rootCaDn, intermediateCaDn, true);
-    intermediateX509Certificate = new JcaX509CertificateConverter()
+    X509Certificate intermediateX509Certificate = new JcaX509CertificateConverter()
         .setProvider(BouncyCastleProvider.PROVIDER_NAME)
         .getCertificate(intermediateCaCertificateHolder);
-    intermediateCa = new CertificateCredentialValue(
+    CertificateCredentialValue intermediateCa = new CertificateCredentialValue(
         null,
         CertificateFormatter.pemOf(intermediateX509Certificate),
         CertificateFormatter.pemOf(intermediateCaKeyPair.getPrivate()),
