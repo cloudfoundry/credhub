@@ -8,7 +8,7 @@ import javax.validation.constraints.NotNull;
 @SuppressWarnings("unused")
 public class RegenerateRequest {
 
-  @NotNull
+  @NotNull(message = "error.missing_name")
   private String name;
 
   public RegenerateRequest() {
