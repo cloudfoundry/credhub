@@ -14,9 +14,7 @@ public class CertificateCredential extends Credential<CertificateCredential> {
   public CertificateCredential(CertificateCredentialData delegate) {
     super(delegate);
     this.delegate = delegate;
-    if (StringUtils.isNotEmpty(delegate.getCertificate())) {
-      this.parsedCertificate = new CertificateReader(delegate.getCertificate());
-    }
+    this.setCertificate(delegate.getCertificate());
   }
 
   public CertificateCredential(String name) {
@@ -34,9 +32,7 @@ public class CertificateCredential extends Credential<CertificateCredential> {
     this.setCertificate(certificate.getCertificate());
     this.setPrivateKey(certificate.getPrivateKey());
     this.setCaName(certificate.getCaName());
-    if (StringUtils.isNotEmpty(delegate.getCertificate())) {
-      this.parsedCertificate = new CertificateReader(certificate.getCertificate());
-    }
+    this.setCertificate(certificate.getCertificate());
   }
 
   public CertificateReader getParsedCertificate() {
@@ -58,6 +54,9 @@ public class CertificateCredential extends Credential<CertificateCredential> {
 
   public CertificateCredential setCertificate(String certificate) {
     delegate.setCertificate(certificate);
+    if (StringUtils.isNotEmpty(delegate.getCertificate())) {
+      parsedCertificate = new CertificateReader(certificate);
+    }
     return this;
   }
 

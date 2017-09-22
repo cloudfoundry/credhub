@@ -101,18 +101,16 @@ public class RegenerateHandler {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
-    Regeneratable regeneratable = regeneratableTypeProducers
-        .getOrDefault(credential.getCredentialType(), NotRegeneratable::new)
-        .get();
-
     if (credential instanceof PasswordCredential && ((PasswordCredential) credential).getGenerationParameters() == null) {
       auditRecordParameters.add(new EventAuditRecordParameters(CREDENTIAL_UPDATE, credentialName));
     }
 
-    final BaseCredentialGenerateRequest generateRequest = regeneratable
-        .createGenerateRequest(credential);
+    Regeneratable regeneratable = regeneratableTypeProducers
+        .getOrDefault(credential.getCredentialType(), NotRegeneratable::new)
+        .get();
+    BaseCredentialGenerateRequest generateRequest = regeneratable.createGenerateRequest(credential);
 
-    final CredentialValue credentialValue = generateCredential(generateRequest);
+    CredentialValue credentialValue = generateCredential(generateRequest, userContext);
 
     StringGenerationParameters generationParameters = null;
     if (generateRequest instanceof PasswordGenerateRequest) {
@@ -158,8 +156,8 @@ public class RegenerateHandler {
     return results;
   }
 
-  private CredentialValue generateCredential(BaseCredentialGenerateRequest generateRequest) {
+  private CredentialValue generateCredential(BaseCredentialGenerateRequest generateRequest, UserContext userContext) {
     CredentialGenerator generator = credentialGenerators.get(generateRequest.getType());
-    return generator.generateCredential(generateRequest.getDomainGenerationParameters());
+    return generator.generateCredential(generateRequest.getDomainGenerationParameters(), userContext);
   }
 }

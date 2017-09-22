@@ -1,5 +1,6 @@
 package io.pivotal.security.generator;
 
+import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.credential.CryptSaltFactory;
 import io.pivotal.security.credential.UserCredentialValue;
 import io.pivotal.security.request.GenerationParameters;
@@ -25,15 +26,14 @@ public class UserGenerator implements CredentialGenerator<UserCredentialValue> {
     this.cryptSaltFactory = cryptSaltFactory;
   }
 
-  public UserCredentialValue generateCredential(GenerationParameters p) {
+  public UserCredentialValue generateCredential(GenerationParameters p, UserContext userContext) {
     StringGenerationParameters params = (StringGenerationParameters) p;
     if (params.getUsername() == null) {
       String username = usernameGenerator.generateCredential().getStringCredential();
       params.setUsername(username);
     }
 
-    final String password = passwordGenerator.generateCredential(params)
-        .getStringCredential();
+    String password = passwordGenerator.generateCredential(params, userContext).getStringCredential();
 
     return new UserCredentialValue(params.getUsername(), password,
         cryptSaltFactory.generateSalt(password));

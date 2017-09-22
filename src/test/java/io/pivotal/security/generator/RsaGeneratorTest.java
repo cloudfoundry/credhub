@@ -1,5 +1,14 @@
 package io.pivotal.security.generator;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.auth.UserContext;
+import io.pivotal.security.credential.RsaCredentialValue;
+import io.pivotal.security.request.RsaGenerationParameters;
+import io.pivotal.security.util.CertificateFormatter;
+import org.junit.runner.RunWith;
+
+import java.security.KeyPair;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -10,13 +19,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.credential.RsaCredentialValue;
-import io.pivotal.security.request.RsaGenerationParameters;
-import io.pivotal.security.util.CertificateFormatter;
-import java.security.KeyPair;
-import org.junit.runner.RunWith;
-
 @RunWith(Spectrum.class)
 public class RsaGeneratorTest {
 
@@ -26,6 +28,8 @@ public class RsaGeneratorTest {
 
   private KeyPair keyPair;
 
+  private UserContext userContext;
+
   {
     beforeEach(() -> {
       keyPairGenerator = mock(LibcryptoRsaKeyPairGenerator.class);
@@ -33,13 +37,14 @@ public class RsaGeneratorTest {
       fakeKeyPairGenerator = new FakeKeyPairGenerator();
       keyPair = fakeKeyPairGenerator.generate();
       when(keyPairGenerator.generateKeyPair(anyInt())).thenReturn(keyPair);
+      userContext = mock(UserContext.class);
 
       subject = new RsaGenerator(keyPairGenerator);
     });
 
     describe("generateCredential", () -> {
       it("should return a generated credential", () -> {
-        final RsaCredentialValue rsa = subject.generateCredential(new RsaGenerationParameters());
+        final RsaCredentialValue rsa = subject.generateCredential(new RsaGenerationParameters(), userContext);
 
         verify(keyPairGenerator).generateKeyPair(2048);
 
@@ -51,7 +56,7 @@ public class RsaGeneratorTest {
         RsaGenerationParameters rsaGenerationParameters = new RsaGenerationParameters();
         rsaGenerationParameters.setKeyLength(4096);
 
-        subject.generateCredential(rsaGenerationParameters);
+        subject.generateCredential(rsaGenerationParameters, userContext);
 
         verify(keyPairGenerator).generateKeyPair(4096);
       });

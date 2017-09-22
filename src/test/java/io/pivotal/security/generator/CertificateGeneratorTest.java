@@ -1,9 +1,11 @@
 package io.pivotal.security.generator;
 
+import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.data.CertificateAuthorityService;
 import io.pivotal.security.domain.CertificateGenerationParameters;
 import io.pivotal.security.request.CertificateGenerationRequestParameters;
+import io.pivotal.security.service.PermissionService;
 import io.pivotal.security.util.CertificateFormatter;
 import io.pivotal.security.util.CurrentTimeProvider;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -37,7 +39,9 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -63,15 +67,25 @@ public class CertificateGeneratorTest {
   private CertificateGenerationParameters inputParameters;
   private CertificateGenerationRequestParameters generationParameters;
   private X509Certificate childX509Certificate;
+  private PermissionService permissionService;
+  private UserContext userContext;
 
   @Before
   public void beforeEach() throws Exception {
     keyGenerator = mock(LibcryptoRsaKeyPairGenerator.class);
     signedCertificateGenerator = mock(SignedCertificateGenerator.class);
     certificateAuthorityService = mock(CertificateAuthorityService.class);
+    permissionService = mock(PermissionService.class);
+    userContext = mock(UserContext.class);
 
-    subject = new CertificateGenerator(keyGenerator, signedCertificateGenerator,
-        certificateAuthorityService);
+    subject = new CertificateGenerator(
+        keyGenerator,
+        signedCertificateGenerator,
+        certificateAuthorityService,
+        permissionService
+    );
+
+    when(permissionService.hasPermission(anyString(), anyString(), any())).thenReturn(true);
 
     fakeKeyPairGenerator = new FakeKeyPairGenerator();
 
@@ -103,8 +117,7 @@ public class CertificateGeneratorTest {
     final KeyPair childCertificateKeyPair = setupKeyPair();
     setupMocksForRootCA(childCertificateKeyPair);
 
-    CertificateCredentialValue certificateSignedByRoot = subject
-        .generateCredential(inputParameters);
+    CertificateCredentialValue certificateSignedByRoot = subject.generateCredential(inputParameters, userContext);
 
     assertThat(certificateSignedByRoot.getCa(),
         equalTo(rootCa.getCertificate()));
@@ -135,8 +148,7 @@ public class CertificateGeneratorTest {
             .getSignedByIssuer(childCertificateKeyPair, params, rootCaX509Certificate, rootCaKeyPair.getPrivate())
     ).thenReturn(childX509Certificate);
 
-    CertificateCredentialValue certificate = subject.generateCredential(
-        params);
+    CertificateCredentialValue certificate = subject.generateCredential(params, userContext);
 
     assertThat(certificate, notNullValue());
     verify(keyGenerator, times(1)).generateKeyPair(4096);
@@ -179,7 +191,7 @@ public class CertificateGeneratorTest {
     ).thenReturn(childX509Certificate);
 
 
-    CertificateCredentialValue certificateSignedByIntermediate = subject.generateCredential(inputParameters);
+    CertificateCredentialValue certificateSignedByIntermediate = subject.generateCredential(inputParameters, userContext);
 
     assertThat(certificateSignedByIntermediate.getCa(),
         equalTo(intermediateCa.getCertificate()));
@@ -205,7 +217,7 @@ public class CertificateGeneratorTest {
     when(signedCertificateGenerator.getSelfSigned(rootCaKeyPair, inputParameters))
         .thenReturn(certificate);
 
-    CertificateCredentialValue certificateCredential = subject.generateCredential(inputParameters);
+    CertificateCredentialValue certificateCredential = subject.generateCredential(inputParameters, userContext);
     assertThat(certificateCredential.getPrivateKey(),
         equalTo(CertificateFormatter.pemOf(rootCaKeyPair.getPrivate())));
     assertThat(certificateCredential.getCertificate(),

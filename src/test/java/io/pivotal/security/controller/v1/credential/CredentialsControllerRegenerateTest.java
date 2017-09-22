@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -34,7 +35,13 @@ import java.time.Instant;
 import java.util.function.Consumer;
 
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
+import static io.pivotal.security.helper.RequestHelper.expect404WhileRegeneratingCertificate;
+import static io.pivotal.security.helper.RequestHelper.generateCa;
+import static io.pivotal.security.helper.RequestHelper.generateCertificate;
+import static io.pivotal.security.helper.RequestHelper.grantPermission;
+import static io.pivotal.security.helper.RequestHelper.revokePermissions;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -53,9 +60,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
+@TestPropertySource(properties = "security.authorization.acls.enabled=true")
 @Transactional
 public class CredentialsControllerRegenerateTest {
-
   private static final Instant FROZEN_TIME = Instant.ofEpochSecond(1400011001L);
 
   @Autowired
@@ -310,5 +317,24 @@ public class CredentialsControllerRegenerateTest {
         .andDo(print())
         .andExpect(status().isInternalServerError())
         .andExpect(content().json(cannotRegenerate));
+  }
+
+  @Test
+  public void certificateRegeneration_whenUserNotAuthorizedToReadCa_shouldReturnCorrectError() throws Exception {
+    generateCa(mockMvc, "picard", UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+
+    grantPermission(mockMvc, UAA_OAUTH2_PASSWORD_GRANT_TOKEN,
+        "uaa-client:credhub_test",
+        "read",
+        "picard");
+
+    generateCertificate(mockMvc, "riker", "picard", UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
+
+    revokePermissions(mockMvc, UAA_OAUTH2_PASSWORD_GRANT_TOKEN,
+        "uaa-client:credhub_test",
+        "picard");
+
+    expect404WhileRegeneratingCertificate(mockMvc, "riker", UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN,
+        "The request could not be completed because the credential does not exist or you do not have sufficient authorization.");
   }
 }

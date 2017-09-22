@@ -1,10 +1,6 @@
 package io.pivotal.security.generator;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
+import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.credential.StringCredentialValue;
 import io.pivotal.security.request.StringGenerationParameters;
 import org.junit.Before;
@@ -12,15 +8,22 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 @RunWith(JUnit4.class)
 public class PasswordGeneratorTest {
   private PasswordCredentialGenerator subject;
 
   private PassayStringCredentialGenerator passayStringCredentialGenerator;
+  private UserContext userContext;
 
   @Before
   public void beforeEach() {
     passayStringCredentialGenerator = mock(PassayStringCredentialGenerator.class);
+    userContext = mock(UserContext.class);
     subject = new PasswordCredentialGenerator(passayStringCredentialGenerator);
   }
 
@@ -32,6 +35,6 @@ public class PasswordGeneratorTest {
     when(passayStringCredentialGenerator.generateCredential(stringGenerationParameters))
         .thenReturn(credential);
     
-    assertThat(subject.generateCredential(stringGenerationParameters), equalTo(credential));
+    assertThat(subject.generateCredential(stringGenerationParameters, userContext), equalTo(credential));
   }
 }

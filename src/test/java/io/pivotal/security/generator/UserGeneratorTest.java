@@ -1,5 +1,6 @@
 package io.pivotal.security.generator;
 
+import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.credential.CryptSaltFactory;
 import io.pivotal.security.credential.StringCredentialValue;
 import io.pivotal.security.credential.UserCredentialValue;
@@ -11,6 +12,8 @@ import org.junit.runners.JUnit4;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -20,6 +23,7 @@ public class UserGeneratorTest {
   private UserGenerator subject;
 
   private StringGenerationParameters passwordParameters;
+  private UserContext userContext;
 
   @Before
   public void beforeEach() {
@@ -28,14 +32,17 @@ public class UserGeneratorTest {
     CryptSaltFactory cryptSaltFactory = mock(CryptSaltFactory.class);
 
     passwordParameters = new StringGenerationParameters();
+    userContext = null;
 
     subject = new UserGenerator(usernameGenerator, passwordGenerator, cryptSaltFactory);
 
     StringCredentialValue generatedUsername = new StringCredentialValue("fake-generated-username");
     StringCredentialValue generatedPassword = new StringCredentialValue("fake-generated-password");
 
-    when(usernameGenerator.generateCredential()).thenReturn(generatedUsername);
-    when(passwordGenerator.generateCredential(passwordParameters)).thenReturn(generatedPassword);
+    when(usernameGenerator.generateCredential())
+        .thenReturn(generatedUsername);
+    when(passwordGenerator.generateCredential(eq(passwordParameters), any()))
+        .thenReturn(generatedPassword);
     when(cryptSaltFactory.generateSalt(generatedPassword.getStringCredential()))
         .thenReturn("fake-generated-salt");
   }
@@ -43,7 +50,7 @@ public class UserGeneratorTest {
   @Test
   public void generateCredential_givenAUsernameAndPasswordParameters_generatesUserWithUsernameAndGeneratedPassword() {
     passwordParameters.setUsername("test-user");
-    final UserCredentialValue user = subject.generateCredential(passwordParameters);
+    final UserCredentialValue user = subject.generateCredential(passwordParameters, userContext);
 
     assertThat(user.getUsername(), equalTo("test-user"));
     assertThat(user.getPassword(), equalTo("fake-generated-password"));
@@ -52,7 +59,7 @@ public class UserGeneratorTest {
 
   @Test
   public void generateCredential_givenNoUsernameAndPasswordParameters_generatesUserWithGeneratedUsernameAndPassword() {
-    final UserCredentialValue user = subject.generateCredential(passwordParameters);
+    final UserCredentialValue user = subject.generateCredential(passwordParameters, userContext);
 
     assertThat(user.getUsername(), equalTo("fake-generated-username"));
     assertThat(user.getPassword(), equalTo("fake-generated-password"));

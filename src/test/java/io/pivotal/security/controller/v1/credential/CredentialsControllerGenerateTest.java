@@ -1,6 +1,7 @@
 package io.pivotal.security.controller.v1.credential;
 
 import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.credential.RsaCredentialValue;
 import io.pivotal.security.credential.SshCredentialValue;
@@ -45,8 +46,10 @@ import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvid
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -94,10 +97,12 @@ public class CredentialsControllerGenerateTest {
   private CurrentTimeProvider mockCurrentTimeProvider;
 
   private MockMvc mockMvc;
+  private UserContext userContext;
 
   @Before
   public void beforeEach() {
     Consumer<Long> fakeTimeSetter = mockOutCurrentTimeProvider(mockCurrentTimeProvider);
+    userContext = mock(UserContext.class);
 
     fakeTimeSetter.accept(FROZEN_TIME.toEpochMilli());
     mockMvc = MockMvcBuilders
@@ -107,13 +112,13 @@ public class CredentialsControllerGenerateTest {
     when(credentialGenerator.generateCredential(any(StringGenerationParameters.class)))
         .thenReturn(new StringCredentialValue(FAKE_PASSWORD_NAME));
 
-    when(sshGenerator.generateCredential(any(SshGenerationParameters.class)))
+    when(sshGenerator.generateCredential(any(SshGenerationParameters.class), eq(userContext)))
         .thenReturn(new SshCredentialValue(PUBLIC_KEY, PRIVATE_KEY, null));
 
-    when(rsaGenerator.generateCredential(any(RsaGenerationParameters.class)))
+    when(rsaGenerator.generateCredential(any(RsaGenerationParameters.class), eq(userContext)))
         .thenReturn(new RsaCredentialValue(PUBLIC_KEY, PRIVATE_KEY));
 
-    when(certificateGenerator.generateCredential(any(CertificateGenerationParameters.class)))
+    when(certificateGenerator.generateCredential(any(CertificateGenerationParameters.class), eq(userContext)))
         .thenReturn(new CertificateCredentialValue("ca_cert", CERT, PRIVATE_KEY, null));
   }
 

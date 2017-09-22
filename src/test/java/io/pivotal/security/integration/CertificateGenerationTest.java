@@ -1,6 +1,7 @@
 package io.pivotal.security.integration;
 
 import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.helper.RequestHelper;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.Extension;
@@ -13,6 +14,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -24,6 +26,8 @@ import java.io.ByteArrayInputStream;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 
+import static io.pivotal.security.helper.RequestHelper.generateCa;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -38,10 +42,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
+@TestPropertySource(properties = "security.authorization.acls.enabled=true")
 @Transactional
 public class CertificateGenerationTest {
-
-
   @Autowired
   private WebApplicationContext webApplicationContext;
 
@@ -121,6 +124,14 @@ public class CertificateGenerationTest {
     byte[] authKeyId = authorityKeyIdentifier.getKeyIdentifier();
 
     assertThat(subjectKeyId, equalTo(authKeyId));
+  }
+
+  @Test
+  public void certificateGeneration_whenUserNotAuthorizedToReadCa_shouldReturnCorrectError() throws Exception {
+    generateCa(mockMvc, "picard", UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+    // try to generate with a different token that doesn't have read permission
+    RequestHelper.expect404WhileGeneratingCertificate(mockMvc, "riker", UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN,
+        "The request could not be completed because the credential does not exist or you do not have sufficient authorization.");
   }
 
   @Test
