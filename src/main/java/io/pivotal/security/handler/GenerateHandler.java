@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class GenerateRequestHandler {
+public class GenerateHandler {
 
   private PasswordCredentialGenerator passwordCredentialGenerator;
   private UserGenerator userGenerator;
@@ -35,7 +35,7 @@ public class GenerateRequestHandler {
   private Map<String, CredentialGenerator> credentialGenerators;
 
   @Autowired
-  public GenerateRequestHandler(
+  public GenerateHandler(
       CredentialService credentialService,
       PasswordCredentialGenerator passwordCredentialGenerator,
       UserGenerator userGenerator, SshGenerator sshGenerator,

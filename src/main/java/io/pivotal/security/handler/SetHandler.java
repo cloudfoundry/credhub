@@ -17,13 +17,13 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class SetRequestHandler {
+public class SetHandler {
 
   private CredentialService credentialService;
   private CertificateAuthorityService certificateAuthorityService;
 
   @Autowired
-  public SetRequestHandler(
+  public SetHandler(
       CredentialService credentialService,
       CertificateAuthorityService certificateAuthorityService
   ) {

@@ -56,7 +56,8 @@ public class PermissionsHandler {
     final CredentialName credentialName = credentialNameDataService.find(name);
 
     // We need to verify that the credential exists in case ACL enforcement is off
-    if (credentialName == null || !permissionService.hasPermission(userContext.getAclUser(), name, WRITE_ACL)) {
+    if (credentialName == null || !permissionService
+        .hasPermission(userContext.getAclUser(), name, WRITE_ACL)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 

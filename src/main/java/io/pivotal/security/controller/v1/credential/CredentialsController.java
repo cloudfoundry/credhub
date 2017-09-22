@@ -11,14 +11,14 @@ import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.exceptions.InvalidQueryParameterException;
-import io.pivotal.security.handler.CredentialHandler;
-import io.pivotal.security.handler.GenerateRequestHandler;
-import io.pivotal.security.handler.SetRequestHandler;
+import io.pivotal.security.handler.CredentialsHandler;
+import io.pivotal.security.handler.GenerateHandler;
+import io.pivotal.security.handler.SetHandler;
 import io.pivotal.security.request.BaseCredentialGenerateRequest;
 import io.pivotal.security.request.BaseCredentialSetRequest;
 import io.pivotal.security.request.CredentialRegenerateRequest;
 import io.pivotal.security.request.PermissionEntry;
-import io.pivotal.security.service.RegenerateService;
+import io.pivotal.security.handler.RegenerateHandler;
 import io.pivotal.security.util.StringUtil;
 import io.pivotal.security.view.CredentialView;
 import io.pivotal.security.view.DataResponse;
@@ -64,27 +64,27 @@ public class CredentialsController {
   private final CredentialDataService credentialDataService;
   private final EventAuditLogService eventAuditLogService;
   private final ObjectMapper objectMapper;
-  private final SetRequestHandler setRequestHandler;
-  private final GenerateRequestHandler generateRequestHandler;
-  private final RegenerateService regenerateService;
-  private final CredentialHandler credentialHandler;
+  private final SetHandler setHandler;
+  private final GenerateHandler generateHandler;
+  private final RegenerateHandler regenerateHandler;
+  private final CredentialsHandler credentialsHandler;
 
   @Autowired
   public CredentialsController(CredentialDataService credentialDataService,
       EventAuditLogService eventAuditLogService,
       ObjectMapper objectMapper,
-      GenerateRequestHandler generateRequestHandler,
-      RegenerateService regenerateService,
-      CredentialHandler credentialHandler,
-      SetRequestHandler setRequestHandler
+      GenerateHandler generateHandler,
+      RegenerateHandler regenerateHandler,
+      CredentialsHandler credentialsHandler,
+      SetHandler setHandler
   ) {
     this.credentialDataService = credentialDataService;
     this.eventAuditLogService = eventAuditLogService;
     this.objectMapper = objectMapper;
-    this.generateRequestHandler = generateRequestHandler;
-    this.regenerateService = regenerateService;
-    this.credentialHandler = credentialHandler;
-    this.setRequestHandler = setRequestHandler;
+    this.generateHandler = generateHandler;
+    this.regenerateHandler = regenerateHandler;
+    this.credentialsHandler = credentialsHandler;
+    this.setHandler = setHandler;
   }
 
   @RequestMapping(path = "", method = RequestMethod.POST)
@@ -141,7 +141,7 @@ public class CredentialsController {
     eventAuditLogService.auditEvents(requestUuid, userContext, (eventAuditRecordParametersList) -> {
       eventAuditRecordParametersList.add(new EventAuditRecordParameters(CREDENTIAL_DELETE, credentialName));
 
-      credentialHandler.deleteCredential(credentialName, userContext);
+      credentialsHandler.deleteCredential(credentialName, userContext);
 
       return true;
     });
@@ -154,7 +154,8 @@ public class CredentialsController {
       RequestUuid requestUuid,
       UserContext userContext) {
     return eventAuditLogService.auditEvents(requestUuid, userContext, eventAuditRecordParametersList -> {
-      Credential credentialVersion = credentialHandler.getCredentialVersionByUUID(id, userContext, eventAuditRecordParametersList);
+      Credential credentialVersion = credentialsHandler
+          .getCredentialVersionByUUID(id, userContext, eventAuditRecordParametersList);
       return CredentialView.fromEntity(credentialVersion);
     });
   }
@@ -174,10 +175,11 @@ public class CredentialsController {
     return eventAuditLogService.auditEvents(requestUuid, userContext, eventAuditRecordParametersList -> {
       List<Credential> credentials;
       if (current) {
-        Credential credential = credentialHandler.getMostRecentCredentialVersion(credentialName, userContext, eventAuditRecordParametersList);
+        Credential credential = credentialsHandler
+            .getMostRecentCredentialVersion(credentialName, userContext, eventAuditRecordParametersList);
         credentials = singletonList(credential);
       } else {
-        credentials = credentialHandler.getNCredentialVersions(credentialName, numberOfVersions,
+        credentials = credentialsHandler.getNCredentialVersions(credentialName, numberOfVersions,
             userContext, eventAuditRecordParametersList);
       }
 
@@ -267,7 +269,7 @@ public class CredentialsController {
         .readValue(requestString, BaseCredentialGenerateRequest.class);
     requestBody.validate();
 
-    return generateRequestHandler
+    return generateHandler
         .handle(requestBody, userContext, currentUserPermissionEntry, auditRecordParameters);
   }
 
@@ -278,8 +280,8 @@ public class CredentialsController {
     CredentialRegenerateRequest requestBody = objectMapper
         .readValue(requestString, CredentialRegenerateRequest.class);
 
-    return regenerateService
-        .performRegenerate(requestBody.getName(), userContext, currentUserPermissionEntry, auditRecordParameters);
+    return regenerateHandler
+        .handleRegenerate(requestBody.getName(), userContext, currentUserPermissionEntry, auditRecordParameters);
   }
 
   private CredentialView auditedHandlePutRequest(
@@ -298,7 +300,7 @@ public class CredentialsController {
       List<EventAuditRecordParameters> auditRecordParameters,
       PermissionEntry currentUserPermissionEntry
   ) {
-    return setRequestHandler.handle(
+    return setHandler.handle(
         requestBody,
         userContext,
         currentUserPermissionEntry,

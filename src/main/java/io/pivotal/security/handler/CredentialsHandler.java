@@ -17,13 +17,13 @@ import static io.pivotal.security.request.PermissionOperation.DELETE;
 import static io.pivotal.security.request.PermissionOperation.READ;
 
 @Component
-public class CredentialHandler {
+public class CredentialsHandler {
 
   private final CredentialDataService credentialDataService;
   private final PermissionService permissionService;
 
   @Autowired
-  public CredentialHandler(CredentialDataService credentialDataService,
+  public CredentialsHandler(CredentialDataService credentialDataService,
       PermissionService permissionService) {
     this.credentialDataService = credentialDataService;
     this.permissionService = permissionService;

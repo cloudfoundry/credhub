@@ -6,7 +6,7 @@ import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.request.BulkRegenerateRequest;
 import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.RegenerateRequest;
-import io.pivotal.security.service.RegenerateService;
+import io.pivotal.security.handler.RegenerateHandler;
 import io.pivotal.security.view.BulkRegenerateResults;
 import io.pivotal.security.view.CredentialView;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,14 +27,14 @@ public class RegenerateController {
   static final String API_V1_BULK_REGENERATE = "api/v1/bulk-regenerate";
 
   private final EventAuditLogService eventAuditLogService;
-  private RegenerateService regenerateService;
+  private RegenerateHandler regenerateHandler;
 
   @Autowired
   public RegenerateController(
-      RegenerateService regenerateService,
+      RegenerateHandler regenerateHandler,
       EventAuditLogService eventAuditLogService
   ) {
-    this.regenerateService = regenerateService;
+    this.regenerateHandler = regenerateHandler;
     this.eventAuditLogService = eventAuditLogService;
   }
 
@@ -50,8 +50,8 @@ public class RegenerateController {
   ) throws IOException {
     return eventAuditLogService
         .auditEvents(requestUuid, userContext, (auditRecordParameters -> {
-          return regenerateService
-              .performRegenerate(requestBody.getName(), userContext,
+          return regenerateHandler
+              .handleRegenerate(requestBody.getName(), userContext,
                   currentUserPermissionEntry, auditRecordParameters);
         }));
   }
@@ -68,8 +68,8 @@ public class RegenerateController {
   ) throws IOException {
     return eventAuditLogService
         .auditEvents(requestUuid, userContext, (auditRecordParameters -> {
-          return regenerateService
-              .performBulkRegenerate(requestBody.getSignedBy(), userContext,
+          return regenerateHandler
+              .handleBulkRegenerate(requestBody.getSignedBy(), userContext,
                   currentUserPermissionEntry, auditRecordParameters);
         }));
   }

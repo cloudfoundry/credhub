@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
@@ -41,7 +42,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = CredentialManagerApp.class)
 @Transactional
 @TestPropertySource(properties = "security.authorization.acls.enabled=true")
-public class RegenerationEndpointPasswordTest {
+public class RegenerationEndpointTest {
 
   private static final String API_V1_DATA_ENDPOINT = "/api/v1/data";
   private static final String API_V1_REGENERATE_ENDPOINT = "/api/v1/regenerate";
@@ -74,7 +75,14 @@ public class RegenerationEndpointPasswordTest {
         //language=JSON
         .content("{\n"
             + "  \"name\" : \"picard\",\n"
-            + "  \"type\" : \"password\"\n"
+            + "  \"type\" : \"password\",\n"
+            + "  \"additional_permissions\":\n"
+            + "  [\n"
+            + "    {\n"
+            + "      \"actor\": \" " + UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID + "\",\n"
+            + "      \"operations\": [\"write\", \"read\"]\n"
+            + "    }\n"
+            + "  ]\n"
             + "}");
 
     String generatePasswordResult = this.mockMvc.perform(generatePasswordRequest)
@@ -114,7 +122,10 @@ public class RegenerationEndpointPasswordTest {
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        .content("{\"name\":\"picard\"}");
+        //language=JSON
+        .content("{\n"
+            + "  \"name\": \"picard\"\n"
+            + "}");
 
     mockMvc.perform(request)
         .andExpect(status().isOk())

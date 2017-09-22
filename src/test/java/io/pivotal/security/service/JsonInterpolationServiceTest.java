@@ -5,7 +5,7 @@ import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.domain.JsonCredential;
 import io.pivotal.security.domain.PasswordCredential;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.handler.CredentialHandler;
+import io.pivotal.security.handler.CredentialsHandler;
 import org.assertj.core.util.Maps;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,15 +32,15 @@ public class JsonInterpolationServiceTest {
   private JsonInterpolationService subject;
   private Map<String, Object> response;
   private List<EventAuditRecordParameters> eventAuditRecordParameters;
-  private CredentialHandler credentialHandler;
+  private CredentialsHandler credentialsHandler;
   private UserContext userContext;
 
   @Before
   public void beforeEach() {
-    credentialHandler = mock(CredentialHandler.class);
+    credentialsHandler = mock(CredentialsHandler.class);
     userContext = mock(UserContext.class);
 
-    subject = new JsonInterpolationService(credentialHandler);
+    subject = new JsonInterpolationService(credentialsHandler);
     eventAuditRecordParameters = new ArrayList<>();
   }
 
@@ -89,7 +89,7 @@ public class JsonInterpolationServiceTest {
 
       doReturn(
           passwordCredential
-      ).when(credentialHandler).getMostRecentCredentialVersion("/password_cred", userContext, eventAuditRecordParameters);
+      ).when(credentialsHandler).getMostRecentCredentialVersion("/password_cred", userContext, eventAuditRecordParameters);
 
       try {
         subject.interpolateCredHubReferences(userContext, deserialize(inputJson, Map.class), eventAuditRecordParameters);
@@ -250,15 +250,15 @@ public class JsonInterpolationServiceTest {
 
     doReturn(
         jsonCredential
-    ).when(credentialHandler).getMostRecentCredentialVersion("/cred1", userContext, newArrayList());
+    ).when(credentialsHandler).getMostRecentCredentialVersion("/cred1", userContext, newArrayList());
 
     doReturn(
         jsonCredential1
-    ).when(credentialHandler).getMostRecentCredentialVersion("/cred2", userContext, newArrayList());
+    ).when(credentialsHandler).getMostRecentCredentialVersion("/cred2", userContext, newArrayList());
 
     doReturn(
         jsonCredential2
-    ).when(credentialHandler).getMostRecentCredentialVersion("/cred3", userContext, newArrayList());
+    ).when(credentialsHandler).getMostRecentCredentialVersion("/cred3", userContext, newArrayList());
 
     response = subject.interpolateCredHubReferences(userContext, inputJson, eventAuditRecordParameters);
   }

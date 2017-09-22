@@ -17,7 +17,7 @@ import io.pivotal.security.domain.SshCredential;
 import io.pivotal.security.domain.UserCredential;
 import io.pivotal.security.domain.ValueCredential;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.handler.SetRequestHandler;
+import io.pivotal.security.handler.SetHandler;
 import io.pivotal.security.helper.AuditingHelper;
 import io.pivotal.security.helper.JsonTestHelper;
 import io.pivotal.security.repository.EventAuditRecordRepository;
@@ -153,7 +153,7 @@ public class CredentialsControllerTypeSpecificSetTest {
   private CredentialDataService credentialDataService;
 
   @SpyBean
-  private SetRequestHandler setRequestHandler;
+  private SetHandler setHandler;
 
   @MockBean
   private CurrentTimeProvider mockCurrentTimeProvider;
@@ -436,7 +436,7 @@ public class CredentialsControllerTypeSpecificSetTest {
 
     mockMvc.perform(request);
 
-    verify(setRequestHandler, times(1))
+    verify(setHandler, times(1))
         .handle(isA(BaseCredentialSetRequest.class), isA(UserContext.class), isA(PermissionEntry.class), any());
     verify(credentialDataService, times(1)).save(argumentCaptor.capture());
 

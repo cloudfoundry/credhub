@@ -32,11 +32,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
-public class SetRequestHandlerTest {
+public class SetHandlerTest {
   private CredentialService credentialService;
   private CertificateAuthorityService certificateAuthorityService;
 
-  private SetRequestHandler subject;
+  private SetHandler subject;
 
   private StringGenerationParameters generationParameters;
   private ArrayList<PermissionEntry> accessControlEntries;
@@ -48,7 +48,7 @@ public class SetRequestHandlerTest {
     credentialService = mock(CredentialService.class);
     certificateAuthorityService = mock(CertificateAuthorityService.class);
 
-    subject = new SetRequestHandler(credentialService, certificateAuthorityService);
+    subject = new SetHandler(credentialService, certificateAuthorityService);
 
     generationParameters = new StringGenerationParameters();
     accessControlEntries = new ArrayList<>();

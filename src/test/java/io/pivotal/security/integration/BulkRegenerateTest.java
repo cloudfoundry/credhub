@@ -245,6 +245,7 @@ public class BulkRegenerateTest {
         new EventAuditRecordParameters(CREDENTIAL_UPDATE, "/cert-to-regenerate")
     ));
   }
+
   @Test
   public void regeneratingCertificatesSignedByCA_whenUserCannotWriteToAllOfTheCertificates_shouldFailAndNotRotateAnyCertificates()
       throws Exception {
@@ -321,14 +322,17 @@ public class BulkRegenerateTest {
             + "  \"name\" : \"" + certificateName + "\",\n"
             + "  \"type\" : \"certificate\",\n"
             + "  \"parameters\" : {\n"
-            + "\"ca\": \"" + signingCA + "\",\n"
-            + "\"common_name\": \"" + certificatCN + "\"\n"
-            + "},"
-            + "\"overwrite\": true,"
-            + "\"additional_permissions\": [{"
-            + "\"actor\": \"" + UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID + "\",\n"
-            + "\"operations\": [\"write\"]\n"
-            + "}]"
+            + "    \"ca\": \"" + signingCA + "\",\n"
+            + "    \"common_name\": \"" + certificatCN + "\"\n"
+            + "  },\n"
+            + "  \"overwrite\": true,\n"
+            + "  \"additional_permissions\": \n"
+            + "    [\n"
+            + "      {\n"
+            + "        \"actor\": \"" + UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID + "\",\n"
+            + "        \"operations\": [\"write\"]\n"
+            + "      }\n"
+            + "    ]\n"
             + "}");
 
     String certGenerationResult = this.mockMvc.perform(generateCertSignedByOriginalCARequest)

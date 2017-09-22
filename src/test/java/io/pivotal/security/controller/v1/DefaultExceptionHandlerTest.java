@@ -1,7 +1,7 @@
 package io.pivotal.security.controller.v1;
 
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.handler.CredentialHandler;
+import io.pivotal.security.handler.CredentialsHandler;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,7 +39,7 @@ public class DefaultExceptionHandlerTest {
   private WebApplicationContext webApplicationContext;
 
   @MockBean
-  CredentialHandler credentialHandler;
+  CredentialsHandler credentialsHandler;
 
   private MockMvc mockMvc;
 
@@ -53,7 +53,7 @@ public class DefaultExceptionHandlerTest {
 
   @Test
   public void wheGenericExceptionIsThrown_returns500() throws Exception {
-    when(credentialHandler.getNCredentialVersions(eq("foo"), any(), any(), any())).thenThrow(new RuntimeException());
+    when(credentialsHandler.getNCredentialVersions(eq("foo"), any(), any(), any())).thenThrow(new RuntimeException());
 
     final MockHttpServletRequestBuilder request = get("/api/v1/data?name=foo")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)

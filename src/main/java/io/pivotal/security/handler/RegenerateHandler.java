@@ -1,4 +1,4 @@
-package io.pivotal.security.service;
+package io.pivotal.security.handler;
 
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
@@ -20,6 +20,8 @@ import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.PermissionOperation;
 import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.request.UserGenerateRequest;
+import io.pivotal.security.service.CredentialService;
+import io.pivotal.security.service.PermissionService;
 import io.pivotal.security.service.regeneratables.CertificateCredentialRegeneratable;
 import io.pivotal.security.service.regeneratables.NotRegeneratable;
 import io.pivotal.security.service.regeneratables.PasswordCredentialRegeneratable;
@@ -40,7 +42,7 @@ import java.util.function.Supplier;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 
 @Service
-public class RegenerateService {
+public class RegenerateHandler {
 
   private CredentialDataService credentialDataService;
   private Map<String, Supplier<Regeneratable>> regeneratableTypeProducers;
@@ -53,7 +55,7 @@ public class RegenerateService {
   private CertificateGenerator certificateGenerator;
   private Map<String, CredentialGenerator> credentialGenerators;
 
-  RegenerateService(
+  RegenerateHandler(
       CredentialDataService credentialDataService,
       CredentialService credentialService,
       PermissionService permissionService,
@@ -87,7 +89,7 @@ public class RegenerateService {
     this.credentialGenerators.put("certificate", this.certificateGenerator);
   }
 
-  public CredentialView performRegenerate(
+  public CredentialView handleRegenerate(
       String credentialName,
       UserContext userContext,
       PermissionEntry currentUserPermissionEntry,
@@ -97,9 +99,6 @@ public class RegenerateService {
     if (credential == null) {
       auditRecordParameters.add(new EventAuditRecordParameters(CREDENTIAL_UPDATE, credentialName));
       throw new EntryNotFoundException("error.credential.invalid_access");
-    } else if (!permissionService.hasPermission(userContext.getAclUser(), credentialName, PermissionOperation.WRITE)){
-      auditRecordParameters.add(new EventAuditRecordParameters(CREDENTIAL_UPDATE, credentialName));
-      throw new PermissionException("error.credential.invalid_access");
     }
 
     Regeneratable regeneratable = regeneratableTypeProducers
@@ -136,7 +135,7 @@ public class RegenerateService {
     );
   }
 
-  public BulkRegenerateResults performBulkRegenerate(
+  public BulkRegenerateResults handleBulkRegenerate(
       String signerName,
       UserContext userContext,
       PermissionEntry currentUserPermissionEntry,
@@ -151,7 +150,7 @@ public class RegenerateService {
 
     final HashSet<String> credentialNamesSet = new HashSet<>(certificateNames);
     for (String name : credentialNamesSet) {
-      this.performRegenerate(name, userContext, currentUserPermissionEntry,
+      this.handleRegenerate(name, userContext, currentUserPermissionEntry,
           auditRecordParameters);
     }
 

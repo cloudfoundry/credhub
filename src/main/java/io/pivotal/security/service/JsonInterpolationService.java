@@ -5,7 +5,7 @@ import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.JsonCredential;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.handler.CredentialHandler;
+import io.pivotal.security.handler.CredentialsHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,11 +15,11 @@ import java.util.Map;
 
 @Service
 public class JsonInterpolationService {
-  private final CredentialHandler credentialHandler;
+  private final CredentialsHandler credentialsHandler;
 
   @Autowired
-  public JsonInterpolationService(CredentialHandler credentialHandler) {
-    this.credentialHandler = credentialHandler;
+  public JsonInterpolationService(CredentialsHandler credentialsHandler) {
+    this.credentialsHandler = credentialsHandler;
   }
 
   public Map<String, Object> interpolateCredHubReferences(
@@ -52,7 +52,7 @@ public class JsonInterpolationService {
         }
         String credentialName = getCredentialNameFromRef((String) credhubRef);
 
-        Credential credential = credentialHandler.getMostRecentCredentialVersion(
+        Credential credential = credentialsHandler.getMostRecentCredentialVersion(
             credentialName,
             userContext,
             auditRecordParameters

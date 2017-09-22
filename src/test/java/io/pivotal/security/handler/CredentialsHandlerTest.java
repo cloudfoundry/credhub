@@ -33,14 +33,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
-public class CredentialHandlerTest {
+public class CredentialsHandlerTest {
   private static final String CREDENTIAL_NAME = "/test/credential";
   private static final Instant VERSION1_CREATED_AT = Instant.ofEpochMilli(555555555);
   private static final Instant VERSION2_CREATED_AT = Instant.ofEpochMilli(777777777);
   private static final String UUID_STRING = "fake-uuid";
   private static final String USER = "darth-sirius";
 
-  private CredentialHandler subject;
+  private CredentialsHandler subject;
   private CredentialDataService credentialDataService;
   private PermissionService permissionService;
 
@@ -54,7 +54,7 @@ public class CredentialHandlerTest {
 
     credentialDataService = mock(CredentialDataService.class);
     permissionService = mock(PermissionService.class);
-    subject = new CredentialHandler(credentialDataService, permissionService);
+    subject = new CredentialsHandler(credentialDataService, permissionService);
 
     userContext = mock(UserContext.class);
     when(userContext.getAclUser()).thenReturn(USER);
