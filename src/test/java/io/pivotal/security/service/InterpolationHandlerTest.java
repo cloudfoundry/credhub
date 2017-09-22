@@ -6,6 +6,7 @@ import io.pivotal.security.domain.JsonCredential;
 import io.pivotal.security.domain.PasswordCredential;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.handler.CredentialsHandler;
+import io.pivotal.security.handler.InterpolationHandler;
 import org.assertj.core.util.Maps;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,9 +28,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
-public class JsonInterpolationServiceTest {
+public class InterpolationHandlerTest {
 
-  private JsonInterpolationService subject;
+  private InterpolationHandler subject;
   private Map<String, Object> response;
   private List<EventAuditRecordParameters> eventAuditRecordParameters;
   private CredentialsHandler credentialsHandler;
@@ -40,7 +41,7 @@ public class JsonInterpolationServiceTest {
     credentialsHandler = mock(CredentialsHandler.class);
     userContext = mock(UserContext.class);
 
-    subject = new JsonInterpolationService(credentialsHandler);
+    subject = new InterpolationHandler(credentialsHandler);
     eventAuditRecordParameters = new ArrayList<>();
   }
 

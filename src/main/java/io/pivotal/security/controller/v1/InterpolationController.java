@@ -3,7 +3,7 @@ package io.pivotal.security.controller.v1;
 import io.pivotal.security.audit.EventAuditLogService;
 import io.pivotal.security.audit.RequestUuid;
 import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.service.JsonInterpolationService;
+import io.pivotal.security.handler.InterpolationHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -21,15 +21,15 @@ import java.util.Map;
 public class InterpolationController {
 
   static final String API_V1 = "/api/v1";
-  private final JsonInterpolationService jsonInterpolationService;
+  private final InterpolationHandler jsonInterpolationHandler;
   private final EventAuditLogService eventAuditLogService;
 
   @Autowired
   InterpolationController(
-      JsonInterpolationService jsonInterpolationService,
+      InterpolationHandler jsonInterpolationHandler,
       EventAuditLogService eventAuditLogService
   ) {
-    this.jsonInterpolationService = jsonInterpolationService;
+    this.jsonInterpolationHandler = jsonInterpolationHandler;
     this.eventAuditLogService = eventAuditLogService;
   }
 
@@ -41,7 +41,7 @@ public class InterpolationController {
       UserContext userContext
   ) {
     return eventAuditLogService.auditEvents(requestUuid, userContext, (eventAuditRecordParametersList ->
-          jsonInterpolationService
+          jsonInterpolationHandler
             .interpolateCredHubReferences(userContext, requestBody, eventAuditRecordParametersList))
     );
   }

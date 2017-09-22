@@ -1,11 +1,10 @@
-package io.pivotal.security.service;
+package io.pivotal.security.handler;
 
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.JsonCredential;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.handler.CredentialsHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,11 +13,11 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class JsonInterpolationService {
+public class InterpolationHandler {
   private final CredentialsHandler credentialsHandler;
 
   @Autowired
-  public JsonInterpolationService(CredentialsHandler credentialsHandler) {
+  public InterpolationHandler(CredentialsHandler credentialsHandler) {
     this.credentialsHandler = credentialsHandler;
   }
 

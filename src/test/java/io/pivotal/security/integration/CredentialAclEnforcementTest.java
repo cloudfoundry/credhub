@@ -57,7 +57,7 @@ public class CredentialAclEnforcementTest {
     mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
         .apply(springSecurity())
         .build();
-    seedCredential();
+    seedCredentials();
   }
 
   @Test
@@ -100,6 +100,32 @@ public class CredentialAclEnforcementTest {
   public void GET_byId_whenTheUserDoesntHavePermissionToReadCredential_returns404()
       throws Exception {
     final MockHttpServletRequestBuilder get = get("/api/v1/data/" + uuid)
+        .with(x509(getCertificate(SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT)));
+    String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
+    mockMvc.perform(get)
+        .andDo(print())
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.error", equalTo(expectedError)));
+  }
+
+  @Test
+  public void GET_byVersions_whenTheUserHasPermissionToReadCredential_returnsCredentialVersions()
+      throws Exception {
+    final MockHttpServletRequestBuilder get = get("/api/v1/data?name=" + CREDENTIAL_NAME + "&versions=2")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
+    mockMvc.perform(get)
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data[0].type", equalTo("password")))
+        .andExpect(jsonPath("$.data[1].type", equalTo("password")))
+        .andExpect(jsonPath("$.data[0].name", equalTo(CREDENTIAL_NAME)))
+        .andExpect(jsonPath("$.data[1].name", equalTo(CREDENTIAL_NAME)));
+  }
+
+  @Test
+  public void GET_byVersions_whenTheUserDoesntHavePermissionToReadCredential_returns404()
+      throws Exception {
+    final MockHttpServletRequestBuilder get = get("/api/v1/data?name=" + CREDENTIAL_NAME + "&versions=2")
         .with(x509(getCertificate(SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT)));
     String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
     mockMvc.perform(get)
@@ -332,20 +358,29 @@ public class CredentialAclEnforcementTest {
         .andExpect(status().isOk());
   }
 
-  private void seedCredential() throws Exception {
+  private void seedCredentials() throws Exception {
     final MockHttpServletRequestBuilder post = post("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        .content("{"
+        //language=JSON
+        .content("{\n"
             + "  \"name\": \"" + CREDENTIAL_NAME + "\",\n"
-            + "  \"type\": \"password\","
+            + "  \"type\": \"password\",\n"
+            + "  \"overwrite\": true,\n"
             + "  \"additional_permissions\": [\n"
-            + "     { \n"
-            + "       \"actor\": \"uaa-client:credhub_test\",\n"
-            + "       \"operations\": [\"read\"]\n"
-            + "     }]"
+            + "    {\n"
+            + "      \"actor\": \"uaa-client:credhub_test\",\n"
+            + "      \"operations\": [\n"
+            + "        \"read\"\n"
+            + "      ]\n"
+            + "    }\n"
+            + "  ]\n"
             + "}");
+
+    mockMvc.perform(post)
+        .andExpect(status().isOk())
+        .andReturn();
 
     final MvcResult result = mockMvc.perform(post)
         .andExpect(status().isOk())

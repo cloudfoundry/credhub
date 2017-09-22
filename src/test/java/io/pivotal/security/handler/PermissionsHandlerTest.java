@@ -121,7 +121,7 @@ public class PermissionsHandlerTest {
   }
 
   @Test
-  public void setPermissions_setsAndReturnsTheAces() {
+  public void setPermissions_setsAndReturnsThePermissions() {
     when(permissionService.hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(WRITE_ACL)))
         .thenReturn(true);
     when(permissionService.validAclUpdateOperation(userContext, ACTOR_NAME))
@@ -172,6 +172,8 @@ public class PermissionsHandlerTest {
         .thenReturn(false);
     when(permissionService.validAclUpdateOperation(userContext, ACTOR_NAME))
         .thenReturn(true);
+    when(credentialNameDataService.find(CREDENTIAL_NAME))
+        .thenReturn(credentialName);
 
     try {
       subject.setPermissions(CREDENTIAL_NAME, userContext, emptyList());
