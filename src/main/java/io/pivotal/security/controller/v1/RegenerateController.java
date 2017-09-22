@@ -9,8 +9,6 @@ import io.pivotal.security.request.RegenerateRequest;
 import io.pivotal.security.service.RegenerateService;
 import io.pivotal.security.view.BulkRegenerateResults;
 import io.pivotal.security.view.CredentialView;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -28,7 +26,6 @@ public class RegenerateController {
   static final String API_V1_REGENERATE = "api/v1/regenerate";
   static final String API_V1_BULK_REGENERATE = "api/v1/bulk-regenerate";
 
-  private static final Logger LOGGER = LogManager.getLogger(RegenerateController.class);
   private final EventAuditLogService eventAuditLogService;
   private RegenerateService regenerateService;
 
@@ -40,7 +37,6 @@ public class RegenerateController {
     this.regenerateService = regenerateService;
     this.eventAuditLogService = eventAuditLogService;
   }
-
 
   @PostMapping(
       path = RegenerateController.API_V1_REGENERATE,
