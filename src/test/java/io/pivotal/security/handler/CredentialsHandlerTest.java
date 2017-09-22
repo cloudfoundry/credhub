@@ -81,6 +81,7 @@ public class CredentialsHandlerTest {
 
   @Test
   public void deleteCredential_whenTheUserLacksPermission_throwsAnException() {
+    when(credentialDataService.delete(CREDENTIAL_NAME)).thenReturn(true);
     when(permissionService.hasPermission(USER, CREDENTIAL_NAME, DELETE))
         .thenReturn(false);
 
