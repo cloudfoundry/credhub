@@ -103,12 +103,16 @@ public class PermissionsController {
       List<PermissionOperation> operationList = permissionsDataService
           .getAllowedOperations(credentialName, actor);
 
-      auditRecordParameters.addAll(createPermissionEventAuditRecordParameters(
-          ACL_DELETE,
-          credentialName,
-          actor,
-          operationList
-      ));
+      if (operationList.size() == 0) {
+        auditRecordParameters.add(new EventAuditRecordParameters(ACL_DELETE, credentialName, null, actor));
+      } else {
+        auditRecordParameters.addAll(createPermissionEventAuditRecordParameters(
+            ACL_DELETE,
+            credentialName,
+            actor,
+            operationList
+        ));
+      }
 
       permissionsHandler.deletePermissionEntry(credentialName, actor, userContext);
 

@@ -1,32 +1,42 @@
 package io.pivotal.security.controller.v1;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.pivotal.security.audit.EventAuditLogService;
-import io.pivotal.security.audit.EventAuditRecordParameters;
+import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.PermissionsDataService;
+import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.handler.PermissionsHandler;
+import io.pivotal.security.helper.AuditingHelper;
 import io.pivotal.security.helper.JsonTestHelper;
+import io.pivotal.security.repository.EventAuditRecordRepository;
+import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.PermissionOperation;
+import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.PermissionsView;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.WebApplicationContext;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.function.Function;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static io.pivotal.security.audit.AuditingOperationCode.ACL_DELETE;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasItem;
@@ -35,10 +45,10 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -47,35 +57,36 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(JUnit4.class)
+@RunWith(SpringRunner.class)
+@ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
+@SpringBootTest(classes = CredentialManagerApp.class)
+@Transactional
 public class PermissionsControllerTest {
-  private PermissionsController subject;
+  @MockBean
   private PermissionsHandler permissionsHandler;
-  private MockMvc mockMvc;
-  private EventAuditLogService eventAuditLogService;
+
+  @Autowired
+  private WebApplicationContext webApplicationContext;
+
+  @Autowired
+  private RequestAuditRecordRepository requestAuditRecordRepository;
+
+  @Autowired
+  private EventAuditRecordRepository eventAuditRecordRepository;
+
+  @MockBean
   private PermissionsDataService permissionsDataService;
+
+  private MockMvc mockMvc;
+  private AuditingHelper auditingHelper;
 
   @Before
   public void beforeEach() {
-    permissionsHandler = mock(PermissionsHandler.class);
-    eventAuditLogService = mock(EventAuditLogService.class);
-    permissionsDataService = mock(PermissionsDataService.class);
+    auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
 
-    subject = new PermissionsController(permissionsHandler, eventAuditLogService,
-        permissionsDataService);
-
-    when(eventAuditLogService.auditEvents(any(), any(), any())).thenAnswer(answer -> {
-      Function<List<EventAuditRecordParameters>, RequestEntity> block = answer
-          .getArgumentAt(2, Function.class);
-      return block.apply(mock(ArrayList.class));
-    });
-
-    MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter =
-        new MappingJackson2HttpMessageConverter();
-    ObjectMapper objectMapper = JsonTestHelper.createObjectMapper();
-    mappingJackson2HttpMessageConverter.setObjectMapper(objectMapper);
-    mockMvc = MockMvcBuilders.standaloneSetup(subject)
-        .setMessageConverters(mappingJackson2HttpMessageConverter)
+    mockMvc = MockMvcBuilders
+        .webAppContextSetup(webApplicationContext)
+        .apply(springSecurity())
         .build();
   }
 
@@ -87,10 +98,14 @@ public class PermissionsControllerTest {
     when(permissionsHandler.getPermissions(eq("test_credential_name"), any(UserContext.class)))
         .thenReturn(permissionsView);
 
-    mockMvc.perform(get("/api/v1/permissions?credential_name=test_credential_name"))
+    mockMvc.perform(
+        get("/api/v1/permissions?credential_name=test_credential_name")
+            .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+    )
+        .andDo(print())
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.credential_name").value("test_credential_name"))
-        .andExpect(jsonPath("$.permissions").exists()).andDo(print());
+        .andExpect(jsonPath("$.permissions").exists());
   }
 
   @Test
@@ -103,7 +118,7 @@ public class PermissionsControllerTest {
         "      \"actor\": \"test-actor\",\n" +
         "      \"operations\": [\n" +
         "        \"read\",\n" +
-        "        \"write\"\n" +
+        "        \"write\"\n" +/**/
         "      ]\n" +
         "    }\n" +
         "  ]\n" +
@@ -127,6 +142,7 @@ public class PermissionsControllerTest {
         .thenReturn(JsonTestHelper.deserialize(expectedResponse, PermissionsView.class));
 
     MockHttpServletRequestBuilder request = post("/api/v1/permissions")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .contentType(MediaType.APPLICATION_JSON)
         .content(accessControlEntriesJson);
 
@@ -165,6 +181,7 @@ public class PermissionsControllerTest {
         "}";
 
     MockHttpServletRequestBuilder request = post("/api/v1/permissions")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .contentType(MediaType.APPLICATION_JSON)
         .content(accessControlEntriesJson);
 
@@ -174,11 +191,50 @@ public class PermissionsControllerTest {
 
   @Test
   public void DELETE_removesThePermissions() throws Exception {
-    mockMvc.perform(delete("/api/v1/permissions?credential_name=test-name&actor=test-actor"))
+    when(permissionsDataService.getAllowedOperations("test-name", "test-actor"))
+        .thenReturn(Collections.singletonList(PermissionOperation.WRITE));
+
+    mockMvc.perform(
+        delete("/api/v1/permissions?credential_name=test-name&actor=test-actor")
+            .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+    )
         .andExpect(status().isNoContent())
         .andExpect(content().string(""));
 
     verify(permissionsHandler, times(1))
         .deletePermissionEntry(eq("test-name"), eq("test-actor"), any(UserContext.class));
+
+    auditingHelper.verifyAuditing(
+        ACL_DELETE,
+        "/test-name",
+        UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
+        "/api/v1/permissions",
+        204);
+  }
+
+  @Test
+  public void DELETE_whenTheCredentialDoesNotExist_logsAnEvent() throws Exception {
+    when(permissionsDataService.getAllowedOperations("incorrect-name", "test-actor"))
+        .thenReturn(Collections.emptyList());
+
+    Mockito.doThrow(new EntryNotFoundException("error.credential.invalid_access"))
+        .when(permissionsHandler)
+        .deletePermissionEntry(eq("incorrect-name"), eq("test-actor"), any());
+
+    mockMvc.perform(
+        delete("/api/v1/permissions?credential_name=incorrect-name&actor=test-actor")
+            .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+    )
+        .andExpect(status().isNotFound());
+
+    verify(permissionsHandler, times(1))
+        .deletePermissionEntry(eq("incorrect-name"), eq("test-actor"), any(UserContext.class));
+
+    auditingHelper.verifyAuditing(
+        ACL_DELETE,
+        "/incorrect-name",
+        UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
+        "/api/v1/permissions",
+        404);
   }
 }
