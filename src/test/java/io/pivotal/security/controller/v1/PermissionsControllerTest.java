@@ -1,6 +1,7 @@
 package io.pivotal.security.controller.v1;
 
 import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.PermissionsDataService;
 import io.pivotal.security.exceptions.EntryNotFoundException;
@@ -230,11 +231,13 @@ public class PermissionsControllerTest {
     verify(permissionsHandler, times(1))
         .deletePermissionEntry(eq("incorrect-name"), eq("test-actor"), any(UserContext.class));
 
+    EventAuditRecordParameters expectedEntry = new EventAuditRecordParameters(ACL_DELETE, "/incorrect-name", null, "test-actor");
+
     auditingHelper.verifyAuditing(
-        ACL_DELETE,
-        "/incorrect-name",
         UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
         "/api/v1/permissions",
-        404);
+        404,
+        Collections.singletonList(expectedEntry)
+        );
   }
 }
