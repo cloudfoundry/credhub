@@ -16,7 +16,7 @@ public class DefaultCredentialGenerateRequest extends BaseCredentialGenerateRequ
 
   @Override
   @JsonIgnore
-  public GenerationParameters getDomainGenerationParameters() {
+  public GenerationParameters getGenerationParameters() {
     return null;
   }
 }

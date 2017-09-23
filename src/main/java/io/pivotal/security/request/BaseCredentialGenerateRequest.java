@@ -24,7 +24,7 @@ import static com.google.common.collect.Lists.newArrayList;
 public abstract class BaseCredentialGenerateRequest extends BaseCredentialRequest {
   private boolean regenerate;
 
-  public abstract GenerationParameters getDomainGenerationParameters();
+  public abstract GenerationParameters getGenerationParameters();
 
   @Override
   public void validate() {

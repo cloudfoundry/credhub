@@ -114,7 +114,7 @@ public class RegenerateHandler {
 
     StringGenerationParameters generationParameters = null;
     if (generateRequest instanceof PasswordGenerateRequest) {
-      generationParameters = ((PasswordGenerateRequest) generateRequest).getGenerationParameters();
+      generationParameters = (StringGenerationParameters) generateRequest.getGenerationParameters();
     }
     if (generateRequest instanceof UserGenerateRequest) {
       generationParameters = ((UserGenerateRequest) generateRequest).getUserCredentialGenerationParameters();
@@ -158,6 +158,6 @@ public class RegenerateHandler {
 
   private CredentialValue generateCredential(BaseCredentialGenerateRequest generateRequest, UserContext userContext) {
     CredentialGenerator generator = credentialGenerators.get(generateRequest.getType());
-    return generator.generateCredential(generateRequest.getDomainGenerationParameters(), userContext);
+    return generator.generateCredential(generateRequest.getGenerationParameters(), userContext);
   }
 }

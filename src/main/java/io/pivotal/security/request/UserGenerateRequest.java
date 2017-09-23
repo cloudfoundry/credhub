@@ -12,13 +12,8 @@ public class UserGenerateRequest extends BaseCredentialGenerateRequest {
 
   @Override
   @JsonIgnore
-  public GenerationParameters getDomainGenerationParameters() {
+  public GenerationParameters getGenerationParameters() {
     return getUserCredentialGenerationParameters();
-  }
-
-  @Override
-  public void validate() {
-    super.validate();
   }
 
   public StringGenerationParameters getUserCredentialGenerationParameters() {

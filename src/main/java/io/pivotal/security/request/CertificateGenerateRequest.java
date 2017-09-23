@@ -26,7 +26,7 @@ public class CertificateGenerateRequest extends BaseCredentialGenerateRequest {
 
   @Override
   @JsonIgnore
-  public GenerationParameters getDomainGenerationParameters() {
+  public GenerationParameters getGenerationParameters() {
     if (certificateGenerationParameters == null) {
       certificateGenerationParameters = new CertificateGenerationParameters(requestGenerationParameters);
     }
