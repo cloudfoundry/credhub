@@ -39,6 +39,9 @@ public class CertificateCredentialValue implements CredentialValue {
     return ca;
   }
 
+  public void setCa(String ca) {
+    this.ca = ca;
+  }
   public String getCertificate() {
     return certificate;
   }

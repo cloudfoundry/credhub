@@ -122,8 +122,7 @@ public class CredentialsController {
       LOGGER.error(
           "Exception \"" + e.getMessage() + "\" with class \"" + e.getClass().getCanonicalName()
               + "\" while storing credential, possibly caused by race condition, retrying...");
-      return auditedHandlePutRequest(requestBody, requestUuid, userContext,
-          currentUserPermissionEntry);
+      return auditedHandlePutRequest(requestBody, requestUuid, userContext, currentUserPermissionEntry);
     }
   }
 
@@ -244,11 +243,6 @@ public class CredentialsController {
       String requestString = StringUtil.fromInputStream(inputStream);
 
       if (readRegenerateFlagFrom(requestString)) {
-        // If it's a regenerate request deserialization is simple; the generation case requires
-        // polymorphic deserialization See BaseCredentialGenerateRequest to see how that's done. It
-        // would be nice if Jackson could pick a subclass based on an arbitrary function, since
-        // we want to consider both type and .regenerate. We could do custom deserialization but
-        // then we'd have to do the entire job by hand.
         return handleRegenerateRequest(userContext, requestString, currentUserPermissionEntry, auditRecordParameters);
       } else {
         return handleGenerateRequest(userContext, auditRecordParameters, requestString,
@@ -291,14 +285,14 @@ public class CredentialsController {
       PermissionEntry currentUserPermissionEntry
   ) {
     return eventAuditLogService.auditEvents(requestUuid, userContext, auditRecordParameters ->
-        handlePutRequest(requestBody, userContext, auditRecordParameters, currentUserPermissionEntry));
+        handlePutRequest(requestBody, userContext, currentUserPermissionEntry, auditRecordParameters));
   }
 
   private CredentialView handlePutRequest(
       @RequestBody BaseCredentialSetRequest requestBody,
       UserContext userContext,
-      List<EventAuditRecordParameters> auditRecordParameters,
-      PermissionEntry currentUserPermissionEntry
+      PermissionEntry currentUserPermissionEntry,
+      List<EventAuditRecordParameters> auditRecordParameters
   ) {
     return setHandler.handle(
         requestBody,

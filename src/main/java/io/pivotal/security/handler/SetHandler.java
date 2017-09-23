@@ -42,22 +42,12 @@ public class SetHandler {
     if (setRequest instanceof PasswordSetRequest) {
       generationParameters = ((PasswordSetRequest) setRequest).getGenerationParameters();
     } else if (setRequest instanceof CertificateSetRequest) {
-      CertificateSetRequest certificateSetRequest = (CertificateSetRequest) setRequest;
-      CertificateCredentialValue certificateValue = certificateSetRequest.getCertificateValue();
+      // fill in the ca value if it's one of ours
+      CertificateCredentialValue certificateValue = ((CertificateSetRequest) setRequest).getCertificateValue();
 
-      if (certificateValue.getCaName() != null) {
-        CertificateCredentialValue certificateAuthority = certificateAuthorityService.findMostRecent(certificateValue.getCaName());
-
-        certificateSetRequest.setCertificateValue(
-            new CertificateCredentialValue(
-                certificateAuthority.getCertificate(),
-                certificateValue.getCertificate(),
-                certificateValue.getPrivateKey(),
-                certificateValue.getCaName()
-            )
-        );
-
-        setRequest = certificateSetRequest;
+      String caName = certificateValue.getCaName();
+      if (caName != null) {
+        certificateValue.setCa(certificateAuthorityService.findMostRecent(caName).getCertificate());
       }
     }
 

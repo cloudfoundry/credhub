@@ -11,7 +11,6 @@ import java.util.List;
 @JsonAutoDetect
 @Validated
 public class PermissionEntry {
-
   @NotEmpty(message = "error.acl.missing_actor")
   private String actor;
 

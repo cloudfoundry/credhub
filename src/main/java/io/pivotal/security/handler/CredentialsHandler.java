@@ -18,7 +18,6 @@ import static io.pivotal.security.request.PermissionOperation.READ;
 
 @Component
 public class CredentialsHandler {
-
   private final CredentialDataService credentialDataService;
   private final PermissionService permissionService;
 
@@ -51,18 +50,18 @@ public class CredentialsHandler {
     auditRecordParametersList.add(auditRecordParameters);
 
     List<Credential> credentials;
-    if (numberOfVersions != null) {
+    if (numberOfVersions == null) {
+      credentials = credentialDataService.findAllByName(credentialName);
+    } else {
       if (numberOfVersions < 0) {
         throw new InvalidQueryParameterException("error.invalid_query_parameter", "versions");
       }
       credentials = credentialDataService.findNByName(credentialName, numberOfVersions);
-    } else {
-      credentials = credentialDataService.findAllByName(credentialName);
     }
 
     // We need this extra check in case permissions aren't being enforced.
-    if (credentials.isEmpty() || !permissionService
-        .hasPermission(userContext.getAclUser(), credentialName, READ)) {
+    if (credentials.isEmpty()
+        || !permissionService.hasPermission(userContext.getAclUser(), credentialName, READ)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
@@ -82,7 +81,9 @@ public class CredentialsHandler {
       UserContext userContext,
       List<EventAuditRecordParameters> auditRecordParametersList
   ) {
-    Credential credential = getNCredentialVersions(credentialName, 1, userContext, auditRecordParametersList).get(0);
+    Credential credential =
+        getNCredentialVersions(credentialName, 1, userContext, auditRecordParametersList)
+            .get(0);
 
     return credential;
   }

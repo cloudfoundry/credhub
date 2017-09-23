@@ -4,6 +4,7 @@ import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.CredentialFactory;
 import io.pivotal.security.entity.CredentialData;
 import io.pivotal.security.entity.CredentialName;
+import io.pivotal.security.exceptions.InvalidQueryParameterException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.repository.CredentialRepository;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
