@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.List;
 
 public class RsaSshGenerationParameters implements GenerationParameters{
-
   private int keyLength = 2048;
   private List<Integer> validKeyLengths = Arrays.asList(2048, 3072, 4096);
 

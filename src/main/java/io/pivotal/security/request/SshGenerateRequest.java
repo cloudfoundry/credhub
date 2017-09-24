@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class SshGenerateRequest extends BaseCredentialGenerateRequest {
-
   @JsonProperty("parameters")
   private SshGenerationParameters generationParameters;
 
@@ -19,12 +18,5 @@ public class SshGenerateRequest extends BaseCredentialGenerateRequest {
       generationParameters = new SshGenerationParameters();
     }
     return generationParameters;
-  }
-
-  @Override
-  public void validate() {
-    super.validate();
-
-    getGenerationParameters().validate();
   }
 }

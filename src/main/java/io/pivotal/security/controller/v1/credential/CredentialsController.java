@@ -263,8 +263,7 @@ public class CredentialsController {
         .readValue(requestString, BaseCredentialGenerateRequest.class);
     requestBody.validate();
 
-    return generateHandler
-        .handle(requestBody, userContext, currentUserPermissionEntry, auditRecordParameters);
+    return generateHandler.handle(requestBody, userContext, currentUserPermissionEntry, auditRecordParameters);
   }
 
   private CredentialView handleRegenerateRequest(

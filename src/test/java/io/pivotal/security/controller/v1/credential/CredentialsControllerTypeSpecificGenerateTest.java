@@ -352,8 +352,8 @@ public class CredentialsControllerTypeSpecificGenerateTest {
             "}");
 
     mockMvc.perform(request)
-        .andExpect(parametizer.jsonAssertions())
         .andExpect(status().isOk())
+        .andExpect(parametizer.jsonAssertions())
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
         .andExpect(multiJsonPath(
             "$.type", parametizer.credentialType,

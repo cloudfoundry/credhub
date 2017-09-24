@@ -37,6 +37,10 @@ public abstract class BaseCredentialGenerateRequest extends BaseCredentialReques
     if (isInvalidTypeForGeneration(getType())) {
       throw new ParameterizedValidationException("error.cannot_generate_type");
     }
+
+    if (getGenerationParameters() != null ) {
+      getGenerationParameters().validate();
+    }
   }
 
   private boolean isInvalidCredentialType(String type) {

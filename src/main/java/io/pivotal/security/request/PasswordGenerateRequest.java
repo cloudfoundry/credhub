@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class PasswordGenerateRequest extends BaseCredentialGenerateRequest {
-
   @JsonProperty("parameters")
   private StringGenerationParameters generationParameters;
 
@@ -20,12 +19,4 @@ public class PasswordGenerateRequest extends BaseCredentialGenerateRequest {
     }
     return generationParameters;
   }
-
-  @Override
-  public void validate() {
-    super.validate();
-
-    getGenerationParameters().validate();
-  }
-
 }

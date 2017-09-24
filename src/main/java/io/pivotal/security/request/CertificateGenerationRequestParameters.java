@@ -16,7 +16,6 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 @JsonInclude(NON_DEFAULT)
 public class CertificateGenerationRequestParameters {
-
   public static final String SERVER_AUTH = "server_auth";
   public static final String CLIENT_AUTH = "client_auth";
   public static final String CODE_SIGNING = "code_signing";
@@ -129,6 +128,10 @@ public class CertificateGenerationRequestParameters {
   }
 
   public boolean isSelfSigned() {
+    if (isCa() && isEmpty(caName)) {
+      selfSigned = true;
+    }
+
     return selfSigned;
   }
 
@@ -199,10 +202,6 @@ public class CertificateGenerationRequestParameters {
   }
 
   public void validate() {
-    if (isCa() && isEmpty(caName)) {
-      selfSigned = true;
-    }
-
     if (StringUtils.isEmpty(organization)
         && StringUtils.isEmpty(state)
         && StringUtils.isEmpty(locality)

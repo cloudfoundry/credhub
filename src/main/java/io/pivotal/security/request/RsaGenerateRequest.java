@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class RsaGenerateRequest extends BaseCredentialGenerateRequest {
-
   @JsonProperty("parameters")
   private RsaGenerationParameters generationParameters;
 
@@ -19,12 +18,5 @@ public class RsaGenerateRequest extends BaseCredentialGenerateRequest {
       generationParameters = new RsaGenerationParameters();
     }
     return generationParameters;
-  }
-
-  @Override
-  public void validate() {
-    super.validate();
-
-    getGenerationParameters().validate();
   }
 }
