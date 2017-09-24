@@ -13,10 +13,6 @@ public class UserGenerateRequest extends BaseCredentialGenerateRequest {
   @Override
   @JsonIgnore
   public GenerationParameters getGenerationParameters() {
-    return getUserCredentialGenerationParameters();
-  }
-
-  public StringGenerationParameters getUserCredentialGenerationParameters() {
     if(value.getUsername() != null){
       passwordGenerationParameters.setUsername(value.getUsername());
     }

@@ -16,6 +16,7 @@ import io.pivotal.security.entity.RsaCredentialData;
 import io.pivotal.security.entity.SshCredentialData;
 import io.pivotal.security.entity.UserCredentialData;
 import io.pivotal.security.entity.ValueCredentialData;
+import io.pivotal.security.request.GenerationParameters;
 import io.pivotal.security.request.StringGenerationParameters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -70,37 +71,35 @@ public class CredentialFactory {
       String name,
       CredentialValue credentialValue,
       Credential existingCredential,
-      StringGenerationParameters passwordGenerationParameters
+      GenerationParameters passwordGenerationParameters
   ) {
     Credential credential;
     switch (type) {
       case password:
-        credential = new PasswordCredential((StringCredentialValue) credentialValue,
-            passwordGenerationParameters, encryptor);
+        credential = new PasswordCredential(
+            (StringCredentialValue) credentialValue,
+            (StringGenerationParameters) passwordGenerationParameters,
+            encryptor);
         break;
       case certificate:
-        credential = new CertificateCredential((CertificateCredentialValue) credentialValue,
-            encryptor);
+        credential = new CertificateCredential((CertificateCredentialValue) credentialValue, encryptor);
         break;
       case value:
-        credential = new ValueCredential((StringCredentialValue) credentialValue,
-            encryptor);
+        credential = new ValueCredential((StringCredentialValue) credentialValue, encryptor);
         break;
       case rsa:
-        credential = new RsaCredential((RsaCredentialValue) credentialValue,
-            encryptor);
+        credential = new RsaCredential((RsaCredentialValue) credentialValue, encryptor);
         break;
       case ssh:
-        credential = new SshCredential((SshCredentialValue) credentialValue,
-            encryptor);
+        credential = new SshCredential((SshCredentialValue) credentialValue, encryptor);
         break;
       case json:
-        credential = new JsonCredential((JsonCredentialValue) credentialValue,
-            encryptor);
+        credential = new JsonCredential((JsonCredentialValue) credentialValue, encryptor);
         break;
       case user:
-        credential = new UserCredential((UserCredentialValue) credentialValue,
-            passwordGenerationParameters,
+        credential = new UserCredential(
+            (UserCredentialValue) credentialValue,
+            (StringGenerationParameters) passwordGenerationParameters,
             encryptor);
         break;
       default:

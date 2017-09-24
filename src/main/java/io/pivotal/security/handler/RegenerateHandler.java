@@ -9,11 +9,8 @@ import io.pivotal.security.domain.PasswordCredential;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.PermissionException;
 import io.pivotal.security.request.BaseCredentialGenerateRequest;
-import io.pivotal.security.request.PasswordGenerateRequest;
 import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.PermissionOperation;
-import io.pivotal.security.request.StringGenerationParameters;
-import io.pivotal.security.request.UserGenerateRequest;
 import io.pivotal.security.service.CredentialService;
 import io.pivotal.security.service.PermissionService;
 import io.pivotal.security.view.BulkRegenerateResults;
@@ -54,32 +51,24 @@ public class RegenerateHandler {
       PermissionEntry currentUserPermissionEntry,
       List<EventAuditRecordParameters> auditRecordParameters
   ) {
-    Credential credential = credentialDataService.findMostRecent(credentialName);
-    if (credential == null) {
+    Credential existingCredential = credentialDataService.findMostRecent(credentialName);
+    if (existingCredential == null) {
       auditRecordParameters.add(new EventAuditRecordParameters(CREDENTIAL_UPDATE, credentialName));
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
-    if (credential instanceof PasswordCredential && ((PasswordCredential) credential).getGenerationParameters() == null) {
+    if (existingCredential instanceof PasswordCredential && ((PasswordCredential) existingCredential).getGenerationParameters() == null) {
       auditRecordParameters.add(new EventAuditRecordParameters(CREDENTIAL_UPDATE, credentialName));
     }
 
-    BaseCredentialGenerateRequest generateRequest = generationRequestGenerator.createGenerateRequest(credential);
+    BaseCredentialGenerateRequest generateRequest = generationRequestGenerator.createGenerateRequest(existingCredential);
     CredentialValue credentialValue = credentialGenerator.generate(generateRequest, userContext);
-
-    StringGenerationParameters generationParameters = null;
-    if (generateRequest instanceof PasswordGenerateRequest) {
-      generationParameters = (StringGenerationParameters) generateRequest.getGenerationParameters();
-    }
-    if (generateRequest instanceof UserGenerateRequest) {
-      generationParameters = ((UserGenerateRequest) generateRequest).getUserCredentialGenerationParameters();
-    }
 
     return credentialService.save(
         generateRequest.getName(),
         generateRequest.getType(),
         credentialValue,
-        generationParameters,
+        generateRequest.getGenerationParameters(),
         generateRequest.getAdditionalPermissions(),
         generateRequest.isOverwrite(),
         userContext,

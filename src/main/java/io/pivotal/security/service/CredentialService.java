@@ -12,8 +12,8 @@ import io.pivotal.security.domain.CredentialFactory;
 import io.pivotal.security.exceptions.InvalidAclOperationException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.exceptions.PermissionException;
+import io.pivotal.security.request.GenerationParameters;
 import io.pivotal.security.request.PermissionEntry;
-import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.view.CredentialView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -52,7 +52,7 @@ public class CredentialService {
       String credentialName,
       String type,
       CredentialValue credentialValue,
-      StringGenerationParameters generationParameters,
+      GenerationParameters generationParameters,
       List<PermissionEntry> accessControlEntries,
       boolean isOverwrite,
       UserContext userContext,
