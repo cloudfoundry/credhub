@@ -8,12 +8,6 @@ import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.PasswordCredential;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.PermissionException;
-import io.pivotal.security.generator.CertificateGenerator;
-import io.pivotal.security.generator.CredentialGenerator;
-import io.pivotal.security.generator.PasswordCredentialGenerator;
-import io.pivotal.security.generator.RsaGenerator;
-import io.pivotal.security.generator.SshGenerator;
-import io.pivotal.security.generator.UserGenerator;
 import io.pivotal.security.request.BaseCredentialGenerateRequest;
 import io.pivotal.security.request.PasswordGenerateRequest;
 import io.pivotal.security.request.PermissionEntry;
@@ -22,22 +16,12 @@ import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.request.UserGenerateRequest;
 import io.pivotal.security.service.CredentialService;
 import io.pivotal.security.service.PermissionService;
-import io.pivotal.security.service.regeneratables.CertificateCredentialRegeneratable;
-import io.pivotal.security.service.regeneratables.NotRegeneratable;
-import io.pivotal.security.service.regeneratables.PasswordCredentialRegeneratable;
-import io.pivotal.security.service.regeneratables.Regeneratable;
-import io.pivotal.security.service.regeneratables.RsaCredentialRegeneratable;
-import io.pivotal.security.service.regeneratables.SshCredentialRegeneratable;
-import io.pivotal.security.service.regeneratables.UserCredentialRegeneratable;
 import io.pivotal.security.view.BulkRegenerateResults;
 import io.pivotal.security.view.CredentialView;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Supplier;
 
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 
@@ -45,48 +29,23 @@ import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 public class RegenerateHandler {
 
   private CredentialDataService credentialDataService;
-  private Map<String, Supplier<Regeneratable>> regeneratableTypeProducers;
   private CredentialService credentialService;
+  private UniversalCredentialGenerator credentialGenerator;
   private final PermissionService permissionService;
-  private PasswordCredentialGenerator passwordCredentialGenerator;
-  private UserGenerator userGenerator;
-  private SshGenerator sshGenerator;
-  private RsaGenerator rsaGenerator;
-  private CertificateGenerator certificateGenerator;
-  private Map<String, CredentialGenerator> credentialGenerators;
+  private GenerationRequestGenerator generationRequestGenerator;
 
   RegenerateHandler(
       CredentialDataService credentialDataService,
       CredentialService credentialService,
       PermissionService permissionService,
-      PasswordCredentialGenerator passwordCredentialGenerator,
-      UserGenerator userGenerator,
-      SshGenerator sshGenerator,
-      RsaGenerator rsaGenerator,
-      CertificateGenerator certificateGenerator) {
+      UniversalCredentialGenerator credentialGenerator,
+      GenerationRequestGenerator generationRequestGenerator) {
     this.credentialDataService = credentialDataService;
     this.credentialService = credentialService;
     this.permissionService = permissionService;
     this.credentialService = credentialService;
-    this.passwordCredentialGenerator = passwordCredentialGenerator;
-    this.userGenerator = userGenerator;
-    this.sshGenerator = sshGenerator;
-    this.rsaGenerator = rsaGenerator;
-    this.certificateGenerator = certificateGenerator;
-
-    this.regeneratableTypeProducers = new HashMap<>();
-    this.regeneratableTypeProducers.put("password", PasswordCredentialRegeneratable::new);
-    this.regeneratableTypeProducers.put("user", UserCredentialRegeneratable::new);
-    this.regeneratableTypeProducers.put("ssh", SshCredentialRegeneratable::new);
-    this.regeneratableTypeProducers.put("rsa", RsaCredentialRegeneratable::new);
-    this.regeneratableTypeProducers.put("certificate", CertificateCredentialRegeneratable::new);
-
-    this.credentialGenerators = new HashMap<>();
-    this.credentialGenerators.put("password", this.passwordCredentialGenerator);
-    this.credentialGenerators.put("user", this.userGenerator);
-    this.credentialGenerators.put("ssh", this.sshGenerator);
-    this.credentialGenerators.put("rsa", this.rsaGenerator);
-    this.credentialGenerators.put("certificate", this.certificateGenerator);
+    this.credentialGenerator = credentialGenerator;
+    this.generationRequestGenerator = generationRequestGenerator;
   }
 
   public CredentialView handleRegenerate(
@@ -105,12 +64,8 @@ public class RegenerateHandler {
       auditRecordParameters.add(new EventAuditRecordParameters(CREDENTIAL_UPDATE, credentialName));
     }
 
-    Regeneratable regeneratable = regeneratableTypeProducers
-        .getOrDefault(credential.getCredentialType(), NotRegeneratable::new)
-        .get();
-    BaseCredentialGenerateRequest generateRequest = regeneratable.createGenerateRequest(credential);
-
-    CredentialValue credentialValue = generateCredential(generateRequest, userContext);
+    BaseCredentialGenerateRequest generateRequest = generationRequestGenerator.createGenerateRequest(credential);
+    CredentialValue credentialValue = credentialGenerator.generate(generateRequest, userContext);
 
     StringGenerationParameters generationParameters = null;
     if (generateRequest instanceof PasswordGenerateRequest) {
@@ -154,10 +109,5 @@ public class RegenerateHandler {
 
     results.setRegeneratedCredentials(credentialNamesSet);
     return results;
-  }
-
-  private CredentialValue generateCredential(BaseCredentialGenerateRequest generateRequest, UserContext userContext) {
-    CredentialGenerator generator = credentialGenerators.get(generateRequest.getType());
-    return generator.generateCredential(generateRequest.getGenerationParameters(), userContext);
   }
 }
