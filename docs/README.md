@@ -6,7 +6,7 @@ The API endpoints and associated CLI commands for interactions with CredHub are 
 
 ## Product Initiatives
 
-#### In Progress 
+#### In Progress
 
 * **Authorization via resource access control lists**
 
@@ -20,23 +20,39 @@ The API endpoints and associated CLI commands for interactions with CredHub are 
 
     **Status**: MVP in v1.1.0; In Development
 
-* **Provide performance results for horizontally scaled instances**
+* **CredHub client library for Go**
 
-    The goal of this initiative is to provide performance results for CredHub as it is scaled to multiple instances. 
-
-    **Status**: In Development
-
-* **CredHub should support BBR for backing up and restoring its database**
-
-    The goal of this initiative is to allow users of [BBR](https://github.com/cloudfoundry-incubator/bosh-backup-and-restore) to backup and restore the CredHub database using the BBR utility. 
+    The goal of this initiative is to provide a supported golang client library for CredHub.
 
     **Status**: In Development
 
-* **Integration with Concourse CI**
+* **Cloud Foundry credential rotation**
 
-    The goal of this initiative is to integrate with Concourse CI to enable credential generation and storage in CredHub.
+    The goal of this initiative is to enable automated rotation of credentials for components of Cloud Foundry.
 
-    **Status**: In Development
+    **Status**: Exploration in Progress
+
+***
+
+#### Future
+
+* **Provide pluggable encryption provider interface**
+
+    The goal of this initiative is to provide a pluggable interface for encryption providers to allow the creation and maintenance of encryption providers outside of the core codebase.
+
+    **Status**: Planned
+
+* **Cloud Foundry application credential management**
+
+    The goal of this initiative is to provide a credential management solution for applications of Cloud Foundry.
+
+    **Status**: Planned
+
+* **Encryption-as-a-Service**
+
+    The goal of this initiative is to provide endpoints to allow encryption and decryption of arbitrary data.
+
+    **Status**: Planned
 
 ***
 
@@ -64,9 +80,15 @@ The API endpoints and associated CLI commands for interactions with CredHub are 
 
 * **Luna HSM encryption provider support**
 
-    The goal of this initiative is to provide support for using a Luna hardware security module (HSM) as an encryption provider.
+    The goal of this initiative is to provide support for using a Luna hardware security module (HSM) as an encryption provider. Additional information can be [found here.](https://github.com/pivotal-cf/credhub-release/blob/master/docs/configure-luna-hsm.md)
 
     **Status**: Released in v1.0.0
+
+* **CredHub client library for Java**
+
+    The goal of this initiative is to provide a supported Java client library for CredHub. Additional information can be [found here.](https://projects.spring.io/spring-credhub/)
+
+    **Status**: Completed
 
 * **Integration with Pivotal Ops Manager**
 
@@ -86,32 +108,21 @@ The API endpoints and associated CLI commands for interactions with CredHub are 
 
     **Status**: Released in v1.1.0
 
-***
+* **Integration with Concourse CI**
 
-#### Future
+    The goal of this initiative is to integrate with Concourse CI to enable credential generation and storage in CredHub. Additional information can be [found here.](http://concourse.ci/creds.html#credhub)
 
-* **Cloud Foundry credential rotation**
+    **Status**: Released in Concourse v3.5.0
 
-    The goal of this initiative is to enable automated rotation of credentials for components of Cloud Foundry.
+* **Provide performance results for horizontally scaled instances**
 
-    **Status**: Planned
+    The goal of this initiative is to provide performance results for CredHub as it is scaled to multiple instances. Additional information can be [found here.](performance-testing.md)
 
-* **Provide pluggable encryption provider interface**
+    **Status**: Completed
 
-    The goal of this initiative is to provide a pluggable interface for encryption providers to allow the creation and maintenance of encryption providers outside of the core codebase.
+* **CredHub should support BBR for backing up and restoring its database**
 
-    **Status**: Planned
+    The goal of this initiative is to allow users of [BBR](https://github.com/cloudfoundry-incubator/bosh-backup-and-restore) to backup and restore the CredHub database using the BBR utility. Additional information can be [found here.](https://github.com/pivotal-cf/credhub-release/blob/master/docs/backup-restore-recommendations.md)
 
-* **Cloud Foundry application credential management**
-
-    The goal of this initiative is to provide a credential management solution for applications of Cloud Foundry.
-
-    **Status**: Planned
-
-* **Encryption-as-a-Service**
-
-    The goal of this initiative is to provide endpoints to allow encryption and decryption of arbitrary data.
-
-    **Status**: Planned
-
+    **Status**: Released in v1.3.0
 
