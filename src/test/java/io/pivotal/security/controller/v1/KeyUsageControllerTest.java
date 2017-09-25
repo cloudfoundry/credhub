@@ -2,7 +2,7 @@ package io.pivotal.security.controller.v1;
 
 import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.data.EncryptionKeyCanaryDataService;
-import io.pivotal.security.entity.EncryptionKeyCanary;
+import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,10 +14,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.ArrayList;
+import java.util.UUID;
 
-import static org.mockito.Matchers.anyList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -34,13 +33,15 @@ public class KeyUsageControllerTest {
   private MockMvc mockMvc;
   CredentialDataService credentialDataService;
   EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
+  EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
 
   @Before
   public void beforeEach() {
     credentialDataService = mock(CredentialDataService.class);
+    encryptionKeyCanaryMapper = mock(EncryptionKeyCanaryMapper.class);
     encryptionKeyCanaryDataService = mock(EncryptionKeyCanaryDataService.class);
     final KeyUsageController keyUsageController = new KeyUsageController(credentialDataService,
-        encryptionKeyCanaryDataService);
+        encryptionKeyCanaryMapper);
 
     mockMvc = MockMvcBuilders
         .standaloneSetup(keyUsageController)
@@ -51,14 +52,15 @@ public class KeyUsageControllerTest {
   @Test
   public void getKeyUsages_getsKeyDistributionAcrossActiveInactiveAndUnknownEncryptionKeys()
       throws Exception {
-    List<EncryptionKeyCanary> canaries = Arrays
-        .asList(new EncryptionKeyCanary(), new EncryptionKeyCanary());
+    ArrayList<UUID> keysInConfigUuids = new ArrayList<UUID>() {{
+      add(UUID.randomUUID());
+      add(UUID.randomUUID());
+    }};
 
-    when(encryptionKeyCanaryDataService.findAll()).thenReturn(
-        canaries);
+    when(encryptionKeyCanaryMapper.getKnownCanaryUuids()).thenReturn(keysInConfigUuids);
     when(credentialDataService.count()).thenReturn(225L);
     when(credentialDataService.countAllNotEncryptedByActiveKey()).thenReturn(25L);
-    when(credentialDataService.countEncryptedWithKeyUuidIn(anyList())).thenReturn(220L);
+    when(credentialDataService.countEncryptedWithKeyUuidIn(keysInConfigUuids)).thenReturn(220L);
 
     mockMvc.perform(get("/api/v1/key-usage"))
         .andExpect(status().isOk())

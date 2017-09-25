@@ -2,7 +2,7 @@ package io.pivotal.security.controller.v1;
 
 import com.google.common.collect.ImmutableMap;
 import io.pivotal.security.data.CredentialDataService;
-import io.pivotal.security.data.EncryptionKeyCanaryDataService;
+import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(
@@ -23,26 +22,24 @@ import java.util.stream.Collectors;
 public class KeyUsageController {
 
   private final CredentialDataService credentialDataService;
-  private final EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
+  private final EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
 
   @Autowired
   public KeyUsageController(
       CredentialDataService credentialDataService,
-      EncryptionKeyCanaryDataService encryptionKeyCanaryDataService) {
+      EncryptionKeyCanaryMapper encryptionKeyCanaryMapper) {
     this.credentialDataService = credentialDataService;
-    this.encryptionKeyCanaryDataService = encryptionKeyCanaryDataService;
+    this.encryptionKeyCanaryMapper = encryptionKeyCanaryMapper;
   }
 
   @RequestMapping(method = RequestMethod.GET, path = "")
   public ResponseEntity<Map> getKeyUsages() {
-    List<UUID> canaryKeyUuids = encryptionKeyCanaryDataService.findAll().stream()
-        .map(key -> key.getUuid())
-        .collect(Collectors.toList());
+    List<UUID> canaryKeyInConfigUuids = encryptionKeyCanaryMapper.getKnownCanaryUuids();
 
     Long totalCredCount = credentialDataService.count();
     Long credsNotEncryptedByActiveKey = credentialDataService.countAllNotEncryptedByActiveKey();
     Long credsEncryptedByKnownKeys = credentialDataService
-        .countEncryptedWithKeyUuidIn(canaryKeyUuids);
+        .countEncryptedWithKeyUuidIn(canaryKeyInConfigUuids);
 
     Long activeKeyCreds = totalCredCount - credsNotEncryptedByActiveKey;
     Long unknownKeyCreds = totalCredCount - credsEncryptedByKnownKeys;
