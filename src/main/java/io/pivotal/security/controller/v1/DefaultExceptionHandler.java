@@ -1,6 +1,8 @@
 package io.pivotal.security.controller.v1;
 
 import io.pivotal.security.view.ResponseError;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.http.HttpStatus;
@@ -12,16 +14,20 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class DefaultExceptionHandler {
 
   private final MessageSourceAccessor messageSourceAccessor;
+  private final Logger logger;
 
   @Autowired
   DefaultExceptionHandler(MessageSourceAccessor messageSourceAccessor) {
     this.messageSourceAccessor = messageSourceAccessor;
+    this.logger = LogManager.getLogger(this.getClass());
   }
 
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   @ExceptionHandler(Exception.class)
-  public ResponseError handleGeneralException()
+  public ResponseError handleGeneralException(Exception e)
       throws Exception {
-    return new ResponseError(messageSourceAccessor.getMessage("error.internal_server_error"));
+    String message = messageSourceAccessor.getMessage("error.internal_server_error");
+    logger.error(message, e);
+    return new ResponseError(message);
   }
 }

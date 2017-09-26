@@ -14,6 +14,8 @@ import io.pivotal.security.exceptions.KeyNotFoundException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.exceptions.PermissionException;
 import io.pivotal.security.view.ResponseError;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.core.annotation.Order;
@@ -33,10 +35,12 @@ import static org.springframework.core.Ordered.HIGHEST_PRECEDENCE;
 @Order(HIGHEST_PRECEDENCE)
 public class ExceptionHandlers {
   private final MessageSourceAccessor messageSourceAccessor;
+  private final Logger logger;
 
   @Autowired
   ExceptionHandlers(MessageSourceAccessor messageSourceAccessor) {
     this.messageSourceAccessor = messageSourceAccessor;
+    this.logger = LogManager.getLogger(this.getClass());
   }
 
   @ExceptionHandler(EntryNotFoundException.class)
@@ -151,14 +155,21 @@ public class ExceptionHandlers {
   }
 
   private ResponseError constructError(String error) {
-    return new ResponseError(messageSourceAccessor.getMessage(error));
+
+    String message = messageSourceAccessor.getMessage(error);
+    logger.error(message);
+    return new ResponseError(message);
   }
 
   private ResponseError constructError(String error, String... args) {
-    return new ResponseError(messageSourceAccessor.getMessage(error, args));
+    String message = messageSourceAccessor.getMessage(error, args);
+    logger.error(message);
+    return new ResponseError(message);
   }
 
   private ResponseError constructError(String error, Object[] args) {
-    return new ResponseError(messageSourceAccessor.getMessage(error, args));
+    String message = messageSourceAccessor.getMessage(error, args);
+    logger.error(message);
+    return new ResponseError(message);
   }
 }
