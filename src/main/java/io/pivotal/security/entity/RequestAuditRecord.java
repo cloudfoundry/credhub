@@ -1,8 +1,8 @@
 package io.pivotal.security.entity;
 
-import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
-
 import io.pivotal.security.util.InstantMillisecondsConverter;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import java.time.Instant;
 import java.util.UUID;
 import javax.persistence.Column;
@@ -11,11 +11,12 @@ import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
 
 @SuppressWarnings("unused")
 @Entity
-@Table(name = "RequestAuditRecord")
+@Table(name = "request_audit_record")
 @EntityListeners(AuditingEntityListener.class)
 public class RequestAuditRecord {
 

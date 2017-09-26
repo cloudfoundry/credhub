@@ -15,7 +15,7 @@ import static io.pivotal.security.constants.EncryptionConstants.SALT_SIZE;
 import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
 
 @Entity
-@Table(name = "EncryptionKeyCanary")
+@Table(name = "encryption_key_canary")
 public class EncryptionKeyCanary {
 
   // Use VARBINARY to make all 3 DB types happy.

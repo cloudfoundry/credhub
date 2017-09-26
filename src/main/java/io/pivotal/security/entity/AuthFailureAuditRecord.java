@@ -17,7 +17,7 @@ import javax.persistence.Table;
 
 @SuppressWarnings("unused")
 @Entity
-@Table(name = "AuthFailureAuditRecord")
+@Table(name = "auth_failure_audit_record")
 @EntityListeners(AuditingEntityListener.class)
 public class AuthFailureAuditRecord {
 

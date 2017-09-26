@@ -16,7 +16,7 @@ import javax.persistence.SecondaryTable;
 public class RsaCredentialData extends CredentialData<RsaCredentialData> {
 
   public static final String CREDENTIAL_TYPE = "rsa";
-  static final String TABLE_NAME = "RsaCredential";
+  static final String TABLE_NAME = "rsa_credential";
 
   @Column(table = RsaCredentialData.TABLE_NAME, length = 7000)
   private String publicKey;

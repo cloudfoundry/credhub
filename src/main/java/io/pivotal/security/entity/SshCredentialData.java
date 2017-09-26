@@ -16,7 +16,7 @@ import javax.persistence.SecondaryTable;
 public class SshCredentialData extends CredentialData<SshCredentialData> {
 
   public static final String CREDENTIAL_TYPE = "ssh";
-  static final String TABLE_NAME = "SshCredential";
+  static final String TABLE_NAME = "ssh_credential";
 
   @Column(table = SshCredentialData.TABLE_NAME, length = 7000)
   private String publicKey;

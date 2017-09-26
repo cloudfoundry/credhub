@@ -1,6 +1,6 @@
 package io.pivotal.security.entity;
 
-import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
+import org.hibernate.annotations.GenericGenerator;
 
 import java.util.UUID;
 import javax.persistence.Column;
@@ -8,10 +8,11 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import org.hibernate.annotations.GenericGenerator;
+
+import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
 
 @Entity
-@Table(name = "CredentialName")
+@Table(name = "credential")
 public class CredentialName {
 
   @Id

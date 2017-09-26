@@ -4,7 +4,6 @@ import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.CredentialFactory;
 import io.pivotal.security.entity.CredentialData;
 import io.pivotal.security.entity.CredentialName;
-import io.pivotal.security.exceptions.InvalidQueryParameterException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.repository.CredentialRepository;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
@@ -186,16 +185,16 @@ public class CredentialDataService {
 
   private List<FindCredentialResult> findMatchingName(String nameLike) {
     final List<FindCredentialResult> credentialResults = jdbcTemplate.query(
-        " select name.name, credential.version_created_at from ("
+        " select name.name, credential_version.version_created_at from ("
             + "   select"
             + "     max(version_created_at) as version_created_at,"
             + "     credential_name_uuid"
-            + "   from credential group by credential_name_uuid"
-            + " ) as credential inner join ("
-            + "   select * from credential_name"
+            + "   from credential_version group by credential_name_uuid"
+            + " ) as credential_version inner join ("
+            + "   select * from credential"
             + "     where lower(name) like lower(?)"
             + " ) as name"
-            + " on credential.credential_name_uuid = name.uuid"
+            + " on credential_version.credential_name_uuid = name.uuid"
             + " order by version_created_at desc",
         new Object[]{nameLike},
         (rowSet, rowNum) -> {
@@ -209,10 +208,10 @@ public class CredentialDataService {
   }
 
   private List<String> findCertificateNamesByCaName(String caName){
-    String query = "select distinct credential_name.name from "
-        + "credential_name, credential, certificate_credential "
-        + "where credential_name.uuid=credential.credential_name_uuid "
-        + "and credential.uuid=certificate_credential.uuid "
+    String query = "select distinct credential.name from "
+        + "credential, credential_version, certificate_credential "
+        + "where credential.uuid=credential_version.credential_name_uuid "
+        + "and credential_version.uuid=certificate_credential.uuid "
         + "and lower(certificate_credential.ca_name) "
         + "like lower(?)";
     return jdbcTemplate.queryForList(query, String.class, caName);

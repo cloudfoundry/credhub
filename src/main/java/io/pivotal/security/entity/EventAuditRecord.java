@@ -19,7 +19,7 @@ import javax.persistence.Table;
 import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
 
 @Entity
-@Table(name = "EventAuditRecord")
+@Table(name = "event_audit_record")
 @EntityListeners(AuditingEntityListener.class)
 public class EventAuditRecord {
   @Id

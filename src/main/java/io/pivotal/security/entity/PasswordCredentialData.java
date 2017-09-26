@@ -13,7 +13,7 @@ import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
 public class PasswordCredentialData extends CredentialData<PasswordCredentialData> {
 
   public static final String CREDENTIAL_TYPE = "password";
-  static final String TABLE_NAME = "PasswordSecret";
+  static final String TABLE_NAME = "password_credential";
   @Column(table = PasswordCredentialData.TABLE_NAME, length = 255 + NONCE_SIZE)
   private byte[] encryptedGenerationParameters;
   @Column(table = PasswordCredentialData.TABLE_NAME, length = NONCE_SIZE)

@@ -17,7 +17,7 @@ import javax.persistence.SecondaryTable;
 public class CertificateCredentialData extends CredentialData<CertificateCredentialData> {
 
   public static final String CREDENTIAL_TYPE = "certificate";
-  static final String TABLE_NAME = "CertificateCredential";
+  static final String TABLE_NAME = "certificate_credential";
 
   @Column(table = CertificateCredentialData.TABLE_NAME, length = 7000)
   private String ca;

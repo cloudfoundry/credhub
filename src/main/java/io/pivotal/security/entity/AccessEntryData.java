@@ -17,7 +17,7 @@ import javax.persistence.Table;
 import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
 
 @Entity
-@Table(name = "AccessEntry")
+@Table(name = "access_entry")
 public class AccessEntryData {
 
   private static final boolean DEFAULT_DENY = false;
