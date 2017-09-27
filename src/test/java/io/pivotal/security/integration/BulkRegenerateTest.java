@@ -178,7 +178,7 @@ public class BulkRegenerateTest {
             + "}");
 
     mockMvc.perform(regenerateCertificatesRequest)
-        .andExpect(status().isForbidden())
+        .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.error", IsEqual.equalTo("The request could not be completed because the credential does not exist or you do not have sufficient authorization.")));
 
     assertThat(credentialDataService.findAllByName("/cert-to-regenerate").size(), equalTo(2));

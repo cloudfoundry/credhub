@@ -7,7 +7,6 @@ import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.PasswordCredential;
 import io.pivotal.security.exceptions.EntryNotFoundException;
-import io.pivotal.security.exceptions.PermissionException;
 import io.pivotal.security.request.BaseCredentialGenerateRequest;
 import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.PermissionOperation;
@@ -84,7 +83,7 @@ public class RegenerateHandler {
       List<EventAuditRecordParameters> auditRecordParameters
   ) {
     if (!permissionService.hasPermission(userContext.getAclUser(), signerName, PermissionOperation.READ)) {
-      throw new PermissionException("error.credential.invalid_access");
+      throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
     BulkRegenerateResults results = new BulkRegenerateResults();
