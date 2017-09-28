@@ -209,7 +209,9 @@ public class SignedCertificateGeneratorTest {
 
     assertThat(authorityKeyIdentifier.getKeyIdentifier(), equalTo(caSubjectKeyIdentifier.getKeyIdentifier()));
     assertThat(authorityKeyIdentifier.getAuthorityCertSerialNumber(), equalTo(caSerialNumber));
-    assertThat(authorityKeyIdentifier.getAuthorityCertIssuer().getNames()[0].getName().toString(), equalTo(new X500Principal(caName).getName()));
+    String certIssuerName = authorityKeyIdentifier.getAuthorityCertIssuer().getNames()[0].getName().toString();
+    assertThat(certIssuerName, containsString("CN=ca DN"));
+    assertThat(certIssuerName, containsString("O=credhub"));
   }
 
   @Test

@@ -147,7 +147,7 @@ public class SignedCertificateGenerator {
   }
 
   private X500Principal getSubjectNameFrom(X509Certificate certificate) throws IOException, CertificateException {
-    return new X500Principal(certificate.getSubjectDN().getName());
+    return new X500Principal(certificate.getSubjectX500Principal().getEncoded());
   }
 
   private SubjectKeyIdentifier getSubjectKeyIdentifierFrom(X509Certificate certificate) throws Exception {
