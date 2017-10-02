@@ -3,37 +3,32 @@ package io.pivotal.security.handler;
 import io.pivotal.security.audit.AuditingOperationCode;
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.InvalidQueryParameterException;
 import io.pivotal.security.service.PermissionService;
+import io.pivotal.security.service.PermissionedCredentialService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-import static io.pivotal.security.request.PermissionOperation.DELETE;
 import static io.pivotal.security.request.PermissionOperation.READ;
 
 @Component
 public class CredentialsHandler {
-  private final CredentialDataService credentialDataService;
+  private final PermissionedCredentialService credentialService;
   private final PermissionService permissionService;
 
   @Autowired
-  public CredentialsHandler(CredentialDataService credentialDataService,
+  public CredentialsHandler(PermissionedCredentialService credentialService,
       PermissionService permissionService) {
-    this.credentialDataService = credentialDataService;
+    this.credentialService = credentialService;
     this.permissionService = permissionService;
   }
 
   public void deleteCredential(String credentialName, UserContext userContext) {
-    if (!permissionService.hasPermission(userContext.getAclUser(), credentialName, DELETE)) {
-      throw new EntryNotFoundException("error.credential.invalid_access");
-    }
-
-    boolean deleteSucceeded = credentialDataService.delete(credentialName);
+    boolean deleteSucceeded = credentialService.delete(userContext, credentialName);
 
     if (!deleteSucceeded) {
       throw new EntryNotFoundException("error.credential.invalid_access");
@@ -50,21 +45,19 @@ public class CredentialsHandler {
     auditRecordParametersList.add(auditRecordParameters);
 
     List<Credential> credentials;
-    if (numberOfVersions == null) {
-      credentials = credentialDataService.findAllByName(credentialName);
-    } else {
-      if (numberOfVersions < 0) {
-        throw new InvalidQueryParameterException("error.invalid_query_parameter", "versions");
-      }
-      credentials = credentialDataService.findNByName(credentialName, numberOfVersions);
+    if (numberOfVersions != null && numberOfVersions < 0) {
+      throw new InvalidQueryParameterException("error.invalid_query_parameter", "versions");
     }
 
-    // We need this extra check in case permissions aren't being enforced.
-    if (credentials.isEmpty()
-        || !permissionService.hasPermission(userContext.getAclUser(), credentialName, READ)) {
+    if (numberOfVersions == null) {
+      credentials = credentialService.findAllByName(userContext, credentialName);
+    } else {
+      credentials = credentialService.findNByName(userContext, credentialName, numberOfVersions);
+    }
+
+    if (credentials.isEmpty()) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
-
     return credentials;
   }
 
@@ -97,7 +90,7 @@ public class CredentialsHandler {
         AuditingOperationCode.CREDENTIAL_ACCESS
     );
 
-    Credential credential = credentialDataService.findByUuid(credentialUUID);
+    Credential credential = credentialService.findByUuid(credentialUUID);
 
     if (credential != null) {
       eventAuditRecordParameters.setCredentialName(credential.getName());

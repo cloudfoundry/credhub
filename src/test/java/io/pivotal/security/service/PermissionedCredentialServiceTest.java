@@ -10,6 +10,7 @@ import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.CredentialFactory;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.PasswordCredential;
+import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.InvalidAclOperationException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.exceptions.PermissionException;
@@ -34,6 +35,7 @@ import static io.pivotal.security.request.PermissionOperation.READ;
 import static io.pivotal.security.request.PermissionOperation.READ_ACL;
 import static io.pivotal.security.request.PermissionOperation.WRITE;
 import static io.pivotal.security.request.PermissionOperation.WRITE_ACL;
+import static org.assertj.core.api.Java6Assertions.fail;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
@@ -75,6 +77,7 @@ public class PermissionedCredentialServiceTest {
   private PermissionEntry currentUserPermissions;
 
   private static final String CREDENTIAL_NAME = "/Picard";
+  private static final String USER = "Kirk";
 
   @Before
   public void setUp() throws Exception {
@@ -92,7 +95,7 @@ public class PermissionedCredentialServiceTest {
     credentialValue = mock(CredentialValue.class);
     accessControlEntries = new ArrayList<>();
 
-    when(userContext.getAclUser()).thenReturn("Kirk");
+    when(userContext.getAclUser()).thenReturn(USER);
     currentUserPermissions = new PermissionEntry(userContext.getAclUser(),
         Arrays.asList(READ, WRITE, DELETE, WRITE_ACL, READ_ACL));
 
@@ -434,5 +437,44 @@ public class PermissionedCredentialServiceTest {
         samePropertyValuesAs(
             new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, READ_ACL, "Kirk")
         )));
+  }
+
+  @Test
+  public void delete_whenTheUserLacksPermission_throwsAnException() {
+    when(permissionService.hasPermission(USER, CREDENTIAL_NAME, DELETE))
+        .thenReturn(false);
+
+    try {
+      subject.delete(userContext, CREDENTIAL_NAME);
+      fail("Should throw exception");
+    } catch (EntryNotFoundException e) {
+      assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
+    }
+  }
+
+  @Test
+  public void findAllByName_whenTheUserLacksPermission_throwsAnException() {
+    when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
+        .thenReturn(false);
+
+    try {
+      subject.findAllByName(userContext, CREDENTIAL_NAME);
+      fail("Should throw exception");
+    } catch (EntryNotFoundException e) {
+      assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
+    }
+  }
+
+  @Test
+  public void findNByName_whenTheUserLacksPermission_throwsAnException() {
+    when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
+        .thenReturn(false);
+
+    try {
+      subject.findNByName(userContext, CREDENTIAL_NAME, 1);
+      fail("Should throw exception");
+    } catch (EntryNotFoundException e) {
+      assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
+    }
   }
 }

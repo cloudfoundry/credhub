@@ -9,6 +9,7 @@ import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.data.PermissionsDataService;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.CredentialFactory;
+import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.InvalidAclOperationException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.exceptions.PermissionException;
@@ -24,6 +25,8 @@ import static io.pivotal.security.audit.AuditingOperationCode.ACL_UPDATE;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 import static io.pivotal.security.audit.EventAuditRecordParametersFactory.createPermissionsEventAuditParameters;
+import static io.pivotal.security.request.PermissionOperation.DELETE;
+import static io.pivotal.security.request.PermissionOperation.READ;
 import static io.pivotal.security.request.PermissionOperation.WRITE;
 import static io.pivotal.security.request.PermissionOperation.WRITE_ACL;
 
@@ -123,5 +126,32 @@ public class PermissionedCredentialService {
     if (!permissionService.hasPermission(userContext.getAclUser(), credentialName, WRITE_ACL)) {
       throw new PermissionException("error.credential.invalid_access");
     }
+  }
+
+  public boolean delete(UserContext userContext, String credentialName) {
+    if (!permissionService.hasPermission(userContext.getAclUser(), credentialName, DELETE)) {
+      throw new EntryNotFoundException("error.credential.invalid_access");
+    }
+    return credentialDataService.delete(credentialName);
+  }
+
+  public List<Credential> findAllByName(UserContext userContext, String credentialName) {
+    if (!permissionService.hasPermission(userContext.getAclUser(), credentialName, READ)) {
+      throw new EntryNotFoundException("error.credential.invalid_access");
+    }
+
+    return credentialDataService.findAllByName(credentialName);
+  }
+
+  public List<Credential> findNByName(UserContext userContext, String credentialName, Integer numberOfVersions) {
+    if (!permissionService.hasPermission(userContext.getAclUser(), credentialName, READ)) {
+      throw new EntryNotFoundException("error.credential.invalid_access");
+    }
+
+    return credentialDataService.findNByName(credentialName, numberOfVersions);
+  }
+
+  public Credential findByUuid(String credentialUUID) {
+    return credentialDataService.findByUuid(credentialUUID);
   }
 }
