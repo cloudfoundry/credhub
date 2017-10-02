@@ -12,7 +12,7 @@ import io.pivotal.security.request.PasswordSetRequest;
 import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.request.UserSetRequest;
-import io.pivotal.security.service.CredentialService;
+import io.pivotal.security.service.PermissionedCredentialService;
 import io.pivotal.security.view.CredentialView;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,7 +33,7 @@ import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
 public class SetHandlerTest {
-  private CredentialService credentialService;
+  private PermissionedCredentialService credentialService;
   private CertificateAuthorityService certificateAuthorityService;
 
   private SetHandler subject;
@@ -45,7 +45,7 @@ public class SetHandlerTest {
 
   @Before
   public void setUp() throws Exception {
-    credentialService = mock(CredentialService.class);
+    credentialService = mock(PermissionedCredentialService.class);
     certificateAuthorityService = mock(CertificateAuthorityService.class);
 
     subject = new SetHandler(credentialService, certificateAuthorityService);

@@ -28,7 +28,7 @@ import static io.pivotal.security.request.PermissionOperation.WRITE;
 import static io.pivotal.security.request.PermissionOperation.WRITE_ACL;
 
 @Service
-public class CredentialService {
+public class PermissionedCredentialService {
 
   private final CredentialDataService credentialDataService;
   private final PermissionsDataService permissionsDataService;
@@ -36,7 +36,7 @@ public class CredentialService {
   private final CredentialFactory credentialFactory;
 
   @Autowired
-  public CredentialService(
+  public PermissionedCredentialService(
       CredentialDataService credentialDataService,
       PermissionsDataService permissionsDataService,
       PermissionService permissionService,

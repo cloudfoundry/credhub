@@ -5,7 +5,7 @@ import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.credential.CredentialValue;
 import io.pivotal.security.request.BaseCredentialGenerateRequest;
 import io.pivotal.security.request.PermissionEntry;
-import io.pivotal.security.service.CredentialService;
+import io.pivotal.security.service.PermissionedCredentialService;
 import io.pivotal.security.view.CredentialView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,12 +15,12 @@ import java.util.List;
 @Service
 public class GenerateHandler {
 
-  private final CredentialService credentialService;
+  private final PermissionedCredentialService credentialService;
   private final UniversalCredentialGenerator credentialGenerator;
 
   @Autowired
   public GenerateHandler(
-      CredentialService credentialService,
+      PermissionedCredentialService credentialService,
       UniversalCredentialGenerator credentialGenerator) {
     this.credentialService = credentialService;
     this.credentialGenerator = credentialGenerator;

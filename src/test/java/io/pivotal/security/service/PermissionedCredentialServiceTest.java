@@ -47,7 +47,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 @RunWith(JUnit4.class)
-public class CredentialServiceTest {
+public class PermissionedCredentialServiceTest {
 
   @Mock
   private CredentialDataService credentialDataService;
@@ -64,7 +64,7 @@ public class CredentialServiceTest {
   @Mock
   private CredentialFactory credentialFactory;
 
-  private CredentialService subject;
+  private PermissionedCredentialService subject;
 
   private Credential existingCredential;
   private UserContext userContext;
@@ -80,7 +80,7 @@ public class CredentialServiceTest {
   public void setUp() throws Exception {
     initMocks(this);
 
-    subject = new CredentialService(
+    subject = new PermissionedCredentialService(
         credentialDataService,
         permissionsDataService,
         permissionService,

@@ -10,7 +10,7 @@ import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.request.BaseCredentialGenerateRequest;
 import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.PermissionOperation;
-import io.pivotal.security.service.CredentialService;
+import io.pivotal.security.service.PermissionedCredentialService;
 import io.pivotal.security.service.PermissionService;
 import io.pivotal.security.view.BulkRegenerateResults;
 import io.pivotal.security.view.CredentialView;
@@ -25,14 +25,14 @@ import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 public class RegenerateHandler {
 
   private CredentialDataService credentialDataService;
-  private CredentialService credentialService;
+  private PermissionedCredentialService credentialService;
   private UniversalCredentialGenerator credentialGenerator;
   private final PermissionService permissionService;
   private GenerationRequestGenerator generationRequestGenerator;
 
   RegenerateHandler(
       CredentialDataService credentialDataService,
-      CredentialService credentialService,
+      PermissionedCredentialService credentialService,
       PermissionService permissionService,
       UniversalCredentialGenerator credentialGenerator,
       GenerationRequestGenerator generationRequestGenerator) {

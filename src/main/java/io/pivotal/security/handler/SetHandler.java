@@ -9,7 +9,7 @@ import io.pivotal.security.request.CertificateSetRequest;
 import io.pivotal.security.request.PasswordSetRequest;
 import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.StringGenerationParameters;
-import io.pivotal.security.service.CredentialService;
+import io.pivotal.security.service.PermissionedCredentialService;
 import io.pivotal.security.view.CredentialView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -19,12 +19,12 @@ import java.util.List;
 @Component
 public class SetHandler {
 
-  private CredentialService credentialService;
+  private PermissionedCredentialService credentialService;
   private CertificateAuthorityService certificateAuthorityService;
 
   @Autowired
   public SetHandler(
-      CredentialService credentialService,
+      PermissionedCredentialService credentialService,
       CertificateAuthorityService certificateAuthorityService
   ) {
     this.credentialService = credentialService;
