@@ -151,15 +151,22 @@ public class PermissionedCredentialService {
     return credentialDataService.findNByName(credentialName, numberOfVersions);
   }
 
-  public Credential findByUuid(String credentialUUID) {
-    return credentialDataService.findByUuid(credentialUUID);
-  }
+  public Credential findByUuid(UserContext userContext, String credentialUUID, List<EventAuditRecordParameters> auditRecordParametersList) {
+    EventAuditRecordParameters eventAuditRecordParameters = new EventAuditRecordParameters(
+        AuditingOperationCode.CREDENTIAL_ACCESS
+    );
+    auditRecordParametersList.add(eventAuditRecordParameters);
 
-  public String getCredentialNameByUUIDForLogging(String credentialUUID) {
     Credential credential = credentialDataService.findByUuid(credentialUUID);
     if (credential == null) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
-    return credential.getName();
+    String credentialName = credential.getName();
+    eventAuditRecordParameters.setCredentialName(credentialName);
+
+    if (!permissionService.hasPermission(userContext.getAclUser(), credentialName, READ)) {
+      throw new EntryNotFoundException("error.credential.invalid_access");
+    }
+    return credentialDataService.findByUuid(credentialUUID);
   }
 }

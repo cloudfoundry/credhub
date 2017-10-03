@@ -13,8 +13,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-import static io.pivotal.security.request.PermissionOperation.READ;
-
 @Component
 public class CredentialsHandler {
   private final PermissionedCredentialService credentialService;
@@ -86,27 +84,6 @@ public class CredentialsHandler {
       UserContext userContext,
       List<EventAuditRecordParameters> auditRecordParametersList
   ) {
-    EventAuditRecordParameters eventAuditRecordParameters = new EventAuditRecordParameters(
-        AuditingOperationCode.CREDENTIAL_ACCESS
-    );
-    auditRecordParametersList.add(eventAuditRecordParameters);
-
-    String credentialName = credentialService.getCredentialNameByUUIDForLogging(credentialUUID);
-
-    if (credentialName == null) {
-      throw new EntryNotFoundException("error.credential.invalid_access");
-    }
-
-    eventAuditRecordParameters.setCredentialName(credentialName);
-    if (!permissionService.hasPermission(userContext.getAclUser(), credentialName, READ)) {
-      throw new EntryNotFoundException("error.credential.invalid_access");
-    }
-
-    Credential credential = credentialService.findByUuid(credentialUUID);
-    if (credential == null) {
-      throw new EntryNotFoundException("error.credential.invalid_access");
-    }
-
-    return credential;
+    return credentialService.findByUuid(userContext, credentialUUID, auditRecordParametersList);
   }
 }

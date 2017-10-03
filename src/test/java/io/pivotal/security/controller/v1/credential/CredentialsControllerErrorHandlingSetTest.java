@@ -369,7 +369,7 @@ public class CredentialsControllerErrorHandlingSetTest {
   }
 
   @Test
-  public void givenACertificateRequest_whenAnInvalidCaNameIsProvided_returns400() throws Exception {
+  public void givenACertificateRequest_whenAnInvalidCaNameIsProvided_returns404() throws Exception {
     final MockHttpServletRequestBuilder request = put("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
@@ -382,10 +382,10 @@ public class CredentialsControllerErrorHandlingSetTest {
             "    \"ca_name\": \"does-not-exist\"" +
             "  }" +
             "}");
-    final String expectedError = "The request could not be completed because the requested CA certificate could not be found. Please retry your request.";
+    final String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
 
     mockMvc.perform(request)
-        .andExpect(status().isBadRequest())
+        .andExpect(status().isNotFound())
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
         .andExpect(jsonPath("$.error").value(expectedError));
   }

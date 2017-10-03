@@ -81,8 +81,7 @@ public class CertificateGeneratorTest {
     subject = new CertificateGenerator(
         keyGenerator,
         signedCertificateGenerator,
-        certificateAuthorityService,
-        permissionService
+        certificateAuthorityService
     );
 
     when(permissionService.hasPermission(anyString(), anyString(), any())).thenReturn(true);
@@ -171,7 +170,7 @@ public class CertificateGeneratorTest {
         CertificateFormatter.pemOf(intermediateX509Certificate),
         CertificateFormatter.pemOf(intermediateCaKeyPair.getPrivate()),
         null);
-    when(certificateAuthorityService.findMostRecent("my-ca-name")).thenReturn(intermediateCa);
+    when(certificateAuthorityService.findMostRecent(userContext, "my-ca-name")).thenReturn(intermediateCa);
 
     when(keyGenerator.generateKeyPair(anyInt())).thenReturn(childCertificateKeyPair);
 
@@ -265,7 +264,7 @@ public class CertificateGeneratorTest {
   }
 
   private void setupMocksForRootCA(KeyPair childCertificateKeyPair) throws Exception {
-    when(certificateAuthorityService.findMostRecent("my-ca-name")).thenReturn(rootCa);
+    when(certificateAuthorityService.findMostRecent(userContext, "my-ca-name")).thenReturn(rootCa);
     when(keyGenerator.generateKeyPair(anyInt())).thenReturn(childCertificateKeyPair);
     X509CertificateHolder childCertificateHolder = generateChildCertificateSignedByCa(
         childCertificateKeyPair,
