@@ -14,7 +14,7 @@ public class VersionProvider {
     try {
       version = resources.readFileToString("version").trim();
     } catch (IOException | IllegalArgumentException e) {
-      version = "unknown";
+      version = "0.0.0";
     }
   }
 
