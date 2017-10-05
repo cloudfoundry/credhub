@@ -154,4 +154,12 @@ public class PermissionedCredentialService {
   public Credential findByUuid(String credentialUUID) {
     return credentialDataService.findByUuid(credentialUUID);
   }
+
+  public String getCredentialNameByUUIDForLogging(String credentialUUID) {
+    Credential credential = credentialDataService.findByUuid(credentialUUID);
+    if (credential == null) {
+      throw new EntryNotFoundException("error.credential.invalid_access");
+    }
+    return credential.getName();
+  }
 }

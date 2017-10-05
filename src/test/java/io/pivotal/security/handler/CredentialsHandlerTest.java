@@ -253,6 +253,8 @@ public class CredentialsHandlerTest {
         .thenReturn(version1);
     when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(true);
+    when(permissionedCredentialService.getCredentialNameByUUIDForLogging(UUID_STRING))
+        .thenReturn("/test/credential");
 
     Credential credential = subject.getCredentialVersionByUUID(
         UUID_STRING,
@@ -271,6 +273,8 @@ public class CredentialsHandlerTest {
         .thenReturn(version1);
     when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(true);
+    when(permissionedCredentialService.getCredentialNameByUUIDForLogging(UUID_STRING))
+        .thenReturn("/test/credential");
 
     subject.getCredentialVersionByUUID(UUID_STRING, userContext, auditRecordParametersList);
 
@@ -316,6 +320,8 @@ public class CredentialsHandlerTest {
         .thenReturn(version1);
     when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(false);
+    when(permissionedCredentialService.getCredentialNameByUUIDForLogging(UUID_STRING))
+        .thenReturn("/test/credential");
 
     try {
       subject.getCredentialVersionByUUID(UUID_STRING, userContext, auditRecordParametersList);

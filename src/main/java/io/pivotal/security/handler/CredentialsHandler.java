@@ -89,17 +89,21 @@ public class CredentialsHandler {
     EventAuditRecordParameters eventAuditRecordParameters = new EventAuditRecordParameters(
         AuditingOperationCode.CREDENTIAL_ACCESS
     );
-
-    Credential credential = credentialService.findByUuid(credentialUUID);
-
-    if (credential != null) {
-      eventAuditRecordParameters.setCredentialName(credential.getName());
-    }
-
     auditRecordParametersList.add(eventAuditRecordParameters);
 
-    if (credential == null ||
-        !permissionService.hasPermission(userContext.getAclUser(), credential.getName(), READ)) {
+    String credentialName = credentialService.getCredentialNameByUUIDForLogging(credentialUUID);
+
+    if (credentialName == null) {
+      throw new EntryNotFoundException("error.credential.invalid_access");
+    }
+
+    eventAuditRecordParameters.setCredentialName(credentialName);
+    if (!permissionService.hasPermission(userContext.getAclUser(), credentialName, READ)) {
+      throw new EntryNotFoundException("error.credential.invalid_access");
+    }
+
+    Credential credential = credentialService.findByUuid(credentialUUID);
+    if (credential == null) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 

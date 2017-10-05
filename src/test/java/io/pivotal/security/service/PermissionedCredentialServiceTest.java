@@ -42,6 +42,7 @@ import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -99,7 +100,7 @@ public class PermissionedCredentialServiceTest {
     currentUserPermissions = new PermissionEntry(userContext.getAclUser(),
         Arrays.asList(READ, WRITE, DELETE, WRITE_ACL, READ_ACL));
 
-    existingCredential = new PasswordCredential();
+    existingCredential = new PasswordCredential(CREDENTIAL_NAME);
     existingCredential.setEncryptor(encryptor);
   }
 
@@ -472,6 +473,26 @@ public class PermissionedCredentialServiceTest {
 
     try {
       subject.findNByName(userContext, CREDENTIAL_NAME, 1);
+      fail("Should throw exception");
+    } catch (EntryNotFoundException e) {
+      assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
+    }
+  }
+
+  @Test
+  public void getCredentialNameByUUIDForLogging_returnsTheCredentialName() throws Exception {
+    when(credentialDataService.findByUuid(anyString())).thenReturn(existingCredential);
+
+    assertThat(subject.getCredentialNameByUUIDForLogging("the correct UUID"),
+        equalTo(CREDENTIAL_NAME));
+  }
+
+  @Test
+  public void getCredentialNameByUUIDForLogging_whenNoSuchCredential_throws() throws Exception {
+    when(credentialDataService.findByUuid(anyString())).thenReturn(null);
+
+    try {
+      subject.getCredentialNameByUUIDForLogging("a bogus UUID");
       fail("Should throw exception");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
