@@ -1,8 +1,8 @@
 package io.pivotal.security.service;
 
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.EncryptedValueDataService;
 import io.pivotal.security.data.EncryptionKeyCanaryDataService;
-import io.pivotal.security.domain.Credential;
+import io.pivotal.security.entity.EncryptedValue;
 import io.pivotal.security.exceptions.KeyNotFoundException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -16,18 +16,18 @@ import java.util.UUID;
 @Component
 public class EncryptionKeyRotator {
 
-  private final CredentialDataService credentialDataService;
+  private final EncryptedValueDataService encryptedValueDataService;
   private final Logger logger;
   private final EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
   private final EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
 
   @Autowired
   EncryptionKeyRotator(
-      CredentialDataService credentialDataService,
+      EncryptedValueDataService encryptedValueDataService,
       EncryptionKeyCanaryMapper encryptionKeyCanaryMapper,
       EncryptionKeyCanaryDataService encryptionKeyCanaryDataService
   ) {
-    this.credentialDataService = credentialDataService;
+    this.encryptedValueDataService = encryptedValueDataService;
     this.logger = LogManager.getLogger(this.getClass());
     this.encryptionKeyCanaryMapper = encryptionKeyCanaryMapper;
     this.encryptionKeyCanaryDataService = encryptionKeyCanaryDataService;
@@ -38,21 +38,20 @@ public class EncryptionKeyRotator {
     logger.info("Starting encryption key rotation.");
     int rotatedRecordCount = 0;
 
-    final long startingNotRotatedRecordCount = credentialDataService.countAllNotEncryptedByActiveKey();
+    final long startingNotRotatedRecordCount = encryptedValueDataService.countAllNotEncryptedByActiveKey();
 
-    Slice<Credential> credentialsEncryptedByOldKey = credentialDataService
+    Slice<EncryptedValue> valuesEncryptedByOldKey = encryptedValueDataService
         .findEncryptedWithAvailableInactiveKey();
-    while (credentialsEncryptedByOldKey.hasContent()) {
-      for (Credential credential : credentialsEncryptedByOldKey.getContent()) {
+    while (valuesEncryptedByOldKey.hasContent()) {
+      for (EncryptedValue value : valuesEncryptedByOldKey.getContent()) {
         try {
-          credential.rotate();
-          credentialDataService.save(credential);
+          encryptedValueDataService.rotate(value);
           rotatedRecordCount++;
         } catch (KeyNotFoundException e) {
           logger.error("key not found for value, unable to rotate");
         }
       }
-      credentialsEncryptedByOldKey = credentialDataService.findEncryptedWithAvailableInactiveKey();
+      valuesEncryptedByOldKey = encryptedValueDataService.findEncryptedWithAvailableInactiveKey();
     }
 
     final long finish = System.currentTimeMillis();

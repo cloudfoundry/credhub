@@ -1,11 +1,9 @@
 package io.pivotal.security.service;
 
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.EncryptedValueDataService;
 import io.pivotal.security.data.EncryptionKeyCanaryDataService;
-import io.pivotal.security.domain.CertificateCredential;
-import io.pivotal.security.domain.PasswordCredential;
-import io.pivotal.security.domain.SshCredential;
+import io.pivotal.security.entity.EncryptedValue;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.data.domain.SliceImpl;
@@ -28,11 +26,11 @@ import static org.mockito.Mockito.when;
 @RunWith(Spectrum.class)
 public class EncryptionKeyRotatorTest {
 
-  private CredentialDataService credentialDataService;
+  private EncryptedValueDataService encryptedValueDataService;
 
-  private CertificateCredential certificateCredential;
-  private PasswordCredential passwordCredential;
-  private SshCredential sshCredential;
+  private EncryptedValue encryptedValue1;
+  private EncryptedValue encryptedValue2;
+  private EncryptedValue encryptedValue3;
   private EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
   private EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
   private UUID oldUuid;
@@ -41,38 +39,32 @@ public class EncryptionKeyRotatorTest {
     beforeEach(() -> {
       oldUuid = UUID.randomUUID();
 
-      credentialDataService = mock(CredentialDataService.class);
+      encryptedValueDataService = mock(EncryptedValueDataService.class);
 
-      certificateCredential = mock(CertificateCredential.class);
-      passwordCredential = mock(PasswordCredential.class);
-      sshCredential = mock(SshCredential.class);
+      encryptedValue1 = mock(EncryptedValue.class);
+      encryptedValue2 = mock(EncryptedValue.class);
+      encryptedValue3 = mock(EncryptedValue.class);
 
       encryptionKeyCanaryMapper =mock(EncryptionKeyCanaryMapper.class);
       when(encryptionKeyCanaryMapper.getCanaryUuidsWithKnownAndInactiveKeys())
           .thenReturn(newArrayList(oldUuid));
       encryptionKeyCanaryDataService = mock(EncryptionKeyCanaryDataService.class);
-      when(credentialDataService.findEncryptedWithAvailableInactiveKey())
-          .thenReturn(new SliceImpl<>(asList(certificateCredential, passwordCredential)))
-          .thenReturn(new SliceImpl<>(asList(sshCredential)))
+      when(encryptedValueDataService.findEncryptedWithAvailableInactiveKey())
+          .thenReturn(new SliceImpl<>(asList(encryptedValue1, encryptedValue2)))
+          .thenReturn(new SliceImpl<>(asList(encryptedValue3)))
           .thenReturn(new SliceImpl<>(new ArrayList<>()));
 
-      final EncryptionKeyRotator encryptionKeyRotator = new EncryptionKeyRotator(credentialDataService, encryptionKeyCanaryMapper, encryptionKeyCanaryDataService);
+      final EncryptionKeyRotator encryptionKeyRotator = new EncryptionKeyRotator(encryptedValueDataService, encryptionKeyCanaryMapper, encryptionKeyCanaryDataService);
 
       encryptionKeyRotator.rotate();
     });
 
     it("should rotate all the credentials and CAs that were encrypted with an available old key",
         () -> {
-          verify(certificateCredential).rotate();
-          verify(passwordCredential).rotate();
-          verify(sshCredential).rotate();
+          verify(encryptedValueDataService).rotate(encryptedValue1);
+          verify(encryptedValueDataService).rotate(encryptedValue2);
+          verify(encryptedValueDataService).rotate(encryptedValue3);
         });
-
-    it("should save all the credentials, CAs that were rotated", () -> {
-      verify(credentialDataService).save(certificateCredential);
-      verify(credentialDataService).save(passwordCredential);
-      verify(credentialDataService).save(sshCredential);
-    });
 
     it("deletes the unused canaries", () -> {
       ArgumentCaptor<List> argumentCaptor = ArgumentCaptor.forClass(List.class);

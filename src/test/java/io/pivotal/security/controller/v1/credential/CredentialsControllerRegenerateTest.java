@@ -141,6 +141,7 @@ public class CredentialsControllerRegenerateTest {
   public void regeneratingAnRsaKey_regeneratesTheRsaKey_andPersistsAnAuditEntry() throws Exception {
     RsaCredential originalCredential = new RsaCredential("my-rsa");
     originalCredential.setEncryptor(encryptor);
+    originalCredential.setPrivateKey("original value");
     originalCredential.setVersionCreatedAt(FROZEN_TIME.plusSeconds(1));
 
     credentialDataService.save(originalCredential);
@@ -174,6 +175,7 @@ public class CredentialsControllerRegenerateTest {
   public void regeneratingAnSshKey_regeneratesTheSshKey_andPersistsAnAuditEntry() throws Exception {
     SshCredential originalCredential = new SshCredential("my-ssh");
     originalCredential.setEncryptor(encryptor);
+    originalCredential.setPrivateKey("original value");
     originalCredential.setVersionCreatedAt(FROZEN_TIME.plusSeconds(1));
 
     credentialDataService.save(originalCredential);

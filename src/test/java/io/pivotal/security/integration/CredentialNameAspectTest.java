@@ -4,6 +4,7 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.data.CredentialNameDataService;
 import io.pivotal.security.domain.CertificateCredential;
+import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.Before;
@@ -33,10 +34,20 @@ public class CredentialNameAspectTest {
   @Autowired
   CredentialDataService credentialDataService;
 
+  @Autowired
+  Encryptor encryptor;
+
   @Before
   public void setup() {
     credentialNameDataService.save(new CredentialName("/test/name"));
-    credentialDataService.save(new CertificateCredential("/test/certificate").setCaName("/ca/certificate"));
+
+    CertificateCredential certificateCredential = new CertificateCredential("/test/certificate")
+        .setCaName("/ca/certificate")
+        .setEncryptor(encryptor);
+
+    certificateCredential.setPrivateKey("some-private-key");
+
+    credentialDataService.save(certificateCredential);
   }
 
   @Test

@@ -2,7 +2,6 @@ package io.pivotal.security.domain;
 
 import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.entity.CertificateCredentialData;
-import io.pivotal.security.service.Encryption;
 import io.pivotal.security.util.CertificateReader;
 import org.apache.commons.lang3.StringUtils;
 
@@ -61,19 +60,13 @@ public class CertificateCredential extends Credential<CertificateCredential> {
   }
 
   public String getPrivateKey() {
-    return encryptor.decrypt(new Encryption(
-        delegate.getEncryptionKeyUuid(),
-        delegate.getEncryptedValue(),
-        delegate.getNonce()));
+    return (String) super.getValue();
   }
 
   public CertificateCredential setPrivateKey(String privateKey) {
-    final Encryption encryption = encryptor.encrypt(privateKey);
-
-    delegate.setNonce(encryption.nonce);
-    delegate.setEncryptedValue(encryption.encryptedValue);
-    delegate.setEncryptionKeyUuid(encryption.canaryUuid);
-
+    if (privateKey != null) {
+      super.setValue(privateKey);
+    }
     return this;
   }
 

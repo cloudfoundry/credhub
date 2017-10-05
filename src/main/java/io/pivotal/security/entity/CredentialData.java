@@ -1,13 +1,16 @@
 package io.pivotal.security.entity;
 
+import io.pivotal.security.service.Encryption;
 import io.pivotal.security.util.InstantMillisecondsConverter;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
 import java.util.UUID;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.DiscriminatorColumn;
@@ -20,10 +23,9 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
-import static io.pivotal.security.constants.EncryptionConstants.ENCRYPTED_BYTES;
-import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
 import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
 
 @Entity
@@ -43,27 +45,15 @@ public abstract class CredentialData<Z extends CredentialData> {
   @GenericGenerator(name = "uuid2", strategy = "uuid2")
   private UUID uuid;
 
-  @Column(length = ENCRYPTED_BYTES + NONCE_SIZE, name = "encrypted_value")
-  private byte[] encryptedValue;
-
-  @Column(length = NONCE_SIZE)
-  private byte[] nonce;
+  @OneToOne(cascade = CascadeType.ALL)
+  @NotFound(action = NotFoundAction.IGNORE)
+  @JoinColumn(name = "encrypted_value_uuid")
+  private EncryptedValue encryptedCredentialValue;
 
   @Convert(converter = InstantMillisecondsConverter.class)
   @Column(nullable = false, columnDefinition = "BIGINT NOT NULL")
   @CreatedDate
   private Instant versionCreatedAt;
-
-  @Convert(converter = InstantMillisecondsConverter.class)
-  @Column(nullable = false, columnDefinition = "BIGINT NOT NULL")
-  @CreatedDate
-  @LastModifiedDate
-  @SuppressWarnings("unused")
-  //secrets are updated in place when encryption keys are rotated
-  private Instant updatedAt;
-
-  @Column(length = UUID_BYTES, columnDefinition = "VARBINARY")
-  private UUID encryptionKeyUuid;
 
   @ManyToOne
   @JoinColumn(name = "credential_name_uuid", nullable = false)
@@ -103,31 +93,50 @@ public abstract class CredentialData<Z extends CredentialData> {
   }
 
   public byte[] getEncryptedValue() {
-    return encryptedValue == null ? null : encryptedValue.clone();
+    return encryptedCredentialValue !=null ? encryptedCredentialValue.getEncryptedValue() : null;
+  }
+
+  public Z setValuesFromEncryption(Encryption encryptedValue){
+    if (this.encryptedCredentialValue == null) {
+      this.encryptedCredentialValue = new EncryptedValue();
+    }
+    encryptedCredentialValue.setNonce(encryptedValue.nonce);
+    encryptedCredentialValue.setEncryptionKeyUuid(encryptedValue.canaryUuid);
+    encryptedCredentialValue.setEncryptedValue(encryptedValue.encryptedValue);
+    return (Z) this;
   }
 
   public Z setEncryptedValue(byte[] encryptedValue) {
-    this.encryptedValue = encryptedValue == null ? null : encryptedValue.clone();
+    if (this.encryptedCredentialValue == null) {
+      this.encryptedCredentialValue = new EncryptedValue();
+    }
+    this.encryptedCredentialValue.setEncryptedValue(encryptedValue);
     return (Z) this;
   }
 
   public byte[] getNonce() {
-    return nonce == null ? null : nonce.clone();
+    return encryptedCredentialValue !=null ? this.encryptedCredentialValue.getNonce() : null;
   }
 
   public Z setNonce(byte[] nonce) {
-    this.nonce = nonce == null ? null : nonce.clone();
+    if (this.encryptedCredentialValue == null) {
+      this.encryptedCredentialValue = new EncryptedValue();
+    }
+    this.encryptedCredentialValue.setNonce(nonce);
     return (Z) this;
   }
 
   public abstract String getCredentialType();
 
   public UUID getEncryptionKeyUuid() {
-    return encryptionKeyUuid;
+    return encryptedCredentialValue != null ? encryptedCredentialValue.getEncryptionKeyUuid() : null;
   }
 
   public Z setEncryptionKeyUuid(UUID encryptionKeyUuid) {
-    this.encryptionKeyUuid = encryptionKeyUuid;
+    if (this.encryptedCredentialValue == null) {
+      this.encryptedCredentialValue = new EncryptedValue();
+    }
+    this.encryptedCredentialValue.setEncryptionKeyUuid(encryptionKeyUuid);
     return (Z) this;
   }
 

@@ -55,18 +55,14 @@ public class UserCredential extends Credential<UserCredential> {
   }
 
   public UserCredential setPassword(String password) {
-    Encryption passwordEncryption = encryptor.encrypt(password);
-    delegate.setEncryptionKeyUuid(passwordEncryption.canaryUuid);
-    delegate.setEncryptedValue(passwordEncryption.encryptedValue);
-    delegate.setNonce(passwordEncryption.nonce);
+    if (password != null) {
+      super.setValue(password);
+    }
     return this;
   }
 
   public String getPassword() {
-    return encryptor.decrypt(new Encryption(
-        delegate.getEncryptionKeyUuid(),
-        delegate.getEncryptedValue(),
-        delegate.getNonce()));
+    return (String) super.getValue();
   }
 
   public UserCredential setUsername(String username) {
@@ -88,15 +84,15 @@ public class UserCredential extends Credential<UserCredential> {
   }
 
   public UserCredential setGenerationParameters(StringGenerationParameters generationParameters) {
+    Encryption encryptedParameters;
     try {
       String generationParameterJson =
           generationParameters != null ? jsonObjectMapper.writeValueAsString(generationParameters)
               : null;
-
-      Encryption encryptedParameters = encryptor.encrypt(generationParameterJson);
-      delegate.setEncryptionKeyUuid(encryptedParameters.canaryUuid);
-      delegate.setEncryptedGenerationParameters(encryptedParameters.encryptedValue);
-      delegate.setParametersNonce(encryptedParameters.nonce);
+      if (generationParameterJson != null) {
+        encryptedParameters = encryptor.encrypt(generationParameterJson);
+        delegate.setEncryptedGenerationParameters(encryptedParameters);
+      }
 
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -106,9 +102,9 @@ public class UserCredential extends Credential<UserCredential> {
 
   public StringGenerationParameters getGenerationParameters() {
     String parameterJson = encryptor.decrypt(new Encryption(
-        delegate.getEncryptionKeyUuid(),
-        delegate.getEncryptedGenerationParameters(),
-        delegate.getParametersNonce())
+        delegate.getEncryptedGenerationParameters().getEncryptionKeyUuid(),
+        delegate.getEncryptedGenerationParameters().getEncryptedValue(),
+        delegate.getEncryptedGenerationParameters().getNonce())
     );
 
     if (parameterJson == null) {

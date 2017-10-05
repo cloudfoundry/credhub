@@ -80,7 +80,7 @@ public class PasswordCredentialTest {
 
   @Test
   public void getGenerationParameters_shouldCallDecryptTwice() {
-    subject.setPasswordAndGenerationParameters(PASSWORD, null);
+    subject.setPasswordAndGenerationParameters(PASSWORD, new StringGenerationParameters().setExcludeLower(true));
 
     subject.getGenerationParameters();
 
@@ -127,15 +127,14 @@ public class PasswordCredentialTest {
   public void setPasswordAndGenerationParameters_setsParamsNonceAndEncryptedGenerationParameters() {
     subject.setPasswordAndGenerationParameters(PASSWORD, generationParameters);
 
-    assertThat(passwordCredentialData.getEncryptedGenerationParameters(), notNullValue());
-    assertThat(passwordCredentialData.getParametersNonce(), notNullValue());
+    assertThat(passwordCredentialData.getEncryptedGenerationParameters().getEncryptedValue(), notNullValue());
+    assertThat(passwordCredentialData.getEncryptedGenerationParameters().getNonce(), notNullValue());
   }
 
   @Test
   public void setPasswordAndGenerationParameters_shouldSetNullsIfTheParamsAreNulls() {
     subject.setPasswordAndGenerationParameters(PASSWORD, null);
     assertThat(passwordCredentialData.getEncryptedGenerationParameters(), nullValue());
-    assertThat(passwordCredentialData.getParametersNonce(), nullValue());
   }
 
   @Test

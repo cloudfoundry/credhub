@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import io.pivotal.security.credential.JsonCredentialValue;
 import io.pivotal.security.entity.JsonCredentialData;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.service.Encryption;
 import io.pivotal.security.util.JsonObjectMapper;
 
 import java.io.IOException;
@@ -52,10 +51,7 @@ public class JsonCredential extends Credential<JsonCredential> {
   }
 
   public Map<String, Object> getValue() {
-    String serializedValue = encryptor.decrypt(new Encryption(
-        delegate.getEncryptionKeyUuid(),
-        delegate.getEncryptedValue(),
-        delegate.getNonce()));
+    String serializedValue = (String) super.getValue();
     try {
       return objectMapper.readValue(serializedValue, Map.class);
     } catch (IOException e) {
@@ -70,12 +66,8 @@ public class JsonCredential extends Credential<JsonCredential> {
 
     try {
       String serializedString = objectMapper.writeValueAsString(value);
-      Encryption encryption = encryptor.encrypt(serializedString);
 
-      delegate.setEncryptedValue(encryption.encryptedValue);
-      delegate.setNonce(encryption.nonce);
-      delegate.setEncryptionKeyUuid(encryption.canaryUuid);
-      return this;
+      return super.setValue(serializedString);
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }

@@ -108,12 +108,13 @@ public class UserCredentialTest {
     byte[] oldNonce = "old-nonce".getBytes();
     byte[] oldParametersNonce = "old-parameters-nonce".getBytes();
 
+    Encryption parametersEncryption = new Encryption(oldEncryptionKeyUuid, oldEncryptedGenerationParams, oldParametersNonce);
+
     userCredentialData = new UserCredentialData(CREDENTIAL_NAME)
         .setEncryptionKeyUuid(oldEncryptionKeyUuid)
         .setEncryptedValue(oldEncryptedPassword)
-        .setEncryptedGenerationParameters(oldEncryptedGenerationParams)
-        .setNonce(oldNonce)
-        .setParametersNonce(oldParametersNonce);
+        .setEncryptedGenerationParameters(parametersEncryption)
+        .setNonce(oldNonce);
     subject = new UserCredential(userCredentialData)
         .setEncryptor(encryptor);
     when(encryptor.decrypt(new Encryption(oldEncryptionKeyUuid, oldEncryptedPassword, oldNonce)))
@@ -134,9 +135,9 @@ public class UserCredentialTest {
 
     assertThat(userCredentialData.getEncryptionKeyUuid(), equalTo(ENCRYPTION_KEY_UUID));
     assertThat(userCredentialData.getEncryptedValue(), equalTo(ENCRYPTED_PASSWORD));
-    assertThat(userCredentialData.getEncryptedGenerationParameters(), equalTo(ENCRYPTED_GENERATION_PARAMS));
+    assertThat(userCredentialData.getEncryptedGenerationParameters().getEncryptedValue(), equalTo(ENCRYPTED_GENERATION_PARAMS));
     assertThat(userCredentialData.getNonce(), equalTo(NONCE));
-    assertThat(userCredentialData.getParametersNonce(), equalTo(PARAMETERS_NONCE));
+    assertThat(userCredentialData.getEncryptedGenerationParameters().getNonce(), equalTo(PARAMETERS_NONCE));
   }
 
   @Test
@@ -151,9 +152,9 @@ public class UserCredentialTest {
 
     verify(encryptor, times(1)).encrypt(eq(USER_GENERATION_PARAMS_STRING));
 
-    assertThat(userCredentialData.getEncryptionKeyUuid(), equalTo(ENCRYPTION_KEY_UUID));
-    assertThat(userCredentialData.getEncryptedGenerationParameters(), equalTo(ENCRYPTED_GENERATION_PARAMS));
-    assertThat(userCredentialData.getParametersNonce(), equalTo(PARAMETERS_NONCE));
+    assertThat(userCredentialData.getEncryptedGenerationParameters().getEncryptionKeyUuid(), equalTo(ENCRYPTION_KEY_UUID));
+    assertThat(userCredentialData.getEncryptedGenerationParameters().getEncryptedValue(), equalTo(ENCRYPTED_GENERATION_PARAMS));
+    assertThat(userCredentialData.getEncryptedGenerationParameters().getNonce(), equalTo(PARAMETERS_NONCE));
   }
 
   @Test
@@ -162,8 +163,8 @@ public class UserCredentialTest {
     when(encryptor.decrypt(encryption))
         .thenReturn(USER_GENERATION_PARAMS_STRING);
     userCredentialData = new UserCredentialData()
-        .setEncryptedGenerationParameters(ENCRYPTED_GENERATION_PARAMS)
-        .setParametersNonce(PARAMETERS_NONCE)
+        .setEncryptedGenerationParameters(encryption)
+
         .setEncryptionKeyUuid(ENCRYPTION_KEY_UUID);
     subject = new UserCredential(userCredentialData)
         .setEncryptor(encryptor);

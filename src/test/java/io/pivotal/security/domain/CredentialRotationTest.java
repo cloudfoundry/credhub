@@ -105,9 +105,9 @@ public class CredentialRotationTest {
     passwordCredentialData.setNonce("old-nonce".getBytes());
     PasswordCredential password = new PasswordCredential(passwordCredentialData);
     password.setEncryptor(encryptor);
+    Encryption encryption = new Encryption(oldEncryptionKeyUuid,"old-encrypted-parameters".getBytes(), "old-parameters-nonce".getBytes());
+    passwordCredentialData.setEncryptedGenerationParameters(encryption);
 
-    passwordCredentialData.setEncryptedGenerationParameters("old-encrypted-parameters".getBytes());
-    passwordCredentialData.setParametersNonce("old-parameters-nonce".getBytes());
 
     stringifiedParameters = new ObjectMapper()
         .writeValueAsString(new StringGenerationParameters());
@@ -126,9 +126,9 @@ public class CredentialRotationTest {
         equalTo("new-encrypted-value".getBytes()));
     assertThat(passwordCredentialData.getNonce(), equalTo("new-nonce".getBytes()));
 
-    assertThat(passwordCredentialData.getEncryptedGenerationParameters(),
+    assertThat(passwordCredentialData.getEncryptedGenerationParameters().getEncryptedValue(),
         equalTo("new-encrypted-parameters".getBytes()));
-    assertThat(passwordCredentialData.getParametersNonce(),
+    assertThat(passwordCredentialData.getEncryptedGenerationParameters().getNonce(),
         equalTo("new-nonce-parameters".getBytes()));
   }
 

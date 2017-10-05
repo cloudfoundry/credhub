@@ -1,8 +1,16 @@
 package io.pivotal.security.entity;
 
-import javax.persistence.*;
+import io.pivotal.security.service.Encryption;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
-import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
+import javax.persistence.CascadeType;
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
+import javax.persistence.PrimaryKeyJoinColumn;
+import javax.persistence.SecondaryTable;
 
 @Entity
 @DiscriminatorValue(PasswordCredentialData.CREDENTIAL_TYPE)
@@ -14,10 +22,11 @@ public class PasswordCredentialData extends CredentialData<PasswordCredentialDat
 
   public static final String CREDENTIAL_TYPE = "password";
   static final String TABLE_NAME = "password_credential";
-  @Column(table = PasswordCredentialData.TABLE_NAME, length = 255 + NONCE_SIZE)
-  private byte[] encryptedGenerationParameters;
-  @Column(table = PasswordCredentialData.TABLE_NAME, length = NONCE_SIZE)
-  private byte[] parametersNonce;
+
+  @OneToOne(cascade = CascadeType.ALL)
+  @NotFound(action = NotFoundAction.IGNORE)
+  @JoinColumn(table = PasswordCredentialData.TABLE_NAME, name = "password_parameters_uuid")
+  private EncryptedValue encryptedGenerationParameters;
 
   @SuppressWarnings("unused")
   public PasswordCredentialData() {
@@ -27,23 +36,20 @@ public class PasswordCredentialData extends CredentialData<PasswordCredentialDat
     super(name);
   }
 
-  public byte[] getEncryptedGenerationParameters() {
-    return encryptedGenerationParameters == null ? null : encryptedGenerationParameters.clone();
-  }
 
   public PasswordCredentialData setEncryptedGenerationParameters(
-      byte[] encryptedGenerationParameters) {
-    this.encryptedGenerationParameters = encryptedGenerationParameters == null ? null : encryptedGenerationParameters.clone();
+     Encryption encryptedGenerationParameters) {
+    if (this.encryptedGenerationParameters == null){
+      this.encryptedGenerationParameters = new EncryptedValue();
+    }
+    this.encryptedGenerationParameters.setEncryptedValue(encryptedGenerationParameters.encryptedValue);
+    this.encryptedGenerationParameters.setEncryptionKeyUuid(encryptedGenerationParameters.canaryUuid);
+    this.encryptedGenerationParameters.setNonce(encryptedGenerationParameters.nonce);
     return this;
   }
 
-  public byte[] getParametersNonce() {
-    return parametersNonce == null ? null : parametersNonce.clone();
-  }
-
-  public PasswordCredentialData setParametersNonce(byte[] parametersNonce) {
-    this.parametersNonce = parametersNonce == null ? null : parametersNonce.clone();
-    return this;
+  public EncryptedValue getEncryptedGenerationParameters() {
+    return encryptedGenerationParameters;
   }
 
   @Override

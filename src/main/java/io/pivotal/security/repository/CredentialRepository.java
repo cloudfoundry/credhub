@@ -14,11 +14,11 @@ public interface CredentialRepository extends JpaRepository<CredentialData, UUID
 
   CredentialData findOneByUuid(UUID uuid);
 
-  Long countByEncryptionKeyUuidNot(UUID encryptionKeyUuid);
+  Long countByEncryptedCredentialValueEncryptionKeyUuidNot(UUID encryptionKeyUuid);
 
-  Long countByEncryptionKeyUuidIn(List<UUID> encryptionKeyUuids);
+  Long countByEncryptedCredentialValueEncryptionKeyUuidIn(List<UUID> encryptionKeyUuids);
 
-  Slice<CredentialData> findByEncryptionKeyUuidIn(List<UUID> encryptionKeyUuids, Pageable page);
+  Slice<CredentialData> findByEncryptedCredentialValueEncryptionKeyUuidIn(List<UUID> encryptionKeyUuids, Pageable page);
 
   List<CredentialData> findAllByCredentialNameUuidOrderByVersionCreatedAtDesc(UUID uuid);
 

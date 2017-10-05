@@ -63,6 +63,7 @@ public class CredentialRepositoryTest {
     entity.setCertificate(longString);
     entity.setEncryptedValue(encryptedValue);
     entity.setEncryptionKeyUuid(canaryUuid);
+    entity.setNonce("nonce".getBytes());
 
     subject.save(entity);
     CertificateCredentialData credentialData = (CertificateCredentialData) subject
@@ -85,6 +86,7 @@ public class CredentialRepositoryTest {
     entity.setCredentialName(credentialName);
     entity.setEncryptedValue(encryptedValue);
     entity.setEncryptionKeyUuid(canaryUuid);
+    entity.setNonce("nonce".getBytes());
 
     subject.save(entity);
     assertThat(subject.findFirstByCredentialNameUuidOrderByVersionCreatedAtDesc(credentialName.getUuid())

@@ -51,6 +51,7 @@ public class PasswordCredential extends Credential<PasswordCredential> {
 
   public PasswordCredential setPasswordAndGenerationParameters(String password,
                                                                StringGenerationParameters generationParameters) {
+    Encryption encryptedParameters, encryptedPassword;
     if (password == null) {
       throw new IllegalArgumentException("password cannot be null");
     }
@@ -59,15 +60,14 @@ public class PasswordCredential extends Credential<PasswordCredential> {
       String generationParameterJson =
           generationParameters != null ? jsonObjectMapper.writeValueAsString(generationParameters)
               : null;
+      if (generationParameterJson != null) {
+        encryptedParameters = encryptor.encrypt(generationParameterJson);
+        delegate.setEncryptedGenerationParameters(encryptedParameters);
+      }
 
-      Encryption encryptedParameters = encryptor.encrypt(generationParameterJson);
-      delegate.setEncryptedGenerationParameters(encryptedParameters.encryptedValue);
-      delegate.setParametersNonce(encryptedParameters.nonce);
-
-      Encryption encryptedPassword = encryptor.encrypt(password);
+      encryptedPassword = encryptor.encrypt(password);
       delegate.setEncryptedValue(encryptedPassword.encryptedValue);
       delegate.setNonce(encryptedPassword.nonce);
-
       delegate.setEncryptionKeyUuid(encryptedPassword.canaryUuid);
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -80,10 +80,14 @@ public class PasswordCredential extends Credential<PasswordCredential> {
     Assert.notNull(password,
         "Password length generation parameter cannot be restored without an existing password");
 
+    if (delegate.getEncryptedGenerationParameters() == null) {
+      return null;
+    }
+
     String parameterJson = encryptor.decrypt(new Encryption(
-        delegate.getEncryptionKeyUuid(),
-        delegate.getEncryptedGenerationParameters(),
-        delegate.getParametersNonce())
+        delegate.getEncryptedGenerationParameters().getEncryptionKeyUuid(),
+        delegate.getEncryptedGenerationParameters().getEncryptedValue(),
+        delegate.getEncryptedGenerationParameters().getNonce())
     );
 
     if (parameterJson == null) {

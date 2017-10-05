@@ -85,6 +85,7 @@ public class EventAuditLogServiceTest {
   private UserContext userContext;
   private RequestUuid requestUuid;
   private List<EncryptionKeyCanary> canaries;
+  private ValueCredentialData entity;
 
   @Before
   public void beforeEach() {
@@ -93,6 +94,10 @@ public class EventAuditLogServiceTest {
     mockOutCurrentTimeProvider(currentTimeProvider).accept(now.toEpochMilli());
     userContext = mockUserContext(true);
     requestUuid = new RequestUuid(UUID.randomUUID());
+
+    entity = new ValueCredentialData("keyName");
+    entity.setEncryptedValue("value".getBytes());
+    entity.setNonce("nonce".getBytes());
   }
 
   @After
@@ -122,9 +127,6 @@ public class EventAuditLogServiceTest {
         eventAuditRecordParametersList -> {
           eventAuditRecordParametersList.add(parameters1);
           eventAuditRecordParametersList.add(parameters2);
-
-          ValueCredentialData entity = new ValueCredentialData("keyName");
-          entity.setEncryptedValue("value".getBytes());
           return credentialDataService.save(entity);
         }
     );
@@ -153,9 +155,6 @@ public class EventAuditLogServiceTest {
       subject.auditEvents(requestUuid, userContext, eventAuditRecordParametersList -> {
         eventAuditRecordParametersList.add(parameters1);
         eventAuditRecordParametersList.add(parameters2);
-
-        ValueCredentialData entity = new ValueCredentialData("keyName");
-        entity.setEncryptedValue("value".getBytes());
         return credentialDataService.save(entity);
       });
     } finally {
@@ -190,10 +189,6 @@ public class EventAuditLogServiceTest {
       subject.auditEvents(requestUuid, userContext, eventAuditRecordParametersList -> {
         eventAuditRecordParametersList.add(parameters1);
         eventAuditRecordParametersList.add(parameters2);
-
-        ValueCredentialData entity = new ValueCredentialData("keyName");
-        entity.setEncryptedValue("value".getBytes());
-
         credentialDataService.save(entity);
 
         throw new RuntimeException("test");
@@ -225,9 +220,6 @@ public class EventAuditLogServiceTest {
       subject.auditEvents(requestUuid, userContext, eventAuditRecordParametersList -> {
         eventAuditRecordParametersList.add(parameters1);
         eventAuditRecordParametersList.add(parameters2);
-
-        ValueCredentialData entity = new ValueCredentialData("keyName");
-        entity.setEncryptedValue("value".getBytes());
         credentialDataService.save(entity);
 
         throw new RuntimeException("controller method failed");

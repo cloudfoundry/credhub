@@ -77,7 +77,7 @@ public class JsonCredentialTest {
   @Test
   public void setValue_whenValueIsNull_throwsException() {
     try {
-      subject.setValue(null);
+      subject.setValue((Map) null);
       fail("should throw");
     } catch (ParameterizedValidationException e) {
       assertThat(e.getMessage(), equalTo("error.missing_value"));

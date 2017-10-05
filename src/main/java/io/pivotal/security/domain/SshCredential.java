@@ -2,7 +2,6 @@ package io.pivotal.security.domain;
 
 import io.pivotal.security.credential.SshCredentialValue;
 import io.pivotal.security.entity.SshCredentialData;
-import io.pivotal.security.service.Encryption;
 import io.pivotal.security.util.SshPublicKeyParser;
 
 public class SshCredential extends Credential<SshCredential> {
@@ -39,19 +38,13 @@ public class SshCredential extends Credential<SshCredential> {
   }
 
   public String getPrivateKey() {
-    return encryptor.decrypt(new Encryption(
-        delegate.getEncryptionKeyUuid(),
-        delegate.getEncryptedValue(),
-        delegate.getNonce()));
+      return (String) super.getValue();
   }
 
   public SshCredential setPrivateKey(String privateKey) {
-    final Encryption encryption = encryptor.encrypt(privateKey);
-
-    delegate.setEncryptedValue(encryption.encryptedValue);
-    delegate.setNonce(encryption.nonce);
-    delegate.setEncryptionKeyUuid(encryption.canaryUuid);
-
+    if (privateKey != null) {
+      super.setValue(privateKey);
+    }
     return this;
   }
 

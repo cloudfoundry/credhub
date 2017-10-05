@@ -2,7 +2,6 @@ package io.pivotal.security.domain;
 
 import io.pivotal.security.credential.StringCredentialValue;
 import io.pivotal.security.entity.ValueCredentialData;
-import io.pivotal.security.service.Encryption;
 
 public class ValueCredential extends Credential<ValueCredential> {
 
@@ -27,24 +26,12 @@ public class ValueCredential extends Credential<ValueCredential> {
     this.setValue(value.getStringCredential());
   }
 
-  public String getValue() {
-    return encryptor.decrypt(new Encryption(
-        delegate.getEncryptionKeyUuid(),
-        delegate.getEncryptedValue(),
-        delegate.getNonce()));
-  }
-
   public ValueCredential setValue(String value) {
     if (value == null) {
       throw new IllegalArgumentException("value cannot be null");
     }
 
-    final Encryption encryption = encryptor.encrypt(value);
-    delegate.setEncryptedValue(encryption.encryptedValue);
-    delegate.setNonce(encryption.nonce);
-    delegate.setEncryptionKeyUuid(encryption.canaryUuid);
-
-    return this;
+    return super.setValue(value);
   }
 
   @Override
@@ -54,7 +41,7 @@ public class ValueCredential extends Credential<ValueCredential> {
 
 
   public void rotate() {
-    String decryptedValue = this.getValue();
+    String decryptedValue = (String) this.getValue();
     this.setValue(decryptedValue);
   }
 
