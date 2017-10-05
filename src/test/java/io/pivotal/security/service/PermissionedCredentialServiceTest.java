@@ -51,6 +51,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 @RunWith(JUnit4.class)
 public class PermissionedCredentialServiceTest {
+
   private static final String UUID_STRING = "expected UUID";
   private static final String CREDENTIAL_NAME = "/Picard";
   private static final String USER = "Kirk";
@@ -241,7 +242,8 @@ public class PermissionedCredentialServiceTest {
   @Test
   public void save_whenThereIsAnExistingCredentialWithACEs_shouldCallVerifyAclWritePermission() {
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
-    when(permissionService.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE_ACL)).thenReturn(true);
+    when(permissionService.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE_ACL))
+        .thenReturn(true);
     when(permissionService.validAclUpdateOperation(userContext, "some_actor")).thenReturn(true);
 
     accessControlEntries
@@ -265,7 +267,8 @@ public class PermissionedCredentialServiceTest {
   @Test
   public void save_whenThereIsAnExistingCredentialWithACEs_shouldThrowAnExceptionIfItLacksPermission() {
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
-    when(permissionService.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE_ACL)).thenReturn(false);
+    when(permissionService.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE_ACL))
+        .thenReturn(false);
 
     accessControlEntries
         .add(new PermissionEntry("some_actor", Arrays.asList(PermissionOperation.READ_ACL)));
@@ -488,7 +491,8 @@ public class PermissionedCredentialServiceTest {
 
     assertThat(auditRecordParametersList, hasSize(1));
     assertThat(auditRecordParametersList.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
-    assertThat(auditRecordParametersList.get(0).getAuditingOperationCode(), equalTo(CREDENTIAL_ACCESS));
+    assertThat(auditRecordParametersList.get(0).getAuditingOperationCode(),
+        equalTo(CREDENTIAL_ACCESS));
   }
 
   @Test
@@ -516,7 +520,36 @@ public class PermissionedCredentialServiceTest {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
       assertThat(auditRecordParametersList, hasSize(1));
       assertThat(auditRecordParametersList.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
-      assertThat(auditRecordParametersList.get(0).getAuditingOperationCode(), equalTo(CREDENTIAL_ACCESS));
+      assertThat(auditRecordParametersList.get(0).getAuditingOperationCode(),
+          equalTo(CREDENTIAL_ACCESS));
+    }
+  }
+
+  @Test
+  public void findAllCertificateCredentialsByCaName_whenTheUserHasPermission_getsAllCertificateCredentialsByCaName() {
+    when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
+        .thenReturn(true);
+
+    ArrayList<String> expectedCertificates = newArrayList("expectedCertificate");
+    when(credentialDataService.findAllCertificateCredentialsByCaName(CREDENTIAL_NAME))
+        .thenReturn(expectedCertificates);
+
+    List<String> foundCertificates = subject
+        .findAllCertificateCredentialsByCaName(userContext, CREDENTIAL_NAME);
+
+    assertThat(foundCertificates, equalTo(expectedCertificates));
+  }
+
+  @Test
+  public void findAllCertificateCredentialsByCaName_whenTheUserLacksPermission_throwsException() {
+    when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
+        .thenReturn(false);
+
+    try {
+      subject.findAllCertificateCredentialsByCaName(userContext, CREDENTIAL_NAME);
+      fail("should throw exception");
+    } catch (EntryNotFoundException e) {
+      assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
     }
   }
 

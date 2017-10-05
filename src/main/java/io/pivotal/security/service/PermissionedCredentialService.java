@@ -15,6 +15,7 @@ import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.exceptions.PermissionException;
 import io.pivotal.security.request.GenerationParameters;
 import io.pivotal.security.request.PermissionEntry;
+import io.pivotal.security.request.PermissionOperation;
 import io.pivotal.security.view.CredentialView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -168,5 +169,13 @@ public class PermissionedCredentialService {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
     return credentialDataService.findByUuid(credentialUUID);
+  }
+
+  public List<String> findAllCertificateCredentialsByCaName(UserContext userContext, String caName) {
+    if (!permissionService.hasPermission(userContext.getAclUser(), caName, PermissionOperation.READ)) {
+      throw new EntryNotFoundException("error.credential.invalid_access");
+    }
+
+    return credentialDataService.findAllCertificateCredentialsByCaName(caName);
   }
 }

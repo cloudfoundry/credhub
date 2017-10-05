@@ -9,9 +9,8 @@ import io.pivotal.security.domain.PasswordCredential;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.request.BaseCredentialGenerateRequest;
 import io.pivotal.security.request.PermissionEntry;
-import io.pivotal.security.request.PermissionOperation;
-import io.pivotal.security.service.PermissionedCredentialService;
 import io.pivotal.security.service.PermissionService;
+import io.pivotal.security.service.PermissionedCredentialService;
 import io.pivotal.security.view.BulkRegenerateResults;
 import io.pivotal.security.view.CredentialView;
 import org.springframework.stereotype.Service;
@@ -82,12 +81,8 @@ public class RegenerateHandler {
       PermissionEntry currentUserPermissionEntry,
       List<EventAuditRecordParameters> auditRecordParameters
   ) {
-    if (!permissionService.hasPermission(userContext.getAclUser(), signerName, PermissionOperation.READ)) {
-      throw new EntryNotFoundException("error.credential.invalid_access");
-    }
-
     BulkRegenerateResults results = new BulkRegenerateResults();
-    List<String> certificateNames = credentialDataService.findAllCertificateCredentialsByCaName(signerName);
+    List<String> certificateNames = credentialService.findAllCertificateCredentialsByCaName(userContext, signerName);
 
     final HashSet<String> credentialNamesSet = new HashSet<>(certificateNames);
     for (String name : credentialNamesSet) {
