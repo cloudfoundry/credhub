@@ -2,7 +2,6 @@ package io.pivotal.security.handler;
 
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.CredentialNameDataService;
-import io.pivotal.security.data.PermissionsDataService;
 import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.InvalidAclOperationException;
@@ -21,17 +20,14 @@ import static io.pivotal.security.request.PermissionOperation.WRITE_ACL;
 public class PermissionsHandler {
 
   private final PermissionService permissionService;
-  private final PermissionsDataService permissionsDataService;
   private final CredentialNameDataService credentialNameDataService;
 
   @Autowired
   PermissionsHandler(
       PermissionService permissionService,
-      PermissionsDataService permissionsDataService,
       CredentialNameDataService credentialNameDataService
   ) {
     this.permissionService = permissionService;
-    this.permissionsDataService = permissionsDataService;
     this.credentialNameDataService = credentialNameDataService;
   }
 
@@ -44,7 +40,7 @@ public class PermissionsHandler {
 
     return new PermissionsView(
         credentialName.getName(),
-        permissionsDataService.getAccessControlList(credentialName)
+        permissionService.getAccessControlList(credentialName)
     );
   }
 
@@ -62,28 +58,29 @@ public class PermissionsHandler {
     }
 
     for (PermissionEntry permissionEntry : permissionEntryList) {
-      if (!permissionService.validAclUpdateOperation(userContext, permissionEntry.getActor())) {
+      if (!permissionService.userAllowedToOperateOnActor(userContext, permissionEntry.getActor())) {
         throw new InvalidAclOperationException("error.acl.invalid_update_operation");
       }
     }
 
-    permissionsDataService
+    permissionService
         .saveAccessControlEntries(credentialName, permissionEntryList);
 
     return new PermissionsView(credentialName.getName(),
-        permissionsDataService.getAccessControlList(credentialName));
+        permissionService.getAccessControlList(credentialName));
   }
 
-  public void deletePermissionEntry(String credentialName, String actor, UserContext userContext) {
+  public void deletePermissionEntry(UserContext userContext,
+      String credentialName, String actor) {
     if (!permissionService.hasPermission(userContext.getAclUser(), credentialName, WRITE_ACL)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
-    if (!permissionService.validAclUpdateOperation(userContext, actor)) {
+    if (!permissionService.userAllowedToOperateOnActor(userContext, actor)) {
       throw new InvalidAclOperationException("error.acl.invalid_update_operation");
     }
 
-    boolean successfullyDeleted = permissionsDataService
+    boolean successfullyDeleted = permissionService
         .deleteAccessControlEntry(credentialName, actor);
 
     if (!successfullyDeleted) {

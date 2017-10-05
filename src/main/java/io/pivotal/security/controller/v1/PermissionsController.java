@@ -4,10 +4,10 @@ import io.pivotal.security.audit.EventAuditLogService;
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.audit.RequestUuid;
 import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.data.PermissionsDataService;
 import io.pivotal.security.handler.PermissionsHandler;
 import io.pivotal.security.request.PermissionOperation;
 import io.pivotal.security.request.PermissionsRequest;
+import io.pivotal.security.service.PermissionService;
 import io.pivotal.security.view.PermissionsView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -35,17 +35,17 @@ import static io.pivotal.security.audit.EventAuditRecordParametersFactory.create
 public class PermissionsController {
   private final PermissionsHandler permissionsHandler;
   private final EventAuditLogService eventAuditLogService;
-  private PermissionsDataService permissionsDataService;
+  private PermissionService permissionService;
 
   @Autowired
   public PermissionsController(
       PermissionsHandler permissionsHandler,
       EventAuditLogService eventAuditLogService,
-      PermissionsDataService permissionsDataService
+      PermissionService permissionService
   ) {
     this.permissionsHandler = permissionsHandler;
     this.eventAuditLogService = eventAuditLogService;
-    this.permissionsDataService = permissionsDataService;
+    this.permissionService = permissionService;
   }
 
   @GetMapping
@@ -93,15 +93,13 @@ public class PermissionsController {
   @DeleteMapping
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void deleteAccessControlEntry(
+      RequestUuid requestUuid, UserContext userContext,
       @RequestParam("credential_name") String credentialName,
-      @RequestParam("actor") String actor,
-      RequestUuid requestUuid,
-      UserContext userContext
+      @RequestParam("actor") String actor
 
   ) {
-    eventAuditLogService.auditEvents(requestUuid, userContext, auditRecordParameters -> {
-      List<PermissionOperation> operationList = permissionsDataService
-          .getAllowedOperations(credentialName, actor);
+    eventAuditLogService.auditEvents(requestUuid, userContext, (List<EventAuditRecordParameters> auditRecordParameters) -> {
+      List<PermissionOperation> operationList = permissionService.getAllowedOperations(credentialName, actor);
 
       if (operationList.size() == 0) {
         auditRecordParameters.add(new EventAuditRecordParameters(ACL_DELETE, credentialName, null, actor));
@@ -114,7 +112,7 @@ public class PermissionsController {
         ));
       }
 
-      permissionsHandler.deletePermissionEntry(credentialName, actor, userContext);
+      permissionsHandler.deletePermissionEntry(userContext, credentialName, actor);
 
       return true;
     });

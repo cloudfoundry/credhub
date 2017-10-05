@@ -203,7 +203,7 @@ public class PermissionsControllerTest {
         .andExpect(content().string(""));
 
     verify(permissionsHandler, times(1))
-        .deletePermissionEntry(eq("test-name"), eq("test-actor"), any(UserContext.class));
+        .deletePermissionEntry(any(UserContext.class), eq("test-name"), eq("test-actor"));
 
     auditingHelper.verifyAuditing(
         ACL_DELETE,
@@ -220,7 +220,8 @@ public class PermissionsControllerTest {
 
     Mockito.doThrow(new EntryNotFoundException("error.credential.invalid_access"))
         .when(permissionsHandler)
-        .deletePermissionEntry(eq("incorrect-name"), eq("test-actor"), any());
+        .deletePermissionEntry(any(), eq("incorrect-name"), eq("test-actor")
+        );
 
     mockMvc.perform(
         delete("/api/v1/permissions?credential_name=incorrect-name&actor=test-actor")
@@ -229,7 +230,8 @@ public class PermissionsControllerTest {
         .andExpect(status().isNotFound());
 
     verify(permissionsHandler, times(1))
-        .deletePermissionEntry(eq("incorrect-name"), eq("test-actor"), any(UserContext.class));
+        .deletePermissionEntry(any(UserContext.class), eq("incorrect-name"), eq("test-actor")
+        );
 
     EventAuditRecordParameters expectedEntry = new EventAuditRecordParameters(ACL_DELETE, "/incorrect-name", null, "test-actor");
 

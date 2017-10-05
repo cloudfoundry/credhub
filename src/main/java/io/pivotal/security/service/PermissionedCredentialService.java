@@ -85,7 +85,7 @@ public class PermissionedCredentialService {
     }
 
     for (PermissionEntry accessControlEntry : accessControlEntries) {
-      if (!permissionService.validAclUpdateOperation(userContext, accessControlEntry.getActor())) {
+      if (!permissionService.userAllowedToOperateOnActor(userContext, accessControlEntry.getActor())) {
         throw new InvalidAclOperationException("error.acl.invalid_update_operation");
       }
     }

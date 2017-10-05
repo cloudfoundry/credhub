@@ -178,7 +178,7 @@ public class PermissionedCredentialServiceTest {
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(null);
     when(credentialDataService.save(any(Credential.class)))
         .thenReturn(new PasswordCredential().setEncryptor(encryptor));
-    when(permissionService.validAclUpdateOperation(userContext, "test-user"))
+    when(permissionService.userAllowedToOperateOnActor(userContext, "test-user"))
         .thenReturn(false);
 
     accessControlEntries.add(new PermissionEntry("test-user", Arrays.asList(WRITE, WRITE_ACL)));
@@ -244,7 +244,7 @@ public class PermissionedCredentialServiceTest {
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
     when(permissionService.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE_ACL))
         .thenReturn(true);
-    when(permissionService.validAclUpdateOperation(userContext, "some_actor")).thenReturn(true);
+    when(permissionService.userAllowedToOperateOnActor(userContext, "some_actor")).thenReturn(true);
 
     accessControlEntries
         .add(new PermissionEntry("some_actor", Arrays.asList(PermissionOperation.READ_ACL)));
@@ -388,8 +388,8 @@ public class PermissionedCredentialServiceTest {
   public void save_whenOverwriteIsTrue_logsACL_UPDATE() {
     PasswordCredential credential = new PasswordCredential(CREDENTIAL_NAME).setEncryptor(encryptor);
     when(credentialDataService.save(any(Credential.class))).thenReturn(credential);
-    when(permissionService.validAclUpdateOperation(userContext, "Spock")).thenReturn(true);
-    when(permissionService.validAclUpdateOperation(userContext, "McCoy")).thenReturn(true);
+    when(permissionService.userAllowedToOperateOnActor(userContext, "Spock")).thenReturn(true);
+    when(permissionService.userAllowedToOperateOnActor(userContext, "McCoy")).thenReturn(true);
 
     accessControlEntries.addAll(Arrays.asList(
         new PermissionEntry("Spock", Arrays.asList(WRITE)),
