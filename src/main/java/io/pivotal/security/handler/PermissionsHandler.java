@@ -14,9 +14,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-import static io.pivotal.security.request.PermissionOperation.READ_ACL;
-import static io.pivotal.security.request.PermissionOperation.WRITE_ACL;
-
 @Component
 public class PermissionsHandler {
 
@@ -38,14 +35,9 @@ public class PermissionsHandler {
   public PermissionsView getPermissions(String name, UserContext userContext) {
     final CredentialName credentialName = credentialNameDataService.findOrThrow(name);
 
-    if (!permissionCheckingService
-        .hasPermission(userContext.getAclUser(), name, READ_ACL)) {
-      throw new EntryNotFoundException("error.resource_not_found");
-    }
-
     return new PermissionsView(
         credentialName.getName(),
-        permissionService.getAccessControlList(credentialName)
+        permissionService.getAccessControlList(userContext, credentialName)
     );
   }
 
@@ -57,23 +49,22 @@ public class PermissionsHandler {
     final CredentialName credentialName = credentialNameDataService.find(name);
 
     // We need to verify that the credential exists in case ACL enforcement is off
-    if (credentialName == null || !permissionCheckingService
-        .hasPermission(userContext.getAclUser(), name, WRITE_ACL)) {
+    if (credentialName == null) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
     for (PermissionEntry permissionEntry : permissionEntryList) {
-      if (!permissionCheckingService
-          .userAllowedToOperateOnActor(userContext, permissionEntry.getActor())) {
+      if (!permissionCheckingService.userAllowedToOperateOnActor(userContext, permissionEntry.getActor())) {
         throw new InvalidAclOperationException("error.acl.invalid_update_operation");
       }
     }
 
-    permissionService
-        .saveAccessControlEntries(credentialName, permissionEntryList);
+    permissionService.saveAccessControlEntries(userContext, credentialName, permissionEntryList);
 
-    return new PermissionsView(credentialName.getName(),
-        permissionService.getAccessControlList(credentialName));
+    return new PermissionsView(
+        credentialName.getName(),
+        permissionService.getAccessControlList(userContext, credentialName)
+    );
   }
 
   public void deletePermissionEntry(UserContext userContext,

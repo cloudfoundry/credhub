@@ -99,7 +99,7 @@ public class PermissionsController {
 
   ) {
     eventAuditLogService.auditEvents(requestUuid, userContext, (List<EventAuditRecordParameters> auditRecordParameters) -> {
-      List<PermissionOperation> operationList = permissionService.getAllowedOperations(credentialName, actor);
+      List<PermissionOperation> operationList = permissionService.getAllowedOperationsForLogging(credentialName, actor);
 
       if (operationList.size() == 0) {
         auditRecordParameters.add(new EventAuditRecordParameters(ACL_DELETE, credentialName, null, actor));

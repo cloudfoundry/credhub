@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static io.pivotal.security.request.PermissionOperation.READ_ACL;
 import static io.pivotal.security.request.PermissionOperation.WRITE_ACL;
 
 @Service
@@ -30,20 +31,28 @@ public class PermissionService {
     this.permissionCheckingService = permissionCheckingService;
   }
 
-  public List<PermissionOperation> getAllowedOperations(String credentialName, String actor) {
+  public List<PermissionOperation> getAllowedOperationsForLogging(String credentialName, String actor) {
     return permissionsDataService.getAllowedOperations(credentialName, actor);
   }
 
-  public void saveAccessControlEntries(CredentialName credentialName, List<PermissionEntry> permissionEntryList) {
+  public void saveAccessControlEntries(UserContext userContext, CredentialName credentialName, List<PermissionEntry> permissionEntryList) {
+    if (!permissionCheckingService
+        .hasPermission(userContext.getAclUser(), credentialName.getName(), WRITE_ACL)) {
+      throw new EntryNotFoundException("error.credential.invalid_access");
+    }
+
     permissionsDataService.saveAccessControlEntries(credentialName, permissionEntryList);
   }
 
-  public List<PermissionEntry> getAccessControlList(CredentialName credentialName) {
+  public List<PermissionEntry> getAccessControlList(UserContext userContext, CredentialName credentialName) {
+    if (!permissionCheckingService.hasPermission(userContext.getAclUser(), credentialName.getName(), READ_ACL)) {
+      throw new EntryNotFoundException("error.credential.invalid_access");
+    }
+
     return permissionsDataService.getAccessControlList(credentialName);
   }
 
-  public boolean deleteAccessControlEntry(UserContext userContext,
-      String credentialName, String actor) {
+  public boolean deleteAccessControlEntry(UserContext userContext, String credentialName, String actor) {
     if (!permissionCheckingService
         .hasPermission(userContext.getAclUser(), credentialName, WRITE_ACL)) {
       throw new EntryNotFoundException("error.credential.invalid_access");

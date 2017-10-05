@@ -17,17 +17,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static io.pivotal.security.request.PermissionOperation.READ_ACL;
 import static io.pivotal.security.request.PermissionOperation.WRITE_ACL;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
 public class PermissionServiceTest {
+
   private static final String CREDENTIAL_NAME = "/test/credential";
+  private static final String USER_NAME = "test-actor";
 
   private PermissionService subject;
 
@@ -39,10 +44,13 @@ public class PermissionServiceTest {
   @Before
   public void beforeEach() {
     userContext = mock(UserContext.class);
-    when(userContext.getAclUser()).thenReturn("test-actor");
+    when(userContext.getAclUser()).thenReturn(USER_NAME);
+    expectedCredentialName = new CredentialName(CREDENTIAL_NAME);
 
     permissionsDataService = mock(PermissionsDataService.class);
     permissionCheckingService = mock(PermissionCheckingService.class);
+    when(permissionCheckingService.hasPermission(anyString(), anyString(), any(PermissionOperation.class)))
+        .thenReturn(true);
 
     subject = new PermissionService(permissionsDataService, permissionCheckingService);
   }
@@ -50,11 +58,11 @@ public class PermissionServiceTest {
   @Test
   public void getAllowedOperations_getsAllowedOperationsUsingPermissionsDataService() {
     ArrayList<PermissionOperation> expectedOperations = newArrayList(PermissionOperation.READ);
-    when(permissionsDataService.getAllowedOperations(CREDENTIAL_NAME, "test-actor"))
+    when(permissionsDataService.getAllowedOperations(CREDENTIAL_NAME, USER_NAME))
         .thenReturn(expectedOperations);
 
     List<PermissionOperation> foundOperations = subject
-        .getAllowedOperations(CREDENTIAL_NAME, "test-actor");
+        .getAllowedOperationsForLogging(CREDENTIAL_NAME, USER_NAME);
 
     assertThat(expectedOperations, equalTo(foundOperations));
   }
@@ -62,20 +70,48 @@ public class PermissionServiceTest {
   @Test
   public void saveAccessControlEntries_delegatesToDataService() {
     ArrayList<PermissionEntry> expectedEntries = newArrayList();
-    expectedCredentialName = new CredentialName(CREDENTIAL_NAME);
-    subject.saveAccessControlEntries(expectedCredentialName, expectedEntries);
+    subject.saveAccessControlEntries(userContext, expectedCredentialName, expectedEntries);
 
     verify(permissionsDataService).saveAccessControlEntries(expectedCredentialName, expectedEntries);
   }
 
   @Test
-  public void getAccessControlList_delegatesToDataService() {
+  public void saveAccessControlEntries_whenUserCantWrite_throws() {
+    when(permissionCheckingService.hasPermission(USER_NAME, CREDENTIAL_NAME, WRITE_ACL))
+        .thenReturn(false);
+    ArrayList<PermissionEntry> expectedEntries = newArrayList();
+
+    try {
+      subject.saveAccessControlEntries(userContext, expectedCredentialName, expectedEntries);
+      fail("expected exception");
+    } catch (EntryNotFoundException e) {
+      assertThat(e.getMessage(), IsEqual.equalTo("error.credential.invalid_access"));
+    }
+  }
+
+  @Test
+  public void getAccessControlList_whenUserCantRead_throws() {
     List<PermissionEntry> expectedPermissionEntries = newArrayList();
     when(permissionsDataService.getAccessControlList(expectedCredentialName))
         .thenReturn(expectedPermissionEntries);
-    List<PermissionEntry> foundPermissionEntries = subject.getAccessControlList(expectedCredentialName);
+    List<PermissionEntry> foundPermissionEntries = subject.getAccessControlList(userContext, expectedCredentialName);
 
     assertThat(foundPermissionEntries, equalTo(expectedPermissionEntries));
+  }
+
+  @Test
+  public void getAccessControlList_delegatesToDataService() {
+    when(permissionCheckingService.hasPermission(USER_NAME, CREDENTIAL_NAME, READ_ACL))
+        .thenReturn(false);
+    List<PermissionEntry> expectedPermissionEntries = newArrayList();
+    when(permissionsDataService.getAccessControlList(expectedCredentialName))
+        .thenReturn(expectedPermissionEntries);
+
+    try {
+      subject.getAccessControlList(userContext, expectedCredentialName);
+    } catch (EntryNotFoundException e) {
+      assertThat(e.getMessage(), IsEqual.equalTo("error.credential.invalid_access"));
+    }
   }
 
   @Test
@@ -100,7 +136,7 @@ public class PermissionServiceTest {
     try {
       subject.deleteAccessControlEntry(userContext, CREDENTIAL_NAME, "other-actor");
       fail("should throw");
-    } catch( EntryNotFoundException e ){
+    } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), IsEqual.equalTo("error.credential.invalid_access"));
     }
   }
@@ -114,7 +150,7 @@ public class PermissionServiceTest {
     try {
       subject.deleteAccessControlEntry(userContext, CREDENTIAL_NAME, userContext.getAclUser());
       fail("should throw");
-    } catch( InvalidAclOperationException iaoe ){
+    } catch (InvalidAclOperationException iaoe) {
       assertThat(iaoe.getMessage(), IsEqual.equalTo("error.acl.invalid_update_operation"));
     }
   }

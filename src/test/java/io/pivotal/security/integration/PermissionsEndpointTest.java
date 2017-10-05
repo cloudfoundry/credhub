@@ -169,7 +169,7 @@ public class PermissionsEndpointTest {
         .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
         .accept(APPLICATION_JSON);
 
-    String expectedError = "The request could not be fulfilled because the resource could not be found.";
+    String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
     this.mockMvc.perform(get)
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.error", equalTo(

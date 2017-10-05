@@ -70,7 +70,7 @@ public class PermissionsHandlerTest {
   @Test
   public void getPermissions_whenTheNameDoesntStartWithASlash_fixesTheName() {
     List<PermissionEntry> accessControlList = newArrayList();
-    when(permissionService.getAccessControlList(any(CredentialName.class)))
+    when(permissionService.getAccessControlList(eq(userContext), any(CredentialName.class)))
         .thenReturn(accessControlList);
     when(permissionCheckingService
         .hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(READ_ACL)))
@@ -99,16 +99,13 @@ public class PermissionsHandlerTest {
         operations
     );
     List<PermissionEntry> accessControlList = newArrayList(permissionEntry);
-    when(permissionService.getAccessControlList(credentialName))
+    when(permissionService.getAccessControlList(userContext, credentialName))
         .thenReturn(accessControlList);
 
     PermissionsView response = subject.getPermissions(
         CREDENTIAL_NAME,
         userContext
     );
-
-    verify(permissionCheckingService, times(1)).hasPermission(any(String.class),
-        eq(CREDENTIAL_NAME), eq(READ_ACL));
 
     List<PermissionEntry> accessControlEntries = response.getPermissions();
 
@@ -148,7 +145,7 @@ public class PermissionsHandlerTest {
     List<PermissionEntry> expectedControlList = newArrayList(permissionEntry,
         preexistingPermissionEntry);
 
-    when(permissionService.getAccessControlList(credentialName))
+    when(permissionService.getAccessControlList(userContext, credentialName))
         .thenReturn(expectedControlList);
 
     when(credentialNameDataService.find(CREDENTIAL_NAME))
@@ -174,26 +171,6 @@ public class PermissionsHandlerTest {
   }
 
   @Test
-  public void setPermissions_whenUserDoesNotHavePermission_throwsException() {
-    when(
-        permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, WRITE_ACL))
-        .thenReturn(false);
-    when(permissionCheckingService
-        .userAllowedToOperateOnActor(userContext, ACTOR_NAME))
-        .thenReturn(true);
-    when(credentialNameDataService.find(CREDENTIAL_NAME))
-        .thenReturn(credentialName);
-
-    try {
-      subject.setPermissions(CREDENTIAL_NAME, userContext, emptyList());
-      fail("should throw");
-    } catch (EntryNotFoundException e) {
-      assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
-      verify(permissionService, times(0)).saveAccessControlEntries(any(), any());
-    }
-  }
-
-  @Test
   public void setPermissions_whenUserUpdatesOwnPermission_throwsException() {
     when(permissionCheckingService
         .hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(WRITE_ACL)))
@@ -210,7 +187,7 @@ public class PermissionsHandlerTest {
       );
     } catch (InvalidAclOperationException e) {
       assertThat(e.getMessage(), equalTo("error.acl.invalid_update_operation"));
-      verify(permissionService, times(0)).saveAccessControlEntries(any(), any());
+      verify(permissionService, times(0)).saveAccessControlEntries(any(), any(), any());
     }
   }
 
@@ -230,7 +207,7 @@ public class PermissionsHandlerTest {
       fail("should throw");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
-      verify(permissionService, times(0)).saveAccessControlEntries(any(), any());
+      verify(permissionService, times(0)).saveAccessControlEntries(any(), any(), any());
     }
   }
 
