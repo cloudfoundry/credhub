@@ -30,7 +30,7 @@ public class CredentialDataTest {
     passwordCredentialData.setEncryptedValue(toModify);
     byte[] unModified = toModify.clone();
 
-    toModify[0] = (byte) 'a';
+    toModify[0] = (byte) (((int) toModify[0]) >> 1);
 
     assertThat(passwordCredentialData.getEncryptedValue(), not(equalTo(toModify)));
     assertThat(passwordCredentialData.getEncryptedValue(), equalTo(unModified));
@@ -51,7 +51,7 @@ public class CredentialDataTest {
     passwordCredentialData.setNonce(toModify);
     byte[] unModified = toModify.clone();
 
-    toModify[0] = (byte) 'a';
+    toModify[0] = (byte) (((int) toModify[0]) >> 1);
 
     assertThat(passwordCredentialData.getNonce(), not(equalTo(toModify)));
     assertThat(passwordCredentialData.getNonce(), equalTo(unModified));

@@ -30,7 +30,7 @@ public class EncryptionKeyCanaryTest {
     subject.setEncryptedCanaryValue(toModify);
     byte[] unModified = toModify.clone();
 
-    toModify[0] = (byte) 'a';
+    toModify[0] = (byte) (((int) toModify[0]) >> 1);
 
     assertThat(subject.getEncryptedCanaryValue(), not(equalTo(toModify)));
     assertThat(subject.getEncryptedCanaryValue(), equalTo(unModified));
@@ -51,7 +51,7 @@ public class EncryptionKeyCanaryTest {
     subject.setNonce(toModify);
     byte[] unModified = toModify.clone();
 
-    toModify[0] = (byte) 'b';
+    toModify[0] = (byte) (((int) toModify[0]) >> 1);
 
     assertThat(subject.getNonce(), not(equalTo(toModify)));
     assertThat(subject.getNonce(), equalTo(unModified));
@@ -72,7 +72,7 @@ public class EncryptionKeyCanaryTest {
     subject.setSalt(toModify);
     byte[] unModified = toModify.clone();
 
-    toModify[0] = (byte) 'b';
+    toModify[0] = (byte) (((int) toModify[0]) >> 1);
 
     assertThat(subject.getSalt(), not(equalTo(toModify)));
     assertThat(subject.getSalt(), equalTo(unModified));
