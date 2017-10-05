@@ -3,7 +3,6 @@ package io.pivotal.security.handler;
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.credential.CredentialValue;
-import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.PasswordCredential;
 import io.pivotal.security.exceptions.EntryNotFoundException;
@@ -23,19 +22,16 @@ import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 @Service
 public class RegenerateHandler {
 
-  private CredentialDataService credentialDataService;
   private PermissionedCredentialService credentialService;
   private UniversalCredentialGenerator credentialGenerator;
   private final PermissionService permissionService;
   private GenerationRequestGenerator generationRequestGenerator;
 
   RegenerateHandler(
-      CredentialDataService credentialDataService,
       PermissionedCredentialService credentialService,
       PermissionService permissionService,
       UniversalCredentialGenerator credentialGenerator,
       GenerationRequestGenerator generationRequestGenerator) {
-    this.credentialDataService = credentialDataService;
     this.credentialService = credentialService;
     this.permissionService = permissionService;
     this.credentialService = credentialService;
@@ -49,7 +45,7 @@ public class RegenerateHandler {
       PermissionEntry currentUserPermissionEntry,
       List<EventAuditRecordParameters> auditRecordParameters
   ) {
-    Credential existingCredential = credentialDataService.findMostRecent(credentialName);
+    Credential existingCredential = credentialService.findMostRecent(credentialName);
     if (existingCredential == null) {
       auditRecordParameters.add(new EventAuditRecordParameters(CREDENTIAL_UPDATE, credentialName));
       throw new EntryNotFoundException("error.credential.invalid_access");

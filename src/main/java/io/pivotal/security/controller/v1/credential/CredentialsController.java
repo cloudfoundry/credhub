@@ -8,17 +8,17 @@ import io.pivotal.security.audit.EventAuditLogService;
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.audit.RequestUuid;
 import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.exceptions.InvalidQueryParameterException;
 import io.pivotal.security.handler.CredentialsHandler;
 import io.pivotal.security.handler.GenerateHandler;
+import io.pivotal.security.handler.RegenerateHandler;
 import io.pivotal.security.handler.SetHandler;
 import io.pivotal.security.request.BaseCredentialGenerateRequest;
 import io.pivotal.security.request.BaseCredentialSetRequest;
 import io.pivotal.security.request.CredentialRegenerateRequest;
 import io.pivotal.security.request.PermissionEntry;
-import io.pivotal.security.handler.RegenerateHandler;
+import io.pivotal.security.service.PermissionedCredentialService;
 import io.pivotal.security.util.StringUtil;
 import io.pivotal.security.view.CredentialView;
 import io.pivotal.security.view.DataResponse;
@@ -61,7 +61,7 @@ public class CredentialsController {
   public static final String API_V1_DATA = "/api/v1/data";
 
   private static final Logger LOGGER = LogManager.getLogger(CredentialsController.class);
-  private final CredentialDataService credentialDataService;
+  private final PermissionedCredentialService credentialService;
   private final EventAuditLogService eventAuditLogService;
   private final ObjectMapper objectMapper;
   private final SetHandler setHandler;
@@ -70,7 +70,7 @@ public class CredentialsController {
   private final CredentialsHandler credentialsHandler;
 
   @Autowired
-  public CredentialsController(CredentialDataService credentialDataService,
+  public CredentialsController(PermissionedCredentialService credentialService,
       EventAuditLogService eventAuditLogService,
       ObjectMapper objectMapper,
       GenerateHandler generateHandler,
@@ -78,7 +78,7 @@ public class CredentialsController {
       CredentialsHandler credentialsHandler,
       SetHandler setHandler
   ) {
-    this.credentialDataService = credentialDataService;
+    this.credentialService = credentialService;
     this.eventAuditLogService = eventAuditLogService;
     this.objectMapper = objectMapper;
     this.generateHandler = generateHandler;
@@ -193,7 +193,7 @@ public class CredentialsController {
       RequestUuid requestUuid,
       UserContext userContext
   ) {
-    return findWithAuditing(path, credentialDataService::findStartingWithPath, requestUuid, userContext);
+    return findWithAuditing(path, credentialService::findStartingWithPath, requestUuid, userContext);
   }
 
   @RequestMapping(path = "", params = "paths=true", method = RequestMethod.GET)
@@ -201,7 +201,7 @@ public class CredentialsController {
   public FindPathResults findPaths(RequestUuid requestUuid, UserContext userContext) {
     return eventAuditLogService.auditEvents(requestUuid, userContext, eventAuditRecordParametersList -> {
       eventAuditRecordParametersList.add(new EventAuditRecordParameters(CREDENTIAL_FIND));
-      List<String> paths = credentialDataService.findAllPaths();
+      List<String> paths = credentialService.findAllPaths();
       return FindPathResults.fromEntity(paths);
     });
   }
@@ -213,7 +213,7 @@ public class CredentialsController {
       RequestUuid requestUuid,
       UserContext userContext
   ) {
-    return findWithAuditing(nameLike, credentialDataService::findContainingName, requestUuid,
+    return findWithAuditing(nameLike, credentialService::findContainingName, requestUuid,
         userContext);
   }
 

@@ -17,6 +17,7 @@ import io.pivotal.security.request.GenerationParameters;
 import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.PermissionOperation;
 import io.pivotal.security.view.CredentialView;
+import io.pivotal.security.view.FindCredentialResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -177,5 +178,21 @@ public class PermissionedCredentialService {
     }
 
     return credentialDataService.findAllCertificateCredentialsByCaName(caName);
+  }
+
+  public List<FindCredentialResult> findStartingWithPath(String path) {
+    return credentialDataService.findStartingWithPath(path);
+  }
+
+  public List<String> findAllPaths() {
+    return credentialDataService.findAllPaths();
+  }
+
+  public List<FindCredentialResult> findContainingName(String name) {
+    return credentialDataService.findContainingName(name);
+  }
+
+  public Credential findMostRecent(String credentialName) {
+    return credentialDataService.findMostRecent(credentialName);
   }
 }

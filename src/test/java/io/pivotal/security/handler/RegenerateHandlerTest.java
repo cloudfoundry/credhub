@@ -1,7 +1,6 @@
 package io.pivotal.security.handler;
 
 import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.request.PasswordGenerateRequest;
 import io.pivotal.security.request.PermissionEntry;
@@ -26,7 +25,6 @@ public class RegenerateHandlerTest {
   private static final String SIGNER_NAME = "signer name";
 
   private RegenerateHandler subject;
-  private CredentialDataService credentialDataService;
   private PermissionedCredentialService credentialService;
   private PermissionService permissionService;
   private UniversalCredentialGenerator credentialGenerator;
@@ -36,7 +34,6 @@ public class RegenerateHandlerTest {
 
   @Before
   public void beforeEach() {
-    credentialDataService = mock(CredentialDataService.class);
     credentialService = mock(PermissionedCredentialService.class);
     permissionService = mock(PermissionService.class);
     credentialGenerator = mock(UniversalCredentialGenerator.class);
@@ -44,7 +41,6 @@ public class RegenerateHandlerTest {
     currentUserPermissionEntry = mock(PermissionEntry.class);
     userContext = mock(UserContext.class);
     subject = new RegenerateHandler(
-        credentialDataService,
         credentialService,
         permissionService,
         credentialGenerator,
@@ -55,7 +51,7 @@ public class RegenerateHandlerTest {
   public void handleBulkRegenerate_regeneratesEverythingInTheList() throws Exception {
     when(credentialService.findAllCertificateCredentialsByCaName(userContext, SIGNER_NAME))
         .thenReturn(newArrayList("firstExpectedName", "secondExpectedName"));
-    when(credentialDataService.findMostRecent(anyString()))
+    when(credentialService.findMostRecent(anyString()))
         .thenReturn(mock(Credential.class));
     PasswordGenerateRequest generateRequest1 = new PasswordGenerateRequest();
     generateRequest1.setName("firstExpectedName");
