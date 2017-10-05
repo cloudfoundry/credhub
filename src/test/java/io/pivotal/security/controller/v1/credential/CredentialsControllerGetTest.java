@@ -8,7 +8,7 @@ import io.pivotal.security.exceptions.KeyNotFoundException;
 import io.pivotal.security.helper.AuditingHelper;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
-import io.pivotal.security.service.PermissionService;
+import io.pivotal.security.service.PermissionCheckingService;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.Before;
@@ -70,7 +70,7 @@ public class CredentialsControllerGetTest {
   private Encryptor encryptor;
 
   @SpyBean
-  private PermissionService permissionService;
+  private PermissionCheckingService permissionCheckingService;
 
   @Autowired
   private RequestAuditRecordRepository requestAuditRecordRepository;
@@ -104,8 +104,8 @@ public class CredentialsControllerGetTest {
   @Test
   public void gettingACredential_byName_thatExists_returnsTheCredential() throws Exception {
     doReturn(true)
-        .when(permissionService)
-        .hasPermission(any(String.class), any(String.class), eq(READ));
+        .when(permissionCheckingService).hasPermission(any(String.class),
+        any(String.class), eq(READ));
 
     UUID uuid = UUID.randomUUID();
 
@@ -136,8 +136,8 @@ public class CredentialsControllerGetTest {
   @Test
   public void gettingACredential_byName_whenTheCredentialDoesNotExist_returnsNotFound() throws Exception {
     doReturn(true)
-        .when(permissionService)
-        .hasPermission(any(String.class), any(String.class), eq(READ));
+        .when(permissionCheckingService).hasPermission(any(String.class),
+        any(String.class), eq(READ));
 
     final MockHttpServletRequestBuilder get1 = get("/api/v1/data?name=invalid_name")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -163,8 +163,8 @@ public class CredentialsControllerGetTest {
   @Test
   public void gettingACredential_byName_whenTheCredentialDoesNotExist_andCurrentIsSetToTrue_returnsNotFound() throws Exception {
     doReturn(true)
-        .when(permissionService)
-        .hasPermission(any(String.class), any(String.class), eq(READ));
+        .when(permissionCheckingService).hasPermission(any(String.class),
+        any(String.class), eq(READ));
 
     final MockHttpServletRequestBuilder get1 = get("/api/v1/data?name=invalid_name&current=true")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -190,8 +190,8 @@ public class CredentialsControllerGetTest {
   @Test
   public void gettingACredential_byName_whenTheUserDoesNotHavePermissionToAccessTheCredential_returnsNotFound() throws Exception {
     doReturn(false)
-        .when(permissionService)
-        .hasPermission(any(String.class), any(String.class), eq(READ));
+        .when(permissionCheckingService).hasPermission(any(String.class),
+        any(String.class), eq(READ));
     final MockHttpServletRequestBuilder get1 = get("/api/v1/data?name=" + CREDENTIAL_NAME)
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON);

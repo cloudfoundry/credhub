@@ -5,7 +5,7 @@ import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.data.CertificateAuthorityService;
 import io.pivotal.security.domain.CertificateGenerationParameters;
 import io.pivotal.security.request.CertificateGenerationRequestParameters;
-import io.pivotal.security.service.PermissionService;
+import io.pivotal.security.service.PermissionCheckingService;
 import io.pivotal.security.util.CertificateFormatter;
 import io.pivotal.security.util.CurrentTimeProvider;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -67,7 +67,7 @@ public class CertificateGeneratorTest {
   private CertificateGenerationParameters inputParameters;
   private CertificateGenerationRequestParameters generationParameters;
   private X509Certificate childX509Certificate;
-  private PermissionService permissionService;
+  private PermissionCheckingService permissionCheckingService;
   private UserContext userContext;
 
   @Before
@@ -75,7 +75,7 @@ public class CertificateGeneratorTest {
     keyGenerator = mock(LibcryptoRsaKeyPairGenerator.class);
     signedCertificateGenerator = mock(SignedCertificateGenerator.class);
     certificateAuthorityService = mock(CertificateAuthorityService.class);
-    permissionService = mock(PermissionService.class);
+    permissionCheckingService = mock(PermissionCheckingService.class);
     userContext = mock(UserContext.class);
 
     subject = new CertificateGenerator(
@@ -84,7 +84,7 @@ public class CertificateGeneratorTest {
         certificateAuthorityService
     );
 
-    when(permissionService.hasPermission(anyString(), anyString(), any())).thenReturn(true);
+    when(permissionCheckingService.hasPermission(anyString(), anyString(), any())).thenReturn(true);
 
     fakeKeyPairGenerator = new FakeKeyPairGenerator();
 

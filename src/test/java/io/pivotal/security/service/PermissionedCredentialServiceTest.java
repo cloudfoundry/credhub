@@ -66,6 +66,9 @@ public class PermissionedCredentialServiceTest {
   private PermissionService permissionService;
 
   @Mock
+  private PermissionCheckingService permissionCheckingService;
+
+  @Mock
   private Encryptor encryptor;
 
   @Mock
@@ -91,7 +94,8 @@ public class PermissionedCredentialServiceTest {
         credentialDataService,
         permissionsDataService,
         permissionService,
-        credentialFactory);
+        credentialFactory,
+        permissionCheckingService);
 
     userContext = mock(UserContext.class);
     auditRecordParameters = new ArrayList<>();
@@ -108,9 +112,9 @@ public class PermissionedCredentialServiceTest {
 
     auditRecordParametersList = newArrayList();
 
-    when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
+    when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(true);
-    when(permissionService.hasPermission(USER, CREDENTIAL_NAME, WRITE))
+    when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, WRITE))
         .thenReturn(true);
     when(credentialDataService.findByUuid(UUID_STRING))
         .thenReturn(existingCredential);
@@ -178,7 +182,8 @@ public class PermissionedCredentialServiceTest {
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(null);
     when(credentialDataService.save(any(Credential.class)))
         .thenReturn(new PasswordCredential().setEncryptor(encryptor));
-    when(permissionService.userAllowedToOperateOnActor(userContext, "test-user"))
+    when(permissionCheckingService
+        .userAllowedToOperateOnActor(userContext, "test-user"))
         .thenReturn(false);
 
     accessControlEntries.add(new PermissionEntry("test-user", Arrays.asList(WRITE, WRITE_ACL)));
@@ -215,8 +220,8 @@ public class PermissionedCredentialServiceTest {
         auditRecordParameters
     );
 
-    verify(permissionService)
-        .hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE);
+    verify(permissionCheckingService).hasPermission(userContext.getAclUser(),
+        CREDENTIAL_NAME, WRITE);
   }
 
   @Test
@@ -235,16 +240,18 @@ public class PermissionedCredentialServiceTest {
         auditRecordParameters
     );
 
-    verify(permissionService, times(0))
-        .hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE);
+    verify(permissionCheckingService, times(0)).hasPermission(
+        userContext.getAclUser(), CREDENTIAL_NAME, WRITE);
   }
 
   @Test
   public void save_whenThereIsAnExistingCredentialWithACEs_shouldCallVerifyAclWritePermission() {
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
-    when(permissionService.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE_ACL))
+    when(permissionCheckingService
+        .hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE_ACL))
         .thenReturn(true);
-    when(permissionService.userAllowedToOperateOnActor(userContext, "some_actor")).thenReturn(true);
+    when(permissionCheckingService
+        .userAllowedToOperateOnActor(userContext, "some_actor")).thenReturn(true);
 
     accessControlEntries
         .add(new PermissionEntry("some_actor", Arrays.asList(PermissionOperation.READ_ACL)));
@@ -260,14 +267,15 @@ public class PermissionedCredentialServiceTest {
         auditRecordParameters
     );
 
-    verify(permissionService)
-        .hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE_ACL);
+    verify(permissionCheckingService).hasPermission(userContext.getAclUser(),
+        CREDENTIAL_NAME, WRITE_ACL);
   }
 
   @Test
   public void save_whenThereIsAnExistingCredentialWithACEs_shouldThrowAnExceptionIfItLacksPermission() {
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
-    when(permissionService.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE_ACL))
+    when(permissionCheckingService
+        .hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE_ACL))
         .thenReturn(false);
 
     accessControlEntries
@@ -388,8 +396,10 @@ public class PermissionedCredentialServiceTest {
   public void save_whenOverwriteIsTrue_logsACL_UPDATE() {
     PasswordCredential credential = new PasswordCredential(CREDENTIAL_NAME).setEncryptor(encryptor);
     when(credentialDataService.save(any(Credential.class))).thenReturn(credential);
-    when(permissionService.userAllowedToOperateOnActor(userContext, "Spock")).thenReturn(true);
-    when(permissionService.userAllowedToOperateOnActor(userContext, "McCoy")).thenReturn(true);
+    when(permissionCheckingService
+        .userAllowedToOperateOnActor(userContext, "Spock")).thenReturn(true);
+    when(permissionCheckingService
+        .userAllowedToOperateOnActor(userContext, "McCoy")).thenReturn(true);
 
     accessControlEntries.addAll(Arrays.asList(
         new PermissionEntry("Spock", Arrays.asList(WRITE)),
@@ -446,7 +456,7 @@ public class PermissionedCredentialServiceTest {
 
   @Test
   public void delete_whenTheUserLacksPermission_throwsAnException() {
-    when(permissionService.hasPermission(USER, CREDENTIAL_NAME, DELETE))
+    when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, DELETE))
         .thenReturn(false);
 
     try {
@@ -459,7 +469,7 @@ public class PermissionedCredentialServiceTest {
 
   @Test
   public void findAllByName_whenTheUserLacksPermission_throwsAnException() {
-    when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
+    when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(false);
 
     try {
@@ -472,7 +482,7 @@ public class PermissionedCredentialServiceTest {
 
   @Test
   public void findNByName_whenTheUserLacksPermission_throwsAnException() {
-    when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
+    when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(false);
 
     try {
@@ -510,7 +520,7 @@ public class PermissionedCredentialServiceTest {
 
   @Test
   public void getCredentialVersion_whenTheUserLacksPermission_throwsExceptionAndSetsCorrectAuditingParameters() {
-    when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
+    when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(false);
 
     try {
@@ -527,7 +537,7 @@ public class PermissionedCredentialServiceTest {
 
   @Test
   public void findAllCertificateCredentialsByCaName_whenTheUserHasPermission_getsAllCertificateCredentialsByCaName() {
-    when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
+    when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(true);
 
     ArrayList<String> expectedCertificates = newArrayList("expectedCertificate");
@@ -542,7 +552,7 @@ public class PermissionedCredentialServiceTest {
 
   @Test
   public void findAllCertificateCredentialsByCaName_whenTheUserLacksPermission_throwsException() {
-    when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
+    when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(false);
 
     try {

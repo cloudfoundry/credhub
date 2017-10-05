@@ -6,6 +6,7 @@ import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.InvalidAclOperationException;
 import io.pivotal.security.request.PermissionEntry;
+import io.pivotal.security.service.PermissionCheckingService;
 import io.pivotal.security.service.PermissionService;
 import io.pivotal.security.view.PermissionsView;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,21 +21,25 @@ import static io.pivotal.security.request.PermissionOperation.WRITE_ACL;
 public class PermissionsHandler {
 
   private final PermissionService permissionService;
+  private final PermissionCheckingService permissionCheckingService;
   private final CredentialNameDataService credentialNameDataService;
 
   @Autowired
   PermissionsHandler(
       PermissionService permissionService,
+      PermissionCheckingService permissionCheckingService,
       CredentialNameDataService credentialNameDataService
   ) {
     this.permissionService = permissionService;
+    this.permissionCheckingService = permissionCheckingService;
     this.credentialNameDataService = credentialNameDataService;
   }
 
   public PermissionsView getPermissions(String name, UserContext userContext) {
     final CredentialName credentialName = credentialNameDataService.findOrThrow(name);
 
-    if (!permissionService.hasPermission(userContext.getAclUser(), name, READ_ACL)) {
+    if (!permissionCheckingService
+        .hasPermission(userContext.getAclUser(), name, READ_ACL)) {
       throw new EntryNotFoundException("error.resource_not_found");
     }
 
@@ -52,13 +57,14 @@ public class PermissionsHandler {
     final CredentialName credentialName = credentialNameDataService.find(name);
 
     // We need to verify that the credential exists in case ACL enforcement is off
-    if (credentialName == null || !permissionService
+    if (credentialName == null || !permissionCheckingService
         .hasPermission(userContext.getAclUser(), name, WRITE_ACL)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
     for (PermissionEntry permissionEntry : permissionEntryList) {
-      if (!permissionService.userAllowedToOperateOnActor(userContext, permissionEntry.getActor())) {
+      if (!permissionCheckingService
+          .userAllowedToOperateOnActor(userContext, permissionEntry.getActor())) {
         throw new InvalidAclOperationException("error.acl.invalid_update_operation");
       }
     }

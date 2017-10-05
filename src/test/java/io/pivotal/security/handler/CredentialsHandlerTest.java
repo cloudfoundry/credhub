@@ -7,7 +7,7 @@ import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.SshCredential;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.InvalidQueryParameterException;
-import io.pivotal.security.service.PermissionService;
+import io.pivotal.security.service.PermissionCheckingService;
 import io.pivotal.security.service.PermissionedCredentialService;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,7 +44,7 @@ public class CredentialsHandlerTest {
 
   private CredentialsHandler subject;
   private PermissionedCredentialService permissionedCredentialService;
-  private PermissionService permissionService;
+  private PermissionCheckingService permissionCheckingService;
 
   private UserContext userContext;
   private SshCredential version1;
@@ -55,8 +55,8 @@ public class CredentialsHandlerTest {
     Encryptor encryptor = mock(Encryptor.class);
 
     permissionedCredentialService = mock(PermissionedCredentialService.class);
-    permissionService = mock(PermissionService.class);
-    subject = new CredentialsHandler(permissionedCredentialService, permissionService);
+    permissionCheckingService = mock(PermissionCheckingService.class);
+    subject = new CredentialsHandler(permissionedCredentialService, permissionCheckingService);
 
     userContext = mock(UserContext.class);
     when(userContext.getAclUser()).thenReturn(USER);
@@ -73,7 +73,7 @@ public class CredentialsHandlerTest {
   @Test
   public void deleteCredential_whenTheDeletionSucceeds_deletesTheCredential() {
     when(permissionedCredentialService.delete(any(), eq(CREDENTIAL_NAME))).thenReturn(true);
-    when(permissionService.hasPermission(USER, CREDENTIAL_NAME, DELETE))
+    when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, DELETE))
         .thenReturn(true);
 
     subject.deleteCredential(CREDENTIAL_NAME, userContext);
@@ -83,7 +83,7 @@ public class CredentialsHandlerTest {
 
   @Test
   public void deleteCredential_whenTheCredentialIsNotDeleted_throwsAnException() {
-    when(permissionService.hasPermission(USER, CREDENTIAL_NAME, DELETE))
+    when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, DELETE))
         .thenReturn(true);
     when(permissionedCredentialService.delete(any(), eq(CREDENTIAL_NAME))).thenReturn(false);
 
@@ -100,7 +100,7 @@ public class CredentialsHandlerTest {
     List<Credential> credentials = newArrayList(version1, version2);
     when(permissionedCredentialService.findAllByName(any(UserContext.class), eq(CREDENTIAL_NAME)))
         .thenReturn(credentials);
-    when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
+    when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(true);
 
     List<Credential> credentialVersions = subject.getAllCredentialVersions(CREDENTIAL_NAME, userContext,
@@ -119,7 +119,7 @@ public class CredentialsHandlerTest {
     List<Credential> credentials = newArrayList(version1);
     when(permissionedCredentialService.findAllByName(any(UserContext.class), eq(CREDENTIAL_NAME)))
         .thenReturn(credentials);
-    when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
+    when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(true);
 
     subject.getAllCredentialVersions(CREDENTIAL_NAME, userContext, auditRecordParametersList);
@@ -133,7 +133,7 @@ public class CredentialsHandlerTest {
   public void getAllCredentialVersions_whenTheCredentialDoesNotExist_throwsException() {
     when(permissionedCredentialService.findAllByName(any(UserContext.class), eq(CREDENTIAL_NAME)))
         .thenReturn(emptyList());
-    when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
+    when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(true);
 
     try {
@@ -181,7 +181,7 @@ public class CredentialsHandlerTest {
   public void getMostRecentCredentialVersion_whenTheCredentialExists_returnsDataResponse() {
     when(permissionedCredentialService.findNByName(any(UserContext.class), eq(CREDENTIAL_NAME), eq(1)))
         .thenReturn(Arrays.asList(version1));
-    when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
+    when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(true);
 
     Credential credential = subject.getMostRecentCredentialVersion(
@@ -198,7 +198,7 @@ public class CredentialsHandlerTest {
     List<EventAuditRecordParameters> auditRecordParametersList = newArrayList();
     when(permissionedCredentialService.findNByName(any(UserContext.class), eq(CREDENTIAL_NAME), eq(1)))
         .thenReturn(Arrays.asList(version1));
-    when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
+    when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(true);
 
     subject.getMostRecentCredentialVersion(CREDENTIAL_NAME, userContext, auditRecordParametersList);
@@ -220,7 +220,7 @@ public class CredentialsHandlerTest {
 
   @Test
   public void getMostRecentCredentialVersion_whenTheUserLacksPermission_throwsException() {
-    when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
+    when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(false);
 
     try {
@@ -235,7 +235,7 @@ public class CredentialsHandlerTest {
   public void getMostRecentCredentialVersion_whenTheUserLacksPermission_setsCorrectAuditingParameters() {
     List<EventAuditRecordParameters> auditRecordParametersList = newArrayList();
 
-    when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
+    when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(false);
 
     try {

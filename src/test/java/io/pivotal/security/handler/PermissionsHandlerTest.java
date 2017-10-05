@@ -7,6 +7,7 @@ import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.InvalidAclOperationException;
 import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.PermissionOperation;
+import io.pivotal.security.service.PermissionCheckingService;
 import io.pivotal.security.service.PermissionService;
 import io.pivotal.security.view.PermissionsView;
 import org.junit.Before;
@@ -46,6 +47,7 @@ public class PermissionsHandlerTest {
   private PermissionsHandler subject;
 
   private PermissionService permissionService;
+  private PermissionCheckingService permissionCheckingService;
   private CredentialNameDataService credentialNameDataService;
 
   private final CredentialName credentialName = new CredentialName(CREDENTIAL_NAME);
@@ -54,9 +56,11 @@ public class PermissionsHandlerTest {
   @Before
   public void beforeEach() {
     permissionService = mock(PermissionService.class);
+    permissionCheckingService = mock(PermissionCheckingService.class);
     credentialNameDataService = mock(CredentialNameDataService.class);
     subject = new PermissionsHandler(
         permissionService,
+        permissionCheckingService,
         credentialNameDataService
     );
 
@@ -68,7 +72,8 @@ public class PermissionsHandlerTest {
     List<PermissionEntry> accessControlList = newArrayList();
     when(permissionService.getAccessControlList(any(CredentialName.class)))
         .thenReturn(accessControlList);
-    when(permissionService.hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(READ_ACL)))
+    when(permissionCheckingService
+        .hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(READ_ACL)))
         .thenReturn(true);
     when(credentialNameDataService.findOrThrow(any(String.class)))
         .thenReturn(new CredentialName(CREDENTIAL_NAME));
@@ -86,7 +91,8 @@ public class PermissionsHandlerTest {
         READ,
         WRITE
     );
-    when(permissionService.hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(READ_ACL)))
+    when(permissionCheckingService
+        .hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(READ_ACL)))
         .thenReturn(true);
     PermissionEntry permissionEntry = new PermissionEntry(
         ACTOR_NAME,
@@ -101,8 +107,8 @@ public class PermissionsHandlerTest {
         userContext
     );
 
-    verify(permissionService, times(1))
-        .hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(READ_ACL));
+    verify(permissionCheckingService, times(1)).hasPermission(any(String.class),
+        eq(CREDENTIAL_NAME), eq(READ_ACL));
 
     List<PermissionEntry> accessControlEntries = response.getPermissions();
 
@@ -121,9 +127,11 @@ public class PermissionsHandlerTest {
 
   @Test
   public void setPermissions_setsAndReturnsThePermissions() {
-    when(permissionService.hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(WRITE_ACL)))
+    when(permissionCheckingService
+        .hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(WRITE_ACL)))
         .thenReturn(true);
-    when(permissionService.userAllowedToOperateOnActor(userContext, ACTOR_NAME))
+    when(permissionCheckingService
+        .userAllowedToOperateOnActor(userContext, ACTOR_NAME))
         .thenReturn(true);
 
     ArrayList<PermissionOperation> operations = newArrayList(
@@ -167,9 +175,11 @@ public class PermissionsHandlerTest {
 
   @Test
   public void setPermissions_whenUserDoesNotHavePermission_throwsException() {
-    when(permissionService.hasPermission(USER, CREDENTIAL_NAME, WRITE_ACL))
+    when(
+        permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, WRITE_ACL))
         .thenReturn(false);
-    when(permissionService.userAllowedToOperateOnActor(userContext, ACTOR_NAME))
+    when(permissionCheckingService
+        .userAllowedToOperateOnActor(userContext, ACTOR_NAME))
         .thenReturn(true);
     when(credentialNameDataService.find(CREDENTIAL_NAME))
         .thenReturn(credentialName);
@@ -185,11 +195,13 @@ public class PermissionsHandlerTest {
 
   @Test
   public void setPermissions_whenUserUpdatesOwnPermission_throwsException() {
-    when(permissionService.hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(WRITE_ACL)))
+    when(permissionCheckingService
+        .hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(WRITE_ACL)))
         .thenReturn(true);
     when(credentialNameDataService.find(CREDENTIAL_NAME))
         .thenReturn(credentialName);
-    when(permissionService.userAllowedToOperateOnActor(userContext, ACTOR_NAME))
+    when(permissionCheckingService
+        .userAllowedToOperateOnActor(userContext, ACTOR_NAME))
         .thenReturn(false);
 
     try {
@@ -204,9 +216,11 @@ public class PermissionsHandlerTest {
 
   @Test
   public void setPermissions_whenTheCredentialDoesNotExist_throwsException() {
-    when(permissionService.hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(WRITE_ACL)))
+    when(permissionCheckingService
+        .hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(WRITE_ACL)))
         .thenReturn(true);
-    when(permissionService.userAllowedToOperateOnActor(userContext, ACTOR_NAME))
+    when(permissionCheckingService
+        .userAllowedToOperateOnActor(userContext, ACTOR_NAME))
         .thenReturn(true);
     when(credentialNameDataService.find(CREDENTIAL_NAME))
         .thenReturn(null);
@@ -222,11 +236,13 @@ public class PermissionsHandlerTest {
 
   @Test
   public void deletePermissions_whenTheUserHasPermission_deletesTheAce() {
-    when(permissionService.hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(WRITE_ACL)))
+    when(permissionCheckingService
+        .hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(WRITE_ACL)))
         .thenReturn(true);
     when(permissionService.deleteAccessControlEntry(userContext, CREDENTIAL_NAME, ACTOR_NAME))
         .thenReturn(true);
-    when(permissionService.userAllowedToOperateOnActor(userContext, ACTOR_NAME))
+    when(permissionCheckingService
+        .userAllowedToOperateOnActor(userContext, ACTOR_NAME))
         .thenReturn(true);
 
     subject.deletePermissionEntry(userContext, CREDENTIAL_NAME, ACTOR_NAME

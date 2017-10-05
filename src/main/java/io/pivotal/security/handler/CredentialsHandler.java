@@ -6,7 +6,7 @@ import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.InvalidQueryParameterException;
-import io.pivotal.security.service.PermissionService;
+import io.pivotal.security.service.PermissionCheckingService;
 import io.pivotal.security.service.PermissionedCredentialService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -16,13 +16,13 @@ import java.util.List;
 @Component
 public class CredentialsHandler {
   private final PermissionedCredentialService credentialService;
-  private final PermissionService permissionService;
+  private final PermissionCheckingService permissionCheckingService;
 
   @Autowired
   public CredentialsHandler(PermissionedCredentialService credentialService,
-      PermissionService permissionService) {
+      PermissionCheckingService permissionCheckingService) {
     this.credentialService = credentialService;
-    this.permissionService = permissionService;
+    this.permissionCheckingService = permissionCheckingService;
   }
 
   public void deleteCredential(String credentialName, UserContext userContext) {

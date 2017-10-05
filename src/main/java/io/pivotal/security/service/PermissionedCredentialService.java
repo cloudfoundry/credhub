@@ -39,18 +39,20 @@ public class PermissionedCredentialService {
   private final PermissionsDataService permissionsDataService;
   private PermissionService permissionService;
   private final CredentialFactory credentialFactory;
+  private PermissionCheckingService permissionCheckingService;
 
   @Autowired
   public PermissionedCredentialService(
       CredentialDataService credentialDataService,
       PermissionsDataService permissionsDataService,
       PermissionService permissionService,
-      CredentialFactory credentialFactory
-  ) {
+      CredentialFactory credentialFactory,
+      PermissionCheckingService permissionCheckingService) {
     this.credentialDataService = credentialDataService;
     this.permissionsDataService = permissionsDataService;
     this.permissionService = permissionService;
     this.credentialFactory = credentialFactory;
+    this.permissionCheckingService = permissionCheckingService;
   }
 
   public CredentialView save(
@@ -86,7 +88,7 @@ public class PermissionedCredentialService {
     }
 
     for (PermissionEntry accessControlEntry : accessControlEntries) {
-      if (!permissionService.userAllowedToOperateOnActor(userContext, accessControlEntry.getActor())) {
+      if (!permissionCheckingService.userAllowedToOperateOnActor(userContext, accessControlEntry.getActor())) {
         throw new InvalidAclOperationException("error.acl.invalid_update_operation");
       }
     }
@@ -119,26 +121,30 @@ public class PermissionedCredentialService {
   }
 
   private void verifyCredentialWritePermission(UserContext userContext, String credentialName) {
-    if (!permissionService.hasPermission(userContext.getAclUser(), credentialName, WRITE)) {
+    if (!permissionCheckingService
+        .hasPermission(userContext.getAclUser(), credentialName, WRITE)) {
       throw new PermissionException("error.credential.invalid_access");
     }
   }
 
   private void verifyAclWrite(UserContext userContext, String credentialName) {
-    if (!permissionService.hasPermission(userContext.getAclUser(), credentialName, WRITE_ACL)) {
+    if (!permissionCheckingService
+        .hasPermission(userContext.getAclUser(), credentialName, WRITE_ACL)) {
       throw new PermissionException("error.credential.invalid_access");
     }
   }
 
   public boolean delete(UserContext userContext, String credentialName) {
-    if (!permissionService.hasPermission(userContext.getAclUser(), credentialName, DELETE)) {
+    if (!permissionCheckingService
+        .hasPermission(userContext.getAclUser(), credentialName, DELETE)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
     return credentialDataService.delete(credentialName);
   }
 
   public List<Credential> findAllByName(UserContext userContext, String credentialName) {
-    if (!permissionService.hasPermission(userContext.getAclUser(), credentialName, READ)) {
+    if (!permissionCheckingService
+        .hasPermission(userContext.getAclUser(), credentialName, READ)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
@@ -146,7 +152,8 @@ public class PermissionedCredentialService {
   }
 
   public List<Credential> findNByName(UserContext userContext, String credentialName, Integer numberOfVersions) {
-    if (!permissionService.hasPermission(userContext.getAclUser(), credentialName, READ)) {
+    if (!permissionCheckingService
+        .hasPermission(userContext.getAclUser(), credentialName, READ)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
@@ -166,14 +173,16 @@ public class PermissionedCredentialService {
     String credentialName = credential.getName();
     eventAuditRecordParameters.setCredentialName(credentialName);
 
-    if (!permissionService.hasPermission(userContext.getAclUser(), credentialName, READ)) {
+    if (!permissionCheckingService
+        .hasPermission(userContext.getAclUser(), credentialName, READ)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
     return credentialDataService.findByUuid(credentialUUID);
   }
 
   public List<String> findAllCertificateCredentialsByCaName(UserContext userContext, String caName) {
-    if (!permissionService.hasPermission(userContext.getAclUser(), caName, PermissionOperation.READ)) {
+    if (!permissionCheckingService
+        .hasPermission(userContext.getAclUser(), caName, PermissionOperation.READ)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 

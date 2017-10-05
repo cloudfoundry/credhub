@@ -7,7 +7,7 @@ import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.entity.EventAuditRecord;
 import io.pivotal.security.repository.CredentialNameRepository;
 import io.pivotal.security.request.PermissionEntry;
-import io.pivotal.security.service.PermissionService;
+import io.pivotal.security.service.PermissionCheckingService;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.Before;
 import org.junit.Test;
@@ -65,7 +65,7 @@ public class PermissionsControllerAuditLogTest {
   private CredentialNameRepository credentialNameRepository;
 
   @MockBean
-  private PermissionService permissionService;
+  private PermissionCheckingService permissionCheckingService;
 
   private MockMvc mockMvc;
 
@@ -79,7 +79,8 @@ public class PermissionsControllerAuditLogTest {
         Arrays.asList(READ_ACL));
     when(permissionsDataService.getAccessControlList(eq(CRED1)))
         .thenReturn(Arrays.asList(ace));
-    when(permissionService.hasPermission(any(), anyString(), eq(READ_ACL)))
+    when(
+        permissionCheckingService.hasPermission(any(), anyString(), eq(READ_ACL)))
         .thenReturn(true);
     when(credentialNameRepository.findOneByNameIgnoreCase(CRED1.getName())).thenReturn(CRED1);
     reset(eventAuditRecordDataService);
