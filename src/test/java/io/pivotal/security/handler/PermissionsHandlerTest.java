@@ -5,7 +5,6 @@ import io.pivotal.security.data.CredentialNameDataService;
 import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.InvalidAclOperationException;
-import io.pivotal.security.helper.AuditingHelper;
 import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.PermissionOperation;
 import io.pivotal.security.service.PermissionService;
@@ -225,7 +224,7 @@ public class PermissionsHandlerTest {
   public void deletePermissions_whenTheUserHasPermission_deletesTheAce() {
     when(permissionService.hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(WRITE_ACL)))
         .thenReturn(true);
-    when(permissionService.deleteAccessControlEntry(CREDENTIAL_NAME, ACTOR_NAME))
+    when(permissionService.deleteAccessControlEntry(userContext, CREDENTIAL_NAME, ACTOR_NAME))
         .thenReturn(true);
     when(permissionService.userAllowedToOperateOnActor(userContext, ACTOR_NAME))
         .thenReturn(true);
@@ -233,32 +232,13 @@ public class PermissionsHandlerTest {
     subject.deletePermissionEntry(userContext, CREDENTIAL_NAME, ACTOR_NAME
     );
 
-    verify(permissionService, times(1)).deleteAccessControlEntry(
+    verify(permissionService, times(1)).deleteAccessControlEntry(userContext,
         CREDENTIAL_NAME, ACTOR_NAME);
   }
 
   @Test
-  public void deletePermissions_whenTheUserDeletesOwnPermission_throwsAnException() {
-    when(permissionService.hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(WRITE_ACL)))
-        .thenReturn(true);
-    when(permissionService.userAllowedToOperateOnActor(userContext, ACTOR_NAME))
-        .thenReturn(false);
-
-    try {
-      subject.deletePermissionEntry(userContext, CREDENTIAL_NAME, ACTOR_NAME
-      );
-    } catch( InvalidAclOperationException iaoe ){
-      assertThat(iaoe.getMessage(), equalTo("error.acl.invalid_update_operation"));
-    }
-  }
-
-  @Test
   public void deletePermissions_whenNothingIsDeleted_throwsAnException() {
-    when(permissionService.hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(WRITE_ACL)))
-        .thenReturn(true);
-    when(permissionService.userAllowedToOperateOnActor(userContext, ACTOR_NAME))
-        .thenReturn(true);
-    when(permissionService.deleteAccessControlEntry(CREDENTIAL_NAME, ACTOR_NAME))
+    when(permissionService.deleteAccessControlEntry(userContext, CREDENTIAL_NAME, ACTOR_NAME))
         .thenReturn(false);
 
     try {
@@ -267,23 +247,6 @@ public class PermissionsHandlerTest {
       fail("should throw");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
-    }
-  }
-
-  @Test
-  public void deletePermissions_whenTheUserLacksPermission_throwsInsteadOfDeletingThePermissions() {
-    when(permissionService.hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(WRITE_ACL)))
-        .thenReturn(false);
-    when(permissionService.userAllowedToOperateOnActor(userContext, ACTOR_NAME))
-        .thenReturn(true);
-
-    try {
-      subject.deletePermissionEntry(userContext, CREDENTIAL_NAME, ACTOR_NAME
-      );
-      fail("should throw");
-    } catch (EntryNotFoundException e) {
-      assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
-      verify(permissionService, times(0)).deleteAccessControlEntry(any(), any());
     }
   }
 }

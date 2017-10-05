@@ -3,8 +3,11 @@ package io.pivotal.security.service;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.PermissionsDataService;
 import io.pivotal.security.entity.CredentialName;
+import io.pivotal.security.exceptions.EntryNotFoundException;
+import io.pivotal.security.exceptions.InvalidAclOperationException;
 import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.PermissionOperation;
+import org.hamcrest.core.IsEqual;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,6 +27,7 @@ import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -167,12 +171,46 @@ public class PermissionServiceTest {
   }
 
   @Test
-  public void deleteAccessControlEntry_delegatesToDataService() {
-    when(permissionsDataService.deleteAccessControlEntry(CREDENTIAL_NAME, "test-actor"))
+  public void deleteAccessControlEntry_whenTheUserHasPermission_delegatesToDataService() {
+    initializeEnforcement(true);
+
+    when(permissionsDataService.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE_ACL))
         .thenReturn(true);
-    boolean result = subject.deleteAccessControlEntry(CREDENTIAL_NAME, "test-actor");
+    when(permissionsDataService.deleteAccessControlEntry(CREDENTIAL_NAME, "other-actor"))
+        .thenReturn(true);
+    boolean result = subject.deleteAccessControlEntry(userContext, CREDENTIAL_NAME, "other-actor");
 
     assertThat(result, equalTo(true));
+  }
+
+  @Test
+  public void deleteAccessControlEntry_whenTheUserLacksPermission_throwsAnException() {
+    initializeEnforcement(true);
+    when(permissionsDataService.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE_ACL))
+        .thenReturn(false);
+    when(permissionsDataService.deleteAccessControlEntry(CREDENTIAL_NAME, "other-actor"))
+        .thenReturn(true);
+    try {
+      subject.deleteAccessControlEntry(userContext, CREDENTIAL_NAME, "other-actor");
+      fail("should throw");
+    } catch( EntryNotFoundException e ){
+      assertThat(e.getMessage(), IsEqual.equalTo("error.credential.invalid_access"));
+    }
+  }
+
+  @Test
+  public void deleteAccessControlEntry_whenTheUserIsTheSameAsActor_throwsAnException() {
+    initializeEnforcement(true);
+    when(permissionsDataService.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE_ACL))
+        .thenReturn(true);
+    when(permissionsDataService.deleteAccessControlEntry(CREDENTIAL_NAME, userContext.getAclUser()))
+        .thenReturn(true);
+    try {
+      subject.deleteAccessControlEntry(userContext, CREDENTIAL_NAME, userContext.getAclUser());
+      fail("should throw");
+    } catch( InvalidAclOperationException iaoe ){
+      assertThat(iaoe.getMessage(), IsEqual.equalTo("error.acl.invalid_update_operation"));
+    }
   }
 
   private void initializeEnforcement(boolean enabled) {

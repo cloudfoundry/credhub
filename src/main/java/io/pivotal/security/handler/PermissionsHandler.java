@@ -72,16 +72,9 @@ public class PermissionsHandler {
 
   public void deletePermissionEntry(UserContext userContext,
       String credentialName, String actor) {
-    if (!permissionService.hasPermission(userContext.getAclUser(), credentialName, WRITE_ACL)) {
-      throw new EntryNotFoundException("error.credential.invalid_access");
-    }
-
-    if (!permissionService.userAllowedToOperateOnActor(userContext, actor)) {
-      throw new InvalidAclOperationException("error.acl.invalid_update_operation");
-    }
 
     boolean successfullyDeleted = permissionService
-        .deleteAccessControlEntry(credentialName, actor);
+        .deleteAccessControlEntry(userContext, credentialName, actor);
 
     if (!successfullyDeleted) {
       throw new EntryNotFoundException("error.credential.invalid_access");
