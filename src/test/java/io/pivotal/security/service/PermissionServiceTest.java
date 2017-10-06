@@ -2,7 +2,7 @@ package io.pivotal.security.service;
 
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.PermissionsDataService;
-import io.pivotal.security.entity.CredentialName;
+import io.pivotal.security.entity.Credential;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.InvalidAclOperationException;
 import io.pivotal.security.request.PermissionEntry;
@@ -39,13 +39,13 @@ public class PermissionServiceTest {
   private UserContext userContext;
   private PermissionsDataService permissionsDataService;
   private PermissionCheckingService permissionCheckingService;
-  private CredentialName expectedCredentialName;
+  private Credential expectedCredential;
 
   @Before
   public void beforeEach() {
     userContext = mock(UserContext.class);
     when(userContext.getAclUser()).thenReturn(USER_NAME);
-    expectedCredentialName = new CredentialName(CREDENTIAL_NAME);
+    expectedCredential = new Credential(CREDENTIAL_NAME);
 
     permissionsDataService = mock(PermissionsDataService.class);
     permissionCheckingService = mock(PermissionCheckingService.class);
@@ -70,9 +70,9 @@ public class PermissionServiceTest {
   @Test
   public void saveAccessControlEntries_delegatesToDataService() {
     ArrayList<PermissionEntry> expectedEntries = newArrayList();
-    subject.saveAccessControlEntries(userContext, expectedCredentialName, expectedEntries);
+    subject.saveAccessControlEntries(userContext, expectedCredential, expectedEntries);
 
-    verify(permissionsDataService).saveAccessControlEntries(expectedCredentialName, expectedEntries);
+    verify(permissionsDataService).saveAccessControlEntries(expectedCredential, expectedEntries);
   }
 
   @Test
@@ -82,7 +82,7 @@ public class PermissionServiceTest {
     ArrayList<PermissionEntry> expectedEntries = newArrayList();
 
     try {
-      subject.saveAccessControlEntries(userContext, expectedCredentialName, expectedEntries);
+      subject.saveAccessControlEntries(userContext, expectedCredential, expectedEntries);
       fail("expected exception");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), IsEqual.equalTo("error.credential.invalid_access"));
@@ -92,9 +92,9 @@ public class PermissionServiceTest {
   @Test
   public void getAccessControlList_whenUserCantRead_throws() {
     List<PermissionEntry> expectedPermissionEntries = newArrayList();
-    when(permissionsDataService.getAccessControlList(expectedCredentialName))
+    when(permissionsDataService.getAccessControlList(expectedCredential))
         .thenReturn(expectedPermissionEntries);
-    List<PermissionEntry> foundPermissionEntries = subject.getAccessControlList(userContext, expectedCredentialName);
+    List<PermissionEntry> foundPermissionEntries = subject.getAccessControlList(userContext, expectedCredential);
 
     assertThat(foundPermissionEntries, equalTo(expectedPermissionEntries));
   }
@@ -104,11 +104,11 @@ public class PermissionServiceTest {
     when(permissionCheckingService.hasPermission(USER_NAME, CREDENTIAL_NAME, READ_ACL))
         .thenReturn(false);
     List<PermissionEntry> expectedPermissionEntries = newArrayList();
-    when(permissionsDataService.getAccessControlList(expectedCredentialName))
+    when(permissionsDataService.getAccessControlList(expectedCredential))
         .thenReturn(expectedPermissionEntries);
 
     try {
-      subject.getAccessControlList(userContext, expectedCredentialName);
+      subject.getAccessControlList(userContext, expectedCredential);
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), IsEqual.equalTo("error.credential.invalid_access"));
     }

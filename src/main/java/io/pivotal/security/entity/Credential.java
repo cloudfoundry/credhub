@@ -13,7 +13,7 @@ import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
 
 @Entity
 @Table(name = "credential")
-public class CredentialName {
+public class Credential {
 
   @Id
   @Column(length = UUID_BYTES, columnDefinition = "VARBINARY")
@@ -26,11 +26,11 @@ public class CredentialName {
 
   // Needed for hibernate
   @SuppressWarnings("unused")
-  CredentialName() {
+  Credential() {
     this(null);
   }
 
-  public CredentialName(String name) {
+  public Credential(String name) {
     setName(name);
   }
 

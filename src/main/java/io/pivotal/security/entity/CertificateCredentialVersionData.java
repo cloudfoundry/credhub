@@ -36,7 +36,7 @@ public class CertificateCredentialVersionData extends CredentialVersionData<Cert
   }
 
   public String getName() {
-    return super.getCredentialName().getName();
+    return super.getCredential().getName();
   }
 
   public String getCa() {

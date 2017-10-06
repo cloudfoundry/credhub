@@ -1,8 +1,8 @@
 package io.pivotal.security.handler;
 
 import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.data.CredentialNameDataService;
-import io.pivotal.security.entity.CredentialName;
+import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.entity.Credential;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.InvalidAclOperationException;
 import io.pivotal.security.request.PermissionEntry;
@@ -19,25 +19,25 @@ public class PermissionsHandler {
 
   private final PermissionService permissionService;
   private final PermissionCheckingService permissionCheckingService;
-  private final CredentialNameDataService credentialNameDataService;
+  private final CredentialDataService credentialDataService;
 
   @Autowired
   PermissionsHandler(
       PermissionService permissionService,
       PermissionCheckingService permissionCheckingService,
-      CredentialNameDataService credentialNameDataService
+      CredentialDataService credentialDataService
   ) {
     this.permissionService = permissionService;
     this.permissionCheckingService = permissionCheckingService;
-    this.credentialNameDataService = credentialNameDataService;
+    this.credentialDataService = credentialDataService;
   }
 
   public PermissionsView getPermissions(String name, UserContext userContext) {
-    final CredentialName credentialName = credentialNameDataService.findOrThrow(name);
+    final Credential credential = credentialDataService.findOrThrow(name);
 
     return new PermissionsView(
-        credentialName.getName(),
-        permissionService.getAccessControlList(userContext, credentialName)
+        credential.getName(),
+        permissionService.getAccessControlList(userContext, credential)
     );
   }
 
@@ -46,10 +46,10 @@ public class PermissionsHandler {
       UserContext userContext,
       List<PermissionEntry> permissionEntryList
   ) {
-    final CredentialName credentialName = credentialNameDataService.find(name);
+    final Credential credential = credentialDataService.find(name);
 
     // We need to verify that the credential exists in case ACL enforcement is off
-    if (credentialName == null) {
+    if (credential == null) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
@@ -59,11 +59,11 @@ public class PermissionsHandler {
       }
     }
 
-    permissionService.saveAccessControlEntries(userContext, credentialName, permissionEntryList);
+    permissionService.saveAccessControlEntries(userContext, credential, permissionEntryList);
 
     return new PermissionsView(
-        credentialName.getName(),
-        permissionService.getAccessControlList(userContext, credentialName)
+        credential.getName(),
+        permissionService.getAccessControlList(userContext, credential)
     );
   }
 

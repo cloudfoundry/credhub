@@ -2,10 +2,10 @@ package io.pivotal.security.integration;
 
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.CredentialVersionDataService;
-import io.pivotal.security.data.CredentialNameDataService;
+import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.domain.CertificateCredentialVersion;
 import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.entity.CredentialName;
+import io.pivotal.security.entity.Credential;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,9 +27,9 @@ import static org.hamcrest.core.IsNull.notNullValue;
 @ActiveProfiles(profiles = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 @Transactional
-public class CredentialNameAspectTest {
+public class CredentialAspectTest {
   @Autowired
-  CredentialNameDataService credentialNameDataService;
+  CredentialDataService credentialDataService;
 
   @Autowired
   CredentialVersionDataService credentialVersionDataService;
@@ -39,7 +39,7 @@ public class CredentialNameAspectTest {
 
   @Before
   public void setup() {
-    credentialNameDataService.save(new CredentialName("/test/name"));
+    credentialDataService.save(new Credential("/test/name"));
 
     CertificateCredentialVersion certificateCredential = new CertificateCredentialVersion("/test/certificate")
         .setCaName("/ca/certificate")
@@ -52,27 +52,27 @@ public class CredentialNameAspectTest {
 
   @Test
   public void save_prependsLeadingSlashToCredentialNameIfMissing() {
-    CredentialName savedCredential = credentialNameDataService
-        .save(new CredentialName("new/name"));
+    Credential savedCredential = credentialDataService
+        .save(new Credential("new/name"));
     assertThat(savedCredential.getName(), equalTo("/new/name"));
   }
 
   @Test
   public void saveAndFlush_prependsLeadingSlashToCredentialNameIfMissing() {
-    CredentialName savedCredential = credentialNameDataService.save(new CredentialName("new/name"));
+    Credential savedCredential = credentialDataService.save(new Credential("new/name"));
     assertThat(savedCredential.getName(), equalTo("/new/name"));
   }
 
   @Test
   public void findOneByNameIgnoreCase_prependsLeadingSlashToCredentialNameIfMissing() {
-    CredentialName foundCredentialName = credentialNameDataService.find("test/name");
-    assertThat(foundCredentialName, notNullValue());
-    assertThat(foundCredentialName.getName(), equalTo("/test/name"));
+    Credential foundCredential = credentialDataService.find("test/name");
+    assertThat(foundCredential, notNullValue());
+    assertThat(foundCredential.getName(), equalTo("/test/name"));
   }
 
   @Test
   public void deleteByNameIgnoreCase_prependsLeadingSlashToCredentialNameIfMissing() {
-    boolean deleted = credentialNameDataService.delete("test/name");
+    boolean deleted = credentialDataService.delete("test/name");
     assertThat(deleted, equalTo(true));
   }
 

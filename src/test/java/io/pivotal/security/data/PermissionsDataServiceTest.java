@@ -1,7 +1,7 @@
 package io.pivotal.security.data;
 
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.entity.CredentialName;
+import io.pivotal.security.entity.Credential;
 import io.pivotal.security.entity.ValueCredentialVersionData;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.request.PermissionEntry;
@@ -60,10 +60,10 @@ public class PermissionsDataServiceTest {
   private PermissionsDataService subject;
 
   @Autowired
-  private CredentialNameDataService credentialNameDataService;
+  private CredentialDataService credentialDataService;
 
   private List<PermissionEntry> aces;
-  private CredentialName credentialName;
+  private Credential credential;
 
   @Before
   public void beforeEach() {
@@ -72,7 +72,7 @@ public class PermissionsDataServiceTest {
 
   @Test
   public void getAccessControlList_givenExistingCredentialName_returnsAcl() {
-    final List<PermissionEntry> accessControlEntries = subject.getAccessControlList(credentialName);
+    final List<PermissionEntry> accessControlEntries = subject.getAccessControlList(credential);
 
     assertThat(accessControlEntries, hasSize(3));
 
@@ -116,7 +116,7 @@ public class PermissionsDataServiceTest {
   @Test
   public void getAccessControlList_whenGivenNonExistentCredentialName_throwsException() {
     try {
-      subject.getAccessControlList(new CredentialName(CREDENTIAL_NAME_DOES_NOT_EXIST));
+      subject.getAccessControlList(new Credential(CREDENTIAL_NAME_DOES_NOT_EXIST));
     } catch (EntryNotFoundException enfe) {
       assertThat(enfe.getMessage(), Matchers.equalTo("error.resource_not_found"));
     }
@@ -128,9 +128,9 @@ public class PermissionsDataServiceTest {
         new PermissionEntry(LUKE, singletonList(READ))
     );
 
-    subject.saveAccessControlEntries(credentialName, aces);
+    subject.saveAccessControlEntries(credential, aces);
 
-    List<PermissionEntry> response = subject.getAccessControlList(credentialName);
+    List<PermissionEntry> response = subject.getAccessControlList(credential);
 
         assertThat(response, containsInAnyOrder(
         allOf(hasProperty("actor", equalTo(LUKE)),
@@ -146,15 +146,15 @@ public class PermissionsDataServiceTest {
   @Test
   public void setAccessControlEntries_whenGivenANewAce_returnsTheAcl() {
     final ValueCredentialVersionData valueCredentialData2 = new ValueCredentialVersionData("lightsaber2");
-    final CredentialName credentialName2 = valueCredentialData2.getCredentialName();
+    final Credential credential2 = valueCredentialData2.getCredential();
 
-    credentialNameDataService.save(credentialName2);
+    credentialDataService.save(credential2);
     aces = singletonList(
         new PermissionEntry(LUKE, singletonList(READ)));
 
-    subject.saveAccessControlEntries(credentialName2, aces);
+    subject.saveAccessControlEntries(credential2, aces);
 
-    List<PermissionEntry> response = subject.getAccessControlList(credentialName2);
+    List<PermissionEntry> response = subject.getAccessControlList(credential2);
 
 
     final PermissionEntry permissionEntry = response.get(0);
@@ -170,7 +170,7 @@ public class PermissionsDataServiceTest {
     subject.deleteAccessControlEntry(CREDENTIAL_NAME, LUKE);
 
     final List<PermissionEntry> accessControlList = subject
-        .getAccessControlList(credentialName);
+        .getAccessControlList(credential);
 
     assertThat(accessControlList, hasSize(2));
 
@@ -185,7 +185,7 @@ public class PermissionsDataServiceTest {
     assertTrue(deleted);
 
     final List<PermissionEntry> accessControlList = subject
-        .getAccessControlList(credentialName);
+        .getAccessControlList(credential);
 
     assertThat(accessControlList, hasSize(2));
 
@@ -330,28 +330,28 @@ public class PermissionsDataServiceTest {
 
   private void seedDatabase() {
     ValueCredentialVersionData valueCredentialData = new ValueCredentialVersionData(CREDENTIAL_NAME);
-    credentialName = valueCredentialData.getCredentialName();
+    credential = valueCredentialData.getCredential();
     ValueCredentialVersionData noAccessValueCredentialData = new ValueCredentialVersionData(
         NO_ACCESS_CREDENTIAL_NAME);
-    CredentialName noAccessValueCredentialName = noAccessValueCredentialData.getCredentialName();
+    Credential noAccessValueCredential = noAccessValueCredentialData.getCredential();
 
-    CredentialName noAccessCredentialName = credentialNameDataService.save(noAccessValueCredentialName);
-    this.credentialName = credentialNameDataService.save(this.credentialName);
+    Credential noAccessCredential = credentialDataService.save(noAccessValueCredential);
+    this.credential = credentialDataService.save(this.credential);
 
     subject.saveAccessControlEntries(
-        this.credentialName,
+        this.credential,
         singletonList(new PermissionEntry(LUKE,
             newArrayList(WRITE, DELETE)))
     );
 
     subject.saveAccessControlEntries(
-        this.credentialName,
+        this.credential,
         singletonList(new PermissionEntry(LEIA,
             singletonList(READ)))
     );
 
     subject.saveAccessControlEntries(
-        this.credentialName,
+        this.credential,
         singletonList(new PermissionEntry(HAN_SOLO,
             newArrayList(READ_ACL, WRITE_ACL)))
     );

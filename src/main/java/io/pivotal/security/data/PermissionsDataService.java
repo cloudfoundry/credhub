@@ -1,7 +1,7 @@
 package io.pivotal.security.data;
 
 import io.pivotal.security.entity.AccessEntryData;
-import io.pivotal.security.entity.CredentialName;
+import io.pivotal.security.entity.Credential;
 import io.pivotal.security.repository.AccessEntryRepository;
 import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.PermissionOperation;
@@ -18,39 +18,39 @@ import static com.google.common.collect.Lists.newArrayList;
 public class PermissionsDataService {
 
   private AccessEntryRepository accessEntryRepository;
-  private final CredentialNameDataService credentialNameDataService;
+  private final CredentialDataService credentialDataService;
 
   @Autowired
   public PermissionsDataService(
       AccessEntryRepository accessEntryRepository,
-      CredentialNameDataService credentialNameDataService
+      CredentialDataService credentialDataService
   ) {
     this.accessEntryRepository = accessEntryRepository;
-    this.credentialNameDataService = credentialNameDataService;
+    this.credentialDataService = credentialDataService;
   }
 
-  public List<PermissionEntry> getAccessControlList(CredentialName credentialName) {
-    return createViewsForAllAcesWithName(credentialName);
+  public List<PermissionEntry> getAccessControlList(Credential credential) {
+    return createViewsForAllAcesWithName(credential);
   }
 
   public void saveAccessControlEntries(
-      CredentialName credentialName,
+      Credential credential,
       List<PermissionEntry> entries
   ) {
     List<AccessEntryData> existingAccessEntries = accessEntryRepository
-        .findAllByCredentialNameUuid(credentialName.getUuid());
+        .findAllByCredentialUuid(credential.getUuid());
 
     for (PermissionEntry ace : entries) {
-      upsertAccessEntryOperations(credentialName, existingAccessEntries, ace.getActor(),
+      upsertAccessEntryOperations(credential, existingAccessEntries, ace.getActor(),
           ace.getAllowedOperations());
     }
   }
 
   public List<PermissionOperation> getAllowedOperations(String name, String actor) {
     List<PermissionOperation> operations = newArrayList();
-    CredentialName credentialName = credentialNameDataService.find(name);
+    Credential credential = credentialDataService.find(name);
     AccessEntryData accessEntryData = accessEntryRepository
-        .findByCredentialNameAndActor(credentialName, actor);
+        .findByCredentialAndActor(credential, actor);
 
     if (accessEntryData != null) {
       if (accessEntryData.hasReadPermission()) {
@@ -74,31 +74,31 @@ public class PermissionsDataService {
   }
 
   public boolean deleteAccessControlEntry(String name, String actor) {
-    CredentialName credentialName = credentialNameDataService.find(name);
-    return accessEntryRepository.deleteByCredentialNameAndActor(credentialName, actor) > 0;
+    Credential credential = credentialDataService.find(name);
+    return accessEntryRepository.deleteByCredentialAndActor(credential, actor) > 0;
   }
 
   public boolean hasNoDefinedAccessControl(String name) {
-    CredentialName credentialName = credentialNameDataService.find(name);
-    if (credentialName == null) {
+    Credential credential = credentialDataService.find(name);
+    if (credential == null) {
       return false;
     }
-    return (accessEntryRepository.findAllByCredentialNameUuid(credentialName.getUuid()).size() == 0);
+    return (accessEntryRepository.findAllByCredentialUuid(credential.getUuid()).size() == 0);
   }
 
   public boolean hasPermission(String user, String name, PermissionOperation requiredPermission) {
-    CredentialName credentialName = credentialNameDataService.find(name);
+    Credential credential = credentialDataService.find(name);
     final AccessEntryData accessEntryData =
-        accessEntryRepository.findByCredentialNameAndActor(credentialName, user);
+        accessEntryRepository.findByCredentialAndActor(credential, user);
     return accessEntryData != null && accessEntryData.hasPermission(requiredPermission);
   }
 
-  private void upsertAccessEntryOperations(CredentialName credentialName,
+  private void upsertAccessEntryOperations(Credential credential,
       List<AccessEntryData> accessEntries, String actor, List<PermissionOperation> operations) {
     AccessEntryData entry = findAccessEntryForActor(accessEntries, actor);
 
     if (entry == null) {
-      entry = new AccessEntryData(credentialName, actor);
+      entry = new AccessEntryData(credential, actor);
     }
 
     entry.enableOperations(operations);
@@ -116,8 +116,8 @@ public class PermissionsDataService {
     return entry;
   }
 
-  private List<PermissionEntry> createViewsForAllAcesWithName(CredentialName credentialName) {
-    return accessEntryRepository.findAllByCredentialNameUuid(credentialName.getUuid())
+  private List<PermissionEntry> createViewsForAllAcesWithName(Credential credential) {
+    return accessEntryRepository.findAllByCredentialUuid(credential.getUuid())
         .stream()
         .map(this::createViewFor)
         .collect(Collectors.toList());

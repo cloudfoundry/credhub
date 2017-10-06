@@ -2,7 +2,7 @@ package io.pivotal.security.service;
 
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.PermissionsDataService;
-import io.pivotal.security.entity.CredentialName;
+import io.pivotal.security.entity.Credential;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.InvalidAclOperationException;
 import io.pivotal.security.request.PermissionEntry;
@@ -35,21 +35,21 @@ public class PermissionService {
     return permissionsDataService.getAllowedOperations(credentialName, actor);
   }
 
-  public void saveAccessControlEntries(UserContext userContext, CredentialName credentialName, List<PermissionEntry> permissionEntryList) {
+  public void saveAccessControlEntries(UserContext userContext, Credential credential, List<PermissionEntry> permissionEntryList) {
     if (!permissionCheckingService
-        .hasPermission(userContext.getAclUser(), credentialName.getName(), WRITE_ACL)) {
+        .hasPermission(userContext.getAclUser(), credential.getName(), WRITE_ACL)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
-    permissionsDataService.saveAccessControlEntries(credentialName, permissionEntryList);
+    permissionsDataService.saveAccessControlEntries(credential, permissionEntryList);
   }
 
-  public List<PermissionEntry> getAccessControlList(UserContext userContext, CredentialName credentialName) {
-    if (!permissionCheckingService.hasPermission(userContext.getAclUser(), credentialName.getName(), READ_ACL)) {
+  public List<PermissionEntry> getAccessControlList(UserContext userContext, Credential credential) {
+    if (!permissionCheckingService.hasPermission(userContext.getAclUser(), credential.getName(), READ_ACL)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
-    return permissionsDataService.getAccessControlList(credentialName);
+    return permissionsDataService.getAccessControlList(credential);
   }
 
   public boolean deleteAccessControlEntry(UserContext userContext, String credentialName, String actor) {

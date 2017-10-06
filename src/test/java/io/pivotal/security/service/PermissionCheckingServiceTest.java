@@ -2,7 +2,7 @@ package io.pivotal.security.service;
 
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.PermissionsDataService;
-import io.pivotal.security.entity.CredentialName;
+import io.pivotal.security.entity.Credential;
 import io.pivotal.security.request.PermissionOperation;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,7 +30,7 @@ public class PermissionCheckingServiceTest {
 
   private UserContext userContext;
   private PermissionsDataService permissionsDataService;
-  private CredentialName expectedCredentialName;
+  private Credential expectedCredential;
 
   @Before
   public void beforeEach() {

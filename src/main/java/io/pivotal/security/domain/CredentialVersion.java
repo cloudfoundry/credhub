@@ -1,8 +1,8 @@
 package io.pivotal.security.domain;
 
 import io.pivotal.security.data.CredentialVersionDataService;
+import io.pivotal.security.entity.Credential;
 import io.pivotal.security.entity.CredentialVersionData;
-import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.service.Encryption;
 
 import java.time.Instant;
@@ -44,7 +44,7 @@ public abstract class CredentialVersion<Z extends CredentialVersion> {
   }
 
   public String getName() {
-    return delegate.getCredentialName().getName();
+    return delegate.getCredential().getName();
   }
 
   public Instant getVersionCreatedAt() {
@@ -65,15 +65,15 @@ public abstract class CredentialVersion<Z extends CredentialVersion> {
     return (Z) credentialVersionDataService.save(delegate);
   }
 
-  public CredentialName getCredentialName() {
-    return delegate.getCredentialName();
+  public Credential getCredentialName() {
+    return delegate.getCredential();
   }
 
   protected void copyNameReferenceFrom(CredentialVersion credentialVersion) {
-    this.delegate.setCredentialName(credentialVersion.delegate.getCredentialName());
+    this.delegate.setCredential(credentialVersion.delegate.getCredential());
   }
 
   public void createName(String name) {
-    delegate.setCredentialName(new CredentialName(name));
+    delegate.setCredential(new Credential(name));
   }
 }

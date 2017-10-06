@@ -3,9 +3,9 @@ package io.pivotal.security.controller.v1;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.EventAuditRecordDataService;
 import io.pivotal.security.data.PermissionsDataService;
-import io.pivotal.security.entity.CredentialName;
+import io.pivotal.security.entity.Credential;
 import io.pivotal.security.entity.EventAuditRecord;
-import io.pivotal.security.repository.CredentialNameRepository;
+import io.pivotal.security.repository.CredentialRepository;
 import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.service.PermissionCheckingService;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -50,7 +50,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 public class PermissionsControllerAuditLogTest {
 
-  public static final CredentialName CRED1 = new CredentialName("/cred1");
+  public static final Credential CRED1 = new Credential("/cred1");
 
   @Autowired
   private WebApplicationContext applicationContext;
@@ -62,7 +62,7 @@ public class PermissionsControllerAuditLogTest {
   private PermissionsDataService permissionsDataService;
 
   @MockBean
-  private CredentialNameRepository credentialNameRepository;
+  private CredentialRepository credentialRepository;
 
   @MockBean
   private PermissionCheckingService permissionCheckingService;
@@ -82,7 +82,7 @@ public class PermissionsControllerAuditLogTest {
     when(
         permissionCheckingService.hasPermission(any(), anyString(), eq(READ_ACL)))
         .thenReturn(true);
-    when(credentialNameRepository.findOneByNameIgnoreCase(CRED1.getName())).thenReturn(CRED1);
+    when(credentialRepository.findOneByNameIgnoreCase(CRED1.getName())).thenReturn(CRED1);
     reset(eventAuditRecordDataService);
   }
 

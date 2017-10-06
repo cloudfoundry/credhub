@@ -20,7 +20,7 @@ public interface CredentialVersionRepository extends JpaRepository<CredentialVer
 
   Slice<CredentialVersionData> findByEncryptedCredentialValueEncryptionKeyUuidIn(List<UUID> encryptionKeyUuids, Pageable page);
 
-  List<CredentialVersionData> findAllByCredentialNameUuidOrderByVersionCreatedAtDesc(UUID uuid);
+  List<CredentialVersionData> findAllByCredentialUuidOrderByVersionCreatedAtDesc(UUID uuid);
 
-  CredentialVersionData findFirstByCredentialNameUuidOrderByVersionCreatedAtDesc(UUID uuid);
+  CredentialVersionData findFirstByCredentialUuidOrderByVersionCreatedAtDesc(UUID uuid);
 }

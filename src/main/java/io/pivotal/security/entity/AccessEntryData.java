@@ -30,7 +30,7 @@ public class AccessEntryData {
 
   @ManyToOne
   @JoinColumn(name = "credential_uuid", nullable = false)
-  private CredentialName credentialName;
+  private Credential credential;
 
   @Column(nullable = false)
   private String actor;
@@ -55,14 +55,14 @@ public class AccessEntryData {
     this(null, null, new ArrayList<>());
   }
 
-  public AccessEntryData(CredentialName credentialName, String actor,
+  public AccessEntryData(Credential credential, String actor,
                          List<PermissionOperation> operations) {
-    this(credentialName, actor);
+    this(credential, actor);
     enableOperations(operations);
   }
 
-  public AccessEntryData(CredentialName credentialName, String actor) {
-    this.credentialName = credentialName;
+  public AccessEntryData(Credential credential, String actor) {
+    this.credential = credential;
     this.actor = actor;
   }
 
@@ -74,12 +74,12 @@ public class AccessEntryData {
     this.uuid = uuid;
   }
 
-  public CredentialName getCredentialName() {
-    return credentialName;
+  public Credential getCredential() {
+    return credential;
   }
 
-  public void setCredentialName(CredentialName credentialName) {
-    this.credentialName = credentialName;
+  public void setCredential(Credential credential) {
+    this.credential = credential;
   }
 
   public String getActor() {

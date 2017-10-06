@@ -1,8 +1,8 @@
 package io.pivotal.security.handler;
 
 import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.data.CredentialNameDataService;
-import io.pivotal.security.entity.CredentialName;
+import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.entity.Credential;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.InvalidAclOperationException;
 import io.pivotal.security.request.PermissionEntry;
@@ -48,35 +48,35 @@ public class PermissionsHandlerTest {
 
   private PermissionService permissionService;
   private PermissionCheckingService permissionCheckingService;
-  private CredentialNameDataService credentialNameDataService;
+  private CredentialDataService credentialDataService;
 
-  private final CredentialName credentialName = new CredentialName(CREDENTIAL_NAME);
+  private final Credential credential = new Credential(CREDENTIAL_NAME);
   private final UserContext userContext = mock(UserContext.class);
 
   @Before
   public void beforeEach() {
     permissionService = mock(PermissionService.class);
     permissionCheckingService = mock(PermissionCheckingService.class);
-    credentialNameDataService = mock(CredentialNameDataService.class);
+    credentialDataService = mock(CredentialDataService.class);
     subject = new PermissionsHandler(
         permissionService,
         permissionCheckingService,
-        credentialNameDataService
+        credentialDataService
     );
 
-    when(credentialNameDataService.findOrThrow(any(String.class))).thenReturn(credentialName);
+    when(credentialDataService.findOrThrow(any(String.class))).thenReturn(credential);
   }
 
   @Test
   public void getPermissions_whenTheNameDoesntStartWithASlash_fixesTheName() {
     List<PermissionEntry> accessControlList = newArrayList();
-    when(permissionService.getAccessControlList(eq(userContext), any(CredentialName.class)))
+    when(permissionService.getAccessControlList(eq(userContext), any(Credential.class)))
         .thenReturn(accessControlList);
     when(permissionCheckingService
         .hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(READ_ACL)))
         .thenReturn(true);
-    when(credentialNameDataService.findOrThrow(any(String.class)))
-        .thenReturn(new CredentialName(CREDENTIAL_NAME));
+    when(credentialDataService.findOrThrow(any(String.class)))
+        .thenReturn(new Credential(CREDENTIAL_NAME));
 
     PermissionsView response = subject.getPermissions(
         CREDENTIAL_NAME,
@@ -99,7 +99,7 @@ public class PermissionsHandlerTest {
         operations
     );
     List<PermissionEntry> accessControlList = newArrayList(permissionEntry);
-    when(permissionService.getAccessControlList(userContext, credentialName))
+    when(permissionService.getAccessControlList(userContext, credential))
         .thenReturn(accessControlList);
 
     PermissionsView response = subject.getPermissions(
@@ -145,11 +145,11 @@ public class PermissionsHandlerTest {
     List<PermissionEntry> expectedControlList = newArrayList(permissionEntry,
         preexistingPermissionEntry);
 
-    when(permissionService.getAccessControlList(userContext, credentialName))
+    when(permissionService.getAccessControlList(userContext, credential))
         .thenReturn(expectedControlList);
 
-    when(credentialNameDataService.find(CREDENTIAL_NAME))
-        .thenReturn(credentialName);
+    when(credentialDataService.find(CREDENTIAL_NAME))
+        .thenReturn(credential);
 
     PermissionsView response = subject.setPermissions(CREDENTIAL_NAME, userContext, accessControlList);
 
@@ -175,8 +175,8 @@ public class PermissionsHandlerTest {
     when(permissionCheckingService
         .hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(WRITE_ACL)))
         .thenReturn(true);
-    when(credentialNameDataService.find(CREDENTIAL_NAME))
-        .thenReturn(credentialName);
+    when(credentialDataService.find(CREDENTIAL_NAME))
+        .thenReturn(credential);
     when(permissionCheckingService
         .userAllowedToOperateOnActor(userContext, ACTOR_NAME))
         .thenReturn(false);
@@ -199,7 +199,7 @@ public class PermissionsHandlerTest {
     when(permissionCheckingService
         .userAllowedToOperateOnActor(userContext, ACTOR_NAME))
         .thenReturn(true);
-    when(credentialNameDataService.find(CREDENTIAL_NAME))
+    when(credentialDataService.find(CREDENTIAL_NAME))
         .thenReturn(null);
 
     try {

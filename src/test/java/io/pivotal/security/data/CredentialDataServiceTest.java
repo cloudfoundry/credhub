@@ -1,8 +1,8 @@
 package io.pivotal.security.data;
 
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.entity.CredentialName;
-import io.pivotal.security.repository.CredentialNameRepository;
+import io.pivotal.security.entity.Credential;
+import io.pivotal.security.repository.CredentialRepository;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
@@ -27,59 +27,59 @@ import static org.hamcrest.core.IsEqual.equalTo;
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 @Transactional
-public class CredentialNameDataServiceTest {
+public class CredentialDataServiceTest {
   private static final String CREDENTIAL_NAME = "/test/credential";
   private static final String CREDENTIAL_NAME2 = "/test/credential2";
 
   @Autowired
-  private CredentialNameDataService subject;
+  private CredentialDataService subject;
 
   @Autowired
-  private CredentialNameRepository credentialNameRepository;
+  private CredentialRepository credentialRepository;
 
   @Test
   public void save_savesTheCredentialName() {
-    final CredentialName credential = new CredentialName(CREDENTIAL_NAME);
+    final Credential credential = new Credential(CREDENTIAL_NAME);
 
-    assertThat(credentialNameRepository.count(), equalTo(0L));
+    assertThat(credentialRepository.count(), equalTo(0L));
 
-    credentialNameRepository.save(credential);
+    credentialRepository.save(credential);
 
-    assertThat(credentialNameRepository.count(), equalTo(1L));
+    assertThat(credentialRepository.count(), equalTo(1L));
 
     assertThat(
-        credentialNameRepository.findOneByNameIgnoreCase(CREDENTIAL_NAME).getName(),
+        credentialRepository.findOneByNameIgnoreCase(CREDENTIAL_NAME).getName(),
         equalTo(CREDENTIAL_NAME)
     );
   }
 
   @Test
   public void save_setsTheUuidOnTheCredentialName() {
-    final CredentialName credential = credentialNameRepository.save(new CredentialName(CREDENTIAL_NAME));
+    final Credential credential = credentialRepository.save(new Credential(CREDENTIAL_NAME));
 
     assertThat(credential.getUuid(), instanceOf(UUID.class));
   }
 
   @Test
   public void find_whenTheCredentialExists_returnsTheCredentialName() {
-    final CredentialName credential = new CredentialName(CREDENTIAL_NAME);
-    credentialNameRepository.save(credential);
+    final Credential credential = new Credential(CREDENTIAL_NAME);
+    credentialRepository.save(credential);
 
     assertThat(subject.find(CREDENTIAL_NAME), equalTo(credential));
   }
 
   @Test
   public void find_isCaseInsensitive() {
-    final CredentialName credential = new CredentialName(CREDENTIAL_NAME.toLowerCase());
-    credentialNameRepository.save(credential);
+    final Credential credential = new Credential(CREDENTIAL_NAME.toLowerCase());
+    credentialRepository.save(credential);
 
     assertThat(subject.find(CREDENTIAL_NAME.toUpperCase()), equalTo(credential));
   }
 
   @Test
   public void find_prependsTheLeadingSlashIfNecessary() {
-    final CredentialName credential = new CredentialName(StringUtils.prependIfMissing(CREDENTIAL_NAME, "/"));
-    credentialNameRepository.save(credential);
+    final Credential credential = new Credential(StringUtils.prependIfMissing(CREDENTIAL_NAME, "/"));
+    credentialRepository.save(credential);
 
     assertThat(subject.find(StringUtils.removeStart(CREDENTIAL_NAME, "/")), equalTo(credential));
   }
@@ -91,10 +91,10 @@ public class CredentialNameDataServiceTest {
 
   @Test
   public void delete_whenTheCredentialExists_deletesTheCredential_andReturnsTrue() {
-    credentialNameRepository.save(new CredentialName(CREDENTIAL_NAME));
+    credentialRepository.save(new Credential(CREDENTIAL_NAME));
 
     assertThat(subject.delete(CREDENTIAL_NAME), equalTo(true));
-    assertThat(credentialNameRepository.count(), equalTo(0L));
+    assertThat(credentialRepository.count(), equalTo(0L));
   }
 
   @Test
@@ -104,18 +104,18 @@ public class CredentialNameDataServiceTest {
 
   @Test
   public void delete_isCaseInsensitive() {
-    credentialNameRepository.save(new CredentialName(CREDENTIAL_NAME.toUpperCase()));
+    credentialRepository.save(new Credential(CREDENTIAL_NAME.toUpperCase()));
 
     assertThat(subject.delete(CREDENTIAL_NAME.toLowerCase()), equalTo(true));
-    assertThat(credentialNameRepository.count(), equalTo(0L));
+    assertThat(credentialRepository.count(), equalTo(0L));
   }
 
   @Test
   public void delete_prependsTheLeadingSlashIfNecessary() {
-    credentialNameRepository.save(new CredentialName(StringUtils.prependIfMissing(CREDENTIAL_NAME, "/")));
+    credentialRepository.save(new Credential(StringUtils.prependIfMissing(CREDENTIAL_NAME, "/")));
 
     assertThat(subject.delete(StringUtils.removeStart(CREDENTIAL_NAME, "/")), equalTo(true));
-    assertThat(credentialNameRepository.count(), equalTo(0L));
+    assertThat(credentialRepository.count(), equalTo(0L));
   }
 
   @Test
@@ -125,12 +125,12 @@ public class CredentialNameDataServiceTest {
 
   @Test
   public void findAll_whenThereAreCredentials_returnsTheListOfNames() {
-    credentialNameRepository.save(new CredentialName(CREDENTIAL_NAME));
-    credentialNameRepository.save(new CredentialName(CREDENTIAL_NAME2));
+    credentialRepository.save(new Credential(CREDENTIAL_NAME));
+    credentialRepository.save(new Credential(CREDENTIAL_NAME2));
 
-    List<CredentialName> credentialNames = subject.findAll();
-    List<String> names = credentialNames.stream()
-        .map(CredentialName::getName)
+    List<Credential> credentials = subject.findAll();
+    List<String> names = credentials.stream()
+        .map(Credential::getName)
         .collect(Collectors.toList());
 
     assertThat(names, hasSize(2));

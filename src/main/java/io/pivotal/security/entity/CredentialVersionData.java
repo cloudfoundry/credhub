@@ -57,18 +57,18 @@ public abstract class CredentialVersionData<Z extends CredentialVersionData> {
 
   @ManyToOne
   @JoinColumn(name = "credential_uuid", nullable = false)
-  private CredentialName credentialName;
+  private Credential credential;
 
-  public CredentialVersionData(CredentialName name) {
-    if (this.credentialName != null) {
-      this.credentialName.setName(name.getName());
+  public CredentialVersionData(Credential name) {
+    if (this.credential != null) {
+      this.credential.setName(name.getName());
     } else {
-      setCredentialName(name);
+      setCredential(name);
     }
   }
 
   public CredentialVersionData(String name) {
-    this(new CredentialName(name));
+    this(new Credential(name));
   }
 
   public CredentialVersionData() {
@@ -84,12 +84,12 @@ public abstract class CredentialVersionData<Z extends CredentialVersionData> {
     return (Z) this;
   }
 
-  public CredentialName getCredentialName() {
-    return credentialName;
+  public Credential getCredential() {
+    return credential;
   }
 
-  public void setCredentialName(CredentialName credentialName) {
-    this.credentialName = credentialName;
+  public void setCredential(Credential credential) {
+    this.credential = credential;
   }
 
   public byte[] getEncryptedValue() {
