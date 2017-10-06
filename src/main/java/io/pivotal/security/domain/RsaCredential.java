@@ -2,7 +2,6 @@ package io.pivotal.security.domain;
 
 import io.pivotal.security.credential.RsaCredentialValue;
 import io.pivotal.security.entity.RsaCredentialData;
-import io.pivotal.security.service.Encryption;
 
 public class RsaCredential extends Credential<RsaCredential> {
 
@@ -42,19 +41,13 @@ public class RsaCredential extends Credential<RsaCredential> {
   }
 
   public String getPrivateKey() {
-    return encryptor.decrypt(new Encryption(
-        delegate.getEncryptionKeyUuid(),
-        delegate.getEncryptedValue(),
-        delegate.getNonce()));
+    return (String) super.getValue();
   }
 
   public RsaCredential setPrivateKey(String privateKey) {
-    final Encryption encryption = encryptor.encrypt(privateKey);
-
-    delegate.setEncryptedValue(encryption.encryptedValue);
-    delegate.setNonce(encryption.nonce);
-    delegate.setEncryptionKeyUuid(encryption.canaryUuid);
-
+    if (privateKey != null) {
+      super.setValue(privateKey);
+    }
     return this;
   }
 
