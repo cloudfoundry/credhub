@@ -5,7 +5,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import java.util.Random;
 import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -30,7 +29,7 @@ public class EncryptionKeyCanaryTest {
     subject.setEncryptedCanaryValue(toModify);
     byte[] unModified = toModify.clone();
 
-    toModify[0] = (byte) (((int) toModify[0]) >> 1);
+    toModify[0] = (byte) 'a';
 
     assertThat(subject.getEncryptedCanaryValue(), not(equalTo(toModify)));
     assertThat(subject.getEncryptedCanaryValue(), equalTo(unModified));
@@ -45,13 +44,14 @@ public class EncryptionKeyCanaryTest {
 
   @Test
   public void nonce_doesNotStoreOrPassByReference() throws Exception {
-    byte[] toModify = new byte[20];
-    new Random().nextBytes(toModify);
+    byte[] toModify = "foobar".getBytes();
+    subject.setEncryptedCanaryValue(toModify);
+
 
     subject.setNonce(toModify);
     byte[] unModified = toModify.clone();
 
-    toModify[0] = (byte) (((int) toModify[0]) >> 1);
+    toModify[0] = (byte) 'a';
 
     assertThat(subject.getNonce(), not(equalTo(toModify)));
     assertThat(subject.getNonce(), equalTo(unModified));
@@ -66,13 +66,12 @@ public class EncryptionKeyCanaryTest {
 
   @Test
   public void salt_doesNotStoreOrPassByReference() throws Exception {
-    byte[] toModify = new byte[20];
-    new Random().nextBytes(toModify);
+    byte[] toModify = "foobar".getBytes();
 
     subject.setSalt(toModify);
     byte[] unModified = toModify.clone();
 
-    toModify[0] = (byte) (((int) toModify[0]) >> 1);
+    toModify[0] = (byte) 'a';
 
     assertThat(subject.getSalt(), not(equalTo(toModify)));
     assertThat(subject.getSalt(), equalTo(unModified));

@@ -5,8 +5,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import java.util.Random;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
@@ -24,13 +22,11 @@ public class CredentialVersionDataTest {
 
   @Test
   public void encryptedValue_doesNotStoreOrPassByReference() throws Exception {
-    byte[] toModify = new byte[20];
-    new Random().nextBytes(toModify);
-
+    byte[] toModify = "foobar".getBytes();
     passwordCredentialData.setEncryptedValue(toModify);
     byte[] unModified = toModify.clone();
 
-    toModify[0] = (byte) (((int) toModify[0]) >> 1);
+    toModify[0] = (byte) 'a';
 
     assertThat(passwordCredentialData.getEncryptedValue(), not(equalTo(toModify)));
     assertThat(passwordCredentialData.getEncryptedValue(), equalTo(unModified));
@@ -45,13 +41,13 @@ public class CredentialVersionDataTest {
 
   @Test
   public void nonce_doesNotStoreOrPassByReference() throws Exception {
-    byte[] toModify = new byte[20];
-    new Random().nextBytes(toModify);
+    byte[] toModify = "foobar".getBytes();
+    passwordCredentialData.setEncryptedValue(toModify);
 
     passwordCredentialData.setNonce(toModify);
     byte[] unModified = toModify.clone();
 
-    toModify[0] = (byte) (((int) toModify[0]) >> 1);
+    toModify[0] = (byte) 'a';
 
     assertThat(passwordCredentialData.getNonce(), not(equalTo(toModify)));
     assertThat(passwordCredentialData.getNonce(), equalTo(unModified));
