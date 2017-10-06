@@ -14,12 +14,12 @@ import static io.pivotal.security.request.PermissionOperation.READ;
 @Component
 public class CertificateAuthorityService {
 
-  private final CredentialDataService credentialDataService;
+  private final CredentialVersionDataService credentialVersionDataService;
   private PermissionsDataService permissionService;
 
   @Autowired
-  public CertificateAuthorityService(CredentialDataService credentialDataService, PermissionsDataService permissionService) {
-    this.credentialDataService = credentialDataService;
+  public CertificateAuthorityService(CredentialVersionDataService credentialVersionDataService, PermissionsDataService permissionService) {
+    this.credentialVersionDataService = credentialVersionDataService;
     this.permissionService = permissionService;
   }
 
@@ -28,7 +28,7 @@ public class CertificateAuthorityService {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
-    Credential mostRecent = credentialDataService.findMostRecent(caName);
+    Credential mostRecent = credentialVersionDataService.findMostRecent(caName);
     if (!(mostRecent instanceof CertificateCredential)) {
       throw new ParameterizedValidationException("error.not_a_ca_name");
     }

@@ -2,7 +2,7 @@ package io.pivotal.security.domain;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.pivotal.security.entity.JsonCredentialData;
+import io.pivotal.security.entity.JsonCredentialVersion;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.service.Encryption;
 import org.junit.Before;
@@ -27,7 +27,7 @@ public class JsonCredentialTest {
   private JsonCredential subject;
   private Map<String, Object> value;
 
-  private JsonCredentialData jsonCredentialData;
+  private JsonCredentialVersion jsonCredentialData;
 
   @Before
   public void beforeEach() throws JsonProcessingException {
@@ -50,7 +50,7 @@ public class JsonCredentialTest {
     when(encryptor.decrypt(encryption))
         .thenReturn(serializedValue);
 
-    jsonCredentialData = new JsonCredentialData("Foo");
+    jsonCredentialData = new JsonCredentialVersion("Foo");
     subject = new JsonCredential(jsonCredentialData).setEncryptor(encryptor);
   }
 

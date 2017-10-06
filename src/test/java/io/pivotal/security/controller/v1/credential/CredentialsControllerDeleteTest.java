@@ -2,7 +2,7 @@ package io.pivotal.security.controller.v1.credential;
 
 
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.domain.ValueCredential;
 import io.pivotal.security.helper.AuditingHelper;
 import io.pivotal.security.repository.EventAuditRecordRepository;
@@ -46,7 +46,7 @@ public class CredentialsControllerDeleteTest {
   private WebApplicationContext webApplicationContext;
 
   @SpyBean
-  private CredentialDataService credentialDataService;
+  private CredentialVersionDataService credentialVersionDataService;
 
   @Autowired
   private RequestAuditRecordRepository requestAuditRecordRepository;
@@ -112,9 +112,9 @@ public class CredentialsControllerDeleteTest {
 
   @Test
   public void delete_whenThereIsOneCredentialVersionWithTheCaseInsensitiveName_deletesTheCredential() throws Exception {
-    doReturn(true).when(credentialDataService).delete(CREDENTIAL_NAME.toUpperCase());
+    doReturn(true).when(credentialVersionDataService).delete(CREDENTIAL_NAME.toUpperCase());
     doReturn(new ValueCredential())
-        .when(credentialDataService)
+        .when(credentialVersionDataService)
         .findMostRecent(CREDENTIAL_NAME.toUpperCase());
 
     MockHttpServletRequestBuilder request = delete("/api/v1/data?name=" + CREDENTIAL_NAME.toUpperCase())
@@ -123,15 +123,15 @@ public class CredentialsControllerDeleteTest {
     mockMvc.perform(request)
         .andExpect(status().isNoContent());
 
-    verify(credentialDataService, times(1)).delete(CREDENTIAL_NAME.toUpperCase());
+    verify(credentialVersionDataService, times(1)).delete(CREDENTIAL_NAME.toUpperCase());
 
     auditingHelper.verifyAuditing(CREDENTIAL_DELETE, CREDENTIAL_NAME.toUpperCase(), UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 204);
   }
 
   @Test
   public void delete_whenThereAreMultipleCredentialVersionsWithTheName_deletesAllVersions() throws Exception {
-    doReturn(true).when(credentialDataService).delete(CREDENTIAL_NAME);
-    doReturn(new ValueCredential()).when(credentialDataService).findMostRecent(CREDENTIAL_NAME);
+    doReturn(true).when(credentialVersionDataService).delete(CREDENTIAL_NAME);
+    doReturn(new ValueCredential()).when(credentialVersionDataService).findMostRecent(CREDENTIAL_NAME);
 
     MockHttpServletRequestBuilder request = delete("/api/v1/data?name=" + CREDENTIAL_NAME)
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
@@ -139,7 +139,7 @@ public class CredentialsControllerDeleteTest {
     mockMvc.perform(request)
         .andExpect(status().isNoContent());
 
-    verify(credentialDataService, times(1)).delete(CREDENTIAL_NAME);
+    verify(credentialVersionDataService, times(1)).delete(CREDENTIAL_NAME);
 
     auditingHelper.verifyAuditing(CREDENTIAL_DELETE, CREDENTIAL_NAME, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 204);
   }

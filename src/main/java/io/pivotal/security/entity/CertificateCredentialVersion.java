@@ -11,27 +11,27 @@ import javax.persistence.SecondaryTable;
 @Entity
 @DiscriminatorValue("cert")
 @SecondaryTable(
-    name = CertificateCredentialData.TABLE_NAME,
+    name = CertificateCredentialVersion.TABLE_NAME,
     pkJoinColumns = {@PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")}
 )
-public class CertificateCredentialData extends CredentialData<CertificateCredentialData> {
+public class CertificateCredentialVersion extends CredentialVersion<CertificateCredentialVersion> {
 
   public static final String CREDENTIAL_TYPE = "certificate";
   static final String TABLE_NAME = "certificate_credential";
 
-  @Column(table = CertificateCredentialData.TABLE_NAME, length = 7000)
+  @Column(table = CertificateCredentialVersion.TABLE_NAME, length = 7000)
   private String ca;
 
-  @Column(table = CertificateCredentialData.TABLE_NAME, length = 7000)
+  @Column(table = CertificateCredentialVersion.TABLE_NAME, length = 7000)
   private String certificate;
 
-  @Column(table = CertificateCredentialData.TABLE_NAME)
+  @Column(table = CertificateCredentialVersion.TABLE_NAME)
   private String caName;
 
-  public CertificateCredentialData() {
+  public CertificateCredentialVersion() {
   }
 
-  public CertificateCredentialData(String name) {
+  public CertificateCredentialVersion(String name) {
     super(name);
   }
 
@@ -43,7 +43,7 @@ public class CertificateCredentialData extends CredentialData<CertificateCredent
     return ca;
   }
 
-  public CertificateCredentialData setCa(String ca) {
+  public CertificateCredentialVersion setCa(String ca) {
     this.ca = ca;
     return this;
   }
@@ -52,7 +52,7 @@ public class CertificateCredentialData extends CredentialData<CertificateCredent
     return certificate;
   }
 
-  public CertificateCredentialData setCertificate(String certificate) {
+  public CertificateCredentialVersion setCertificate(String certificate) {
     this.certificate = certificate;
     return this;
   }
@@ -61,7 +61,7 @@ public class CertificateCredentialData extends CredentialData<CertificateCredent
     return caName;
   }
 
-  public CertificateCredentialData setCaName(String caName) {
+  public CertificateCredentialVersion setCaName(String caName) {
     this.caName = !StringUtils.isEmpty(caName) ? StringUtils.prependIfMissing(caName, "/") : caName;
     return this;
   }

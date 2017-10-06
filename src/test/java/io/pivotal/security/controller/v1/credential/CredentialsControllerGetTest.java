@@ -1,7 +1,7 @@
 package io.pivotal.security.controller.v1.credential;
 
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.ValueCredential;
 import io.pivotal.security.exceptions.KeyNotFoundException;
@@ -79,7 +79,7 @@ public class CredentialsControllerGetTest {
   private EventAuditRecordRepository eventAuditRecordRepository;
 
   @SpyBean
-  private CredentialDataService credentialDataService;
+  private CredentialVersionDataService credentialVersionDataService;
 
   @MockBean
   private CurrentTimeProvider mockCurrentTimeProvider;
@@ -116,7 +116,7 @@ public class CredentialsControllerGetTest {
 
     doReturn(CREDENTIAL_VALUE).when(encryptor).decrypt(any());
 
-    doReturn(newArrayList(credential)).when(credentialDataService).findAllByName(CREDENTIAL_NAME);
+    doReturn(newArrayList(credential)).when(credentialVersionDataService).findAllByName(CREDENTIAL_NAME);
 
     final MockHttpServletRequestBuilder request = get("/api/v1/data?name=" + CREDENTIAL_NAME)
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -224,7 +224,7 @@ public class CredentialsControllerGetTest {
 
     doReturn(CREDENTIAL_VALUE).when(encryptor).decrypt(any());
 
-    doReturn(Arrays.asList(credential)).when(credentialDataService).findNByName(CREDENTIAL_NAME, 1);
+    doReturn(Arrays.asList(credential)).when(credentialVersionDataService).findNByName(CREDENTIAL_NAME, 1);
 
     mockMvc.perform(get("/api/v1/data?current=true&name=" + CREDENTIAL_NAME)
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -233,7 +233,7 @@ public class CredentialsControllerGetTest {
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
         .andExpect(jsonPath("$.data", hasSize(1)));
 
-    verify(credentialDataService).findNByName(CREDENTIAL_NAME, 1);
+    verify(credentialVersionDataService).findNByName(CREDENTIAL_NAME, 1);
   }
 
   @Test
@@ -252,7 +252,7 @@ public class CredentialsControllerGetTest {
 
     doReturn(
         newArrayList(valueCredential1, valueCredential2)
-    ).when(credentialDataService).findAllByName(CREDENTIAL_NAME);
+    ).when(credentialVersionDataService).findAllByName(CREDENTIAL_NAME);
 
     mockMvc.perform(get("/api/v1/data?current=false&name=" + CREDENTIAL_NAME)
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -287,7 +287,7 @@ public class CredentialsControllerGetTest {
 
     doReturn(
         newArrayList(valueCredential1, valueCredential2)
-    ).when(credentialDataService).findNByName(CREDENTIAL_NAME, 2);
+    ).when(credentialVersionDataService).findNByName(CREDENTIAL_NAME, 2);
 
     mockMvc.perform(get("/api/v1/data?current=false&name=" + CREDENTIAL_NAME + "&versions=2")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -323,7 +323,7 @@ public class CredentialsControllerGetTest {
         .setVersionCreatedAt(FROZEN_TIME);
 
     doReturn(CREDENTIAL_VALUE).when(encryptor).decrypt(any());
-    doReturn(credential).when(credentialDataService).findByUuid(uuid.toString());
+    doReturn(credential).when(credentialVersionDataService).findByUuid(uuid.toString());
 
     final MockHttpServletRequestBuilder request = get("/api/v1/data/" + uuid)
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -356,7 +356,7 @@ public class CredentialsControllerGetTest {
 
     doThrow(new KeyNotFoundException("error.missing_encryption_key"))
         .when(encryptor).decrypt(any());
-    doReturn(Arrays.asList(valueCredential)).when(credentialDataService)
+    doReturn(Arrays.asList(valueCredential)).when(credentialVersionDataService)
         .findAllByName(CREDENTIAL_NAME);
 
     final MockHttpServletRequestBuilder get =

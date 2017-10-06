@@ -3,7 +3,7 @@ package io.pivotal.security.controller.v1;
 import com.google.common.collect.Lists;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.audit.EventAuditRecordParameters;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.domain.JsonCredential;
 import io.pivotal.security.domain.ValueCredential;
 import io.pivotal.security.helper.AuditingHelper;
@@ -59,7 +59,7 @@ public class InterpolationControllerTest {
   private EventAuditRecordRepository eventAuditRecordRepository;
 
   @SpyBean
-  private CredentialDataService mockCredentialDataService;
+  private CredentialVersionDataService mockCredentialVersionDataService;
 
   private MockMvc mockMvc;
   private AuditingHelper auditingHelper;
@@ -86,11 +86,11 @@ public class InterpolationControllerTest {
 
     doReturn(
         Arrays.asList(jsonCredential)
-    ).when(mockCredentialDataService).findNByName("/cred1", 1);
+    ).when(mockCredentialVersionDataService).findNByName("/cred1", 1);
 
     doReturn(
         Arrays.asList(jsonCredential1)
-    ).when(mockCredentialDataService).findNByName("/cred2", 1);
+    ).when(mockCredentialVersionDataService).findNByName("/cred2", 1);
 
     mockMvc.perform(makeValidPostRequest()).andDo(print()).andExpect(status().isOk())
         .andExpect(jsonPath("$.pp-config-server[0].credentials.secret1")
@@ -111,11 +111,11 @@ public class InterpolationControllerTest {
 
     doReturn(
         Arrays.asList(jsonCredential)
-    ).when(mockCredentialDataService).findNByName("/cred1", 1);
+    ).when(mockCredentialVersionDataService).findNByName("/cred1", 1);
 
     doReturn(
         Arrays.asList(jsonCredential1)
-    ).when(mockCredentialDataService).findNByName("/cred2", 1);
+    ).when(mockCredentialVersionDataService).findNByName("/cred2", 1);
 
     mockMvc.perform(makeValidPostRequest()).andExpect(status().isOk());
 
@@ -135,7 +135,7 @@ public class InterpolationControllerTest {
 
     doReturn(
         Arrays.asList(valueCredential)
-    ).when(mockCredentialDataService).findNByName("/cred1", 1);
+    ).when(mockCredentialVersionDataService).findNByName("/cred1", 1);
 
     String expectedMessage = "The credential '/cred1' is not the expected type. A credhub-ref credential must be of type 'JSON'.";
 
@@ -162,7 +162,7 @@ public class InterpolationControllerTest {
   public void POST_whenAReferencedCredentialDoesNotExist_throwsAnError() throws Exception {
     doReturn(
         null
-    ).when(mockCredentialDataService).findMostRecent("/cred1");
+    ).when(mockCredentialVersionDataService).findMostRecent("/cred1");
 
     String expectedMessage = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
     mockMvc.perform(post("/api/v1/interpolate")

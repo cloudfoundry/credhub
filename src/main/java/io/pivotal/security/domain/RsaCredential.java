@@ -1,23 +1,23 @@
 package io.pivotal.security.domain;
 
 import io.pivotal.security.credential.RsaCredentialValue;
-import io.pivotal.security.entity.RsaCredentialData;
+import io.pivotal.security.entity.RsaCredentialVersion;
 
 public class RsaCredential extends Credential<RsaCredential> {
 
-  private RsaCredentialData delegate;
+  private RsaCredentialVersion delegate;
 
-  public RsaCredential(RsaCredentialData delegate) {
+  public RsaCredential(RsaCredentialVersion delegate) {
     super(delegate);
     this.delegate = delegate;
   }
 
   public RsaCredential(String name) {
-    this(new RsaCredentialData(name));
+    this(new RsaCredentialVersion(name));
   }
 
   public RsaCredential() {
-    this(new RsaCredentialData());
+    this(new RsaCredentialVersion());
   }
 
   public RsaCredential(RsaCredentialValue rsaValue, Encryptor encryptor) {

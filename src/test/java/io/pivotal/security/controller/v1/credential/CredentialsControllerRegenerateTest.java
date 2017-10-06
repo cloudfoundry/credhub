@@ -1,7 +1,7 @@
 package io.pivotal.security.controller.v1.credential;
 
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.data.EncryptionKeyCanaryDataService;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.PasswordCredential;
@@ -9,7 +9,7 @@ import io.pivotal.security.domain.RsaCredential;
 import io.pivotal.security.domain.SshCredential;
 import io.pivotal.security.domain.UserCredential;
 import io.pivotal.security.entity.EncryptionKeyCanary;
-import io.pivotal.security.entity.PasswordCredentialData;
+import io.pivotal.security.entity.PasswordCredentialVersion;
 import io.pivotal.security.helper.AuditingHelper;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
@@ -69,7 +69,7 @@ public class CredentialsControllerRegenerateTest {
   private WebApplicationContext webApplicationContext;
 
   @Autowired
-  private CredentialDataService credentialDataService;
+  private CredentialVersionDataService credentialVersionDataService;
 
   @Autowired
   private EncryptionKeyCanaryDataService canaryDataService;
@@ -113,7 +113,7 @@ public class CredentialsControllerRegenerateTest {
         .setPasswordAndGenerationParameters("original-password", generationParameters);
     originalCredential.setVersionCreatedAt(FROZEN_TIME.plusSeconds(1));
 
-    credentialDataService.save(originalCredential);
+    credentialVersionDataService.save(originalCredential);
 
     fakeTimeSetter.accept(FROZEN_TIME.plusSeconds(10).toEpochMilli());
 
@@ -129,7 +129,7 @@ public class CredentialsControllerRegenerateTest {
         .andExpect(jsonPath("$.type").value("password"))
         .andExpect(jsonPath("$.version_created_at").value(FROZEN_TIME.plusSeconds(10).toString()));
 
-    final PasswordCredential newPassword = (PasswordCredential) credentialDataService.findMostRecent("my-password");
+    final PasswordCredential newPassword = (PasswordCredential) credentialVersionDataService.findMostRecent("my-password");
 
     assertThat(newPassword.getPassword(), not(equalTo("original-credential")));
     assertThat(newPassword.getGenerationParameters().isExcludeNumber(), equalTo(true));
@@ -144,7 +144,7 @@ public class CredentialsControllerRegenerateTest {
     originalCredential.setPrivateKey("original value");
     originalCredential.setVersionCreatedAt(FROZEN_TIME.plusSeconds(1));
 
-    credentialDataService.save(originalCredential);
+    credentialVersionDataService.save(originalCredential);
 
     fakeTimeSetter.accept(FROZEN_TIME.plusSeconds(10).toEpochMilli());
 
@@ -161,7 +161,7 @@ public class CredentialsControllerRegenerateTest {
         .andExpect(
             jsonPath("$.version_created_at").value(FROZEN_TIME.plusSeconds(10).toString()));
 
-    RsaCredential newRsa = (RsaCredential) credentialDataService.findMostRecent("my-rsa");
+    RsaCredential newRsa = (RsaCredential) credentialVersionDataService.findMostRecent("my-rsa");
 
     assertTrue(newRsa.getPublicKey().contains("-----BEGIN PUBLIC KEY-----"));
     assertTrue(newRsa.getPrivateKey().contains("-----BEGIN RSA PRIVATE KEY-----"));
@@ -178,7 +178,7 @@ public class CredentialsControllerRegenerateTest {
     originalCredential.setPrivateKey("original value");
     originalCredential.setVersionCreatedAt(FROZEN_TIME.plusSeconds(1));
 
-    credentialDataService.save(originalCredential);
+    credentialVersionDataService.save(originalCredential);
 
     fakeTimeSetter.accept(FROZEN_TIME.plusSeconds(10).toEpochMilli());
 
@@ -194,7 +194,7 @@ public class CredentialsControllerRegenerateTest {
         .andExpect(jsonPath("$.type").value("ssh"))
         .andExpect(jsonPath("$.version_created_at").value(FROZEN_TIME.plusSeconds(10).toString()));
 
-    final SshCredential newSsh = (SshCredential) credentialDataService.findMostRecent("my-ssh");
+    final SshCredential newSsh = (SshCredential) credentialVersionDataService.findMostRecent("my-ssh");
 
     assertThat(newSsh.getPrivateKey(), containsString("-----BEGIN RSA PRIVATE KEY-----"));
     assertThat(newSsh.getPublicKey(), containsString("ssh-rsa "));
@@ -218,7 +218,7 @@ public class CredentialsControllerRegenerateTest {
     originalCredential.setGenerationParameters(generationParameters);
     originalCredential.setVersionCreatedAt(FROZEN_TIME.plusSeconds(1));
 
-    credentialDataService.save(originalCredential);
+    credentialVersionDataService.save(originalCredential);
 
     fakeTimeSetter.accept(FROZEN_TIME.plusSeconds(10).toEpochMilli());
 
@@ -234,7 +234,7 @@ public class CredentialsControllerRegenerateTest {
         .andExpect(jsonPath("$.type").value("user"))
         .andExpect(jsonPath("$.version_created_at").value(FROZEN_TIME.plusSeconds(10).toString()));
 
-    UserCredential newUser = (UserCredential) credentialDataService.findMostRecent("the-user");
+    UserCredential newUser = (UserCredential) credentialVersionDataService.findMostRecent("the-user");
 
     assertThat(newUser.getPassword(), not(equalTo(originalCredential.getPassword())));
     assertThat(newUser.getGenerationParameters().isExcludeNumber(), equalTo(true));
@@ -268,7 +268,7 @@ public class CredentialsControllerRegenerateTest {
     originalCredential.setEncryptor(encryptor);
     originalCredential.setPasswordAndGenerationParameters("abcde", null);
 
-    credentialDataService.save(originalCredential);
+    credentialVersionDataService.save(originalCredential);
 
     String cannotRegenerateJson = "{" +
         "  \"error\": \"The password could not be regenerated because the value was " +
@@ -292,7 +292,7 @@ public class CredentialsControllerRegenerateTest {
     EncryptionKeyCanary encryptionKeyCanary = new EncryptionKeyCanary();
     canaryDataService.save(encryptionKeyCanary);
 
-    PasswordCredentialData passwordCredentialData = new PasswordCredentialData(
+    PasswordCredentialVersion passwordCredentialData = new PasswordCredentialVersion(
         "my-password");
     PasswordCredential originalCredential = new PasswordCredential(passwordCredentialData);
     originalCredential.setEncryptor(encryptor);
@@ -301,7 +301,7 @@ public class CredentialsControllerRegenerateTest {
 
     passwordCredentialData.setEncryptionKeyUuid(encryptionKeyCanary.getUuid());
 
-    credentialDataService.save(originalCredential);
+    credentialVersionDataService.save(originalCredential);
 
     // language=JSON
     String cannotRegenerate = "{\n" +

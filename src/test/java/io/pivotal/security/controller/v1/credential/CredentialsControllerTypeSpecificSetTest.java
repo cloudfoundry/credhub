@@ -6,7 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.domain.CertificateCredential;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.Encryptor;
@@ -150,7 +150,7 @@ public class CredentialsControllerTypeSpecificSetTest {
   private WebApplicationContext webApplicationContext;
 
   @SpyBean
-  private CredentialDataService credentialDataService;
+  private CredentialVersionDataService credentialVersionDataService;
 
   @SpyBean
   private SetHandler setHandler;
@@ -374,7 +374,7 @@ public class CredentialsControllerTypeSpecificSetTest {
     ResultActions response = mockMvc.perform(request);
 
     ArgumentCaptor<Credential> argumentCaptor = ArgumentCaptor.forClass(Credential.class);
-    verify(credentialDataService, times(1)).save(argumentCaptor.capture());
+    verify(credentialVersionDataService, times(1)).save(argumentCaptor.capture());
 
     response
         .andExpect(status().isOk())
@@ -406,7 +406,7 @@ public class CredentialsControllerTypeSpecificSetTest {
     ResultActions response = mockMvc.perform(request);
 
     ArgumentCaptor<Credential> argumentCaptor = ArgumentCaptor.forClass(Credential.class);
-    verify(credentialDataService, times(1)).save(argumentCaptor.capture());
+    verify(credentialVersionDataService, times(1)).save(argumentCaptor.capture());
 
     response.andExpect(parametizer.jsonAssertions())
         .andExpect(multiJsonPath(
@@ -438,7 +438,7 @@ public class CredentialsControllerTypeSpecificSetTest {
 
     verify(setHandler, times(1))
         .handle(isA(BaseCredentialSetRequest.class), isA(UserContext.class), isA(PermissionEntry.class), any());
-    verify(credentialDataService, times(1)).save(argumentCaptor.capture());
+    verify(credentialVersionDataService, times(1)).save(argumentCaptor.capture());
 
     Credential newCredential = argumentCaptor.getValue();
 
@@ -536,7 +536,7 @@ public class CredentialsControllerTypeSpecificSetTest {
 
   @Test
   public void updatingACredential_withTheOverwriteFlagSetToTrue_returnsTheExistingCredentialVersion() throws Exception {
-    doReturn(parametizer.createCredential(encryptor)).when(credentialDataService).findMostRecent(CREDENTIAL_NAME);
+    doReturn(parametizer.createCredential(encryptor)).when(credentialVersionDataService).findMostRecent(CREDENTIAL_NAME);
 
     final MockHttpServletRequestBuilder put = put("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -552,7 +552,7 @@ public class CredentialsControllerTypeSpecificSetTest {
     ResultActions response = mockMvc.perform(put);
 
     ArgumentCaptor<Credential> argumentCaptor = ArgumentCaptor.forClass(Credential.class);
-    verify(credentialDataService, times(1)).save(argumentCaptor.capture());
+    verify(credentialVersionDataService, times(1)).save(argumentCaptor.capture());
 
     response.andExpect(status().isOk())
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -565,7 +565,7 @@ public class CredentialsControllerTypeSpecificSetTest {
 
   @Test
   public void updatingACredential_withTheOverwriteFlagSetToTrue_persistsTheCredential() throws Exception {
-    doReturn(parametizer.createCredential(encryptor)).when(credentialDataService).findMostRecent(CREDENTIAL_NAME);
+    doReturn(parametizer.createCredential(encryptor)).when(credentialVersionDataService).findMostRecent(CREDENTIAL_NAME);
 
     final MockHttpServletRequestBuilder put = put("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -580,13 +580,13 @@ public class CredentialsControllerTypeSpecificSetTest {
 
     mockMvc.perform(put);
 
-    Credential credential = credentialDataService.findMostRecent(CREDENTIAL_NAME);
+    Credential credential = credentialVersionDataService.findMostRecent(CREDENTIAL_NAME);
     parametizer.credentialAssertions(credential);
   }
 
   @Test
   public void updatingACredential_withTheOverwriteFlagSetToTrue_persistsAnAuditEntry() throws Exception {
-    doReturn(parametizer.createCredential(encryptor)).when(credentialDataService).findMostRecent(CREDENTIAL_NAME);
+    doReturn(parametizer.createCredential(encryptor)).when(credentialVersionDataService).findMostRecent(CREDENTIAL_NAME);
 
     final MockHttpServletRequestBuilder put = put("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -608,7 +608,7 @@ public class CredentialsControllerTypeSpecificSetTest {
   public void updatingACredential_withOverwriteSetToFalse_returnsThePreviousVersion() throws Exception {
     Credential expectedCredential = parametizer.createCredential(encryptor);
     doReturn(expectedCredential)
-        .when(credentialDataService)
+        .when(credentialVersionDataService)
         .findMostRecent(CREDENTIAL_NAME);
     final MockHttpServletRequestBuilder request = put("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -633,7 +633,7 @@ public class CredentialsControllerTypeSpecificSetTest {
   public void updatingACredential_withOverwriteSetToFalse_doesNotPersistTheCredential() throws Exception {
     Credential expectedCredential = parametizer.createCredential(encryptor);
     doReturn(expectedCredential)
-        .when(credentialDataService)
+        .when(credentialVersionDataService)
         .findMostRecent(CREDENTIAL_NAME);
     final MockHttpServletRequestBuilder request = put("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -647,14 +647,14 @@ public class CredentialsControllerTypeSpecificSetTest {
 
     mockMvc.perform(request);
 
-    verify(credentialDataService, times(0)).save(any(Credential.class));
+    verify(credentialVersionDataService, times(0)).save(any(Credential.class));
   }
 
   @Test
   public void updatingACredential_withOverwriteSetToFalse_persistsAnAuditEntry() throws Exception {
     Credential expectedCredential = parametizer.createCredential(encryptor);
     doReturn(expectedCredential)
-        .when(credentialDataService)
+        .when(credentialVersionDataService)
         .findMostRecent(CREDENTIAL_NAME);
     final MockHttpServletRequestBuilder request = put("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)

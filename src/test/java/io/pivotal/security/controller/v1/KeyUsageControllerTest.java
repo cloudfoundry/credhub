@@ -1,6 +1,6 @@
 package io.pivotal.security.controller.v1;
 
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.data.EncryptionKeyCanaryDataService;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -31,16 +31,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class KeyUsageControllerTest {
 
   private MockMvc mockMvc;
-  CredentialDataService credentialDataService;
+  CredentialVersionDataService credentialVersionDataService;
   EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
   EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
 
   @Before
   public void beforeEach() {
-    credentialDataService = mock(CredentialDataService.class);
+    credentialVersionDataService = mock(CredentialVersionDataService.class);
     encryptionKeyCanaryMapper = mock(EncryptionKeyCanaryMapper.class);
     encryptionKeyCanaryDataService = mock(EncryptionKeyCanaryDataService.class);
-    final KeyUsageController keyUsageController = new KeyUsageController(credentialDataService,
+    final KeyUsageController keyUsageController = new KeyUsageController(credentialVersionDataService,
         encryptionKeyCanaryMapper);
 
     mockMvc = MockMvcBuilders
@@ -58,9 +58,9 @@ public class KeyUsageControllerTest {
     }};
 
     when(encryptionKeyCanaryMapper.getKnownCanaryUuids()).thenReturn(keysInConfigUuids);
-    when(credentialDataService.count()).thenReturn(225L);
-    when(credentialDataService.countAllNotEncryptedByActiveKey()).thenReturn(25L);
-    when(credentialDataService.countEncryptedWithKeyUuidIn(keysInConfigUuids)).thenReturn(220L);
+    when(credentialVersionDataService.count()).thenReturn(225L);
+    when(credentialVersionDataService.countAllNotEncryptedByActiveKey()).thenReturn(25L);
+    when(credentialVersionDataService.countEncryptedWithKeyUuidIn(keysInConfigUuids)).thenReturn(220L);
 
     mockMvc.perform(get("/api/v1/key-usage"))
         .andExpect(status().isOk())

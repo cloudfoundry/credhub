@@ -1,7 +1,7 @@
 package io.pivotal.security.controller.v1.credential;
 
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.helper.AuditingHelper;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
@@ -53,7 +53,7 @@ public class CredentialsControllerFindTest {
   private WebApplicationContext webApplicationContext;
 
   @SpyBean
-  private CredentialDataService credentialDataService;
+  private CredentialVersionDataService credentialVersionDataService;
 
   @MockBean
   private CurrentTimeProvider mockCurrentTimeProvider;
@@ -107,7 +107,7 @@ public class CredentialsControllerFindTest {
     String substring = credentialName.substring(0, credentialName.lastIndexOf("/"));
     doReturn(
         singletonList(new FindCredentialResult(frozenTime, credentialName))
-    ).when(credentialDataService).findStartingWithPath(substring);
+    ).when(credentialVersionDataService).findStartingWithPath(substring);
 
     final MockHttpServletRequestBuilder getResponse = get("/api/v1/data?path=" + substring)
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -140,7 +140,7 @@ public class CredentialsControllerFindTest {
     final String path = "/my-namespace";
     doReturn(
         singletonList(new FindCredentialResult(frozenTime, credentialName))
-    ).when(credentialDataService).findStartingWithPath(path.toUpperCase());
+    ).when(credentialVersionDataService).findStartingWithPath(path.toUpperCase());
 
     assertTrue(credentialName.startsWith(path));
 
@@ -173,7 +173,7 @@ public class CredentialsControllerFindTest {
     String substring = credentialName.substring(0, credentialName.lastIndexOf("/"));
     doReturn(
         singletonList(new FindCredentialResult(frozenTime, credentialName))
-    ).when(credentialDataService).findStartingWithPath(substring);
+    ).when(credentialVersionDataService).findStartingWithPath(substring);
 
     final MockHttpServletRequestBuilder request = get("/api/v1/data?path=" + substring)
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -191,7 +191,7 @@ public class CredentialsControllerFindTest {
         .accept(APPLICATION_JSON);
     doReturn(
         Arrays.asList("my-namespace/", "my-namespace/subTree/")
-    ).when(credentialDataService).findAllPaths();
+    ).when(credentialVersionDataService).findAllPaths();
 
     mockMvc.perform(getRequest)
         .andExpect(status().isOk())
@@ -204,7 +204,7 @@ public class CredentialsControllerFindTest {
     String substring = credentialName.substring(4).toUpperCase();
     doReturn(
         singletonList(new FindCredentialResult(frozenTime, credentialName))
-    ).when(credentialDataService).findContainingName(substring);
+    ).when(credentialVersionDataService).findContainingName(substring);
     final MockHttpServletRequestBuilder get = get("/api/v1/data?name-like=" + substring)
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON);

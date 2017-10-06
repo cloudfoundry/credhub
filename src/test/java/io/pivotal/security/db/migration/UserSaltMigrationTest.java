@@ -1,7 +1,7 @@
 package io.pivotal.security.db.migration;
 
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.domain.UserCredential;
 import io.pivotal.security.entity.EncryptionKeyCanary;
 import io.pivotal.security.repository.EncryptionKeyCanaryRepository;
@@ -34,7 +34,7 @@ public class UserSaltMigrationTest {
   @Autowired
   private Flyway flyway;
   @Autowired
-  private CredentialDataService credentialDataService;
+  private CredentialVersionDataService credentialVersionDataService;
   @Autowired
   private JdbcTemplate jdbcTemplate;
   @Autowired
@@ -81,7 +81,7 @@ public class UserSaltMigrationTest {
     flyway.setTarget(MigrationVersion.LATEST);
     flyway.migrate();
 
-    final UserCredential migratedUser = (UserCredential) credentialDataService.findMostRecent(credentialName);
+    final UserCredential migratedUser = (UserCredential) credentialVersionDataService.findMostRecent(credentialName);
     assertThat(migratedUser.getSalt().matches("^\\$6\\$[a-zA-Z0-9/.]{8}$"),
         equalTo(true));
   }
@@ -105,8 +105,8 @@ public class UserSaltMigrationTest {
     flyway.setTarget(MigrationVersion.LATEST);
     flyway.migrate();
 
-    final UserCredential migratedUser1 = (UserCredential) credentialDataService.findMostRecent(credentialName1);
-    final UserCredential migratedUser2 = (UserCredential) credentialDataService.findMostRecent(credentialName2);
+    final UserCredential migratedUser1 = (UserCredential) credentialVersionDataService.findMostRecent(credentialName1);
+    final UserCredential migratedUser2 = (UserCredential) credentialVersionDataService.findMostRecent(credentialName2);
 
     assertThat(migratedUser1.getSalt(), not(equalTo(migratedUser2.getSalt())));
   }

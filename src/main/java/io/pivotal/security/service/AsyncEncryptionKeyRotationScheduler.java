@@ -1,6 +1,6 @@
 package io.pivotal.security.service;
 
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -16,23 +16,23 @@ class AsyncEncryptionKeyRotationScheduler {
 
   private EncryptionKeyRotator encryptionKeyRotator;
   private EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
-  private CredentialDataService credentialDataService;
+  private CredentialVersionDataService credentialVersionDataService;
 
   @Autowired
   public AsyncEncryptionKeyRotationScheduler(
       EncryptionKeyRotator encryptionKeyRotator,
       EncryptionKeyCanaryMapper encryptionKeyCanaryMapper,
-      CredentialDataService credentialDataService
+      CredentialVersionDataService credentialVersionDataService
   ) {
     this.encryptionKeyRotator = encryptionKeyRotator;
     this.encryptionKeyCanaryMapper = encryptionKeyCanaryMapper;
-    this.credentialDataService = credentialDataService;
+    this.credentialVersionDataService = credentialVersionDataService;
 
     makeSureWeCanDecryptSomething();
   }
 
   public void makeSureWeCanDecryptSomething() {
-    (new DecryptableDataDetector(encryptionKeyCanaryMapper, credentialDataService)).check();
+    (new DecryptableDataDetector(encryptionKeyCanaryMapper, credentialVersionDataService)).check();
   }
 
   @Async

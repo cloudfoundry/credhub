@@ -7,25 +7,25 @@ import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.SecondaryTable;
 
 @Entity
-@DiscriminatorValue(SshCredentialData.CREDENTIAL_TYPE)
+@DiscriminatorValue(SshCredentialVersion.CREDENTIAL_TYPE)
 @SecondaryTable(
-    name = SshCredentialData.TABLE_NAME,
+    name = SshCredentialVersion.TABLE_NAME,
     pkJoinColumns = {@PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")}
 )
 
-public class SshCredentialData extends CredentialData<SshCredentialData> {
+public class SshCredentialVersion extends CredentialVersion<SshCredentialVersion> {
 
   public static final String CREDENTIAL_TYPE = "ssh";
   static final String TABLE_NAME = "ssh_credential";
 
-  @Column(table = SshCredentialData.TABLE_NAME, length = 7000)
+  @Column(table = SshCredentialVersion.TABLE_NAME, length = 7000)
   private String publicKey;
 
-  public SshCredentialData() {
+  public SshCredentialVersion() {
     this(null);
   }
 
-  public SshCredentialData(String name) {
+  public SshCredentialVersion(String name) {
     super(name);
   }
 
@@ -33,7 +33,7 @@ public class SshCredentialData extends CredentialData<SshCredentialData> {
     return publicKey;
   }
 
-  public SshCredentialData setPublicKey(String publicKey) {
+  public SshCredentialVersion setPublicKey(String publicKey) {
     this.publicKey = publicKey;
     return this;
   }

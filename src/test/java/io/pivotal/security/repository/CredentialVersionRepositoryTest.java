@@ -1,9 +1,9 @@
 package io.pivotal.security.repository;
 
-import io.pivotal.security.entity.CertificateCredentialData;
+import io.pivotal.security.entity.CertificateCredentialVersion;
 import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.entity.EncryptionKeyCanary;
-import io.pivotal.security.entity.ValueCredentialData;
+import io.pivotal.security.entity.ValueCredentialVersion;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,10 +26,10 @@ import static org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureT
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = Replace.NONE)
-public class CredentialRepositoryTest {
+public class CredentialVersionRepositoryTest {
 
   @Autowired
-  CredentialRepository subject;
+  CredentialVersionRepository subject;
 
   @Autowired
   CredentialNameRepository credentialNameRepository;
@@ -57,7 +57,7 @@ public class CredentialRepositoryTest {
     CredentialName credentialName = credentialNameRepository.save(new CredentialName(name));
     final String longString = stringBuilder.toString();
 
-    CertificateCredentialData entity = new CertificateCredentialData();
+    CertificateCredentialVersion entity = new CertificateCredentialVersion();
     entity.setCredentialName(credentialName);
     entity.setCa(longString);
     entity.setCertificate(longString);
@@ -66,7 +66,7 @@ public class CredentialRepositoryTest {
     entity.setNonce("nonce".getBytes());
 
     subject.save(entity);
-    CertificateCredentialData credentialData = (CertificateCredentialData) subject
+    CertificateCredentialVersion credentialData = (CertificateCredentialVersion) subject
         .findFirstByCredentialNameUuidOrderByVersionCreatedAtDesc(credentialName.getUuid());
     assertThat(credentialData.getCa().length(), equalTo(7000));
     assertThat(credentialData.getCertificate().length(), equalTo(7000));
@@ -81,7 +81,7 @@ public class CredentialRepositoryTest {
 
     final StringBuilder stringBuilder = new StringBuilder(7000);
     Stream.generate(() -> "a").limit(stringBuilder.capacity()).forEach(stringBuilder::append);
-    ValueCredentialData entity = new ValueCredentialData();
+    ValueCredentialVersion entity = new ValueCredentialVersion();
     CredentialName credentialName = credentialNameRepository.save(new CredentialName(name));
     entity.setCredentialName(credentialName);
     entity.setEncryptedValue(encryptedValue);

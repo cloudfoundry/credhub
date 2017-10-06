@@ -1,7 +1,7 @@
 package io.pivotal.security.controller.v1;
 
 import com.google.common.collect.ImmutableMap;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,14 +21,14 @@ import java.util.UUID;
     produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class KeyUsageController {
 
-  private final CredentialDataService credentialDataService;
+  private final CredentialVersionDataService credentialVersionDataService;
   private final EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
 
   @Autowired
   public KeyUsageController(
-      CredentialDataService credentialDataService,
+      CredentialVersionDataService credentialVersionDataService,
       EncryptionKeyCanaryMapper encryptionKeyCanaryMapper) {
-    this.credentialDataService = credentialDataService;
+    this.credentialVersionDataService = credentialVersionDataService;
     this.encryptionKeyCanaryMapper = encryptionKeyCanaryMapper;
   }
 
@@ -36,9 +36,9 @@ public class KeyUsageController {
   public ResponseEntity<Map> getKeyUsages() {
     List<UUID> canaryKeyInConfigUuids = encryptionKeyCanaryMapper.getKnownCanaryUuids();
 
-    Long totalCredCount = credentialDataService.count();
-    Long credsNotEncryptedByActiveKey = credentialDataService.countAllNotEncryptedByActiveKey();
-    Long credsEncryptedByKnownKeys = credentialDataService
+    Long totalCredCount = credentialVersionDataService.count();
+    Long credsNotEncryptedByActiveKey = credentialVersionDataService.countAllNotEncryptedByActiveKey();
+    Long credsEncryptedByKnownKeys = credentialVersionDataService
         .countEncryptedWithKeyUuidIn(canaryKeyInConfigUuids);
 
     Long activeKeyCreds = totalCredCount - credsNotEncryptedByActiveKey;

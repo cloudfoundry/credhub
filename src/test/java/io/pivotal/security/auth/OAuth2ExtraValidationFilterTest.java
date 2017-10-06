@@ -2,7 +2,7 @@ package io.pivotal.security.auth;
 
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.repository.AuthFailureAuditRecordRepository;
-import io.pivotal.security.repository.CredentialRepository;
+import io.pivotal.security.repository.CredentialVersionRepository;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,7 +47,7 @@ public class OAuth2ExtraValidationFilterTest {
   private AuthFailureAuditRecordRepository authFailureAuditRecordRepository;
 
   @Autowired
-  private CredentialRepository credentialRepository;
+  private CredentialVersionRepository credentialVersionRepository;
 
   private MockMvc mockMvc;
   private final static String ERROR_MESSAGE = "The request token identity zone does not match the UAA server authorized by CredHub. Please validate that your request token was issued by the UAA server authorized by CredHub and retry your request.";
@@ -120,7 +120,7 @@ public class OAuth2ExtraValidationFilterTest {
     String expectedResponse = "{\"error\":\"invalid_token\",\"error_description\":\"The request token identity zone does not match the UAA server authorized by CredHub. Please validate that your request token was issued by the UAA server authorized by CredHub and retry your request.\"}";
 
     assertThat(response, equalTo(expectedResponse));
-    assertThat(credentialRepository.count(), equalTo(0L));
+    assertThat(credentialVersionRepository.count(), equalTo(0L));
   }
 
   @Test

@@ -10,7 +10,7 @@ import io.pivotal.security.credential.RsaCredentialValue;
 import io.pivotal.security.credential.SshCredentialValue;
 import io.pivotal.security.credential.StringCredentialValue;
 import io.pivotal.security.credential.UserCredentialValue;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.domain.CertificateCredential;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.Encryptor;
@@ -123,7 +123,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
   private WebApplicationContext webApplicationContext;
 
   @SpyBean
-  private CredentialDataService credentialDataService;
+  private CredentialVersionDataService credentialVersionDataService;
 
   @MockBean
   private CurrentTimeProvider mockCurrentTimeProvider;
@@ -368,7 +368,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
     ResultActions response = mockMvc.perform(request);
 
     ArgumentCaptor<Credential> argumentCaptor = ArgumentCaptor.forClass(Credential.class);
-    verify(credentialDataService, times(1)).save(argumentCaptor.capture());
+    verify(credentialVersionDataService, times(1)).save(argumentCaptor.capture());
 
     response
         .andExpect(parametizer.jsonAssertions())
@@ -387,7 +387,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
     ResultActions response = mockMvc.perform(request);
 
     ArgumentCaptor<Credential> argumentCaptor = ArgumentCaptor.forClass(Credential.class);
-    verify(credentialDataService, times(1)).save(argumentCaptor.capture());
+    verify(credentialVersionDataService, times(1)).save(argumentCaptor.capture());
 
     response
         .andExpect(parametizer.jsonAssertions())
@@ -446,7 +446,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
     ResultActions response = mockMvc.perform(request);
 
     ArgumentCaptor<Credential> argumentCaptor = ArgumentCaptor.forClass(Credential.class);
-    verify(credentialDataService, times(1)).save(argumentCaptor.capture());
+    verify(credentialVersionDataService, times(1)).save(argumentCaptor.capture());
 
     response
         .andExpect(status().isOk())
@@ -465,7 +465,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
 
     mockMvc.perform(request);
 
-    Credential credential = credentialDataService.findMostRecent(CREDENTIAL_NAME);
+    Credential credential = credentialVersionDataService.findMostRecent(CREDENTIAL_NAME);
     parametizer.credentialAssertions(credential);
   }
 
@@ -506,7 +506,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
     MockHttpServletRequestBuilder request = beforeEachOverwriteSetToFalse();
     mockMvc.perform(request);
 
-    verify(credentialDataService, times(0)).save(any(Credential.class));
+    verify(credentialVersionDataService, times(0)).save(any(Credential.class));
   }
 
   @Test
@@ -534,7 +534,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
 
   private void beforeEachExistingCredential() {
     doReturn(parametizer.createCredential(encryptor))
-        .when(credentialDataService)
+        .when(credentialVersionDataService)
         .findMostRecent(CREDENTIAL_NAME);
   }
 

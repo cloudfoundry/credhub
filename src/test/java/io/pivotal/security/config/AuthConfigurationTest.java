@@ -2,7 +2,7 @@ package io.pivotal.security.config;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.data.PermissionsDataService;
 import io.pivotal.security.data.RequestAuditRecordDataService;
 import io.pivotal.security.domain.Credential;
@@ -60,7 +60,7 @@ public class AuthConfigurationTest {
   WebApplicationContext applicationContext;
 
   @MockBean
-  CredentialDataService credentialDataService;
+  CredentialVersionDataService credentialVersionDataService;
 
   @MockBean
   PermissionsDataService permissionsDataService;
@@ -297,7 +297,7 @@ public class AuthConfigurationTest {
   }
 
   private void setupDataEndpointMocks() {
-    when(credentialDataService.save(any(Credential.class))).thenAnswer(invocation -> {
+    when(credentialVersionDataService.save(any(Credential.class))).thenAnswer(invocation -> {
       PasswordCredential passwordCredential = invocation
           .getArgumentAt(0, PasswordCredential.class);
       passwordCredential.setUuid(UUID.randomUUID());

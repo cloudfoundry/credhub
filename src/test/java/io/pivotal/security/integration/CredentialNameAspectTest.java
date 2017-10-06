@@ -1,7 +1,7 @@
 package io.pivotal.security.integration;
 
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.data.CredentialNameDataService;
 import io.pivotal.security.domain.CertificateCredential;
 import io.pivotal.security.domain.Encryptor;
@@ -32,7 +32,7 @@ public class CredentialNameAspectTest {
   CredentialNameDataService credentialNameDataService;
 
   @Autowired
-  CredentialDataService credentialDataService;
+  CredentialVersionDataService credentialVersionDataService;
 
   @Autowired
   Encryptor encryptor;
@@ -47,7 +47,7 @@ public class CredentialNameAspectTest {
 
     certificateCredential.setPrivateKey("some-private-key");
 
-    credentialDataService.save(certificateCredential);
+    credentialVersionDataService.save(certificateCredential);
   }
 
   @Test
@@ -78,7 +78,7 @@ public class CredentialNameAspectTest {
 
   @Test
   public void findAllCertificateCredentialDataByCaNameIgnoreCase_prependsLeadingSlashToCredentialNameIfMissing() {
-    final List<String> certificateNames = credentialDataService.findAllCertificateCredentialsByCaName("ca/certificate");
+    final List<String> certificateNames = credentialVersionDataService.findAllCertificateCredentialsByCaName("ca/certificate");
     assertThat(certificateNames, containsInAnyOrder("/test/certificate"));
   }
 }

@@ -1,6 +1,6 @@
 package io.pivotal.security.util;
 
-import io.pivotal.security.entity.RsaCredentialData;
+import io.pivotal.security.entity.RsaCredentialVersion;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 
@@ -18,9 +18,9 @@ public class RsaCredentialHelper {
   private static final String RSA_END = "\n-----END PUBLIC KEY-----";
   private static final String NEW_LINE = "\n";
 
-  private final RsaCredentialData rsaCredentialData;
+  private final RsaCredentialVersion rsaCredentialData;
 
-  public RsaCredentialHelper(RsaCredentialData rsaCredentialData) {
+  public RsaCredentialHelper(RsaCredentialVersion rsaCredentialData) {
     this.rsaCredentialData = rsaCredentialData;
   }
 

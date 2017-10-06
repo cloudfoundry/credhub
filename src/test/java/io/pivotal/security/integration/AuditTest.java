@@ -6,7 +6,7 @@ import io.pivotal.security.data.RequestAuditRecordDataService;
 import io.pivotal.security.entity.EventAuditRecord;
 import io.pivotal.security.entity.RequestAuditRecord;
 import io.pivotal.security.helper.AuditingHelper;
-import io.pivotal.security.repository.CredentialRepository;
+import io.pivotal.security.repository.CredentialVersionRepository;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -57,7 +57,7 @@ public class AuditTest {
   @Autowired
   private EventAuditRecordRepository eventAuditRecordRepository;
   @Autowired
-  private CredentialRepository credentialRepository;
+  private CredentialVersionRepository credentialVersionRepository;
   @SpyBean
   private Logger logger;
   @SpyBean
@@ -172,7 +172,7 @@ public class AuditTest {
   public void when_event_audit_record_save_fails_it_rolls_back_event() throws Exception {
     long initialRequestAuditCount = requestAuditRecordRepository.count();
     long initialEventAuditCount = eventAuditRecordRepository.count();
-    long initialCredentialCount = credentialRepository.count();
+    long initialCredentialCount = credentialVersionRepository.count();
     doThrow(new RuntimeException("test"))
         .when(eventAuditRecordDataService).save(any(List.class));
 
@@ -184,7 +184,7 @@ public class AuditTest {
         .contentType(APPLICATION_JSON)
     ).andExpect(status().isInternalServerError());
 
-    assertThat(credentialRepository.count(), equalTo(initialCredentialCount));
+    assertThat(credentialVersionRepository.count(), equalTo(initialCredentialCount));
     assertThat(eventAuditRecordRepository.count(), equalTo(initialEventAuditCount+0L));
 
     assertThat(requestAuditRecordRepository.count(), equalTo(initialRequestAuditCount+1L));

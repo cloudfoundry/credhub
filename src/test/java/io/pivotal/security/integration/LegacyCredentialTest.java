@@ -1,10 +1,10 @@
 package io.pivotal.security.integration;
 
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.ValueCredential;
-import io.pivotal.security.entity.ValueCredentialData;
+import io.pivotal.security.entity.ValueCredentialVersion;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,7 +39,7 @@ public class LegacyCredentialTest {
   WebApplicationContext webApplicationContext;
 
   @Autowired
-  CredentialDataService credentialDataService;
+  CredentialVersionDataService credentialVersionDataService;
 
   @Autowired
   Encryptor encryptor;
@@ -50,12 +50,12 @@ public class LegacyCredentialTest {
   @Before
   public void setup() throws Exception {
     CREDENTIAL_NAME = "/bob";
-    ValueCredentialData valueCredentialData = new ValueCredentialData(CREDENTIAL_NAME);
+    ValueCredentialVersion valueCredentialData = new ValueCredentialVersion(CREDENTIAL_NAME);
     ValueCredential noAclsSecret = new ValueCredential(valueCredentialData);
     noAclsSecret.setEncryptor(encryptor);
     noAclsSecret.setValue("bob's value");
 
-    credentialDataService.save(noAclsSecret);
+    credentialVersionDataService.save(noAclsSecret);
     mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
         .apply(springSecurity())
         .build();

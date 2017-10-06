@@ -2,7 +2,7 @@ package io.pivotal.security.integration;
 
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.audit.EventAuditRecordParameters;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.entity.EncryptionKeyCanary;
 import io.pivotal.security.helper.AuditingHelper;
 import io.pivotal.security.repository.EncryptionKeyCanaryRepository;
@@ -70,7 +70,7 @@ public class BulkRegenerateTest {
   private EventAuditRecordRepository eventAuditRecordRepository;
 
   @Autowired
-  private CredentialDataService credentialDataService;
+  private CredentialVersionDataService credentialVersionDataService;
 
   @Autowired
   private Flyway flyway;
@@ -165,8 +165,8 @@ public class BulkRegenerateTest {
     mockMvc.perform(revokeCaReadAccess)
         .andExpect(status().isNoContent());
 
-    assertThat(credentialDataService.findAllByName("/cert-to-regenerate").size(), equalTo(2));
-    assertThat(credentialDataService.findAllByName("/cert-to-regenerate-as-well").size(), equalTo(1));
+    assertThat(credentialVersionDataService.findAllByName("/cert-to-regenerate").size(), equalTo(2));
+    assertThat(credentialVersionDataService.findAllByName("/cert-to-regenerate-as-well").size(), equalTo(1));
 
     MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
         .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
@@ -181,8 +181,8 @@ public class BulkRegenerateTest {
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.error", IsEqual.equalTo("The request could not be completed because the credential does not exist or you do not have sufficient authorization.")));
 
-    assertThat(credentialDataService.findAllByName("/cert-to-regenerate").size(), equalTo(2));
-    assertThat(credentialDataService.findAllByName("/cert-to-regenerate-as-well").size(), equalTo(1));
+    assertThat(credentialVersionDataService.findAllByName("/cert-to-regenerate").size(), equalTo(2));
+    assertThat(credentialVersionDataService.findAllByName("/cert-to-regenerate-as-well").size(), equalTo(1));
   }
 
   @Test
@@ -211,8 +211,8 @@ public class BulkRegenerateTest {
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.error", IsEqual.equalTo("The request could not be completed because the credential does not exist or you do not have sufficient authorization.")));
 
-    assertThat(credentialDataService.findAllByName("/cert-to-regenerate").size(), equalTo(2));
-    assertThat(credentialDataService.findAllByName("/cert-to-regenerate-as-well").size(), equalTo(1));
+    assertThat(credentialVersionDataService.findAllByName("/cert-to-regenerate").size(), equalTo(2));
+    assertThat(credentialVersionDataService.findAllByName("/cert-to-regenerate-as-well").size(), equalTo(1));
   }
 
   @Test
@@ -270,8 +270,8 @@ public class BulkRegenerateTest {
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.error", IsEqual.equalTo("The request could not be completed because the credential does not exist or you do not have sufficient authorization.")));
 
-    assertThat(credentialDataService.findAllByName("/cert-to-regenerate").size(), equalTo(2));
-    assertThat(credentialDataService.findAllByName("/cert-to-regenerate-as-well").size(), equalTo(1));
+    assertThat(credentialVersionDataService.findAllByName("/cert-to-regenerate").size(), equalTo(2));
+    assertThat(credentialVersionDataService.findAllByName("/cert-to-regenerate-as-well").size(), equalTo(1));
   }
 
   @Test

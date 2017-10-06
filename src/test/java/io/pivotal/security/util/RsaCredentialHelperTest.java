@@ -1,6 +1,6 @@
 package io.pivotal.security.util;
 
-import io.pivotal.security.entity.RsaCredentialData;
+import io.pivotal.security.entity.RsaCredentialVersion;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -12,7 +12,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 public class RsaCredentialHelperTest {
   @Test
   public void getKeyLength_returnsLengthOfPublicKey() {
-    RsaCredentialData rsaCredentialData = new RsaCredentialData("testRsa");
+    RsaCredentialVersion rsaCredentialData = new RsaCredentialVersion("testRsa");
     String publicKey = "-----BEGIN PUBLIC KEY-----\n"
         + "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAoRIqdibiYHKZhyH91xYR\n"
         + "Tpz728+A8d/t2U2e8OIhNqI7pjh5uKnbmeoAXdZAbGN3TW7xArdMAUOSRhELH0Gc\n"
@@ -35,7 +35,7 @@ public class RsaCredentialHelperTest {
 
   @Test
   public void getKeyLength_whenPublicKeyIsNotSet_returnsZero() {
-    RsaCredentialData rsaCredentialData = new RsaCredentialData("testRsa");
+    RsaCredentialVersion rsaCredentialData = new RsaCredentialVersion("testRsa");
     RsaCredentialHelper rsaHelper = new RsaCredentialHelper(rsaCredentialData);
 
     assertThat(rsaHelper.getKeyLength(), equalTo(0));
@@ -43,7 +43,7 @@ public class RsaCredentialHelperTest {
 
   @Test(expected = RuntimeException.class)
   public void getKeyLength_whenPublicKeyIsInvalid_throwsException() {
-    RsaCredentialData rsaCredentialData = new RsaCredentialData("testRsa");
+    RsaCredentialVersion rsaCredentialData = new RsaCredentialVersion("testRsa");
     String publicKey = "This is a key that is obviously incorrect. Is it not?";
     rsaCredentialData.setPublicKey(publicKey);
     RsaCredentialHelper rsaHelper = new RsaCredentialHelper(rsaCredentialData);

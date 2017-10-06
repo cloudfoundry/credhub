@@ -1,7 +1,7 @@
 package io.pivotal.security.controller.v1.credential;
 
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.ValueCredential;
 import io.pivotal.security.helper.AuditingHelper;
@@ -57,7 +57,7 @@ public class CredentialsControllerErrorHandlingSetTest {
   private EventAuditRecordRepository eventAuditRecordRepository;
 
   @SpyBean
-  private CredentialDataService credentialDataService;
+  private CredentialVersionDataService credentialVersionDataService;
 
   private AuditingHelper auditingHelper;
   private MockMvc mockMvc;
@@ -77,7 +77,7 @@ public class CredentialsControllerErrorHandlingSetTest {
     ValueCredential valueCredential = new ValueCredential(CREDENTIAL_NAME);
     valueCredential.setEncryptor(encryptor);
     valueCredential.setValue(CREDENTIAL_VALUE);
-    doReturn(valueCredential).when(credentialDataService).findMostRecent(CREDENTIAL_NAME);
+    doReturn(valueCredential).when(credentialVersionDataService).findMostRecent(CREDENTIAL_NAME);
 
     final MockHttpServletRequestBuilder request = put("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -98,7 +98,7 @@ public class CredentialsControllerErrorHandlingSetTest {
 
   @Test
   public void whenTheTypeChanges_auditsTheFailure() throws Exception {
-    System.out.println("Most recent cred:" + credentialDataService.findMostRecent(CREDENTIAL_NAME));
+    System.out.println("Most recent cred:" + credentialVersionDataService.findMostRecent(CREDENTIAL_NAME));
     final MockHttpServletRequestBuilder setRequest = put("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
@@ -111,8 +111,8 @@ public class CredentialsControllerErrorHandlingSetTest {
 
     mockMvc.perform(setRequest).andDo(print());
 
-    credentialDataService.findMostRecent(CREDENTIAL_NAME).getUuid();
-    reset(credentialDataService);
+    credentialVersionDataService.findMostRecent(CREDENTIAL_NAME).getUuid();
+    reset(credentialVersionDataService);
 
     final MockHttpServletRequestBuilder updateRequest = put("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)

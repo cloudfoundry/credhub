@@ -16,29 +16,29 @@ import javax.persistence.SecondaryTable;
 @Entity
 @DiscriminatorValue("user")
 @SecondaryTable(
-    name = UserCredentialData.TABLE_NAME,
+    name = UserCredentialVersion.TABLE_NAME,
     pkJoinColumns = {@PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")}
 )
-public class UserCredentialData extends CredentialData<UserCredentialData> {
+public class UserCredentialVersion extends CredentialVersion<UserCredentialVersion> {
   public static final String TABLE_NAME = "user_credential";
   public static final String CREDENTIAL_TYPE = "user";
 
-  @Column(table = UserCredentialData.TABLE_NAME, length = 7000)
+  @Column(table = UserCredentialVersion.TABLE_NAME, length = 7000)
   private String username;
 
-  @Column(table = UserCredentialData.TABLE_NAME, length = 20)
+  @Column(table = UserCredentialVersion.TABLE_NAME, length = 20)
   private String salt;
 
   @OneToOne(cascade = CascadeType.ALL)
   @NotFound(action = NotFoundAction.IGNORE)
-  @JoinColumn(table = UserCredentialData.TABLE_NAME, name = "password_parameters_uuid")
+  @JoinColumn(table = UserCredentialVersion.TABLE_NAME, name = "password_parameters_uuid")
   private EncryptedValue encryptedGenerationParameters;
 
-  public UserCredentialData() {
+  public UserCredentialVersion() {
     this(null);
   }
 
-  public UserCredentialData(String name) {
+  public UserCredentialVersion(String name) {
     super(name);
   }
 
@@ -51,12 +51,12 @@ public class UserCredentialData extends CredentialData<UserCredentialData> {
     return username;
   }
 
-  public UserCredentialData setUsername(String username) {
+  public UserCredentialVersion setUsername(String username) {
     this.username = username;
     return this;
   }
 
-  public UserCredentialData setSalt(String salt) {
+  public UserCredentialVersion setSalt(String salt) {
     this.salt = salt;
     return this;
   }
@@ -65,7 +65,7 @@ public class UserCredentialData extends CredentialData<UserCredentialData> {
     return salt;
   }
 
-  public UserCredentialData setEncryptedGenerationParameters(
+  public UserCredentialVersion setEncryptedGenerationParameters(
       Encryption encryptedGenerationParameters) {
     if (this.encryptedGenerationParameters == null){
       this.encryptedGenerationParameters = new EncryptedValue();

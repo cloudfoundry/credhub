@@ -2,11 +2,11 @@ package io.pivotal.security.audit;
 
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.data.EventAuditRecordDataService;
 import io.pivotal.security.entity.EncryptionKeyCanary;
 import io.pivotal.security.entity.EventAuditRecord;
-import io.pivotal.security.entity.ValueCredentialData;
+import io.pivotal.security.entity.ValueCredentialVersion;
 import io.pivotal.security.exceptions.AuditSaveFailureException;
 import io.pivotal.security.repository.EncryptionKeyCanaryRepository;
 import io.pivotal.security.repository.EventAuditRecordRepository;
@@ -62,7 +62,7 @@ public class EventAuditLogServiceTest {
   private EventAuditRecordRepository eventAuditRecordRepository;
 
   @Autowired
-  private CredentialDataService credentialDataService;
+  private CredentialVersionDataService credentialVersionDataService;
 
   @SpyBean
   private TransactionManagerDelegate transactionManager;
@@ -85,7 +85,7 @@ public class EventAuditLogServiceTest {
   private UserContext userContext;
   private RequestUuid requestUuid;
   private List<EncryptionKeyCanary> canaries;
-  private ValueCredentialData entity;
+  private ValueCredentialVersion entity;
 
   @Before
   public void beforeEach() {
@@ -95,7 +95,7 @@ public class EventAuditLogServiceTest {
     userContext = mockUserContext(true);
     requestUuid = new RequestUuid(UUID.randomUUID());
 
-    entity = new ValueCredentialData("keyName");
+    entity = new ValueCredentialVersion("keyName");
     entity.setEncryptedValue("value".getBytes());
     entity.setNonce("nonce".getBytes());
   }
@@ -127,11 +127,11 @@ public class EventAuditLogServiceTest {
         eventAuditRecordParametersList -> {
           eventAuditRecordParametersList.add(parameters1);
           eventAuditRecordParametersList.add(parameters2);
-          return credentialDataService.save(entity);
+          return credentialVersionDataService.save(entity);
         }
     );
 
-    assertThat(credentialDataService.count(), equalTo(1L));
+    assertThat(credentialVersionDataService.count(), equalTo(1L));
     checkAuditRecords(newArrayList(parameters1, parameters2), true);
   }
 
@@ -155,7 +155,7 @@ public class EventAuditLogServiceTest {
       subject.auditEvents(requestUuid, userContext, eventAuditRecordParametersList -> {
         eventAuditRecordParametersList.add(parameters1);
         eventAuditRecordParametersList.add(parameters2);
-        return credentialDataService.save(entity);
+        return credentialVersionDataService.save(entity);
       });
     } finally {
       final ArgumentCaptor<TransactionStatus> captor = ArgumentCaptor.forClass(TransactionStatus.class);
@@ -164,7 +164,7 @@ public class EventAuditLogServiceTest {
       List<TransactionStatus> transactionStatuses = captor.getAllValues();
       assertThat(transactionStatuses.get(0).isCompleted(), equalTo(true));
 
-      assertThat(credentialDataService.count(), equalTo(0L));
+      assertThat(credentialVersionDataService.count(), equalTo(0L));
       assertThat(eventAuditRecordRepository.count(), equalTo(0L));
     }
   }
@@ -189,7 +189,7 @@ public class EventAuditLogServiceTest {
       subject.auditEvents(requestUuid, userContext, eventAuditRecordParametersList -> {
         eventAuditRecordParametersList.add(parameters1);
         eventAuditRecordParametersList.add(parameters2);
-        credentialDataService.save(entity);
+        credentialVersionDataService.save(entity);
 
         throw new RuntimeException("test");
       });
@@ -200,7 +200,7 @@ public class EventAuditLogServiceTest {
       List<TransactionStatus> transactionStatuses = captor.getAllValues();
       assertThat(transactionStatuses.get(1).isCompleted(), equalTo(true));
 
-      assertThat(credentialDataService.count(), equalTo(0L));
+      assertThat(credentialVersionDataService.count(), equalTo(0L));
       assertThat(eventAuditRecordRepository.count(), equalTo(0L));
     }
   }
@@ -220,13 +220,13 @@ public class EventAuditLogServiceTest {
       subject.auditEvents(requestUuid, userContext, eventAuditRecordParametersList -> {
         eventAuditRecordParametersList.add(parameters1);
         eventAuditRecordParametersList.add(parameters2);
-        credentialDataService.save(entity);
+        credentialVersionDataService.save(entity);
 
         throw new RuntimeException("controller method failed");
       });
     } finally {
       checkAuditRecords(newArrayList(parameters1, parameters2), false);
-      assertThat(credentialDataService.count(), equalTo(0L));
+      assertThat(credentialVersionDataService.count(), equalTo(0L));
     }
   }
 

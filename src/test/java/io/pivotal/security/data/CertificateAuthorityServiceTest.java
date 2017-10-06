@@ -28,7 +28,7 @@ public class CertificateAuthorityServiceTest {
   private static final String CREDENTIAL_NAME = "/expectedCredential";
   private static final String USER_NAME = "expectedUser";
   private CertificateAuthorityService certificateAuthorityService;
-  private CredentialDataService credentialDataService;
+  private CredentialVersionDataService credentialVersionDataService;
   private CertificateCredentialValue certificate;
   private CertificateCredential certificateCredential;
   private PermissionsDataService permissionService;
@@ -46,13 +46,13 @@ public class CertificateAuthorityServiceTest {
     when(permissionService.hasPermission(USER_NAME, CREDENTIAL_NAME, PermissionOperation.READ))
         .thenReturn(true);
 
-    credentialDataService = mock(CredentialDataService.class);
-    certificateAuthorityService = new CertificateAuthorityService(credentialDataService, permissionService);
+    credentialVersionDataService = mock(CredentialVersionDataService.class);
+    certificateAuthorityService = new CertificateAuthorityService(credentialVersionDataService, permissionService);
   }
 
   @Test
   public void findMostRecent_whenACaDoesNotExist_throwsException() {
-    when(credentialDataService.findMostRecent(any(String.class))).thenReturn(null);
+    when(credentialVersionDataService.findMostRecent(any(String.class))).thenReturn(null);
 
     try {
       certificateAuthorityService.findMostRecent(userContext, "any ca name");
@@ -63,7 +63,7 @@ public class CertificateAuthorityServiceTest {
 
   @Test
   public void findMostRecent_whenCaNameRefersToNonCa_throwsException() {
-    when(credentialDataService.findMostRecent(any(String.class))).thenReturn(mock(PasswordCredential.class));
+    when(credentialVersionDataService.findMostRecent(any(String.class))).thenReturn(mock(PasswordCredential.class));
     when(permissionService.hasPermission(USER_NAME, "any non-ca name", PermissionOperation.READ))
         .thenReturn(true);
 
@@ -77,7 +77,7 @@ public class CertificateAuthorityServiceTest {
   @Test
   public void findMostRecent_givenExistingCa_returnsTheCa() {
     CertificateReader certificateReader = mock(CertificateReader.class);
-    when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(certificateCredential);
+    when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(certificateCredential);
     when(certificateCredential.getPrivateKey()).thenReturn("my-key");
     when(certificateCredential.getParsedCertificate()).thenReturn(certificateReader);
     when(certificateReader.isCa()).thenReturn(true);
@@ -89,7 +89,7 @@ public class CertificateAuthorityServiceTest {
 
   @Test
   public void findMostRecent_whenCredentialIsNotACa_throwsException() {
-    when(credentialDataService.findMostRecent("actually-a-password"))
+    when(credentialVersionDataService.findMostRecent("actually-a-password"))
         .thenReturn(new PasswordCredential());
 
     try {
@@ -104,7 +104,7 @@ public class CertificateAuthorityServiceTest {
     CertificateCredential notACertificateAuthority = mock(CertificateCredential.class);
     when(notACertificateAuthority.getParsedCertificate()).thenReturn(mock(CertificateReader.class));
     when(notACertificateAuthority.getCertificate()).thenReturn(SIMPLE_SELF_SIGNED_TEST_CERT);
-    when(credentialDataService.findMostRecent(CREDENTIAL_NAME))
+    when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME))
         .thenReturn(notACertificateAuthority);
 
 

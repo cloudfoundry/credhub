@@ -4,7 +4,7 @@ import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.constants.CredentialType;
 import io.pivotal.security.credential.CredentialValue;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.data.PermissionsDataService;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.CredentialFactory;
@@ -57,7 +57,7 @@ public class PermissionedCredentialServiceTest {
   private static final String USER = "Kirk";
 
   @Mock
-  private CredentialDataService credentialDataService;
+  private CredentialVersionDataService credentialVersionDataService;
 
   @Mock
   private PermissionsDataService permissionsDataService;
@@ -91,7 +91,7 @@ public class PermissionedCredentialServiceTest {
     initMocks(this);
 
     subject = new PermissionedCredentialService(
-        credentialDataService,
+        credentialVersionDataService,
         permissionsDataService,
         permissionService,
         credentialFactory,
@@ -116,13 +116,13 @@ public class PermissionedCredentialServiceTest {
         .thenReturn(true);
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, WRITE))
         .thenReturn(true);
-    when(credentialDataService.findByUuid(UUID_STRING))
+    when(credentialVersionDataService.findByUuid(UUID_STRING))
         .thenReturn(existingCredential);
   }
 
   @Test(expected = ParameterizedValidationException.class)
   public void save_whenGivenTypeAndExistingTypeDontMatch_throwsException() {
-    when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
+    when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
     subject.save(
         CREDENTIAL_NAME,
         "user",
@@ -138,7 +138,7 @@ public class PermissionedCredentialServiceTest {
 
   @Test
   public void save_whenThereIsAnExistingCredentialAndOverwriteIsFalse_logsCREDENTIAL_ACCESS() {
-    when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
+    when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
     subject.save(
         CREDENTIAL_NAME,
         "password",
@@ -157,8 +157,8 @@ public class PermissionedCredentialServiceTest {
 
   @Test
   public void save_whenThereIsAnExistingCredentialAndOverwriteIsTrue_logsCREDENTIAL_UPDATE() {
-    when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
-    when(credentialDataService.save(any(Credential.class)))
+    when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
+    when(credentialVersionDataService.save(any(Credential.class)))
         .thenReturn(new PasswordCredential().setEncryptor(encryptor));
 
     subject.save(
@@ -179,8 +179,8 @@ public class PermissionedCredentialServiceTest {
 
   @Test
   public void save_whenThereIsANewCredentialAndSelfUpdatingAcls_throwsException() {
-    when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(null);
-    when(credentialDataService.save(any(Credential.class)))
+    when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(null);
+    when(credentialVersionDataService.save(any(Credential.class)))
         .thenReturn(new PasswordCredential().setEncryptor(encryptor));
     when(permissionCheckingService
         .userAllowedToOperateOnActor(userContext, "test-user"))
@@ -207,7 +207,7 @@ public class PermissionedCredentialServiceTest {
 
   @Test
   public void save_whenThereIsAnExistingCredential_shouldCallVerifyCredentialWritePermission() {
-    when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
+    when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
     subject.save(
         CREDENTIAL_NAME,
         "password",
@@ -226,7 +226,7 @@ public class PermissionedCredentialServiceTest {
 
   @Test
   public void save_whenThereIsNoExistingCredential_shouldNotCallVerifyCredentialWritePermission() {
-    when(credentialDataService.save(any(Credential.class)))
+    when(credentialVersionDataService.save(any(Credential.class)))
         .thenReturn(new PasswordCredential().setEncryptor(encryptor));
     subject.save(
         CREDENTIAL_NAME,
@@ -246,7 +246,7 @@ public class PermissionedCredentialServiceTest {
 
   @Test
   public void save_whenThereIsAnExistingCredentialWithACEs_shouldCallVerifyAclWritePermission() {
-    when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
+    when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
     when(permissionCheckingService
         .hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE_ACL))
         .thenReturn(true);
@@ -273,7 +273,7 @@ public class PermissionedCredentialServiceTest {
 
   @Test
   public void save_whenThereIsAnExistingCredentialWithACEs_shouldThrowAnExceptionIfItLacksPermission() {
-    when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
+    when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
     when(permissionCheckingService
         .hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE_ACL))
         .thenReturn(false);
@@ -300,7 +300,7 @@ public class PermissionedCredentialServiceTest {
 
   @Test
   public void save_whenThereIsNoExistingCredential_shouldAddAceForTheCurrentUser() {
-    when(credentialDataService.save(any(Credential.class)))
+    when(credentialVersionDataService.save(any(Credential.class)))
         .thenReturn(new PasswordCredential().setEncryptor(encryptor));
     subject.save(
         CREDENTIAL_NAME,
@@ -324,9 +324,9 @@ public class PermissionedCredentialServiceTest {
 
   @Test
   public void save_whenThereIsAnExistingCredentialAndOverWriteIsTrue_shouldNotAddAceForTheCurrentUser() {
-    when(credentialDataService.save(any(Credential.class)))
+    when(credentialVersionDataService.save(any(Credential.class)))
         .thenReturn(new PasswordCredential().setEncryptor(encryptor));
-    when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
+    when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
 
     subject.save(
         CREDENTIAL_NAME,
@@ -345,7 +345,7 @@ public class PermissionedCredentialServiceTest {
 
   @Test
   public void save_whenWritingCredential_savesANewVersion() {
-    when(credentialDataService.save(any(Credential.class)))
+    when(credentialVersionDataService.save(any(Credential.class)))
         .thenReturn(new PasswordCredential().setEncryptor(encryptor));
     final PasswordCredential newVersion = new PasswordCredential();
 
@@ -368,13 +368,13 @@ public class PermissionedCredentialServiceTest {
         auditRecordParameters
     );
 
-    verify(credentialDataService).save(newVersion);
+    verify(credentialVersionDataService).save(newVersion);
   }
 
   @Test
   public void save_whenOverwriteIsTrue_shouldSaveAccessControlEntries() {
     PasswordCredential credential = new PasswordCredential().setEncryptor(encryptor);
-    when(credentialDataService.save(any(Credential.class))).thenReturn(credential);
+    when(credentialVersionDataService.save(any(Credential.class))).thenReturn(credential);
 
     subject.save(
         CREDENTIAL_NAME,
@@ -395,7 +395,7 @@ public class PermissionedCredentialServiceTest {
   @Test
   public void save_whenOverwriteIsTrue_logsACL_UPDATE() {
     PasswordCredential credential = new PasswordCredential(CREDENTIAL_NAME).setEncryptor(encryptor);
-    when(credentialDataService.save(any(Credential.class))).thenReturn(credential);
+    when(credentialVersionDataService.save(any(Credential.class))).thenReturn(credential);
     when(permissionCheckingService
         .userAllowedToOperateOnActor(userContext, "Spock")).thenReturn(true);
     when(permissionCheckingService
@@ -507,7 +507,7 @@ public class PermissionedCredentialServiceTest {
 
   @Test
   public void getCredentialVersion_whenTheVersionDoesNotExist_throwsException() {
-    when(credentialDataService.findByUuid(UUID_STRING))
+    when(credentialVersionDataService.findByUuid(UUID_STRING))
         .thenReturn(null);
 
     try {
@@ -541,7 +541,7 @@ public class PermissionedCredentialServiceTest {
         .thenReturn(true);
 
     ArrayList<String> expectedCertificates = newArrayList("expectedCertificate");
-    when(credentialDataService.findAllCertificateCredentialsByCaName(CREDENTIAL_NAME))
+    when(credentialVersionDataService.findAllCertificateCredentialsByCaName(CREDENTIAL_NAME))
         .thenReturn(expectedCertificates);
 
     List<String> foundCertificates = subject

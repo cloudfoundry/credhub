@@ -4,15 +4,15 @@ import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 
 @Entity
-@DiscriminatorValue(ValueCredentialData.CREDENTIAL_TYPE)
-public class ValueCredentialData extends CredentialData<ValueCredentialData> {
+@DiscriminatorValue(ValueCredentialVersion.CREDENTIAL_TYPE)
+public class ValueCredentialVersion extends CredentialVersion<ValueCredentialVersion> {
 
   public static final String CREDENTIAL_TYPE = "value";
 
-  public ValueCredentialData() {
+  public ValueCredentialVersion() {
   }
 
-  public ValueCredentialData(String name) {
+  public ValueCredentialVersion(String name) {
     super(name);
   }
 

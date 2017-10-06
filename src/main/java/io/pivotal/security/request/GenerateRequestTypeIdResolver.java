@@ -4,11 +4,11 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.DatabindContext;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
-import io.pivotal.security.entity.CertificateCredentialData;
-import io.pivotal.security.entity.PasswordCredentialData;
-import io.pivotal.security.entity.RsaCredentialData;
-import io.pivotal.security.entity.SshCredentialData;
-import io.pivotal.security.entity.UserCredentialData;
+import io.pivotal.security.entity.CertificateCredentialVersion;
+import io.pivotal.security.entity.PasswordCredentialVersion;
+import io.pivotal.security.entity.RsaCredentialVersion;
+import io.pivotal.security.entity.SshCredentialVersion;
+import io.pivotal.security.entity.UserCredentialVersion;
 
 import java.io.IOException;
 
@@ -40,19 +40,19 @@ public class GenerateRequestTypeIdResolver implements TypeIdResolver {
     Class<?> subType = DefaultCredentialGenerateRequest.class;
 
     switch (id.toLowerCase()) {
-      case CertificateCredentialData.CREDENTIAL_TYPE:
+      case CertificateCredentialVersion.CREDENTIAL_TYPE:
         subType = CertificateGenerateRequest.class;
         break;
-      case PasswordCredentialData.CREDENTIAL_TYPE:
+      case PasswordCredentialVersion.CREDENTIAL_TYPE:
         subType = PasswordGenerateRequest.class;
         break;
-      case RsaCredentialData.CREDENTIAL_TYPE:
+      case RsaCredentialVersion.CREDENTIAL_TYPE:
         subType = RsaGenerateRequest.class;
         break;
-      case SshCredentialData.CREDENTIAL_TYPE:
+      case SshCredentialVersion.CREDENTIAL_TYPE:
         subType = SshGenerateRequest.class;
         break;
-      case UserCredentialData.CREDENTIAL_TYPE:
+      case UserCredentialVersion.CREDENTIAL_TYPE:
         subType = UserGenerateRequest.class;
         break;
     }

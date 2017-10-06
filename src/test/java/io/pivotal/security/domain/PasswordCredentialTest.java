@@ -1,6 +1,6 @@
 package io.pivotal.security.domain;
 
-import io.pivotal.security.entity.PasswordCredentialData;
+import io.pivotal.security.entity.PasswordCredentialVersion;
 import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.util.JsonObjectMapper;
@@ -28,7 +28,7 @@ public class PasswordCredentialTest {
   private static final String PASSWORD = "my-password";
 
   private PasswordCredential subject;
-  private PasswordCredentialData passwordCredentialData;
+  private PasswordCredentialVersion passwordCredentialData;
   private Encryptor encryptor;
   private UUID canaryUuid;
   private StringGenerationParameters generationParameters;
@@ -68,7 +68,7 @@ public class PasswordCredentialTest {
     when(encryptor.decrypt(parametersEncryption))
         .thenReturn(generationParametersJson);
 
-    passwordCredentialData = new PasswordCredentialData("/Foo");
+    passwordCredentialData = new PasswordCredentialVersion("/Foo");
     subject = new PasswordCredential(passwordCredentialData);
     subject.setEncryptor(encryptor);
   }

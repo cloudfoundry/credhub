@@ -5,7 +5,7 @@ import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.constants.CredentialType;
 import io.pivotal.security.credential.CredentialValue;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.data.PermissionsDataService;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.CredentialFactory;
@@ -35,7 +35,7 @@ import static io.pivotal.security.request.PermissionOperation.WRITE_ACL;
 @Service
 public class PermissionedCredentialService {
 
-  private final CredentialDataService credentialDataService;
+  private final CredentialVersionDataService credentialVersionDataService;
   private final PermissionsDataService permissionsDataService;
   private PermissionService permissionService;
   private final CredentialFactory credentialFactory;
@@ -43,12 +43,12 @@ public class PermissionedCredentialService {
 
   @Autowired
   public PermissionedCredentialService(
-      CredentialDataService credentialDataService,
+      CredentialVersionDataService credentialVersionDataService,
       PermissionsDataService permissionsDataService,
       PermissionService permissionService,
       CredentialFactory credentialFactory,
       PermissionCheckingService permissionCheckingService) {
-    this.credentialDataService = credentialDataService;
+    this.credentialVersionDataService = credentialVersionDataService;
     this.permissionsDataService = permissionsDataService;
     this.permissionService = permissionService;
     this.credentialFactory = credentialFactory;
@@ -66,7 +66,7 @@ public class PermissionedCredentialService {
       PermissionEntry currentUserPermissionEntry,
       List<EventAuditRecordParameters> auditRecordParameters
   ) {
-    Credential existingCredential = credentialDataService.findMostRecent(credentialName);
+    Credential existingCredential = credentialVersionDataService.findMostRecent(credentialName);
 
     boolean shouldWriteNewEntity = existingCredential == null || isOverwrite;
 
@@ -105,7 +105,7 @@ public class PermissionedCredentialService {
           credentialValue,
           existingCredential,
           generationParameters);
-      storedCredentialVersion = credentialDataService.save(newVersion);
+      storedCredentialVersion = credentialVersionDataService.save(newVersion);
 
       permissionsDataService.saveAccessControlEntries(
           storedCredentialVersion.getCredentialName(),
@@ -139,7 +139,7 @@ public class PermissionedCredentialService {
         .hasPermission(userContext.getAclUser(), credentialName, DELETE)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
-    return credentialDataService.delete(credentialName);
+    return credentialVersionDataService.delete(credentialName);
   }
 
   public List<Credential> findAllByName(UserContext userContext, String credentialName) {
@@ -148,7 +148,7 @@ public class PermissionedCredentialService {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
-    return credentialDataService.findAllByName(credentialName);
+    return credentialVersionDataService.findAllByName(credentialName);
   }
 
   public List<Credential> findNByName(UserContext userContext, String credentialName, Integer numberOfVersions) {
@@ -157,7 +157,7 @@ public class PermissionedCredentialService {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
-    return credentialDataService.findNByName(credentialName, numberOfVersions);
+    return credentialVersionDataService.findNByName(credentialName, numberOfVersions);
   }
 
   public Credential findByUuid(UserContext userContext, String credentialUUID, List<EventAuditRecordParameters> auditRecordParametersList) {
@@ -166,7 +166,7 @@ public class PermissionedCredentialService {
     );
     auditRecordParametersList.add(eventAuditRecordParameters);
 
-    Credential credential = credentialDataService.findByUuid(credentialUUID);
+    Credential credential = credentialVersionDataService.findByUuid(credentialUUID);
     if (credential == null) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
@@ -177,7 +177,7 @@ public class PermissionedCredentialService {
         .hasPermission(userContext.getAclUser(), credentialName, READ)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
-    return credentialDataService.findByUuid(credentialUUID);
+    return credentialVersionDataService.findByUuid(credentialUUID);
   }
 
   public List<String> findAllCertificateCredentialsByCaName(UserContext userContext, String caName) {
@@ -186,22 +186,22 @@ public class PermissionedCredentialService {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
-    return credentialDataService.findAllCertificateCredentialsByCaName(caName);
+    return credentialVersionDataService.findAllCertificateCredentialsByCaName(caName);
   }
 
   public List<FindCredentialResult> findStartingWithPath(String path) {
-    return credentialDataService.findStartingWithPath(path);
+    return credentialVersionDataService.findStartingWithPath(path);
   }
 
   public List<String> findAllPaths() {
-    return credentialDataService.findAllPaths();
+    return credentialVersionDataService.findAllPaths();
   }
 
   public List<FindCredentialResult> findContainingName(String name) {
-    return credentialDataService.findContainingName(name);
+    return credentialVersionDataService.findContainingName(name);
   }
 
   public Credential findMostRecent(String credentialName) {
-    return credentialDataService.findMostRecent(credentialName);
+    return credentialVersionDataService.findMostRecent(credentialName);
   }
 }

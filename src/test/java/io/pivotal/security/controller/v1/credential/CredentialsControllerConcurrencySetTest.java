@@ -1,7 +1,7 @@
 package io.pivotal.security.controller.v1.credential;
 
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.ValueCredential;
@@ -54,7 +54,7 @@ public class CredentialsControllerConcurrencySetTest {
   private WebApplicationContext webApplicationContext;
 
   @SpyBean
-  private CredentialDataService credentialDataService;
+  private CredentialVersionDataService credentialVersionDataService;
 
   @Autowired
   private Encryptor encryptor;
@@ -155,10 +155,10 @@ public class CredentialsControllerConcurrencySetTest {
 
     doReturn(null)
         .doReturn(valueCredential)
-        .when(credentialDataService).findMostRecent(anyString());
+        .when(credentialVersionDataService).findMostRecent(anyString());
 
     doThrow(new DataIntegrityViolationException("we already have one of those"))
-        .when(credentialDataService).save(any(Credential.class));
+        .when(credentialVersionDataService).save(any(Credential.class));
 
     final MockHttpServletRequestBuilder put = put("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -177,6 +177,6 @@ public class CredentialsControllerConcurrencySetTest {
         .andExpect(jsonPath("$.value").value(credentialValue))
         .andExpect(jsonPath("$.id").value(uuid.toString()));
 
-    verify(credentialDataService).save(any(Credential.class));
+    verify(credentialVersionDataService).save(any(Credential.class));
   }
 }
