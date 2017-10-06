@@ -188,13 +188,13 @@ public class CredentialDataService {
         " select name.name, credential_version.version_created_at from ("
             + "   select"
             + "     max(version_created_at) as version_created_at,"
-            + "     credential_name_uuid"
-            + "   from credential_version group by credential_name_uuid"
+            + "     credential_uuid"
+            + "   from credential_version group by credential_uuid"
             + " ) as credential_version inner join ("
             + "   select * from credential"
             + "     where lower(name) like lower(?)"
             + " ) as name"
-            + " on credential_version.credential_name_uuid = name.uuid"
+            + " on credential_version.credential_uuid = name.uuid"
             + " order by version_created_at desc",
         new Object[]{nameLike},
         (rowSet, rowNum) -> {
@@ -210,7 +210,7 @@ public class CredentialDataService {
   private List<String> findCertificateNamesByCaName(String caName){
     String query = "select distinct credential.name from "
         + "credential, credential_version, certificate_credential "
-        + "where credential.uuid=credential_version.credential_name_uuid "
+        + "where credential.uuid=credential_version.credential_uuid "
         + "and credential_version.uuid=certificate_credential.uuid "
         + "and lower(certificate_credential.ca_name) "
         + "like lower(?)";

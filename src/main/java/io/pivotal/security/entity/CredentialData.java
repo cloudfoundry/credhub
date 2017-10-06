@@ -56,7 +56,7 @@ public abstract class CredentialData<Z extends CredentialData> {
   private Instant versionCreatedAt;
 
   @ManyToOne
-  @JoinColumn(name = "credential_name_uuid", nullable = false)
+  @JoinColumn(name = "credential_uuid", nullable = false)
   private CredentialName credentialName;
 
   public CredentialData(CredentialName name) {

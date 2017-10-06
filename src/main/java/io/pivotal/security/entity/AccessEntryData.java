@@ -29,7 +29,7 @@ public class AccessEntryData {
   private UUID uuid;
 
   @ManyToOne
-  @JoinColumn(name = "credential_name_uuid", nullable = false)
+  @JoinColumn(name = "credential_uuid", nullable = false)
   private CredentialName credentialName;
 
   @Column(nullable = false)
