@@ -1,27 +1,27 @@
 package io.pivotal.security.domain;
 
 import io.pivotal.security.credential.CertificateCredentialValue;
-import io.pivotal.security.entity.CertificateCredentialVersion;
+import io.pivotal.security.entity.CertificateCredentialVersionData;
 import io.pivotal.security.util.CertificateReader;
 import org.apache.commons.lang3.StringUtils;
 
 public class CertificateCredential extends Credential<CertificateCredential> {
 
-  private CertificateCredentialVersion delegate;
+  private CertificateCredentialVersionData delegate;
   private CertificateReader parsedCertificate;
 
-  public CertificateCredential(CertificateCredentialVersion delegate) {
+  public CertificateCredential(CertificateCredentialVersionData delegate) {
     super(delegate);
     this.delegate = delegate;
     this.setCertificate(delegate.getCertificate());
   }
 
   public CertificateCredential(String name) {
-    this(new CertificateCredentialVersion(name));
+    this(new CertificateCredentialVersionData(name));
   }
 
   public CertificateCredential() {
-    this(new CertificateCredentialVersion());
+    this(new CertificateCredentialVersionData());
   }
 
   public CertificateCredential(CertificateCredentialValue certificate, Encryptor encryptor) {

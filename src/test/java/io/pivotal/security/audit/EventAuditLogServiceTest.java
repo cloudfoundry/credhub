@@ -6,7 +6,7 @@ import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.data.EventAuditRecordDataService;
 import io.pivotal.security.entity.EncryptionKeyCanary;
 import io.pivotal.security.entity.EventAuditRecord;
-import io.pivotal.security.entity.ValueCredentialVersion;
+import io.pivotal.security.entity.ValueCredentialVersionData;
 import io.pivotal.security.exceptions.AuditSaveFailureException;
 import io.pivotal.security.repository.EncryptionKeyCanaryRepository;
 import io.pivotal.security.repository.EventAuditRecordRepository;
@@ -85,7 +85,7 @@ public class EventAuditLogServiceTest {
   private UserContext userContext;
   private RequestUuid requestUuid;
   private List<EncryptionKeyCanary> canaries;
-  private ValueCredentialVersion entity;
+  private ValueCredentialVersionData entity;
 
   @Before
   public void beforeEach() {
@@ -95,7 +95,7 @@ public class EventAuditLogServiceTest {
     userContext = mockUserContext(true);
     requestUuid = new RequestUuid(UUID.randomUUID());
 
-    entity = new ValueCredentialVersion("keyName");
+    entity = new ValueCredentialVersionData("keyName");
     entity.setEncryptedValue("value".getBytes());
     entity.setNonce("nonce".getBytes());
   }

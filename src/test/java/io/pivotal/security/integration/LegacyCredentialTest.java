@@ -4,7 +4,7 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.ValueCredential;
-import io.pivotal.security.entity.ValueCredentialVersion;
+import io.pivotal.security.entity.ValueCredentialVersionData;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,7 +50,7 @@ public class LegacyCredentialTest {
   @Before
   public void setup() throws Exception {
     CREDENTIAL_NAME = "/bob";
-    ValueCredentialVersion valueCredentialData = new ValueCredentialVersion(CREDENTIAL_NAME);
+    ValueCredentialVersionData valueCredentialData = new ValueCredentialVersionData(CREDENTIAL_NAME);
     ValueCredential noAclsSecret = new ValueCredential(valueCredentialData);
     noAclsSecret.setEncryptor(encryptor);
     noAclsSecret.setValue("bob's value");

@@ -5,13 +5,13 @@ import com.fasterxml.jackson.databind.DatabindContext;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
-import io.pivotal.security.entity.CertificateCredentialVersion;
-import io.pivotal.security.entity.JsonCredentialVersion;
-import io.pivotal.security.entity.PasswordCredentialVersion;
-import io.pivotal.security.entity.RsaCredentialVersion;
-import io.pivotal.security.entity.SshCredentialVersion;
-import io.pivotal.security.entity.UserCredentialVersion;
-import io.pivotal.security.entity.ValueCredentialVersion;
+import io.pivotal.security.entity.CertificateCredentialVersionData;
+import io.pivotal.security.entity.JsonCredentialVersionData;
+import io.pivotal.security.entity.PasswordCredentialVersionData;
+import io.pivotal.security.entity.RsaCredentialVersionData;
+import io.pivotal.security.entity.SshCredentialVersionData;
+import io.pivotal.security.entity.UserCredentialVersionData;
+import io.pivotal.security.entity.ValueCredentialVersionData;
 
 import java.io.IOException;
 
@@ -44,25 +44,25 @@ public class SetRequestTypeIdResolver implements TypeIdResolver {
     id = id.toLowerCase();
 
     switch (id) {
-      case CertificateCredentialVersion.CREDENTIAL_TYPE:
+      case CertificateCredentialVersionData.CREDENTIAL_TYPE:
         subType = CertificateSetRequest.class;
         break;
-      case ValueCredentialVersion.CREDENTIAL_TYPE:
+      case ValueCredentialVersionData.CREDENTIAL_TYPE:
         subType = ValueSetRequest.class;
         break;
-      case JsonCredentialVersion.CREDENTIAL_TYPE:
+      case JsonCredentialVersionData.CREDENTIAL_TYPE:
         subType = JsonSetRequest.class;
         break;
-      case PasswordCredentialVersion.CREDENTIAL_TYPE:
+      case PasswordCredentialVersionData.CREDENTIAL_TYPE:
         subType = PasswordSetRequest.class;
         break;
-      case RsaCredentialVersion.CREDENTIAL_TYPE:
+      case RsaCredentialVersionData.CREDENTIAL_TYPE:
         subType = RsaSetRequest.class;
         break;
-      case SshCredentialVersion.CREDENTIAL_TYPE:
+      case SshCredentialVersionData.CREDENTIAL_TYPE:
         subType = SshSetRequest.class;
         break;
-      case UserCredentialVersion.CREDENTIAL_TYPE:
+      case UserCredentialVersionData.CREDENTIAL_TYPE:
         subType = UserSetRequest.class;
         break;
       default:

@@ -4,15 +4,15 @@ import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 
 @Entity
-@DiscriminatorValue(JsonCredentialVersion.CREDENTIAL_TYPE)
-public class JsonCredentialVersion extends CredentialVersion<JsonCredentialVersion> {
+@DiscriminatorValue(JsonCredentialVersionData.CREDENTIAL_TYPE)
+public class JsonCredentialVersionData extends CredentialVersionData<JsonCredentialVersionData> {
 
   public static final String CREDENTIAL_TYPE = "json";
 
-  public JsonCredentialVersion() {
+  public JsonCredentialVersionData() {
   }
 
-  public JsonCredentialVersion(String name) {
+  public JsonCredentialVersionData(String name) {
     super(name);
   }
 

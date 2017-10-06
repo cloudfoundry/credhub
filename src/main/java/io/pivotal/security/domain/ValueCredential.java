@@ -1,23 +1,23 @@
 package io.pivotal.security.domain;
 
 import io.pivotal.security.credential.StringCredentialValue;
-import io.pivotal.security.entity.ValueCredentialVersion;
+import io.pivotal.security.entity.ValueCredentialVersionData;
 
 public class ValueCredential extends Credential<ValueCredential> {
 
-  private ValueCredentialVersion delegate;
+  private ValueCredentialVersionData delegate;
 
-  public ValueCredential(ValueCredentialVersion delegate) {
+  public ValueCredential(ValueCredentialVersionData delegate) {
     super(delegate);
     this.delegate = delegate;
   }
 
   public ValueCredential(String name) {
-    this(new ValueCredentialVersion(name));
+    this(new ValueCredentialVersionData(name));
   }
 
   public ValueCredential() {
-    this(new ValueCredentialVersion());
+    this(new ValueCredentialVersionData());
   }
 
   public ValueCredential(StringCredentialValue value, Encryptor encryptor) {

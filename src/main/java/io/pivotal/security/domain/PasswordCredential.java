@@ -1,7 +1,7 @@
 package io.pivotal.security.domain;
 
 import io.pivotal.security.credential.StringCredentialValue;
-import io.pivotal.security.entity.PasswordCredentialVersion;
+import io.pivotal.security.entity.PasswordCredentialVersionData;
 import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.util.JsonObjectMapper;
@@ -11,22 +11,22 @@ import java.io.IOException;
 
 public class PasswordCredential extends Credential<PasswordCredential> {
 
-  private PasswordCredentialVersion delegate;
+  private PasswordCredentialVersionData delegate;
   private String password;
   private JsonObjectMapper jsonObjectMapper;
 
-  public PasswordCredential(PasswordCredentialVersion delegate) {
+  public PasswordCredential(PasswordCredentialVersionData delegate) {
     super(delegate);
     this.delegate = delegate;
     jsonObjectMapper = new JsonObjectMapper();
   }
 
   public PasswordCredential(String name) {
-    this(new PasswordCredentialVersion(name));
+    this(new PasswordCredentialVersionData(name));
   }
 
   public PasswordCredential() {
-    this(new PasswordCredentialVersion());
+    this(new PasswordCredentialVersionData());
   }
 
   public PasswordCredential(

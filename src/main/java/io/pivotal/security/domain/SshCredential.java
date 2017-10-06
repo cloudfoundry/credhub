@@ -1,24 +1,24 @@
 package io.pivotal.security.domain;
 
 import io.pivotal.security.credential.SshCredentialValue;
-import io.pivotal.security.entity.SshCredentialVersion;
+import io.pivotal.security.entity.SshCredentialVersionData;
 import io.pivotal.security.util.SshPublicKeyParser;
 
 public class SshCredential extends Credential<SshCredential> {
 
-  private SshCredentialVersion delegate;
+  private SshCredentialVersionData delegate;
 
-  public SshCredential(SshCredentialVersion delegate) {
+  public SshCredential(SshCredentialVersionData delegate) {
     super(delegate);
     this.delegate = delegate;
   }
 
   public SshCredential(String name) {
-    this(new SshCredentialVersion(name));
+    this(new SshCredentialVersionData(name));
   }
 
   public SshCredential() {
-    this(new SshCredentialVersion());
+    this(new SshCredentialVersionData());
   }
 
   public SshCredential(SshCredentialValue sshValue, Encryptor encryptor) {

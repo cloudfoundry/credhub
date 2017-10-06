@@ -1,12 +1,12 @@
 package io.pivotal.security.domain;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.pivotal.security.entity.CertificateCredentialVersion;
-import io.pivotal.security.entity.CredentialVersion;
-import io.pivotal.security.entity.PasswordCredentialVersion;
-import io.pivotal.security.entity.RsaCredentialVersion;
-import io.pivotal.security.entity.SshCredentialVersion;
-import io.pivotal.security.entity.ValueCredentialVersion;
+import io.pivotal.security.entity.CertificateCredentialVersionData;
+import io.pivotal.security.entity.CredentialVersionData;
+import io.pivotal.security.entity.PasswordCredentialVersionData;
+import io.pivotal.security.entity.RsaCredentialVersionData;
+import io.pivotal.security.entity.SshCredentialVersionData;
+import io.pivotal.security.entity.ValueCredentialVersionData;
 import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
@@ -67,7 +67,7 @@ public class CredentialRotationTest {
 
   @Test
   public void rotate_givenCertificateCredential_reEncryptsWithActiveKey() {
-    CertificateCredentialVersion certificateCredentialData = new CertificateCredentialVersion("some-name");
+    CertificateCredentialVersionData certificateCredentialData = new CertificateCredentialVersionData("some-name");
     CertificateCredential credential = new CertificateCredential(certificateCredentialData);
 
     assertRotation(credential, certificateCredentialData);
@@ -75,7 +75,7 @@ public class CredentialRotationTest {
 
   @Test
   public void rotate_givenSshCredential_reEncryptsWithActiveKey() {
-    SshCredentialVersion sshCredentialData = new SshCredentialVersion("ssh-key");
+    SshCredentialVersionData sshCredentialData = new SshCredentialVersionData("ssh-key");
     SshCredential credential = new SshCredential(sshCredentialData);
 
     assertRotation(credential, sshCredentialData);
@@ -83,7 +83,7 @@ public class CredentialRotationTest {
 
   @Test
   public void rotate_givenRsaCredential_reEncryptsWithActiveKey() {
-    RsaCredentialVersion rsaCredentialData = new RsaCredentialVersion("rsa key");
+    RsaCredentialVersionData rsaCredentialData = new RsaCredentialVersionData("rsa key");
     RsaCredential credential = new RsaCredential(rsaCredentialData);
 
     assertRotation(credential, rsaCredentialData);
@@ -91,7 +91,7 @@ public class CredentialRotationTest {
 
   @Test
   public void rotate_givenValueCredential_reEncryptsWithActiveKey() {
-    ValueCredentialVersion valueCredentialData = new ValueCredentialVersion("value key");
+    ValueCredentialVersionData valueCredentialData = new ValueCredentialVersionData("value key");
     ValueCredential credential = new ValueCredential(valueCredentialData);
 
     assertRotation(credential, valueCredentialData);
@@ -99,7 +99,7 @@ public class CredentialRotationTest {
 
   @Test
   public void rotate_givenPasswordCredential_reEncryptsPasswordAndParametersWithActiveKey() throws Exception {
-    PasswordCredentialVersion passwordCredentialData = new PasswordCredentialVersion("some-name");
+    PasswordCredentialVersionData passwordCredentialData = new PasswordCredentialVersionData("some-name");
     passwordCredentialData.setEncryptionKeyUuid(oldEncryptionKeyUuid);
     passwordCredentialData.setEncryptedValue("old-encrypted-value".getBytes());
     passwordCredentialData.setNonce("old-nonce".getBytes());
@@ -132,7 +132,7 @@ public class CredentialRotationTest {
         equalTo("new-nonce-parameters".getBytes()));
   }
 
-  private void assertRotation(Credential credential, CredentialVersion delegate) {
+  private void assertRotation(Credential credential, CredentialVersionData delegate) {
     credential.setEncryptor(encryptor);
     delegate.setEncryptionKeyUuid(oldEncryptionKeyUuid);
     delegate.setEncryptedValue("old-encrypted-value".getBytes());

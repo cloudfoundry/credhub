@@ -11,10 +11,10 @@ import io.pivotal.security.domain.CertificateCredential;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.PasswordCredential;
-import io.pivotal.security.entity.CertificateCredentialVersion;
+import io.pivotal.security.entity.CertificateCredentialVersionData;
 import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.entity.EncryptionKeyCanary;
-import io.pivotal.security.entity.PasswordCredentialVersion;
+import io.pivotal.security.entity.PasswordCredentialVersionData;
 import io.pivotal.security.repository.CredentialVersionRepository;
 import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.service.Encryption;
@@ -200,8 +200,8 @@ public class EncryptionKeyRotatorTest {
 
     CredentialName credentialName = credentialNameDataService.find(passwordName);
 
-    final PasswordCredentialVersion firstEncryption =
-        (PasswordCredentialVersion) credentialVersionRepository
+    final PasswordCredentialVersionData firstEncryption =
+        (PasswordCredentialVersionData) credentialVersionRepository
             .findAllByCredentialNameUuidOrderByVersionCreatedAtDesc(credentialName.getUuid())
             .get(0);
 
@@ -212,8 +212,8 @@ public class EncryptionKeyRotatorTest {
 
     encryptionKeyRotator.rotate();
 
-    final PasswordCredentialVersion secondEncryption =
-        (PasswordCredentialVersion) credentialVersionRepository
+    final PasswordCredentialVersionData secondEncryption =
+        (PasswordCredentialVersionData) credentialVersionRepository
             .findAllByCredentialNameUuidOrderByVersionCreatedAtDesc(credentialName.getUuid())
             .get(0);
     assertThat(firstEncryptedValue,
@@ -260,8 +260,8 @@ public class EncryptionKeyRotatorTest {
 
     encryptionKeyRotator.rotate();
 
-    final CertificateCredentialVersion secondEncryption =
-        (CertificateCredentialVersion) credentialVersionRepository
+    final CertificateCredentialVersionData secondEncryption =
+        (CertificateCredentialVersionData) credentialVersionRepository
             .findAllByCredentialNameUuidOrderByVersionCreatedAtDesc(credentialName.getUuid())
             .get(0);
     assertThat(firstEncryption, not(equalTo(secondEncryption.getEncryptedValue())));
@@ -303,7 +303,7 @@ public class EncryptionKeyRotatorTest {
     passwordName = "/test-password";
     final Encryption credentialEncryption = encryptionService
         .encrypt(oldCanary.getUuid(), oldKey, "test-password-plaintext");
-    PasswordCredentialVersion passwordCredentialData = new PasswordCredentialVersion(passwordName);
+    PasswordCredentialVersionData passwordCredentialData = new PasswordCredentialVersionData(passwordName);
     passwordCredentialData.setValuesFromEncryption(credentialEncryption);
 
     StringGenerationParameters parameters = new StringGenerationParameters();
@@ -318,7 +318,7 @@ public class EncryptionKeyRotatorTest {
   }
 
   private void createCredentialWithUnknownKey() {
-    CertificateCredentialVersion certificateCredentialData2 = new CertificateCredentialVersion(
+    CertificateCredentialVersionData certificateCredentialData2 = new CertificateCredentialVersionData(
         "/unknown-key");
     credentialWithUnknownKey = new CertificateCredential(certificateCredentialData2);
     credentialWithUnknownKey
@@ -338,8 +338,8 @@ public class EncryptionKeyRotatorTest {
   private void createCertificateWithOldKey(Key oldKey) throws Exception {
     final Encryption encryption = encryptionService
         .encrypt(oldCanary.getUuid(), oldKey, "old-certificate-private-key");
-    CertificateCredentialVersion certificateCredentialData1 =
-        new CertificateCredentialVersion("/old-key");
+    CertificateCredentialVersionData certificateCredentialData1 =
+        new CertificateCredentialVersionData("/old-key");
     certificateCredentialData1.setValuesFromEncryption(encryption);
     credentialWithOldKey = new CertificateCredential(certificateCredentialData1);
     credentialVersionDataService.save(credentialWithOldKey);

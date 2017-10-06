@@ -13,13 +13,13 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 @RunWith(JUnit4.class)
-public class CredentialVersionTest {
+public class CredentialVersionDataTest {
 
-  private PasswordCredentialVersion passwordCredentialData;
+  private PasswordCredentialVersionData passwordCredentialData;
 
   @Before
   public void beforeEach() {
-    passwordCredentialData = new PasswordCredentialVersion("/Picard");
+    passwordCredentialData = new PasswordCredentialVersionData("/Picard");
   }
 
   @Test

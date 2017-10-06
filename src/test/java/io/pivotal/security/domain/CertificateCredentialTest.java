@@ -1,7 +1,7 @@
 package io.pivotal.security.domain;
 
 import io.pivotal.security.credential.CertificateCredentialValue;
-import io.pivotal.security.entity.CertificateCredentialVersion;
+import io.pivotal.security.entity.CertificateCredentialVersionData;
 import io.pivotal.security.service.Encryption;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,7 +20,7 @@ import static org.mockito.Mockito.when;
 public class CertificateCredentialTest {
 
   private CertificateCredential subject;
-  private CertificateCredentialVersion certificateCredentialData;
+  private CertificateCredentialVersionData certificateCredentialData;
 
   private UUID canaryUuid;
   private Encryptor encryptor;
@@ -41,7 +41,7 @@ public class CertificateCredentialTest {
         .thenReturn(encryption);
     when(encryptor.decrypt(encryption)).thenReturn("my-priv");
 
-    certificateCredentialData = new CertificateCredentialVersion("/Foo");
+    certificateCredentialData = new CertificateCredentialVersionData("/Foo");
     subject = new CertificateCredential(certificateCredentialData)
         .setEncryptor(encryptor)
         .setCa("my-ca")

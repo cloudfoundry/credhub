@@ -2,7 +2,7 @@ package io.pivotal.security.data;
 
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.CredentialFactory;
-import io.pivotal.security.entity.CredentialVersion;
+import io.pivotal.security.entity.CredentialVersionData;
 import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.repository.CredentialVersionRepository;
@@ -54,25 +54,25 @@ public class CredentialVersionDataService {
     return (Z) namedSecret.save(this);
   }
 
-  public <Z extends Credential> Z save(CredentialVersion credentialVersion) {
-    if (credentialVersion.getEncryptionKeyUuid() == null && credentialVersion.getEncryptedValue() != null) {
-      credentialVersion.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
+  public <Z extends Credential> Z save(CredentialVersionData credentialVersionData) {
+    if (credentialVersionData.getEncryptionKeyUuid() == null && credentialVersionData.getEncryptedValue() != null) {
+      credentialVersionData.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
     }
 
-    CredentialName credentialName = credentialVersion.getCredentialName();
+    CredentialName credentialName = credentialVersionData.getCredentialName();
 
     if (credentialName.getUuid() == null) {
-      credentialVersion.setCredentialName(credentialNameDataService.save(credentialName));
+      credentialVersionData.setCredentialName(credentialNameDataService.save(credentialName));
     } else {
       Credential existingCredential = findMostRecent(credentialName.getName());
       if (existingCredential != null && !existingCredential.getCredentialType()
-          .equals(credentialVersion.getCredentialType())) {
+          .equals(credentialVersionData.getCredentialType())) {
         throw new ParameterizedValidationException("error.type_mismatch");
       }
     }
 
     return (Z) credentialFactory
-        .makeCredentialFromEntity(credentialVersionRepository.saveAndFlush(credentialVersion));
+        .makeCredentialFromEntity(credentialVersionRepository.saveAndFlush(credentialVersionData));
   }
 
   public List<String> findAllPaths() {
@@ -148,12 +148,12 @@ public class CredentialVersionDataService {
     CredentialName credentialName = credentialNameDataService.find(name);
 
     if (credentialName != null) {
-      List<CredentialVersion> credentialVersions = credentialVersionRepository
+      List<CredentialVersionData> credentialVersionData = credentialVersionRepository
           .findAllByCredentialNameUuidOrderByVersionCreatedAtDesc(credentialName.getUuid())
           .stream()
           .limit(numberOfVersions)
           .collect(Collectors.toList());
-      return credentialFactory.makeCredentialsFromEntities(credentialVersions);
+      return credentialFactory.makeCredentialsFromEntities(credentialVersionData);
     } else {
       return newArrayList();
     }
@@ -174,7 +174,7 @@ public class CredentialVersionDataService {
   }
 
   public Slice<Credential> findEncryptedWithAvailableInactiveKey() {
-    final Slice<CredentialVersion> credentialDataSlice = credentialVersionRepository
+    final Slice<CredentialVersionData> credentialDataSlice = credentialVersionRepository
         .findByEncryptedCredentialValueEncryptionKeyUuidIn(
             encryptionKeyCanaryMapper.getCanaryUuidsWithKnownAndInactiveKeys(),
             new PageRequest(0, BATCH_SIZE)

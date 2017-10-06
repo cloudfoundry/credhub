@@ -2,7 +2,7 @@ package io.pivotal.security.data;
 
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.CredentialName;
-import io.pivotal.security.entity.ValueCredentialVersion;
+import io.pivotal.security.entity.ValueCredentialVersionData;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -145,7 +145,7 @@ public class PermissionsDataServiceTest {
 
   @Test
   public void setAccessControlEntries_whenGivenANewAce_returnsTheAcl() {
-    final ValueCredentialVersion valueCredentialData2 = new ValueCredentialVersion("lightsaber2");
+    final ValueCredentialVersionData valueCredentialData2 = new ValueCredentialVersionData("lightsaber2");
     final CredentialName credentialName2 = valueCredentialData2.getCredentialName();
 
     credentialNameDataService.save(credentialName2);
@@ -329,9 +329,9 @@ public class PermissionsDataServiceTest {
   }
 
   private void seedDatabase() {
-    ValueCredentialVersion valueCredentialData = new ValueCredentialVersion(CREDENTIAL_NAME);
+    ValueCredentialVersionData valueCredentialData = new ValueCredentialVersionData(CREDENTIAL_NAME);
     credentialName = valueCredentialData.getCredentialName();
-    ValueCredentialVersion noAccessValueCredentialData = new ValueCredentialVersion(
+    ValueCredentialVersionData noAccessValueCredentialData = new ValueCredentialVersionData(
         NO_ACCESS_CREDENTIAL_NAME);
     CredentialName noAccessValueCredentialName = noAccessValueCredentialData.getCredentialName();
 

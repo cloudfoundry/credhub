@@ -8,24 +8,24 @@ import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.SecondaryTable;
 
 @Entity
-@DiscriminatorValue(RsaCredentialVersion.CREDENTIAL_TYPE)
+@DiscriminatorValue(RsaCredentialVersionData.CREDENTIAL_TYPE)
 @SecondaryTable(
-    name = RsaCredentialVersion.TABLE_NAME,
+    name = RsaCredentialVersionData.TABLE_NAME,
     pkJoinColumns = {@PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")}
 )
-public class RsaCredentialVersion extends CredentialVersion<RsaCredentialVersion> {
+public class RsaCredentialVersionData extends CredentialVersionData<RsaCredentialVersionData> {
 
   public static final String CREDENTIAL_TYPE = "rsa";
   static final String TABLE_NAME = "rsa_credential";
 
-  @Column(table = RsaCredentialVersion.TABLE_NAME, length = 7000)
+  @Column(table = RsaCredentialVersionData.TABLE_NAME, length = 7000)
   private String publicKey;
 
-  public RsaCredentialVersion() {
+  public RsaCredentialVersionData() {
     this(null);
   }
 
-  public RsaCredentialVersion(String name) {
+  public RsaCredentialVersionData(String name) {
     super(name);
   }
 
@@ -33,7 +33,7 @@ public class RsaCredentialVersion extends CredentialVersion<RsaCredentialVersion
     return publicKey;
   }
 
-  public RsaCredentialVersion setPublicKey(String publicKey) {
+  public RsaCredentialVersionData setPublicKey(String publicKey) {
     this.publicKey = publicKey;
     return this;
   }

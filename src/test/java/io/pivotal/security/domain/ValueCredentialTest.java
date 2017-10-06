@@ -1,6 +1,6 @@
 package io.pivotal.security.domain;
 
-import io.pivotal.security.entity.ValueCredentialVersion;
+import io.pivotal.security.entity.ValueCredentialVersionData;
 import io.pivotal.security.service.Encryption;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,7 +21,7 @@ public class ValueCredentialTest {
   private ValueCredential subject;
   private Encryptor encryptor;
   private UUID canaryUuid;
-  private ValueCredentialVersion valueCredentialData;
+  private ValueCredentialVersionData valueCredentialData;
 
   @Before
   public void beforeEach() {
@@ -45,7 +45,7 @@ public class ValueCredentialTest {
 
   @Test
   public void setValue_encryptsValue() {
-    valueCredentialData = new ValueCredentialVersion("foo");
+    valueCredentialData = new ValueCredentialVersionData("foo");
     subject = new ValueCredential(valueCredentialData).setEncryptor(encryptor);
 
     subject.setValue("my-value");
@@ -56,7 +56,7 @@ public class ValueCredentialTest {
 
   @Test
   public void getValue_decryptsValue() {
-    valueCredentialData = new ValueCredentialVersion("foo");
+    valueCredentialData = new ValueCredentialVersionData("foo");
     subject = new ValueCredential(valueCredentialData).setEncryptor(encryptor);
 
     subject.setValue("my-value");
@@ -66,7 +66,7 @@ public class ValueCredentialTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void setValue_whenValueIsNull_throwsException() {
-    valueCredentialData = new ValueCredentialVersion("foo");
+    valueCredentialData = new ValueCredentialVersionData("foo");
     subject = new ValueCredential(valueCredentialData).setEncryptor(encryptor);
 
     subject.setValue(null);

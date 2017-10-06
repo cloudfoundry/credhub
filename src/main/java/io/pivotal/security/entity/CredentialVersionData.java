@@ -33,7 +33,7 @@ import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @EntityListeners(AuditingEntityListener.class)
 @DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
-public abstract class CredentialVersion<Z extends CredentialVersion> {
+public abstract class CredentialVersionData<Z extends CredentialVersionData> {
 
   // Use VARBINARY to make all 3 DB types happy.
   // H2 doesn't distinguish between "binary" and "varbinary" - see
@@ -59,7 +59,7 @@ public abstract class CredentialVersion<Z extends CredentialVersion> {
   @JoinColumn(name = "credential_uuid", nullable = false)
   private CredentialName credentialName;
 
-  public CredentialVersion(CredentialName name) {
+  public CredentialVersionData(CredentialName name) {
     if (this.credentialName != null) {
       this.credentialName.setName(name.getName());
     } else {
@@ -67,11 +67,11 @@ public abstract class CredentialVersion<Z extends CredentialVersion> {
     }
   }
 
-  public CredentialVersion(String name) {
+  public CredentialVersionData(String name) {
     this(new CredentialName(name));
   }
 
-  public CredentialVersion() {
+  public CredentialVersionData() {
     this((String) null);
   }
 

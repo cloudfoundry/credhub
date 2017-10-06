@@ -9,7 +9,7 @@ import io.pivotal.security.domain.RsaCredential;
 import io.pivotal.security.domain.SshCredential;
 import io.pivotal.security.domain.UserCredential;
 import io.pivotal.security.entity.EncryptionKeyCanary;
-import io.pivotal.security.entity.PasswordCredentialVersion;
+import io.pivotal.security.entity.PasswordCredentialVersionData;
 import io.pivotal.security.helper.AuditingHelper;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
@@ -292,7 +292,7 @@ public class CredentialsControllerRegenerateTest {
     EncryptionKeyCanary encryptionKeyCanary = new EncryptionKeyCanary();
     canaryDataService.save(encryptionKeyCanary);
 
-    PasswordCredentialVersion passwordCredentialData = new PasswordCredentialVersion(
+    PasswordCredentialVersionData passwordCredentialData = new PasswordCredentialVersionData(
         "my-password");
     PasswordCredential originalCredential = new PasswordCredential(passwordCredentialData);
     originalCredential.setEncryptor(encryptor);

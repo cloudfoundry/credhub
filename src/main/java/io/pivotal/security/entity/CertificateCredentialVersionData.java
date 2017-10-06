@@ -11,27 +11,27 @@ import javax.persistence.SecondaryTable;
 @Entity
 @DiscriminatorValue("cert")
 @SecondaryTable(
-    name = CertificateCredentialVersion.TABLE_NAME,
+    name = CertificateCredentialVersionData.TABLE_NAME,
     pkJoinColumns = {@PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")}
 )
-public class CertificateCredentialVersion extends CredentialVersion<CertificateCredentialVersion> {
+public class CertificateCredentialVersionData extends CredentialVersionData<CertificateCredentialVersionData> {
 
   public static final String CREDENTIAL_TYPE = "certificate";
   static final String TABLE_NAME = "certificate_credential";
 
-  @Column(table = CertificateCredentialVersion.TABLE_NAME, length = 7000)
+  @Column(table = CertificateCredentialVersionData.TABLE_NAME, length = 7000)
   private String ca;
 
-  @Column(table = CertificateCredentialVersion.TABLE_NAME, length = 7000)
+  @Column(table = CertificateCredentialVersionData.TABLE_NAME, length = 7000)
   private String certificate;
 
-  @Column(table = CertificateCredentialVersion.TABLE_NAME)
+  @Column(table = CertificateCredentialVersionData.TABLE_NAME)
   private String caName;
 
-  public CertificateCredentialVersion() {
+  public CertificateCredentialVersionData() {
   }
 
-  public CertificateCredentialVersion(String name) {
+  public CertificateCredentialVersionData(String name) {
     super(name);
   }
 
@@ -43,7 +43,7 @@ public class CertificateCredentialVersion extends CredentialVersion<CertificateC
     return ca;
   }
 
-  public CertificateCredentialVersion setCa(String ca) {
+  public CertificateCredentialVersionData setCa(String ca) {
     this.ca = ca;
     return this;
   }
@@ -52,7 +52,7 @@ public class CertificateCredentialVersion extends CredentialVersion<CertificateC
     return certificate;
   }
 
-  public CertificateCredentialVersion setCertificate(String certificate) {
+  public CertificateCredentialVersionData setCertificate(String certificate) {
     this.certificate = certificate;
     return this;
   }
@@ -61,7 +61,7 @@ public class CertificateCredentialVersion extends CredentialVersion<CertificateC
     return caName;
   }
 
-  public CertificateCredentialVersion setCaName(String caName) {
+  public CertificateCredentialVersionData setCaName(String caName) {
     this.caName = !StringUtils.isEmpty(caName) ? StringUtils.prependIfMissing(caName, "/") : caName;
     return this;
   }

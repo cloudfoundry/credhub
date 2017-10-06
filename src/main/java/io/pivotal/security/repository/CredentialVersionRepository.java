@@ -1,6 +1,6 @@
 package io.pivotal.security.repository;
 
-import io.pivotal.security.entity.CredentialVersion;
+import io.pivotal.security.entity.CredentialVersionData;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,19 +8,19 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.UUID;
 
-public interface CredentialVersionRepository extends JpaRepository<CredentialVersion, UUID> {
+public interface CredentialVersionRepository extends JpaRepository<CredentialVersionData, UUID> {
 
   int BATCH_SIZE = 50;
 
-  CredentialVersion findOneByUuid(UUID uuid);
+  CredentialVersionData findOneByUuid(UUID uuid);
 
   Long countByEncryptedCredentialValueEncryptionKeyUuidNot(UUID encryptionKeyUuid);
 
   Long countByEncryptedCredentialValueEncryptionKeyUuidIn(List<UUID> encryptionKeyUuids);
 
-  Slice<CredentialVersion> findByEncryptedCredentialValueEncryptionKeyUuidIn(List<UUID> encryptionKeyUuids, Pageable page);
+  Slice<CredentialVersionData> findByEncryptedCredentialValueEncryptionKeyUuidIn(List<UUID> encryptionKeyUuids, Pageable page);
 
-  List<CredentialVersion> findAllByCredentialNameUuidOrderByVersionCreatedAtDesc(UUID uuid);
+  List<CredentialVersionData> findAllByCredentialNameUuidOrderByVersionCreatedAtDesc(UUID uuid);
 
-  CredentialVersion findFirstByCredentialNameUuidOrderByVersionCreatedAtDesc(UUID uuid);
+  CredentialVersionData findFirstByCredentialNameUuidOrderByVersionCreatedAtDesc(UUID uuid);
 }

@@ -1,7 +1,7 @@
 package io.pivotal.security.domain;
 
 import io.pivotal.security.data.CredentialVersionDataService;
-import io.pivotal.security.entity.CredentialVersion;
+import io.pivotal.security.entity.CredentialVersionData;
 import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.service.Encryption;
 
@@ -10,10 +10,10 @@ import java.util.UUID;
 
 public abstract class Credential<Z extends Credential> {
 
-  protected CredentialVersion delegate;
+  protected CredentialVersionData delegate;
   protected Encryptor encryptor;
 
-  public Credential(CredentialVersion delegate) {
+  public Credential(CredentialVersionData delegate) {
     this.delegate = delegate;
   }
 
