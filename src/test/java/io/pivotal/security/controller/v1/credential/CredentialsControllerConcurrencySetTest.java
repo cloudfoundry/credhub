@@ -2,9 +2,9 @@ package io.pivotal.security.controller.v1.credential;
 
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.CredentialVersionDataService;
-import io.pivotal.security.domain.Credential;
+import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.ValueCredential;
+import io.pivotal.security.domain.ValueCredentialVersion;
 import io.pivotal.security.entity.EncryptionKeyCanary;
 import io.pivotal.security.repository.EncryptionKeyCanaryRepository;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -148,7 +148,7 @@ public class CredentialsControllerConcurrencySetTest {
   public void whenAnotherThreadsWinsARaceToUpdateACredential_retriesAndReturnsTheValueWrittenByTheOtherThread() throws Exception {
     UUID uuid = UUID.randomUUID();
 
-    ValueCredential valueCredential = new ValueCredential(credentialName);
+    ValueCredentialVersion valueCredential = new ValueCredentialVersion(credentialName);
     valueCredential.setEncryptor(encryptor);
     valueCredential.setValue(credentialValue);
     valueCredential.setUuid(uuid);
@@ -158,7 +158,7 @@ public class CredentialsControllerConcurrencySetTest {
         .when(credentialVersionDataService).findMostRecent(anyString());
 
     doThrow(new DataIntegrityViolationException("we already have one of those"))
-        .when(credentialVersionDataService).save(any(Credential.class));
+        .when(credentialVersionDataService).save(any(CredentialVersion.class));
 
     final MockHttpServletRequestBuilder put = put("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -177,6 +177,6 @@ public class CredentialsControllerConcurrencySetTest {
         .andExpect(jsonPath("$.value").value(credentialValue))
         .andExpect(jsonPath("$.id").value(uuid.toString()));
 
-    verify(credentialVersionDataService).save(any(Credential.class));
+    verify(credentialVersionDataService).save(any(CredentialVersion.class));
   }
 }

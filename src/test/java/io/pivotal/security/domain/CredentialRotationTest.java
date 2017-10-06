@@ -68,7 +68,7 @@ public class CredentialRotationTest {
   @Test
   public void rotate_givenCertificateCredential_reEncryptsWithActiveKey() {
     CertificateCredentialVersionData certificateCredentialData = new CertificateCredentialVersionData("some-name");
-    CertificateCredential credential = new CertificateCredential(certificateCredentialData);
+    CertificateCredentialVersion credential = new CertificateCredentialVersion(certificateCredentialData);
 
     assertRotation(credential, certificateCredentialData);
   }
@@ -76,7 +76,7 @@ public class CredentialRotationTest {
   @Test
   public void rotate_givenSshCredential_reEncryptsWithActiveKey() {
     SshCredentialVersionData sshCredentialData = new SshCredentialVersionData("ssh-key");
-    SshCredential credential = new SshCredential(sshCredentialData);
+    SshCredentialVersion credential = new SshCredentialVersion(sshCredentialData);
 
     assertRotation(credential, sshCredentialData);
   }
@@ -84,7 +84,7 @@ public class CredentialRotationTest {
   @Test
   public void rotate_givenRsaCredential_reEncryptsWithActiveKey() {
     RsaCredentialVersionData rsaCredentialData = new RsaCredentialVersionData("rsa key");
-    RsaCredential credential = new RsaCredential(rsaCredentialData);
+    RsaCredentialVersion credential = new RsaCredentialVersion(rsaCredentialData);
 
     assertRotation(credential, rsaCredentialData);
   }
@@ -92,7 +92,7 @@ public class CredentialRotationTest {
   @Test
   public void rotate_givenValueCredential_reEncryptsWithActiveKey() {
     ValueCredentialVersionData valueCredentialData = new ValueCredentialVersionData("value key");
-    ValueCredential credential = new ValueCredential(valueCredentialData);
+    ValueCredentialVersion credential = new ValueCredentialVersion(valueCredentialData);
 
     assertRotation(credential, valueCredentialData);
   }
@@ -103,7 +103,7 @@ public class CredentialRotationTest {
     passwordCredentialData.setEncryptionKeyUuid(oldEncryptionKeyUuid);
     passwordCredentialData.setEncryptedValue("old-encrypted-value".getBytes());
     passwordCredentialData.setNonce("old-nonce".getBytes());
-    PasswordCredential password = new PasswordCredential(passwordCredentialData);
+    PasswordCredentialVersion password = new PasswordCredentialVersion(passwordCredentialData);
     password.setEncryptor(encryptor);
     Encryption encryption = new Encryption(oldEncryptionKeyUuid,"old-encrypted-parameters".getBytes(), "old-parameters-nonce".getBytes());
     passwordCredentialData.setEncryptedGenerationParameters(encryption);
@@ -132,13 +132,13 @@ public class CredentialRotationTest {
         equalTo("new-nonce-parameters".getBytes()));
   }
 
-  private void assertRotation(Credential credential, CredentialVersionData delegate) {
-    credential.setEncryptor(encryptor);
+  private void assertRotation(CredentialVersion credentialVersion, CredentialVersionData delegate) {
+    credentialVersion.setEncryptor(encryptor);
     delegate.setEncryptionKeyUuid(oldEncryptionKeyUuid);
     delegate.setEncryptedValue("old-encrypted-value".getBytes());
     delegate.setNonce("old-nonce".getBytes());
 
-    credential.rotate();
+    credentialVersion.rotate();
 
     assertThat(delegate.getEncryptionKeyUuid(), equalTo(activeEncryptionKeyUuid));
     assertThat(delegate.getEncryptedValue(), equalTo("new-encrypted-value".getBytes()));

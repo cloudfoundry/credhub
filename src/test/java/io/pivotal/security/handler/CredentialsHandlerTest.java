@@ -2,9 +2,9 @@ package io.pivotal.security.handler;
 
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.domain.Credential;
+import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.SshCredential;
+import io.pivotal.security.domain.SshCredentialVersion;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.InvalidQueryParameterException;
 import io.pivotal.security.service.PermissionCheckingService;
@@ -47,8 +47,8 @@ public class CredentialsHandlerTest {
   private PermissionCheckingService permissionCheckingService;
 
   private UserContext userContext;
-  private SshCredential version1;
-  private SshCredential version2;
+  private SshCredentialVersion version1;
+  private SshCredentialVersion version2;
 
   @Before
   public void beforeEach() {
@@ -61,11 +61,11 @@ public class CredentialsHandlerTest {
     userContext = mock(UserContext.class);
     when(userContext.getAclUser()).thenReturn(USER);
 
-    version1 = new SshCredential(CREDENTIAL_NAME);
+    version1 = new SshCredentialVersion(CREDENTIAL_NAME);
     version1.setVersionCreatedAt(VERSION1_CREATED_AT);
     version1.setEncryptor(encryptor);
 
-    version2 = new SshCredential(CREDENTIAL_NAME);
+    version2 = new SshCredentialVersion(CREDENTIAL_NAME);
     version2.setVersionCreatedAt(VERSION2_CREATED_AT);
     version2.setEncryptor(encryptor);
   }
@@ -97,28 +97,28 @@ public class CredentialsHandlerTest {
 
   @Test
   public void getAllCredentialVersions_whenTheCredentialExists_returnsADataResponse() {
-    List<Credential> credentials = newArrayList(version1, version2);
+    List<CredentialVersion> credentials = newArrayList(version1, version2);
     when(permissionedCredentialService.findAllByName(any(UserContext.class), eq(CREDENTIAL_NAME)))
         .thenReturn(credentials);
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(true);
 
-    List<Credential> credentialVersions = subject.getAllCredentialVersions(CREDENTIAL_NAME, userContext,
+    List<CredentialVersion> credentialVersionVersions = subject.getAllCredentialVersions(CREDENTIAL_NAME, userContext,
         newArrayList());
 
-    assertThat(credentialVersions, hasSize(2));
-    assertThat(credentialVersions.get(0).getName(), equalTo(CREDENTIAL_NAME));
-    assertThat(credentialVersions.get(0).getVersionCreatedAt(), equalTo(VERSION1_CREATED_AT));
-    assertThat(credentialVersions.get(1).getName(), equalTo(CREDENTIAL_NAME));
-    assertThat(credentialVersions.get(1).getVersionCreatedAt(), equalTo(VERSION2_CREATED_AT));
+    assertThat(credentialVersionVersions, hasSize(2));
+    assertThat(credentialVersionVersions.get(0).getName(), equalTo(CREDENTIAL_NAME));
+    assertThat(credentialVersionVersions.get(0).getVersionCreatedAt(), equalTo(VERSION1_CREATED_AT));
+    assertThat(credentialVersionVersions.get(1).getName(), equalTo(CREDENTIAL_NAME));
+    assertThat(credentialVersionVersions.get(1).getVersionCreatedAt(), equalTo(VERSION2_CREATED_AT));
   }
 
   @Test
   public void getAllCredentialVersions_whenTheCredentialExists_setsCorrectAuditingParameters() {
     List<EventAuditRecordParameters> auditRecordParametersList = newArrayList();
-    List<Credential> credentials = newArrayList(version1);
+    List<CredentialVersion> credentialVersions = newArrayList(version1);
     when(permissionedCredentialService.findAllByName(any(UserContext.class), eq(CREDENTIAL_NAME)))
-        .thenReturn(credentials);
+        .thenReturn(credentialVersions);
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(true);
 
@@ -184,13 +184,13 @@ public class CredentialsHandlerTest {
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(true);
 
-    Credential credential = subject.getMostRecentCredentialVersion(
+    CredentialVersion credentialVersion = subject.getMostRecentCredentialVersion(
         CREDENTIAL_NAME, userContext,
         newArrayList()
     );
 
-    assertThat(credential.getName(), equalTo(CREDENTIAL_NAME));
-    assertThat(credential.getVersionCreatedAt(), equalTo(VERSION1_CREATED_AT));
+    assertThat(credentialVersion.getName(), equalTo(CREDENTIAL_NAME));
+    assertThat(credentialVersion.getVersionCreatedAt(), equalTo(VERSION1_CREATED_AT));
   }
 
   @Test
@@ -252,12 +252,12 @@ public class CredentialsHandlerTest {
     when(permissionedCredentialService.findByUuid(eq(userContext), eq(UUID_STRING), any(List.class)))
         .thenReturn(version1);
 
-    Credential credential = subject.getCredentialVersionByUUID(
+    CredentialVersion credentialVersion = subject.getCredentialVersionByUUID(
         UUID_STRING,
         userContext,
         newArrayList()
     );
-    assertThat(credential.getName(), equalTo(CREDENTIAL_NAME));
-    assertThat(credential.getVersionCreatedAt(), equalTo(VERSION1_CREATED_AT));
+    assertThat(credentialVersion.getName(), equalTo(CREDENTIAL_NAME));
+    assertThat(credentialVersion.getVersionCreatedAt(), equalTo(VERSION1_CREATED_AT));
   }
 }

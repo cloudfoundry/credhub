@@ -3,24 +3,24 @@ package io.pivotal.security.domain;
 import io.pivotal.security.credential.RsaCredentialValue;
 import io.pivotal.security.entity.RsaCredentialVersionData;
 
-public class RsaCredential extends Credential<RsaCredential> {
+public class RsaCredentialVersion extends CredentialVersion<RsaCredentialVersion> {
 
   private RsaCredentialVersionData delegate;
 
-  public RsaCredential(RsaCredentialVersionData delegate) {
+  public RsaCredentialVersion(RsaCredentialVersionData delegate) {
     super(delegate);
     this.delegate = delegate;
   }
 
-  public RsaCredential(String name) {
+  public RsaCredentialVersion(String name) {
     this(new RsaCredentialVersionData(name));
   }
 
-  public RsaCredential() {
+  public RsaCredentialVersion() {
     this(new RsaCredentialVersionData());
   }
 
-  public RsaCredential(RsaCredentialValue rsaValue, Encryptor encryptor) {
+  public RsaCredentialVersion(RsaCredentialValue rsaValue, Encryptor encryptor) {
     this();
     this.setEncryptor(encryptor);
     this.setPublicKey(rsaValue.getPublicKey());
@@ -35,7 +35,7 @@ public class RsaCredential extends Credential<RsaCredential> {
     return delegate.getPublicKey();
   }
 
-  public RsaCredential setPublicKey(String publicKey) {
+  public RsaCredentialVersion setPublicKey(String publicKey) {
     this.delegate.setPublicKey(publicKey);
     return this;
   }
@@ -44,7 +44,7 @@ public class RsaCredential extends Credential<RsaCredential> {
     return (String) super.getValue();
   }
 
-  public RsaCredential setPrivateKey(String privateKey) {
+  public RsaCredentialVersion setPrivateKey(String privateKey) {
     if (privateKey != null) {
       super.setValue(privateKey);
     }

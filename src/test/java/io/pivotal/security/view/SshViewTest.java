@@ -1,7 +1,7 @@
 package io.pivotal.security.view;
 
 import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.SshCredential;
+import io.pivotal.security.domain.SshCredentialVersion;
 import io.pivotal.security.helper.JsonTestHelper;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.util.TestConstants;
@@ -23,7 +23,7 @@ public class SshViewTest {
   private static final String CREDENTIAL_NAME = "/foo";
   private static final UUID CREDENTIAL_UUID = java.util.UUID.randomUUID();
 
-  private SshCredential entity;
+  private SshCredentialVersion entity;
 
   @Before
   public void beforeEach() {
@@ -33,7 +33,7 @@ public class SshViewTest {
         encryption);
     when(encryptor.decrypt(encryption))
         .thenReturn(TestConstants.PRIVATE_KEY_4096);
-    entity = new SshCredential(CREDENTIAL_NAME)
+    entity = new SshCredentialVersion(CREDENTIAL_NAME)
         .setEncryptor(encryptor)
         .setPublicKey(TestConstants.SSH_PUBLIC_KEY_4096_WITH_COMMENT)
         .setPrivateKey(TestConstants.PRIVATE_KEY_4096);

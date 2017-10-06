@@ -1,7 +1,7 @@
 package io.pivotal.security.handler;
 
 import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.domain.Credential;
+import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.request.PasswordGenerateRequest;
 import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.service.PermissionService;
@@ -52,12 +52,12 @@ public class RegenerateHandlerTest {
     when(credentialService.findAllCertificateCredentialsByCaName(userContext, SIGNER_NAME))
         .thenReturn(newArrayList("firstExpectedName", "secondExpectedName"));
     when(credentialService.findMostRecent(anyString()))
-        .thenReturn(mock(Credential.class));
+        .thenReturn(mock(CredentialVersion.class));
     PasswordGenerateRequest generateRequest1 = new PasswordGenerateRequest();
     generateRequest1.setName("firstExpectedName");
     PasswordGenerateRequest generateRequest2 = new PasswordGenerateRequest();
     generateRequest2.setName("secondExpectedName");
-    when(generationRequestGenerator.createGenerateRequest(any(Credential.class)))
+    when(generationRequestGenerator.createGenerateRequest(any(CredentialVersion.class)))
         .thenReturn(generateRequest1)
         .thenReturn(generateRequest2);
 

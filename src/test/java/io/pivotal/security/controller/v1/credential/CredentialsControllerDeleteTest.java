@@ -3,7 +3,7 @@ package io.pivotal.security.controller.v1.credential;
 
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.CredentialVersionDataService;
-import io.pivotal.security.domain.ValueCredential;
+import io.pivotal.security.domain.ValueCredentialVersion;
 import io.pivotal.security.helper.AuditingHelper;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
@@ -113,7 +113,7 @@ public class CredentialsControllerDeleteTest {
   @Test
   public void delete_whenThereIsOneCredentialVersionWithTheCaseInsensitiveName_deletesTheCredential() throws Exception {
     doReturn(true).when(credentialVersionDataService).delete(CREDENTIAL_NAME.toUpperCase());
-    doReturn(new ValueCredential())
+    doReturn(new ValueCredentialVersion())
         .when(credentialVersionDataService)
         .findMostRecent(CREDENTIAL_NAME.toUpperCase());
 
@@ -131,7 +131,7 @@ public class CredentialsControllerDeleteTest {
   @Test
   public void delete_whenThereAreMultipleCredentialVersionsWithTheName_deletesAllVersions() throws Exception {
     doReturn(true).when(credentialVersionDataService).delete(CREDENTIAL_NAME);
-    doReturn(new ValueCredential()).when(credentialVersionDataService).findMostRecent(CREDENTIAL_NAME);
+    doReturn(new ValueCredentialVersion()).when(credentialVersionDataService).findMostRecent(CREDENTIAL_NAME);
 
     MockHttpServletRequestBuilder request = delete("/api/v1/data?name=" + CREDENTIAL_NAME)
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN);

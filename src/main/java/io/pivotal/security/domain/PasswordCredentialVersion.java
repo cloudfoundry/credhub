@@ -9,27 +9,27 @@ import org.springframework.util.Assert;
 
 import java.io.IOException;
 
-public class PasswordCredential extends Credential<PasswordCredential> {
+public class PasswordCredentialVersion extends CredentialVersion<PasswordCredentialVersion> {
 
   private PasswordCredentialVersionData delegate;
   private String password;
   private JsonObjectMapper jsonObjectMapper;
 
-  public PasswordCredential(PasswordCredentialVersionData delegate) {
+  public PasswordCredentialVersion(PasswordCredentialVersionData delegate) {
     super(delegate);
     this.delegate = delegate;
     jsonObjectMapper = new JsonObjectMapper();
   }
 
-  public PasswordCredential(String name) {
+  public PasswordCredentialVersion(String name) {
     this(new PasswordCredentialVersionData(name));
   }
 
-  public PasswordCredential() {
+  public PasswordCredentialVersion() {
     this(new PasswordCredentialVersionData());
   }
 
-  public PasswordCredential(
+  public PasswordCredentialVersion(
       StringCredentialValue password,
       StringGenerationParameters generationParameters,
       Encryptor encryptor
@@ -49,8 +49,8 @@ public class PasswordCredential extends Credential<PasswordCredential> {
     return password;
   }
 
-  public PasswordCredential setPasswordAndGenerationParameters(String password,
-                                                               StringGenerationParameters generationParameters) {
+  public PasswordCredentialVersion setPasswordAndGenerationParameters(String password,
+                                                                      StringGenerationParameters generationParameters) {
     Encryption encryptedParameters, encryptedPassword;
     if (password == null) {
       throw new IllegalArgumentException("password cannot be null");

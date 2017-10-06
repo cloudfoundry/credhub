@@ -3,7 +3,7 @@ package io.pivotal.security.handler;
 import io.pivotal.security.audit.AuditingOperationCode;
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.domain.Credential;
+import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.InvalidQueryParameterException;
 import io.pivotal.security.service.PermissionCheckingService;
@@ -33,7 +33,7 @@ public class CredentialsHandler {
     }
   }
 
-  public List<Credential> getNCredentialVersions(
+  public List<CredentialVersion> getNCredentialVersions(
       String credentialName,
       Integer numberOfVersions, UserContext userContext,
       List<EventAuditRecordParameters> auditRecordParametersList
@@ -42,24 +42,24 @@ public class CredentialsHandler {
         AuditingOperationCode.CREDENTIAL_ACCESS, credentialName);
     auditRecordParametersList.add(auditRecordParameters);
 
-    List<Credential> credentials;
+    List<CredentialVersion> credentialVersions;
     if (numberOfVersions != null && numberOfVersions < 0) {
       throw new InvalidQueryParameterException("error.invalid_query_parameter", "versions");
     }
 
     if (numberOfVersions == null) {
-      credentials = credentialService.findAllByName(userContext, credentialName);
+      credentialVersions = credentialService.findAllByName(userContext, credentialName);
     } else {
-      credentials = credentialService.findNByName(userContext, credentialName, numberOfVersions);
+      credentialVersions = credentialService.findNByName(userContext, credentialName, numberOfVersions);
     }
 
-    if (credentials.isEmpty()) {
+    if (credentialVersions.isEmpty()) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
-    return credentials;
+    return credentialVersions;
   }
 
-  public List<Credential> getAllCredentialVersions(
+  public List<CredentialVersion> getAllCredentialVersions(
       String credentialName,
       UserContext userContext,
       List<EventAuditRecordParameters> auditRecordParametersList
@@ -67,19 +67,19 @@ public class CredentialsHandler {
     return getNCredentialVersions(credentialName, null, userContext, auditRecordParametersList);
   }
 
-  public Credential getMostRecentCredentialVersion(
+  public CredentialVersion getMostRecentCredentialVersion(
       String credentialName,
       UserContext userContext,
       List<EventAuditRecordParameters> auditRecordParametersList
   ) {
-    Credential credential =
+    CredentialVersion credentialVersion =
         getNCredentialVersions(credentialName, 1, userContext, auditRecordParametersList)
             .get(0);
 
-    return credential;
+    return credentialVersion;
   }
 
-  public Credential getCredentialVersionByUUID(
+  public CredentialVersion getCredentialVersionByUUID(
       String credentialUUID,
       UserContext userContext,
       List<EventAuditRecordParameters> auditRecordParametersList

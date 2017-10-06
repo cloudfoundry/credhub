@@ -9,16 +9,16 @@ import io.pivotal.security.util.JsonObjectMapper;
 import java.io.IOException;
 import java.util.Map;
 
-public class JsonCredential extends Credential<JsonCredential> {
+public class JsonCredentialVersion extends CredentialVersion<JsonCredentialVersion> {
 
   private final JsonObjectMapper objectMapper;
   private final JsonCredentialVersionData delegate;
 
-  public JsonCredential() {
+  public JsonCredentialVersion() {
     this(new JsonCredentialVersionData());
   }
 
-  public JsonCredential(JsonCredentialVersionData delegate) {
+  public JsonCredentialVersion(JsonCredentialVersionData delegate) {
     super(delegate);
     this.delegate = delegate;
     /*
@@ -29,11 +29,11 @@ public class JsonCredential extends Credential<JsonCredential> {
     this.objectMapper = new JsonObjectMapper();
   }
 
-  public JsonCredential(String name) {
+  public JsonCredentialVersion(String name) {
     this(new JsonCredentialVersionData(name));
   }
 
-  public JsonCredential(JsonCredentialValue jsonValue, Encryptor encryptor) {
+  public JsonCredentialVersion(JsonCredentialValue jsonValue, Encryptor encryptor) {
     this();
     this.setEncryptor(encryptor);
     this.setValue(jsonValue.getValue());
@@ -59,7 +59,7 @@ public class JsonCredential extends Credential<JsonCredential> {
     }
   }
 
-  public JsonCredential setValue(Map<String, Object> value) {
+  public JsonCredentialVersion setValue(Map<String, Object> value) {
     if (value == null) {
       throw new ParameterizedValidationException("error.missing_value");
     }

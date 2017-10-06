@@ -16,9 +16,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
-public class ValueCredentialTest {
+public class ValueCredentialVersionTest {
 
-  private ValueCredential subject;
+  private ValueCredentialVersion subject;
   private Encryptor encryptor;
   private UUID canaryUuid;
   private ValueCredentialVersionData valueCredentialData;
@@ -35,7 +35,7 @@ public class ValueCredentialTest {
     when(encryptor.decrypt(encryption))
         .thenReturn("my-value");
 
-    subject = new ValueCredential("Foo");
+    subject = new ValueCredentialVersion("Foo");
   }
 
   @Test
@@ -46,7 +46,7 @@ public class ValueCredentialTest {
   @Test
   public void setValue_encryptsValue() {
     valueCredentialData = new ValueCredentialVersionData("foo");
-    subject = new ValueCredential(valueCredentialData).setEncryptor(encryptor);
+    subject = new ValueCredentialVersion(valueCredentialData).setEncryptor(encryptor);
 
     subject.setValue("my-value");
 
@@ -57,7 +57,7 @@ public class ValueCredentialTest {
   @Test
   public void getValue_decryptsValue() {
     valueCredentialData = new ValueCredentialVersionData("foo");
-    subject = new ValueCredential(valueCredentialData).setEncryptor(encryptor);
+    subject = new ValueCredentialVersion(valueCredentialData).setEncryptor(encryptor);
 
     subject.setValue("my-value");
 
@@ -67,7 +67,7 @@ public class ValueCredentialTest {
   @Test(expected = IllegalArgumentException.class)
   public void setValue_whenValueIsNull_throwsException() {
     valueCredentialData = new ValueCredentialVersionData("foo");
-    subject = new ValueCredential(valueCredentialData).setEncryptor(encryptor);
+    subject = new ValueCredentialVersion(valueCredentialData).setEncryptor(encryptor);
 
     subject.setValue(null);
   }

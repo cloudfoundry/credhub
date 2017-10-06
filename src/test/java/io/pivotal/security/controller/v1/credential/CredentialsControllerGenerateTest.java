@@ -8,9 +8,9 @@ import io.pivotal.security.credential.SshCredentialValue;
 import io.pivotal.security.credential.StringCredentialValue;
 import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.domain.CertificateGenerationParameters;
-import io.pivotal.security.domain.Credential;
+import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.PasswordCredential;
+import io.pivotal.security.domain.PasswordCredentialVersion;
 import io.pivotal.security.generator.CertificateGenerator;
 import io.pivotal.security.generator.PassayStringCredentialGenerator;
 import io.pivotal.security.generator.RsaGenerator;
@@ -172,7 +172,7 @@ public class CredentialsControllerGenerateTest {
 
   @Test
   public void generatingACredential_whenAnotherThreadWinsARaceToWriteANewValue_retriesAndFindsTheValueWrittenByTheOtherThread() throws Exception {
-    final PasswordCredential expectedCredential = new PasswordCredential(CREDENTIAL_NAME);
+    final PasswordCredentialVersion expectedCredential = new PasswordCredentialVersion(CREDENTIAL_NAME);
     final UUID uuid = UUID.randomUUID();
 
     expectedCredential.setEncryptor(encryptor);
@@ -187,7 +187,7 @@ public class CredentialsControllerGenerateTest {
         ).when(credentialVersionDataService).findMostRecent(anyString());
 
     doThrow(new DataIntegrityViolationException("we already have one of those"))
-        .when(credentialVersionDataService).save(any(Credential.class));
+        .when(credentialVersionDataService).save(any(CredentialVersion.class));
 
     final MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -197,7 +197,7 @@ public class CredentialsControllerGenerateTest {
 
     ResultActions response = mockMvc.perform(postRequest);
 
-    verify(credentialVersionDataService).save(any(Credential.class));
+    verify(credentialVersionDataService).save(any(CredentialVersion.class));
     response.andExpect(status().isOk())
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
         .andExpect(jsonPath("$.type").value("password"))

@@ -17,9 +17,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
-public class CertificateCredentialTest {
+public class CertificateCredentialVersionTest {
 
-  private CertificateCredential subject;
+  private CertificateCredentialVersion subject;
   private CertificateCredentialVersionData certificateCredentialData;
 
   private UUID canaryUuid;
@@ -42,7 +42,7 @@ public class CertificateCredentialTest {
     when(encryptor.decrypt(encryption)).thenReturn("my-priv");
 
     certificateCredentialData = new CertificateCredentialVersionData("/Foo");
-    subject = new CertificateCredential(certificateCredentialData)
+    subject = new CertificateCredentialVersion(certificateCredentialData)
         .setEncryptor(encryptor)
         .setCa("my-ca")
         .setCertificate("my-cert")
@@ -85,7 +85,7 @@ public class CertificateCredentialTest {
   @Test
   public void CertificateCredential_withMissingCertificateValue_shouldNotError() {
     final CertificateCredentialValue certificateCredentialValue = new CertificateCredentialValue("someCa", "", "my-priv", "/aCaName");
-    final CertificateCredential certificateCredential = new CertificateCredential(certificateCredentialValue, encryptor);
+    final CertificateCredentialVersion certificateCredential = new CertificateCredentialVersion(certificateCredentialValue, encryptor);
 
     assertThat(certificateCredential.getCa(), equalTo("someCa"));
     assertThat(certificateCredential.getCertificate(), equalTo(""));

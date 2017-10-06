@@ -3,7 +3,7 @@ package io.pivotal.security.controller.v1.credential;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.ValueCredential;
+import io.pivotal.security.domain.ValueCredentialVersion;
 import io.pivotal.security.helper.AuditingHelper;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
@@ -74,7 +74,7 @@ public class CredentialsControllerErrorHandlingSetTest {
 
   @Test
   public void whenTheTypeChanges_returns400() throws Exception {
-    ValueCredential valueCredential = new ValueCredential(CREDENTIAL_NAME);
+    ValueCredentialVersion valueCredential = new ValueCredentialVersion(CREDENTIAL_NAME);
     valueCredential.setEncryptor(encryptor);
     valueCredential.setValue(CREDENTIAL_VALUE);
     doReturn(valueCredential).when(credentialVersionDataService).findMostRecent(CREDENTIAL_NAME);

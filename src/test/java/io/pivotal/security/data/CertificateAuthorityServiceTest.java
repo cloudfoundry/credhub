@@ -2,8 +2,8 @@ package io.pivotal.security.data;
 
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.credential.CertificateCredentialValue;
-import io.pivotal.security.domain.CertificateCredential;
-import io.pivotal.security.domain.PasswordCredential;
+import io.pivotal.security.domain.CertificateCredentialVersion;
+import io.pivotal.security.domain.PasswordCredentialVersion;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.request.PermissionOperation;
@@ -30,14 +30,14 @@ public class CertificateAuthorityServiceTest {
   private CertificateAuthorityService certificateAuthorityService;
   private CredentialVersionDataService credentialVersionDataService;
   private CertificateCredentialValue certificate;
-  private CertificateCredential certificateCredential;
+  private CertificateCredentialVersion certificateCredential;
   private PermissionsDataService permissionService;
   private UserContext userContext;
 
   @Before
   public void beforeEach() {
     certificate = new CertificateCredentialValue(null, SELF_SIGNED_CA_CERT, "my-key", null);
-    certificateCredential = mock(CertificateCredential.class);
+    certificateCredential = mock(CertificateCredentialVersion.class);
 
     permissionService = mock(PermissionsDataService.class);
     userContext = mock(UserContext.class);
@@ -63,7 +63,7 @@ public class CertificateAuthorityServiceTest {
 
   @Test
   public void findMostRecent_whenCaNameRefersToNonCa_throwsException() {
-    when(credentialVersionDataService.findMostRecent(any(String.class))).thenReturn(mock(PasswordCredential.class));
+    when(credentialVersionDataService.findMostRecent(any(String.class))).thenReturn(mock(PasswordCredentialVersion.class));
     when(permissionService.hasPermission(USER_NAME, "any non-ca name", PermissionOperation.READ))
         .thenReturn(true);
 
@@ -90,7 +90,7 @@ public class CertificateAuthorityServiceTest {
   @Test
   public void findMostRecent_whenCredentialIsNotACa_throwsException() {
     when(credentialVersionDataService.findMostRecent("actually-a-password"))
-        .thenReturn(new PasswordCredential());
+        .thenReturn(new PasswordCredentialVersion());
 
     try {
       certificateAuthorityService.findMostRecent(userContext, "actually-a-password");
@@ -101,7 +101,7 @@ public class CertificateAuthorityServiceTest {
 
   @Test
   public void findMostRecent_whenCertificateIsNotACa_throwsException() {
-    CertificateCredential notACertificateAuthority = mock(CertificateCredential.class);
+    CertificateCredentialVersion notACertificateAuthority = mock(CertificateCredentialVersion.class);
     when(notACertificateAuthority.getParsedCertificate()).thenReturn(mock(CertificateReader.class));
     when(notACertificateAuthority.getCertificate()).thenReturn(SIMPLE_SELF_SIGNED_TEST_CERT);
     when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME))

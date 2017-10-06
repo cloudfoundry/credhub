@@ -4,24 +4,24 @@ import io.pivotal.security.credential.SshCredentialValue;
 import io.pivotal.security.entity.SshCredentialVersionData;
 import io.pivotal.security.util.SshPublicKeyParser;
 
-public class SshCredential extends Credential<SshCredential> {
+public class SshCredentialVersion extends CredentialVersion<SshCredentialVersion> {
 
   private SshCredentialVersionData delegate;
 
-  public SshCredential(SshCredentialVersionData delegate) {
+  public SshCredentialVersion(SshCredentialVersionData delegate) {
     super(delegate);
     this.delegate = delegate;
   }
 
-  public SshCredential(String name) {
+  public SshCredentialVersion(String name) {
     this(new SshCredentialVersionData(name));
   }
 
-  public SshCredential() {
+  public SshCredentialVersion() {
     this(new SshCredentialVersionData());
   }
 
-  public SshCredential(SshCredentialValue sshValue, Encryptor encryptor) {
+  public SshCredentialVersion(SshCredentialValue sshValue, Encryptor encryptor) {
     this();
     this.setEncryptor(encryptor);
     this.setPublicKey(sshValue.getPublicKey());
@@ -32,7 +32,7 @@ public class SshCredential extends Credential<SshCredential> {
     return delegate.getPublicKey();
   }
 
-  public SshCredential setPublicKey(String publicKey) {
+  public SshCredentialVersion setPublicKey(String publicKey) {
     this.delegate.setPublicKey(publicKey);
     return this;
   }
@@ -41,7 +41,7 @@ public class SshCredential extends Credential<SshCredential> {
       return (String) super.getValue();
   }
 
-  public SshCredential setPrivateKey(String privateKey) {
+  public SshCredentialVersion setPrivateKey(String privateKey) {
     if (privateKey != null) {
       super.setValue(privateKey);
     }

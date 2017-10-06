@@ -22,8 +22,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
-public class UserCredentialTest {
-  private UserCredential subject;
+public class UserCredentialVersionTest {
+  private UserCredentialVersion subject;
   private Encryptor encryptor;
   private final String CREDENTIAL_NAME = "/test/user";
   private final String USER_PASSWORD = "test-user-password";
@@ -36,7 +36,7 @@ public class UserCredentialTest {
   private final String USER_GENERATION_PARAMS_STRING = new JsonObjectMapper().writeValueAsString(STRING_GENERATION_PARAMS);
   private UserCredentialVersionData userCredentialData;
 
-  public UserCredentialTest() throws Exception {
+  public UserCredentialVersionTest() throws Exception {
   }
 
   @Before
@@ -46,20 +46,20 @@ public class UserCredentialTest {
 
   @Test
   public void getCredentialType_returnsUser() {
-    subject = new UserCredential();
+    subject = new UserCredentialVersion();
     assertThat(subject.getCredentialType(), equalTo("user"));
   }
 
   @Test
   public void getUsername_returnsUsernameFromDelegate() {
-    subject = new UserCredential(new UserCredentialVersionData(CREDENTIAL_NAME).setUsername("test-user"));
+    subject = new UserCredentialVersion(new UserCredentialVersionData(CREDENTIAL_NAME).setUsername("test-user"));
     assertThat(subject.getUsername(), equalTo("test-user"));
   }
 
   @Test
   public void setUsername_setsUsernameOnDelegate() {
     UserCredentialVersionData delegate = new UserCredentialVersionData(CREDENTIAL_NAME);
-    subject = new UserCredential(delegate);
+    subject = new UserCredentialVersion(delegate);
     subject.setUsername("test-user");
     assertThat(delegate.getUsername(), equalTo("test-user"));
   }
@@ -73,7 +73,7 @@ public class UserCredentialTest {
         .setEncryptedValue(ENCRYPTED_PASSWORD)
         .setNonce(NONCE)
         .setEncryptionKeyUuid(ENCRYPTION_KEY_UUID);
-    subject = new UserCredential(userCredentialData)
+    subject = new UserCredentialVersion(userCredentialData)
         .setEncryptor(encryptor);
 
     String password = subject.getPassword();
@@ -87,7 +87,7 @@ public class UserCredentialTest {
     when(encryptor.encrypt(eq(USER_PASSWORD)))
         .thenReturn(new Encryption(ENCRYPTION_KEY_UUID, ENCRYPTED_PASSWORD, NONCE));
     userCredentialData = new UserCredentialVersionData(CREDENTIAL_NAME);
-    subject = new UserCredential(userCredentialData)
+    subject = new UserCredentialVersion(userCredentialData)
         .setEncryptor(encryptor);
 
     subject.setPassword(USER_PASSWORD);
@@ -115,7 +115,7 @@ public class UserCredentialTest {
         .setEncryptedValue(oldEncryptedPassword)
         .setEncryptedGenerationParameters(parametersEncryption)
         .setNonce(oldNonce);
-    subject = new UserCredential(userCredentialData)
+    subject = new UserCredentialVersion(userCredentialData)
         .setEncryptor(encryptor);
     when(encryptor.decrypt(new Encryption(oldEncryptionKeyUuid, oldEncryptedPassword, oldNonce)))
         .thenReturn(USER_PASSWORD);
@@ -145,7 +145,7 @@ public class UserCredentialTest {
     when(encryptor.encrypt(eq(USER_GENERATION_PARAMS_STRING)))
         .thenReturn(new Encryption(ENCRYPTION_KEY_UUID, ENCRYPTED_GENERATION_PARAMS, PARAMETERS_NONCE));
     userCredentialData = new UserCredentialVersionData(CREDENTIAL_NAME);
-    subject = new UserCredential(userCredentialData)
+    subject = new UserCredentialVersion(userCredentialData)
         .setEncryptor(encryptor);
 
     subject.setGenerationParameters(STRING_GENERATION_PARAMS);
@@ -166,7 +166,7 @@ public class UserCredentialTest {
         .setEncryptedGenerationParameters(encryption)
 
         .setEncryptionKeyUuid(ENCRYPTION_KEY_UUID);
-    subject = new UserCredential(userCredentialData)
+    subject = new UserCredentialVersion(userCredentialData)
         .setEncryptor(encryptor);
 
     StringGenerationParameters generationParameters = subject.getGenerationParameters();

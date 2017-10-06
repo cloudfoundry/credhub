@@ -1,10 +1,10 @@
 package io.pivotal.security.view;
 
 import io.pivotal.security.credential.UserCredentialValue;
-import io.pivotal.security.domain.UserCredential;
+import io.pivotal.security.domain.UserCredentialVersion;
 
 public class UserView extends CredentialView {
-  public UserView(UserCredential userCredential) {
+  public UserView(UserCredentialVersion userCredential) {
     super(
         userCredential.getVersionCreatedAt(),
         userCredential.getUuid(),

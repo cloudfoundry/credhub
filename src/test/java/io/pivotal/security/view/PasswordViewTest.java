@@ -2,7 +2,7 @@ package io.pivotal.security.view;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.PasswordCredential;
+import io.pivotal.security.domain.PasswordCredentialVersion;
 import org.junit.runner.RunWith;
 
 import java.time.Instant;
@@ -20,7 +20,7 @@ import static org.mockito.Mockito.when;
 @RunWith(Spectrum.class)
 public class PasswordViewTest {
 
-  private PasswordCredential entity;
+  private PasswordCredentialVersion entity;
   private UUID uuid;
   private Encryptor encryptor;
 
@@ -28,7 +28,7 @@ public class PasswordViewTest {
     beforeEach(() -> {
       encryptor = mock(Encryptor.class);
       uuid = UUID.randomUUID();
-      entity = new PasswordCredential("/foo")
+      entity = new PasswordCredentialVersion("/foo")
           .setEncryptor(encryptor)
           .setUuid(uuid);
 

@@ -7,7 +7,7 @@ import io.pivotal.security.constants.CredentialType;
 import io.pivotal.security.credential.CredentialValue;
 import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.data.PermissionsDataService;
-import io.pivotal.security.domain.Credential;
+import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.domain.CredentialFactory;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.InvalidAclOperationException;
@@ -66,24 +66,24 @@ public class PermissionedCredentialService {
       PermissionEntry currentUserPermissionEntry,
       List<EventAuditRecordParameters> auditRecordParameters
   ) {
-    Credential existingCredential = credentialVersionDataService.findMostRecent(credentialName);
+    CredentialVersion existingCredentialVersion = credentialVersionDataService.findMostRecent(credentialName);
 
-    boolean shouldWriteNewEntity = existingCredential == null || isOverwrite;
+    boolean shouldWriteNewEntity = existingCredentialVersion == null || isOverwrite;
 
     AuditingOperationCode credentialOperationCode =
         shouldWriteNewEntity ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS;
     auditRecordParameters
         .add(new EventAuditRecordParameters(credentialOperationCode, credentialName));
 
-    if (existingCredential != null) {
+    if (existingCredentialVersion != null) {
       verifyCredentialWritePermission(userContext, credentialName);
     }
 
-    if (existingCredential != null && accessControlEntries.size() > 0) {
+    if (existingCredentialVersion != null && accessControlEntries.size() > 0) {
       verifyAclWrite(userContext, credentialName);
     }
 
-    if (existingCredential != null && !existingCredential.getCredentialType().equals(type)) {
+    if (existingCredentialVersion != null && !existingCredentialVersion.getCredentialType().equals(type)) {
       throw new ParameterizedValidationException("error.type_mismatch");
     }
 
@@ -93,31 +93,31 @@ public class PermissionedCredentialService {
       }
     }
 
-    Credential storedCredentialVersion = existingCredential;
+    CredentialVersion storedCredentialVersionVersion = existingCredentialVersion;
     if (shouldWriteNewEntity) {
-      if (existingCredential == null) {
+      if (existingCredentialVersion == null) {
         accessControlEntries.add(currentUserPermissionEntry);
       }
 
-      Credential newVersion = credentialFactory.makeNewCredentialVersion(
+      CredentialVersion newVersion = credentialFactory.makeNewCredentialVersion(
           CredentialType.valueOf(type),
           credentialName,
           credentialValue,
-          existingCredential,
+          existingCredentialVersion,
           generationParameters);
-      storedCredentialVersion = credentialVersionDataService.save(newVersion);
+      storedCredentialVersionVersion = credentialVersionDataService.save(newVersion);
 
       permissionsDataService.saveAccessControlEntries(
-          storedCredentialVersion.getCredentialName(),
+          storedCredentialVersionVersion.getCredentialName(),
           accessControlEntries);
       auditRecordParameters.addAll(createPermissionsEventAuditParameters(
           ACL_UPDATE,
-          storedCredentialVersion.getName(),
+          storedCredentialVersionVersion.getName(),
           accessControlEntries
       ));
     }
 
-    return CredentialView.fromEntity(storedCredentialVersion);
+    return CredentialView.fromEntity(storedCredentialVersionVersion);
   }
 
   private void verifyCredentialWritePermission(UserContext userContext, String credentialName) {
@@ -142,7 +142,7 @@ public class PermissionedCredentialService {
     return credentialVersionDataService.delete(credentialName);
   }
 
-  public List<Credential> findAllByName(UserContext userContext, String credentialName) {
+  public List<CredentialVersion> findAllByName(UserContext userContext, String credentialName) {
     if (!permissionCheckingService
         .hasPermission(userContext.getAclUser(), credentialName, READ)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
@@ -151,7 +151,7 @@ public class PermissionedCredentialService {
     return credentialVersionDataService.findAllByName(credentialName);
   }
 
-  public List<Credential> findNByName(UserContext userContext, String credentialName, Integer numberOfVersions) {
+  public List<CredentialVersion> findNByName(UserContext userContext, String credentialName, Integer numberOfVersions) {
     if (!permissionCheckingService
         .hasPermission(userContext.getAclUser(), credentialName, READ)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
@@ -160,17 +160,17 @@ public class PermissionedCredentialService {
     return credentialVersionDataService.findNByName(credentialName, numberOfVersions);
   }
 
-  public Credential findByUuid(UserContext userContext, String credentialUUID, List<EventAuditRecordParameters> auditRecordParametersList) {
+  public CredentialVersion findByUuid(UserContext userContext, String credentialUUID, List<EventAuditRecordParameters> auditRecordParametersList) {
     EventAuditRecordParameters eventAuditRecordParameters = new EventAuditRecordParameters(
         AuditingOperationCode.CREDENTIAL_ACCESS
     );
     auditRecordParametersList.add(eventAuditRecordParameters);
 
-    Credential credential = credentialVersionDataService.findByUuid(credentialUUID);
-    if (credential == null) {
+    CredentialVersion credentialVersion = credentialVersionDataService.findByUuid(credentialUUID);
+    if (credentialVersion == null) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
-    String credentialName = credential.getName();
+    String credentialName = credentialVersion.getName();
     eventAuditRecordParameters.setCredentialName(credentialName);
 
     if (!permissionCheckingService
@@ -201,7 +201,7 @@ public class PermissionedCredentialService {
     return credentialVersionDataService.findContainingName(name);
   }
 
-  public Credential findMostRecent(String credentialName) {
+  public CredentialVersion findMostRecent(String credentialName) {
     return credentialVersionDataService.findMostRecent(credentialName);
   }
 }

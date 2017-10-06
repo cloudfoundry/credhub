@@ -23,11 +23,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
-public class PasswordCredentialTest {
+public class PasswordCredentialVersionTest {
 
   private static final String PASSWORD = "my-password";
 
-  private PasswordCredential subject;
+  private PasswordCredentialVersion subject;
   private PasswordCredentialVersionData passwordCredentialData;
   private Encryptor encryptor;
   private UUID canaryUuid;
@@ -69,7 +69,7 @@ public class PasswordCredentialTest {
         .thenReturn(generationParametersJson);
 
     passwordCredentialData = new PasswordCredentialVersionData("/Foo");
-    subject = new PasswordCredential(passwordCredentialData);
+    subject = new PasswordCredentialVersion(passwordCredentialData);
     subject.setEncryptor(encryptor);
   }
 
@@ -89,7 +89,7 @@ public class PasswordCredentialTest {
 
   @Test
   public void getPassword_shouldCallDecryptOnce() {
-    subject = new PasswordCredential("/Foo");
+    subject = new PasswordCredentialVersion("/Foo");
     subject.setEncryptor(encryptor);
     when(encryptor.encrypt(null))
         .thenReturn(new Encryption(canaryUuid, null, null));

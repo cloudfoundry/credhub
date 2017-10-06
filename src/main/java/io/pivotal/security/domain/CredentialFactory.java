@@ -34,26 +34,26 @@ public class CredentialFactory {
     this.encryptor = encryptor;
   }
 
-  public Credential makeCredentialFromEntity(CredentialVersionData credentialVersionData) {
+  public CredentialVersion makeCredentialFromEntity(CredentialVersionData credentialVersionData) {
     if (credentialVersionData == null) {
       return null;
     }
 
-    Credential returnValue;
+    CredentialVersion returnValue;
     if (credentialVersionData instanceof CertificateCredentialVersionData) {
-      returnValue = new CertificateCredential((CertificateCredentialVersionData) credentialVersionData);
+      returnValue = new CertificateCredentialVersion((CertificateCredentialVersionData) credentialVersionData);
     } else if (credentialVersionData instanceof PasswordCredentialVersionData) {
-      returnValue = new PasswordCredential((PasswordCredentialVersionData) credentialVersionData);
+      returnValue = new PasswordCredentialVersion((PasswordCredentialVersionData) credentialVersionData);
     } else if (credentialVersionData instanceof RsaCredentialVersionData) {
-      returnValue = new RsaCredential((RsaCredentialVersionData) credentialVersionData);
+      returnValue = new RsaCredentialVersion((RsaCredentialVersionData) credentialVersionData);
     } else if (credentialVersionData instanceof SshCredentialVersionData) {
-      returnValue = new SshCredential((SshCredentialVersionData) credentialVersionData);
+      returnValue = new SshCredentialVersion((SshCredentialVersionData) credentialVersionData);
     } else if (credentialVersionData instanceof ValueCredentialVersionData) {
-      returnValue = new ValueCredential((ValueCredentialVersionData) credentialVersionData);
+      returnValue = new ValueCredentialVersion((ValueCredentialVersionData) credentialVersionData);
     } else if (credentialVersionData instanceof JsonCredentialVersionData) {
-      returnValue = new JsonCredential((JsonCredentialVersionData) credentialVersionData);
+      returnValue = new JsonCredentialVersion((JsonCredentialVersionData) credentialVersionData);
     } else if (credentialVersionData instanceof UserCredentialVersionData) {
-      returnValue = new UserCredential((UserCredentialVersionData) credentialVersionData);
+      returnValue = new UserCredentialVersion((UserCredentialVersionData) credentialVersionData);
     } else {
       throw new RuntimeException("Unrecognized type: " + credentialVersionData.getClass().getName());
     }
@@ -62,42 +62,42 @@ public class CredentialFactory {
     return returnValue;
   }
 
-  public List<Credential> makeCredentialsFromEntities(List<CredentialVersionData> daos) {
+  public List<CredentialVersion> makeCredentialsFromEntities(List<CredentialVersionData> daos) {
     return daos.stream().map(this::makeCredentialFromEntity).collect(Collectors.toList());
   }
 
-  public Credential makeNewCredentialVersion(
+  public CredentialVersion makeNewCredentialVersion(
       CredentialType type,
       String name,
       CredentialValue credentialValue,
-      Credential existingCredential,
+      CredentialVersion existingCredentialVersion,
       GenerationParameters passwordGenerationParameters
   ) {
-    Credential credential;
+    CredentialVersion credentialVersion;
     switch (type) {
       case password:
-        credential = new PasswordCredential(
+        credentialVersion = new PasswordCredentialVersion(
             (StringCredentialValue) credentialValue,
             (StringGenerationParameters) passwordGenerationParameters,
             encryptor);
         break;
       case certificate:
-        credential = new CertificateCredential((CertificateCredentialValue) credentialValue, encryptor);
+        credentialVersion = new CertificateCredentialVersion((CertificateCredentialValue) credentialValue, encryptor);
         break;
       case value:
-        credential = new ValueCredential((StringCredentialValue) credentialValue, encryptor);
+        credentialVersion = new ValueCredentialVersion((StringCredentialValue) credentialValue, encryptor);
         break;
       case rsa:
-        credential = new RsaCredential((RsaCredentialValue) credentialValue, encryptor);
+        credentialVersion = new RsaCredentialVersion((RsaCredentialValue) credentialValue, encryptor);
         break;
       case ssh:
-        credential = new SshCredential((SshCredentialValue) credentialValue, encryptor);
+        credentialVersion = new SshCredentialVersion((SshCredentialValue) credentialValue, encryptor);
         break;
       case json:
-        credential = new JsonCredential((JsonCredentialValue) credentialValue, encryptor);
+        credentialVersion = new JsonCredentialVersion((JsonCredentialValue) credentialValue, encryptor);
         break;
       case user:
-        credential = new UserCredential(
+        credentialVersion = new UserCredentialVersion(
             (UserCredentialValue) credentialValue,
             (StringGenerationParameters) passwordGenerationParameters,
             encryptor);
@@ -106,12 +106,12 @@ public class CredentialFactory {
         throw new RuntimeException("Unrecognized type: " + type);
     }
 
-    if (existingCredential == null) {
-      credential.createName(name);
+    if (existingCredentialVersion == null) {
+      credentialVersion.createName(name);
     } else {
-      credential.copyNameReferenceFrom(existingCredential);
+      credentialVersion.copyNameReferenceFrom(existingCredentialVersion);
     }
 
-    return credential;
+    return credentialVersion;
   }
 }

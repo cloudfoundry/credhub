@@ -2,14 +2,14 @@ package io.pivotal.security.view;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.pivotal.security.credential.CredentialValue;
-import io.pivotal.security.domain.CertificateCredential;
-import io.pivotal.security.domain.Credential;
-import io.pivotal.security.domain.JsonCredential;
-import io.pivotal.security.domain.PasswordCredential;
-import io.pivotal.security.domain.RsaCredential;
-import io.pivotal.security.domain.SshCredential;
-import io.pivotal.security.domain.UserCredential;
-import io.pivotal.security.domain.ValueCredential;
+import io.pivotal.security.domain.CertificateCredentialVersion;
+import io.pivotal.security.domain.CredentialVersion;
+import io.pivotal.security.domain.JsonCredentialVersion;
+import io.pivotal.security.domain.PasswordCredentialVersion;
+import io.pivotal.security.domain.RsaCredentialVersion;
+import io.pivotal.security.domain.SshCredentialVersion;
+import io.pivotal.security.domain.UserCredentialVersion;
+import io.pivotal.security.domain.ValueCredentialVersion;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -32,22 +32,22 @@ public class CredentialView<T extends CredentialValue> {
     this.value = value;
   }
 
-  public static CredentialView fromEntity(Credential credential) {
+  public static CredentialView fromEntity(CredentialVersion credentialVersion) {
     CredentialView result;
-    if (ValueCredential.class.isInstance(credential)) {
-      result = new ValueView((ValueCredential) credential);
-    } else if (PasswordCredential.class.isInstance(credential)) {
-      result = new PasswordView((PasswordCredential) credential);
-    } else if (CertificateCredential.class.isInstance(credential)) {
-      result = new CertificateView((CertificateCredential) credential);
-    } else if (SshCredential.class.isInstance(credential)) {
-      result = new SshView((SshCredential) credential);
-    } else if (RsaCredential.class.isInstance(credential)) {
-      result = new RsaView((RsaCredential) credential);
-    } else if (JsonCredential.class.isInstance(credential)) {
-      result = new JsonView((JsonCredential) credential);
-    } else if (UserCredential.class.isInstance(credential)) {
-      result = new UserView((UserCredential) credential);
+    if (ValueCredentialVersion.class.isInstance(credentialVersion)) {
+      result = new ValueView((ValueCredentialVersion) credentialVersion);
+    } else if (PasswordCredentialVersion.class.isInstance(credentialVersion)) {
+      result = new PasswordView((PasswordCredentialVersion) credentialVersion);
+    } else if (CertificateCredentialVersion.class.isInstance(credentialVersion)) {
+      result = new CertificateView((CertificateCredentialVersion) credentialVersion);
+    } else if (SshCredentialVersion.class.isInstance(credentialVersion)) {
+      result = new SshView((SshCredentialVersion) credentialVersion);
+    } else if (RsaCredentialVersion.class.isInstance(credentialVersion)) {
+      result = new RsaView((RsaCredentialVersion) credentialVersion);
+    } else if (JsonCredentialVersion.class.isInstance(credentialVersion)) {
+      result = new JsonView((JsonCredentialVersion) credentialVersion);
+    } else if (UserCredentialVersion.class.isInstance(credentialVersion)) {
+      result = new UserView((UserCredentialVersion) credentialVersion);
     } else {
       throw new IllegalArgumentException();
     }

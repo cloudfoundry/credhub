@@ -1,6 +1,6 @@
 package io.pivotal.security.handler;
 
-import io.pivotal.security.domain.Credential;
+import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.request.BaseCredentialGenerateRequest;
 import io.pivotal.security.service.regeneratables.CertificateCredentialRegeneratable;
 import io.pivotal.security.service.regeneratables.NotRegeneratable;
@@ -28,10 +28,10 @@ public class GenerationRequestGenerator {
     this.regeneratableTypeProducers.put("certificate", CertificateCredentialRegeneratable::new);
   }
 
-  public BaseCredentialGenerateRequest createGenerateRequest(Credential credential) {
+  public BaseCredentialGenerateRequest createGenerateRequest(CredentialVersion credentialVersion) {
     Regeneratable regeneratable = regeneratableTypeProducers
-        .getOrDefault(credential.getCredentialType(), NotRegeneratable::new)
+        .getOrDefault(credentialVersion.getCredentialType(), NotRegeneratable::new)
         .get();
-    return regeneratable.createGenerateRequest(credential);
+    return regeneratable.createGenerateRequest(credentialVersion);
   }
 }

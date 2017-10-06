@@ -1,7 +1,7 @@
 package io.pivotal.security.view;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.pivotal.security.domain.Credential;
+import io.pivotal.security.domain.CredentialVersion;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,9 +16,9 @@ public class DataResponse {
     this.data = data;
   }
 
-  public static DataResponse fromEntity(List<Credential> models) {
+  public static DataResponse fromEntity(List<CredentialVersion> models) {
     ArrayList<CredentialView> views = newArrayList();
-    for (Credential model : models) {
+    for (CredentialVersion model : models) {
       views.add(CredentialView.fromEntity((model)));
     }
     return new DataResponse(views);

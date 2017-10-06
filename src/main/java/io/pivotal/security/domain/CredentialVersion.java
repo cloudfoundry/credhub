@@ -8,12 +8,12 @@ import io.pivotal.security.service.Encryption;
 import java.time.Instant;
 import java.util.UUID;
 
-public abstract class Credential<Z extends Credential> {
+public abstract class CredentialVersion<Z extends CredentialVersion> {
 
   protected CredentialVersionData delegate;
   protected Encryptor encryptor;
 
-  public Credential(CredentialVersionData delegate) {
+  public CredentialVersion(CredentialVersionData delegate) {
     this.delegate = delegate;
   }
 
@@ -61,7 +61,7 @@ public abstract class Credential<Z extends Credential> {
     return (Z) this;
   }
 
-  public <Z extends Credential> Z save(CredentialVersionDataService credentialVersionDataService) {
+  public <Z extends CredentialVersion> Z save(CredentialVersionDataService credentialVersionDataService) {
     return (Z) credentialVersionDataService.save(delegate);
   }
 
@@ -69,8 +69,8 @@ public abstract class Credential<Z extends Credential> {
     return delegate.getCredentialName();
   }
 
-  protected void copyNameReferenceFrom(Credential credential) {
-    this.delegate.setCredentialName(credential.delegate.getCredentialName());
+  protected void copyNameReferenceFrom(CredentialVersion credentialVersion) {
+    this.delegate.setCredentialName(credentialVersion.delegate.getCredentialName());
   }
 
   public void createName(String name) {

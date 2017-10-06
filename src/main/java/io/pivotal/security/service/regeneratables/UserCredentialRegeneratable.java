@@ -1,7 +1,7 @@
 package io.pivotal.security.service.regeneratables;
 
-import io.pivotal.security.domain.Credential;
-import io.pivotal.security.domain.UserCredential;
+import io.pivotal.security.domain.CredentialVersion;
+import io.pivotal.security.domain.UserCredentialVersion;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.request.BaseCredentialGenerateRequest;
 import io.pivotal.security.request.UserGenerateRequest;
@@ -10,8 +10,8 @@ import io.pivotal.security.request.StringGenerationParameters;
 public class UserCredentialRegeneratable implements Regeneratable {
 
   @Override
-  public BaseCredentialGenerateRequest createGenerateRequest(Credential credential) {
-    UserCredential userCredential = (UserCredential) credential;
+  public BaseCredentialGenerateRequest createGenerateRequest(CredentialVersion credentialVersion) {
+    UserCredentialVersion userCredential = (UserCredentialVersion) credentialVersion;
     UserGenerateRequest generateRequest = new UserGenerateRequest();
 
     generateRequest.setName(userCredential.getName());

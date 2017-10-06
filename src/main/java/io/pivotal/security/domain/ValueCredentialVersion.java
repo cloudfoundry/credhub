@@ -3,30 +3,30 @@ package io.pivotal.security.domain;
 import io.pivotal.security.credential.StringCredentialValue;
 import io.pivotal.security.entity.ValueCredentialVersionData;
 
-public class ValueCredential extends Credential<ValueCredential> {
+public class ValueCredentialVersion extends CredentialVersion<ValueCredentialVersion> {
 
   private ValueCredentialVersionData delegate;
 
-  public ValueCredential(ValueCredentialVersionData delegate) {
+  public ValueCredentialVersion(ValueCredentialVersionData delegate) {
     super(delegate);
     this.delegate = delegate;
   }
 
-  public ValueCredential(String name) {
+  public ValueCredentialVersion(String name) {
     this(new ValueCredentialVersionData(name));
   }
 
-  public ValueCredential() {
+  public ValueCredentialVersion() {
     this(new ValueCredentialVersionData());
   }
 
-  public ValueCredential(StringCredentialValue value, Encryptor encryptor) {
+  public ValueCredentialVersion(StringCredentialValue value, Encryptor encryptor) {
     this();
     this.setEncryptor(encryptor);
     this.setValue(value.getStringCredential());
   }
 
-  public ValueCredential setValue(String value) {
+  public ValueCredentialVersion setValue(String value) {
     if (value == null) {
       throw new IllegalArgumentException("value cannot be null");
     }

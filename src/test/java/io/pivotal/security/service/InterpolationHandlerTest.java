@@ -2,8 +2,8 @@ package io.pivotal.security.service;
 
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.domain.JsonCredential;
-import io.pivotal.security.domain.PasswordCredential;
+import io.pivotal.security.domain.JsonCredentialVersion;
+import io.pivotal.security.domain.PasswordCredentialVersion;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.handler.CredentialsHandler;
 import io.pivotal.security.handler.InterpolationHandler;
@@ -85,7 +85,7 @@ public class InterpolationHandlerTest {
           + "  ]"
           + "}";
 
-      PasswordCredential passwordCredential = mock(PasswordCredential.class);
+      PasswordCredentialVersion passwordCredential = mock(PasswordCredentialVersion.class);
       when(passwordCredential.getName()).thenReturn("/password_cred");
 
       doReturn(
@@ -235,15 +235,15 @@ public class InterpolationHandlerTest {
         + "}";
     Map<String, Object> inputJson = deserialize(inputJsonString, Map.class);
 
-    JsonCredential jsonCredential = mock(JsonCredential.class);
+    JsonCredentialVersion jsonCredential = mock(JsonCredentialVersion.class);
     when(jsonCredential.getName()).thenReturn("/cred1");
     doReturn(Maps.newHashMap("secret1", "secret1-value")).when(jsonCredential).getValue();
 
-    JsonCredential jsonCredential1 = mock(JsonCredential.class);
+    JsonCredentialVersion jsonCredential1 = mock(JsonCredentialVersion.class);
     when(jsonCredential1.getName()).thenReturn("/cred2");
     doReturn(Maps.newHashMap("secret2", "secret2-value")).when(jsonCredential1).getValue();
 
-    JsonCredential jsonCredential2 = mock(JsonCredential.class);
+    JsonCredentialVersion jsonCredential2 = mock(JsonCredentialVersion.class);
     when(jsonCredential2.getName()).thenReturn("/cred3");
     Map<String, String> jsonCredetials = Maps.newHashMap("secret3-1", "secret3-1-value");
     jsonCredetials.put("secret3-2", "secret3-2-value");

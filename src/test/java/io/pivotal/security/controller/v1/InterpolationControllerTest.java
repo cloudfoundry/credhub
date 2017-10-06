@@ -4,8 +4,8 @@ import com.google.common.collect.Lists;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.data.CredentialVersionDataService;
-import io.pivotal.security.domain.JsonCredential;
-import io.pivotal.security.domain.ValueCredential;
+import io.pivotal.security.domain.JsonCredentialVersion;
+import io.pivotal.security.domain.ValueCredentialVersion;
 import io.pivotal.security.helper.AuditingHelper;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
@@ -76,11 +76,11 @@ public class InterpolationControllerTest {
 
   @Test
   public void POST_replacesTheCredHubRefWithTheCredentialValue() throws Exception {
-    JsonCredential jsonCredential = mock(JsonCredential.class);
+    JsonCredentialVersion jsonCredential = mock(JsonCredentialVersion.class);
     doReturn(Maps.newHashMap("secret1", "secret1-value")).when(jsonCredential).getValue();
     when(jsonCredential.getName()).thenReturn("/cred1");
 
-    JsonCredential jsonCredential1 = mock(JsonCredential.class);
+    JsonCredentialVersion jsonCredential1 = mock(JsonCredentialVersion.class);
     doReturn(Maps.newHashMap("secret2", "secret2-value")).when(jsonCredential1).getValue();
     when(jsonCredential1.getName()).thenReturn("/cred2");
 
@@ -101,11 +101,11 @@ public class InterpolationControllerTest {
 
   @Test
   public void POST_logsTheCredentialAccess() throws Exception {
-    JsonCredential jsonCredential = mock(JsonCredential.class);
+    JsonCredentialVersion jsonCredential = mock(JsonCredentialVersion.class);
     doReturn(Maps.newHashMap("secret1", "secret1-value")).when(jsonCredential).getValue();
     when(jsonCredential.getName()).thenReturn("/cred1");
 
-    JsonCredential jsonCredential1 = mock(JsonCredential.class);
+    JsonCredentialVersion jsonCredential1 = mock(JsonCredentialVersion.class);
     doReturn(Maps.newHashMap("secret2", "secret2-value")).when(jsonCredential1).getValue();
     when(jsonCredential1.getName()).thenReturn("/cred2");
 
@@ -130,7 +130,7 @@ public class InterpolationControllerTest {
 
   @Test
   public void POST_whenAReferencedCredentialIsNotJsonType_throwsAnError() throws Exception {
-    ValueCredential valueCredential = mock(ValueCredential.class);
+    ValueCredentialVersion valueCredential = mock(ValueCredentialVersion.class);
     doReturn("something").when(valueCredential).getValue();
 
     doReturn(

@@ -5,8 +5,8 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.data.PermissionsDataService;
 import io.pivotal.security.data.RequestAuditRecordDataService;
-import io.pivotal.security.domain.Credential;
-import io.pivotal.security.domain.PasswordCredential;
+import io.pivotal.security.domain.CredentialVersion;
+import io.pivotal.security.domain.PasswordCredentialVersion;
 import io.pivotal.security.entity.RequestAuditRecord;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.Before;
@@ -297,9 +297,9 @@ public class AuthConfigurationTest {
   }
 
   private void setupDataEndpointMocks() {
-    when(credentialVersionDataService.save(any(Credential.class))).thenAnswer(invocation -> {
-      PasswordCredential passwordCredential = invocation
-          .getArgumentAt(0, PasswordCredential.class);
+    when(credentialVersionDataService.save(any(CredentialVersion.class))).thenAnswer(invocation -> {
+      PasswordCredentialVersion passwordCredential = invocation
+          .getArgumentAt(0, PasswordCredentialVersion.class);
       passwordCredential.setUuid(UUID.randomUUID());
       passwordCredential.setVersionCreatedAt(Instant.now());
       return passwordCredential;

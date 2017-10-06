@@ -22,9 +22,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
-public class JsonCredentialTest {
+public class JsonCredentialVersionTest {
 
-  private JsonCredential subject;
+  private JsonCredentialVersion subject;
   private Map<String, Object> value;
 
   private JsonCredentialVersionData jsonCredentialData;
@@ -51,7 +51,7 @@ public class JsonCredentialTest {
         .thenReturn(serializedValue);
 
     jsonCredentialData = new JsonCredentialVersionData("Foo");
-    subject = new JsonCredential(jsonCredentialData).setEncryptor(encryptor);
+    subject = new JsonCredentialVersion(jsonCredentialData).setEncryptor(encryptor);
   }
 
   @Test

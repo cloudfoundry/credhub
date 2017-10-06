@@ -4,10 +4,10 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.data.EncryptionKeyCanaryDataService;
 import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.PasswordCredential;
-import io.pivotal.security.domain.RsaCredential;
-import io.pivotal.security.domain.SshCredential;
-import io.pivotal.security.domain.UserCredential;
+import io.pivotal.security.domain.PasswordCredentialVersion;
+import io.pivotal.security.domain.RsaCredentialVersion;
+import io.pivotal.security.domain.SshCredentialVersion;
+import io.pivotal.security.domain.UserCredentialVersion;
 import io.pivotal.security.entity.EncryptionKeyCanary;
 import io.pivotal.security.entity.PasswordCredentialVersionData;
 import io.pivotal.security.helper.AuditingHelper;
@@ -105,7 +105,7 @@ public class CredentialsControllerRegenerateTest {
 
   @Test
   public void regeneratingAPassword_regeneratesThePassword_andPersistsAnAuditEntry() throws Exception {
-    PasswordCredential originalCredential = new PasswordCredential("my-password");
+    PasswordCredentialVersion originalCredential = new PasswordCredentialVersion("my-password");
     originalCredential.setEncryptor(encryptor);
     StringGenerationParameters generationParameters = new StringGenerationParameters();
     generationParameters.setExcludeNumber(true);
@@ -129,7 +129,7 @@ public class CredentialsControllerRegenerateTest {
         .andExpect(jsonPath("$.type").value("password"))
         .andExpect(jsonPath("$.version_created_at").value(FROZEN_TIME.plusSeconds(10).toString()));
 
-    final PasswordCredential newPassword = (PasswordCredential) credentialVersionDataService.findMostRecent("my-password");
+    final PasswordCredentialVersion newPassword = (PasswordCredentialVersion) credentialVersionDataService.findMostRecent("my-password");
 
     assertThat(newPassword.getPassword(), not(equalTo("original-credential")));
     assertThat(newPassword.getGenerationParameters().isExcludeNumber(), equalTo(true));
@@ -139,7 +139,7 @@ public class CredentialsControllerRegenerateTest {
 
   @Test
   public void regeneratingAnRsaKey_regeneratesTheRsaKey_andPersistsAnAuditEntry() throws Exception {
-    RsaCredential originalCredential = new RsaCredential("my-rsa");
+    RsaCredentialVersion originalCredential = new RsaCredentialVersion("my-rsa");
     originalCredential.setEncryptor(encryptor);
     originalCredential.setPrivateKey("original value");
     originalCredential.setVersionCreatedAt(FROZEN_TIME.plusSeconds(1));
@@ -161,7 +161,7 @@ public class CredentialsControllerRegenerateTest {
         .andExpect(
             jsonPath("$.version_created_at").value(FROZEN_TIME.plusSeconds(10).toString()));
 
-    RsaCredential newRsa = (RsaCredential) credentialVersionDataService.findMostRecent("my-rsa");
+    RsaCredentialVersion newRsa = (RsaCredentialVersion) credentialVersionDataService.findMostRecent("my-rsa");
 
     assertTrue(newRsa.getPublicKey().contains("-----BEGIN PUBLIC KEY-----"));
     assertTrue(newRsa.getPrivateKey().contains("-----BEGIN RSA PRIVATE KEY-----"));
@@ -173,7 +173,7 @@ public class CredentialsControllerRegenerateTest {
 
   @Test
   public void regeneratingAnSshKey_regeneratesTheSshKey_andPersistsAnAuditEntry() throws Exception {
-    SshCredential originalCredential = new SshCredential("my-ssh");
+    SshCredentialVersion originalCredential = new SshCredentialVersion("my-ssh");
     originalCredential.setEncryptor(encryptor);
     originalCredential.setPrivateKey("original value");
     originalCredential.setVersionCreatedAt(FROZEN_TIME.plusSeconds(1));
@@ -194,7 +194,7 @@ public class CredentialsControllerRegenerateTest {
         .andExpect(jsonPath("$.type").value("ssh"))
         .andExpect(jsonPath("$.version_created_at").value(FROZEN_TIME.plusSeconds(10).toString()));
 
-    final SshCredential newSsh = (SshCredential) credentialVersionDataService.findMostRecent("my-ssh");
+    final SshCredentialVersion newSsh = (SshCredentialVersion) credentialVersionDataService.findMostRecent("my-ssh");
 
     assertThat(newSsh.getPrivateKey(), containsString("-----BEGIN RSA PRIVATE KEY-----"));
     assertThat(newSsh.getPublicKey(), containsString("ssh-rsa "));
@@ -206,7 +206,7 @@ public class CredentialsControllerRegenerateTest {
 
   @Test
   public void regeneratingAUser_regeneratesTheUser_andPersistsAnAuditEntry() throws Exception {
-    UserCredential originalCredential = new UserCredential("the-user");
+    UserCredentialVersion originalCredential = new UserCredentialVersion("the-user");
     originalCredential.setEncryptor(encryptor);
     StringGenerationParameters generationParameters = new StringGenerationParameters();
     generationParameters.setExcludeNumber(true);
@@ -234,7 +234,7 @@ public class CredentialsControllerRegenerateTest {
         .andExpect(jsonPath("$.type").value("user"))
         .andExpect(jsonPath("$.version_created_at").value(FROZEN_TIME.plusSeconds(10).toString()));
 
-    UserCredential newUser = (UserCredential) credentialVersionDataService.findMostRecent("the-user");
+    UserCredentialVersion newUser = (UserCredentialVersion) credentialVersionDataService.findMostRecent("the-user");
 
     assertThat(newUser.getPassword(), not(equalTo(originalCredential.getPassword())));
     assertThat(newUser.getGenerationParameters().isExcludeNumber(), equalTo(true));
@@ -264,7 +264,7 @@ public class CredentialsControllerRegenerateTest {
 
   @Test
   public void regeneratingANonGeneratedPassword_returnsAnError_andPersistsAnAuditEntry() throws Exception {
-    PasswordCredential originalCredential = new PasswordCredential("my-password");
+    PasswordCredentialVersion originalCredential = new PasswordCredentialVersion("my-password");
     originalCredential.setEncryptor(encryptor);
     originalCredential.setPasswordAndGenerationParameters("abcde", null);
 
@@ -294,7 +294,7 @@ public class CredentialsControllerRegenerateTest {
 
     PasswordCredentialVersionData passwordCredentialData = new PasswordCredentialVersionData(
         "my-password");
-    PasswordCredential originalCredential = new PasswordCredential(passwordCredentialData);
+    PasswordCredentialVersion originalCredential = new PasswordCredentialVersion(passwordCredentialData);
     originalCredential.setEncryptor(encryptor);
     originalCredential
         .setPasswordAndGenerationParameters("abcde", new StringGenerationParameters());

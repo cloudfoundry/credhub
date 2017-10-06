@@ -3,7 +3,7 @@ package io.pivotal.security.integration;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.data.CredentialNameDataService;
-import io.pivotal.security.domain.CertificateCredential;
+import io.pivotal.security.domain.CertificateCredentialVersion;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -41,7 +41,7 @@ public class CredentialNameAspectTest {
   public void setup() {
     credentialNameDataService.save(new CredentialName("/test/name"));
 
-    CertificateCredential certificateCredential = new CertificateCredential("/test/certificate")
+    CertificateCredentialVersion certificateCredential = new CertificateCredentialVersion("/test/certificate")
         .setCaName("/ca/certificate")
         .setEncryptor(encryptor);
 

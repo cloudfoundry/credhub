@@ -8,26 +8,26 @@ import io.pivotal.security.util.JsonObjectMapper;
 
 import java.io.IOException;
 
-public class UserCredential extends Credential<UserCredential> {
+public class UserCredentialVersion extends CredentialVersion<UserCredentialVersion> {
   private final UserCredentialVersionData delegate;
   private StringGenerationParameters generationParameters;
   private JsonObjectMapper jsonObjectMapper;
 
-  public UserCredential() {
+  public UserCredentialVersion() {
     this(new UserCredentialVersionData());
   }
 
-  public UserCredential(UserCredentialVersionData delegate) {
+  public UserCredentialVersion(UserCredentialVersionData delegate) {
     super(delegate);
     this.delegate = delegate;
     jsonObjectMapper = new JsonObjectMapper();
   }
 
-  public UserCredential(String name) {
+  public UserCredentialVersion(String name) {
     this(new UserCredentialVersionData(name));
   }
 
-  public UserCredential(
+  public UserCredentialVersion(
       UserCredentialValue userValue,
       StringGenerationParameters generationParameters,
       Encryptor encryptor
@@ -54,7 +54,7 @@ public class UserCredential extends Credential<UserCredential> {
     setGenerationParameters(decryptedGenerationParameters);
   }
 
-  public UserCredential setPassword(String password) {
+  public UserCredentialVersion setPassword(String password) {
     if (password != null) {
       super.setValue(password);
     }
@@ -65,7 +65,7 @@ public class UserCredential extends Credential<UserCredential> {
     return (String) super.getValue();
   }
 
-  public UserCredential setUsername(String username) {
+  public UserCredentialVersion setUsername(String username) {
     delegate.setUsername(username);
     return this;
   }
@@ -78,12 +78,12 @@ public class UserCredential extends Credential<UserCredential> {
     return delegate.getSalt();
   }
 
-  public UserCredential setSalt(String salt) {
+  public UserCredentialVersion setSalt(String salt) {
     delegate.setSalt(salt);
     return this;
   }
 
-  public UserCredential setGenerationParameters(StringGenerationParameters generationParameters) {
+  public UserCredentialVersion setGenerationParameters(StringGenerationParameters generationParameters) {
     Encryption encryptedParameters;
     try {
       String generationParameterJson =

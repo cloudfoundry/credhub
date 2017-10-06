@@ -1,7 +1,7 @@
 package io.pivotal.security.view;
 
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.domain.CertificateCredential;
+import io.pivotal.security.domain.CertificateCredentialVersion;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.helper.JsonTestHelper;
 import io.pivotal.security.service.Encryption;
@@ -20,7 +20,7 @@ import static org.mockito.Mockito.when;
 @RunWith(Spectrum.class)
 public class CertificateCredentialTest {
 
-  private CertificateCredential entity;
+  private CertificateCredentialVersion entity;
   private String credentialName;
   private UUID uuid;
   private Encryptor encryptor;
@@ -38,7 +38,7 @@ public class CertificateCredentialTest {
 
       credentialName = "/foo";
       uuid = UUID.randomUUID();
-      entity = new CertificateCredential(credentialName)
+      entity = new CertificateCredentialVersion(credentialName)
           .setEncryptor(encryptor)
           .setCa("ca")
           .setCertificate("cert")
@@ -77,7 +77,7 @@ public class CertificateCredentialTest {
 
     it("includes keys with null values", () -> {
       final CredentialView subject = CertificateView
-          .fromEntity(new CertificateCredential(credentialName).setEncryptor(encryptor).setUuid(uuid));
+          .fromEntity(new CertificateCredentialVersion(credentialName).setEncryptor(encryptor).setUuid(uuid));
       final String json = JsonTestHelper.serializeToString(subject);
 
       assertThat(json, equalTo("{"

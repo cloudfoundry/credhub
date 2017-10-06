@@ -5,10 +5,10 @@ import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.data.EventAuditRecordDataService;
 import io.pivotal.security.data.PermissionsDataService;
 import io.pivotal.security.data.RequestAuditRecordDataService;
-import io.pivotal.security.domain.Credential;
+import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.PasswordCredential;
-import io.pivotal.security.domain.ValueCredential;
+import io.pivotal.security.domain.PasswordCredentialVersion;
+import io.pivotal.security.domain.ValueCredentialVersion;
 import io.pivotal.security.entity.EventAuditRecord;
 import io.pivotal.security.entity.RequestAuditRecord;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -87,7 +87,7 @@ public class CredentialsControllerAuditLogTest {
 
   @Test
   public void gettingACredential_byName_makesACredentialAccessLogEntry() throws Exception {
-    doReturn(Arrays.asList(new PasswordCredential("/foo").setEncryptor(encryptor)))
+    doReturn(Arrays.asList(new PasswordCredentialVersion("/foo").setEncryptor(encryptor)))
         .when(credentialVersionDataService).findAllByName(eq("foo"));
 
     mockMvc.perform(get(API_V1_DATA + "?name=foo")
@@ -108,7 +108,7 @@ public class CredentialsControllerAuditLogTest {
 
   @Test
   public void gettingACredential_byId_makesACredentialAccessAuditLogEntry() throws Exception {
-    doReturn(new PasswordCredential("/foo").setEncryptor(encryptor))
+    doReturn(new PasswordCredentialVersion("/foo").setEncryptor(encryptor))
         .when(credentialVersionDataService).findByUuid(eq("foo-id"));
 
     mockMvc.perform(get(API_V1_DATA + "/foo-id")
@@ -129,8 +129,8 @@ public class CredentialsControllerAuditLogTest {
 
   @Test
   public void settingACredential_makesACredentialUpdateLogEntry() throws Exception {
-    when(credentialVersionDataService.save(any(Credential.class))).thenAnswer(invocation -> {
-      ValueCredential valueCredential = invocation.getArgumentAt(0, ValueCredential.class);
+    when(credentialVersionDataService.save(any(CredentialVersion.class))).thenAnswer(invocation -> {
+      ValueCredentialVersion valueCredential = invocation.getArgumentAt(0, ValueCredentialVersion.class);
       valueCredential.setEncryptor(encryptor);
       valueCredential.setUuid(UUID.randomUUID());
       return valueCredential;
@@ -187,8 +187,8 @@ public class CredentialsControllerAuditLogTest {
 
   @Test
   public void whenARequestHasMultipleXForwardedForHeaders_logsAllXForwardedForValues() throws Exception {
-    when(credentialVersionDataService.save(any(Credential.class))).thenAnswer(invocation -> {
-      ValueCredential valueCredential = invocation.getArgumentAt(0, ValueCredential.class);
+    when(credentialVersionDataService.save(any(CredentialVersion.class))).thenAnswer(invocation -> {
+      ValueCredentialVersion valueCredential = invocation.getArgumentAt(0, ValueCredentialVersion.class);
       valueCredential.setUuid(UUID.randomUUID());
       return valueCredential;
     });

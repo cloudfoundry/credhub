@@ -8,7 +8,7 @@ import io.pivotal.security.audit.EventAuditLogService;
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.audit.RequestUuid;
 import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.domain.Credential;
+import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.exceptions.InvalidQueryParameterException;
 import io.pivotal.security.handler.CredentialsHandler;
 import io.pivotal.security.handler.GenerateHandler;
@@ -153,9 +153,9 @@ public class CredentialsController {
       RequestUuid requestUuid,
       UserContext userContext) {
     return eventAuditLogService.auditEvents(requestUuid, userContext, eventAuditRecordParametersList -> {
-      Credential credentialVersion = credentialsHandler
+      CredentialVersion credentialVersionVersion = credentialsHandler
           .getCredentialVersionByUUID(id, userContext, eventAuditRecordParametersList);
-      return CredentialView.fromEntity(credentialVersion);
+      return CredentialView.fromEntity(credentialVersionVersion);
     });
   }
 
@@ -172,17 +172,17 @@ public class CredentialsController {
     }
 
     return eventAuditLogService.auditEvents(requestUuid, userContext, eventAuditRecordParametersList -> {
-      List<Credential> credentials;
+      List<CredentialVersion> credentialVersions;
       if (current) {
-        Credential credential = credentialsHandler
+        CredentialVersion credentialVersion = credentialsHandler
             .getMostRecentCredentialVersion(credentialName, userContext, eventAuditRecordParametersList);
-        credentials = singletonList(credential);
+        credentialVersions = singletonList(credentialVersion);
       } else {
-        credentials = credentialsHandler.getNCredentialVersions(credentialName, numberOfVersions,
+        credentialVersions = credentialsHandler.getNCredentialVersions(credentialName, numberOfVersions,
             userContext, eventAuditRecordParametersList);
       }
 
-      return DataResponse.fromEntity(credentials);
+      return DataResponse.fromEntity(credentialVersions);
     });
   }
 

@@ -67,23 +67,23 @@ public class CredentialFactoryTest {
   public void makeCredentialFromRequest_givenAnExistingPassword_copiesCredentialNameReference() throws Exception {
     StringCredentialValue passwordValue = new StringCredentialValue(PLAINTEXT_VALUE);
 
-    Credential existingCredential = new PasswordCredential(CREDENTIAL_NAME);
-    Credential credential =
+    CredentialVersion existingCredentialVersion = new PasswordCredentialVersion(CREDENTIAL_NAME);
+    CredentialVersion credentialVersion =
         subject.makeNewCredentialVersion(
             CredentialType.valueOf("password"),
             CREDENTIAL_NAME,
             passwordValue,
-            existingCredential,
+            existingCredentialVersion,
             generationParameters);
-    assertThat(credential.getCredentialName(), equalTo(existingCredential.getCredentialName()));
+    assertThat(credentialVersion.getCredentialName(), equalTo(existingCredentialVersion.getCredentialName()));
   }
 
   @Test
   public void makeCredentialFromRequest_givenPasswordType_andNoExisting_returnsPasswordCredential() throws Exception {
     StringCredentialValue passwordValue = new StringCredentialValue(PLAINTEXT_VALUE);
 
-    PasswordCredential credential =
-        (PasswordCredential) subject.makeNewCredentialVersion(
+    PasswordCredentialVersion credential =
+        (PasswordCredentialVersion) subject.makeNewCredentialVersion(
             CredentialType.valueOf("password"),
             CREDENTIAL_NAME,
             passwordValue,
@@ -98,8 +98,8 @@ public class CredentialFactoryTest {
   public void makeCredentialFromRequest_givenValueType_andNoExisting_returnsValueCredential() throws Exception {
     StringCredentialValue passwordValue = new StringCredentialValue(PLAINTEXT_VALUE);
 
-    ValueCredential credential =
-        (ValueCredential) subject.makeNewCredentialVersion(
+    ValueCredentialVersion credential =
+        (ValueCredentialVersion) subject.makeNewCredentialVersion(
             CredentialType.valueOf("value"),
             CREDENTIAL_NAME,
             passwordValue,
@@ -117,8 +117,8 @@ public class CredentialFactoryTest {
         PLAINTEXT_VALUE,
         "my-ca");
 
-    CertificateCredential credential =
-        (CertificateCredential) subject.makeNewCredentialVersion(
+    CertificateCredentialVersion credential =
+        (CertificateCredentialVersion) subject.makeNewCredentialVersion(
             CredentialType.valueOf("certificate"),
             CREDENTIAL_NAME,
             certificateValue,
@@ -137,8 +137,8 @@ public class CredentialFactoryTest {
         "public-key",
         PLAINTEXT_VALUE);
 
-    RsaCredential credential =
-        (RsaCredential) subject.makeNewCredentialVersion(
+    RsaCredentialVersion credential =
+        (RsaCredentialVersion) subject.makeNewCredentialVersion(
             CredentialType.valueOf("rsa"),
             CREDENTIAL_NAME,
             rsaValue,
@@ -156,8 +156,8 @@ public class CredentialFactoryTest {
         PLAINTEXT_VALUE,
         null);
 
-    SshCredential credential =
-        (SshCredential) subject.makeNewCredentialVersion(
+    SshCredentialVersion credential =
+        (SshCredentialVersion) subject.makeNewCredentialVersion(
             CredentialType.valueOf("ssh"),
             CREDENTIAL_NAME,
             sshValue,
@@ -172,8 +172,8 @@ public class CredentialFactoryTest {
   public void makeCredentialFromRequest_givenJsonType_andNoExisting_returnsJsonCredential() throws Exception {
     JsonCredentialValue jsonValue = new JsonCredentialValue(jsonValueMap);
 
-    JsonCredential credential =
-        (JsonCredential) subject.makeNewCredentialVersion(
+    JsonCredentialVersion credential =
+        (JsonCredentialVersion) subject.makeNewCredentialVersion(
             CredentialType.valueOf("json"),
             CREDENTIAL_NAME,
             jsonValue,
@@ -187,8 +187,8 @@ public class CredentialFactoryTest {
   public void makeCredentialFromRequest_givenUserType_andNoExisting_returnsUserCredential() throws Exception {
     UserCredentialValue userValue = new UserCredentialValue("username", PLAINTEXT_VALUE, "salt");
 
-    UserCredential credential =
-        (UserCredential) subject.makeNewCredentialVersion(
+    UserCredentialVersion credential =
+        (UserCredentialVersion) subject.makeNewCredentialVersion(
             CredentialType.valueOf("user"),
             CREDENTIAL_NAME,
             userValue,

@@ -5,26 +5,26 @@ import io.pivotal.security.entity.CertificateCredentialVersionData;
 import io.pivotal.security.util.CertificateReader;
 import org.apache.commons.lang3.StringUtils;
 
-public class CertificateCredential extends Credential<CertificateCredential> {
+public class CertificateCredentialVersion extends CredentialVersion<CertificateCredentialVersion> {
 
   private CertificateCredentialVersionData delegate;
   private CertificateReader parsedCertificate;
 
-  public CertificateCredential(CertificateCredentialVersionData delegate) {
+  public CertificateCredentialVersion(CertificateCredentialVersionData delegate) {
     super(delegate);
     this.delegate = delegate;
     this.setCertificate(delegate.getCertificate());
   }
 
-  public CertificateCredential(String name) {
+  public CertificateCredentialVersion(String name) {
     this(new CertificateCredentialVersionData(name));
   }
 
-  public CertificateCredential() {
+  public CertificateCredentialVersion() {
     this(new CertificateCredentialVersionData());
   }
 
-  public CertificateCredential(CertificateCredentialValue certificate, Encryptor encryptor) {
+  public CertificateCredentialVersion(CertificateCredentialValue certificate, Encryptor encryptor) {
     this();
     this.setEncryptor(encryptor);
     this.setCa(certificate.getCa());
@@ -42,7 +42,7 @@ public class CertificateCredential extends Credential<CertificateCredential> {
     return delegate.getCa();
   }
 
-  public CertificateCredential setCa(String ca) {
+  public CertificateCredentialVersion setCa(String ca) {
     delegate.setCa(ca);
     return this;
   }
@@ -51,7 +51,7 @@ public class CertificateCredential extends Credential<CertificateCredential> {
     return delegate.getCertificate();
   }
 
-  public CertificateCredential setCertificate(String certificate) {
+  public CertificateCredentialVersion setCertificate(String certificate) {
     delegate.setCertificate(certificate);
     if (StringUtils.isNotEmpty(delegate.getCertificate())) {
       parsedCertificate = new CertificateReader(certificate);
@@ -63,7 +63,7 @@ public class CertificateCredential extends Credential<CertificateCredential> {
     return (String) super.getValue();
   }
 
-  public CertificateCredential setPrivateKey(String privateKey) {
+  public CertificateCredentialVersion setPrivateKey(String privateKey) {
     if (privateKey != null) {
       super.setValue(privateKey);
     }
@@ -74,7 +74,7 @@ public class CertificateCredential extends Credential<CertificateCredential> {
     return delegate.getCaName();
   }
 
-  public CertificateCredential setCaName(String caName) {
+  public CertificateCredentialVersion setCaName(String caName) {
     delegate.setCaName(caName);
     return this;
   }

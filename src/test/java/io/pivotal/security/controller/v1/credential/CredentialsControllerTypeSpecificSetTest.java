@@ -7,15 +7,15 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.CredentialVersionDataService;
-import io.pivotal.security.domain.CertificateCredential;
-import io.pivotal.security.domain.Credential;
+import io.pivotal.security.domain.CertificateCredentialVersion;
+import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.JsonCredential;
-import io.pivotal.security.domain.PasswordCredential;
-import io.pivotal.security.domain.RsaCredential;
-import io.pivotal.security.domain.SshCredential;
-import io.pivotal.security.domain.UserCredential;
-import io.pivotal.security.domain.ValueCredential;
+import io.pivotal.security.domain.JsonCredentialVersion;
+import io.pivotal.security.domain.PasswordCredentialVersion;
+import io.pivotal.security.domain.RsaCredentialVersion;
+import io.pivotal.security.domain.SshCredentialVersion;
+import io.pivotal.security.domain.UserCredentialVersion;
+import io.pivotal.security.domain.ValueCredentialVersion;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.handler.SetHandler;
 import io.pivotal.security.helper.AuditingHelper;
@@ -187,12 +187,12 @@ public class CredentialsControllerTypeSpecificSetTest {
         return multiJsonPath("$.value", VALUE_VALUE);
       }
 
-      void credentialAssertions(Credential credential) {
-        assertThat(((ValueCredential) credential).getValue(), equalTo(VALUE_VALUE));
+      void credentialAssertions(CredentialVersion credential) {
+        assertThat(((ValueCredentialVersion) credential).getValue(), equalTo(VALUE_VALUE));
       }
 
-      Credential createCredential(Encryptor encryptor) {
-        return new ValueCredential(CREDENTIAL_NAME)
+      CredentialVersion createCredential(Encryptor encryptor) {
+        return new ValueCredentialVersion(CREDENTIAL_NAME)
             .setEncryptor(encryptor)
             .setValue(VALUE_VALUE)
             .setUuid(credentialUuid)
@@ -204,12 +204,12 @@ public class CredentialsControllerTypeSpecificSetTest {
         return multiJsonPath("$.value", PASSWORD_VALUE);
       }
 
-      void credentialAssertions(Credential credential) {
-        assertThat(((PasswordCredential) credential).getPassword(), equalTo(PASSWORD_VALUE));
+      void credentialAssertions(CredentialVersion credential) {
+        assertThat(((PasswordCredentialVersion) credential).getPassword(), equalTo(PASSWORD_VALUE));
       }
 
-      Credential createCredential(Encryptor encryptor) {
-        return new PasswordCredential(CREDENTIAL_NAME)
+      CredentialVersion createCredential(Encryptor encryptor) {
+        return new PasswordCredentialVersion(CREDENTIAL_NAME)
             .setEncryptor(encryptor)
             .setPasswordAndGenerationParameters(PASSWORD_VALUE, null)
             .setUuid(credentialUuid)
@@ -225,15 +225,15 @@ public class CredentialsControllerTypeSpecificSetTest {
         );
       }
 
-      void credentialAssertions(Credential credential) {
-        CertificateCredential certificateCredential = (CertificateCredential) credential;
+      void credentialAssertions(CredentialVersion credential) {
+        CertificateCredentialVersion certificateCredential = (CertificateCredentialVersion) credential;
         assertThat(certificateCredential.getCa(), equalTo(TEST_CA));
         assertThat(certificateCredential.getCertificate(), equalTo(TEST_CERTIFICATE));
         assertThat(certificateCredential.getPrivateKey(), equalTo(TEST_PRIVATE_KEY));
       }
 
-      Credential createCredential(Encryptor encryptor) {
-        return new CertificateCredential(CREDENTIAL_NAME)
+      CredentialVersion createCredential(Encryptor encryptor) {
+        return new CertificateCredentialVersion(CREDENTIAL_NAME)
             .setEncryptor(encryptor)
             .setCa(TEST_CA)
             .setCertificate(TEST_CERTIFICATE)
@@ -251,14 +251,14 @@ public class CredentialsControllerTypeSpecificSetTest {
         );
       }
 
-      void credentialAssertions(Credential credential) {
-        SshCredential sshCredential = (SshCredential) credential;
+      void credentialAssertions(CredentialVersion credential) {
+        SshCredentialVersion sshCredential = (SshCredentialVersion) credential;
         assertThat(sshCredential.getPublicKey(), equalTo(SSH_PUBLIC_KEY_4096_WITH_COMMENT));
         assertThat(sshCredential.getPrivateKey(), equalTo(PRIVATE_KEY_4096));
       }
 
-      Credential createCredential(Encryptor encryptor) {
-        return new SshCredential(CREDENTIAL_NAME)
+      CredentialVersion createCredential(Encryptor encryptor) {
+        return new SshCredentialVersion(CREDENTIAL_NAME)
             .setEncryptor(encryptor)
             .setPrivateKey(PRIVATE_KEY_4096)
             .setPublicKey(SSH_PUBLIC_KEY_4096_WITH_COMMENT)
@@ -274,14 +274,14 @@ public class CredentialsControllerTypeSpecificSetTest {
         );
       }
 
-      void credentialAssertions(Credential credential) {
-        RsaCredential rsaCredential = (RsaCredential) credential;
+      void credentialAssertions(CredentialVersion credential) {
+        RsaCredentialVersion rsaCredential = (RsaCredentialVersion) credential;
         assertThat(rsaCredential.getPublicKey(), equalTo(RSA_PUBLIC_KEY_4096));
         assertThat(rsaCredential.getPrivateKey(), equalTo(PRIVATE_KEY_4096));
       }
 
-      Credential createCredential(Encryptor encryptor) {
-        return new RsaCredential(CREDENTIAL_NAME)
+      CredentialVersion createCredential(Encryptor encryptor) {
+        return new RsaCredentialVersion(CREDENTIAL_NAME)
             .setEncryptor(encryptor)
             .setPrivateKey(PRIVATE_KEY_4096)
             .setPublicKey(RSA_PUBLIC_KEY_4096)
@@ -294,13 +294,13 @@ public class CredentialsControllerTypeSpecificSetTest {
         return multiJsonPath("$.value", jsonValueMap);
       }
 
-      void credentialAssertions(Credential credential) {
-        JsonCredential jsonCredential = (JsonCredential) credential;
+      void credentialAssertions(CredentialVersion credential) {
+        JsonCredentialVersion jsonCredential = (JsonCredentialVersion) credential;
         assertThat(jsonCredential.getValue(), equalTo(jsonValueMap));
       }
 
-      Credential createCredential(Encryptor encryptor) {
-        return new JsonCredential(CREDENTIAL_NAME)
+      CredentialVersion createCredential(Encryptor encryptor) {
+        return new JsonCredentialVersion(CREDENTIAL_NAME)
             .setEncryptor(encryptor)
             .setValue(jsonValueMap)
             .setUuid(credentialUuid)
@@ -315,14 +315,14 @@ public class CredentialsControllerTypeSpecificSetTest {
         );
       }
 
-      void credentialAssertions(Credential credential) {
-        UserCredential userCredential = (UserCredential) credential;
+      void credentialAssertions(CredentialVersion credential) {
+        UserCredentialVersion userCredential = (UserCredentialVersion) credential;
         assertThat(userCredential.getUsername(), equalTo(USERNAME_VALUE));
         assertThat(userCredential.getPassword(), equalTo(PASSWORD_VALUE));
       }
 
-      Credential createCredential(Encryptor encryptor) {
-        return new UserCredential(CREDENTIAL_NAME)
+      CredentialVersion createCredential(Encryptor encryptor) {
+        return new UserCredentialVersion(CREDENTIAL_NAME)
             .setEncryptor(encryptor)
             .setUsername(USERNAME_VALUE)
             .setPassword(PASSWORD_VALUE)
@@ -373,7 +373,7 @@ public class CredentialsControllerTypeSpecificSetTest {
 
     ResultActions response = mockMvc.perform(request);
 
-    ArgumentCaptor<Credential> argumentCaptor = ArgumentCaptor.forClass(Credential.class);
+    ArgumentCaptor<CredentialVersion> argumentCaptor = ArgumentCaptor.forClass(CredentialVersion.class);
     verify(credentialVersionDataService, times(1)).save(argumentCaptor.capture());
 
     response
@@ -405,7 +405,7 @@ public class CredentialsControllerTypeSpecificSetTest {
 
     ResultActions response = mockMvc.perform(request);
 
-    ArgumentCaptor<Credential> argumentCaptor = ArgumentCaptor.forClass(Credential.class);
+    ArgumentCaptor<CredentialVersion> argumentCaptor = ArgumentCaptor.forClass(CredentialVersion.class);
     verify(credentialVersionDataService, times(1)).save(argumentCaptor.capture());
 
     response.andExpect(parametizer.jsonAssertions())
@@ -432,7 +432,7 @@ public class CredentialsControllerTypeSpecificSetTest {
             "{\"actor\": \"app1-guid\"," +
             "\"operations\": [\"read\"]}]" +
             "}");
-    ArgumentCaptor<Credential> argumentCaptor = ArgumentCaptor.forClass(Credential.class);
+    ArgumentCaptor<CredentialVersion> argumentCaptor = ArgumentCaptor.forClass(CredentialVersion.class);
 
     mockMvc.perform(request);
 
@@ -440,9 +440,9 @@ public class CredentialsControllerTypeSpecificSetTest {
         .handle(isA(BaseCredentialSetRequest.class), isA(UserContext.class), isA(PermissionEntry.class), any());
     verify(credentialVersionDataService, times(1)).save(argumentCaptor.capture());
 
-    Credential newCredential = argumentCaptor.getValue();
+    CredentialVersion newCredentialVersion = argumentCaptor.getValue();
 
-    parametizer.credentialAssertions(newCredential);
+    parametizer.credentialAssertions(newCredentialVersion);
   }
 
   @Test
@@ -551,7 +551,7 @@ public class CredentialsControllerTypeSpecificSetTest {
 
     ResultActions response = mockMvc.perform(put);
 
-    ArgumentCaptor<Credential> argumentCaptor = ArgumentCaptor.forClass(Credential.class);
+    ArgumentCaptor<CredentialVersion> argumentCaptor = ArgumentCaptor.forClass(CredentialVersion.class);
     verify(credentialVersionDataService, times(1)).save(argumentCaptor.capture());
 
     response.andExpect(status().isOk())
@@ -580,8 +580,8 @@ public class CredentialsControllerTypeSpecificSetTest {
 
     mockMvc.perform(put);
 
-    Credential credential = credentialVersionDataService.findMostRecent(CREDENTIAL_NAME);
-    parametizer.credentialAssertions(credential);
+    CredentialVersion credentialVersion = credentialVersionDataService.findMostRecent(CREDENTIAL_NAME);
+    parametizer.credentialAssertions(credentialVersion);
   }
 
   @Test
@@ -606,8 +606,8 @@ public class CredentialsControllerTypeSpecificSetTest {
 
   @Test
   public void updatingACredential_withOverwriteSetToFalse_returnsThePreviousVersion() throws Exception {
-    Credential expectedCredential = parametizer.createCredential(encryptor);
-    doReturn(expectedCredential)
+    CredentialVersion expectedCredentialVersion = parametizer.createCredential(encryptor);
+    doReturn(expectedCredentialVersion)
         .when(credentialVersionDataService)
         .findMostRecent(CREDENTIAL_NAME);
     final MockHttpServletRequestBuilder request = put("/api/v1/data")
@@ -625,14 +625,14 @@ public class CredentialsControllerTypeSpecificSetTest {
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
         .andExpect(parametizer.jsonAssertions())
         .andExpect(multiJsonPath(
-            "$.id", expectedCredential.getUuid().toString(),
+            "$.id", expectedCredentialVersion.getUuid().toString(),
             "$.version_created_at", FROZEN_TIME.minusSeconds(1).toString()));
   }
 
   @Test
   public void updatingACredential_withOverwriteSetToFalse_doesNotPersistTheCredential() throws Exception {
-    Credential expectedCredential = parametizer.createCredential(encryptor);
-    doReturn(expectedCredential)
+    CredentialVersion expectedCredentialVersion = parametizer.createCredential(encryptor);
+    doReturn(expectedCredentialVersion)
         .when(credentialVersionDataService)
         .findMostRecent(CREDENTIAL_NAME);
     final MockHttpServletRequestBuilder request = put("/api/v1/data")
@@ -647,13 +647,13 @@ public class CredentialsControllerTypeSpecificSetTest {
 
     mockMvc.perform(request);
 
-    verify(credentialVersionDataService, times(0)).save(any(Credential.class));
+    verify(credentialVersionDataService, times(0)).save(any(CredentialVersion.class));
   }
 
   @Test
   public void updatingACredential_withOverwriteSetToFalse_persistsAnAuditEntry() throws Exception {
-    Credential expectedCredential = parametizer.createCredential(encryptor);
-    doReturn(expectedCredential)
+    CredentialVersion expectedCredentialVersion = parametizer.createCredential(encryptor);
+    doReturn(expectedCredentialVersion)
         .when(credentialVersionDataService)
         .findMostRecent(CREDENTIAL_NAME);
     final MockHttpServletRequestBuilder request = put("/api/v1/data")
@@ -687,8 +687,8 @@ public class CredentialsControllerTypeSpecificSetTest {
 
     abstract ResultMatcher jsonAssertions();
 
-    abstract void credentialAssertions(Credential credential);
+    abstract void credentialAssertions(CredentialVersion credentialVersion);
 
-    abstract Credential createCredential(Encryptor encryptor);
+    abstract CredentialVersion createCredential(Encryptor encryptor);
   }
 }

@@ -2,8 +2,8 @@ package io.pivotal.security.data;
 
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.credential.CertificateCredentialValue;
-import io.pivotal.security.domain.CertificateCredential;
-import io.pivotal.security.domain.Credential;
+import io.pivotal.security.domain.CertificateCredentialVersion;
+import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,11 +28,11 @@ public class CertificateAuthorityService {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
-    Credential mostRecent = credentialVersionDataService.findMostRecent(caName);
-    if (!(mostRecent instanceof CertificateCredential)) {
+    CredentialVersion mostRecent = credentialVersionDataService.findMostRecent(caName);
+    if (!(mostRecent instanceof CertificateCredentialVersion)) {
       throw new ParameterizedValidationException("error.not_a_ca_name");
     }
-    CertificateCredential certificateCredential = (CertificateCredential) mostRecent;
+    CertificateCredentialVersion certificateCredential = (CertificateCredentialVersion) mostRecent;
 
     if (!certificateCredential.getParsedCertificate().isCa()) {
       throw new ParameterizedValidationException("error.cert_not_ca");

@@ -2,8 +2,8 @@ package io.pivotal.security.handler;
 
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.domain.Credential;
-import io.pivotal.security.domain.JsonCredential;
+import io.pivotal.security.domain.CredentialVersion;
+import io.pivotal.security.domain.JsonCredentialVersion;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -51,14 +51,14 @@ public class InterpolationHandler {
         }
         String credentialName = getCredentialNameFromRef((String) credhubRef);
 
-        Credential credential = credentialsHandler.getMostRecentCredentialVersion(
+        CredentialVersion credentialVersion = credentialsHandler.getMostRecentCredentialVersion(
             credentialName,
             userContext,
             auditRecordParameters
         );
 
-        if (credential instanceof JsonCredential) {
-          propertiesMap.put("credentials", ((JsonCredential) credential).getValue());
+        if (credentialVersion instanceof JsonCredentialVersion) {
+          propertiesMap.put("credentials", ((JsonCredentialVersion) credentialVersion).getValue());
         } else {
           throw new ParameterizedValidationException("error.interpolation.invalid_type",
               credentialName);

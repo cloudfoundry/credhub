@@ -11,13 +11,13 @@ import io.pivotal.security.credential.SshCredentialValue;
 import io.pivotal.security.credential.StringCredentialValue;
 import io.pivotal.security.credential.UserCredentialValue;
 import io.pivotal.security.data.CredentialVersionDataService;
-import io.pivotal.security.domain.CertificateCredential;
-import io.pivotal.security.domain.Credential;
+import io.pivotal.security.domain.CertificateCredentialVersion;
+import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.PasswordCredential;
-import io.pivotal.security.domain.RsaCredential;
-import io.pivotal.security.domain.SshCredential;
-import io.pivotal.security.domain.UserCredential;
+import io.pivotal.security.domain.PasswordCredentialVersion;
+import io.pivotal.security.domain.RsaCredentialVersion;
+import io.pivotal.security.domain.SshCredentialVersion;
+import io.pivotal.security.domain.UserCredentialVersion;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.generator.CertificateGenerator;
 import io.pivotal.security.generator.PasswordCredentialGenerator;
@@ -174,14 +174,14 @@ public class CredentialsControllerTypeSpecificGenerateTest {
         return multiJsonPath("$.value", FAKE_PASSWORD);
       }
 
-      void credentialAssertions(Credential credential) {
-        PasswordCredential passwordCredential = (PasswordCredential) credential;
+      void credentialAssertions(CredentialVersion credential) {
+        PasswordCredentialVersion passwordCredential = (PasswordCredentialVersion) credential;
         assertThat(passwordCredential.getGenerationParameters().isExcludeNumber(), equalTo(true));
         assertThat(passwordCredential.getPassword(), equalTo(FAKE_PASSWORD));
       }
 
-      Credential createCredential(Encryptor encryptor) {
-        return new PasswordCredential(CREDENTIAL_NAME)
+      CredentialVersion createCredential(Encryptor encryptor) {
+        return new PasswordCredentialVersion(CREDENTIAL_NAME)
             .setEncryptor(encryptor)
             .setPasswordAndGenerationParameters(FAKE_PASSWORD, new StringGenerationParameters().setExcludeNumber(true))
             .setUuid(credentialUuid)
@@ -197,14 +197,14 @@ public class CredentialsControllerTypeSpecificGenerateTest {
         );
       }
 
-      void credentialAssertions(Credential credential) {
-        UserCredential userCredential = (UserCredential) credential;
+      void credentialAssertions(CredentialVersion credential) {
+        UserCredentialVersion userCredential = (UserCredentialVersion) credential;
         assertThat(userCredential.getUsername(), equalTo(USERNAME));
         assertThat(userCredential.getPassword(), equalTo(FAKE_PASSWORD));
       }
 
-      Credential createCredential(Encryptor encryptor) {
-        return new UserCredential(CREDENTIAL_NAME)
+      CredentialVersion createCredential(Encryptor encryptor) {
+        return new UserCredentialVersion(CREDENTIAL_NAME)
             .setEncryptor(encryptor)
             .setPassword(FAKE_PASSWORD)
             .setUsername(USERNAME)
@@ -221,15 +221,15 @@ public class CredentialsControllerTypeSpecificGenerateTest {
             "$.value.ca", "ca");
       }
 
-      void credentialAssertions(Credential credential) {
-        CertificateCredential certificateCredential = (CertificateCredential) credential;
+      void credentialAssertions(CredentialVersion credential) {
+        CertificateCredentialVersion certificateCredential = (CertificateCredentialVersion) credential;
         assertThat(certificateCredential.getCa(), equalTo(CA));
         assertThat(certificateCredential.getCertificate(), equalTo(CERTIFICATE));
         assertThat(certificateCredential.getPrivateKey(), equalTo(PRIVATE_KEY));
       }
 
-      Credential createCredential(Encryptor encryptor) {
-        return new CertificateCredential(CREDENTIAL_NAME)
+      CredentialVersion createCredential(Encryptor encryptor) {
+        return new CertificateCredentialVersion(CREDENTIAL_NAME)
             .setEncryptor(encryptor)
             .setCa(CA)
             .setCertificate(CERTIFICATE)
@@ -247,14 +247,14 @@ public class CredentialsControllerTypeSpecificGenerateTest {
             "$.value.public_key_fingerprint", null);
       }
 
-      void credentialAssertions(Credential credential) {
-        SshCredential sshCredential = (SshCredential) credential;
+      void credentialAssertions(CredentialVersion credential) {
+        SshCredentialVersion sshCredential = (SshCredentialVersion) credential;
         assertThat(sshCredential.getPublicKey(), equalTo(PUBLIC_KEY));
         assertThat(sshCredential.getPrivateKey(), equalTo(PRIVATE_KEY));
       }
 
-      Credential createCredential(Encryptor encryptor) {
-        return new SshCredential(CREDENTIAL_NAME)
+      CredentialVersion createCredential(Encryptor encryptor) {
+        return new SshCredentialVersion(CREDENTIAL_NAME)
             .setEncryptor(encryptor)
             .setPrivateKey(PRIVATE_KEY)
             .setPublicKey(PUBLIC_KEY)
@@ -269,14 +269,14 @@ public class CredentialsControllerTypeSpecificGenerateTest {
             "$.value.private_key", "private_key");
       }
 
-      void credentialAssertions(Credential credential) {
-        RsaCredential rsaCredential = (RsaCredential) credential;
+      void credentialAssertions(CredentialVersion credential) {
+        RsaCredentialVersion rsaCredential = (RsaCredentialVersion) credential;
         assertThat(rsaCredential.getPublicKey(), equalTo(PUBLIC_KEY));
         assertThat(rsaCredential.getPrivateKey(), equalTo(PRIVATE_KEY));
       }
 
-      Credential createCredential(Encryptor encryptor) {
-        return new RsaCredential(CREDENTIAL_NAME)
+      CredentialVersion createCredential(Encryptor encryptor) {
+        return new RsaCredentialVersion(CREDENTIAL_NAME)
             .setEncryptor(encryptor)
             .setPrivateKey(PRIVATE_KEY)
             .setPublicKey(PUBLIC_KEY)
@@ -367,7 +367,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
 
     ResultActions response = mockMvc.perform(request);
 
-    ArgumentCaptor<Credential> argumentCaptor = ArgumentCaptor.forClass(Credential.class);
+    ArgumentCaptor<CredentialVersion> argumentCaptor = ArgumentCaptor.forClass(CredentialVersion.class);
     verify(credentialVersionDataService, times(1)).save(argumentCaptor.capture());
 
     response
@@ -386,7 +386,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
 
     ResultActions response = mockMvc.perform(request);
 
-    ArgumentCaptor<Credential> argumentCaptor = ArgumentCaptor.forClass(Credential.class);
+    ArgumentCaptor<CredentialVersion> argumentCaptor = ArgumentCaptor.forClass(CredentialVersion.class);
     verify(credentialVersionDataService, times(1)).save(argumentCaptor.capture());
 
     response
@@ -445,7 +445,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
 
     ResultActions response = mockMvc.perform(request);
 
-    ArgumentCaptor<Credential> argumentCaptor = ArgumentCaptor.forClass(Credential.class);
+    ArgumentCaptor<CredentialVersion> argumentCaptor = ArgumentCaptor.forClass(CredentialVersion.class);
     verify(credentialVersionDataService, times(1)).save(argumentCaptor.capture());
 
     response
@@ -465,8 +465,8 @@ public class CredentialsControllerTypeSpecificGenerateTest {
 
     mockMvc.perform(request);
 
-    Credential credential = credentialVersionDataService.findMostRecent(CREDENTIAL_NAME);
-    parametizer.credentialAssertions(credential);
+    CredentialVersion credentialVersion = credentialVersionDataService.findMostRecent(CREDENTIAL_NAME);
+    parametizer.credentialAssertions(credentialVersion);
   }
 
   @Test
@@ -506,7 +506,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
     MockHttpServletRequestBuilder request = beforeEachOverwriteSetToFalse();
     mockMvc.perform(request);
 
-    verify(credentialVersionDataService, times(0)).save(any(Credential.class));
+    verify(credentialVersionDataService, times(0)).save(any(CredentialVersion.class));
   }
 
   @Test
@@ -580,9 +580,9 @@ public class CredentialsControllerTypeSpecificGenerateTest {
 
     abstract ResultMatcher jsonAssertions();
 
-    abstract void credentialAssertions(Credential credential);
+    abstract void credentialAssertions(CredentialVersion credentialVersion);
 
-    abstract Credential createCredential(Encryptor encryptor);
+    abstract CredentialVersion createCredential(Encryptor encryptor);
   }
 
 }

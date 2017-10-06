@@ -2,7 +2,7 @@ package io.pivotal.security.view;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.credential.CryptSaltFactory;
-import io.pivotal.security.domain.UserCredential;
+import io.pivotal.security.domain.UserCredentialVersion;
 import org.apache.commons.codec.digest.Crypt;
 import org.junit.runner.RunWith;
 
@@ -23,7 +23,7 @@ public class UserViewTest {
       final String salt = new CryptSaltFactory().generateSalt("test-password");
       final String passwordHash = Crypt.crypt("test-password", salt);
 
-      final UserCredential userCredential = mock(UserCredential.class);
+      final UserCredentialVersion userCredential = mock(UserCredentialVersion.class);
       when(userCredential.getName()).thenReturn("/foo");
       when(userCredential.getUuid()).thenReturn(uuid);
       when(userCredential.getCredentialType()).thenReturn("user");

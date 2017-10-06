@@ -3,7 +3,7 @@ package io.pivotal.security.controller.v1.credential;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.ValueCredential;
+import io.pivotal.security.domain.ValueCredentialVersion;
 import io.pivotal.security.exceptions.KeyNotFoundException;
 import io.pivotal.security.helper.AuditingHelper;
 import io.pivotal.security.repository.EventAuditRecordRepository;
@@ -109,7 +109,7 @@ public class CredentialsControllerGetTest {
 
     UUID uuid = UUID.randomUUID();
 
-    ValueCredential credential = new ValueCredential(CREDENTIAL_NAME)
+    ValueCredentialVersion credential = new ValueCredentialVersion(CREDENTIAL_NAME)
         .setEncryptor(encryptor)
         .setUuid(uuid)
         .setVersionCreatedAt(FROZEN_TIME);
@@ -217,7 +217,7 @@ public class CredentialsControllerGetTest {
   @Test
   public void gettingACredential_byName_withCurrentSetToTrue_returnsTheLatestCredential() throws Exception {
     UUID uuid = UUID.randomUUID();
-    ValueCredential credential = new ValueCredential(CREDENTIAL_NAME)
+    ValueCredentialVersion credential = new ValueCredentialVersion(CREDENTIAL_NAME)
         .setEncryptor(encryptor)
         .setUuid(uuid)
         .setVersionCreatedAt(FROZEN_TIME);
@@ -239,11 +239,11 @@ public class CredentialsControllerGetTest {
   @Test
   public void gettingACredential_byName_withCurrentSetToFalse_returnsAllTheCredentialVersions() throws Exception {
     UUID uuid = UUID.randomUUID();
-    ValueCredential valueCredential1 = new ValueCredential(CREDENTIAL_NAME)
+    ValueCredentialVersion valueCredential1 = new ValueCredentialVersion(CREDENTIAL_NAME)
         .setEncryptor(encryptor)
         .setUuid(uuid)
         .setVersionCreatedAt(FROZEN_TIME);
-    ValueCredential valueCredential2 = new ValueCredential(CREDENTIAL_NAME)
+    ValueCredentialVersion valueCredential2 = new ValueCredentialVersion(CREDENTIAL_NAME)
         .setEncryptor(encryptor)
         .setUuid(uuid)
         .setVersionCreatedAt(FROZEN_TIME);
@@ -270,15 +270,15 @@ public class CredentialsControllerGetTest {
     Instant credential2Instant = Instant.ofEpochSecond(1400000002L);
     Instant credential3Instant = Instant.ofEpochSecond(1400000003L);
 
-    ValueCredential valueCredential1 = new ValueCredential(CREDENTIAL_NAME)
+    ValueCredentialVersion valueCredential1 = new ValueCredentialVersion(CREDENTIAL_NAME)
         .setEncryptor(encryptor)
         .setUuid(uuid)
         .setVersionCreatedAt(credential1Instant);
-    ValueCredential valueCredential2 = new ValueCredential(CREDENTIAL_NAME)
+    ValueCredentialVersion valueCredential2 = new ValueCredentialVersion(CREDENTIAL_NAME)
         .setEncryptor(encryptor)
         .setUuid(uuid)
         .setVersionCreatedAt(credential2Instant);
-    ValueCredential valueCredential3 = new ValueCredential(CREDENTIAL_NAME)
+    ValueCredentialVersion valueCredential3 = new ValueCredentialVersion(CREDENTIAL_NAME)
         .setEncryptor(encryptor)
         .setUuid(uuid)
         .setVersionCreatedAt(credential3Instant);
@@ -317,7 +317,7 @@ public class CredentialsControllerGetTest {
   @Test
   public void gettingACredential_byId_returnsTheCredentialAndPersistAnAuditEntry() throws Exception {
     UUID uuid = UUID.randomUUID();
-    ValueCredential credential = new ValueCredential(CREDENTIAL_NAME)
+    ValueCredentialVersion credential = new ValueCredentialVersion(CREDENTIAL_NAME)
         .setEncryptor(encryptor)
         .setUuid(uuid)
         .setVersionCreatedAt(FROZEN_TIME);
@@ -348,8 +348,8 @@ public class CredentialsControllerGetTest {
   @Test
   public void gettingACredential_thatIsEncryptedWithAnUnknownKey_throwsAnException() throws Exception {
     UUID uuid = UUID.randomUUID();
-    ValueCredential valueCredential =
-        new ValueCredential(CREDENTIAL_NAME)
+    ValueCredentialVersion valueCredential =
+        new ValueCredentialVersion(CREDENTIAL_NAME)
             .setEncryptor(encryptor)
             .setUuid(uuid)
             .setVersionCreatedAt(FROZEN_TIME);

@@ -2,7 +2,7 @@ package io.pivotal.security.view;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.ValueCredential;
+import io.pivotal.security.domain.ValueCredentialVersion;
 import org.junit.runner.RunWith;
 
 import java.time.Instant;
@@ -20,7 +20,7 @@ import static org.mockito.Mockito.when;
 @RunWith(Spectrum.class)
 public class ValueViewTest {
 
-  private ValueCredential entity;
+  private ValueCredentialVersion entity;
 
   private UUID uuid;
 
@@ -32,7 +32,7 @@ public class ValueViewTest {
       encryptor = mock(Encryptor.class);
       when(encryptor.decrypt(any()))
           .thenReturn("fake-plaintext-value");
-      entity = new ValueCredential("/foo")
+      entity = new ValueCredentialVersion("/foo")
           .setEncryptor(encryptor)
           .setUuid(uuid);
     });
