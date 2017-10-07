@@ -33,6 +33,7 @@ import static io.pivotal.security.audit.EventAuditRecordParametersFactory.create
 @RestController
 @RequestMapping(path = "/api/v1/permissions", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class PermissionsController {
+
   private final PermissionsHandler permissionsHandler;
   private final EventAuditLogService eventAuditLogService;
   private PermissionService permissionService;
@@ -51,42 +52,45 @@ public class PermissionsController {
   @GetMapping
   @ResponseStatus(HttpStatus.OK)
   public PermissionsView getAccessControlList(
-    @RequestParam("credential_name") String credentialName,
-    RequestUuid requestUuid,
-    UserContext userContext
+      @RequestParam("credential_name") String credentialName,
+      RequestUuid requestUuid,
+      UserContext userContext
   ) throws Exception {
-    return eventAuditLogService.auditEvents(requestUuid, userContext, eventAuditRecordParametersList -> {
-      EventAuditRecordParameters eventAuditRecordParameters = new EventAuditRecordParameters(
-          ACL_ACCESS, credentialName
-      );
-      eventAuditRecordParametersList.add(eventAuditRecordParameters);
+    return eventAuditLogService
+        .auditEvents(requestUuid, userContext, eventAuditRecordParametersList -> {
+          EventAuditRecordParameters eventAuditRecordParameters = new EventAuditRecordParameters(
+              ACL_ACCESS, credentialName
+          );
+          eventAuditRecordParametersList.add(eventAuditRecordParameters);
 
-      final PermissionsView response = permissionsHandler.getPermissions(credentialName, userContext);
+          final PermissionsView response = permissionsHandler
+              .getPermissions(credentialName, userContext);
 
-      eventAuditRecordParameters.setCredentialName(response.getCredentialName());
+          eventAuditRecordParameters.setCredentialName(response.getCredentialName());
 
-      return response;
-    });
+          return response;
+        });
   }
 
   @PostMapping(consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-  @ResponseStatus(HttpStatus.OK)
-  public PermissionsView setAccessControlEntries(
+  @ResponseStatus(HttpStatus.CREATED)
+  public void setAccessControlEntries(
       RequestUuid requestUuid,
       UserContext userContext,
       @Validated @RequestBody PermissionsRequest accessEntriesRequest
   ) {
-    return eventAuditLogService.auditEvents(requestUuid, userContext, auditRecordParameters -> {
+    eventAuditLogService.auditEvents(requestUuid, userContext, auditRecordParameters -> {
       auditRecordParameters.addAll(createPermissionsEventAuditParameters(
           ACL_UPDATE,
           accessEntriesRequest.getCredentialName(),
           accessEntriesRequest.getPermissions())
       );
-      return permissionsHandler.setPermissions(
+      permissionsHandler.setPermissions(
           accessEntriesRequest.getCredentialName(),
           userContext,
           accessEntriesRequest.getPermissions()
       );
+      return null;
     });
   }
 
@@ -98,23 +102,26 @@ public class PermissionsController {
       @RequestParam("actor") String actor
 
   ) {
-    eventAuditLogService.auditEvents(requestUuid, userContext, (List<EventAuditRecordParameters> auditRecordParameters) -> {
-      List<PermissionOperation> operationList = permissionService.getAllowedOperationsForLogging(credentialName, actor);
+    eventAuditLogService.auditEvents(requestUuid, userContext,
+        (List<EventAuditRecordParameters> auditRecordParameters) -> {
+          List<PermissionOperation> operationList = permissionService
+              .getAllowedOperationsForLogging(credentialName, actor);
 
-      if (operationList.size() == 0) {
-        auditRecordParameters.add(new EventAuditRecordParameters(ACL_DELETE, credentialName, null, actor));
-      } else {
-        auditRecordParameters.addAll(createPermissionEventAuditRecordParameters(
-            ACL_DELETE,
-            credentialName,
-            actor,
-            operationList
-        ));
-      }
+          if (operationList.size() == 0) {
+            auditRecordParameters
+                .add(new EventAuditRecordParameters(ACL_DELETE, credentialName, null, actor));
+          } else {
+            auditRecordParameters.addAll(createPermissionEventAuditRecordParameters(
+                ACL_DELETE,
+                credentialName,
+                actor,
+                operationList
+            ));
+          }
 
-      permissionsHandler.deletePermissionEntry(userContext, credentialName, actor);
+          permissionsHandler.deletePermissionEntry(userContext, credentialName, actor);
 
-      return true;
-    });
+          return true;
+        });
   }
 }

@@ -41,7 +41,7 @@ public class PermissionsHandler {
     );
   }
 
-  public PermissionsView setPermissions(
+  public void setPermissions(
       String name,
       UserContext userContext,
       List<PermissionEntry> permissionEntryList
@@ -60,11 +60,6 @@ public class PermissionsHandler {
     }
 
     permissionService.saveAccessControlEntries(userContext, credential, permissionEntryList);
-
-    return new PermissionsView(
-        credential.getName(),
-        permissionService.getAccessControlList(userContext, credential)
-    );
   }
 
   public void deletePermissionEntry(UserContext userContext,

@@ -14,6 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.mockito.ArgumentCaptor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -151,23 +152,19 @@ public class PermissionsHandlerTest {
     when(credentialDataService.find(CREDENTIAL_NAME))
         .thenReturn(credential);
 
-    PermissionsView response = subject.setPermissions(CREDENTIAL_NAME, userContext, accessControlList);
+    subject.setPermissions(CREDENTIAL_NAME, userContext, accessControlList);
 
-    List<PermissionEntry> accessControlEntries = response.getPermissions();
+    ArgumentCaptor<List> permissionsListCaptor = ArgumentCaptor.forClass(List.class);
+    verify(permissionService).saveAccessControlEntries(eq(userContext), eq(credential), permissionsListCaptor.capture());
 
-    assertThat(response.getCredentialName(), equalTo(CREDENTIAL_NAME));
-    assertThat(accessControlEntries, hasSize(2));
+    List<PermissionEntry> accessControlEntries = permissionsListCaptor.getValue();
 
-    PermissionEntry entry1 = accessControlEntries.get(0);
-    assertThat(entry1.getActor(), equalTo(ACTOR_NAME));
-    assertThat(entry1.getAllowedOperations(), contains(
+    PermissionEntry entry = accessControlEntries.get(0);
+    assertThat(entry.getActor(), equalTo(ACTOR_NAME));
+    assertThat(entry.getAllowedOperations(), contains(
         equalTo(READ),
         equalTo(WRITE)
     ));
-
-    PermissionEntry entry2 = accessControlEntries.get(1);
-    assertThat(entry2.getActor(), equalTo(ACTOR_NAME2));
-    assertThat(entry2.getAllowedOperations(), contains(equalTo(READ)));
   }
 
   @Test

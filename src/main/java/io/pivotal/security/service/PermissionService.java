@@ -8,7 +8,6 @@ import io.pivotal.security.exceptions.InvalidAclOperationException;
 import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.PermissionOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,9 +20,6 @@ public class PermissionService {
 
   private PermissionsDataService permissionsDataService;
   private PermissionCheckingService permissionCheckingService;
-
-  @Value("${security.authorization.acls.enabled}")
-  private boolean enforcePermissions;
 
   @Autowired
   public PermissionService(PermissionsDataService permissionsDataService, PermissionCheckingService permissionCheckingService) {
@@ -49,6 +45,10 @@ public class PermissionService {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
+    return insecureGetPermissionEntries(credential);
+  }
+
+  public List<PermissionEntry> insecureGetPermissionEntries(Credential credential) {
     return permissionsDataService.getAccessControlList(credential);
   }
 

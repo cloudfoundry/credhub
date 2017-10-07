@@ -35,11 +35,11 @@ import java.time.Instant;
 import java.util.function.Consumer;
 
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
+import static io.pivotal.security.helper.RequestHelper.revokePermissions;
 import static io.pivotal.security.helper.RequestHelper.expect404WhileRegeneratingCertificate;
 import static io.pivotal.security.helper.RequestHelper.generateCa;
 import static io.pivotal.security.helper.RequestHelper.generateCertificate;
-import static io.pivotal.security.helper.RequestHelper.grantPermission;
-import static io.pivotal.security.helper.RequestHelper.revokePermissions;
+import static io.pivotal.security.helper.RequestHelper.grantPermissions;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
@@ -325,16 +325,13 @@ public class CredentialsControllerRegenerateTest {
   public void certificateRegeneration_whenUserNotAuthorizedToReadCa_shouldReturnCorrectError() throws Exception {
     generateCa(mockMvc, "picard", UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
 
-    grantPermission(mockMvc, UAA_OAUTH2_PASSWORD_GRANT_TOKEN,
-        "uaa-client:credhub_test",
-        "read",
-        "picard");
+    grantPermissions(mockMvc, "picard", UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "uaa-client:credhub_test",
+        "read");
 
     generateCertificate(mockMvc, "riker", "picard", UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
 
-    revokePermissions(mockMvc, UAA_OAUTH2_PASSWORD_GRANT_TOKEN,
-        "uaa-client:credhub_test",
-        "picard");
+    revokePermissions(mockMvc, "picard", UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "uaa-client:credhub_test"
+    );
 
     expect404WhileRegeneratingCertificate(mockMvc, "riker", UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN,
         "The request could not be completed because the credential does not exist or you do not have sufficient authorization.");

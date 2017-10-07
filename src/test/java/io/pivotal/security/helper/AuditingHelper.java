@@ -103,8 +103,8 @@ public class AuditingHelper {
       }
 
       @Override
-      public void describeTo(Description description) {
-        description.appendText("Expected audit parameters did not match actual audit parameters");
+      public void describeTo(Description message) {
+        message.appendText("Expected audit parameters did not match actual audit parameters: ");
       }
     };
   }
