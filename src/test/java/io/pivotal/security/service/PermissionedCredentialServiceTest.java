@@ -92,7 +92,6 @@ public class PermissionedCredentialServiceTest {
 
     subject = new PermissionedCredentialService(
         credentialVersionDataService,
-        permissionsDataService,
         permissionService,
         credentialFactory,
         permissionCheckingService);
@@ -245,33 +244,6 @@ public class PermissionedCredentialServiceTest {
   }
 
   @Test
-  public void save_whenThereIsAnExistingCredentialWithACEs_shouldCallVerifyAclWritePermission() {
-    when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredentialVersion);
-    when(permissionCheckingService
-        .hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE_ACL))
-        .thenReturn(true);
-    when(permissionCheckingService
-        .userAllowedToOperateOnActor(userContext, "some_actor")).thenReturn(true);
-
-    accessControlEntries
-        .add(new PermissionEntry("some_actor", Arrays.asList(PermissionOperation.READ_ACL)));
-    subject.save(
-        CREDENTIAL_NAME,
-        "password",
-        credentialValue,
-        generationParameters,
-        accessControlEntries,
-        false,
-        userContext,
-        currentUserPermissions,
-        auditRecordParameters
-    );
-
-    verify(permissionCheckingService).hasPermission(userContext.getAclUser(),
-        CREDENTIAL_NAME, WRITE_ACL);
-  }
-
-  @Test
   public void save_whenThereIsAnExistingCredentialWithACEs_shouldThrowAnExceptionIfItLacksPermission() {
     when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredentialVersion);
     when(permissionCheckingService
@@ -388,8 +360,7 @@ public class PermissionedCredentialServiceTest {
         auditRecordParameters
     );
 
-    verify(permissionsDataService)
-        .saveAccessControlEntries(credential.getCredentialName(), accessControlEntries);
+    verify(permissionService).saveAccessControlEntries(userContext, credential.getCredential(), accessControlEntries);
   }
 
   @Test

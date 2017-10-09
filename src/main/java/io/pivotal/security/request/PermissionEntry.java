@@ -8,6 +8,8 @@ import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 @JsonAutoDetect
 @Validated
 public class PermissionEntry {
@@ -19,6 +21,10 @@ public class PermissionEntry {
   private List<PermissionOperation> allowedOperations;
 
   public PermissionEntry() {
+  }
+
+  public PermissionEntry(String actor, PermissionOperation... operations) {
+    this(actor, newArrayList(operations));
   }
 
   public PermissionEntry(String actor, List<PermissionOperation> operations) {

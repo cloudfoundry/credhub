@@ -6,9 +6,8 @@ import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.constants.CredentialType;
 import io.pivotal.security.credential.CredentialValue;
 import io.pivotal.security.data.CredentialVersionDataService;
-import io.pivotal.security.data.PermissionsDataService;
-import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.domain.CredentialFactory;
+import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.InvalidAclOperationException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
@@ -34,9 +33,8 @@ import static io.pivotal.security.request.PermissionOperation.WRITE_ACL;
 
 @Service
 public class PermissionedCredentialService {
-
   private final CredentialVersionDataService credentialVersionDataService;
-  private final PermissionsDataService permissionsDataService;
+
   private PermissionService permissionService;
   private final CredentialFactory credentialFactory;
   private PermissionCheckingService permissionCheckingService;
@@ -44,12 +42,10 @@ public class PermissionedCredentialService {
   @Autowired
   public PermissionedCredentialService(
       CredentialVersionDataService credentialVersionDataService,
-      PermissionsDataService permissionsDataService,
       PermissionService permissionService,
       CredentialFactory credentialFactory,
       PermissionCheckingService permissionCheckingService) {
     this.credentialVersionDataService = credentialVersionDataService;
-    this.permissionsDataService = permissionsDataService;
     this.permissionService = permissionService;
     this.credentialFactory = credentialFactory;
     this.permissionCheckingService = permissionCheckingService;
@@ -68,70 +64,37 @@ public class PermissionedCredentialService {
   ) {
     CredentialVersion existingCredentialVersion = credentialVersionDataService.findMostRecent(credentialName);
 
-    boolean shouldWriteNewEntity = existingCredentialVersion == null || isOverwrite;
+    boolean shouldWriteNewCredential = existingCredentialVersion == null || isOverwrite;
 
-    AuditingOperationCode credentialOperationCode =
-        shouldWriteNewEntity ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS;
-    auditRecordParameters
-        .add(new EventAuditRecordParameters(credentialOperationCode, credentialName));
+    writeSaveAuditRecord(credentialName, auditRecordParameters, shouldWriteNewCredential);
 
-    if (existingCredentialVersion != null) {
-      verifyCredentialWritePermission(userContext, credentialName);
+    validateCredentialSave(credentialName, type, accessControlEntries, userContext, existingCredentialVersion);
+
+    if (!shouldWriteNewCredential) {
+      return CredentialView.fromEntity(existingCredentialVersion);
     }
 
-    if (existingCredentialVersion != null && accessControlEntries.size() > 0) {
-      verifyAclWrite(userContext, credentialName);
+    if (existingCredentialVersion == null) {
+      accessControlEntries.add(currentUserPermissionEntry);
     }
 
-    if (existingCredentialVersion != null && !existingCredentialVersion.getCredentialType().equals(type)) {
-      throw new ParameterizedValidationException("error.type_mismatch");
-    }
+    CredentialVersion storedCredentialVersion = makeAndSaveNewCredential(
+        credentialName,
+        type,
+        credentialValue,
+        generationParameters,
+        existingCredentialVersion
+    );
 
-    for (PermissionEntry accessControlEntry : accessControlEntries) {
-      if (!permissionCheckingService.userAllowedToOperateOnActor(userContext, accessControlEntry.getActor())) {
-        throw new InvalidAclOperationException("error.acl.invalid_update_operation");
-      }
-    }
+    permissionService.saveAccessControlEntries(
+        userContext,
+        storedCredentialVersion.getCredential(),
+        accessControlEntries
+    );
 
-    CredentialVersion storedCredentialVersionVersion = existingCredentialVersion;
-    if (shouldWriteNewEntity) {
-      if (existingCredentialVersion == null) {
-        accessControlEntries.add(currentUserPermissionEntry);
-      }
+    writePermissionsUpdateAuditRecord(accessControlEntries, auditRecordParameters, storedCredentialVersion);
 
-      CredentialVersion newVersion = credentialFactory.makeNewCredentialVersion(
-          CredentialType.valueOf(type),
-          credentialName,
-          credentialValue,
-          existingCredentialVersion,
-          generationParameters);
-      storedCredentialVersionVersion = credentialVersionDataService.save(newVersion);
-
-      permissionsDataService.saveAccessControlEntries(
-          storedCredentialVersionVersion.getCredentialName(),
-          accessControlEntries);
-      auditRecordParameters.addAll(createPermissionsEventAuditParameters(
-          ACL_UPDATE,
-          storedCredentialVersionVersion.getName(),
-          accessControlEntries
-      ));
-    }
-
-    return CredentialView.fromEntity(storedCredentialVersionVersion);
-  }
-
-  private void verifyCredentialWritePermission(UserContext userContext, String credentialName) {
-    if (!permissionCheckingService
-        .hasPermission(userContext.getAclUser(), credentialName, WRITE)) {
-      throw new PermissionException("error.credential.invalid_access");
-    }
-  }
-
-  private void verifyAclWrite(UserContext userContext, String credentialName) {
-    if (!permissionCheckingService
-        .hasPermission(userContext.getAclUser(), credentialName, WRITE_ACL)) {
-      throw new PermissionException("error.credential.invalid_access");
-    }
+    return CredentialView.fromEntity(storedCredentialVersion);
   }
 
   public boolean delete(UserContext userContext, String credentialName) {
@@ -203,5 +166,64 @@ public class PermissionedCredentialService {
 
   public CredentialVersion findMostRecent(String credentialName) {
     return credentialVersionDataService.findMostRecent(credentialName);
+  }
+
+  private CredentialVersion makeAndSaveNewCredential(String credentialName, String type, CredentialValue credentialValue, GenerationParameters generationParameters, CredentialVersion existingCredentialVersion) {
+    CredentialVersion newVersion = credentialFactory.makeNewCredentialVersion(
+        CredentialType.valueOf(type),
+        credentialName,
+        credentialValue,
+        existingCredentialVersion,
+        generationParameters);
+    return credentialVersionDataService.save(newVersion);
+  }
+
+  private void writePermissionsUpdateAuditRecord(List<PermissionEntry> accessControlEntries, List<EventAuditRecordParameters> auditRecordParameters, CredentialVersion storedCredentialVersion) {
+    auditRecordParameters.addAll(createPermissionsEventAuditParameters(
+        ACL_UPDATE,
+        storedCredentialVersion.getName(),
+        accessControlEntries
+    ));
+  }
+
+  private void validateCredentialSave(String credentialName, String type, List<PermissionEntry> accessControlEntries, UserContext userContext, CredentialVersion existingCredentialVersion) {
+    if (existingCredentialVersion != null) {
+      verifyCredentialWritePermission(userContext, credentialName);
+    }
+
+    if (existingCredentialVersion != null && accessControlEntries.size() > 0) {
+      verifyAclWrite(userContext, credentialName);
+    }
+
+    if (existingCredentialVersion != null && !existingCredentialVersion.getCredentialType().equals(type)) {
+      throw new ParameterizedValidationException("error.type_mismatch");
+    }
+
+    for (PermissionEntry accessControlEntry : accessControlEntries) {
+      if (!permissionCheckingService.userAllowedToOperateOnActor(userContext, accessControlEntry.getActor())) {
+        throw new InvalidAclOperationException("error.acl.invalid_update_operation");
+      }
+    }
+  }
+
+  private void writeSaveAuditRecord(String credentialName, List<EventAuditRecordParameters> auditRecordParameters, boolean shouldWriteNewEntity) {
+    AuditingOperationCode credentialOperationCode =
+        shouldWriteNewEntity ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS;
+    auditRecordParameters
+        .add(new EventAuditRecordParameters(credentialOperationCode, credentialName));
+  }
+
+  private void verifyCredentialWritePermission(UserContext userContext, String credentialName) {
+    if (!permissionCheckingService
+        .hasPermission(userContext.getAclUser(), credentialName, WRITE)) {
+      throw new PermissionException("error.credential.invalid_access");
+    }
+  }
+
+  private void verifyAclWrite(UserContext userContext, String credentialName) {
+    if (!permissionCheckingService
+        .hasPermission(userContext.getAclUser(), credentialName, WRITE_ACL)) {
+      throw new PermissionException("error.credential.invalid_access");
+    }
   }
 }

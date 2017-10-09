@@ -196,7 +196,7 @@ public class CredentialVersionDataServiceTest {
     subject.save(credentialWithLeadingSlash);
 
     CredentialVersion savedCredentialVersion = subject.findMostRecent("/my/credential");
-    assertThat(savedCredentialVersion.getCredentialName().getName(), equalTo("/my/credential"));
+    assertThat(savedCredentialVersion.getCredential().getName(), equalTo("/my/credential"));
   }
 
   @Test

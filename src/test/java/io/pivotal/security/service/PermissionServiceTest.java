@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static io.pivotal.security.request.PermissionOperation.READ;
 import static io.pivotal.security.request.PermissionOperation.READ_ACL;
 import static io.pivotal.security.request.PermissionOperation.WRITE_ACL;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -25,6 +26,7 @@ import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -57,7 +59,7 @@ public class PermissionServiceTest {
 
   @Test
   public void getAllowedOperations_getsAllowedOperationsUsingPermissionsDataService() {
-    ArrayList<PermissionOperation> expectedOperations = newArrayList(PermissionOperation.READ);
+    ArrayList<PermissionOperation> expectedOperations = newArrayList(READ);
     when(permissionsDataService.getAllowedOperations(CREDENTIAL_NAME, USER_NAME))
         .thenReturn(expectedOperations);
 
@@ -68,18 +70,45 @@ public class PermissionServiceTest {
   }
 
   @Test
-  public void saveAccessControlEntries_delegatesToDataService() {
+  public void saveAccessControlEntries_whenThereAreNoChanges_doesNothing() {
     ArrayList<PermissionEntry> expectedEntries = newArrayList();
+    subject.saveAccessControlEntries(userContext, expectedCredential, expectedEntries);
+
+    verify(permissionsDataService, never()).saveAccessControlEntries(any(), any());
+  }
+
+  @Test
+  public void saveAccessControlEntries_withEntries_delegatesToDataService() {
+    ArrayList<PermissionEntry> expectedEntries = newArrayList(new PermissionEntry(USER_NAME, READ));
     subject.saveAccessControlEntries(userContext, expectedCredential, expectedEntries);
 
     verify(permissionsDataService).saveAccessControlEntries(expectedCredential, expectedEntries);
   }
 
   @Test
+  public void saveAccessControlEntries_whenCredentialHasACEs_shouldCallVerifyAclWritePermission() {
+    ArrayList<PermissionEntry> entries = newArrayList();
+    entries.add(new PermissionEntry());
+
+    subject.saveAccessControlEntries(userContext, expectedCredential, entries);
+
+    verify(permissionCheckingService).hasPermission(USER_NAME, CREDENTIAL_NAME, WRITE_ACL);
+  }
+
+  @Test
+  public void saveAccessControlEntries_whenCredentialHasNoACEs_shouldDoNothing() {
+    ArrayList<PermissionEntry> entries = newArrayList();
+
+    subject.saveAccessControlEntries(userContext, expectedCredential, entries);
+
+    verify(permissionCheckingService, never()).hasPermission(USER_NAME, CREDENTIAL_NAME, WRITE_ACL);
+  }
+
+  @Test
   public void saveAccessControlEntries_whenUserCantWrite_throws() {
     when(permissionCheckingService.hasPermission(USER_NAME, CREDENTIAL_NAME, WRITE_ACL))
         .thenReturn(false);
-    ArrayList<PermissionEntry> expectedEntries = newArrayList();
+    ArrayList<PermissionEntry> expectedEntries = newArrayList(new PermissionEntry(USER_NAME, READ));
 
     try {
       subject.saveAccessControlEntries(userContext, expectedCredential, expectedEntries);

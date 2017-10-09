@@ -65,7 +65,7 @@ public abstract class CredentialVersion<Z extends CredentialVersion> {
     return (Z) credentialVersionDataService.save(delegate);
   }
 
-  public Credential getCredentialName() {
+  public Credential getCredential() {
     return delegate.getCredential();
   }
 
