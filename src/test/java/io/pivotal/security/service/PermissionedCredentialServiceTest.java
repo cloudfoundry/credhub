@@ -6,8 +6,8 @@ import io.pivotal.security.constants.CredentialType;
 import io.pivotal.security.credential.CredentialValue;
 import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.data.PermissionsDataService;
-import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.domain.CredentialFactory;
+import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.PasswordCredentialVersion;
 import io.pivotal.security.exceptions.EntryNotFoundException;
@@ -17,6 +17,7 @@ import io.pivotal.security.exceptions.PermissionException;
 import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.PermissionOperation;
 import io.pivotal.security.request.StringGenerationParameters;
+import io.pivotal.security.view.FindCredentialResult;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,6 +31,7 @@ import java.util.List;
 import static com.google.common.collect.Lists.newArrayList;
 import static io.pivotal.security.audit.AuditingOperationCode.ACL_UPDATE;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_FIND;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 import static io.pivotal.security.request.PermissionOperation.DELETE;
 import static io.pivotal.security.request.PermissionOperation.READ;
@@ -83,7 +85,6 @@ public class PermissionedCredentialServiceTest {
   private CredentialValue credentialValue;
   private List<PermissionEntry> accessControlEntries;
   private PermissionEntry currentUserPermissions;
-  private List<EventAuditRecordParameters> auditRecordParametersList;
 
 
   @Before
@@ -109,7 +110,7 @@ public class PermissionedCredentialServiceTest {
     existingCredentialVersion = new PasswordCredentialVersion(CREDENTIAL_NAME);
     existingCredentialVersion.setEncryptor(encryptor);
 
-    auditRecordParametersList = newArrayList();
+    auditRecordParameters = newArrayList();
 
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(true);
@@ -466,13 +467,13 @@ public class PermissionedCredentialServiceTest {
 
   @Test
   public void getCredentialVersion_whenTheVersionExists_setsCorrectAuditingParametersAndReturnsTheCredential() {
-    final CredentialVersion credentialVersionFound = subject.findByUuid(userContext, UUID_STRING, auditRecordParametersList);
+    final CredentialVersion credentialVersionFound = subject.findByUuid(userContext, UUID_STRING, auditRecordParameters);
 
     assertThat(credentialVersionFound, equalTo(existingCredentialVersion));
 
-    assertThat(auditRecordParametersList, hasSize(1));
-    assertThat(auditRecordParametersList.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
-    assertThat(auditRecordParametersList.get(0).getAuditingOperationCode(),
+    assertThat(auditRecordParameters, hasSize(1));
+    assertThat(auditRecordParameters.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
+    assertThat(auditRecordParameters.get(0).getAuditingOperationCode(),
         equalTo(CREDENTIAL_ACCESS));
   }
 
@@ -482,7 +483,7 @@ public class PermissionedCredentialServiceTest {
         .thenReturn(null);
 
     try {
-      subject.findByUuid(userContext, UUID_STRING, auditRecordParametersList);
+      subject.findByUuid(userContext, UUID_STRING, auditRecordParameters);
       fail("should throw exception");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
@@ -495,13 +496,13 @@ public class PermissionedCredentialServiceTest {
         .thenReturn(false);
 
     try {
-      subject.findByUuid(userContext, UUID_STRING, auditRecordParametersList);
+      subject.findByUuid(userContext, UUID_STRING, auditRecordParameters);
       fail("should throw exception");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
-      assertThat(auditRecordParametersList, hasSize(1));
-      assertThat(auditRecordParametersList.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
-      assertThat(auditRecordParametersList.get(0).getAuditingOperationCode(),
+      assertThat(auditRecordParameters, hasSize(1));
+      assertThat(auditRecordParameters.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
+      assertThat(auditRecordParameters.get(0).getAuditingOperationCode(),
           equalTo(CREDENTIAL_ACCESS));
     }
   }
@@ -532,6 +533,24 @@ public class PermissionedCredentialServiceTest {
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
     }
+  }
+
+  @Test
+  public void findStartingWithPath_updatesAuditLoginWithFindRequest() {
+    when(credentialVersionDataService.findStartingWithPath("test_path")).thenReturn(new ArrayList<FindCredentialResult>());
+    subject.findStartingWithPath("test_path", auditRecordParameters);
+    assertThat(auditRecordParameters, hasSize(1));
+    assertThat(auditRecordParameters.get(0).getAuditingOperationCode(),
+        equalTo(CREDENTIAL_FIND));
+  }
+
+  @Test
+  public void findContainingName_updatesAuditLoginWithFindRequest() {
+    when(credentialVersionDataService.findContainingName("test_path")).thenReturn(new ArrayList<FindCredentialResult>());
+    subject.findContainingName("test_path", auditRecordParameters);
+    assertThat(auditRecordParameters, hasSize(1));
+    assertThat(auditRecordParameters.get(0).getAuditingOperationCode(),
+        equalTo(CREDENTIAL_FIND));
   }
 
 }

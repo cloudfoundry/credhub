@@ -24,6 +24,7 @@ import java.util.List;
 
 import static io.pivotal.security.audit.AuditingOperationCode.ACL_UPDATE;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_FIND;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 import static io.pivotal.security.audit.EventAuditRecordParametersFactory.createPermissionsEventAuditParameters;
 import static io.pivotal.security.request.PermissionOperation.DELETE;
@@ -152,7 +153,8 @@ public class PermissionedCredentialService {
     return credentialVersionDataService.findAllCertificateCredentialsByCaName(caName);
   }
 
-  public List<FindCredentialResult> findStartingWithPath(String path) {
+  public List<FindCredentialResult> findStartingWithPath(String path, List<EventAuditRecordParameters> eventAuditRecordParametersList) {
+    eventAuditRecordParametersList.add(new EventAuditRecordParameters(CREDENTIAL_FIND));
     return credentialVersionDataService.findStartingWithPath(path);
   }
 
@@ -160,7 +162,8 @@ public class PermissionedCredentialService {
     return credentialVersionDataService.findAllPaths();
   }
 
-  public List<FindCredentialResult> findContainingName(String name) {
+  public List<FindCredentialResult> findContainingName(String name, List<EventAuditRecordParameters> eventAuditRecordParametersList) {
+    eventAuditRecordParametersList.add(new EventAuditRecordParameters(CREDENTIAL_FIND));
     return credentialVersionDataService.findContainingName(name);
   }
 

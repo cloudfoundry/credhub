@@ -46,7 +46,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_DELETE;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_FIND;
@@ -313,13 +313,9 @@ public class CredentialsController {
   }
 
   private FindCredentialResults findWithAuditing(String nameSubstring,
-      Function<String, List<FindCredentialResult>> finder,
-      RequestUuid requestUuid,
-      UserContext userContext) {
+      BiFunction<String, List<EventAuditRecordParameters>, List<FindCredentialResult>> finder,
+      RequestUuid requestUuid, UserContext userContext) {
     return eventAuditLogService
-        .auditEvents(requestUuid, userContext, eventAuditRecordParametersList -> {
-          eventAuditRecordParametersList.add(new EventAuditRecordParameters(CREDENTIAL_FIND));
-          return new FindCredentialResults(finder.apply(nameSubstring));
-        });
+        .auditEvents(requestUuid, userContext, eventAuditRecordParametersList -> new FindCredentialResults(finder.apply(nameSubstring, eventAuditRecordParametersList)));
   }
 }
