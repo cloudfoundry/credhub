@@ -10,6 +10,7 @@ import io.pivotal.security.domain.CredentialFactory;
 import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.InvalidAclOperationException;
+import io.pivotal.security.exceptions.InvalidQueryParameterException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.exceptions.PermissionException;
 import io.pivotal.security.request.GenerationParameters;
@@ -108,7 +109,9 @@ public class PermissionedCredentialService {
     return credentialVersionDataService.delete(credentialName);
   }
 
-  public List<CredentialVersion> findAllByName(UserContext userContext, String credentialName) {
+  public List<CredentialVersion> findAllByName(UserContext userContext, String credentialName, List<EventAuditRecordParameters> auditRecordParametersList) {
+    auditRecordParametersList.add(new EventAuditRecordParameters(CREDENTIAL_ACCESS, credentialName));
+
     if (!permissionCheckingService
         .hasPermission(userContext.getAclUser(), credentialName, READ)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
@@ -117,7 +120,13 @@ public class PermissionedCredentialService {
     return credentialVersionDataService.findAllByName(credentialName);
   }
 
-  public List<CredentialVersion> findNByName(UserContext userContext, String credentialName, Integer numberOfVersions) {
+  public List<CredentialVersion> findNByName(UserContext userContext, String credentialName, Integer numberOfVersions, List<EventAuditRecordParameters> auditRecordParametersList) {
+    auditRecordParametersList.add(new EventAuditRecordParameters(CREDENTIAL_ACCESS, credentialName));
+
+    if (numberOfVersions < 0) {
+      throw new InvalidQueryParameterException("error.invalid_query_parameter", "versions");
+    }
+
     if (!permissionCheckingService
         .hasPermission(userContext.getAclUser(), credentialName, READ)) {
       throw new EntryNotFoundException("error.credential.invalid_access");

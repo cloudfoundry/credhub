@@ -12,6 +12,7 @@ import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.PasswordCredentialVersion;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.InvalidAclOperationException;
+import io.pivotal.security.exceptions.InvalidQueryParameterException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.exceptions.PermissionException;
 import io.pivotal.security.request.PermissionEntry;
@@ -450,10 +451,14 @@ public class PermissionedCredentialServiceTest {
         .thenReturn(false);
 
     try {
-      subject.findAllByName(userContext, CREDENTIAL_NAME);
+      subject.findAllByName(userContext, CREDENTIAL_NAME, auditRecordParameters);
       fail("Should throw exception");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
+      assertThat(auditRecordParameters, hasSize(1));
+      assertThat(auditRecordParameters.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
+      assertThat(auditRecordParameters.get(0).getAuditingOperationCode(),
+          equalTo(CREDENTIAL_ACCESS));
     }
   }
 
@@ -463,10 +468,28 @@ public class PermissionedCredentialServiceTest {
         .thenReturn(false);
 
     try {
-      subject.findNByName(userContext, CREDENTIAL_NAME, 1);
+      subject.findNByName(userContext, CREDENTIAL_NAME, 1, auditRecordParameters);
       fail("Should throw exception");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
+      assertThat(auditRecordParameters, hasSize(1));
+      assertThat(auditRecordParameters.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
+      assertThat(auditRecordParameters.get(0).getAuditingOperationCode(),
+          equalTo(CREDENTIAL_ACCESS));
+    }
+  }
+
+  @Test
+  public void getNCredentialVersions_whenTheNumberOfCredentialsIsNegative_throws() {
+    when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
+        .thenReturn(true);
+
+    try {
+      subject.findNByName(userContext, CREDENTIAL_NAME, -1, auditRecordParameters);
+      fail("should throw exception");
+    } catch (InvalidQueryParameterException e) {
+      assertThat(e.getInvalidQueryParameter(), equalTo("versions"));
+      assertThat(e.getMessage(), equalTo("error.invalid_query_parameter"));
     }
   }
 

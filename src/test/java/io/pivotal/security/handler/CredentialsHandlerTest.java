@@ -6,7 +6,6 @@ import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.SshCredentialVersion;
 import io.pivotal.security.exceptions.EntryNotFoundException;
-import io.pivotal.security.exceptions.InvalidQueryParameterException;
 import io.pivotal.security.service.PermissionCheckingService;
 import io.pivotal.security.service.PermissionedCredentialService;
 import org.junit.Before;
@@ -19,7 +18,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.request.PermissionOperation.DELETE;
 import static io.pivotal.security.request.PermissionOperation.READ;
 import static java.util.Collections.emptyList;
@@ -101,13 +99,13 @@ public class CredentialsHandlerTest {
   @Test
   public void getAllCredentialVersions_whenTheCredentialExists_returnsADataResponse() {
     List<CredentialVersion> credentials = newArrayList(version1, version2);
-    when(permissionedCredentialService.findAllByName(any(UserContext.class), eq(CREDENTIAL_NAME)))
+    when(permissionedCredentialService.findAllByName(any(UserContext.class), eq(CREDENTIAL_NAME), eq(auditRecordParametersList)))
         .thenReturn(credentials);
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(true);
 
     List<CredentialVersion> credentialVersionVersions = subject.getAllCredentialVersions(CREDENTIAL_NAME, userContext,
-        newArrayList());
+        auditRecordParametersList);
 
     assertThat(credentialVersionVersions, hasSize(2));
     assertThat(credentialVersionVersions.get(0).getName(), equalTo(CREDENTIAL_NAME));
@@ -117,30 +115,14 @@ public class CredentialsHandlerTest {
   }
 
   @Test
-  public void getAllCredentialVersions_whenTheCredentialExists_setsCorrectAuditingParameters() {
-    List<EventAuditRecordParameters> auditRecordParametersList = newArrayList();
-    List<CredentialVersion> credentialVersions = newArrayList(version1);
-    when(permissionedCredentialService.findAllByName(any(UserContext.class), eq(CREDENTIAL_NAME)))
-        .thenReturn(credentialVersions);
-    when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
-        .thenReturn(true);
-
-    subject.getAllCredentialVersions(CREDENTIAL_NAME, userContext, auditRecordParametersList);
-
-    assertThat(auditRecordParametersList, hasSize(1));
-    assertThat(auditRecordParametersList.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
-    assertThat(auditRecordParametersList.get(0).getAuditingOperationCode(), equalTo(CREDENTIAL_ACCESS));
-  }
-
-  @Test
   public void getAllCredentialVersions_whenTheCredentialDoesNotExist_throwsException() {
-    when(permissionedCredentialService.findAllByName(any(UserContext.class), eq(CREDENTIAL_NAME)))
+    when(permissionedCredentialService.findAllByName(any(UserContext.class), eq(CREDENTIAL_NAME), eq(auditRecordParametersList)))
         .thenReturn(emptyList());
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(true);
 
     try {
-      subject.getAllCredentialVersions(CREDENTIAL_NAME, userContext, newArrayList()
+      subject.getAllCredentialVersions(CREDENTIAL_NAME, userContext, auditRecordParametersList
       );
       fail("should throw exception");
     } catch (EntryNotFoundException e) {
@@ -149,66 +131,19 @@ public class CredentialsHandlerTest {
   }
 
   @Test
-  public void getAllCredentialVersions_whenTheCredentialDoesNotExist_setsCorrectAuditingParameter() {
-    List<EventAuditRecordParameters> auditRecordParametersList = newArrayList();
-
-    when(permissionedCredentialService.findAllByName(any(UserContext.class), eq(CREDENTIAL_NAME)))
-        .thenReturn(emptyList());
-
-    try {
-      subject.getAllCredentialVersions(CREDENTIAL_NAME, userContext, auditRecordParametersList);
-      fail("should throw exception");
-    } catch (EntryNotFoundException e) {
-      assertThat(auditRecordParametersList, hasSize(1));
-      assertThat(auditRecordParametersList.get(0).getAuditingOperationCode(), equalTo(CREDENTIAL_ACCESS));
-    }
-  }
-
-  @Test
-  public void getNCredentialVersions_whenTheNumberOfCredentialsIsNegative_throws() {
-    List<EventAuditRecordParameters> auditRecordParametersList = newArrayList();
-
-    when(permissionedCredentialService.findAllByName(any(UserContext.class), eq(CREDENTIAL_NAME)))
-        .thenReturn(emptyList());
-
-    try {
-      subject.getNCredentialVersions(CREDENTIAL_NAME, -1, userContext, auditRecordParametersList);
-      fail("should throw exception");
-    } catch (InvalidQueryParameterException e) {
-      assertThat(e.getInvalidQueryParameter(), equalTo("versions"));
-      assertThat(e.getMessage(), equalTo("error.invalid_query_parameter"));
-    }
-  }
-
-  @Test
   public void getMostRecentCredentialVersion_whenTheCredentialExists_returnsDataResponse() {
-    when(permissionedCredentialService.findNByName(any(UserContext.class), eq(CREDENTIAL_NAME), eq(1)))
+    when(permissionedCredentialService.findNByName(any(UserContext.class), eq(CREDENTIAL_NAME), eq(1), eq(auditRecordParametersList)))
         .thenReturn(Arrays.asList(version1));
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(true);
 
     CredentialVersion credentialVersion = subject.getMostRecentCredentialVersion(
         CREDENTIAL_NAME, userContext,
-        newArrayList()
+        auditRecordParametersList
     );
 
     assertThat(credentialVersion.getName(), equalTo(CREDENTIAL_NAME));
     assertThat(credentialVersion.getVersionCreatedAt(), equalTo(VERSION1_CREATED_AT));
-  }
-
-  @Test
-  public void getMostRecentCredentialVersion_whenTheCredentialExists_setsCorrectAuditingParameters() {
-    List<EventAuditRecordParameters> auditRecordParametersList = newArrayList();
-    when(permissionedCredentialService.findNByName(any(UserContext.class), eq(CREDENTIAL_NAME), eq(1)))
-        .thenReturn(Arrays.asList(version1));
-    when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
-        .thenReturn(true);
-
-    subject.getMostRecentCredentialVersion(CREDENTIAL_NAME, userContext, auditRecordParametersList);
-
-    assertThat(auditRecordParametersList, hasSize(1));
-    assertThat(auditRecordParametersList.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
-    assertThat(auditRecordParametersList.get(0).getAuditingOperationCode(), equalTo(CREDENTIAL_ACCESS));
   }
 
   @Test
@@ -231,22 +166,6 @@ public class CredentialsHandlerTest {
       fail("should throw exception");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
-    }
-  }
-
-  @Test
-  public void getMostRecentCredentialVersion_whenTheUserLacksPermission_setsCorrectAuditingParameters() {
-    List<EventAuditRecordParameters> auditRecordParametersList = newArrayList();
-
-    when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
-        .thenReturn(false);
-
-    try {
-      subject.getMostRecentCredentialVersion(CREDENTIAL_NAME, userContext, auditRecordParametersList);
-      fail("should throw exception");
-    } catch (EntryNotFoundException e) {
-      assertThat(auditRecordParametersList.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
-      assertThat(auditRecordParametersList.get(0).getAuditingOperationCode(), equalTo(CREDENTIAL_ACCESS));
     }
   }
 
