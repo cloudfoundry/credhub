@@ -2,7 +2,7 @@ package io.pivotal.security.domain;
 
 import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.entity.CertificateCredentialVersionData;
-import io.pivotal.security.service.Encryption;
+import io.pivotal.security.entity.EncryptedValue;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,7 +36,7 @@ public class CertificateCredentialVersionTest {
     nonce = "fake-nonce".getBytes();
     canaryUuid = UUID.randomUUID();
 
-    final Encryption encryption = new Encryption(canaryUuid, encryptedValue, nonce);
+    final EncryptedValue encryption = new EncryptedValue(canaryUuid, encryptedValue, nonce);
     when(encryptor.encrypt("my-priv"))
         .thenReturn(encryption);
     when(encryptor.decrypt(encryption)).thenReturn("my-priv");
@@ -57,7 +57,7 @@ public class CertificateCredentialVersionTest {
   @Test
   public void setPrivateKey_setsEncryptedValueAndNonce() {
     subject.setPrivateKey("my-priv");
-    assertThat(certificateCredentialData.getEncryptedValue(), notNullValue());
+    assertThat(certificateCredentialData.getEncryptedValueData().getEncryptedValue(), notNullValue());
     assertThat(certificateCredentialData.getNonce(), notNullValue());
   }
 

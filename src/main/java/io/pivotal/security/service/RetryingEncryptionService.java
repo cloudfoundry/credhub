@@ -1,15 +1,16 @@
 package io.pivotal.security.service;
 
+import io.pivotal.security.entity.EncryptedValue;
 import io.pivotal.security.exceptions.KeyNotFoundException;
-import java.security.Key;
-import java.security.ProviderException;
-import java.util.UUID;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import javax.crypto.IllegalBlockSizeException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import javax.crypto.IllegalBlockSizeException;
+import java.security.Key;
+import java.security.ProviderException;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 @Component
 public class RetryingEncryptionService {
@@ -34,22 +35,22 @@ public class RetryingEncryptionService {
     readWriteLock = new ReentrantReadWriteLock();
   }
 
-  public Encryption encrypt(final String value) throws Exception {
+  public EncryptedValue encrypt(final String value) throws Exception {
     logger.info("Attempting encrypt");
     return retryOnErrorWithRemappedKey(() -> encryptionService.encrypt(keyMapper.getActiveUuid(), keyMapper.getActiveKey(), value));
   }
 
-  public String decrypt(Encryption encryption)
+  public String decrypt(EncryptedValue encryptedValue)
       throws Exception {
     logger.info("Attempting decrypt");
     return retryOnErrorWithRemappedKey(() -> {
-      final Key key = keyMapper.getKeyForUuid(encryption.canaryUuid);
+      final Key key = keyMapper.getKeyForUuid(encryptedValue.getEncryptionKeyUuid());
 
       if (key == null) {
         throw new KeyNotFoundException("error.missing_encryption_key");
       }
 
-      return encryptionService.decrypt(key, encryption.encryptedValue, encryption.nonce);
+      return encryptionService.decrypt(key, encryptedValue.getEncryptedValue(), encryptedValue.getNonce());
     });
   }
 

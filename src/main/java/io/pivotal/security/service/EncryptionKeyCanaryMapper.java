@@ -2,6 +2,7 @@ package io.pivotal.security.service;
 
 import io.pivotal.security.config.EncryptionKeysConfiguration;
 import io.pivotal.security.data.EncryptionKeyCanaryDataService;
+import io.pivotal.security.entity.EncryptedValue;
 import io.pivotal.security.entity.EncryptionKeyCanary;
 import io.pivotal.security.util.TimedRetry;
 import org.apache.logging.log4j.LogManager;
@@ -143,10 +144,10 @@ public class EncryptionKeyCanaryMapper {
                 EncryptionKeyCanary canary = new EncryptionKeyCanary();
 
                 try {
-                  Encryption encryptionData = encryptionService
+                  EncryptedValue encryptionData = encryptionService
                       .encrypt(null, activeKey.getKey(), CANARY_VALUE);
-                  canary.setEncryptedCanaryValue(encryptionData.encryptedValue);
-                  canary.setNonce(encryptionData.nonce);
+                  canary.setEncryptedCanaryValue(encryptionData.getEncryptedValue());
+                  canary.setNonce(encryptionData.getNonce());
                   final List<Byte> salt = activeKey.getSalt();
                   final Byte[] saltArray = new Byte[salt.size()];
                   canary.setSalt(toPrimitive(salt.toArray(saltArray)));

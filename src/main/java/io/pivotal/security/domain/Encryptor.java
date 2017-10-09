@@ -1,6 +1,6 @@
 package io.pivotal.security.domain;
 
-import io.pivotal.security.service.Encryption;
+import io.pivotal.security.entity.EncryptedValue;
 import io.pivotal.security.service.RetryingEncryptionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -15,18 +15,21 @@ public class Encryptor {
     this.encryptionService = encryptionService;
   }
 
-  public Encryption encrypt(String clearTextValue) {
+  public EncryptedValue encrypt(String clearTextValue) {
     try {
       return clearTextValue == null
-          ? new Encryption(null, null, null) :
+          ? new EncryptedValue() :
           encryptionService.encrypt(clearTextValue);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  public String decrypt(Encryption encryption) {
-    if (encryption.canaryUuid == null || encryption.encryptedValue == null || encryption.nonce == null) {
+  public String decrypt(EncryptedValue encryption) {
+    if (encryption == null ||
+        encryption.getEncryptionKeyUuid() == null ||
+        encryption.getEncryptedValue() == null ||
+        encryption.getNonce() == null) {
       return null;
     }
     try {

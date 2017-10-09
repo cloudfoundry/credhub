@@ -1,7 +1,7 @@
 package io.pivotal.security.data;
 
-import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.domain.CredentialFactory;
+import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.entity.Credential;
 import io.pivotal.security.entity.CredentialVersionData;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
@@ -50,15 +50,11 @@ public class CredentialVersionDataService {
     this.credentialFactory = credentialFactory;
   }
 
-  public <Z extends CredentialVersion> Z save(Z namedSecret) {
-    return (Z) namedSecret.save(this);
+  public <Z extends CredentialVersion> Z save(Z credentialVersion) {
+    return (Z) credentialVersion.save(this);
   }
 
   public <Z extends CredentialVersion> Z save(CredentialVersionData credentialVersionData) {
-    if (credentialVersionData.getEncryptionKeyUuid() == null && credentialVersionData.getEncryptedValue() != null) {
-      credentialVersionData.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
-    }
-
     Credential credential = credentialVersionData.getCredential();
 
     if (credential.getUuid() == null) {

@@ -326,7 +326,7 @@ public class CredentialsControllerRegenerateTest {
     originalCredential
         .setPasswordAndGenerationParameters("abcde", new StringGenerationParameters());
 
-    passwordCredentialData.setEncryptionKeyUuid(encryptionKeyCanary.getUuid());
+    passwordCredentialData.getEncryptedValueData().setEncryptionKeyUuid(encryptionKeyCanary.getUuid());
 
     credentialVersionDataService.save(originalCredential);
 

@@ -4,7 +4,6 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.entity.EncryptedValue;
 import io.pivotal.security.repository.EncryptedValueRepository;
-import io.pivotal.security.service.Encryption;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.Before;
@@ -71,17 +70,17 @@ public class EncryptedValueDataServiceTest {
 
   @Test
   public void rotate() throws Exception {
-    Encryption newEncryption = new Encryption(UUID.randomUUID(), "new value".getBytes(), "nonce".getBytes());
+    EncryptedValue newEncryption = new EncryptedValue(UUID.randomUUID(), "expected value".getBytes(), "nonce".getBytes());
     EncryptedValue value = new EncryptedValue();
     value.setEncryptedValue("bytes".getBytes());
     value.setEncryptionKeyUuid(UUID.randomUUID());
     value.setNonce("nonce".getBytes());
-    when(encryptor.decrypt(any(Encryption.class))).thenReturn("new value");
-    when(encryptor.encrypt("new value")).thenReturn(newEncryption);
+    when(encryptor.decrypt(any(EncryptedValue.class))).thenReturn("expected value");
+    when(encryptor.encrypt("expected value")).thenReturn(newEncryption);
     subject.rotate(value);
 
-    verify(encryptedValueRepository).saveAndFlush(value);
-    assertThat(value.getEncryptedValue(), equalTo("new value".getBytes()));
+    verify(encryptedValueRepository).saveAndFlush(newEncryption);
+    assertThat(newEncryption.getUuid(), equalTo(value.getUuid()));
   }
 
 }

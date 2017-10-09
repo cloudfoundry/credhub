@@ -2,8 +2,8 @@ package io.pivotal.security.view;
 
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.SshCredentialVersion;
+import io.pivotal.security.entity.EncryptedValue;
 import io.pivotal.security.helper.JsonTestHelper;
-import io.pivotal.security.service.Encryption;
 import io.pivotal.security.util.TestConstants;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,7 +28,7 @@ public class SshViewTest {
   @Before
   public void beforeEach() {
     Encryptor encryptor = mock(Encryptor.class);
-    final Encryption encryption = new Encryption(UUID.randomUUID(), "encrypted".getBytes(), "nonce".getBytes());
+    final EncryptedValue encryption = new EncryptedValue(UUID.randomUUID(), "encrypted".getBytes(), "nonce".getBytes());
     when(encryptor.encrypt(TestConstants.PRIVATE_KEY_4096)).thenReturn(
         encryption);
     when(encryptor.decrypt(encryption))

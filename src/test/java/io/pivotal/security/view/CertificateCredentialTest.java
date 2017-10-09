@@ -3,8 +3,8 @@ package io.pivotal.security.view;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.domain.CertificateCredentialVersion;
 import io.pivotal.security.domain.Encryptor;
+import io.pivotal.security.entity.EncryptedValue;
 import io.pivotal.security.helper.JsonTestHelper;
-import io.pivotal.security.service.Encryption;
 import org.junit.runner.RunWith;
 
 import java.time.Instant;
@@ -32,7 +32,7 @@ public class CertificateCredentialTest {
       byte[] nonce = "fake-nonce".getBytes();
 
       encryptor = mock(Encryptor.class);
-      final Encryption encryption = new Encryption(canaryUuid, encryptedValue, nonce);
+      final EncryptedValue encryption = new EncryptedValue(canaryUuid, encryptedValue, nonce);
       when(encryptor.encrypt("priv")).thenReturn(encryption);
       when(encryptor.decrypt(encryption)).thenReturn("priv");
 

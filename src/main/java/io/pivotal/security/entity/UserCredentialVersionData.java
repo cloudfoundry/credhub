@@ -1,6 +1,5 @@
 package io.pivotal.security.entity;
 
-import io.pivotal.security.service.Encryption;
 import org.hibernate.annotations.NotFound;
 import org.hibernate.annotations.NotFoundAction;
 
@@ -65,14 +64,8 @@ public class UserCredentialVersionData extends CredentialVersionData<UserCredent
     return salt;
   }
 
-  public UserCredentialVersionData setEncryptedGenerationParameters(
-      Encryption encryptedGenerationParameters) {
-    if (this.encryptedGenerationParameters == null){
-      this.encryptedGenerationParameters = new EncryptedValue();
-    }
-    this.encryptedGenerationParameters.setEncryptedValue(encryptedGenerationParameters.encryptedValue);
-    this.encryptedGenerationParameters.setEncryptionKeyUuid(encryptedGenerationParameters.canaryUuid);
-    this.encryptedGenerationParameters.setNonce(encryptedGenerationParameters.nonce);
+  public UserCredentialVersionData setEncryptedGenerationParameters(EncryptedValue encryptedGenerationParameters) {
+    this.encryptedGenerationParameters = encryptedGenerationParameters;
     return this;
   }
 

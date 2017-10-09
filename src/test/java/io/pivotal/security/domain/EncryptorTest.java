@@ -1,8 +1,8 @@
 package io.pivotal.security.domain;
 
+import io.pivotal.security.entity.EncryptedValue;
 import io.pivotal.security.service.BcEncryptionService;
 import io.pivotal.security.service.BcNullConnection;
-import io.pivotal.security.service.Encryption;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.service.RetryingEncryptionService;
 import io.pivotal.security.util.PasswordKeyProxyFactoryTestImpl;
@@ -11,9 +11,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
 import java.util.UUID;
-import javax.crypto.spec.SecretKeySpec;
 
 import static io.pivotal.security.helper.SpectrumHelper.getBouncyCastleProvider;
 import static javax.xml.bind.DatatypeConverter.parseHexBinary;
@@ -61,18 +61,18 @@ public class EncryptorTest {
 
   @Test
   public void encrypt_returnsNullForNullInput() {
-    Encryption encryption = subject.encrypt(null);
+    EncryptedValue encryption = subject.encrypt(null);
 
-    assertThat(encryption.encryptedValue, nullValue());
-    assertThat(encryption.nonce, nullValue());
+    assertThat(encryption.getEncryptedValue(), nullValue());
+    assertThat(encryption.getNonce(), nullValue());
   }
 
   @Test
   public void encrypt_encryptsPlainTest() {
-    Encryption encryption = subject.encrypt("some value");
+    EncryptedValue encryption = subject.encrypt("some value");
 
-    assertThat(encryption.encryptedValue, notNullValue());
-    assertThat(encryption.nonce, notNullValue());
+    assertThat(encryption.getEncryptedValue(), notNullValue());
+    assertThat(encryption.getNonce(), notNullValue());
   }
 
   @Test(expected = RuntimeException.class)
@@ -84,19 +84,19 @@ public class EncryptorTest {
 
   @Test
   public void decrypt_decryptsEncryptedValues() {
-    Encryption encryption = subject.encrypt("the expected clear text");
-    encryptedValue = encryption.encryptedValue;
-    nonce = encryption.nonce;
+    EncryptedValue encryption = subject.encrypt("the expected clear text");
+    encryptedValue = encryption.getEncryptedValue();
+    nonce = encryption.getNonce();
 
-    assertThat(subject.decrypt(new Encryption(newUuid, encryptedValue, nonce)), equalTo("the expected clear text"));
+    assertThat(subject.decrypt(new EncryptedValue(newUuid, encryptedValue, nonce)), equalTo("the expected clear text"));
   }
 
   @Test(expected = RuntimeException.class)
   public void decrypt_failsToEncryptWhenGivenWrongKeyUuid() {
-    Encryption encryption = subject.encrypt("the expected clear text");
-    encryptedValue = encryption.encryptedValue;
-    nonce = encryption.nonce;
+    EncryptedValue encryption = subject.encrypt("the expected clear text");
+    encryptedValue = encryption.getEncryptedValue();
+    nonce = encryption.getNonce();
 
-    subject.decrypt(new Encryption(oldUuid, encryptedValue, nonce));
+    subject.decrypt(new EncryptedValue(oldUuid, encryptedValue, nonce));
   }
 }

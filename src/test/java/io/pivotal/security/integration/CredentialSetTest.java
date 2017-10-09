@@ -55,7 +55,7 @@ public class CredentialSetTest {
             + "  }\n"
             + "}");
 
-    final String setRsaResponse = this.mockMvc
+    this.mockMvc
         .perform(setRsaRequest)
         .andDo(print())
         .andExpect(status().isOk())

@@ -2,6 +2,7 @@ package io.pivotal.security.repository;
 
 import io.pivotal.security.entity.CertificateCredentialVersionData;
 import io.pivotal.security.entity.Credential;
+import io.pivotal.security.entity.EncryptedValue;
 import io.pivotal.security.entity.EncryptionKeyCanary;
 import io.pivotal.security.entity.ValueCredentialVersionData;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -61,17 +62,18 @@ public class CredentialVersionDataRepositoryTest {
     entity.setCredential(credential);
     entity.setCa(longString);
     entity.setCertificate(longString);
-    entity.setEncryptedValue(encryptedValue);
-    entity.setEncryptionKeyUuid(canaryUuid);
-    entity.setNonce("nonce".getBytes());
+    entity.setEncryptedValueData(new EncryptedValue()
+        .setEncryptionKeyUuid(canaryUuid)
+        .setEncryptedValue(encryptedValue)
+        .setNonce("nonce".getBytes()));
 
     subject.save(entity);
     CertificateCredentialVersionData credentialData = (CertificateCredentialVersionData) subject
         .findFirstByCredentialUuidOrderByVersionCreatedAtDesc(credential.getUuid());
     assertThat(credentialData.getCa().length(), equalTo(7000));
     assertThat(credentialData.getCertificate().length(), equalTo(7000));
-    assertThat(credentialData.getEncryptedValue(), equalTo(encryptedValue));
-    assertThat(credentialData.getEncryptedValue().length, equalTo(7016));
+    assertThat(credentialData.getEncryptedValueData().getEncryptedValue(), equalTo(encryptedValue));
+    assertThat(credentialData.getEncryptedValueData().getEncryptedValue().length, equalTo(7016));
   }
 
   @Test
@@ -84,12 +86,13 @@ public class CredentialVersionDataRepositoryTest {
     ValueCredentialVersionData entity = new ValueCredentialVersionData();
     Credential credential = credentialRepository.save(new Credential(name));
     entity.setCredential(credential);
-    entity.setEncryptedValue(encryptedValue);
-    entity.setEncryptionKeyUuid(canaryUuid);
-    entity.setNonce("nonce".getBytes());
+    entity.setEncryptedValueData(new EncryptedValue()
+      .setEncryptedValue(encryptedValue)
+      .setEncryptionKeyUuid(canaryUuid)
+      .setNonce("nonce".getBytes()));
 
     subject.save(entity);
     assertThat(subject.findFirstByCredentialUuidOrderByVersionCreatedAtDesc(credential.getUuid())
-        .getEncryptedValue().length, equalTo(7016));
+        .getEncryptedValueData().getEncryptedValue().length, equalTo(7016));
   }
 }

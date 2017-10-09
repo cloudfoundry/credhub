@@ -3,6 +3,7 @@ package io.pivotal.security.service;
 import io.pivotal.security.config.EncryptionKeyMetadata;
 import io.pivotal.security.config.EncryptionKeysConfiguration;
 import io.pivotal.security.data.EncryptionKeyCanaryDataService;
+import io.pivotal.security.entity.EncryptedValue;
 import io.pivotal.security.entity.EncryptionKeyCanary;
 import io.pivotal.security.util.TimedRetry;
 import org.assertj.core.util.Lists;
@@ -12,14 +13,13 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.ArgumentCaptor;
 
+import javax.crypto.AEADBadTagException;
+import javax.crypto.IllegalBlockSizeException;
 import java.security.Key;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
-
-import javax.crypto.AEADBadTagException;
-import javax.crypto.IllegalBlockSizeException;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
@@ -107,8 +107,10 @@ public class EncryptionKeyCanaryMapperTest {
         "fake-existing-nonce3", unknownKey);
 
     when(encryptionService.encrypt(null, activeKey, CANARY_VALUE))
-        .thenReturn(
-            new Encryption(null, "fake-encrypted-value".getBytes(), "fake-nonce".getBytes()));
+        .thenReturn(new EncryptedValue(
+            null,
+            "fake-encrypted-value",
+            "fake-nonce"));
     when(encryptionKeysConfiguration.getKeys()).thenReturn(newArrayList(
         existingKey1Data,
         activeKeyData,

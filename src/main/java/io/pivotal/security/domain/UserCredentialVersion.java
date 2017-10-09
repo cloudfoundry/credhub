@@ -1,9 +1,9 @@
 package io.pivotal.security.domain;
 
 import io.pivotal.security.credential.UserCredentialValue;
+import io.pivotal.security.entity.EncryptedValue;
 import io.pivotal.security.entity.UserCredentialVersionData;
 import io.pivotal.security.request.StringGenerationParameters;
-import io.pivotal.security.service.Encryption;
 import io.pivotal.security.util.JsonObjectMapper;
 
 import java.io.IOException;
@@ -84,7 +84,7 @@ public class UserCredentialVersion extends CredentialVersion<UserCredentialVersi
   }
 
   public UserCredentialVersion setGenerationParameters(StringGenerationParameters generationParameters) {
-    Encryption encryptedParameters;
+    EncryptedValue encryptedParameters;
     try {
       String generationParameterJson =
           generationParameters != null ? jsonObjectMapper.writeValueAsString(generationParameters)
@@ -101,15 +101,7 @@ public class UserCredentialVersion extends CredentialVersion<UserCredentialVersi
   }
 
   public StringGenerationParameters getGenerationParameters() {
-    if (delegate.getEncryptedGenerationParameters() == null) {
-      return null;
-    }
-
-    String parameterJson = encryptor.decrypt(new Encryption(
-        delegate.getEncryptedGenerationParameters().getEncryptionKeyUuid(),
-        delegate.getEncryptedGenerationParameters().getEncryptedValue(),
-        delegate.getEncryptedGenerationParameters().getNonce())
-    );
+    String parameterJson = encryptor.decrypt(delegate.getEncryptedGenerationParameters());
 
     if (parameterJson == null) {
       return null;

@@ -1,8 +1,8 @@
 package io.pivotal.security.domain;
 
+import io.pivotal.security.entity.EncryptedValue;
 import io.pivotal.security.entity.UserCredentialVersionData;
 import io.pivotal.security.request.StringGenerationParameters;
-import io.pivotal.security.service.Encryption;
 import io.pivotal.security.util.JsonObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -66,13 +66,14 @@ public class UserCredentialVersionTest {
 
   @Test
   public void getPassword_returnsDecryptedPassword_andOnlyDecryptsOnce() {
-    final Encryption encryption = new Encryption(ENCRYPTION_KEY_UUID, ENCRYPTED_PASSWORD, NONCE);
+    final EncryptedValue encryption = new EncryptedValue(ENCRYPTION_KEY_UUID, ENCRYPTED_PASSWORD, NONCE);
     when(encryptor.decrypt(encryption))
         .thenReturn(USER_PASSWORD);
     userCredentialData = new UserCredentialVersionData()
+        .setEncryptedValueData(new EncryptedValue()
         .setEncryptedValue(ENCRYPTED_PASSWORD)
         .setNonce(NONCE)
-        .setEncryptionKeyUuid(ENCRYPTION_KEY_UUID);
+        .setEncryptionKeyUuid(ENCRYPTION_KEY_UUID));
     subject = new UserCredentialVersion(userCredentialData)
         .setEncryptor(encryptor);
 
@@ -85,7 +86,7 @@ public class UserCredentialVersionTest {
   @Test
   public void setPassword_encryptedProvidedPasswordOnce_andSetsCorrectValuesOnDelegate() {
     when(encryptor.encrypt(eq(USER_PASSWORD)))
-        .thenReturn(new Encryption(ENCRYPTION_KEY_UUID, ENCRYPTED_PASSWORD, NONCE));
+        .thenReturn(new EncryptedValue(ENCRYPTION_KEY_UUID, ENCRYPTED_PASSWORD, NONCE));
     userCredentialData = new UserCredentialVersionData(CREDENTIAL_NAME);
     subject = new UserCredentialVersion(userCredentialData)
         .setEncryptor(encryptor);
@@ -95,7 +96,7 @@ public class UserCredentialVersionTest {
     verify(encryptor, times(1)).encrypt(eq(USER_PASSWORD));
 
     assertThat(userCredentialData.getEncryptionKeyUuid(), equalTo(ENCRYPTION_KEY_UUID));
-    assertThat(userCredentialData.getEncryptedValue(), equalTo(ENCRYPTED_PASSWORD));
+    assertThat(userCredentialData.getEncryptedValueData().getEncryptedValue(), equalTo(ENCRYPTED_PASSWORD));
     assertThat(userCredentialData.getNonce(), equalTo(NONCE));
   }
 
@@ -108,24 +109,26 @@ public class UserCredentialVersionTest {
     byte[] oldNonce = "old-nonce".getBytes();
     byte[] oldParametersNonce = "old-parameters-nonce".getBytes();
 
-    Encryption parametersEncryption = new Encryption(oldEncryptionKeyUuid, oldEncryptedGenerationParams, oldParametersNonce);
+    EncryptedValue parametersEncryption = new EncryptedValue(oldEncryptionKeyUuid, oldEncryptedGenerationParams, oldParametersNonce);
 
-    userCredentialData = new UserCredentialVersionData(CREDENTIAL_NAME)
+    EncryptedValue encryptedUserValue = new EncryptedValue()
         .setEncryptionKeyUuid(oldEncryptionKeyUuid)
         .setEncryptedValue(oldEncryptedPassword)
-        .setEncryptedGenerationParameters(parametersEncryption)
         .setNonce(oldNonce);
+    userCredentialData = new UserCredentialVersionData(CREDENTIAL_NAME)
+        .setEncryptedValueData(encryptedUserValue)
+        .setEncryptedGenerationParameters(parametersEncryption);
     subject = new UserCredentialVersion(userCredentialData)
         .setEncryptor(encryptor);
-    when(encryptor.decrypt(new Encryption(oldEncryptionKeyUuid, oldEncryptedPassword, oldNonce)))
+    when(encryptor.decrypt(new EncryptedValue(oldEncryptionKeyUuid, oldEncryptedPassword, oldNonce)))
         .thenReturn(USER_PASSWORD);
-    when(encryptor.decrypt(new Encryption(oldEncryptionKeyUuid, oldEncryptedGenerationParams, oldParametersNonce)))
+    when(encryptor.decrypt(new EncryptedValue(oldEncryptionKeyUuid, oldEncryptedGenerationParams, oldParametersNonce)))
         .thenReturn(USER_GENERATION_PARAMS_STRING);
 
     when(encryptor.encrypt(eq(USER_PASSWORD)))
-        .thenReturn(new Encryption(ENCRYPTION_KEY_UUID, ENCRYPTED_PASSWORD, NONCE));
+        .thenReturn(new EncryptedValue(ENCRYPTION_KEY_UUID, ENCRYPTED_PASSWORD, NONCE));
     when(encryptor.encrypt(eq(USER_GENERATION_PARAMS_STRING)))
-        .thenReturn(new Encryption(ENCRYPTION_KEY_UUID, ENCRYPTED_GENERATION_PARAMS, PARAMETERS_NONCE));
+        .thenReturn(new EncryptedValue(ENCRYPTION_KEY_UUID, ENCRYPTED_GENERATION_PARAMS, PARAMETERS_NONCE));
 
     subject.rotate();
 
@@ -134,7 +137,7 @@ public class UserCredentialVersionTest {
     verify(encryptor).encrypt(USER_GENERATION_PARAMS_STRING);
 
     assertThat(userCredentialData.getEncryptionKeyUuid(), equalTo(ENCRYPTION_KEY_UUID));
-    assertThat(userCredentialData.getEncryptedValue(), equalTo(ENCRYPTED_PASSWORD));
+    assertThat(userCredentialData.getEncryptedValueData().getEncryptedValue(), equalTo(ENCRYPTED_PASSWORD));
     assertThat(userCredentialData.getEncryptedGenerationParameters().getEncryptedValue(), equalTo(ENCRYPTED_GENERATION_PARAMS));
     assertThat(userCredentialData.getNonce(), equalTo(NONCE));
     assertThat(userCredentialData.getEncryptedGenerationParameters().getNonce(), equalTo(PARAMETERS_NONCE));
@@ -143,7 +146,7 @@ public class UserCredentialVersionTest {
   @Test
   public void setGenerationParameters_setsEncryptedGenerationParametersAndNonce() {
     when(encryptor.encrypt(eq(USER_GENERATION_PARAMS_STRING)))
-        .thenReturn(new Encryption(ENCRYPTION_KEY_UUID, ENCRYPTED_GENERATION_PARAMS, PARAMETERS_NONCE));
+        .thenReturn(new EncryptedValue(ENCRYPTION_KEY_UUID, ENCRYPTED_GENERATION_PARAMS, PARAMETERS_NONCE));
     userCredentialData = new UserCredentialVersionData(CREDENTIAL_NAME);
     subject = new UserCredentialVersion(userCredentialData)
         .setEncryptor(encryptor);
@@ -159,13 +162,12 @@ public class UserCredentialVersionTest {
 
   @Test
   public void getGenerationParameters_decryptsGenerationParameters() {
-    final Encryption encryption = new Encryption(ENCRYPTION_KEY_UUID, ENCRYPTED_GENERATION_PARAMS, PARAMETERS_NONCE);
+    final EncryptedValue encryption = new EncryptedValue(ENCRYPTION_KEY_UUID, ENCRYPTED_GENERATION_PARAMS, PARAMETERS_NONCE);
     when(encryptor.decrypt(encryption))
         .thenReturn(USER_GENERATION_PARAMS_STRING);
     userCredentialData = new UserCredentialVersionData()
         .setEncryptedGenerationParameters(encryption)
-
-        .setEncryptionKeyUuid(ENCRYPTION_KEY_UUID);
+        .setEncryptedValueData(new EncryptedValue(ENCRYPTION_KEY_UUID, "", ""));
     subject = new UserCredentialVersion(userCredentialData)
         .setEncryptor(encryptor);
 

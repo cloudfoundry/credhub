@@ -3,7 +3,7 @@ package io.pivotal.security.domain;
 import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.entity.Credential;
 import io.pivotal.security.entity.CredentialVersionData;
-import io.pivotal.security.service.Encryption;
+import io.pivotal.security.entity.EncryptedValue;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -22,15 +22,12 @@ public abstract class CredentialVersion<Z extends CredentialVersion> {
   public abstract void rotate();
 
   public Object getValue() {
-    return encryptor.decrypt(new Encryption(
-        delegate.getEncryptionKeyUuid(),
-        delegate.getEncryptedValue(),
-        delegate.getNonce()));
+    return encryptor.decrypt(delegate.getEncryptedValueData());
   }
 
   public Z setValue(String value) {
-    final Encryption encryption = encryptor.encrypt(value);
-    delegate.setValuesFromEncryption(encryption);
+    final EncryptedValue encryption = encryptor.encrypt(value);
+    delegate.setEncryptedValueData(encryption);
     return (Z) this;
   }
 

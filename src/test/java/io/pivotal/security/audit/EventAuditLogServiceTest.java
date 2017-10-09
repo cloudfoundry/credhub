@@ -4,6 +4,7 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.data.EventAuditRecordDataService;
+import io.pivotal.security.entity.EncryptedValue;
 import io.pivotal.security.entity.EncryptionKeyCanary;
 import io.pivotal.security.entity.EventAuditRecord;
 import io.pivotal.security.entity.ValueCredentialVersionData;
@@ -96,8 +97,10 @@ public class EventAuditLogServiceTest {
     requestUuid = new RequestUuid(UUID.randomUUID());
 
     entity = new ValueCredentialVersionData("keyName");
-    entity.setEncryptedValue("value".getBytes());
-    entity.setNonce("nonce".getBytes());
+    entity.setEncryptedValueData(new EncryptedValue(
+        canaries.get(0).getUuid(),
+        "value",
+        "nonce"));
   }
 
   @After

@@ -1,5 +1,6 @@
 package io.pivotal.security.service;
 
+import io.pivotal.security.entity.EncryptedValue;
 import io.pivotal.security.entity.EncryptionKeyCanary;
 import io.pivotal.security.util.PasswordKeyProxyFactoryTestImpl;
 import org.apache.commons.lang3.ArrayUtils;
@@ -67,10 +68,10 @@ public class PasswordBasedKeyProxyTest {
     final List<Byte> salt = oldProxy.getSalt();
 
     // Create a canary whose value is encrypted with this key
-    final Encryption encryptedCanaryValue = encryptionService.encrypt(null, derivedKey, CANARY_VALUE);
+    final EncryptedValue encryptedCanaryValue = encryptionService.encrypt(null, derivedKey, CANARY_VALUE);
     EncryptionKeyCanary canary = new EncryptionKeyCanary();
-    canary.setEncryptedCanaryValue(encryptedCanaryValue.encryptedValue);
-    canary.setNonce(encryptedCanaryValue.nonce);
+    canary.setEncryptedCanaryValue(encryptedCanaryValue.getEncryptedValue());
+    canary.setNonce(encryptedCanaryValue.getNonce());
     final Byte[] saltArray = new Byte[salt.size()];
     canary.setSalt(toPrimitive(salt.toArray(saltArray)));
 

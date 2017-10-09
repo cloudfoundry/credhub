@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.config.EncryptionKeyMetadata;
 import io.pivotal.security.config.EncryptionKeysConfiguration;
-import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.data.EncryptionKeyCanaryDataService;
 import io.pivotal.security.domain.CertificateCredentialVersion;
 import io.pivotal.security.domain.CredentialVersion;
@@ -13,11 +13,11 @@ import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.PasswordCredentialVersion;
 import io.pivotal.security.entity.CertificateCredentialVersionData;
 import io.pivotal.security.entity.Credential;
+import io.pivotal.security.entity.EncryptedValue;
 import io.pivotal.security.entity.EncryptionKeyCanary;
 import io.pivotal.security.entity.PasswordCredentialVersionData;
 import io.pivotal.security.repository.CredentialVersionRepository;
 import io.pivotal.security.request.StringGenerationParameters;
-import io.pivotal.security.service.Encryption;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.service.EncryptionKeyRotator;
 import io.pivotal.security.service.EncryptionService;
@@ -205,8 +205,8 @@ public class EncryptionKeyRotatorTest {
             .findAllByCredentialUuidOrderByVersionCreatedAtDesc(credential.getUuid())
             .get(0);
 
-    final byte[] firstEncryptedValue = firstEncryption.getEncryptedValue().clone();
-    final byte[] firstEncryptedGenParams = firstEncryption.getEncryptedGenerationParameters().getEncryptedValue().clone();
+    final byte[] firstEncryptedValue = firstEncryption.getEncryptedValueData().getEncryptedValue();
+    final byte[] firstEncryptedGenParams = firstEncryption.getEncryptedGenerationParameters().getEncryptedValue();
 
     setActiveKey(1);
 
@@ -217,7 +217,7 @@ public class EncryptionKeyRotatorTest {
             .findAllByCredentialUuidOrderByVersionCreatedAtDesc(credential.getUuid())
             .get(0);
     assertThat(firstEncryptedValue,
-        not(equalTo(secondEncryption.getEncryptedValue())));
+        not(equalTo(secondEncryption.getEncryptedValueData().getEncryptedValue())));
     assertThat(firstEncryptedGenParams,
         not(equalTo(secondEncryption.getEncryptedGenerationParameters())));
 
@@ -253,6 +253,7 @@ public class EncryptionKeyRotatorTest {
     final byte[] firstEncryption =
         credentialVersionRepository
             .findAllByCredentialUuidOrderByVersionCreatedAtDesc(credential.getUuid()).get(0)
+            .getEncryptedValueData()
             .getEncryptedValue()
             .clone();
 
@@ -264,7 +265,7 @@ public class EncryptionKeyRotatorTest {
         (CertificateCredentialVersionData) credentialVersionRepository
             .findAllByCredentialUuidOrderByVersionCreatedAtDesc(credential.getUuid())
             .get(0);
-    assertThat(firstEncryption, not(equalTo(secondEncryption.getEncryptedValue())));
+    assertThat(firstEncryption, not(equalTo(secondEncryption.getEncryptedValueData().getEncryptedValue())));
 
     final MockHttpServletRequestBuilder get = get("/api/v1/data?name=" + certificateName)
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
@@ -301,14 +302,14 @@ public class EncryptionKeyRotatorTest {
 
   private void createPasswordWithOldKey(Key oldKey) throws Exception {
     passwordName = "/test-password";
-    final Encryption credentialEncryption = encryptionService
+    final EncryptedValue credentialEncryption = encryptionService
         .encrypt(oldCanary.getUuid(), oldKey, "test-password-plaintext");
     PasswordCredentialVersionData passwordCredentialData = new PasswordCredentialVersionData(passwordName);
-    passwordCredentialData.setValuesFromEncryption(credentialEncryption);
+    passwordCredentialData.setEncryptedValueData(credentialEncryption);
 
     StringGenerationParameters parameters = new StringGenerationParameters();
     parameters.setExcludeNumber(true);
-    final Encryption parameterEncryption = encryptionService
+    final EncryptedValue parameterEncryption = encryptionService
         .encrypt(oldCanary.getUuid(), oldKey,
             new ObjectMapper().writeValueAsString(parameters));
     passwordCredentialData.setEncryptedGenerationParameters(parameterEncryption);
@@ -318,13 +319,14 @@ public class EncryptionKeyRotatorTest {
   }
 
   private void createCredentialWithUnknownKey() {
-    CertificateCredentialVersionData certificateCredentialData2 = new CertificateCredentialVersionData(
-        "/unknown-key");
+    CertificateCredentialVersionData certificateCredentialData2 = new CertificateCredentialVersionData("/unknown-key");
     credentialWithUnknownKey = new CertificateCredentialVersion(certificateCredentialData2);
     credentialWithUnknownKey
         .setEncryptor(encryptor)
         .setPrivateKey("cert-private-key");
-    certificateCredentialData2.setEncryptionKeyUuid(unknownCanary.getUuid());
+    certificateCredentialData2
+        .getEncryptedValueData()
+        .setEncryptionKeyUuid(unknownCanary.getUuid());
     credentialVersionDataService.save(credentialWithUnknownKey);
   }
 
@@ -336,11 +338,11 @@ public class EncryptionKeyRotatorTest {
   }
 
   private void createCertificateWithOldKey(Key oldKey) throws Exception {
-    final Encryption encryption = encryptionService
+    final EncryptedValue encryption = encryptionService
         .encrypt(oldCanary.getUuid(), oldKey, "old-certificate-private-key");
     CertificateCredentialVersionData certificateCredentialData1 =
         new CertificateCredentialVersionData("/old-key");
-    certificateCredentialData1.setValuesFromEncryption(encryption);
+    certificateCredentialData1.setEncryptedValueData(encryption);
     credentialVersionWithOldKey = new CertificateCredentialVersion(certificateCredentialData1);
     credentialVersionDataService.save(credentialVersionWithOldKey);
   }
@@ -351,9 +353,9 @@ public class EncryptionKeyRotatorTest {
     Key oldKey = keyProxy.deriveKey();
 
     oldCanary = new EncryptionKeyCanary();
-    final Encryption canaryEncryption = encryptionService.encrypt(null, oldKey, CANARY_VALUE);
-    oldCanary.setEncryptedCanaryValue(canaryEncryption.encryptedValue);
-    oldCanary.setNonce(canaryEncryption.nonce);
+    final EncryptedValue canaryEncryption = encryptionService.encrypt(null, oldKey, CANARY_VALUE);
+    oldCanary.setEncryptedCanaryValue(canaryEncryption.getEncryptedValue());
+    oldCanary.setNonce(canaryEncryption.getNonce());
     oldCanary = encryptionKeyCanaryDataService.save(oldCanary);
 
     when(encryptionKeyCanaryMapper.getKeyForUuid(oldCanary.getUuid())).thenReturn(oldKey);

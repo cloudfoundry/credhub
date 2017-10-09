@@ -1,7 +1,12 @@
 package io.pivotal.security.service;
 
 import io.pivotal.security.config.EncryptionKeyMetadata;
+import io.pivotal.security.entity.EncryptedValue;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
@@ -9,10 +14,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.UUID;
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 
 import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
 import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CHARSET;
@@ -29,7 +30,7 @@ public abstract class EncryptionService {
 
   public abstract SecureRandom getSecureRandom();
 
-  public Encryption encrypt(UUID canaryUuid, Key key, String value) throws Exception {
+  public EncryptedValue encrypt(UUID canaryUuid, Key key, String value) throws Exception {
     byte[] nonce = generateNonce();
     AlgorithmParameterSpec parameterSpec = generateParameterSpec(nonce);
     CipherWrapper encryptionCipher = getCipher();
@@ -38,7 +39,7 @@ public abstract class EncryptionService {
 
     byte[] encrypted = encryptionCipher.doFinal(value.getBytes(CHARSET));
 
-    return new Encryption(canaryUuid, encrypted, nonce);
+    return new EncryptedValue(canaryUuid, encrypted, nonce);
   }
 
   public String decrypt(Key key, byte[] encryptedValue, byte[] nonce) throws Exception {

@@ -1,9 +1,9 @@
 package io.pivotal.security.domain;
 
 import io.pivotal.security.credential.StringCredentialValue;
+import io.pivotal.security.entity.EncryptedValue;
 import io.pivotal.security.entity.PasswordCredentialVersionData;
 import io.pivotal.security.request.StringGenerationParameters;
-import io.pivotal.security.service.Encryption;
 import io.pivotal.security.util.JsonObjectMapper;
 import org.springframework.util.Assert;
 
@@ -41,17 +41,14 @@ public class PasswordCredentialVersion extends CredentialVersion<PasswordCredent
 
   public String getPassword() {
     if (password == null) {
-      password = encryptor.decrypt(new Encryption(
-          delegate.getEncryptionKeyUuid(),
-          delegate.getEncryptedValue(),
-          delegate.getNonce()));
+      password = encryptor.decrypt(delegate.getEncryptedValueData());
     }
     return password;
   }
 
   public PasswordCredentialVersion setPasswordAndGenerationParameters(String password,
                                                                       StringGenerationParameters generationParameters) {
-    Encryption encryptedParameters, encryptedPassword;
+    EncryptedValue encryptedParameters, encryptedPassword;
     if (password == null) {
       throw new IllegalArgumentException("password cannot be null");
     }
@@ -66,9 +63,7 @@ public class PasswordCredentialVersion extends CredentialVersion<PasswordCredent
       }
 
       encryptedPassword = encryptor.encrypt(password);
-      delegate.setEncryptedValue(encryptedPassword.encryptedValue);
-      delegate.setNonce(encryptedPassword.nonce);
-      delegate.setEncryptionKeyUuid(encryptedPassword.canaryUuid);
+      delegate.setEncryptedValueData(encryptedPassword);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -84,11 +79,7 @@ public class PasswordCredentialVersion extends CredentialVersion<PasswordCredent
       return null;
     }
 
-    String parameterJson = encryptor.decrypt(new Encryption(
-        delegate.getEncryptedGenerationParameters().getEncryptionKeyUuid(),
-        delegate.getEncryptedGenerationParameters().getEncryptedValue(),
-        delegate.getEncryptedGenerationParameters().getNonce())
-    );
+    String parameterJson = encryptor.decrypt(delegate.getEncryptedGenerationParameters());
 
     if (parameterJson == null) {
       return null;

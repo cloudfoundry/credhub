@@ -3,12 +3,12 @@ package io.pivotal.security.domain;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.pivotal.security.entity.CertificateCredentialVersionData;
 import io.pivotal.security.entity.CredentialVersionData;
+import io.pivotal.security.entity.EncryptedValue;
 import io.pivotal.security.entity.PasswordCredentialVersionData;
 import io.pivotal.security.entity.RsaCredentialVersionData;
 import io.pivotal.security.entity.SshCredentialVersionData;
 import io.pivotal.security.entity.ValueCredentialVersionData;
 import io.pivotal.security.request.StringGenerationParameters;
-import io.pivotal.security.service.Encryption;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.service.RetryingEncryptionService;
 import org.junit.Before;
@@ -58,10 +58,10 @@ public class CredentialRotationTest {
     when(encryptionKeyCanaryMapper.getKeyForUuid(oldEncryptionKeyUuid))
         .thenReturn(oldEncryptionKey);
 
-    when(encryptionService.decrypt(new Encryption(oldEncryptionKeyUuid, "old-encrypted-value".getBytes(), "old-nonce".getBytes())))
+    when(encryptionService.decrypt(new EncryptedValue(oldEncryptionKeyUuid, "old-encrypted-value".getBytes(), "old-nonce".getBytes())))
         .thenReturn("plaintext");
     when(encryptionService.encrypt("plaintext"))
-        .thenReturn(new Encryption(activeEncryptionKeyUuid, "new-encrypted-value".getBytes(),
+        .thenReturn(new EncryptedValue(activeEncryptionKeyUuid, "new-encrypted-value".getBytes(),
             "new-nonce".getBytes()));
   }
 
@@ -100,12 +100,13 @@ public class CredentialRotationTest {
   @Test
   public void rotate_givenPasswordCredential_reEncryptsPasswordAndParametersWithActiveKey() throws Exception {
     PasswordCredentialVersionData passwordCredentialData = new PasswordCredentialVersionData("some-name");
-    passwordCredentialData.setEncryptionKeyUuid(oldEncryptionKeyUuid);
-    passwordCredentialData.setEncryptedValue("old-encrypted-value".getBytes());
-    passwordCredentialData.setNonce("old-nonce".getBytes());
+    passwordCredentialData.setEncryptedValueData(new EncryptedValue()
+      .setEncryptionKeyUuid(oldEncryptionKeyUuid)
+      .setEncryptedValue("old-encrypted-value".getBytes())
+      .setNonce("old-nonce".getBytes()));
     PasswordCredentialVersion password = new PasswordCredentialVersion(passwordCredentialData);
     password.setEncryptor(encryptor);
-    Encryption encryption = new Encryption(oldEncryptionKeyUuid,"old-encrypted-parameters".getBytes(), "old-parameters-nonce".getBytes());
+    EncryptedValue encryption = new EncryptedValue(oldEncryptionKeyUuid,"old-encrypted-parameters".getBytes(), "old-parameters-nonce".getBytes());
     passwordCredentialData.setEncryptedGenerationParameters(encryption);
 
 
@@ -113,16 +114,16 @@ public class CredentialRotationTest {
         .writeValueAsString(new StringGenerationParameters());
 
     when(encryptionService
-        .decrypt(new Encryption(oldEncryptionKeyUuid, "old-encrypted-parameters".getBytes(), "old-parameters-nonce".getBytes())))
+        .decrypt(new EncryptedValue(oldEncryptionKeyUuid, "old-encrypted-parameters".getBytes(), "old-parameters-nonce".getBytes())))
         .thenReturn(stringifiedParameters);
     when(encryptionService.encrypt(stringifiedParameters))
-        .thenReturn(new Encryption(activeEncryptionKeyUuid, "new-encrypted-parameters".getBytes(), "new-nonce-parameters".getBytes()));
+        .thenReturn(new EncryptedValue(activeEncryptionKeyUuid, "new-encrypted-parameters".getBytes(), "new-nonce-parameters".getBytes()));
 
     password.rotate();
 
     assertThat(passwordCredentialData.getEncryptionKeyUuid(),
         equalTo(activeEncryptionKeyUuid));
-    assertThat(passwordCredentialData.getEncryptedValue(),
+    assertThat(passwordCredentialData.getEncryptedValueData().getEncryptedValue(),
         equalTo("new-encrypted-value".getBytes()));
     assertThat(passwordCredentialData.getNonce(), equalTo("new-nonce".getBytes()));
 
@@ -134,14 +135,15 @@ public class CredentialRotationTest {
 
   private void assertRotation(CredentialVersion credentialVersion, CredentialVersionData delegate) {
     credentialVersion.setEncryptor(encryptor);
-    delegate.setEncryptionKeyUuid(oldEncryptionKeyUuid);
-    delegate.setEncryptedValue("old-encrypted-value".getBytes());
-    delegate.setNonce("old-nonce".getBytes());
+    delegate.setEncryptedValueData(new EncryptedValue()
+      .setEncryptionKeyUuid(oldEncryptionKeyUuid)
+      .setEncryptedValue("old-encrypted-value".getBytes())
+      .setNonce("old-nonce".getBytes()));
 
     credentialVersion.rotate();
 
     assertThat(delegate.getEncryptionKeyUuid(), equalTo(activeEncryptionKeyUuid));
-    assertThat(delegate.getEncryptedValue(), equalTo("new-encrypted-value".getBytes()));
+    assertThat(delegate.getEncryptedValueData().getEncryptedValue(), equalTo("new-encrypted-value".getBytes()));
     assertThat(delegate.getNonce(), equalTo("new-nonce".getBytes()));
   }
 }

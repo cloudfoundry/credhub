@@ -1,6 +1,7 @@
 package io.pivotal.security.service;
 
 import io.pivotal.security.config.EncryptionKeyMetadata;
+import io.pivotal.security.entity.EncryptedValue;
 import io.pivotal.security.entity.EncryptionKeyCanary;
 import io.pivotal.security.exceptions.IncorrectKeyException;
 import io.pivotal.security.util.PasswordKeyProxyFactoryTestImpl;
@@ -10,10 +11,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import java.security.Key;
 import javax.crypto.AEADBadTagException;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
+import java.security.Key;
 
 import static io.pivotal.security.helper.SpectrumHelper.getBouncyCastleProvider;
 import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
@@ -40,15 +41,15 @@ public class DefaultKeyProxyTest {
 
     encryptionKey = encryptionService.createKeyProxy(keyMetadata).getKey();
     canary = new EncryptionKeyCanary();
-    Encryption encryptionData = encryptionService.encrypt(null, encryptionKey, CANARY_VALUE);
-    canary.setEncryptedCanaryValue(encryptionData.encryptedValue);
-    canary.setNonce(encryptionData.nonce);
+    EncryptedValue encryptionData = encryptionService.encrypt(null, encryptionKey, CANARY_VALUE);
+    canary.setEncryptedCanaryValue(encryptionData.getEncryptedValue());
+    canary.setNonce(encryptionData.getNonce());
 
     deprecatedCanary = new EncryptionKeyCanary();
-    Encryption deprecatedEncryptionData = encryptionService
+    EncryptedValue deprecatedEncryptionData = encryptionService
         .encrypt(null, encryptionKey, DEPRECATED_CANARY_VALUE);
-    deprecatedCanary.setEncryptedCanaryValue(deprecatedEncryptionData.encryptedValue);
-    deprecatedCanary.setNonce(deprecatedEncryptionData.nonce);
+    deprecatedCanary.setEncryptedCanaryValue(deprecatedEncryptionData.getEncryptedValue());
+    deprecatedCanary.setNonce(deprecatedEncryptionData.getNonce());
   }
 
   @Test

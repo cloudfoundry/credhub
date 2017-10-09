@@ -2,9 +2,9 @@ package io.pivotal.security.domain;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.pivotal.security.entity.EncryptedValue;
 import io.pivotal.security.entity.JsonCredentialVersionData;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.service.Encryption;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,7 +44,7 @@ public class JsonCredentialVersionTest {
     byte[] encryptedValue = "fake-encrypted-value".getBytes();
     byte[] nonce = "fake-nonce".getBytes();
     UUID canaryUuid = UUID.randomUUID();
-    final Encryption encryption = new Encryption(canaryUuid, encryptedValue, nonce);
+    final EncryptedValue encryption = new EncryptedValue(canaryUuid, encryptedValue, nonce);
     when(encryptor.encrypt(serializedValue))
         .thenReturn(encryption);
     when(encryptor.decrypt(encryption))
@@ -63,7 +63,7 @@ public class JsonCredentialVersionTest {
   public void setValue_setsEncryptedValueAndNonce() {
     subject.setValue(value);
 
-    assertThat(jsonCredentialData.getEncryptedValue(), notNullValue());
+    assertThat(jsonCredentialData.getEncryptedValueData().getEncryptedValue(), notNullValue());
     assertThat(jsonCredentialData.getNonce(), notNullValue());
   }
 

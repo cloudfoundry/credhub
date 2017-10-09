@@ -1,7 +1,7 @@
 package io.pivotal.security.domain;
 
+import io.pivotal.security.entity.EncryptedValue;
 import io.pivotal.security.entity.ValueCredentialVersionData;
-import io.pivotal.security.service.Encryption;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,7 +29,7 @@ public class ValueCredentialVersionTest {
     encryptor = mock(Encryptor.class);
     byte[] encryptedValue = "fake-encrypted-value".getBytes();
     byte[] nonce = "fake-nonce".getBytes();
-    final Encryption encryption = new Encryption(canaryUuid, encryptedValue, nonce);
+    final EncryptedValue encryption = new EncryptedValue(canaryUuid, encryptedValue, nonce);
     when(encryptor.encrypt("my-value"))
         .thenReturn(encryption);
     when(encryptor.decrypt(encryption))
@@ -50,8 +50,8 @@ public class ValueCredentialVersionTest {
 
     subject.setValue("my-value");
 
-    assertThat(valueCredentialData.getEncryptedValue(), notNullValue());
-    assertThat(valueCredentialData.getNonce(), notNullValue());
+    assertThat(valueCredentialData.getEncryptedValueData().getEncryptedValue(), notNullValue());
+    assertThat(valueCredentialData.getEncryptedValueData().getNonce(), notNullValue());
   }
 
   @Test

@@ -7,7 +7,6 @@ import org.junit.runners.JUnit4;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 @RunWith(JUnit4.class)
@@ -23,40 +22,25 @@ public class CredentialVersionDataTest {
   @Test
   public void encryptedValue_doesNotStoreOrPassByReference() throws Exception {
     byte[] toModify = "foobar".getBytes();
-    passwordCredentialData.setEncryptedValue(toModify);
+    passwordCredentialData.setEncryptedValueData(new EncryptedValue().setEncryptedValue(toModify));
     byte[] unModified = toModify.clone();
 
     toModify[0] = (byte) 'a';
 
-    assertThat(passwordCredentialData.getEncryptedValue(), not(equalTo(toModify)));
-    assertThat(passwordCredentialData.getEncryptedValue(), equalTo(unModified));
-  }
-
-  @Test
-  public void encryptedValue_returnsNullWhenEncryptedValueNull() throws Exception {
-    passwordCredentialData.setEncryptedValue(null);
-
-    assertThat(passwordCredentialData.getEncryptedValue(), nullValue());
+    assertThat(passwordCredentialData.getEncryptedValueData().getEncryptedValue(), not(equalTo(toModify)));
+    assertThat(passwordCredentialData.getEncryptedValueData().getEncryptedValue(), equalTo(unModified));
   }
 
   @Test
   public void nonce_doesNotStoreOrPassByReference() throws Exception {
     byte[] toModify = "foobar".getBytes();
-    passwordCredentialData.setEncryptedValue(toModify);
-
-    passwordCredentialData.setNonce(toModify);
+    passwordCredentialData.setEncryptedValueData(new EncryptedValue().setEncryptedValue(toModify)
+        .setNonce(toModify));
     byte[] unModified = toModify.clone();
 
     toModify[0] = (byte) 'a';
 
-    assertThat(passwordCredentialData.getNonce(), not(equalTo(toModify)));
-    assertThat(passwordCredentialData.getNonce(), equalTo(unModified));
-  }
-
-  @Test
-  public void nonce_returnsNullWhenEncryptedValueNull() throws Exception {
-    passwordCredentialData.setNonce(null);
-
-    assertThat(passwordCredentialData.getNonce(), nullValue());
+    assertThat(passwordCredentialData.getEncryptedValueData().getNonce(), not(equalTo(toModify)));
+    assertThat(passwordCredentialData.getEncryptedValueData().getNonce(), equalTo(unModified));
   }
 }

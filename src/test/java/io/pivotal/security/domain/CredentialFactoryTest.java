@@ -9,8 +9,8 @@ import io.pivotal.security.credential.RsaCredentialValue;
 import io.pivotal.security.credential.SshCredentialValue;
 import io.pivotal.security.credential.StringCredentialValue;
 import io.pivotal.security.credential.UserCredentialValue;
+import io.pivotal.security.entity.EncryptedValue;
 import io.pivotal.security.request.StringGenerationParameters;
-import io.pivotal.security.service.Encryption;
 import io.pivotal.security.util.JsonObjectMapper;
 import net.minidev.json.JSONObject;
 import org.junit.Before;
@@ -49,16 +49,16 @@ public class CredentialFactoryTest {
     generationParameters = new StringGenerationParameters().setExcludeNumber(true).setLength(PLAINTEXT_VALUE.length());
 
     UUID encryptionKeyUuid = UUID.randomUUID();
-    Encryption encryption = new Encryption(encryptionKeyUuid, PLAINTEXT_VALUE.getBytes(), "test-nonce".getBytes());
+    EncryptedValue encryption = new EncryptedValue(encryptionKeyUuid, PLAINTEXT_VALUE.getBytes(), "test-nonce".getBytes());
     when(encryptor.encrypt(PLAINTEXT_VALUE)).thenReturn(encryption);
     when(encryptor.decrypt(encryption)).thenReturn(PLAINTEXT_VALUE);
 
     String generationParametersJsonString = objectMapper.writeValueAsString(generationParameters);
-    Encryption parametersEncryption = new Encryption(encryptionKeyUuid, "test-parameters".getBytes(), "test-parameters-nonce".getBytes());
+    EncryptedValue parametersEncryption = new EncryptedValue(encryptionKeyUuid, "test-parameters".getBytes(), "test-parameters-nonce".getBytes());
     when(encryptor.encrypt(generationParametersJsonString)).thenReturn(parametersEncryption);
     when(encryptor.decrypt(parametersEncryption)).thenReturn(generationParametersJsonString);
 
-    Encryption jsonEncryption =  new Encryption(encryptionKeyUuid, jsonValueJsonString.getBytes(), "test-nonce".getBytes());
+    EncryptedValue jsonEncryption =  new EncryptedValue(encryptionKeyUuid, jsonValueJsonString.getBytes(), "test-nonce".getBytes());
     when(encryptor.encrypt(jsonValueJsonString)).thenReturn(jsonEncryption);
     when(encryptor.decrypt(jsonEncryption)).thenReturn(jsonValueJsonString);
   }

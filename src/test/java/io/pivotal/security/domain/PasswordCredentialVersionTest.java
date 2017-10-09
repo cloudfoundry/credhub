@@ -1,8 +1,8 @@
 package io.pivotal.security.domain;
 
+import io.pivotal.security.entity.EncryptedValue;
 import io.pivotal.security.entity.PasswordCredentialVersionData;
 import io.pivotal.security.request.StringGenerationParameters;
-import io.pivotal.security.service.Encryption;
 import io.pivotal.security.util.JsonObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,11 +55,11 @@ public class PasswordCredentialVersionTest {
     String generationParametersJson = new JsonObjectMapper().writeValueAsString(generationParameters);
 
     when(encryptor.encrypt(null))
-        .thenReturn(new Encryption(canaryUuid, null, null));
-    final Encryption encryption = new Encryption(canaryUuid, encryptedValue, nonce);
+        .thenReturn(new EncryptedValue(canaryUuid, "", ""));
+    final EncryptedValue encryption = new EncryptedValue(canaryUuid, encryptedValue, nonce);
     when(encryptor.encrypt(PASSWORD))
         .thenReturn(encryption);
-    final Encryption parametersEncryption = new Encryption(canaryUuid, encryptedParametersValue, parametersNonce);
+    final EncryptedValue parametersEncryption = new EncryptedValue(canaryUuid, encryptedParametersValue, parametersNonce);
     when(encryptor.encrypt(eq(generationParametersJson)))
         .thenReturn(parametersEncryption);
 
@@ -92,7 +92,7 @@ public class PasswordCredentialVersionTest {
     subject = new PasswordCredentialVersion("/Foo");
     subject.setEncryptor(encryptor);
     when(encryptor.encrypt(null))
-        .thenReturn(new Encryption(canaryUuid, null, null));
+        .thenReturn(new EncryptedValue(canaryUuid, "", ""));
     subject.setPasswordAndGenerationParameters(PASSWORD, null);
 
     subject.getPassword();
@@ -103,7 +103,7 @@ public class PasswordCredentialVersionTest {
   @Test
   public void setPasswordAndGenerationParameters_setsTheNonceAndEncryptedValue() {
     subject.setPasswordAndGenerationParameters(PASSWORD, null);
-    assertThat(passwordCredentialData.getEncryptedValue(), notNullValue());
+    assertThat(passwordCredentialData.getEncryptedValueData().getEncryptedValue(), notNullValue());
     assertThat(passwordCredentialData.getNonce(), notNullValue());
   }
 
