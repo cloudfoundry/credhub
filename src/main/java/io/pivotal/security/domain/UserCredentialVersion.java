@@ -101,6 +101,10 @@ public class UserCredentialVersion extends CredentialVersion<UserCredentialVersi
   }
 
   public StringGenerationParameters getGenerationParameters() {
+    if (delegate.getEncryptedGenerationParameters() == null) {
+      return null;
+    }
+
     String parameterJson = encryptor.decrypt(new Encryption(
         delegate.getEncryptedGenerationParameters().getEncryptionKeyUuid(),
         delegate.getEncryptedGenerationParameters().getEncryptedValue(),

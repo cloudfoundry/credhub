@@ -174,4 +174,16 @@ public class UserCredentialVersionTest {
     assertThat(generationParameters, samePropertyValuesAs(STRING_GENERATION_PARAMS));
     verify(encryptor, times(1)).decrypt(any());
   }
+
+  @Test
+  public void getGenerationParameters_returnsNullIfTheGenerationParametersAreNull() {
+    userCredentialData = new UserCredentialVersionData();
+    subject = new UserCredentialVersion(userCredentialData)
+        .setEncryptor(encryptor);
+    subject.setGenerationParameters(null);
+
+    StringGenerationParameters generationParameters = subject.getGenerationParameters();
+
+    assertThat(generationParameters, equalTo(null));
+  }
 }

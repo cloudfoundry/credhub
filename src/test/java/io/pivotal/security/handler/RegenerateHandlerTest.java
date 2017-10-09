@@ -11,6 +11,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import java.util.List;
+
 import static com.google.common.collect.Lists.newArrayList;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
@@ -42,7 +44,6 @@ public class RegenerateHandlerTest {
     userContext = mock(UserContext.class);
     subject = new RegenerateHandler(
         credentialService,
-        permissionService,
         credentialGenerator,
         generationRequestGenerator);
   }
@@ -57,7 +58,7 @@ public class RegenerateHandlerTest {
     generateRequest1.setName("firstExpectedName");
     PasswordGenerateRequest generateRequest2 = new PasswordGenerateRequest();
     generateRequest2.setName("secondExpectedName");
-    when(generationRequestGenerator.createGenerateRequest(any(CredentialVersion.class)))
+    when(generationRequestGenerator.createGenerateRequest(any(CredentialVersion.class), any(String.class), any(List.class)))
         .thenReturn(generateRequest1)
         .thenReturn(generateRequest2);
 

@@ -288,6 +288,33 @@ public class CredentialsControllerRegenerateTest {
   }
 
   @Test
+  public void regeneratingANonGeneratedUser_returnsAnError_andPersistsAnAuditEntry() throws Exception {
+    UserCredentialVersion originalCredential = new UserCredentialVersion("my-user");
+    originalCredential.setEncryptor(encryptor);
+    originalCredential.setPassword("abcde");
+    originalCredential.setUsername("username");
+    originalCredential.setSalt("so salty");
+
+    credentialVersionDataService.save(originalCredential);
+
+    String cannotRegenerateJson = "{" +
+        "  \"error\": \"The user could not be regenerated because the value was" +
+        " statically set. Only generated users may be regenerated.\"" +
+        "}";
+
+    MockHttpServletRequestBuilder request = post("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{\"regenerate\":true,\"name\":\"my-user\"}");
+
+    mockMvc.perform(request)
+        .andExpect(content().json(cannotRegenerateJson));
+
+    auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/my-user", UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 400);
+  }
+
+  @Test
   public void regeneratingAPasswordWithParametersThatCannotBeDecrypted_returnsAnError() throws Exception {
     EncryptionKeyCanary encryptionKeyCanary = new EncryptionKeyCanary();
     canaryDataService.save(encryptionKeyCanary);
