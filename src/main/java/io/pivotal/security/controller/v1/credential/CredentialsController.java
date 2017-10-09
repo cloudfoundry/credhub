@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_FIND;
 import static java.util.Collections.singletonList;
 
 @RestController
@@ -195,8 +194,7 @@ public class CredentialsController {
   @ResponseStatus(HttpStatus.OK)
   public FindPathResults findPaths(RequestUuid requestUuid, UserContext userContext) {
     return eventAuditLogService.auditEvents(requestUuid, userContext, eventAuditRecordParametersList -> {
-      eventAuditRecordParametersList.add(new EventAuditRecordParameters(CREDENTIAL_FIND));
-      List<String> paths = credentialService.findAllPaths();
+      List<String> paths = credentialService.findAllPaths(eventAuditRecordParametersList);
       return FindPathResults.fromEntity(paths);
     });
   }

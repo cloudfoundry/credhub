@@ -112,8 +112,6 @@ public class PermissionedCredentialServiceTest {
     existingCredentialVersion = new PasswordCredentialVersion(CREDENTIAL_NAME);
     existingCredentialVersion.setEncryptor(encryptor);
 
-    auditRecordParameters = newArrayList();
-
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(true);
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, WRITE))
@@ -190,7 +188,6 @@ public class PermissionedCredentialServiceTest {
 
     accessControlEntries.add(new PermissionEntry("test-user", Arrays.asList(WRITE, WRITE_ACL)));
     try {
-
       subject.save(
           CREDENTIAL_NAME,
           "password",

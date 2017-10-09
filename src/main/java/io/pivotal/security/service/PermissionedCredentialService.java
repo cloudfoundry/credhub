@@ -169,7 +169,8 @@ public class PermissionedCredentialService {
     return credentialVersionDataService.findStartingWithPath(path);
   }
 
-  public List<String> findAllPaths() {
+  public List<String> findAllPaths(List<EventAuditRecordParameters> auditRecordParameters) {
+    auditRecordParameters.add(new EventAuditRecordParameters(CREDENTIAL_FIND));
     return credentialVersionDataService.findAllPaths();
   }
 
