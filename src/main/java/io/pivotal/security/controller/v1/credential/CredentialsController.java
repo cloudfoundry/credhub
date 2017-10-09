@@ -22,7 +22,6 @@ import io.pivotal.security.service.PermissionedCredentialService;
 import io.pivotal.security.util.StringUtil;
 import io.pivotal.security.view.CredentialView;
 import io.pivotal.security.view.DataResponse;
-import io.pivotal.security.view.FindCredentialResult;
 import io.pivotal.security.view.FindCredentialResults;
 import io.pivotal.security.view.FindPathResults;
 import org.apache.commons.lang3.StringUtils;
@@ -46,9 +45,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.function.BiFunction;
 
-import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_DELETE;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_FIND;
 import static java.util.Collections.singletonList;
 
@@ -138,10 +135,7 @@ public class CredentialsController {
     }
 
     eventAuditLogService.auditEvents(requestUuid, userContext, (eventAuditRecordParametersList) -> {
-      eventAuditRecordParametersList.add(new EventAuditRecordParameters(CREDENTIAL_DELETE, credentialName));
-
-      credentialsHandler.deleteCredential(credentialName, userContext);
-
+      credentialsHandler.deleteCredential(credentialName, userContext, eventAuditRecordParametersList);
       return true;
     });
   }
@@ -193,7 +187,8 @@ public class CredentialsController {
       RequestUuid requestUuid,
       UserContext userContext
   ) {
-    return findWithAuditing(path, credentialService::findStartingWithPath, requestUuid, userContext);
+    return eventAuditLogService
+        .auditEvents(requestUuid, userContext, eventAuditRecordParametersList -> new FindCredentialResults(credentialService.findStartingWithPath(path, eventAuditRecordParametersList)));
   }
 
   @RequestMapping(path = "", params = "paths=true", method = RequestMethod.GET)
@@ -213,8 +208,8 @@ public class CredentialsController {
       RequestUuid requestUuid,
       UserContext userContext
   ) {
-    return findWithAuditing(nameLike, credentialService::findContainingName, requestUuid,
-        userContext);
+    return eventAuditLogService
+        .auditEvents(requestUuid, userContext, eventAuditRecordParametersList -> new FindCredentialResults(credentialService.findContainingName(nameLike, eventAuditRecordParametersList)));
   }
 
   private CredentialView auditedHandlePostRequest(
@@ -310,12 +305,5 @@ public class CredentialsController {
       isRegenerateRequest = false;
     }
     return isRegenerateRequest;
-  }
-
-  private FindCredentialResults findWithAuditing(String nameSubstring,
-      BiFunction<String, List<EventAuditRecordParameters>, List<FindCredentialResult>> finder,
-      RequestUuid requestUuid, UserContext userContext) {
-    return eventAuditLogService
-        .auditEvents(requestUuid, userContext, eventAuditRecordParametersList -> new FindCredentialResults(finder.apply(nameSubstring, eventAuditRecordParametersList)));
   }
 }

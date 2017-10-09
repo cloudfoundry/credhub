@@ -49,6 +49,7 @@ public class CredentialsHandlerTest {
   private UserContext userContext;
   private SshCredentialVersion version1;
   private SshCredentialVersion version2;
+  List<EventAuditRecordParameters> auditRecordParametersList;
 
   @Before
   public void beforeEach() {
@@ -68,27 +69,29 @@ public class CredentialsHandlerTest {
     version2 = new SshCredentialVersion(CREDENTIAL_NAME);
     version2.setVersionCreatedAt(VERSION2_CREATED_AT);
     version2.setEncryptor(encryptor);
+
+    List<EventAuditRecordParameters> auditRecordParametersList = newArrayList();
   }
 
   @Test
   public void deleteCredential_whenTheDeletionSucceeds_deletesTheCredential() {
-    when(permissionedCredentialService.delete(any(), eq(CREDENTIAL_NAME))).thenReturn(true);
+    when(permissionedCredentialService.delete(any(), eq(CREDENTIAL_NAME), eq(auditRecordParametersList))).thenReturn(true);
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, DELETE))
         .thenReturn(true);
 
-    subject.deleteCredential(CREDENTIAL_NAME, userContext);
+    subject.deleteCredential(CREDENTIAL_NAME, userContext, auditRecordParametersList);
 
-    verify(permissionedCredentialService, times(1)).delete(any(), eq(CREDENTIAL_NAME));
+    verify(permissionedCredentialService, times(1)).delete(any(), eq(CREDENTIAL_NAME), eq(auditRecordParametersList));
   }
 
   @Test
   public void deleteCredential_whenTheCredentialIsNotDeleted_throwsAnException() {
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, DELETE))
         .thenReturn(true);
-    when(permissionedCredentialService.delete(any(), eq(CREDENTIAL_NAME))).thenReturn(false);
+    when(permissionedCredentialService.delete(any(), eq(CREDENTIAL_NAME), eq(auditRecordParametersList))).thenReturn(false);
 
     try {
-      subject.deleteCredential(CREDENTIAL_NAME, userContext);
+      subject.deleteCredential(CREDENTIAL_NAME, userContext, auditRecordParametersList);
       fail("Should throw exception");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));

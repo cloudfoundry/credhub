@@ -24,6 +24,7 @@ import java.util.List;
 
 import static io.pivotal.security.audit.AuditingOperationCode.ACL_UPDATE;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_DELETE;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_FIND;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 import static io.pivotal.security.audit.EventAuditRecordParametersFactory.createPermissionsEventAuditParameters;
@@ -98,7 +99,8 @@ public class PermissionedCredentialService {
     return CredentialView.fromEntity(storedCredentialVersion);
   }
 
-  public boolean delete(UserContext userContext, String credentialName) {
+  public boolean delete(UserContext userContext, String credentialName, List<EventAuditRecordParameters> auditRecordParameters) {
+    auditRecordParameters.add(new EventAuditRecordParameters(CREDENTIAL_DELETE, credentialName));
     if (!permissionCheckingService
         .hasPermission(userContext.getAclUser(), credentialName, DELETE)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
@@ -124,11 +126,11 @@ public class PermissionedCredentialService {
     return credentialVersionDataService.findNByName(credentialName, numberOfVersions);
   }
 
-  public CredentialVersion findByUuid(UserContext userContext, String credentialUUID, List<EventAuditRecordParameters> auditRecordParametersList) {
+  public CredentialVersion findByUuid(UserContext userContext, String credentialUUID, List<EventAuditRecordParameters> auditRecordParameters) {
     EventAuditRecordParameters eventAuditRecordParameters = new EventAuditRecordParameters(
         AuditingOperationCode.CREDENTIAL_ACCESS
     );
-    auditRecordParametersList.add(eventAuditRecordParameters);
+    auditRecordParameters.add(eventAuditRecordParameters);
 
     CredentialVersion credentialVersion = credentialVersionDataService.findByUuid(credentialUUID);
     if (credentialVersion == null) {
@@ -153,8 +155,8 @@ public class PermissionedCredentialService {
     return credentialVersionDataService.findAllCertificateCredentialsByCaName(caName);
   }
 
-  public List<FindCredentialResult> findStartingWithPath(String path, List<EventAuditRecordParameters> eventAuditRecordParametersList) {
-    eventAuditRecordParametersList.add(new EventAuditRecordParameters(CREDENTIAL_FIND));
+  public List<FindCredentialResult> findStartingWithPath(String path, List<EventAuditRecordParameters> auditRecordParameters) {
+    auditRecordParameters.add(new EventAuditRecordParameters(CREDENTIAL_FIND));
     return credentialVersionDataService.findStartingWithPath(path);
   }
 
@@ -162,8 +164,8 @@ public class PermissionedCredentialService {
     return credentialVersionDataService.findAllPaths();
   }
 
-  public List<FindCredentialResult> findContainingName(String name, List<EventAuditRecordParameters> eventAuditRecordParametersList) {
-    eventAuditRecordParametersList.add(new EventAuditRecordParameters(CREDENTIAL_FIND));
+  public List<FindCredentialResult> findContainingName(String name, List<EventAuditRecordParameters> auditRecordParameters) {
+    auditRecordParameters.add(new EventAuditRecordParameters(CREDENTIAL_FIND));
     return credentialVersionDataService.findContainingName(name);
   }
 
@@ -215,6 +217,7 @@ public class PermissionedCredentialService {
     auditRecordParameters
         .add(new EventAuditRecordParameters(credentialOperationCode, credentialName));
   }
+
   private void verifyCredentialWritePermission(UserContext userContext, String credentialName) {
     if (!permissionCheckingService
         .hasPermission(userContext.getAclUser(), credentialName, WRITE)) {

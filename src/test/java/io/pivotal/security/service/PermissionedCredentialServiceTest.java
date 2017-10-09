@@ -31,6 +31,7 @@ import java.util.List;
 import static com.google.common.collect.Lists.newArrayList;
 import static io.pivotal.security.audit.AuditingOperationCode.ACL_UPDATE;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_DELETE;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_FIND;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 import static io.pivotal.security.request.PermissionOperation.DELETE;
@@ -432,10 +433,14 @@ public class PermissionedCredentialServiceTest {
         .thenReturn(false);
 
     try {
-      subject.delete(userContext, CREDENTIAL_NAME);
+      subject.delete(userContext, CREDENTIAL_NAME, auditRecordParameters);
       fail("Should throw exception");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
+      assertThat(auditRecordParameters, hasSize(1));
+      assertThat(auditRecordParameters.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
+      assertThat(auditRecordParameters.get(0).getAuditingOperationCode(),
+          equalTo(CREDENTIAL_DELETE));
     }
   }
 

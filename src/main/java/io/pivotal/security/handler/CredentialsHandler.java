@@ -25,9 +25,8 @@ public class CredentialsHandler {
     this.permissionCheckingService = permissionCheckingService;
   }
 
-  public void deleteCredential(String credentialName, UserContext userContext) {
-    boolean deleteSucceeded = credentialService.delete(userContext, credentialName);
-
+  public void deleteCredential(String credentialName, UserContext userContext, List<EventAuditRecordParameters> eventAuditRecordParametersList) {
+    boolean deleteSucceeded = credentialService.delete(userContext, credentialName, eventAuditRecordParametersList);
     if (!deleteSucceeded) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
