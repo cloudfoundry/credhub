@@ -212,7 +212,6 @@ public class PermissionedCredentialService {
     auditRecordParameters
         .add(new EventAuditRecordParameters(credentialOperationCode, credentialName));
   }
-
   private void verifyCredentialWritePermission(UserContext userContext, String credentialName) {
     if (!permissionCheckingService
         .hasPermission(userContext.getAclUser(), credentialName, WRITE)) {
