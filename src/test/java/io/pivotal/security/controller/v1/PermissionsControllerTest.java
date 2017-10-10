@@ -11,6 +11,7 @@ import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.PermissionOperation;
+import io.pivotal.security.request.PermissionsRequest;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.PermissionsView;
 import org.junit.Before;
@@ -109,14 +110,15 @@ public class PermissionsControllerTest {
     grantPermissions(mockMvc, "test-credential-name", UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "test-actor",
         "read", "write");
 
-    ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
+    ArgumentCaptor<PermissionsRequest> captor = ArgumentCaptor.forClass(PermissionsRequest.class);
     verify(permissionsHandler, times(1)).setPermissions(
-        eq("test-credential-name"),
+        captor.capture(),
         any(UserContext.class),
-        captor.capture()
+        any(List.class)
     );
 
-    List<PermissionEntry> accessControlEntries = captor.getValue();
+    PermissionsRequest permissionsRequest = captor.getValue();
+    List<PermissionEntry> accessControlEntries = permissionsRequest.getPermissions();
     assertThat(accessControlEntries,
         hasItem(allOf(hasProperty("actor", equalTo("test-actor")),
             hasProperty("allowedOperations",

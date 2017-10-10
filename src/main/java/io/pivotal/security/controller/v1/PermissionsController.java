@@ -25,9 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 import static io.pivotal.security.audit.AuditingOperationCode.ACL_DELETE;
-import static io.pivotal.security.audit.AuditingOperationCode.ACL_UPDATE;
 import static io.pivotal.security.audit.EventAuditRecordParametersFactory.createPermissionEventAuditRecordParameters;
-import static io.pivotal.security.audit.EventAuditRecordParametersFactory.createPermissionsEventAuditParameters;
 
 @RestController
 @RequestMapping(path = "/api/v1/permissions", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -70,16 +68,7 @@ public class PermissionsController {
       @Validated @RequestBody PermissionsRequest accessEntriesRequest
   ) {
     eventAuditLogService.auditEvents(requestUuid, userContext, auditRecordParameters -> {
-      auditRecordParameters.addAll(createPermissionsEventAuditParameters(
-          ACL_UPDATE,
-          accessEntriesRequest.getCredentialName(),
-          accessEntriesRequest.getPermissions())
-      );
-      permissionsHandler.setPermissions(
-          accessEntriesRequest.getCredentialName(),
-          userContext,
-          accessEntriesRequest.getPermissions()
-      );
+      permissionsHandler.setPermissions(accessEntriesRequest, userContext, auditRecordParameters);
       return null;
     });
   }

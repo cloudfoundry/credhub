@@ -8,6 +8,7 @@ import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.InvalidAclOperationException;
 import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.PermissionOperation;
+import io.pivotal.security.request.PermissionsRequest;
 import io.pivotal.security.service.PermissionCheckingService;
 import io.pivotal.security.service.PermissionService;
 import io.pivotal.security.view.PermissionsView;
@@ -22,6 +23,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static io.pivotal.security.audit.AuditingOperationCode.ACL_ACCESS;
+import static io.pivotal.security.audit.AuditingOperationCode.ACL_UPDATE;
 import static io.pivotal.security.request.PermissionOperation.READ;
 import static io.pivotal.security.request.PermissionOperation.READ_ACL;
 import static io.pivotal.security.request.PermissionOperation.WRITE;
@@ -55,6 +58,7 @@ public class PermissionsHandlerTest {
   private final Credential credential = new Credential(CREDENTIAL_NAME);
   private final UserContext userContext = mock(UserContext.class);
   private List<EventAuditRecordParameters> auditRecordParameters;
+  private PermissionsRequest permissionsRequest;
 
   @Before
   public void beforeEach() {
@@ -67,6 +71,7 @@ public class PermissionsHandlerTest {
         credentialDataService
     );
 
+    permissionsRequest = mock(PermissionsRequest.class);
     auditRecordParameters = new ArrayList<>();
 
     when(credentialDataService.find(any(String.class))).thenReturn(credential);
@@ -88,6 +93,10 @@ public class PermissionsHandlerTest {
         userContext,
         auditRecordParameters);
     assertThat(response.getCredentialName(), equalTo(CREDENTIAL_NAME));
+
+    assertThat(auditRecordParameters.size(), equalTo(1));
+    assertThat(auditRecordParameters.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
+    assertThat(auditRecordParameters.get(0).getAuditingOperationCode(), equalTo(ACL_ACCESS));
   }
 
   @Test
@@ -125,6 +134,10 @@ public class PermissionsHandlerTest {
         equalTo(READ),
         equalTo(WRITE)
     ));
+
+    assertThat(auditRecordParameters.size(), equalTo(1));
+    assertThat(auditRecordParameters.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
+    assertThat(auditRecordParameters.get(0).getAuditingOperationCode(), equalTo(ACL_ACCESS));
   }
 
   @Test
@@ -156,7 +169,10 @@ public class PermissionsHandlerTest {
     when(credentialDataService.find(CREDENTIAL_NAME))
         .thenReturn(credential);
 
-    subject.setPermissions(CREDENTIAL_NAME, userContext, accessControlList);
+    when(permissionsRequest.getCredentialName()).thenReturn(CREDENTIAL_NAME);
+    when(permissionsRequest.getPermissions()).thenReturn(accessControlList);
+
+    subject.setPermissions(permissionsRequest, userContext, auditRecordParameters);
 
     ArgumentCaptor<List> permissionsListCaptor = ArgumentCaptor.forClass(List.class);
     verify(permissionService).saveAccessControlEntries(eq(userContext), eq(credential), permissionsListCaptor.capture());
@@ -182,18 +198,23 @@ public class PermissionsHandlerTest {
         .userAllowedToOperateOnActor(userContext, ACTOR_NAME))
         .thenReturn(false);
 
+    List<PermissionEntry> accessControlList = Arrays.asList(new PermissionEntry(ACTOR_NAME, Arrays.asList(READ)));
+    when(permissionsRequest.getCredentialName()).thenReturn(CREDENTIAL_NAME);
+    when(permissionsRequest.getPermissions()).thenReturn(accessControlList);
+
     try {
-      subject.setPermissions(CREDENTIAL_NAME, userContext, Arrays.asList(
-          new PermissionEntry(ACTOR_NAME, Arrays.asList(READ)))
-      );
+      subject.setPermissions(permissionsRequest, userContext, auditRecordParameters);
     } catch (InvalidAclOperationException e) {
       assertThat(e.getMessage(), equalTo("error.acl.invalid_update_operation"));
       verify(permissionService, times(0)).saveAccessControlEntries(any(), any(), any());
+      assertThat(auditRecordParameters.size(), equalTo(1));
+      assertThat(auditRecordParameters.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
+      assertThat(auditRecordParameters.get(0).getAuditingOperationCode(), equalTo(ACL_UPDATE));
     }
   }
 
   @Test
-  public void setPermissions_whenTheCredentialDoesNotExist_throwsException() {
+  public void setPermissions_whenTheCredentialDoesNotExist_throwsExceptionAndAuditsEvent() {
     when(permissionCheckingService
         .hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(WRITE_ACL)))
         .thenReturn(true);
@@ -202,9 +223,11 @@ public class PermissionsHandlerTest {
         .thenReturn(true);
     when(credentialDataService.find(CREDENTIAL_NAME))
         .thenReturn(null);
+    when(permissionsRequest.getCredentialName()).thenReturn(CREDENTIAL_NAME);
+    when(permissionsRequest.getPermissions()).thenReturn(emptyList());
 
     try {
-      subject.setPermissions(CREDENTIAL_NAME, userContext, emptyList());
+      subject.setPermissions(permissionsRequest, userContext, auditRecordParameters);
       fail("should throw");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
