@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-import static io.pivotal.security.audit.AuditingOperationCode.ACL_ACCESS;
 import static io.pivotal.security.audit.AuditingOperationCode.ACL_DELETE;
 import static io.pivotal.security.audit.AuditingOperationCode.ACL_UPDATE;
 import static io.pivotal.security.audit.EventAuditRecordParametersFactory.createPermissionEventAuditRecordParameters;
@@ -57,18 +56,9 @@ public class PermissionsController {
       UserContext userContext
   ) throws Exception {
     return eventAuditLogService
-        .auditEvents(requestUuid, userContext, eventAuditRecordParametersList -> {
-          EventAuditRecordParameters eventAuditRecordParameters = new EventAuditRecordParameters(
-              ACL_ACCESS, credentialName
-          );
-          eventAuditRecordParametersList.add(eventAuditRecordParameters);
-
-          final PermissionsView response = permissionsHandler
-              .getPermissions(credentialName, userContext);
-
-          eventAuditRecordParameters.setCredentialName(response.getCredentialName());
-
-          return response;
+        .auditEvents(requestUuid, userContext, auditRecordParameters -> {
+          return permissionsHandler
+              .getPermissions(credentialName, userContext, auditRecordParameters);
         });
   }
 

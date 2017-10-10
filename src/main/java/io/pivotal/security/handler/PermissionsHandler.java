@@ -1,5 +1,6 @@
 package io.pivotal.security.handler;
 
+import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.entity.Credential;
@@ -13,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+
+import static io.pivotal.security.audit.AuditingOperationCode.ACL_ACCESS;
 
 @Component
 public class PermissionsHandler {
@@ -32,9 +35,19 @@ public class PermissionsHandler {
     this.credentialDataService = credentialDataService;
   }
 
-  public PermissionsView getPermissions(String name, UserContext userContext) {
-    final Credential credential = credentialDataService.findOrThrow(name);
+  public PermissionsView getPermissions(String name, UserContext userContext, List<EventAuditRecordParameters> auditRecordParameters) {
+    EventAuditRecordParameters eventAuditRecordParameters = new EventAuditRecordParameters(
+        ACL_ACCESS, name
+    );
+    auditRecordParameters.add(eventAuditRecordParameters);
 
+    final Credential credential = credentialDataService.find(name);
+
+    if (credential == null) {
+      throw new EntryNotFoundException("error.resource_not_found");
+    }
+
+    eventAuditRecordParameters.setCredentialName(credential.getName());
     return new PermissionsView(
         credential.getName(),
         permissionService.getAccessControlList(userContext, credential)

@@ -1,5 +1,6 @@
 package io.pivotal.security.handler;
 
+import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.entity.Credential;
@@ -53,6 +54,7 @@ public class PermissionsHandlerTest {
 
   private final Credential credential = new Credential(CREDENTIAL_NAME);
   private final UserContext userContext = mock(UserContext.class);
+  private List<EventAuditRecordParameters> auditRecordParameters;
 
   @Before
   public void beforeEach() {
@@ -65,7 +67,9 @@ public class PermissionsHandlerTest {
         credentialDataService
     );
 
-    when(credentialDataService.findOrThrow(any(String.class))).thenReturn(credential);
+    auditRecordParameters = new ArrayList<>();
+
+    when(credentialDataService.find(any(String.class))).thenReturn(credential);
   }
 
   @Test
@@ -76,13 +80,13 @@ public class PermissionsHandlerTest {
     when(permissionCheckingService
         .hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(READ_ACL)))
         .thenReturn(true);
-    when(credentialDataService.findOrThrow(any(String.class)))
+    when(credentialDataService.find(any(String.class)))
         .thenReturn(new Credential(CREDENTIAL_NAME));
 
     PermissionsView response = subject.getPermissions(
         CREDENTIAL_NAME,
-        userContext
-    );
+        userContext,
+        auditRecordParameters);
     assertThat(response.getCredentialName(), equalTo(CREDENTIAL_NAME));
   }
 
@@ -105,8 +109,8 @@ public class PermissionsHandlerTest {
 
     PermissionsView response = subject.getPermissions(
         CREDENTIAL_NAME,
-        userContext
-    );
+        userContext,
+        auditRecordParameters);
 
     List<PermissionEntry> accessControlEntries = response.getPermissions();
 

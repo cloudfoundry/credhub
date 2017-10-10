@@ -95,7 +95,7 @@ public class PermissionsControllerTest {
     PermissionsView permissionsView = new PermissionsView(
         "test_credential_name", newArrayList());
 
-    when(permissionsHandler.getPermissions(eq("test_credential_name"), any(UserContext.class)))
+    when(permissionsHandler.getPermissions(eq("test_credential_name"), any(UserContext.class), any(List.class)))
         .thenReturn(permissionsView);
 
     PermissionsView permissions = getPermissions(mockMvc, "test_credential_name",
