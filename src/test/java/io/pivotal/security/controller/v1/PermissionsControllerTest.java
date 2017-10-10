@@ -1,7 +1,6 @@
 package io.pivotal.security.controller.v1;
 
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.PermissionsDataService;
 import io.pivotal.security.exceptions.EntryNotFoundException;
@@ -35,12 +34,10 @@ import java.util.Collections;
 import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static io.pivotal.security.audit.AuditingOperationCode.ACL_DELETE;
 import static io.pivotal.security.helper.RequestHelper.expectStatusWhenDeletingPermissions;
 import static io.pivotal.security.helper.RequestHelper.getPermissions;
 import static io.pivotal.security.helper.RequestHelper.grantPermissions;
 import static io.pivotal.security.helper.RequestHelper.revokePermissions;
-import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
@@ -158,14 +155,7 @@ public class PermissionsControllerTest {
     revokePermissions(mockMvc, "test-name", UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "test-actor");
 
     verify(permissionsHandler, times(1))
-        .deletePermissionEntry(any(UserContext.class), eq("test-name"), eq("test-actor"));
-
-    auditingHelper.verifyAuditing(
-        ACL_DELETE,
-        "/test-name",
-        UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
-        "/api/v1/permissions",
-        204);
+        .deletePermissionEntry(any(UserContext.class), eq("test-name"), eq("test-actor"), any(List.class));
   }
 
   @Test
@@ -175,22 +165,13 @@ public class PermissionsControllerTest {
 
     Mockito.doThrow(new EntryNotFoundException("error.credential.invalid_access"))
         .when(permissionsHandler)
-        .deletePermissionEntry(any(), eq("incorrect-name"), eq("test-actor")
-        );
+        .deletePermissionEntry(any(), eq("incorrect-name"), eq("test-actor"),
+            any(List.class));
 
     expectStatusWhenDeletingPermissions(mockMvc, 404, "incorrect-name", "test-actor", UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
 
     verify(permissionsHandler, times(1))
-        .deletePermissionEntry(any(UserContext.class), eq("incorrect-name"), eq("test-actor")
-        );
-
-    EventAuditRecordParameters expectedEntry = new EventAuditRecordParameters(ACL_DELETE, "/incorrect-name", null, "test-actor");
-
-    auditingHelper.verifyAuditing(
-        UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
-        "/api/v1/permissions",
-        404,
-        Collections.singletonList(expectedEntry)
-        );
+        .deletePermissionEntry(any(UserContext.class), eq("incorrect-name"), eq("test-actor"),
+            any(List.class));
   }
 }

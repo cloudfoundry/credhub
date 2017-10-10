@@ -7,6 +7,7 @@ import io.pivotal.security.entity.Credential;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.InvalidAclOperationException;
 import io.pivotal.security.request.PermissionEntry;
+import io.pivotal.security.request.PermissionOperation;
 import io.pivotal.security.request.PermissionsRequest;
 import io.pivotal.security.service.PermissionCheckingService;
 import io.pivotal.security.service.PermissionService;
@@ -17,7 +18,9 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 import static io.pivotal.security.audit.AuditingOperationCode.ACL_ACCESS;
+import static io.pivotal.security.audit.AuditingOperationCode.ACL_DELETE;
 import static io.pivotal.security.audit.AuditingOperationCode.ACL_UPDATE;
+import static io.pivotal.security.audit.EventAuditRecordParametersFactory.createPermissionEventAuditRecordParameters;
 import static io.pivotal.security.audit.EventAuditRecordParametersFactory.createPermissionsEventAuditParameters;
 
 @Component
@@ -84,10 +87,17 @@ public class PermissionsHandler {
   }
 
   public void deletePermissionEntry(UserContext userContext,
-      String credentialName, String actor) {
+                                    String credentialName, String actor, List<EventAuditRecordParameters> auditRecordParameters) {
 
-    boolean successfullyDeleted = permissionService
-        .deleteAccessControlEntry(userContext, credentialName, actor);
+    List<PermissionOperation> operationList = permissionService.getAllowedOperationsForLogging(credentialName, actor);
+
+    if (operationList.size() == 0) {
+      auditRecordParameters.add(new EventAuditRecordParameters(ACL_DELETE, credentialName, null, actor));
+    } else {
+      auditRecordParameters.addAll(createPermissionEventAuditRecordParameters(ACL_DELETE, credentialName, actor, operationList));
+    }
+
+    boolean successfullyDeleted = permissionService.deleteAccessControlEntry(userContext, credentialName, actor);
 
     if (!successfullyDeleted) {
       throw new EntryNotFoundException("error.credential.invalid_access");

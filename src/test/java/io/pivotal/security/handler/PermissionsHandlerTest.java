@@ -24,6 +24,7 @@ import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static io.pivotal.security.audit.AuditingOperationCode.ACL_ACCESS;
+import static io.pivotal.security.audit.AuditingOperationCode.ACL_DELETE;
 import static io.pivotal.security.audit.AuditingOperationCode.ACL_UPDATE;
 import static io.pivotal.security.request.PermissionOperation.READ;
 import static io.pivotal.security.request.PermissionOperation.READ_ACL;
@@ -246,11 +247,14 @@ public class PermissionsHandlerTest {
         .userAllowedToOperateOnActor(userContext, ACTOR_NAME))
         .thenReturn(true);
 
-    subject.deletePermissionEntry(userContext, CREDENTIAL_NAME, ACTOR_NAME
-    );
+    subject.deletePermissionEntry(userContext, CREDENTIAL_NAME, ACTOR_NAME,
+        auditRecordParameters);
 
     verify(permissionService, times(1)).deleteAccessControlEntry(userContext,
         CREDENTIAL_NAME, ACTOR_NAME);
+    assertThat(auditRecordParameters.size(), equalTo(1));
+    assertThat(auditRecordParameters.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
+    assertThat(auditRecordParameters.get(0).getAuditingOperationCode(), equalTo(ACL_DELETE));
   }
 
   @Test
@@ -259,11 +263,14 @@ public class PermissionsHandlerTest {
         .thenReturn(false);
 
     try {
-      subject.deletePermissionEntry(userContext, CREDENTIAL_NAME, ACTOR_NAME
-      );
+      subject.deletePermissionEntry(userContext, CREDENTIAL_NAME, ACTOR_NAME,
+          auditRecordParameters);
       fail("should throw");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
+      assertThat(auditRecordParameters.size(), equalTo(1));
+      assertThat(auditRecordParameters.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
+      assertThat(auditRecordParameters.get(0).getAuditingOperationCode(), equalTo(ACL_DELETE));
     }
   }
 }
