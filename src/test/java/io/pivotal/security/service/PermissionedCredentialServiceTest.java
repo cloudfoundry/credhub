@@ -5,7 +5,6 @@ import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.constants.CredentialType;
 import io.pivotal.security.credential.CredentialValue;
 import io.pivotal.security.data.CredentialVersionDataService;
-import io.pivotal.security.data.PermissionsDataService;
 import io.pivotal.security.domain.CredentialFactory;
 import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.domain.Encryptor;
@@ -62,9 +61,6 @@ public class PermissionedCredentialServiceTest {
 
   @Mock
   private CredentialVersionDataService credentialVersionDataService;
-
-  @Mock
-  private PermissionsDataService permissionsDataService;
 
   @Mock
   private PermissionService permissionService;

@@ -4,7 +4,6 @@ import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.exceptions.EntryNotFoundException;
-import io.pivotal.security.service.PermissionCheckingService;
 import io.pivotal.security.service.PermissionedCredentialService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -14,13 +13,10 @@ import java.util.List;
 @Component
 public class CredentialsHandler {
   private final PermissionedCredentialService credentialService;
-  private final PermissionCheckingService permissionCheckingService;
 
   @Autowired
-  public CredentialsHandler(PermissionedCredentialService credentialService,
-      PermissionCheckingService permissionCheckingService) {
+  public CredentialsHandler(PermissionedCredentialService credentialService) {
     this.credentialService = credentialService;
-    this.permissionCheckingService = permissionCheckingService;
   }
 
   public void deleteCredential(String credentialName, UserContext userContext, List<EventAuditRecordParameters> eventAuditRecordParametersList) {

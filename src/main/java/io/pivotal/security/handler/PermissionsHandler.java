@@ -41,17 +41,13 @@ public class PermissionsHandler {
   }
 
   public PermissionsView getPermissions(String name, UserContext userContext, List<EventAuditRecordParameters> auditRecordParameters) {
-    EventAuditRecordParameters eventAuditRecordParameters = new EventAuditRecordParameters(
-        ACL_ACCESS, name
-    );
-    auditRecordParameters.add(eventAuditRecordParameters);
+    auditRecordParameters.add(new EventAuditRecordParameters(ACL_ACCESS, name));
     CredentialVersion credentialVersion = permissionedCredentialService.findMostRecent(name);
 
     if (credentialVersion == null) {
       throw new EntryNotFoundException("error.resource_not_found");
     }
 
-    eventAuditRecordParameters.setCredentialName(credentialVersion.getName());
     return new PermissionsView(
         credentialVersion.getName(),
         permissionService.getAccessControlList(userContext, credentialVersion)

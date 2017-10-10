@@ -55,7 +55,7 @@ public class CredentialsHandlerTest {
 
     permissionedCredentialService = mock(PermissionedCredentialService.class);
     permissionCheckingService = mock(PermissionCheckingService.class);
-    subject = new CredentialsHandler(permissionedCredentialService, permissionCheckingService);
+    subject = new CredentialsHandler(permissionedCredentialService);
 
     userContext = mock(UserContext.class);
     when(userContext.getAclUser()).thenReturn(USER);
@@ -68,7 +68,6 @@ public class CredentialsHandlerTest {
     version2.setVersionCreatedAt(VERSION2_CREATED_AT);
     version2.setEncryptor(encryptor);
 
-    List<EventAuditRecordParameters> auditRecordParametersList = newArrayList();
   }
 
   @Test
