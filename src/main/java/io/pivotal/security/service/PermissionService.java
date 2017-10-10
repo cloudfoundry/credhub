@@ -2,6 +2,7 @@ package io.pivotal.security.service;
 
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.PermissionsDataService;
+import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.entity.Credential;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.InvalidAclOperationException;
@@ -31,27 +32,23 @@ public class PermissionService {
     return permissionsDataService.getAllowedOperations(credentialName, actor);
   }
 
-  public void saveAccessControlEntries(UserContext userContext, Credential credential, List<PermissionEntry> permissionEntryList) {
+  public void saveAccessControlEntries(UserContext userContext, CredentialVersion credentialVersion, List<PermissionEntry> permissionEntryList) {
     if (permissionEntryList.size() == 0) {
       return;
     }
-    if (!permissionCheckingService.hasPermission(userContext.getAclUser(), credential.getName(), WRITE_ACL)) {
+    if (!permissionCheckingService.hasPermission(userContext.getAclUser(), credentialVersion.getName(), WRITE_ACL)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
-    permissionsDataService.saveAccessControlEntries(credential, permissionEntryList);
+    permissionsDataService.saveAccessControlEntries(credentialVersion.getCredential(), permissionEntryList);
   }
 
-  public List<PermissionEntry> getAccessControlList(UserContext userContext, Credential credential) {
-    if (!permissionCheckingService.hasPermission(userContext.getAclUser(), credential.getName(), READ_ACL)) {
+  public List<PermissionEntry> getAccessControlList(UserContext userContext, CredentialVersion credentialVersion) {
+    if (!permissionCheckingService.hasPermission(userContext.getAclUser(), credentialVersion.getName(), READ_ACL)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
-    return insecureGetPermissionEntries(credential);
-  }
-
-  public List<PermissionEntry> insecureGetPermissionEntries(Credential credential) {
-    return permissionsDataService.getAccessControlList(credential);
+    return getPermissionEntries(credentialVersion.getCredential());
   }
 
   public boolean deleteAccessControlEntry(UserContext userContext, String credentialName, String actor) {
@@ -65,5 +62,9 @@ public class PermissionService {
     }
 
     return permissionsDataService.deleteAccessControlEntry(credentialName, actor);
+  }
+
+  private List<PermissionEntry> getPermissionEntries(Credential credential) {
+    return permissionsDataService.getAccessControlList(credential);
   }
 }

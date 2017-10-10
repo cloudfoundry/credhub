@@ -91,7 +91,7 @@ public class PermissionedCredentialService {
 
     permissionService.saveAccessControlEntries(
         userContext,
-        storedCredentialVersion.getCredential(),
+        storedCredentialVersion,
         accessControlEntries
     );
 

@@ -360,7 +360,7 @@ public class PermissionedCredentialServiceTest {
         auditRecordParameters
     );
 
-    verify(permissionService).saveAccessControlEntries(userContext, credential.getCredential(), accessControlEntries);
+    verify(permissionService).saveAccessControlEntries(userContext, credential, accessControlEntries);
   }
 
   @Test

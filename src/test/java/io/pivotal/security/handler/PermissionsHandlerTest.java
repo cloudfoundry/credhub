@@ -3,7 +3,10 @@ package io.pivotal.security.handler;
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.domain.CredentialVersion;
+import io.pivotal.security.domain.PasswordCredentialVersion;
 import io.pivotal.security.entity.Credential;
+import io.pivotal.security.entity.PasswordCredentialVersionData;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.InvalidAclOperationException;
 import io.pivotal.security.request.PermissionEntry;
@@ -11,6 +14,7 @@ import io.pivotal.security.request.PermissionOperation;
 import io.pivotal.security.request.PermissionsRequest;
 import io.pivotal.security.service.PermissionCheckingService;
 import io.pivotal.security.service.PermissionService;
+import io.pivotal.security.service.PermissionedCredentialService;
 import io.pivotal.security.view.PermissionsView;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,8 +59,10 @@ public class PermissionsHandlerTest {
   private PermissionService permissionService;
   private PermissionCheckingService permissionCheckingService;
   private CredentialDataService credentialDataService;
+  private PermissionedCredentialService permissionedCredentialService;
 
   private final Credential credential = new Credential(CREDENTIAL_NAME);
+  private final CredentialVersion credentialVersion = new PasswordCredentialVersion(new PasswordCredentialVersionData(CREDENTIAL_NAME));
   private final UserContext userContext = mock(UserContext.class);
   private List<EventAuditRecordParameters> auditRecordParameters;
   private PermissionsRequest permissionsRequest;
@@ -66,28 +72,27 @@ public class PermissionsHandlerTest {
     permissionService = mock(PermissionService.class);
     permissionCheckingService = mock(PermissionCheckingService.class);
     credentialDataService = mock(CredentialDataService.class);
+    permissionedCredentialService = mock(PermissionedCredentialService.class);
     subject = new PermissionsHandler(
         permissionService,
         permissionCheckingService,
-        credentialDataService
-    );
+        permissionedCredentialService);
 
     permissionsRequest = mock(PermissionsRequest.class);
     auditRecordParameters = new ArrayList<>();
 
+    when(permissionedCredentialService.findMostRecent(CREDENTIAL_NAME)).thenReturn(credentialVersion);
     when(credentialDataService.find(any(String.class))).thenReturn(credential);
   }
 
   @Test
   public void getPermissions_whenTheNameDoesntStartWithASlash_fixesTheName() {
     List<PermissionEntry> accessControlList = newArrayList();
-    when(permissionService.getAccessControlList(eq(userContext), any(Credential.class)))
+    when(permissionService.getAccessControlList(eq(userContext), any(CredentialVersion.class)))
         .thenReturn(accessControlList);
     when(permissionCheckingService
         .hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(READ_ACL)))
         .thenReturn(true);
-    when(credentialDataService.find(any(String.class)))
-        .thenReturn(new Credential(CREDENTIAL_NAME));
 
     PermissionsView response = subject.getPermissions(
         CREDENTIAL_NAME,
@@ -114,7 +119,7 @@ public class PermissionsHandlerTest {
         operations
     );
     List<PermissionEntry> accessControlList = newArrayList(permissionEntry);
-    when(permissionService.getAccessControlList(userContext, credential))
+    when(permissionService.getAccessControlList(userContext, credentialVersion))
         .thenReturn(accessControlList);
 
     PermissionsView response = subject.getPermissions(
@@ -164,11 +169,8 @@ public class PermissionsHandlerTest {
     List<PermissionEntry> expectedControlList = newArrayList(permissionEntry,
         preexistingPermissionEntry);
 
-    when(permissionService.getAccessControlList(userContext, credential))
+    when(permissionService.getAccessControlList(userContext, credentialVersion))
         .thenReturn(expectedControlList);
-
-    when(credentialDataService.find(CREDENTIAL_NAME))
-        .thenReturn(credential);
 
     when(permissionsRequest.getCredentialName()).thenReturn(CREDENTIAL_NAME);
     when(permissionsRequest.getPermissions()).thenReturn(accessControlList);
@@ -176,7 +178,7 @@ public class PermissionsHandlerTest {
     subject.setPermissions(permissionsRequest, userContext, auditRecordParameters);
 
     ArgumentCaptor<List> permissionsListCaptor = ArgumentCaptor.forClass(List.class);
-    verify(permissionService).saveAccessControlEntries(eq(userContext), eq(credential), permissionsListCaptor.capture());
+    verify(permissionService).saveAccessControlEntries(eq(userContext), eq(credentialVersion), permissionsListCaptor.capture());
 
     List<PermissionEntry> accessControlEntries = permissionsListCaptor.getValue();
 
@@ -193,8 +195,6 @@ public class PermissionsHandlerTest {
     when(permissionCheckingService
         .hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(WRITE_ACL)))
         .thenReturn(true);
-    when(credentialDataService.find(CREDENTIAL_NAME))
-        .thenReturn(credential);
     when(permissionCheckingService
         .userAllowedToOperateOnActor(userContext, ACTOR_NAME))
         .thenReturn(false);
@@ -222,8 +222,7 @@ public class PermissionsHandlerTest {
     when(permissionCheckingService
         .userAllowedToOperateOnActor(userContext, ACTOR_NAME))
         .thenReturn(true);
-    when(credentialDataService.find(CREDENTIAL_NAME))
-        .thenReturn(null);
+    when(permissionedCredentialService.findMostRecent(CREDENTIAL_NAME)).thenReturn(null);
     when(permissionsRequest.getCredentialName()).thenReturn(CREDENTIAL_NAME);
     when(permissionsRequest.getPermissions()).thenReturn(emptyList());
 

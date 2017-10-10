@@ -2,8 +2,7 @@ package io.pivotal.security.handler;
 
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.data.CredentialDataService;
-import io.pivotal.security.entity.Credential;
+import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.InvalidAclOperationException;
 import io.pivotal.security.request.PermissionEntry;
@@ -11,6 +10,7 @@ import io.pivotal.security.request.PermissionOperation;
 import io.pivotal.security.request.PermissionsRequest;
 import io.pivotal.security.service.PermissionCheckingService;
 import io.pivotal.security.service.PermissionService;
+import io.pivotal.security.service.PermissionedCredentialService;
 import io.pivotal.security.view.PermissionsView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -28,17 +28,16 @@ public class PermissionsHandler {
 
   private final PermissionService permissionService;
   private final PermissionCheckingService permissionCheckingService;
-  private final CredentialDataService credentialDataService;
+  private final PermissionedCredentialService permissionedCredentialService;
 
   @Autowired
   PermissionsHandler(
       PermissionService permissionService,
       PermissionCheckingService permissionCheckingService,
-      CredentialDataService credentialDataService
-  ) {
+      PermissionedCredentialService permissionedCredentialService) {
     this.permissionService = permissionService;
     this.permissionCheckingService = permissionCheckingService;
-    this.credentialDataService = credentialDataService;
+    this.permissionedCredentialService = permissionedCredentialService;
   }
 
   public PermissionsView getPermissions(String name, UserContext userContext, List<EventAuditRecordParameters> auditRecordParameters) {
@@ -46,17 +45,16 @@ public class PermissionsHandler {
         ACL_ACCESS, name
     );
     auditRecordParameters.add(eventAuditRecordParameters);
+    CredentialVersion credentialVersion = permissionedCredentialService.findMostRecent(name);
 
-    final Credential credential = credentialDataService.find(name);
-
-    if (credential == null) {
+    if (credentialVersion == null) {
       throw new EntryNotFoundException("error.resource_not_found");
     }
 
-    eventAuditRecordParameters.setCredentialName(credential.getName());
+    eventAuditRecordParameters.setCredentialName(credentialVersion.getName());
     return new PermissionsView(
-        credential.getName(),
-        permissionService.getAccessControlList(userContext, credential)
+        credentialVersion.getName(),
+        permissionService.getAccessControlList(userContext, credentialVersion)
     );
   }
 
@@ -70,10 +68,10 @@ public class PermissionsHandler {
         request.getCredentialName(),
         request.getPermissions())
     );
-    final Credential credential = credentialDataService.find(request.getCredentialName());
 
-    // We need to verify that the credential exists in case ACL enforcement is off
-    if (credential == null) {
+    CredentialVersion credentialVersion = permissionedCredentialService.findMostRecent(request.getCredentialName());
+
+    if (credentialVersion == null) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
@@ -83,7 +81,7 @@ public class PermissionsHandler {
       }
     }
 
-    permissionService.saveAccessControlEntries(userContext, credential, request.getPermissions());
+    permissionService.saveAccessControlEntries(userContext, credentialVersion, request.getPermissions());
   }
 
   public void deletePermissionEntry(UserContext userContext,
