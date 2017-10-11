@@ -7,13 +7,15 @@ import io.pivotal.security.credential.CredentialValue;
 import io.pivotal.security.credential.StringCredentialValue;
 import io.pivotal.security.credential.UserCredentialValue;
 import io.pivotal.security.data.CertificateAuthorityService;
+import io.pivotal.security.domain.CredentialVersion;
+import io.pivotal.security.domain.PasswordCredentialVersion;
 import io.pivotal.security.request.CertificateSetRequest;
 import io.pivotal.security.request.PasswordSetRequest;
 import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.request.UserSetRequest;
+import io.pivotal.security.service.PermissionService;
 import io.pivotal.security.service.PermissionedCredentialService;
-import io.pivotal.security.view.CredentialView;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,8 +26,10 @@ import java.util.ArrayList;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyList;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -35,27 +39,65 @@ import static org.mockito.Mockito.when;
 public class SetHandlerTest {
   private PermissionedCredentialService credentialService;
   private CertificateAuthorityService certificateAuthorityService;
+  private PermissionService permissionService;
 
   private SetHandler subject;
 
   private StringGenerationParameters generationParameters;
   private ArrayList<PermissionEntry> accessControlEntries;
   private UserContext userContext;
+  private CredentialVersion credentialVersion;
 
   @Before
   public void setUp() throws Exception {
     credentialService = mock(PermissionedCredentialService.class);
     certificateAuthorityService = mock(CertificateAuthorityService.class);
+    permissionService = mock(PermissionService.class);
 
-    subject = new SetHandler(credentialService, certificateAuthorityService);
+    subject = new SetHandler(credentialService, permissionService, certificateAuthorityService);
 
     generationParameters = new StringGenerationParameters();
     accessControlEntries = new ArrayList<>();
     userContext = new UserContext();
+    credentialVersion = mock(PasswordCredentialVersion.class);
+    when(credentialService.save(anyObject(), anyString(), anyString(), anyObject(), anyObject(), anyList(), anyBoolean(), anyObject(), anyList())).thenReturn(credentialVersion);
   }
 
+
+
   @Test
-  public void handleSetRequest_whenPasswordSetRequest_passesInCorrectParametersIncludingGeneration() {
+  public void handleSetRequest_whenOverwriteIsTrue_shouldSaveAccessControlEntries() {
+    StringCredentialValue password = new StringCredentialValue("federation");
+    PasswordSetRequest setRequest = new PasswordSetRequest();
+    CredentialVersion existingCredMock = mock(CredentialVersion.class);
+
+    when(credentialService.findMostRecent("captain")).thenReturn(existingCredMock);
+    final ArrayList<EventAuditRecordParameters> eventAuditRecordParameters = new ArrayList<>();
+    setRequest.setType("password");
+    setRequest.setGenerationParameters(generationParameters);
+    setRequest.setPassword(password);
+    setRequest.setName("captain");
+    setRequest.setAdditionalPermissions(accessControlEntries);
+    setRequest.setOverwrite(true);
+
+    subject.handle(setRequest, userContext, eventAuditRecordParameters);
+
+    verify(credentialService).save(
+        existingCredMock, "captain",
+        "password",
+        password,
+        generationParameters,
+        accessControlEntries,
+        true,
+        userContext,
+        eventAuditRecordParameters
+    );
+    verify(permissionService).saveAccessControlEntries(userContext, credentialVersion, accessControlEntries, eventAuditRecordParameters, false, "captain");
+  }
+
+
+  @Test
+  public void handleSetRequest_whenPasswordSetRequest_passesCorrectParametersIncludingGeneration() {
     StringCredentialValue password = new StringCredentialValue("federation");
     PasswordSetRequest setRequest = new PasswordSetRequest();
 
@@ -63,14 +105,14 @@ public class SetHandlerTest {
     setRequest.setType("password");
     setRequest.setGenerationParameters(generationParameters);
     setRequest.setPassword(password);
-    setRequest.setName("government");
+    setRequest.setName("captain");
     setRequest.setAdditionalPermissions(accessControlEntries);
     setRequest.setOverwrite(false);
 
-    CredentialView credentialView = mock(CredentialView.class);
+    subject.handle(setRequest, userContext, eventAuditRecordParameters);
 
-    when(credentialService.save(
-        "government",
+    verify(credentialService).save(
+        null, "captain",
         "password",
         password,
         generationParameters,
@@ -78,21 +120,12 @@ public class SetHandlerTest {
         false,
         userContext,
         eventAuditRecordParameters
-    ))
-        .thenReturn(credentialView);
-
-    final CredentialView returnValue = subject
-        .handle(
-            setRequest,
-            userContext,
-            eventAuditRecordParameters
-        );
-
-    assertThat(returnValue, equalTo(credentialView));
+    );
+    verify(permissionService).saveAccessControlEntries(userContext, credentialVersion, accessControlEntries, eventAuditRecordParameters, true, "captain");
   }
 
   @Test
-  public void handleSetRequest_whenNonPasswordSetRequest_passesInCorrectParametersWithNullGeneration() {
+  public void handleSetRequest_whenNonPasswordSetRequest_passesCorrectParametersWithNullGeneration() {
     UserSetRequest setRequest = new UserSetRequest();
     final UserCredentialValue userCredentialValue = new UserCredentialValue(
         "Picard",
@@ -106,10 +139,10 @@ public class SetHandlerTest {
     setRequest.setOverwrite(false);
     setRequest.setUserValue(userCredentialValue);
 
-    CredentialView credentialView = mock(CredentialView.class);
+    subject.handle(setRequest, userContext, eventAuditRecordParameters);
 
-    when(credentialService.save(
-        "captain",
+    verify(credentialService).save(
+        null, "captain",
         "user",
         userCredentialValue,
         null,
@@ -117,17 +150,8 @@ public class SetHandlerTest {
         false,
         userContext,
         eventAuditRecordParameters
-    ))
-        .thenReturn(credentialView);
-
-    final CredentialView returnValue = subject
-        .handle(
-            setRequest,
-            userContext,
-            eventAuditRecordParameters
-        );
-
-    assertThat(returnValue, equalTo(credentialView));
+    );
+    verify(permissionService).saveAccessControlEntries(userContext, credentialVersion, accessControlEntries, eventAuditRecordParameters, true, "captain");
   }
 
   @Test
@@ -146,10 +170,10 @@ public class SetHandlerTest {
     setRequest.setOverwrite(false);
     setRequest.setCertificateValue(certificateValue);
 
-    CredentialView credentialView = mock(CredentialView.class);
+    subject.handle(setRequest, userContext, eventAuditRecordParameters);
 
-    when(credentialService.save(
-        "captain",
+    verify(credentialService).save(
+        null, "captain",
         "certificate",
         certificateValue,
         null,
@@ -157,17 +181,8 @@ public class SetHandlerTest {
         false,
         userContext,
         eventAuditRecordParameters
-    ))
-        .thenReturn(credentialView);
-
-    final CredentialView returnValue = subject
-        .handle(
-            setRequest,
-            userContext,
-            eventAuditRecordParameters
-        );
-
-    assertThat(returnValue, equalTo(credentialView));
+    );
+    verify(permissionService).saveAccessControlEntries(userContext, credentialVersion, accessControlEntries, eventAuditRecordParameters, true, "captain");
   }
 
   @Test
@@ -195,8 +210,6 @@ public class SetHandlerTest {
     setRequest.setOverwrite(false);
     setRequest.setCertificateValue(credentialValue);
 
-    CredentialView credentialView = mock(CredentialView.class);
-
     CertificateCredentialValue expectedCredentialValue = new CertificateCredentialValue(
         "test-ca-certificate",
         "Picard",
@@ -205,29 +218,10 @@ public class SetHandlerTest {
     );
     ArgumentCaptor<CredentialValue> credentialValueArgumentCaptor = ArgumentCaptor.forClass(CredentialValue.class);
 
-    when(credentialService.save(
-        eq("captain"),
-        eq("certificate"),
-        any(),
-        eq(null),
-        eq(accessControlEntries),
-        eq(false),
-        eq(userContext),
-        eq(eventAuditRecordParameters)
-    ))
-        .thenReturn(credentialView);
-
-    final CredentialView returnValue = subject
-        .handle(
-            setRequest,
-            userContext,
-            eventAuditRecordParameters
-        );
-
-    assertThat(returnValue, equalTo(credentialView));
+    subject.handle(setRequest, userContext, eventAuditRecordParameters);
 
     verify(credentialService).save(
-        eq("captain"),
+        eq(null), eq("captain"),
         eq("certificate"),
         credentialValueArgumentCaptor.capture(),
         eq(null),
@@ -237,5 +231,6 @@ public class SetHandlerTest {
         eq(eventAuditRecordParameters)
     );
     assertThat(credentialValueArgumentCaptor.getValue(), samePropertyValuesAs(expectedCredentialValue));
+    verify(permissionService).saveAccessControlEntries(userContext, credentialVersion, accessControlEntries, eventAuditRecordParameters, true, "captain");
   }
 }

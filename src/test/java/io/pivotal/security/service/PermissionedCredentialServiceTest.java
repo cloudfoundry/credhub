@@ -43,7 +43,6 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -113,7 +112,7 @@ public class PermissionedCredentialServiceTest {
   public void save_whenGivenTypeAndExistingTypeDontMatch_throwsException() {
     when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredentialVersion);
     subject.save(
-        CREDENTIAL_NAME,
+        existingCredentialVersion, CREDENTIAL_NAME,
         "user",
         credentialValue,
         generationParameters,
@@ -128,7 +127,7 @@ public class PermissionedCredentialServiceTest {
   public void save_whenThereIsAnExistingCredentialAndOverwriteIsFalse_logsCREDENTIAL_ACCESS() {
     when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredentialVersion);
     subject.save(
-        CREDENTIAL_NAME,
+        existingCredentialVersion, CREDENTIAL_NAME,
         "password",
         credentialValue,
         generationParameters,
@@ -149,7 +148,7 @@ public class PermissionedCredentialServiceTest {
         .thenReturn(new PasswordCredentialVersion().setEncryptor(encryptor));
 
     subject.save(
-        CREDENTIAL_NAME,
+        existingCredentialVersion, CREDENTIAL_NAME,
         "password",
         credentialValue,
         generationParameters,
@@ -170,12 +169,15 @@ public class PermissionedCredentialServiceTest {
         .thenReturn(new PasswordCredentialVersion().setEncryptor(encryptor));
     when(permissionCheckingService
         .userAllowedToOperateOnActor(userContext, "test-user"))
-        .thenReturn(false);
+        .thenReturn(true);
+    when(permissionCheckingService
+        .hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE_ACL))
+        .thenReturn(true);
 
     accessControlEntries.add(new PermissionEntry("test-user", Arrays.asList(WRITE, WRITE_ACL)));
     try {
       subject.save(
-          CREDENTIAL_NAME,
+          existingCredentialVersion, CREDENTIAL_NAME,
           "password",
           credentialValue,
           generationParameters,
@@ -193,7 +195,7 @@ public class PermissionedCredentialServiceTest {
   public void save_whenThereIsAnExistingCredential_shouldCallVerifyCredentialWritePermission() {
     when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredentialVersion);
     subject.save(
-        CREDENTIAL_NAME,
+        existingCredentialVersion, CREDENTIAL_NAME,
         "password",
         credentialValue,
         generationParameters,
@@ -212,7 +214,7 @@ public class PermissionedCredentialServiceTest {
     when(credentialVersionDataService.save(any(CredentialVersion.class)))
         .thenReturn(new PasswordCredentialVersion().setEncryptor(encryptor));
     subject.save(
-        CREDENTIAL_NAME,
+        existingCredentialVersion, CREDENTIAL_NAME,
         "password",
         credentialValue,
         generationParameters,
@@ -221,9 +223,6 @@ public class PermissionedCredentialServiceTest {
         userContext,
         auditRecordParameters
     );
-
-    verify(permissionCheckingService, times(0)).hasPermission(
-        userContext.getAclUser(), CREDENTIAL_NAME, WRITE);
   }
 
   @Test
@@ -238,7 +237,7 @@ public class PermissionedCredentialServiceTest {
 
     try {
       subject.save(
-          CREDENTIAL_NAME,
+          existingCredentialVersion, CREDENTIAL_NAME,
           "password",
           credentialValue,
           generationParameters,
@@ -259,7 +258,7 @@ public class PermissionedCredentialServiceTest {
     when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredentialVersion);
 
     subject.save(
-        CREDENTIAL_NAME,
+        existingCredentialVersion, CREDENTIAL_NAME,
         "password",
         credentialValue,
         generationParameters,
@@ -286,7 +285,7 @@ public class PermissionedCredentialServiceTest {
         generationParameters)).thenReturn(newVersion);
 
     subject.save(
-        CREDENTIAL_NAME,
+        null, CREDENTIAL_NAME,
         "password",
         credentialValue,
         generationParameters,
@@ -299,24 +298,6 @@ public class PermissionedCredentialServiceTest {
     verify(credentialVersionDataService).save(newVersion);
   }
 
-  @Test
-  public void save_whenOverwriteIsTrue_shouldSaveAccessControlEntries() {
-    PasswordCredentialVersion credential = new PasswordCredentialVersion().setEncryptor(encryptor);
-    when(credentialVersionDataService.save(any(CredentialVersion.class))).thenReturn(credential);
-
-    subject.save(
-        CREDENTIAL_NAME,
-        "password",
-        credentialValue,
-        generationParameters,
-        accessControlEntries,
-        true,
-        userContext,
-        auditRecordParameters
-    );
-
-    verify(permissionService).saveAccessControlEntries(userContext, credential, accessControlEntries, auditRecordParameters, true, CREDENTIAL_NAME);
-  }
 
   @Test
   public void delete_whenTheUserLacksPermission_throwsAnException() {

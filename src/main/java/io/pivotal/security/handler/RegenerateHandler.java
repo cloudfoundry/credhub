@@ -5,7 +5,6 @@ import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.credential.CredentialValue;
 import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.request.BaseCredentialGenerateRequest;
-import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.service.PermissionedCredentialService;
 import io.pivotal.security.view.BulkRegenerateResults;
 import io.pivotal.security.view.CredentialView;
@@ -40,7 +39,8 @@ public class RegenerateHandler {
     BaseCredentialGenerateRequest generateRequest = generationRequestGenerator.createGenerateRequest(existingCredentialVersion, credentialName, auditRecordParameters);
     CredentialValue credentialValue = credentialGenerator.generate(generateRequest, userContext);
 
-    return credentialService.save(
+    final CredentialVersion credentialVersion = credentialService.save(
+        existingCredentialVersion,
         generateRequest.getName(),
         generateRequest.getType(),
         credentialValue,
@@ -50,12 +50,13 @@ public class RegenerateHandler {
         userContext,
         auditRecordParameters
     );
+
+    return CredentialView.fromEntity(credentialVersion);
   }
 
   public BulkRegenerateResults handleBulkRegenerate(
       String signerName,
       UserContext userContext,
-      PermissionEntry currentUserPermissionEntry,
       List<EventAuditRecordParameters> auditRecordParameters
   ) {
     BulkRegenerateResults results = new BulkRegenerateResults();

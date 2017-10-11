@@ -15,7 +15,6 @@ import io.pivotal.security.exceptions.PermissionException;
 import io.pivotal.security.request.GenerationParameters;
 import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.PermissionOperation;
-import io.pivotal.security.view.CredentialView;
 import io.pivotal.security.view.FindCredentialResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -51,8 +50,8 @@ public class PermissionedCredentialService {
     this.permissionCheckingService = permissionCheckingService;
   }
 
-  public CredentialView save(
-      String credentialName,
+  public CredentialVersion save(
+      CredentialVersion existingCredentialVersion, String credentialName,
       String type,
       CredentialValue credentialValue,
       GenerationParameters generationParameters,
@@ -61,7 +60,6 @@ public class PermissionedCredentialService {
       UserContext userContext,
       List<EventAuditRecordParameters> auditRecordParameters
   ) {
-    CredentialVersion existingCredentialVersion = credentialVersionDataService.findMostRecent(credentialName);
 
     final boolean isNewCredential = existingCredentialVersion == null;
     boolean shouldWriteNewCredential = isNewCredential || isOverwrite;
@@ -71,20 +69,16 @@ public class PermissionedCredentialService {
     validateCredentialSave(credentialName, type, accessControlEntries, userContext, existingCredentialVersion);
 
     if (!shouldWriteNewCredential) {
-      return CredentialView.fromEntity(existingCredentialVersion);
+      return existingCredentialVersion;
     }
 
-    CredentialVersion storedCredentialVersion = makeAndSaveNewCredential(
+    return makeAndSaveNewCredential(
         credentialName,
         type,
         credentialValue,
         generationParameters,
         existingCredentialVersion
     );
-
-    permissionService.saveAccessControlEntries(userContext, storedCredentialVersion, accessControlEntries, auditRecordParameters, isNewCredential, credentialName);
-
-    return CredentialView.fromEntity(storedCredentialVersion);
   }
 
   public boolean delete(UserContext userContext, String credentialName, List<EventAuditRecordParameters> auditRecordParameters) {

@@ -3,10 +3,9 @@ package io.pivotal.security.controller.v1;
 import io.pivotal.security.audit.EventAuditLogService;
 import io.pivotal.security.audit.RequestUuid;
 import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.request.BulkRegenerateRequest;
-import io.pivotal.security.request.PermissionEntry;
-import io.pivotal.security.request.RegenerateRequest;
 import io.pivotal.security.handler.RegenerateHandler;
+import io.pivotal.security.request.BulkRegenerateRequest;
+import io.pivotal.security.request.RegenerateRequest;
 import io.pivotal.security.view.BulkRegenerateResults;
 import io.pivotal.security.view.CredentialView;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +44,6 @@ public class RegenerateController {
   public CredentialView regenerate(
       UserContext userContext,
       RequestUuid requestUuid,
-      PermissionEntry currentUserPermissionEntry,
       @RequestBody @Validated RegenerateRequest requestBody
   ) throws IOException {
     return eventAuditLogService
@@ -63,14 +61,13 @@ public class RegenerateController {
   public BulkRegenerateResults bulkRegenerate(
       UserContext userContext,
       RequestUuid requestUuid,
-      PermissionEntry currentUserPermissionEntry,
       @RequestBody @Valid BulkRegenerateRequest requestBody
   ) throws IOException {
     return eventAuditLogService
         .auditEvents(requestUuid, userContext, (auditRecordParameters -> {
           return regenerateHandler
               .handleBulkRegenerate(requestBody.getSignedBy(), userContext,
-                  currentUserPermissionEntry, auditRecordParameters);
+                  auditRecordParameters);
         }));
   }
 }

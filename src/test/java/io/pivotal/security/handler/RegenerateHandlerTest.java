@@ -2,8 +2,8 @@ package io.pivotal.security.handler;
 
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.domain.CredentialVersion;
+import io.pivotal.security.domain.PasswordCredentialVersion;
 import io.pivotal.security.request.PasswordGenerateRequest;
-import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.service.PermissionService;
 import io.pivotal.security.service.PermissionedCredentialService;
 import org.junit.Before;
@@ -16,6 +16,8 @@ import java.util.List;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyList;
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -32,7 +34,6 @@ public class RegenerateHandlerTest {
   private UniversalCredentialGenerator credentialGenerator;
   private GenerationRequestGenerator generationRequestGenerator;
   private UserContext userContext;
-  private PermissionEntry currentUserPermissionEntry;
 
   @Before
   public void beforeEach() {
@@ -40,7 +41,6 @@ public class RegenerateHandlerTest {
     permissionService = mock(PermissionService.class);
     credentialGenerator = mock(UniversalCredentialGenerator.class);
     generationRequestGenerator = mock(GenerationRequestGenerator.class);
-    currentUserPermissionEntry = mock(PermissionEntry.class);
     userContext = mock(UserContext.class);
     subject = new RegenerateHandler(
         credentialService,
@@ -54,6 +54,9 @@ public class RegenerateHandlerTest {
         .thenReturn(newArrayList("firstExpectedName", "secondExpectedName"));
     when(credentialService.findMostRecent(anyString()))
         .thenReturn(mock(CredentialVersion.class));
+    CredentialVersion credentialVersion = mock(PasswordCredentialVersion.class);
+    when(credentialService.save(anyObject(), anyString(), anyString(), anyObject(), anyObject(), anyList(), anyBoolean(), anyObject(), anyList())).thenReturn(credentialVersion);
+
     PasswordGenerateRequest generateRequest1 = new PasswordGenerateRequest();
     generateRequest1.setName("firstExpectedName");
     PasswordGenerateRequest generateRequest2 = new PasswordGenerateRequest();
@@ -62,18 +65,20 @@ public class RegenerateHandlerTest {
         .thenReturn(generateRequest1)
         .thenReturn(generateRequest2);
 
-    subject.handleBulkRegenerate(SIGNER_NAME, userContext, currentUserPermissionEntry, newArrayList());
+    subject.handleBulkRegenerate(SIGNER_NAME, userContext, newArrayList());
 
     verify(credentialService).save(
-        eq("firstExpectedName"),
+        any(), eq("firstExpectedName"),
         any(), any(), any(),
         any(), anyBoolean(),
         eq(userContext), any());
+
     verify(credentialService).save(
-        eq("secondExpectedName"),
+        any(), eq("secondExpectedName"),
         any(), any(), any(),
         any(), anyBoolean(),
         eq(userContext), any());
+
   }
 
 }
