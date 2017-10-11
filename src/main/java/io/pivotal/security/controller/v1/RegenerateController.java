@@ -52,7 +52,7 @@ public class RegenerateController {
         .auditEvents(requestUuid, userContext, (auditRecordParameters -> {
           return regenerateHandler
               .handleRegenerate(requestBody.getName(), userContext,
-                  currentUserPermissionEntry, auditRecordParameters);
+                  auditRecordParameters);
         }));
   }
 

@@ -4,7 +4,6 @@ import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.credential.CredentialValue;
 import io.pivotal.security.request.BaseCredentialGenerateRequest;
-import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.service.PermissionedCredentialService;
 import io.pivotal.security.view.CredentialView;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +28,6 @@ public class GenerateHandler {
   public CredentialView handle(
       BaseCredentialGenerateRequest generateRequest,
       UserContext userContext,
-      PermissionEntry currentUserPermissionEntry,
       List<EventAuditRecordParameters> auditRecordParameters
   ) {
     CredentialValue value = credentialGenerator.generate(generateRequest, userContext);
@@ -42,7 +40,6 @@ public class GenerateHandler {
         generateRequest.getAdditionalPermissions(),
         generateRequest.isOverwrite(),
         userContext,
-        currentUserPermissionEntry,
         auditRecordParameters
     );
   }

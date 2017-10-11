@@ -34,7 +34,6 @@ public class RegenerateHandler {
   public CredentialView handleRegenerate(
       String credentialName,
       UserContext userContext,
-      PermissionEntry currentUserPermissionEntry,
       List<EventAuditRecordParameters> auditRecordParameters
   ) {
     CredentialVersion existingCredentialVersion = credentialService.findMostRecent(credentialName);
@@ -49,7 +48,6 @@ public class RegenerateHandler {
         generateRequest.getAdditionalPermissions(),
         generateRequest.isOverwrite(),
         userContext,
-        currentUserPermissionEntry,
         auditRecordParameters
     );
   }
@@ -65,7 +63,7 @@ public class RegenerateHandler {
 
     final HashSet<String> credentialNamesSet = new HashSet<>(certificateNames);
     for (String name : credentialNamesSet) {
-      this.handleRegenerate(name, userContext, currentUserPermissionEntry,
+      this.handleRegenerate(name, userContext,
           auditRecordParameters);
     }
 

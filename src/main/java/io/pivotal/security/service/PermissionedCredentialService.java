@@ -9,7 +9,6 @@ import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.domain.CredentialFactory;
 import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.exceptions.EntryNotFoundException;
-import io.pivotal.security.exceptions.InvalidAclOperationException;
 import io.pivotal.security.exceptions.InvalidQueryParameterException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.exceptions.PermissionException;
@@ -23,12 +22,10 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-import static io.pivotal.security.audit.AuditingOperationCode.ACL_UPDATE;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_DELETE;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_FIND;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
-import static io.pivotal.security.audit.EventAuditRecordParametersFactory.createPermissionsEventAuditParameters;
 import static io.pivotal.security.request.PermissionOperation.DELETE;
 import static io.pivotal.security.request.PermissionOperation.READ;
 import static io.pivotal.security.request.PermissionOperation.WRITE;
@@ -62,12 +59,12 @@ public class PermissionedCredentialService {
       List<PermissionEntry> accessControlEntries,
       boolean isOverwrite,
       UserContext userContext,
-      PermissionEntry currentUserPermissionEntry,
       List<EventAuditRecordParameters> auditRecordParameters
   ) {
     CredentialVersion existingCredentialVersion = credentialVersionDataService.findMostRecent(credentialName);
 
-    boolean shouldWriteNewCredential = existingCredentialVersion == null || isOverwrite;
+    final boolean isNewCredential = existingCredentialVersion == null;
+    boolean shouldWriteNewCredential = isNewCredential || isOverwrite;
 
     writeSaveAuditRecord(credentialName, auditRecordParameters, shouldWriteNewCredential);
 
@@ -75,10 +72,6 @@ public class PermissionedCredentialService {
 
     if (!shouldWriteNewCredential) {
       return CredentialView.fromEntity(existingCredentialVersion);
-    }
-
-    if (existingCredentialVersion == null) {
-      accessControlEntries.add(currentUserPermissionEntry);
     }
 
     CredentialVersion storedCredentialVersion = makeAndSaveNewCredential(
@@ -89,13 +82,7 @@ public class PermissionedCredentialService {
         existingCredentialVersion
     );
 
-    permissionService.saveAccessControlEntries(
-        userContext,
-        storedCredentialVersion,
-        accessControlEntries
-    );
-
-    writePermissionsUpdateAuditRecord(accessControlEntries, auditRecordParameters, storedCredentialVersion);
+    permissionService.saveAccessControlEntries(userContext, storedCredentialVersion, accessControlEntries, auditRecordParameters, isNewCredential, credentialName);
 
     return CredentialView.fromEntity(storedCredentialVersion);
   }
@@ -193,14 +180,6 @@ public class PermissionedCredentialService {
     return credentialVersionDataService.save(newVersion);
   }
 
-  private void writePermissionsUpdateAuditRecord(List<PermissionEntry> accessControlEntries, List<EventAuditRecordParameters> auditRecordParameters, CredentialVersion storedCredentialVersion) {
-    auditRecordParameters.addAll(createPermissionsEventAuditParameters(
-        ACL_UPDATE,
-        storedCredentialVersion.getName(),
-        accessControlEntries
-    ));
-  }
-
   private void validateCredentialSave(String credentialName, String type, List<PermissionEntry> accessControlEntries, UserContext userContext, CredentialVersion existingCredentialVersion) {
     if (existingCredentialVersion != null) {
       verifyCredentialWritePermission(userContext, credentialName);
@@ -212,12 +191,6 @@ public class PermissionedCredentialService {
 
     if (existingCredentialVersion != null && !existingCredentialVersion.getCredentialType().equals(type)) {
       throw new ParameterizedValidationException("error.type_mismatch");
-    }
-
-    for (PermissionEntry accessControlEntry : accessControlEntries) {
-      if (!permissionCheckingService.userAllowedToOperateOnActor(userContext, accessControlEntry.getActor())) {
-        throw new InvalidAclOperationException("error.acl.invalid_update_operation");
-      }
     }
   }
 

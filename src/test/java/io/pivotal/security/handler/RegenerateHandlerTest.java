@@ -68,14 +68,12 @@ public class RegenerateHandlerTest {
         eq("firstExpectedName"),
         any(), any(), any(),
         any(), anyBoolean(),
-        eq(userContext),
-        any(), any());
+        eq(userContext), any());
     verify(credentialService).save(
         eq("secondExpectedName"),
         any(), any(), any(),
         any(), anyBoolean(),
-        eq(userContext),
-        any(), any());
+        eq(userContext), any());
   }
 
 }

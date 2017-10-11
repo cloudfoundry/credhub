@@ -60,7 +60,7 @@ public class RegenerateControllerTest {
   public void POST_regeneratesThePassword_andPersistsAnAuditEntry() throws Exception {
     mockMvc.perform(makeRegenerateRequest()).andDo(print()).andExpect(status().isOk());
 
-    Mockito.verify(regenerateHandler).handleRegenerate(eq("picard"), any(UserContext.class), any(PermissionEntry.class), any());
+    Mockito.verify(regenerateHandler).handleRegenerate(eq("picard"), any(UserContext.class), any());
     Mockito.verify(eventAuditLogService).auditEvents(any(RequestUuid.class), org.mockito.Matchers.argThat(
         org.hamcrest.Matchers.hasProperty("userId", org.hamcrest.Matchers.equalTo("df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"))
     ), any());

@@ -29,21 +29,17 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static io.pivotal.security.audit.AuditingOperationCode.ACL_UPDATE;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_DELETE;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_FIND;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 import static io.pivotal.security.request.PermissionOperation.DELETE;
 import static io.pivotal.security.request.PermissionOperation.READ;
-import static io.pivotal.security.request.PermissionOperation.READ_ACL;
 import static io.pivotal.security.request.PermissionOperation.WRITE;
 import static io.pivotal.security.request.PermissionOperation.WRITE_ACL;
 import static org.assertj.core.api.Java6Assertions.fail;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.samePropertyValuesAs;
-import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
@@ -82,7 +78,6 @@ public class PermissionedCredentialServiceTest {
   private StringGenerationParameters generationParameters;
   private CredentialValue credentialValue;
   private List<PermissionEntry> accessControlEntries;
-  private PermissionEntry currentUserPermissions;
 
 
   @Before
@@ -102,8 +97,6 @@ public class PermissionedCredentialServiceTest {
     accessControlEntries = new ArrayList<>();
 
     when(userContext.getAclUser()).thenReturn(USER);
-    currentUserPermissions = new PermissionEntry(userContext.getAclUser(),
-        Arrays.asList(READ, WRITE, DELETE, WRITE_ACL, READ_ACL));
 
     existingCredentialVersion = new PasswordCredentialVersion(CREDENTIAL_NAME);
     existingCredentialVersion.setEncryptor(encryptor);
@@ -127,7 +120,6 @@ public class PermissionedCredentialServiceTest {
         accessControlEntries,
         false,
         userContext,
-        currentUserPermissions,
         auditRecordParameters
     );
   }
@@ -143,7 +135,6 @@ public class PermissionedCredentialServiceTest {
         accessControlEntries,
         false,
         userContext,
-        currentUserPermissions,
         auditRecordParameters
     );
 
@@ -165,7 +156,6 @@ public class PermissionedCredentialServiceTest {
         accessControlEntries,
         true,
         userContext,
-        currentUserPermissions,
         auditRecordParameters
     );
 
@@ -192,7 +182,6 @@ public class PermissionedCredentialServiceTest {
           accessControlEntries,
           true,
           userContext,
-          currentUserPermissions,
           auditRecordParameters
       );
     } catch (InvalidAclOperationException e) {
@@ -211,7 +200,6 @@ public class PermissionedCredentialServiceTest {
         accessControlEntries,
         false,
         userContext,
-        currentUserPermissions,
         auditRecordParameters
     );
 
@@ -231,7 +219,6 @@ public class PermissionedCredentialServiceTest {
         accessControlEntries,
         false,
         userContext,
-        currentUserPermissions,
         auditRecordParameters
     );
 
@@ -258,36 +245,11 @@ public class PermissionedCredentialServiceTest {
           accessControlEntries,
           false,
           userContext,
-          currentUserPermissions,
           auditRecordParameters
       );
     } catch (PermissionException pe) {
       assertThat(pe.getMessage(), equalTo("error.credential.invalid_access"));
     }
-  }
-
-  @Test
-  public void save_whenThereIsNoExistingCredential_shouldAddAceForTheCurrentUser() {
-    when(credentialVersionDataService.save(any(CredentialVersion.class)))
-        .thenReturn(new PasswordCredentialVersion().setEncryptor(encryptor));
-    subject.save(
-        CREDENTIAL_NAME,
-        "password",
-        credentialValue,
-        generationParameters,
-        accessControlEntries,
-        false,
-        userContext,
-        currentUserPermissions,
-        auditRecordParameters
-    );
-
-    assertThat(accessControlEntries, hasItem(
-        samePropertyValuesAs(
-            new PermissionEntry("Kirk", Arrays.asList(READ, WRITE, DELETE, WRITE_ACL, READ_ACL))
-        )
-        )
-    );
   }
 
   @Test
@@ -304,7 +266,6 @@ public class PermissionedCredentialServiceTest {
         accessControlEntries,
         true,
         userContext,
-        currentUserPermissions,
         auditRecordParameters
     );
 
@@ -332,7 +293,6 @@ public class PermissionedCredentialServiceTest {
         accessControlEntries,
         true,
         userContext,
-        currentUserPermissions,
         auditRecordParameters
     );
 
@@ -352,73 +312,10 @@ public class PermissionedCredentialServiceTest {
         accessControlEntries,
         true,
         userContext,
-        currentUserPermissions,
         auditRecordParameters
     );
 
-    verify(permissionService).saveAccessControlEntries(userContext, credential, accessControlEntries);
-  }
-
-  @Test
-  public void save_whenOverwriteIsTrue_logsACL_UPDATE() {
-    PasswordCredentialVersion credential = new PasswordCredentialVersion(CREDENTIAL_NAME).setEncryptor(encryptor);
-    when(credentialVersionDataService.save(any(CredentialVersion.class))).thenReturn(credential);
-    when(permissionCheckingService
-        .userAllowedToOperateOnActor(userContext, "Spock")).thenReturn(true);
-    when(permissionCheckingService
-        .userAllowedToOperateOnActor(userContext, "McCoy")).thenReturn(true);
-
-    accessControlEntries.addAll(Arrays.asList(
-        new PermissionEntry("Spock", Arrays.asList(WRITE)),
-        new PermissionEntry("McCoy", Arrays.asList(DELETE))
-    ));
-
-    subject.save(
-        CREDENTIAL_NAME,
-        "password",
-        credentialValue,
-        generationParameters,
-        accessControlEntries,
-        true,
-        userContext,
-        currentUserPermissions,
-        auditRecordParameters
-    );
-
-    assertThat(auditRecordParameters, hasItem(
-        samePropertyValuesAs(
-            new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, WRITE, "Spock")
-        )));
-
-    assertThat(auditRecordParameters, hasItem(
-        samePropertyValuesAs(
-            new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, DELETE, "McCoy")
-        )));
-
-    assertThat(auditRecordParameters, hasItem(
-        samePropertyValuesAs(
-            new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, DELETE, "Kirk")
-        )));
-
-    assertThat(auditRecordParameters, hasItem(
-        samePropertyValuesAs(
-            new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, READ, "Kirk")
-        )));
-
-    assertThat(auditRecordParameters, hasItem(
-        samePropertyValuesAs(
-            new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, WRITE, "Kirk")
-        )));
-
-    assertThat(auditRecordParameters, hasItem(
-        samePropertyValuesAs(
-            new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, WRITE_ACL, "Kirk")
-        )));
-
-    assertThat(auditRecordParameters, hasItem(
-        samePropertyValuesAs(
-            new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, READ_ACL, "Kirk")
-        )));
+    verify(permissionService).saveAccessControlEntries(userContext, credential, accessControlEntries, auditRecordParameters, true, CREDENTIAL_NAME);
   }
 
   @Test

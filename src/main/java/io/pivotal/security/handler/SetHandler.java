@@ -7,7 +7,6 @@ import io.pivotal.security.data.CertificateAuthorityService;
 import io.pivotal.security.request.BaseCredentialSetRequest;
 import io.pivotal.security.request.CertificateSetRequest;
 import io.pivotal.security.request.PasswordSetRequest;
-import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.service.PermissionedCredentialService;
 import io.pivotal.security.view.CredentialView;
@@ -34,7 +33,6 @@ public class SetHandler {
   public CredentialView handle(
       BaseCredentialSetRequest setRequest,
       UserContext userContext,
-      PermissionEntry currentEntry,
       List<EventAuditRecordParameters> eventAuditRecordParameters
   ) {
     StringGenerationParameters generationParameters = null;
@@ -59,7 +57,6 @@ public class SetHandler {
         setRequest.getAdditionalPermissions(),
         setRequest.isOverwrite(),
         userContext,
-        currentEntry,
         eventAuditRecordParameters
     );
   }

@@ -41,7 +41,6 @@ public class SetHandlerTest {
   private StringGenerationParameters generationParameters;
   private ArrayList<PermissionEntry> accessControlEntries;
   private UserContext userContext;
-  private PermissionEntry currentEntry;
 
   @Before
   public void setUp() throws Exception {
@@ -53,7 +52,6 @@ public class SetHandlerTest {
     generationParameters = new StringGenerationParameters();
     accessControlEntries = new ArrayList<>();
     userContext = new UserContext();
-    currentEntry = new PermissionEntry();
   }
 
   @Test
@@ -79,7 +77,6 @@ public class SetHandlerTest {
         accessControlEntries,
         false,
         userContext,
-        currentEntry,
         eventAuditRecordParameters
     ))
         .thenReturn(credentialView);
@@ -88,7 +85,6 @@ public class SetHandlerTest {
         .handle(
             setRequest,
             userContext,
-            currentEntry,
             eventAuditRecordParameters
         );
 
@@ -120,7 +116,6 @@ public class SetHandlerTest {
         accessControlEntries,
         false,
         userContext,
-        currentEntry,
         eventAuditRecordParameters
     ))
         .thenReturn(credentialView);
@@ -129,7 +124,6 @@ public class SetHandlerTest {
         .handle(
             setRequest,
             userContext,
-            currentEntry,
             eventAuditRecordParameters
         );
 
@@ -162,7 +156,6 @@ public class SetHandlerTest {
         accessControlEntries,
         false,
         userContext,
-        currentEntry,
         eventAuditRecordParameters
     ))
         .thenReturn(credentialView);
@@ -171,7 +164,6 @@ public class SetHandlerTest {
         .handle(
             setRequest,
             userContext,
-            currentEntry,
             eventAuditRecordParameters
         );
 
@@ -221,7 +213,6 @@ public class SetHandlerTest {
         eq(accessControlEntries),
         eq(false),
         eq(userContext),
-        eq(currentEntry),
         eq(eventAuditRecordParameters)
     ))
         .thenReturn(credentialView);
@@ -230,7 +221,6 @@ public class SetHandlerTest {
         .handle(
             setRequest,
             userContext,
-            currentEntry,
             eventAuditRecordParameters
         );
 
@@ -244,7 +234,6 @@ public class SetHandlerTest {
         eq(accessControlEntries),
         eq(false),
         eq(userContext),
-        eq(currentEntry),
         eq(eventAuditRecordParameters)
     );
     assertThat(credentialValueArgumentCaptor.getValue(), samePropertyValuesAs(expectedCredentialValue));
