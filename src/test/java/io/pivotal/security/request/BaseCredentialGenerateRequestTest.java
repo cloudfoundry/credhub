@@ -46,23 +46,6 @@ public class BaseCredentialGenerateRequestTest {
                 request.validate();
               });
         });
-
-        describe("when type is an empty string", () -> {
-          itThrowsWithMessage("should throw invalid_type_with_generate_prompt error",
-              ParameterizedValidationException.class,
-              "error.invalid_type_with_generate_prompt",
-              () -> {
-                String json = "{"
-                    + "\"name\":\"some-name\","
-                    + "\"type\":\"\","
-                    + "\"overwrite\":true"
-                    + "}";
-
-                BaseCredentialGenerateRequest request = JsonTestHelper
-                    .deserialize(json, BaseCredentialGenerateRequest.class);
-                request.validate();
-              });
-        });
       });
 
       describe("when type is value", () -> {

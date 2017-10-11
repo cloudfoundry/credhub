@@ -40,6 +40,24 @@ public class RequestHelper {
         .andExpect(status().isOk());
   }
 
+  public static String generatePassword(MockMvc mockMvc, String credentialName, String mode)
+      throws Exception {
+    MockHttpServletRequestBuilder post = post("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{"
+            + "  \"name\": \"" + credentialName + "\","
+            + "  \"type\": \"password\","
+            + "  \"mode\": \"" + mode + "\""
+            + "}");
+
+    String response = mockMvc.perform(post)
+        .andExpect(status().isOk())
+        .andReturn().getResponse().getContentAsString();
+    return response;
+  }
+
   public static String generateCa(MockMvc mockMvc, String caName, String token) throws Exception {
     MockHttpServletRequestBuilder caPost = post("/api/v1/data")
         .header("Authorization", "Bearer " + token)

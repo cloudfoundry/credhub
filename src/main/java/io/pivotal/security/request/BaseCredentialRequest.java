@@ -24,6 +24,7 @@ public abstract class BaseCredentialRequest {
   private String name;
   private String type;
   private boolean overwrite;
+  private String mode;
   private List<PermissionEntry> additionalPermissions = new ArrayList<>();
 
   public String getType() {
@@ -40,6 +41,10 @@ public abstract class BaseCredentialRequest {
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  public boolean shouldOverwrite() {
+    return "overwrite".equals(mode) || overwrite;
   }
 
   public boolean isOverwrite() {
@@ -76,5 +81,13 @@ public abstract class BaseCredentialRequest {
     for (ConstraintViolation<BaseCredentialRequest> constraintViolation : constraintViolations) {
       throw new ParameterizedValidationException(constraintViolation.getMessage());
     }
+  }
+
+  public String getMode() {
+    return mode;
+  }
+
+  public void setMode(String mode) {
+    this.mode = mode;
   }
 }

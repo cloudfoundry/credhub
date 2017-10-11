@@ -22,8 +22,6 @@ import static com.google.common.collect.Lists.newArrayList;
     @JsonSubTypes.Type(name = "user", value = UserGenerateRequest.class)
 })
 public abstract class BaseCredentialGenerateRequest extends BaseCredentialRequest {
-  private boolean regenerate;
-
   public abstract GenerationParameters getGenerationParameters();
 
   @Override
@@ -49,9 +47,5 @@ public abstract class BaseCredentialGenerateRequest extends BaseCredentialReques
 
   private boolean isInvalidTypeForGeneration(String type) {
     return !newArrayList("password", "certificate", "rsa", "ssh", "user").contains(type);
-  }
-
-  public void setRegenerate(boolean regenerate) {
-    this.regenerate = regenerate;
   }
 }

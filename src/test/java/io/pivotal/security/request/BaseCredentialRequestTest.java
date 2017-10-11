@@ -38,6 +38,20 @@ public class BaseCredentialRequestTest {
   }
 
   @Test
+  public void whenGivenModeAttribute_shouldBeValid() {
+    // language=JSON
+    String json = "{"
+        + "\"type\":\"value\","
+        + "\"name\":\"/some/NAME/with_all-valid_CHARACTERS/0123456789\","
+        + /* it thinks this name has a slash in it*/ "\"value\":\"some-value\","
+        + /* it thinks this name has a slash in it*/ "\"mode\":\"overwrite\""
+        + "}";
+    Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
+        BaseCredentialSetRequest.class);
+    assertThat(violations.size(), equalTo(0));
+  }
+
+  @Test
   public void whenGivenValidJson_setsCorrectFields() {
     // language=JSON
     String json = "{"
