@@ -7,6 +7,7 @@ import io.pivotal.security.util.DatabaseProfileResolver;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,6 +24,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import static io.pivotal.security.helper.RequestHelper.generateUser;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.apache.commons.lang.math.NumberUtils.isNumber;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -256,6 +258,50 @@ public class UserGenerationTest {
     assertThat(postHash, equalTo(getHash));
     assertThat(postHash.matches("^\\$6\\$[a-zA-Z0-9/.]+\\$[a-zA-Z0-9/.]+$"), equalTo(true));
   }
+
+  @Test
+  public void credentialNotOverwrittenWhenModeIsSetToConvergeAndParametersAreTheSame() throws Exception {
+    String firstResponse = generateUser(mockMvc, credentialName1, "overwrite", 20);
+    String originalUsername = (new JSONObject(firstResponse)).getJSONObject("value").getString("username");
+    String originalPassword = (new JSONObject(firstResponse)).getJSONObject("value").getString("password");
+
+    String secondResponse = generateUser(mockMvc, credentialName1, "converge", 20);
+    String secondUsername = (new JSONObject(secondResponse)).getJSONObject("value").getString("username");
+    String secondPassword = (new JSONObject(secondResponse)).getJSONObject("value").getString("password");
+
+    assertThat(originalPassword, Matchers.equalTo(secondPassword));
+    assertThat(originalUsername, Matchers.equalTo(secondUsername));
+  }
+
+  @Test
+  public void credentialNotOverwrittenWhenModeIsSetToConvergeAndParametersAreTheSameAndAreTheDefaults() throws Exception {
+    String firstResponse = generateUser(mockMvc, credentialName1, "overwrite", null);
+    String originalUsername = (new JSONObject(firstResponse)).getJSONObject("value").getString("username");
+    String originalPassword = (new JSONObject(firstResponse)).getJSONObject("value").getString("password");
+
+    String secondResponse = generateUser(mockMvc, credentialName1, "converge", null);
+    String secondUsername = (new JSONObject(secondResponse)).getJSONObject("value").getString("username");
+    String secondPassword = (new JSONObject(secondResponse)).getJSONObject("value").getString("password");
+
+    assertThat(originalPassword, Matchers.equalTo(secondPassword));
+    assertThat(originalUsername, Matchers.equalTo(secondUsername));
+  }
+
+  @Test
+  public void credentialOverwrittenWhenModeIsSetToConvergeAndParametersNotTheSame() throws Exception {
+    String firstResponse = generateUser(mockMvc, credentialName1, "overwrite", 30);
+    String originalUsername = (new JSONObject(firstResponse)).getJSONObject("value").getString("username");
+    String originalPassword = (new JSONObject(firstResponse)).getJSONObject("value").getString("password");
+
+    String secondResponse = generateUser(mockMvc, credentialName1, "converge", 20);
+    String secondUsername = (new JSONObject(secondResponse)).getJSONObject("value").getString("username");
+    String secondPassword = (new JSONObject(secondResponse)).getJSONObject("value").getString("password");
+
+    assertThat(originalPassword, not(Matchers.equalTo(secondPassword)));
+    assertThat(secondPassword.length(), equalTo(20));
+    assertThat(originalUsername, not(Matchers.equalTo(secondUsername)));
+  }
+
 
   private JSONObject getJsonObject(MvcResult cred1) throws Exception {
     JSONObject jsonCred1 = new JSONObject(cred1.getResponse().getContentAsString());

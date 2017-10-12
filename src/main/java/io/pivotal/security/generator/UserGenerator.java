@@ -28,14 +28,14 @@ public class UserGenerator implements CredentialGenerator<UserCredentialValue> {
 
   public UserCredentialValue generateCredential(GenerationParameters p, UserContext userContext) {
     StringGenerationParameters params = (StringGenerationParameters) p;
-    if (params.getUsername() == null) {
-      String username = usernameGenerator.generateCredential().getStringCredential();
-      params.setUsername(username);
+    String username = params.getUsername();
+    if (username == null) {
+      username = usernameGenerator.generateCredential().getStringCredential();
     }
 
     String password = passwordGenerator.generateCredential(params, userContext).getStringCredential();
 
-    return new UserCredentialValue(params.getUsername(), password,
+    return new UserCredentialValue(username, password,
         cryptSaltFactory.generateSalt(password));
   }
 }

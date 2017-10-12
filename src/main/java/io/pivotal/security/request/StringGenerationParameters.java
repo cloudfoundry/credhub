@@ -16,7 +16,7 @@ public class StringGenerationParameters implements GenerationParameters{
 
   // Value Parameters
   @JsonProperty(access = Access.WRITE_ONLY)
-  private Integer length;
+  private Integer length = PassayStringCredentialGenerator.DEFAULT_LENGTH;
 
   private String username;
 
@@ -26,7 +26,7 @@ public class StringGenerationParameters implements GenerationParameters{
   private boolean includeSpecial;
 
   public int getLength() {
-    return length == null ? PassayStringCredentialGenerator.DEFAULT_LENGTH : length;
+    return length;
   }
 
   public StringGenerationParameters setLength(int length) {

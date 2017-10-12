@@ -32,7 +32,7 @@ public class UserCredentialVersionTest {
   private final byte[] ENCRYPTED_GENERATION_PARAMS = "encrypted-user-generation-params".getBytes();
   private final byte[] NONCE = "user-NONCE".getBytes();
   private final byte[] PARAMETERS_NONCE = "user-NONCE".getBytes();
-  private final StringGenerationParameters STRING_GENERATION_PARAMS = new StringGenerationParameters().setUsername("not fnu").setExcludeLower(false);
+  private final StringGenerationParameters STRING_GENERATION_PARAMS = new StringGenerationParameters().setUsername("not fnu").setExcludeLower(false).setLength(USER_PASSWORD.length());
   private final String USER_GENERATION_PARAMS_STRING = new JsonObjectMapper().writeValueAsString(STRING_GENERATION_PARAMS);
   private UserCredentialVersionData userCredentialData;
 
@@ -162,19 +162,22 @@ public class UserCredentialVersionTest {
 
   @Test
   public void getGenerationParameters_decryptsGenerationParameters() {
-    final EncryptedValue encryption = new EncryptedValue(ENCRYPTION_KEY_UUID, ENCRYPTED_GENERATION_PARAMS, PARAMETERS_NONCE);
-    when(encryptor.decrypt(encryption))
+    final EncryptedValue parameterEncryption = new EncryptedValue(ENCRYPTION_KEY_UUID, ENCRYPTED_GENERATION_PARAMS, PARAMETERS_NONCE);
+    final EncryptedValue passwordEncryption = new EncryptedValue(ENCRYPTION_KEY_UUID, ENCRYPTED_PASSWORD, NONCE);
+    when(encryptor.decrypt(parameterEncryption))
         .thenReturn(USER_GENERATION_PARAMS_STRING);
+    when(encryptor.decrypt(passwordEncryption))
+        .thenReturn(USER_PASSWORD);
     userCredentialData = new UserCredentialVersionData()
-        .setEncryptedGenerationParameters(encryption)
-        .setEncryptedValueData(new EncryptedValue(ENCRYPTION_KEY_UUID, "", ""));
+        .setEncryptedValueData(passwordEncryption)
+        .setEncryptedGenerationParameters(parameterEncryption);
     subject = new UserCredentialVersion(userCredentialData)
         .setEncryptor(encryptor);
 
     StringGenerationParameters generationParameters = subject.getGenerationParameters();
 
     assertThat(generationParameters, samePropertyValuesAs(STRING_GENERATION_PARAMS));
-    verify(encryptor, times(1)).decrypt(any());
+    verify(encryptor, times(2)).decrypt(any());
   }
 
   @Test

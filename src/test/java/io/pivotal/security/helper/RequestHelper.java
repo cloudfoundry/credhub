@@ -1,5 +1,6 @@
 package io.pivotal.security.helper;
 
+import com.google.common.collect.ImmutableMap;
 import io.pivotal.security.view.PermissionsView;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.core.IsEqual;
@@ -7,6 +8,9 @@ import org.json.JSONObject;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static java.lang.String.join;
@@ -40,20 +44,55 @@ public class RequestHelper {
         .andExpect(status().isOk());
   }
 
-  public static String generatePassword(MockMvc mockMvc, String credentialName, String mode, int length)
+  public static String generatePassword(MockMvc mockMvc, String credentialName, String mode, Integer length)
       throws Exception {
+    Map<String, Object> passwordRequestBody = new HashMap() {
+      {
+        put("name", credentialName);
+        put("type", "password");
+        put("mode", mode);
+      }
+    };
+
+    if (length != null) {
+      passwordRequestBody.put("parameters", ImmutableMap.of("length", length));
+    }
+    String content = JsonTestHelper.serializeToString(passwordRequestBody);
     MockHttpServletRequestBuilder post = post("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        .content("{"
-            + "  \"name\": \"" + credentialName + "\","
-            + "  \"type\": \"password\","
-            + "  \"mode\": \"" + mode + "\","
-            + "  \"parameters\": {\"length\": " + length + "}"
-            + "}");
+        .content(content);
 
     String response = mockMvc.perform(post)
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andReturn().getResponse().getContentAsString();
+    return response;
+  }
+
+  public static String generateUser(MockMvc mockMvc, String credentialName, String mode, Integer length)
+      throws Exception {
+    Map<String, Object> passwordRequestBody = new HashMap() {
+      {
+        put("name", credentialName);
+        put("type", "user");
+        put("mode", mode);
+      }
+    };
+
+    if (length != null) {
+      passwordRequestBody.put("parameters", ImmutableMap.of("length", length));
+    }
+    String content = JsonTestHelper.serializeToString(passwordRequestBody);
+    MockHttpServletRequestBuilder post = post("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(content);
+
+    String response = mockMvc.perform(post)
+        .andDo(print())
         .andExpect(status().isOk())
         .andReturn().getResponse().getContentAsString();
     return response;

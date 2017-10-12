@@ -34,8 +34,8 @@ public class GenerateHandler {
       UserContext userContext,
       List<EventAuditRecordParameters> auditRecordParameters
   ) {
-    CredentialValue value = credentialGenerator.generate(generateRequest, userContext);
     CredentialVersion existingCredentialVersion = credentialService.findMostRecent(generateRequest.getName());
+    CredentialValue value = credentialGenerator.generate(generateRequest, userContext);
 
     final CredentialVersion credentialVersion = credentialService.save(
         existingCredentialVersion, generateRequest.getName(),

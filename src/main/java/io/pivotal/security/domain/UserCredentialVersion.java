@@ -12,6 +12,7 @@ public class UserCredentialVersion extends CredentialVersion<UserCredentialVersi
   private final UserCredentialVersionData delegate;
   private StringGenerationParameters generationParameters;
   private JsonObjectMapper jsonObjectMapper;
+  private String password;
 
   public UserCredentialVersion() {
     this(new UserCredentialVersionData());
@@ -62,7 +63,8 @@ public class UserCredentialVersion extends CredentialVersion<UserCredentialVersi
   }
 
   public String getPassword() {
-    return (String) super.getValue();
+    this.password = (String) super.getValue();
+    return this.password;
   }
 
   public UserCredentialVersion setUsername(String username) {
@@ -102,6 +104,7 @@ public class UserCredentialVersion extends CredentialVersion<UserCredentialVersi
 
   public StringGenerationParameters getGenerationParameters() {
     String parameterJson = encryptor.decrypt(delegate.getEncryptedGenerationParameters());
+    String password = this.password == null ? getPassword() : this.password;
 
     if (parameterJson == null) {
       return null;
@@ -110,6 +113,7 @@ public class UserCredentialVersion extends CredentialVersion<UserCredentialVersi
     try {
       StringGenerationParameters generationParameters = jsonObjectMapper
           .deserializeBackwardsCompatibleValue(parameterJson, StringGenerationParameters.class);
+      generationParameters.setLength(password.length());
       return generationParameters;
     } catch (IOException e) {
       throw new RuntimeException(e);
