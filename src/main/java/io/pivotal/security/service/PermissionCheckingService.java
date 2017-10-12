@@ -1,7 +1,7 @@
 package io.pivotal.security.service;
 
 import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.data.PermissionsDataService;
+import io.pivotal.security.data.PermissionDataService;
 import io.pivotal.security.request.PermissionOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,22 +10,22 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class PermissionCheckingService {
-  private PermissionsDataService permissionsDataService;
+  private PermissionDataService permissionDataService;
 
   @Value("${security.authorization.acls.enabled}")
   private boolean enforcePermissions;
 
   @Autowired
-  public PermissionCheckingService(PermissionsDataService permissionsDataService) {
-    this.permissionsDataService = permissionsDataService;
+  public PermissionCheckingService(PermissionDataService permissionDataService) {
+    this.permissionDataService = permissionDataService;
   }
 
   public boolean hasPermission(String user, String credentialName, PermissionOperation permission) {
     if (enforcePermissions) {
-      if (permissionsDataService.hasNoDefinedAccessControl(credentialName)) {
+      if (permissionDataService.hasNoDefinedAccessControl(credentialName)) {
         return true;
       }
-      return permissionsDataService.hasPermission(user, credentialName, permission);
+      return permissionDataService.hasPermission(user, credentialName, permission);
     }
     return true;
   }
@@ -33,8 +33,8 @@ public class PermissionCheckingService {
   public boolean userAllowedToOperateOnActor(UserContext userContext, String actor) {
     if (enforcePermissions) {
       return actor != null &&
-          userContext.getAclUser() != null &&
-          !StringUtils.equals(userContext.getAclUser(), actor);
+          userContext.getActor() != null &&
+          !StringUtils.equals(userContext.getActor(), actor);
     } else {
       return true;
     }

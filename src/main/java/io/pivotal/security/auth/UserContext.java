@@ -100,7 +100,7 @@ public class UserContext {
     return authMethod;
   }
 
-  public String getAclUser() {
+  public String getActor() {
     if (AUTH_METHOD_UAA.equals(this.getAuthMethod())) {
       if (UAA_PASSWORD_GRANT_TYPE.equals(this.getGrantType())) {
         return UAA_USER_ACTOR_PREFIX + ":" + this.getUserId();

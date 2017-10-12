@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.jayway.jsonpath.InvalidJsonException;
 import io.pivotal.security.exceptions.AuditSaveFailureException;
 import io.pivotal.security.exceptions.EntryNotFoundException;
-import io.pivotal.security.exceptions.InvalidAclOperationException;
+import io.pivotal.security.exceptions.InvalidPermissionOperationException;
 import io.pivotal.security.exceptions.InvalidQueryParameterException;
 import io.pivotal.security.exceptions.KeyNotFoundException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
@@ -60,7 +60,7 @@ public class ExceptionHandlers {
   public ResponseError handleJsonMappingException(JsonMappingException e) {
     for (com.fasterxml.jackson.databind.JsonMappingException.Reference reference : e.getPath()) {
       if ("operations".equals(reference.getFieldName())) {
-        return constructError("error.acl.invalid_operation");
+        return constructError("error.permission.invalid_operation");
       }
     }
 
@@ -119,16 +119,16 @@ public class ExceptionHandlers {
       for (InvalidFormatException.Reference reference : ((InvalidFormatException) cause)
           .getPath()) {
         if ("operations".equals(reference.getFieldName())) {
-          return constructError("error.acl.invalid_operation");
+          return constructError("error.permission.invalid_operation");
         }
       }
     }
     return badRequestResponse();
   }
 
-  @ExceptionHandler(InvalidAclOperationException.class)
+  @ExceptionHandler(InvalidPermissionOperationException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ResponseError handleIncorrectAclOperation(InvalidAclOperationException e) {
+  public ResponseError handleIncorrectAclOperation(InvalidPermissionOperationException e) {
     return constructError(e.getMessage());
   }
 

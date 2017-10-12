@@ -3,7 +3,7 @@ package io.pivotal.security.controller.v1.credential;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.data.EventAuditRecordDataService;
-import io.pivotal.security.data.PermissionsDataService;
+import io.pivotal.security.data.PermissionDataService;
 import io.pivotal.security.data.RequestAuditRecordDataService;
 import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.domain.Encryptor;
@@ -71,7 +71,7 @@ public class CredentialsControllerAuditLogTest {
   private CredentialVersionDataService credentialVersionDataService;
 
   @MockBean
-  private PermissionsDataService permissionsDataService;
+  private PermissionDataService permissionDataService;
 
   @SpyBean
   private Encryptor encryptor;

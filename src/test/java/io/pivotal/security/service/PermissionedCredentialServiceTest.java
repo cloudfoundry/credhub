@@ -10,7 +10,7 @@ import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.PasswordCredentialVersion;
 import io.pivotal.security.exceptions.EntryNotFoundException;
-import io.pivotal.security.exceptions.InvalidAclOperationException;
+import io.pivotal.security.exceptions.InvalidPermissionOperationException;
 import io.pivotal.security.exceptions.InvalidQueryParameterException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.exceptions.PermissionException;
@@ -96,7 +96,7 @@ public class PermissionedCredentialServiceTest {
     credentialValue = mock(CredentialValue.class);
     accessControlEntries = new ArrayList<>();
 
-    when(userContext.getAclUser()).thenReturn(USER);
+    when(userContext.getActor()).thenReturn(USER);
 
     existingCredentialVersion = new PasswordCredentialVersion(CREDENTIAL_NAME);
     existingCredentialVersion.setEncryptor(encryptor);
@@ -172,7 +172,7 @@ public class PermissionedCredentialServiceTest {
         .userAllowedToOperateOnActor(userContext, "test-user"))
         .thenReturn(true);
     when(permissionCheckingService
-        .hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE_ACL))
+        .hasPermission(userContext.getActor(), CREDENTIAL_NAME, WRITE_ACL))
         .thenReturn(true);
 
     accessControlEntries.add(new PermissionEntry("test-user", Arrays.asList(WRITE, WRITE_ACL)));
@@ -187,8 +187,8 @@ public class PermissionedCredentialServiceTest {
           userContext,
           auditRecordParameters
       );
-    } catch (InvalidAclOperationException e) {
-      assertThat(e.getMessage(), equalTo("error.acl.invalid_update_operation"));
+    } catch (InvalidPermissionOperationException e) {
+      assertThat(e.getMessage(), equalTo("error.permission.invalid_update_operation"));
     }
   }
 
@@ -206,7 +206,7 @@ public class PermissionedCredentialServiceTest {
         auditRecordParameters
     );
 
-    verify(permissionCheckingService).hasPermission(userContext.getAclUser(),
+    verify(permissionCheckingService).hasPermission(userContext.getActor(),
         CREDENTIAL_NAME, WRITE);
   }
 
@@ -230,7 +230,7 @@ public class PermissionedCredentialServiceTest {
   public void save_whenThereIsAnExistingCredentialWithACEs_shouldThrowAnExceptionIfItLacksPermission() {
     when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredentialVersion);
     when(permissionCheckingService
-        .hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE_ACL))
+        .hasPermission(userContext.getActor(), CREDENTIAL_NAME, WRITE_ACL))
         .thenReturn(false);
 
     accessControlEntries

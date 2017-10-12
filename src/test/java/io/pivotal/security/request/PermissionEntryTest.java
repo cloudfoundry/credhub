@@ -54,7 +54,7 @@ public class PermissionEntryTest {
         + "\"actor\": \"dan\""
         + "}";
     Set<ConstraintViolation<PermissionEntry>> constraintViolations = deserializeAndValidate(json, PermissionEntry.class);
-    assertThat(constraintViolations, contains(hasViolationWithMessage("error.acl.missing_operations")));
+    assertThat(constraintViolations, contains(hasViolationWithMessage("error.permission.missing_operations")));
   }
 
   @Test
@@ -64,7 +64,7 @@ public class PermissionEntryTest {
         + "\"operations\": []"
         + "}";
     Set<ConstraintViolation<PermissionEntry>> constraintViolations = deserializeAndValidate(json, PermissionEntry.class);
-    assertThat(constraintViolations, contains(hasViolationWithMessage("error.acl.missing_operations")));
+    assertThat(constraintViolations, contains(hasViolationWithMessage("error.permission.missing_operations")));
   }
 
   @Test(expected = InvalidFormatException.class)

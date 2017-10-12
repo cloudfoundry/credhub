@@ -1,5 +1,13 @@
 package io.pivotal.security.audit;
 
+import io.pivotal.security.auth.UserContext;
+import io.pivotal.security.entity.EventAuditRecord;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
+import java.util.UUID;
+
 import static io.pivotal.security.audit.AuditLogFactory.createEventAuditRecord;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
@@ -9,13 +17,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
-import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.entity.EventAuditRecord;
-import java.util.UUID;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class AuditLogFactoryTest {
@@ -30,7 +31,7 @@ public class AuditLogFactoryTest {
     eventAuditRecordParameters.setAceOperation(WRITE_ACL);
     eventAuditRecordParameters.setAceActor("ace-actor");
 
-    when(userContext.getAclUser()).thenReturn("test-actor");
+    when(userContext.getActor()).thenReturn("test-actor");
 
     EventAuditRecord eventAuditRecord = createEventAuditRecord(
         eventAuditRecordParameters,
@@ -56,7 +57,7 @@ public class AuditLogFactoryTest {
     final EventAuditRecordParameters eventAuditRecordParameters = new EventAuditRecordParameters();
     eventAuditRecordParameters.setCredentialName("/test-credential");
 
-    when(userContext.getAclUser()).thenReturn("test-actor");
+    when(userContext.getActor()).thenReturn("test-actor");
 
     EventAuditRecord eventAuditRecord = createEventAuditRecord(
         eventAuditRecordParameters,
@@ -76,7 +77,7 @@ public class AuditLogFactoryTest {
     final EventAuditRecordParameters eventAuditRecordParameters = new EventAuditRecordParameters();
     eventAuditRecordParameters.setCredentialName("/test-credential");
 
-    when(userContext.getAclUser()).thenReturn("test-actor");
+    when(userContext.getActor()).thenReturn("test-actor");
 
     EventAuditRecord eventAuditRecord = createEventAuditRecord(
         eventAuditRecordParameters,
@@ -96,7 +97,7 @@ public class AuditLogFactoryTest {
     final EventAuditRecordParameters eventAuditRecordParameters = new EventAuditRecordParameters();
     eventAuditRecordParameters.setAuditingOperationCode(CREDENTIAL_UPDATE);
 
-    when(userContext.getAclUser()).thenReturn("test-actor");
+    when(userContext.getActor()).thenReturn("test-actor");
 
     EventAuditRecord eventAuditRecord = createEventAuditRecord(
         eventAuditRecordParameters,
@@ -113,7 +114,7 @@ public class AuditLogFactoryTest {
     final UserContext userContext = mock(UserContext.class);
     final UUID requestUuid = UUID.randomUUID();
 
-    when(userContext.getAclUser()).thenReturn("test-actor");
+    when(userContext.getActor()).thenReturn("test-actor");
 
     EventAuditRecord eventAuditRecord = createEventAuditRecord(
         null,

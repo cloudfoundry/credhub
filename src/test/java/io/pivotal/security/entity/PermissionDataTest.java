@@ -16,27 +16,27 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(JUnit4.class)
-public class AccessEntryDataTest {
+public class PermissionDataTest {
 
-  private AccessEntryData accessEntryData;
+  private PermissionData permissionData;
 
   @Before
   public void setUp() throws Exception {
-    accessEntryData = new AccessEntryData();
+    permissionData = new PermissionData();
   }
 
   @Test
   public void hasPermission_withPermissions_ReturnsHasPermission() {
-    assertFalse(accessEntryData.hasPermission(READ));
-    assertFalse(accessEntryData.hasPermission(WRITE));
-    assertFalse(accessEntryData.hasPermission(DELETE));
-    assertFalse(accessEntryData.hasPermission(READ_ACL));
-    assertFalse(accessEntryData.hasPermission(WRITE_ACL));
-    accessEntryData.enableOperations(Arrays.asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL));
-    assertTrue(accessEntryData.hasPermission(READ));
-    assertTrue(accessEntryData.hasPermission(WRITE));
-    assertTrue(accessEntryData.hasPermission(DELETE));
-    assertTrue(accessEntryData.hasPermission(READ_ACL));
-    assertTrue(accessEntryData.hasPermission(WRITE_ACL));
+    assertFalse(permissionData.hasPermission(READ));
+    assertFalse(permissionData.hasPermission(WRITE));
+    assertFalse(permissionData.hasPermission(DELETE));
+    assertFalse(permissionData.hasPermission(READ_ACL));
+    assertFalse(permissionData.hasPermission(WRITE_ACL));
+    permissionData.enableOperations(Arrays.asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL));
+    assertTrue(permissionData.hasPermission(READ));
+    assertTrue(permissionData.hasPermission(WRITE));
+    assertTrue(permissionData.hasPermission(DELETE));
+    assertTrue(permissionData.hasPermission(READ_ACL));
+    assertTrue(permissionData.hasPermission(WRITE_ACL));
   }
 }

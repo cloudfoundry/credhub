@@ -18,7 +18,7 @@ import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
 
 @Entity
 @Table(name = "access_entry")
-public class AccessEntryData {
+public class PermissionData {
 
   private static final boolean DEFAULT_DENY = false;
 
@@ -51,17 +51,17 @@ public class AccessEntryData {
   private boolean writeAclPermission = DEFAULT_DENY;
 
   @SuppressWarnings("unused")
-  public AccessEntryData() {
+  public PermissionData() {
     this(null, null, new ArrayList<>());
   }
 
-  public AccessEntryData(Credential credential, String actor,
-                         List<PermissionOperation> operations) {
+  public PermissionData(Credential credential, String actor,
+                        List<PermissionOperation> operations) {
     this(credential, actor);
     enableOperations(operations);
   }
 
-  public AccessEntryData(Credential credential, String actor) {
+  public PermissionData(Credential credential, String actor) {
     this.credential = credential;
     this.actor = actor;
   }

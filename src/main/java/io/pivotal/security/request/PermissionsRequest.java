@@ -12,7 +12,7 @@ public class PermissionsRequest {
 
   @NotEmpty(message = "error.missing_name")
   private String credentialName;
-  @NotEmpty(message = "error.acl.missing_aces")
+  @NotEmpty(message = "error.permission.missing_aces")
   private List<PermissionEntry> permissions;
 
   public PermissionsRequest() {

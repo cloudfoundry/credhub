@@ -1,7 +1,7 @@
 package io.pivotal.security.service;
 
 import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.data.PermissionsDataService;
+import io.pivotal.security.data.PermissionDataService;
 import io.pivotal.security.entity.Credential;
 import io.pivotal.security.request.PermissionOperation;
 import org.junit.Before;
@@ -29,23 +29,23 @@ public class PermissionCheckingServiceTest {
   private PermissionCheckingService subject;
 
   private UserContext userContext;
-  private PermissionsDataService permissionsDataService;
+  private PermissionDataService permissionDataService;
   private Credential expectedCredential;
 
   @Before
   public void beforeEach() {
     userContext = mock(UserContext.class);
-    when(userContext.getAclUser()).thenReturn("test-actor");
+    when(userContext.getActor()).thenReturn("test-actor");
 
-    permissionsDataService = mock(PermissionsDataService.class);
+    permissionDataService = mock(PermissionDataService.class);
 
-    subject = new PermissionCheckingService(permissionsDataService);
+    subject = new PermissionCheckingService(permissionDataService);
   }
 
   @Test
   public void hasPermission_returnsWhetherTheUserHasThePermissionForTheCredential(){
     initializeEnforcement(true);
-    when(permissionsDataService.hasNoDefinedAccessControl(CREDENTIAL_NAME)).thenReturn(false);
+    when(permissionDataService.hasNoDefinedAccessControl(CREDENTIAL_NAME)).thenReturn(false);
 
     assertConditionallyHasPermission("test-actor", CREDENTIAL_NAME, READ_ACL, true);
     assertConditionallyHasPermission("test-actor", CREDENTIAL_NAME, READ_ACL, false);
@@ -62,7 +62,7 @@ public class PermissionCheckingServiceTest {
   @Test
   public void hasPermission_ifPermissionsNotEnforced_returnsTrue(){
     initializeEnforcement(false);
-    when(permissionsDataService.hasNoDefinedAccessControl(CREDENTIAL_NAME)).thenReturn(false);
+    when(permissionDataService.hasNoDefinedAccessControl(CREDENTIAL_NAME)).thenReturn(false);
 
     assertAlwaysHasPermission("test-actor", CREDENTIAL_NAME, READ_ACL, true);
     assertAlwaysHasPermission("test-actor", CREDENTIAL_NAME, READ_ACL, false);
@@ -79,7 +79,7 @@ public class PermissionCheckingServiceTest {
   @Test
   public void hasPermission_whenNoDefinedAccessControl_returnsTrue() {
     initializeEnforcement(true);
-    when(permissionsDataService.hasNoDefinedAccessControl(CREDENTIAL_NAME)).thenReturn(true);
+    when(permissionDataService.hasNoDefinedAccessControl(CREDENTIAL_NAME)).thenReturn(true);
 
     assertAlwaysHasPermission("test-actor", CREDENTIAL_NAME, READ_ACL, true);
     assertAlwaysHasPermission("test-actor", CREDENTIAL_NAME, READ_ACL, false);
@@ -119,7 +119,7 @@ public class PermissionCheckingServiceTest {
   @Test
   public void validDeleteOperation_withEnforcement_whenAclUserIsNull_returnsFalse() {
     initializeEnforcement(true);
-    when(userContext.getAclUser()).thenReturn(null);
+    when(userContext.getActor()).thenReturn(null);
 
     assertFalse(
         subject.userAllowedToOperateOnActor(userContext, "test-actor"));
@@ -128,7 +128,7 @@ public class PermissionCheckingServiceTest {
   @Test
   public void validDeleteOperation_withEnforcement_whenAclUserAndActorAreNull_returnsFalse() {
     initializeEnforcement(true);
-    when(userContext.getAclUser()).thenReturn(null);
+    when(userContext.getActor()).thenReturn(null);
 
     assertFalse(subject.userAllowedToOperateOnActor(userContext, null));
   }
@@ -140,7 +140,7 @@ public class PermissionCheckingServiceTest {
 
   private void assertConditionallyHasPermission(String user, String credentialName,
       PermissionOperation permission, boolean isGranted) {
-    when(permissionsDataService
+    when(permissionDataService
         .hasPermission(user, credentialName, permission))
         .thenReturn(isGranted);
 
@@ -149,7 +149,7 @@ public class PermissionCheckingServiceTest {
 
   private void assertAlwaysHasPermission(String user, String credentialName,
       PermissionOperation permission, boolean isGranted) {
-    when(permissionsDataService
+    when(permissionDataService
         .hasPermission(user, credentialName, permission))
         .thenReturn(isGranted);
 

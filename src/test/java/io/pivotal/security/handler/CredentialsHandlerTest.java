@@ -58,7 +58,7 @@ public class CredentialsHandlerTest {
     subject = new CredentialsHandler(permissionedCredentialService);
 
     userContext = mock(UserContext.class);
-    when(userContext.getAclUser()).thenReturn(USER);
+    when(userContext.getActor()).thenReturn(USER);
 
     version1 = new SshCredentialVersion(CREDENTIAL_NAME);
     version1.setVersionCreatedAt(VERSION1_CREATED_AT);

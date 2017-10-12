@@ -1,21 +1,22 @@
 package io.pivotal.security.audit;
 
-import static io.pivotal.security.audit.AuditInterceptor.REQUEST_UUID_ATTRIBUTE;
-import static io.pivotal.security.auth.UserContext.AUTH_METHOD_UAA;
-
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.entity.AuthFailureAuditRecord;
 import io.pivotal.security.entity.EventAuditRecord;
 import io.pivotal.security.entity.RequestAuditRecord;
 import io.pivotal.security.util.CurrentTimeProvider;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+
+import static io.pivotal.security.audit.AuditInterceptor.REQUEST_UUID_ATTRIBUTE;
+import static io.pivotal.security.auth.UserContext.AUTH_METHOD_UAA;
 
 @Component
 public class AuditLogFactory {
@@ -114,7 +115,7 @@ public class AuditLogFactory {
     return new EventAuditRecord(
         eventAuditRecordParameters.getAuditingOperationCode().toString(),
         eventAuditRecordParameters.getCredentialName(),
-        userContext.getAclUser(),
+        userContext.getActor(),
         requestUuid,
         success,
         eventAuditRecordParameters.getAceOperation() != null ? eventAuditRecordParameters.getAceOperation().getOperation() : null,

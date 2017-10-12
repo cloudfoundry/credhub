@@ -67,7 +67,7 @@ public class PermissionsRequestTest {
     Set<ConstraintViolation<PermissionsRequest>> violations = validate(original);
 
     assertThat(violations.size(), equalTo(1));
-    assertThat(violations, contains(hasViolationWithMessage("error.acl.missing_aces")));
+    assertThat(violations, contains(hasViolationWithMessage("error.permission.missing_aces")));
   }
 
   @Test
@@ -76,6 +76,6 @@ public class PermissionsRequestTest {
     Set<ConstraintViolation<PermissionsRequest>> violations = validate(original);
 
     assertThat(violations.size(), equalTo(1));
-    assertThat(violations, contains(hasViolationWithMessage("error.acl.missing_aces")));
+    assertThat(violations, contains(hasViolationWithMessage("error.permission.missing_aces")));
   }
 }

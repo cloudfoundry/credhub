@@ -31,7 +31,7 @@ public class CertificateAuthorityServiceTest {
   private CredentialVersionDataService credentialVersionDataService;
   private CertificateCredentialValue certificate;
   private CertificateCredentialVersion certificateCredential;
-  private PermissionsDataService permissionService;
+  private PermissionDataService permissionService;
   private UserContext userContext;
 
   @Before
@@ -39,9 +39,9 @@ public class CertificateAuthorityServiceTest {
     certificate = new CertificateCredentialValue(null, SELF_SIGNED_CA_CERT, "my-key", null);
     certificateCredential = mock(CertificateCredentialVersion.class);
 
-    permissionService = mock(PermissionsDataService.class);
+    permissionService = mock(PermissionDataService.class);
     userContext = mock(UserContext.class);
-    when(userContext.getAclUser()).thenReturn(USER_NAME);
+    when(userContext.getActor()).thenReturn(USER_NAME);
     when(certificateCredential.getName()).thenReturn(CREDENTIAL_NAME);
     when(permissionService.hasPermission(USER_NAME, CREDENTIAL_NAME, PermissionOperation.READ))
         .thenReturn(true);

@@ -16,7 +16,7 @@ public class PermissionEntry {
   @NotEmpty(message = "error.acl.missing_actor")
   private String actor;
 
-  @NotEmpty(message = "error.acl.missing_operations")
+  @NotEmpty(message = "error.permission.missing_operations")
   @JsonProperty("operations")
   private List<PermissionOperation> allowedOperations;
 

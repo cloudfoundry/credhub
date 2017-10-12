@@ -2,7 +2,7 @@ package io.pivotal.security.controller.v1;
 
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.data.PermissionsDataService;
+import io.pivotal.security.data.PermissionDataService;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.handler.PermissionsHandler;
 import io.pivotal.security.helper.AuditingHelper;
@@ -73,7 +73,7 @@ public class PermissionsControllerTest {
   private EventAuditRecordRepository eventAuditRecordRepository;
 
   @MockBean
-  private PermissionsDataService permissionsDataService;
+  private PermissionDataService permissionDataService;
 
   private MockMvc mockMvc;
   private AuditingHelper auditingHelper;
@@ -149,7 +149,7 @@ public class PermissionsControllerTest {
 
   @Test
   public void DELETE_removesThePermissions() throws Exception {
-    when(permissionsDataService.getAllowedOperations("test-name", "test-actor"))
+    when(permissionDataService.getAllowedOperations("test-name", "test-actor"))
         .thenReturn(Collections.singletonList(PermissionOperation.WRITE));
 
     revokePermissions(mockMvc, "test-name", UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "test-actor");
@@ -160,7 +160,7 @@ public class PermissionsControllerTest {
 
   @Test
   public void DELETE_whenTheCredentialDoesNotExist_logsAnEvent() throws Exception {
-    when(permissionsDataService.getAllowedOperations("incorrect-name", "test-actor"))
+    when(permissionDataService.getAllowedOperations("incorrect-name", "test-actor"))
         .thenReturn(Collections.emptyList());
 
     Mockito.doThrow(new EntryNotFoundException("error.credential.invalid_access"))

@@ -67,7 +67,7 @@ public class AuditOAuth2AccessDeniedHandler extends OAuth2AccessDeniedHandler {
       );
 
       requestAuditRecordDataService.save(requestAuditRecord);
-      securityEventsLogService.log(new SecurityEventAuditRecord(requestAuditRecord, userContext.getAclUser()));
+      securityEventsLogService.log(new SecurityEventAuditRecord(requestAuditRecord, userContext.getActor()));
     }
   }
 

@@ -2,7 +2,7 @@ package io.pivotal.security.controller.v1;
 
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.EventAuditRecordDataService;
-import io.pivotal.security.data.PermissionsDataService;
+import io.pivotal.security.data.PermissionDataService;
 import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.domain.PasswordCredentialVersion;
 import io.pivotal.security.entity.EventAuditRecord;
@@ -60,7 +60,7 @@ public class PermissionsControllerAuditLogTest {
   private EventAuditRecordDataService eventAuditRecordDataService;
 
   @MockBean
-  private PermissionsDataService permissionsDataService;
+  private PermissionDataService permissionDataService;
 
   @MockBean
   private PermissionedCredentialService permissionedCredentialService;
@@ -78,7 +78,7 @@ public class PermissionsControllerAuditLogTest {
     PermissionEntry ace = new PermissionEntry(
         UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
         Arrays.asList(READ_ACL));
-    when(permissionsDataService.getAccessControlList(eq(CRED1.getCredential())))
+    when(permissionDataService.getPermissions(eq(CRED1.getCredential())))
         .thenReturn(Arrays.asList(ace));
     when(
         permissionCheckingService.hasPermission(any(), anyString(), eq(READ_ACL)))

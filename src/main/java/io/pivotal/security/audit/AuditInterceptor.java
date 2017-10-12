@@ -60,7 +60,7 @@ public class AuditInterceptor extends HandlerInterceptorAdapter {
     try {
       requestAuditRecordDataService.save(requestAuditRecord);
     } finally {
-      securityEventsLogService.log(new SecurityEventAuditRecord(requestAuditRecord, userContext.getAclUser()));
+      securityEventsLogService.log(new SecurityEventAuditRecord(requestAuditRecord, userContext.getActor()));
     }
   }
 }

@@ -91,7 +91,7 @@ public class SetHandlerTest {
         userContext,
         eventAuditRecordParameters
     );
-    verify(permissionService).saveAccessControlEntries(userContext, credentialVersion, accessControlEntries, eventAuditRecordParameters, false, "captain");
+    verify(permissionService).savePermissions(userContext, credentialVersion, accessControlEntries, eventAuditRecordParameters, false, "captain");
   }
 
 
@@ -120,7 +120,7 @@ public class SetHandlerTest {
         userContext,
         eventAuditRecordParameters
     );
-    verify(permissionService).saveAccessControlEntries(userContext, credentialVersion, accessControlEntries, eventAuditRecordParameters, true, "captain");
+    verify(permissionService).savePermissions(userContext, credentialVersion, accessControlEntries, eventAuditRecordParameters, true, "captain");
   }
 
   @Test
@@ -150,7 +150,7 @@ public class SetHandlerTest {
         userContext,
         eventAuditRecordParameters
     );
-    verify(permissionService).saveAccessControlEntries(userContext, credentialVersion, accessControlEntries, eventAuditRecordParameters, true, "captain");
+    verify(permissionService).savePermissions(userContext, credentialVersion, accessControlEntries, eventAuditRecordParameters, true, "captain");
   }
 
   @Test
@@ -181,7 +181,7 @@ public class SetHandlerTest {
         userContext,
         eventAuditRecordParameters
     );
-    verify(permissionService).saveAccessControlEntries(userContext, credentialVersion, accessControlEntries, eventAuditRecordParameters, true, "captain");
+    verify(permissionService).savePermissions(userContext, credentialVersion, accessControlEntries, eventAuditRecordParameters, true, "captain");
   }
 
   @Test
@@ -230,6 +230,6 @@ public class SetHandlerTest {
         eq(eventAuditRecordParameters)
     );
     assertThat(credentialValueArgumentCaptor.getValue(), samePropertyValuesAs(expectedCredentialValue));
-    verify(permissionService).saveAccessControlEntries(userContext, credentialVersion, accessControlEntries, eventAuditRecordParameters, true, "captain");
+    verify(permissionService).savePermissions(userContext, credentialVersion, accessControlEntries, eventAuditRecordParameters, true, "captain");
   }
 }

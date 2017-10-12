@@ -91,7 +91,7 @@ public class UserContextFactoryTest {
     OAuth2Authentication oauth2Authentication = setupOAuthMock("password");
     UserContext context = subject.createUserContext(oauth2Authentication);
 
-    assertThat(context.getAclUser(),
+    assertThat(context.getActor(),
         equalTo("uaa-user:TEST_USER_ID"));
   }
 
@@ -100,7 +100,7 @@ public class UserContextFactoryTest {
     OAuth2Authentication oauth2Authentication = setupOAuthMock("client_credentials");
     UserContext context = subject.createUserContext(oauth2Authentication);
 
-    assertThat(context.getAclUser(),
+    assertThat(context.getActor(),
         equalTo("uaa-client:TEST_CLIENT_ID"));
   }
 
@@ -109,7 +109,7 @@ public class UserContextFactoryTest {
     final PreAuthenticatedAuthenticationToken authenticationToken = setupMtlsMock();
     UserContext context = subject.createUserContext(authenticationToken);
 
-    assertThat(context.getAclUser(),
+    assertThat(context.getActor(),
         equalTo("mtls-app:e054393e-c9c3-478b-9047-e6d05c307bf2"));
   }
 

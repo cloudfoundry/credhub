@@ -8,7 +8,7 @@ import io.pivotal.security.domain.PasswordCredentialVersion;
 import io.pivotal.security.entity.Credential;
 import io.pivotal.security.entity.PasswordCredentialVersionData;
 import io.pivotal.security.exceptions.EntryNotFoundException;
-import io.pivotal.security.exceptions.InvalidAclOperationException;
+import io.pivotal.security.exceptions.InvalidPermissionOperationException;
 import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.PermissionOperation;
 import io.pivotal.security.request.PermissionsRequest;
@@ -27,7 +27,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static io.pivotal.security.audit.AuditingOperationCode.ACL_DELETE;
 import static io.pivotal.security.request.PermissionOperation.READ;
 import static io.pivotal.security.request.PermissionOperation.READ_ACL;
 import static io.pivotal.security.request.PermissionOperation.WRITE;
@@ -84,7 +83,7 @@ public class PermissionsHandlerTest {
   @Test
   public void getPermissions_whenTheNameDoesntStartWithASlash_fixesTheName() {
     List<PermissionEntry> accessControlList = newArrayList();
-    when(permissionService.getAccessControlList(eq(userContext), any(CredentialVersion.class), eq(auditRecordParameters), eq(CREDENTIAL_NAME)))
+    when(permissionService.getPermissions(eq(userContext), any(CredentialVersion.class), eq(auditRecordParameters), eq(CREDENTIAL_NAME)))
         .thenReturn(accessControlList);
     when(permissionCheckingService
         .hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(READ_ACL)))
@@ -112,7 +111,7 @@ public class PermissionsHandlerTest {
         operations
     );
     List<PermissionEntry> accessControlList = newArrayList(permissionEntry);
-    when(permissionService.getAccessControlList(userContext, credentialVersion, auditRecordParameters, CREDENTIAL_NAME))
+    when(permissionService.getPermissions(userContext, credentialVersion, auditRecordParameters, CREDENTIAL_NAME))
         .thenReturn(accessControlList);
 
     PermissionsView response = subject.getPermissions(
@@ -158,7 +157,7 @@ public class PermissionsHandlerTest {
     List<PermissionEntry> expectedControlList = newArrayList(permissionEntry,
         preexistingPermissionEntry);
 
-    when(permissionService.getAccessControlList(userContext, credentialVersion, auditRecordParameters, CREDENTIAL_NAME))
+    when(permissionService.getPermissions(userContext, credentialVersion, auditRecordParameters, CREDENTIAL_NAME))
         .thenReturn(expectedControlList);
 
     when(permissionsRequest.getCredentialName()).thenReturn(CREDENTIAL_NAME);
@@ -167,7 +166,7 @@ public class PermissionsHandlerTest {
     subject.setPermissions(permissionsRequest, userContext, auditRecordParameters);
 
     ArgumentCaptor<List> permissionsListCaptor = ArgumentCaptor.forClass(List.class);
-    verify(permissionService).saveAccessControlEntries(eq(userContext), eq(credentialVersion), permissionsListCaptor.capture(), eq(auditRecordParameters), eq(false), eq(CREDENTIAL_NAME));
+    verify(permissionService).savePermissions(eq(userContext), eq(credentialVersion), permissionsListCaptor.capture(), eq(auditRecordParameters), eq(false), eq(CREDENTIAL_NAME));
 
     List<PermissionEntry> accessControlEntries = permissionsListCaptor.getValue();
 
@@ -194,9 +193,9 @@ public class PermissionsHandlerTest {
 
     try {
       subject.setPermissions(permissionsRequest, userContext, auditRecordParameters);
-    } catch (InvalidAclOperationException e) {
-      assertThat(e.getMessage(), equalTo("error.acl.invalid_update_operation"));
-      verify(permissionService, times(0)).saveAccessControlEntries(any(), any(), any(), eq(auditRecordParameters), eq(false), eq(CREDENTIAL_NAME));
+    } catch (InvalidPermissionOperationException e) {
+      assertThat(e.getMessage(), equalTo("error.permission.invalid_update_operation"));
+      verify(permissionService, times(0)).savePermissions(any(), any(), any(), eq(auditRecordParameters), eq(false), eq(CREDENTIAL_NAME));
     }
   }
 
@@ -205,7 +204,7 @@ public class PermissionsHandlerTest {
     when(permissionCheckingService
         .hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(WRITE_ACL)))
         .thenReturn(true);
-    when(permissionService.deleteAccessControlEntry(userContext, CREDENTIAL_NAME, ACTOR_NAME, auditRecordParameters))
+    when(permissionService.deletePermissions(userContext, CREDENTIAL_NAME, ACTOR_NAME, auditRecordParameters))
         .thenReturn(true);
     when(permissionCheckingService
         .userAllowedToOperateOnActor(userContext, ACTOR_NAME))
@@ -214,14 +213,14 @@ public class PermissionsHandlerTest {
     subject.deletePermissionEntry(userContext, CREDENTIAL_NAME, ACTOR_NAME,
         auditRecordParameters);
 
-    verify(permissionService, times(1)).deleteAccessControlEntry(userContext,
+    verify(permissionService, times(1)).deletePermissions(userContext,
         CREDENTIAL_NAME, ACTOR_NAME, auditRecordParameters);
 
   }
 
   @Test
   public void deletePermissions_whenNothingIsDeleted_throwsAnException() {
-    when(permissionService.deleteAccessControlEntry(userContext, CREDENTIAL_NAME, ACTOR_NAME, auditRecordParameters))
+    when(permissionService.deletePermissions(userContext, CREDENTIAL_NAME, ACTOR_NAME, auditRecordParameters))
         .thenReturn(false);
 
     try {

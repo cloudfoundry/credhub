@@ -46,7 +46,7 @@ public class AuditInterceptorTest {
     userContextFactory = mock(UserContextFactory.class);
     userContext = mock(UserContext.class);
     when(userContextFactory.createUserContext(any())).thenReturn(userContext);
-    when(userContext.getAclUser()).thenReturn("");
+    when(userContext.getActor()).thenReturn("");
 
     subject = new AuditInterceptor(
         requestAuditRecordDataService,
@@ -82,7 +82,7 @@ public class AuditInterceptorTest {
     final HttpServletResponse response = mock(HttpServletResponse.class);
     final Authentication authentication = mock(Authentication.class);
     final UserContext userContext = mock(UserContext.class);
-    when(userContext.getAclUser()).thenReturn("user");
+    when(userContext.getActor()).thenReturn("user");
     final RequestAuditRecord requestAuditRecord = spy(RequestAuditRecord.class);
     when(requestAuditRecord.getNow()).thenReturn(Instant.now());
 

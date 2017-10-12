@@ -77,6 +77,6 @@ public class GenerateHandlerTest {
         userContext,
         eventAuditRecordParameters
     );
-    verify(permissionService).saveAccessControlEntries(userContext, credentialVersion, accessControlEntries, eventAuditRecordParameters, true, "captain");
+    verify(permissionService).savePermissions(userContext, credentialVersion, accessControlEntries, eventAuditRecordParameters, true, "captain");
   }
 }

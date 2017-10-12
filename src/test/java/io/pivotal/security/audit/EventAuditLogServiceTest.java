@@ -238,7 +238,7 @@ public class EventAuditLogServiceTest {
     when(context.getValidFrom()).thenReturn(now.getEpochSecond());
     when(context.getValidUntil()).thenReturn(then.getEpochSecond());
     when(context.getClientId()).thenReturn("test-client-id");
-    when(context.getAclUser()).thenReturn("test-actor");
+    when(context.getActor()).thenReturn("test-actor");
 
     if (valid) {
       when(context.getAuthMethod()).thenReturn(AUTH_METHOD_UAA);

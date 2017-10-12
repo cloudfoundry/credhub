@@ -3,7 +3,7 @@ package io.pivotal.security.config;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.CredentialVersionDataService;
-import io.pivotal.security.data.PermissionsDataService;
+import io.pivotal.security.data.PermissionDataService;
 import io.pivotal.security.data.RequestAuditRecordDataService;
 import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.domain.PasswordCredentialVersion;
@@ -63,7 +63,7 @@ public class AuthConfigurationTest {
   CredentialVersionDataService credentialVersionDataService;
 
   @MockBean
-  PermissionsDataService permissionsDataService;
+  PermissionDataService permissionDataService;
 
   @SpyBean
   RequestAuditRecordDataService requestAuditRecordDataService;

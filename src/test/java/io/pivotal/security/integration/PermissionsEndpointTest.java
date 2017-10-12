@@ -319,10 +319,10 @@ public class PermissionsEndpointTest {
         )
     );
 
-    PermissionsView acl = getPermissions(mockMvc, credentialName, UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
-    assertThat(acl.getPermissions(), hasSize(3));
-    assertThat(acl.getCredentialName(), equalTo(credentialName));
-    assertThat(acl.getPermissions(), containsInAnyOrder(
+    PermissionsView permissions = getPermissions(mockMvc, credentialName, UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+    assertThat(permissions.getPermissions(), hasSize(3));
+    assertThat(permissions.getCredentialName(), equalTo(credentialName));
+    assertThat(permissions.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
             new PermissionEntry(UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
                 asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),

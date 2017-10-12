@@ -44,7 +44,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 @Transactional
-public class PermissionsDataServiceTest {
+public class PermissionDataServiceTest {
   private static final String CREDENTIAL_NAME = "/lightsaber";
   private static final String CREDENTIAL_NAME_WITHOUT_LEADING_SLASH = StringUtils.removeStart(CREDENTIAL_NAME, "/");
   private static final String CREDENTIAL_NAME_DOES_NOT_EXIST = "/this/credential/does/not/exist";
@@ -57,7 +57,7 @@ public class PermissionsDataServiceTest {
   public static final String NO_ACCESS_CREDENTIAL_NAME = "Alderaan";
 
   @Autowired
-  private PermissionsDataService subject;
+  private PermissionDataService subject;
 
   @Autowired
   private CredentialDataService credentialDataService;
@@ -72,7 +72,7 @@ public class PermissionsDataServiceTest {
 
   @Test
   public void getAccessControlList_givenExistingCredentialName_returnsAcl() {
-    final List<PermissionEntry> accessControlEntries = subject.getAccessControlList(credential);
+    final List<PermissionEntry> accessControlEntries = subject.getPermissions(credential);
 
     assertThat(accessControlEntries, hasSize(3));
 
@@ -116,7 +116,7 @@ public class PermissionsDataServiceTest {
   @Test
   public void getAccessControlList_whenGivenNonExistentCredentialName_throwsException() {
     try {
-      subject.getAccessControlList(new Credential(CREDENTIAL_NAME_DOES_NOT_EXIST));
+      subject.getPermissions(new Credential(CREDENTIAL_NAME_DOES_NOT_EXIST));
     } catch (EntryNotFoundException enfe) {
       assertThat(enfe.getMessage(), Matchers.equalTo("error.resource_not_found"));
     }
@@ -128,9 +128,9 @@ public class PermissionsDataServiceTest {
         new PermissionEntry(LUKE, singletonList(READ))
     );
 
-    subject.saveAccessControlEntries(credential, aces);
+    subject.savePermissions(credential, aces);
 
-    List<PermissionEntry> response = subject.getAccessControlList(credential);
+    List<PermissionEntry> response = subject.getPermissions(credential);
 
         assertThat(response, containsInAnyOrder(
         allOf(hasProperty("actor", equalTo(LUKE)),
@@ -152,9 +152,9 @@ public class PermissionsDataServiceTest {
     aces = singletonList(
         new PermissionEntry(LUKE, singletonList(READ)));
 
-    subject.saveAccessControlEntries(credential2, aces);
+    subject.savePermissions(credential2, aces);
 
-    List<PermissionEntry> response = subject.getAccessControlList(credential2);
+    List<PermissionEntry> response = subject.getPermissions(credential2);
 
 
     final PermissionEntry permissionEntry = response.get(0);
@@ -167,10 +167,10 @@ public class PermissionsDataServiceTest {
 
   @Test
   public void deleteAccessControlEntry_whenGivenExistingCredentialAndActor_deletesTheAce() {
-    subject.deleteAccessControlEntry(CREDENTIAL_NAME, LUKE);
+    subject.deletePermissions(CREDENTIAL_NAME, LUKE);
 
     final List<PermissionEntry> accessControlList = subject
-        .getAccessControlList(credential);
+        .getPermissions(credential);
 
     assertThat(accessControlList, hasSize(2));
 
@@ -180,12 +180,12 @@ public class PermissionsDataServiceTest {
 
   @Test
   public void deleteAccessControlEntry_whenNameIsMissingLeadingSlash_deletesTheAce() {
-    boolean deleted = subject.deleteAccessControlEntry(CREDENTIAL_NAME_WITHOUT_LEADING_SLASH, LUKE);
+    boolean deleted = subject.deletePermissions(CREDENTIAL_NAME_WITHOUT_LEADING_SLASH, LUKE);
 
     assertTrue(deleted);
 
     final List<PermissionEntry> accessControlList = subject
-        .getAccessControlList(credential);
+        .getPermissions(credential);
 
     assertThat(accessControlList, hasSize(2));
 
@@ -195,13 +195,13 @@ public class PermissionsDataServiceTest {
 
   @Test
   public void deleteAccessControlEntry_whenNonExistentResource_returnsFalse() {
-    boolean deleted = subject.deleteAccessControlEntry("/some-thing-that-is-not-here", LUKE);
+    boolean deleted = subject.deletePermissions("/some-thing-that-is-not-here", LUKE);
     assertFalse(deleted);
   }
 
   @Test
   public void deleteAccessControlEntry_whenNonExistentAce_returnsFalse() {
-    boolean deleted = subject.deleteAccessControlEntry(CREDENTIAL_NAME, DARTH);
+    boolean deleted = subject.deletePermissions(CREDENTIAL_NAME, DARTH);
     assertFalse(deleted);
   }
 
@@ -338,19 +338,19 @@ public class PermissionsDataServiceTest {
     Credential noAccessCredential = credentialDataService.save(noAccessValueCredential);
     this.credential = credentialDataService.save(this.credential);
 
-    subject.saveAccessControlEntries(
+    subject.savePermissions(
         this.credential,
         singletonList(new PermissionEntry(LUKE,
             newArrayList(WRITE, DELETE)))
     );
 
-    subject.saveAccessControlEntries(
+    subject.savePermissions(
         this.credential,
         singletonList(new PermissionEntry(LEIA,
             singletonList(READ)))
     );
 
-    subject.saveAccessControlEntries(
+    subject.savePermissions(
         this.credential,
         singletonList(new PermissionEntry(HAN_SOLO,
             newArrayList(READ_ACL, WRITE_ACL)))
