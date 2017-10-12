@@ -3,6 +3,7 @@ package io.pivotal.security.integration;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.json.JSONObject;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,13 +33,16 @@ public class CredentialGenerateTest {
 
   private MockMvc mockMvc;
 
-  @Test
-  public void credentialCanBeOverwrittenWhenModeIsSetToOverwriteInRequest() throws Exception {
+  @Before
+  public void setup() {
     mockMvc = MockMvcBuilders
         .webAppContextSetup(webApplicationContext)
         .apply(springSecurity())
         .build();
+  }
 
+  @Test
+  public void credentialCanBeOverwrittenWhenModeIsSetToOverwriteInRequest() throws Exception {
     String firstResponse = generatePassword(mockMvc, CREDENTIAL_NAME, "overwrite");
     String originalPassword = (new JSONObject(firstResponse)).getString("value");
 
@@ -47,4 +51,16 @@ public class CredentialGenerateTest {
 
     assertThat(originalPassword, not(equalTo(updatedPassword)));
   }
+
+  @Test
+  public void credentialNotOverwrittenWhenModeIsSetToNotOverwriteInRequest() throws Exception {
+    String firstResponse = generatePassword(mockMvc, CREDENTIAL_NAME, "overwrite");
+    String originalPassword = (new JSONObject(firstResponse)).getString("value");
+
+    String secondResponse = generatePassword(mockMvc, CREDENTIAL_NAME, "no-overwrite");
+    String samePassword = (new JSONObject(secondResponse)).getString("value");
+
+    assertThat(originalPassword, equalTo(samePassword));
+  }
+
 }
