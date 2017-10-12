@@ -65,7 +65,7 @@ public class CredentialGenerateTest {
 
   @Test
   public void credentialNotOverwrittenWhenModeIsSetToConvergeAndParametersAreTheSame() throws Exception {
-    String firstResponse = generatePassword(mockMvc, CREDENTIAL_NAME, "overwrite", 20);
+    String firstResponse = generatePassword(mockMvc, CREDENTIAL_NAME, "converge", 20);
     String originalPassword = (new JSONObject(firstResponse)).getString("value");
 
     String secondResponse = generatePassword(mockMvc, CREDENTIAL_NAME, "converge", 20);

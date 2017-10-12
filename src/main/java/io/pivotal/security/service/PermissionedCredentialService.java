@@ -65,14 +65,16 @@ public class PermissionedCredentialService {
     final boolean isNewCredential = existingCredentialVersion == null;
 
     boolean shouldWriteNewCredential;
-    if ("converge".equals(overwriteMode)) {
+    if (isNewCredential) {
+      shouldWriteNewCredential = true;
+    } else if ("converge".equals(overwriteMode)) {
       StringGenerationParameters existingGenerationParameters = existingCredentialVersion
           .getGenerationParameters();
 
       StringGenerationParameters newGenerationParameters = (StringGenerationParameters) generationParameters;
       shouldWriteNewCredential = !(newGenerationParameters.equals(existingGenerationParameters));
     } else {
-     shouldWriteNewCredential = isNewCredential || "overwrite".equals(overwriteMode);
+     shouldWriteNewCredential = "overwrite".equals(overwriteMode);
     }
 
     writeSaveAuditRecord(credentialName, auditRecordParameters, shouldWriteNewCredential);
