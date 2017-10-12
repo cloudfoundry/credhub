@@ -43,8 +43,14 @@ public abstract class BaseCredentialRequest {
     this.name = name;
   }
 
-  public boolean shouldOverwrite() {
-    return "overwrite".equals(mode) || overwrite;
+  public String getOverwriteMode() {
+    if (mode != null) {
+      return mode;
+    }
+    if (overwrite) {
+      return "overwrite";
+    }
+    return "no-overwrite";
   }
 
   public boolean isOverwrite() {

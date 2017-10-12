@@ -4,6 +4,7 @@ import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.entity.Credential;
 import io.pivotal.security.entity.CredentialVersionData;
 import io.pivotal.security.entity.EncryptedValue;
+import io.pivotal.security.request.StringGenerationParameters;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -72,5 +73,9 @@ public abstract class CredentialVersion<Z extends CredentialVersion> {
 
   public void createName(String name) {
     delegate.setCredential(new Credential(name));
+  }
+
+  public StringGenerationParameters getGenerationParameters() {
+    return null;
   }
 }

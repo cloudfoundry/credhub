@@ -46,7 +46,7 @@ public class RegenerateHandler {
         credentialValue,
         generateRequest.getGenerationParameters(),
         generateRequest.getAdditionalPermissions(),
-        generateRequest.isOverwrite(),
+        generateRequest.getOverwriteMode(),
         userContext,
         auditRecordParameters
     );

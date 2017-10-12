@@ -43,7 +43,7 @@ public class GenerateHandler {
         value,
         generateRequest.getGenerationParameters(),
         generateRequest.getAdditionalPermissions(),
-        generateRequest.shouldOverwrite(),
+        generateRequest.getOverwriteMode(),
         userContext,
         auditRecordParameters
     );

@@ -61,7 +61,7 @@ public class SetHandler {
         setRequest.getCredentialValue(),
         generationParameters,
         setRequest.getAdditionalPermissions(),
-        setRequest.isOverwrite(),
+        setRequest.getOverwriteMode(),
         userContext,
         auditRecordParameters
     );

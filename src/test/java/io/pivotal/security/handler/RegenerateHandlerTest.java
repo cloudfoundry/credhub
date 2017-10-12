@@ -15,7 +15,6 @@ import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
@@ -55,7 +54,7 @@ public class RegenerateHandlerTest {
     when(credentialService.findMostRecent(anyString()))
         .thenReturn(mock(CredentialVersion.class));
     CredentialVersion credentialVersion = mock(PasswordCredentialVersion.class);
-    when(credentialService.save(anyObject(), anyString(), anyString(), anyObject(), anyObject(), anyList(), anyBoolean(), anyObject(), anyList())).thenReturn(credentialVersion);
+    when(credentialService.save(anyObject(), anyString(), anyString(), anyObject(), anyObject(), anyList(), anyString(), anyObject(), anyList())).thenReturn(credentialVersion);
 
     PasswordGenerateRequest generateRequest1 = new PasswordGenerateRequest();
     generateRequest1.setName("firstExpectedName");
@@ -70,13 +69,13 @@ public class RegenerateHandlerTest {
     verify(credentialService).save(
         any(), eq("firstExpectedName"),
         any(), any(), any(),
-        any(), anyBoolean(),
+        any(), anyString(),
         eq(userContext), any());
 
     verify(credentialService).save(
         any(), eq("secondExpectedName"),
         any(), any(), any(),
-        any(), anyBoolean(),
+        any(), anyString(),
         eq(userContext), any());
 
   }

@@ -15,6 +15,7 @@ import io.pivotal.security.exceptions.PermissionException;
 import io.pivotal.security.request.GenerationParameters;
 import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.PermissionOperation;
+import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.view.FindCredentialResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -56,13 +57,23 @@ public class PermissionedCredentialService {
       CredentialValue credentialValue,
       GenerationParameters generationParameters,
       List<PermissionEntry> accessControlEntries,
-      boolean isOverwrite,
+      String overwriteMode,
       UserContext userContext,
       List<EventAuditRecordParameters> auditRecordParameters
   ) {
 
     final boolean isNewCredential = existingCredentialVersion == null;
-    boolean shouldWriteNewCredential = isNewCredential || isOverwrite;
+
+    boolean shouldWriteNewCredential;
+    if ("converge".equals(overwriteMode)) {
+      StringGenerationParameters existingGenerationParameters = existingCredentialVersion
+          .getGenerationParameters();
+
+      StringGenerationParameters newGenerationParameters = (StringGenerationParameters) generationParameters;
+      shouldWriteNewCredential = !(newGenerationParameters.equals(existingGenerationParameters));
+    } else {
+     shouldWriteNewCredential = isNewCredential || "overwrite".equals(overwriteMode);
+    }
 
     writeSaveAuditRecord(credentialName, auditRecordParameters, shouldWriteNewCredential);
 

@@ -17,7 +17,6 @@ import org.junit.runners.JUnit4;
 
 import java.util.ArrayList;
 
-import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
@@ -50,7 +49,7 @@ public class GenerateHandlerTest {
     accessControlEntries = new ArrayList<>();
     userContext = new UserContext();
     credentialVersion = mock(PasswordCredentialVersion.class);
-    when(credentialService.save(anyObject(), anyString(), anyString(), anyObject(), anyObject(), anyList(), anyBoolean(), anyObject(), anyList())).thenReturn(credentialVersion);
+    when(credentialService.save(anyObject(), anyString(), anyString(), anyObject(), anyObject(), anyList(), anyString(), anyObject(), anyList())).thenReturn(credentialVersion);
   }
 
 
@@ -74,7 +73,7 @@ public class GenerateHandlerTest {
         null,
         generationParameters,
         accessControlEntries,
-        false,
+        "no-overwrite",
         userContext,
         eventAuditRecordParameters
     );

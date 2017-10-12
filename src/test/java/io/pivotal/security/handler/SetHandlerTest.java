@@ -26,7 +26,6 @@ import java.util.ArrayList;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
-import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
@@ -60,7 +59,7 @@ public class SetHandlerTest {
     accessControlEntries = new ArrayList<>();
     userContext = new UserContext();
     credentialVersion = mock(PasswordCredentialVersion.class);
-    when(credentialService.save(anyObject(), anyString(), anyString(), anyObject(), anyObject(), anyList(), anyBoolean(), anyObject(), anyList())).thenReturn(credentialVersion);
+    when(credentialService.save(anyObject(), anyString(), anyString(), anyObject(), anyObject(), anyList(), anyString(), anyObject(), anyList())).thenReturn(credentialVersion);
   }
 
 
@@ -88,7 +87,7 @@ public class SetHandlerTest {
         password,
         generationParameters,
         accessControlEntries,
-        true,
+        "overwrite",
         userContext,
         eventAuditRecordParameters
     );
@@ -117,7 +116,7 @@ public class SetHandlerTest {
         password,
         generationParameters,
         accessControlEntries,
-        false,
+        "no-overwrite",
         userContext,
         eventAuditRecordParameters
     );
@@ -147,7 +146,7 @@ public class SetHandlerTest {
         userCredentialValue,
         null,
         accessControlEntries,
-        false,
+        "no-overwrite",
         userContext,
         eventAuditRecordParameters
     );
@@ -178,7 +177,7 @@ public class SetHandlerTest {
         certificateValue,
         null,
         accessControlEntries,
-        false,
+        "no-overwrite",
         userContext,
         eventAuditRecordParameters
     );
@@ -226,7 +225,7 @@ public class SetHandlerTest {
         credentialValueArgumentCaptor.capture(),
         eq(null),
         eq(accessControlEntries),
-        eq(false),
+        eq("no-overwrite"),
         eq(userContext),
         eq(eventAuditRecordParameters)
     );

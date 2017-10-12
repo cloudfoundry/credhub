@@ -43,6 +43,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -117,7 +118,7 @@ public class PermissionedCredentialServiceTest {
         credentialValue,
         generationParameters,
         accessControlEntries,
-        false,
+        "no-overwrite",
         userContext,
         auditRecordParameters
     );
@@ -132,7 +133,7 @@ public class PermissionedCredentialServiceTest {
         credentialValue,
         generationParameters,
         accessControlEntries,
-        false,
+        "no-overwrite",
         userContext,
         auditRecordParameters
     );
@@ -153,7 +154,7 @@ public class PermissionedCredentialServiceTest {
         credentialValue,
         generationParameters,
         accessControlEntries,
-        true,
+        "overwrite",
         userContext,
         auditRecordParameters
     );
@@ -182,7 +183,7 @@ public class PermissionedCredentialServiceTest {
           credentialValue,
           generationParameters,
           accessControlEntries,
-          true,
+          "overwrite",
           userContext,
           auditRecordParameters
       );
@@ -200,7 +201,7 @@ public class PermissionedCredentialServiceTest {
         credentialValue,
         generationParameters,
         accessControlEntries,
-        false,
+        "no-overwrite",
         userContext,
         auditRecordParameters
     );
@@ -219,7 +220,7 @@ public class PermissionedCredentialServiceTest {
         credentialValue,
         generationParameters,
         accessControlEntries,
-        false,
+        "no-overwrite",
         userContext,
         auditRecordParameters
     );
@@ -242,7 +243,7 @@ public class PermissionedCredentialServiceTest {
           credentialValue,
           generationParameters,
           accessControlEntries,
-          false,
+          "no-overwrite",
           userContext,
           auditRecordParameters
       );
@@ -263,7 +264,7 @@ public class PermissionedCredentialServiceTest {
         credentialValue,
         generationParameters,
         accessControlEntries,
-        true,
+        "overwrite",
         userContext,
         auditRecordParameters
     );
@@ -290,7 +291,7 @@ public class PermissionedCredentialServiceTest {
         credentialValue,
         generationParameters,
         accessControlEntries,
-        true,
+        "overwrite",
         userContext,
         auditRecordParameters
     );
@@ -452,4 +453,75 @@ public class PermissionedCredentialServiceTest {
         equalTo(CREDENTIAL_FIND));
   }
 
+  @Test
+  public void save_whenThereIsAnExistingCredentialAndOverwriteModeIsConvergeAndParametersAreSame_DoesNotOverwriteCredential() {
+    when(credentialVersionDataService.save(any(CredentialVersion.class)))
+        .thenReturn(new PasswordCredentialVersion().setEncryptor(encryptor));
+    final PasswordCredentialVersion newVersion = new PasswordCredentialVersion();
+
+    StringGenerationParameters existingGenerationParameters = new StringGenerationParameters();
+    existingGenerationParameters.setLength(20);
+
+    CredentialVersion originalCredentialVersion = mock(CredentialVersion.class);
+    when(originalCredentialVersion.getGenerationParameters()).thenReturn(existingGenerationParameters);
+
+    when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(originalCredentialVersion);
+    when(originalCredentialVersion.getCredentialType()).thenReturn("password");
+
+    when(credentialFactory.makeNewCredentialVersion(
+        CredentialType.valueOf("password"),
+        CREDENTIAL_NAME,
+        credentialValue,
+        originalCredentialVersion,
+        existingGenerationParameters)).thenReturn(newVersion);
+
+    subject.save(
+        originalCredentialVersion, CREDENTIAL_NAME,
+        "password",
+        credentialValue,
+        existingGenerationParameters,
+        accessControlEntries,
+        "converge",
+        userContext,
+        auditRecordParameters
+    );
+
+    verify(credentialVersionDataService, never()).save(newVersion);
+  }
+
+  @Test
+  public void save_whenThereIsAnExistingCredentialAndOverwriteModeIsConvergeAndParametersAreDifferent_OverwritesCredential() {
+    when(credentialVersionDataService.save(any(CredentialVersion.class)))
+        .thenReturn(new PasswordCredentialVersion().setEncryptor(encryptor));
+    final PasswordCredentialVersion newVersion = new PasswordCredentialVersion();
+
+    StringGenerationParameters existingGenerationParameters = new StringGenerationParameters();
+    existingGenerationParameters.setLength(20);
+
+    CredentialVersion originalCredentialVersion = mock(CredentialVersion.class);
+    when(originalCredentialVersion.getGenerationParameters()).thenReturn(existingGenerationParameters);
+
+    when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(originalCredentialVersion);
+    when(originalCredentialVersion.getCredentialType()).thenReturn("password");
+
+    when(credentialFactory.makeNewCredentialVersion(
+        CredentialType.valueOf("password"),
+        CREDENTIAL_NAME,
+        credentialValue,
+        originalCredentialVersion,
+        generationParameters)).thenReturn(newVersion);
+
+    subject.save(
+        originalCredentialVersion, CREDENTIAL_NAME,
+        "password",
+        credentialValue,
+        generationParameters,
+        accessControlEntries,
+        "converge",
+        userContext,
+        auditRecordParameters
+    );
+
+    verify(credentialVersionDataService).save(newVersion);
+  }
 }

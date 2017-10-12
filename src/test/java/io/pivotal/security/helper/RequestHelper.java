@@ -40,7 +40,7 @@ public class RequestHelper {
         .andExpect(status().isOk());
   }
 
-  public static String generatePassword(MockMvc mockMvc, String credentialName, String mode)
+  public static String generatePassword(MockMvc mockMvc, String credentialName, String mode, int length)
       throws Exception {
     MockHttpServletRequestBuilder post = post("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -49,7 +49,8 @@ public class RequestHelper {
         .content("{"
             + "  \"name\": \"" + credentialName + "\","
             + "  \"type\": \"password\","
-            + "  \"mode\": \"" + mode + "\""
+            + "  \"mode\": \"" + mode + "\","
+            + "  \"parameters\": {\"length\": " + length + "}"
             + "}");
 
     String response = mockMvc.perform(post)
