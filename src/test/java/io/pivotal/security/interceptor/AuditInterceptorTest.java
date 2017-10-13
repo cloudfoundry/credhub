@@ -1,6 +1,7 @@
 package io.pivotal.security.interceptor;
 
 import io.pivotal.security.audit.AuditLogFactory;
+import io.pivotal.security.audit.RequestUuid;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.auth.UserContextFactory;
 import io.pivotal.security.data.RequestAuditRecordDataService;
@@ -15,14 +16,12 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.security.core.Authentication;
 
 import java.time.Instant;
-import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.beans.SamePropertyValuesAs.samePropertyValuesAs;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -38,6 +37,7 @@ public class AuditInterceptorTest {
   private AuditLogFactory auditLogFactory;
   private UserContextFactory userContextFactory;
   private UserContext userContext;
+  private RequestUuid requestUuid;
 
   @Before
   public void setup() {
@@ -46,6 +46,8 @@ public class AuditInterceptorTest {
     auditLogFactory = mock(AuditLogFactory.class);
     userContextFactory = mock(UserContextFactory.class);
     userContext = mock(UserContext.class);
+    requestUuid = new RequestUuid();
+
     when(userContextFactory.createUserContext(any())).thenReturn(userContext);
     when(userContext.getActor()).thenReturn("");
 
@@ -55,26 +57,6 @@ public class AuditInterceptorTest {
         auditLogFactory,
         userContextFactory
     );
-  }
-
-  @Test
-  public void preHandle_sets_request_uuid_if_not_already_set() throws Exception {
-    final HttpServletRequest request = mock(HttpServletRequest.class);
-    subject.preHandle(request, null, null);
-
-    verify(request).setAttribute(eq("REQUEST_UUID"), any(UUID.class));
-  }
-
-  @Test
-  public void preHandle_does_not_override_existing_uuid() throws Exception {
-    final UUID originalUuid = UUID.randomUUID();
-    final HttpServletRequest request = mock(HttpServletRequest.class);
-
-    when(request.getAttribute("REQUEST_UUID")).thenReturn(originalUuid);
-
-    subject.preHandle(request, null, null);
-
-    verify(request, times(0)).setAttribute(any(String.class), any());
   }
 
   @Test

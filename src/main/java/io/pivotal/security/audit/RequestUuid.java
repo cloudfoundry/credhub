@@ -1,18 +1,22 @@
 package io.pivotal.security.audit;
 
+import org.springframework.stereotype.Component;
+import org.springframework.web.context.annotation.RequestScope;
+
 import java.util.UUID;
 
+@Component
+@RequestScope
 public class RequestUuid {
-  private final UUID uuid;
+  private UUID uuid;
 
   @SuppressWarnings("unused")
-  public RequestUuid() { uuid = null; }
-
-  public RequestUuid(UUID uuid) {
-    this.uuid = uuid;
-  }
+  public RequestUuid() {}
 
   public UUID getUuid() {
+    if (uuid == null) {
+      uuid = UUID.randomUUID();
+    }
     return uuid;
   }
 }

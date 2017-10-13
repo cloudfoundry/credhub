@@ -23,19 +23,20 @@ public class EventAuditLogService {
   private final EventAuditRecordDataService eventAuditRecordDataService;
   private final TransactionManagerDelegate transactionManager;
   private final UserContextHolder userContextHolder;
+  private final RequestUuid requestUuid;
 
   @Autowired
   EventAuditLogService(
       EventAuditRecordDataService eventAuditRecordDataService,
       TransactionManagerDelegate transactionManager,
-      UserContextHolder userContextHolder) {
+      UserContextHolder userContextHolder, RequestUuid requestUuid) {
     this.eventAuditRecordDataService = eventAuditRecordDataService;
     this.transactionManager = transactionManager;
     this.userContextHolder = userContextHolder;
+    this.requestUuid = requestUuid;
   }
 
   public <T> T auditEvents(
-      RequestUuid requestUuid,
       Function<List<EventAuditRecordParameters>, T> respondToRequestFunction
   ) {
     TransactionStatus transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
@@ -46,12 +47,11 @@ public class EventAuditLogService {
       success = true;
       return response;
     } finally {
-      writeAuditRecords(requestUuid, eventAuditRecordParametersList, success, transaction);
+      writeAuditRecords(eventAuditRecordParametersList, success, transaction);
     }
   }
 
   private void writeAuditRecords(
-      RequestUuid requestUuid,
       List<EventAuditRecordParameters> eventAuditRecordParametersList,
       boolean success,
       TransactionStatus transaction

@@ -2,7 +2,6 @@ package io.pivotal.security.controller.v1;
 
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.audit.EventAuditLogService;
-import io.pivotal.security.audit.RequestUuid;
 import io.pivotal.security.handler.RegenerateHandler;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.Before;
@@ -59,7 +58,7 @@ public class RegenerateControllerTest {
     mockMvc.perform(makeRegenerateRequest()).andDo(print()).andExpect(status().isOk());
 
     Mockito.verify(regenerateHandler).handleRegenerate(eq("picard"), any());
-    Mockito.verify(eventAuditLogService).auditEvents(any(RequestUuid.class), any());
+    Mockito.verify(eventAuditLogService).auditEvents(any());
   }
 
   @Test
@@ -67,7 +66,7 @@ public class RegenerateControllerTest {
     mockMvc.perform(makeBulkRegenerateRequest()).andDo(print()).andExpect(status().isOk());
 
     Mockito.verify(regenerateHandler).handleBulkRegenerate(eq("/some-ca"), any());
-    Mockito.verify(eventAuditLogService).auditEvents(any(RequestUuid.class), any());
+    Mockito.verify(eventAuditLogService).auditEvents(any());
   }
 
   private MockHttpServletRequestBuilder makeRegenerateRequest() {

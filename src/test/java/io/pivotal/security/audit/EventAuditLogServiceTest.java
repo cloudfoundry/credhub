@@ -33,7 +33,6 @@ import org.springframework.transaction.TransactionStatus;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
-import java.util.UUID;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
@@ -84,11 +83,13 @@ public class EventAuditLogServiceTest {
   @Autowired
   private EncryptionKeyCanaryRepository encryptionKeyCanaryRepository;
 
+  @Autowired
+  private RequestUuid requestUuid;
+
   private final Instant now = Instant.ofEpochSecond(1490903353L);
   private final Instant then = Instant.ofEpochSecond(1550903353L);
 
   private UserContext userContext;
-  private RequestUuid requestUuid;
   private List<EncryptionKeyCanary> canaries;
   private ValueCredentialVersionData entity;
 
@@ -99,7 +100,6 @@ public class EventAuditLogServiceTest {
     mockOutCurrentTimeProvider(currentTimeProvider).accept(now.toEpochMilli());
     userContext = mockUserContext(true);
     userContextHolder.setUserContext(userContext);
-    requestUuid = new RequestUuid(UUID.randomUUID());
 
     entity = new ValueCredentialVersionData("keyName");
     entity.setEncryptedValueData(new EncryptedValue(
@@ -130,7 +130,6 @@ public class EventAuditLogServiceTest {
     );
 
     subject.auditEvents(
-        requestUuid,
         eventAuditRecordParametersList -> {
           eventAuditRecordParametersList.add(parameters1);
           eventAuditRecordParametersList.add(parameters2);
@@ -159,7 +158,7 @@ public class EventAuditLogServiceTest {
     userContext = mockUserContext(false);
 
     try {
-      subject.auditEvents(requestUuid, eventAuditRecordParametersList -> {
+      subject.auditEvents(eventAuditRecordParametersList -> {
         eventAuditRecordParametersList.add(parameters1);
         eventAuditRecordParametersList.add(parameters2);
         return credentialVersionDataService.save(entity);
@@ -193,7 +192,7 @@ public class EventAuditLogServiceTest {
     userContext = mockUserContext(false);
 
     try {
-      subject.auditEvents(requestUuid, eventAuditRecordParametersList -> {
+      subject.auditEvents(eventAuditRecordParametersList -> {
         eventAuditRecordParametersList.add(parameters1);
         eventAuditRecordParametersList.add(parameters2);
         credentialVersionDataService.save(entity);
@@ -224,7 +223,7 @@ public class EventAuditLogServiceTest {
     );
 
     try {
-      subject.auditEvents(requestUuid, eventAuditRecordParametersList -> {
+      subject.auditEvents(eventAuditRecordParametersList -> {
         eventAuditRecordParametersList.add(parameters1);
         eventAuditRecordParametersList.add(parameters2);
         credentialVersionDataService.save(entity);

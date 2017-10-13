@@ -2,7 +2,6 @@ package io.pivotal.security.controller.v1;
 
 import io.pivotal.security.audit.EventAuditLogService;
 import io.pivotal.security.audit.EventAuditRecordParameters;
-import io.pivotal.security.audit.RequestUuid;
 import io.pivotal.security.handler.PermissionsHandler;
 import io.pivotal.security.request.PermissionsRequest;
 import io.pivotal.security.view.PermissionsView;
@@ -38,12 +37,9 @@ public class PermissionsController {
 
   @GetMapping
   @ResponseStatus(HttpStatus.OK)
-  public PermissionsView getAccessControlList(
-      @RequestParam("credential_name") String credentialName,
-      RequestUuid requestUuid
-  ) throws Exception {
+  public PermissionsView getAccessControlList(@RequestParam("credential_name") String credentialName) throws Exception {
     return eventAuditLogService
-        .auditEvents(requestUuid, auditRecordParameters -> {
+        .auditEvents(auditRecordParameters -> {
           return permissionsHandler
               .getPermissions(credentialName, auditRecordParameters);
         });
@@ -51,11 +47,8 @@ public class PermissionsController {
 
   @PostMapping(consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ResponseStatus(HttpStatus.CREATED)
-  public void setAccessControlEntries(
-      RequestUuid requestUuid,
-      @Validated @RequestBody PermissionsRequest accessEntriesRequest
-  ) {
-    eventAuditLogService.auditEvents(requestUuid, auditRecordParameters -> {
+  public void setAccessControlEntries(@Validated @RequestBody PermissionsRequest accessEntriesRequest) {
+    eventAuditLogService.auditEvents(auditRecordParameters -> {
       permissionsHandler.setPermissions(accessEntriesRequest, auditRecordParameters);
       return null;
     });
@@ -64,11 +57,10 @@ public class PermissionsController {
   @DeleteMapping
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void deleteAccessControlEntry(
-      RequestUuid requestUuid,
       @RequestParam("credential_name") String credentialName,
       @RequestParam("actor") String actor
   ) {
-    eventAuditLogService.auditEvents(requestUuid,
+    eventAuditLogService.auditEvents(
         (List<EventAuditRecordParameters> auditRecordParameters) -> {
           permissionsHandler.deletePermissionEntry(credentialName, actor, auditRecordParameters);
           return true;

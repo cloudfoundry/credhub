@@ -1,7 +1,6 @@
 package io.pivotal.security.controller.v1;
 
 import io.pivotal.security.audit.EventAuditLogService;
-import io.pivotal.security.audit.RequestUuid;
 import io.pivotal.security.handler.RegenerateHandler;
 import io.pivotal.security.request.BulkRegenerateRequest;
 import io.pivotal.security.request.RegenerateRequest;
@@ -39,12 +38,9 @@ public class RegenerateController {
       path = RegenerateController.API_V1_REGENERATE,
       produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ResponseStatus(HttpStatus.OK)
-  public CredentialView regenerate(
-      RequestUuid requestUuid,
-      @RequestBody @Validated RegenerateRequest requestBody
-  ) throws IOException {
+  public CredentialView regenerate(@RequestBody @Validated RegenerateRequest requestBody) throws IOException {
     return eventAuditLogService
-        .auditEvents(requestUuid, (auditRecordParameters -> {
+        .auditEvents((auditRecordParameters -> {
           return regenerateHandler
               .handleRegenerate(requestBody.getName(),
                   auditRecordParameters);
@@ -55,12 +51,9 @@ public class RegenerateController {
       path = RegenerateController.API_V1_BULK_REGENERATE,
       produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ResponseStatus(HttpStatus.OK)
-  public BulkRegenerateResults bulkRegenerate(
-      RequestUuid requestUuid,
-      @RequestBody @Valid BulkRegenerateRequest requestBody
-  ) throws IOException {
+  public BulkRegenerateResults bulkRegenerate(@RequestBody @Valid BulkRegenerateRequest requestBody) throws IOException {
     return eventAuditLogService
-        .auditEvents(requestUuid, (auditRecordParameters -> {
+        .auditEvents((auditRecordParameters -> {
           return regenerateHandler
               .handleBulkRegenerate(requestBody.getSignedBy(),
                   auditRecordParameters);

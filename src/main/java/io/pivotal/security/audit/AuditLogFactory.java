@@ -16,19 +16,20 @@ import java.util.Map;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 
-import static io.pivotal.security.interceptor.AuditInterceptor.REQUEST_UUID_ATTRIBUTE;
 import static io.pivotal.security.auth.UserContext.AUTH_METHOD_UAA;
 
 @Component
 public class AuditLogFactory {
   private final CurrentTimeProvider currentTimeProvider;
   private final UserContextHolder userContextHolder;
+  private final RequestUuid requestUuid;
 
   @Autowired
   AuditLogFactory(CurrentTimeProvider currentTimeProvider,
-      UserContextHolder userContextHolder) {
+      UserContextHolder userContextHolder, RequestUuid requestUuid) {
     this.currentTimeProvider = currentTimeProvider;
     this.userContextHolder = userContextHolder;
+    this.requestUuid = requestUuid;
   }
 
   public RequestAuditRecord createRequestAuditRecord(HttpServletRequest request, int requestStatus) {
@@ -36,14 +37,8 @@ public class AuditLogFactory {
   }
 
   public RequestAuditRecord createRequestAuditRecord(HttpServletRequest request, UserContext userContext, int requestStatus) {
-    if (request.getAttribute(REQUEST_UUID_ATTRIBUTE) == null) {
-      request.setAttribute(REQUEST_UUID_ATTRIBUTE, UUID.randomUUID());
-    }
-
-    final UUID requestUuid = (UUID) request.getAttribute(REQUEST_UUID_ATTRIBUTE);
-
     return new RequestAuditRecord(
-        requestUuid,
+        requestUuid.getUuid(),
         currentTimeProvider.getInstant(),
         userContext.getAuthMethod(),
         userContext.getUserId(),

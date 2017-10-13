@@ -6,7 +6,6 @@ import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
 import io.pivotal.security.audit.EventAuditLogService;
 import io.pivotal.security.audit.EventAuditRecordParameters;
-import io.pivotal.security.audit.RequestUuid;
 import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.exceptions.InvalidQueryParameterException;
 import io.pivotal.security.handler.CredentialsHandler;
@@ -82,47 +81,42 @@ public class CredentialsController {
 
   @RequestMapping(path = "", method = RequestMethod.POST)
   @ResponseStatus(HttpStatus.OK)
-  public CredentialView generate(InputStream inputStream,
-                                 RequestUuid requestUuid) throws IOException {
+  public CredentialView generate(InputStream inputStream) throws IOException {
     InputStream requestInputStream = new ByteArrayInputStream(ByteStreams.toByteArray(inputStream));
     try {
-      return auditedHandlePostRequest(requestInputStream, requestUuid);
+      return auditedHandlePostRequest(requestInputStream);
     } catch (JpaSystemException | DataIntegrityViolationException e) {
       requestInputStream.reset();
       LOGGER.error(
           "Exception \"" + e.getMessage() + "\" with class \"" + e.getClass().getCanonicalName()
               + "\" while storing credential, possibly caused by race condition, retrying...");
-      return auditedHandlePostRequest(requestInputStream, requestUuid);
+      return auditedHandlePostRequest(requestInputStream);
     }
   }
 
   @RequestMapping(path = "", method = RequestMethod.PUT)
   @ResponseStatus(HttpStatus.OK)
-  public CredentialView set(@RequestBody BaseCredentialSetRequest requestBody,
-      RequestUuid requestUuid) {
+  public CredentialView set(@RequestBody BaseCredentialSetRequest requestBody) {
     requestBody.validate();
 
     try {
-      return auditedHandlePutRequest(requestBody, requestUuid);
+      return auditedHandlePutRequest(requestBody);
     } catch (JpaSystemException | DataIntegrityViolationException e) {
       LOGGER.error(
           "Exception \"" + e.getMessage() + "\" with class \"" + e.getClass().getCanonicalName()
               + "\" while storing credential, possibly caused by race condition, retrying...");
-      return auditedHandlePutRequest(requestBody, requestUuid);
+      return auditedHandlePutRequest(requestBody);
     }
   }
 
   @RequestMapping(path = "", method = RequestMethod.DELETE)
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  public void delete(
-      @RequestParam(value = "name") String credentialName,
-      RequestUuid requestUuid
-  ) {
+  public void delete(@RequestParam(value = "name") String credentialName) {
     if (StringUtils.isEmpty(credentialName)) {
       throw new InvalidQueryParameterException("error.missing_query_parameter", "name");
     }
 
-    eventAuditLogService.auditEvents(requestUuid, (eventAuditRecordParametersList) -> {
+    eventAuditLogService.auditEvents((eventAuditRecordParametersList) -> {
       credentialsHandler.deleteCredential(credentialName, eventAuditRecordParametersList);
       return true;
     });
@@ -130,10 +124,8 @@ public class CredentialsController {
 
   @RequestMapping(path = "/{id}", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
-  public CredentialView getCredentialById(
-      @PathVariable String id,
-      RequestUuid requestUuid) {
-    return eventAuditLogService.auditEvents(requestUuid, eventAuditRecordParametersList -> {
+  public CredentialView getCredentialById(@PathVariable String id) {
+    return eventAuditLogService.auditEvents(eventAuditRecordParametersList -> {
       CredentialVersion credentialVersionVersion = credentialsHandler
           .getCredentialVersionByUUID(id, eventAuditRecordParametersList);
       return CredentialView.fromEntity(credentialVersionVersion);
@@ -145,13 +137,13 @@ public class CredentialsController {
   public DataResponse getCredential(
       @RequestParam(value = "name") String credentialName,
       @RequestParam(value = "versions", required = false) Integer numberOfVersions,
-      @RequestParam(value = "current", required = false, defaultValue = "false") boolean current,
-      RequestUuid requestUuid) {
+      @RequestParam(value = "current", required = false, defaultValue = "false") boolean current
+  ) {
     if (StringUtils.isEmpty(credentialName)) {
       throw new InvalidQueryParameterException("error.missing_query_parameter", "name");
     }
 
-    return eventAuditLogService.auditEvents(requestUuid, eventAuditRecordParametersList -> {
+    return eventAuditLogService.auditEvents(eventAuditRecordParametersList -> {
       List<CredentialVersion> credentialVersions;
       if (current) {
         CredentialVersion credentialVersion = credentialsHandler
@@ -168,18 +160,15 @@ public class CredentialsController {
 
   @RequestMapping(path = "", params = "path", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
-  public FindCredentialResults findByPath(
-      @RequestParam("path") String path,
-      RequestUuid requestUuid
-  ) {
+  public FindCredentialResults findByPath(@RequestParam("path") String path) {
     return eventAuditLogService
-        .auditEvents(requestUuid, eventAuditRecordParametersList -> new FindCredentialResults(credentialService.findStartingWithPath(path, eventAuditRecordParametersList)));
+        .auditEvents(eventAuditRecordParametersList -> new FindCredentialResults(credentialService.findStartingWithPath(path, eventAuditRecordParametersList)));
   }
 
   @RequestMapping(path = "", params = "paths=true", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
-  public FindPathResults findPaths(RequestUuid requestUuid) {
-    return eventAuditLogService.auditEvents(requestUuid, eventAuditRecordParametersList -> {
+  public FindPathResults findPaths() {
+    return eventAuditLogService.auditEvents(eventAuditRecordParametersList -> {
       List<String> paths = credentialService.findAllPaths(eventAuditRecordParametersList);
       return FindPathResults.fromEntity(paths);
     });
@@ -187,20 +176,14 @@ public class CredentialsController {
 
   @RequestMapping(path = "", params = "name-like", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
-  public FindCredentialResults findByNameLike(
-      @RequestParam("name-like") String nameLike,
-      RequestUuid requestUuid
-  ) {
+  public FindCredentialResults findByNameLike(@RequestParam("name-like") String nameLike) {
     return eventAuditLogService
-        .auditEvents(requestUuid, eventAuditRecordParametersList -> new FindCredentialResults(credentialService.findContainingName(nameLike, eventAuditRecordParametersList)));
+        .auditEvents(eventAuditRecordParametersList -> new FindCredentialResults(credentialService.findContainingName(nameLike, eventAuditRecordParametersList)));
   }
 
-  private CredentialView auditedHandlePostRequest(
-      InputStream inputStream,
-      RequestUuid requestUuid
-  ) {
+  private CredentialView auditedHandlePostRequest(InputStream inputStream) {
     return eventAuditLogService
-        .auditEvents(requestUuid, (auditRecordParameters -> {
+        .auditEvents((auditRecordParameters -> {
           return deserializeAndHandlePostRequest(
               inputStream,
               auditRecordParameters
@@ -247,11 +230,8 @@ public class CredentialsController {
         .handleRegenerate(requestBody.getName(), auditRecordParameters);
   }
 
-  private CredentialView auditedHandlePutRequest(
-      @RequestBody BaseCredentialSetRequest requestBody,
-      RequestUuid requestUuid
-  ) {
-    return eventAuditLogService.auditEvents(requestUuid, auditRecordParameters ->
+  private CredentialView auditedHandlePutRequest(@RequestBody BaseCredentialSetRequest requestBody) {
+    return eventAuditLogService.auditEvents(auditRecordParameters ->
         handlePutRequest(requestBody, auditRecordParameters));
   }
 

@@ -12,13 +12,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
-import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @Component
 public class AuditInterceptor extends HandlerInterceptorAdapter {
-  public static final String REQUEST_UUID_ATTRIBUTE = "REQUEST_UUID";
 
   private final RequestAuditRecordDataService requestAuditRecordDataService;
   private final SecurityEventsLogService securityEventsLogService;
@@ -30,21 +28,11 @@ public class AuditInterceptor extends HandlerInterceptorAdapter {
       RequestAuditRecordDataService requestAuditRecordDataService,
       SecurityEventsLogService securityEventsLogService,
       AuditLogFactory auditLogFactory,
-      UserContextFactory userContextFactory
-  ) {
+      UserContextFactory userContextFactory) {
     this.requestAuditRecordDataService = requestAuditRecordDataService;
     this.securityEventsLogService = securityEventsLogService;
     this.auditLogFactory = auditLogFactory;
     this.userContextFactory = userContextFactory;
-  }
-
-  @Override
-  public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-    if (request.getAttribute(REQUEST_UUID_ATTRIBUTE) == null) {
-      request.setAttribute(REQUEST_UUID_ATTRIBUTE, UUID.randomUUID());
-    }
-
-    return super.preHandle(request, response, handler);
   }
 
   @Override
