@@ -1,5 +1,8 @@
 package io.pivotal.security.util;
 
+import com.greghaskins.spectrum.Spectrum;
+import org.junit.runner.RunWith;
+
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.util.TestConstants.SSH_PUBLIC_KEY_4096;
@@ -7,29 +10,29 @@ import static io.pivotal.security.util.TestConstants.SSH_PUBLIC_KEY_4096_WITH_CO
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-import com.greghaskins.spectrum.Spectrum;
-import org.junit.runner.RunWith;
-
 @RunWith(Spectrum.class)
 public class SshPublicKeyParserTest {
 
   {
     it("return null if public key is null", () -> {
-      SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser(null);
+      SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser();
+      sshPublicKeyParser.setPublicKey(null);
       assertThat(sshPublicKeyParser.getFingerprint(), equalTo(null));
       assertThat(sshPublicKeyParser.getComment(), equalTo(null));
       assertThat(sshPublicKeyParser.getKeyLength(), equalTo(0));
     });
 
     it("return null if public key is invalid", () -> {
-      SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser("foobar");
+      SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser();
+      sshPublicKeyParser.setPublicKey("foobar");
       assertThat(sshPublicKeyParser.getFingerprint(), equalTo(null));
       assertThat(sshPublicKeyParser.getComment(), equalTo(null));
       assertThat(sshPublicKeyParser.getKeyLength(), equalTo(0));
     });
 
     it("should return null when given an invalid format", () -> {
-      SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser(
+      SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser();
+      sshPublicKeyParser.setPublicKey(
           "AAAAB3NzaC1yc2EAAAADAQABAAABAQDKGE4+UYSH1Op/vBLg+7pveOtiZqZQK4RVnQlRsttVelIZM"
               + "n8iafQQxv2xRqb2/np+9ErsTqby+9ninr8E4mxgWCs3Ew/K7Rnuzg9EEyfypB76cSzHZHHt"
               + "k9j2qejwkZwTrBvRV4NA7irAqX5s6v+tKa/xX0PwB1UhLPJ3Z1yb4oEaAmAv/TAGbrKX7Ql"
@@ -42,7 +45,8 @@ public class SshPublicKeyParserTest {
     });
 
     it("should return null when given another invalid format", () -> {
-      SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser("          ");
+      SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser();
+      sshPublicKeyParser.setPublicKey("          ");
       assertThat(sshPublicKeyParser.getFingerprint(), equalTo(null));
       assertThat(sshPublicKeyParser.getComment(), equalTo(null));
       assertThat(sshPublicKeyParser.getKeyLength(), equalTo(0));
@@ -50,7 +54,8 @@ public class SshPublicKeyParserTest {
 
     describe("when the key is missing a valid prefix", () -> {
       it("should return null", () -> {
-        SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser("invalid");
+        SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser();
+        sshPublicKeyParser.setPublicKey("invalid");
 
         assertThat(sshPublicKeyParser.getFingerprint(), equalTo(null));
         assertThat(sshPublicKeyParser.getComment(), equalTo(null));
@@ -60,7 +65,8 @@ public class SshPublicKeyParserTest {
 
     describe("when the key is not valid base64", () -> {
       it("should return null", () -> {
-        SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser("ssh-rsa so=invalid");
+        SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser();
+        sshPublicKeyParser.setPublicKey("ssh-rsa so=invalid");
 
         assertThat(sshPublicKeyParser.getFingerprint(), equalTo(null));
         assertThat(sshPublicKeyParser.getComment(), equalTo(null));
@@ -70,7 +76,8 @@ public class SshPublicKeyParserTest {
 
     describe("when the key is base64-encoded but invalid", () -> {
       it("should return null", () -> {
-        SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser(
+        SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser();
+        sshPublicKeyParser.setPublicKey(
             "as qwe0qwe qwe qwe qweqwe das"
         );
 
@@ -82,26 +89,36 @@ public class SshPublicKeyParserTest {
 
     describe("#getKeyLength", () -> {
       it("should return the length of the public key (when no comment)", () -> {
-        assertThat(new SshPublicKeyParser(SSH_PUBLIC_KEY_4096).getKeyLength(), equalTo(4096));
+        final SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser();
+        sshPublicKeyParser.setPublicKey(SSH_PUBLIC_KEY_4096);
+        assertThat(
+            sshPublicKeyParser.getKeyLength(), equalTo(4096));
       });
 
       it("should still return the length when there is a comment", () -> {
+        final SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser();
+        sshPublicKeyParser.setPublicKey(SSH_PUBLIC_KEY_4096_WITH_COMMENT);
         assertThat(
-            new SshPublicKeyParser(SSH_PUBLIC_KEY_4096_WITH_COMMENT).getKeyLength(),
-            equalTo(4096));
+            sshPublicKeyParser.getKeyLength(), equalTo(4096));
       });
     });
 
     describe("#getComment", () -> {
       it("should return a comment when there is one", () -> {
+        final SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser();
+        sshPublicKeyParser.setPublicKey(SSH_PUBLIC_KEY_4096_WITH_COMMENT);
+
         assertThat(
-            new SshPublicKeyParser(SSH_PUBLIC_KEY_4096_WITH_COMMENT).getComment(),
+            sshPublicKeyParser.getComment(),
             equalTo("dan@foo"));
       });
 
       it("should return a empty string when there is none", () -> {
+        final SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser();
+        sshPublicKeyParser.setPublicKey(SSH_PUBLIC_KEY_4096);
+
         assertThat(
-            new SshPublicKeyParser(SSH_PUBLIC_KEY_4096).getComment(),
+            sshPublicKeyParser.getComment(),
             equalTo(""));
       });
 
@@ -118,7 +135,10 @@ public class SshPublicKeyParserTest {
             + "ab5pvX/E4RX0HsRTLzu6nAZWVGmwrYf7iRA5UzdnAaajXSlxtk4kNtActSCtmMc+EHkLkQ"
             + "== comment with spaces";
 
-        assertThat(new SshPublicKeyParser(publicKeyWithSpacesInComment).getComment(),
+        final SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser();
+        sshPublicKeyParser.setPublicKey(publicKeyWithSpacesInComment);
+
+        assertThat(sshPublicKeyParser.getComment(),
             equalTo("comment with spaces"));
       });
     });
@@ -130,16 +150,21 @@ public class SshPublicKeyParserTest {
           + "/TAGbrKX7QlHc0TLjjkIIA/fAiD7NFOBaQVaSWvL+SBfgBRbxQ4QXluPF9uOX6XkcgXkn524SrqBR"
           + "5BBT01WIzEreZzmGlZQMWR1wnO7j7ogubinwulZkVLf/ufX68I2+6sIlFELelKcFMbzgOshcQj6o/"
           + "XaswSMUH4UR";
-
       it("should compute SHA-256 fingerprint from the public key", () -> {
-        assertThat(new SshPublicKeyParser(validSshPublicKey).getFingerprint(),
+        final SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser();
+        sshPublicKeyParser.setPublicKey(validSshPublicKey);
+
+        assertThat(sshPublicKeyParser.getFingerprint(),
             equalTo("Ngft7Y3Aap0RoLTVAaOzQE1KXz1wo3bpzz4k9KV7TqA"));
       });
 
       describe("when the key has carriage returns in it", () -> {
         it("should compute SHA-256 fingerprint from the public key", () -> {
+          final SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser();
+          sshPublicKeyParser.setPublicKey(validSshPublicKey + '\n');
+
           assertThat(
-              new SshPublicKeyParser(validSshPublicKey + '\n').getFingerprint(),
+              sshPublicKeyParser.getFingerprint(),
               equalTo("Ngft7Y3Aap0RoLTVAaOzQE1KXz1wo3bpzz4k9KV7TqA")
           );
         });
@@ -152,8 +177,10 @@ public class SshPublicKeyParserTest {
             + "1yb4oEaAmAv/TAGbrKX7QlHc0TLjjkIIA/fAiD7NFOBaQVaSWvL+SBfgBRbxQ4QXluPF9uOX6Xkcg"
             + "Xkn524SrqBR5BBT01WIzEreZzmGlZQMWR1wnO7j7ogubinwulZkVLf/ufX68I2+6sIlFELelKcFMb"
             + "zgOshcQj6o/XaswSMUH4UR    bob@example.com";
+        final SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser();
+        sshPublicKeyParser.setPublicKey(sshPublicKeyWithComment);
 
-        assertThat(new SshPublicKeyParser(sshPublicKeyWithComment).getFingerprint(),
+        assertThat(sshPublicKeyParser.getFingerprint(),
             equalTo("Ngft7Y3Aap0RoLTVAaOzQE1KXz1wo3bpzz4k9KV7TqA"));
       });
     });

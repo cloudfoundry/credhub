@@ -18,7 +18,13 @@ public class SshPublicKeyParser {
   private Base64.Encoder encoder = Base64.getEncoder().withoutPadding();
   private Base64.Decoder decoder = Base64.getDecoder();
 
-  public SshPublicKeyParser(String publicKey) {
+  public SshPublicKeyParser() {}
+
+  public void setPublicKey(String publicKey) {
+    if (this.publicKey != null) {
+      return;
+    }
+
     this.publicKey = publicKey != null ? publicKey.trim() : null;
     parsePublicKey();
   }

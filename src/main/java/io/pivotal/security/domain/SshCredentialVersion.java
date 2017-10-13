@@ -6,11 +6,17 @@ import io.pivotal.security.util.SshPublicKeyParser;
 
 public class SshCredentialVersion extends CredentialVersion<SshCredentialVersion> {
 
+  private final SshPublicKeyParser parser;
   private SshCredentialVersionData delegate;
 
   public SshCredentialVersion(SshCredentialVersionData delegate) {
+    this(delegate, new SshPublicKeyParser());
+  }
+
+  public SshCredentialVersion(SshCredentialVersionData delegate, SshPublicKeyParser keyParser) {
     super(delegate);
     this.delegate = delegate;
+    this.parser = keyParser;
   }
 
   public SshCredentialVersion(String name) {
@@ -38,7 +44,7 @@ public class SshCredentialVersion extends CredentialVersion<SshCredentialVersion
   }
 
   public String getPrivateKey() {
-      return (String) super.getValue();
+    return (String) super.getValue();
   }
 
   public SshCredentialVersion setPrivateKey(String privateKey) {
@@ -53,21 +59,23 @@ public class SshCredentialVersion extends CredentialVersion<SshCredentialVersion
     this.setPrivateKey(decryptedValue);
   }
 
-
   @Override
   public String getCredentialType() {
     return delegate.getCredentialType();
   }
 
   public int getKeyLength() {
-    return new SshPublicKeyParser(getPublicKey()).getKeyLength();
+    parser.setPublicKey(getPublicKey());
+    return parser.getKeyLength();
   }
 
   public String getComment() {
-    return new SshPublicKeyParser(getPublicKey()).getComment();
+    parser.setPublicKey(getPublicKey());
+    return parser.getComment();
   }
 
   public String getFingerprint() {
-    return new SshPublicKeyParser(getPublicKey()).getFingerprint();
+    parser.setPublicKey(getPublicKey());
+    return parser.getFingerprint();
   }
 }
