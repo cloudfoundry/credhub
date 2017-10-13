@@ -65,7 +65,6 @@ public class RequestHelper {
         .content(content);
 
     String response = mockMvc.perform(post)
-        .andDo(print())
         .andExpect(status().isOk())
         .andReturn().getResponse().getContentAsString();
     return response;
@@ -92,7 +91,32 @@ public class RequestHelper {
         .content(content);
 
     String response = mockMvc.perform(post)
-        .andDo(print())
+        .andExpect(status().isOk())
+        .andReturn().getResponse().getContentAsString();
+    return response;
+  }
+
+  public static String generateSsh(MockMvc mockMvc, String credentialName, String mode, Integer length)
+      throws Exception {
+    Map<String, Object> passwordRequestBody = new HashMap() {
+      {
+        put("name", credentialName);
+        put("type", "ssh");
+        put("mode", mode);
+      }
+    };
+
+    if (length != null) {
+      passwordRequestBody.put("parameters", ImmutableMap.of("key_length", length));
+    }
+    String content = JsonTestHelper.serializeToString(passwordRequestBody);
+    MockHttpServletRequestBuilder post = post("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(content);
+
+    String response = mockMvc.perform(post)
         .andExpect(status().isOk())
         .andReturn().getResponse().getContentAsString();
     return response;

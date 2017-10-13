@@ -2,6 +2,7 @@ package io.pivotal.security.domain;
 
 import io.pivotal.security.credential.RsaCredentialValue;
 import io.pivotal.security.entity.RsaCredentialVersionData;
+import io.pivotal.security.request.GenerationParameters;
 
 public class RsaCredentialVersion extends CredentialVersion<RsaCredentialVersion> {
 
@@ -54,6 +55,11 @@ public class RsaCredentialVersion extends CredentialVersion<RsaCredentialVersion
   public void rotate() {
     String decryptedValue = this.getPrivateKey();
     this.setPrivateKey(decryptedValue);
+  }
+
+  @Override
+  public boolean matchesGenerationParameters(GenerationParameters generationParameters) {
+    return false;
   }
 
 

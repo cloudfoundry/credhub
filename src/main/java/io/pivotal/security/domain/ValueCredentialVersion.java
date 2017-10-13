@@ -2,6 +2,7 @@ package io.pivotal.security.domain;
 
 import io.pivotal.security.credential.StringCredentialValue;
 import io.pivotal.security.entity.ValueCredentialVersionData;
+import io.pivotal.security.request.GenerationParameters;
 
 public class ValueCredentialVersion extends CredentialVersion<ValueCredentialVersion> {
 
@@ -32,6 +33,11 @@ public class ValueCredentialVersion extends CredentialVersion<ValueCredentialVer
     }
 
     return super.setValue(value);
+  }
+
+  @Override
+  public boolean matchesGenerationParameters(GenerationParameters generationParameters) {
+    return false;
   }
 
   @Override

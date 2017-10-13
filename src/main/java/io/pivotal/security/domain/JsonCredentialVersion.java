@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import io.pivotal.security.credential.JsonCredentialValue;
 import io.pivotal.security.entity.JsonCredentialVersionData;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.request.GenerationParameters;
 import io.pivotal.security.util.JsonObjectMapper;
 
 import java.io.IOException;
@@ -57,6 +58,11 @@ public class JsonCredentialVersion extends CredentialVersion<JsonCredentialVersi
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  @Override
+  public boolean matchesGenerationParameters(GenerationParameters generationParameters) {
+    return false;
   }
 
   public JsonCredentialVersion setValue(Map<String, Object> value) {

@@ -15,7 +15,6 @@ import io.pivotal.security.exceptions.PermissionException;
 import io.pivotal.security.request.GenerationParameters;
 import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.PermissionOperation;
-import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.view.FindCredentialResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -62,18 +61,7 @@ public class PermissionedCredentialService {
   ) {
     final boolean isNewCredential = existingCredentialVersion == null;
 
-    boolean shouldWriteNewCredential;
-    if (isNewCredential) {
-      shouldWriteNewCredential = true;
-    } else if ("converge".equals(overwriteMode)) {
-      StringGenerationParameters existingGenerationParameters = existingCredentialVersion
-          .getGenerationParameters();
-
-      StringGenerationParameters newGenerationParameters = (StringGenerationParameters) generationParameters;
-      shouldWriteNewCredential = !(newGenerationParameters.equals(existingGenerationParameters));
-    } else {
-     shouldWriteNewCredential = "overwrite".equals(overwriteMode);
-    }
+    boolean shouldWriteNewCredential = shouldWriteNewCredential(existingCredentialVersion, generationParameters, overwriteMode, isNewCredential);
 
     writeSaveAuditRecord(credentialName, auditRecordParameters, shouldWriteNewCredential);
 
@@ -183,6 +171,18 @@ public class PermissionedCredentialService {
         existingCredentialVersion,
         generationParameters);
     return credentialVersionDataService.save(newVersion);
+  }
+
+  private boolean shouldWriteNewCredential(CredentialVersion existingCredentialVersion, GenerationParameters generationParameters, String overwriteMode, boolean isNewCredential) {
+    boolean shouldWriteNewCredential;
+    if (isNewCredential) {
+      shouldWriteNewCredential = true;
+    } else if ("converge".equals(overwriteMode)) {
+      shouldWriteNewCredential = !existingCredentialVersion.matchesGenerationParameters(generationParameters);
+    } else {
+      shouldWriteNewCredential = "overwrite".equals(overwriteMode);
+    }
+    return shouldWriteNewCredential;
   }
 
   private void validateCredentialSave(String credentialName, String type, List<PermissionEntry> accessControlEntries, CredentialVersion existingCredentialVersion) {

@@ -1,6 +1,7 @@
 package io.pivotal.security.util;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;

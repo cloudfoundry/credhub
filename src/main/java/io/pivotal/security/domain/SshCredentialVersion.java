@@ -2,6 +2,8 @@ package io.pivotal.security.domain;
 
 import io.pivotal.security.credential.SshCredentialValue;
 import io.pivotal.security.entity.SshCredentialVersionData;
+import io.pivotal.security.request.GenerationParameters;
+import io.pivotal.security.request.SshGenerationParameters;
 import io.pivotal.security.util.SshPublicKeyParser;
 
 public class SshCredentialVersion extends CredentialVersion<SshCredentialVersion> {
@@ -57,6 +59,12 @@ public class SshCredentialVersion extends CredentialVersion<SshCredentialVersion
   public void rotate() {
     String decryptedValue = this.getPrivateKey();
     this.setPrivateKey(decryptedValue);
+  }
+
+  @Override
+  public boolean matchesGenerationParameters(GenerationParameters generationParameters) {
+    final SshGenerationParameters parameters = (SshGenerationParameters) generationParameters;
+    return parameters.getKeyLength() == getKeyLength() && parameters.getSshComment() == getComment();
   }
 
   @Override

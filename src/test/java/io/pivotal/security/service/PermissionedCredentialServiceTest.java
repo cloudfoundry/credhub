@@ -450,11 +450,8 @@ public class PermissionedCredentialServiceTest {
         .thenReturn(new PasswordCredentialVersion().setEncryptor(encryptor));
     final PasswordCredentialVersion newVersion = new PasswordCredentialVersion();
 
-    StringGenerationParameters existingGenerationParameters = new StringGenerationParameters();
-    existingGenerationParameters.setLength(20);
-
     CredentialVersion originalCredentialVersion = mock(CredentialVersion.class);
-    when(originalCredentialVersion.getGenerationParameters()).thenReturn(existingGenerationParameters);
+    when(originalCredentialVersion.matchesGenerationParameters(generationParameters)).thenReturn(true);
 
     when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(originalCredentialVersion);
     when(originalCredentialVersion.getCredentialType()).thenReturn("password");
@@ -464,13 +461,13 @@ public class PermissionedCredentialServiceTest {
         CREDENTIAL_NAME,
         credentialValue,
         originalCredentialVersion,
-        existingGenerationParameters)).thenReturn(newVersion);
+        generationParameters)).thenReturn(newVersion);
 
     subject.save(
         originalCredentialVersion, CREDENTIAL_NAME,
         "password",
         credentialValue,
-        existingGenerationParameters,
+        generationParameters,
         accessControlEntries,
         "converge",
         auditRecordParameters
@@ -485,11 +482,8 @@ public class PermissionedCredentialServiceTest {
         .thenReturn(new PasswordCredentialVersion().setEncryptor(encryptor));
     final PasswordCredentialVersion newVersion = new PasswordCredentialVersion();
 
-    StringGenerationParameters existingGenerationParameters = new StringGenerationParameters();
-    existingGenerationParameters.setLength(20);
-
     CredentialVersion originalCredentialVersion = mock(CredentialVersion.class);
-    when(originalCredentialVersion.getGenerationParameters()).thenReturn(existingGenerationParameters);
+    when(originalCredentialVersion.matchesGenerationParameters(generationParameters)).thenReturn(false);
 
     when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(originalCredentialVersion);
     when(originalCredentialVersion.getCredentialType()).thenReturn("password");

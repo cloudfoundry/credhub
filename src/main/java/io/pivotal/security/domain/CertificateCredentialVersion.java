@@ -2,6 +2,7 @@ package io.pivotal.security.domain;
 
 import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.entity.CertificateCredentialVersionData;
+import io.pivotal.security.request.GenerationParameters;
 import io.pivotal.security.util.CertificateReader;
 import org.apache.commons.lang3.StringUtils;
 
@@ -87,5 +88,11 @@ public class CertificateCredentialVersion extends CredentialVersion<CertificateC
   public void rotate() {
     String decryptedPrivateKey = this.getPrivateKey();
     this.setPrivateKey(decryptedPrivateKey);
+  }
+
+  @Override
+  public boolean matchesGenerationParameters(GenerationParameters generationParameters) {
+
+    return false;
   }
 }

@@ -3,6 +3,7 @@ package io.pivotal.security.domain;
 import io.pivotal.security.credential.StringCredentialValue;
 import io.pivotal.security.entity.EncryptedValue;
 import io.pivotal.security.entity.PasswordCredentialVersionData;
+import io.pivotal.security.request.GenerationParameters;
 import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.util.JsonObjectMapper;
 import org.springframework.util.Assert;
@@ -93,6 +94,11 @@ public class PasswordCredentialVersion extends CredentialVersion<PasswordCredent
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  @Override
+  public boolean matchesGenerationParameters(GenerationParameters generationParameters) {
+    return generationParameters.equals(getGenerationParameters());
   }
 
   @Override

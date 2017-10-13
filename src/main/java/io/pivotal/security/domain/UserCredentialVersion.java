@@ -3,6 +3,7 @@ package io.pivotal.security.domain;
 import io.pivotal.security.credential.UserCredentialValue;
 import io.pivotal.security.entity.EncryptedValue;
 import io.pivotal.security.entity.UserCredentialVersionData;
+import io.pivotal.security.request.GenerationParameters;
 import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.util.JsonObjectMapper;
 
@@ -118,5 +119,10 @@ public class UserCredentialVersion extends CredentialVersion<UserCredentialVersi
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  @Override
+  public boolean matchesGenerationParameters(GenerationParameters generationParameters) {
+    return generationParameters.equals(getGenerationParameters());
   }
 }
