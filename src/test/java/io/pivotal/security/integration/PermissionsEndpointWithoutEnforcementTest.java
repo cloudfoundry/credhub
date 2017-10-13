@@ -84,7 +84,7 @@ public class PermissionsEndpointWithoutEnforcementTest {
         .apply(springSecurity())
         .build();
 
-    setPassword(mockMvc, credentialName, "testpassword");
+    setPassword(mockMvc, credentialName, "testpassword", "no-overwrite");
 
     auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
   }

@@ -2,6 +2,8 @@ package io.pivotal.security.integration;
 
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.util.DatabaseProfileResolver;
+import org.json.JSONObject;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +16,10 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import static io.pivotal.security.helper.RequestHelper.setPassword;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -34,13 +39,16 @@ public class CredentialSetTest {
   private MockMvc mockMvc;
   private Object caCertificate;
 
-  @Test
-  public void rsaCredentialCanBeSetWithoutPrivateKey() throws Exception {
+  @Before
+  public void setUp() {
     mockMvc = MockMvcBuilders
         .webAppContextSetup(webApplicationContext)
         .apply(springSecurity())
         .build();
+  }
 
+  @Test
+  public void rsaCredentialCanBeSetWithoutPrivateKey() throws Exception {
     MockHttpServletRequestBuilder setRsaRequest = put("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
@@ -62,5 +70,25 @@ public class CredentialSetTest {
         .andReturn().getResponse()
         .getContentAsString();
 
+  }
+
+  @Test
+  public void credentialCanBeOverwrittenWhenModeIsSetToOverwriteInRequest() throws Exception {
+    setPassword(mockMvc, CREDENTIAL_NAME, "original-password", "no-overwrite");
+
+    String secondResponse = setPassword(mockMvc, CREDENTIAL_NAME, "new-password", "overwrite");
+    String updatedPassword = (new JSONObject(secondResponse)).getString("value");
+
+    assertThat(updatedPassword, equalTo("new-password"));
+  }
+
+  @Test
+  public void credentialNotOverwrittenWhenModeIsSetToNotOverwriteInRequest() throws Exception {
+    setPassword(mockMvc, CREDENTIAL_NAME, "original-password", "no-overwrite");
+
+    String secondResponse = setPassword(mockMvc, CREDENTIAL_NAME, "new-password", "no-overwrite");
+    String updatedPassword = (new JSONObject(secondResponse)).getString("value");
+
+    assertThat(updatedPassword, equalTo("original-password"));
   }
 }

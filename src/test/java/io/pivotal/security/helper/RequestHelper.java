@@ -28,20 +28,30 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 public class RequestHelper {
 
-  public static void setPassword(MockMvc mockMvc, String credentialName, String passwordValue)
+  public static String setPassword(MockMvc mockMvc, String credentialName, String passwordValue, String overwriteMode)
       throws Exception {
+    Map<String, Object> passwordRequestBody = new HashMap() {
+      {
+        put("name", credentialName);
+        put("type", "password");
+        put("value", passwordValue);
+        put("mode", overwriteMode);
+      }
+    };
+
+    String content = JsonTestHelper.serializeToString(passwordRequestBody);
+
     MockHttpServletRequestBuilder put = put("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        .content("{"
-            + "  \"name\": \"" + credentialName + "\","
-            + "  \"type\": \"password\","
-            + "  \"value\": \"" + passwordValue + "\""
-            + "}");
+        .content(content);
 
-    mockMvc.perform(put)
-        .andExpect(status().isOk());
+    String response = mockMvc.perform(put)
+        .andExpect(status().isOk())
+        .andDo(print())
+        .andReturn().getResponse().getContentAsString();
+    return response;
   }
 
   public static String generatePassword(MockMvc mockMvc, String credentialName, String mode, Integer length)
