@@ -3,6 +3,7 @@ package io.pivotal.security.domain;
 import io.pivotal.security.credential.RsaCredentialValue;
 import io.pivotal.security.entity.RsaCredentialVersionData;
 import io.pivotal.security.request.GenerationParameters;
+import io.pivotal.security.request.RsaGenerationParameters;
 
 public class RsaCredentialVersion extends CredentialVersion<RsaCredentialVersion> {
 
@@ -59,9 +60,8 @@ public class RsaCredentialVersion extends CredentialVersion<RsaCredentialVersion
 
   @Override
   public boolean matchesGenerationParameters(GenerationParameters generationParameters) {
-    return false;
+    return ((RsaGenerationParameters) generationParameters).getKeyLength() == getKeyLength();
   }
-
 
   @Override
   public String getCredentialType() {

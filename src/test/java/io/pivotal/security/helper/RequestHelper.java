@@ -122,6 +122,32 @@ public class RequestHelper {
     return response;
   }
 
+  public static String generateRsa(MockMvc mockMvc, String credentialName, String mode, Integer length)
+      throws Exception {
+    Map<String, Object> passwordRequestBody = new HashMap() {
+      {
+        put("name", credentialName);
+        put("type", "rsa");
+        put("mode", mode);
+      }
+    };
+
+    if (length != null) {
+      passwordRequestBody.put("parameters", ImmutableMap.of("key_length", length));
+    }
+    String content = JsonTestHelper.serializeToString(passwordRequestBody);
+    MockHttpServletRequestBuilder post = post("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(content);
+
+    String response = mockMvc.perform(post)
+        .andExpect(status().isOk())
+        .andReturn().getResponse().getContentAsString();
+    return response;
+  }
+
   public static String generateCa(MockMvc mockMvc, String caName, String token) throws Exception {
     MockHttpServletRequestBuilder caPost = post("/api/v1/data")
         .header("Authorization", "Bearer " + token)
