@@ -1,7 +1,6 @@
 package io.pivotal.security.handler;
 
 import io.pivotal.security.audit.EventAuditRecordParameters;
-import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.domain.JsonCredentialVersion;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
@@ -22,7 +21,6 @@ public class InterpolationHandler {
   }
 
   public Map<String, Object> interpolateCredHubReferences(
-      UserContext userContext,
       Map<String, Object> servicesMap,
       List<EventAuditRecordParameters> auditRecordParameters
   ) {
@@ -53,7 +51,6 @@ public class InterpolationHandler {
 
         CredentialVersion credentialVersion = credentialsHandler.getMostRecentCredentialVersion(
             credentialName,
-            userContext,
             auditRecordParameters
         );
 

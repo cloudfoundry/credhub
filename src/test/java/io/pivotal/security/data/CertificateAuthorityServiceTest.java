@@ -1,6 +1,7 @@
 package io.pivotal.security.data;
 
 import io.pivotal.security.auth.UserContext;
+import io.pivotal.security.auth.UserContextHolder;
 import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.domain.CertificateCredentialVersion;
 import io.pivotal.security.domain.PasswordCredentialVersion;
@@ -47,7 +48,9 @@ public class CertificateAuthorityServiceTest {
         .thenReturn(true);
 
     credentialVersionDataService = mock(CredentialVersionDataService.class);
-    certificateAuthorityService = new CertificateAuthorityService(credentialVersionDataService, permissionService);
+    UserContextHolder userContextHolder = new UserContextHolder();
+    userContextHolder.setUserContext(userContext);
+    certificateAuthorityService = new CertificateAuthorityService(credentialVersionDataService, permissionService, userContextHolder);
   }
 
   @Test
@@ -55,7 +58,7 @@ public class CertificateAuthorityServiceTest {
     when(credentialVersionDataService.findMostRecent(any(String.class))).thenReturn(null);
 
     try {
-      certificateAuthorityService.findMostRecent(userContext, "any ca name");
+      certificateAuthorityService.findMostRecent("any ca name");
     } catch (EntryNotFoundException pe) {
       assertThat(pe.getMessage(), equalTo("error.credential.invalid_access"));
     }
@@ -68,7 +71,7 @@ public class CertificateAuthorityServiceTest {
         .thenReturn(true);
 
     try {
-      certificateAuthorityService.findMostRecent(userContext, "any non-ca name");
+      certificateAuthorityService.findMostRecent("any non-ca name");
     } catch (ParameterizedValidationException pe) {
       assertThat(pe.getMessage(), equalTo("error.not_a_ca_name"));
     }
@@ -83,7 +86,7 @@ public class CertificateAuthorityServiceTest {
     when(certificateReader.isCa()).thenReturn(true);
     when(certificateCredential.getCertificate()).thenReturn(SELF_SIGNED_CA_CERT);
 
-    assertThat(certificateAuthorityService.findMostRecent(userContext, CREDENTIAL_NAME),
+    assertThat(certificateAuthorityService.findMostRecent(CREDENTIAL_NAME),
         samePropertyValuesAs(certificate));
   }
 
@@ -93,7 +96,7 @@ public class CertificateAuthorityServiceTest {
         .thenReturn(new PasswordCredentialVersion());
 
     try {
-      certificateAuthorityService.findMostRecent(userContext, "actually-a-password");
+      certificateAuthorityService.findMostRecent("actually-a-password");
     } catch (EntryNotFoundException pe) {
       assertThat(pe.getMessage(), equalTo("error.credential.invalid_access"));
     }
@@ -109,7 +112,7 @@ public class CertificateAuthorityServiceTest {
 
 
     try {
-      certificateAuthorityService.findMostRecent(userContext, CREDENTIAL_NAME);
+      certificateAuthorityService.findMostRecent(CREDENTIAL_NAME);
     } catch (ParameterizedValidationException pe) {
       assertThat(pe.getMessage(), equalTo("error.cert_not_ca"));
     }

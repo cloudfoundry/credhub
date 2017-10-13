@@ -3,6 +3,7 @@ package io.pivotal.security.controller.v1;
 import io.pivotal.security.audit.EventAuditLogService;
 import io.pivotal.security.audit.RequestUuid;
 import io.pivotal.security.auth.UserContext;
+import io.pivotal.security.auth.UserContextHolder;
 import io.pivotal.security.handler.InterpolationHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,14 +24,16 @@ public class InterpolationController {
   static final String API_V1 = "/api/v1";
   private final InterpolationHandler jsonInterpolationHandler;
   private final EventAuditLogService eventAuditLogService;
+  private final UserContextHolder userContextHolder;
 
   @Autowired
   InterpolationController(
       InterpolationHandler jsonInterpolationHandler,
-      EventAuditLogService eventAuditLogService
-  ) {
+      EventAuditLogService eventAuditLogService,
+      UserContextHolder userContextHolder) {
     this.jsonInterpolationHandler = jsonInterpolationHandler;
     this.eventAuditLogService = eventAuditLogService;
+    this.userContextHolder = userContextHolder;
   }
 
   @RequestMapping(method = RequestMethod.POST, path = "/interpolate")
@@ -40,9 +43,10 @@ public class InterpolationController {
       RequestUuid requestUuid,
       UserContext userContext
   ) {
-    return eventAuditLogService.auditEvents(requestUuid, userContext, (eventAuditRecordParametersList ->
+    userContextHolder.setUserContext(userContext);
+    return eventAuditLogService.auditEvents(requestUuid, (eventAuditRecordParametersList ->
           jsonInterpolationHandler
-            .interpolateCredHubReferences(userContext, requestBody, eventAuditRecordParametersList))
+            .interpolateCredHubReferences(requestBody, eventAuditRecordParametersList))
     );
   }
 }

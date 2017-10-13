@@ -112,13 +112,13 @@ public class CredentialsControllerGenerateTest {
     when(credentialGenerator.generateCredential(any(StringGenerationParameters.class)))
         .thenReturn(new StringCredentialValue(FAKE_PASSWORD_NAME));
 
-    when(sshGenerator.generateCredential(any(SshGenerationParameters.class), eq(userContext)))
+    when(sshGenerator.generateCredential(any(SshGenerationParameters.class)))
         .thenReturn(new SshCredentialValue(PUBLIC_KEY, PRIVATE_KEY, null));
 
-    when(rsaGenerator.generateCredential(any(RsaGenerationParameters.class), eq(userContext)))
+    when(rsaGenerator.generateCredential(any(RsaGenerationParameters.class)))
         .thenReturn(new RsaCredentialValue(PUBLIC_KEY, PRIVATE_KEY));
 
-    when(certificateGenerator.generateCredential(any(CertificateGenerationParameters.class), eq(userContext)))
+    when(certificateGenerator.generateCredential(any(CertificateGenerationParameters.class)))
         .thenReturn(new CertificateCredentialValue("ca_cert", CERT, PRIVATE_KEY, null));
   }
 

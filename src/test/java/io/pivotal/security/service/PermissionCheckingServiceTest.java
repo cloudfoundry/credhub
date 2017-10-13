@@ -1,6 +1,7 @@
 package io.pivotal.security.service;
 
 import io.pivotal.security.auth.UserContext;
+import io.pivotal.security.auth.UserContextHolder;
 import io.pivotal.security.data.PermissionDataService;
 import io.pivotal.security.entity.Credential;
 import io.pivotal.security.request.PermissionOperation;
@@ -38,8 +39,9 @@ public class PermissionCheckingServiceTest {
     when(userContext.getActor()).thenReturn("test-actor");
 
     permissionDataService = mock(PermissionDataService.class);
-
-    subject = new PermissionCheckingService(permissionDataService);
+    UserContextHolder userContextHolder = new UserContextHolder();
+    userContextHolder.setUserContext(userContext);
+    subject = new PermissionCheckingService(permissionDataService, userContextHolder);
   }
 
   @Test
@@ -97,7 +99,7 @@ public class PermissionCheckingServiceTest {
     initializeEnforcement(false);
 
     assertTrue(
-        subject.userAllowedToOperateOnActor(userContext, "test-actor"));
+        subject.userAllowedToOperateOnActor("test-actor"));
   }
 
   @Test
@@ -105,7 +107,7 @@ public class PermissionCheckingServiceTest {
     initializeEnforcement(true);
 
     assertTrue(
-        subject.userAllowedToOperateOnActor(userContext, "random-actor"));
+        subject.userAllowedToOperateOnActor("random-actor"));
   }
 
   @Test
@@ -113,7 +115,7 @@ public class PermissionCheckingServiceTest {
     initializeEnforcement(true);
 
     assertFalse(
-        subject.userAllowedToOperateOnActor(userContext, "test-actor"));
+        subject.userAllowedToOperateOnActor("test-actor"));
   }
 
   @Test
@@ -122,7 +124,7 @@ public class PermissionCheckingServiceTest {
     when(userContext.getActor()).thenReturn(null);
 
     assertFalse(
-        subject.userAllowedToOperateOnActor(userContext, "test-actor"));
+        subject.userAllowedToOperateOnActor("test-actor"));
   }
 
   @Test
@@ -130,7 +132,7 @@ public class PermissionCheckingServiceTest {
     initializeEnforcement(true);
     when(userContext.getActor()).thenReturn(null);
 
-    assertFalse(subject.userAllowedToOperateOnActor(userContext, null));
+    assertFalse(subject.userAllowedToOperateOnActor(null));
   }
 
   private void initializeEnforcement(boolean enabled) {

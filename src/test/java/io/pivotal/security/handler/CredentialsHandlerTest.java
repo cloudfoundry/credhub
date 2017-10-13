@@ -72,23 +72,23 @@ public class CredentialsHandlerTest {
 
   @Test
   public void deleteCredential_whenTheDeletionSucceeds_deletesTheCredential() {
-    when(permissionedCredentialService.delete(any(), eq(CREDENTIAL_NAME), eq(auditRecordParametersList))).thenReturn(true);
+    when(permissionedCredentialService.delete(eq(CREDENTIAL_NAME), eq(auditRecordParametersList))).thenReturn(true);
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, DELETE))
         .thenReturn(true);
 
-    subject.deleteCredential(CREDENTIAL_NAME, userContext, auditRecordParametersList);
+    subject.deleteCredential(CREDENTIAL_NAME, auditRecordParametersList);
 
-    verify(permissionedCredentialService, times(1)).delete(any(), eq(CREDENTIAL_NAME), eq(auditRecordParametersList));
+    verify(permissionedCredentialService, times(1)).delete(eq(CREDENTIAL_NAME), eq(auditRecordParametersList));
   }
 
   @Test
   public void deleteCredential_whenTheCredentialIsNotDeleted_throwsAnException() {
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, DELETE))
         .thenReturn(true);
-    when(permissionedCredentialService.delete(any(), eq(CREDENTIAL_NAME), eq(auditRecordParametersList))).thenReturn(false);
+    when(permissionedCredentialService.delete(eq(CREDENTIAL_NAME), eq(auditRecordParametersList))).thenReturn(false);
 
     try {
-      subject.deleteCredential(CREDENTIAL_NAME, userContext, auditRecordParametersList);
+      subject.deleteCredential(CREDENTIAL_NAME, auditRecordParametersList);
       fail("Should throw exception");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
@@ -98,12 +98,12 @@ public class CredentialsHandlerTest {
   @Test
   public void getAllCredentialVersions_whenTheCredentialExists_returnsADataResponse() {
     List<CredentialVersion> credentials = newArrayList(version1, version2);
-    when(permissionedCredentialService.findAllByName(any(UserContext.class), eq(CREDENTIAL_NAME), eq(auditRecordParametersList)))
+    when(permissionedCredentialService.findAllByName(eq(CREDENTIAL_NAME), eq(auditRecordParametersList)))
         .thenReturn(credentials);
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(true);
 
-    List<CredentialVersion> credentialVersionVersions = subject.getAllCredentialVersions(CREDENTIAL_NAME, userContext,
+    List<CredentialVersion> credentialVersionVersions = subject.getAllCredentialVersions(CREDENTIAL_NAME,
         auditRecordParametersList);
 
     assertThat(credentialVersionVersions, hasSize(2));
@@ -115,13 +115,13 @@ public class CredentialsHandlerTest {
 
   @Test
   public void getAllCredentialVersions_whenTheCredentialDoesNotExist_throwsException() {
-    when(permissionedCredentialService.findAllByName(any(UserContext.class), eq(CREDENTIAL_NAME), eq(auditRecordParametersList)))
+    when(permissionedCredentialService.findAllByName(eq(CREDENTIAL_NAME), eq(auditRecordParametersList)))
         .thenReturn(emptyList());
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(true);
 
     try {
-      subject.getAllCredentialVersions(CREDENTIAL_NAME, userContext, auditRecordParametersList
+      subject.getAllCredentialVersions(CREDENTIAL_NAME, auditRecordParametersList
       );
       fail("should throw exception");
     } catch (EntryNotFoundException e) {
@@ -131,13 +131,13 @@ public class CredentialsHandlerTest {
 
   @Test
   public void getMostRecentCredentialVersion_whenTheCredentialExists_returnsDataResponse() {
-    when(permissionedCredentialService.findNByName(any(UserContext.class), eq(CREDENTIAL_NAME), eq(1), eq(auditRecordParametersList)))
+    when(permissionedCredentialService.findNByName(eq(CREDENTIAL_NAME), eq(1), eq(auditRecordParametersList)))
         .thenReturn(Arrays.asList(version1));
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(true);
 
     CredentialVersion credentialVersion = subject.getMostRecentCredentialVersion(
-        CREDENTIAL_NAME, userContext,
+        CREDENTIAL_NAME,
         auditRecordParametersList
     );
 
@@ -148,7 +148,7 @@ public class CredentialsHandlerTest {
   @Test
   public void getMostRecentCredentialVersion_whenTheCredentialDoesNotExist_throwsException() {
     try {
-      subject.getMostRecentCredentialVersion(CREDENTIAL_NAME, userContext, newArrayList());
+      subject.getMostRecentCredentialVersion(CREDENTIAL_NAME, newArrayList());
       fail("should throw exception");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
@@ -161,7 +161,7 @@ public class CredentialsHandlerTest {
         .thenReturn(false);
 
     try {
-      subject.getMostRecentCredentialVersion(CREDENTIAL_NAME, userContext, newArrayList());
+      subject.getMostRecentCredentialVersion(CREDENTIAL_NAME, newArrayList());
       fail("should throw exception");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
@@ -170,12 +170,11 @@ public class CredentialsHandlerTest {
 
   @Test
   public void getCredentialVersion_whenTheVersionExists_returnsDataResponse() {
-    when(permissionedCredentialService.findByUuid(eq(userContext), eq(UUID_STRING), any(List.class)))
+    when(permissionedCredentialService.findByUuid(eq(UUID_STRING), any(List.class)))
         .thenReturn(version1);
 
     CredentialVersion credentialVersion = subject.getCredentialVersionByUUID(
         UUID_STRING,
-        userContext,
         newArrayList()
     );
     assertThat(credentialVersion.getName(), equalTo(CREDENTIAL_NAME));

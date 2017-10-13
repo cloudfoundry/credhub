@@ -2,7 +2,7 @@ package io.pivotal.security.service;
 
 import io.pivotal.security.audit.AuditingOperationCode;
 import io.pivotal.security.audit.EventAuditRecordParameters;
-import io.pivotal.security.auth.UserContext;
+import io.pivotal.security.auth.UserContextHolder;
 import io.pivotal.security.constants.CredentialType;
 import io.pivotal.security.credential.CredentialValue;
 import io.pivotal.security.data.CredentialVersionDataService;
@@ -35,20 +35,20 @@ import static io.pivotal.security.request.PermissionOperation.WRITE_ACL;
 public class PermissionedCredentialService {
   private final CredentialVersionDataService credentialVersionDataService;
 
-  private PermissionService permissionService;
   private final CredentialFactory credentialFactory;
   private PermissionCheckingService permissionCheckingService;
+  private final UserContextHolder userContextHolder;
 
   @Autowired
   public PermissionedCredentialService(
       CredentialVersionDataService credentialVersionDataService,
-      PermissionService permissionService,
       CredentialFactory credentialFactory,
-      PermissionCheckingService permissionCheckingService) {
+      PermissionCheckingService permissionCheckingService,
+      UserContextHolder userContextHolder) {
     this.credentialVersionDataService = credentialVersionDataService;
-    this.permissionService = permissionService;
     this.credentialFactory = credentialFactory;
     this.permissionCheckingService = permissionCheckingService;
+    this.userContextHolder = userContextHolder;
   }
 
   public CredentialVersion save(
@@ -58,10 +58,8 @@ public class PermissionedCredentialService {
       GenerationParameters generationParameters,
       List<PermissionEntry> accessControlEntries,
       String overwriteMode,
-      UserContext userContext,
       List<EventAuditRecordParameters> auditRecordParameters
   ) {
-
     final boolean isNewCredential = existingCredentialVersion == null;
 
     boolean shouldWriteNewCredential;
@@ -79,7 +77,7 @@ public class PermissionedCredentialService {
 
     writeSaveAuditRecord(credentialName, auditRecordParameters, shouldWriteNewCredential);
 
-    validateCredentialSave(credentialName, type, accessControlEntries, userContext, existingCredentialVersion);
+    validateCredentialSave(credentialName, type, accessControlEntries, existingCredentialVersion);
 
     if (!shouldWriteNewCredential) {
       return existingCredentialVersion;
@@ -94,27 +92,27 @@ public class PermissionedCredentialService {
     );
   }
 
-  public boolean delete(UserContext userContext, String credentialName, List<EventAuditRecordParameters> auditRecordParameters) {
+  public boolean delete(String credentialName, List<EventAuditRecordParameters> auditRecordParameters) {
     auditRecordParameters.add(new EventAuditRecordParameters(CREDENTIAL_DELETE, credentialName));
     if (!permissionCheckingService
-        .hasPermission(userContext.getActor(), credentialName, DELETE)) {
+        .hasPermission(userContextHolder.getUserContext().getActor(), credentialName, DELETE)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
     return credentialVersionDataService.delete(credentialName);
   }
 
-  public List<CredentialVersion> findAllByName(UserContext userContext, String credentialName, List<EventAuditRecordParameters> auditRecordParametersList) {
+  public List<CredentialVersion> findAllByName(String credentialName, List<EventAuditRecordParameters> auditRecordParametersList) {
     auditRecordParametersList.add(new EventAuditRecordParameters(CREDENTIAL_ACCESS, credentialName));
 
     if (!permissionCheckingService
-        .hasPermission(userContext.getActor(), credentialName, READ)) {
+        .hasPermission(userContextHolder.getUserContext().getActor(), credentialName, READ)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
     return credentialVersionDataService.findAllByName(credentialName);
   }
 
-  public List<CredentialVersion> findNByName(UserContext userContext, String credentialName, Integer numberOfVersions, List<EventAuditRecordParameters> auditRecordParametersList) {
+  public List<CredentialVersion> findNByName(String credentialName, Integer numberOfVersions, List<EventAuditRecordParameters> auditRecordParametersList) {
     auditRecordParametersList.add(new EventAuditRecordParameters(CREDENTIAL_ACCESS, credentialName));
 
     if (numberOfVersions < 0) {
@@ -122,14 +120,14 @@ public class PermissionedCredentialService {
     }
 
     if (!permissionCheckingService
-        .hasPermission(userContext.getActor(), credentialName, READ)) {
+        .hasPermission(userContextHolder.getUserContext().getActor(), credentialName, READ)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
     return credentialVersionDataService.findNByName(credentialName, numberOfVersions);
   }
 
-  public CredentialVersion findByUuid(UserContext userContext, String credentialUUID, List<EventAuditRecordParameters> auditRecordParameters) {
+  public CredentialVersion findByUuid(String credentialUUID, List<EventAuditRecordParameters> auditRecordParameters) {
     EventAuditRecordParameters eventAuditRecordParameters = new EventAuditRecordParameters(
         AuditingOperationCode.CREDENTIAL_ACCESS
     );
@@ -143,15 +141,15 @@ public class PermissionedCredentialService {
     eventAuditRecordParameters.setCredentialName(credentialName);
 
     if (!permissionCheckingService
-        .hasPermission(userContext.getActor(), credentialName, READ)) {
+        .hasPermission(userContextHolder.getUserContext().getActor(), credentialName, READ)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
     return credentialVersionDataService.findByUuid(credentialUUID);
   }
 
-  public List<String> findAllCertificateCredentialsByCaName(UserContext userContext, String caName) {
+  public List<String> findAllCertificateCredentialsByCaName(String caName) {
     if (!permissionCheckingService
-        .hasPermission(userContext.getActor(), caName, PermissionOperation.READ)) {
+        .hasPermission(userContextHolder.getUserContext().getActor(), caName, PermissionOperation.READ)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
@@ -187,13 +185,13 @@ public class PermissionedCredentialService {
     return credentialVersionDataService.save(newVersion);
   }
 
-  private void validateCredentialSave(String credentialName, String type, List<PermissionEntry> accessControlEntries, UserContext userContext, CredentialVersion existingCredentialVersion) {
+  private void validateCredentialSave(String credentialName, String type, List<PermissionEntry> accessControlEntries, CredentialVersion existingCredentialVersion) {
     if (existingCredentialVersion != null) {
-      verifyCredentialWritePermission(userContext, credentialName);
+      verifyCredentialWritePermission(credentialName);
     }
 
     if (existingCredentialVersion != null && accessControlEntries.size() > 0) {
-      verifyWritePermission(userContext, credentialName);
+      verifyWritePermission(credentialName);
     }
 
     if (existingCredentialVersion != null && !existingCredentialVersion.getCredentialType().equals(type)) {
@@ -202,22 +200,18 @@ public class PermissionedCredentialService {
   }
 
   private void writeSaveAuditRecord(String credentialName, List<EventAuditRecordParameters> auditRecordParameters, boolean shouldWriteNewEntity) {
-    AuditingOperationCode credentialOperationCode =
-        shouldWriteNewEntity ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS;
-    auditRecordParameters
-        .add(new EventAuditRecordParameters(credentialOperationCode, credentialName));
+    AuditingOperationCode credentialOperationCode = shouldWriteNewEntity ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS;
+    auditRecordParameters.add(new EventAuditRecordParameters(credentialOperationCode, credentialName));
   }
 
-  private void verifyCredentialWritePermission(UserContext userContext, String credentialName) {
-    if (!permissionCheckingService
-        .hasPermission(userContext.getActor(), credentialName, WRITE)) {
+  private void verifyCredentialWritePermission(String credentialName) {
+    if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), credentialName, WRITE)) {
       throw new PermissionException("error.credential.invalid_access");
     }
   }
 
-  private void verifyWritePermission(UserContext userContext, String credentialName) {
-    if (!permissionCheckingService
-        .hasPermission(userContext.getActor(), credentialName, WRITE_ACL)) {
+  private void verifyWritePermission(String credentialName) {
+    if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), credentialName, WRITE_ACL)) {
       throw new PermissionException("error.credential.invalid_access");
     }
   }

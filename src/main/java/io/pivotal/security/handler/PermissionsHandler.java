@@ -1,7 +1,6 @@
 package io.pivotal.security.handler;
 
 import io.pivotal.security.audit.EventAuditRecordParameters;
-import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.request.PermissionEntry;
@@ -28,24 +27,23 @@ public class PermissionsHandler {
     this.permissionedCredentialService = permissionedCredentialService;
   }
 
-  public PermissionsView getPermissions(String name, UserContext userContext, List<EventAuditRecordParameters> auditRecordParameters) {
+  public PermissionsView getPermissions(String name,
+      List<EventAuditRecordParameters> auditRecordParameters) {
     CredentialVersion credentialVersion = permissionedCredentialService.findMostRecent(name);
-    final List<PermissionEntry> permissions = permissionService.getPermissions(userContext, credentialVersion, auditRecordParameters, name);
+    final List<PermissionEntry> permissions = permissionService.getPermissions(credentialVersion, auditRecordParameters, name);
     return new PermissionsView(credentialVersion.getName(), permissions);
   }
 
   public void setPermissions(
       PermissionsRequest request,
-      UserContext userContext,
       List<EventAuditRecordParameters> auditRecordParameters
   ) {
     CredentialVersion credentialVersion = permissionedCredentialService.findMostRecent(request.getCredentialName());
-    permissionService.savePermissions(userContext, credentialVersion, request.getPermissions(), auditRecordParameters, false, request.getCredentialName());
+    permissionService.savePermissions(credentialVersion, request.getPermissions(), auditRecordParameters, false, request.getCredentialName());
   }
 
-  public void deletePermissionEntry(UserContext userContext,
-                                    String credentialName, String actor, List<EventAuditRecordParameters> auditRecordParameters) {
-    boolean successfullyDeleted = permissionService.deletePermissions(userContext, credentialName, actor, auditRecordParameters);
+  public void deletePermissionEntry(String credentialName, String actor, List<EventAuditRecordParameters> auditRecordParameters) {
+    boolean successfullyDeleted = permissionService.deletePermissions(credentialName, actor, auditRecordParameters);
     if (!successfullyDeleted) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }

@@ -1,6 +1,7 @@
 package io.pivotal.security.audit;
 
 import io.pivotal.security.auth.UserContext;
+import io.pivotal.security.auth.UserContextHolder;
 import io.pivotal.security.entity.AuthFailureAuditRecord;
 import io.pivotal.security.entity.EventAuditRecord;
 import io.pivotal.security.entity.RequestAuditRecord;
@@ -21,10 +22,17 @@ import static io.pivotal.security.auth.UserContext.AUTH_METHOD_UAA;
 @Component
 public class AuditLogFactory {
   private final CurrentTimeProvider currentTimeProvider;
+  private final UserContextHolder userContextHolder;
 
   @Autowired
-  AuditLogFactory(CurrentTimeProvider currentTimeProvider) {
+  AuditLogFactory(CurrentTimeProvider currentTimeProvider,
+      UserContextHolder userContextHolder) {
     this.currentTimeProvider = currentTimeProvider;
+    this.userContextHolder = userContextHolder;
+  }
+
+  public RequestAuditRecord createRequestAuditRecord(HttpServletRequest request, int requestStatus) {
+    return createRequestAuditRecord(request, userContextHolder.getUserContext(), requestStatus);
   }
 
   public RequestAuditRecord createRequestAuditRecord(HttpServletRequest request, UserContext userContext, int requestStatus) {

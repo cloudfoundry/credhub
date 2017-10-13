@@ -1,7 +1,6 @@
 package io.pivotal.security.handler;
 
 import io.pivotal.security.audit.EventAuditRecordParameters;
-import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.credential.CredentialValue;
 import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.request.BaseCredentialGenerateRequest;
@@ -32,12 +31,11 @@ public class RegenerateHandler {
 
   public CredentialView handleRegenerate(
       String credentialName,
-      UserContext userContext,
       List<EventAuditRecordParameters> auditRecordParameters
   ) {
     CredentialVersion existingCredentialVersion = credentialService.findMostRecent(credentialName);
     BaseCredentialGenerateRequest generateRequest = generationRequestGenerator.createGenerateRequest(existingCredentialVersion, credentialName, auditRecordParameters);
-    CredentialValue credentialValue = credentialGenerator.generate(generateRequest, userContext);
+    CredentialValue credentialValue = credentialGenerator.generate(generateRequest);
 
     final CredentialVersion credentialVersion = credentialService.save(
         existingCredentialVersion,
@@ -47,7 +45,6 @@ public class RegenerateHandler {
         generateRequest.getGenerationParameters(),
         generateRequest.getAdditionalPermissions(),
         generateRequest.getOverwriteMode(),
-        userContext,
         auditRecordParameters
     );
 
@@ -56,15 +53,15 @@ public class RegenerateHandler {
 
   public BulkRegenerateResults handleBulkRegenerate(
       String signerName,
-      UserContext userContext,
       List<EventAuditRecordParameters> auditRecordParameters
   ) {
     BulkRegenerateResults results = new BulkRegenerateResults();
-    List<String> certificateNames = credentialService.findAllCertificateCredentialsByCaName(userContext, signerName);
+    List<String> certificateNames = credentialService.findAllCertificateCredentialsByCaName(
+        signerName);
 
     final HashSet<String> credentialNamesSet = new HashSet<>(certificateNames);
     for (String name : credentialNamesSet) {
-      this.handleRegenerate(name, userContext,
+      this.handleRegenerate(name,
           auditRecordParameters);
     }
 

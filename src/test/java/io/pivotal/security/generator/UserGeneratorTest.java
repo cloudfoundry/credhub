@@ -41,7 +41,7 @@ public class UserGeneratorTest {
 
     when(usernameGenerator.generateCredential())
         .thenReturn(generatedUsername);
-    when(passwordGenerator.generateCredential(eq(passwordParameters), any()))
+    when(passwordGenerator.generateCredential(eq(passwordParameters)))
         .thenReturn(generatedPassword);
     when(cryptSaltFactory.generateSalt(generatedPassword.getStringCredential()))
         .thenReturn("fake-generated-salt");
@@ -50,7 +50,7 @@ public class UserGeneratorTest {
   @Test
   public void generateCredential_givenAUsernameAndPasswordParameters_generatesUserWithUsernameAndGeneratedPassword() {
     passwordParameters.setUsername("test-user");
-    final UserCredentialValue user = subject.generateCredential(passwordParameters, userContext);
+    final UserCredentialValue user = subject.generateCredential(passwordParameters);
 
     assertThat(user.getUsername(), equalTo("test-user"));
     assertThat(user.getPassword(), equalTo("fake-generated-password"));
@@ -59,7 +59,7 @@ public class UserGeneratorTest {
 
   @Test
   public void generateCredential_givenNoUsernameAndPasswordParameters_generatesUserWithGeneratedUsernameAndPassword() {
-    final UserCredentialValue user = subject.generateCredential(passwordParameters, userContext);
+    final UserCredentialValue user = subject.generateCredential(passwordParameters);
 
     assertThat(user.getUsername(), equalTo("fake-generated-username"));
     assertThat(user.getPassword(), equalTo("fake-generated-password"));

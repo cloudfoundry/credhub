@@ -1,6 +1,5 @@
 package io.pivotal.security.generator;
 
-import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.credential.StringCredentialValue;
 import io.pivotal.security.request.GenerationParameters;
 import io.pivotal.security.request.StringGenerationParameters;
@@ -19,7 +18,7 @@ public class PasswordCredentialGenerator implements CredentialGenerator<StringCr
   }
 
   @Override
-  public StringCredentialValue generateCredential(GenerationParameters stringGenerationParameters, UserContext userContext) {
+  public StringCredentialValue generateCredential(GenerationParameters stringGenerationParameters) {
     return passayStringCredentialGenerator.generateCredential((StringGenerationParameters) stringGenerationParameters);
   }
 }

@@ -2,6 +2,7 @@ package io.pivotal.security.service;
 
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
+import io.pivotal.security.auth.UserContextHolder;
 import io.pivotal.security.constants.CredentialType;
 import io.pivotal.security.credential.CredentialValue;
 import io.pivotal.security.data.CredentialVersionDataService;
@@ -59,9 +60,6 @@ public class PermissionedCredentialServiceTest {
   private CredentialVersionDataService credentialVersionDataService;
 
   @Mock
-  private PermissionService permissionService;
-
-  @Mock
   private PermissionCheckingService permissionCheckingService;
 
   @Mock
@@ -71,7 +69,6 @@ public class PermissionedCredentialServiceTest {
   private CredentialFactory credentialFactory;
 
   private PermissionedCredentialService subject;
-
   private CredentialVersion existingCredentialVersion;
   private UserContext userContext;
   private List<EventAuditRecordParameters> auditRecordParameters;
@@ -84,13 +81,16 @@ public class PermissionedCredentialServiceTest {
   public void setUp() throws Exception {
     initMocks(this);
 
+    userContext = mock(UserContext.class);
+    UserContextHolder userContextHolder = new UserContextHolder();
+    userContextHolder.setUserContext(userContext);
+
     subject = new PermissionedCredentialService(
         credentialVersionDataService,
-        permissionService,
         credentialFactory,
-        permissionCheckingService);
+        permissionCheckingService,
+        userContextHolder);
 
-    userContext = mock(UserContext.class);
     auditRecordParameters = new ArrayList<>();
     generationParameters = mock(StringGenerationParameters.class);
     credentialValue = mock(CredentialValue.class);
@@ -119,7 +119,6 @@ public class PermissionedCredentialServiceTest {
         generationParameters,
         accessControlEntries,
         "no-overwrite",
-        userContext,
         auditRecordParameters
     );
   }
@@ -134,7 +133,6 @@ public class PermissionedCredentialServiceTest {
         generationParameters,
         accessControlEntries,
         "no-overwrite",
-        userContext,
         auditRecordParameters
     );
 
@@ -155,7 +153,6 @@ public class PermissionedCredentialServiceTest {
         generationParameters,
         accessControlEntries,
         "overwrite",
-        userContext,
         auditRecordParameters
     );
 
@@ -169,7 +166,7 @@ public class PermissionedCredentialServiceTest {
     when(credentialVersionDataService.save(any(CredentialVersion.class)))
         .thenReturn(new PasswordCredentialVersion().setEncryptor(encryptor));
     when(permissionCheckingService
-        .userAllowedToOperateOnActor(userContext, "test-user"))
+        .userAllowedToOperateOnActor("test-user"))
         .thenReturn(true);
     when(permissionCheckingService
         .hasPermission(userContext.getActor(), CREDENTIAL_NAME, WRITE_ACL))
@@ -184,7 +181,6 @@ public class PermissionedCredentialServiceTest {
           generationParameters,
           accessControlEntries,
           "overwrite",
-          userContext,
           auditRecordParameters
       );
     } catch (InvalidPermissionOperationException e) {
@@ -202,7 +198,6 @@ public class PermissionedCredentialServiceTest {
         generationParameters,
         accessControlEntries,
         "no-overwrite",
-        userContext,
         auditRecordParameters
     );
 
@@ -221,7 +216,6 @@ public class PermissionedCredentialServiceTest {
         generationParameters,
         accessControlEntries,
         "no-overwrite",
-        userContext,
         auditRecordParameters
     );
   }
@@ -244,7 +238,6 @@ public class PermissionedCredentialServiceTest {
           generationParameters,
           accessControlEntries,
           "no-overwrite",
-          userContext,
           auditRecordParameters
       );
     } catch (PermissionException pe) {
@@ -265,7 +258,6 @@ public class PermissionedCredentialServiceTest {
         generationParameters,
         accessControlEntries,
         "overwrite",
-        userContext,
         auditRecordParameters
     );
 
@@ -292,7 +284,6 @@ public class PermissionedCredentialServiceTest {
         generationParameters,
         accessControlEntries,
         "overwrite",
-        userContext,
         auditRecordParameters
     );
 
@@ -306,7 +297,7 @@ public class PermissionedCredentialServiceTest {
         .thenReturn(false);
 
     try {
-      subject.delete(userContext, CREDENTIAL_NAME, auditRecordParameters);
+      subject.delete(CREDENTIAL_NAME, auditRecordParameters);
       fail("Should throw exception");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
@@ -323,7 +314,7 @@ public class PermissionedCredentialServiceTest {
         .thenReturn(false);
 
     try {
-      subject.findAllByName(userContext, CREDENTIAL_NAME, auditRecordParameters);
+      subject.findAllByName(CREDENTIAL_NAME, auditRecordParameters);
       fail("Should throw exception");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
@@ -340,7 +331,7 @@ public class PermissionedCredentialServiceTest {
         .thenReturn(false);
 
     try {
-      subject.findNByName(userContext, CREDENTIAL_NAME, 1, auditRecordParameters);
+      subject.findNByName(CREDENTIAL_NAME, 1, auditRecordParameters);
       fail("Should throw exception");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
@@ -357,7 +348,7 @@ public class PermissionedCredentialServiceTest {
         .thenReturn(true);
 
     try {
-      subject.findNByName(userContext, CREDENTIAL_NAME, -1, auditRecordParameters);
+      subject.findNByName(CREDENTIAL_NAME, -1, auditRecordParameters);
       fail("should throw exception");
     } catch (InvalidQueryParameterException e) {
       assertThat(e.getInvalidQueryParameter(), equalTo("versions"));
@@ -367,7 +358,7 @@ public class PermissionedCredentialServiceTest {
 
   @Test
   public void getCredentialVersion_whenTheVersionExists_setsCorrectAuditingParametersAndReturnsTheCredential() {
-    final CredentialVersion credentialVersionFound = subject.findByUuid(userContext, UUID_STRING, auditRecordParameters);
+    final CredentialVersion credentialVersionFound = subject.findByUuid(UUID_STRING, auditRecordParameters);
 
     assertThat(credentialVersionFound, equalTo(existingCredentialVersion));
 
@@ -383,7 +374,7 @@ public class PermissionedCredentialServiceTest {
         .thenReturn(null);
 
     try {
-      subject.findByUuid(userContext, UUID_STRING, auditRecordParameters);
+      subject.findByUuid(UUID_STRING, auditRecordParameters);
       fail("should throw exception");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
@@ -396,7 +387,7 @@ public class PermissionedCredentialServiceTest {
         .thenReturn(false);
 
     try {
-      subject.findByUuid(userContext, UUID_STRING, auditRecordParameters);
+      subject.findByUuid(UUID_STRING, auditRecordParameters);
       fail("should throw exception");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
@@ -417,7 +408,7 @@ public class PermissionedCredentialServiceTest {
         .thenReturn(expectedCertificates);
 
     List<String> foundCertificates = subject
-        .findAllCertificateCredentialsByCaName(userContext, CREDENTIAL_NAME);
+        .findAllCertificateCredentialsByCaName(CREDENTIAL_NAME);
 
     assertThat(foundCertificates, equalTo(expectedCertificates));
   }
@@ -428,7 +419,7 @@ public class PermissionedCredentialServiceTest {
         .thenReturn(false);
 
     try {
-      subject.findAllCertificateCredentialsByCaName(userContext, CREDENTIAL_NAME);
+      subject.findAllCertificateCredentialsByCaName(CREDENTIAL_NAME);
       fail("should throw exception");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
@@ -482,7 +473,6 @@ public class PermissionedCredentialServiceTest {
         existingGenerationParameters,
         accessControlEntries,
         "converge",
-        userContext,
         auditRecordParameters
     );
 
@@ -518,7 +508,6 @@ public class PermissionedCredentialServiceTest {
         generationParameters,
         accessControlEntries,
         "converge",
-        userContext,
         auditRecordParameters
     );
 

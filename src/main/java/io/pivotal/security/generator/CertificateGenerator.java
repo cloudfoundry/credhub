@@ -1,6 +1,5 @@
 package io.pivotal.security.generator;
 
-import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.data.CertificateAuthorityService;
 import io.pivotal.security.domain.CertificateGenerationParameters;
@@ -34,7 +33,7 @@ public class CertificateGenerator implements CredentialGenerator<CertificateCred
   }
 
   @Override
-  public CertificateCredentialValue generateCredential(GenerationParameters p, UserContext userContext) {
+  public CertificateCredentialValue generateCredential(GenerationParameters p) {
     CertificateGenerationParameters params = (CertificateGenerationParameters) p;
     try {
       KeyPair keyPair = keyGenerator.generateKeyPair(params.getKeyLength());
@@ -47,7 +46,7 @@ public class CertificateGenerator implements CredentialGenerator<CertificateCred
         cert = signedCertificateGenerator.getSelfSigned(keyPair, params);
       } else {
         caName = params.getCaName();
-        CertificateCredentialValue ca = certificateAuthorityService.findMostRecent(userContext, caName);
+        CertificateCredentialValue ca = certificateAuthorityService.findMostRecent(caName);
         caCertificate = ca.getCertificate();
 
         cert = signedCertificateGenerator.getSignedByIssuer(

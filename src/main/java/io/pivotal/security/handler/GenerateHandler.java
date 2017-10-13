@@ -1,7 +1,6 @@
 package io.pivotal.security.handler;
 
 import io.pivotal.security.audit.EventAuditRecordParameters;
-import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.credential.CredentialValue;
 import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.request.BaseCredentialGenerateRequest;
@@ -31,11 +30,10 @@ public class GenerateHandler {
 
   public CredentialView handle(
       BaseCredentialGenerateRequest generateRequest,
-      UserContext userContext,
       List<EventAuditRecordParameters> auditRecordParameters
   ) {
     CredentialVersion existingCredentialVersion = credentialService.findMostRecent(generateRequest.getName());
-    CredentialValue value = credentialGenerator.generate(generateRequest, userContext);
+    CredentialValue value = credentialGenerator.generate(generateRequest);
 
     final CredentialVersion credentialVersion = credentialService.save(
         existingCredentialVersion, generateRequest.getName(),
@@ -44,14 +42,13 @@ public class GenerateHandler {
         generateRequest.getGenerationParameters(),
         generateRequest.getAdditionalPermissions(),
         generateRequest.getOverwriteMode(),
-        userContext,
         auditRecordParameters
     );
 
     final boolean isNewCredential = existingCredentialVersion == null;
 
     if (isNewCredential || generateRequest.isOverwrite()) {
-      permissionService.savePermissions(userContext, credentialVersion, generateRequest.getAdditionalPermissions(), auditRecordParameters, isNewCredential, generateRequest.getName());
+      permissionService.savePermissions(credentialVersion, generateRequest.getAdditionalPermissions(), auditRecordParameters, isNewCredential, generateRequest.getName());
     }
 
     return CredentialView.fromEntity(credentialVersion);

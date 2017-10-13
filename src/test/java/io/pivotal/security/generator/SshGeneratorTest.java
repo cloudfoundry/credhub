@@ -42,7 +42,7 @@ public class SshGeneratorTest {
 
     describe("generateCredential", () -> {
       it("should return a generated credential", () -> {
-        final SshCredentialValue ssh = subject.generateCredential(new SshGenerationParameters(), userContext);
+        final SshCredentialValue ssh = subject.generateCredential(new SshGenerationParameters());
 
         verify(keyPairGeneratorMock).generateKeyPair(2048);
 
@@ -55,7 +55,7 @@ public class SshGeneratorTest {
         SshGenerationParameters sshGenerationParameters = new SshGenerationParameters();
         sshGenerationParameters.setKeyLength(4096);
 
-        subject.generateCredential(sshGenerationParameters, userContext);
+        subject.generateCredential(sshGenerationParameters);
 
         verify(keyPairGeneratorMock).generateKeyPair(4096);
       });
@@ -64,7 +64,7 @@ public class SshGeneratorTest {
         SshGenerationParameters sshGenerationParameters = new SshGenerationParameters();
         sshGenerationParameters.setSshComment("this is an ssh comment");
 
-        final SshCredentialValue ssh = subject.generateCredential(sshGenerationParameters, userContext);
+        final SshCredentialValue ssh = subject.generateCredential(sshGenerationParameters);
 
         String expectedPublicKey = CertificateFormatter.derOf((RSAPublicKey) keyPair.getPublic())
             + " this is an ssh comment";

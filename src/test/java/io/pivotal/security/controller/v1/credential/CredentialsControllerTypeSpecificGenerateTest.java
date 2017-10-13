@@ -3,7 +3,6 @@ package io.pivotal.security.controller.v1.credential;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.audit.EventAuditRecordParameters;
-import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.credential.CryptSaltFactory;
 import io.pivotal.security.credential.RsaCredentialValue;
@@ -305,19 +304,19 @@ public class CredentialsControllerTypeSpecificGenerateTest {
         .apply(springSecurity())
         .build();
 
-    when(passwordGenerator.generateCredential(any(GenerationParameters.class), any(UserContext.class)))
+    when(passwordGenerator.generateCredential(any(GenerationParameters.class)))
         .thenReturn(new StringCredentialValue(FAKE_PASSWORD));
 
-    when(certificateGenerator.generateCredential(any(GenerationParameters.class), any(UserContext.class)))
+    when(certificateGenerator.generateCredential(any(GenerationParameters.class)))
         .thenReturn(new CertificateCredentialValue(CA, CERTIFICATE, PRIVATE_KEY, null));
 
-    when(sshGenerator.generateCredential(any(GenerationParameters.class), any(UserContext.class)))
+    when(sshGenerator.generateCredential(any(GenerationParameters.class)))
         .thenReturn(new SshCredentialValue(PUBLIC_KEY, PRIVATE_KEY, null));
 
-    when(rsaGenerator.generateCredential(any(GenerationParameters.class), any(UserContext.class)))
+    when(rsaGenerator.generateCredential(any(GenerationParameters.class)))
         .thenReturn(new RsaCredentialValue(PUBLIC_KEY, PRIVATE_KEY));
 
-    when(userGenerator.generateCredential(any(GenerationParameters.class), any(UserContext.class)))
+    when(userGenerator.generateCredential(any(GenerationParameters.class)))
         .thenReturn(new UserCredentialValue(USERNAME, FAKE_PASSWORD, fakeSalt));
 
     auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);

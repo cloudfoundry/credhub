@@ -2,6 +2,7 @@ package io.pivotal.security.handler;
 
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
+import io.pivotal.security.auth.UserContextHolder;
 import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.data.CertificateAuthorityService;
 import io.pivotal.security.domain.CredentialVersion;
@@ -23,23 +24,25 @@ public class SetHandler {
   private PermissionedCredentialService credentialService;
   private PermissionService permissionService;
   private CertificateAuthorityService certificateAuthorityService;
+  private UserContextHolder userContextHolder;
 
   @Autowired
   public SetHandler(
       PermissionedCredentialService credentialService,
-      PermissionService permissionService, CertificateAuthorityService certificateAuthorityService
-  ) {
+      PermissionService permissionService, CertificateAuthorityService certificateAuthorityService,
+      UserContextHolder userContextHolder) {
     this.credentialService = credentialService;
     this.permissionService = permissionService;
     this.certificateAuthorityService = certificateAuthorityService;
+    this.userContextHolder = userContextHolder;
   }
 
   public CredentialView handle(
       BaseCredentialSetRequest setRequest,
-      UserContext userContext,
       List<EventAuditRecordParameters> auditRecordParameters
   ) {
     StringGenerationParameters generationParameters = null;
+    UserContext userContext = userContextHolder.getUserContext();
 
     if (setRequest instanceof PasswordSetRequest) {
       generationParameters = ((PasswordSetRequest) setRequest).getGenerationParameters();
@@ -49,7 +52,7 @@ public class SetHandler {
 
       String caName = certificateValue.getCaName();
       if (caName != null) {
-        certificateValue.setCa(certificateAuthorityService.findMostRecent(userContext, caName).getCertificate());
+        certificateValue.setCa(certificateAuthorityService.findMostRecent(caName).getCertificate());
       }
     }
 
@@ -62,14 +65,13 @@ public class SetHandler {
         generationParameters,
         setRequest.getAdditionalPermissions(),
         setRequest.getOverwriteMode(),
-        userContext,
         auditRecordParameters
     );
 
     final boolean isNewCredential = existingCredentialVersion == null;
 
     if (isNewCredential || setRequest.isOverwrite()) {
-      permissionService.savePermissions(userContext, credentialVersion, setRequest.getAdditionalPermissions(), auditRecordParameters, isNewCredential, setRequest.getName());
+      permissionService.savePermissions(credentialVersion, setRequest.getAdditionalPermissions(), auditRecordParameters, isNewCredential, setRequest.getName());
     }
 
     return CredentialView.fromEntity(credentialVersion);

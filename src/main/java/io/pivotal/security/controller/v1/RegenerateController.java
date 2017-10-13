@@ -3,6 +3,7 @@ package io.pivotal.security.controller.v1;
 import io.pivotal.security.audit.EventAuditLogService;
 import io.pivotal.security.audit.RequestUuid;
 import io.pivotal.security.auth.UserContext;
+import io.pivotal.security.auth.UserContextHolder;
 import io.pivotal.security.handler.RegenerateHandler;
 import io.pivotal.security.request.BulkRegenerateRequest;
 import io.pivotal.security.request.RegenerateRequest;
@@ -27,14 +28,16 @@ public class RegenerateController {
 
   private final EventAuditLogService eventAuditLogService;
   private RegenerateHandler regenerateHandler;
+  private UserContextHolder userContextHolder;
 
   @Autowired
   public RegenerateController(
       RegenerateHandler regenerateHandler,
-      EventAuditLogService eventAuditLogService
-  ) {
+      EventAuditLogService eventAuditLogService,
+      UserContextHolder userContextHolder) {
     this.regenerateHandler = regenerateHandler;
     this.eventAuditLogService = eventAuditLogService;
+    this.userContextHolder = userContextHolder;
   }
 
   @PostMapping(
@@ -46,10 +49,11 @@ public class RegenerateController {
       RequestUuid requestUuid,
       @RequestBody @Validated RegenerateRequest requestBody
   ) throws IOException {
+    userContextHolder.setUserContext(userContext);
     return eventAuditLogService
-        .auditEvents(requestUuid, userContext, (auditRecordParameters -> {
+        .auditEvents(requestUuid, (auditRecordParameters -> {
           return regenerateHandler
-              .handleRegenerate(requestBody.getName(), userContext,
+              .handleRegenerate(requestBody.getName(),
                   auditRecordParameters);
         }));
   }
@@ -63,10 +67,11 @@ public class RegenerateController {
       RequestUuid requestUuid,
       @RequestBody @Valid BulkRegenerateRequest requestBody
   ) throws IOException {
+    userContextHolder.setUserContext(userContext);
     return eventAuditLogService
-        .auditEvents(requestUuid, userContext, (auditRecordParameters -> {
+        .auditEvents(requestUuid, (auditRecordParameters -> {
           return regenerateHandler
-              .handleBulkRegenerate(requestBody.getSignedBy(), userContext,
+              .handleBulkRegenerate(requestBody.getSignedBy(),
                   auditRecordParameters);
         }));
   }

@@ -1,7 +1,7 @@
 package io.pivotal.security.service;
 
 import io.pivotal.security.audit.EventAuditRecordParameters;
-import io.pivotal.security.auth.UserContext;
+import io.pivotal.security.auth.UserContextHolder;
 import io.pivotal.security.data.PermissionDataService;
 import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.entity.Credential;
@@ -31,18 +31,25 @@ public class PermissionService {
 
   private PermissionDataService permissionDataService;
   private PermissionCheckingService permissionCheckingService;
+  private UserContextHolder userContextHolder;
 
   @Autowired
-  public PermissionService(PermissionDataService permissionDataService, PermissionCheckingService permissionCheckingService) {
+  public PermissionService(PermissionDataService permissionDataService,
+      PermissionCheckingService permissionCheckingService,
+      UserContextHolder userContextHolder) {
     this.permissionDataService = permissionDataService;
     this.permissionCheckingService = permissionCheckingService;
+    this.userContextHolder = userContextHolder;
   }
 
   public List<PermissionOperation> getAllowedOperationsForLogging(String credentialName, String actor) {
     return permissionDataService.getAllowedOperations(credentialName, actor);
   }
 
-  public void savePermissions(UserContext userContext, CredentialVersion credentialVersion, List<PermissionEntry> permissionEntryList, List<EventAuditRecordParameters> auditRecordParameters, boolean isNewCredential, String credentialName) {
+  public void savePermissions(CredentialVersion credentialVersion,
+      List<PermissionEntry> permissionEntryList,
+      List<EventAuditRecordParameters> auditRecordParameters, boolean isNewCredential,
+      String credentialName) {
     auditRecordParameters.addAll(createPermissionsEventAuditParameters(ACL_UPDATE, credentialName, permissionEntryList));
 
     if (credentialVersion == null) {
@@ -50,13 +57,13 @@ public class PermissionService {
     }
 
     for (PermissionEntry permissionEntry : permissionEntryList) {
-      if (!permissionCheckingService.userAllowedToOperateOnActor(userContext, permissionEntry.getActor())) {
+      if (!permissionCheckingService.userAllowedToOperateOnActor(permissionEntry.getActor())) {
         throw new InvalidPermissionOperationException("error.permission.invalid_update_operation");
       }
     }
 
     if (isNewCredential) {
-      final PermissionEntry permissionEntry = new PermissionEntry(userContext.getActor(), asList(READ, WRITE, DELETE, WRITE_ACL, READ_ACL));
+      final PermissionEntry permissionEntry = new PermissionEntry(userContextHolder.getUserContext().getActor(), asList(READ, WRITE, DELETE, WRITE_ACL, READ_ACL));
       permissionEntryList.add(permissionEntry);
       auditRecordParameters.addAll(createPermissionsEventAuditParameters(ACL_UPDATE, credentialName, asList(permissionEntry)));
     }
@@ -65,28 +72,29 @@ public class PermissionService {
       return;
     }
 
-    if (!permissionCheckingService.hasPermission(userContext.getActor(), credentialVersion.getName(), WRITE_ACL)) {
+    if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), credentialVersion.getName(), WRITE_ACL)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
     permissionDataService.savePermissions(credentialVersion.getCredential(), permissionEntryList);
   }
 
-  public List<PermissionEntry> getPermissions(UserContext userContext, CredentialVersion credentialVersion, List<EventAuditRecordParameters> auditRecordParameters, String name) {
+  public List<PermissionEntry> getPermissions(CredentialVersion credentialVersion, List<EventAuditRecordParameters> auditRecordParameters,
+      String name) {
     auditRecordParameters.add(new EventAuditRecordParameters(ACL_ACCESS, name));
 
     if (credentialVersion == null) {
       throw new EntryNotFoundException("error.resource_not_found");
     }
 
-    if (!permissionCheckingService.hasPermission(userContext.getActor(), credentialVersion.getName(), READ_ACL)) {
+    if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), credentialVersion.getName(), READ_ACL)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
     return getPermissions(credentialVersion.getCredential());
   }
 
-  public boolean deletePermissions(UserContext userContext, String credentialName, String actor, List<EventAuditRecordParameters> auditRecordParameters) {
+  public boolean deletePermissions(String credentialName, String actor, List<EventAuditRecordParameters> auditRecordParameters) {
     List<PermissionOperation> operationList = getAllowedOperationsForLogging(credentialName, actor);
 
     if (operationList.size() == 0) {
@@ -95,11 +103,11 @@ public class PermissionService {
       auditRecordParameters.addAll(createPermissionEventAuditRecordParameters(ACL_DELETE, credentialName, actor, operationList));
     }
     if (!permissionCheckingService
-        .hasPermission(userContext.getActor(), credentialName, WRITE_ACL)) {
+        .hasPermission(userContextHolder.getUserContext().getActor(), credentialName, WRITE_ACL)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
-    if (!permissionCheckingService.userAllowedToOperateOnActor(userContext, actor)) {
+    if (!permissionCheckingService.userAllowedToOperateOnActor(actor)) {
       throw new InvalidPermissionOperationException("error.permission.invalid_update_operation");
     }
 

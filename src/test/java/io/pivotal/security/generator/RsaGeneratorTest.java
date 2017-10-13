@@ -44,7 +44,7 @@ public class RsaGeneratorTest {
 
     describe("generateCredential", () -> {
       it("should return a generated credential", () -> {
-        final RsaCredentialValue rsa = subject.generateCredential(new RsaGenerationParameters(), userContext);
+        final RsaCredentialValue rsa = subject.generateCredential(new RsaGenerationParameters());
 
         verify(keyPairGenerator).generateKeyPair(2048);
 
@@ -56,7 +56,7 @@ public class RsaGeneratorTest {
         RsaGenerationParameters rsaGenerationParameters = new RsaGenerationParameters();
         rsaGenerationParameters.setKeyLength(4096);
 
-        subject.generateCredential(rsaGenerationParameters, userContext);
+        subject.generateCredential(rsaGenerationParameters);
 
         verify(keyPairGenerator).generateKeyPair(4096);
       });

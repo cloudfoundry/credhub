@@ -110,7 +110,7 @@ public class AuditInterceptorTest {
 
     doThrow(new RuntimeException("test"))
         .when(requestAuditRecordDataService).save(any(RequestAuditRecord.class));
-    when(auditLogFactory.createRequestAuditRecord(any(HttpServletRequest.class), any(UserContext.class), any(Integer.class)))
+    when(auditLogFactory.createRequestAuditRecord(any(HttpServletRequest.class), any(Integer.class)))
         .thenReturn(requestAuditRecord);
 
     try {

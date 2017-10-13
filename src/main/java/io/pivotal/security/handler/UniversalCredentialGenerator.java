@@ -1,6 +1,5 @@
 package io.pivotal.security.handler;
 
-import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.credential.CredentialValue;
 import io.pivotal.security.generator.CertificateGenerator;
 import io.pivotal.security.generator.CredentialGenerator;
@@ -35,8 +34,8 @@ class UniversalCredentialGenerator {
     credentialGenerators.put("certificate", certificateGenerator);
   }
 
-  public CredentialValue generate(BaseCredentialGenerateRequest generateRequest, UserContext userContext) {
+  public CredentialValue generate(BaseCredentialGenerateRequest generateRequest) {
     CredentialGenerator generator = credentialGenerators.get(generateRequest.getType());
-    return generator.generateCredential(generateRequest.getGenerationParameters(), userContext);
+    return generator.generateCredential(generateRequest.getGenerationParameters());
   }
 }

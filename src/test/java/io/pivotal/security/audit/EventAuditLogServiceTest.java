@@ -2,6 +2,7 @@ package io.pivotal.security.audit;
 
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.auth.UserContext;
+import io.pivotal.security.auth.UserContextHolder;
 import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.data.EventAuditRecordDataService;
 import io.pivotal.security.entity.EncryptedValue;
@@ -60,6 +61,9 @@ public class EventAuditLogServiceTest {
   private EventAuditLogService subject;
 
   @Autowired
+  private UserContextHolder userContextHolder;
+
+  @Autowired
   private EventAuditRecordRepository eventAuditRecordRepository;
 
   @Autowired
@@ -94,6 +98,7 @@ public class EventAuditLogServiceTest {
 
     mockOutCurrentTimeProvider(currentTimeProvider).accept(now.toEpochMilli());
     userContext = mockUserContext(true);
+    userContextHolder.setUserContext(userContext);
     requestUuid = new RequestUuid(UUID.randomUUID());
 
     entity = new ValueCredentialVersionData("keyName");
@@ -126,7 +131,6 @@ public class EventAuditLogServiceTest {
 
     subject.auditEvents(
         requestUuid,
-        userContext,
         eventAuditRecordParametersList -> {
           eventAuditRecordParametersList.add(parameters1);
           eventAuditRecordParametersList.add(parameters2);
@@ -155,7 +159,7 @@ public class EventAuditLogServiceTest {
     userContext = mockUserContext(false);
 
     try {
-      subject.auditEvents(requestUuid, userContext, eventAuditRecordParametersList -> {
+      subject.auditEvents(requestUuid, eventAuditRecordParametersList -> {
         eventAuditRecordParametersList.add(parameters1);
         eventAuditRecordParametersList.add(parameters2);
         return credentialVersionDataService.save(entity);
@@ -189,7 +193,7 @@ public class EventAuditLogServiceTest {
     userContext = mockUserContext(false);
 
     try {
-      subject.auditEvents(requestUuid, userContext, eventAuditRecordParametersList -> {
+      subject.auditEvents(requestUuid, eventAuditRecordParametersList -> {
         eventAuditRecordParametersList.add(parameters1);
         eventAuditRecordParametersList.add(parameters2);
         credentialVersionDataService.save(entity);
@@ -220,7 +224,7 @@ public class EventAuditLogServiceTest {
     );
 
     try {
-      subject.auditEvents(requestUuid, userContext, eventAuditRecordParametersList -> {
+      subject.auditEvents(requestUuid, eventAuditRecordParametersList -> {
         eventAuditRecordParametersList.add(parameters1);
         eventAuditRecordParametersList.add(parameters2);
         credentialVersionDataService.save(entity);

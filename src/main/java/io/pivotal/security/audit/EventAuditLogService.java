@@ -1,6 +1,6 @@
 package io.pivotal.security.audit;
 
-import io.pivotal.security.auth.UserContext;
+import io.pivotal.security.auth.UserContextHolder;
 import io.pivotal.security.data.EventAuditRecordDataService;
 import io.pivotal.security.entity.EventAuditRecord;
 import io.pivotal.security.exceptions.AuditSaveFailureException;
@@ -22,19 +22,20 @@ public class EventAuditLogService {
 
   private final EventAuditRecordDataService eventAuditRecordDataService;
   private final TransactionManagerDelegate transactionManager;
+  private final UserContextHolder userContextHolder;
 
   @Autowired
   EventAuditLogService(
       EventAuditRecordDataService eventAuditRecordDataService,
-      TransactionManagerDelegate transactionManager
-  ) {
+      TransactionManagerDelegate transactionManager,
+      UserContextHolder userContextHolder) {
     this.eventAuditRecordDataService = eventAuditRecordDataService;
     this.transactionManager = transactionManager;
+    this.userContextHolder = userContextHolder;
   }
 
   public <T> T auditEvents(
       RequestUuid requestUuid,
-      UserContext userContext,
       Function<List<EventAuditRecordParameters>, T> respondToRequestFunction
   ) {
     TransactionStatus transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
@@ -45,13 +46,12 @@ public class EventAuditLogService {
       success = true;
       return response;
     } finally {
-      writeAuditRecords(requestUuid, userContext, eventAuditRecordParametersList, success, transaction);
+      writeAuditRecords(requestUuid, eventAuditRecordParametersList, success, transaction);
     }
   }
 
   private void writeAuditRecords(
       RequestUuid requestUuid,
-      UserContext userContext,
       List<EventAuditRecordParameters> eventAuditRecordParametersList,
       boolean success,
       TransactionStatus transaction
@@ -65,7 +65,7 @@ public class EventAuditLogService {
       final UUID uuid = requestUuid.getUuid();
       final List<EventAuditRecord> eventAuditRecords = eventAuditRecordParametersList
           .stream()
-          .map(parameters -> createEventAuditRecord(parameters, userContext, uuid, success))
+          .map(parameters -> createEventAuditRecord(parameters, userContextHolder.getUserContext(), uuid, success))
           .collect(Collectors.toList());
       eventAuditRecordDataService.save(eventAuditRecords);
 

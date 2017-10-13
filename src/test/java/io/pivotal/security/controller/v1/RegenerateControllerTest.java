@@ -3,7 +3,6 @@ package io.pivotal.security.controller.v1;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.audit.EventAuditLogService;
 import io.pivotal.security.audit.RequestUuid;
-import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.handler.RegenerateHandler;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.Before;
@@ -59,20 +58,16 @@ public class RegenerateControllerTest {
   public void POST_regeneratesThePassword_andPersistsAnAuditEntry() throws Exception {
     mockMvc.perform(makeRegenerateRequest()).andDo(print()).andExpect(status().isOk());
 
-    Mockito.verify(regenerateHandler).handleRegenerate(eq("picard"), any(UserContext.class), any());
-    Mockito.verify(eventAuditLogService).auditEvents(any(RequestUuid.class), org.mockito.Matchers.argThat(
-        org.hamcrest.Matchers.hasProperty("userId", org.hamcrest.Matchers.equalTo("df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"))
-    ), any());
+    Mockito.verify(regenerateHandler).handleRegenerate(eq("picard"), any());
+    Mockito.verify(eventAuditLogService).auditEvents(any(RequestUuid.class), any());
   }
 
   @Test
   public void POST_withSignedBy_regeneratesAllCertificatesSignedByCA_andPersistsAnAuditEntry() throws Exception {
     mockMvc.perform(makeBulkRegenerateRequest()).andDo(print()).andExpect(status().isOk());
 
-    Mockito.verify(regenerateHandler).handleBulkRegenerate(eq("/some-ca"), any(UserContext.class), any());
-    Mockito.verify(eventAuditLogService).auditEvents(any(RequestUuid.class), org.mockito.Matchers.argThat(
-        org.hamcrest.Matchers.hasProperty("userId", org.hamcrest.Matchers.equalTo("df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"))
-    ), any());
+    Mockito.verify(regenerateHandler).handleBulkRegenerate(eq("/some-ca"), any());
+    Mockito.verify(eventAuditLogService).auditEvents(any(RequestUuid.class), any());
   }
 
   private MockHttpServletRequestBuilder makeRegenerateRequest() {

@@ -1,6 +1,5 @@
 package io.pivotal.security.generator;
 
-import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.credential.SshCredentialValue;
 import io.pivotal.security.request.GenerationParameters;
 import io.pivotal.security.request.SshGenerationParameters;
@@ -23,7 +22,7 @@ public class SshGenerator implements CredentialGenerator<SshCredentialValue> {
   }
 
   @Override
-  public SshCredentialValue generateCredential(GenerationParameters p, UserContext userContext) {
+  public SshCredentialValue generateCredential(GenerationParameters p) {
     SshGenerationParameters params = (SshGenerationParameters) p;
     try {
       final KeyPair keyPair = keyGenerator.generateKeyPair(params.getKeyLength());

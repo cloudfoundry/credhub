@@ -8,6 +8,7 @@ import io.pivotal.security.audit.EventAuditLogService;
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.audit.RequestUuid;
 import io.pivotal.security.auth.UserContext;
+import io.pivotal.security.auth.UserContextHolder;
 import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.exceptions.InvalidQueryParameterException;
 import io.pivotal.security.handler.CredentialsHandler;
@@ -63,6 +64,7 @@ public class CredentialsController {
   private final GenerateHandler generateHandler;
   private final RegenerateHandler regenerateHandler;
   private final CredentialsHandler credentialsHandler;
+  private final UserContextHolder userContextHolder;
 
   @Autowired
   public CredentialsController(PermissionedCredentialService credentialService,
@@ -71,8 +73,8 @@ public class CredentialsController {
       GenerateHandler generateHandler,
       RegenerateHandler regenerateHandler,
       CredentialsHandler credentialsHandler,
-      SetHandler setHandler
-  ) {
+      SetHandler setHandler,
+      UserContextHolder userContextHolder) {
     this.credentialService = credentialService;
     this.eventAuditLogService = eventAuditLogService;
     this.objectMapper = objectMapper;
@@ -80,6 +82,7 @@ public class CredentialsController {
     this.regenerateHandler = regenerateHandler;
     this.credentialsHandler = credentialsHandler;
     this.setHandler = setHandler;
+    this.userContextHolder = userContextHolder;
   }
 
   @RequestMapping(path = "", method = RequestMethod.POST)
@@ -87,6 +90,7 @@ public class CredentialsController {
   public CredentialView generate(InputStream inputStream,
                                  RequestUuid requestUuid,
                                  UserContext userContext) throws IOException {
+    userContextHolder.setUserContext(userContext);
     InputStream requestInputStream = new ByteArrayInputStream(ByteStreams.toByteArray(inputStream));
     try {
       return auditedHandlePostRequest(requestInputStream, requestUuid, userContext
@@ -107,6 +111,7 @@ public class CredentialsController {
                             RequestUuid requestUuid,
                             UserContext userContext) {
     requestBody.validate();
+    userContextHolder.setUserContext(userContext);
 
     try {
       return auditedHandlePutRequest(requestBody, requestUuid, userContext
@@ -126,12 +131,13 @@ public class CredentialsController {
       RequestUuid requestUuid,
       UserContext userContext
   ) {
+    userContextHolder.setUserContext(userContext);
     if (StringUtils.isEmpty(credentialName)) {
       throw new InvalidQueryParameterException("error.missing_query_parameter", "name");
     }
 
-    eventAuditLogService.auditEvents(requestUuid, userContext, (eventAuditRecordParametersList) -> {
-      credentialsHandler.deleteCredential(credentialName, userContext, eventAuditRecordParametersList);
+    eventAuditLogService.auditEvents(requestUuid, (eventAuditRecordParametersList) -> {
+      credentialsHandler.deleteCredential(credentialName, eventAuditRecordParametersList);
       return true;
     });
   }
@@ -142,9 +148,10 @@ public class CredentialsController {
       @PathVariable String id,
       RequestUuid requestUuid,
       UserContext userContext) {
-    return eventAuditLogService.auditEvents(requestUuid, userContext, eventAuditRecordParametersList -> {
+    userContextHolder.setUserContext(userContext);
+    return eventAuditLogService.auditEvents(requestUuid, eventAuditRecordParametersList -> {
       CredentialVersion credentialVersionVersion = credentialsHandler
-          .getCredentialVersionByUUID(id, userContext, eventAuditRecordParametersList);
+          .getCredentialVersionByUUID(id, eventAuditRecordParametersList);
       return CredentialView.fromEntity(credentialVersionVersion);
     });
   }
@@ -157,19 +164,20 @@ public class CredentialsController {
       @RequestParam(value = "current", required = false, defaultValue = "false") boolean current,
       RequestUuid requestUuid,
       UserContext userContext) {
+    userContextHolder.setUserContext(userContext);
     if (StringUtils.isEmpty(credentialName)) {
       throw new InvalidQueryParameterException("error.missing_query_parameter", "name");
     }
 
-    return eventAuditLogService.auditEvents(requestUuid, userContext, eventAuditRecordParametersList -> {
+    return eventAuditLogService.auditEvents(requestUuid, eventAuditRecordParametersList -> {
       List<CredentialVersion> credentialVersions;
       if (current) {
         CredentialVersion credentialVersion = credentialsHandler
-            .getMostRecentCredentialVersion(credentialName, userContext, eventAuditRecordParametersList);
+            .getMostRecentCredentialVersion(credentialName, eventAuditRecordParametersList);
         credentialVersions = singletonList(credentialVersion);
       } else {
         credentialVersions = credentialsHandler.getNCredentialVersions(credentialName, numberOfVersions,
-            userContext, eventAuditRecordParametersList);
+            eventAuditRecordParametersList);
       }
 
       return DataResponse.fromEntity(credentialVersions);
@@ -183,14 +191,16 @@ public class CredentialsController {
       RequestUuid requestUuid,
       UserContext userContext
   ) {
+    userContextHolder.setUserContext(userContext);
     return eventAuditLogService
-        .auditEvents(requestUuid, userContext, eventAuditRecordParametersList -> new FindCredentialResults(credentialService.findStartingWithPath(path, eventAuditRecordParametersList)));
+        .auditEvents(requestUuid, eventAuditRecordParametersList -> new FindCredentialResults(credentialService.findStartingWithPath(path, eventAuditRecordParametersList)));
   }
 
   @RequestMapping(path = "", params = "paths=true", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   public FindPathResults findPaths(RequestUuid requestUuid, UserContext userContext) {
-    return eventAuditLogService.auditEvents(requestUuid, userContext, eventAuditRecordParametersList -> {
+    userContextHolder.setUserContext(userContext);
+    return eventAuditLogService.auditEvents(requestUuid, eventAuditRecordParametersList -> {
       List<String> paths = credentialService.findAllPaths(eventAuditRecordParametersList);
       return FindPathResults.fromEntity(paths);
     });
@@ -203,8 +213,9 @@ public class CredentialsController {
       RequestUuid requestUuid,
       UserContext userContext
   ) {
+    userContextHolder.setUserContext(userContext);
     return eventAuditLogService
-        .auditEvents(requestUuid, userContext, eventAuditRecordParametersList -> new FindCredentialResults(credentialService.findContainingName(nameLike, eventAuditRecordParametersList)));
+        .auditEvents(requestUuid, eventAuditRecordParametersList -> new FindCredentialResults(credentialService.findContainingName(nameLike, eventAuditRecordParametersList)));
   }
 
   private CredentialView auditedHandlePostRequest(
@@ -213,7 +224,7 @@ public class CredentialsController {
       UserContext userContext
   ) {
     return eventAuditLogService
-        .auditEvents(requestUuid, userContext, (auditRecordParameters -> {
+        .auditEvents(requestUuid, (auditRecordParameters -> {
           return deserializeAndHandlePostRequest(
               inputStream,
               userContext,
@@ -231,9 +242,9 @@ public class CredentialsController {
       String requestString = StringUtil.fromInputStream(inputStream);
 
       if (readRegenerateFlagFrom(requestString)) {
-        return handleRegenerateRequest(userContext, requestString, auditRecordParameters);
+        return handleRegenerateRequest(requestString, auditRecordParameters);
       } else {
-        return handleGenerateRequest(userContext, auditRecordParameters, requestString
+        return handleGenerateRequest(auditRecordParameters, requestString
         );
       }
     } catch (IOException e) {
@@ -242,7 +253,6 @@ public class CredentialsController {
   }
 
   private CredentialView handleGenerateRequest(
-      UserContext userContext,
       List<EventAuditRecordParameters> auditRecordParameters,
       String requestString
   ) throws IOException {
@@ -250,18 +260,17 @@ public class CredentialsController {
         .readValue(requestString, BaseCredentialGenerateRequest.class);
     requestBody.validate();
 
-    return generateHandler.handle(requestBody, userContext, auditRecordParameters);
+    return generateHandler.handle(requestBody, auditRecordParameters);
   }
 
   private CredentialView handleRegenerateRequest(
-      UserContext userContext,
       String requestString, List<EventAuditRecordParameters> auditRecordParameters
   ) throws IOException {
     CredentialRegenerateRequest requestBody = objectMapper
         .readValue(requestString, CredentialRegenerateRequest.class);
 
     return regenerateHandler
-        .handleRegenerate(requestBody.getName(), userContext, auditRecordParameters);
+        .handleRegenerate(requestBody.getName(), auditRecordParameters);
   }
 
   private CredentialView auditedHandlePutRequest(
@@ -269,7 +278,7 @@ public class CredentialsController {
       RequestUuid requestUuid,
       UserContext userContext
   ) {
-    return eventAuditLogService.auditEvents(requestUuid, userContext, auditRecordParameters ->
+    return eventAuditLogService.auditEvents(requestUuid, auditRecordParameters ->
         handlePutRequest(requestBody, userContext, auditRecordParameters));
   }
 
@@ -280,7 +289,6 @@ public class CredentialsController {
   ) {
     return setHandler.handle(
         requestBody,
-        userContext,
         auditRecordParameters
     );
   }

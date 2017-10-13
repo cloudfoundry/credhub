@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.audit.EventAuditRecordParameters;
-import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.domain.CertificateCredentialVersion;
 import io.pivotal.security.domain.CredentialVersion;
@@ -437,7 +436,7 @@ public class CredentialsControllerTypeSpecificSetTest {
     mockMvc.perform(request);
 
     verify(setHandler, times(1))
-        .handle(isA(BaseCredentialSetRequest.class), isA(UserContext.class), any());
+        .handle(isA(BaseCredentialSetRequest.class), any());
     verify(credentialVersionDataService, times(1)).save(argumentCaptor.capture());
 
     CredentialVersion newCredentialVersion = argumentCaptor.getValue();

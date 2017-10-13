@@ -35,6 +35,6 @@ public class PasswordGeneratorTest {
     when(passayStringCredentialGenerator.generateCredential(stringGenerationParameters))
         .thenReturn(credential);
     
-    assertThat(subject.generateCredential(stringGenerationParameters, userContext), equalTo(credential));
+    assertThat(subject.generateCredential(stringGenerationParameters), equalTo(credential));
   }
 }

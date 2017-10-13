@@ -1,7 +1,6 @@
 package io.pivotal.security.controller.v1;
 
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.PermissionDataService;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.handler.PermissionsHandler;
@@ -93,7 +92,7 @@ public class PermissionsControllerTest {
     PermissionsView permissionsView = new PermissionsView(
         "test_credential_name", newArrayList());
 
-    when(permissionsHandler.getPermissions(eq("test_credential_name"), any(UserContext.class), any(List.class)))
+    when(permissionsHandler.getPermissions(eq("test_credential_name"), any(List.class)))
         .thenReturn(permissionsView);
 
     PermissionsView permissions = getPermissions(mockMvc, "test_credential_name",
@@ -110,7 +109,6 @@ public class PermissionsControllerTest {
     ArgumentCaptor<PermissionsRequest> captor = ArgumentCaptor.forClass(PermissionsRequest.class);
     verify(permissionsHandler, times(1)).setPermissions(
         captor.capture(),
-        any(UserContext.class),
         any(List.class)
     );
 
@@ -155,7 +153,7 @@ public class PermissionsControllerTest {
     revokePermissions(mockMvc, "test-name", UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "test-actor");
 
     verify(permissionsHandler, times(1))
-        .deletePermissionEntry(any(UserContext.class), eq("test-name"), eq("test-actor"), any(List.class));
+        .deletePermissionEntry(eq("test-name"), eq("test-actor"), any(List.class));
   }
 
   @Test
@@ -165,13 +163,11 @@ public class PermissionsControllerTest {
 
     Mockito.doThrow(new EntryNotFoundException("error.credential.invalid_access"))
         .when(permissionsHandler)
-        .deletePermissionEntry(any(), eq("incorrect-name"), eq("test-actor"),
-            any(List.class));
+        .deletePermissionEntry(eq("incorrect-name"), eq("test-actor"), any(List.class));
 
     expectStatusWhenDeletingPermissions(mockMvc, 404, "incorrect-name", "test-actor", UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
 
     verify(permissionsHandler, times(1))
-        .deletePermissionEntry(any(UserContext.class), eq("incorrect-name"), eq("test-actor"),
-            any(List.class));
+        .deletePermissionEntry(eq("incorrect-name"), eq("test-actor"), any(List.class));
   }
 }

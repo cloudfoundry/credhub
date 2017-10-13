@@ -1,6 +1,6 @@
 package io.pivotal.security.data;
 
-import io.pivotal.security.auth.UserContext;
+import io.pivotal.security.auth.UserContextHolder;
 import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.domain.CertificateCredentialVersion;
 import io.pivotal.security.domain.CredentialVersion;
@@ -16,15 +16,19 @@ public class CertificateAuthorityService {
 
   private final CredentialVersionDataService credentialVersionDataService;
   private PermissionDataService permissionService;
+  private UserContextHolder userContextHolder;
 
   @Autowired
-  public CertificateAuthorityService(CredentialVersionDataService credentialVersionDataService, PermissionDataService permissionService) {
+  public CertificateAuthorityService(CredentialVersionDataService credentialVersionDataService,
+      PermissionDataService permissionService,
+      UserContextHolder userContextHolder) {
     this.credentialVersionDataService = credentialVersionDataService;
     this.permissionService = permissionService;
+    this.userContextHolder = userContextHolder;
   }
 
-  public CertificateCredentialValue findMostRecent(UserContext userContext, String caName) {
-    if (!permissionService.hasPermission(userContext.getActor(), caName, READ)) {
+  public CertificateCredentialValue findMostRecent(String caName) {
+    if (!permissionService.hasPermission(userContextHolder.getUserContext().getActor(), caName, READ)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 

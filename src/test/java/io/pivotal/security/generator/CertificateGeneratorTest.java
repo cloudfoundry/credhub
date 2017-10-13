@@ -116,7 +116,7 @@ public class CertificateGeneratorTest {
     final KeyPair childCertificateKeyPair = setupKeyPair();
     setupMocksForRootCA(childCertificateKeyPair);
 
-    CertificateCredentialValue certificateSignedByRoot = subject.generateCredential(inputParameters, userContext);
+    CertificateCredentialValue certificateSignedByRoot = subject.generateCredential(inputParameters);
 
     assertThat(certificateSignedByRoot.getCa(),
         equalTo(rootCa.getCertificate()));
@@ -147,7 +147,7 @@ public class CertificateGeneratorTest {
             .getSignedByIssuer(childCertificateKeyPair, params, rootCaX509Certificate, rootCaKeyPair.getPrivate())
     ).thenReturn(childX509Certificate);
 
-    CertificateCredentialValue certificate = subject.generateCredential(params, userContext);
+    CertificateCredentialValue certificate = subject.generateCredential(params);
 
     assertThat(certificate, notNullValue());
     verify(keyGenerator, times(1)).generateKeyPair(4096);
@@ -170,7 +170,7 @@ public class CertificateGeneratorTest {
         CertificateFormatter.pemOf(intermediateX509Certificate),
         CertificateFormatter.pemOf(intermediateCaKeyPair.getPrivate()),
         null);
-    when(certificateAuthorityService.findMostRecent(userContext, "my-ca-name")).thenReturn(intermediateCa);
+    when(certificateAuthorityService.findMostRecent("my-ca-name")).thenReturn(intermediateCa);
 
     when(keyGenerator.generateKeyPair(anyInt())).thenReturn(childCertificateKeyPair);
 
@@ -190,7 +190,7 @@ public class CertificateGeneratorTest {
     ).thenReturn(childX509Certificate);
 
 
-    CertificateCredentialValue certificateSignedByIntermediate = subject.generateCredential(inputParameters, userContext);
+    CertificateCredentialValue certificateSignedByIntermediate = subject.generateCredential(inputParameters);
 
     assertThat(certificateSignedByIntermediate.getCa(),
         equalTo(intermediateCa.getCertificate()));
@@ -216,7 +216,7 @@ public class CertificateGeneratorTest {
     when(signedCertificateGenerator.getSelfSigned(rootCaKeyPair, inputParameters))
         .thenReturn(certificate);
 
-    CertificateCredentialValue certificateCredential = subject.generateCredential(inputParameters, userContext);
+    CertificateCredentialValue certificateCredential = subject.generateCredential(inputParameters);
     assertThat(certificateCredential.getPrivateKey(),
         equalTo(CertificateFormatter.pemOf(rootCaKeyPair.getPrivate())));
     assertThat(certificateCredential.getCertificate(),
@@ -264,7 +264,7 @@ public class CertificateGeneratorTest {
   }
 
   private void setupMocksForRootCA(KeyPair childCertificateKeyPair) throws Exception {
-    when(certificateAuthorityService.findMostRecent(userContext, "my-ca-name")).thenReturn(rootCa);
+    when(certificateAuthorityService.findMostRecent("my-ca-name")).thenReturn(rootCa);
     when(keyGenerator.generateKeyPair(anyInt())).thenReturn(childCertificateKeyPair);
     X509CertificateHolder childCertificateHolder = generateChildCertificateSignedByCa(
         childCertificateKeyPair,

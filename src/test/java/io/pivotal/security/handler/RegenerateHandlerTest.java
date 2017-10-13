@@ -49,12 +49,12 @@ public class RegenerateHandlerTest {
 
   @Test
   public void handleBulkRegenerate_regeneratesEverythingInTheList() throws Exception {
-    when(credentialService.findAllCertificateCredentialsByCaName(userContext, SIGNER_NAME))
+    when(credentialService.findAllCertificateCredentialsByCaName(SIGNER_NAME))
         .thenReturn(newArrayList("firstExpectedName", "secondExpectedName"));
     when(credentialService.findMostRecent(anyString()))
         .thenReturn(mock(CredentialVersion.class));
     CredentialVersion credentialVersion = mock(PasswordCredentialVersion.class);
-    when(credentialService.save(anyObject(), anyString(), anyString(), anyObject(), anyObject(), anyList(), anyString(), anyObject(), anyList())).thenReturn(credentialVersion);
+    when(credentialService.save(anyObject(), anyString(), anyString(), anyObject(), anyObject(), anyList(), anyString(), anyList())).thenReturn(credentialVersion);
 
     PasswordGenerateRequest generateRequest1 = new PasswordGenerateRequest();
     generateRequest1.setName("firstExpectedName");
@@ -64,19 +64,19 @@ public class RegenerateHandlerTest {
         .thenReturn(generateRequest1)
         .thenReturn(generateRequest2);
 
-    subject.handleBulkRegenerate(SIGNER_NAME, userContext, newArrayList());
+    subject.handleBulkRegenerate(SIGNER_NAME, newArrayList());
 
     verify(credentialService).save(
         any(), eq("firstExpectedName"),
         any(), any(), any(),
         any(), anyString(),
-        eq(userContext), any());
+        any());
 
     verify(credentialService).save(
         any(), eq("secondExpectedName"),
         any(), any(), any(),
         any(), anyString(),
-        eq(userContext), any());
+        any());
 
   }
 
