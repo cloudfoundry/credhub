@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 
-import static io.pivotal.security.audit.AuditInterceptor.REQUEST_UUID_ATTRIBUTE;
+import static io.pivotal.security.interceptor.AuditInterceptor.REQUEST_UUID_ATTRIBUTE;
 import static io.pivotal.security.auth.UserContext.AUTH_METHOD_UAA;
 
 @Component

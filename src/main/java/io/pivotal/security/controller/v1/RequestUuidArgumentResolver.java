@@ -11,7 +11,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 
 import java.util.UUID;
 
-import static io.pivotal.security.audit.AuditInterceptor.REQUEST_UUID_ATTRIBUTE;
+import static io.pivotal.security.interceptor.AuditInterceptor.REQUEST_UUID_ATTRIBUTE;
 
 @Component
 public class RequestUuidArgumentResolver implements HandlerMethodArgumentResolver {

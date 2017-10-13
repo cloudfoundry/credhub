@@ -7,8 +7,6 @@ import com.jayway.jsonpath.PathNotFoundException;
 import io.pivotal.security.audit.EventAuditLogService;
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.audit.RequestUuid;
-import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.auth.UserContextHolder;
 import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.exceptions.InvalidQueryParameterException;
 import io.pivotal.security.handler.CredentialsHandler;
@@ -64,7 +62,6 @@ public class CredentialsController {
   private final GenerateHandler generateHandler;
   private final RegenerateHandler regenerateHandler;
   private final CredentialsHandler credentialsHandler;
-  private final UserContextHolder userContextHolder;
 
   @Autowired
   public CredentialsController(PermissionedCredentialService credentialService,
@@ -73,8 +70,7 @@ public class CredentialsController {
       GenerateHandler generateHandler,
       RegenerateHandler regenerateHandler,
       CredentialsHandler credentialsHandler,
-      SetHandler setHandler,
-      UserContextHolder userContextHolder) {
+      SetHandler setHandler) {
     this.credentialService = credentialService;
     this.eventAuditLogService = eventAuditLogService;
     this.objectMapper = objectMapper;
@@ -82,45 +78,37 @@ public class CredentialsController {
     this.regenerateHandler = regenerateHandler;
     this.credentialsHandler = credentialsHandler;
     this.setHandler = setHandler;
-    this.userContextHolder = userContextHolder;
   }
 
   @RequestMapping(path = "", method = RequestMethod.POST)
   @ResponseStatus(HttpStatus.OK)
   public CredentialView generate(InputStream inputStream,
-                                 RequestUuid requestUuid,
-                                 UserContext userContext) throws IOException {
-    userContextHolder.setUserContext(userContext);
+                                 RequestUuid requestUuid) throws IOException {
     InputStream requestInputStream = new ByteArrayInputStream(ByteStreams.toByteArray(inputStream));
     try {
-      return auditedHandlePostRequest(requestInputStream, requestUuid, userContext
-      );
+      return auditedHandlePostRequest(requestInputStream, requestUuid);
     } catch (JpaSystemException | DataIntegrityViolationException e) {
       requestInputStream.reset();
       LOGGER.error(
           "Exception \"" + e.getMessage() + "\" with class \"" + e.getClass().getCanonicalName()
               + "\" while storing credential, possibly caused by race condition, retrying...");
-      return auditedHandlePostRequest(requestInputStream, requestUuid, userContext
-      );
+      return auditedHandlePostRequest(requestInputStream, requestUuid);
     }
   }
 
   @RequestMapping(path = "", method = RequestMethod.PUT)
   @ResponseStatus(HttpStatus.OK)
   public CredentialView set(@RequestBody BaseCredentialSetRequest requestBody,
-                            RequestUuid requestUuid,
-                            UserContext userContext) {
+      RequestUuid requestUuid) {
     requestBody.validate();
-    userContextHolder.setUserContext(userContext);
 
     try {
-      return auditedHandlePutRequest(requestBody, requestUuid, userContext
-      );
+      return auditedHandlePutRequest(requestBody, requestUuid);
     } catch (JpaSystemException | DataIntegrityViolationException e) {
       LOGGER.error(
           "Exception \"" + e.getMessage() + "\" with class \"" + e.getClass().getCanonicalName()
               + "\" while storing credential, possibly caused by race condition, retrying...");
-      return auditedHandlePutRequest(requestBody, requestUuid, userContext);
+      return auditedHandlePutRequest(requestBody, requestUuid);
     }
   }
 
@@ -128,10 +116,8 @@ public class CredentialsController {
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void delete(
       @RequestParam(value = "name") String credentialName,
-      RequestUuid requestUuid,
-      UserContext userContext
+      RequestUuid requestUuid
   ) {
-    userContextHolder.setUserContext(userContext);
     if (StringUtils.isEmpty(credentialName)) {
       throw new InvalidQueryParameterException("error.missing_query_parameter", "name");
     }
@@ -146,9 +132,7 @@ public class CredentialsController {
   @ResponseStatus(HttpStatus.OK)
   public CredentialView getCredentialById(
       @PathVariable String id,
-      RequestUuid requestUuid,
-      UserContext userContext) {
-    userContextHolder.setUserContext(userContext);
+      RequestUuid requestUuid) {
     return eventAuditLogService.auditEvents(requestUuid, eventAuditRecordParametersList -> {
       CredentialVersion credentialVersionVersion = credentialsHandler
           .getCredentialVersionByUUID(id, eventAuditRecordParametersList);
@@ -162,9 +146,7 @@ public class CredentialsController {
       @RequestParam(value = "name") String credentialName,
       @RequestParam(value = "versions", required = false) Integer numberOfVersions,
       @RequestParam(value = "current", required = false, defaultValue = "false") boolean current,
-      RequestUuid requestUuid,
-      UserContext userContext) {
-    userContextHolder.setUserContext(userContext);
+      RequestUuid requestUuid) {
     if (StringUtils.isEmpty(credentialName)) {
       throw new InvalidQueryParameterException("error.missing_query_parameter", "name");
     }
@@ -188,18 +170,15 @@ public class CredentialsController {
   @ResponseStatus(HttpStatus.OK)
   public FindCredentialResults findByPath(
       @RequestParam("path") String path,
-      RequestUuid requestUuid,
-      UserContext userContext
+      RequestUuid requestUuid
   ) {
-    userContextHolder.setUserContext(userContext);
     return eventAuditLogService
         .auditEvents(requestUuid, eventAuditRecordParametersList -> new FindCredentialResults(credentialService.findStartingWithPath(path, eventAuditRecordParametersList)));
   }
 
   @RequestMapping(path = "", params = "paths=true", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
-  public FindPathResults findPaths(RequestUuid requestUuid, UserContext userContext) {
-    userContextHolder.setUserContext(userContext);
+  public FindPathResults findPaths(RequestUuid requestUuid) {
     return eventAuditLogService.auditEvents(requestUuid, eventAuditRecordParametersList -> {
       List<String> paths = credentialService.findAllPaths(eventAuditRecordParametersList);
       return FindPathResults.fromEntity(paths);
@@ -210,24 +189,20 @@ public class CredentialsController {
   @ResponseStatus(HttpStatus.OK)
   public FindCredentialResults findByNameLike(
       @RequestParam("name-like") String nameLike,
-      RequestUuid requestUuid,
-      UserContext userContext
+      RequestUuid requestUuid
   ) {
-    userContextHolder.setUserContext(userContext);
     return eventAuditLogService
         .auditEvents(requestUuid, eventAuditRecordParametersList -> new FindCredentialResults(credentialService.findContainingName(nameLike, eventAuditRecordParametersList)));
   }
 
   private CredentialView auditedHandlePostRequest(
       InputStream inputStream,
-      RequestUuid requestUuid,
-      UserContext userContext
+      RequestUuid requestUuid
   ) {
     return eventAuditLogService
         .auditEvents(requestUuid, (auditRecordParameters -> {
           return deserializeAndHandlePostRequest(
               inputStream,
-              userContext,
               auditRecordParameters
           );
         }));
@@ -235,7 +210,6 @@ public class CredentialsController {
 
   private CredentialView deserializeAndHandlePostRequest(
       InputStream inputStream,
-      UserContext userContext,
       List<EventAuditRecordParameters> auditRecordParameters
   ) {
     try {
@@ -275,16 +249,14 @@ public class CredentialsController {
 
   private CredentialView auditedHandlePutRequest(
       @RequestBody BaseCredentialSetRequest requestBody,
-      RequestUuid requestUuid,
-      UserContext userContext
+      RequestUuid requestUuid
   ) {
     return eventAuditLogService.auditEvents(requestUuid, auditRecordParameters ->
-        handlePutRequest(requestBody, userContext, auditRecordParameters));
+        handlePutRequest(requestBody, auditRecordParameters));
   }
 
   private CredentialView handlePutRequest(
       @RequestBody BaseCredentialSetRequest requestBody,
-      UserContext userContext,
       List<EventAuditRecordParameters> auditRecordParameters
   ) {
     return setHandler.handle(

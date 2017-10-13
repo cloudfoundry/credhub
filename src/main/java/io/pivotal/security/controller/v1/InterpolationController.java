@@ -24,26 +24,21 @@ public class InterpolationController {
   static final String API_V1 = "/api/v1";
   private final InterpolationHandler jsonInterpolationHandler;
   private final EventAuditLogService eventAuditLogService;
-  private final UserContextHolder userContextHolder;
 
   @Autowired
   InterpolationController(
       InterpolationHandler jsonInterpolationHandler,
-      EventAuditLogService eventAuditLogService,
-      UserContextHolder userContextHolder) {
+      EventAuditLogService eventAuditLogService) {
     this.jsonInterpolationHandler = jsonInterpolationHandler;
     this.eventAuditLogService = eventAuditLogService;
-    this.userContextHolder = userContextHolder;
   }
 
   @RequestMapping(method = RequestMethod.POST, path = "/interpolate")
   @ResponseStatus(HttpStatus.OK)
   public Map<String, Object> interpolate(
       @RequestBody Map<String, Object> requestBody,
-      RequestUuid requestUuid,
-      UserContext userContext
+      RequestUuid requestUuid
   ) {
-    userContextHolder.setUserContext(userContext);
     return eventAuditLogService.auditEvents(requestUuid, (eventAuditRecordParametersList ->
           jsonInterpolationHandler
             .interpolateCredHubReferences(requestBody, eventAuditRecordParametersList))

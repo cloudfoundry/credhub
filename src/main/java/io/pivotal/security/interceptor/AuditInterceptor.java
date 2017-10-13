@@ -1,5 +1,6 @@
-package io.pivotal.security.audit;
+package io.pivotal.security.interceptor;
 
+import io.pivotal.security.audit.AuditLogFactory;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.auth.UserContextFactory;
 import io.pivotal.security.data.RequestAuditRecordDataService;

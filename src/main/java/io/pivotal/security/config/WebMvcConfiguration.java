@@ -1,8 +1,8 @@
 package io.pivotal.security.config;
 
-import io.pivotal.security.audit.AuditInterceptor;
+import io.pivotal.security.interceptor.AuditInterceptor;
 import io.pivotal.security.controller.v1.RequestUuidArgumentResolver;
-import io.pivotal.security.controller.v1.UserContextArgumentResolver;
+import io.pivotal.security.interceptor.UserContextInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -15,17 +15,16 @@ import java.util.List;
 
 @Configuration
 public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
-  private final UserContextArgumentResolver userContextArgumentResolver;
   private final RequestUuidArgumentResolver requestUuidArgumentResolver;
   private final AuditInterceptor auditInterceptor;
+  private final UserContextInterceptor userContextInterceptor;
 
   @Autowired
   public WebMvcConfiguration(
-      UserContextArgumentResolver userContextArgumentResolver,
       RequestUuidArgumentResolver requestUuidArgumentResolver,
-      AuditInterceptor auditInterceptor
-  ) {
-    this.userContextArgumentResolver = userContextArgumentResolver;
+      AuditInterceptor auditInterceptor,
+      UserContextInterceptor userContextInterceptor) {
+    this.userContextInterceptor = userContextInterceptor;
     this.requestUuidArgumentResolver = requestUuidArgumentResolver;
     this.auditInterceptor = auditInterceptor;
   }
@@ -42,13 +41,13 @@ public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
 
   @Override
   public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
-    argumentResolvers.add(userContextArgumentResolver);
     argumentResolvers.add(requestUuidArgumentResolver);
   }
 
   @Override
   public void addInterceptors(InterceptorRegistry registry) {
     super.addInterceptors(registry);
-    registry.addInterceptor(auditInterceptor).excludePathPatterns("/info", "/health");
+    registry.addInterceptor(auditInterceptor).excludePathPatterns("/info", "/health", "/key-usage");
+    registry.addInterceptor(userContextInterceptor).excludePathPatterns("/info", "/health", "/key-usage");
   }
 }

@@ -2,8 +2,6 @@ package io.pivotal.security.controller.v1;
 
 import io.pivotal.security.audit.EventAuditLogService;
 import io.pivotal.security.audit.RequestUuid;
-import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.auth.UserContextHolder;
 import io.pivotal.security.handler.RegenerateHandler;
 import io.pivotal.security.request.BulkRegenerateRequest;
 import io.pivotal.security.request.RegenerateRequest;
@@ -28,16 +26,13 @@ public class RegenerateController {
 
   private final EventAuditLogService eventAuditLogService;
   private RegenerateHandler regenerateHandler;
-  private UserContextHolder userContextHolder;
 
   @Autowired
   public RegenerateController(
       RegenerateHandler regenerateHandler,
-      EventAuditLogService eventAuditLogService,
-      UserContextHolder userContextHolder) {
+      EventAuditLogService eventAuditLogService) {
     this.regenerateHandler = regenerateHandler;
     this.eventAuditLogService = eventAuditLogService;
-    this.userContextHolder = userContextHolder;
   }
 
   @PostMapping(
@@ -45,11 +40,9 @@ public class RegenerateController {
       produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ResponseStatus(HttpStatus.OK)
   public CredentialView regenerate(
-      UserContext userContext,
       RequestUuid requestUuid,
       @RequestBody @Validated RegenerateRequest requestBody
   ) throws IOException {
-    userContextHolder.setUserContext(userContext);
     return eventAuditLogService
         .auditEvents(requestUuid, (auditRecordParameters -> {
           return regenerateHandler
@@ -63,11 +56,9 @@ public class RegenerateController {
       produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ResponseStatus(HttpStatus.OK)
   public BulkRegenerateResults bulkRegenerate(
-      UserContext userContext,
       RequestUuid requestUuid,
       @RequestBody @Valid BulkRegenerateRequest requestBody
   ) throws IOException {
-    userContextHolder.setUserContext(userContext);
     return eventAuditLogService
         .auditEvents(requestUuid, (auditRecordParameters -> {
           return regenerateHandler
