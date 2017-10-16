@@ -126,8 +126,10 @@ public class UserCredentialVersion extends CredentialVersion<UserCredentialVersi
     final StringGenerationParameters existingGenerationParameters = getGenerationParameters();
     final StringGenerationParameters newGenerationParameters = (StringGenerationParameters) generationParameters;
 
-    return newGenerationParameters.getLength() == existingGenerationParameters.getLength() &&
-        (newGenerationParameters.getUsername() == null ||
-            newGenerationParameters.getUsername() == getUsername());
+    final boolean lengthsMatch = newGenerationParameters.getLength() == existingGenerationParameters.getLength();
+    final boolean usernamesMatch = getUsername().equals(newGenerationParameters.getUsername()) ||
+        existingGenerationParameters.getUsername() == newGenerationParameters.getUsername();
+
+    return lengthsMatch && usernamesMatch;
   }
 }

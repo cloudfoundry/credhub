@@ -319,7 +319,7 @@ public class UserGenerationTest {
     String secondResponse = generateUser(mockMvc, credentialName1, "converge", null, null);
     String secondUsername = (new JSONObject(secondResponse)).getJSONObject("value").getString("username");
 
-    assertThat(secondUsername, Matchers.equalTo("original-username"));
+    assertThat(secondUsername, not(equalTo("original-username")));
   }
 
 
