@@ -32,8 +32,8 @@ import static io.pivotal.security.request.CertificateGenerationRequestParameters
 import static io.pivotal.security.request.CertificateGenerationRequestParameters.NON_REPUDIATION;
 import static io.pivotal.security.request.CertificateGenerationRequestParameters.SERVER_AUTH;
 import static io.pivotal.security.request.CertificateGenerationRequestParameters.TIMESTAMPING;
-import static org.apache.commons.lang3.StringUtils.*;
 import static org.apache.commons.lang3.StringUtils.join;
+import static org.apache.commons.lang3.StringUtils.prependIfMissing;
 
 public class CertificateGenerationParameters implements GenerationParameters{
 
