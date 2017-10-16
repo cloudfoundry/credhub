@@ -64,7 +64,7 @@ public class SshCredentialVersion extends CredentialVersion<SshCredentialVersion
   @Override
   public boolean matchesGenerationParameters(GenerationParameters generationParameters) {
     final SshGenerationParameters parameters = (SshGenerationParameters) generationParameters;
-    return parameters.getKeyLength() == getKeyLength() && parameters.getSshComment() == getComment();
+    return parameters.getKeyLength() == getKeyLength() && parameters.getSshComment().equals(getComment());
   }
 
   @Override
