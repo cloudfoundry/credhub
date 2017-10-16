@@ -36,6 +36,10 @@ public abstract class BaseCredentialSetRequest<T extends CredentialValue> extend
     if (isInvalidTypeForSet(getType())) {
       throw new ParameterizedValidationException("error.invalid_type_with_set_prompt");
     }
+
+    if (getMode() != null && getRawOverwriteValue() != null) {
+      throw new ParameterizedValidationException("error.overwrite_and_mode_both_provided");
+    }
   }
 
   private boolean isInvalidTypeForSet(String type) {

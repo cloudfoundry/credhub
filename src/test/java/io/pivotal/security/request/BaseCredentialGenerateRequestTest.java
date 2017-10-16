@@ -48,6 +48,24 @@ public class BaseCredentialGenerateRequestTest {
         });
       });
 
+      describe("when both overwrite and mode are set", () -> {
+        itThrowsWithMessage("should throw invalid_type_with_generate_prompt error",
+            ParameterizedValidationException.class,
+            "error.overwrite_and_mode_both_provided",
+            () -> {
+              String json = "{"
+                  + "\"name\":\"some-name\","
+                  + "\"type\":\"password\","
+                  + "\"overwrite\":true,"
+                  + "\"mode\":\"overwrite\""
+                  + "}";
+
+              BaseCredentialGenerateRequest request = JsonTestHelper
+                  .deserialize(json, BaseCredentialGenerateRequest.class);
+              request.validate();
+            });
+      });
+
       describe("when type is value", () -> {
         itThrowsWithMessage("should throw invalid_type_with_generate_prompt",
             ParameterizedValidationException.class,

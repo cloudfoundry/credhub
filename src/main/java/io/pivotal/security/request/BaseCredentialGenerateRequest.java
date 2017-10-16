@@ -36,6 +36,10 @@ public abstract class BaseCredentialGenerateRequest extends BaseCredentialReques
       throw new ParameterizedValidationException("error.cannot_generate_type");
     }
 
+    if (getMode() != null && getRawOverwriteValue() != null) {
+      throw new ParameterizedValidationException("error.overwrite_and_mode_both_provided");
+    }
+
     if (getGenerationParameters() != null ) {
       getGenerationParameters().validate();
     }

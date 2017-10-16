@@ -23,7 +23,7 @@ public abstract class BaseCredentialRequest {
   })
   private String name;
   private String type;
-  private boolean overwrite;
+  private Boolean overwrite;
   private String mode;
   private List<PermissionEntry> additionalPermissions = new ArrayList<>();
 
@@ -47,17 +47,21 @@ public abstract class BaseCredentialRequest {
     if (mode != null) {
       return mode;
     }
-    if (overwrite) {
+    if (isOverwrite()) {
       return "overwrite";
     }
     return "no-overwrite";
   }
 
   public boolean isOverwrite() {
+    return overwrite == null ? false : overwrite;
+  }
+
+  public Boolean getRawOverwriteValue() {
     return overwrite;
   }
 
-  public void setOverwrite(boolean overwrite) {
+  public void setOverwrite(Boolean overwrite) {
     this.overwrite = overwrite;
   }
 

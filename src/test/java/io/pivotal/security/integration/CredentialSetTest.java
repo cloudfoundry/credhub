@@ -19,6 +19,7 @@ import org.springframework.web.context.WebApplicationContext;
 import static io.pivotal.security.helper.RequestHelper.setPassword;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -45,6 +46,27 @@ public class CredentialSetTest {
         .webAppContextSetup(webApplicationContext)
         .apply(springSecurity())
         .build();
+  }
+
+  @Test
+  public void whenUserProvidesBothOverwriteAndMode_returnsAnError() throws Exception {
+    MockHttpServletRequestBuilder put = put("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{\n"
+            + "  \"name\" : \"name\",\n"
+            + "  \"type\" : \"password\",\n"
+            + "  \"overwrite\" : false,\n"
+            + "  \"value\" : \"some-password\",\n"
+            + "  \"mode\" : \"no-overwrite\"\n"
+            + "}");
+
+    String response = mockMvc.perform(put)
+        .andExpect(status().isBadRequest())
+        .andReturn().getResponse().getContentAsString();
+
+    assertThat(response, containsString("The parameters overwrite and mode cannot be combined. Please update and retry your request."));
   }
 
   @Test

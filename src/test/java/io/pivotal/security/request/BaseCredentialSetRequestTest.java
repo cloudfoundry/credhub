@@ -3,6 +3,7 @@ package io.pivotal.security.request;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.helper.JsonTestHelper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,6 +31,21 @@ public class BaseCredentialSetRequestTest {
         "}";
 
     JsonTestHelper.deserializeChecked(json, BaseCredentialSetRequest.class);
+  }
+
+  @Test(expected = ParameterizedValidationException.class)
+  public void whenModeAndOverwriteAreBothSet_throwsException() throws IOException {
+    String json = "{" +
+        "\"name\":\"some-name\"," +
+        "\"type\":\"password\"," +
+        "\"overwrite\":true," +
+        "\"value\":\"some-value\"," +
+        "\"mode\":\"overwrite\"" +
+        "}";
+
+    BaseCredentialSetRequest request = JsonTestHelper
+        .deserialize(json, BaseCredentialSetRequest.class);
+    request.validate();
   }
 
   @Test(expected = InvalidTypeIdException.class)
