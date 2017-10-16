@@ -29,7 +29,6 @@ public class CertificateCredentialVersion extends CredentialVersion<CertificateC
     this();
     this.setEncryptor(encryptor);
     this.setCa(certificate.getCa());
-    this.setCertificate(certificate.getCertificate());
     this.setPrivateKey(certificate.getPrivateKey());
     this.setCaName(certificate.getCaName());
     this.setCertificate(certificate.getCertificate());
@@ -90,9 +89,9 @@ public class CertificateCredentialVersion extends CredentialVersion<CertificateC
     this.setPrivateKey(decryptedPrivateKey);
   }
 
-  @Override
   public boolean matchesGenerationParameters(GenerationParameters generationParameters) {
-
-    return false;
+    final CertificateGenerationParameters parameters = (CertificateGenerationParameters) generationParameters;
+    final CertificateGenerationParameters existingGenerationParameters = new CertificateGenerationParameters(getParsedCertificate(), getCaName());
+    return existingGenerationParameters.equals(parameters);
   }
 }

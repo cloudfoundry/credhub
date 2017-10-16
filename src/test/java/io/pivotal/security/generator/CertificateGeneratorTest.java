@@ -127,7 +127,7 @@ public class CertificateGeneratorTest {
     assertThat(certificateSignedByRoot.getCertificate(),
         equalTo(CertificateFormatter.pemOf(childX509Certificate)));
 
-    assertThat(certificateSignedByRoot.getCaName(), equalTo("my-ca-name"));
+    assertThat(certificateSignedByRoot.getCaName(), equalTo("/my-ca-name"));
 
     verify(keyGenerator, times(1)).generateKeyPair(2048);
 
@@ -170,7 +170,7 @@ public class CertificateGeneratorTest {
         CertificateFormatter.pemOf(intermediateX509Certificate),
         CertificateFormatter.pemOf(intermediateCaKeyPair.getPrivate()),
         null);
-    when(certificateAuthorityService.findMostRecent("my-ca-name")).thenReturn(intermediateCa);
+    when(certificateAuthorityService.findMostRecent("/my-ca-name")).thenReturn(intermediateCa);
 
     when(keyGenerator.generateKeyPair(anyInt())).thenReturn(childCertificateKeyPair);
 
@@ -264,7 +264,7 @@ public class CertificateGeneratorTest {
   }
 
   private void setupMocksForRootCA(KeyPair childCertificateKeyPair) throws Exception {
-    when(certificateAuthorityService.findMostRecent("my-ca-name")).thenReturn(rootCa);
+    when(certificateAuthorityService.findMostRecent("/my-ca-name")).thenReturn(rootCa);
     when(keyGenerator.generateKeyPair(anyInt())).thenReturn(childCertificateKeyPair);
     X509CertificateHolder childCertificateHolder = generateChildCertificateSignedByCa(
         childCertificateKeyPair,

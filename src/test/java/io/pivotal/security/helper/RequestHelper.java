@@ -149,6 +149,40 @@ public class RequestHelper {
     return response;
   }
 
+  public static String generateCertificateCredential(MockMvc mockMvc, String credentialName, String mode, String commonName, String caName)
+      throws Exception {
+    Map<String, Object> passwordRequestBody = new HashMap() {
+      {
+        put("name", credentialName);
+        put("type", "certificate");
+        put("mode", mode);
+      }
+    };
+
+    Map parameters = new HashMap<String, Object>();
+    if(caName == null) {
+      parameters.put("self_sign", true);
+      parameters.put("is_ca", true);
+    } else {
+      parameters.put("ca", caName);
+    }
+    parameters.put("common_name", commonName);
+
+
+    passwordRequestBody.put("parameters", parameters);
+    String content = JsonTestHelper.serializeToString(passwordRequestBody);
+    MockHttpServletRequestBuilder post = post("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(content);
+
+    String response = mockMvc.perform(post)
+        .andExpect(status().isOk())
+        .andReturn().getResponse().getContentAsString();
+    return response;
+  }
+
   public static String generateRsa(MockMvc mockMvc, String credentialName, String mode, Integer length)
       throws Exception {
     Map<String, Object> passwordRequestBody = new HashMap() {

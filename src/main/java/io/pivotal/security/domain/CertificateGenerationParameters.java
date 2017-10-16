@@ -14,6 +14,7 @@ import org.bouncycastle.asn1.x509.KeyUsage;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.Objects;
 import javax.security.auth.x500.X500Principal;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -31,6 +32,7 @@ import static io.pivotal.security.request.CertificateGenerationRequestParameters
 import static io.pivotal.security.request.CertificateGenerationRequestParameters.NON_REPUDIATION;
 import static io.pivotal.security.request.CertificateGenerationRequestParameters.SERVER_AUTH;
 import static io.pivotal.security.request.CertificateGenerationRequestParameters.TIMESTAMPING;
+import static org.apache.commons.lang3.StringUtils.*;
 import static org.apache.commons.lang3.StringUtils.join;
 
 public class CertificateGenerationParameters implements GenerationParameters{
@@ -48,12 +50,33 @@ public class CertificateGenerationParameters implements GenerationParameters{
 
   private KeyUsage keyUsage;
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    CertificateGenerationParameters that = (CertificateGenerationParameters) o;
+    return keyLength == that.keyLength &&
+        duration == that.duration &&
+        selfSigned == that.selfSigned &&
+        isCa == that.isCa &&
+        Objects.equals(caName, that.caName) &&
+        Objects.equals(x500Principal, that.x500Principal) &&
+        Objects.equals(alternativeNames, that.alternativeNames) &&
+        Objects.equals(extendedKeyUsage, that.extendedKeyUsage) &&
+        Objects.equals(keyUsage, that.keyUsage);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(keyLength, duration, selfSigned, caName, isCa, x500Principal, alternativeNames, extendedKeyUsage, keyUsage);
+  }
+
   public CertificateGenerationParameters(CertificateGenerationRequestParameters generationParameters) {
     this.keyUsage = buildKeyUsage(generationParameters);
     this.x500Principal = buildDn(generationParameters);
     this.alternativeNames = buildAlternativeNames(generationParameters);
     this.extendedKeyUsage = buildExtendedKeyUsage(generationParameters);
-    this.caName = generationParameters.getCaName();
+    this.caName = generationParameters.getCaName() != null ? prependIfMissing(generationParameters.getCaName(), "/") : null;
     this.selfSigned = generationParameters.isSelfSigned();
     this.duration = generationParameters.getDuration();
     this.keyLength = generationParameters.getKeyLength();

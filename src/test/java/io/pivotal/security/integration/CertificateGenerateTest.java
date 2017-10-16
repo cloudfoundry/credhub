@@ -7,6 +7,7 @@ import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
+import org.hamcrest.Matchers;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,11 +28,13 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 
 import static io.pivotal.security.helper.RequestHelper.generateCa;
+import static io.pivotal.security.helper.RequestHelper.generateCertificateCredential;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.core.IsNot.not;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -44,11 +47,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = CredentialManagerApp.class)
 @TestPropertySource(properties = "security.authorization.acls.enabled=true")
 @Transactional
-public class CertificateGenerationTest {
+public class CertificateGenerateTest {
   @Autowired
   private WebApplicationContext webApplicationContext;
 
   private MockMvc mockMvc;
+
+  private static final String CREDENTIAL_NAME = "some-certificate";
+  private static final String CA_NAME = "some-ca";
+  private static final String CA_NAME2 = "some-ca2";
 
   @Before
   public void beforeEach() throws Exception {
@@ -156,4 +163,57 @@ public class CertificateGenerationTest {
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error", equalTo(error)));
   }
+
+  @Test
+  public void credentialNotOverwrittenWhenModeIsSetToConvergeAndParametersAreTheSame() throws Exception {
+    generateCertificateCredential(mockMvc, CA_NAME, "overwrite", "test-CA", null);
+
+    String firstResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, "converge", "some-common-name", CA_NAME);
+    String originalValue = (new JSONObject(firstResponse)).getString("value");
+
+    String secondResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, "converge", "some-common-name", CA_NAME);
+    String sameValue = (new JSONObject(secondResponse)).getString("value");
+
+    assertThat(originalValue, Matchers.equalTo(sameValue));
+  }
+
+  @Test
+  public void credentialNotOverwrittenWhenModeIsSetToConvergeAndParametersAreTheSameAndAreCAs() throws Exception {
+    String firstResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, "converge", "some-common-name", null);
+    String originalValue = (new JSONObject(firstResponse)).getString("value");
+
+    String secondResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, "converge", "some-common-name", null);
+    String sameValue = (new JSONObject(secondResponse)).getString("value");
+
+    assertThat(originalValue, Matchers.equalTo(sameValue));
+  }
+
+  @Test
+  public void credentialOverwrittenWhenModeIsSetToConvergeAndCommonNameNotTheSame() throws Exception {
+    generateCertificateCredential(mockMvc, CA_NAME, "overwrite", "test-CA", null);
+
+    String firstResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, "converge", "some-common-name", CA_NAME);
+    String originalValue = (new JSONObject(firstResponse)).getString("value");
+
+    String secondResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, "converge", "other-common-name", CA_NAME);
+    String updatedValue = (new JSONObject(secondResponse)).getString("value");
+
+    assertThat(originalValue, not(Matchers.equalTo(updatedValue)));
+  }
+
+  @Test
+  public void credentialOverwrittenWhenModeIsSetToConvergeAndCaNameNotTheSame() throws Exception {
+    generateCertificateCredential(mockMvc, CA_NAME, "overwrite", "test-CA", null);
+    generateCertificateCredential(mockMvc, CA_NAME2, "overwrite", "test-CA2", null);
+
+
+    String firstResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, "converge", "some-common-name", CA_NAME);
+    String originalValue = (new JSONObject(firstResponse)).getString("value");
+
+    String secondResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, "converge", "some-common-name", CA_NAME2);
+    String updatedValue = (new JSONObject(secondResponse)).getString("value");
+
+    assertThat(originalValue, not(Matchers.equalTo(updatedValue)));
+  }
+
 }
