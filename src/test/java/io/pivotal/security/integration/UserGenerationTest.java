@@ -261,11 +261,11 @@ public class UserGenerationTest {
 
   @Test
   public void credentialNotOverwrittenWhenModeIsSetToConvergeAndParametersAreTheSame() throws Exception {
-    String firstResponse = generateUser(mockMvc, credentialName1, "overwrite", 20);
+    String firstResponse = generateUser(mockMvc, credentialName1, "overwrite", 20, null);
     String originalUsername = (new JSONObject(firstResponse)).getJSONObject("value").getString("username");
     String originalPassword = (new JSONObject(firstResponse)).getJSONObject("value").getString("password");
 
-    String secondResponse = generateUser(mockMvc, credentialName1, "converge", 20);
+    String secondResponse = generateUser(mockMvc, credentialName1, "converge", 20, null);
     String secondUsername = (new JSONObject(secondResponse)).getJSONObject("value").getString("username");
     String secondPassword = (new JSONObject(secondResponse)).getJSONObject("value").getString("password");
 
@@ -275,11 +275,11 @@ public class UserGenerationTest {
 
   @Test
   public void credentialNotOverwrittenWhenModeIsSetToConvergeAndParametersAreTheSameAndAreTheDefaults() throws Exception {
-    String firstResponse = generateUser(mockMvc, credentialName1, "overwrite", null);
+    String firstResponse = generateUser(mockMvc, credentialName1, "overwrite", null, null);
     String originalUsername = (new JSONObject(firstResponse)).getJSONObject("value").getString("username");
     String originalPassword = (new JSONObject(firstResponse)).getJSONObject("value").getString("password");
 
-    String secondResponse = generateUser(mockMvc, credentialName1, "converge", null);
+    String secondResponse = generateUser(mockMvc, credentialName1, "converge", null, null);
     String secondUsername = (new JSONObject(secondResponse)).getJSONObject("value").getString("username");
     String secondPassword = (new JSONObject(secondResponse)).getJSONObject("value").getString("password");
 
@@ -289,17 +289,37 @@ public class UserGenerationTest {
 
   @Test
   public void credentialOverwrittenWhenModeIsSetToConvergeAndParametersNotTheSame() throws Exception {
-    String firstResponse = generateUser(mockMvc, credentialName1, "overwrite", 30);
+    String firstResponse = generateUser(mockMvc, credentialName1, "overwrite", 30, null);
     String originalUsername = (new JSONObject(firstResponse)).getJSONObject("value").getString("username");
     String originalPassword = (new JSONObject(firstResponse)).getJSONObject("value").getString("password");
 
-    String secondResponse = generateUser(mockMvc, credentialName1, "converge", 20);
+    String secondResponse = generateUser(mockMvc, credentialName1, "converge", 20, null);
     String secondUsername = (new JSONObject(secondResponse)).getJSONObject("value").getString("username");
     String secondPassword = (new JSONObject(secondResponse)).getJSONObject("value").getString("password");
 
     assertThat(originalPassword, not(Matchers.equalTo(secondPassword)));
     assertThat(secondPassword.length(), equalTo(20));
     assertThat(originalUsername, not(Matchers.equalTo(secondUsername)));
+  }
+
+  @Test
+  public void credentialOverwrittenWhenModeIsSetToConvergeAndUsernameNotTheSame() throws Exception {
+    generateUser(mockMvc, credentialName1, "overwrite", null, "original-username");
+
+    String secondResponse = generateUser(mockMvc, credentialName1, "converge", null, "updated-username");
+    String secondUsername = (new JSONObject(secondResponse)).getJSONObject("value").getString("username");
+
+    assertThat(secondUsername, Matchers.equalTo("updated-username"));
+  }
+
+  @Test
+  public void credentialOverwrittenWhenModeIsSetToConvergeAndUsernameIsNotProvidedInTheSecondRequest() throws Exception {
+    generateUser(mockMvc, credentialName1, "overwrite", null, "original-username");
+
+    String secondResponse = generateUser(mockMvc, credentialName1, "converge", null, null);
+    String secondUsername = (new JSONObject(secondResponse)).getJSONObject("value").getString("username");
+
+    assertThat(secondUsername, Matchers.equalTo("original-username"));
   }
 
 

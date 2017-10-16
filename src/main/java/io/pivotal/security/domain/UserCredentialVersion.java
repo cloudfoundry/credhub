@@ -123,6 +123,11 @@ public class UserCredentialVersion extends CredentialVersion<UserCredentialVersi
 
   @Override
   public boolean matchesGenerationParameters(GenerationParameters generationParameters) {
-    return generationParameters.equals(getGenerationParameters());
+    final StringGenerationParameters existingGenerationParameters = getGenerationParameters();
+    final StringGenerationParameters newGenerationParameters = (StringGenerationParameters) generationParameters;
+
+    return newGenerationParameters.getLength() == existingGenerationParameters.getLength() &&
+        (newGenerationParameters.getUsername() == null ||
+            newGenerationParameters.getUsername() == getUsername());
   }
 }

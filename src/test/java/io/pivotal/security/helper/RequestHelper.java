@@ -80,7 +80,7 @@ public class RequestHelper {
     return response;
   }
 
-  public static String generateUser(MockMvc mockMvc, String credentialName, String mode, Integer length)
+  public static String generateUser(MockMvc mockMvc, String credentialName, String mode, Integer length, String username)
       throws Exception {
     Map<String, Object> passwordRequestBody = new HashMap() {
       {
@@ -90,9 +90,18 @@ public class RequestHelper {
       }
     };
 
+    Map parameters = new HashMap<String, Object>();
+
     if (length != null) {
-      passwordRequestBody.put("parameters", ImmutableMap.of("length", length));
+      parameters.put("length", length);
     }
+
+    if (username != null) {
+      parameters.put("username", username);
+    }
+
+    passwordRequestBody.put("parameters", parameters);
+
     String content = JsonTestHelper.serializeToString(passwordRequestBody);
     MockHttpServletRequestBuilder post = post("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
