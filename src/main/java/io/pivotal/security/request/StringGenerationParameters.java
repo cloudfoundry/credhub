@@ -6,8 +6,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.generator.PassayStringCredentialGenerator;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
+
+import java.util.Objects;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT;
 
@@ -97,28 +97,25 @@ public class StringGenerationParameters implements GenerationParameters{
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-
     if (o == null || getClass() != o.getClass()) return false;
-
     StringGenerationParameters that = (StringGenerationParameters) o;
-
-    return new EqualsBuilder()
-        .append(excludeLower, that.excludeLower)
-        .append(excludeNumber, that.excludeNumber)
-        .append(excludeUpper, that.excludeUpper)
-        .append(includeSpecial, that.includeSpecial)
-        .append(length, that.length)
-        .isEquals();
+    return excludeLower == that.excludeLower &&
+        excludeNumber == that.excludeNumber &&
+        excludeUpper == that.excludeUpper &&
+        includeSpecial == that.includeSpecial &&
+        Objects.equals(length, that.length) &&
+        Objects.equals(username, that.username);
   }
 
   @Override
   public int hashCode() {
-    return new HashCodeBuilder(17, 37)
-        .append(length)
-        .append(excludeLower)
-        .append(excludeNumber)
-        .append(excludeUpper)
-        .append(includeSpecial)
-        .toHashCode();
+    return Objects.hash(length, username, excludeLower, excludeNumber, excludeUpper, includeSpecial);
+  }
+
+  public boolean passwordOptionsEqual(StringGenerationParameters that) {
+    return excludeLower == that.excludeLower &&
+        excludeNumber == that.excludeNumber &&
+        excludeUpper == that.excludeUpper &&
+        includeSpecial == that.includeSpecial;
   }
 }

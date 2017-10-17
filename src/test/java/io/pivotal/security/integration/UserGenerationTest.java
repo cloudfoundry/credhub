@@ -261,11 +261,11 @@ public class UserGenerationTest {
 
   @Test
   public void credentialNotOverwrittenWhenModeIsSetToConvergeAndParametersAreTheSame() throws Exception {
-    String firstResponse = generateUser(mockMvc, credentialName1, "overwrite", 20, null);
+    String firstResponse = generateUser(mockMvc, credentialName1, "overwrite", 20, null, false);
     String originalUsername = (new JSONObject(firstResponse)).getJSONObject("value").getString("username");
     String originalPassword = (new JSONObject(firstResponse)).getJSONObject("value").getString("password");
 
-    String secondResponse = generateUser(mockMvc, credentialName1, "converge", 20, null);
+    String secondResponse = generateUser(mockMvc, credentialName1, "converge", 20, null, false);
     String secondUsername = (new JSONObject(secondResponse)).getJSONObject("value").getString("username");
     String secondPassword = (new JSONObject(secondResponse)).getJSONObject("value").getString("password");
 
@@ -275,11 +275,11 @@ public class UserGenerationTest {
 
   @Test
   public void credentialNotOverwrittenWhenModeIsSetToConvergeAndParametersAreTheSameAndAreTheDefaults() throws Exception {
-    String firstResponse = generateUser(mockMvc, credentialName1, "overwrite", null, null);
+    String firstResponse = generateUser(mockMvc, credentialName1, "overwrite", null, null, false);
     String originalUsername = (new JSONObject(firstResponse)).getJSONObject("value").getString("username");
     String originalPassword = (new JSONObject(firstResponse)).getJSONObject("value").getString("password");
 
-    String secondResponse = generateUser(mockMvc, credentialName1, "converge", null, null);
+    String secondResponse = generateUser(mockMvc, credentialName1, "converge", null, null, false);
     String secondUsername = (new JSONObject(secondResponse)).getJSONObject("value").getString("username");
     String secondPassword = (new JSONObject(secondResponse)).getJSONObject("value").getString("password");
 
@@ -289,11 +289,11 @@ public class UserGenerationTest {
 
   @Test
   public void credentialOverwrittenWhenModeIsSetToConvergeAndParametersNotTheSame() throws Exception {
-    String firstResponse = generateUser(mockMvc, credentialName1, "overwrite", 30, null);
+    String firstResponse = generateUser(mockMvc, credentialName1, "overwrite", 30, null, false);
     String originalUsername = (new JSONObject(firstResponse)).getJSONObject("value").getString("username");
     String originalPassword = (new JSONObject(firstResponse)).getJSONObject("value").getString("password");
 
-    String secondResponse = generateUser(mockMvc, credentialName1, "converge", 20, null);
+    String secondResponse = generateUser(mockMvc, credentialName1, "converge", 20, null, false);
     String secondUsername = (new JSONObject(secondResponse)).getJSONObject("value").getString("username");
     String secondPassword = (new JSONObject(secondResponse)).getJSONObject("value").getString("password");
 
@@ -304,9 +304,9 @@ public class UserGenerationTest {
 
   @Test
   public void credentialOverwrittenWhenModeIsSetToConvergeAndUsernameNotTheSame() throws Exception {
-    generateUser(mockMvc, credentialName1, "overwrite", null, "original-username");
+    generateUser(mockMvc, credentialName1, "overwrite", null, "original-username", false);
 
-    String secondResponse = generateUser(mockMvc, credentialName1, "converge", null, "updated-username");
+    String secondResponse = generateUser(mockMvc, credentialName1, "converge", null, "updated-username", false);
     String secondUsername = (new JSONObject(secondResponse)).getJSONObject("value").getString("username");
 
     assertThat(secondUsername, Matchers.equalTo("updated-username"));
@@ -314,14 +314,28 @@ public class UserGenerationTest {
 
   @Test
   public void credentialOverwrittenWhenModeIsSetToConvergeAndUsernameIsNotProvidedInTheSecondRequest() throws Exception {
-    generateUser(mockMvc, credentialName1, "overwrite", null, "original-username");
+    generateUser(mockMvc, credentialName1, "overwrite", null, "original-username", false);
 
-    String secondResponse = generateUser(mockMvc, credentialName1, "converge", null, null);
+    String secondResponse = generateUser(mockMvc, credentialName1, "converge", null, null, false);
     String secondUsername = (new JSONObject(secondResponse)).getJSONObject("value").getString("username");
 
     assertThat(secondUsername, not(equalTo("original-username")));
   }
 
+  @Test
+  public void credentialOverwrittenWhenModeIsSetToConvergeAndPasswordParametersNotTheSame() throws Exception {
+    String firstResponse = generateUser(mockMvc, credentialName1, "overwrite", 20, null, true);
+    String originalUsername = (new JSONObject(firstResponse)).getJSONObject("value").getString("username");
+    String originalPassword = (new JSONObject(firstResponse)).getJSONObject("value").getString("password");
+
+    String secondResponse = generateUser(mockMvc, credentialName1, "converge", 20, null, false);
+    String secondUsername = (new JSONObject(secondResponse)).getJSONObject("value").getString("username");
+    String secondPassword = (new JSONObject(secondResponse)).getJSONObject("value").getString("password");
+
+    assertThat(originalPassword, not(Matchers.equalTo(secondPassword)));
+    assertThat(secondPassword.length(), equalTo(20));
+    assertThat(originalUsername, not(Matchers.equalTo(secondUsername)));
+  }
 
   private JSONObject getJsonObject(MvcResult cred1) throws Exception {
     JSONObject jsonCred1 = new JSONObject(cred1.getResponse().getContentAsString());

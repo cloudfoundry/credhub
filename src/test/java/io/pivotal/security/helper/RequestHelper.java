@@ -80,7 +80,7 @@ public class RequestHelper {
     return response;
   }
 
-  public static String generateUser(MockMvc mockMvc, String credentialName, String mode, Integer length, String username)
+  public static String generateUser(MockMvc mockMvc, String credentialName, String mode, Integer length, String username, boolean excludeUpper)
       throws Exception {
     Map<String, Object> passwordRequestBody = new HashMap() {
       {
@@ -98,6 +98,10 @@ public class RequestHelper {
 
     if (username != null) {
       parameters.put("username", username);
+    }
+
+    if (excludeUpper) {
+      parameters.put("exclude_upper", true);
     }
 
     passwordRequestBody.put("parameters", parameters);
