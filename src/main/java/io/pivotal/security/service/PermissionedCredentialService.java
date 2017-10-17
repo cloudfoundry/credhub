@@ -5,7 +5,9 @@ import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContextHolder;
 import io.pivotal.security.constants.CredentialType;
 import io.pivotal.security.credential.CredentialValue;
+import io.pivotal.security.data.CertificateAuthorityService;
 import io.pivotal.security.data.CredentialVersionDataService;
+import io.pivotal.security.domain.CertificateCredentialVersion;
 import io.pivotal.security.domain.CredentialFactory;
 import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.exceptions.EntryNotFoundException;
@@ -35,6 +37,7 @@ public class PermissionedCredentialService {
   private final CredentialVersionDataService credentialVersionDataService;
 
   private final CredentialFactory credentialFactory;
+  private final CertificateAuthorityService certificateAuthorityService;
   private PermissionCheckingService permissionCheckingService;
   private final UserContextHolder userContextHolder;
 
@@ -43,10 +46,12 @@ public class PermissionedCredentialService {
       CredentialVersionDataService credentialVersionDataService,
       CredentialFactory credentialFactory,
       PermissionCheckingService permissionCheckingService,
+      CertificateAuthorityService certificateAuthorityService,
       UserContextHolder userContextHolder) {
     this.credentialVersionDataService = credentialVersionDataService;
     this.credentialFactory = credentialFactory;
     this.permissionCheckingService = permissionCheckingService;
+    this.certificateAuthorityService = certificateAuthorityService;
     this.userContextHolder = userContextHolder;
   }
 
@@ -178,6 +183,15 @@ public class PermissionedCredentialService {
     if (isNewCredential) {
       shouldWriteNewCredential = true;
     } else if ("converge".equals(overwriteMode)) {
+      if (existingCredentialVersion instanceof CertificateCredentialVersion) {
+        final CertificateCredentialVersion certificateCredentialVersion = (CertificateCredentialVersion) existingCredentialVersion;
+        if (certificateCredentialVersion.getCaName() != null) {
+          boolean updatedCA = !certificateCredentialVersion.getCa().equals(certificateAuthorityService.findMostRecent(certificateCredentialVersion.getCaName()).getCertificate());
+          if (updatedCA) {
+            return true;
+          }
+        }
+      }
       shouldWriteNewCredential = !existingCredentialVersion.matchesGenerationParameters(generationParameters);
     } else {
       shouldWriteNewCredential = "overwrite".equals(overwriteMode);

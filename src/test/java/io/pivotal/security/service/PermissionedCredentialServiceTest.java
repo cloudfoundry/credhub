@@ -5,6 +5,7 @@ import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.auth.UserContextHolder;
 import io.pivotal.security.constants.CredentialType;
 import io.pivotal.security.credential.CredentialValue;
+import io.pivotal.security.data.CertificateAuthorityService;
 import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.domain.CredentialFactory;
 import io.pivotal.security.domain.CredentialVersion;
@@ -68,6 +69,9 @@ public class PermissionedCredentialServiceTest {
   @Mock
   private CredentialFactory credentialFactory;
 
+  @Mock
+  private CertificateAuthorityService certificateAuthorityService;
+
   private PermissionedCredentialService subject;
   private CredentialVersion existingCredentialVersion;
   private UserContext userContext;
@@ -89,6 +93,7 @@ public class PermissionedCredentialServiceTest {
         credentialVersionDataService,
         credentialFactory,
         permissionCheckingService,
+        certificateAuthorityService,
         userContextHolder);
 
     auditRecordParameters = new ArrayList<>();

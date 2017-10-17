@@ -263,4 +263,18 @@ public class CertificateGenerateTest {
     assertThat(originalValue, not(Matchers.equalTo(updatedValue)));
   }
 
+  @Test
+  public void credentialOverwrittenWhenModeIsSetToConvergeAndCAUpdated() throws Exception {
+    generateCertificateCredential(mockMvc, CA_NAME, "overwrite", "test-CA", null);
+
+    String firstResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, "converge", "some-common-name", CA_NAME);
+    String originalValue = (new JSONObject(firstResponse)).getString("value");
+
+    generateCertificateCredential(mockMvc, CA_NAME, "overwrite", "test-CA", null);
+
+    String secondResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, "converge", "some-common-name", CA_NAME);
+    String updatedValue = (new JSONObject(secondResponse)).getString("value");
+
+    assertThat(originalValue, not(Matchers.equalTo(updatedValue)));
+  }
 }
