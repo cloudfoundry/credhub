@@ -5,6 +5,7 @@ import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.request.CertificateGenerationRequestParameters;
 import io.pivotal.security.request.GenerationParameters;
 import io.pivotal.security.util.CertificateReader;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
@@ -60,7 +61,7 @@ public class CertificateGenerationParameters implements GenerationParameters{
         selfSigned == that.selfSigned &&
         isCa == that.isCa &&
         Objects.equals(caName, that.caName) &&
-        Objects.equals(x500Principal, that.x500Principal) &&
+        new X500Name(that.x500Principal.getName()).equals(new X500Name(this.x500Principal.getName())) &&
         Objects.equals(alternativeNames, that.alternativeNames) &&
         Objects.equals(extendedKeyUsage, that.extendedKeyUsage) &&
         Objects.equals(keyUsage, that.keyUsage);

@@ -15,9 +15,10 @@ public class CertificateGenerationParametersTest {
   public void constructor_prependsForwardSlashToCaName() throws Exception {
     final CertificateGenerationRequestParameters requestParameters1 = new CertificateGenerationRequestParameters();
     requestParameters1.setCaName("ca-name");
+    requestParameters1.setCommonName("a-common-name");
     final CertificateGenerationRequestParameters requestParameters2 = new CertificateGenerationRequestParameters();
     requestParameters2.setCaName("/ca-name");
-
+    requestParameters2.setCommonName("a-common-name");
     final CertificateGenerationParameters parameters1 = new CertificateGenerationParameters(requestParameters1);
     final CertificateGenerationParameters parameters2 = new CertificateGenerationParameters(requestParameters2);
 
@@ -30,8 +31,10 @@ public class CertificateGenerationParametersTest {
     final String[] keyUsages1 = new String[]{"data_encipherment", "digital_signature", "non_repudiation", "key_encipherment"};
     final String[] keyUsages2 = new String[]{"digital_signature", "non_repudiation", "key_encipherment", "data_encipherment"};
     requestParameters1.setKeyUsage(keyUsages1);
+    requestParameters1.setCommonName("a-common-name");
     final CertificateGenerationRequestParameters requestParameters2 = new CertificateGenerationRequestParameters();
     requestParameters2.setKeyUsage(keyUsages2);
+    requestParameters2.setCommonName("a-common-name");
 
     final CertificateGenerationParameters parameters1 = new CertificateGenerationParameters(requestParameters1);
     final CertificateGenerationParameters parameters2 = new CertificateGenerationParameters(requestParameters2);
@@ -45,8 +48,10 @@ public class CertificateGenerationParametersTest {
     final String[] keyUsages1 = new String[]{"data_encipherment", "digital_signature", "non_repudiation", "key_encipherment"};
     final String[] keyUsages2 = new String[]{"data_encipherment", "digital_signature", "non_repudiation"};
     requestParameters1.setKeyUsage(keyUsages1);
+    requestParameters1.setCommonName("a-common-name");
     final CertificateGenerationRequestParameters requestParameters2 = new CertificateGenerationRequestParameters();
     requestParameters2.setKeyUsage(keyUsages2);
+    requestParameters2.setCommonName("a-common-name");
 
     final CertificateGenerationParameters parameters1 = new CertificateGenerationParameters(requestParameters1);
     final CertificateGenerationParameters parameters2 = new CertificateGenerationParameters(requestParameters2);
@@ -60,8 +65,10 @@ public class CertificateGenerationParametersTest {
     final String[] keyUsages1 = new String[]{"server_auth", "client_auth", "code_signing", "email_protection", "timestamping"};
     final String[] keyUsages2 = new String[]{"server_auth", "client_auth", "code_signing", "email_protection", "timestamping"};
     requestParameters1.setExtendedKeyUsage(keyUsages1);
+    requestParameters1.setCommonName("a-common-name");
     final CertificateGenerationRequestParameters requestParameters2 = new CertificateGenerationRequestParameters();
     requestParameters2.setExtendedKeyUsage(keyUsages2);
+    requestParameters2.setCommonName("a-common-name");
 
     final CertificateGenerationParameters parameters1 = new CertificateGenerationParameters(requestParameters1);
     final CertificateGenerationParameters parameters2 = new CertificateGenerationParameters(requestParameters2);
@@ -75,8 +82,10 @@ public class CertificateGenerationParametersTest {
     final String[] keyUsages1 = new String[]{"server_auth", "client_auth", "code_signing", "email_protection", "timestamping"};
     final String[] keyUsages2 = new String[]{"server_auth", "client_auth", "code_signing", "email_protection"};
     requestParameters1.setExtendedKeyUsage(keyUsages1);
+    requestParameters1.setCommonName("a-common-name");
     final CertificateGenerationRequestParameters requestParameters2 = new CertificateGenerationRequestParameters();
     requestParameters2.setExtendedKeyUsage(keyUsages2);
+    requestParameters2.setCommonName("a-common-name");
 
     final CertificateGenerationParameters parameters1 = new CertificateGenerationParameters(requestParameters1);
     final CertificateGenerationParameters parameters2 = new CertificateGenerationParameters(requestParameters2);

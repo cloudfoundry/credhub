@@ -1,6 +1,7 @@
 package io.pivotal.security.integration;
 
 import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.helper.JsonTestHelper;
 import io.pivotal.security.helper.RequestHelper;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
@@ -26,6 +27,8 @@ import org.springframework.web.context.WebApplicationContext;
 import java.io.ByteArrayInputStream;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.HashMap;
+import java.util.Map;
 
 import static io.pivotal.security.helper.RequestHelper.generateCa;
 import static io.pivotal.security.helper.RequestHelper.generateCertificateCredential;
@@ -199,6 +202,50 @@ public class CertificateGenerateTest {
     String updatedValue = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalValue, not(Matchers.equalTo(updatedValue)));
+  }
+
+  @Test
+  public void credentialNotOverwrittenWhenModeIsSetAndAllDNsSet() throws Exception {
+    generateCertificateCredential(mockMvc, CA_NAME, "overwrite", "test-CA", null);
+
+    Map<String, Object> certRequestBody = new HashMap() {
+      {
+        put("name", CREDENTIAL_NAME);
+        put("type", "certificate");
+        put("mode", "converge");
+      }
+    };
+
+    Map parameters = new HashMap<String, Object>();
+    parameters.put("ca", CA_NAME);
+    parameters.put("common_name", "common_name");
+    parameters.put("country", "US");
+    parameters.put("locality", "Area 51");
+    parameters.put("organization", "yes");
+
+
+    certRequestBody.put("parameters", parameters);
+    String content = JsonTestHelper.serializeToString(certRequestBody);
+    MockHttpServletRequestBuilder post = post("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(content);
+
+    String firstResponse = mockMvc.perform(post)
+        .andExpect(status().isOk())
+        .andReturn().getResponse().getContentAsString();
+
+    String secondResponse = mockMvc.perform(post)
+        .andExpect(status().isOk())
+        .andReturn().getResponse().getContentAsString();
+
+
+    String originalValue = (new JSONObject(firstResponse)).getString("value");
+
+    String updatedValue = (new JSONObject(secondResponse)).getString("value");
+
+    assertThat(originalValue, equalTo(updatedValue));
   }
 
   @Test

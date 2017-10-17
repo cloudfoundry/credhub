@@ -155,7 +155,7 @@ public class RequestHelper {
 
   public static String generateCertificateCredential(MockMvc mockMvc, String credentialName, String mode, String commonName, String caName)
       throws Exception {
-    Map<String, Object> passwordRequestBody = new HashMap() {
+    Map<String, Object> certRequestBody = new HashMap() {
       {
         put("name", credentialName);
         put("type", "certificate");
@@ -173,8 +173,8 @@ public class RequestHelper {
     parameters.put("common_name", commonName);
 
 
-    passwordRequestBody.put("parameters", parameters);
-    String content = JsonTestHelper.serializeToString(passwordRequestBody);
+    certRequestBody.put("parameters", parameters);
+    String content = JsonTestHelper.serializeToString(certRequestBody);
     MockHttpServletRequestBuilder post = post("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
