@@ -55,7 +55,7 @@ dependencies {
     compile("org.passay:passay:1.1.0")
     compile("com.h2database:h2:1.4.192")
     compile("com.jayway.jsonpath:json-path:2.2.0")
-    compile("org.bouncycastle:bcpkix-jdk15on:1.57")
+    compile("org.bouncycastle:bcpkix-jdk15on:1.58")
     compile("com.google.guava:guava:19.0")
     compile("org.apache.commons:commons-lang3:3.4")
     compile("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.7.5")
