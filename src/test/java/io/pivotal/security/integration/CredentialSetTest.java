@@ -95,6 +95,32 @@ public class CredentialSetTest {
   }
 
   @Test
+  public void userCredentialReturnsNullUsernameWhenSetWithBlankStringAsUsername() throws Exception {
+    MockHttpServletRequestBuilder setUserRequest = put("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        //language=JSON
+        .content("{\n"
+            + "  \"name\" :\"" + CREDENTIAL_NAME + "\",\n"
+            + "  \"type\" : \"user\",\n"
+            + "  \"value\" : {\n"
+            + "    \"username\" : \"\",\n"
+            + "    \"password\" : \"some_silly_password\"\n"
+            + "  }\n"
+            + "}");
+
+    String response = this.mockMvc
+        .perform(setUserRequest)
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andReturn().getResponse()
+        .getContentAsString();
+
+    assertThat(response, containsString("\"username\":null"));
+  }
+
+  @Test
   public void credentialCanBeOverwrittenWhenModeIsSetToOverwriteInRequest() throws Exception {
     setPassword(mockMvc, CREDENTIAL_NAME, "original-password", "no-overwrite");
 
