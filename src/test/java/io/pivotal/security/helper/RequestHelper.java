@@ -222,6 +222,7 @@ public class RequestHelper {
         .content("{\n"
             + "  \"name\" : \"" + caName + "\",\n"
             + "  \"type\" : \"certificate\",\n"
+            + "  \"overwrite\": true,\n"
             + "  \"parameters\" : {\n"
             + "    \"common_name\" : \"federation\",\n"
             + "    \"is_ca\" : true,\n"
@@ -230,7 +231,6 @@ public class RequestHelper {
             + "}");
 
     String caResult = mockMvc.perform(caPost)
-        .andDo(print())
         .andExpect(status().isOk())
         .andReturn().getResponse().getContentAsString();
 

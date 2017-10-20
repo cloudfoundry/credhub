@@ -6,6 +6,7 @@ import io.pivotal.security.domain.CertificateCredentialVersion;
 import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.service.PermissionCheckingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -15,24 +16,29 @@ import static io.pivotal.security.request.PermissionOperation.READ;
 public class CertificateAuthorityService {
 
   private final CredentialVersionDataService credentialVersionDataService;
-  private PermissionDataService permissionService;
+  private PermissionCheckingService permissionCheckingService;
   private UserContextHolder userContextHolder;
 
   @Autowired
   public CertificateAuthorityService(CredentialVersionDataService credentialVersionDataService,
-      PermissionDataService permissionService,
+      PermissionCheckingService permissionCheckingService,
       UserContextHolder userContextHolder) {
     this.credentialVersionDataService = credentialVersionDataService;
-    this.permissionService = permissionService;
+    this.permissionCheckingService = permissionCheckingService;
     this.userContextHolder = userContextHolder;
   }
 
   public CertificateCredentialValue findMostRecent(String caName) {
-    if (!permissionService.hasPermission(userContextHolder.getUserContext().getActor(), caName, READ)) {
+    if(!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), caName, READ)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
     CredentialVersion mostRecent = credentialVersionDataService.findMostRecent(caName);
+
+    if (mostRecent == null) {
+      throw new EntryNotFoundException("error.credential.invalid_access");
+    }
+
     if (!(mostRecent instanceof CertificateCredentialVersion)) {
       throw new ParameterizedValidationException("error.not_a_ca_name");
     }

@@ -8,6 +8,7 @@ import io.pivotal.security.domain.PasswordCredentialVersion;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.request.PermissionOperation;
+import io.pivotal.security.service.PermissionCheckingService;
 import io.pivotal.security.util.CertificateReader;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,6 +21,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -32,7 +35,7 @@ public class CertificateAuthorityServiceTest {
   private CredentialVersionDataService credentialVersionDataService;
   private CertificateCredentialValue certificate;
   private CertificateCredentialVersion certificateCredential;
-  private PermissionDataService permissionService;
+  private PermissionCheckingService permissionCheckingService;
   private UserContext userContext;
 
   @Before
@@ -40,17 +43,18 @@ public class CertificateAuthorityServiceTest {
     certificate = new CertificateCredentialValue(null, SELF_SIGNED_CA_CERT, "my-key", null);
     certificateCredential = mock(CertificateCredentialVersion.class);
 
-    permissionService = mock(PermissionDataService.class);
+    permissionCheckingService = mock(PermissionCheckingService.class);
     userContext = mock(UserContext.class);
     when(userContext.getActor()).thenReturn(USER_NAME);
     when(certificateCredential.getName()).thenReturn(CREDENTIAL_NAME);
-    when(permissionService.hasPermission(USER_NAME, CREDENTIAL_NAME, PermissionOperation.READ))
+    when(permissionCheckingService.hasPermission(USER_NAME, CREDENTIAL_NAME, PermissionOperation.READ))
         .thenReturn(true);
 
     credentialVersionDataService = mock(CredentialVersionDataService.class);
     UserContextHolder userContextHolder = new UserContextHolder();
     userContextHolder.setUserContext(userContext);
-    certificateAuthorityService = new CertificateAuthorityService(credentialVersionDataService, permissionService, userContextHolder);
+    certificateAuthorityService = new CertificateAuthorityService(credentialVersionDataService,
+        permissionCheckingService, userContextHolder);
   }
 
   @Test
@@ -65,9 +69,20 @@ public class CertificateAuthorityServiceTest {
   }
 
   @Test
+  public void findMostRecent_whenACaDoesNotExistAndPermissionsAreNotEnforced_throwsException() {
+    when(credentialVersionDataService.findMostRecent(any(String.class))).thenReturn(null);
+    when(permissionCheckingService.hasPermission(anyString(), anyString(), anyObject())).thenReturn(true);
+    try {
+      certificateAuthorityService.findMostRecent("any ca name");
+    } catch (EntryNotFoundException pe) {
+      assertThat(pe.getMessage(), equalTo("error.credential.invalid_access"));
+    }
+  }
+
+  @Test
   public void findMostRecent_whenCaNameRefersToNonCa_throwsException() {
     when(credentialVersionDataService.findMostRecent(any(String.class))).thenReturn(mock(PasswordCredentialVersion.class));
-    when(permissionService.hasPermission(USER_NAME, "any non-ca name", PermissionOperation.READ))
+    when(permissionCheckingService.hasPermission(USER_NAME, "any non-ca name", PermissionOperation.READ))
         .thenReturn(true);
 
     try {

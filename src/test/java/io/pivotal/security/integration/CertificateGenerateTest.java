@@ -2,7 +2,6 @@ package io.pivotal.security.integration;
 
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.helper.JsonTestHelper;
-import io.pivotal.security.helper.RequestHelper;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.Extension;
@@ -30,6 +29,7 @@ import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Map;
 
+import static io.pivotal.security.helper.RequestHelper.expect404WhileGeneratingCertificate;
 import static io.pivotal.security.helper.RequestHelper.generateCa;
 import static io.pivotal.security.helper.RequestHelper.generateCertificateCredential;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN;
@@ -140,7 +140,7 @@ public class CertificateGenerateTest {
   public void certificateGeneration_whenUserNotAuthorizedToReadCa_shouldReturnCorrectError() throws Exception {
     generateCa(mockMvc, "picard", UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
     // try to generate with a different token that doesn't have read permission
-    RequestHelper.expect404WhileGeneratingCertificate(mockMvc, "riker", UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN,
+    expect404WhileGeneratingCertificate(mockMvc, "riker", UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN,
         "The request could not be completed because the credential does not exist or you do not have sufficient authorization.");
   }
 
