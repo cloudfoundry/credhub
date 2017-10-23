@@ -1,7 +1,18 @@
 package io.pivotal.security.generator;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.it;
+import io.pivotal.security.credential.StringCredentialValue;
+import io.pivotal.security.request.StringGenerationParameters;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.passay.CharacterRule;
+import org.passay.PasswordGenerator;
+
+import java.util.List;
+
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
@@ -10,18 +21,8 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.credential.StringCredentialValue;
-import io.pivotal.security.request.StringGenerationParameters;
-import java.util.List;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.passay.CharacterRule;
-import org.passay.PasswordGenerator;
 
-
-@RunWith(Spectrum.class)
+@RunWith(JUnit4.class)
 public class PassayStringCredentialValueGeneratorTest {
 
   private PasswordGenerator passwordGenerator;
@@ -30,52 +31,56 @@ public class PassayStringCredentialValueGeneratorTest {
   @Captor
   private ArgumentCaptor<List<CharacterRule>> captor;
 
-  {
-    beforeEach(() -> {
-      passwordGenerator = mock(PasswordGenerator.class);
-      subject = new PassayStringCredentialGenerator(passwordGenerator);
-    });
 
-    it("can generate credential", () -> {
-      StringGenerationParameters generationParameters = new StringGenerationParameters();
+  @Before
+  public void beforeEach() {
+    passwordGenerator = mock(PasswordGenerator.class);
+    subject = new PassayStringCredentialGenerator(passwordGenerator);
+  }
 
-      when(passwordGenerator.generatePassword(eq(subject.DEFAULT_LENGTH), any(List.class)))
-          .thenReturn("very-credential");
+  @Test
+  public void canGenerateCredential() {
+    StringGenerationParameters generationParameters = new StringGenerationParameters();
 
-      StringCredentialValue stringCredentialValue = subject.generateCredential(generationParameters);
-      assertThat(stringCredentialValue.getStringCredential(), equalTo("very-credential"));
-    });
+    when(passwordGenerator.generatePassword(eq(subject.DEFAULT_LENGTH), any(List.class)))
+        .thenReturn("very-credential");
 
-    it("can generate credential with specific length", () -> {
-      when(passwordGenerator.generatePassword(eq(42), anyList())).thenReturn("very-credential");
+    StringCredentialValue stringCredentialValue = subject.generateCredential(generationParameters);
+    assertThat(stringCredentialValue.getStringCredential(), equalTo("very-credential"));
+  }
 
-      StringGenerationParameters generationParameters = new StringGenerationParameters();
-      generationParameters.setLength(42);
+  @Test
+  public void canGenerateCredentialWithSpecificLength() {
+    when(passwordGenerator.generatePassword(eq(42), anyList())).thenReturn("very-credential");
 
-      StringCredentialValue stringCredentialValue = subject.generateCredential(generationParameters);
-      assertThat(stringCredentialValue.getStringCredential(), equalTo("very-credential"));
-    });
+    StringGenerationParameters generationParameters = new StringGenerationParameters();
+    generationParameters.setLength(42);
 
-    it("ignores too-small length values", () -> {
-      when(passwordGenerator.generatePassword(eq(subject.DEFAULT_LENGTH), anyList()))
-          .thenReturn("very-credential");
+    StringCredentialValue stringCredentialValue = subject.generateCredential(generationParameters);
+    assertThat(stringCredentialValue.getStringCredential(), equalTo("very-credential"));
+  }
 
-      StringGenerationParameters generationParameters = new StringGenerationParameters();
-      generationParameters.setLength(3);
+  @Test
+  public void ignoresTooSmallLengthValues() {
+    when(passwordGenerator.generatePassword(eq(subject.DEFAULT_LENGTH), anyList()))
+        .thenReturn("very-credential");
 
-      StringCredentialValue stringCredentialValue = subject.generateCredential(generationParameters);
-      assertThat(stringCredentialValue.getStringCredential(), equalTo("very-credential"));
-    });
+    StringGenerationParameters generationParameters = new StringGenerationParameters();
+    generationParameters.setLength(3);
 
-    it("ignores too-large length values", () -> {
-      when(passwordGenerator.generatePassword(eq(subject.DEFAULT_LENGTH), anyList()))
-          .thenReturn("very-credential");
+    StringCredentialValue stringCredentialValue = subject.generateCredential(generationParameters);
+    assertThat(stringCredentialValue.getStringCredential(), equalTo("very-credential"));
+  }
 
-      StringGenerationParameters generationParameters = new StringGenerationParameters();
-      generationParameters.setLength(201);
+  @Test
+  public void ignoresTooLargeLengthValues() {
+    when(passwordGenerator.generatePassword(eq(subject.DEFAULT_LENGTH), anyList()))
+        .thenReturn("very-credential");
 
-      StringCredentialValue stringCredentialValue = subject.generateCredential(generationParameters);
-      assertThat(stringCredentialValue.getStringCredential(), equalTo("very-credential"));
-    });
+    StringGenerationParameters generationParameters = new StringGenerationParameters();
+    generationParameters.setLength(201);
+
+    StringCredentialValue stringCredentialValue = subject.generateCredential(generationParameters);
+    assertThat(stringCredentialValue.getStringCredential(), equalTo("very-credential"));
   }
 }

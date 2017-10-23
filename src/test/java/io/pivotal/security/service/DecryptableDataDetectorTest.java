@@ -1,74 +1,60 @@
 package io.pivotal.security.service;
 
-import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.data.CredentialVersionDataService;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@RunWith(Spectrum.class)
+@RunWith(JUnit4.class)
 public class DecryptableDataDetectorTest {
 
   private CredentialVersionDataService credentialVersionDataService;
   private EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
   private DecryptableDataDetector decryptableDataDetector;
 
-  {
-    beforeEach(() -> {
-      credentialVersionDataService = mock(CredentialVersionDataService.class);
-      encryptionKeyCanaryMapper = mock(EncryptionKeyCanaryMapper.class);
-    });
+  @Before
+  public void beforeEach() {
+    credentialVersionDataService = mock(CredentialVersionDataService.class);
+    encryptionKeyCanaryMapper = mock(EncryptionKeyCanaryMapper.class);
+  }
 
-    describe("when no credentials could be decrypted", () -> {
-      describe("when there are no credentials", () -> {
-        beforeEach(() -> {
-          when(credentialVersionDataService.count()).thenReturn(0L);
-          when(credentialVersionDataService.countEncryptedWithKeyUuidIn(any())).thenReturn(0L);
-        });
+  @Test
+  public void whenNoCredentialsCouldBeDecrypted_whenThereAreNoCredentials_doesNotError() {
+    when(credentialVersionDataService.count()).thenReturn(0L);
+    when(credentialVersionDataService.countEncryptedWithKeyUuidIn(any())).thenReturn(0L);
+    decryptableDataDetector = new DecryptableDataDetector(encryptionKeyCanaryMapper,
+        credentialVersionDataService);
+    decryptableDataDetector.check();
+  }
 
-        it("does not error", () -> {
-          decryptableDataDetector = new DecryptableDataDetector(encryptionKeyCanaryMapper,
-              credentialVersionDataService);
-          decryptableDataDetector.check();
-        });
-      });
+  @Test
+  public void whenNoCredentialsCouldBeDecrypted_whenThereAreCredentials_andNoneCanBeDecrypted() {
+    when(credentialVersionDataService.count()).thenReturn(4L);
+    when(credentialVersionDataService.countEncryptedWithKeyUuidIn(any())).thenReturn(0L);
+    decryptableDataDetector = new DecryptableDataDetector(encryptionKeyCanaryMapper,
+        credentialVersionDataService);
+    try {
+      decryptableDataDetector.check();
+    } catch (RuntimeException rte) {
+      assertThat(rte.getMessage(),
+          containsString("The encryption keys provided cannot decrypt any of the 4 value(s) in the database."
+              + " Please make sure you've provided the necessary encryption keys."));
+    }
+  }
 
-      describe("when there are credentials", () -> {
-        describe("when none can be decrypted", () -> {
-          beforeEach(() -> {
-            when(credentialVersionDataService.count()).thenReturn(4L);
-            when(credentialVersionDataService.countEncryptedWithKeyUuidIn(any())).thenReturn(0L);
-          });
-
-          itThrowsWithMessage("stuff", RuntimeException.class,
-              "The encryption keys provided cannot decrypt any of the 4 value(s) in the database."
-                  + " Please make sure you've provided the necessary encryption keys.",
-              () -> {
-                decryptableDataDetector = new DecryptableDataDetector(encryptionKeyCanaryMapper,
-                    credentialVersionDataService);
-                decryptableDataDetector.check();
-              });
-        });
-
-        describe("when some can be decrypted", () -> {
-          beforeEach(() -> {
-            when(credentialVersionDataService.count()).thenReturn(4L);
-            when(credentialVersionDataService.countEncryptedWithKeyUuidIn(any())).thenReturn(1L);
-          });
-
-          it("does not error", () -> {
-            decryptableDataDetector = new DecryptableDataDetector(encryptionKeyCanaryMapper,
-                credentialVersionDataService);
-            decryptableDataDetector.check();
-          });
-        });
-      });
-    });
+  @Test
+  public void whenCredentialsCanBeDecrypted_doesNotError() {
+    when(credentialVersionDataService.count()).thenReturn(4L);
+    when(credentialVersionDataService.countEncryptedWithKeyUuidIn(any())).thenReturn(1L);
+    decryptableDataDetector = new DecryptableDataDetector(encryptionKeyCanaryMapper,
+        credentialVersionDataService);
+    decryptableDataDetector.check();
   }
 }

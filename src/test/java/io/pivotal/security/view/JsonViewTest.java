@@ -1,17 +1,18 @@
 package io.pivotal.security.view;
 
-import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.JsonCredentialVersion;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.JsonTestHelper.serializeToString;
 import static io.pivotal.security.helper.SpectrumHelper.json;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -20,7 +21,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@RunWith(Spectrum.class)
+@RunWith(JUnit4.class)
 public class JsonViewTest {
 
   private JsonCredentialVersion entity;
@@ -29,55 +30,58 @@ public class JsonViewTest {
   private Map<String, Object> value;
   private String serializedValue;
 
-  {
-    beforeEach(() -> {
-      value = new HashMap<>();
-      value.put("string", "something");
-      value.put("num", 10);
-      value.put("camelCase", "blabla");
+  @Before
+  public void beforeEach() {
+    value = new HashMap<>();
+    value.put("string", "something");
+    value.put("num", 10);
+    value.put("camelCase", "blabla");
 
-      serializedValue = serializeToString(value);
+    serializedValue = serializeToString(value);
 
-      encryptor = mock(Encryptor.class);
-      uuid = UUID.randomUUID();
-      entity = new JsonCredentialVersion("/foo")
-          .setEncryptor(encryptor)
-          .setUuid(uuid);
+    encryptor = mock(Encryptor.class);
+    uuid = UUID.randomUUID();
+    entity = new JsonCredentialVersion("/foo")
+        .setEncryptor(encryptor)
+        .setUuid(uuid);
 
-      when(encryptor.decrypt(any()))
-          .thenReturn(serializedValue);
-    });
+    when(encryptor.decrypt(any()))
+        .thenReturn(serializedValue);
+  }
 
-    it("can create view from entity", () -> {
-      JsonView actual = (JsonView) JsonView.fromEntity(entity);
-      assertThat(json(actual), equalTo("{"
-          + "\"type\":\"json\","
-          + "\"version_created_at\":null,"
-          + "\"id\":\"" + uuid.toString() + "\","
-          + "\"name\":\"/foo\","
-          + "\"value\":" + serializedValue
-          + "}"));
-    });
+  @Test
+  public void itCanCreateViewFromEntity() throws IOException {
+    JsonView actual = (JsonView) JsonView.fromEntity(entity);
+    assertThat(json(actual), equalTo("{"
+        + "\"type\":\"json\","
+        + "\"version_created_at\":null,"
+        + "\"id\":\"" + uuid.toString() + "\","
+        + "\"name\":\"/foo\","
+        + "\"value\":" + serializedValue
+        + "}"));
+  }
 
-    it("has version_created_at in the view", () -> {
-      Instant now = Instant.now();
-      entity.setVersionCreatedAt(now);
+  @Test
+  public void hasVersionCreatedAtInTheView() {
+    Instant now = Instant.now();
+    entity.setVersionCreatedAt(now);
 
-      JsonView actual = (JsonView) JsonView.fromEntity(entity);
+    JsonView actual = (JsonView) JsonView.fromEntity(entity);
 
-      assertThat(actual.getVersionCreatedAt(), equalTo(now));
-    });
+    assertThat(actual.getVersionCreatedAt(), equalTo(now));
+  }
 
-    it("has type in the view", () -> {
-      JsonView actual = (JsonView) JsonView.fromEntity(entity);
+  @Test
+  public void hasTypeInTheView() {
+    JsonView actual = (JsonView) JsonView.fromEntity(entity);
 
-      assertThat(actual.getType(), equalTo("json"));
-    });
+    assertThat(actual.getType(), equalTo("json"));
+  }
 
-    it("has a uuid in the view", () -> {
-      JsonView actual = (JsonView) JsonView.fromEntity(entity);
+  @Test
+  public void hasAUUIDInTheView() {
+    JsonView actual = (JsonView) JsonView.fromEntity(entity);
 
-      assertThat(actual.getUuid(), equalTo(uuid.toString()));
-    });
+    assertThat(actual.getUuid(), equalTo(uuid.toString()));
   }
 }

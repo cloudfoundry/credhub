@@ -1,17 +1,15 @@
 package io.pivotal.security.generator;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.credential.RsaCredentialValue;
 import io.pivotal.security.request.RsaGenerationParameters;
 import io.pivotal.security.util.CertificateFormatter;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import java.security.KeyPair;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.anyInt;
@@ -19,7 +17,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(Spectrum.class)
+@RunWith(JUnit4.class)
 public class RsaGeneratorTest {
 
   private LibcryptoRsaKeyPairGenerator keyPairGenerator;
@@ -28,38 +26,33 @@ public class RsaGeneratorTest {
 
   private KeyPair keyPair;
 
-  private UserContext userContext;
+  @Before
+  public void beforeEach() throws Exception {
+    keyPairGenerator = mock(LibcryptoRsaKeyPairGenerator.class);
+    fakeKeyPairGenerator = new FakeKeyPairGenerator();
+    keyPair = fakeKeyPairGenerator.generate();
+    when(keyPairGenerator.generateKeyPair(anyInt())).thenReturn(keyPair);
 
-  {
-    beforeEach(() -> {
-      keyPairGenerator = mock(LibcryptoRsaKeyPairGenerator.class);
+    subject = new RsaGenerator(keyPairGenerator);
+  }
 
-      fakeKeyPairGenerator = new FakeKeyPairGenerator();
-      keyPair = fakeKeyPairGenerator.generate();
-      when(keyPairGenerator.generateKeyPair(anyInt())).thenReturn(keyPair);
-      userContext = mock(UserContext.class);
+  @Test
+  public void generateCredential_shouldReturnAGeneratedCredential() throws Exception {
+    final RsaCredentialValue rsa = subject.generateCredential(new RsaGenerationParameters());
 
-      subject = new RsaGenerator(keyPairGenerator);
-    });
+    verify(keyPairGenerator).generateKeyPair(2048);
 
-    describe("generateCredential", () -> {
-      it("should return a generated credential", () -> {
-        final RsaCredentialValue rsa = subject.generateCredential(new RsaGenerationParameters());
+    assertThat(rsa.getPublicKey(), equalTo(CertificateFormatter.pemOf(keyPair.getPublic())));
+    assertThat(rsa.getPrivateKey(), equalTo(CertificateFormatter.pemOf(keyPair.getPrivate())));
+  }
 
-        verify(keyPairGenerator).generateKeyPair(2048);
+  @Test
+  public void generateCredential_shouldUseTheProvidedKeyLength() throws Exception {
+    RsaGenerationParameters rsaGenerationParameters = new RsaGenerationParameters();
+    rsaGenerationParameters.setKeyLength(4096);
 
-        assertThat(rsa.getPublicKey(), equalTo(CertificateFormatter.pemOf(keyPair.getPublic())));
-        assertThat(rsa.getPrivateKey(), equalTo(CertificateFormatter.pemOf(keyPair.getPrivate())));
-      });
+    subject.generateCredential(rsaGenerationParameters);
 
-      it("should use the provided key length", () -> {
-        RsaGenerationParameters rsaGenerationParameters = new RsaGenerationParameters();
-        rsaGenerationParameters.setKeyLength(4096);
-
-        subject.generateCredential(rsaGenerationParameters);
-
-        verify(keyPairGenerator).generateKeyPair(4096);
-      });
-    });
+    verify(keyPairGenerator).generateKeyPair(4096);
   }
 }
