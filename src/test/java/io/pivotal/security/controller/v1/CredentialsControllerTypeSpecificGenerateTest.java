@@ -1,4 +1,4 @@
-package io.pivotal.security.controller.v1.credential;
+package io.pivotal.security.controller.v1;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.pivotal.security.CredentialManagerApp;
@@ -329,12 +329,12 @@ public class CredentialsControllerTypeSpecificGenerateTest {
 
     DefaultCredentialGenerateRequest requestBody = mock(DefaultCredentialGenerateRequest.class);
 
-    doThrow(new ParameterizedValidationException("error.request_validation_test")).when(requestBody).validate();
+    doThrow(new ParameterizedValidationException("error.bad_request")).when(requestBody).validate();
     doReturn(requestBody).when(objectMapper).readValue(anyString(), any(Class.class));
 
     mockMvc.perform(request)
         .andExpect(status().isBadRequest())
-        .andExpect(content().json("{\"error\":\"Request body was validated and ControllerAdvice worked.\"}"));
+        .andExpect(content().json("{\"error\":\"The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.\"}"));
   }
 
   @Test
@@ -361,26 +361,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
   }
 
   @Test
-  public void generatingANewCredential_shouldReturnGeneratedCredential() throws Exception {
-    MockHttpServletRequestBuilder request = createGenerateNewCredentialRequest();
-
-    ResultActions response = mockMvc.perform(request);
-
-    ArgumentCaptor<CredentialVersion> argumentCaptor = ArgumentCaptor.forClass(CredentialVersion.class);
-    verify(credentialVersionDataService, times(1)).save(argumentCaptor.capture());
-
-    response
-        .andExpect(parametizer.jsonAssertions())
-        .andExpect(multiJsonPath(
-            "$.type", parametizer.credentialType,
-            "$.id", argumentCaptor.getValue().getUuid().toString(),
-            "$.version_created_at", FROZEN_TIME.toString()))
-        .andExpect(status().isOk())
-        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON));
-  }
-
-  @Test
-  public void generatingANewCredential_shouldAskDataServiceToPersistTheCredential() throws Exception {
+  public void generatingANewCredential_shouldReturnGeneratedCredentialAndAskDataServiceToPersistTheCredential() throws Exception {
     MockHttpServletRequestBuilder request = createGenerateNewCredentialRequest();
 
     ResultActions response = mockMvc.perform(request);

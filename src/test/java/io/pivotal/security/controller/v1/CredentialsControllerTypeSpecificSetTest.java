@@ -1,4 +1,4 @@
-package io.pivotal.security.controller.v1.credential;
+package io.pivotal.security.controller.v1;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -509,7 +509,7 @@ public class CredentialsControllerTypeSpecificSetTest {
   }
 
   @Test
-  public void settingACredential_validatesTheRequestBody() throws Exception {
+  public void validationExceptionsAreReturnedAsErrorMessages() throws Exception {
     MockHttpServletRequestBuilder request = put("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
@@ -525,12 +525,12 @@ public class CredentialsControllerTypeSpecificSetTest {
             "}");
 
     BaseCredentialSetRequest requestObject = mock(BaseCredentialSetRequest.class);
-    doThrow(new ParameterizedValidationException("error.request_validation_test")).when(requestObject).validate();
+    doThrow(new ParameterizedValidationException("error.bad_request")).when(requestObject).validate();
     doReturn(requestObject).when(objectMapper).readValue(any(InputStream.class), any(JavaType.class));
 
     mockMvc.perform(request)
         .andExpect(status().isBadRequest())
-        .andExpect(content().json("{\"error\":\"Request body was validated and ControllerAdvice worked.\"}"));
+        .andExpect(content().json("{\"error\":\"The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.\"}"));
   }
 
   @Test

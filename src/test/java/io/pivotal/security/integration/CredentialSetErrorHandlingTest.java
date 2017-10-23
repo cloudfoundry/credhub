@@ -1,9 +1,6 @@
-package io.pivotal.security.controller.v1.credential;
+package io.pivotal.security.integration;
 
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.data.CredentialVersionDataService;
-import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.ValueCredentialVersion;
 import io.pivotal.security.helper.AuditingHelper;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
@@ -13,7 +10,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -23,11 +19,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
+import static io.pivotal.security.helper.RequestHelper.setPassword;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.reset;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -40,7 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 @Transactional
-public class CredentialsControllerErrorHandlingSetTest {
+public class CredentialSetErrorHandlingTest {
   private final String CREDENTIAL_NAME = "/my-namespace/secretForErrorHandlingSetTest/credential-name";
   private final String CREDENTIAL_VALUE = "credential-value";
 
@@ -48,16 +43,10 @@ public class CredentialsControllerErrorHandlingSetTest {
   private WebApplicationContext webApplicationContext;
 
   @Autowired
-  private Encryptor encryptor;
-
-  @Autowired
   private RequestAuditRecordRepository requestAuditRecordRepository;
 
   @Autowired
   private EventAuditRecordRepository eventAuditRecordRepository;
-
-  @SpyBean
-  private CredentialVersionDataService credentialVersionDataService;
 
   private AuditingHelper auditingHelper;
   private MockMvc mockMvc;
@@ -74,17 +63,14 @@ public class CredentialsControllerErrorHandlingSetTest {
 
   @Test
   public void whenTheTypeChanges_returns400() throws Exception {
-    ValueCredentialVersion valueCredential = new ValueCredentialVersion(CREDENTIAL_NAME);
-    valueCredential.setEncryptor(encryptor);
-    valueCredential.setValue(CREDENTIAL_VALUE);
-    doReturn(valueCredential).when(credentialVersionDataService).findMostRecent(CREDENTIAL_NAME);
+    setPassword(mockMvc, CREDENTIAL_NAME, "some password", "overwrite");
 
     final MockHttpServletRequestBuilder request = put("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{" +
-            "  \"type\":\"password\"," +
+            "  \"type\":\"value\"," +
             "  \"name\":\"" + CREDENTIAL_NAME + "\"," +
             "  \"value\":\"some password\"" +
             "}");
@@ -98,7 +84,6 @@ public class CredentialsControllerErrorHandlingSetTest {
 
   @Test
   public void whenTheTypeChanges_auditsTheFailure() throws Exception {
-    System.out.println("Most recent cred:" + credentialVersionDataService.findMostRecent(CREDENTIAL_NAME));
     final MockHttpServletRequestBuilder setRequest = put("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
@@ -110,9 +95,6 @@ public class CredentialsControllerErrorHandlingSetTest {
             "}");
 
     mockMvc.perform(setRequest).andDo(print());
-
-    credentialVersionDataService.findMostRecent(CREDENTIAL_NAME).getUuid();
-    reset(credentialVersionDataService);
 
     final MockHttpServletRequestBuilder updateRequest = put("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)

@@ -1,4 +1,4 @@
-package io.pivotal.security.controller.v1.credential;
+package io.pivotal.security.controller.v1;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.ByteStreams;

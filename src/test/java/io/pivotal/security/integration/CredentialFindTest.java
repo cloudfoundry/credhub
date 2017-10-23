@@ -1,20 +1,15 @@
-package io.pivotal.security.controller.v1.credential;
+package io.pivotal.security.integration;
 
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.helper.AuditingHelper;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
-import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.view.FindCredentialResult;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -24,18 +19,12 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.function.Consumer;
-
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_FIND;
-import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
+import static io.pivotal.security.helper.RequestHelper.generatePassword;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
-import static java.util.Collections.singletonList;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.doReturn;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -47,16 +36,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 @Transactional
-public class CredentialsControllerFindTest {
+public class CredentialFindTest {
 
   @Autowired
   private WebApplicationContext webApplicationContext;
-
-  @SpyBean
-  private CredentialVersionDataService credentialVersionDataService;
-
-  @MockBean
-  private CurrentTimeProvider mockCurrentTimeProvider;
 
   @Autowired
   private RequestAuditRecordRepository requestAuditRecordRepository;
@@ -68,15 +51,10 @@ public class CredentialsControllerFindTest {
 
   private MockMvc mockMvc;
 
-  private Instant frozenTime = Instant.ofEpochSecond(1400011001L);
-
   private final String credentialName = "/my-namespace/subTree/credential-name";
 
   @Before
   public void beforeEach() {
-    Consumer<Long> fakeTimeSetter = mockOutCurrentTimeProvider(mockCurrentTimeProvider);
-
-    fakeTimeSetter.accept(frozenTime.toEpochMilli());
     mockMvc = MockMvcBuilders
         .webAppContextSetup(webApplicationContext)
         .apply(springSecurity())
@@ -91,8 +69,7 @@ public class CredentialsControllerFindTest {
 
     response.andExpect(status().isOk())
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-        .andExpect(jsonPath("$.credentials[0].name").value(credentialName))
-        .andExpect(jsonPath("$.credentials[0].version_created_at").value(frozenTime.toString()));
+        .andExpect(jsonPath("$.credentials[0].name").value(credentialName));
   }
 
   @Test
@@ -105,9 +82,7 @@ public class CredentialsControllerFindTest {
   @Test
   public void findCredentials_byPath_returnsCredentialMetaData() throws Exception {
     String substring = credentialName.substring(0, credentialName.lastIndexOf("/"));
-    doReturn(
-        singletonList(new FindCredentialResult(frozenTime, credentialName))
-    ).when(credentialVersionDataService).findStartingWithPath(substring);
+    generatePassword(mockMvc, credentialName, "overwrite", 20);
 
     final MockHttpServletRequestBuilder getResponse = get("/api/v1/data?path=" + substring)
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -116,8 +91,7 @@ public class CredentialsControllerFindTest {
     mockMvc.perform(getResponse)
         .andExpect(status().isOk())
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-        .andExpect(jsonPath("$.credentials[0].name").value(credentialName))
-        .andExpect(jsonPath("$.credentials[0].version_created_at").value(frozenTime.toString()));
+        .andExpect(jsonPath("$.credentials[0].name").value(credentialName));
   }
 
   @Test
@@ -138,9 +112,8 @@ public class CredentialsControllerFindTest {
   @Test
   public void findCredentials_byPath_shouldReturnAllChildrenPrefixedWithThePathCaseInsensitively() throws Exception {
     final String path = "/my-namespace";
-    doReturn(
-        singletonList(new FindCredentialResult(frozenTime, credentialName))
-    ).when(credentialVersionDataService).findStartingWithPath(path.toUpperCase());
+
+    generatePassword(mockMvc, credentialName, "overwrite", 20);
 
     assertTrue(credentialName.startsWith(path));
 
@@ -171,9 +144,8 @@ public class CredentialsControllerFindTest {
   @Test
   public void findCredentials_byPath_savesTheAuditLog() throws Exception {
     String substring = credentialName.substring(0, credentialName.lastIndexOf("/"));
-    doReturn(
-        singletonList(new FindCredentialResult(frozenTime, credentialName))
-    ).when(credentialVersionDataService).findStartingWithPath(substring);
+
+    generatePassword(mockMvc, credentialName, "overwrite", 20);
 
     final MockHttpServletRequestBuilder request = get("/api/v1/data?path=" + substring)
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -189,22 +161,21 @@ public class CredentialsControllerFindTest {
     final MockHttpServletRequestBuilder getRequest = get("/api/v1/data?paths=true")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON);
-    doReturn(
-        Arrays.asList("my-namespace/", "my-namespace/subTree/")
-    ).when(credentialVersionDataService).findAllPaths();
+
+    generatePassword(mockMvc, "my-namespace/subTree/credential", "overwrite", 20);
 
     mockMvc.perform(getRequest)
         .andExpect(status().isOk())
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-        .andExpect(jsonPath("$.paths[0].path").value("my-namespace/"))
-        .andExpect(jsonPath("$.paths[1].path").value("my-namespace/subTree/"));
+        .andExpect(jsonPath("$.paths[0].path").value("/"))
+        .andExpect(jsonPath("$.paths[1].path").value("/my-namespace/"))
+        .andExpect(jsonPath("$.paths[2].path").value("/my-namespace/subTree/"));
   }
 
   private ResultActions findCredentialsByNameLike() throws Exception {
+    generatePassword(mockMvc, credentialName, "overwrite", 20);
     String substring = credentialName.substring(4).toUpperCase();
-    doReturn(
-        singletonList(new FindCredentialResult(frozenTime, credentialName))
-    ).when(credentialVersionDataService).findContainingName(substring);
+
     final MockHttpServletRequestBuilder get = get("/api/v1/data?name-like=" + substring)
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON);

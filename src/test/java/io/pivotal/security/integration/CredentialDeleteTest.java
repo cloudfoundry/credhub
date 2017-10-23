@@ -1,9 +1,8 @@
-package io.pivotal.security.controller.v1.credential;
+package io.pivotal.security.integration;
 
 
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.CredentialVersionDataService;
-import io.pivotal.security.domain.ValueCredentialVersion;
 import io.pivotal.security.helper.AuditingHelper;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
@@ -13,7 +12,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -23,11 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_DELETE;
+import static io.pivotal.security.helper.RequestHelper.generateCa;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -39,13 +35,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 @Transactional
-public class CredentialsControllerDeleteTest {
+public class CredentialDeleteTest {
   private static final String CREDENTIAL_NAME = "/my-namespace/subTree/credential-name";
 
   @Autowired
   private WebApplicationContext webApplicationContext;
 
-  @SpyBean
+  @Autowired
   private CredentialVersionDataService credentialVersionDataService;
 
   @Autowired
@@ -112,10 +108,7 @@ public class CredentialsControllerDeleteTest {
 
   @Test
   public void delete_whenThereIsOneCredentialVersionWithTheCaseInsensitiveName_deletesTheCredential() throws Exception {
-    doReturn(true).when(credentialVersionDataService).delete(CREDENTIAL_NAME.toUpperCase());
-    doReturn(new ValueCredentialVersion())
-        .when(credentialVersionDataService)
-        .findMostRecent(CREDENTIAL_NAME.toUpperCase());
+    generateCa(mockMvc, CREDENTIAL_NAME, UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
 
     MockHttpServletRequestBuilder request = delete("/api/v1/data?name=" + CREDENTIAL_NAME.toUpperCase())
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
@@ -123,23 +116,19 @@ public class CredentialsControllerDeleteTest {
     mockMvc.perform(request)
         .andExpect(status().isNoContent());
 
-    verify(credentialVersionDataService, times(1)).delete(CREDENTIAL_NAME.toUpperCase());
-
     auditingHelper.verifyAuditing(CREDENTIAL_DELETE, CREDENTIAL_NAME.toUpperCase(), UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 204);
   }
 
   @Test
   public void delete_whenThereAreMultipleCredentialVersionsWithTheName_deletesAllVersions() throws Exception {
-    doReturn(true).when(credentialVersionDataService).delete(CREDENTIAL_NAME);
-    doReturn(new ValueCredentialVersion()).when(credentialVersionDataService).findMostRecent(CREDENTIAL_NAME);
+    generateCa(mockMvc, CREDENTIAL_NAME, UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+    generateCa(mockMvc, CREDENTIAL_NAME, UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
 
     MockHttpServletRequestBuilder request = delete("/api/v1/data?name=" + CREDENTIAL_NAME)
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
 
     mockMvc.perform(request)
         .andExpect(status().isNoContent());
-
-    verify(credentialVersionDataService, times(1)).delete(CREDENTIAL_NAME);
 
     auditingHelper.verifyAuditing(CREDENTIAL_DELETE, CREDENTIAL_NAME, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 204);
   }

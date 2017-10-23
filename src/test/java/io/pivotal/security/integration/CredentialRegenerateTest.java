@@ -1,4 +1,4 @@
-package io.pivotal.security.controller.v1.credential;
+package io.pivotal.security.integration;
 
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.CredentialVersionDataService;
@@ -62,7 +62,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = CredentialManagerApp.class)
 @TestPropertySource(properties = "security.authorization.acls.enabled=true")
 @Transactional
-public class CredentialsControllerRegenerateTest {
+public class CredentialRegenerateTest {
   private static final Instant FROZEN_TIME = Instant.ofEpochSecond(1400011001L);
 
   @Autowired

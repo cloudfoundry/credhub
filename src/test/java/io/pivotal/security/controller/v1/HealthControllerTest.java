@@ -1,4 +1,4 @@
-package io.pivotal.security.controller.v1.health;
+package io.pivotal.security.controller.v1;
 
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.util.DatabaseProfileResolver;

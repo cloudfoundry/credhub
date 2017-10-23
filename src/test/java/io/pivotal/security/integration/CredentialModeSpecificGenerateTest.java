@@ -31,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 @Transactional
-public class CredentialGenerateTest {
+public class CredentialModeSpecificGenerateTest {
   private static final String CREDENTIAL_NAME = "/set_credential";
 
   @Autowired

@@ -27,7 +27,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.util.Map;
 
-import static io.pivotal.security.controller.v1.credential.CredentialsController.API_V1_DATA;
+import static io.pivotal.security.controller.v1.CredentialsController.API_V1_DATA;
 import static io.pivotal.security.util.AuthConstants.INVALID_SCOPE_KEY_JWT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
