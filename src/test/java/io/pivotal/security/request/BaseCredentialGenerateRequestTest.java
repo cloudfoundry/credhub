@@ -1,121 +1,112 @@
 package io.pivotal.security.request;
 
-import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.helper.JsonTestHelper;
+import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertThat;
 
-@RunWith(Spectrum.class)
+@RunWith(JUnit4.class)
 public class BaseCredentialGenerateRequestTest {
 
-  {
-    describe("#validate", () -> {
-      describe("when the request is valid", () -> {
-        it("should not have any constraint violations", () -> {
-          String json = "{"
-              + "\"name\":\"some-name\","
-              + "\"type\":\"password\","
-              + "\"overwrite\":true"
-              + "}";
+  @Test
+  public void validate_whenTheRequestIsValid_doesNotHaveAnyConstraintValidations() {
+    String json = "{"
+        + "\"name\":\"some-name\","
+        + "\"type\":\"password\","
+        + "\"overwrite\":true"
+        + "}";
 
-          BaseCredentialGenerateRequest request = JsonTestHelper
-              .deserialize(json, BaseCredentialGenerateRequest.class);
-          request.validate();
+    BaseCredentialGenerateRequest request = JsonTestHelper
+        .deserialize(json, BaseCredentialGenerateRequest.class);
+    request.validate();
+  }
 
-          // passes if we get here
-        });
-      });
+  @Test
+  public void validate_whenTypeIsNotSet_throwsInvalidTypeWithGeneratePromptError() throws Exception {
+    try {
+      String json = "{"
+          + "\"name\":\"some-name\","
+          + "\"overwrite\":true"
+          + "}";
 
-      describe("#validate", () -> {
-        describe("when type is not set", () -> {
-          itThrowsWithMessage("should throw invalid_type_with_generate_prompt error",
-              ParameterizedValidationException.class,
-              "error.invalid_type_with_generate_prompt",
-              () -> {
-                String json = "{"
-                    + "\"name\":\"some-name\","
-                    + "\"overwrite\":true"
-                    + "}";
+      BaseCredentialGenerateRequest request = JsonTestHelper
+          .deserialize(json, BaseCredentialGenerateRequest.class);
+      request.validate();
+    } catch (ParameterizedValidationException e) {
+      assertThat(e.getMessage(), equalTo("error.invalid_type_with_generate_prompt"));
+    }
+  }
 
-                BaseCredentialGenerateRequest request = JsonTestHelper
-                    .deserialize(json, BaseCredentialGenerateRequest.class);
-                request.validate();
-              });
-        });
-      });
+  @Test
+  public void validate_whenBothOverwriteAndModeAreSet_throwsException() {
+    try {
+      String json = "{"
+          + "\"name\":\"some-name\","
+          + "\"type\":\"password\","
+          + "\"overwrite\":true,"
+          + "\"mode\":\"overwrite\""
+          + "}";
 
-      describe("when both overwrite and mode are set", () -> {
-        itThrowsWithMessage("should throw invalid_type_with_generate_prompt error",
-            ParameterizedValidationException.class,
-            "error.overwrite_and_mode_both_provided",
-            () -> {
-              String json = "{"
-                  + "\"name\":\"some-name\","
-                  + "\"type\":\"password\","
-                  + "\"overwrite\":true,"
-                  + "\"mode\":\"overwrite\""
-                  + "}";
+      BaseCredentialGenerateRequest request = JsonTestHelper
+          .deserialize(json, BaseCredentialGenerateRequest.class);
+      request.validate();
+    } catch (ParameterizedValidationException e) {
+      assertThat(e.getMessage(), equalTo("error.overwrite_and_mode_both_provided"));
+    }
+  }
 
-              BaseCredentialGenerateRequest request = JsonTestHelper
-                  .deserialize(json, BaseCredentialGenerateRequest.class);
-              request.validate();
-            });
-      });
+  @Test
+  public void validate_whenTypeIsValue_throwsException() {
+    try {
+      String json = "{"
+          + "\"name\":\"some-name\","
+          + "\"type\":\"value\","
+          + "\"overwrite\":true"
+          + "}";
 
-      describe("when type is value", () -> {
-        itThrowsWithMessage("should throw invalid_type_with_generate_prompt",
-            ParameterizedValidationException.class,
-            "error.cannot_generate_type",
-            () -> {
-              String json = "{"
-                  + "\"name\":\"some-name\","
-                  + "\"type\":\"value\","
-                  + "\"overwrite\":true"
-                  + "}";
+      BaseCredentialGenerateRequest request = JsonTestHelper
+          .deserialize(json, BaseCredentialGenerateRequest.class);
+      request.validate();
+    } catch (ParameterizedValidationException e) {
+      assertThat(e.getMessage(), equalTo("error.cannot_generate_type"));
+    }
+  }
 
-              BaseCredentialGenerateRequest request = JsonTestHelper
-                  .deserialize(json, BaseCredentialGenerateRequest.class);
-              request.validate();
-            });
-      });
+  @Test
+  public void validate_whenTypeIsJson_throwsException() {
+    try {
+      String json = "{"
+          + "\"name\":\"some-name\","
+          + "\"type\":\"json\","
+          + "\"overwrite\":true"
+          + "}";
 
-      describe("when type is json", () -> {
-        itThrowsWithMessage("should throw invalid_type_with_generate_prompt",
-            ParameterizedValidationException.class,
-            "error.cannot_generate_type",
-            () -> {
-              String json = "{"
-                  + "\"name\":\"some-name\","
-                  + "\"type\":\"json\","
-                  + "\"overwrite\":true"
-                  + "}";
+      BaseCredentialGenerateRequest request = JsonTestHelper
+          .deserialize(json, BaseCredentialGenerateRequest.class);
+      request.validate();
+    } catch (ParameterizedValidationException e) {
+      assertThat(e.getMessage(), equalTo("error.cannot_generate_type"));
+    }
+  }
 
-              BaseCredentialGenerateRequest request = JsonTestHelper
-                  .deserialize(json, BaseCredentialGenerateRequest.class);
-              request.validate();
-            });
-      });
+  @Test
+  public void validate_whenTypeIsTotallyWrong_throwsException() {
+    try {
+      String json = "{"
+          + "\"name\":\"some-name\","
+          + "\"type\":\"banana\","
+          + "\"overwrite\":true"
+          + "}";
 
-      describe("when type is totally wrong", () -> {
-        itThrowsWithMessage("should throw invalid_type_with_generate_prompt",
-            ParameterizedValidationException.class,
-            "error.invalid_type_with_generate_prompt",
-            () -> {
-              String json = "{"
-                  + "\"name\":\"some-name\","
-                  + "\"type\":\"banana\","
-                  + "\"overwrite\":true"
-                  + "}";
-
-              BaseCredentialGenerateRequest request = JsonTestHelper
-                  .deserialize(json, BaseCredentialGenerateRequest.class);
-              request.validate();
-            });
-      });
-    });
+      BaseCredentialGenerateRequest request = JsonTestHelper
+          .deserialize(json, BaseCredentialGenerateRequest.class);
+      request.validate();
+    } catch (ParameterizedValidationException e) {
+      assertThat(e.getMessage(), equalTo("error.invalid_type_with_generate_prompt"));
+    }
   }
 }

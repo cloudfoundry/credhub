@@ -1,18 +1,25 @@
 package io.pivotal.security.request;
 
-import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
-
-import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
+import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
-@RunWith(Spectrum.class)
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+
+@RunWith(JUnit4.class)
 public class RsaSshGenerationParametersTest {
-  {
-    itThrowsWithMessage("#validate", ParameterizedValidationException.class, "error.invalid_key_length", () -> {
+  @Test
+  public void validate_withInvalidKeyLength_throwsAnException() {
+    try {
       RsaSshGenerationParameters subject = new RsaSshGenerationParameters();
       subject.setKeyLength(1337);
       subject.validate();
-    });
+      fail("should throw");
+    } catch (ParameterizedValidationException e) {
+      assertThat(e.getMessage(), equalTo("error.invalid_key_length"));
+    }
   }
 }

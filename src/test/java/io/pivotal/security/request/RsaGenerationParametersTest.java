@@ -1,48 +1,50 @@
 package io.pivotal.security.request;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
+import static junit.framework.TestCase.fail;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.exceptions.ParameterizedValidationException;
-import org.junit.runner.RunWith;
-
-@RunWith(Spectrum.class)
+@RunWith(JUnit4.class)
 public class RsaGenerationParametersTest {
 
   private RsaGenerationParameters subject;
 
-  {
-    beforeEach(() -> {
-      subject = new RsaGenerationParameters();
-    });
+  @Before
+  public void beforeEach() {
+    subject = new RsaGenerationParameters();
+  }
 
-    it("should default to a reasonable key length", () -> {
-      assertThat(subject.getKeyLength(), equalTo(2048));
-    });
+  @Test
+  public void defaultsToAReasonableKeyLength() {
+    assertThat(subject.getKeyLength(), equalTo(2048));
+  }
 
-    describe("validate", () -> {
-      it("should accept correct key lengths", () -> {
-        subject.setKeyLength(2048);
+  @Test
+  public void describe_acceptsCorrectKeyLengths() {
+    subject.setKeyLength(2048);
+    subject.validate();
+
+    subject.setKeyLength(3072);
+    subject.validate();
+
+    subject.setKeyLength(4096);
+    subject.validate();
+  }
+
+  @Test
+  public void describe_withAnInvalidLength_ThrowsAnException() throws Exception {
+      try {
+        subject.setKeyLength(1024);
         subject.validate();
-
-        subject.setKeyLength(3072);
-        subject.validate();
-
-        subject.setKeyLength(4096);
-        subject.validate();
-        //pass
-      });
-
-      itThrowsWithMessage("should throw if given an invalid length",
-          ParameterizedValidationException.class, "error.invalid_key_length", () -> {
-            subject.setKeyLength(1024);
-            subject.validate();
-          });
-    });
+        fail("should throw");
+      } catch (ParameterizedValidationException e) {
+        assertThat(e.getMessage(), equalTo("error.invalid_key_length"));
+      }
   }
 }
