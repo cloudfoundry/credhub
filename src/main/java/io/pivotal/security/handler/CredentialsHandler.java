@@ -4,6 +4,8 @@ import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.service.PermissionedCredentialService;
+import io.pivotal.security.view.CredentialView;
+import io.pivotal.security.view.DataResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -25,7 +27,7 @@ public class CredentialsHandler {
     }
   }
 
-  public List<CredentialVersion> getNCredentialVersions(
+  public DataResponse getNCredentialVersions(
       String credentialName,
       Integer numberOfVersions,
       List<EventAuditRecordParameters> auditRecordParametersList
@@ -40,31 +42,28 @@ public class CredentialsHandler {
     if (credentialVersions.isEmpty()) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
-    return credentialVersions;
+    return DataResponse.fromEntity(credentialVersions);
   }
 
-  public List<CredentialVersion> getAllCredentialVersions(
+  public DataResponse getAllCredentialVersions(
       String credentialName,
       List<EventAuditRecordParameters> auditRecordParametersList
   ) {
     return getNCredentialVersions(credentialName, null, auditRecordParametersList);
   }
 
-  public CredentialVersion getMostRecentCredentialVersion(
+  public DataResponse getMostRecentCredentialVersion(
       String credentialName,
       List<EventAuditRecordParameters> auditRecordParametersList
   ) {
-    CredentialVersion credentialVersion =
-        getNCredentialVersions(credentialName, 1, auditRecordParametersList)
-            .get(0);
+    return getNCredentialVersions(credentialName, 1, auditRecordParametersList);
 
-    return credentialVersion;
   }
 
-  public CredentialVersion getCredentialVersionByUUID(
+  public CredentialView getCredentialVersionByUUID(
       String credentialUUID,
       List<EventAuditRecordParameters> auditRecordParametersList
   ) {
-    return credentialService.findByUuid(credentialUUID, auditRecordParametersList);
+    return CredentialView.fromEntity(credentialService.findByUuid(credentialUUID, auditRecordParametersList));
   }
 }

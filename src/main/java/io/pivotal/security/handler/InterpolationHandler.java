@@ -3,7 +3,9 @@ package io.pivotal.security.handler;
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.domain.JsonCredentialVersion;
+import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.service.PermissionedCredentialService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,11 +15,12 @@ import java.util.Map;
 
 @Service
 public class InterpolationHandler {
-  private final CredentialsHandler credentialsHandler;
+
+  private PermissionedCredentialService credentialService;
 
   @Autowired
-  public InterpolationHandler(CredentialsHandler credentialsHandler) {
-    this.credentialsHandler = credentialsHandler;
+  public InterpolationHandler(PermissionedCredentialService credentialService) {
+    this.credentialService = credentialService;
   }
 
   public Map<String, Object> interpolateCredHubReferences(
@@ -49,10 +52,14 @@ public class InterpolationHandler {
         }
         String credentialName = getCredentialNameFromRef((String) credhubRef);
 
-        CredentialVersion credentialVersion = credentialsHandler.getMostRecentCredentialVersion(
-            credentialName,
-            auditRecordParameters
-        );
+        List<CredentialVersion> credentialVersions = credentialService
+            .findNByName(credentialName, 1, auditRecordParameters);
+
+        if (credentialVersions.isEmpty()) {
+          throw new EntryNotFoundException("error.credential.invalid_access");
+        }
+
+        CredentialVersion credentialVersion = credentialVersions.get(0);
 
         if (credentialVersion instanceof JsonCredentialVersion) {
           propertiesMap.put("credentials", ((JsonCredentialVersion) credentialVersion).getValue());

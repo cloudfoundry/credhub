@@ -5,7 +5,6 @@ import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.domain.JsonCredentialVersion;
 import io.pivotal.security.domain.PasswordCredentialVersion;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.handler.CredentialsHandler;
 import io.pivotal.security.handler.InterpolationHandler;
 import org.assertj.core.util.Maps;
 import org.junit.Before;
@@ -18,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 import static io.pivotal.security.helper.JsonTestHelper.deserialize;
+import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
@@ -33,15 +33,15 @@ public class InterpolationHandlerTest {
   private InterpolationHandler subject;
   private Map<String, Object> response;
   private List<EventAuditRecordParameters> eventAuditRecordParameters;
-  private CredentialsHandler credentialsHandler;
+  private PermissionedCredentialService credentialService;
   private UserContext userContext;
 
   @Before
   public void beforeEach() {
-    credentialsHandler = mock(CredentialsHandler.class);
+    credentialService = mock(PermissionedCredentialService.class);
     userContext = mock(UserContext.class);
 
-    subject = new InterpolationHandler(credentialsHandler);
+    subject = new InterpolationHandler(credentialService);
     eventAuditRecordParameters = new ArrayList<>();
   }
 
@@ -52,11 +52,13 @@ public class InterpolationHandlerTest {
     final ArrayList firstService = (ArrayList) response.get("pp-config-server");
     final ArrayList secondService = (ArrayList) response.get("pp-something-else");
 
-    Map<String, Object> firstCredentialsBlock = (Map<String, Object>) ((Map<String, Object>) firstService.get(0)).get("credentials");
-    Map<String, Object> secondCredentialsBlock = (Map<String, Object>) ((Map<String, Object>) firstService.get(1)).get("credentials");
+    Map<String, Object> firstCredentialsBlock = (Map<String, Object>) ((Map<String, Object>) firstService.get(0))
+        .get("credentials");
+    Map<String, Object> secondCredentialsBlock = (Map<String, Object>) ((Map<String, Object>) firstService.get(1))
+        .get("credentials");
 
-    Map<String, Object> secondServiceCredentials = (Map<String, Object>) ((Map<String, Object>) secondService.get(0)).get("credentials");
-
+    Map<String, Object> secondServiceCredentials = (Map<String, Object>) ((Map<String, Object>) secondService.get(0))
+        .get("credentials");
 
     assertThat(firstCredentialsBlock.get("credhub-ref"), nullValue());
     assertThat(firstCredentialsBlock.size(), equalTo(1));
@@ -73,31 +75,29 @@ public class InterpolationHandlerTest {
   }
 
   @Test
-  public void interpolateCredHubReferences_whenAReferencedCredentialIsNotJsonType_itThrowsAnException() throws Exception {
-      String inputJson = "{"
-          + "  \"pp-config-server\": ["
-          + "    {"
-          + "      \"credentials\": {"
-          + "        \"credhub-ref\": \"((/password_cred))\""
-          + "      },"
-          + "      \"label\": \"pp-config-server\""
-          + "    }"
-          + "  ]"
-          + "}";
+  public void interpolateCredHubReferences_whenAReferencedCredentialIsNotJsonType_itThrowsAnException()
+      throws Exception {
+    String inputJson = "{"
+        + "  \"pp-config-server\": ["
+        + "    {"
+        + "      \"credentials\": {"
+        + "        \"credhub-ref\": \"((/password_cred))\""
+        + "      },"
+        + "      \"label\": \"pp-config-server\""
+        + "    }"
+        + "  ]"
+        + "}";
 
-      PasswordCredentialVersion passwordCredential = mock(PasswordCredentialVersion.class);
-      when(passwordCredential.getName()).thenReturn("/password_cred");
+    PasswordCredentialVersion passwordCredential = mock(PasswordCredentialVersion.class);
+    when(passwordCredential.getName()).thenReturn("/password_cred");
 
-      doReturn(
-          passwordCredential
-      ).when(credentialsHandler).getMostRecentCredentialVersion("/password_cred",
-          eventAuditRecordParameters);
+    doReturn(singletonList(passwordCredential)).when(credentialService).findNByName("/password_cred", 1, eventAuditRecordParameters);
 
-      try {
-        subject.interpolateCredHubReferences(deserialize(inputJson, Map.class), eventAuditRecordParameters);
-      } catch (ParameterizedValidationException exception) {
-        assertThat(exception.getMessage(), equalTo("error.interpolation.invalid_type"));
-      }
+    try {
+      subject.interpolateCredHubReferences(deserialize(inputJson, Map.class), eventAuditRecordParameters);
+    } catch (ParameterizedValidationException exception) {
+      assertThat(exception.getMessage(), equalTo("error.interpolation.invalid_type"));
+    }
   }
 
   @Test
@@ -137,15 +137,15 @@ public class InterpolationHandlerTest {
   @Test
   public void interpolateCredHubReferences_whenTheCredentialsPropertyIsFormattedUnexpectedly_doesNotInterpolateIt() {
     String inputJsonString = "{"
-            + "  \"pp-config-server\": [{"
-            + "    \"foo\": {"
-            + "      \"credentials\": {"
-            + "        \"credhub-ref\": \"((/cred1))\""
-            + "       }"
-            + "     },"
-            + "    \"label\": \"pp-config-server\""
-            + "  }]"
-            + "}";
+        + "  \"pp-config-server\": [{"
+        + "    \"foo\": {"
+        + "      \"credentials\": {"
+        + "        \"credhub-ref\": \"((/cred1))\""
+        + "       }"
+        + "     },"
+        + "    \"label\": \"pp-config-server\""
+        + "  }]"
+        + "}";
     Map<String, Object> inputJson = deserialize(inputJsonString, Map.class);
     Map<String, Object> response = subject
         .interpolateCredHubReferences(inputJson, eventAuditRecordParameters);
@@ -250,17 +250,11 @@ public class InterpolationHandlerTest {
     jsonCredetials.put("secret3-2", "secret3-2-value");
     doReturn(jsonCredetials).when(jsonCredential2).getValue();
 
-    doReturn(
-        jsonCredential
-    ).when(credentialsHandler).getMostRecentCredentialVersion("/cred1", newArrayList());
+    doReturn(singletonList(jsonCredential)).when(credentialService).findNByName("/cred1", 1, newArrayList());
 
-    doReturn(
-        jsonCredential1
-    ).when(credentialsHandler).getMostRecentCredentialVersion("/cred2", newArrayList());
+    doReturn(singletonList(jsonCredential1)).when(credentialService).findNByName("/cred2", 1, newArrayList());
 
-    doReturn(
-        jsonCredential2
-    ).when(credentialsHandler).getMostRecentCredentialVersion("/cred3", newArrayList());
+    doReturn(singletonList(jsonCredential2)).when(credentialService).findNByName("/cred3", 1, newArrayList());
 
     response = subject.interpolateCredHubReferences(inputJson, eventAuditRecordParameters);
   }

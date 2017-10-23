@@ -8,6 +8,8 @@ import io.pivotal.security.domain.SshCredentialVersion;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.service.PermissionCheckingService;
 import io.pivotal.security.service.PermissionedCredentialService;
+import io.pivotal.security.view.CredentialView;
+import io.pivotal.security.view.DataResponse;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -103,14 +105,14 @@ public class CredentialsHandlerTest {
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(true);
 
-    List<CredentialVersion> credentialVersionVersions = subject.getAllCredentialVersions(CREDENTIAL_NAME,
-        auditRecordParametersList);
+    DataResponse credentialVersions = subject.getAllCredentialVersions(CREDENTIAL_NAME, auditRecordParametersList);
 
-    assertThat(credentialVersionVersions, hasSize(2));
-    assertThat(credentialVersionVersions.get(0).getName(), equalTo(CREDENTIAL_NAME));
-    assertThat(credentialVersionVersions.get(0).getVersionCreatedAt(), equalTo(VERSION1_CREATED_AT));
-    assertThat(credentialVersionVersions.get(1).getName(), equalTo(CREDENTIAL_NAME));
-    assertThat(credentialVersionVersions.get(1).getVersionCreatedAt(), equalTo(VERSION2_CREATED_AT));
+    List<CredentialView> credentialViews = credentialVersions.getData();
+    assertThat(credentialViews, hasSize(2));
+    assertThat(credentialViews.get(0).getName(), equalTo(CREDENTIAL_NAME));
+    assertThat(credentialViews.get(0).getVersionCreatedAt(), equalTo(VERSION1_CREATED_AT));
+    assertThat(credentialViews.get(1).getName(), equalTo(CREDENTIAL_NAME));
+    assertThat(credentialViews.get(1).getVersionCreatedAt(), equalTo(VERSION2_CREATED_AT));
   }
 
   @Test
@@ -136,13 +138,13 @@ public class CredentialsHandlerTest {
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(true);
 
-    CredentialVersion credentialVersion = subject.getMostRecentCredentialVersion(
+    DataResponse dataResponse = subject.getMostRecentCredentialVersion(
         CREDENTIAL_NAME,
         auditRecordParametersList
     );
-
-    assertThat(credentialVersion.getName(), equalTo(CREDENTIAL_NAME));
-    assertThat(credentialVersion.getVersionCreatedAt(), equalTo(VERSION1_CREATED_AT));
+    CredentialView credentialView = dataResponse.getData().get(0);
+    assertThat(credentialView.getName(), equalTo(CREDENTIAL_NAME));
+    assertThat(credentialView.getVersionCreatedAt(), equalTo(VERSION1_CREATED_AT));
   }
 
   @Test
@@ -173,10 +175,7 @@ public class CredentialsHandlerTest {
     when(permissionedCredentialService.findByUuid(eq(UUID_STRING), any(List.class)))
         .thenReturn(version1);
 
-    CredentialVersion credentialVersion = subject.getCredentialVersionByUUID(
-        UUID_STRING,
-        newArrayList()
-    );
+    CredentialView credentialVersion = subject.getCredentialVersionByUUID(UUID_STRING, newArrayList());
     assertThat(credentialVersion.getName(), equalTo(CREDENTIAL_NAME));
     assertThat(credentialVersion.getVersionCreatedAt(), equalTo(VERSION1_CREATED_AT));
   }

@@ -6,7 +6,6 @@ import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
 import io.pivotal.security.audit.EventAuditLogService;
 import io.pivotal.security.audit.EventAuditRecordParameters;
-import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.exceptions.InvalidQueryParameterException;
 import io.pivotal.security.handler.CredentialsHandler;
 import io.pivotal.security.handler.GenerateHandler;
@@ -42,8 +41,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-
-import static java.util.Collections.singletonList;
 
 @RestController
 @RequestMapping(
@@ -126,9 +123,7 @@ public class CredentialsController {
   @ResponseStatus(HttpStatus.OK)
   public CredentialView getCredentialById(@PathVariable String id) {
     return eventAuditLogService.auditEvents(eventAuditRecordParametersList -> {
-      CredentialVersion credentialVersionVersion = credentialsHandler
-          .getCredentialVersionByUUID(id, eventAuditRecordParametersList);
-      return CredentialView.fromEntity(credentialVersionVersion);
+     return credentialsHandler.getCredentialVersionByUUID(id, eventAuditRecordParametersList);
     });
   }
 
@@ -144,17 +139,11 @@ public class CredentialsController {
     }
 
     return eventAuditLogService.auditEvents(eventAuditRecordParametersList -> {
-      List<CredentialVersion> credentialVersions;
       if (current) {
-        CredentialVersion credentialVersion = credentialsHandler
-            .getMostRecentCredentialVersion(credentialName, eventAuditRecordParametersList);
-        credentialVersions = singletonList(credentialVersion);
+        return credentialsHandler.getMostRecentCredentialVersion(credentialName, eventAuditRecordParametersList);
       } else {
-        credentialVersions = credentialsHandler.getNCredentialVersions(credentialName, numberOfVersions,
-            eventAuditRecordParametersList);
+       return credentialsHandler.getNCredentialVersions(credentialName, numberOfVersions, eventAuditRecordParametersList);
       }
-
-      return DataResponse.fromEntity(credentialVersions);
     });
   }
 
@@ -162,7 +151,8 @@ public class CredentialsController {
   @ResponseStatus(HttpStatus.OK)
   public FindCredentialResults findByPath(@RequestParam("path") String path) {
     return eventAuditLogService
-        .auditEvents(eventAuditRecordParametersList -> new FindCredentialResults(credentialService.findStartingWithPath(path, eventAuditRecordParametersList)));
+        .auditEvents(eventAuditRecordParametersList -> new FindCredentialResults(
+            credentialService.findStartingWithPath(path, eventAuditRecordParametersList)));
   }
 
   @RequestMapping(path = "", params = "paths=true", method = RequestMethod.GET)
@@ -178,17 +168,13 @@ public class CredentialsController {
   @ResponseStatus(HttpStatus.OK)
   public FindCredentialResults findByNameLike(@RequestParam("name-like") String nameLike) {
     return eventAuditLogService
-        .auditEvents(eventAuditRecordParametersList -> new FindCredentialResults(credentialService.findContainingName(nameLike, eventAuditRecordParametersList)));
+        .auditEvents(eventAuditRecordParametersList -> new FindCredentialResults(
+            credentialService.findContainingName(nameLike, eventAuditRecordParametersList)));
   }
 
   private CredentialView auditedHandlePostRequest(InputStream inputStream) {
     return eventAuditLogService
-        .auditEvents((auditRecordParameters -> {
-          return deserializeAndHandlePostRequest(
-              inputStream,
-              auditRecordParameters
-          );
-        }));
+        .auditEvents((auditRecordParameters -> deserializeAndHandlePostRequest(inputStream,auditRecordParameters)));
   }
 
   private CredentialView deserializeAndHandlePostRequest(
@@ -213,8 +199,7 @@ public class CredentialsController {
       List<EventAuditRecordParameters> auditRecordParameters,
       String requestString
   ) throws IOException {
-    BaseCredentialGenerateRequest requestBody = objectMapper
-        .readValue(requestString, BaseCredentialGenerateRequest.class);
+    BaseCredentialGenerateRequest requestBody = objectMapper.readValue(requestString, BaseCredentialGenerateRequest.class);
     requestBody.validate();
 
     return generateHandler.handle(requestBody, auditRecordParameters);
@@ -223,26 +208,14 @@ public class CredentialsController {
   private CredentialView handleRegenerateRequest(
       String requestString, List<EventAuditRecordParameters> auditRecordParameters
   ) throws IOException {
-    CredentialRegenerateRequest requestBody = objectMapper
-        .readValue(requestString, CredentialRegenerateRequest.class);
+    CredentialRegenerateRequest requestBody = objectMapper.readValue(requestString, CredentialRegenerateRequest.class);
 
-    return regenerateHandler
-        .handleRegenerate(requestBody.getName(), auditRecordParameters);
+    return regenerateHandler.handleRegenerate(requestBody.getName(), auditRecordParameters);
   }
 
   private CredentialView auditedHandlePutRequest(@RequestBody BaseCredentialSetRequest requestBody) {
-    return eventAuditLogService.auditEvents(auditRecordParameters ->
-        handlePutRequest(requestBody, auditRecordParameters));
-  }
-
-  private CredentialView handlePutRequest(
-      @RequestBody BaseCredentialSetRequest requestBody,
-      List<EventAuditRecordParameters> auditRecordParameters
-  ) {
-    return setHandler.handle(
-        requestBody,
-        auditRecordParameters
-    );
+    return eventAuditLogService.auditEvents(
+        auditRecordParameters -> setHandler.handle(requestBody, auditRecordParameters));
   }
 
   private boolean readRegenerateFlagFrom(String requestString) {
