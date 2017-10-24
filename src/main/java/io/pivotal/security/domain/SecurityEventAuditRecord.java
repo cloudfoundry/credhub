@@ -2,7 +2,7 @@ package io.pivotal.security.domain;
 
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.entity.RequestAuditRecord;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public class SecurityEventAuditRecord {
 

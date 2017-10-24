@@ -26,7 +26,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import static io.pivotal.security.helper.RequestHelper.generateUser;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
-import static org.apache.commons.lang.math.NumberUtils.isNumber;
+import static org.apache.commons.lang3.math.NumberUtils.isNumber;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.IsNot.not;

@@ -6,7 +6,7 @@ import io.pivotal.security.entity.ValueCredentialVersionData;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;

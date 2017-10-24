@@ -57,7 +57,6 @@ dependencies {
     compile("com.google.guava:guava:19.0")
     compile("org.apache.commons:commons-lang3:3.4")
     compile("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.7.5")
-    compile("org.exparity:hamcrest-bean:1.0.11")
     compile("org.postgresql:postgresql:9.3-1100-jdbc4")
     compile("org.mariadb.jdbc:mariadb-java-client:1.5.8")
     compile("org.flywaydb:flyway-core:4.0.3")
@@ -65,9 +64,7 @@ dependencies {
     compile("org.apache.httpcomponents:httpclient:4.5.3")
 
     testCompile("org.springframework.boot:spring-boot-starter-test")
-    testCompile("org.skyscreamer:jsonassert")
     testCompile("com.jayway.jsonpath:json-path-assert:2.2.0")
-    testCompile("org.apache.commons:commons-lang3:3.4")
 }
 
 task wrapper(type: Wrapper) {

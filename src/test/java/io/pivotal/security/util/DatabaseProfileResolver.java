@@ -1,6 +1,6 @@
 package io.pivotal.security.util;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.test.context.support.DefaultActiveProfilesResolver;
 
 public class DatabaseProfileResolver extends DefaultActiveProfilesResolver {
