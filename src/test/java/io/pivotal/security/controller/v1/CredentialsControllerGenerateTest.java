@@ -42,7 +42,7 @@ import java.time.Instant;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
+import static io.pivotal.security.helper.TestHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;

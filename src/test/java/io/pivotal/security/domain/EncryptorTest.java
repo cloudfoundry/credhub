@@ -15,7 +15,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
 import java.util.UUID;
 
-import static io.pivotal.security.helper.SpectrumHelper.getBouncyCastleProvider;
+import static io.pivotal.security.helper.TestHelper.getBouncyCastleProvider;
 import static javax.xml.bind.DatatypeConverter.parseHexBinary;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;

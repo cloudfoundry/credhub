@@ -2,6 +2,7 @@ package io.pivotal.security.view;
 
 import io.pivotal.security.credential.CryptSaltFactory;
 import io.pivotal.security.domain.UserCredentialVersion;
+import io.pivotal.security.helper.JsonTestHelper;
 import org.apache.commons.codec.digest.Crypt;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,7 +11,6 @@ import org.junit.runners.JUnit4;
 import java.io.IOException;
 import java.util.UUID;
 
-import static io.pivotal.security.helper.SpectrumHelper.json;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
@@ -35,7 +35,7 @@ public class UserViewTest {
 
     UserView actual = (UserView) UserView.fromEntity(userCredential);
 
-    assertThat(json(actual), equalTo("{"
+    assertThat(JsonTestHelper.serializeToString(actual), equalTo("{"
         + "\"type\":\"user\","
         + "\"version_created_at\":null,"
         + "\"id\":\"" + uuid.toString() + "\","

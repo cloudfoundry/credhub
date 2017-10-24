@@ -13,7 +13,7 @@ import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.spec.InvalidKeySpecException;
 
-import static io.pivotal.security.helper.SpectrumHelper.getBouncyCastleProvider;
+import static io.pivotal.security.helper.TestHelper.getBouncyCastleProvider;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;

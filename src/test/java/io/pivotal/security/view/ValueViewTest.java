@@ -2,6 +2,7 @@ package io.pivotal.security.view;
 
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.ValueCredentialVersion;
+import io.pivotal.security.helper.JsonTestHelper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,7 +12,6 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.UUID;
 
-import static io.pivotal.security.helper.SpectrumHelper.json;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
@@ -41,7 +41,7 @@ public class ValueViewTest {
   @Test
   public void itCanCreateViewFromEntity() throws IOException {
     ValueView actual = (ValueView) ValueView.fromEntity(entity);
-    assertThat(json(actual), equalTo("{"
+    assertThat(JsonTestHelper.serializeToString(actual), equalTo("{"
         + "\"type\":\"value\","
         + "\"version_created_at\":null,"
         + "\"id\":\""

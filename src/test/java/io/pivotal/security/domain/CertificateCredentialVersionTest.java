@@ -3,7 +3,7 @@ package io.pivotal.security.domain;
 import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.entity.CertificateCredentialVersionData;
 import io.pivotal.security.entity.EncryptedValue;
-import io.pivotal.security.helper.SpectrumHelper;
+import io.pivotal.security.helper.TestHelper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,7 +31,7 @@ public class CertificateCredentialVersionTest {
 
   @Before
   public void setup() {
-    SpectrumHelper.getBouncyCastleProvider();
+    TestHelper.getBouncyCastleProvider();
     encryptor = mock(Encryptor.class);
 
     encryptedValue = "fake-encrypted-value".getBytes();

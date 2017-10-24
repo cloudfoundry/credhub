@@ -40,7 +40,7 @@ import java.util.Calendar;
 import java.util.Date;
 import javax.security.auth.x500.X500Principal;
 
-import static io.pivotal.security.helper.SpectrumHelper.getBouncyCastleProvider;
+import static io.pivotal.security.helper.TestHelper.getBouncyCastleProvider;
 import static io.pivotal.security.request.CertificateGenerationRequestParameters.CODE_SIGNING;
 import static io.pivotal.security.request.CertificateGenerationRequestParameters.DIGITAL_SIGNATURE;
 import static io.pivotal.security.request.CertificateGenerationRequestParameters.KEY_ENCIPHERMENT;

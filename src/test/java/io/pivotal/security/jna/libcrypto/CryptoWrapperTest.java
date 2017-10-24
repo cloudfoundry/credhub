@@ -16,7 +16,7 @@ import java.security.PrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import javax.crypto.Cipher;
 
-import static io.pivotal.security.helper.SpectrumHelper.getBouncyCastleProvider;
+import static io.pivotal.security.helper.TestHelper.getBouncyCastleProvider;
 import static io.pivotal.security.jna.libcrypto.Crypto.RSA_NO_PADDING;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;

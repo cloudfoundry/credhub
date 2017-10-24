@@ -1,6 +1,5 @@
 package io.pivotal.security.config;
 
-import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.CredentialVersionDataService;
 import io.pivotal.security.data.PermissionDataService;
@@ -47,6 +46,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -82,13 +82,17 @@ public class AuthConfigurationTest {
   }
 
   @Test
-  public void infoCanBeAccessedWithoutAuthentication() {
-    withoutAuthCheck("/info", "$.auth-server.url");
+  public void infoCanBeAccessedWithoutAuthentication()throws Exception {
+    mockMvc.perform(get("/info").accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.auth-server.url").isNotEmpty());
   }
 
   @Test
-  public void healthCanBeAccessWithoutAuthentication() {
-    withoutAuthCheck("/health", "$.auth-server.url");
+  public void healthCanBeAccessWithoutAuthentication() throws Exception{
+    mockMvc.perform(get("/health").accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").isNotEmpty());
   }
 
   @Test
@@ -259,7 +263,7 @@ public class AuthConfigurationTest {
         .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
 
     mockMvc.perform(post)
-        .andDo(org.springframework.test.web.servlet.result.MockMvcResultHandlers.print())
+        .andDo(print())
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.error")
             .value(
@@ -288,12 +292,6 @@ public class AuthConfigurationTest {
     mockMvc.perform(post)
         .andExpect(status().isOk());
 
-  }
-
-  private Spectrum.Block withoutAuthCheck(String path, String expectedJsonSpec) {
-    return () -> mockMvc.perform(get(path).accept(MediaType.APPLICATION_JSON))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath(expectedJsonSpec).isNotEmpty());
   }
 
   private void setupDataEndpointMocks() {

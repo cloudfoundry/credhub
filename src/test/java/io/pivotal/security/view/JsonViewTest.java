@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import static io.pivotal.security.helper.JsonTestHelper.serializeToString;
-import static io.pivotal.security.helper.SpectrumHelper.json;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
@@ -52,7 +51,7 @@ public class JsonViewTest {
   @Test
   public void itCanCreateViewFromEntity() throws IOException {
     JsonView actual = (JsonView) JsonView.fromEntity(entity);
-    assertThat(json(actual), equalTo("{"
+    assertThat(serializeToString(actual), equalTo("{"
         + "\"type\":\"json\","
         + "\"version_created_at\":null,"
         + "\"id\":\"" + uuid.toString() + "\","

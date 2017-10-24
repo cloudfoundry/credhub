@@ -40,7 +40,7 @@ import static io.pivotal.security.helper.RequestHelper.expect404WhileRegeneratin
 import static io.pivotal.security.helper.RequestHelper.generateCa;
 import static io.pivotal.security.helper.RequestHelper.generateCertificate;
 import static io.pivotal.security.helper.RequestHelper.grantPermissions;
-import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
+import static io.pivotal.security.helper.TestHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
