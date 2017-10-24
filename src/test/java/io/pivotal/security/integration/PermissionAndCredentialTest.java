@@ -9,6 +9,7 @@ import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.PermissionsView;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -529,7 +530,7 @@ public class PermissionAndCredentialTest {
   }
 
   private void hasCreatorAcl(String token, String actor) throws Exception {
-    assertThat(getAcl(token).getPermissions(), containsInAnyOrder(samePropertyValuesAs(new PermissionEntry(actor,
+    assertThat(getAcl(token).getPermissions(), Matchers.contains(samePropertyValuesAs(new PermissionEntry(actor,
         asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL)))));
   }
 

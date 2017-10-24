@@ -34,6 +34,7 @@ import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.PermissionsView;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -78,7 +79,6 @@ import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_T
 import static io.pivotal.security.util.MultiJsonPathMatcher.multiJsonPath;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.beans.SamePropertyValuesAs.samePropertyValuesAs;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.any;
@@ -412,7 +412,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
         .deserialize(content, PermissionsView.class);
 
     assertThat(acl.getCredentialName(), equalTo(CREDENTIAL_NAME));
-    assertThat(acl.getPermissions(), containsInAnyOrder(
+    assertThat(acl.getPermissions(), Matchers.contains(
         samePropertyValuesAs(
             new PermissionEntry(UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
                 asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL)))));
