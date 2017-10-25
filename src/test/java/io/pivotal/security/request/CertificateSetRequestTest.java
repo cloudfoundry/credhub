@@ -139,7 +139,7 @@ public class CertificateSetRequestTest {
         + "}";
 
     CertificateSetRequest certificateSetRequest = deserialize(json, CertificateSetRequest.class);
-    assertThat(certificateSetRequest.getCertificateValue().getCaName(), equalTo("test-ca-name"));
+    assertThat(certificateSetRequest.getCertificateValue().getCaName(), equalTo("/test-ca-name"));
   }
 
   @Test

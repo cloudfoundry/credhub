@@ -61,14 +61,14 @@ public class GenerateHandlerTest {
     final ArrayList<EventAuditRecordParameters> eventAuditRecordParameters = new ArrayList<>();
     generateRequest.setType("password");
     generateRequest.setGenerationParameters(generationParameters);
-    generateRequest.setName("captain");
+    generateRequest.setName("/captain");
     generateRequest.setAdditionalPermissions(accessControlEntries);
     generateRequest.setOverwrite(false);
 
     subject.handle(generateRequest, eventAuditRecordParameters);
 
     verify(credentialService).save(
-        null, "captain",
+        null, "/captain",
         "password",
         null,
         generationParameters,
@@ -76,6 +76,6 @@ public class GenerateHandlerTest {
         "no-overwrite",
         eventAuditRecordParameters
     );
-    verify(permissionService).savePermissions(credentialVersion, accessControlEntries, eventAuditRecordParameters, true, "captain");
+    verify(permissionService).savePermissions(credentialVersion, accessControlEntries, eventAuditRecordParameters, true, "/captain");
   }
 }

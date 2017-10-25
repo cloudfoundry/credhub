@@ -56,13 +56,27 @@ public class BaseCredentialRequestTest {
     // language=JSON
     String json = "{"
         + "\"type\":\"value\","
+        + "\"name\":\"/some-name\","
+        + "\"value\":\"some-value\""
+        + "}";
+    BaseCredentialSetRequest credentialSetRequest = deserialize(json, BaseCredentialSetRequest.class);
+
+    assertThat(credentialSetRequest.getType(), equalTo("value"));
+    assertThat(credentialSetRequest.getName(), equalTo("/some-name"));
+  }
+
+  @Test
+  public void setName_whenNameDoesNotStartWithASlash_prependsASlash() {
+    // language=JSON
+    String json = "{"
+        + "\"type\":\"value\","
         + "\"name\":\"some-name\","
         + "\"value\":\"some-value\""
         + "}";
     BaseCredentialSetRequest credentialSetRequest = deserialize(json, BaseCredentialSetRequest.class);
 
     assertThat(credentialSetRequest.getType(), equalTo("value"));
-    assertThat(credentialSetRequest.getName(), equalTo("some-name"));
+    assertThat(credentialSetRequest.getName(), equalTo("/some-name"));
   }
 
   @Test
@@ -160,6 +174,21 @@ public class BaseCredentialRequestTest {
     // language=JSON
     String json = "{"
         + "\"name\":\"\","
+        + "\"type\":\"value\","
+        + "\"value\":\"some-value\","
+        + "\"overwrite\":true"
+        + "}";
+    Set<ConstraintViolation<BaseCredentialSetRequest>> violations = JsonTestHelper
+        .deserializeAndValidate(json, BaseCredentialSetRequest.class);
+
+    assertThat(violations, contains(hasViolationWithMessage("error.missing_name")));
+  }
+
+  @Test
+  public void whenNameIsJustASlash_shouldBeInvalid() {
+    // language=JSON
+    String json = "{"
+        + "\"name\":\"/\","
         + "\"type\":\"value\","
         + "\"value\":\"some-value\","
         + "\"overwrite\":true"

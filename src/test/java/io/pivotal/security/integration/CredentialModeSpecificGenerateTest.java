@@ -122,4 +122,14 @@ public class CredentialModeSpecificGenerateTest {
     assertThat(originalPassword, not(equalTo(updatedPassword)));
   }
 
+  @Test
+  public void credentialNotOverwrittenWhenNameIsProvidedWithoutASlashAndThenWithOne() throws Exception {
+    String firstResponse = generatePassword(mockMvc, "a-name", "overwrite", 30);
+    String originalPassword = (new JSONObject(firstResponse)).getString("value");
+
+    String secondResponse = generatePassword(mockMvc, "/a-name", "no-overwrite", 20);
+    String updatedPassword = (new JSONObject(secondResponse)).getString("value");
+
+    assertThat(originalPassword, equalTo(updatedPassword));
+  }
 }

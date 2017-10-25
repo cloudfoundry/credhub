@@ -5,6 +5,7 @@ import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.handler.PermissionsHandler;
 import io.pivotal.security.request.PermissionsRequest;
 import io.pivotal.security.view.PermissionsView;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -38,10 +39,11 @@ public class PermissionsController {
   @GetMapping
   @ResponseStatus(HttpStatus.OK)
   public PermissionsView getAccessControlList(@RequestParam("credential_name") String credentialName) throws Exception {
+    String credentialNameWithLeadingSlash = StringUtils.prependIfMissing(credentialName, "/");
     return eventAuditLogService
         .auditEvents(auditRecordParameters -> {
           return permissionsHandler
-              .getPermissions(credentialName, auditRecordParameters);
+              .getPermissions(credentialNameWithLeadingSlash, auditRecordParameters);
         });
   }
 
@@ -60,9 +62,11 @@ public class PermissionsController {
       @RequestParam("credential_name") String credentialName,
       @RequestParam("actor") String actor
   ) {
+    String credentialNameWithPrependedSlash = StringUtils.prependIfMissing(credentialName, "/");
+
     eventAuditLogService.auditEvents(
         (List<EventAuditRecordParameters> auditRecordParameters) -> {
-          permissionsHandler.deletePermissionEntry(credentialName, actor, auditRecordParameters);
+          permissionsHandler.deletePermissionEntry(credentialNameWithPrependedSlash, actor, auditRecordParameters);
           return true;
         });
   }

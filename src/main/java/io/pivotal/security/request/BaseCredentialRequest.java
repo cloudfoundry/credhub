@@ -1,6 +1,7 @@
 package io.pivotal.security.request;
 
 import io.pivotal.security.exceptions.ParameterizedValidationException;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import java.util.ArrayList;
@@ -13,13 +14,15 @@ import javax.validation.constraints.Pattern;
 
 public abstract class BaseCredentialRequest {
   private static final String ONLY_VALID_CHARACTERS_IN_NAME = "^[a-zA-Z0-9-_/]*$";
-  public static final String STARTS_WITH_SLASH_AND_AT_LEAST_ONE_NONSLASH_AND_HAS_NO_DOUBLE_SLASHES
-      = "^(?>(?:/?[^/]+))*$";
+  public static final String HAS_NO_DOUBLE_SLASHES_AND_DOES_NOT_END_WITH_A_SLASH
+      = "^(/|(?>(?:/?[^/]+))*)$";
+  private static final String IS_NOT_EMPTY = "^(.|\n){2,}$";
 
   @NotEmpty(message = "error.missing_name")
   @Pattern.List({
-      @Pattern(regexp = STARTS_WITH_SLASH_AND_AT_LEAST_ONE_NONSLASH_AND_HAS_NO_DOUBLE_SLASHES, message = "error.credential.invalid_slash_in_name"),
-      @Pattern(regexp = ONLY_VALID_CHARACTERS_IN_NAME, message = "error.credential.invalid_character_in_name")
+      @Pattern(regexp = HAS_NO_DOUBLE_SLASHES_AND_DOES_NOT_END_WITH_A_SLASH, message = "error.credential.invalid_slash_in_name"),
+      @Pattern(regexp = ONLY_VALID_CHARACTERS_IN_NAME, message = "error.credential.invalid_character_in_name"),
+      @Pattern(regexp = IS_NOT_EMPTY, message = "error.missing_name")
   })
   private String name;
   private String type;
@@ -40,7 +43,7 @@ public abstract class BaseCredentialRequest {
   }
 
   public void setName(String name) {
-    this.name = name;
+    this.name = StringUtils.prependIfMissing(name, "/");
   }
 
   public String getOverwriteMode() {

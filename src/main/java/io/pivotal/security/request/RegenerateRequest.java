@@ -1,6 +1,7 @@
 package io.pivotal.security.request;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.validation.constraints.NotNull;
 
@@ -24,6 +25,6 @@ public class RegenerateRequest {
   }
 
   public void setName(String name) {
-    this.name = name;
+    this.name = StringUtils.prependIfMissing(name, "/");
   }
 }

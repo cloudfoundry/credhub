@@ -1,6 +1,7 @@
 package io.pivotal.security.request;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import java.util.List;
@@ -29,7 +30,7 @@ public class PermissionsRequest {
   }
 
   public void setCredentialName(String credentialName) {
-    this.credentialName = credentialName;
+    this.credentialName = StringUtils.prependIfMissing(credentialName, "/");
   }
 
   @Valid

@@ -54,7 +54,7 @@ public class PermissionDataServiceTest {
   private static final String HAN_SOLO = "HansSolo";
   private static final String DARTH = "Darth";
   private static final String CHEWIE = "Chewie";
-  public static final String NO_ACCESS_CREDENTIAL_NAME = "Alderaan";
+  private static final String NO_ACCESS_CREDENTIAL_NAME = "Alderaan";
 
   @Autowired
   private PermissionDataService subject;
@@ -90,14 +90,6 @@ public class PermissionDataServiceTest {
   @Test
   public void getAllowedOperations_whenTheCredentialExists_andTheActorHasPermissions_returnsListOfActivePermissions() {
     assertThat(subject.getAllowedOperations(CREDENTIAL_NAME, LUKE), containsInAnyOrder(
-        WRITE,
-        DELETE
-    ));
-  }
-
-  @Test
-  public void getAllowedOperations_whenTheNameIsMissingTheLeadingSlash_returnsListOfActivePermissions() {
-    assertThat(subject.getAllowedOperations(CREDENTIAL_NAME_WITHOUT_LEADING_SLASH, LUKE), containsInAnyOrder(
         WRITE,
         DELETE
     ));
@@ -168,21 +160,6 @@ public class PermissionDataServiceTest {
   @Test
   public void deleteAccessControlEntry_whenGivenExistingCredentialAndActor_deletesTheAce() {
     subject.deletePermissions(CREDENTIAL_NAME, LUKE);
-
-    final List<PermissionEntry> accessControlList = subject
-        .getPermissions(credential);
-
-    assertThat(accessControlList, hasSize(2));
-
-    assertThat(accessControlList,
-        not(contains(hasProperty("actor", equalTo(LUKE)))));
-  }
-
-  @Test
-  public void deleteAccessControlEntry_whenNameIsMissingLeadingSlash_deletesTheAce() {
-    boolean deleted = subject.deletePermissions(CREDENTIAL_NAME_WITHOUT_LEADING_SLASH, LUKE);
-
-    assertTrue(deleted);
 
     final List<PermissionEntry> accessControlList = subject
         .getPermissions(credential);

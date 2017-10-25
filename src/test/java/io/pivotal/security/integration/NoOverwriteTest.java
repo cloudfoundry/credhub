@@ -226,7 +226,8 @@ public class NoOverwriteTest {
                     + "\"operations\": [\"read\"]"
                     + "}]"
                     + additionalJsonPayload1
-                    + "}");
+                    + "\n" +
+                    "}");
 
         try {
           responses[0] = mockMvc.perform(requestBuilder);

@@ -57,9 +57,9 @@ public class RegenerateHandlerTest {
     when(credentialService.save(anyObject(), anyString(), anyString(), anyObject(), anyObject(), anyList(), anyString(), anyList())).thenReturn(credentialVersion);
 
     PasswordGenerateRequest generateRequest1 = new PasswordGenerateRequest();
-    generateRequest1.setName("firstExpectedName");
+    generateRequest1.setName("/firstExpectedName");
     PasswordGenerateRequest generateRequest2 = new PasswordGenerateRequest();
-    generateRequest2.setName("secondExpectedName");
+    generateRequest2.setName("/secondExpectedName");
     when(generationRequestGenerator.createGenerateRequest(any(CredentialVersion.class), any(String.class), any(List.class)))
         .thenReturn(generateRequest1)
         .thenReturn(generateRequest2);
@@ -67,13 +67,13 @@ public class RegenerateHandlerTest {
     subject.handleBulkRegenerate(SIGNER_NAME, newArrayList());
 
     verify(credentialService).save(
-        any(), eq("firstExpectedName"),
+        any(), eq("/firstExpectedName"),
         any(), any(), any(),
         any(), anyString(),
         any());
 
     verify(credentialService).save(
-        any(), eq("secondExpectedName"),
+        any(), eq("/secondExpectedName"),
         any(), any(), any(),
         any(), anyString(),
         any());

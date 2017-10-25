@@ -90,14 +90,28 @@ public class PermissionsControllerTest {
   @Test
   public void GET_returnsThePermissionsForTheCredential() throws Exception {
     PermissionsView permissionsView = new PermissionsView(
-        "test_credential_name", newArrayList());
+        "/test_credential_name", newArrayList());
 
-    when(permissionsHandler.getPermissions(eq("test_credential_name"), any(List.class)))
+    when(permissionsHandler.getPermissions(eq("/test_credential_name"), any(List.class)))
+        .thenReturn(permissionsView);
+
+    PermissionsView permissions = getPermissions(mockMvc, "/test_credential_name",
+        UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+    assertThat(permissions.getCredentialName(), equalTo("/test_credential_name"));
+    assertThat(permissions.getPermissions(), hasSize(0));
+  }
+
+  @Test
+  public void GET_whenTheCredentialNameDoesNotHaveALeadingSlash_returnsThePermissionsForTheCredential() throws Exception {
+    PermissionsView permissionsView = new PermissionsView(
+        "/test_credential_name", newArrayList());
+
+    when(permissionsHandler.getPermissions(eq("/test_credential_name"), any(List.class)))
         .thenReturn(permissionsView);
 
     PermissionsView permissions = getPermissions(mockMvc, "test_credential_name",
         UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
-    assertThat(permissions.getCredentialName(), equalTo("test_credential_name"));
+    assertThat(permissions.getCredentialName(), equalTo("/test_credential_name"));
     assertThat(permissions.getPermissions(), hasSize(0));
   }
 
@@ -147,27 +161,38 @@ public class PermissionsControllerTest {
 
   @Test
   public void DELETE_removesThePermissions() throws Exception {
-    when(permissionDataService.getAllowedOperations("test-name", "test-actor"))
+    when(permissionDataService.getAllowedOperations("/test-name", "test-actor"))
+        .thenReturn(Collections.singletonList(PermissionOperation.WRITE));
+
+    revokePermissions(mockMvc, "/test-name", UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "test-actor");
+
+    verify(permissionsHandler, times(1))
+        .deletePermissionEntry(eq("/test-name"), eq("test-actor"), any(List.class));
+  }
+
+  @Test
+  public void DELETE_whenTheCredentialNameDoesNotHaveALeadingSlash_removesThePermissions() throws Exception {
+    when(permissionDataService.getAllowedOperations("/test-name", "test-actor"))
         .thenReturn(Collections.singletonList(PermissionOperation.WRITE));
 
     revokePermissions(mockMvc, "test-name", UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "test-actor");
 
     verify(permissionsHandler, times(1))
-        .deletePermissionEntry(eq("test-name"), eq("test-actor"), any(List.class));
+        .deletePermissionEntry(eq("/test-name"), eq("test-actor"), any(List.class));
   }
 
   @Test
   public void DELETE_whenTheCredentialDoesNotExist_logsAnEvent() throws Exception {
-    when(permissionDataService.getAllowedOperations("incorrect-name", "test-actor"))
+    when(permissionDataService.getAllowedOperations("/incorrect-name", "test-actor"))
         .thenReturn(Collections.emptyList());
 
     Mockito.doThrow(new EntryNotFoundException("error.credential.invalid_access"))
         .when(permissionsHandler)
-        .deletePermissionEntry(eq("incorrect-name"), eq("test-actor"), any(List.class));
+        .deletePermissionEntry(eq("/incorrect-name"), eq("test-actor"), any(List.class));
 
     expectStatusWhenDeletingPermissions(mockMvc, 404, "incorrect-name", "test-actor", UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
 
     verify(permissionsHandler, times(1))
-        .deletePermissionEntry(eq("incorrect-name"), eq("test-actor"), any(List.class));
+        .deletePermissionEntry(eq("/incorrect-name"), eq("test-actor"), any(List.class));
   }
 }

@@ -120,6 +120,19 @@ public class CredentialDeleteTest {
   }
 
   @Test
+  public void delete_whenThereIsOneCredentialVersionWithTheSlashPrependedName_deletesTheCredential() throws Exception {
+    generateCa(mockMvc, "/some-ca", UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+
+    MockHttpServletRequestBuilder request = delete("/api/v1/data?name=" + "some-ca")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+
+    mockMvc.perform(request)
+        .andExpect(status().isNoContent());
+
+    auditingHelper.verifyAuditing(CREDENTIAL_DELETE, "/some-ca", UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 204);
+  }
+
+  @Test
   public void delete_whenThereAreMultipleCredentialVersionsWithTheName_deletesAllVersions() throws Exception {
     generateCa(mockMvc, CREDENTIAL_NAME, UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
     generateCa(mockMvc, CREDENTIAL_NAME, UAA_OAUTH2_PASSWORD_GRANT_TOKEN);

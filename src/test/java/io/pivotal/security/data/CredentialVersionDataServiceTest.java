@@ -282,24 +282,9 @@ public class CredentialVersionDataServiceTest {
 
     assertThat(subject.findAllByName("/my-credential"), hasSize(2));
 
-    subject.delete("MY-CREDENTIAL");
+    subject.delete("/MY-CREDENTIAL");
 
     assertThat(subject.findAllByName("/my-credential"), empty());
-  }
-
-  @Test
-  public void delete_givenACredentialNameWithoutALeadingSlash_deletesTheCredentialAnyway() {
-    PasswordCredentialVersionData passwordCredentialData = new PasswordCredentialVersionData("/my/credential");
-    passwordCredentialData.setEncryptedValueData(new EncryptedValue()
-      .setEncryptionKeyUuid(activeCanaryUuid)
-      .setEncryptedValue("credential-password".getBytes())
-      .setNonce("nonce".getBytes()));
-    PasswordCredentialVersion credential = new PasswordCredentialVersion(passwordCredentialData);
-    subject.save(credential);
-
-    subject.delete("my/credential");
-
-    assertThat(subject.findAllByName("/my/credential"), hasSize(0));
   }
 
   @Test
@@ -320,16 +305,6 @@ public class CredentialVersionDataServiceTest {
 
     PasswordCredentialVersion passwordCredential = (PasswordCredentialVersion) subject.findMostRecent("/my-credential");
 
-    assertThat(passwordCredential.getName(), equalTo("/my-CREDENTIAL"));
-    assertThat(passwordCredential2.getEncryptedValueData().getEncryptedValue(), equalTo("/my-new-password".getBytes()));
-  }
-
-  @Test
-  public void findMostRecent_givenACredentialName_returnsTheMostRecentCredentialIgnoringTheLeadingSlash() {
-    setupTestFixtureForFindMostRecent();
-
-    PasswordCredentialVersion passwordCredential = (PasswordCredentialVersion) subject
-        .findMostRecent("my-credential");
     assertThat(passwordCredential.getName(), equalTo("/my-CREDENTIAL"));
     assertThat(passwordCredential2.getEncryptedValueData().getEncryptedValue(), equalTo("/my-new-password".getBytes()));
   }
@@ -365,7 +340,7 @@ public class CredentialVersionDataServiceTest {
         hasProperty("name", equalTo(valueName)),
         hasProperty("name", equalTo(passwordName))));
 
-    ValueCredentialVersion valueCredential = (ValueCredentialVersion) subject.findMostRecent("value.Credential");
+    ValueCredentialVersion valueCredential = (ValueCredentialVersion) subject.findMostRecent("/value.Credential");
     valueCredentialData.setEncryptedValueData(new EncryptedValue()
       .setEncryptionKeyUuid(activeCanaryUuid)
       .setEncryptedValue("new-encrypted-value".getBytes())
@@ -382,11 +357,10 @@ public class CredentialVersionDataServiceTest {
 
   @Test
   public void findContainingName_whenThereAreMultipleVerionsOfACredential() {
-
-    savePassword(2000000000123L, "foo/DUPLICATE");
-    savePassword(1000000000123L, "foo/DUPLICATE");
-    savePassword(3000000000123L, "bar/duplicate");
-    savePassword(4000000000123L, "bar/duplicate");
+    savePassword(2000000000123L, "/foo/DUPLICATE");
+    savePassword(1000000000123L, "/foo/DUPLICATE");
+    savePassword(3000000000123L, "/bar/duplicate");
+    savePassword(4000000000123L, "/bar/duplicate");
 
     List<FindCredentialResult> credentials = subject.findContainingName("DUP");
     assertThat("should only return unique credential names", credentials.size(), equalTo(2));
@@ -419,7 +393,7 @@ public class CredentialVersionDataServiceTest {
         credentials, not(contains(hasProperty("notSoSecret"))));
 
     PasswordCredentialVersion passwordCredential = (PasswordCredentialVersion) subject
-        .findMostRecent("credential/1");
+        .findMostRecent("/credential/1");
     passwordCredential.setPasswordAndGenerationParameters("new-password", null);
     subject.save(passwordCredential);
     credentials = subject.findStartingWithPath("Credential/");
@@ -502,11 +476,6 @@ public class CredentialVersionDataServiceTest {
     assertThat(credentialVersions, containsInAnyOrder(hasProperty("uuid", equalTo(credential1.getUuid())),
         hasProperty("uuid", equalTo(credential2.getUuid()))));
 
-    credentialVersions = subject.findAllByName("Secret1");
-    assertThat("prepends slash to search if missing",
-        credentialVersions, containsInAnyOrder(hasProperty("uuid", equalTo(credential1.getUuid())),
-            hasProperty("uuid", equalTo(credential2.getUuid()))));
-
     assertThat("returns empty list when no credential matches",
         subject.findAllByName("does/NOT/exist"), empty());
   }
@@ -524,16 +493,6 @@ public class CredentialVersionDataServiceTest {
         containsInAnyOrder(
             hasProperty("uuid", equalTo(credential1.getUuid())),
             hasProperty("uuid", equalTo(credential2.getUuid()))
-        )
-    );
-
-    credentialVersions = subject.findNByName("Secret1", 3);
-    assertThat("prepends slash to search if missing",
-        credentialVersions,
-        containsInAnyOrder(
-            hasProperty("uuid", equalTo(credential1.getUuid())),
-            hasProperty("uuid", equalTo(credential2.getUuid())),
-            hasProperty("uuid", equalTo(credential3.getUuid()))
         )
     );
 

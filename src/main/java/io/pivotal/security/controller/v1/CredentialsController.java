@@ -113,8 +113,10 @@ public class CredentialsController {
       throw new InvalidQueryParameterException("error.missing_query_parameter", "name");
     }
 
+    String credentialNameWithPrependedSlash = StringUtils.prependIfMissing(credentialName, "/");
+
     eventAuditLogService.auditEvents((eventAuditRecordParametersList) -> {
-      credentialsHandler.deleteCredential(credentialName, eventAuditRecordParametersList);
+      credentialsHandler.deleteCredential(credentialNameWithPrependedSlash, eventAuditRecordParametersList);
       return true;
     });
   }
@@ -138,11 +140,13 @@ public class CredentialsController {
       throw new InvalidQueryParameterException("error.missing_query_parameter", "name");
     }
 
+    String credentialNameWithPrependedSlash = StringUtils.prependIfMissing(credentialName, "/");
+
     return eventAuditLogService.auditEvents(eventAuditRecordParametersList -> {
       if (current) {
-        return credentialsHandler.getMostRecentCredentialVersion(credentialName, eventAuditRecordParametersList);
+        return credentialsHandler.getMostRecentCredentialVersion(credentialNameWithPrependedSlash, eventAuditRecordParametersList);
       } else {
-       return credentialsHandler.getNCredentialVersions(credentialName, numberOfVersions, eventAuditRecordParametersList);
+       return credentialsHandler.getNCredentialVersions(credentialNameWithPrependedSlash, numberOfVersions, eventAuditRecordParametersList);
       }
     });
   }

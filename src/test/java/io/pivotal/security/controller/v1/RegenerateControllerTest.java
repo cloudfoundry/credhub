@@ -57,7 +57,7 @@ public class RegenerateControllerTest {
   public void POST_regeneratesThePassword_andPersistsAnAuditEntry() throws Exception {
     mockMvc.perform(makeRegenerateRequest()).andDo(print()).andExpect(status().isOk());
 
-    Mockito.verify(regenerateHandler).handleRegenerate(eq("picard"), any());
+    Mockito.verify(regenerateHandler).handleRegenerate(eq("/picard"), any());
     Mockito.verify(eventAuditLogService).auditEvents(any());
   }
 

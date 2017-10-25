@@ -105,7 +105,7 @@ public class CredentialRegenerateTest {
 
   @Test
   public void regeneratingAPassword_regeneratesThePassword_andPersistsAnAuditEntry() throws Exception {
-    PasswordCredentialVersion originalCredential = new PasswordCredentialVersion("my-password");
+    PasswordCredentialVersion originalCredential = new PasswordCredentialVersion("/my-password");
     originalCredential.setEncryptor(encryptor);
     StringGenerationParameters generationParameters = new StringGenerationParameters();
     generationParameters.setExcludeNumber(true);
@@ -129,7 +129,7 @@ public class CredentialRegenerateTest {
         .andExpect(jsonPath("$.type").value("password"))
         .andExpect(jsonPath("$.version_created_at").value(FROZEN_TIME.plusSeconds(10).toString()));
 
-    final PasswordCredentialVersion newPassword = (PasswordCredentialVersion) credentialVersionDataService.findMostRecent("my-password");
+    final PasswordCredentialVersion newPassword = (PasswordCredentialVersion) credentialVersionDataService.findMostRecent("/my-password");
 
     assertThat(newPassword.getPassword(), not(equalTo("original-credential")));
     assertThat(newPassword.getGenerationParameters().isExcludeNumber(), equalTo(true));
@@ -139,7 +139,7 @@ public class CredentialRegenerateTest {
 
   @Test
   public void regeneratingAnRsaKey_regeneratesTheRsaKey_andPersistsAnAuditEntry() throws Exception {
-    RsaCredentialVersion originalCredential = new RsaCredentialVersion("my-rsa");
+    RsaCredentialVersion originalCredential = new RsaCredentialVersion("/my-rsa");
     originalCredential.setEncryptor(encryptor);
     originalCredential.setPrivateKey("original value");
     originalCredential.setVersionCreatedAt(FROZEN_TIME.plusSeconds(1));
@@ -161,7 +161,7 @@ public class CredentialRegenerateTest {
         .andExpect(
             jsonPath("$.version_created_at").value(FROZEN_TIME.plusSeconds(10).toString()));
 
-    RsaCredentialVersion newRsa = (RsaCredentialVersion) credentialVersionDataService.findMostRecent("my-rsa");
+    RsaCredentialVersion newRsa = (RsaCredentialVersion) credentialVersionDataService.findMostRecent("/my-rsa");
 
     assertTrue(newRsa.getPublicKey().contains("-----BEGIN PUBLIC KEY-----"));
     assertTrue(newRsa.getPrivateKey().contains("-----BEGIN RSA PRIVATE KEY-----"));
@@ -173,7 +173,7 @@ public class CredentialRegenerateTest {
 
   @Test
   public void regeneratingAnSshKey_regeneratesTheSshKey_andPersistsAnAuditEntry() throws Exception {
-    SshCredentialVersion originalCredential = new SshCredentialVersion("my-ssh");
+    SshCredentialVersion originalCredential = new SshCredentialVersion("/my-ssh");
     originalCredential.setEncryptor(encryptor);
     originalCredential.setPrivateKey("original value");
     originalCredential.setVersionCreatedAt(FROZEN_TIME.plusSeconds(1));
@@ -194,7 +194,7 @@ public class CredentialRegenerateTest {
         .andExpect(jsonPath("$.type").value("ssh"))
         .andExpect(jsonPath("$.version_created_at").value(FROZEN_TIME.plusSeconds(10).toString()));
 
-    final SshCredentialVersion newSsh = (SshCredentialVersion) credentialVersionDataService.findMostRecent("my-ssh");
+    final SshCredentialVersion newSsh = (SshCredentialVersion) credentialVersionDataService.findMostRecent("/my-ssh");
 
     assertThat(newSsh.getPrivateKey(), containsString("-----BEGIN RSA PRIVATE KEY-----"));
     assertThat(newSsh.getPublicKey(), containsString("ssh-rsa "));
@@ -206,7 +206,7 @@ public class CredentialRegenerateTest {
 
   @Test
   public void regeneratingAUser_regeneratesTheUser_andPersistsAnAuditEntry() throws Exception {
-    UserCredentialVersion originalCredential = new UserCredentialVersion("the-user");
+    UserCredentialVersion originalCredential = new UserCredentialVersion("/the-user");
     originalCredential.setEncryptor(encryptor);
     StringGenerationParameters generationParameters = new StringGenerationParameters();
     generationParameters.setExcludeNumber(true);
@@ -234,7 +234,7 @@ public class CredentialRegenerateTest {
         .andExpect(jsonPath("$.type").value("user"))
         .andExpect(jsonPath("$.version_created_at").value(FROZEN_TIME.plusSeconds(10).toString()));
 
-    UserCredentialVersion newUser = (UserCredentialVersion) credentialVersionDataService.findMostRecent("the-user");
+    UserCredentialVersion newUser = (UserCredentialVersion) credentialVersionDataService.findMostRecent("/the-user");
 
     assertThat(newUser.getPassword(), not(equalTo(originalCredential.getPassword())));
     assertThat(newUser.getGenerationParameters().isExcludeNumber(), equalTo(true));
@@ -264,7 +264,7 @@ public class CredentialRegenerateTest {
 
   @Test
   public void regeneratingANonGeneratedPassword_returnsAnError_andPersistsAnAuditEntry() throws Exception {
-    PasswordCredentialVersion originalCredential = new PasswordCredentialVersion("my-password");
+    PasswordCredentialVersion originalCredential = new PasswordCredentialVersion("/my-password");
     originalCredential.setEncryptor(encryptor);
     originalCredential.setPasswordAndGenerationParameters("abcde", null);
 
@@ -289,7 +289,7 @@ public class CredentialRegenerateTest {
 
   @Test
   public void regeneratingANonGeneratedUser_returnsAnError_andPersistsAnAuditEntry() throws Exception {
-    UserCredentialVersion originalCredential = new UserCredentialVersion("my-user");
+    UserCredentialVersion originalCredential = new UserCredentialVersion("/my-user");
     originalCredential.setEncryptor(encryptor);
     originalCredential.setPassword("abcde");
     originalCredential.setUsername("username");
@@ -320,7 +320,7 @@ public class CredentialRegenerateTest {
     canaryDataService.save(encryptionKeyCanary);
 
     PasswordCredentialVersionData passwordCredentialData = new PasswordCredentialVersionData(
-        "my-password");
+        "/my-password");
     PasswordCredentialVersion originalCredential = new PasswordCredentialVersion(passwordCredentialData);
     originalCredential.setEncryptor(encryptor);
     originalCredential
@@ -352,13 +352,12 @@ public class CredentialRegenerateTest {
   public void certificateRegeneration_whenUserNotAuthorizedToReadCa_shouldReturnCorrectError() throws Exception {
     generateCa(mockMvc, "picard", UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
 
-    grantPermissions(mockMvc, "picard", UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "uaa-client:credhub_test",
+    grantPermissions(mockMvc, "/picard", UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "uaa-client:credhub_test",
         "read");
 
     generateCertificate(mockMvc, "riker", "picard", UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
 
-    revokePermissions(mockMvc, "picard", UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "uaa-client:credhub_test"
-    );
+    revokePermissions(mockMvc, "/picard", UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "uaa-client:credhub_test");
 
     expect404WhileRegeneratingCertificate(mockMvc, "riker", UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN,
         "The request could not be completed because the credential does not exist or you do not have sufficient authorization.");

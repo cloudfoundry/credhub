@@ -30,7 +30,7 @@ public class PermissionsRequestTest {
     byte[] json = serialize(original);
     PermissionsRequest actual = deserialize(json, PermissionsRequest.class);
 
-    assertThat(actual.getCredentialName(), equalTo("test-name"));
+    assertThat(actual.getCredentialName(), equalTo("/test-name"));
     assertThat(actual.getPermissions(), contains(
         allOf(
             hasProperty("actor", equalTo("someone")),

@@ -77,14 +77,6 @@ public class CredentialDataServiceTest {
   }
 
   @Test
-  public void find_prependsTheLeadingSlashIfNecessary() {
-    final Credential credential = new Credential(StringUtils.prependIfMissing(CREDENTIAL_NAME, "/"));
-    credentialRepository.save(credential);
-
-    assertThat(subject.find(StringUtils.removeStart(CREDENTIAL_NAME, "/")), equalTo(credential));
-  }
-
-  @Test
   public void find_whenTheCredentialDoesNotExist_returnsNull() {
     assertThat(subject.find(CREDENTIAL_NAME), equalTo(null));
   }
@@ -107,14 +99,6 @@ public class CredentialDataServiceTest {
     credentialRepository.save(new Credential(CREDENTIAL_NAME.toUpperCase()));
 
     assertThat(subject.delete(CREDENTIAL_NAME.toLowerCase()), equalTo(true));
-    assertThat(credentialRepository.count(), equalTo(0L));
-  }
-
-  @Test
-  public void delete_prependsTheLeadingSlashIfNecessary() {
-    credentialRepository.save(new Credential(StringUtils.prependIfMissing(CREDENTIAL_NAME, "/")));
-
-    assertThat(subject.delete(StringUtils.removeStart(CREDENTIAL_NAME, "/")), equalTo(true));
     assertThat(credentialRepository.count(), equalTo(0L));
   }
 

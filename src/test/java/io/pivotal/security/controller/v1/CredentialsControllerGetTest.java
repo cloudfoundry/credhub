@@ -134,6 +134,35 @@ public class CredentialsControllerGetTest {
   }
 
   @Test
+  public void gettingACredential_byName_thatExists_withoutLeadingSlash_returnsTheCredential() throws Exception {
+    doReturn(true)
+        .when(permissionCheckingService).hasPermission(any(String.class),
+        any(String.class), eq(READ));
+
+    UUID uuid = UUID.randomUUID();
+
+    ValueCredentialVersion credential = new ValueCredentialVersion(CREDENTIAL_NAME)
+        .setEncryptor(encryptor)
+        .setUuid(uuid)
+        .setVersionCreatedAt(FROZEN_TIME);
+
+    doReturn(CREDENTIAL_VALUE).when(encryptor).decrypt(any());
+
+    doReturn(newArrayList(credential)).when(credentialVersionDataService).findAllByName(CREDENTIAL_NAME);
+
+    final MockHttpServletRequestBuilder request = get("/api/v1/data?name=" + CREDENTIAL_NAME)
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON);
+
+    mockMvc.perform(request)
+        .andExpect(status().isOk())
+        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+        .andExpect(jsonPath("$.data[0]" + ".value").value(CREDENTIAL_VALUE));
+
+    auditingHelper.verifyAuditing(CREDENTIAL_ACCESS, CREDENTIAL_NAME, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 200);
+  }
+
+  @Test
   public void gettingACredential_byName_whenTheCredentialDoesNotExist_returnsNotFound() throws Exception {
     doReturn(true)
         .when(permissionCheckingService).hasPermission(any(String.class),

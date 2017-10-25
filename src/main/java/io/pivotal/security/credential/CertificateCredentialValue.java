@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.pivotal.security.util.EmptyStringToNull;
 import io.pivotal.security.validator.MutuallyExclusive;
 import io.pivotal.security.validator.RequireAnyOf;
+import org.apache.commons.lang3.StringUtils;
 
 @RequireAnyOf(message = "error.missing_certificate_credentials", fields = {"ca", "certificate", "privateKey"})
 @MutuallyExclusive(message = "error.mixed_ca_name_and_ca", fields = {"ca", "caName"})
@@ -32,7 +33,7 @@ public class CertificateCredentialValue implements CredentialValue {
     this.ca = ca;
     this.certificate = certificate;
     this.privateKey = privateKey;
-    this.caName = caName;
+    setCaName(caName);
   }
 
   public String getCa() {
@@ -52,5 +53,9 @@ public class CertificateCredentialValue implements CredentialValue {
 
   public String getCaName() {
     return caName;
+  }
+
+  public void setCaName(String caName) {
+    this.caName = StringUtils.prependIfMissing(caName, "/");
   }
 }
