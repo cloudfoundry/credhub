@@ -26,7 +26,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import static io.pivotal.security.helper.RequestHelper.generateUser;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
-import static org.apache.commons.lang3.math.NumberUtils.isNumber;
+import static org.apache.commons.lang3.math.NumberUtils.isDigits;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.IsNot.not;
@@ -66,24 +66,24 @@ public class UserGenerationTest {
     getPost(credentialName2);
 
     MvcResult cred1 = this.mockMvc.perform(get("/api/v1/data?name=" + credentialName1)
-      .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-      .accept(APPLICATION_JSON)
-      .contentType(APPLICATION_JSON))
-      .andExpect(status().isOk())
-      .andExpect(jsonPath("$.data[0].value.username", isUsername()))
-      .andExpect(jsonPath("$.data[0].value.password", isPassword()))
-      .andReturn();
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data[0].value.username", isUsername()))
+        .andExpect(jsonPath("$.data[0].value.password", isPassword()))
+        .andReturn();
 
 
     MvcResult cred2 = this.mockMvc.perform(get("/api/v1/data?name=" + credentialName2)
-      .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-      .accept(APPLICATION_JSON)
-      .contentType(APPLICATION_JSON))
-      .andDo(print())
-      .andExpect(status().isOk())
-      .andExpect(jsonPath("$.data[0].value.username", isUsername()))
-      .andExpect(jsonPath("$.data[0].value.password", isPassword()))
-      .andReturn();
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data[0].value.username", isUsername()))
+        .andExpect(jsonPath("$.data[0].value.password", isPassword()))
+        .andReturn();
 
     JSONObject jsonCred1 = getJsonObject(cred1);
     JSONObject jsonCred2 = getJsonObject(cred2);
@@ -93,61 +93,61 @@ public class UserGenerationTest {
   }
 
   @Test
-  public void generatesOnlyPasswordWhenGivenStaticUsernameProvidedInValues() throws Exception{
+  public void generatesOnlyPasswordWhenGivenStaticUsernameProvidedInValues() throws Exception {
     MockHttpServletRequestBuilder post = post("/api/v1/data")
-      .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-      .accept(APPLICATION_JSON)
-      .contentType(APPLICATION_JSON)
-      //language=JSON
-      .content("{  \"name\": \"" + credentialName1 + "\", \n" +
-        "  \"type\": \"user\", \n" +
-        "  \"value\": {\n" +
-        "    \"username\": \"luke\" \n" +
-        "  }\n" +
-        "}");
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        //language=JSON
+        .content("{  \"name\": \"" + credentialName1 + "\", \n" +
+            "  \"type\": \"user\", \n" +
+            "  \"value\": {\n" +
+            "    \"username\": \"luke\" \n" +
+            "  }\n" +
+            "}");
 
     this.mockMvc.perform(post)
-      .andDo(print())
-      .andExpect(status().isOk());
+        .andDo(print())
+        .andExpect(status().isOk());
 
     this.mockMvc.perform(get("/api/v1/data?name=" + credentialName1)
-      .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-      .accept(APPLICATION_JSON)
-      .contentType(APPLICATION_JSON))
-      .andDo(print())
-      .andExpect(status().isOk())
-      .andExpect(jsonPath("$.data[0].value.username", equalTo("luke")))
-      .andExpect(jsonPath("$.data[0].value.password", isPassword()))
-      .andReturn();
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data[0].value.username", equalTo("luke")))
+        .andExpect(jsonPath("$.data[0].value.password", isPassword()))
+        .andReturn();
   }
 
   @Test
-  public void generatesOnlyPasswordWhenGivenStaticUsernameProvidedInParams() throws Exception{
+  public void generatesOnlyPasswordWhenGivenStaticUsernameProvidedInParams() throws Exception {
     MockHttpServletRequestBuilder post = post("/api/v1/data")
-      .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-      .accept(APPLICATION_JSON)
-      .contentType(APPLICATION_JSON)
-      //language=JSON
-      .content("{  \"name\": \"" + credentialName1 + "\", \n" +
-        "  \"type\": \"user\", \n" +
-        "  \"parameters\": {\n" +
-        "    \"username\": \"luke\" \n" +
-        "  }\n" +
-        "}");
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        //language=JSON
+        .content("{  \"name\": \"" + credentialName1 + "\", \n" +
+            "  \"type\": \"user\", \n" +
+            "  \"parameters\": {\n" +
+            "    \"username\": \"luke\" \n" +
+            "  }\n" +
+            "}");
 
     this.mockMvc.perform(post)
-      .andDo(print())
-      .andExpect(status().isOk());
+        .andDo(print())
+        .andExpect(status().isOk());
 
     this.mockMvc.perform(get("/api/v1/data?name=" + credentialName1)
-      .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-      .accept(APPLICATION_JSON)
-      .contentType(APPLICATION_JSON))
-      .andDo(print())
-      .andExpect(status().isOk())
-      .andExpect(jsonPath("$.data[0].value.username", equalTo("luke")))
-      .andExpect(jsonPath("$.data[0].value.password", isPassword()))
-      .andReturn();
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data[0].value.username", equalTo("luke")))
+        .andExpect(jsonPath("$.data[0].value.password", isPassword()))
+        .andReturn();
   }
 
   @Test
@@ -176,7 +176,7 @@ public class UserGenerationTest {
 
     final String password = parsedResponse.read("$.value.password");
     assertThat(password.length(), equalTo(40));
-    assertThat(isNumber(password), equalTo(true));
+    assertThat(isDigits(password), equalTo(true));
 
     final String username = parsedResponse.read("$.value.username");
     assertThat(username.length(), equalTo(20));
@@ -193,16 +193,16 @@ public class UserGenerationTest {
             "\"name\": \"" + credentialName1 + "\"," +
             "\"type\": \"user\"," +
             "\"value\": {" +
-              "\"username\": \"test-username\"" +
+            "\"username\": \"test-username\"" +
             "}," +
             "\"parameters\": {" +
-              "\"length\": 40," +
-              "\"exclude_upper\": true," +
-              "\"exclude_lower\": true," +
-              "\"exclude_number\": false," +
-              "\"include_special\": false" +
+            "\"length\": 40," +
+            "\"exclude_upper\": true," +
+            "\"exclude_lower\": true," +
+            "\"exclude_number\": false," +
+            "\"include_special\": false" +
             "}" +
-          "}"
+            "}"
         );
 
     final MockHttpServletResponse response = this.mockMvc.perform(post).andExpect(status()
@@ -212,7 +212,7 @@ public class UserGenerationTest {
 
     final String password = parsedResponse.read("$.value.password");
     assertThat(password.length(), equalTo(40));
-    assertThat(isNumber(password), equalTo(true));
+    assertThat(isDigits(password), equalTo(true));
 
     final String username = parsedResponse.read("$.value.username");
     assertThat(username, equalTo("test-username"));
@@ -228,9 +228,9 @@ public class UserGenerationTest {
             "\"name\": \"" + credentialName1 + "\"," +
             "\"type\": \"user\"," +
             "\"value\": {" +
-              "\"username\": \"test-username\"" +
+            "\"username\": \"test-username\"" +
             "}" +
-          "}"
+            "}"
         );
 
     final MockHttpServletResponse postResponse = this.mockMvc.perform(postRequest)
