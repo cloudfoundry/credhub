@@ -19,13 +19,13 @@ security:
       jwt:
         key_value: |
           -----BEGIN PUBLIC KEY-----
-          MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA6n/uasMY2UVcF4PGPeGg
-          XDiXaWOMUiVn2sjuqf+ctN/W3iK2SKa8rEXn/yrSRlnINFfu9fVv522xfV5tUWog
-          EAcd/aSEv+Bu/S2+ZksGGSHOmmBLkDU4DUbVKAs1TpVNNh88nxxdaeh5Lv3R3CZI
-          dKABaT3qeZ9DaBB7V7gZjWFAzSsFfGOCcbqXogfQZnp+o9Vg5UK1Dy7cd8Dl9o8J
-          YkGCqRVjPP/aaRFFVxkbjbV91nrv1S42n1zU74FicpiVKsQlBVlCgRxOTRcYEYZ/
-          qbNZ/j1ensZq+ZuECNvX6cBoMNyY14UoJhMzIPVrW0xr+vA0PfgWswm/LHtIVWhN
-          UwIDAQAB
+          MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAo9hvZNbP3U9Ory1aTHt7
+          OXucx2Ur0mhyrzKeB1T9R3gLuUCYXBUuc2PhhoQ5aKP+ii3UsWVx0WUsdLmX+8x2
+          iHDZ20ZCCg9MrOgAhVDsGGx3eNjNRdbk3RaeDJlI4RD1cy8+cMza2dp7h2Yk8Um6
+          U/+vXDBIdsKAQZayrm4X1xIc27D78KPSZeP3ux2qV7y4j5CHLjhg5mxnfWpJxltD
+          G1YtacCIbL3H41NVboqerJopZbtGAGh6/60GriUqf1z82TVaovOUp/HfGLF3OK8G
+          BYbcCW+Z3N1Q4QFKiNcNjWZNViKGAysdhogp/P6xb8cFFksiKFOi6HyWEW8/wr8w
+          CwIDAQAB
           -----END PUBLIC KEY-----
   authorization:
     acls:
