@@ -25,6 +25,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -127,8 +128,16 @@ public class CertificateSetAndRegenerateTest {
             "}");
 
     this.mockMvc.perform(regenerateRequest)
-        .andDo(print())
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.value.transitional", equalTo(true)));
+
+    MockHttpServletRequestBuilder getRequest = get("/api/v1/data?name=" + CA_NAME)
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON);
+
+    this.mockMvc.perform(getRequest)
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data[0].value.transitional", equalTo(true)));
   }
 }

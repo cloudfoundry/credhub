@@ -49,6 +49,6 @@ public class CertificateAuthorityService {
     }
 
     return new CertificateCredentialValue(null, certificateCredential.getCertificate(),
-        certificateCredential.getPrivateKey(), null);
+        certificateCredential.getPrivateKey(), null, certificateCredential.isVersionTransitional());
   }
 }

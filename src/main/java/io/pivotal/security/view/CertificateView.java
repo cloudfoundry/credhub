@@ -10,7 +10,7 @@ public class CertificateView extends CredentialView {
   CertificateView(CertificateCredentialVersion certificateCredential) {
     this(certificateCredential,
         new CertificateCredentialValue(certificateCredential.getCa(), certificateCredential.getCertificate(),
-          certificateCredential.getPrivateKey(), null)
+          certificateCredential.getPrivateKey(), null, certificateCredential.isVersionTransitional())
     );
   }
 

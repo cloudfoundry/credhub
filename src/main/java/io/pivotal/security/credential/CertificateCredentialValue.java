@@ -21,7 +21,7 @@ public class CertificateCredentialValue implements CredentialValue {
   @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
   private String caName;
 
-  private boolean isTransitional;
+  private boolean transitional;
 
   @SuppressWarnings("unused")
   public CertificateCredentialValue() {}
@@ -30,11 +30,20 @@ public class CertificateCredentialValue implements CredentialValue {
       String ca,
       String certificate,
       String privateKey,
-      String caName
-  ) {
+      String caName) {
+    this(ca, certificate, privateKey, caName, false);
+  }
+
+  public CertificateCredentialValue(
+      String ca,
+      String certificate,
+      String privateKey,
+      String caName,
+      boolean transitional) {
     this.ca = ca;
     this.certificate = certificate;
     this.privateKey = privateKey;
+    this.transitional = transitional;
     setCaName(caName);
   }
 
@@ -62,10 +71,10 @@ public class CertificateCredentialValue implements CredentialValue {
   }
 
   public boolean isTransitional() {
-    return isTransitional;
+    return transitional;
   }
 
   public void setTransitional(boolean transitional) {
-    isTransitional = transitional;
+    this.transitional = transitional;
   }
 }

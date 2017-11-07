@@ -12,6 +12,7 @@ import org.junit.runners.JUnit4;
 import java.time.Instant;
 import java.util.UUID;
 
+import static io.pivotal.security.helper.TestHelper.getBouncyCastleProvider;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
@@ -28,6 +29,7 @@ public class CertificateCredentialTest {
 
   @Before
   public void beforeEach() {
+    getBouncyCastleProvider();
     UUID canaryUuid = UUID.randomUUID();
     byte[] encryptedValue = "fake-encrypted-value".getBytes();
     byte[] nonce = "fake-nonce".getBytes();
@@ -60,7 +62,8 @@ public class CertificateCredentialTest {
         + "\"value\":{"
         + "\"ca\":\"ca\","
         + "\"certificate\":\"cert\","
-        + "\"private_key\":\"priv\""
+        + "\"private_key\":\"priv\","
+        + "\"transitional\":false"
         + "}"
         + "}"));
   }
@@ -93,7 +96,8 @@ public class CertificateCredentialTest {
         + credentialName + "\",\"value\":{"
         + "\"ca\":null,"
         + "\"certificate\":null,"
-        + "\"private_key\":null"
+        + "\"private_key\":null,"
+        + "\"transitional\":false"
         + "}"
         + "}"));
   }
