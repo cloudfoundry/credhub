@@ -27,6 +27,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -42,6 +43,7 @@ public class CertificateSetAndRegenerateTest {
 
   private MockMvc mockMvc;
   private Object caCertificate;
+  private String caId;
 
   @Before
   public void beforeEach() throws Exception {
@@ -73,6 +75,7 @@ public class CertificateSetAndRegenerateTest {
 
     caCertificate = JsonPath.parse(generateCaResponse)
         .read("$.value.certificate");
+    caId = JsonPath.parse(generateCaResponse).read("$.id");
     assertNotNull(caCertificate);
   }
 
@@ -111,5 +114,21 @@ public class CertificateSetAndRegenerateTest {
     this.mockMvc.perform(regenerateRequest)
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.value.ca", equalTo(caCertificate)));
+  }
+
+  @Test
+  public void certificateRegenerate_withTransitionalSetToTrue_generatesANewTransitionalCertificate() throws Exception {
+    MockHttpServletRequestBuilder regenerateRequest = post("/api/v1/certificates/" + caId + "/regenerate")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{" +
+            "\"transitional\": true" +
+            "}");
+
+    this.mockMvc.perform(regenerateRequest)
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.value.transitional", equalTo(true)));
   }
 }

@@ -32,6 +32,7 @@ public class CertificateCredentialVersion extends CredentialVersion<CertificateC
     this.setPrivateKey(certificate.getPrivateKey());
     this.setCaName(certificate.getCaName());
     this.setCertificate(certificate.getCertificate());
+    this.setTransitional(certificate.isTransitional());
   }
 
   public CertificateReader getParsedCertificate() {
@@ -93,5 +94,14 @@ public class CertificateCredentialVersion extends CredentialVersion<CertificateC
     final CertificateGenerationParameters parameters = (CertificateGenerationParameters) generationParameters;
     final CertificateGenerationParameters existingGenerationParameters = new CertificateGenerationParameters(getParsedCertificate(), getCaName());
     return existingGenerationParameters.equals(parameters);
+  }
+
+  private CertificateCredentialVersion setTransitional(boolean transitional) {
+    delegate.setTransitional(transitional);
+    return this;
+  }
+
+  public boolean isVersionTransitional() {
+    return delegate.isTransitional();
   }
 }

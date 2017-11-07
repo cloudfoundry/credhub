@@ -28,6 +28,9 @@ public class CertificateCredentialVersionData extends CredentialVersionData<Cert
   @Column(table = CertificateCredentialVersionData.TABLE_NAME)
   private String caName;
 
+  @Column(table = CertificateCredentialVersionData.TABLE_NAME)
+  private boolean transitional;
+
   public CertificateCredentialVersionData() {
   }
 
@@ -69,5 +72,14 @@ public class CertificateCredentialVersionData extends CredentialVersionData<Cert
   @Override
   public String getCredentialType() {
     return CREDENTIAL_TYPE;
+  }
+
+  public CertificateCredentialVersionData setTransitional(boolean transitional) {
+    this.transitional = transitional;
+    return this;
+  }
+
+  public boolean isTransitional() {
+    return transitional;
   }
 }

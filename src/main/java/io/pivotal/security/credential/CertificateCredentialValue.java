@@ -21,6 +21,8 @@ public class CertificateCredentialValue implements CredentialValue {
   @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
   private String caName;
 
+  private boolean isTransitional;
+
   @SuppressWarnings("unused")
   public CertificateCredentialValue() {}
 
@@ -57,5 +59,13 @@ public class CertificateCredentialValue implements CredentialValue {
 
   public void setCaName(String caName) {
     this.caName = StringUtils.prependIfMissing(caName, "/");
+  }
+
+  public boolean isTransitional() {
+    return isTransitional;
+  }
+
+  public void setTransitional(boolean transitional) {
+    isTransitional = transitional;
   }
 }
