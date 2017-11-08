@@ -9,7 +9,7 @@ KEYSTORE_PASSWORD=changeit
 KEY_STORE=key_store.jks
 MTLS_TRUST_STORE=trust_store.jks
 AUTH_SERVER_TRUST_STORE=auth_server_trust_store.jks
-UAA_CA=${UAA_CA:-${HOME}/workspace/credhub-deployments/ca/credhub_root_ca.pem}
+UAA_CA=ca/dev_uaa.pem
 
 clean() {
     echo "Removing any existing key stores and certs..."
