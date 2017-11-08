@@ -55,6 +55,6 @@ public class CertificatesHandler {
         auditRecordParameters
     );
 
-    return new CertificateView(credentialVersion, credentialValue);
+    return new CertificateView(credentialVersion);
   }
 }

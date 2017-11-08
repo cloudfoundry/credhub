@@ -1,26 +1,30 @@
 package io.pivotal.security.view;
 
-import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.domain.CertificateCredentialVersion;
 
 @SuppressWarnings("unused")
 public class CertificateView extends CredentialView {
+  private CertificateCredentialVersion version;
+
   CertificateView() { /* Jackson */ }
 
-  CertificateView(CertificateCredentialVersion certificateCredential) {
-    this(certificateCredential,
-        new CertificateCredentialValue(certificateCredential.getCa(), certificateCredential.getCertificate(),
-          certificateCredential.getPrivateKey(), null, certificateCredential.isVersionTransitional())
-    );
-  }
-
-  public CertificateView(CertificateCredentialVersion version, CertificateCredentialValue value) {
+  public CertificateView(CertificateCredentialVersion version) {
     super(
         version.getVersionCreatedAt(),
         version.getUuid(),
         version.getName(),
         version.getCredentialType(),
-        value
+        null
     );
+    this.version = version;
+  }
+
+  @Override
+  public Object getValue() {
+    return new CertificateValueView(version);
+  }
+
+  public boolean getTransitional() {
+    return version.isVersionTransitional();
   }
 }

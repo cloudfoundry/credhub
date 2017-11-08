@@ -28,7 +28,6 @@ import static org.springframework.security.test.web.servlet.setup.SecurityMockMv
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -129,15 +128,14 @@ public class CertificateSetAndRegenerateTest {
 
     this.mockMvc.perform(regenerateRequest)
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.value.transitional", equalTo(true)));
+        .andExpect(jsonPath("$.transitional", equalTo(true)));
 
     MockHttpServletRequestBuilder getRequest = get("/api/v1/data?name=" + CA_NAME)
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON);
 
     this.mockMvc.perform(getRequest)
-        .andDo(print())
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.data[0].value.transitional", equalTo(true)));
+        .andExpect(jsonPath("$.data[0].transitional", equalTo(true)));
   }
 }

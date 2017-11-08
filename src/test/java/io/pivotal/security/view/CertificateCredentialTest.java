@@ -56,14 +56,14 @@ public class CertificateCredentialTest {
 
     assertThat(json, equalTo("{"
         + "\"type\":\"certificate\","
+        + "\"transitional\":false,"
         + "\"version_created_at\":null,"
         + "\"id\":\"" + uuid.toString() + "\","
         + "\"name\":\"" + credentialName + "\","
         + "\"value\":{"
         + "\"ca\":\"ca\","
         + "\"certificate\":\"cert\","
-        + "\"private_key\":\"priv\","
-        + "\"transitional\":false"
+        + "\"private_key\":\"priv\""
         + "}"
         + "}"));
   }
@@ -90,14 +90,14 @@ public class CertificateCredentialTest {
 
     assertThat(json, equalTo("{"
         + "\"type\":\"certificate\","
+        + "\"transitional\":false,"
         + "\"version_created_at\":null,"
         + "\"id\":\""
         + uuid.toString() + "\",\"name\":\""
         + credentialName + "\",\"value\":{"
         + "\"ca\":null,"
         + "\"certificate\":null,"
-        + "\"private_key\":null,"
-        + "\"transitional\":false"
+        + "\"private_key\":null"
         + "}"
         + "}"));
   }
