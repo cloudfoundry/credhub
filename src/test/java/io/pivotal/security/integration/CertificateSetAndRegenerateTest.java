@@ -138,4 +138,23 @@ public class CertificateSetAndRegenerateTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.data[0].transitional", equalTo(true)));
   }
+
+  @Test
+  public void certificateRegenerate_withTransitionalSetToTrue_failsIfThereIsAlreadyATransitionalCert() throws Exception {
+    MockHttpServletRequestBuilder regenerateRequest = post("/api/v1/certificates/" + caId + "/regenerate")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{" +
+            "\"transitional\": true" +
+            "}");
+
+    this.mockMvc.perform(regenerateRequest)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.transitional", equalTo(true)));
+
+    this.mockMvc.perform(regenerateRequest)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error").value("The maximum number of transitional versions for a given CA is 1."));
+  }
 }

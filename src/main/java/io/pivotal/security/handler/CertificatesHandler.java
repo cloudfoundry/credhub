@@ -6,7 +6,7 @@ import io.pivotal.security.domain.CertificateCredentialVersion;
 import io.pivotal.security.request.BaseCredentialGenerateRequest;
 import io.pivotal.security.request.CertificateRegenerateRequest;
 import io.pivotal.security.service.CertificateService;
-import io.pivotal.security.service.PermissionedCredentialService;
+import io.pivotal.security.service.PermissionedCertificateService;
 import io.pivotal.security.view.CertificateView;
 import io.pivotal.security.view.CredentialView;
 import org.springframework.stereotype.Service;
@@ -16,13 +16,13 @@ import java.util.List;
 @Service
 public class CertificatesHandler {
 
-  private PermissionedCredentialService credentialService;
+  private PermissionedCertificateService credentialService;
   private UniversalCredentialGenerator credentialGenerator;
   private GenerationRequestGenerator generationRequestGenerator;
   private CertificateService certificateService;
 
   CertificatesHandler(
-      PermissionedCredentialService credentialService,
+      PermissionedCertificateService credentialService,
       CertificateService certificateService,
       UniversalCredentialGenerator credentialGenerator,
       GenerationRequestGenerator generationRequestGenerator) {
@@ -47,7 +47,6 @@ public class CertificatesHandler {
     final CertificateCredentialVersion credentialVersion = (CertificateCredentialVersion) credentialService.save(
         existingCredentialVersion,
         generateRequest.getName(),
-        generateRequest.getType(),
         credentialValue,
         generateRequest.getGenerationParameters(),
         generateRequest.getAdditionalPermissions(),
