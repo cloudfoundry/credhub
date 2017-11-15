@@ -3,12 +3,14 @@ package io.pivotal.security.generator;
 import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.data.CertificateAuthorityService;
 import io.pivotal.security.domain.CertificateGenerationParameters;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.request.GenerationParameters;
 import io.pivotal.security.util.CertificateReader;
 import io.pivotal.security.util.PrivateKeyReader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 
@@ -35,30 +37,48 @@ public class CertificateGenerator implements CredentialGenerator<CertificateCred
   @Override
   public CertificateCredentialValue generateCredential(GenerationParameters p) {
     CertificateGenerationParameters params = (CertificateGenerationParameters) p;
+    KeyPair keyPair;
+    String privatePem;
     try {
-      KeyPair keyPair = keyGenerator.generateKeyPair(params.getKeyLength());
-      X509Certificate cert;
-      String caName = null;
-      String caCertificate = null;
-      String privatePem = pemOf(keyPair.getPrivate());
+      keyPair = keyGenerator.generateKeyPair(params.getKeyLength());
+      privatePem = pemOf(keyPair.getPrivate());
+    } catch (Exception e) {
+        throw new RuntimeException(e);
+    }
 
-      if (params.isSelfSigned()) {
+    X509Certificate cert;
+    String caName = null;
+    String caCertificate = null;
+
+    if (params.isSelfSigned()) {
+      try {
         cert = signedCertificateGenerator.getSelfSigned(keyPair, params);
-      } else {
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    } else {
         caName = params.getCaName();
         CertificateCredentialValue ca = certificateAuthorityService.findMostRecent(caName);
+        if (ca.getPrivateKey() == null) {
+          throw new ParameterizedValidationException("error.ca_missing_private_key");
+        }
         caCertificate = ca.getCertificate();
 
-        cert = signedCertificateGenerator.getSignedByIssuer(
-            keyPair,
-            params,
-            CertificateReader.getCertificate(caCertificate),
-            PrivateKeyReader.getPrivateKey(ca.getPrivateKey())
+        try {
+          cert = signedCertificateGenerator.getSignedByIssuer(
+              keyPair,
+              params,
+              CertificateReader.getCertificate(caCertificate),
+              PrivateKeyReader.getPrivateKey(ca.getPrivateKey())
           );
-      }
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
+    }
 
+    try {
       return new CertificateCredentialValue(caCertificate, pemOf(cert), privatePem, caName);
-    } catch (Exception e) {
+    } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }

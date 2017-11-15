@@ -77,6 +77,7 @@ public class InterpolationHandlerTest {
   @Test
   public void interpolateCredHubReferences_whenAReferencedCredentialIsNotJsonType_itThrowsAnException()
       throws Exception {
+    //lang=JSON
     String inputJson = "{"
         + "  \"pp-config-server\": ["
         + "    {"

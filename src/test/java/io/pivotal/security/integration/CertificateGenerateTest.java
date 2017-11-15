@@ -1,5 +1,6 @@
 package io.pivotal.security.integration;
 
+import com.google.common.collect.ImmutableMap;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.helper.JsonTestHelper;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -34,6 +35,7 @@ import static io.pivotal.security.helper.RequestHelper.generateCa;
 import static io.pivotal.security.helper.RequestHelper.generateCertificateCredential;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
+import static io.pivotal.security.util.TestConstants.TEST_CA;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -41,6 +43,7 @@ import static org.hamcrest.core.IsNot.not;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -276,5 +279,54 @@ public class CertificateGenerateTest {
     String updatedValue = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalValue, not(Matchers.equalTo(updatedValue)));
+  }
+
+  @Test
+  public void certificateGeneratedReferencingACAWithoutAPrivateKeyReturnsBadRequest() throws Exception {
+    final String setJson = net.minidev.json.JSONObject.toJSONString(
+        ImmutableMap.<String, String>builder()
+            .put("certificate", TEST_CA)
+            .build());
+
+    String caName = "crusher";
+    MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        //language=JSON
+        .content("{\n"
+            + "  \"name\" : \"" + caName + "\",\n"
+            + "  \"type\" : \"certificate\",\n"
+            + "  \"value\" : " + setJson + "}");
+
+    this.mockMvc.perform(certificateSetRequest)
+      .andExpect(status().is2xxSuccessful());
+
+    Map<String, Object> certRequestBody = new HashMap() {
+      {
+        put("name", CREDENTIAL_NAME);
+        put("type", "certificate");
+        put("mode", "overwrite");
+      }
+    };
+
+    Map parameters = new HashMap<String, Object>();
+    parameters.put("ca", caName);
+    parameters.put("common_name", "some-common-name");
+
+
+    certRequestBody.put("parameters", parameters);
+    String content = JsonTestHelper.serializeToString(certRequestBody);
+    MockHttpServletRequestBuilder post = post("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(content);
+
+    this.mockMvc.perform(post)
+        .andExpect(status().isBadRequest())
+        .andExpect(
+            jsonPath("$.error")
+                .value("The specified CA object does not have an associated private key."));
   }
 }

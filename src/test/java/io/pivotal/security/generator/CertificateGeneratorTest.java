@@ -4,6 +4,7 @@ import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.data.CertificateAuthorityService;
 import io.pivotal.security.domain.CertificateGenerationParameters;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.request.CertificateGenerationRequestParameters;
 import io.pivotal.security.service.PermissionCheckingService;
 import io.pivotal.security.util.CertificateFormatter;
@@ -35,10 +36,11 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.assertj.core.api.Assertions.fail;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
@@ -223,6 +225,29 @@ public class CertificateGeneratorTest {
         equalTo(CertificateFormatter.pemOf(certificate)));
     assertThat(certificateCredential.getCa(), nullValue());
     verify(signedCertificateGenerator, times(1)).getSelfSigned(rootCaKeyPair, inputParameters);
+  }
+
+  @Test
+  public void whenTheCADoesNotHaveAPrivateKey_itThrowsAnException() throws Exception {
+    CertificateGenerationRequestParameters parameters = new CertificateGenerationRequestParameters();
+    parameters.setCaName("/ca-without-private-key");
+    parameters.setKeyLength(2048);
+    parameters.setSelfSigned(false);
+
+    CertificateCredentialValue caWithoutPrivateKey = mock(CertificateCredentialValue.class);
+    when(certificateAuthorityService.findMostRecent("/ca-without-private-key"))
+        .thenReturn(caWithoutPrivateKey);
+
+    when(caWithoutPrivateKey.getPrivateKey()).thenReturn(null);
+
+    when(keyGenerator.generateKeyPair(anyInt())).thenReturn(rootCaKeyPair);
+
+    try {
+      subject.generateCredential(new CertificateGenerationParameters(parameters));
+      fail("Should throw exception");
+    } catch (ParameterizedValidationException e) {
+      assertThat(e.getMessage(), equalTo("error.ca_missing_private_key"));
+    }
   }
 
   private X509CertificateHolder generateX509SelfSignedCert() throws Exception {
