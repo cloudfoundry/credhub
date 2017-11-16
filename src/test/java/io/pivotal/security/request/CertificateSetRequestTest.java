@@ -3,6 +3,7 @@ package io.pivotal.security.request;
 import com.google.common.collect.ImmutableMap;
 import io.pivotal.security.helper.TestHelper;
 import net.minidev.json.JSONObject;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -282,5 +283,28 @@ public class CertificateSetRequestTest {
     );
 
     assertThat(violations.size(), equalTo(0));
+  }
+
+  @Test
+  public void whenCertificateValueIsLongerThan7000Chars_isInvalid() {
+    int repetitionCount = 7001 - TEST_CERTIFICATE.length();
+    final String setJson = JSONObject.toJSONString(
+        ImmutableMap.<String, String>builder()
+            .put("ca_name", "CA_NAME")
+            .put("certificate", TEST_CERTIFICATE + StringUtils.repeat("a", repetitionCount))
+            .put("private_key", TEST_PRIVATE_KEY)
+            .build());
+
+    String json = "{\n"
+        + "  \"name\": \"/example/certificate\",\n"
+        + "  \"type\": \"certificate\",\n"
+        + "  \"value\": " + setJson
+        + "}";
+    Set<ConstraintViolation<CertificateSetRequest>> violations = deserializeAndValidate(
+        json,
+        CertificateSetRequest.class
+    );
+
+    assertThat(violations, contains(hasViolationWithMessage("error.invalid_certificate_length")));
   }
 }

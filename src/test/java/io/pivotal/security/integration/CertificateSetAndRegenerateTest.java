@@ -5,6 +5,7 @@ import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import net.minidev.json.JSONObject;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -180,5 +181,30 @@ public class CertificateSetAndRegenerateTest {
     this.mockMvc.perform(certificateSetRequest)
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error", equalTo("The provided certificate value is not a valid X509 certificate.")));
+  }
+
+  @Test
+  public void certificateSetRequest_whenProvidedACertificateValueThatIsTooLong_returnsAValidationError() throws Exception {
+    int repetitionCount = 7001 - TEST_CERTIFICATE.length();
+    final String setJson = JSONObject.toJSONString(
+        ImmutableMap.<String, String>builder()
+            .put("ca_name", "")
+            .put("certificate", TEST_CERTIFICATE + StringUtils.repeat("a", repetitionCount))
+            .put("private_key", TEST_PRIVATE_KEY)
+            .build());
+
+    MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        //language=JSON
+        .content("{\n"
+            + "  \"name\" : \"/crusher\",\n"
+            + "  \"type\" : \"certificate\",\n"
+            + "  \"value\" : " + setJson + "}");
+
+    this.mockMvc.perform(certificateSetRequest)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error", equalTo("The provided certificate value is too long. Certificate lengths must be less than 7000 characters.")));
   }
 }
