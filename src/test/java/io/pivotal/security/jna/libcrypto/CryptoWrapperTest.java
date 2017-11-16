@@ -17,7 +17,7 @@ import java.security.spec.InvalidKeySpecException;
 import javax.crypto.Cipher;
 
 import static io.pivotal.security.helper.TestHelper.getBouncyCastleProvider;
-import static io.pivotal.security.jna.libcrypto.Crypto.RSA_NO_PADDING;
+import static io.pivotal.security.jna.libcrypto.Crypto.RSA_PKCS1_PADDING;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -63,13 +63,13 @@ public class CryptoWrapperTest {
   @Test
   public void canTransformRsaStructsIntoKeyPairs() throws GeneralSecurityException {
     subject.generateKeyPair(1024, rsa -> {
-      byte[] plaintext = new byte[128];
+      byte[] plaintext = new byte[117];
       byte[] message = "OpenSSL for speed".getBytes();
       System.arraycopy(message, 0, plaintext, 0, message.length);
 
       byte[] ciphertext = new byte[Crypto.RSA_size(rsa)];
       int result = Crypto
-          .RSA_private_encrypt(plaintext.length, plaintext, ciphertext, rsa, RSA_NO_PADDING);
+          .RSA_private_encrypt(plaintext.length, plaintext, ciphertext, rsa, RSA_PKCS1_PADDING);
       if (result == -1) {
         System.out.println(subject.getError());
       }
@@ -78,7 +78,7 @@ public class CryptoWrapperTest {
       KeyPair keyPair = subject.toKeyPair(rsa);
       PrivateKey privateKey = keyPair.getPrivate();
 
-      Cipher cipher = Cipher.getInstance(CryptoWrapper.ALGORITHM, getBouncyCastleProvider());
+      Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding", getBouncyCastleProvider());
       cipher.init(Cipher.ENCRYPT_MODE, privateKey);
       byte[] javaCipherText = cipher.doFinal(plaintext);
 

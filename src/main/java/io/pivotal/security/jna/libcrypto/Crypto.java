@@ -6,6 +6,8 @@ import com.sun.jna.Pointer;
 class Crypto {
 
   static final long RSA_F4 = 0x10001L;
+  static final int RSA_PKCS1_PADDING = 1;
+  static final int RSA_SSLV23_PADDING = 2;
   static final int RSA_NO_PADDING = 3;
 
   static {
