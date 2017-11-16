@@ -7,12 +7,12 @@ import java.lang.reflect.Field;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
-public class CertificateValidator implements ConstraintValidator<RequireValidCertificate, Object> {
+public class CAValidator implements ConstraintValidator<RequireValidCA, Object> {
 
   private String[] fields;
 
   @Override
-  public void initialize(RequireValidCertificate constraintAnnotation) {
+  public void initialize(RequireValidCA constraintAnnotation) {
     fields = constraintAnnotation.fields();
   }
 
@@ -28,7 +28,8 @@ public class CertificateValidator implements ConstraintValidator<RequireValidCer
         }
 
         CertificateReader reader = new CertificateReader((String) field.get(value));
-        return reader.isValid();
+        return reader.isValid() && reader.isCa();
+
       } catch (NoSuchFieldException | IllegalAccessException e) {
         throw new RuntimeException(e);
       }

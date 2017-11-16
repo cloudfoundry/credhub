@@ -79,13 +79,16 @@ public class CertificateSetRequestTest {
 
   @Test
   public void whenTheValueIsValid_doesNotRequireTheCertificate() {
+    final String setJson = JSONObject.toJSONString(
+        ImmutableMap.<String, String>builder()
+            .put("ca", TEST_CA)
+            .put("private_key", TEST_PRIVATE_KEY)
+            .build());
+
     String json = "{"
         + "\"name\": \"/example/certificate\","
         + "\"type\": \"certificate\","
-        + "\"value\": {"
-        + "\"private_key\":\"fake-private-key\","
-        + "\"ca\":\"fake-ca\""
-        + "}"
+        + "\"value\": " + setJson
         + "}";
 
     Set<ConstraintViolation<CertificateSetRequest>> violations = deserializeAndValidate(json,
@@ -268,7 +271,7 @@ public class CertificateSetRequestTest {
     final String setJson = JSONObject.toJSONString(
         ImmutableMap.<String, String>builder()
             .put("ca_name", "CA_NAME")
-            .put("certificate", TEST_CERTIFICATE+"this is a comment at the end of a valid cert")
+            .put("certificate", TEST_CERTIFICATE + "this is a comment at the end of a valid cert")
             .put("private_key", TEST_PRIVATE_KEY)
             .build());
 
@@ -329,5 +332,49 @@ public class CertificateSetRequestTest {
     );
 
     assertThat(violations, contains(hasViolationWithMessage("error.invalid_certificate_length")));
+  }
+
+  @Test
+  public void whenCAValueIsInvalidX509Certificate_isInvalid() {
+    final String setJson = JSONObject.toJSONString(
+        ImmutableMap.<String, String>builder()
+            .put("ca", "CA")
+            .put("certificate", TEST_CERTIFICATE)
+            .put("private_key", TEST_PRIVATE_KEY)
+            .build());
+
+    String json = "{\n"
+        + "  \"name\": \"/example/certificate\",\n"
+        + "  \"type\": \"certificate\",\n"
+        + "  \"value\": " + setJson
+        + "}";
+    Set<ConstraintViolation<CertificateSetRequest>> violations = deserializeAndValidate(
+        json,
+        CertificateSetRequest.class
+    );
+
+    assertThat(violations, contains(hasViolationWithMessage("error.invalid_ca_value")));
+  }
+
+  @Test
+  public void whenCAValueIsNotACertificateAuthority_isInvalid() {
+    final String setJson = JSONObject.toJSONString(
+        ImmutableMap.<String, String>builder()
+            .put("ca", TEST_CERTIFICATE)
+            .put("certificate", TEST_CERTIFICATE)
+            .put("private_key", TEST_PRIVATE_KEY)
+            .build());
+
+    String json = "{\n"
+        + "  \"name\": \"/example/certificate\",\n"
+        + "  \"type\": \"certificate\",\n"
+        + "  \"value\": " + setJson
+        + "}";
+    Set<ConstraintViolation<CertificateSetRequest>> violations = deserializeAndValidate(
+        json,
+        CertificateSetRequest.class
+    );
+
+    assertThat(violations, contains(hasViolationWithMessage("error.invalid_ca_value")));
   }
 }
