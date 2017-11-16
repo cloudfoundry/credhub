@@ -261,4 +261,26 @@ public class CertificateSetRequestTest {
 
     assertThat(violations, contains(hasViolationWithMessage("error.invalid_certificate_value")));
   }
+
+  @Test
+  public void whenCertificateValueIsValidX509CertificateButHasTrailingText_isValid() {
+    final String setJson = JSONObject.toJSONString(
+        ImmutableMap.<String, String>builder()
+            .put("ca_name", "CA_NAME")
+            .put("certificate", TEST_CERTIFICATE+"this is a comment at the end of a valid cert")
+            .put("private_key", TEST_PRIVATE_KEY)
+            .build());
+
+    String json = "{\n"
+        + "  \"name\": \"/example/certificate\",\n"
+        + "  \"type\": \"certificate\",\n"
+        + "  \"value\": " + setJson
+        + "}";
+    Set<ConstraintViolation<CertificateSetRequest>> violations = deserializeAndValidate(
+        json,
+        CertificateSetRequest.class
+    );
+
+    assertThat(violations.size(), equalTo(0));
+  }
 }
