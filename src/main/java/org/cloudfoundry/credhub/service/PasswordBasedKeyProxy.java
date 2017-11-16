@@ -58,8 +58,7 @@ public class PasswordBasedKeyProxy extends DefaultKeyProxy implements KeyProxy {
     try {
       SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA384");
       final SecretKey pbeKey = keyFactory.generateSecret(pbeSpec);
-      SecretKeySpec aesKeySpec = new SecretKeySpec(pbeKey.getEncoded(), "AES");
-      return SecretKeyFactory.getInstance("AES").generateSecret(aesKeySpec);
+      return new SecretKeySpec(pbeKey.getEncoded(), "AES");
     } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
       throw new RuntimeException(e);
     }

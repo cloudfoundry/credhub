@@ -1,7 +1,5 @@
 package org.cloudfoundry.credhub.generator;
 
-import org.cloudfoundry.credhub.helper.TestHelper;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.stereotype.Component;
 
 import java.security.KeyPair;
@@ -15,9 +13,8 @@ public class FakeKeyPairGenerator {
   private static final int KEY_LENGTH_FOR_TESTING = 1024;
 
   public KeyPair generate() throws NoSuchProviderException, NoSuchAlgorithmException {
-    TestHelper.getBouncyCastleProvider(); // has side effect of setting up the BouncyCastleProvider
     KeyPairGenerator generator = KeyPairGenerator
-        .getInstance("RSA", BouncyCastleProvider.PROVIDER_NAME);
+        .getInstance("RSA");
     generator.initialize(KEY_LENGTH_FOR_TESTING);
     return generator.generateKeyPair();
   }

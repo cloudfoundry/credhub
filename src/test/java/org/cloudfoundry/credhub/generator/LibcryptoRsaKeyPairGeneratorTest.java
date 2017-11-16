@@ -1,9 +1,8 @@
 package org.cloudfoundry.credhub.generator;
 
 import org.cloudfoundry.credhub.jna.libcrypto.CryptoWrapper;
-import org.cloudfoundry.credhub.service.BcEncryptionService;
+import org.cloudfoundry.credhub.service.InternalEncryptionService;
 import org.cloudfoundry.credhub.service.PasswordKeyProxyFactory;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,7 +12,6 @@ import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.spec.InvalidKeySpecException;
 
-import static org.cloudfoundry.credhub.helper.TestHelper.getBouncyCastleProvider;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
@@ -24,10 +22,9 @@ public class LibcryptoRsaKeyPairGeneratorTest {
 
   @Before
   public void beforeEach() throws Exception {
-    BouncyCastleProvider bouncyCastleProvider = getBouncyCastleProvider();
-    BcEncryptionService encryptionService = new BcEncryptionService(bouncyCastleProvider, mock(PasswordKeyProxyFactory.class));
+    InternalEncryptionService encryptionService = new InternalEncryptionService(mock(PasswordKeyProxyFactory.class));
 
-    subject = new LibcryptoRsaKeyPairGenerator(new CryptoWrapper(bouncyCastleProvider, encryptionService));
+    subject = new LibcryptoRsaKeyPairGenerator(new CryptoWrapper(encryptionService));
   }
 
   @Test

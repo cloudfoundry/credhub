@@ -17,7 +17,6 @@ import java.util.List;
 
 import static org.cloudfoundry.credhub.constants.EncryptionConstants.NONCE_SIZE;
 import static org.cloudfoundry.credhub.constants.EncryptionConstants.SALT_SIZE;
-import static org.cloudfoundry.credhub.helper.TestHelper.getBouncyCastleProvider;
 import static org.cloudfoundry.credhub.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
 import static java.util.Arrays.asList;
 import static org.apache.commons.lang3.ArrayUtils.toPrimitive;
@@ -36,12 +35,12 @@ public class PasswordBasedKeyProxyTest {
   private PasswordBasedKeyProxy subject;
   private String password;
 
-  private BcEncryptionService encryptionService;
+  private InternalEncryptionService encryptionService;
 
   @Before
   public void beforeEach() throws Exception {
     password = "abcdefghijklmnopqrst";
-    encryptionService = new BcEncryptionService(getBouncyCastleProvider(), new PasswordKeyProxyFactoryTestImpl());
+    encryptionService = new InternalEncryptionService(new PasswordKeyProxyFactoryTestImpl());
     subject = new PasswordBasedKeyProxy(password, 1, encryptionService);
   }
 

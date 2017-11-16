@@ -1,9 +1,9 @@
 package org.cloudfoundry.credhub.domain;
 
 import org.cloudfoundry.credhub.entity.EncryptedValue;
-import org.cloudfoundry.credhub.service.BcEncryptionService;
 import org.cloudfoundry.credhub.service.BcNullConnection;
 import org.cloudfoundry.credhub.service.EncryptionKeyCanaryMapper;
+import org.cloudfoundry.credhub.service.InternalEncryptionService;
 import org.cloudfoundry.credhub.service.RetryingEncryptionService;
 import org.cloudfoundry.credhub.util.PasswordKeyProxyFactoryTestImpl;
 import org.junit.Before;
@@ -11,11 +11,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
 import java.util.UUID;
+import javax.crypto.spec.SecretKeySpec;
 
-import static org.cloudfoundry.credhub.helper.TestHelper.getBouncyCastleProvider;
 import static javax.xml.bind.DatatypeConverter.parseHexBinary;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -42,8 +41,8 @@ public class EncryptorTest {
     newUuid = UUID.randomUUID();
 
     keyMapper = mock(EncryptionKeyCanaryMapper.class);
-    BcEncryptionService bcEncryptionService;
-    bcEncryptionService = new BcEncryptionService(getBouncyCastleProvider(), new PasswordKeyProxyFactoryTestImpl());
+    InternalEncryptionService internalEncryptionService;
+    internalEncryptionService = new InternalEncryptionService(new PasswordKeyProxyFactoryTestImpl());
 
     Key newKey = new SecretKeySpec(parseHexBinary("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"), 0, 16,
         "AES");
@@ -55,7 +54,7 @@ public class EncryptorTest {
     when(keyMapper.getKeyForUuid(newUuid)).thenReturn(newKey);
 
     RetryingEncryptionService encryptionService = new RetryingEncryptionService(
-        bcEncryptionService, keyMapper, new BcNullConnection());
+        internalEncryptionService, keyMapper, new BcNullConnection());
     subject = new Encryptor(encryptionService);
   }
 

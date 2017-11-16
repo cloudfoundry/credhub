@@ -5,10 +5,8 @@ import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import org.cloudfoundry.credhub.service.EncryptionService;
 import org.cloudfoundry.credhub.util.CheckedConsumer;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
 
 import java.math.BigInteger;
 import java.security.KeyFactory;
@@ -35,8 +33,8 @@ public class CryptoWrapper {
   private final SecureRandom secureRandom;
 
   @Autowired
-  public CryptoWrapper(BouncyCastleProvider bouncyCastleProvider, EncryptionService encryptionService) throws NoSuchAlgorithmException {
-    keyFactory = KeyFactory.getInstance(ALGORITHM, bouncyCastleProvider);
+  public CryptoWrapper(EncryptionService encryptionService) throws NoSuchAlgorithmException {
+    keyFactory = KeyFactory.getInstance(ALGORITHM);
     secureRandom = encryptionService.getSecureRandom();
 
     initializeOpenssl();
