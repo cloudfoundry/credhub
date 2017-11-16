@@ -58,7 +58,7 @@ public class CertificateGenerator implements CredentialGenerator<CertificateCred
       }
     } else {
         caName = params.getCaName();
-        CertificateCredentialValue ca = certificateAuthorityService.findMostRecent(caName);
+        CertificateCredentialValue ca = certificateAuthorityService.findActiveVersion(caName);
         if (ca.getPrivateKey() == null) {
           throw new ParameterizedValidationException("error.ca_missing_private_key");
         }

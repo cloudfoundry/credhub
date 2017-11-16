@@ -32,7 +32,7 @@ public class CertificateAuthorityServiceTest {
   private static final String CREDENTIAL_NAME = "/expectedCredential";
   private static final String USER_NAME = "expectedUser";
   private CertificateAuthorityService certificateAuthorityService;
-  private CredentialVersionDataService credentialVersionDataService;
+  private CertificateVersionDataService certificateVersionDataService;
   private CertificateCredentialValue certificate;
   private CertificateCredentialVersion certificateCredential;
   private PermissionCheckingService permissionCheckingService;
@@ -50,84 +50,83 @@ public class CertificateAuthorityServiceTest {
     when(permissionCheckingService.hasPermission(USER_NAME, CREDENTIAL_NAME, PermissionOperation.READ))
         .thenReturn(true);
 
-    credentialVersionDataService = mock(CredentialVersionDataService.class);
+    certificateVersionDataService = mock(CertificateVersionDataService.class);
     UserContextHolder userContextHolder = new UserContextHolder();
     userContextHolder.setUserContext(userContext);
-    certificateAuthorityService = new CertificateAuthorityService(credentialVersionDataService,
+    certificateAuthorityService = new CertificateAuthorityService(certificateVersionDataService,
         permissionCheckingService, userContextHolder);
   }
 
   @Test
-  public void findMostRecent_whenACaDoesNotExist_throwsException() {
-    when(credentialVersionDataService.findMostRecent(any(String.class))).thenReturn(null);
+  public void findActiveVersion_whenACaDoesNotExist_throwsException() {
+    when(certificateVersionDataService.findActive(any(String.class))).thenReturn(null);
 
     try {
-      certificateAuthorityService.findMostRecent("any ca name");
+      certificateAuthorityService.findActiveVersion("any ca name");
     } catch (EntryNotFoundException pe) {
       assertThat(pe.getMessage(), equalTo("error.credential.invalid_access"));
     }
   }
 
   @Test
-  public void findMostRecent_whenACaDoesNotExistAndPermissionsAreNotEnforced_throwsException() {
-    when(credentialVersionDataService.findMostRecent(any(String.class))).thenReturn(null);
+  public void findActiveVersion_whenACaDoesNotExistAndPermissionsAreNotEnforced_throwsException() {
+    when(certificateVersionDataService.findActive(any(String.class))).thenReturn(null);
     when(permissionCheckingService.hasPermission(anyString(), anyString(), anyObject())).thenReturn(true);
     try {
-      certificateAuthorityService.findMostRecent("any ca name");
+      certificateAuthorityService.findActiveVersion("any ca name");
     } catch (EntryNotFoundException pe) {
       assertThat(pe.getMessage(), equalTo("error.credential.invalid_access"));
     }
   }
 
   @Test
-  public void findMostRecent_whenCaNameRefersToNonCa_throwsException() {
-    when(credentialVersionDataService.findMostRecent(any(String.class))).thenReturn(mock(PasswordCredentialVersion.class));
+  public void findActiveVersion_whenCaNameRefersToNonCa_throwsException() {
+    when(certificateVersionDataService.findActive(any(String.class))).thenReturn(mock(PasswordCredentialVersion.class));
     when(permissionCheckingService.hasPermission(USER_NAME, "any non-ca name", PermissionOperation.READ))
         .thenReturn(true);
 
     try {
-      certificateAuthorityService.findMostRecent("any non-ca name");
+      certificateAuthorityService.findActiveVersion("any non-ca name");
     } catch (ParameterizedValidationException pe) {
       assertThat(pe.getMessage(), equalTo("error.not_a_ca_name"));
     }
   }
 
   @Test
-  public void findMostRecent_givenExistingCa_returnsTheCa() {
+  public void findActiveVersion_givenExistingCa_returnsTheCa() {
     CertificateReader certificateReader = mock(CertificateReader.class);
-    when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(certificateCredential);
+    when(certificateVersionDataService.findActive(CREDENTIAL_NAME)).thenReturn(certificateCredential);
     when(certificateCredential.getPrivateKey()).thenReturn("my-key");
     when(certificateCredential.getParsedCertificate()).thenReturn(certificateReader);
     when(certificateReader.isCa()).thenReturn(true);
     when(certificateCredential.getCertificate()).thenReturn(SELF_SIGNED_CA_CERT);
 
-    assertThat(certificateAuthorityService.findMostRecent(CREDENTIAL_NAME),
+    assertThat(certificateAuthorityService.findActiveVersion(CREDENTIAL_NAME),
         samePropertyValuesAs(certificate));
   }
 
   @Test
-  public void findMostRecent_whenCredentialIsNotACa_throwsException() {
-    when(credentialVersionDataService.findMostRecent("actually-a-password"))
+  public void findActiveVersion_whenCredentialIsNotACa_throwsException() {
+    when(certificateVersionDataService.findActive("actually-a-password"))
         .thenReturn(new PasswordCredentialVersion());
 
     try {
-      certificateAuthorityService.findMostRecent("actually-a-password");
+      certificateAuthorityService.findActiveVersion("actually-a-password");
     } catch (EntryNotFoundException pe) {
       assertThat(pe.getMessage(), equalTo("error.credential.invalid_access"));
     }
   }
 
   @Test
-  public void findMostRecent_whenCertificateIsNotACa_throwsException() {
+  public void findActiveVersion_whenCertificateIsNotACa_throwsException() {
     CertificateCredentialVersion notACertificateAuthority = mock(CertificateCredentialVersion.class);
     when(notACertificateAuthority.getParsedCertificate()).thenReturn(mock(CertificateReader.class));
     when(notACertificateAuthority.getCertificate()).thenReturn(SIMPLE_SELF_SIGNED_TEST_CERT);
-    when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME))
+    when(certificateVersionDataService.findActive(CREDENTIAL_NAME))
         .thenReturn(notACertificateAuthority);
 
-
     try {
-      certificateAuthorityService.findMostRecent(CREDENTIAL_NAME);
+      certificateAuthorityService.findActiveVersion(CREDENTIAL_NAME);
     } catch (ParameterizedValidationException pe) {
       assertThat(pe.getMessage(), equalTo("error.cert_not_ca"));
     }

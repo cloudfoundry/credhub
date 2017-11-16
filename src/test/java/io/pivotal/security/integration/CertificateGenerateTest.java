@@ -1,6 +1,7 @@
 package io.pivotal.security.integration;
 
 import com.google.common.collect.ImmutableMap;
+import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.helper.JsonTestHelper;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -328,5 +329,42 @@ public class CertificateGenerateTest {
         .andExpect(
             jsonPath("$.error")
                 .value("The specified CA object does not have an associated private key."));
+  }
+
+  @Test
+  public void usesTheLatestNonTransitionalCaAsTheSigningCertificate() throws Exception {
+    String generateCaResponse = generateCa(mockMvc, "/originalCA", UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+    String originalCaCertificate = JsonPath.parse(generateCaResponse)
+        .read("$.value.certificate");
+    String caId = JsonPath.parse(generateCaResponse)
+        .read("$.id");
+
+    MockHttpServletRequestBuilder caRegenerateRequest = post("/api/v1/certificates/" + caId + "/regenerate")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        //language=JSON
+        .content("{\"transitional\" : true}");
+
+    String transitionalCaResponse = this.mockMvc.perform(caRegenerateRequest)
+        .andExpect(status().is2xxSuccessful())
+        .andReturn().getResponse().getContentAsString();
+
+    String transitionalCaCertificate = JsonPath.parse(transitionalCaResponse)
+        .read("$.value.certificate");
+
+    String generateCertificateResponse = generateCertificateCredential(
+        mockMvc,
+        "/some-cert",
+        "overwrite",
+        "test",
+        "/originalCA"
+    );
+
+    String actualCaCertificate = JsonPath.parse(generateCertificateResponse)
+        .read("$.value.ca");
+
+    assertThat(actualCaCertificate, not(equalTo(transitionalCaCertificate)));
+    assertThat(actualCaCertificate, equalTo(originalCaCertificate));
   }
 }

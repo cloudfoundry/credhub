@@ -189,7 +189,7 @@ public class SetHandlerTest {
         null,
         null
     );
-    when(certificateAuthorityService.findMostRecent("/test-ca-name"))
+    when(certificateAuthorityService.findActiveVersion("/test-ca-name"))
         .thenReturn(cerificateAuthority);
 
     CertificateSetRequest setRequest = new CertificateSetRequest();

@@ -52,7 +52,7 @@ public class SetHandler {
 
       String caName = certificateValue.getCaName();
       if (caName != null) {
-        certificateValue.setCa(certificateAuthorityService.findMostRecent(caName).getCertificate());
+        certificateValue.setCa(certificateAuthorityService.findActiveVersion(caName).getCertificate());
       }
     }
 

@@ -2,9 +2,7 @@ package io.pivotal.security.helper;
 
 import com.google.common.collect.ImmutableMap;
 import io.pivotal.security.view.PermissionsView;
-import org.hamcrest.MatcherAssert;
 import org.hamcrest.core.IsEqual;
-import org.json.JSONObject;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -14,7 +12,6 @@ import java.util.Map;
 
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static java.lang.String.join;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -233,12 +230,7 @@ public class RequestHelper {
     String caResult = mockMvc.perform(caPost)
         .andExpect(status().isOk())
         .andReturn().getResponse().getContentAsString();
-
-    String ca = new JSONObject(caResult)
-        .getJSONObject("value")
-        .getString("certificate");
-    MatcherAssert.assertThat(ca, notNullValue());
-    return ca;
+    return caResult;
   }
 
   private static MockHttpServletRequestBuilder createRequestForGenerateCertificate(String certName,

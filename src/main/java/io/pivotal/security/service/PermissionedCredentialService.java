@@ -186,7 +186,7 @@ public class PermissionedCredentialService {
       if (existingCredentialVersion instanceof CertificateCredentialVersion) {
         final CertificateCredentialVersion certificateCredentialVersion = (CertificateCredentialVersion) existingCredentialVersion;
         if (certificateCredentialVersion.getCaName() != null) {
-          boolean updatedCA = !certificateCredentialVersion.getCa().equals(certificateAuthorityService.findMostRecent(certificateCredentialVersion.getCaName()).getCertificate());
+          boolean updatedCA = !certificateCredentialVersion.getCa().equals(certificateAuthorityService.findActiveVersion(certificateCredentialVersion.getCaName()).getCertificate());
           if (updatedCA) {
             return true;
           }

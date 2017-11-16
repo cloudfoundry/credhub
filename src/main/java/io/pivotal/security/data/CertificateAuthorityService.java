@@ -15,25 +15,25 @@ import static io.pivotal.security.request.PermissionOperation.READ;
 @Component
 public class CertificateAuthorityService {
 
-  private final CredentialVersionDataService credentialVersionDataService;
+  private final CertificateVersionDataService certificateVersionDataService;
   private PermissionCheckingService permissionCheckingService;
   private UserContextHolder userContextHolder;
 
   @Autowired
-  public CertificateAuthorityService(CredentialVersionDataService credentialVersionDataService,
+  public CertificateAuthorityService(CertificateVersionDataService certificateVersionDataService,
       PermissionCheckingService permissionCheckingService,
       UserContextHolder userContextHolder) {
-    this.credentialVersionDataService = credentialVersionDataService;
+    this.certificateVersionDataService = certificateVersionDataService;
     this.permissionCheckingService = permissionCheckingService;
     this.userContextHolder = userContextHolder;
   }
 
-  public CertificateCredentialValue findMostRecent(String caName) {
+  public CertificateCredentialValue findActiveVersion(String caName) {
     if(!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), caName, READ)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
-    CredentialVersion mostRecent = credentialVersionDataService.findMostRecent(caName);
+    CredentialVersion mostRecent = certificateVersionDataService.findActive(caName);
 
     if (mostRecent == null) {
       throw new EntryNotFoundException("error.credential.invalid_access");
