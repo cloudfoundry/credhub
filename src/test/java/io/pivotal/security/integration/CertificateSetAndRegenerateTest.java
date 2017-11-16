@@ -157,4 +157,28 @@ public class CertificateSetAndRegenerateTest {
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error").value("The maximum number of transitional versions for a given CA is 1."));
   }
+
+  @Test
+  public void certificateSetRequest_whenProvidedANonCertificateValue_returnsAValidationError() throws Exception {
+    final String setJson = JSONObject.toJSONString(
+        ImmutableMap.<String, String>builder()
+            .put("ca_name", "")
+            .put("certificate", "This is definitely not a certificate. Or is it?")
+            .put("private_key", TEST_PRIVATE_KEY)
+            .build());
+
+    MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        //language=JSON
+        .content("{\n"
+            + "  \"name\" : \"/crusher\",\n"
+            + "  \"type\" : \"certificate\",\n"
+            + "  \"value\" : " + setJson + "}");
+
+    this.mockMvc.perform(certificateSetRequest)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error", equalTo("The provided certificate value is not a valid X509 certificate.")));
+  }
 }

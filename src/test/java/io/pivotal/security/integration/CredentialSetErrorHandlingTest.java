@@ -1,10 +1,12 @@
 package io.pivotal.security.integration;
 
+import com.google.common.collect.ImmutableMap;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.helper.AuditingHelper;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.util.DatabaseProfileResolver;
+import net.minidev.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,6 +24,9 @@ import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 import static io.pivotal.security.helper.RequestHelper.setPassword;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
+import static io.pivotal.security.util.TestConstants.TEST_CA;
+import static io.pivotal.security.util.TestConstants.TEST_CERTIFICATE;
+import static io.pivotal.security.util.TestConstants.TEST_PRIVATE_KEY;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -36,6 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = CredentialManagerApp.class)
 @Transactional
 public class CredentialSetErrorHandlingTest {
+
   private final String CREDENTIAL_NAME = "/my-namespace/secretForErrorHandlingSetTest/credential-name";
   private final String CREDENTIAL_VALUE = "credential-value";
 
@@ -352,6 +358,13 @@ public class CredentialSetErrorHandlingTest {
 
   @Test
   public void givenACertificateRequest_whenAnInvalidCaNameIsProvided_returns404() throws Exception {
+    final String setJson = JSONObject.toJSONString(
+        ImmutableMap.<String, String>builder()
+            .put("ca_name", "does not exist")
+            .put("certificate", TEST_CERTIFICATE)
+            .put("private_key", TEST_PRIVATE_KEY)
+            .build());
+
     final MockHttpServletRequestBuilder request = put("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
@@ -359,10 +372,7 @@ public class CredentialSetErrorHandlingTest {
         .content("{" +
             "  \"name\":\"some-name\"," +
             "  \"type\":\"certificate\"," +
-            "  \"value\": {" +
-            "    \"certificate\": \"test-certificate\"," +
-            "    \"ca_name\": \"does-not-exist\"" +
-            "  }" +
+            "  \"value\": " + setJson +
             "}");
     final String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
 
@@ -374,6 +384,14 @@ public class CredentialSetErrorHandlingTest {
 
   @Test
   public void givenACertificateRequest_whenBothCaNameAndCaAreBothProvided_returns400() throws Exception {
+    final String setJson = JSONObject.toJSONString(
+        ImmutableMap.<String, String>builder()
+            .put("ca_name", "CA_NAME")
+            .put("ca", TEST_CA)
+            .put("certificate", TEST_CERTIFICATE)
+            .put("private_key", TEST_PRIVATE_KEY)
+            .build());
+
     final MockHttpServletRequestBuilder request = put("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
@@ -381,11 +399,7 @@ public class CredentialSetErrorHandlingTest {
         .content("{" +
             "  \"name\":\"some-name\"," +
             "  \"type\":\"certificate\"," +
-            "  \"value\": {" +
-            "    \"certificate\": \"test-certificate\"," +
-            "    \"ca\": \"test-ca\"," +
-            "    \"ca_name\": \"test-ca-name\"" +
-            "  }" +
+            "  \"value\": " + setJson +
             "}");
     final String expectedError = "Only one of the values 'ca_name' and 'ca' may be provided. Please update and retry your request.";
 

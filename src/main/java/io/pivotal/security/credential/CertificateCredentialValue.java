@@ -5,10 +5,12 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.pivotal.security.util.EmptyStringToNull;
 import io.pivotal.security.validator.MutuallyExclusive;
 import io.pivotal.security.validator.RequireAnyOf;
+import io.pivotal.security.validator.RequireValidCertificate;
 import org.apache.commons.lang3.StringUtils;
 
 @RequireAnyOf(message = "error.missing_certificate_credentials", fields = {"ca", "certificate", "privateKey"})
 @MutuallyExclusive(message = "error.mixed_ca_name_and_ca", fields = {"ca", "caName"})
+@RequireValidCertificate(message = "error.invalid_certificate_value", fields = {"certificate"})
 public class CertificateCredentialValue implements CredentialValue {
 
   @JsonDeserialize(using = EmptyStringToNull.class)
