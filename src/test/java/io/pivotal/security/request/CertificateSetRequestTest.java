@@ -307,4 +307,27 @@ public class CertificateSetRequestTest {
 
     assertThat(violations, contains(hasViolationWithMessage("error.invalid_certificate_length")));
   }
+
+  @Test
+  public void whenCAValueIsLongerThan7000Chars_isInvalid() {
+    int repetitionCount = 7001 - TEST_CA.length();
+    final String setJson = JSONObject.toJSONString(
+        ImmutableMap.<String, String>builder()
+            .put("ca", TEST_CA + StringUtils.repeat("a", repetitionCount))
+            .put("certificate", TEST_CERTIFICATE)
+            .put("private_key", TEST_PRIVATE_KEY)
+            .build());
+
+    String json = "{\n"
+        + "  \"name\": \"/example/certificate\",\n"
+        + "  \"type\": \"certificate\",\n"
+        + "  \"value\": " + setJson
+        + "}";
+    Set<ConstraintViolation<CertificateSetRequest>> violations = deserializeAndValidate(
+        json,
+        CertificateSetRequest.class
+    );
+
+    assertThat(violations, contains(hasViolationWithMessage("error.invalid_certificate_length")));
+  }
 }

@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
+import static io.pivotal.security.util.TestConstants.TEST_CA;
 import static io.pivotal.security.util.TestConstants.TEST_CERTIFICATE;
 import static io.pivotal.security.util.TestConstants.TEST_PRIVATE_KEY;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -190,6 +191,31 @@ public class CertificateSetAndRegenerateTest {
         ImmutableMap.<String, String>builder()
             .put("ca_name", "")
             .put("certificate", TEST_CERTIFICATE + StringUtils.repeat("a", repetitionCount))
+            .put("private_key", TEST_PRIVATE_KEY)
+            .build());
+
+    MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        //language=JSON
+        .content("{\n"
+            + "  \"name\" : \"/crusher\",\n"
+            + "  \"type\" : \"certificate\",\n"
+            + "  \"value\" : " + setJson + "}");
+
+    this.mockMvc.perform(certificateSetRequest)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error", equalTo("The provided certificate value is too long. Certificate lengths must be less than 7000 characters.")));
+  }
+
+  @Test
+  public void certificateSetRequest_whenProvidedACAValueThatIsTooLong_returnsAValidationError() throws Exception {
+    int repetitionCount = 7001 - TEST_CA.length();
+    final String setJson = JSONObject.toJSONString(
+        ImmutableMap.<String, String>builder()
+            .put("ca", TEST_CA + StringUtils.repeat("a", repetitionCount))
+            .put("certificate", TEST_CERTIFICATE)
             .put("private_key", TEST_PRIVATE_KEY)
             .build());
 
