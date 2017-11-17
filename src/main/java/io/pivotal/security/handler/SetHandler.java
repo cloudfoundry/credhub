@@ -6,12 +6,14 @@ import io.pivotal.security.auth.UserContextHolder;
 import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.data.CertificateAuthorityService;
 import io.pivotal.security.domain.CredentialVersion;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.request.BaseCredentialSetRequest;
 import io.pivotal.security.request.CertificateSetRequest;
 import io.pivotal.security.request.PasswordSetRequest;
 import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.service.PermissionService;
 import io.pivotal.security.service.PermissionedCredentialService;
+import io.pivotal.security.util.CertificateReader;
 import io.pivotal.security.view.CredentialView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -52,7 +54,14 @@ public class SetHandler {
 
       String caName = certificateValue.getCaName();
       if (caName != null) {
-        certificateValue.setCa(certificateAuthorityService.findActiveVersion(caName).getCertificate());
+        final String caValue = certificateAuthorityService.findActiveVersion(caName).getCertificate();
+        certificateValue.setCa(caValue);
+
+        CertificateReader certificateReader = new CertificateReader(certificateValue.getCertificate());
+
+        if (!certificateReader.isSignedByCa(caValue)){
+          throw new ParameterizedValidationException("error.certificate_was_not_signed_by_ca");
+        }
       }
     }
 

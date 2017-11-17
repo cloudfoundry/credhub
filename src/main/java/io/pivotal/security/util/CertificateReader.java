@@ -77,6 +77,18 @@ public class CertificateReader {
     return subjectName;
   }
 
+  public boolean isSignedByCa(String caValue) {
+    try {
+      X509Certificate ca = getCertificate(caValue);
+      certificate.verify(ca.getPublicKey());
+      return true;
+    } catch (SignatureException | InvalidKeyException e) {
+      return false;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   public int getKeyLength() {
     return ((RSAPublicKey) certificate.getPublicKey()).getModulus().bitLength();
   }

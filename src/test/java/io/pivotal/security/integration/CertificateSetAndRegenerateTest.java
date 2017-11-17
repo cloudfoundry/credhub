@@ -3,6 +3,7 @@ package io.pivotal.security.integration;
 import com.google.common.collect.ImmutableMap;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.helper.RequestHelper;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import net.minidev.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
@@ -46,6 +47,7 @@ public class CertificateSetAndRegenerateTest {
   private MockMvc mockMvc;
   private Object caCertificate;
   private String caId;
+  private String testSignedCert;
 
   @Before
   public void beforeEach() throws Exception {
@@ -83,10 +85,14 @@ public class CertificateSetAndRegenerateTest {
 
   @Test
   public void certificateSet_withCaName_canBeRegeneratedWithSameCA() throws Exception {
+    final String generatedCertificate = RequestHelper.generateCertificateCredential(mockMvc, "generatedCertificate", "overwrite", "generated-cert", CA_NAME);
+    String certificateValue = JsonPath.parse(generatedCertificate)
+        .read("$.value.certificate");
+
     final String setJson = JSONObject.toJSONString(
         ImmutableMap.<String, String>builder()
             .put("ca_name", CA_NAME)
-            .put("certificate", TEST_CERTIFICATE)
+            .put("certificate", certificateValue)
             .put("private_key", TEST_PRIVATE_KEY)
             .build());
 
@@ -232,5 +238,34 @@ public class CertificateSetAndRegenerateTest {
     this.mockMvc.perform(certificateSetRequest)
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error", equalTo("The provided certificate value is too long. Certificate lengths must be less than 7000 characters.")));
+  }
+
+  @Test
+  public void certificateSetRequest_whenProvidedCertificateWasNotSignedByProvidedCA_returnsAValidationError() throws Exception {
+    RequestHelper.generateCa(mockMvc, "otherCa", UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+    final String otherCaCertificate = RequestHelper.generateCertificateCredential(mockMvc, "otherCaCertificate", "overwrite", "other-ca-cert", "otherCa");
+
+    String otherCaCertificateValue = JsonPath.parse(otherCaCertificate)
+        .read("$.value.certificate");
+
+    final String setJson = JSONObject.toJSONString(
+        ImmutableMap.<String, String>builder()
+            .put("ca_name", CA_NAME)
+            .put("certificate", otherCaCertificateValue)
+            .build());
+
+    MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        //language=JSON
+        .content("{\n"
+            + "  \"name\" : \"/crusher\",\n"
+            + "  \"type\" : \"certificate\",\n"
+            + "  \"value\" : " + setJson + "}");
+
+    this.mockMvc.perform(certificateSetRequest)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error", equalTo("The provided certificate was not signed by the CA specified in the 'ca_name' property.")));
   }
 }

@@ -10,6 +10,7 @@ import io.pivotal.security.credential.UserCredentialValue;
 import io.pivotal.security.data.CertificateAuthorityService;
 import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.domain.PasswordCredentialVersion;
+import io.pivotal.security.helper.TestHelper;
 import io.pivotal.security.request.CertificateSetRequest;
 import io.pivotal.security.request.PasswordSetRequest;
 import io.pivotal.security.request.PermissionEntry;
@@ -25,6 +26,8 @@ import org.mockito.ArgumentCaptor;
 
 import java.util.ArrayList;
 
+import static io.pivotal.security.util.TestConstants.TEST_CA;
+import static io.pivotal.security.util.TestConstants.TEST_CERTIFICATE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.mockito.Matchers.anyList;
@@ -50,6 +53,7 @@ public class SetHandlerTest {
 
   @Before
   public void setUp() throws Exception {
+    TestHelper.getBouncyCastleProvider();
     credentialService = mock(PermissionedCredentialService.class);
     certificateAuthorityService = mock(CertificateAuthorityService.class);
     permissionService = mock(PermissionService.class);
@@ -185,7 +189,7 @@ public class SetHandlerTest {
   public void handleSetRequest_withACertificateSetRequest_andACaName_providesCaCertificate() {
     CertificateCredentialValue cerificateAuthority = new CertificateCredentialValue(
         null,
-        "test-ca-certificate",
+        TEST_CA,
         null,
         null
     );
@@ -195,7 +199,7 @@ public class SetHandlerTest {
     CertificateSetRequest setRequest = new CertificateSetRequest();
     final CertificateCredentialValue credentialValue = new CertificateCredentialValue(
         null,
-        "Picard",
+        TEST_CERTIFICATE,
         "Enterprise",
         "test-ca-name");
 
@@ -207,10 +211,10 @@ public class SetHandlerTest {
     setRequest.setCertificateValue(credentialValue);
 
     CertificateCredentialValue expectedCredentialValue = new CertificateCredentialValue(
-        "test-ca-certificate",
-        "Picard",
+        TEST_CA,
+        TEST_CERTIFICATE,
         "Enterprise",
-        "test-ca-name"
+        "/test-ca-name"
     );
     ArgumentCaptor<CredentialValue> credentialValueArgumentCaptor = ArgumentCaptor.forClass(CredentialValue.class);
 
