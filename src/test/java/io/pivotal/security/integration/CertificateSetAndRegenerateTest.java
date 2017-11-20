@@ -241,7 +241,7 @@ public class CertificateSetAndRegenerateTest {
   }
 
   @Test
-  public void certificateSetRequest_whenProvidedCertificateWasNotSignedByProvidedCA_returnsAValidationError() throws Exception {
+  public void certificateSetRequest_whenProvidedCertificateWasNotSignedByNamedCA_returnsAValidationError() throws Exception {
     RequestHelper.generateCa(mockMvc, "otherCa", UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
     final String otherCaCertificate = RequestHelper.generateCertificateCredential(mockMvc, "otherCaCertificate", "overwrite", "other-ca-cert", "otherCa");
 
@@ -267,5 +267,34 @@ public class CertificateSetAndRegenerateTest {
     this.mockMvc.perform(certificateSetRequest)
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error", equalTo("The provided certificate was not signed by the CA specified in the 'ca_name' property.")));
+  }
+
+  @Test
+  public void certificateSetRequest_whenProvidedCertificateWasNotSignedByProvidedCA_returnsAValidationError() throws Exception {
+    RequestHelper.generateCa(mockMvc, "otherCa", UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+    final String otherCaCertificate = RequestHelper.generateCertificateCredential(mockMvc, "otherCaCertificate", "overwrite", "other-ca-cert", "otherCa");
+
+    String otherCaCertificateValue = JsonPath.parse(otherCaCertificate)
+        .read("$.value.certificate");
+
+    final String setJson = JSONObject.toJSONString(
+        ImmutableMap.<String, String>builder()
+            .put("ca", TEST_CA)
+            .put("certificate", otherCaCertificateValue)
+            .build());
+
+    MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        //language=JSON
+        .content("{\n"
+            + "  \"name\" : \"/crusher\",\n"
+            + "  \"type\" : \"certificate\",\n"
+            + "  \"value\" : " + setJson + "}");
+
+    this.mockMvc.perform(certificateSetRequest)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error", equalTo("The provided certificate was not signed by the CA specified in the 'ca' property.")));
   }
 }

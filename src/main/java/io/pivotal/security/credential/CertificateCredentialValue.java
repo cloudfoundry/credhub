@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.pivotal.security.util.EmptyStringToNull;
 import io.pivotal.security.validator.MutuallyExclusive;
 import io.pivotal.security.validator.RequireAnyOf;
+import io.pivotal.security.validator.RequireCertificateSignedByCA;
 import io.pivotal.security.validator.RequireValidCA;
 import io.pivotal.security.validator.RequireValidCertificate;
 import io.pivotal.security.validator.ValidCertificateLength;
@@ -14,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 @MutuallyExclusive(message = "error.mixed_ca_name_and_ca", fields = {"ca", "caName"})
 @ValidCertificateLength(message = "error.invalid_certificate_length", fields = {"certificate", "ca"})
 @RequireValidCertificate(message = "error.invalid_certificate_value", fields = {"certificate"})
+@RequireCertificateSignedByCA(message = "error.certificate_was_not_signed_by_ca", fields = {"ca"})
 @RequireValidCA(message = "error.invalid_ca_value", fields = {"ca"})
 public class CertificateCredentialValue implements CredentialValue {
 

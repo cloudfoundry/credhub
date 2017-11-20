@@ -19,8 +19,8 @@ import static io.pivotal.security.util.TestConstants.TEST_CA;
 import static io.pivotal.security.util.TestConstants.TEST_CERTIFICATE;
 import static io.pivotal.security.util.TestConstants.TEST_PRIVATE_KEY;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertNull;
 
@@ -167,7 +167,7 @@ public class CertificateSetRequestTest {
     Set<ConstraintViolation<CertificateSetRequest>> violations = deserializeAndValidate(json,
         CertificateSetRequest.class);
 
-    assertThat(violations, contains(hasViolationWithMessage("error.missing_value")));
+    assertThat(violations, hasItem(hasViolationWithMessage("error.missing_value")));
   }
 
   @Test
@@ -181,7 +181,7 @@ public class CertificateSetRequestTest {
         CertificateSetRequest.class);
 
     assertThat(violations,
-        contains(hasViolationWithMessage("error.missing_certificate_credentials")));
+        hasItem(hasViolationWithMessage("error.missing_certificate_credentials")));
   }
 
   @Test
@@ -200,7 +200,7 @@ public class CertificateSetRequestTest {
         CertificateSetRequest.class);
 
     assertThat(violations,
-        contains(hasViolationWithMessage("error.missing_certificate_credentials")));
+        hasItem(hasViolationWithMessage("error.missing_certificate_credentials")));
   }
 
   @Test
@@ -219,7 +219,7 @@ public class CertificateSetRequestTest {
         CertificateSetRequest.class);
 
     assertThat(violations,
-        contains(hasViolationWithMessage("error.missing_certificate_credentials")));
+        hasItem(hasViolationWithMessage("error.missing_certificate_credentials")));
   }
 
   @Test
@@ -241,7 +241,7 @@ public class CertificateSetRequestTest {
         CertificateSetRequest.class
     );
 
-    assertThat(violations, contains(hasViolationWithMessage("error.mixed_ca_name_and_ca")));
+    assertThat(violations, hasItem(hasViolationWithMessage("error.mixed_ca_name_and_ca")));
   }
 
   @Test
@@ -263,7 +263,7 @@ public class CertificateSetRequestTest {
         CertificateSetRequest.class
     );
 
-    assertThat(violations, contains(hasViolationWithMessage("error.invalid_certificate_value")));
+    assertThat(violations, hasItem(hasViolationWithMessage("error.invalid_certificate_value")));
   }
 
   @Test
@@ -308,7 +308,7 @@ public class CertificateSetRequestTest {
         CertificateSetRequest.class
     );
 
-    assertThat(violations, contains(hasViolationWithMessage("error.invalid_certificate_length")));
+    assertThat(violations, hasItem(hasViolationWithMessage("error.invalid_certificate_length")));
   }
 
   @Test
@@ -331,7 +331,7 @@ public class CertificateSetRequestTest {
         CertificateSetRequest.class
     );
 
-    assertThat(violations, contains(hasViolationWithMessage("error.invalid_certificate_length")));
+    assertThat(violations, hasItem(hasViolationWithMessage("error.invalid_certificate_length")));
   }
 
   @Test
@@ -353,7 +353,7 @@ public class CertificateSetRequestTest {
         CertificateSetRequest.class
     );
 
-    assertThat(violations, contains(hasViolationWithMessage("error.invalid_ca_value")));
+    assertThat(violations, hasItem(hasViolationWithMessage("error.invalid_ca_value")));
   }
 
   @Test
@@ -375,6 +375,6 @@ public class CertificateSetRequestTest {
         CertificateSetRequest.class
     );
 
-    assertThat(violations, contains(hasViolationWithMessage("error.invalid_ca_value")));
+    assertThat(violations, hasItem(hasViolationWithMessage("error.invalid_ca_value")));
   }
 }

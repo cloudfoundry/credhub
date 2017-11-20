@@ -60,7 +60,7 @@ public class SetHandler {
         CertificateReader certificateReader = new CertificateReader(certificateValue.getCertificate());
 
         if (!certificateReader.isSignedByCa(caValue)){
-          throw new ParameterizedValidationException("error.certificate_was_not_signed_by_ca");
+          throw new ParameterizedValidationException("error.certificate_was_not_signed_by_ca_name");
         }
       }
     }

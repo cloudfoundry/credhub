@@ -80,8 +80,11 @@ public class CertificateReader {
   public boolean isSignedByCa(String caValue) {
     try {
       X509Certificate ca = getCertificate(caValue);
-      certificate.verify(ca.getPublicKey());
-      return true;
+      if(ca != null) {
+        certificate.verify(ca.getPublicKey());
+        return true;
+      }
+      return false;
     } catch (SignatureException | InvalidKeyException e) {
       return false;
     } catch (Exception e) {
