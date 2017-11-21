@@ -88,12 +88,14 @@ public class CertificateSetAndRegenerateTest {
     final String generatedCertificate = RequestHelper.generateCertificateCredential(mockMvc, "generatedCertificate", "overwrite", "generated-cert", CA_NAME);
     String certificateValue = JsonPath.parse(generatedCertificate)
         .read("$.value.certificate");
+    String privateKeyValue = JsonPath.parse(generatedCertificate)
+        .read("$.value.private_key");
 
     final String setJson = JSONObject.toJSONString(
         ImmutableMap.<String, String>builder()
             .put("ca_name", CA_NAME)
             .put("certificate", certificateValue)
-            .put("private_key", TEST_PRIVATE_KEY)
+            .put("private_key", privateKeyValue)
             .build());
 
     MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
@@ -296,5 +298,37 @@ public class CertificateSetAndRegenerateTest {
     this.mockMvc.perform(certificateSetRequest)
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error", equalTo("The provided certificate was not signed by the CA specified in the 'ca' property.")));
+  }
+
+  @Test
+  public void certificateSetRequest_whenProvidedCertificateWithNonMatchingPrivateKey_returnsAValidationError() throws Exception {
+    final String originalCertificate = RequestHelper.generateCa(mockMvc, "otherCa", UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+    final String otherCaCertificate = RequestHelper.generateCertificateCredential(mockMvc, "otherCaCertificate", "overwrite", "other-ca-cert", "otherCa");
+
+    String originalPrivateKeyValue = JsonPath.parse(originalCertificate)
+        .read("$.value.private_key");
+    String otherCaCertificateValue = JsonPath.parse(otherCaCertificate)
+        .read("$.value.certificate");
+
+    final String setJson = JSONObject.toJSONString(
+        ImmutableMap.<String, String>builder()
+            .put("ca_name", "otherCa")
+            .put("certificate", otherCaCertificateValue)
+            .put("private_key", originalPrivateKeyValue)
+            .build());
+
+    MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        //language=JSON
+        .content("{\n"
+            + "  \"name\" : \"/crusher\",\n"
+            + "  \"type\" : \"certificate\",\n"
+            + "  \"value\" : " + setJson + "}");
+
+    this.mockMvc.perform(certificateSetRequest)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error", equalTo("The provided certificate does not match the private key.")));
   }
 }

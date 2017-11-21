@@ -15,6 +15,7 @@ import javax.validation.ConstraintViolation;
 import static io.pivotal.security.helper.JsonTestHelper.deserialize;
 import static io.pivotal.security.helper.JsonTestHelper.deserializeAndValidate;
 import static io.pivotal.security.helper.JsonTestHelper.hasViolationWithMessage;
+import static io.pivotal.security.util.TestConstants.PRIVATE_KEY_4096;
 import static io.pivotal.security.util.TestConstants.TEST_CA;
 import static io.pivotal.security.util.TestConstants.TEST_CERTIFICATE;
 import static io.pivotal.security.util.TestConstants.TEST_PRIVATE_KEY;
@@ -376,5 +377,27 @@ public class CertificateSetRequestTest {
     );
 
     assertThat(violations, hasItem(hasViolationWithMessage("error.invalid_ca_value")));
+  }
+
+  @Test
+  public void whenCertificateDoesNotMatchPrivateKey_isInvalid() {
+    final String setJson = JSONObject.toJSONString(
+        ImmutableMap.<String, String>builder()
+            .put("ca", TEST_CA  )
+            .put("certificate", TEST_CERTIFICATE)
+            .put("private_key", PRIVATE_KEY_4096)
+            .build());
+
+    String json = "{\n"
+        + "  \"name\": \"/example/certificate\",\n"
+        + "  \"type\": \"certificate\",\n"
+        + "  \"value\": " + setJson
+        + "}";
+    Set<ConstraintViolation<CertificateSetRequest>> violations = deserializeAndValidate(
+        json,
+        CertificateSetRequest.class
+    );
+
+    assertThat(violations, hasItem(hasViolationWithMessage("error.mismatched_certificate_and_private_key")));
   }
 }
