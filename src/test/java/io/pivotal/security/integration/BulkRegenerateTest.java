@@ -135,6 +135,35 @@ public class BulkRegenerateTest {
   }
 
   @Test
+  public void regeneratingCertificatesSignedByCA_shouldRegenerateCertificatesInAlphabeticalOrder() throws Exception {
+    generateSignedCertificate("/z-cert-to-regenerate", "cert to regenerate", "/ca-to-rotate");
+    generateSignedCertificate("/a-cert-to-regenerate", "cert to regenerate", "/ca-to-rotate");
+
+    MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
+        .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        //language=JSON
+        .content("{\n"
+            + "  \"signed_by\" : \"/ca-to-rotate\"\n"
+            + "}");
+
+    String regenerateCertificatesResult = this.mockMvc.perform(regenerateCertificatesRequest)
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andReturn().getResponse().getContentAsString();
+
+    final JSONArray regeneratedCredentials = (new JSONObject(regenerateCertificatesResult)).getJSONArray("regenerated_credentials");
+    final List<String> result = Arrays.asList(regeneratedCredentials.getString(0), regeneratedCredentials.getString(1), regeneratedCredentials.getString(2), regeneratedCredentials.getString(3));
+
+    assertThat(regeneratedCredentials.length(), equalTo(4));
+    assertThat(result.get(0), equalTo("/a-cert-to-regenerate"));
+    assertThat(result.get(1), equalTo("/cert-to-regenerate"));
+    assertThat(result.get(2), equalTo("/cert-to-regenerate-as-well"));
+    assertThat(result.get(3), equalTo("/z-cert-to-regenerate"));
+  }
+
+  @Test
   public void regenerating_PersistsAnAuditEntry() throws Exception {
     MockHttpServletRequestBuilder request = post(API_V1_BULK_REGENERATE_ENDPOINT)
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -241,7 +270,6 @@ public class BulkRegenerateTest {
         .andExpect(jsonPath("$.error", IsEqual.equalTo("The request could not be completed because the credential does not exist or you do not have sufficient authorization.")));
 
     auditingHelper.verifyAuditing(UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID, "/api/v1/bulk-regenerate", 403, newArrayList(
-        new EventAuditRecordParameters(CREDENTIAL_UPDATE, "/cert-to-regenerate-as-well"),
         new EventAuditRecordParameters(CREDENTIAL_UPDATE, "/cert-to-regenerate")
     ));
   }

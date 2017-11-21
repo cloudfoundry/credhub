@@ -10,6 +10,7 @@ import io.pivotal.security.view.CredentialView;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 @Service
@@ -59,7 +60,9 @@ public class RegenerateHandler {
     List<String> certificateNames = credentialService.findAllCertificateCredentialsByCaName(
         signerName);
 
-    final HashSet<String> credentialNamesSet = new HashSet<>(certificateNames);
+    certificateNames.sort(String::compareToIgnoreCase);
+
+    final HashSet<String> credentialNamesSet = new LinkedHashSet<>(certificateNames);
     for (String name : credentialNamesSet) {
       this.handleRegenerate(name,
           auditRecordParameters);

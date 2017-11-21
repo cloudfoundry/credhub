@@ -77,7 +77,6 @@ public class RegenerateHandlerTest {
         any(), any(), any(),
         any(), anyString(),
         any());
-
   }
 
 }
