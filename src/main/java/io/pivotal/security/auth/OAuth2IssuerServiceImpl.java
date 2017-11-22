@@ -3,6 +3,7 @@ package io.pivotal.security.auth;
 import io.pivotal.security.util.RestTemplateFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -19,7 +20,8 @@ import java.security.cert.CertificateException;
 import java.util.HashMap;
 
 @Component
-@Profile({"dev", "prod"})
+@ConditionalOnProperty(value = "security.oauth2.enabled")
+@Profile({"prod", "dev"})
 public class OAuth2IssuerServiceImpl implements OAuth2IssuerService {
   private final static String ISSUER_PATH = "/.well-known/openid-configuration";
 

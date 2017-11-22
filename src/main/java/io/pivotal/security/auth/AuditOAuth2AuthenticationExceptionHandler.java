@@ -6,6 +6,7 @@ import io.pivotal.security.entity.AuthFailureAuditRecord;
 import io.pivotal.security.exceptions.AccessTokenExpiredException;
 import io.pivotal.security.util.CurrentTimeProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.jwt.Jwt;
@@ -28,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import static org.springframework.security.oauth2.provider.token.AccessTokenConverter.EXP;
 
 @Service
+@ConditionalOnProperty(value = "security.oauth2.enabled")
 public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2AuthenticationEntryPoint {
 
   private final CurrentTimeProvider currentTimeProvider;

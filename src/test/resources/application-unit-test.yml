@@ -13,6 +13,7 @@ security:
   basic:
     enabled: false
   oauth2:
+    enabled: true
     resource:
       jwt:
         # /unit/tests/rsa/key in super-bosh

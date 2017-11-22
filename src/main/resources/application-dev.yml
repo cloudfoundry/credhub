@@ -15,6 +15,7 @@ encryption:
   
 security:
   oauth2:
+    enabled: true
     resource:
       jwt:
         key_value: |

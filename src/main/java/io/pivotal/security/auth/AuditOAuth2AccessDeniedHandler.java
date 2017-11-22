@@ -6,6 +6,7 @@ import io.pivotal.security.domain.SecurityEventAuditRecord;
 import io.pivotal.security.entity.RequestAuditRecord;
 import io.pivotal.security.service.SecurityEventsLogService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -23,6 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @Component
+@ConditionalOnProperty(value = "security.oauth2.enabled")
 public class AuditOAuth2AccessDeniedHandler extends OAuth2AccessDeniedHandler {
 
   private final TokenStore tokenStore;

@@ -1,15 +1,20 @@
 package io.pivotal.security.auth;
 
-import org.junit.Before;
+import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.OAuth2Request;
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.security.Principal;
 import java.security.cert.X509Certificate;
@@ -29,19 +34,18 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-@RunWith(JUnit4.class)
+@RunWith(SpringRunner.class)
+@ActiveProfiles(profiles = {"unit-test"}, resolver = DatabaseProfileResolver.class)
+@SpringBootTest(classes = CredentialManagerApp.class)
 public class UserContextFactoryTest {
+  @MockBean
   private ResourceServerTokenServices tokenServicesMock;
+
+  @Autowired
   private UserContextFactory subject;
 
-  @Before
-  public void setup() {
-    tokenServicesMock = mock(ResourceServerTokenServices.class);
-    subject = new UserContextFactory(tokenServicesMock);
-  }
-
   @Test
-  public void fromAuthenication_readsFromOAuthDetails() throws Exception {
+  public void fromAuthentication_readsFromOAuthDetails() throws Exception {
     OAuth2Authentication oauth2Authentication = setupOAuthMock("TEST_GRANT_TYPE");
     UserContext context = subject.createUserContext(oauth2Authentication);
 

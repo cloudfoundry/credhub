@@ -16,12 +16,8 @@ import java.util.Set;
 
 @Component
 public class UserContextFactory {
-  private final ResourceServerTokenServices resourceServerTokenServices;
-
-  @Autowired
-  UserContextFactory(ResourceServerTokenServices resourceServerTokenServices) {
-    this.resourceServerTokenServices = resourceServerTokenServices;
-  }
+  @Autowired(required = false)
+  private ResourceServerTokenServices resourceServerTokenServices;
 
   public UserContext createUserContext(Authentication authentication) {
     if (authentication instanceof PreAuthenticatedAuthenticationToken) {

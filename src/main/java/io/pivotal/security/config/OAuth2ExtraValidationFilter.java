@@ -3,6 +3,7 @@ package io.pivotal.security.config;
 import io.pivotal.security.auth.AuditOAuth2AuthenticationExceptionHandler;
 import io.pivotal.security.auth.OAuth2IssuerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.security.authentication.AuthenticationEventPublisher;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -26,6 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @Component
+@ConditionalOnProperty(value = "security.oauth2.enabled")
 public class OAuth2ExtraValidationFilter extends OncePerRequestFilter {
 
   private final MessageSourceAccessor messageSourceAccessor;

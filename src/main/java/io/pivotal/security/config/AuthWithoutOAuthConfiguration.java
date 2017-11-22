@@ -1,7 +1,5 @@
 package io.pivotal.security.config;
 
-import io.pivotal.security.auth.AuditOAuth2AccessDeniedHandler;
-import io.pivotal.security.auth.AuditOAuth2AuthenticationExceptionHandler;
 import io.pivotal.security.auth.PreAuthenticationFailureFilter;
 import io.pivotal.security.auth.X509AuthenticationProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,41 +19,31 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Res
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
 
-@ConditionalOnProperty(value = "security.oauth2.enabled")
+@ConditionalOnProperty(value = "security.oauth2.enabled", havingValue = "false", matchIfMissing = true)
 @Configuration
 @EnableResourceServer
 @EnableWebSecurity
-public class AuthConfiguration extends ResourceServerConfigurerAdapter {
+public class AuthWithoutOAuthConfiguration extends ResourceServerConfigurerAdapter {
+
   // Only valid for v4 UUID by design.
   private static final String VALID_MTLS_ID =
       "\\bOU=(app:[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[a-f0-9]{4}-[a-f0-9]{12})\\b";
 
   private final ResourceServerProperties resourceServerProperties;
-  private final AuditOAuth2AuthenticationExceptionHandler auditOAuth2AuthenticationExceptionHandler;
-  private final AuditOAuth2AccessDeniedHandler auditOAuth2AccessDeniedHandler;
   private final PreAuthenticationFailureFilter preAuthenticationFailureFilter;
-  private final OAuth2ExtraValidationFilter oAuth2ExtraValidationFilter;
 
   @Autowired
-  AuthConfiguration(
-    ResourceServerProperties resourceServerProperties,
-    AuditOAuth2AuthenticationExceptionHandler auditOAuth2AuthenticationExceptionHandler,
-    AuditOAuth2AccessDeniedHandler auditOAuth2AccessDeniedHandler,
-    PreAuthenticationFailureFilter preAuthenticationFailureFilter,
-    OAuth2ExtraValidationFilter oAuth2ExtraValidationFilter
+  AuthWithoutOAuthConfiguration(
+      ResourceServerProperties resourceServerProperties,
+      PreAuthenticationFailureFilter preAuthenticationFailureFilter
   ) {
     this.resourceServerProperties = resourceServerProperties;
-    this.auditOAuth2AuthenticationExceptionHandler = auditOAuth2AuthenticationExceptionHandler;
-    this.auditOAuth2AccessDeniedHandler = auditOAuth2AccessDeniedHandler;
     this.preAuthenticationFailureFilter = preAuthenticationFailureFilter;
-    this.oAuth2ExtraValidationFilter = oAuth2ExtraValidationFilter;
   }
 
   @Override
   public void configure(ResourceServerSecurityConfigurer resources) throws Exception {
     resources.resourceId(resourceServerProperties.getResourceId());
-    resources.authenticationEntryPoint(auditOAuth2AuthenticationExceptionHandler);
-    resources.accessDeniedHandler(auditOAuth2AccessDeniedHandler);
     resources.stateless(false);
   }
 
@@ -82,7 +70,6 @@ public class AuthConfiguration extends ResourceServerConfigurerAdapter {
         });
 
     http.addFilterBefore(preAuthenticationFailureFilter, X509AuthenticationFilter.class)
-        .addFilterAfter(oAuth2ExtraValidationFilter, preAuthenticationFailureFilter.getClass())
         .authenticationProvider(getPreAuthenticatedAuthenticationProvider());
 
     http
@@ -90,9 +77,8 @@ public class AuthConfiguration extends ResourceServerConfigurerAdapter {
         .antMatchers("/info").permitAll()
         .antMatchers("/health").permitAll()
         .antMatchers("/api/v1/**")
-          .access(String.format("hasRole('%s') "
-                  + "or (#oauth2.hasScope('credhub.read') and #oauth2.hasScope('credhub.write'))",
-              X509AuthenticationProvider.MTLS_USER));
+        .access(String.format("hasRole('%s')",
+            X509AuthenticationProvider.MTLS_USER));
 
     http.httpBasic().disable();
   }
