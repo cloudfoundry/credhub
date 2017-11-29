@@ -423,7 +423,7 @@ public class CredentialAclEnforcementTest {
                 "    \"pp-config-server\": [" +
                 "      {" +
                 "        \"credentials\": {" +
-                "          \"credhub-ref\": \"((/secret1))\"" +
+                "          \"credhub-ref\": \"/secret1\"" +
                 "        }," +
                 "        \"label\": \"pp-config-server\"" +
                 "      }" +
@@ -431,7 +431,7 @@ public class CredentialAclEnforcementTest {
                 "    \"pp-something-else\": [" +
                 "      {" +
                 "        \"credentials\": {" +
-                "          \"credhub-ref\": \"((/secret2))\"" +
+                "          \"credhub-ref\": \"/secret2\"" +
                 "        }," +
                 "        \"something\": [\"pp-config-server\"]" +
                 "      }" +
@@ -460,7 +460,7 @@ public class CredentialAclEnforcementTest {
                 "    \"pp-config-server\": [" +
                 "      {" +
                 "        \"credentials\": {" +
-                "          \"credhub-ref\": \"((/secret1))\"" +
+                "          \"credhub-ref\": \"/secret1\"" +
                 "        }," +
                 "        \"label\": \"pp-config-server\"" +
                 "      }" +
@@ -468,7 +468,7 @@ public class CredentialAclEnforcementTest {
                 "    \"pp-something-else\": [" +
                 "      {" +
                 "        \"credentials\": {" +
-                "          \"credhub-ref\": \"((/secret2))\"" +
+                "          \"credhub-ref\": \"/secret2\"" +
                 "        }," +
                 "        \"something\": [\"pp-config-server\"]" +
                 "      }" +
