@@ -1,13 +1,20 @@
 package io.pivotal.security.service;
 
+import io.pivotal.security.auth.UserContext;
+import io.pivotal.security.auth.UserContextHolder;
 import io.pivotal.security.credential.CertificateCredentialValue;
+import io.pivotal.security.data.CertificateDataService;
 import io.pivotal.security.domain.CertificateCredentialVersion;
 import io.pivotal.security.domain.CredentialVersion;
+import io.pivotal.security.entity.Credential;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.request.GenerationParameters;
+import io.pivotal.security.request.PermissionOperation;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+
+import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.assertj.core.api.Fail.fail;
@@ -21,11 +28,18 @@ import static org.mockito.Mockito.when;
 public class PermissionedCertificateServiceTest {
   private PermissionedCertificateService subject;
   private PermissionedCredentialService permissionedCredentialService;
+  private CertificateDataService certificateDataService;
+  private PermissionCheckingService permissionCheckingService;
+  private UserContextHolder userContextHolder;
 
   @Before
   public void beforeEach() {
     permissionedCredentialService = mock(PermissionedCredentialService.class);
-    subject = new PermissionedCertificateService(permissionedCredentialService);
+    certificateDataService = mock(CertificateDataService.class);
+    permissionCheckingService = mock(PermissionCheckingService.class);
+    certificateDataService = mock(CertificateDataService.class);
+    userContextHolder = mock(UserContextHolder.class);
+    subject = new PermissionedCertificateService(permissionedCredentialService, certificateDataService, permissionCheckingService, userContextHolder);
   }
 
   @Test
@@ -108,5 +122,28 @@ public class PermissionedCertificateServiceTest {
     } catch (ParameterizedValidationException e) {
       assertThat(e.getMessage(), equalTo("error.too_many_transitional_versions"));
     }
+  }
+
+  @Test
+  public void getAll_returnsAllCertificatesTheCurrentUserCanAccess() throws Exception {
+    Credential myCredential = mock(Credential.class);
+    when(myCredential.getName()).thenReturn("my-credential");
+    Credential yourCredential = mock(Credential.class);
+    when(yourCredential.getName()).thenReturn("your-credential");
+
+    UserContext userContext = mock(UserContext.class);
+    when(userContextHolder.getUserContext()).thenReturn(userContext);
+
+    String user = "my-user";
+    when(userContext.getActor()).thenReturn(user);
+
+    when(permissionCheckingService.hasPermission(user, "my-credential", PermissionOperation.READ)).thenReturn(true);
+    when(permissionCheckingService.hasPermission(user, "your-credential", PermissionOperation.READ)).thenReturn(false);
+
+    when(certificateDataService.findAll())
+        .thenReturn(newArrayList(myCredential, yourCredential));
+
+    final List<Credential> certificates = subject.getAll(newArrayList());
+    assertThat(certificates, equalTo(newArrayList(myCredential)));
   }
 }

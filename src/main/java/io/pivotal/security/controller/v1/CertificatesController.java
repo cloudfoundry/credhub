@@ -3,6 +3,7 @@ package io.pivotal.security.controller.v1;
 import io.pivotal.security.audit.EventAuditLogService;
 import io.pivotal.security.handler.CertificatesHandler;
 import io.pivotal.security.request.CertificateRegenerateRequest;
+import io.pivotal.security.view.CertificateCredentialsView;
 import io.pivotal.security.view.CredentialView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -46,6 +47,18 @@ public class CertificatesController {
     return eventAuditLogService
         .auditEvents((auditRecordParameters ->
             certificatesHandler.handleRegenerate(certificateId, auditRecordParameters, requestBody)
+        ));
+  }
+
+  @RequestMapping(
+      method = RequestMethod.GET,
+      value = "",
+      produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+  @ResponseStatus(HttpStatus.OK)
+  public CertificateCredentialsView getAllCertificates() throws IOException {
+    return eventAuditLogService
+        .auditEvents((auditRecordParameters ->
+          certificatesHandler.handleGetAllRequest(auditRecordParameters)
         ));
   }
 }

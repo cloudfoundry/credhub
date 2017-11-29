@@ -150,6 +150,25 @@ public class RequestHelper {
     return response;
   }
 
+  public static String getCertificateCredentials(MockMvc mockMvc) throws Exception {
+    return getCertificateCredentials(mockMvc, UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+  }
+
+  public static String getCertificateCredentials(MockMvc mockMvc, String token)
+      throws Exception {
+
+    MockHttpServletRequestBuilder get = get("/api/v1/certificates")
+        .header("Authorization", "Bearer " + token)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON);
+
+    String response = mockMvc.perform(get)
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andReturn().getResponse().getContentAsString();
+    return response;
+  }
+
   public static String generateCertificateCredential(MockMvc mockMvc, String credentialName, String mode, String commonName, String caName)
       throws Exception {
     Map<String, Object> certRequestBody = new HashMap() {
