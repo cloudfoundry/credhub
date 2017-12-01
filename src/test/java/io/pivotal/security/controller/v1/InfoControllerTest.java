@@ -34,8 +34,7 @@ public class InfoControllerTest {
   @Before
   public void beforeEach() {
     final InfoController infoController = new InfoController(
-        "https://uaa.url.example.com",
-        versionProvider
+        "https://uaa.url.example.com"
     );
 
     mockMvc = MockMvcBuilders
@@ -50,7 +49,6 @@ public class InfoControllerTest {
         .andExpect(status().isOk())
         .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$.auth-server.url").value("https://uaa.url.example.com"))
-        .andExpect(jsonPath("$.app.version").isNotEmpty())
         .andExpect(jsonPath("$.app.name").value("CredHub"));
   }
 }
