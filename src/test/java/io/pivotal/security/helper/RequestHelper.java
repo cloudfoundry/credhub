@@ -169,6 +169,21 @@ public class RequestHelper {
     return response;
   }
 
+  public static String getCertificateCredentialsByName(MockMvc mockMvc, String token, String name)
+      throws Exception {
+
+    MockHttpServletRequestBuilder get = get("/api/v1/certificates?name=" + name)
+        .header("Authorization", "Bearer " + token)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON);
+
+    String response = mockMvc.perform(get)
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andReturn().getResponse().getContentAsString();
+    return response;
+  }
+
   public static String generateCertificateCredential(MockMvc mockMvc, String credentialName, String mode, String commonName, String caName)
       throws Exception {
     Map<String, Object> certRequestBody = new HashMap() {

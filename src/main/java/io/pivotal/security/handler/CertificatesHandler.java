@@ -70,4 +70,14 @@ public class CertificatesHandler {
 
     return new CertificateCredentialsView(list);
   }
+
+  public CertificateCredentialsView handleGetByNameRequest(String name, List<EventAuditRecordParameters> auditRecordParameters) {
+    final List<Credential> credentialList = permissionedCertificateService.getByName(name, auditRecordParameters);
+
+    List<CertificateCredentialView> list = credentialList.stream().map(credential ->
+        new CertificateCredentialView(credential.getName(), credential.getUuid())
+    ).collect(Collectors.toList());
+
+    return new CertificateCredentialsView(list);
+  }
 }

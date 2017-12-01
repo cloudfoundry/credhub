@@ -7,12 +7,14 @@ import io.pivotal.security.data.CertificateDataService;
 import io.pivotal.security.domain.CertificateCredentialVersion;
 import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.entity.Credential;
+import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.request.GenerationParameters;
 import io.pivotal.security.request.PermissionEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,7 +31,8 @@ public class PermissionedCertificateService {
 
   @Autowired
   public PermissionedCertificateService(
-      PermissionedCredentialService permissionedCredentialService, CertificateDataService certificateDataService, PermissionCheckingService permissionCheckingService, UserContextHolder userContextHolder) {
+      PermissionedCredentialService permissionedCredentialService, CertificateDataService certificateDataService,
+      PermissionCheckingService permissionCheckingService, UserContextHolder userContextHolder) {
     this.permissionedCredentialService = permissionedCredentialService;
     this.certificateDataService = certificateDataService;
     this.permissionCheckingService = permissionCheckingService;
@@ -68,13 +71,27 @@ public class PermissionedCertificateService {
         auditRecordParameters);
   }
 
-  public List<Credential> getAll(List<EventAuditRecordParameters> auditRecordParameters){
+  public List<Credential> getAll(List<EventAuditRecordParameters> auditRecordParameters) {
     auditRecordParameters.add(new EventAuditRecordParameters(CREDENTIAL_FIND, null));
 
     final List<Credential> allCertificates = certificateDataService.findAll();
 
     return allCertificates.stream().filter(credential ->
-        permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), credential.getName(), READ)
+        permissionCheckingService
+            .hasPermission(userContextHolder.getUserContext().getActor(), credential.getName(), READ)
     ).collect(Collectors.toList());
+  }
+
+  public List<Credential> getByName(String name, List<EventAuditRecordParameters> auditRecordParameters) {
+    auditRecordParameters.add(new EventAuditRecordParameters(CREDENTIAL_FIND, name));
+
+    final Credential certificate = certificateDataService.findByName(name);
+
+    if (certificate == null || !permissionCheckingService
+        .hasPermission(userContextHolder.getUserContext().getActor(), certificate.getName(), READ)) {
+      throw new EntryNotFoundException("error.credential.invalid_access");
+    }
+
+    return Collections.singletonList(certificate);
   }
 }

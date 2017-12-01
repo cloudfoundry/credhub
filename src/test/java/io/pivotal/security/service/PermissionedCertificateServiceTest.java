@@ -146,4 +146,27 @@ public class PermissionedCertificateServiceTest {
     final List<Credential> certificates = subject.getAll(newArrayList());
     assertThat(certificates, equalTo(newArrayList(myCredential)));
   }
+
+  @Test
+  public void getAllByName_returnsCertificateWithMatchingNameIfCurrentUserHasAccess() throws Exception {
+    Credential myCredential = mock(Credential.class);
+    when(myCredential.getName()).thenReturn("my-credential");
+    Credential otherCredential = mock(Credential.class);
+    when(otherCredential.getName()).thenReturn("other-credential");
+
+    UserContext userContext = mock(UserContext.class);
+    when(userContextHolder.getUserContext()).thenReturn(userContext);
+
+    String user = "my-user";
+    when(userContext.getActor()).thenReturn(user);
+
+    when(permissionCheckingService.hasPermission(user, "my-credential", PermissionOperation.READ)).thenReturn(true);
+    when(permissionCheckingService.hasPermission(user, "other-credential", PermissionOperation.READ)).thenReturn(true);
+
+    when(certificateDataService.findByName("my-credential"))
+        .thenReturn(myCredential);
+
+    final List<Credential> certificates = subject.getByName("my-credential", newArrayList());
+    assertThat(certificates, equalTo(newArrayList(myCredential)));
+  }
 }

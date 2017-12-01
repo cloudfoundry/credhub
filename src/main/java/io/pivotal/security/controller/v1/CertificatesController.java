@@ -5,6 +5,7 @@ import io.pivotal.security.handler.CertificatesHandler;
 import io.pivotal.security.request.CertificateRegenerateRequest;
 import io.pivotal.security.view.CertificateCredentialsView;
 import io.pivotal.security.view.CredentialView;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -59,6 +61,20 @@ public class CertificatesController {
     return eventAuditLogService
         .auditEvents((auditRecordParameters ->
           certificatesHandler.handleGetAllRequest(auditRecordParameters)
+        ));
+  }
+
+  @RequestMapping(
+      method = RequestMethod.GET,
+      value = "",
+      params = "name",
+      produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+  @ResponseStatus(HttpStatus.OK)
+  public CertificateCredentialsView getAllCertificates(@RequestParam("name") String name) throws IOException {
+    String credentialNameWithPrependedSlash = StringUtils.prependIfMissing(name, "/");
+    return eventAuditLogService
+        .auditEvents((auditRecordParameters ->
+          certificatesHandler.handleGetByNameRequest(credentialNameWithPrependedSlash, auditRecordParameters)
         ));
   }
 }

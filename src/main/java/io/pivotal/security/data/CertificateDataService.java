@@ -19,4 +19,8 @@ public class CertificateDataService {
   public List<Credential> findAll() {
     return certificateRepository.findAllCertificates();
   }
+
+  public Credential findByName(String name) {
+    return certificateRepository.findCertificateByName(name);
+  }
 }
