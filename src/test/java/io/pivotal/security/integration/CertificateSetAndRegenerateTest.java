@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import static io.pivotal.security.helper.RequestHelper.getCertificateCredentialsByName;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static io.pivotal.security.util.TestConstants.TEST_CA;
 import static io.pivotal.security.util.TestConstants.TEST_CERTIFICATE;
@@ -47,6 +48,7 @@ public class CertificateSetAndRegenerateTest {
   private MockMvc mockMvc;
   private Object caCertificate;
   private String caId;
+  private String caCredentialUuid;
   private String testSignedCert;
 
   @Before
@@ -80,6 +82,9 @@ public class CertificateSetAndRegenerateTest {
     caCertificate = JsonPath.parse(generateCaResponse)
         .read("$.value.certificate");
     caId = JsonPath.parse(generateCaResponse).read("$.id");
+    String response = getCertificateCredentialsByName(mockMvc, UAA_OAUTH2_PASSWORD_GRANT_TOKEN, CA_NAME);
+    caCredentialUuid = JsonPath.parse(response)
+        .read("$.certificates[0].id");
     assertNotNull(caCertificate);
   }
 
@@ -128,7 +133,7 @@ public class CertificateSetAndRegenerateTest {
 
   @Test
   public void certificateRegenerate_withTransitionalSetToTrue_generatesANewTransitionalCertificate() throws Exception {
-    MockHttpServletRequestBuilder regenerateRequest = post("/api/v1/certificates/" + caId + "/regenerate")
+    MockHttpServletRequestBuilder regenerateRequest = post("/api/v1/certificates/" + caCredentialUuid + "/regenerate")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
@@ -151,7 +156,7 @@ public class CertificateSetAndRegenerateTest {
 
   @Test
   public void certificateRegenerate_withTransitionalSetToTrue_failsIfThereIsAlreadyATransitionalCert() throws Exception {
-    MockHttpServletRequestBuilder regenerateRequest = post("/api/v1/certificates/" + caId + "/regenerate")
+    MockHttpServletRequestBuilder regenerateRequest = post("/api/v1/certificates/" + caCredentialUuid + "/regenerate")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)

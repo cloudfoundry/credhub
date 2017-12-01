@@ -70,7 +70,7 @@ public class CertificatesController {
       params = "name",
       produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ResponseStatus(HttpStatus.OK)
-  public CertificateCredentialsView getAllCertificates(@RequestParam("name") String name) throws IOException {
+  public CertificateCredentialsView getCertificateByName(@RequestParam("name") String name) throws IOException {
     String credentialNameWithPrependedSlash = StringUtils.prependIfMissing(name, "/");
     return eventAuditLogService
         .auditEvents((auditRecordParameters ->

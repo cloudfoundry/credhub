@@ -7,6 +7,8 @@ import io.pivotal.security.repository.CredentialVersionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 public class CertificateVersionDataService {
 
@@ -32,5 +34,10 @@ public class CertificateVersionDataService {
       return credentialFactory.makeCredentialFromEntity(credentialVersionRepository
           .findLatestNonTransitionalCertificateVersion(credential.getUuid()));
     }
+  }
+
+  public CredentialVersion findByCredentialUUID(String uuid) {
+    return credentialFactory.makeCredentialFromEntity(credentialVersionRepository
+        .findLatestNonTransitionalCertificateVersion(UUID.fromString(uuid)));
   }
 }

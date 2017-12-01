@@ -34,6 +34,7 @@ import java.util.Map;
 import static io.pivotal.security.helper.RequestHelper.expect404WhileGeneratingCertificate;
 import static io.pivotal.security.helper.RequestHelper.generateCa;
 import static io.pivotal.security.helper.RequestHelper.generateCertificateCredential;
+import static io.pivotal.security.helper.RequestHelper.getCertificateCredentialsByName;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static io.pivotal.security.util.TestConstants.TEST_CA;
@@ -339,7 +340,11 @@ public class CertificateGenerateTest {
     String caId = JsonPath.parse(generateCaResponse)
         .read("$.id");
 
-    MockHttpServletRequestBuilder caRegenerateRequest = post("/api/v1/certificates/" + caId + "/regenerate")
+    String response = getCertificateCredentialsByName(mockMvc, UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "/originalCA");
+    String uuid = JsonPath.parse(response)
+        .read("$.certificates[0].id");
+
+    MockHttpServletRequestBuilder caRegenerateRequest = post("/api/v1/certificates/" + uuid + "/regenerate")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)

@@ -3,7 +3,7 @@ package io.pivotal.security.service;
 import io.pivotal.security.audit.AuditingOperationCode;
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContextHolder;
-import io.pivotal.security.data.CredentialVersionDataService;
+import io.pivotal.security.data.CertificateVersionDataService;
 import io.pivotal.security.domain.CertificateCredentialVersion;
 import io.pivotal.security.domain.CredentialVersion;
 import io.pivotal.security.exceptions.EntryNotFoundException;
@@ -16,27 +16,29 @@ import java.util.List;
 @Service
 public class CertificateService {
 
-  private final CredentialVersionDataService credentialVersionDataService;
+  private final CertificateVersionDataService certificateVersionDataService;
 
   private PermissionCheckingService permissionCheckingService;
   private final UserContextHolder userContextHolder;
 
   @Autowired
   public CertificateService(
-      CredentialVersionDataService credentialVersionDataService,
+      CertificateVersionDataService certificateVersionDataService,
       PermissionCheckingService permissionCheckingService,
       UserContextHolder userContextHolder) {
-    this.credentialVersionDataService = credentialVersionDataService;
+    this.certificateVersionDataService = certificateVersionDataService;
     this.permissionCheckingService = permissionCheckingService;
     this.userContextHolder = userContextHolder;
   }
 
-  public CertificateCredentialVersion findByUuid(String uuid,
+  public CertificateCredentialVersion findByCredentialUuid(String uuid,
       List<EventAuditRecordParameters> auditRecordParameters) {
     EventAuditRecordParameters eventAuditRecordParameters = new EventAuditRecordParameters(AuditingOperationCode.CREDENTIAL_ACCESS);
     auditRecordParameters.add(eventAuditRecordParameters);
-    CredentialVersion credentialVersion = this.credentialVersionDataService
-        .findByUuid(uuid);
+
+    CredentialVersion credentialVersion = this.certificateVersionDataService
+        .findByCredentialUUID(uuid);
+
     if(credentialVersion == null || !(credentialVersion instanceof CertificateCredentialVersion)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }

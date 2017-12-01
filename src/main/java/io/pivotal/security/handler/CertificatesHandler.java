@@ -37,11 +37,12 @@ public class CertificatesHandler {
   }
 
   public CredentialView handleRegenerate(
-      String certificateId,
+      String credentialUuid,
       List<EventAuditRecordParameters> auditRecordParameters,
       CertificateRegenerateRequest request) {
+
     CertificateCredentialVersion existingCredentialVersion = certificateService
-        .findByUuid(certificateId, auditRecordParameters);
+        .findByCredentialUuid(credentialUuid, auditRecordParameters);
 
     BaseCredentialGenerateRequest generateRequest = generationRequestGenerator
         .createGenerateRequest(existingCredentialVersion, existingCredentialVersion.getName(), auditRecordParameters);
