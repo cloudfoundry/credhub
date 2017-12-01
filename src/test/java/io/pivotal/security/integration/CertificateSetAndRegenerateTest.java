@@ -138,7 +138,7 @@ public class CertificateSetAndRegenerateTest {
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{" +
-            "\"transitional\": true" +
+            "\"set_as_transitional\": true" +
             "}");
 
     this.mockMvc.perform(regenerateRequest)
@@ -161,7 +161,7 @@ public class CertificateSetAndRegenerateTest {
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{" +
-            "\"transitional\": true" +
+            "\"set_as_transitional\": true" +
             "}");
 
     this.mockMvc.perform(regenerateRequest)

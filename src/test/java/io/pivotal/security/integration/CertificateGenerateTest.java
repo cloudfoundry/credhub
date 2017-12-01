@@ -349,7 +349,7 @@ public class CertificateGenerateTest {
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
-        .content("{\"transitional\" : true}");
+        .content("{\"set_as_transitional\" : true}");
 
     String transitionalCaResponse = this.mockMvc.perform(caRegenerateRequest)
         .andExpect(status().is2xxSuccessful())
