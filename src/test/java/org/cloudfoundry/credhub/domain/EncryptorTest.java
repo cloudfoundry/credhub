@@ -1,7 +1,7 @@
 package org.cloudfoundry.credhub.domain;
 
 import org.cloudfoundry.credhub.entity.EncryptedValue;
-import org.cloudfoundry.credhub.service.BcNullConnection;
+import org.cloudfoundry.credhub.service.InternalEncryptorConnection;
 import org.cloudfoundry.credhub.service.EncryptionKeyCanaryMapper;
 import org.cloudfoundry.credhub.service.InternalEncryptionService;
 import org.cloudfoundry.credhub.service.RetryingEncryptionService;
@@ -54,7 +54,7 @@ public class EncryptorTest {
     when(keyMapper.getKeyForUuid(newUuid)).thenReturn(newKey);
 
     RetryingEncryptionService encryptionService = new RetryingEncryptionService(
-        internalEncryptionService, keyMapper, new BcNullConnection());
+        internalEncryptionService, keyMapper, new InternalEncryptorConnection());
     subject = new Encryptor(encryptionService);
   }
 

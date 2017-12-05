@@ -9,18 +9,18 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 @RunWith(JUnit4.class)
-public class BcNullConnectionTest {
+public class InternalEncryptionConnectionTest {
 
   @Test
   public void reconnectionWithBC_shouldIgnoreANullException() throws Exception {
-    BcNullConnection connection = new BcNullConnection();
+    InternalEncryptorConnection connection = new InternalEncryptorConnection();
     connection.reconnect(null);
     // passes
   }
 
   @Test
   public void reconnectionWithBC_shouldRethrowARealException() {
-    BcNullConnection connection = new BcNullConnection();
+    InternalEncryptorConnection connection = new InternalEncryptorConnection();
     try {
       connection.reconnect(new RuntimeException("boom"));
       fail("should not make it here");
