@@ -23,34 +23,50 @@ import java.security.spec.RSAPublicKeySpec;
 
 @Component
 public class CryptoWrapper {
-
   static final String ALGORITHM = "RSA";
+  // NIST SP800-90A recommends 440 bits for SHA1 seed
+  private static final int NIST_SP800_90A_SEEDLENGTH = 440 / 8;
+
+  // https://www.openssl.org/docs/manx.x.x/crypto/ERR_error_string_n.html
+  // "buf must be at least 256 bytes long"
+  private static final int OPENSSL_ERRBUFF_MIN_LENGTH = 256;
 
   private final KeyFactory keyFactory;
   private final SecureRandom secureRandom;
 
   @Autowired
-  public CryptoWrapper(
-      BouncyCastleProvider bouncyCastleProvider,
-      EncryptionService encryptionService
-  ) throws NoSuchAlgorithmException {
+  public CryptoWrapper(BouncyCastleProvider bouncyCastleProvider, EncryptionService encryptionService) throws NoSuchAlgorithmException {
     keyFactory = KeyFactory.getInstance(ALGORITHM, bouncyCastleProvider);
     secureRandom = encryptionService.getSecureRandom();
 
     initializeOpenssl();
   }
 
-  public synchronized <E extends Throwable> void
-      generateKeyPair(int keyLength, CheckedConsumer<Pointer, E> consumer) throws E {
+  public synchronized <E extends Throwable> void generateKeyPair(int keyLength, CheckedConsumer<Pointer, E> consumer) throws E {
+    if (keyLength < 1024 || keyLength > 8096 ){
+      throw new IllegalArgumentException(String.format("Invalid key length: %d", keyLength));
+    }
+
     Pointer bne = Crypto.BN_new();
+    if (bne == Pointer.NULL){
+      // No need to `free` as implicit `malloc` failed
+      throw new RuntimeException(String.format("RSA key generation failed: %s", getError()));
+    }
+
     try {
       Crypto.BN_set_word(bne, Crypto.RSA_F4);
       Pointer rsa = Crypto.RSA_new();
-      int r = Crypto.RSA_generate_key_ex(rsa, keyLength, bne, null);
-      if (r < 1) {
+      if (rsa == Pointer.NULL){
+        // No need to `free` as implicit `malloc` failed
         throw new RuntimeException(String.format("RSA key generation failed: %s", getError()));
       }
+
       try {
+        int r = Crypto.RSA_generate_key_ex(rsa, keyLength, bne, null);
+        if (r < 1) {
+          throw new RuntimeException(String.format("RSA key generation failed: %s", getError()));
+        }
+
         consumer.accept(rsa);
       } finally {
         Crypto.RSA_free(rsa);
@@ -71,15 +87,19 @@ public class CryptoWrapper {
     return new KeyPair(publicKey, privateKey);
   }
 
-  synchronized BigInteger convert(Pointer bn) {
-    Assert.notNull(bn, "bn cannot be null");
-    Assert.notNull(Pointer.nativeValue(bn), "bn cannot be wrapping null");
+  synchronized BigInteger convert(Pointer bn) throws IllegalArgumentException {
+    if (bn == Pointer.NULL){
+      throw new IllegalArgumentException("Pointer 'bn' cannot be null");
+    }
 
     BIGNUM.ByReference bignum = new BIGNUM.ByReference(bn);
     bignum.read();
+    if (bignum.dp == null){
+      throw new RuntimeException("Failed to correctly parse BigNumber");
+    }
 
-    int ratio = 8;
     long[] longs = bignum.dp.getLongArray(0, bignum.top);
+    int ratio = 8;
     byte[] bytes = new byte[longs.length * ratio];
     for (int i = 0; i < longs.length; i++) {
       for (int j = 0; j < ratio; j++) {
@@ -91,17 +111,17 @@ public class CryptoWrapper {
   }
 
   synchronized String getError() {
-    // use code with `openssl errstr`
-    byte[] buffer = new byte[128];
+    byte[] buffer = new byte[OPENSSL_ERRBUFF_MIN_LENGTH];
     Crypto.ERR_error_string_n(Crypto.ERR_get_error(), buffer, buffer.length);
     return Native.toString(buffer);
   }
 
   private synchronized void initializeOpenssl() {
-    byte[] seed = secureRandom.generateSeed(55);
+    byte[] seed = secureRandom.generateSeed(NIST_SP800_90A_SEEDLENGTH);
     Pointer memory = new Memory(seed.length);
     memory.write(0, seed, 0, seed.length);
     Crypto.RAND_seed(memory, seed.length);
+    memory.clear(seed.length);
   }
 
   private RSAPrivateCrtKeySpec getRsaPrivateCrtKeySpec(RSA.ByReference rsa) {

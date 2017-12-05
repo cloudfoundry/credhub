@@ -62,13 +62,13 @@ public class CryptoWrapperTest {
   @Test
   public void canTransformRsaStructsIntoKeyPairs() throws GeneralSecurityException {
     subject.generateKeyPair(1024, rsa -> {
-      byte[] plaintext = new byte[117];
+      byte[] plaintext = new byte[128];
       byte[] message = "OpenSSL for speed".getBytes();
       System.arraycopy(message, 0, plaintext, 0, message.length);
 
       byte[] ciphertext = new byte[Crypto.RSA_size(rsa)];
       int result = Crypto
-          .RSA_private_encrypt(plaintext.length, plaintext, ciphertext, rsa, Crypto.RSA_PKCS1_PADDING);
+          .RSA_private_encrypt(plaintext.length, plaintext, ciphertext, rsa, Crypto.RSA_NO_PADDING);
       if (result == -1) {
         System.out.println(subject.getError());
       }
@@ -77,13 +77,29 @@ public class CryptoWrapperTest {
       KeyPair keyPair = subject.toKeyPair(rsa);
       PrivateKey privateKey = keyPair.getPrivate();
 
-      Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding", getBouncyCastleProvider());
+      Cipher cipher = Cipher.getInstance(CryptoWrapper.ALGORITHM, getBouncyCastleProvider());
       cipher.init(Cipher.ENCRYPT_MODE, privateKey);
       byte[] javaCipherText = cipher.doFinal(plaintext);
 
       assertThat("Encryption should work the same inside and outside openssl", javaCipherText,
           equalTo(ciphertext));
     });
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void generateKeyPair_withHugeKeySize_throwsException() {
+    // https://crypto.stackexchange.com/a/1184/7763
+    subject.generateKeyPair(1024 * 16, null);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void generateKeyPair_withSmallKeySize_throwsException() {
+    subject.generateKeyPair(512, null);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void convert_withNullPointer_throwsException() {
+    subject.convert(Pointer.NULL);
   }
 
   @Test
