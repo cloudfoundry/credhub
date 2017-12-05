@@ -155,7 +155,7 @@ public class PermissionsEndpointTest {
 
   @Test
   public void GET_whenTheCredentialDoesntExist_returnsNotFound() throws Exception {
-    String expectedErrorMessage = "The request could not be fulfilled because the resource could not be found.";
+    String expectedErrorMessage = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
 
     expectErrorWhenGettingPermissions(
         mockMvc,
