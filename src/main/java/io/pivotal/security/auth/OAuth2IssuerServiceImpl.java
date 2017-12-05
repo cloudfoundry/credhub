@@ -33,7 +33,7 @@ public class OAuth2IssuerServiceImpl implements OAuth2IssuerService {
   @Autowired
   OAuth2IssuerServiceImpl(
       RestTemplateFactory restTemplateFactory,
-      @Value("${auth_server.url}") String authServer,
+      @Value("#{@environment.getProperty('auth_server.internal_url') ?: @environment.getProperty('auth_server.url')}") String authServer,
       @Value("${auth_server.trust_store:}") String trustStore,
       @Value("${auth_server.trust_store_password:}") String trustStorePassword
   ) throws URISyntaxException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException {
