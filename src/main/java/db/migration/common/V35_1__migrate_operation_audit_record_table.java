@@ -6,7 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.sql.Types;
 import java.util.List;
 
-import static io.pivotal.security.util.UuidUtil.makeUuid;
+import static org.cloudfoundry.credhub.util.UuidUtil.makeUuid;
 
 @SuppressWarnings("unused")
 public class V35_1__migrate_operation_audit_record_table implements SpringJdbcMigration {

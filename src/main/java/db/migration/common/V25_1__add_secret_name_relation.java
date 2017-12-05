@@ -1,11 +1,12 @@
 package db.migration.common;
 
-import static io.pivotal.security.util.UuidUtil.makeUuid;
+import org.flywaydb.core.api.migration.spring.SpringJdbcMigration;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.Types;
 import java.util.List;
-import org.flywaydb.core.api.migration.spring.SpringJdbcMigration;
-import org.springframework.jdbc.core.JdbcTemplate;
+
+import static org.cloudfoundry.credhub.util.UuidUtil.makeUuid;
 
 public class V25_1__add_secret_name_relation implements SpringJdbcMigration {
 

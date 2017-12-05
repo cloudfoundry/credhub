@@ -1,6 +1,6 @@
 package db.migration.common;
 
-import io.pivotal.security.util.UuidUtil;
+import org.cloudfoundry.credhub.util.UuidUtil;
 import java.sql.Types;
 import java.util.List;
 import java.util.UUID;

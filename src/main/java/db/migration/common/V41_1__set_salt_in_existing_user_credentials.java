@@ -1,7 +1,7 @@
 package db.migration.common;
 
-import io.pivotal.security.credential.CryptSaltFactory;
-import io.pivotal.security.util.UuidUtil;
+import org.cloudfoundry.credhub.credential.CryptSaltFactory;
+import org.cloudfoundry.credhub.util.UuidUtil;
 import org.flywaydb.core.api.migration.spring.SpringJdbcMigration;
 import org.springframework.jdbc.core.JdbcTemplate;
 

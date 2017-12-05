@@ -6,7 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.sql.Types;
 import java.util.List;
 
-import static io.pivotal.security.util.UuidUtil.makeUuid;
+import static org.cloudfoundry.credhub.util.UuidUtil.makeUuid;
 
 public class V44_2__migrate_encypted_values_to_encryped_value_table implements
     SpringJdbcMigration {
