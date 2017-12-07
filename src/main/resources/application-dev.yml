@@ -1,7 +1,6 @@
 auth_server:
   # Public dummy UAA for local development usage only!
   # Username/password: credhub/password
-  url: https://34.206.233.195:8443
   trust_store: src/test/resources/auth_server_trust_store.jks
   trust_store_password: changeit
 
@@ -14,20 +13,6 @@ encryption:
   key_creation_enabled: true
   
 security:
-  oauth2:
-    enabled: true
-    resource:
-      jwt:
-        key_value: |
-          -----BEGIN PUBLIC KEY-----
-          MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAo9hvZNbP3U9Ory1aTHt7
-          OXucx2Ur0mhyrzKeB1T9R3gLuUCYXBUuc2PhhoQ5aKP+ii3UsWVx0WUsdLmX+8x2
-          iHDZ20ZCCg9MrOgAhVDsGGx3eNjNRdbk3RaeDJlI4RD1cy8+cMza2dp7h2Yk8Um6
-          U/+vXDBIdsKAQZayrm4X1xIc27D78KPSZeP3ux2qV7y4j5CHLjhg5mxnfWpJxltD
-          G1YtacCIbL3H41NVboqerJopZbtGAGh6/60GriUqf1z82TVaovOUp/HfGLF3OK8G
-          BYbcCW+Z3N1Q4QFKiNcNjWZNViKGAysdhogp/P6xb8cFFksiKFOi6HyWEW8/wr8w
-          CwIDAQAB
-          -----END PUBLIC KEY-----
   authorization:
     acls:
       # Change to true to enable ACL enforcement
@@ -49,3 +34,7 @@ server:
     trust_store_password: changeit
     trust_store_type: JKS
     enabled-protocols: TLSv1.2
+
+spring:
+  profiles:
+    include: dev-h2,dev-remote-uaa

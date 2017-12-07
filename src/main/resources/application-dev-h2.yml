@@ -1,8 +1,5 @@
 spring:
   datasource:
     username: pivotal
-  profiles:
-    include: dev
-
 flyway:
   locations: classpath:/db/migration/common,classpath:/db/migration/h2

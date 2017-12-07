@@ -105,6 +105,12 @@ In `application-dev.yml` there are two relevant settings:
 
 For convenience, the CredHub team runs a public UAA whose IP is in the default `application-dev.yml` manifest. The password grant values are `credhub`/`password` and the client credentials grant value are `credhub_client`/`secret`. This public UAA is for local development usage only! You will need to skip SSL validation in order to use it.
 
+#### Running CredHub with local UAA
+
+In order to run CredHub against a UAA running on your local machine, do the following:
+1. Start a UAA with Docker: `docker run -d --mount type=bind,source=$PWD/config/uaa.yml,target=/uaa/uaa.yml -p 127.0.0.1:8080:8080 pcfseceng/uaa:latest`
+1. Start CredHub server pointing at the local UAA: `./start_server.sh -Dspring.profiles.active=dev,dev-local-uaa`
+
 #### Starting the server with different databases
 
 ##### H2 (the default)
@@ -128,7 +134,7 @@ createdb credhub_dev
 Then to run in development mode with Postgres
 
 ```sh
-./start_server.sh -Dspring.profiles.active=dev-postgres
+./start_server.sh -Dspring.profiles.active=dev,dev-postgres
 ```
 
 ##### MariaDB
@@ -148,7 +154,7 @@ If you're on a Mac using Homebrew and you run into a problem where you install M
 Then to run in development mode with MariaDB:
 
 ```sh
-./start_server.sh -Dspring.profiles.active=dev-mysql
+./start_server.sh -Dspring.profiles.active=dev,dev-mysql
 ```
 
 #### Running tests with different databases

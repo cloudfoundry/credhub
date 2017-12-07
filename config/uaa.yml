@@ -1,0 +1,61 @@
+scim:
+  users:
+    - credhub|password|credhub|Credhub|User|credhub.read,credhub.write
+oauth:
+  clients:
+    credhub_cli:
+      override: true
+      authorized-grant-types: password,refresh_token
+      # scopes the client may receive
+      scope: credhub.read,credhub.write
+      authorities: uaa.resource
+      access-token-validity: 86400 # 1 day
+      refresh-token-validity: 172800 # re-login required every other day
+      secret: "" # CLI expects this secret to be empty
+    credhub_client:
+      override: true
+      authorized-grant-types: client_credentials
+      secret: secret
+      scope: uaa.none
+      authorities: credhub.read,credhub.write
+      access-token-validity: 86400 # 1 day
+jwt:
+  token:
+    verification-key: |
+      -----BEGIN PUBLIC KEY-----
+      MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyEsIhHyxd2xwI1AqZkma
+      OzqvyrLVJiYXhNc555MWCa+cOP/YcGY8htZS1Z0r3t9o9pHcFmUe5BTgrlMRnvQC
+      04SFV1hS+hs1Pct9E//Fcf/Db2AmbWhAZjki9McE+40DeXz5sjRMKxzVXnNDEJVm
+      Ucr6T65PRdIzKud00JBvkhD2ZIodVh6TUjP8fJIB8BJVZagUQwhBpIOODwgc165g
+      SAn0TwAtrj9SFDy64i74kOPlF8wZ26JIPebisIMDBQmzzp9zoPZ9sSD3yo7bGdXp
+      UPu94Z3/oU7e3YnA3BFpryjuFogpq8/9MPb2cKhENywTr0ljF0zHaazKViPiTwfu
+      cwIDAQAB
+      -----END PUBLIC KEY-----
+    signing-key: |
+      -----BEGIN RSA PRIVATE KEY-----
+      MIIEowIBAAKCAQEAyEsIhHyxd2xwI1AqZkmaOzqvyrLVJiYXhNc555MWCa+cOP/Y
+      cGY8htZS1Z0r3t9o9pHcFmUe5BTgrlMRnvQC04SFV1hS+hs1Pct9E//Fcf/Db2Am
+      bWhAZjki9McE+40DeXz5sjRMKxzVXnNDEJVmUcr6T65PRdIzKud00JBvkhD2ZIod
+      Vh6TUjP8fJIB8BJVZagUQwhBpIOODwgc165gSAn0TwAtrj9SFDy64i74kOPlF8wZ
+      26JIPebisIMDBQmzzp9zoPZ9sSD3yo7bGdXpUPu94Z3/oU7e3YnA3BFpryjuFogp
+      q8/9MPb2cKhENywTr0ljF0zHaazKViPiTwfucwIDAQABAoIBAQC2xNlp5Esg2d/e
+      KXn3SvSlVaEyS0v7esj9XFSnf22duxTIYpaDwpc6x3phGQH+Z0llrqXx/aZZpL99
+      86lhrfKiRwxSLvPQ7GECGZzyUfQ/WY9iI5ANSBNz9HF0geOHFB92jddgiR50PORr
+      QqyRBnOO8bTGXx5RbUVpwjmzVAmrc5cn0I2PyADDxRKfAPdIzbT4ukk4y08DSf2d
+      3oHf4E0t8F7uxaNN1L3iRuo75JbGApHlvuN2nmO7smMgFaHvVXcAql4O5qgb1s08
+      vxk7Hmmyy4JDLw8GQWWSjzMS7laL2P4gRRD4Rv5GV9AA7BkP4TXsEazSv0y2ygVJ
+      P2o6G2XZAoGBAO+RqHoIGv2m25BupSPJMO5DnQDaSURqXnvznejAYriQwxlIgIQb
+      QM69qkLcA9PxMGqvGMwUS4aF8/Jrg3pFQrqqK9JZUqRqIMIRP3BIbk9l5cILDwoR
+      UNlE+0v5fPCa7RP9MVM7DbqcOhoYPQ+WYNcd+tB1Hwd+HRZL7TVmI6ldAoGBANYH
+      xV3NMAMNIXBWzVJooMyWqFdYCCbc92DzNJwlJ99SS+YYP5aWUfMmif2m5KzdIdti
+      EyPFD+r2gt65oKKAiVM5r88/1mZVZJr00KpJjaCva5f5d2JoM39TtenfUyoLFE1u
+      74ndjbQLXEX4E4/pCdjnE8Kqag8NnrGtAIxGiuoPAoGAG1E/pdKgyUWqibikKgV6
+      B+E72OoLKrr6VSX9Xpn5Z9RR+uMSjH3TEP/9lywhX5yECdY3fKXfytIhdAYgcuPM
+      7R4UayL2UnsrixWOZ05LDdCvt0WtjFdXIb9E7G/heEoiOIJJipUURrAjy+/xnoJm
+      PoFTpUuFo0QVKwKzZMBl1p0CgYB3zj/Hgw0GGDqIlL44DAM+onK2+bsObhA3f8wK
+      P64zDvEXaqlllN1om0EQ8HP+44WJNTv7gNqpLrYREJ1/eS3lnVvxSg2smM5JAxMu
+      zx9tO+ShXG5ccnGpK2Wf9XerCCqkMZ36cT9Z8iYDsJraqprthGQGSrg1lu0nDe1J
+      mE84NwKBgFkOV3DcMOgUfPDA/goiBkiZnv8nFAebgYsSHrePjL3DOKV2agCuXDjO
+      LqSIlJ1UdBuWc6JWyQHn9x7t72acsRrtpRP4y4CQU5281/QcGqxCEcAGeTw1W9ni
+      HsxZCNa+Lefc/Qe9qao7x636FtQtMfkb76EMxduFawhgHuDQ53/j
+      -----END RSA PRIVATE KEY-----

@@ -76,7 +76,7 @@ processResources {
 
 bootRun {
     addResources = true
-    systemProperties["spring.profiles.active"] = System.getProperty("spring.profiles.active", "dev-h2")
+    systemProperties["spring.profiles.active"] = System.getProperty("spring.profiles.active", "dev")
     systemProperties["java.security.egd"] = System.getProperty("java.security.egd", "file:/dev/urandom")
 }
 

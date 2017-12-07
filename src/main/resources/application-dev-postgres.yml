@@ -3,8 +3,6 @@ spring:
     username: pivotal
     password:
     url: jdbc:postgresql://localhost:5432/credhub_dev
-  profiles:
-    include: dev
 
 flyway:
   locations: classpath:/db/migration/common,classpath:/db/migration/postgres
