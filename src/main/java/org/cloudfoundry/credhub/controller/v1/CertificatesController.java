@@ -1,15 +1,14 @@
 package org.cloudfoundry.credhub.controller.v1;
 
+import org.apache.commons.lang3.StringUtils;
 import org.cloudfoundry.credhub.audit.EventAuditLogService;
 import org.cloudfoundry.credhub.handler.CertificatesHandler;
 import org.cloudfoundry.credhub.request.CertificateRegenerateRequest;
 import org.cloudfoundry.credhub.view.CertificateCredentialsView;
 import org.cloudfoundry.credhub.view.CredentialView;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -44,11 +43,15 @@ public class CertificatesController {
       value = "/{certificateId}/regenerate",
       produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ResponseStatus(HttpStatus.OK)
-  public CredentialView regenerate(@RequestBody @Validated CertificateRegenerateRequest requestBody,
+  public CredentialView regenerate(@RequestBody(required = false) CertificateRegenerateRequest requestBody,
       @PathVariable String certificateId) throws IOException {
+    if (requestBody == null) {
+      requestBody = new CertificateRegenerateRequest();
+    }
+    CertificateRegenerateRequest finalRequestBody = requestBody;
     return eventAuditLogService
         .auditEvents((auditRecordParameters ->
-            certificatesHandler.handleRegenerate(certificateId, auditRecordParameters, requestBody)
+            certificatesHandler.handleRegenerate(certificateId, auditRecordParameters, finalRequestBody)
         ));
   }
 

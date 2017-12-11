@@ -174,6 +174,16 @@ public class CertificateSetAndRegenerateTest {
   }
 
   @Test
+  public void certificateRegenerate_withoutBodyWorks() throws Exception {
+    MockHttpServletRequestBuilder regenerateRequest = post("/api/v1/certificates/" + caCredentialUuid + "/regenerate")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON);
+
+    this.mockMvc.perform(regenerateRequest).andExpect(status().isOk());
+  }
+
+  @Test
   public void certificateSetRequest_whenProvidedANonCertificateValue_returnsAValidationError() throws Exception {
     final String setJson = JSONObject.toJSONString(
         ImmutableMap.<String, String>builder()
