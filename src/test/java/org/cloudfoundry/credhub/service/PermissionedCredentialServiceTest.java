@@ -4,6 +4,7 @@ import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.constants.CredentialType;
+import org.cloudfoundry.credhub.constants.CredentialWriteMode;
 import org.cloudfoundry.credhub.credential.CredentialValue;
 import org.cloudfoundry.credhub.data.CertificateAuthorityService;
 import org.cloudfoundry.credhub.data.CredentialVersionDataService;
@@ -16,6 +17,7 @@ import org.cloudfoundry.credhub.exceptions.InvalidPermissionOperationException;
 import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.exceptions.PermissionException;
+import org.cloudfoundry.credhub.request.BaseCredentialRequest;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.cloudfoundry.credhub.request.StringGenerationParameters;
@@ -79,7 +81,7 @@ public class PermissionedCredentialServiceTest {
   private StringGenerationParameters generationParameters;
   private CredentialValue credentialValue;
   private List<PermissionEntry> accessControlEntries;
-
+  BaseCredentialRequest request = mock(BaseCredentialRequest.class);
 
   @Before
   public void setUp() throws Exception {
@@ -112,34 +114,27 @@ public class PermissionedCredentialServiceTest {
         .thenReturn(true);
     when(credentialVersionDataService.findByUuid(UUID_STRING))
         .thenReturn(existingCredentialVersion);
+
+    when(request.getName()).thenReturn(CREDENTIAL_NAME);
+    when(request.getGenerationParameters()).thenReturn(generationParameters);
+    when(request.getAdditionalPermissions()).thenReturn(accessControlEntries);
   }
 
   @Test(expected = ParameterizedValidationException.class)
   public void save_whenGivenTypeAndExistingTypeDontMatch_throwsException() {
+    when (request.getType()).thenReturn("user");
+    when(request.getOverwriteMode()).thenReturn(CredentialWriteMode.NO_OVERWRITE.mode);
     when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredentialVersion);
-    subject.save(
-        existingCredentialVersion, CREDENTIAL_NAME,
-        "user",
-        credentialValue,
-        generationParameters,
-        accessControlEntries,
-        "no-overwrite",
-        auditRecordParameters
-    );
+
+    subject.save(existingCredentialVersion, credentialValue, request, auditRecordParameters);
   }
 
   @Test
   public void save_whenThereIsAnExistingCredentialAndOverwriteIsFalse_logsCREDENTIAL_ACCESS() {
+    when (request.getType()).thenReturn("password");
+    when(request.getOverwriteMode()).thenReturn(CredentialWriteMode.NO_OVERWRITE.mode);
     when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredentialVersion);
-    subject.save(
-        existingCredentialVersion, CREDENTIAL_NAME,
-        "password",
-        credentialValue,
-        generationParameters,
-        accessControlEntries,
-        "no-overwrite",
-        auditRecordParameters
-    );
+    subject.save(existingCredentialVersion, credentialValue, request, auditRecordParameters);
 
     assertThat(auditRecordParameters.get(0).getAuditingOperationCode(), equalTo(CREDENTIAL_ACCESS));
     assertThat(auditRecordParameters.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
@@ -147,19 +142,13 @@ public class PermissionedCredentialServiceTest {
 
   @Test
   public void save_whenThereIsAnExistingCredentialAndOverwriteIsTrue_logsCREDENTIAL_UPDATE() {
+    when (request.getType()).thenReturn("password");
+    when(request.getOverwriteMode()).thenReturn(CredentialWriteMode.OVERWRITE.mode);
     when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredentialVersion);
     when(credentialVersionDataService.save(any(CredentialVersion.class)))
         .thenReturn(new PasswordCredentialVersion().setEncryptor(encryptor));
 
-    subject.save(
-        existingCredentialVersion, CREDENTIAL_NAME,
-        "password",
-        credentialValue,
-        generationParameters,
-        accessControlEntries,
-        "overwrite",
-        auditRecordParameters
-    );
+    subject.save(existingCredentialVersion,  credentialValue,request, auditRecordParameters);
 
     assertThat(auditRecordParameters.get(0).getAuditingOperationCode(), equalTo(CREDENTIAL_UPDATE));
     assertThat(auditRecordParameters.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
@@ -167,6 +156,8 @@ public class PermissionedCredentialServiceTest {
 
   @Test
   public void save_whenThereIsANewCredentialAndSelfUpdatingAcls_throwsException() {
+    when (request.getType()).thenReturn("password");
+    when(request.getOverwriteMode()).thenReturn(CredentialWriteMode.OVERWRITE.mode);
     when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(null);
     when(credentialVersionDataService.save(any(CredentialVersion.class)))
         .thenReturn(new PasswordCredentialVersion().setEncryptor(encryptor));
@@ -179,15 +170,7 @@ public class PermissionedCredentialServiceTest {
 
     accessControlEntries.add(new PermissionEntry("test-user", Arrays.asList(WRITE, WRITE_ACL)));
     try {
-      subject.save(
-          existingCredentialVersion, CREDENTIAL_NAME,
-          "password",
-          credentialValue,
-          generationParameters,
-          accessControlEntries,
-          "overwrite",
-          auditRecordParameters
-      );
+      subject.save(existingCredentialVersion, credentialValue, request, auditRecordParameters);
     } catch (InvalidPermissionOperationException e) {
       assertThat(e.getMessage(), equalTo("error.permission.invalid_update_operation"));
     }
@@ -195,16 +178,10 @@ public class PermissionedCredentialServiceTest {
 
   @Test
   public void save_whenThereIsAnExistingCredential_shouldCallVerifyCredentialWritePermission() {
+    when(request.getType()).thenReturn("password");
+    when(request.getOverwriteMode()).thenReturn(CredentialWriteMode.NO_OVERWRITE.mode);
     when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredentialVersion);
-    subject.save(
-        existingCredentialVersion, CREDENTIAL_NAME,
-        "password",
-        credentialValue,
-        generationParameters,
-        accessControlEntries,
-        "no-overwrite",
-        auditRecordParameters
-    );
+    subject.save(existingCredentialVersion, credentialValue, request, auditRecordParameters);
 
     verify(permissionCheckingService).hasPermission(userContext.getActor(),
         CREDENTIAL_NAME, WRITE);
@@ -212,21 +189,17 @@ public class PermissionedCredentialServiceTest {
 
   @Test
   public void save_whenThereIsNoExistingCredential_shouldNotCallVerifyCredentialWritePermission() {
+    when(request.getType()).thenReturn("password");
+    when(request.getOverwriteMode()).thenReturn(CredentialWriteMode.NO_OVERWRITE.mode);
     when(credentialVersionDataService.save(any(CredentialVersion.class)))
         .thenReturn(new PasswordCredentialVersion().setEncryptor(encryptor));
-    subject.save(
-        existingCredentialVersion, CREDENTIAL_NAME,
-        "password",
-        credentialValue,
-        generationParameters,
-        accessControlEntries,
-        "no-overwrite",
-        auditRecordParameters
-    );
+    subject.save( existingCredentialVersion, credentialValue, request, auditRecordParameters);
   }
 
   @Test
   public void save_whenThereIsAnExistingCredentialWithACEs_shouldThrowAnExceptionIfItLacksPermission() {
+    when(request.getType()).thenReturn("password");
+    when(request.getOverwriteMode()).thenReturn(CredentialWriteMode.NO_OVERWRITE.mode);
     when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredentialVersion);
     when(permissionCheckingService
         .hasPermission(userContext.getActor(), CREDENTIAL_NAME, WRITE_ACL))
@@ -236,15 +209,7 @@ public class PermissionedCredentialServiceTest {
         .add(new PermissionEntry("some_actor", Arrays.asList(PermissionOperation.READ_ACL)));
 
     try {
-      subject.save(
-          existingCredentialVersion, CREDENTIAL_NAME,
-          "password",
-          credentialValue,
-          generationParameters,
-          accessControlEntries,
-          "no-overwrite",
-          auditRecordParameters
-      );
+      subject.save(existingCredentialVersion, credentialValue, request, auditRecordParameters);
     } catch (PermissionException pe) {
       assertThat(pe.getMessage(), equalTo("error.credential.invalid_access"));
     }
@@ -252,25 +217,21 @@ public class PermissionedCredentialServiceTest {
 
   @Test
   public void save_whenThereIsAnExistingCredentialAndOverWriteIsTrue_shouldNotAddAceForTheCurrentUser() {
+    when(request.getType()).thenReturn("password");
+    when(request.getOverwriteMode()).thenReturn(CredentialWriteMode.OVERWRITE.mode);
     when(credentialVersionDataService.save(any(CredentialVersion.class)))
         .thenReturn(new PasswordCredentialVersion().setEncryptor(encryptor));
     when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredentialVersion);
 
-    subject.save(
-        existingCredentialVersion, CREDENTIAL_NAME,
-        "password",
-        credentialValue,
-        generationParameters,
-        accessControlEntries,
-        "overwrite",
-        auditRecordParameters
-    );
+    subject.save(existingCredentialVersion, credentialValue, request, auditRecordParameters);
 
     assertThat(accessControlEntries, hasSize(0));
   }
 
   @Test
   public void save_whenWritingCredential_savesANewVersion() {
+    when(request.getType()).thenReturn("password");
+    when(request.getOverwriteMode()).thenReturn(CredentialWriteMode.OVERWRITE.mode);
     when(credentialVersionDataService.save(any(CredentialVersion.class)))
         .thenReturn(new PasswordCredentialVersion().setEncryptor(encryptor));
     final PasswordCredentialVersion newVersion = new PasswordCredentialVersion();
@@ -282,15 +243,7 @@ public class PermissionedCredentialServiceTest {
         null,
         generationParameters)).thenReturn(newVersion);
 
-    subject.save(
-        null, CREDENTIAL_NAME,
-        "password",
-        credentialValue,
-        generationParameters,
-        accessControlEntries,
-        "overwrite",
-        auditRecordParameters
-    );
+    subject.save(null, credentialValue, request, auditRecordParameters);
 
     verify(credentialVersionDataService).save(newVersion);
   }
@@ -451,6 +404,8 @@ public class PermissionedCredentialServiceTest {
 
   @Test
   public void save_whenThereIsAnExistingCredentialAndOverwriteModeIsConvergeAndParametersAreSame_DoesNotOverwriteCredential() {
+    when(request.getType()).thenReturn("password");
+    when(request.getOverwriteMode()).thenReturn(CredentialWriteMode.CONVERGE.mode);
     when(credentialVersionDataService.save(any(CredentialVersion.class)))
         .thenReturn(new PasswordCredentialVersion().setEncryptor(encryptor));
     final PasswordCredentialVersion newVersion = new PasswordCredentialVersion();
@@ -468,21 +423,15 @@ public class PermissionedCredentialServiceTest {
         originalCredentialVersion,
         generationParameters)).thenReturn(newVersion);
 
-    subject.save(
-        originalCredentialVersion, CREDENTIAL_NAME,
-        "password",
-        credentialValue,
-        generationParameters,
-        accessControlEntries,
-        "converge",
-        auditRecordParameters
-    );
+    subject.save(originalCredentialVersion, credentialValue, request, auditRecordParameters);
 
     verify(credentialVersionDataService, never()).save(newVersion);
   }
 
   @Test
   public void save_whenThereIsAnExistingCredentialAndOverwriteModeIsConvergeAndParametersAreDifferent_OverwritesCredential() {
+    when(request.getType()).thenReturn("password");
+    when(request.getOverwriteMode()).thenReturn(CredentialWriteMode.CONVERGE.mode);
     when(credentialVersionDataService.save(any(CredentialVersion.class)))
         .thenReturn(new PasswordCredentialVersion().setEncryptor(encryptor));
     final PasswordCredentialVersion newVersion = new PasswordCredentialVersion();
@@ -500,15 +449,7 @@ public class PermissionedCredentialServiceTest {
         originalCredentialVersion,
         generationParameters)).thenReturn(newVersion);
 
-    subject.save(
-        originalCredentialVersion, CREDENTIAL_NAME,
-        "password",
-        credentialValue,
-        generationParameters,
-        accessControlEntries,
-        "converge",
-        auditRecordParameters
-    );
+    subject.save(originalCredentialVersion, credentialValue, request, auditRecordParameters);
 
     verify(credentialVersionDataService).save(newVersion);
   }

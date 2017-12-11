@@ -1,28 +1,20 @@
 package org.cloudfoundry.credhub.controller.v1;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.ByteStreams;
-import com.jayway.jsonpath.JsonPath;
-import com.jayway.jsonpath.PathNotFoundException;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cloudfoundry.credhub.audit.EventAuditLogService;
-import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException;
 import org.cloudfoundry.credhub.handler.CredentialsHandler;
-import org.cloudfoundry.credhub.handler.GenerateHandler;
-import org.cloudfoundry.credhub.handler.RegenerateHandler;
+import org.cloudfoundry.credhub.handler.LegacyGenerationHandler;
 import org.cloudfoundry.credhub.handler.SetHandler;
-import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
 import org.cloudfoundry.credhub.request.BaseCredentialSetRequest;
-import org.cloudfoundry.credhub.request.CredentialRegenerateRequest;
 import org.cloudfoundry.credhub.service.PermissionedCredentialService;
-import org.cloudfoundry.credhub.util.StringUtil;
 import org.cloudfoundry.credhub.view.CredentialView;
 import org.cloudfoundry.credhub.view.DataResponse;
 import org.cloudfoundry.credhub.view.FindCredentialResults;
 import org.cloudfoundry.credhub.view.FindPathResults;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -53,27 +45,20 @@ public class CredentialsController {
   private static final Logger LOGGER = LogManager.getLogger(CredentialsController.class);
   private final PermissionedCredentialService credentialService;
   private final EventAuditLogService eventAuditLogService;
-  private final ObjectMapper objectMapper;
   private final SetHandler setHandler;
-  private final GenerateHandler generateHandler;
-  private final RegenerateHandler regenerateHandler;
   private final CredentialsHandler credentialsHandler;
+  private final LegacyGenerationHandler legacyGenerationHandler;
 
   @Autowired
   public CredentialsController(PermissionedCredentialService credentialService,
-      EventAuditLogService eventAuditLogService,
-      ObjectMapper objectMapper,
-      GenerateHandler generateHandler,
-      RegenerateHandler regenerateHandler,
-      CredentialsHandler credentialsHandler,
-      SetHandler setHandler) {
+                               EventAuditLogService eventAuditLogService,
+                               CredentialsHandler credentialsHandler,
+                               SetHandler setHandler, LegacyGenerationHandler legacyGenerationHandler) {
     this.credentialService = credentialService;
     this.eventAuditLogService = eventAuditLogService;
-    this.objectMapper = objectMapper;
-    this.generateHandler = generateHandler;
-    this.regenerateHandler = regenerateHandler;
     this.credentialsHandler = credentialsHandler;
     this.setHandler = setHandler;
+    this.legacyGenerationHandler = legacyGenerationHandler;
   }
 
   @RequestMapping(path = "", method = RequestMethod.POST)
@@ -81,13 +66,13 @@ public class CredentialsController {
   public CredentialView generate(InputStream inputStream) throws IOException {
     InputStream requestInputStream = new ByteArrayInputStream(ByteStreams.toByteArray(inputStream));
     try {
-      return auditedHandlePostRequest(requestInputStream);
+      return legacyGenerationHandler.auditedHandlePostRequest(requestInputStream);
     } catch (JpaSystemException | DataIntegrityViolationException e) {
       requestInputStream.reset();
       LOGGER.error(
           "Exception \"" + e.getMessage() + "\" with class \"" + e.getClass().getCanonicalName()
               + "\" while storing credential, possibly caused by race condition, retrying...");
-      return auditedHandlePostRequest(requestInputStream);
+      return legacyGenerationHandler.auditedHandlePostRequest(requestInputStream);
     }
   }
 
@@ -125,7 +110,7 @@ public class CredentialsController {
   @ResponseStatus(HttpStatus.OK)
   public CredentialView getCredentialById(@PathVariable String id) {
     return eventAuditLogService.auditEvents(eventAuditRecordParametersList -> {
-     return credentialsHandler.getCredentialVersionByUUID(id, eventAuditRecordParametersList);
+      return credentialsHandler.getCredentialVersionByUUID(id, eventAuditRecordParametersList);
     });
   }
 
@@ -146,7 +131,7 @@ public class CredentialsController {
       if (current) {
         return credentialsHandler.getMostRecentCredentialVersion(credentialNameWithPrependedSlash, eventAuditRecordParametersList);
       } else {
-       return credentialsHandler.getNCredentialVersions(credentialNameWithPrependedSlash, numberOfVersions, eventAuditRecordParametersList);
+        return credentialsHandler.getNCredentialVersions(credentialNameWithPrependedSlash, numberOfVersions, eventAuditRecordParametersList);
       }
     });
   }
@@ -176,60 +161,11 @@ public class CredentialsController {
             credentialService.findContainingName(nameLike, eventAuditRecordParametersList)));
   }
 
-  private CredentialView auditedHandlePostRequest(InputStream inputStream) {
-    return eventAuditLogService
-        .auditEvents((auditRecordParameters -> deserializeAndHandlePostRequest(inputStream,auditRecordParameters)));
-  }
-
-  private CredentialView deserializeAndHandlePostRequest(
-      InputStream inputStream,
-      List<EventAuditRecordParameters> auditRecordParameters
-  ) {
-    try {
-      String requestString = StringUtil.fromInputStream(inputStream);
-
-      if (readRegenerateFlagFrom(requestString)) {
-        return handleRegenerateRequest(requestString, auditRecordParameters);
-      } else {
-        return handleGenerateRequest(auditRecordParameters, requestString
-        );
-      }
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private CredentialView handleGenerateRequest(
-      List<EventAuditRecordParameters> auditRecordParameters,
-      String requestString
-  ) throws IOException {
-    BaseCredentialGenerateRequest requestBody = objectMapper.readValue(requestString, BaseCredentialGenerateRequest.class);
-    requestBody.validate();
-
-    return generateHandler.handle(requestBody, auditRecordParameters);
-  }
-
-  private CredentialView handleRegenerateRequest(
-      String requestString, List<EventAuditRecordParameters> auditRecordParameters
-  ) throws IOException {
-    CredentialRegenerateRequest requestBody = objectMapper.readValue(requestString, CredentialRegenerateRequest.class);
-
-    return regenerateHandler.handleRegenerate(requestBody.getName(), auditRecordParameters);
-  }
 
   private CredentialView auditedHandlePutRequest(@RequestBody BaseCredentialSetRequest requestBody) {
     return eventAuditLogService.auditEvents(
         auditRecordParameters -> setHandler.handle(requestBody, auditRecordParameters));
   }
 
-  private boolean readRegenerateFlagFrom(String requestString) {
-    boolean isRegenerateRequest;
-    try {
-      isRegenerateRequest = JsonPath.read(requestString, "$.regenerate");
-    } catch (PathNotFoundException e) {
-      // could have just returned null, that would have been pretty useful
-      isRegenerateRequest = false;
-    }
-    return isRegenerateRequest;
-  }
+
 }

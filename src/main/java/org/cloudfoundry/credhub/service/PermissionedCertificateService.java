@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.service;
 
+import org.cloudfoundry.credhub.audit.AuditingOperationCode;
 import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
@@ -9,9 +10,7 @@ import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
-import org.cloudfoundry.credhub.request.GenerationParameters;
-import org.cloudfoundry.credhub.request.PermissionEntry;
-import org.cloudfoundry.credhub.audit.AuditingOperationCode;
+import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
 import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,17 +38,15 @@ public class PermissionedCertificateService {
   }
 
   public CredentialVersion save(
-      CredentialVersion existingCredentialVersion, String credentialName,
+      CredentialVersion existingCredentialVersion,
       CertificateCredentialValue credentialValue,
-      GenerationParameters generationParameters,
-      List<PermissionEntry> accessControlEntries,
-      String overwriteMode,
+      BaseCredentialGenerateRequest generateRequest,
       List<EventAuditRecordParameters> auditRecordParameters
   ) {
+    generateRequest.setType("certificate");
     if (credentialValue.isTransitional()) {
-
       List<CredentialVersion> credentialVersions = permissionedCredentialService
-          .findAllByName(credentialName, auditRecordParameters);
+          .findAllByName(generateRequest.getName(), auditRecordParameters);
 
       boolean transitionalVersionsAlreadyExist = credentialVersions.stream()
           .map(version -> (CertificateCredentialVersion) version)
@@ -59,15 +56,7 @@ public class PermissionedCertificateService {
         throw new ParameterizedValidationException("error.too_many_transitional_versions");
       }
     }
-    return permissionedCredentialService.save(
-        existingCredentialVersion,
-        credentialName,
-        "certificate",
-        credentialValue,
-        generationParameters,
-        accessControlEntries,
-        overwriteMode,
-        auditRecordParameters);
+    return permissionedCredentialService.save(existingCredentialVersion, credentialValue, generateRequest, auditRecordParameters);
   }
 
   public List<Credential> getAll(List<EventAuditRecordParameters> auditRecordParameters) {

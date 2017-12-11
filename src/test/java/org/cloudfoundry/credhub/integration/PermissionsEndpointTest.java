@@ -3,15 +3,16 @@ package org.cloudfoundry.credhub.integration;
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.audit.AuditingOperationCode;
 import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
+import org.cloudfoundry.credhub.constants.CredentialWriteMode;
 import org.cloudfoundry.credhub.helper.AuditingHelper;
 import org.cloudfoundry.credhub.helper.RequestHelper;
 import org.cloudfoundry.credhub.repository.EventAuditRecordRepository;
 import org.cloudfoundry.credhub.repository.RequestAuditRecordRepository;
 import org.cloudfoundry.credhub.request.PermissionEntry;
-import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
-import org.cloudfoundry.credhub.view.PermissionsView;
 import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.cloudfoundry.credhub.util.AuthConstants;
+import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
+import org.cloudfoundry.credhub.view.PermissionsView;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,11 +28,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static org.cloudfoundry.credhub.audit.AuditingOperationCode.ACL_ACCESS;
 import static org.cloudfoundry.credhub.audit.AuditingOperationCode.ACL_DELETE;
 import static org.cloudfoundry.credhub.audit.AuditingOperationCode.ACL_UPDATE;
-import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.beans.SamePropertyValuesAs.samePropertyValuesAs;
@@ -71,7 +72,7 @@ public class PermissionsEndpointTest {
         .apply(springSecurity())
         .build();
 
-    RequestHelper.setPassword(mockMvc, credentialName, "testpassword", "no-overwrite");
+    RequestHelper.setPassword(mockMvc, credentialName, "testpassword", CredentialWriteMode.NO_OVERWRITE.mode);
 
     auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
   }

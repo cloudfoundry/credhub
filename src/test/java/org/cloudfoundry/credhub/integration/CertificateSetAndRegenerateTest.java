@@ -2,11 +2,12 @@ package org.cloudfoundry.credhub.integration;
 
 import com.google.common.collect.ImmutableMap;
 import com.jayway.jsonpath.JsonPath;
-import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.helper.RequestHelper;
-import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import net.minidev.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
+import org.cloudfoundry.credhub.CredentialManagerApp;
+import org.cloudfoundry.credhub.constants.CredentialWriteMode;
+import org.cloudfoundry.credhub.helper.RequestHelper;
+import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -90,7 +91,7 @@ public class CertificateSetAndRegenerateTest {
 
   @Test
   public void certificateSet_withCaName_canBeRegeneratedWithSameCA() throws Exception {
-    final String generatedCertificate = RequestHelper.generateCertificateCredential(mockMvc, "generatedCertificate", "overwrite", "generated-cert", CA_NAME);
+    final String generatedCertificate = RequestHelper.generateCertificateCredential(mockMvc, "generatedCertificate", CredentialWriteMode.OVERWRITE.mode, "generated-cert", CA_NAME);
     String certificateValue = JsonPath.parse(generatedCertificate)
         .read("$.value.certificate");
     String privateKeyValue = JsonPath.parse(generatedCertificate)
@@ -124,7 +125,7 @@ public class CertificateSetAndRegenerateTest {
         .content("{" +
             "\"name\":\"/crusher\"," +
             "\"regenerate\":true" +
-          "}");
+            "}");
 
     this.mockMvc.perform(regenerateRequest)
         .andExpect(status().isOk())
@@ -260,7 +261,7 @@ public class CertificateSetAndRegenerateTest {
   @Test
   public void certificateSetRequest_whenProvidedCertificateWasNotSignedByNamedCA_returnsAValidationError() throws Exception {
     RequestHelper.generateCa(mockMvc, "otherCa", UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
-    final String otherCaCertificate = RequestHelper.generateCertificateCredential(mockMvc, "otherCaCertificate", "overwrite", "other-ca-cert", "otherCa");
+    final String otherCaCertificate = RequestHelper.generateCertificateCredential(mockMvc, "otherCaCertificate", CredentialWriteMode.OVERWRITE.mode, "other-ca-cert", "otherCa");
 
     String otherCaCertificateValue = JsonPath.parse(otherCaCertificate)
         .read("$.value.certificate");
@@ -289,7 +290,7 @@ public class CertificateSetAndRegenerateTest {
   @Test
   public void certificateSetRequest_whenProvidedCertificateWasNotSignedByProvidedCA_returnsAValidationError() throws Exception {
     RequestHelper.generateCa(mockMvc, "otherCa", UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
-    final String otherCaCertificate = RequestHelper.generateCertificateCredential(mockMvc, "otherCaCertificate", "overwrite", "other-ca-cert", "otherCa");
+    final String otherCaCertificate = RequestHelper.generateCertificateCredential(mockMvc, "otherCaCertificate", CredentialWriteMode.OVERWRITE.mode, "other-ca-cert", "otherCa");
 
     String otherCaCertificateValue = JsonPath.parse(otherCaCertificate)
         .read("$.value.certificate");
@@ -318,7 +319,7 @@ public class CertificateSetAndRegenerateTest {
   @Test
   public void certificateSetRequest_whenProvidedCertificateWithNonMatchingPrivateKey_returnsAValidationError() throws Exception {
     final String originalCertificate = RequestHelper.generateCa(mockMvc, "otherCa", UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
-    final String otherCaCertificate = RequestHelper.generateCertificateCredential(mockMvc, "otherCaCertificate", "overwrite", "other-ca-cert", "otherCa");
+    final String otherCaCertificate = RequestHelper.generateCertificateCredential(mockMvc, "otherCaCertificate", CredentialWriteMode.OVERWRITE.mode, "other-ca-cert", "otherCa");
 
     String originalPrivateKeyValue = JsonPath.parse(originalCertificate)
         .read("$.value.private_key");

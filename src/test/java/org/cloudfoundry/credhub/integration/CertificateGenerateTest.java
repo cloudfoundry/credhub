@@ -2,13 +2,14 @@ package org.cloudfoundry.credhub.integration;
 
 import com.google.common.collect.ImmutableMap;
 import com.jayway.jsonpath.JsonPath;
-import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.helper.JsonTestHelper;
-import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
+import org.cloudfoundry.credhub.CredentialManagerApp;
+import org.cloudfoundry.credhub.constants.CredentialWriteMode;
+import org.cloudfoundry.credhub.helper.JsonTestHelper;
+import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.util.TestConstants;
 import org.hamcrest.Matchers;
 import org.json.JSONObject;
@@ -174,12 +175,12 @@ public class CertificateGenerateTest {
 
   @Test
   public void credentialNotOverwrittenWhenModeIsSetToConvergeAndParametersAreTheSame() throws Exception {
-    generateCertificateCredential(mockMvc, CA_NAME, "overwrite", "test-CA", null);
+    generateCertificateCredential(mockMvc, CA_NAME, CredentialWriteMode.OVERWRITE.mode, "test-CA", null);
 
-    String firstResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, "converge", "some-common-name", CA_NAME);
+    String firstResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, "some-common-name", CA_NAME);
     String originalValue = (new JSONObject(firstResponse)).getString("value");
 
-    String secondResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, "converge", "some-common-name", CA_NAME);
+    String secondResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, "some-common-name", CA_NAME);
     String sameValue = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalValue, Matchers.equalTo(sameValue));
@@ -187,10 +188,10 @@ public class CertificateGenerateTest {
 
   @Test
   public void credentialNotOverwrittenWhenModeIsSetToConvergeAndParametersAreTheSameAndAreCAs() throws Exception {
-    String firstResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, "converge", "some-common-name", null);
+    String firstResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, "some-common-name", null);
     String originalValue = (new JSONObject(firstResponse)).getString("value");
 
-    String secondResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, "converge", "some-common-name", null);
+    String secondResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, "some-common-name", null);
     String sameValue = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalValue, Matchers.equalTo(sameValue));
@@ -198,12 +199,12 @@ public class CertificateGenerateTest {
 
   @Test
   public void credentialOverwrittenWhenModeIsSetToConvergeAndCommonNameNotTheSame() throws Exception {
-    generateCertificateCredential(mockMvc, CA_NAME, "overwrite", "test-CA", null);
+    generateCertificateCredential(mockMvc, CA_NAME, CredentialWriteMode.OVERWRITE.mode, "test-CA", null);
 
-    String firstResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, "converge", "some-common-name", CA_NAME);
+    String firstResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, "some-common-name", CA_NAME);
     String originalValue = (new JSONObject(firstResponse)).getString("value");
 
-    String secondResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, "converge", "other-common-name", CA_NAME);
+    String secondResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, "other-common-name", CA_NAME);
     String updatedValue = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalValue, not(Matchers.equalTo(updatedValue)));
@@ -211,13 +212,13 @@ public class CertificateGenerateTest {
 
   @Test
   public void credentialNotOverwrittenWhenModeIsSetAndAllDNsSet() throws Exception {
-    generateCertificateCredential(mockMvc, CA_NAME, "overwrite", "test-CA", null);
+    generateCertificateCredential(mockMvc, CA_NAME, CredentialWriteMode.OVERWRITE.mode, "test-CA", null);
 
     Map<String, Object> certRequestBody = new HashMap() {
       {
         put("name", CREDENTIAL_NAME);
         put("type", "certificate");
-        put("mode", "converge");
+        put("mode", CredentialWriteMode.CONVERGE.mode);
       }
     };
 
@@ -255,14 +256,14 @@ public class CertificateGenerateTest {
 
   @Test
   public void credentialOverwrittenWhenModeIsSetToConvergeAndCaNameNotTheSame() throws Exception {
-    generateCertificateCredential(mockMvc, CA_NAME, "overwrite", "test-CA", null);
-    generateCertificateCredential(mockMvc, CA_NAME2, "overwrite", "test-CA2", null);
+    generateCertificateCredential(mockMvc, CA_NAME, CredentialWriteMode.OVERWRITE.mode, "test-CA", null);
+    generateCertificateCredential(mockMvc, CA_NAME2, CredentialWriteMode.OVERWRITE.mode, "test-CA2", null);
 
 
-    String firstResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, "converge", "some-common-name", CA_NAME);
+    String firstResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, "some-common-name", CA_NAME);
     String originalValue = (new JSONObject(firstResponse)).getString("value");
 
-    String secondResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, "converge", "some-common-name", CA_NAME2);
+    String secondResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, "some-common-name", CA_NAME2);
     String updatedValue = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalValue, not(Matchers.equalTo(updatedValue)));
@@ -270,14 +271,14 @@ public class CertificateGenerateTest {
 
   @Test
   public void credentialOverwrittenWhenModeIsSetToConvergeAndCAUpdated() throws Exception {
-    generateCertificateCredential(mockMvc, CA_NAME, "overwrite", "test-CA", null);
+    generateCertificateCredential(mockMvc, CA_NAME, CredentialWriteMode.OVERWRITE.mode, "test-CA", null);
 
-    String firstResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, "converge", "some-common-name", CA_NAME);
+    String firstResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, "some-common-name", CA_NAME);
     String originalValue = (new JSONObject(firstResponse)).getString("value");
 
-    generateCertificateCredential(mockMvc, CA_NAME, "overwrite", "test-CA", null);
+    generateCertificateCredential(mockMvc, CA_NAME, CredentialWriteMode.OVERWRITE.mode, "test-CA", null);
 
-    String secondResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, "converge", "some-common-name", CA_NAME);
+    String secondResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, "some-common-name", CA_NAME);
     String updatedValue = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalValue, not(Matchers.equalTo(updatedValue)));
@@ -302,13 +303,13 @@ public class CertificateGenerateTest {
             + "  \"value\" : " + setJson + "}");
 
     this.mockMvc.perform(certificateSetRequest)
-      .andExpect(status().is2xxSuccessful());
+        .andExpect(status().is2xxSuccessful());
 
     Map<String, Object> certRequestBody = new HashMap() {
       {
         put("name", CREDENTIAL_NAME);
         put("type", "certificate");
-        put("mode", "overwrite");
+        put("mode", CredentialWriteMode.OVERWRITE.mode);
       }
     };
 
@@ -361,7 +362,7 @@ public class CertificateGenerateTest {
     String generateCertificateResponse = generateCertificateCredential(
         mockMvc,
         "/some-cert",
-        "overwrite",
+        CredentialWriteMode.OVERWRITE.mode,
         "test",
         "/originalCA"
     );

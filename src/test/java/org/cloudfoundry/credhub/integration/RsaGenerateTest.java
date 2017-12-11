@@ -1,6 +1,7 @@
 package org.cloudfoundry.credhub.integration;
 
 import org.cloudfoundry.credhub.CredentialManagerApp;
+import org.cloudfoundry.credhub.constants.CredentialWriteMode;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -43,10 +44,10 @@ public class RsaGenerateTest {
 
   @Test
   public void credentialNotOverwrittenWhenModeIsSetToConvergeAndParametersAreTheSame() throws Exception {
-    String firstResponse = generateRsa(mockMvc, CREDENTIAL_NAME, "converge", 2048);
+    String firstResponse = generateRsa(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, 2048);
     String originalPassword = (new JSONObject(firstResponse)).getString("value");
 
-    String secondResponse = generateRsa(mockMvc, CREDENTIAL_NAME, "converge", 2048);
+    String secondResponse = generateRsa(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, 2048);
     String samePassword = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalPassword, equalTo(samePassword));
@@ -54,10 +55,10 @@ public class RsaGenerateTest {
 
   @Test
   public void credentialNotOverwrittenWhenModeIsSetToConvergeAndParametersAreTheSameAndAreTheDefault() throws Exception {
-    String firstResponse = generateRsa(mockMvc, CREDENTIAL_NAME, "overwrite", null);
+    String firstResponse = generateRsa(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.OVERWRITE.mode, null);
     String originalPassword = (new JSONObject(firstResponse)).getString("value");
 
-    String secondResponse = generateRsa(mockMvc, CREDENTIAL_NAME, "converge", null);
+    String secondResponse = generateRsa(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, null);
     String samePassword = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalPassword, equalTo(samePassword));
@@ -65,10 +66,10 @@ public class RsaGenerateTest {
 
   @Test
   public void credentialOverwrittenWhenModeIsSetToConvergeAndParametersNotTheSame() throws Exception {
-    String firstResponse = generateRsa(mockMvc, CREDENTIAL_NAME, "overwrite", 4096);
+    String firstResponse = generateRsa(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.OVERWRITE.mode, 4096);
     String originalPassword = (new JSONObject(firstResponse)).getString("value");
 
-    String secondResponse = generateRsa(mockMvc, CREDENTIAL_NAME, "converge", 2048);
+    String secondResponse = generateRsa(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, 2048);
     String updatedPassword = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalPassword, not(equalTo(updatedPassword)));

@@ -51,11 +51,8 @@ public class CertificatesHandler {
 
     final CertificateCredentialVersion credentialVersion = (CertificateCredentialVersion) permissionedCertificateService.save(
         existingCredentialVersion,
-        generateRequest.getName(),
         credentialValue,
-        generateRequest.getGenerationParameters(),
-        generateRequest.getAdditionalPermissions(),
-        generateRequest.getOverwriteMode(),
+        generateRequest,
         auditRecordParameters
     );
 

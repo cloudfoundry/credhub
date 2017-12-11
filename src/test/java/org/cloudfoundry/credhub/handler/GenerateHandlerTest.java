@@ -49,7 +49,7 @@ public class GenerateHandlerTest {
     accessControlEntries = new ArrayList<>();
     userContext = new UserContext();
     credentialVersion = mock(PasswordCredentialVersion.class);
-    when(credentialService.save(anyObject(), anyString(), anyString(), anyObject(), anyObject(), anyList(), anyString(), anyList())).thenReturn(credentialVersion);
+    when(credentialService.save(anyObject(), anyObject(), anyObject(), anyList())).thenReturn(credentialVersion);
   }
 
 
@@ -67,15 +67,7 @@ public class GenerateHandlerTest {
 
     subject.handle(generateRequest, eventAuditRecordParameters);
 
-    verify(credentialService).save(
-        null, "/captain",
-        "password",
-        null,
-        generationParameters,
-        accessControlEntries,
-        "no-overwrite",
-        eventAuditRecordParameters
-    );
+    verify(credentialService).save(null, null, generateRequest, eventAuditRecordParameters);
     verify(permissionService).savePermissions(credentialVersion, accessControlEntries, eventAuditRecordParameters, true, "/captain");
   }
 }

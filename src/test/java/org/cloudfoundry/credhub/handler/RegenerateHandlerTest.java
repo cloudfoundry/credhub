@@ -54,7 +54,7 @@ public class RegenerateHandlerTest {
     when(credentialService.findMostRecent(anyString()))
         .thenReturn(mock(CredentialVersion.class));
     CredentialVersion credentialVersion = mock(PasswordCredentialVersion.class);
-    when(credentialService.save(anyObject(), anyString(), anyString(), anyObject(), anyObject(), anyList(), anyString(), anyList())).thenReturn(credentialVersion);
+    when(credentialService.save(anyObject(), anyObject(), anyObject(), anyList())).thenReturn(credentialVersion);
 
     PasswordGenerateRequest generateRequest1 = new PasswordGenerateRequest();
     generateRequest1.setName("/firstExpectedName");
@@ -66,17 +66,8 @@ public class RegenerateHandlerTest {
 
     subject.handleBulkRegenerate(SIGNER_NAME, newArrayList());
 
-    verify(credentialService).save(
-        any(), eq("/firstExpectedName"),
-        any(), any(), any(),
-        any(), anyString(),
-        any());
-
-    verify(credentialService).save(
-        any(), eq("/secondExpectedName"),
-        any(), any(), any(),
-        any(), anyString(),
-        any());
+    verify(credentialService).save(any(), any(), eq(generateRequest1), any());
+    verify(credentialService).save(any(), any(), eq(generateRequest2), any());
   }
 
 }

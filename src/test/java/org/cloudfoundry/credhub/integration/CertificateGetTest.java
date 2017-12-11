@@ -3,6 +3,7 @@ package org.cloudfoundry.credhub.integration;
 
 import com.jayway.jsonpath.JsonPath;
 import org.cloudfoundry.credhub.CredentialManagerApp;
+import org.cloudfoundry.credhub.constants.CredentialWriteMode;
 import org.cloudfoundry.credhub.helper.AuditingHelper;
 import org.cloudfoundry.credhub.repository.EventAuditRecordRepository;
 import org.cloudfoundry.credhub.repository.RequestAuditRecordRepository;
@@ -75,10 +76,10 @@ public class CertificateGetTest {
 
   @Test
   public void getCertificateCredentials_returnsAllCertificateCredentials() throws Exception {
-    generateCertificateCredential(mockMvc, "/first-certificate", "overwrite", "test", null);
-    generateCertificateCredential(mockMvc, "/second-certificate", "overwrite", "first-version", null);
-    generateCertificateCredential(mockMvc, "/second-certificate", "overwrite", "second-version", null);
-    generatePassword(mockMvc, "invalid-cert", "overwrite", null);
+    generateCertificateCredential(mockMvc, "/first-certificate", CredentialWriteMode.OVERWRITE.mode, "test", null);
+    generateCertificateCredential(mockMvc, "/second-certificate", CredentialWriteMode.OVERWRITE.mode, "first-version", null);
+    generateCertificateCredential(mockMvc, "/second-certificate", CredentialWriteMode.OVERWRITE.mode, "second-version", null);
+    generatePassword(mockMvc, "invalid-cert", CredentialWriteMode.OVERWRITE.mode, null);
     String response = getCertificateCredentials(mockMvc);
 
     List<String> names = JsonPath.parse(response)
@@ -145,7 +146,7 @@ public class CertificateGetTest {
 
   @Test
   public void getCertificateCredentialsByName_doesNotReturnOtherCredentialTypes() throws Exception {
-    generatePassword(mockMvc, "my-credential", "overwrite", 10);
+    generatePassword(mockMvc, "my-credential", CredentialWriteMode.OVERWRITE.mode, 10);
 
     MockHttpServletRequestBuilder get = get("/api/v1/certificates?name=" + "my-credential")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)

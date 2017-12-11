@@ -1,7 +1,6 @@
 package org.cloudfoundry.credhub.handler;
 
 import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
-import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.data.CertificateAuthorityService;
@@ -9,8 +8,6 @@ import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.request.BaseCredentialSetRequest;
 import org.cloudfoundry.credhub.request.CertificateSetRequest;
-import org.cloudfoundry.credhub.request.PasswordSetRequest;
-import org.cloudfoundry.credhub.request.StringGenerationParameters;
 import org.cloudfoundry.credhub.service.PermissionService;
 import org.cloudfoundry.credhub.service.PermissionedCredentialService;
 import org.cloudfoundry.credhub.util.CertificateReader;
@@ -43,12 +40,8 @@ public class SetHandler {
       BaseCredentialSetRequest setRequest,
       List<EventAuditRecordParameters> auditRecordParameters
   ) {
-    StringGenerationParameters generationParameters = null;
-    UserContext userContext = userContextHolder.getUserContext();
 
-    if (setRequest instanceof PasswordSetRequest) {
-      generationParameters = ((PasswordSetRequest) setRequest).getGenerationParameters();
-    } else if (setRequest instanceof CertificateSetRequest) {
+    if (setRequest instanceof CertificateSetRequest) {
       // fill in the ca value if it's one of ours
       CertificateCredentialValue certificateValue = ((CertificateSetRequest) setRequest).getCertificateValue();
 
@@ -59,7 +52,7 @@ public class SetHandler {
 
         CertificateReader certificateReader = new CertificateReader(certificateValue.getCertificate());
 
-        if (!certificateReader.isSignedByCa(caValue)){
+        if (!certificateReader.isSignedByCa(caValue)) {
           throw new ParameterizedValidationException("error.certificate_was_not_signed_by_ca_name");
         }
       }
@@ -68,12 +61,9 @@ public class SetHandler {
     CredentialVersion existingCredentialVersion = credentialService.findMostRecent(setRequest.getName());
 
     final CredentialVersion credentialVersion = credentialService.save(
-        existingCredentialVersion, setRequest.getName(),
-        setRequest.getType(),
+        existingCredentialVersion,
         setRequest.getCredentialValue(),
-        generationParameters,
-        setRequest.getAdditionalPermissions(),
-        setRequest.getOverwriteMode(),
+        setRequest,
         auditRecordParameters
     );
 

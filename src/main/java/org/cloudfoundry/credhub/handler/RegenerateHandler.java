@@ -40,12 +40,8 @@ public class RegenerateHandler {
 
     final CredentialVersion credentialVersion = credentialService.save(
         existingCredentialVersion,
-        generateRequest.getName(),
-        generateRequest.getType(),
         credentialValue,
-        generateRequest.getGenerationParameters(),
-        generateRequest.getAdditionalPermissions(),
-        generateRequest.getOverwriteMode(),
+        generateRequest,
         auditRecordParameters
     );
 

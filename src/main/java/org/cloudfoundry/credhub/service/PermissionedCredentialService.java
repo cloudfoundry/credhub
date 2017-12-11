@@ -4,6 +4,7 @@ import org.cloudfoundry.credhub.audit.AuditingOperationCode;
 import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.constants.CredentialType;
+import org.cloudfoundry.credhub.constants.CredentialWriteMode;
 import org.cloudfoundry.credhub.credential.CredentialValue;
 import org.cloudfoundry.credhub.data.CertificateAuthorityService;
 import org.cloudfoundry.credhub.data.CredentialVersionDataService;
@@ -14,7 +15,7 @@ import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.exceptions.PermissionException;
-import org.cloudfoundry.credhub.request.GenerationParameters;
+import org.cloudfoundry.credhub.request.BaseCredentialRequest;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.cloudfoundry.credhub.view.FindCredentialResult;
@@ -56,33 +57,23 @@ public class PermissionedCredentialService {
   }
 
   public CredentialVersion save(
-      CredentialVersion existingCredentialVersion, String credentialName,
-      String type,
+      CredentialVersion existingCredentialVersion,
       CredentialValue credentialValue,
-      GenerationParameters generationParameters,
-      List<PermissionEntry> accessControlEntries,
-      String overwriteMode,
+      BaseCredentialRequest generateRequest,
       List<EventAuditRecordParameters> auditRecordParameters
   ) {
-    final boolean isNewCredential = existingCredentialVersion == null;
 
-    boolean shouldWriteNewCredential = shouldWriteNewCredential(existingCredentialVersion, generationParameters, overwriteMode, isNewCredential);
+    List<PermissionEntry> accessControlEntries = generateRequest.getAdditionalPermissions();
+    boolean shouldWriteNewCredential = shouldWriteNewCredential(existingCredentialVersion, generateRequest);
 
-    writeSaveAuditRecord(credentialName, auditRecordParameters, shouldWriteNewCredential);
-
-    validateCredentialSave(credentialName, type, accessControlEntries, existingCredentialVersion);
+    writeSaveAuditRecord(generateRequest.getName(), auditRecordParameters, shouldWriteNewCredential);
+    validateCredentialSave(generateRequest.getName(), generateRequest.getType(), accessControlEntries, existingCredentialVersion);
 
     if (!shouldWriteNewCredential) {
       return existingCredentialVersion;
     }
 
-    return makeAndSaveNewCredential(
-        credentialName,
-        type,
-        credentialValue,
-        generationParameters,
-        existingCredentialVersion
-    );
+    return makeAndSaveNewCredential(existingCredentialVersion, credentialValue, generateRequest);
   }
 
   public boolean delete(String credentialName, List<EventAuditRecordParameters> auditRecordParameters) {
@@ -168,21 +159,21 @@ public class PermissionedCredentialService {
     return credentialVersionDataService.findMostRecent(credentialName);
   }
 
-  private CredentialVersion makeAndSaveNewCredential(String credentialName, String type, CredentialValue credentialValue, GenerationParameters generationParameters, CredentialVersion existingCredentialVersion) {
+  private CredentialVersion makeAndSaveNewCredential(CredentialVersion existingCredentialVersion, CredentialValue credentialValue, BaseCredentialRequest request) {
     CredentialVersion newVersion = credentialFactory.makeNewCredentialVersion(
-        CredentialType.valueOf(type),
-        credentialName,
+        CredentialType.valueOf(request.getType()),
+        request.getName(),
         credentialValue,
         existingCredentialVersion,
-        generationParameters);
+        request.getGenerationParameters());
     return credentialVersionDataService.save(newVersion);
   }
 
-  private boolean shouldWriteNewCredential(CredentialVersion existingCredentialVersion, GenerationParameters generationParameters, String overwriteMode, boolean isNewCredential) {
+  private boolean shouldWriteNewCredential(CredentialVersion existingCredentialVersion, BaseCredentialRequest request) {
     boolean shouldWriteNewCredential;
-    if (isNewCredential) {
+    if (existingCredentialVersion == null) {
       shouldWriteNewCredential = true;
-    } else if ("converge".equals(overwriteMode)) {
+    } else if (request.getOverwriteMode().equals(CredentialWriteMode.CONVERGE.mode)) {
       if (existingCredentialVersion instanceof CertificateCredentialVersion) {
         final CertificateCredentialVersion certificateCredentialVersion = (CertificateCredentialVersion) existingCredentialVersion;
         if (certificateCredentialVersion.getCaName() != null) {
@@ -192,9 +183,9 @@ public class PermissionedCredentialService {
           }
         }
       }
-      shouldWriteNewCredential = !existingCredentialVersion.matchesGenerationParameters(generationParameters);
+      shouldWriteNewCredential = !existingCredentialVersion.matchesGenerationParameters(request.getGenerationParameters());
     } else {
-      shouldWriteNewCredential = "overwrite".equals(overwriteMode);
+      shouldWriteNewCredential = request.getOverwriteMode().equals(CredentialWriteMode.OVERWRITE.mode);
     }
     return shouldWriteNewCredential;
   }

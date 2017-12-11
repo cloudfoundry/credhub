@@ -1,8 +1,9 @@
 package org.cloudfoundry.credhub.integration;
 
 import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
+import org.cloudfoundry.credhub.constants.CredentialWriteMode;
 import org.cloudfoundry.credhub.util.AuthConstants;
+import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
@@ -122,9 +123,9 @@ public class CredentialSetTest {
 
   @Test
   public void credentialCanBeOverwrittenWhenModeIsSetToOverwriteInRequest() throws Exception {
-    setPassword(mockMvc, CREDENTIAL_NAME, "original-password", "no-overwrite");
+    setPassword(mockMvc, CREDENTIAL_NAME, "original-password", CredentialWriteMode.NO_OVERWRITE.mode);
 
-    String secondResponse = setPassword(mockMvc, CREDENTIAL_NAME, "new-password", "overwrite");
+    String secondResponse = setPassword(mockMvc, CREDENTIAL_NAME, "new-password", CredentialWriteMode.OVERWRITE.mode);
     String updatedPassword = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(updatedPassword, equalTo("new-password"));
@@ -132,9 +133,9 @@ public class CredentialSetTest {
 
   @Test
   public void credentialNotOverwrittenWhenModeIsSetToNotOverwriteInRequest() throws Exception {
-    setPassword(mockMvc, CREDENTIAL_NAME, "original-password", "no-overwrite");
+    setPassword(mockMvc, CREDENTIAL_NAME, "original-password", CredentialWriteMode.NO_OVERWRITE.mode);
 
-    String secondResponse = setPassword(mockMvc, CREDENTIAL_NAME, "new-password", "no-overwrite");
+    String secondResponse = setPassword(mockMvc, CREDENTIAL_NAME, "new-password", CredentialWriteMode.NO_OVERWRITE.mode);
     String updatedPassword = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(updatedPassword, equalTo("original-password"));

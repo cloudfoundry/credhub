@@ -1,7 +1,8 @@
 package org.cloudfoundry.credhub.request;
 
-import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.apache.commons.lang3.StringUtils;
+import org.cloudfoundry.credhub.constants.CredentialWriteMode;
+import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import java.util.ArrayList;
@@ -27,8 +28,9 @@ public abstract class BaseCredentialRequest {
   private String name;
   private String type;
   private Boolean overwrite;
-  private String mode;
+  private CredentialWriteMode mode;
   private List<PermissionEntry> additionalPermissions = new ArrayList<>();
+  private GenerationParameters generationParameters = null;
 
   public String getType() {
     return type;
@@ -48,12 +50,12 @@ public abstract class BaseCredentialRequest {
 
   public String getOverwriteMode() {
     if (mode != null) {
-      return mode;
+      return mode.mode;
     }
     if (isOverwrite()) {
-      return "overwrite";
+      return CredentialWriteMode.OVERWRITE.mode;
     }
-    return "no-overwrite";
+    return CredentialWriteMode.NO_OVERWRITE.mode;
   }
 
   public boolean isOverwrite() {
@@ -96,11 +98,16 @@ public abstract class BaseCredentialRequest {
     }
   }
 
-  public String getMode() {
+  public CredentialWriteMode getMode() {
     return mode;
   }
 
-  public void setMode(String mode) {
+  public void setMode(CredentialWriteMode mode) {
     this.mode = mode;
   }
+
+  public GenerationParameters getGenerationParameters() {
+    return generationParameters;
+  }
+
 }

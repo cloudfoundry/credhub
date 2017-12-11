@@ -65,7 +65,7 @@ public class SetHandlerTest {
     generationParameters = new StringGenerationParameters();
     accessControlEntries = new ArrayList<>();
     credentialVersion = mock(PasswordCredentialVersion.class);
-    when(credentialService.save(anyObject(), anyString(), anyString(), anyObject(), anyObject(), anyList(), anyString(), anyList())).thenReturn(credentialVersion);
+    when(credentialService.save(anyObject(),anyObject(), anyObject(), anyList())).thenReturn(credentialVersion);
   }
 
   @Test
@@ -85,15 +85,7 @@ public class SetHandlerTest {
 
     subject.handle(setRequest, eventAuditRecordParameters);
 
-    verify(credentialService).save(
-        existingCredMock, "/captain",
-        "password",
-        password,
-        generationParameters,
-        accessControlEntries,
-        "overwrite",
-        eventAuditRecordParameters
-    );
+    verify(credentialService).save(existingCredMock, password, setRequest, eventAuditRecordParameters);
     verify(permissionService).savePermissions(credentialVersion, accessControlEntries, eventAuditRecordParameters, false, "/captain");
   }
 
@@ -113,15 +105,7 @@ public class SetHandlerTest {
 
     subject.handle(setRequest, eventAuditRecordParameters);
 
-    verify(credentialService).save(
-        null, "/captain",
-        "password",
-        password,
-        generationParameters,
-        accessControlEntries,
-        "no-overwrite",
-        eventAuditRecordParameters
-    );
+    verify(credentialService).save(null, password, setRequest, eventAuditRecordParameters);
     verify(permissionService).savePermissions(credentialVersion, accessControlEntries, eventAuditRecordParameters, true, "/captain");
   }
 
@@ -143,12 +127,9 @@ public class SetHandlerTest {
     subject.handle(setRequest, eventAuditRecordParameters);
 
     verify(credentialService).save(
-        null, "/captain",
-        "user",
-        userCredentialValue,
         null,
-        accessControlEntries,
-        "no-overwrite",
+        userCredentialValue,
+        setRequest,
         eventAuditRecordParameters
     );
     verify(permissionService).savePermissions(credentialVersion, accessControlEntries, eventAuditRecordParameters, true, "/captain");
@@ -172,15 +153,7 @@ public class SetHandlerTest {
 
     subject.handle(setRequest, eventAuditRecordParameters);
 
-    verify(credentialService).save(
-        null, "/captain",
-        "certificate",
-        certificateValue,
-        null,
-        accessControlEntries,
-        "no-overwrite",
-        eventAuditRecordParameters
-    );
+    verify(credentialService).save(null, certificateValue, setRequest, eventAuditRecordParameters);
     verify(permissionService).savePermissions(credentialVersion, accessControlEntries, eventAuditRecordParameters, true, "/captain");
   }
 
@@ -219,15 +192,7 @@ public class SetHandlerTest {
 
     subject.handle(setRequest, eventAuditRecordParameters);
 
-    verify(credentialService).save(
-        eq(null), eq("/captain"),
-        eq("certificate"),
-        credentialValueArgumentCaptor.capture(),
-        eq(null),
-        eq(accessControlEntries),
-        eq("no-overwrite"),
-        eq(eventAuditRecordParameters)
-    );
+    verify(credentialService).save( eq(null), credentialValueArgumentCaptor.capture(), eq(setRequest), eq(eventAuditRecordParameters));
     assertThat(credentialValueArgumentCaptor.getValue(), samePropertyValuesAs(expectedCredentialValue));
     verify(permissionService).savePermissions(credentialVersion, accessControlEntries, eventAuditRecordParameters, true, "/captain");
   }
