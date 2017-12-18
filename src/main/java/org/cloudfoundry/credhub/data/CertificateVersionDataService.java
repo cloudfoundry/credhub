@@ -53,11 +53,14 @@ public class CertificateVersionDataService {
       return null;
     } else {
       CredentialVersionData active = credentialVersionRepository.findLatestNonTransitionalCertificateVersion(uuid);
-      result.add(credentialFactory.makeCredentialFromEntity(active));
+      if (active != null) {
+        result.add(credentialFactory.makeCredentialFromEntity(active));
+      }
 
       CredentialVersionData transitional = credentialVersionRepository.findTransitionalCertificateVersion(uuid);
-      result.add(credentialFactory.makeCredentialFromEntity(transitional));
-
+      if (transitional != null) {
+        result.add(credentialFactory.makeCredentialFromEntity(transitional));
+      }
       return result;
     }
   }

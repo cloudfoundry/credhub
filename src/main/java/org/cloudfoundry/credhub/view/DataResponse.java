@@ -19,7 +19,9 @@ public class DataResponse {
   public static DataResponse fromEntity(List<CredentialVersion> models) {
     ArrayList<CredentialView> views = newArrayList();
     for (CredentialVersion model : models) {
-      views.add(CredentialView.fromEntity((model)));
+      if (model != null) {
+        views.add(CredentialView.fromEntity((model)));
+      }
     }
     return new DataResponse(views);
   }
