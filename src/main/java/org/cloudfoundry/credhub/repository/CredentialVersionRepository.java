@@ -23,6 +23,14 @@ public interface CredentialVersionRepository extends JpaRepository<CredentialVer
       + "limit 1", nativeQuery = true)
   CredentialVersionData findLatestNonTransitionalCertificateVersion(UUID credentialUUID);
 
+  @Query(value = "select * from credential_version "
+      + "left join certificate_credential on credential_version.uuid = certificate_credential.uuid "
+      + "where credential_uuid = ?1 "
+      + "and certificate_credential.transitional = true "
+      + "order by version_created_at desc "
+      + "limit 1", nativeQuery = true)
+  CredentialVersionData findTransitionalCertificateVersion(UUID credentialUUID);
+
   Long countByEncryptedCredentialValueEncryptionKeyUuidNot(UUID encryptionKeyUuid);
 
   Long countByEncryptedCredentialValueEncryptionKeyUuidIn(List<UUID> encryptionKeyUuids);

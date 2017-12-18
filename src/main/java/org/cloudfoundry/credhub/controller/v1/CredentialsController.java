@@ -125,11 +125,15 @@ public class CredentialsController {
       throw new InvalidQueryParameterException("error.missing_query_parameter", "name");
     }
 
+    if (current && numberOfVersions != null) {
+      throw new InvalidQueryParameterException("error.cant_use_versions_and_current", "name");
+    }
+
     String credentialNameWithPrependedSlash = StringUtils.prependIfMissing(credentialName, "/");
 
     return eventAuditLogService.auditEvents(eventAuditRecordParametersList -> {
       if (current) {
-        return credentialsHandler.getMostRecentCredentialVersion(credentialNameWithPrependedSlash, eventAuditRecordParametersList);
+        return credentialsHandler.getCurrentCredentialVersions(credentialNameWithPrependedSlash, eventAuditRecordParametersList);
       } else {
         return credentialsHandler.getNCredentialVersions(credentialNameWithPrependedSlash, numberOfVersions, eventAuditRecordParametersList);
       }

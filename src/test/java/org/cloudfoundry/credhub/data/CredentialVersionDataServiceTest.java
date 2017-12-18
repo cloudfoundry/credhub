@@ -520,6 +520,37 @@ public class CredentialVersionDataServiceTest {
   }
 
   @Test
+  public void findActiveByName_whenAskedForCertificate_returnsTransitionalValueInAddition() throws Exception {
+    CertificateCredentialVersion certificate = saveCertificate(2000000000123L, "/some-certificate");
+    CertificateCredentialVersion version2 = saveTransitionalCertificate(2000000000123L, "/some-certificate");
+    CertificateCredentialVersion version3 = saveCertificate(2000000000229L, "/some-certificate");
+
+
+    List<CredentialVersion> credentialVersions = subject.findActiveByName("/some-certificate");
+
+    assertThat(credentialVersions.size(), equalTo(2));
+    assertThat(credentialVersions,
+        containsInAnyOrder(
+            hasProperty("uuid", equalTo(version2.getUuid())),
+            hasProperty("uuid", equalTo(version3.getUuid()))
+        ));
+  }
+
+  @Test
+  public void findActiveByName_whenAskedNonCertificateType_returnsOneCredentialValue() throws Exception {
+    PasswordCredentialVersion password1 = savePassword(2000000000123L, "/test/password");
+    PasswordCredentialVersion password2 = savePassword(3000000000123L, "/test/password");
+    PasswordCredentialVersion password3 = savePassword(4000000000123L, "/test/password");
+
+    List<CredentialVersion> credentialVersions = subject.findActiveByName("/test/password");
+
+    assertThat(credentialVersions.size(), equalTo(1));
+    assertThat(credentialVersions, contains(
+        hasProperty("uuid", equalTo(password3.getUuid()))));
+  }
+
+
+  @Test
   public void findEncryptedWithAvailableInactiveKeys() {
     UUID oldCanaryUuid = EncryptionCanaryHelper.addCanary(encryptionKeyCanaryDataService)
         .getUuid();
@@ -604,7 +635,7 @@ public class CredentialVersionDataServiceTest {
     return savePassword(timeMillis, credentialName, activeCanaryUuid);
   }
 
-  private CertificateCredentialVersion saveCertificate(long timeMillis, String name, String caName, UUID canaryUuid) {
+  private CertificateCredentialVersion saveCertificate(long timeMillis, String name, String caName, UUID canaryUuid, boolean transitional) {
     fakeTimeSetter.accept(timeMillis);
     Credential credential = credentialDataService.find(name);
     if (credential == null) {
@@ -619,15 +650,19 @@ public class CredentialVersionDataServiceTest {
     if (caName != null){
       credentialObject.setCaName(caName);
     }
+    credentialObject.setTransitional(transitional);
     return subject.save(credentialObject);
   }
 
   private CertificateCredentialVersion saveCertificate(long timeMillis, String credentialName) {
-    return saveCertificate(timeMillis, credentialName, null, activeCanaryUuid);
+    return saveCertificate(timeMillis, credentialName, null, activeCanaryUuid, false);
   }
 
+  private CertificateCredentialVersion saveTransitionalCertificate(long timeMillis, String credentialName){
+    return saveCertificate(timeMillis, credentialName, null, activeCanaryUuid, true);
+  }
   private CertificateCredentialVersion saveCertificateByCa(long timeMillis, String credentialName, String caName) {
-    return saveCertificate(timeMillis, credentialName, caName, activeCanaryUuid);
+    return saveCertificate(timeMillis, credentialName, caName, activeCanaryUuid, false);
   }
 
 

@@ -1,6 +1,7 @@
 package org.cloudfoundry.credhub.controller.v1;
 
 import org.cloudfoundry.credhub.CredentialManagerApp;
+import org.cloudfoundry.credhub.audit.AuditingOperationCode;
 import org.cloudfoundry.credhub.data.CredentialVersionDataService;
 import org.cloudfoundry.credhub.domain.Encryptor;
 import org.cloudfoundry.credhub.domain.ValueCredentialVersion;
@@ -8,12 +9,11 @@ import org.cloudfoundry.credhub.exceptions.KeyNotFoundException;
 import org.cloudfoundry.credhub.helper.AuditingHelper;
 import org.cloudfoundry.credhub.repository.EventAuditRecordRepository;
 import org.cloudfoundry.credhub.repository.RequestAuditRecordRepository;
+import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.cloudfoundry.credhub.service.PermissionCheckingService;
+import org.cloudfoundry.credhub.util.AuthConstants;
 import org.cloudfoundry.credhub.util.CurrentTimeProvider;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
-import org.cloudfoundry.credhub.audit.AuditingOperationCode;
-import org.cloudfoundry.credhub.request.PermissionOperation;
-import org.cloudfoundry.credhub.util.AuthConstants;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -254,7 +254,7 @@ public class CredentialsControllerGetTest {
 
     doReturn(CREDENTIAL_VALUE).when(encryptor).decrypt(any());
 
-    doReturn(Arrays.asList(credential)).when(credentialVersionDataService).findNByName(CREDENTIAL_NAME, 1);
+    doReturn(Arrays.asList(credential)).when(credentialVersionDataService).findActiveByName(CREDENTIAL_NAME);
 
     mockMvc.perform(get("/api/v1/data?current=true&name=" + CREDENTIAL_NAME)
         .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -263,7 +263,7 @@ public class CredentialsControllerGetTest {
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
         .andExpect(jsonPath("$.data", hasSize(1)));
 
-    verify(credentialVersionDataService).findNByName(CREDENTIAL_NAME, 1);
+    verify(credentialVersionDataService).findActiveByName(CREDENTIAL_NAME);
   }
 
   @Test
@@ -401,4 +401,19 @@ public class CredentialsControllerGetTest {
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
         .andExpect(jsonPath("$.error").value(expectedError));
   }
+
+  @Test
+  public void providingCurrentTrueAndVersions_throwsAnException() throws Exception {
+    final MockHttpServletRequestBuilder get =
+        get("/api/v1/data?name=" + CREDENTIAL_NAME+"&current=true&versions=45")
+            .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+            .accept(APPLICATION_JSON);
+
+    mockMvc.perform(get)
+        .andExpect(status().isBadRequest())
+        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+        .andExpect(jsonPath("$.error").value("The query parameters current and versions cannot be provided in the same request."));
+  }
+
+
 }

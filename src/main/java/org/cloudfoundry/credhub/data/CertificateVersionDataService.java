@@ -3,10 +3,13 @@ package org.cloudfoundry.credhub.data;
 import org.cloudfoundry.credhub.domain.CredentialFactory;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.entity.Credential;
+import org.cloudfoundry.credhub.entity.CredentialVersionData;
 import org.cloudfoundry.credhub.repository.CredentialVersionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -39,5 +42,23 @@ public class CertificateVersionDataService {
   public CredentialVersion findByCredentialUUID(String uuid) {
     return credentialFactory.makeCredentialFromEntity(credentialVersionRepository
         .findLatestNonTransitionalCertificateVersion(UUID.fromString(uuid)));
+  }
+
+  public List<CredentialVersion> findActiveWithTransitional(String certificateName) {
+    ArrayList<CredentialVersion> result = new ArrayList<>();
+    Credential credential = credentialDataService.find(certificateName);
+    UUID uuid = credential.getUuid();
+
+    if (credential == null) {
+      return null;
+    } else {
+      CredentialVersionData active = credentialVersionRepository.findLatestNonTransitionalCertificateVersion(uuid);
+      result.add(credentialFactory.makeCredentialFromEntity(active));
+
+      CredentialVersionData transitional = credentialVersionRepository.findTransitionalCertificateVersion(uuid);
+      result.add(credentialFactory.makeCredentialFromEntity(transitional));
+
+      return result;
+    }
   }
 }

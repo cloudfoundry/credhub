@@ -111,6 +111,17 @@ public class PermissionedCredentialService {
     return credentialVersionDataService.findNByName(credentialName, numberOfVersions);
   }
 
+  public List<CredentialVersion> findActiveByName(String credentialName, List<EventAuditRecordParameters> auditRecordParametersList) {
+    auditRecordParametersList.add(new EventAuditRecordParameters(CREDENTIAL_ACCESS, credentialName));
+
+    if (!permissionCheckingService
+        .hasPermission(userContextHolder.getUserContext().getActor(), credentialName, READ)) {
+      throw new EntryNotFoundException("error.credential.invalid_access");
+    }
+
+    return credentialVersionDataService.findActiveByName(credentialName);
+  }
+
   public CredentialVersion findByUuid(String credentialUUID, List<EventAuditRecordParameters> auditRecordParameters) {
     EventAuditRecordParameters eventAuditRecordParameters = new EventAuditRecordParameters(
         AuditingOperationCode.CREDENTIAL_ACCESS

@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.data;
 
 import org.cloudfoundry.credhub.domain.CredentialFactory;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
+import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.entity.CredentialVersionData;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
@@ -33,6 +34,7 @@ public class CredentialVersionDataService {
   private final JdbcTemplate jdbcTemplate;
   private final EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
   private final CredentialFactory credentialFactory;
+  private CertificateVersionDataService certificateVersionDataService;
 
   @Autowired
   protected CredentialVersionDataService(
@@ -40,13 +42,14 @@ public class CredentialVersionDataService {
       CredentialDataService credentialDataService,
       JdbcTemplate jdbcTemplate,
       EncryptionKeyCanaryMapper encryptionKeyCanaryMapper,
-      CredentialFactory credentialFactory
-  ) {
+      CredentialFactory credentialFactory,
+      CertificateVersionDataService certificateVersionDataService) {
     this.credentialVersionRepository = credentialVersionRepository;
     this.credentialDataService = credentialDataService;
     this.jdbcTemplate = jdbcTemplate;
     this.encryptionKeyCanaryMapper = encryptionKeyCanaryMapper;
     this.credentialFactory = credentialFactory;
+    this.certificateVersionDataService = certificateVersionDataService;
   }
 
   public <Z extends CredentialVersion> Z save(Z credentialVersion) {
@@ -149,6 +152,24 @@ public class CredentialVersionDataService {
           .limit(numberOfVersions)
           .collect(Collectors.toList());
       return credentialFactory.makeCredentialsFromEntities(credentialVersionData);
+    } else {
+      return newArrayList();
+    }
+  }
+
+  public List<CredentialVersion> findActiveByName(String name) {
+    Credential credential = credentialDataService.find(name);
+    CredentialVersionData credentialVersionData;
+    ArrayList<CredentialVersion> result = newArrayList();
+    if (credential != null) {
+      credentialVersionData = credentialVersionRepository
+          .findFirstByCredentialUuidOrderByVersionCreatedAtDesc(credential.getUuid());
+
+      if (credentialVersionData.getCredentialType().equals(CertificateCredentialVersionData.CREDENTIAL_TYPE)){
+        return certificateVersionDataService.findActiveWithTransitional(name);
+      }
+      result.add(credentialFactory.makeCredentialFromEntity(credentialVersionData));
+      return result;
     } else {
       return newArrayList();
     }
