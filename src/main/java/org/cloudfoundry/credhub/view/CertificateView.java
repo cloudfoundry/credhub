@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.view;
 
+import org.cloudfoundry.credhub.credential.CredentialValue;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 
 @SuppressWarnings("unused")
@@ -20,7 +21,7 @@ public class CertificateView extends CredentialView {
   }
 
   @Override
-  public Object getValue() {
+  public CredentialValue getValue() {
     return new CertificateValueView(version);
   }
 

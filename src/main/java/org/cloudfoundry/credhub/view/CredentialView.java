@@ -14,17 +14,17 @@ import org.cloudfoundry.credhub.domain.ValueCredentialVersion;
 import java.time.Instant;
 import java.util.UUID;
 
-public class CredentialView<T extends CredentialValue> {
+public class CredentialView {
 
   private Instant versionCreatedAt;
   private UUID uuid;
   private String name;
   private String type;
-  private T value;
+  private CredentialValue value;
 
   CredentialView() { /* Jackson */ }
 
-  CredentialView(Instant versionCreatedAt, UUID uuid, String name, String type, T value) {
+  CredentialView(Instant versionCreatedAt, UUID uuid, String name, String type, CredentialValue value) {
     this.versionCreatedAt = versionCreatedAt;
     this.uuid = uuid;
     this.name = name;
@@ -75,7 +75,7 @@ public class CredentialView<T extends CredentialValue> {
   }
 
   @JsonProperty("value")
-  public Object getValue() {
+  public CredentialValue getValue() {
     return value;
   }
 }

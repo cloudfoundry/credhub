@@ -1,8 +1,9 @@
 package org.cloudfoundry.credhub.view;
 
+import org.cloudfoundry.credhub.credential.CredentialValue;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 
-class CertificateValueView {
+class CertificateValueView implements CredentialValue {
   private final String ca;
   private final String certificate;
   private final String privateKey;
