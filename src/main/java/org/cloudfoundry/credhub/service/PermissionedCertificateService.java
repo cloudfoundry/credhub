@@ -5,10 +5,12 @@ import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.data.CertificateDataService;
+import org.cloudfoundry.credhub.data.CertificateVersionDataService;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
+import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
 import org.cloudfoundry.credhub.request.PermissionOperation;
@@ -26,15 +28,17 @@ public class PermissionedCertificateService {
   private final CertificateDataService certificateDataService;
   private final PermissionCheckingService permissionCheckingService;
   private final UserContextHolder userContextHolder;
+  private final CertificateVersionDataService certificateVersionDataService;
 
   @Autowired
   public PermissionedCertificateService(
       PermissionedCredentialService permissionedCredentialService, CertificateDataService certificateDataService,
-      PermissionCheckingService permissionCheckingService, UserContextHolder userContextHolder) {
+      PermissionCheckingService permissionCheckingService, UserContextHolder userContextHolder, CertificateVersionDataService certificateVersionDataService) {
     this.permissionedCredentialService = permissionedCredentialService;
     this.certificateDataService = certificateDataService;
     this.permissionCheckingService = permissionCheckingService;
     this.userContextHolder = userContextHolder;
+    this.certificateVersionDataService = certificateVersionDataService;
   }
 
   public CredentialVersion save(
@@ -81,5 +85,27 @@ public class PermissionedCertificateService {
     }
 
     return Collections.singletonList(certificate);
+  }
+
+  public List<CredentialVersion> getAllVersions(String uuid, List<EventAuditRecordParameters> auditRecordParameters) {
+    List<CredentialVersion> list;
+    String name;
+
+    try {
+      list = certificateVersionDataService.findAllVersions(uuid);
+      name = !list.isEmpty() ? list.get(0).getName() : null;
+    } catch (IllegalArgumentException e) {
+      auditRecordParameters.add(new EventAuditRecordParameters(AuditingOperationCode.CREDENTIAL_ACCESS, null));
+      throw new InvalidQueryParameterException("error.bad_request", "uuid");
+    }
+
+    auditRecordParameters.add(new EventAuditRecordParameters(AuditingOperationCode.CREDENTIAL_ACCESS, name));
+
+    if (list.isEmpty() || !permissionCheckingService
+        .hasPermission(userContextHolder.getUserContext().getActor(), name, PermissionOperation.READ)) {
+      throw new EntryNotFoundException("error.credential.invalid_access");
+    }
+
+    return list;
   }
 }

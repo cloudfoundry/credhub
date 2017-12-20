@@ -3,6 +3,7 @@ package org.cloudfoundry.credhub.handler;
 import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
+import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
 import org.cloudfoundry.credhub.request.CertificateRegenerateRequest;
@@ -78,4 +79,16 @@ public class CertificatesHandler {
 
     return new CertificateCredentialsView(list);
   }
+
+  public List<CertificateView> handleGetAllVersionsRequest(String uuid, List<EventAuditRecordParameters> auditRecordParameters) {
+    final List<CredentialVersion> credentialList = permissionedCertificateService.getAllVersions(uuid, auditRecordParameters);
+
+    List<CertificateView> list = credentialList.stream().map(credential ->
+        new CertificateView((CertificateCredentialVersion) credential)
+    ).collect(Collectors.toList());
+
+    return list;
+  }
+
+
 }

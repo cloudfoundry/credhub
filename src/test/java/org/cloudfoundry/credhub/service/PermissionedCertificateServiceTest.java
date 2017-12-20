@@ -4,9 +4,12 @@ import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.data.CertificateDataService;
+import org.cloudfoundry.credhub.data.CertificateVersionDataService;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.entity.Credential;
+import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
+import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
 import org.cloudfoundry.credhub.request.PermissionOperation;
@@ -14,6 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import java.util.Collections;
 import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -31,7 +35,7 @@ public class PermissionedCertificateServiceTest {
   private CertificateDataService certificateDataService;
   private PermissionCheckingService permissionCheckingService;
   private UserContextHolder userContextHolder;
-
+  private CertificateVersionDataService certificateVersionDataService;
   @Before
   public void beforeEach() {
     permissionedCredentialService = mock(PermissionedCredentialService.class);
@@ -39,7 +43,8 @@ public class PermissionedCertificateServiceTest {
     permissionCheckingService = mock(PermissionCheckingService.class);
     certificateDataService = mock(CertificateDataService.class);
     userContextHolder = mock(UserContextHolder.class);
-    subject = new PermissionedCertificateService(permissionedCredentialService, certificateDataService, permissionCheckingService, userContextHolder);
+    certificateVersionDataService = mock(CertificateVersionDataService.class);
+    subject = new PermissionedCertificateService(permissionedCredentialService, certificateDataService, permissionCheckingService, userContextHolder, certificateVersionDataService);
   }
 
   @Test
@@ -163,4 +168,67 @@ public class PermissionedCertificateServiceTest {
     final List<Credential> certificates = subject.getByName("my-credential", newArrayList());
     assertThat(certificates, equalTo(newArrayList(myCredential)));
   }
+
+  @Test
+  public void getAllVersions_returnsListWithVersions() throws Exception {
+    CredentialVersion myCredential = mock(CredentialVersion.class);
+    when(myCredential.getName()).thenReturn("my-credential");
+    CredentialVersion secondVersion = mock(CredentialVersion.class);
+    when(secondVersion.getName()).thenReturn("my-credential");
+
+    List<CredentialVersion> versions = newArrayList(myCredential, secondVersion);
+
+    UserContext userContext = mock(UserContext.class);
+    when(userContextHolder.getUserContext()).thenReturn(userContext);
+
+    String user = "my-user";
+    when(userContext.getActor()).thenReturn(user);
+
+    when(permissionCheckingService.hasPermission(user, "my-credential", PermissionOperation.READ)).thenReturn(true);
+
+    when(certificateVersionDataService.findAllVersions("my-uuid"))
+        .thenReturn(versions);
+
+    final List<CredentialVersion> certificates = subject.getAllVersions("my-uuid", newArrayList());
+    assertThat(certificates, equalTo(versions));
+
+  }
+
+  @Test(expected = InvalidQueryParameterException.class)
+  public void getAllVersions_returnsAnError_whenUUIDisInvalid() throws Exception {
+    when(certificateVersionDataService.findAllVersions("my-uuid")).thenThrow(new IllegalArgumentException());
+    subject.getAllVersions("my-uuid", newArrayList());
+  }
+
+  @Test(expected = EntryNotFoundException.class)
+  public void getAllVersions_returnsAnError_whenCredentialListisEmpty() throws Exception {
+    when(certificateVersionDataService.findAllVersions("my-uuid")).thenReturn(Collections.emptyList());
+    subject.getAllVersions("my-uuid", newArrayList());
+  }
+
+  @Test (expected = EntryNotFoundException.class)
+  public void getAllVersions_returnsAnError_whenUserDoesntHavePermission() throws Exception {
+    CredentialVersion myCredential = mock(CredentialVersion.class);
+    when(myCredential.getName()).thenReturn("my-credential");
+    CredentialVersion secondVersion = mock(CredentialVersion.class);
+    when(secondVersion.getName()).thenReturn("my-credential");
+
+    List<CredentialVersion> versions = newArrayList(myCredential, secondVersion);
+
+    UserContext userContext = mock(UserContext.class);
+    when(userContextHolder.getUserContext()).thenReturn(userContext);
+
+    String user = "my-user";
+    when(userContext.getActor()).thenReturn(user);
+
+    when(permissionCheckingService.hasPermission(user, "my-credential", PermissionOperation.READ)).thenReturn(false);
+
+    when(certificateVersionDataService.findAllVersions("my-uuid"))
+        .thenReturn(versions);
+
+    subject.getAllVersions("my-uuid", newArrayList());
+
+  }
+
+
 }

@@ -5,19 +5,22 @@ import org.cloudfoundry.credhub.audit.EventAuditLogService;
 import org.cloudfoundry.credhub.handler.CertificatesHandler;
 import org.cloudfoundry.credhub.request.CertificateRegenerateRequest;
 import org.cloudfoundry.credhub.view.CertificateCredentialsView;
+import org.cloudfoundry.credhub.view.CertificateView;
 import org.cloudfoundry.credhub.view.CredentialView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.util.List;
 
 import static org.cloudfoundry.credhub.controller.v1.CertificatesController.API_V1_CERTIFICATES;
 
@@ -38,10 +41,7 @@ public class CertificatesController {
     this.eventAuditLogService = eventAuditLogService;
   }
 
-  @RequestMapping(
-      method = RequestMethod.POST,
-      value = "/{certificateId}/regenerate",
-      produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+  @PostMapping(value = "/{certificateId}/regenerate", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ResponseStatus(HttpStatus.OK)
   public CredentialView regenerate(@RequestBody(required = false) CertificateRegenerateRequest requestBody,
       @PathVariable String certificateId) throws IOException {
@@ -55,10 +55,7 @@ public class CertificatesController {
         ));
   }
 
-  @RequestMapping(
-      method = RequestMethod.GET,
-      value = "",
-      produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+  @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ResponseStatus(HttpStatus.OK)
   public CertificateCredentialsView getAllCertificates() throws IOException {
     return eventAuditLogService
@@ -67,17 +64,22 @@ public class CertificatesController {
         ));
   }
 
-  @RequestMapping(
-      method = RequestMethod.GET,
-      value = "",
-      params = "name",
-      produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+  @GetMapping(value = "", params = "name", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ResponseStatus(HttpStatus.OK)
   public CertificateCredentialsView getCertificateByName(@RequestParam("name") String name) throws IOException {
     String credentialNameWithPrependedSlash = StringUtils.prependIfMissing(name, "/");
     return eventAuditLogService
         .auditEvents((auditRecordParameters ->
           certificatesHandler.handleGetByNameRequest(credentialNameWithPrependedSlash, auditRecordParameters)
+        ));
+  }
+
+  @GetMapping(value = "/{certificateId}/versions", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+  @ResponseStatus(HttpStatus.OK)
+  public List<CertificateView> getAllVersions(@PathVariable String certificateId) throws IOException {
+    return eventAuditLogService
+        .auditEvents((auditRecordParameters ->
+            certificatesHandler.handleGetAllVersionsRequest(certificateId, auditRecordParameters)
         ));
   }
 }

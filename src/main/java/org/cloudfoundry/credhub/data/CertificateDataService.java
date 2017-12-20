@@ -23,4 +23,5 @@ public class CertificateDataService {
   public Credential findByName(String name) {
     return certificateRepository.findCertificateByName(name);
   }
+
 }

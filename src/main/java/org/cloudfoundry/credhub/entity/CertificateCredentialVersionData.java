@@ -8,14 +8,17 @@ import javax.persistence.Entity;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.SecondaryTable;
 
+import static org.cloudfoundry.credhub.entity.CertificateCredentialVersionData.CREDENTIAL_DATABASE_TYPE;
+
 @Entity
-@DiscriminatorValue("cert")
+@DiscriminatorValue(CREDENTIAL_DATABASE_TYPE)
 @SecondaryTable(
     name = CertificateCredentialVersionData.TABLE_NAME,
     pkJoinColumns = {@PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")}
 )
 public class CertificateCredentialVersionData extends CredentialVersionData<CertificateCredentialVersionData> {
 
+  public static final String CREDENTIAL_DATABASE_TYPE = "cert";
   public static final String CREDENTIAL_TYPE = "certificate";
   static final String TABLE_NAME = "certificate_credential";
 
