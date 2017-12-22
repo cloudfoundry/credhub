@@ -13,6 +13,8 @@ public interface CredentialRepository extends JpaRepository<Credential, UUID> {
   @Transactional
   long deleteByNameIgnoreCase(String name);
 
+  Credential findOneByUuid(UUID uuid);
+
   Credential findOneByNameIgnoreCase(String name);
 
   @Query(value = "select credential.uuid, credential.name from certificate_credential "

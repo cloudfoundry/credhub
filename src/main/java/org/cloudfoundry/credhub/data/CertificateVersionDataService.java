@@ -65,11 +65,12 @@ public class CertificateVersionDataService {
       return result;
     }
   }
-  public List<CredentialVersion> findAllVersions(String uuid) {
+
+  public List<CredentialVersion> findAllVersions(UUID uuid) {
     List<CredentialVersionData> credentialVersionDataList =
         credentialVersionRepository.
             findAllByCredentialUuidAndTypeOrderByVersionCreatedAtDesc(
-                UUID.fromString(uuid), CertificateCredentialVersionData.CREDENTIAL_DATABASE_TYPE);
+                uuid, CertificateCredentialVersionData.CREDENTIAL_DATABASE_TYPE);
     return credentialFactory.makeCredentialsFromEntities(credentialVersionDataList);
   }
 }

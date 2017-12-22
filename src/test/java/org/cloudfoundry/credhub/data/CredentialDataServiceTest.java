@@ -37,7 +37,7 @@ public class CredentialDataServiceTest {
   private CredentialRepository credentialRepository;
 
   @Test
-  public void save_savesTheCredentialName() {
+  public void save_savesTheCredential() {
     final Credential credential = new Credential(CREDENTIAL_NAME);
 
     assertThat(credentialRepository.count(), equalTo(0L));
@@ -53,14 +53,14 @@ public class CredentialDataServiceTest {
   }
 
   @Test
-  public void save_setsTheUuidOnTheCredentialName() {
+  public void save_setsTheUuidOnTheCredential() {
     final Credential credential = credentialRepository.save(new Credential(CREDENTIAL_NAME));
 
     assertThat(credential.getUuid(), instanceOf(UUID.class));
   }
 
   @Test
-  public void find_whenTheCredentialExists_returnsTheCredentialName() {
+  public void find_whenTheCredentialExists_returnsTheCredential() {
     final Credential credential = new Credential(CREDENTIAL_NAME);
     credentialRepository.save(credential);
 
@@ -78,6 +78,13 @@ public class CredentialDataServiceTest {
   @Test
   public void find_whenTheCredentialDoesNotExist_returnsNull() {
     assertThat(subject.find(CREDENTIAL_NAME), equalTo(null));
+  }
+
+  @Test
+  public void findByUUID_whenTheCredentialExists_returnsTheCredential() {
+    final Credential credential = new Credential(CREDENTIAL_NAME);
+    credentialRepository.save(credential);
+    assertThat(subject.findByUUID(credential.getUuid()), equalTo(credential));
   }
 
   @Test

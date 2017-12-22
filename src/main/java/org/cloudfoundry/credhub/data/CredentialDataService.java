@@ -6,9 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class CredentialDataService {
+
   private final CredentialRepository credentialRepository;
 
   @Autowired
@@ -18,6 +20,10 @@ public class CredentialDataService {
 
   public Credential find(String name) {
     return credentialRepository.findOneByNameIgnoreCase(name);
+  }
+
+  public Credential findByUUID(UUID uuid) {
+    return credentialRepository.findOneByUuid(uuid);
   }
 
   public Credential save(Credential credential) {

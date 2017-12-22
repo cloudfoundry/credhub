@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static java.lang.String.join;
+import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -451,5 +452,19 @@ public class RequestHelper {
             + "       \"operations\": [\"" + join("\", \"", permissions) + "\"]\n"
             + "     }]"
             + "}");
+  }
+
+  public static String regenerateCertificate(MockMvc mockMvc, String uuid,
+      boolean transitional) throws Exception{
+    MockHttpServletRequestBuilder regenerateRequest = post("/api/v1/certificates/" + uuid + "/regenerate")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        //language=JSON
+        .content("{\"set_as_transitional\" : " + transitional +"}");
+
+    return mockMvc.perform(regenerateRequest)
+        .andExpect(status().is2xxSuccessful())
+        .andReturn().getResponse().getContentAsString();
   }
 }

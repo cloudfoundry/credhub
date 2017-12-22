@@ -171,7 +171,7 @@ public class CredentialsHandlerTest {
 
   @Test
   public void getCredentialVersion_whenTheVersionExists_returnsDataResponse() {
-    when(permissionedCredentialService.findByUuid(eq(UUID_STRING), any(List.class)))
+    when(permissionedCredentialService.findVersionByUuid(eq(UUID_STRING), any(List.class)))
         .thenReturn(version1);
 
     CredentialView credentialVersion = subject.getCredentialVersionByUUID(UUID_STRING, newArrayList());

@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -87,13 +88,20 @@ public class PermissionedCertificateService {
     return Collections.singletonList(certificate);
   }
 
-  public List<CredentialVersion> getAllVersions(String uuid, List<EventAuditRecordParameters> auditRecordParameters) {
+  public List<CredentialVersion> getVersions(UUID uuid, boolean current,
+      List<EventAuditRecordParameters> auditRecordParameters) {
     List<CredentialVersion> list;
     String name;
 
     try {
-      list = certificateVersionDataService.findAllVersions(uuid);
-      name = !list.isEmpty() ? list.get(0).getName() : null;
+      if (current) {
+        Credential credential = permissionedCredentialService.findByUuid(uuid, auditRecordParameters);
+        name = credential.getName();
+        list = certificateVersionDataService.findActiveWithTransitional(name);
+      } else {
+        list = certificateVersionDataService.findAllVersions(uuid);
+        name = !list.isEmpty() ? list.get(0).getName() : null;
+      }
     } catch (IllegalArgumentException e) {
       auditRecordParameters.add(new EventAuditRecordParameters(AuditingOperationCode.CREDENTIAL_ACCESS, null));
       throw new InvalidQueryParameterException("error.bad_request", "uuid");

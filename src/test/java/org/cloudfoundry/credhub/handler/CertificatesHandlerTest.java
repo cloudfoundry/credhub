@@ -5,12 +5,14 @@ import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
+import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.domain.Encryptor;
 import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
 import org.cloudfoundry.credhub.request.CertificateRegenerateRequest;
 import org.cloudfoundry.credhub.service.CertificateService;
 import org.cloudfoundry.credhub.service.PermissionCheckingService;
 import org.cloudfoundry.credhub.service.PermissionedCertificateService;
+import org.cloudfoundry.credhub.view.CertificateView;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,7 +21,10 @@ import org.junit.runners.JUnit4;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -83,8 +88,16 @@ public class CertificatesHandlerTest {
 
   @Test
   public void handleGetAllVersionsRequest_returnsListOfCertificateViews() {
+    UUID uuid = UUID.randomUUID();
+    String certificateName = "some certificate";
 
+    CredentialVersion credentialVersion = new CertificateCredentialVersion(certificateName);
+    when(permissionedCertificateService.getVersions(uuid, false, Collections.emptyList()))
+        .thenReturn(Collections.singletonList(credentialVersion));
+    List<CertificateView> certificateViews = subject
+        .handleGetAllVersionsRequest(uuid.toString(), Collections.emptyList(), false);
 
-
+    assertThat(certificateViews.size(), equalTo(1));
+    assertThat(certificateViews.get(0).getName(), equalTo(certificateName));
   }
 }

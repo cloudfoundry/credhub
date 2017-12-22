@@ -3,6 +3,7 @@ package org.cloudfoundry.credhub.integration;
 import com.jayway.jsonpath.JsonPath;
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.constants.CredentialWriteMode;
+import org.cloudfoundry.credhub.helper.RequestHelper;
 import org.cloudfoundry.credhub.util.AuthConstants;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.json.JSONObject;
@@ -31,7 +32,6 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
@@ -64,8 +64,8 @@ public class CredentialGetTest {
     String uuid = JsonPath.parse(response)
         .read("$.certificates[0].id");
 
-    regenerateCertificate(uuid, true);
-    regenerateCertificate(uuid, false);
+    RequestHelper.regenerateCertificate(mockMvc, uuid, true);
+    RequestHelper.regenerateCertificate(mockMvc, uuid, false);
 
     final MockHttpServletRequestBuilder request = get("/api/v1/data?name=" + credentialName + "&current=false")
         .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -91,10 +91,10 @@ public class CredentialGetTest {
     String uuid = JsonPath.parse(response)
         .read("$.certificates[0].id");
 
-    String transitionalCertificate = JsonPath.parse(regenerateCertificate(uuid, true))
+    String transitionalCertificate = JsonPath.parse(RequestHelper.regenerateCertificate(mockMvc, uuid, true))
         .read("$.value.certificate");
 
-    String nonTransitionalCertificate = JsonPath.parse(regenerateCertificate(uuid, false))
+    String nonTransitionalCertificate = JsonPath.parse(RequestHelper.regenerateCertificate(mockMvc, uuid, false))
         .read("$.value.certificate");
 
     final MockHttpServletRequestBuilder request = get("/api/v1/data?name=" + credentialName + "&current=true")
@@ -111,21 +111,6 @@ public class CredentialGetTest {
     List<String> certificates = JsonPath.parse(response)
         .read("$.data[*].value.certificate");
     assertThat(certificates, containsInAnyOrder(transitionalCertificate, nonTransitionalCertificate));
-  }
-
-
-  private String regenerateCertificate(String uuid, boolean transitional) throws Exception{
-    MockHttpServletRequestBuilder regenrateRequest = post("/api/v1/certificates/" + uuid + "/regenerate")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        //language=JSON
-        .content("{\"set_as_transitional\" : " + transitional +"}");
-
-    return mockMvc.perform(regenrateRequest)
-        .andExpect(status().is2xxSuccessful())
-        .andReturn().getResponse().getContentAsString();
-
   }
 
 }

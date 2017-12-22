@@ -69,6 +69,6 @@ public class CredentialsHandler {
       String credentialUUID,
       List<EventAuditRecordParameters> auditRecordParametersList
   ) {
-    return CredentialView.fromEntity(credentialService.findByUuid(credentialUUID, auditRecordParametersList));
+    return CredentialView.fromEntity(credentialService.findVersionByUuid(credentialUUID, auditRecordParametersList));
   }
 }

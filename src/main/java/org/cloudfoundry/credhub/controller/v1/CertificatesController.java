@@ -76,10 +76,11 @@ public class CertificatesController {
 
   @GetMapping(value = "/{certificateId}/versions", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ResponseStatus(HttpStatus.OK)
-  public List<CertificateView> getAllVersions(@PathVariable String certificateId) throws IOException {
+  public List<CertificateView> getAllVersions(@PathVariable String certificateId,
+      @RequestParam(value = "current", required = false, defaultValue = "false") boolean current) throws IOException {
     return eventAuditLogService
         .auditEvents((auditRecordParameters ->
-            certificatesHandler.handleGetAllVersionsRequest(certificateId, auditRecordParameters)
+            certificatesHandler.handleGetAllVersionsRequest(certificateId, auditRecordParameters, current)
         ));
   }
 }

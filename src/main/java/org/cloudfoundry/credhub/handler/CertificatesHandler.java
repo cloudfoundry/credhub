@@ -1,10 +1,12 @@
 package org.cloudfoundry.credhub.handler;
 
+import org.cloudfoundry.credhub.audit.AuditingOperationCode;
 import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.entity.Credential;
+import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
 import org.cloudfoundry.credhub.request.CertificateRegenerateRequest;
 import org.cloudfoundry.credhub.service.CertificateService;
@@ -16,6 +18,7 @@ import org.cloudfoundry.credhub.view.CredentialView;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -80,8 +83,16 @@ public class CertificatesHandler {
     return new CertificateCredentialsView(list);
   }
 
-  public List<CertificateView> handleGetAllVersionsRequest(String uuid, List<EventAuditRecordParameters> auditRecordParameters) {
-    final List<CredentialVersion> credentialList = permissionedCertificateService.getAllVersions(uuid, auditRecordParameters);
+  public List<CertificateView> handleGetAllVersionsRequest(String uuidString,
+      List<EventAuditRecordParameters> auditRecordParameters, boolean current) {
+    UUID uuid;
+    try {
+      uuid = UUID.fromString(uuidString);
+    } catch (IllegalArgumentException e) {
+      auditRecordParameters.add(new EventAuditRecordParameters(AuditingOperationCode.CREDENTIAL_ACCESS, null));
+      throw new EntryNotFoundException("error.credential.invalid_access");
+    }
+    final List<CredentialVersion> credentialList = permissionedCertificateService.getVersions(uuid, current, auditRecordParameters);
 
     List<CertificateView> list = credentialList.stream().map(credential ->
         new CertificateView((CertificateCredentialVersion) credential)
