@@ -15,6 +15,13 @@ public interface CredentialRepository extends JpaRepository<Credential, UUID> {
 
   Credential findOneByUuid(UUID uuid);
 
+  @Query(value = "select credential.uuid, credential.name from certificate_credential "
+      + "left join credential_version on certificate_credential.uuid = credential_version.uuid "
+      + "join credential on credential.uuid = credential_version.credential_uuid "
+      + "where credential.uuid = ?1"
+      , nativeQuery = true)
+  Credential findCertificateByUuid(UUID uuid);
+
   Credential findOneByNameIgnoreCase(String name);
 
   @Query(value = "select credential.uuid, credential.name from certificate_credential "

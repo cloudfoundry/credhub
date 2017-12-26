@@ -102,4 +102,8 @@ public class CertificatesHandler {
   }
 
 
+  public CertificateView handleDeleteVersionRequest(String certificateId, String versionId, List<EventAuditRecordParameters> auditRecordParameters) {
+    CertificateCredentialVersion deletedVersion = permissionedCertificateService.deleteVersion(UUID.fromString(certificateId), UUID.fromString(versionId), auditRecordParameters);
+    return new CertificateView(deletedVersion);
+  }
 }

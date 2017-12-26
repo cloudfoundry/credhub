@@ -89,7 +89,7 @@ public class PermissionedCertificateService {
   }
 
   public List<CredentialVersion> getVersions(UUID uuid, boolean current,
-      List<EventAuditRecordParameters> auditRecordParameters) {
+                                             List<EventAuditRecordParameters> auditRecordParameters) {
     List<CredentialVersion> list;
     String name;
 
@@ -115,5 +115,35 @@ public class PermissionedCertificateService {
     }
 
     return list;
+  }
+
+  public CertificateCredentialVersion deleteVersion(UUID certificateUuid, UUID versionUuid,
+                                                    List<EventAuditRecordParameters> auditRecordParameters) {
+    EventAuditRecordParameters eventAuditRecordParameters = new EventAuditRecordParameters(AuditingOperationCode.CREDENTIAL_DELETE, null);
+    auditRecordParameters.add(eventAuditRecordParameters);
+    Credential certificate = certificateDataService.findByUuid(certificateUuid);
+    if (certificate == null || !permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), certificate.getName(), PermissionOperation.DELETE)) {
+      throw new EntryNotFoundException("error.credential.invalid_access");
+    }
+    eventAuditRecordParameters.setCredentialName(certificate.getName());
+    CertificateCredentialVersion versionToDelete = certificateVersionDataService.findVersion(versionUuid);
+    if (versionBelongsToCertificate(certificate, versionToDelete)) {
+      throw new EntryNotFoundException("error.credential.invalid_access");
+    }
+
+    if (certificateHasOnlyOneVersion(certificateUuid)) {
+      throw new ParameterizedValidationException("error.credential.cannot_delete_last_version");
+    }
+
+    certificateVersionDataService.deleteVersion(versionUuid);
+    return versionToDelete;
+  }
+
+  private boolean versionBelongsToCertificate(Credential certificate, CertificateCredentialVersion versionToDelete) {
+    return versionToDelete == null || !certificate.getUuid().equals(versionToDelete.getCredential().getUuid());
+  }
+
+  private boolean certificateHasOnlyOneVersion(UUID certificateUuid) {
+    return certificateVersionDataService.findAllVersions(certificateUuid).size() == 1;
   }
 }

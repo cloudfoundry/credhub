@@ -7,6 +7,7 @@ import org.cloudfoundry.credhub.data.CertificateDataService;
 import org.cloudfoundry.credhub.data.CertificateVersionDataService;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
+import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException;
@@ -258,8 +259,126 @@ public class PermissionedCertificateServiceTest {
         .thenReturn(versions);
 
     subject.getVersions(uuid, false, newArrayList());
-
   }
 
+  @Test
+  public void deleteVersion_deletesTheProvidedVersion() {
+    UUID versionUuid = UUID.randomUUID();
+    UUID certificateUuid = UUID.randomUUID();
 
+    CertificateCredentialVersion versionToDelete = mock(CertificateCredentialVersion.class);
+    when(certificateVersionDataService.findVersion(versionUuid)).thenReturn(versionToDelete);
+
+    UserContext userContext = mock(UserContext.class);
+    when(userContextHolder.getUserContext()).thenReturn(userContext);
+    String user = "my-user";
+    String credentialName = "my-credential";
+    when(userContext.getActor()).thenReturn(user);
+    when(permissionCheckingService.hasPermission(user, credentialName, PermissionOperation.DELETE)).thenReturn(true);
+
+    Credential certificate = mock(Credential.class);
+    when(certificate.getName()).thenReturn(credentialName);
+    when(certificateDataService.findByUuid(certificateUuid)).thenReturn(certificate);
+
+    when(certificate.getUuid()).thenReturn(UUID.randomUUID());
+    when(certificateVersionDataService.findVersion(versionUuid)).thenReturn(versionToDelete);
+    when(versionToDelete.getCredential()).thenReturn(certificate);
+
+    CertificateCredentialVersion certificateCredentialVersion = subject.deleteVersion(certificateUuid, versionUuid, newArrayList());
+
+    assertThat(certificateCredentialVersion, equalTo(versionToDelete));
+  }
+
+  @Test (expected = EntryNotFoundException.class)
+  public void deleteVersion_whenTheUserDoesNotHavePermission_returnsAnError() throws Exception {
+    UUID versionUuid = UUID.randomUUID();
+    UUID certificateUuid = UUID.randomUUID();
+
+    UserContext userContext = mock(UserContext.class);
+    when(userContextHolder.getUserContext()).thenReturn(userContext);
+    String user = "my-user";
+    when(userContext.getActor()).thenReturn(user);
+    String credentialName = "my-credential";
+    when(permissionCheckingService.hasPermission(user, credentialName, PermissionOperation.DELETE)).thenReturn(false);
+
+    Credential certificate = mock(Credential.class);
+    when(certificate.getName()).thenReturn(credentialName);
+    when(certificateDataService.findByUuid(certificateUuid)).thenReturn(certificate);
+
+    CertificateCredentialVersion versionToDelete = mock(CertificateCredentialVersion.class);
+    when(certificate.getUuid()).thenReturn(UUID.randomUUID());
+    when(certificateVersionDataService.findVersion(versionUuid)).thenReturn(versionToDelete);
+    when(versionToDelete.getCredential()).thenReturn(certificate);
+
+    subject.deleteVersion(certificateUuid, versionUuid, newArrayList());
+  }
+
+  @Test (expected = EntryNotFoundException.class)
+  public void deleteVersion_whenTheProvidedVersionDoesNotExistForTheSpecifiedCredential_returnsAnError() throws Exception {
+    UUID versionUuid = UUID.randomUUID();
+    UUID certificateUuid = UUID.randomUUID();
+
+    UserContext userContext = mock(UserContext.class);
+    when(userContextHolder.getUserContext()).thenReturn(userContext);
+    String user = "my-user";
+    String credentialName = "my-credential";
+    when(userContext.getActor()).thenReturn(user);
+    when(permissionCheckingService.hasPermission(user, credentialName, PermissionOperation.DELETE)).thenReturn(true);
+
+    Credential certificate = mock(Credential.class);
+    when(certificate.getName()).thenReturn(credentialName);
+    when(certificate.getUuid()).thenReturn(certificateUuid);
+    when(certificateDataService.findByUuid(certificateUuid)).thenReturn(certificate);
+
+    CertificateCredentialVersion versionToDelete = mock(CertificateCredentialVersion.class);
+    Credential someOtherCredential = mock(Credential.class);
+    when(certificate.getUuid()).thenReturn(UUID.randomUUID());
+    when(certificateVersionDataService.findVersion(versionUuid)).thenReturn(versionToDelete);
+    when(versionToDelete.getCredential()).thenReturn(someOtherCredential);
+
+    subject.deleteVersion(certificateUuid, versionUuid, newArrayList());
+  }
+
+  @Test (expected = EntryNotFoundException.class)
+  public void deleteVersion_whenTheProvidedVersionDoesNotExist_returnsAnError() throws Exception {
+    UUID versionUuid = UUID.randomUUID();
+    UUID certificateUuid = UUID.randomUUID();
+
+    UserContext userContext = mock(UserContext.class);
+    when(userContextHolder.getUserContext()).thenReturn(userContext);
+    String user = "my-user";
+    String credentialName = "my-credential";
+    when(userContext.getActor()).thenReturn(user);
+    when(permissionCheckingService.hasPermission(user, credentialName, PermissionOperation.DELETE)).thenReturn(true);
+
+    Credential certificate = mock(Credential.class);
+    when(certificate.getName()).thenReturn(credentialName);
+    when(certificate.getUuid()).thenReturn(certificateUuid);
+    when(certificateDataService.findByUuid(certificateUuid)).thenReturn(certificate);
+
+    when(certificate.getUuid()).thenReturn(UUID.randomUUID());
+    when(certificateVersionDataService.findVersion(versionUuid)).thenReturn(null);
+
+    subject.deleteVersion(certificateUuid, versionUuid, newArrayList());
+  }
+
+  @Test (expected = EntryNotFoundException.class)
+  public void deleteVersion_whenTheProvidedCredentialDoesNotExist_returnsAnError() throws Exception {
+    UUID versionUuid = UUID.randomUUID();
+    UUID certificateUuid = UUID.randomUUID();
+
+    UserContext userContext = mock(UserContext.class);
+    when(userContextHolder.getUserContext()).thenReturn(userContext);
+    String user = "my-user";
+    String credentialName = "my-credential";
+    when(userContext.getActor()).thenReturn(user);
+    when(permissionCheckingService.hasPermission(user, credentialName, PermissionOperation.DELETE)).thenReturn(true);
+
+    when(certificateDataService.findByUuid(certificateUuid)).thenReturn(null);
+
+    CertificateCredentialVersion versionToDelete = mock(CertificateCredentialVersion.class);
+    when(certificateVersionDataService.findVersion(versionUuid)).thenReturn(versionToDelete);
+
+    subject.deleteVersion(certificateUuid, versionUuid, newArrayList());
+  }
 }

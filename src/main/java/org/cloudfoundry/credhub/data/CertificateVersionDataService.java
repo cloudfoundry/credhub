@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.data;
 
+import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.CredentialFactory;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData;
@@ -72,5 +73,14 @@ public class CertificateVersionDataService {
             findAllByCredentialUuidAndTypeOrderByVersionCreatedAtDesc(
                 uuid, CertificateCredentialVersionData.CREDENTIAL_DATABASE_TYPE);
     return credentialFactory.makeCredentialsFromEntities(credentialVersionDataList);
+  }
+
+  public void deleteVersion(UUID versionUuid) {
+    credentialVersionRepository.delete(versionUuid);
+  }
+
+  public CertificateCredentialVersion findVersion(UUID versionUuid) {
+    CredentialVersionData credentialVersion = credentialVersionRepository.findOneByUuid(versionUuid);
+    return (CertificateCredentialVersion) credentialFactory.makeCredentialFromEntity(credentialVersion);
   }
 }
