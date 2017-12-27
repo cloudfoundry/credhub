@@ -89,7 +89,7 @@ public class AuthConfiguration extends ResourceServerConfigurerAdapter {
         .authorizeRequests()
         .antMatchers("/info").permitAll()
         .antMatchers("/health").permitAll()
-        .antMatchers("/api/v1/**", "/version")
+        .antMatchers("**")
           .access(String.format("hasRole('%s') "
                   + "or (#oauth2.hasScope('credhub.read') and #oauth2.hasScope('credhub.write'))",
               X509AuthenticationProvider.MTLS_USER));

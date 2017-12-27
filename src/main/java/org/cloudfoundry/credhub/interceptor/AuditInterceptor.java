@@ -12,6 +12,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
+import java.security.Principal;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -42,7 +43,11 @@ public class AuditInterceptor extends HandlerInterceptorAdapter {
       Object handler,
       Exception exception
   ) throws Exception {
-    UserContext userContext = userContextFactory.createUserContext((Authentication) request.getUserPrincipal());
+    Principal userAuth = request.getUserPrincipal();
+    if (userAuth == null) {
+      return;
+    }
+    UserContext userContext = userContextFactory.createUserContext((Authentication) userAuth);
 
     RequestAuditRecord requestAuditRecord = auditLogFactory.createRequestAuditRecord(request, userContext, response.getStatus());
 

@@ -24,6 +24,7 @@ import static org.hamcrest.beans.SamePropertyValuesAs.samePropertyValuesAs;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -38,6 +39,8 @@ public class AuditInterceptorTest {
   private UserContextFactory userContextFactory;
   private UserContext userContext;
   private RequestUuid requestUuid;
+  private HttpServletResponse response;
+  private HttpServletRequest request;
 
   @Before
   public void setup() {
@@ -48,29 +51,27 @@ public class AuditInterceptorTest {
     userContext = mock(UserContext.class);
     requestUuid = new RequestUuid();
 
-    when(userContextFactory.createUserContext(any())).thenReturn(userContext);
-    when(userContext.getActor()).thenReturn("");
-
     subject = new AuditInterceptor(
         requestAuditRecordDataService,
         securityEventsLogService,
         auditLogFactory,
         userContextFactory
     );
+    request = mock(HttpServletRequest.class);
+    response = mock(HttpServletResponse.class);
+    final Authentication authentication = mock(Authentication.class);
+    when(request.getUserPrincipal()).thenReturn(authentication);
+
+    userContext = mock(UserContext.class);
+    when(userContextFactory.createUserContext(any())).thenReturn(userContext);
+    when(userContext.getActor()).thenReturn("user");
   }
 
   @Test
   public void afterCompletion_logs_request_audit_record() throws Exception {
-    final HttpServletRequest request = mock(HttpServletRequest.class);
-    final HttpServletResponse response = mock(HttpServletResponse.class);
-    final Authentication authentication = mock(Authentication.class);
-    final UserContext userContext = mock(UserContext.class);
-    when(userContext.getActor()).thenReturn("user");
     final RequestAuditRecord requestAuditRecord = spy(RequestAuditRecord.class);
     when(requestAuditRecord.getNow()).thenReturn(Instant.now());
 
-    when(request.getUserPrincipal()).thenReturn(authentication);
-    when(userContextFactory.createUserContext(authentication)).thenReturn(userContext);
     when(response.getStatus()).thenReturn(401);
 
     when(auditLogFactory.createRequestAuditRecord(request, userContext, 401))
@@ -90,6 +91,8 @@ public class AuditInterceptorTest {
   @Test(expected = RuntimeException.class)
   public void afterCompletion_when_request_audit_record_save_fails_still_logs_CEF_record() throws Exception {
     final RequestAuditRecord requestAuditRecord = mock(RequestAuditRecord.class);
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    when(request.getUserPrincipal()).thenReturn(mock(Authentication.class));
 
     doThrow(new RuntimeException("test"))
         .when(requestAuditRecordDataService).save(any(RequestAuditRecord.class));
@@ -97,7 +100,7 @@ public class AuditInterceptorTest {
         .thenReturn(requestAuditRecord);
 
     try {
-      subject.afterCompletion(mock(HttpServletRequest.class), mock(HttpServletResponse.class), null, null);
+      subject.afterCompletion(request, mock(HttpServletResponse.class), null, null);
     } finally {
       ArgumentCaptor<SecurityEventAuditRecord> captor = ArgumentCaptor
           .forClass(SecurityEventAuditRecord.class);
@@ -107,5 +110,14 @@ public class AuditInterceptorTest {
       assertThat(captor.getValue(),
           samePropertyValuesAs(new SecurityEventAuditRecord(requestAuditRecord, "")));
     }
+  }
+
+  @Test
+  public void afterCompletion_returnsIfNoUserIsPresent() throws Exception {
+    when(request.getUserPrincipal()).thenReturn(null);
+
+    subject.afterCompletion(request, response, null, null);
+
+    verify(userContextFactory, never()).createUserContext(null);
   }
 }

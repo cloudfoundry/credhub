@@ -7,9 +7,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.springframework.security.core.Authentication;
 
 import javax.servlet.http.HttpServletRequest;
 
+import static junit.framework.TestCase.assertFalse;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Matchers.any;
@@ -22,6 +24,7 @@ public class UserContextInterceptorTest {
   private UserContext userContext;
   private UserContextFactory userContextFactory;
   private UserContextHolder userContextHolder;
+  private HttpServletRequest request;
 
   @Before
   public void setup() {
@@ -32,13 +35,21 @@ public class UserContextInterceptorTest {
     subject = new UserContextInterceptor(userContextFactory, userContextHolder);
 
     when(userContextFactory.createUserContext(any())).thenReturn(userContext);
+    request = mock(HttpServletRequest.class);
   }
 
   @Test
   public void preHandle_setsUserContextFromPrincipal() throws Exception {
-    final HttpServletRequest request = mock(HttpServletRequest.class);
+    when(request.getUserPrincipal()).thenReturn(mock(Authentication.class));
     subject.preHandle(request, null, null);
 
     assertThat(userContextHolder.getUserContext(), equalTo(userContext));
+  }
+
+  @Test
+  public void preHandle_ReturnsFalseWhenNoPrincipal() throws Exception {
+    when(request.getUserPrincipal()).thenReturn(null);
+    boolean result = subject.preHandle(request, null, null);
+    assertFalse(result);
   }
 }
