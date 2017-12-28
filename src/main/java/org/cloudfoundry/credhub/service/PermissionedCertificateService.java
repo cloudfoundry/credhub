@@ -34,7 +34,8 @@ public class PermissionedCertificateService {
   @Autowired
   public PermissionedCertificateService(
       PermissionedCredentialService permissionedCredentialService, CertificateDataService certificateDataService,
-      PermissionCheckingService permissionCheckingService, UserContextHolder userContextHolder, CertificateVersionDataService certificateVersionDataService) {
+      PermissionCheckingService permissionCheckingService, UserContextHolder userContextHolder,
+      CertificateVersionDataService certificateVersionDataService) {
     this.permissionedCredentialService = permissionedCredentialService;
     this.certificateDataService = certificateDataService;
     this.permissionCheckingService = permissionCheckingService;
@@ -61,7 +62,8 @@ public class PermissionedCertificateService {
         throw new ParameterizedValidationException("error.too_many_transitional_versions");
       }
     }
-    return permissionedCredentialService.save(existingCredentialVersion, credentialValue, generateRequest, auditRecordParameters);
+    return permissionedCredentialService
+        .save(existingCredentialVersion, credentialValue, generateRequest, auditRecordParameters);
   }
 
   public List<Credential> getAll(List<EventAuditRecordParameters> auditRecordParameters) {
@@ -70,8 +72,8 @@ public class PermissionedCertificateService {
     final List<Credential> allCertificates = certificateDataService.findAll();
 
     return allCertificates.stream().filter(credential ->
-        permissionCheckingService
-            .hasPermission(userContextHolder.getUserContext().getActor(), credential.getName(), PermissionOperation.READ)
+        permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), credential.getName(),
+            PermissionOperation.READ)
     ).collect(Collectors.toList());
   }
 
@@ -81,7 +83,8 @@ public class PermissionedCertificateService {
     final Credential certificate = certificateDataService.findByName(name);
 
     if (certificate == null || !permissionCheckingService
-        .hasPermission(userContextHolder.getUserContext().getActor(), certificate.getName(), PermissionOperation.READ)) {
+        .hasPermission(userContextHolder.getUserContext().getActor(), certificate.getName(),
+            PermissionOperation.READ)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
@@ -89,13 +92,13 @@ public class PermissionedCertificateService {
   }
 
   public List<CredentialVersion> getVersions(UUID uuid, boolean current,
-                                             List<EventAuditRecordParameters> auditRecordParameters) {
+      List<EventAuditRecordParameters> auditRecordParameters) {
     List<CredentialVersion> list;
     String name;
 
     try {
       if (current) {
-        Credential credential = permissionedCredentialService.findByUuid(uuid, auditRecordParameters);
+        Credential credential = findCertificateCredential(uuid);
         name = credential.getName();
         list = certificateVersionDataService.findActiveWithTransitional(name);
       } else {
@@ -117,17 +120,45 @@ public class PermissionedCertificateService {
     return list;
   }
 
+  public List<CredentialVersion> updateTransitionalVersion(UUID certificateUuid, UUID newTransitionalVersionUuid,
+      List<EventAuditRecordParameters> auditRecordParameters) {
+    EventAuditRecordParameters eventAuditRecordParameters = new EventAuditRecordParameters(
+        AuditingOperationCode.CREDENTIAL_UPDATE, null);
+    auditRecordParameters.add(eventAuditRecordParameters);
+    Credential credential = findCertificateCredential(certificateUuid);
+
+    String name = credential.getName();
+    eventAuditRecordParameters.setCredentialName(name);
+
+    if (!permissionCheckingService
+        .hasPermission(userContextHolder.getUserContext().getActor(), name, PermissionOperation.WRITE)) {
+      throw new EntryNotFoundException("error.credential.invalid_access");
+    }
+
+    CertificateCredentialVersion version = certificateVersionDataService.findVersion(newTransitionalVersionUuid);
+
+    if (versionDoesNotBelongToCertificate(credential, version)) {
+      throw new ParameterizedValidationException("error.credential.mismatched_credential_and_version");
+    }
+
+    certificateVersionDataService.updateTransitionalVersion(certificateUuid, newTransitionalVersionUuid);
+    return certificateVersionDataService.findActiveWithTransitional(name);
+  }
+
   public CertificateCredentialVersion deleteVersion(UUID certificateUuid, UUID versionUuid,
-                                                    List<EventAuditRecordParameters> auditRecordParameters) {
-    EventAuditRecordParameters eventAuditRecordParameters = new EventAuditRecordParameters(AuditingOperationCode.CREDENTIAL_DELETE, null);
+      List<EventAuditRecordParameters> auditRecordParameters) {
+    EventAuditRecordParameters eventAuditRecordParameters = new EventAuditRecordParameters(
+        AuditingOperationCode.CREDENTIAL_DELETE, null);
     auditRecordParameters.add(eventAuditRecordParameters);
     Credential certificate = certificateDataService.findByUuid(certificateUuid);
-    if (certificate == null || !permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), certificate.getName(), PermissionOperation.DELETE)) {
+    if (certificate == null || !permissionCheckingService
+        .hasPermission(userContextHolder.getUserContext().getActor(), certificate.getName(),
+            PermissionOperation.DELETE)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
     eventAuditRecordParameters.setCredentialName(certificate.getName());
     CertificateCredentialVersion versionToDelete = certificateVersionDataService.findVersion(versionUuid);
-    if (versionBelongsToCertificate(certificate, versionToDelete)) {
+    if (versionDoesNotBelongToCertificate(certificate, versionToDelete)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
@@ -139,11 +170,20 @@ public class PermissionedCertificateService {
     return versionToDelete;
   }
 
-  private boolean versionBelongsToCertificate(Credential certificate, CertificateCredentialVersion versionToDelete) {
-    return versionToDelete == null || !certificate.getUuid().equals(versionToDelete.getCredential().getUuid());
+  private boolean versionDoesNotBelongToCertificate(Credential certificate, CertificateCredentialVersion version) {
+    return version == null || !certificate.getUuid().equals(version.getCredential().getUuid());
   }
 
   private boolean certificateHasOnlyOneVersion(UUID certificateUuid) {
     return certificateVersionDataService.findAllVersions(certificateUuid).size() == 1;
+  }
+
+  private Credential findCertificateCredential(UUID certificateUuid) {
+    Credential credential = certificateDataService.findByUuid(certificateUuid);
+
+    if (credential == null) {
+      throw new EntryNotFoundException("error.credential.invalid_access");
+    }
+    return credential;
   }
 }

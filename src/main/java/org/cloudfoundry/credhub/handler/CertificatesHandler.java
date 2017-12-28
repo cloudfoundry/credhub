@@ -9,6 +9,7 @@ import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
 import org.cloudfoundry.credhub.request.CertificateRegenerateRequest;
+import org.cloudfoundry.credhub.request.UpdateTransitionalVersionRequest;
 import org.cloudfoundry.credhub.service.CertificateService;
 import org.cloudfoundry.credhub.service.PermissionedCertificateService;
 import org.cloudfoundry.credhub.view.CertificateCredentialView;
@@ -105,5 +106,17 @@ public class CertificatesHandler {
   public CertificateView handleDeleteVersionRequest(String certificateId, String versionId, List<EventAuditRecordParameters> auditRecordParameters) {
     CertificateCredentialVersion deletedVersion = permissionedCertificateService.deleteVersion(UUID.fromString(certificateId), UUID.fromString(versionId), auditRecordParameters);
     return new CertificateView(deletedVersion);
+  }
+
+  public List<CertificateView> handleUpdateTransitionalVersion(String certificateId, UpdateTransitionalVersionRequest requestBody,
+      List<EventAuditRecordParameters> auditRecordParameters) {
+
+    final List<CredentialVersion> credentialList = permissionedCertificateService.updateTransitionalVersion(UUID.fromString(certificateId), UUID.fromString(requestBody.getVersionUuid()), auditRecordParameters);
+
+    List<CertificateView> list = credentialList.stream().map(credential ->
+        new CertificateView((CertificateCredentialVersion) credential)
+    ).collect(Collectors.toList());
+
+    return list;
   }
 }
