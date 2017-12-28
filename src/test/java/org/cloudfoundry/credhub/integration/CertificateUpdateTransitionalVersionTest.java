@@ -45,6 +45,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @TestPropertySource(properties = "security.authorization.acls.enabled=true")
 @Transactional
 public class CertificateUpdateTransitionalVersionTest {
+
   @Autowired
   private WebApplicationContext webApplicationContext;
 
@@ -92,7 +93,7 @@ public class CertificateUpdateTransitionalVersionTest {
     this.mockMvc.perform(regenerateRequest)
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.transitional", equalTo(true)));
-    
+
     MockHttpServletRequestBuilder versionsRequest = get("/api/v1/certificates/" + caCredentialUuid + "/versions")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
@@ -107,7 +108,8 @@ public class CertificateUpdateTransitionalVersionTest {
     assertThat(JsonPath.parse(regeneratedVersion).read("transitional"), equalTo(true));
     String originalVersionId = JsonPath.parse(originalVersion).read("id");
 
-    MockHttpServletRequestBuilder updateTransitionalRequest = put("/api/v1/certificates/" + caCredentialUuid + "/update_transitional_version")
+    MockHttpServletRequestBuilder updateTransitionalRequest = put(
+        "/api/v1/certificates/" + caCredentialUuid + "/update_transitional_version")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
@@ -122,11 +124,13 @@ public class CertificateUpdateTransitionalVersionTest {
         .andExpect(jsonPath("$[1].transitional", equalTo(true)))
         .andExpect(jsonPath("$[1].id", equalTo(originalVersionId)));
 
-    auditingHelper.verifyAuditing(AuditingOperationCode.CREDENTIAL_UPDATE, caName, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/certificates/" + caCredentialUuid + "/update_transitional_version", 200);
+    auditingHelper.verifyAuditing(AuditingOperationCode.CREDENTIAL_UPDATE, caName, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
+        "/api/v1/certificates/" + caCredentialUuid + "/update_transitional_version", 200);
   }
 
   @Test
-  public void certificateUpdateTransitionalVersion_whenThereIsNoExistingTransitionalVersion_changesValueOfTransitionalFlag() throws Exception {
+  public void certificateUpdateTransitionalVersion_whenThereIsNoExistingTransitionalVersion_changesValueOfTransitionalFlag()
+      throws Exception {
     MockHttpServletRequestBuilder regenerateRequest = post("/api/v1/certificates/" + caCredentialUuid + "/regenerate")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
@@ -147,7 +151,8 @@ public class CertificateUpdateTransitionalVersionTest {
     String originalVersion = new JSONArray(versionsResponse).get(1).toString();
     String originalVersionId = JsonPath.parse(originalVersion).read("id");
 
-    MockHttpServletRequestBuilder updateTransitionalRequest = put("/api/v1/certificates/" + caCredentialUuid + "/update_transitional_version")
+    MockHttpServletRequestBuilder updateTransitionalRequest = put(
+        "/api/v1/certificates/" + caCredentialUuid + "/update_transitional_version")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
@@ -162,7 +167,47 @@ public class CertificateUpdateTransitionalVersionTest {
         .andExpect(jsonPath("$[1].transitional", equalTo(true)))
         .andExpect(jsonPath("$[1].id", equalTo(originalVersionId)));
 
-    auditingHelper.verifyAuditing(AuditingOperationCode.CREDENTIAL_UPDATE, caName, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/certificates/" + caCredentialUuid + "/update_transitional_version", 200);
+    auditingHelper.verifyAuditing(AuditingOperationCode.CREDENTIAL_UPDATE, caName, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
+        "/api/v1/certificates/" + caCredentialUuid + "/update_transitional_version", 200);
+  }
+
+  @Test
+  public void certificateUpdateTransitionalVersion_whenNoVersionIdIsProvided_unSetsTransitionalFlag() throws Exception {
+    MockHttpServletRequestBuilder regenerateRequest = post("/api/v1/certificates/" + caCredentialUuid + "/regenerate")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON);
+
+    this.mockMvc.perform(regenerateRequest)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.transitional", equalTo(false)));
+
+    MockHttpServletRequestBuilder versionsRequest = get("/api/v1/certificates/" + caCredentialUuid + "/versions")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON);
+
+    String versionsResponse = this.mockMvc.perform(versionsRequest)
+        .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+
+    String regeneratedVersion = new JSONArray(versionsResponse).get(0).toString();
+    String regeneratedVersionId = JsonPath.parse(regeneratedVersion).read("id");
+
+    MockHttpServletRequestBuilder updateTransitionalRequest = put(
+        "/api/v1/certificates/" + caCredentialUuid + "/update_transitional_version")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{}");
+
+    this.mockMvc.perform(updateTransitionalRequest)
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].transitional", equalTo(false)))
+        .andExpect(jsonPath("$[0].id", equalTo(regeneratedVersionId)));
+
+    auditingHelper.verifyAuditing(AuditingOperationCode.CREDENTIAL_UPDATE, caName, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
+        "/api/v1/certificates/" + caCredentialUuid + "/update_transitional_version", 200);
   }
 }
 

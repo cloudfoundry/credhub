@@ -84,15 +84,17 @@ public class CertificateVersionDataService {
     return (CertificateCredentialVersion) credentialFactory.makeCredentialFromEntity(credentialVersion);
   }
 
-  public void updateTransitionalVersion(UUID certificateUuid, UUID newTransitionalVersionUuid) {
+  public void setTransitionalVersion(UUID newTransitionalVersionUuid) {
+    CertificateCredentialVersionData newTransitionalCertificate = (CertificateCredentialVersionData)credentialVersionRepository.findOneByUuid(newTransitionalVersionUuid);
+    newTransitionalCertificate.setTransitional(true);
+    credentialVersionRepository.save(newTransitionalCertificate);
+  }
+
+  public void unsetTransitionalVerison(UUID certificateUuid) {
     CertificateCredentialVersionData transitionalCertificate = (CertificateCredentialVersionData)credentialVersionRepository.findTransitionalCertificateVersion(certificateUuid);
     if (transitionalCertificate != null) {
       transitionalCertificate.setTransitional(false);
       credentialVersionRepository.save(transitionalCertificate);
     }
-
-    CertificateCredentialVersionData newTransitionalCertificate = (CertificateCredentialVersionData)credentialVersionRepository.findOneByUuid(newTransitionalVersionUuid);
-    newTransitionalCertificate.setTransitional(true);
-    credentialVersionRepository.save(newTransitionalCertificate);
   }
 }

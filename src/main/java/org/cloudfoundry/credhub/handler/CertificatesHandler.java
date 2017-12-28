@@ -51,15 +51,17 @@ public class CertificatesHandler {
 
     BaseCredentialGenerateRequest generateRequest = generationRequestGenerator
         .createGenerateRequest(existingCredentialVersion, existingCredentialVersion.getName(), auditRecordParameters);
-    CertificateCredentialValue credentialValue = (CertificateCredentialValue) credentialGenerator.generate(generateRequest);
+    CertificateCredentialValue credentialValue = (CertificateCredentialValue) credentialGenerator
+        .generate(generateRequest);
     credentialValue.setTransitional(request.isTransitional());
 
-    final CertificateCredentialVersion credentialVersion = (CertificateCredentialVersion) permissionedCertificateService.save(
-        existingCredentialVersion,
-        credentialValue,
-        generateRequest,
-        auditRecordParameters
-    );
+    final CertificateCredentialVersion credentialVersion = (CertificateCredentialVersion) permissionedCertificateService
+        .save(
+            existingCredentialVersion,
+            credentialValue,
+            generateRequest,
+            auditRecordParameters
+        );
 
     return new CertificateView(credentialVersion);
   }
@@ -74,7 +76,8 @@ public class CertificatesHandler {
     return new CertificateCredentialsView(list);
   }
 
-  public CertificateCredentialsView handleGetByNameRequest(String name, List<EventAuditRecordParameters> auditRecordParameters) {
+  public CertificateCredentialsView handleGetByNameRequest(String name,
+      List<EventAuditRecordParameters> auditRecordParameters) {
     final List<Credential> credentialList = permissionedCertificateService.getByName(name, auditRecordParameters);
 
     List<CertificateCredentialView> list = credentialList.stream().map(credential ->
@@ -93,7 +96,8 @@ public class CertificatesHandler {
       auditRecordParameters.add(new EventAuditRecordParameters(AuditingOperationCode.CREDENTIAL_ACCESS, null));
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
-    final List<CredentialVersion> credentialList = permissionedCertificateService.getVersions(uuid, current, auditRecordParameters);
+    final List<CredentialVersion> credentialList = permissionedCertificateService
+        .getVersions(uuid, current, auditRecordParameters);
 
     List<CertificateView> list = credentialList.stream().map(credential ->
         new CertificateView((CertificateCredentialVersion) credential)
@@ -103,15 +107,24 @@ public class CertificatesHandler {
   }
 
 
-  public CertificateView handleDeleteVersionRequest(String certificateId, String versionId, List<EventAuditRecordParameters> auditRecordParameters) {
-    CertificateCredentialVersion deletedVersion = permissionedCertificateService.deleteVersion(UUID.fromString(certificateId), UUID.fromString(versionId), auditRecordParameters);
+  public CertificateView handleDeleteVersionRequest(String certificateId, String versionId,
+      List<EventAuditRecordParameters> auditRecordParameters) {
+    CertificateCredentialVersion deletedVersion = permissionedCertificateService
+        .deleteVersion(UUID.fromString(certificateId), UUID.fromString(versionId), auditRecordParameters);
     return new CertificateView(deletedVersion);
   }
 
   public List<CertificateView> handleUpdateTransitionalVersion(String certificateId, UpdateTransitionalVersionRequest requestBody,
       List<EventAuditRecordParameters> auditRecordParameters) {
+    List<CredentialVersion> credentialList;
+    UUID versionUUID = null;
 
-    final List<CredentialVersion> credentialList = permissionedCertificateService.updateTransitionalVersion(UUID.fromString(certificateId), UUID.fromString(requestBody.getVersionUuid()), auditRecordParameters);
+    if(requestBody.getVersionUuid() != null) {
+      versionUUID = UUID.fromString(requestBody.getVersionUuid());
+    }
+
+    credentialList = permissionedCertificateService.updateTransitionalVersion(UUID.fromString(certificateId), versionUUID, auditRecordParameters);
+
 
     List<CertificateView> list = credentialList.stream().map(credential ->
         new CertificateView((CertificateCredentialVersion) credential)

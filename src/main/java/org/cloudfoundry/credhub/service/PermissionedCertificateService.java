@@ -135,13 +135,16 @@ public class PermissionedCertificateService {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
-    CertificateCredentialVersion version = certificateVersionDataService.findVersion(newTransitionalVersionUuid);
+    certificateVersionDataService.unsetTransitionalVerison(certificateUuid);
 
-    if (versionDoesNotBelongToCertificate(credential, version)) {
-      throw new ParameterizedValidationException("error.credential.mismatched_credential_and_version");
+    if(newTransitionalVersionUuid != null) {
+      CertificateCredentialVersion version = certificateVersionDataService.findVersion(newTransitionalVersionUuid);
+
+      if (versionDoesNotBelongToCertificate(credential, version)) {
+        throw new ParameterizedValidationException("error.credential.mismatched_credential_and_version");
+      }
+      certificateVersionDataService.setTransitionalVersion(newTransitionalVersionUuid);
     }
-
-    certificateVersionDataService.updateTransitionalVersion(certificateUuid, newTransitionalVersionUuid);
     return certificateVersionDataService.findActiveWithTransitional(name);
   }
 
