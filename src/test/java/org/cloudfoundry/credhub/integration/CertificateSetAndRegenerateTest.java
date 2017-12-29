@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import static org.cloudfoundry.credhub.helper.RequestHelper.getCertificateCredentialsByName;
+import static org.cloudfoundry.credhub.helper.RequestHelper.getCertificateId;
 import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.cloudfoundry.credhub.util.TestConstants.TEST_CA;
 import static org.cloudfoundry.credhub.util.TestConstants.TEST_CERTIFICATE;
@@ -83,9 +84,7 @@ public class CertificateSetAndRegenerateTest {
     caCertificate = JsonPath.parse(generateCaResponse)
         .read("$.value.certificate");
     caId = JsonPath.parse(generateCaResponse).read("$.id");
-    String response = getCertificateCredentialsByName(mockMvc, UAA_OAUTH2_PASSWORD_GRANT_TOKEN, CA_NAME);
-    caCredentialUuid = JsonPath.parse(response)
-        .read("$.certificates[0].id");
+    caCredentialUuid = getCertificateId(mockMvc, CA_NAME);
     assertNotNull(caCertificate);
   }
 

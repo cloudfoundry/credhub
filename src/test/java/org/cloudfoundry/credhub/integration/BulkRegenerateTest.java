@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.integration;
 
+import com.jayway.jsonpath.JsonPath;
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.data.CredentialVersionDataService;
@@ -33,6 +34,7 @@ import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.cloudfoundry.credhub.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
+import static org.cloudfoundry.credhub.helper.RequestHelper.getCertificateId;
 import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID;
 import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN;
 import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
@@ -45,6 +47,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -91,8 +94,8 @@ public class BulkRegenerateTest {
         .build();
     auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
 
-    generateCA("/ca-to-rotate", "original ca");
-    generateCA("/other-ca", "other ca");
+    generateRootCA("/ca-to-rotate", "original ca");
+    generateRootCA("/other-ca", "other ca");
 
     generateSignedCertificate("/cert-to-regenerate", "cert to regenerate", "/ca-to-rotate");
     generateSignedCertificate("/cert-to-regenerate", "cert to regenerate", "/ca-to-rotate");
@@ -316,7 +319,83 @@ public class BulkRegenerateTest {
         .andExpect(jsonPath("$.error", IsEqual.equalTo("You must specify a signing CA. Please update and retry your request.")));
   }
 
-  private void generateCA(String caName, String caCommonName) throws Exception {
+  @Test
+  public void regeneratingCertificatesSignedByCa_recursivelyRegeneratesLeafCertificatesInChain() throws Exception  {
+    generateRootCA("/ca-cert", "cert");
+    generateIntermediateCA("/intermediate-cert", "cert to regenerate", "/ca-cert");
+    generateSignedCertificate("/leaf-cert", "cert to regenerate", "/intermediate-cert");
+
+    MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
+        .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        //language=JSON
+        .content("{\n"
+            + "  \"signed_by\" : \"/ca-cert\"\n"
+            + "}");
+
+    String regenerateCertificatesResult = this.mockMvc.perform(regenerateCertificatesRequest)
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andReturn().getResponse().getContentAsString();
+
+    final JSONArray regeneratedCredentials = (new JSONObject(regenerateCertificatesResult)).getJSONArray("regenerated_credentials");
+
+    assertThat(regeneratedCredentials.length(), equalTo(2));
+    assertThat(regeneratedCredentials.getString(0), equalTo("/intermediate-cert"));
+    assertThat(regeneratedCredentials.getString(1), equalTo("/leaf-cert"));
+
+    verifyVersionCountForCertificate("/intermediate-cert", 2);
+    verifyVersionCountForCertificate("/leaf-cert", 2);
+  }
+
+
+  @Test
+  public void regeneratingCertificatesSignedByCa_willFailIfAnyChildCertificateIsNotWritable() throws Exception  {
+    generateRootCA("/ca-cert", "cert");
+    generateIntermediateCA("/intermediate-cert", "cert to regenerate", "/ca-cert");
+    generateSignedCertificate("/leaf-cert", "cert to regenerate", "/intermediate-cert");
+
+    //revoke  access to one certificate
+    MockHttpServletRequestBuilder revokeReadAccess = delete(API_V1_PERMISSION_ENDPOINT + "?credential_name=/leaf-cert&actor=" + UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID)
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON);
+
+    mockMvc.perform(revokeReadAccess)
+        .andExpect(status().isNoContent());
+
+    MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
+        .header("Authorization", "Bearer " +  UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        //language=JSON
+        .content("{\n"
+            + "  \"signed_by\" : \"/ca-cert\"\n"
+            + "}");
+
+    this.mockMvc.perform(regenerateCertificatesRequest)
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.error", IsEqual.equalTo("The request could not be completed because the credential does not exist or you do not have sufficient authorization.")));
+
+    verifyVersionCountForCertificate("/intermediate-cert", 1);
+    verifyVersionCountForCertificate("/leaf-cert", 1);
+  }
+
+  private void verifyVersionCountForCertificate(String certificateName, int expectedVersionCount) throws Exception {
+    String certificateId = getCertificateId(mockMvc, certificateName);
+    MockHttpServletRequestBuilder getVersionsRequest = get("/api/v1/certificates/" + certificateId + "/versions")
+        .header("Authorization", "Bearer " +  UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON);
+
+    String versions = this.mockMvc.perform(getVersionsRequest)
+        .andExpect(status().isOk())
+        .andReturn().getResponse().getContentAsString();
+
+    assertThat(new JSONArray(versions).length(), equalTo(expectedVersionCount));
+  }
+
+  private String generateRootCA(String caName, String caCommonName) throws Exception {
     MockHttpServletRequestBuilder generateCAToRotateRequest = post(API_V1_DATA_ENDPOINT)
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
@@ -334,7 +413,7 @@ public class BulkRegenerateTest {
             + "   \"operations\": [\"read\"]\n"
             + "}]}");
 
-    this.mockMvc.perform(generateCAToRotateRequest)
+    return this.mockMvc.perform(generateCAToRotateRequest)
         .andDo(print())
         .andExpect(status().isOk())
         .andReturn().getResponse().getContentAsString();
@@ -370,4 +449,35 @@ public class BulkRegenerateTest {
     assertThat((new JSONObject(certGenerationResult)).getString("value"), notNullValue());
   }
 
+  private String generateIntermediateCA(String certificateName, String certificatCN, String signingCA) throws Exception {
+    MockHttpServletRequestBuilder generateCertSignedByOriginalCARequest = post(API_V1_DATA_ENDPOINT)
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        //language=JSON
+        .content("{\n"
+            + "  \"name\" : \"" + certificateName + "\",\n"
+            + "  \"type\" : \"certificate\",\n"
+            + "  \"parameters\" : {\n"
+            + "  \"is_ca\": true,\n"
+            + "    \"ca\": \"" + signingCA + "\",\n"
+            + "    \"common_name\": \"" + certificatCN + "\"\n"
+            + "  },\n"
+            + "  \"overwrite\": true,\n"
+            + "  \"additional_permissions\": \n"
+            + "    [\n"
+            + "      {\n"
+            + "        \"actor\": \"" + UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID + "\",\n"
+            + "        \"operations\": [\"write\", \"read\"]\n"
+            + "      }\n"
+            + "    ]\n"
+            + "}");
+
+    String certGenerationResult = this.mockMvc.perform(generateCertSignedByOriginalCARequest)
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andReturn().getResponse().getContentAsString();
+    assertThat((new JSONObject(certGenerationResult)).getString("value"), notNullValue());
+    return certGenerationResult;
+  }
 }

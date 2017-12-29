@@ -1,6 +1,7 @@
 package org.cloudfoundry.credhub.helper;
 
 import com.google.common.collect.ImmutableMap;
+import com.jayway.jsonpath.JsonPath;
 import org.cloudfoundry.credhub.view.PermissionsView;
 import org.cloudfoundry.credhub.util.AuthConstants;
 import org.hamcrest.core.IsEqual;
@@ -183,6 +184,12 @@ public class RequestHelper {
         .andExpect(status().isOk())
         .andReturn().getResponse().getContentAsString();
     return response;
+  }
+
+  public static String getCertificateId(MockMvc mockMvc, String certificateName) throws Exception {
+    String response = getCertificateCredentialsByName(mockMvc, UAA_OAUTH2_PASSWORD_GRANT_TOKEN, certificateName);
+    return JsonPath.parse(response)
+        .read("$.certificates[0].id");
   }
 
   public static String generateCertificateCredential(MockMvc mockMvc, String credentialName, String mode, String commonName, String caName)

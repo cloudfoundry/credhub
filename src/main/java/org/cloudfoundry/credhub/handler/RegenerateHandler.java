@@ -2,18 +2,19 @@ package org.cloudfoundry.credhub.handler;
 
 import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.credential.CredentialValue;
+import org.cloudfoundry.credhub.domain.CertificateGenerationParameters;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
+import org.cloudfoundry.credhub.request.CertificateGenerateRequest;
 import org.cloudfoundry.credhub.service.PermissionedCredentialService;
 import org.cloudfoundry.credhub.view.BulkRegenerateResults;
 import org.cloudfoundry.credhub.view.CredentialView;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.*;
 
 @Service
+@SuppressWarnings("unchecked")
 public class RegenerateHandler {
 
   private PermissionedCredentialService credentialService;
@@ -53,18 +54,47 @@ public class RegenerateHandler {
       List<EventAuditRecordParameters> auditRecordParameters
   ) {
     BulkRegenerateResults results = new BulkRegenerateResults();
-    List<String> certificateNames = credentialService.findAllCertificateCredentialsByCaName(
-        signerName);
+    TreeSet<String> certificateSet =  new TreeSet(String.CASE_INSENSITIVE_ORDER);
 
-    certificateNames.sort(String::compareToIgnoreCase);
+    certificateSet.addAll(regenerateCertificatesSignedByCA(signerName, auditRecordParameters));
+    results.setRegeneratedCredentials(certificateSet);
+    return results;
+  }
 
-    final HashSet<String> credentialNamesSet = new LinkedHashSet<>(certificateNames);
-    for (String name : credentialNamesSet) {
-      this.handleRegenerate(name,
-          auditRecordParameters);
+  private TreeSet<String> regenerateCertificatesSignedByCA(
+      String signerName,
+      List<EventAuditRecordParameters> auditRecordParameters
+  ) {
+    TreeSet<String> results =  new TreeSet(String.CASE_INSENSITIVE_ORDER);
+    TreeSet<String> certificateNames =  new TreeSet(String.CASE_INSENSITIVE_ORDER);
+
+    certificateNames.addAll(credentialService.findAllCertificateCredentialsByCaName(signerName));
+    certificateNames.stream().map(name -> this.regenerateCertificateAndDirectChildren(name, auditRecordParameters)).forEach(results::addAll);
+
+    return results;
+  }
+
+  private TreeSet<String> regenerateCertificateAndDirectChildren(
+      String credentialName,
+      List<EventAuditRecordParameters> auditRecordParameters
+  ) {
+    TreeSet<String> results = new TreeSet(String.CASE_INSENSITIVE_ORDER);
+    CredentialVersion existingCredentialVersion = credentialService.findMostRecent(credentialName);
+    CertificateGenerateRequest generateRequest = (CertificateGenerateRequest)generationRequestGenerator.createGenerateRequest(existingCredentialVersion, credentialName, auditRecordParameters);
+    CredentialValue newCredentialValue = credentialGenerator.generate(generateRequest);
+
+    CredentialVersion credentialVersion = credentialService.save(
+        existingCredentialVersion,
+        newCredentialValue,
+        generateRequest,
+        auditRecordParameters
+    );
+    results.add(credentialVersion.getName());
+
+    CertificateGenerationParameters generationParameters = (CertificateGenerationParameters)generateRequest.getGenerationParameters();
+    if (generationParameters.isCa()) {
+      results.addAll(this.regenerateCertificatesSignedByCA(generateRequest.getName(), auditRecordParameters));
     }
-
-    results.setRegeneratedCredentials(credentialNamesSet);
     return results;
   }
 }
