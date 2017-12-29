@@ -4,7 +4,7 @@ import org.passay.CharacterData;
 
 public enum CredHubCharacterData implements CharacterData {
   // reusing library string that indicates whether a validation failed
-  Special("INSUFFICIENT_SPECIAL", "!\"#$%&'()*,-./:;<=>?@[\\]^_`{|}~"),
+  Special("INSUFFICIENT_SPECIAL", "!#$%&()*,-./:;<=>?@[\\]^_`{|}~"),
   Hex("error.insufficient_hex_alpha", "0123456789ABCDEF");
 
   private final String errorCode;
