@@ -5,6 +5,8 @@ import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.data.CertificateDataService;
 import org.cloudfoundry.credhub.data.CertificateVersionDataService;
+import org.cloudfoundry.credhub.data.CredentialVersionDataService;
+import org.cloudfoundry.credhub.domain.CertificateCredentialFactory;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.entity.Credential;
@@ -37,7 +39,9 @@ public class PermissionedCertificateServiceTest {
   private PermissionCheckingService permissionCheckingService;
   private UserContextHolder userContextHolder;
   private CertificateVersionDataService certificateVersionDataService;
+  private CertificateCredentialFactory certificateCredentialFactory;
   private UUID uuid;
+  private CredentialVersionDataService credentialVersionDataService;
 
   @Before
   public void beforeEach() {
@@ -47,8 +51,11 @@ public class PermissionedCertificateServiceTest {
     certificateDataService = mock(CertificateDataService.class);
     userContextHolder = mock(UserContextHolder.class);
     certificateVersionDataService = mock(CertificateVersionDataService.class);
+    certificateCredentialFactory = mock(CertificateCredentialFactory.class);
+    credentialVersionDataService = mock(CredentialVersionDataService.class);
     subject = new PermissionedCertificateService(permissionedCredentialService, certificateDataService,
-        permissionCheckingService, userContextHolder, certificateVersionDataService);
+        permissionCheckingService, userContextHolder, certificateVersionDataService, certificateCredentialFactory,
+        credentialVersionDataService);
   }
 
   @Test
@@ -473,5 +480,32 @@ public class PermissionedCertificateServiceTest {
     when(version.getCredential()).thenReturn(otherCertificate);
 
     subject.updateTransitionalVersion(certificateUuid, transitionalVersionUuid, newArrayList());
+  }
+
+  @Test(expected = EntryNotFoundException.class)
+  public void set_whenTheUserDoesNotHavePermission_throwsAnException() {
+    UUID certificateUuid = UUID.randomUUID();
+    String credentialName = "my-credential";
+
+    Credential certificate = mock(Credential.class);
+    when(certificate.getName()).thenReturn(credentialName);
+
+    String user = "my-user";
+    UserContext userContext = mock(UserContext.class);
+    when(userContextHolder.getUserContext()).thenReturn(userContext);
+    when(userContext.getActor()).thenReturn(user);
+
+    when(certificateDataService.findByUuid(certificateUuid)).thenReturn(certificate);
+    when(permissionCheckingService.hasPermission(user, credentialName, PermissionOperation.WRITE)).thenReturn(false);
+
+    subject.set(certificateUuid, mock(CertificateCredentialValue.class), newArrayList());
+  }
+
+  @Test(expected = EntryNotFoundException.class)
+  public void set_whenTheCredentialDoesNotExist_throwsAnException() {
+    UUID certificateUuid = UUID.randomUUID();
+
+    when(certificateDataService.findByUuid(certificateUuid)).thenReturn(null);
+    subject.set(certificateUuid, mock(CertificateCredentialValue.class), newArrayList());
   }
 }

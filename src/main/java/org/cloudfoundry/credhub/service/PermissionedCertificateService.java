@@ -6,6 +6,8 @@ import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.data.CertificateDataService;
 import org.cloudfoundry.credhub.data.CertificateVersionDataService;
+import org.cloudfoundry.credhub.data.CredentialVersionDataService;
+import org.cloudfoundry.credhub.domain.CertificateCredentialFactory;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.entity.Credential;
@@ -30,17 +32,23 @@ public class PermissionedCertificateService {
   private final PermissionCheckingService permissionCheckingService;
   private final UserContextHolder userContextHolder;
   private final CertificateVersionDataService certificateVersionDataService;
+  private final CertificateCredentialFactory certificateCredentialFactory;
+  private final CredentialVersionDataService credentialVersionDataService;
 
   @Autowired
   public PermissionedCertificateService(
       PermissionedCredentialService permissionedCredentialService, CertificateDataService certificateDataService,
       PermissionCheckingService permissionCheckingService, UserContextHolder userContextHolder,
-      CertificateVersionDataService certificateVersionDataService) {
+      CertificateVersionDataService certificateVersionDataService,
+      CertificateCredentialFactory certificateCredentialFactory,
+      CredentialVersionDataService credentialVersionDataService) {
     this.permissionedCredentialService = permissionedCredentialService;
     this.certificateDataService = certificateDataService;
     this.permissionCheckingService = permissionCheckingService;
     this.userContextHolder = userContextHolder;
     this.certificateVersionDataService = certificateVersionDataService;
+    this.certificateCredentialFactory = certificateCredentialFactory;
+    this.credentialVersionDataService = credentialVersionDataService;
   }
 
   public CredentialVersion save(
@@ -51,19 +59,23 @@ public class PermissionedCertificateService {
   ) {
     generateRequest.setType("certificate");
     if (credentialValue.isTransitional()) {
-      List<CredentialVersion> credentialVersions = permissionedCredentialService
-          .findAllByName(generateRequest.getName(), auditRecordParameters);
-
-      boolean transitionalVersionsAlreadyExist = credentialVersions.stream()
-          .map(version -> (CertificateCredentialVersion) version)
-          .anyMatch(version -> version.isVersionTransitional());
-
-      if (transitionalVersionsAlreadyExist) {
-        throw new ParameterizedValidationException("error.too_many_transitional_versions");
-      }
+      validateNoTransitionalVersionsAlreadyExist(generateRequest.getName(), auditRecordParameters);
     }
     return permissionedCredentialService
         .save(existingCredentialVersion, credentialValue, generateRequest, auditRecordParameters);
+  }
+
+  private void validateNoTransitionalVersionsAlreadyExist(String name, List<EventAuditRecordParameters> auditRecordParameters) {
+    List<CredentialVersion> credentialVersions = permissionedCredentialService
+        .findAllByName(name, auditRecordParameters);
+
+    boolean transitionalVersionsAlreadyExist = credentialVersions.stream()
+        .map(version -> (CertificateCredentialVersion) version)
+        .anyMatch(version -> version.isVersionTransitional());
+
+    if (transitionalVersionsAlreadyExist) {
+      throw new ParameterizedValidationException("error.too_many_transitional_versions");
+    }
   }
 
   public List<Credential> getAll(List<EventAuditRecordParameters> auditRecordParameters) {
@@ -188,5 +200,29 @@ public class PermissionedCertificateService {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
     return credential;
+  }
+
+  public CertificateCredentialVersion set(UUID certificateUuid, CertificateCredentialValue value,
+      List<EventAuditRecordParameters> auditRecordParameters) {
+    Credential credential = findCertificateCredential(certificateUuid);
+
+    EventAuditRecordParameters eventAuditRecordParameters = new EventAuditRecordParameters(
+        AuditingOperationCode.CREDENTIAL_UPDATE, credential.getName());
+    auditRecordParameters.add(eventAuditRecordParameters);
+
+    if (!permissionCheckingService
+        .hasPermission(userContextHolder.getUserContext().getActor(), credential.getName(),
+            PermissionOperation.WRITE)) {
+      throw new EntryNotFoundException("error.credential.invalid_access");
+    }
+
+    if (value.isTransitional()) {
+      validateNoTransitionalVersionsAlreadyExist(credential.getName(), auditRecordParameters);
+    }
+
+    CertificateCredentialVersion certificateCredentialVersion = certificateCredentialFactory
+        .makeNewCredentialVersion(credential, value);
+
+    return credentialVersionDataService.save(certificateCredentialVersion);
   }
 }

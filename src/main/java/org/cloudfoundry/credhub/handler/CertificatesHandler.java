@@ -9,6 +9,7 @@ import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
 import org.cloudfoundry.credhub.request.CertificateRegenerateRequest;
+import org.cloudfoundry.credhub.request.CreateVersionRequest;
 import org.cloudfoundry.credhub.request.UpdateTransitionalVersionRequest;
 import org.cloudfoundry.credhub.service.CertificateService;
 import org.cloudfoundry.credhub.service.PermissionedCertificateService;
@@ -131,5 +132,19 @@ public class CertificatesHandler {
     ).collect(Collectors.toList());
 
     return list;
+  }
+
+  public CertificateView handleCreateVersionsRequest(String certificateId, CreateVersionRequest requestBody,
+      List<EventAuditRecordParameters> auditRecordParameters) {
+
+    CertificateCredentialValue certificateCredentialValue = requestBody.getValue();
+    certificateCredentialValue.setTransitional(requestBody.isTransitional());
+    final CertificateCredentialVersion credentialVersion = permissionedCertificateService.set(
+        UUID.fromString(certificateId),
+        certificateCredentialValue,
+        auditRecordParameters
+    );
+
+    return new CertificateView(credentialVersion);
   }
 }

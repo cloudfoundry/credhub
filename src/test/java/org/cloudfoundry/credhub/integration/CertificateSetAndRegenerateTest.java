@@ -5,9 +5,14 @@ import com.jayway.jsonpath.JsonPath;
 import net.minidev.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.cloudfoundry.credhub.CredentialManagerApp;
+import org.cloudfoundry.credhub.audit.AuditingOperationCode;
 import org.cloudfoundry.credhub.constants.CredentialWriteMode;
+import org.cloudfoundry.credhub.helper.AuditingHelper;
 import org.cloudfoundry.credhub.helper.RequestHelper;
+import org.cloudfoundry.credhub.repository.EventAuditRecordRepository;
+import org.cloudfoundry.credhub.repository.RequestAuditRecordRepository;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
+import org.json.JSONArray;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,11 +27,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import static org.cloudfoundry.credhub.helper.RequestHelper.getCertificateCredentialsByName;
+import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
 import static org.cloudfoundry.credhub.helper.RequestHelper.getCertificateId;
 import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.cloudfoundry.credhub.util.TestConstants.TEST_CA;
 import static org.cloudfoundry.credhub.util.TestConstants.TEST_CERTIFICATE;
 import static org.cloudfoundry.credhub.util.TestConstants.TEST_PRIVATE_KEY;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -47,8 +54,16 @@ public class CertificateSetAndRegenerateTest {
   @Autowired
   private WebApplicationContext webApplicationContext;
 
+  @Autowired
+  private RequestAuditRecordRepository requestAuditRecordRepository;
+
+  @Autowired
+  private EventAuditRecordRepository eventAuditRecordRepository;
+
+  private AuditingHelper auditingHelper;
+
   private MockMvc mockMvc;
-  private Object caCertificate;
+  private String caCertificate;
   private String caId;
   private String caCredentialUuid;
   private String testSignedCert;
@@ -86,11 +101,15 @@ public class CertificateSetAndRegenerateTest {
     caId = JsonPath.parse(generateCaResponse).read("$.id");
     caCredentialUuid = getCertificateId(mockMvc, CA_NAME);
     assertNotNull(caCertificate);
+
+    auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
   }
 
   @Test
   public void certificateSet_withCaName_canBeRegeneratedWithSameCA() throws Exception {
-    final String generatedCertificate = RequestHelper.generateCertificateCredential(mockMvc, "generatedCertificate", CredentialWriteMode.OVERWRITE.mode, "generated-cert", CA_NAME);
+    final String generatedCertificate = RequestHelper
+        .generateCertificateCredential(mockMvc, "generatedCertificate", CredentialWriteMode.OVERWRITE.mode,
+            "generated-cert", CA_NAME);
     String certificateValue = JsonPath.parse(generatedCertificate)
         .read("$.value.certificate");
     String privateKeyValue = JsonPath.parse(generatedCertificate)
@@ -155,7 +174,8 @@ public class CertificateSetAndRegenerateTest {
   }
 
   @Test
-  public void certificateRegenerate_withTransitionalSetToTrue_failsIfThereIsAlreadyATransitionalCert() throws Exception {
+  public void certificateRegenerate_withTransitionalSetToTrue_failsIfThereIsAlreadyATransitionalCert()
+      throws Exception {
     MockHttpServletRequestBuilder regenerateRequest = post("/api/v1/certificates/" + caCredentialUuid + "/regenerate")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
@@ -208,7 +228,8 @@ public class CertificateSetAndRegenerateTest {
   }
 
   @Test
-  public void certificateSetRequest_whenProvidedACertificateValueThatIsTooLong_returnsAValidationError() throws Exception {
+  public void certificateSetRequest_whenProvidedACertificateValueThatIsTooLong_returnsAValidationError()
+      throws Exception {
     int repetitionCount = 7001 - TEST_CERTIFICATE.length();
     final String setJson = JSONObject.toJSONString(
         ImmutableMap.<String, String>builder()
@@ -229,7 +250,8 @@ public class CertificateSetAndRegenerateTest {
 
     this.mockMvc.perform(certificateSetRequest)
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error", equalTo("The provided certificate value is too long. Certificate lengths must be less than 7000 characters.")));
+        .andExpect(jsonPath("$.error", equalTo(
+            "The provided certificate value is too long. Certificate lengths must be less than 7000 characters.")));
   }
 
   @Test
@@ -254,13 +276,17 @@ public class CertificateSetAndRegenerateTest {
 
     this.mockMvc.perform(certificateSetRequest)
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error", equalTo("The provided certificate value is too long. Certificate lengths must be less than 7000 characters.")));
+        .andExpect(jsonPath("$.error", equalTo(
+            "The provided certificate value is too long. Certificate lengths must be less than 7000 characters.")));
   }
 
   @Test
-  public void certificateSetRequest_whenProvidedCertificateWasNotSignedByNamedCA_returnsAValidationError() throws Exception {
+  public void certificateSetRequest_whenProvidedCertificateWasNotSignedByNamedCA_returnsAValidationError()
+      throws Exception {
     RequestHelper.generateCa(mockMvc, "otherCa", UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
-    final String otherCaCertificate = RequestHelper.generateCertificateCredential(mockMvc, "otherCaCertificate", CredentialWriteMode.OVERWRITE.mode, "other-ca-cert", "otherCa");
+    final String otherCaCertificate = RequestHelper
+        .generateCertificateCredential(mockMvc, "otherCaCertificate", CredentialWriteMode.OVERWRITE.mode,
+            "other-ca-cert", "otherCa");
 
     String otherCaCertificateValue = JsonPath.parse(otherCaCertificate)
         .read("$.value.certificate");
@@ -283,13 +309,17 @@ public class CertificateSetAndRegenerateTest {
 
     this.mockMvc.perform(certificateSetRequest)
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error", equalTo("The provided certificate was not signed by the CA specified in the 'ca_name' property.")));
+        .andExpect(jsonPath("$.error",
+            equalTo("The provided certificate was not signed by the CA specified in the 'ca_name' property.")));
   }
 
   @Test
-  public void certificateSetRequest_whenProvidedCertificateWasNotSignedByProvidedCA_returnsAValidationError() throws Exception {
+  public void certificateSetRequest_whenProvidedCertificateWasNotSignedByProvidedCA_returnsAValidationError()
+      throws Exception {
     RequestHelper.generateCa(mockMvc, "otherCa", UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
-    final String otherCaCertificate = RequestHelper.generateCertificateCredential(mockMvc, "otherCaCertificate", CredentialWriteMode.OVERWRITE.mode, "other-ca-cert", "otherCa");
+    final String otherCaCertificate = RequestHelper
+        .generateCertificateCredential(mockMvc, "otherCaCertificate", CredentialWriteMode.OVERWRITE.mode,
+            "other-ca-cert", "otherCa");
 
     String otherCaCertificateValue = JsonPath.parse(otherCaCertificate)
         .read("$.value.certificate");
@@ -312,13 +342,17 @@ public class CertificateSetAndRegenerateTest {
 
     this.mockMvc.perform(certificateSetRequest)
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error", equalTo("The provided certificate was not signed by the CA specified in the 'ca' property.")));
+        .andExpect(jsonPath("$.error",
+            equalTo("The provided certificate was not signed by the CA specified in the 'ca' property.")));
   }
 
   @Test
-  public void certificateSetRequest_whenProvidedCertificateWithNonMatchingPrivateKey_returnsAValidationError() throws Exception {
+  public void certificateSetRequest_whenProvidedCertificateWithNonMatchingPrivateKey_returnsAValidationError()
+      throws Exception {
     final String originalCertificate = RequestHelper.generateCa(mockMvc, "otherCa", UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
-    final String otherCaCertificate = RequestHelper.generateCertificateCredential(mockMvc, "otherCaCertificate", CredentialWriteMode.OVERWRITE.mode, "other-ca-cert", "otherCa");
+    final String otherCaCertificate = RequestHelper
+        .generateCertificateCredential(mockMvc, "otherCaCertificate", CredentialWriteMode.OVERWRITE.mode,
+            "other-ca-cert", "otherCa");
 
     String originalPrivateKeyValue = JsonPath.parse(originalCertificate)
         .read("$.value.private_key");
@@ -345,5 +379,105 @@ public class CertificateSetAndRegenerateTest {
     this.mockMvc.perform(certificateSetRequest)
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error", equalTo("The provided certificate does not match the private key.")));
+  }
+
+  @Test
+  public void certificateSetRequest_withoutTransitionalProvided_shouldGenerateAVersionWithTransitionalFalse() throws Exception {
+    final String setJson = JSONObject.toJSONString(
+        ImmutableMap.<String, String>builder()
+            .put("ca", TEST_CA)
+            .put("certificate", TEST_CERTIFICATE)
+            .put("private_key", TEST_PRIVATE_KEY)
+            .build());
+
+    String content = "{\"value\" : " + setJson + "}";
+    MockHttpServletRequestBuilder certificateSetRequest = post("/api/v1/certificates/" + caCredentialUuid + "/versions")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(content);
+
+    this.mockMvc.perform(certificateSetRequest)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.value.ca", equalTo(TEST_CA)))
+        .andExpect(jsonPath("$.value.certificate", equalTo(TEST_CERTIFICATE)))
+        .andExpect(jsonPath("$.value.private_key", equalTo(TEST_PRIVATE_KEY)))
+        .andExpect(jsonPath("$.name", equalTo(CA_NAME)))
+        .andExpect(jsonPath("$.transitional", equalTo(false)));
+
+    auditingHelper.verifyAuditing(AuditingOperationCode.CREDENTIAL_UPDATE, CA_NAME, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
+        "/api/v1/certificates/" + caCredentialUuid + "/versions", 200);
+
+    MockHttpServletRequestBuilder versionsGetRequest = get("/api/v1/certificates/" + caCredentialUuid + "/versions")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON);
+
+    String versionsResponse = this.mockMvc.perform(versionsGetRequest)
+        .andExpect(status().isOk())
+        .andReturn().getResponse().getContentAsString();
+
+    JSONArray versions = new JSONArray(versionsResponse);
+    assertThat(versions.length(), equalTo(2));
+  }
+
+  @Test
+  public void certificateSetRequest_withTransitionalTrue_shouldGenerateAVersionWithTransitionalTrue() throws Exception {
+    final String setJson = JSONObject.toJSONString(
+        ImmutableMap.<String, String>builder()
+            .put("ca", TEST_CA)
+            .put("certificate", TEST_CERTIFICATE)
+            .put("private_key", TEST_PRIVATE_KEY)
+            .build());
+
+    MockHttpServletRequestBuilder certificateSetRequest = post("/api/v1/certificates/" + caCredentialUuid + "/versions")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{\"value\" : " + setJson + ", \"transitional\": true}");
+
+    this.mockMvc.perform(certificateSetRequest)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.transitional", equalTo(true)));
+  }
+
+  @Test
+  public void certificateSetRequest_withTransitionalTrue_whenThereIsAlreadyATransitionalVersion_shouldReturnAnError() throws Exception {
+    final String setJson = JSONObject.toJSONString(
+        ImmutableMap.<String, String>builder()
+            .put("ca", TEST_CA)
+            .put("certificate", TEST_CERTIFICATE)
+            .put("private_key", TEST_PRIVATE_KEY)
+            .build());
+
+    MockHttpServletRequestBuilder certificateSetRequest = post("/api/v1/certificates/" + caCredentialUuid + "/versions")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{\"value\" : " + setJson + ", \"transitional\": true}");
+
+    this.mockMvc.perform(certificateSetRequest)
+        .andExpect(status().isOk());
+    this.mockMvc.perform(certificateSetRequest)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error").value("The maximum number of transitional versions for a given CA is 1."));
+  }
+
+  @Test
+  public void certificateSetRequest_withInvalidParams_shouldReturnBadRequest() throws Exception {
+    final String setJson = JSONObject.toJSONString(
+        ImmutableMap.<String, String>builder()
+            .put("certificate", "fake-certificate")
+            .put("private_key", TEST_PRIVATE_KEY)
+            .build());
+
+    MockHttpServletRequestBuilder certificateSetRequest = post("/api/v1/certificates/" + caCredentialUuid + "/versions")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{\"value\" : " + setJson + "}");
+
+    this.mockMvc.perform(certificateSetRequest)
+        .andExpect(status().isBadRequest());
   }
 }

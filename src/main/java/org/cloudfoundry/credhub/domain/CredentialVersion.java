@@ -71,6 +71,10 @@ public abstract class CredentialVersion<Z extends CredentialVersion> {
     this.delegate.setCredential(credentialVersion.delegate.getCredential());
   }
 
+  public void setCredential(Credential credential) {
+    this.delegate.setCredential(credential);
+  }
+
   public void createName(String name) {
     delegate.setCredential(new Credential(name));
   }
