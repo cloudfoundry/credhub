@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -157,6 +158,17 @@ public class CredentialVersionDataService {
     }
   }
 
+  public HashMap<UUID, Long> countByEncryptionKey() {
+    HashMap<UUID, Long> map = new HashMap<>();
+    jdbcTemplate.query(
+        " SELECT count(*), encryption_key_uuid FROM credential_version " +
+            "LEFT JOIN encrypted_value ON credential_version.encrypted_value_uuid = encrypted_value.uuid " +
+            "GROUP BY encrypted_value.encryption_key_uuid",
+        (rowSet, rowNum) -> map.put(UUID.fromString(rowSet.getString("encryption_key_uuid")), rowSet.getLong("count"))
+    );
+    return map;
+  }
+
   public List<CredentialVersion> findActiveByName(String name) {
     Credential credential = credentialDataService.find(name);
     CredentialVersionData credentialVersionData;
@@ -177,12 +189,6 @@ public class CredentialVersionDataService {
 
   public Long count() {
     return credentialVersionRepository.count();
-  }
-
-  public Long countAllNotEncryptedByActiveKey() {
-    return credentialVersionRepository.countByEncryptedCredentialValueEncryptionKeyUuidNot(
-        encryptionKeyCanaryMapper.getActiveUuid()
-    );
   }
 
   public Long countEncryptedWithKeyUuidIn(List<UUID> uuids) {

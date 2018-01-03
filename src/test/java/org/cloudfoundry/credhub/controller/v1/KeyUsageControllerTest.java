@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.UUID;
 
 import static org.mockito.Mockito.mock;
@@ -52,21 +53,28 @@ public class KeyUsageControllerTest {
   @Test
   public void getKeyUsages_getsKeyDistributionAcrossActiveInactiveAndUnknownEncryptionKeys()
       throws Exception {
+    final UUID activeKey = UUID.randomUUID();
+    final UUID knownKey = UUID.randomUUID();
+    final UUID unknownKey = UUID.randomUUID();
     ArrayList<UUID> keysInConfigUuids = new ArrayList<UUID>() {{
-      add(UUID.randomUUID());
-      add(UUID.randomUUID());
+      add(activeKey);
+      add(knownKey);
     }};
 
+    HashMap<UUID, Long> countByEncryptionKey = new HashMap<>();
+    countByEncryptionKey.put(activeKey, 200L);
+    countByEncryptionKey.put(knownKey, 10L);
+    countByEncryptionKey.put(unknownKey, 5L);
+
     when(encryptionKeyCanaryMapper.getKnownCanaryUuids()).thenReturn(keysInConfigUuids);
-    when(credentialVersionDataService.count()).thenReturn(225L);
-    when(credentialVersionDataService.countAllNotEncryptedByActiveKey()).thenReturn(25L);
-    when(credentialVersionDataService.countEncryptedWithKeyUuidIn(keysInConfigUuids)).thenReturn(220L);
+    when(encryptionKeyCanaryMapper.getActiveUuid()).thenReturn(activeKey);
+    when(credentialVersionDataService.countByEncryptionKey()).thenReturn(countByEncryptionKey);
 
     mockMvc.perform(get("/api/v1/key-usage"))
         .andExpect(status().isOk())
         .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$.active_key").value(200))
-        .andExpect(jsonPath("$.inactive_keys").value(20))
+        .andExpect(jsonPath("$.inactive_keys").value(10))
         .andExpect(jsonPath("$.unknown_keys").value(5));
   }
 

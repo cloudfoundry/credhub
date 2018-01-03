@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -34,14 +34,21 @@ public class KeyUsageController {
 
   @RequestMapping(method = RequestMethod.GET, path = "")
   public ResponseEntity<Map> getKeyUsages() {
-    List<UUID> canaryKeyInConfigUuids = encryptionKeyCanaryMapper.getKnownCanaryUuids();
+    Long totalCredCount = 0L;
+    final HashMap<UUID, Long> countByEncryptionKey = credentialVersionDataService.countByEncryptionKey();
+    for (int i=0; i<countByEncryptionKey.size(); i++) {
+      totalCredCount += countByEncryptionKey.values().toArray(new Long[countByEncryptionKey.values().size()])[i];
+    }
 
-    Long totalCredCount = credentialVersionDataService.count();
-    Long credsNotEncryptedByActiveKey = credentialVersionDataService.countAllNotEncryptedByActiveKey();
-    Long credsEncryptedByKnownKeys = credentialVersionDataService
-        .countEncryptedWithKeyUuidIn(canaryKeyInConfigUuids);
+    Long activeKeyCreds = countByEncryptionKey.getOrDefault(encryptionKeyCanaryMapper.getActiveUuid(), 0L);
 
-    Long activeKeyCreds = totalCredCount - credsNotEncryptedByActiveKey;
+    Long credsEncryptedByKnownKeys = 0L;
+    for (UUID encryptionKeyUuid : countByEncryptionKey.keySet()) {
+      if (encryptionKeyCanaryMapper.getKnownCanaryUuids().contains(encryptionKeyUuid)) {
+        credsEncryptedByKnownKeys += countByEncryptionKey.get(encryptionKeyUuid);
+      }
+    }
+
     Long unknownKeyCreds = totalCredCount - credsEncryptedByKnownKeys;
     Long inactiveKeyCreds = totalCredCount - (activeKeyCreds + unknownKeyCreds);
 
