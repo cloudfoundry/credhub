@@ -10,7 +10,6 @@ import org.cloudfoundry.credhub.util.PrivateKeyReader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 
@@ -46,40 +45,32 @@ public class CertificateGenerator implements CredentialGenerator<CertificateCred
         throw new RuntimeException(e);
     }
 
-    X509Certificate cert;
-    String caName = null;
-    String caCertificate = null;
-
     if (params.isSelfSigned()) {
       try {
-        cert = signedCertificateGenerator.getSelfSigned(keyPair, params);
+        String cert = pemOf(signedCertificateGenerator.getSelfSigned(keyPair, params));
+        return new CertificateCredentialValue(cert, cert, privatePem, null);
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
     } else {
-        caName = params.getCaName();
+      String caName = params.getCaName();
         CertificateCredentialValue ca = certificateAuthorityService.findActiveVersion(caName);
         if (ca.getPrivateKey() == null) {
           throw new ParameterizedValidationException("error.ca_missing_private_key");
         }
-        caCertificate = ca.getCertificate();
+      String caCertificate = ca.getCertificate();
 
         try {
-          cert = signedCertificateGenerator.getSignedByIssuer(
+          X509Certificate cert = signedCertificateGenerator.getSignedByIssuer(
               keyPair,
               params,
               CertificateReader.getCertificate(caCertificate),
               PrivateKeyReader.getPrivateKey(ca.getPrivateKey())
           );
+          return new CertificateCredentialValue(caCertificate, pemOf(cert), privatePem, caName);
         } catch (Exception e) {
           throw new RuntimeException(e);
         }
-    }
-
-    try {
-      return new CertificateCredentialValue(caCertificate, pemOf(cert), privatePem, caName);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
     }
   }
 }

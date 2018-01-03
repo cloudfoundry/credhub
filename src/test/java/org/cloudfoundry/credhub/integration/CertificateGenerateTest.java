@@ -96,9 +96,11 @@ public class CertificateGenerateTest {
         .andExpect(status().isOk())
         .andReturn().getResponse().getContentAsString();
 
-    String ca = (new JSONObject(caResult)).getJSONObject("value").getString("certificate");
+    String picardCert = (new JSONObject(caResult)).getJSONObject("value").getString("certificate");
+    String picardCA = (new JSONObject(caResult)).getJSONObject("value").getString("ca");
+    assertThat(picardCert, equalTo(picardCA));
 
-    assertThat(ca, notNullValue());
+    assertThat(picardCert, notNullValue());
 
     MockHttpServletRequestBuilder certPost = post("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -122,11 +124,11 @@ public class CertificateGenerateTest {
     String certCa = (new JSONObject(certResult)).getJSONObject("value").getString("ca");
     String cert = (new JSONObject(certResult)).getJSONObject("value").getString("certificate");
 
-    assertThat(certCa, equalTo(ca));
+    assertThat(certCa, equalTo(picardCert));
 
     CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
     X509Certificate caPem = (X509Certificate) certificateFactory
-        .generateCertificate(new ByteArrayInputStream(ca.getBytes()));
+        .generateCertificate(new ByteArrayInputStream(picardCert.getBytes()));
 
     X509Certificate certPem = (X509Certificate) certificateFactory
         .generateCertificate(new ByteArrayInputStream(cert.getBytes()));

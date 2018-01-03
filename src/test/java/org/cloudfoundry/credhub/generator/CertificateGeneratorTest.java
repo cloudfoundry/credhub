@@ -1,14 +1,5 @@
 package org.cloudfoundry.credhub.generator;
 
-import org.cloudfoundry.credhub.auth.UserContext;
-import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
-import org.cloudfoundry.credhub.data.CertificateAuthorityService;
-import org.cloudfoundry.credhub.domain.CertificateGenerationParameters;
-import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
-import org.cloudfoundry.credhub.request.CertificateGenerationRequestParameters;
-import org.cloudfoundry.credhub.service.PermissionCheckingService;
-import org.cloudfoundry.credhub.util.CertificateFormatter;
-import org.cloudfoundry.credhub.util.CurrentTimeProvider;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.Extension;
@@ -21,6 +12,16 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.cloudfoundry.credhub.auth.UserContext;
+import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
+import org.cloudfoundry.credhub.data.CertificateAuthorityService;
+import org.cloudfoundry.credhub.domain.CertificateGenerationParameters;
+import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
+import org.cloudfoundry.credhub.helper.TestHelper;
+import org.cloudfoundry.credhub.request.CertificateGenerationRequestParameters;
+import org.cloudfoundry.credhub.service.PermissionCheckingService;
+import org.cloudfoundry.credhub.util.CertificateFormatter;
+import org.cloudfoundry.credhub.util.CurrentTimeProvider;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,7 +39,6 @@ import java.util.Date;
 
 import static org.assertj.core.api.Assertions.fail;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.any;
@@ -74,6 +74,7 @@ public class CertificateGeneratorTest {
 
   @Before
   public void beforeEach() throws Exception {
+    TestHelper.getBouncyCastleProvider();
     keyGenerator = mock(LibcryptoRsaKeyPairGenerator.class);
     signedCertificateGenerator = mock(SignedCertificateGenerator.class);
     certificateAuthorityService = mock(CertificateAuthorityService.class);
@@ -223,7 +224,7 @@ public class CertificateGeneratorTest {
         equalTo(CertificateFormatter.pemOf(rootCaKeyPair.getPrivate())));
     assertThat(certificateCredential.getCertificate(),
         equalTo(CertificateFormatter.pemOf(certificate)));
-    assertThat(certificateCredential.getCa(), nullValue());
+    assertThat(certificateCredential.getCa(), equalTo(CertificateFormatter.pemOf(certificate)));
     verify(signedCertificateGenerator, times(1)).getSelfSigned(rootCaKeyPair, inputParameters);
   }
 
