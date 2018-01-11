@@ -4,7 +4,6 @@ import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.domain.Encryptor;
 import org.cloudfoundry.credhub.entity.EncryptedValue;
 import org.cloudfoundry.credhub.repository.EncryptedValueRepository;
-import org.cloudfoundry.credhub.service.EncryptionKeyCanaryMapper;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,8 +30,6 @@ import static org.mockito.Mockito.when;
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class EncryptedValueDataServiceTest {
-  @MockBean
-  EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
 
   @MockBean
   EncryptedValueRepository encryptedValueRepository;
@@ -44,33 +41,31 @@ public class EncryptedValueDataServiceTest {
 
   @Before
   public void beforeEach() {
-    subject = new EncryptedValueDataService(encryptionKeyCanaryMapper, encryptedValueRepository,
-        encryptor);
+    subject = new EncryptedValueDataService(encryptedValueRepository, encryptor);
   }
 
   @Test
-  public void countAllNotEncryptedByActiveKey() throws Exception {
-    UUID activeKeyUUID = UUID.randomUUID();
-    when(encryptionKeyCanaryMapper.getActiveUuid()).thenReturn(activeKeyUUID);
+  public void countAllByCanaryUuid() throws Exception {
+    UUID uuid = UUID.randomUUID();
 
-    subject.countAllNotEncryptedByActiveKey();
+    subject.countAllByCanaryUuid(uuid);
 
-    verify(encryptedValueRepository).countByEncryptionKeyUuidNot(activeKeyUUID);
+    verify(encryptedValueRepository).countByEncryptionKeyUuidNot(uuid);
   }
 
   @Test
-  public void findEncryptedWithAvailableInactiveKey() throws Exception {
+  public void findByCanaryUuids() throws Exception {
     List<UUID> canaryUuids = Collections.singletonList(UUID.randomUUID());
     Slice<EncryptedValue> encryptedValues = new SliceImpl(Collections.singletonList(new EncryptedValue()));
-    when(encryptionKeyCanaryMapper.getCanaryUuidsWithKnownAndInactiveKeys()).thenReturn(canaryUuids);
     when(encryptedValueRepository.findByEncryptionKeyUuidIn(eq(canaryUuids), any())).thenReturn(encryptedValues);
 
-    assertThat(subject.findEncryptedWithAvailableInactiveKey(), equalTo(encryptedValues));
+    assertThat(subject.findByCanaryUuids(canaryUuids), equalTo(encryptedValues));
   }
 
   @Test
   public void rotate() throws Exception {
-    EncryptedValue newEncryption = new EncryptedValue(UUID.randomUUID(), "expected value".getBytes(), "nonce".getBytes());
+    EncryptedValue newEncryption = new EncryptedValue(UUID.randomUUID(), "expected value".getBytes(),
+        "nonce".getBytes());
     EncryptedValue value = new EncryptedValue();
     value.setEncryptedValue("bytes".getBytes());
     value.setEncryptionKeyUuid(UUID.randomUUID());

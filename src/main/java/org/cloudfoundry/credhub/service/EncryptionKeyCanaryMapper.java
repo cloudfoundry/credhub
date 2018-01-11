@@ -98,6 +98,10 @@ public class EncryptionKeyCanaryMapper {
     return list;
   }
 
+  public void delete(List<UUID> uuids) {
+    encryptionKeyCanaryDataService.delete(uuids);
+  }
+
   private void createKeys() {
     keys = newArrayList();
     encryptionKeysConfiguration.getKeys().forEach(keyMetadata -> {

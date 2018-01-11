@@ -1,11 +1,10 @@
 package org.cloudfoundry.credhub.service;
 
-import org.cloudfoundry.credhub.data.EncryptedValueDataService;
-import org.cloudfoundry.credhub.data.EncryptionKeyCanaryDataService;
-import org.cloudfoundry.credhub.entity.EncryptedValue;
-import org.cloudfoundry.credhub.exceptions.KeyNotFoundException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.cloudfoundry.credhub.data.EncryptedValueDataService;
+import org.cloudfoundry.credhub.entity.EncryptedValue;
+import org.cloudfoundry.credhub.exceptions.KeyNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Component;
@@ -19,18 +18,15 @@ public class EncryptionKeyRotator {
   private final EncryptedValueDataService encryptedValueDataService;
   private final Logger logger;
   private final EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
-  private final EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
 
   @Autowired
   EncryptionKeyRotator(
       EncryptedValueDataService encryptedValueDataService,
-      EncryptionKeyCanaryMapper encryptionKeyCanaryMapper,
-      EncryptionKeyCanaryDataService encryptionKeyCanaryDataService
+      EncryptionKeyCanaryMapper encryptionKeyCanaryMapper
   ) {
     this.encryptedValueDataService = encryptedValueDataService;
     this.logger = LogManager.getLogger(this.getClass());
     this.encryptionKeyCanaryMapper = encryptionKeyCanaryMapper;
-    this.encryptionKeyCanaryDataService = encryptionKeyCanaryDataService;
   }
 
   public void rotate() {
@@ -38,10 +34,11 @@ public class EncryptionKeyRotator {
     logger.info("Starting encryption key rotation.");
     int rotatedRecordCount = 0;
 
-    final long startingNotRotatedRecordCount = encryptedValueDataService.countAllNotEncryptedByActiveKey();
+    final long startingNotRotatedRecordCount = encryptedValueDataService.countAllByCanaryUuid(encryptionKeyCanaryMapper.getActiveUuid());
 
+    List<UUID> inactiveCanaries = encryptionKeyCanaryMapper.getCanaryUuidsWithKnownAndInactiveKeys();
     Slice<EncryptedValue> valuesEncryptedByOldKey = encryptedValueDataService
-        .findEncryptedWithAvailableInactiveKey();
+        .findByCanaryUuids(inactiveCanaries);
     while (valuesEncryptedByOldKey.hasContent()) {
       for (EncryptedValue value : valuesEncryptedByOldKey.getContent()) {
         try {
@@ -51,7 +48,7 @@ public class EncryptionKeyRotator {
           logger.error("key not found for value, unable to rotate");
         }
       }
-      valuesEncryptedByOldKey = encryptedValueDataService.findEncryptedWithAvailableInactiveKey();
+      valuesEncryptedByOldKey = encryptedValueDataService.findByCanaryUuids(inactiveCanaries);
     }
 
     final long finish = System.currentTimeMillis();
@@ -67,11 +64,7 @@ public class EncryptionKeyRotator {
           + " item(s) due to missing master encryption key(s).");
     }
 
-    deleteKnownAndInactiveCanaries();
+    encryptionKeyCanaryMapper.delete(inactiveCanaries);
   }
 
-  private void deleteKnownAndInactiveCanaries() {
-    List<UUID> knownAndInactiveKeys = encryptionKeyCanaryMapper.getCanaryUuidsWithKnownAndInactiveKeys();
-    encryptionKeyCanaryDataService.delete(knownAndInactiveKeys);
-  }
 }
