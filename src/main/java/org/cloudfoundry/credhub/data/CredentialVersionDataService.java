@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.data;
 
+import org.apache.commons.lang3.StringUtils;
 import org.cloudfoundry.credhub.domain.CredentialFactory;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData;
@@ -9,11 +10,7 @@ import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.repository.CredentialVersionRepository;
 import org.cloudfoundry.credhub.service.EncryptionKeyCanaryMapper;
 import org.cloudfoundry.credhub.view.FindCredentialResult;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -177,7 +174,7 @@ public class CredentialVersionDataService {
       credentialVersionData = credentialVersionRepository
           .findFirstByCredentialUuidOrderByVersionCreatedAtDesc(credential.getUuid());
 
-      if (credentialVersionData.getCredentialType().equals(CertificateCredentialVersionData.CREDENTIAL_TYPE)){
+      if (credentialVersionData.getCredentialType().equals(CertificateCredentialVersionData.CREDENTIAL_TYPE)) {
         return certificateVersionDataService.findActiveWithTransitional(name);
       }
       result.add(credentialFactory.makeCredentialFromEntity(credentialVersionData));
@@ -193,16 +190,6 @@ public class CredentialVersionDataService {
 
   public Long countEncryptedWithKeyUuidIn(List<UUID> uuids) {
     return credentialVersionRepository.countByEncryptedCredentialValueEncryptionKeyUuidIn(uuids);
-  }
-
-  public Slice<CredentialVersion> findEncryptedWithAvailableInactiveKey() {
-    final Slice<CredentialVersionData> credentialDataSlice = credentialVersionRepository
-        .findByEncryptedCredentialValueEncryptionKeyUuidIn(
-            encryptionKeyCanaryMapper.getCanaryUuidsWithKnownAndInactiveKeys(),
-            new PageRequest(0, CredentialVersionRepository.BATCH_SIZE)
-        );
-    return new SliceImpl(
-        credentialFactory.makeCredentialsFromEntities(credentialDataSlice.getContent()));
   }
 
   private List<FindCredentialResult> findMatchingName(String nameLike) {
@@ -229,7 +216,7 @@ public class CredentialVersionDataService {
     return credentialResults;
   }
 
-  private List<String> findCertificateNamesByCaName(String caName){
+  private List<String> findCertificateNamesByCaName(String caName) {
     String query = "select distinct credential.name from "
         + "credential, credential_version, certificate_credential "
         + "where credential.uuid=credential_version.credential_uuid "
