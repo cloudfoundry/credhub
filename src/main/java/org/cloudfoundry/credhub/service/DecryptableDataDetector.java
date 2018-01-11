@@ -1,9 +1,12 @@
 package org.cloudfoundry.credhub.service;
 
 import org.cloudfoundry.credhub.data.CredentialVersionDataService;
+import org.springframework.stereotype.Component;
+
 import java.util.ArrayList;
 import java.util.UUID;
 
+@Component
 public class DecryptableDataDetector {
 
   private EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;

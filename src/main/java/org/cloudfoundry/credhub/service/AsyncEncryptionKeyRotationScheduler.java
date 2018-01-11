@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.service;
 
-import org.cloudfoundry.credhub.data.CredentialVersionDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -15,24 +14,15 @@ import org.springframework.stereotype.Component;
 class AsyncEncryptionKeyRotationScheduler {
 
   private EncryptionKeyRotator encryptionKeyRotator;
-  private EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
-  private CredentialVersionDataService credentialVersionDataService;
 
   @Autowired
   public AsyncEncryptionKeyRotationScheduler(
       EncryptionKeyRotator encryptionKeyRotator,
-      EncryptionKeyCanaryMapper encryptionKeyCanaryMapper,
-      CredentialVersionDataService credentialVersionDataService
+      DecryptableDataDetector decryptableDataDetector
   ) {
     this.encryptionKeyRotator = encryptionKeyRotator;
-    this.encryptionKeyCanaryMapper = encryptionKeyCanaryMapper;
-    this.credentialVersionDataService = credentialVersionDataService;
 
-    makeSureWeCanDecryptSomething();
-  }
-
-  public void makeSureWeCanDecryptSomething() {
-    (new DecryptableDataDetector(encryptionKeyCanaryMapper, credentialVersionDataService)).check();
+    decryptableDataDetector.check();
   }
 
   @Async
