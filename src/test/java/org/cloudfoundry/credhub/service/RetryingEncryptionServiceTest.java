@@ -42,7 +42,6 @@ public class RetryingEncryptionServiceTest {
   private EncryptionService encryptionService;
   private RemoteEncryptionConnectable remoteEncryptionConnectable;
   private UUID activeKeyUuid;
-  private UUID oldKeyUuid;
 
   private ReentrantReadWriteLock readWriteLock;
 
@@ -55,7 +54,6 @@ public class RetryingEncryptionServiceTest {
     remoteEncryptionConnectable = mock(RemoteEncryptionConnectable.class);
 
     activeKeyUuid = UUID.randomUUID();
-    oldKeyUuid = UUID.randomUUID();
 
     when(keyMapper.getActiveUuid())
         .thenReturn(activeKeyUuid);

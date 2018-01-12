@@ -16,10 +16,11 @@ public class Encryptor {
   }
 
   public EncryptedValue encrypt(String clearTextValue) {
+    if (clearTextValue == null) {
+      return new EncryptedValue();
+    }
     try {
-      return clearTextValue == null
-          ? new EncryptedValue() :
-          encryptionService.encrypt(clearTextValue);
+      return encryptionService.encrypt(clearTextValue);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
