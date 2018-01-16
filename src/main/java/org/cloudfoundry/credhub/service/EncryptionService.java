@@ -3,10 +3,6 @@ package org.cloudfoundry.credhub.service;
 import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
 import org.cloudfoundry.credhub.entity.EncryptedValue;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
@@ -14,6 +10,10 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.UUID;
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 
 import static org.cloudfoundry.credhub.constants.EncryptionConstants.NONCE_SIZE;
 import static org.cloudfoundry.credhub.service.EncryptionKeyCanaryMapper.CHARSET;
@@ -30,6 +30,10 @@ public abstract class EncryptionService {
 
   public abstract SecureRandom getSecureRandom();
 
+  public EncryptedValue encrypt(EncryptionKey key, String value) throws Exception {
+    return encrypt(key.getUuid(), key.getKey(), value);
+  }
+
   public EncryptedValue encrypt(UUID canaryUuid, Key key, String value) throws Exception {
     byte[] nonce = generateNonce();
     AlgorithmParameterSpec parameterSpec = generateParameterSpec(nonce);
@@ -40,6 +44,10 @@ public abstract class EncryptionService {
     byte[] encrypted = encryptionCipher.doFinal(value.getBytes(CHARSET));
 
     return new EncryptedValue(canaryUuid, encrypted, nonce);
+  }
+
+  public String decrypt(EncryptionKey key, byte[] encryptedValue, byte[] nonce) throws Exception {
+    return decrypt(key.getKey(), encryptedValue, nonce);
   }
 
   public String decrypt(Key key, byte[] encryptedValue, byte[] nonce) throws Exception {

@@ -44,6 +44,8 @@ public class RetryingEncryptionServiceTest {
 
   private ReentrantReadWriteLock readWriteLock;
   private EncryptionKeySet keySet;
+  private EncryptionKey firstActiveKey;
+  private EncryptionKey secondActiveKey;
 
   @Before
   public void beforeEach() {
@@ -54,17 +56,16 @@ public class RetryingEncryptionServiceTest {
     remoteEncryptionConnectable = mock(RemoteEncryptionConnectable.class);
 
     activeKeyUuid = UUID.randomUUID();
+    firstActiveKey = new EncryptionKey(activeKeyUuid, firstKey);
+    secondActiveKey = new EncryptionKey(activeKeyUuid, secondKey);
 
     when(keySet.getActive())
-        .thenReturn(activeKeyUuid);
-
-    when(keySet.getActiveKey())
-        .thenReturn(firstKey)
-        .thenReturn(secondKey);
+        .thenReturn(firstActiveKey)
+        .thenReturn(secondActiveKey);
 
     when(keySet.get(activeKeyUuid))
-        .thenReturn(firstKey)
-        .thenReturn(secondKey);
+        .thenReturn(firstActiveKey)
+        .thenReturn(secondActiveKey);
 
     subject = new RetryingEncryptionService(encryptionService, keySet, remoteEncryptionConnectable);
 
@@ -78,11 +79,11 @@ public class RetryingEncryptionServiceTest {
   }
 
   @Test
-  public void excrypt_shouldEncryptTheStringWithoutAttemptingToReconnect() throws Exception {
+  public void encrypt_shouldEncryptTheStringWithoutAttemptingToReconnect() throws Exception {
     reset(encryptionService);
 
     EncryptedValue expectedEncryption = mock(EncryptedValue.class);
-    when(encryptionService.encrypt(activeKeyUuid, firstKey, "fake-plaintext"))
+    when(encryptionService.encrypt(firstActiveKey, "fake-plaintext"))
         .thenReturn(expectedEncryption);
 
     EncryptedValue encryptedValue = subject.encrypt("fake-plaintext");
@@ -96,7 +97,7 @@ public class RetryingEncryptionServiceTest {
 
   @Test
   public void encrypt_whenThrowsAnError_retriesEncryptionFailure() throws Exception {
-    when(encryptionService.encrypt(any(UUID.class), any(Key.class), anyString()))
+    when(encryptionService.encrypt(any(EncryptionKey.class), anyString()))
         .thenThrow(new ProviderException("function 'C_GenerateRandom' returns 0x30"));
     try {
       subject.encrypt("a value");
@@ -106,14 +107,14 @@ public class RetryingEncryptionServiceTest {
     }
 
     final InOrder inOrder = inOrder(encryptionService, remoteEncryptionConnectable);
-    inOrder.verify(encryptionService).encrypt(eq(activeKeyUuid), eq(firstKey), anyString());
+    inOrder.verify(encryptionService).encrypt(eq(firstActiveKey), anyString());
     inOrder.verify(remoteEncryptionConnectable).reconnect(any(ProviderException.class));
-    inOrder.verify(encryptionService).encrypt(eq(activeKeyUuid), eq(secondKey), anyString());
+    inOrder.verify(encryptionService).encrypt(eq(secondActiveKey), anyString());
   }
 
   @Test
   public void encrypt_whenThrowsAnError_unlocksAfterExceptionAndLocksAgainBeforeEncrypting() throws Exception {
-    when(encryptionService.encrypt(any(UUID.class), any(Key.class), anyString()))
+    when(encryptionService.encrypt(any(EncryptionKey.class), anyString()))
         .thenThrow(new ProviderException("function 'C_GenerateRandom' returns 0x30"));
     reset(writeLock);
 
@@ -132,7 +133,7 @@ public class RetryingEncryptionServiceTest {
 
   @Test
   public void encryption_whenThrowsAnError_createsNewKeysForUUIDs() throws Exception {
-    when(encryptionService.encrypt(any(UUID.class), any(Key.class), anyString()))
+    when(encryptionService.encrypt(any(EncryptionKey.class), anyString()))
         .thenThrow(new ProviderException("function 'C_GenerateRandom' returns 0x30"));
     try {
       subject.encrypt("a value");
@@ -149,9 +150,9 @@ public class RetryingEncryptionServiceTest {
     EncryptedValue expectedEncryption = mock(EncryptedValue.class);
     reset(encryptionService);
 
-    when(encryptionService.encrypt(activeKeyUuid, firstKey, "fake-plaintext"))
+    when(encryptionService.encrypt(firstActiveKey, "fake-plaintext"))
         .thenThrow(new IllegalBlockSizeException("test exception"));
-    when(encryptionService.encrypt(activeKeyUuid, secondKey, "fake-plaintext"))
+    when(encryptionService.encrypt(secondActiveKey, "fake-plaintext"))
         .thenReturn(expectedEncryption);
 
     assertThat(subject.encrypt("fake-plaintext"), equalTo(expectedEncryption));
@@ -199,7 +200,7 @@ public class RetryingEncryptionServiceTest {
 
     subject = new RacingRetryingEncryptionServiceForTest(firstThread, secondThread, lock);
 
-    when(encryptionService.encrypt(eq(activeKeyUuid), any(Key.class), anyString()))
+    when(encryptionService.encrypt(any(EncryptionKey.class), anyString()))
         .thenThrow(new ProviderException("function 'C_GenerateRandom' returns 0x30"));
 
     firstThread.start();
@@ -210,8 +211,9 @@ public class RetryingEncryptionServiceTest {
     verify(keySet, times(1)).reload();
   }
 
+  @Test
   public void decrypt_shouldReturnTheDecryptedStringWithoutAttemptionToReconnect() throws Exception {
-    when(encryptionService.decrypt(firstKey, "fake-encrypted-value".getBytes(), "fake-nonce".getBytes()))
+    when(encryptionService.decrypt(firstActiveKey, "fake-encrypted-value".getBytes(), "fake-nonce".getBytes()))
         .thenReturn("fake-plaintext");
 
     assertThat(
@@ -224,7 +226,7 @@ public class RetryingEncryptionServiceTest {
 
   @Test
   public void decrypt_whenThrowsAnError_retriesDecryptionFailure() throws Exception {
-    when(encryptionService.decrypt(any(Key.class), any(byte[].class), any(byte[].class)))
+    when(encryptionService.decrypt(any(EncryptionKey.class), any(byte[].class), any(byte[].class)))
         .thenThrow(new ProviderException("function 'C_GenerateRandom' returns 0x30"));
     try {
       subject.decrypt(new EncryptedValue(activeKeyUuid, "an encrypted value".getBytes(), "a nonce".getBytes()));
@@ -234,15 +236,15 @@ public class RetryingEncryptionServiceTest {
     }
 
     final InOrder inOrder = inOrder(encryptionService, remoteEncryptionConnectable);
-    inOrder.verify(encryptionService).decrypt(eq(firstKey), any(byte[].class), any(byte[].class));
+    inOrder.verify(encryptionService).decrypt(eq(firstActiveKey), any(byte[].class), any(byte[].class));
     inOrder.verify(remoteEncryptionConnectable).reconnect(any(ProviderException.class));
     inOrder.verify(encryptionService)
-        .decrypt(eq(secondKey), any(byte[].class), any(byte[].class));
+        .decrypt(eq(secondActiveKey), any(byte[].class), any(byte[].class));
   }
 
   @Test
   public void decrypt_whenThrowsErrors_unlocksAfterExceptionAndLocksAgainBeforeEncrypting() throws Exception {
-    when(encryptionService.decrypt(any(Key.class), any(byte[].class), any(byte[].class)))
+    when(encryptionService.decrypt(any(EncryptionKey.class), any(byte[].class), any(byte[].class)))
         .thenThrow(new ProviderException("function 'C_GenerateRandom' returns 0x30"));
     reset(writeLock);
 
@@ -261,7 +263,7 @@ public class RetryingEncryptionServiceTest {
 
   @Test
   public void decrypt_locksAndUnlocksTheReconnectLockWhenLoginError() throws Exception {
-    when(encryptionService.decrypt(any(Key.class), any(byte[].class), any(byte[].class)))
+    when(encryptionService.decrypt(any(EncryptionKey.class), any(byte[].class), any(byte[].class)))
         .thenThrow(new ProviderException("function 'C_GenerateRandom' returns 0x30"));
     reset(writeLock);
     doThrow(new RuntimeException()).when(remoteEncryptionConnectable)
@@ -285,10 +287,10 @@ public class RetryingEncryptionServiceTest {
     reset(encryptionService);
 
     when(encryptionService
-        .decrypt(firstKey, "fake-encrypted-value".getBytes(), "fake-nonce".getBytes()))
+        .decrypt(firstActiveKey, "fake-encrypted-value".getBytes(), "fake-nonce".getBytes()))
         .thenThrow(new IllegalBlockSizeException("test exception"));
     when(encryptionService
-        .decrypt(secondKey, "fake-encrypted-value".getBytes(), "fake-nonce".getBytes()))
+        .decrypt(secondActiveKey, "fake-encrypted-value".getBytes(), "fake-nonce".getBytes()))
         .thenReturn("fake-plaintext");
 
     assertThat(subject
@@ -310,11 +312,6 @@ public class RetryingEncryptionServiceTest {
 
   @Test
   public void decryptionLocks_acquiresALunaUsageReadLock() throws Exception {
-    when(encryptionService.decrypt(any(Key.class), any(byte[].class), any(byte[].class)))
-        .thenReturn("the result");
-
-    reset(writeLock);
-
     subject.decrypt(new EncryptedValue(activeKeyUuid, "an encrypted value".getBytes(), "a nonce".getBytes()));
     verify(readLock, times(1)).lock();
     verify(readLock, times(1)).unlock();
@@ -350,7 +347,7 @@ public class RetryingEncryptionServiceTest {
 
     subject = new RacingRetryingEncryptionServiceForTest(firstThread, secondThread, lock);
 
-    when(encryptionService.decrypt(any(Key.class), any(byte[].class), any(byte[].class)))
+    when(encryptionService.decrypt(any(EncryptionKey.class), any(byte[].class), any(byte[].class)))
         .thenThrow(new ProviderException("function 'C_GenerateRandom' returns 0x30"));
 
     firstThread.start();

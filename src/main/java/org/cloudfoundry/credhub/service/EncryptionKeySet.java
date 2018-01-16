@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 @Component
 public class EncryptionKeySet {
 
-  private Map<UUID, Key> keys;
+  private Map<UUID, EncryptionKey> keys;
   private UUID activeUUID;
   private EncryptionKeyCanaryMapper canaryMapper;
 
@@ -30,35 +30,31 @@ public class EncryptionKeySet {
   }
 
   public void add(UUID uuid, Key key) {
-    keys.put(uuid, key);
+    keys.put(uuid, new EncryptionKey(uuid, key));
   }
 
   public void setActive(UUID uuid) {
     activeUUID = uuid;
   }
 
-  public Key get(UUID uuid) {
+  public EncryptionKey get(UUID uuid) {
     return keys.get(uuid);
   }
 
-  public Collection<Key> getKeys() {
+  public Collection<EncryptionKey> getKeys() {
     return keys.values();
   }
 
-  public UUID getActive() {
-    return activeUUID;
+  public EncryptionKey getActive() {
+    return keys.get(activeUUID);
   }
 
-  public List<UUID> getInactive() {
+  public List<UUID> getInactiveUuids() {
     return keys.keySet().stream().filter(uuid -> !uuid.equals(activeUUID)).collect(Collectors.toList());
   }
 
   public Collection<UUID> getUuids() {
     return keys.keySet();
-  }
-
-  public Key getActiveKey() {
-    return keys.get(activeUUID);
   }
 
   public void reload() {

@@ -8,6 +8,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.springframework.data.domain.SliceImpl;
 
+import java.security.Key;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -34,9 +35,13 @@ public class EncryptionKeyRotatorTest {
   @Before
   public void beforeEach() {
     oldUuid = UUID.randomUUID();
+    UUID activeUuid = UUID.randomUUID();
 
     encryptedValueDataService = mock(EncryptedValueDataService.class);
-    keySet = mock(EncryptionKeySet.class);
+    keySet = new EncryptionKeySet();
+    keySet.add(oldUuid, mock(Key.class));
+    keySet.add(activeUuid, mock(Key.class));
+    keySet.setActive(activeUuid);
 
     encryptedValue1 = mock(EncryptedValue.class);
     encryptedValue2 = mock(EncryptedValue.class);
@@ -44,7 +49,7 @@ public class EncryptionKeyRotatorTest {
 
     encryptionKeyCanaryMapper = mock(EncryptionKeyCanaryMapper.class);
     inactiveCanaries = newArrayList(oldUuid);
-    when(keySet.getInactive()).thenReturn(inactiveCanaries);
+
     when(encryptedValueDataService.findByCanaryUuids(inactiveCanaries))
         .thenReturn(new SliceImpl<>(asList(encryptedValue1, encryptedValue2)))
         .thenReturn(new SliceImpl<>(asList(encryptedValue3)))

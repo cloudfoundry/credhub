@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import javax.crypto.AEADBadTagException;
 import javax.crypto.IllegalBlockSizeException;
 
@@ -152,9 +153,9 @@ public class EncryptionKeyCanaryMapperTest {
         encryptionKeysConfiguration, encryptionService, timedRetry, true);
     subject.mapUuidsToKeys(keySet);
 
-    final Collection<Key> keys = keySet.getKeys();
+    final Collection<EncryptionKey> keys = keySet.getKeys();
     assertThat(keys.size(), equalTo(3));
-    assertThat(keys, containsInAnyOrder(
+    assertThat(keys.stream().map(EncryptionKey::getKey).collect(Collectors.toList()), containsInAnyOrder(
         activeKey, existingKey1, existingKey2
     ));
   }
@@ -165,7 +166,7 @@ public class EncryptionKeyCanaryMapperTest {
         encryptionKeysConfiguration, encryptionService, timedRetry, true);
     subject.mapUuidsToKeys(keySet);
 
-    assertThat(keySet.getKeys(), hasItem(keySet.getActiveKey()));
+    assertThat(keySet.getKeys(), hasItem(keySet.getActive()));
   }
 
   @Test
@@ -198,8 +199,8 @@ public class EncryptionKeyCanaryMapperTest {
     subject.mapUuidsToKeys(keySet);
 
     assertCanaryValueWasEncryptedAndSavedToDatabase();
-    assertThat(keySet.get(activeCanaryUuid), equalTo(activeKey));
-    assertThat(keySet.getActive(), equalTo(activeCanaryUuid));
+    assertThat(keySet.get(activeCanaryUuid).getKey(), equalTo(activeKey));
+    assertThat(keySet.getActive().getUuid(), equalTo(activeCanaryUuid));
   }
 
   @Test
@@ -226,7 +227,7 @@ public class EncryptionKeyCanaryMapperTest {
 
     verify(encryptionKeyCanaryDataService, never()).save(any());
     verify(timedRetry).retryEverySecondUntil(eq(600L), any());
-    assertThat(keySet.getActive(), equalTo(activeCanaryUuid));
+    assertThat(keySet.getActive().getUuid(), equalTo(activeCanaryUuid));
   }
 
   @Test
@@ -357,10 +358,10 @@ public class EncryptionKeyCanaryMapperTest {
 
     subject.mapUuidsToKeys(keySet);
 
-    assertThat(keySet.get(activeCanaryUuid), equalTo(activeKey));
+    assertThat(keySet.get(activeCanaryUuid).getKey(), equalTo(activeKey));
     verify(encryptionService, times(0))
         .encrypt(eq(activeCanaryUuid), eq(activeKey), any(String.class));
-    assertThat(keySet.getActive(), equalTo(activeCanaryUuid));
+    assertThat(keySet.getActive().getUuid(), equalTo(activeCanaryUuid));
   }
 
   @Test
@@ -372,12 +373,12 @@ public class EncryptionKeyCanaryMapperTest {
         encryptionKeysConfiguration, encryptionService, timedRetry, true);
     subject.mapUuidsToKeys(keySet);
 
-    assertThat(keySet.get(activeCanaryUuid), equalTo(activeKey));
-    assertThat(keySet.get(existingCanaryUuid1), equalTo(existingKey1));
-    assertThat(keySet.get(existingCanaryUuid2), equalTo(existingKey2));
-    assertThat(keySet.getInactive().toArray(),
+    assertThat(keySet.get(activeCanaryUuid).getKey(), equalTo(activeKey));
+    assertThat(keySet.get(existingCanaryUuid1).getKey(), equalTo(existingKey1));
+    assertThat(keySet.get(existingCanaryUuid2).getKey(), equalTo(existingKey2));
+    assertThat(keySet.getInactiveUuids().toArray(),
         arrayContainingInAnyOrder(existingCanaryUuid1, existingCanaryUuid2));
-    assertThat(keySet.getActive(), equalTo(activeCanaryUuid));
+    assertThat(keySet.getActive().getUuid(), equalTo(activeCanaryUuid));
   }
 
   @Test
@@ -390,10 +391,10 @@ public class EncryptionKeyCanaryMapperTest {
         encryptionKeysConfiguration, encryptionService, timedRetry, true);
     subject.mapUuidsToKeys(keySet);
 
-    assertThat(keySet.get(activeCanaryUuid), equalTo(activeKey));
+    assertThat(keySet.get(activeCanaryUuid).getKey(), equalTo(activeKey));
     assertThat(keySet.get(unknownCanaryUuid), equalTo(null));
-    assertThat(keySet.getActive(), equalTo(activeCanaryUuid));
-    assertThat(keySet.getInactive().size(), equalTo(0));
+    assertThat(keySet.getActive().getUuid(), equalTo(activeCanaryUuid));
+    assertThat(keySet.getInactiveUuids().size(), equalTo(0));
   }
 
   private void assertCanaryValueWasEncryptedAndSavedToDatabase() throws Exception {

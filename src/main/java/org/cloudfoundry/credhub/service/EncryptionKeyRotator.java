@@ -37,9 +37,10 @@ public class EncryptionKeyRotator {
     logger.info("Starting encryption key rotation.");
     int rotatedRecordCount = 0;
 
-    final long startingNotRotatedRecordCount = encryptedValueDataService.countAllByCanaryUuid(keySet.getActive());
+    final long startingNotRotatedRecordCount = encryptedValueDataService
+        .countAllByCanaryUuid(keySet.getActive().getUuid());
 
-    List<UUID> inactiveCanaries = keySet.getInactive();
+    List<UUID> inactiveCanaries = keySet.getInactiveUuids();
     Slice<EncryptedValue> valuesEncryptedByOldKey = encryptedValueDataService
         .findByCanaryUuids(inactiveCanaries);
     while (valuesEncryptedByOldKey.hasContent()) {

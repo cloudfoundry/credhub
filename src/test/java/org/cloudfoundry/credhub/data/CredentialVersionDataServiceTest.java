@@ -91,7 +91,7 @@ public class CredentialVersionDataServiceTest {
     fakeTimeSetter = mockOutCurrentTimeProvider(mockCurrentTimeProvider);
     fakeTimeSetter.accept(345345L);
 
-    activeCanaryUuid = keySet.getActive();
+    activeCanaryUuid = keySet.getActive().getUuid();
   }
 
   @Test

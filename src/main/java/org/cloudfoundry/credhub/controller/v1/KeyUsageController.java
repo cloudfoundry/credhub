@@ -40,7 +40,7 @@ public class KeyUsageController {
       totalCredCount += countByEncryptionKey.values().toArray(new Long[countByEncryptionKey.values().size()])[i];
     }
 
-    Long activeKeyCreds = countByEncryptionKey.getOrDefault(keySet.getActive(), 0L);
+    Long activeKeyCreds = countByEncryptionKey.getOrDefault(keySet.getActive().getUuid(), 0L);
 
     Long credsEncryptedByKnownKeys = 0L;
     for (UUID encryptionKeyUuid : countByEncryptionKey.keySet()) {

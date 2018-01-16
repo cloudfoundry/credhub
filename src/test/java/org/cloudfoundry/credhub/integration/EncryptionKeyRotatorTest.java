@@ -124,7 +124,7 @@ public class EncryptionKeyRotatorTest {
     setupInitialContext();
 
     List<CredentialVersionData> beforeRotation = credentialVersionRepository
-        .findByEncryptedCredentialValueEncryptionKeyUuidIn(keySet.getInactive());
+        .findByEncryptedCredentialValueEncryptionKeyUuidIn(keySet.getInactiveUuids());
     int numberToRotate = beforeRotation.size();
 
     assertThat(
@@ -134,7 +134,7 @@ public class EncryptionKeyRotatorTest {
     encryptionKeyRotator.rotate();
 
     List<CredentialVersionData> afterRotation = credentialVersionRepository
-        .findByEncryptedCredentialValueEncryptionKeyUuidIn(keySet.getInactive());
+        .findByEncryptedCredentialValueEncryptionKeyUuidIn(keySet.getInactiveUuids());
     int numberToRotateWhenDone = afterRotation.size();
 
     assertThat(numberToRotate, equalTo(2));
@@ -149,13 +149,13 @@ public class EncryptionKeyRotatorTest {
         credentialVersionRepository
             .findOneByUuid(credentialVersionWithOldKey.getUuid())
             .getEncryptionKeyUuid(),
-        equalTo(keySet.getActive())
+        equalTo(keySet.getActive().getUuid())
     );
 
     assertThat(uuids, hasItem(credentialVersionWithOldKey.getUuid()));
 
     assertThat(credentialVersionRepository.findOneByUuid(password.getUuid())
-        .getEncryptionKeyUuid(), equalTo(keySet.getActive()));
+        .getEncryptionKeyUuid(), equalTo(keySet.getActive().getUuid()));
     assertThat(uuids, hasItem(password.getUuid()));
 
     // Unchanged because we don't have the key:
@@ -167,7 +167,7 @@ public class EncryptionKeyRotatorTest {
     // Unchanged because it's already up to date:
     assertThat(
         credentialVersionRepository.findOneByUuid(credentialWithCurrentKey.getUuid())
-            .getEncryptionKeyUuid(), equalTo(keySet.getActive()));
+            .getEncryptionKeyUuid(), equalTo(keySet.getActive().getUuid()));
     assertThat(uuids, not(hasItem(credentialWithCurrentKey.getUuid())));
 
     PasswordCredentialVersion rotatedPassword = (PasswordCredentialVersion) credentialVersionDataService
@@ -277,13 +277,13 @@ public class EncryptionKeyRotatorTest {
     setupInitialContext();
     setActiveKey(1);
     encryptionKeyRotator.rotate();
-    List<UUID> oldCanaryUuids = keySet.getInactive();
+    List<UUID> oldCanaryUuids = keySet.getInactiveUuids();
     List<EncryptionKeyCanary> allCanaries = encryptionKeyCanaryDataService.findAll();
     List<UUID> remainingCanaryUuids = allCanaries.stream()
         .map(EncryptionKeyCanary::getUuid)
         .collect(Collectors.toList());
 
-    assertThat(remainingCanaryUuids, hasItem(keySet.getActive()));
+    assertThat(remainingCanaryUuids, hasItem(keySet.getActive().getUuid()));
 
     for (UUID uuid : oldCanaryUuids) {
       assertThat(remainingCanaryUuids, not(hasItem(uuid)));

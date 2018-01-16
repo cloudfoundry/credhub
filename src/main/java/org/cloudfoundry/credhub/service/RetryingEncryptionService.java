@@ -37,14 +37,14 @@ public class RetryingEncryptionService {
 
   public EncryptedValue encrypt(final String value) throws Exception {
     logger.info("Attempting encrypt");
-    return retryOnErrorWithRemappedKey(() -> encryptionService.encrypt(keySet.getActive(), keySet.getActiveKey(), value));
+    return retryOnErrorWithRemappedKey(() -> encryptionService.encrypt(keySet.getActive(), value));
   }
 
   public String decrypt(EncryptedValue encryptedValue)
       throws Exception {
     logger.info("Attempting decrypt");
     return retryOnErrorWithRemappedKey(() -> {
-      final Key key = keySet.get(encryptedValue.getEncryptionKeyUuid());
+      final EncryptionKey key = keySet.get(encryptedValue.getEncryptionKeyUuid());
 
       if (key == null) {
         throw new KeyNotFoundException("error.missing_encryption_key");
