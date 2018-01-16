@@ -8,7 +8,6 @@ import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.entity.CredentialVersionData;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.repository.CredentialVersionRepository;
-import org.cloudfoundry.credhub.service.EncryptionKeyCanaryMapper;
 import org.cloudfoundry.credhub.view.FindCredentialResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -39,7 +38,6 @@ public class CredentialVersionDataService {
       CredentialVersionRepository credentialVersionRepository,
       CredentialDataService credentialDataService,
       JdbcTemplate jdbcTemplate,
-      EncryptionKeyCanaryMapper encryptionKeyCanaryMapper,
       CredentialFactory credentialFactory,
       CertificateVersionDataService certificateVersionDataService) {
     this.credentialVersionRepository = credentialVersionRepository;

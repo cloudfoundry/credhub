@@ -19,7 +19,6 @@ import org.cloudfoundry.credhub.entity.EncryptionKeyCanary;
 import org.cloudfoundry.credhub.entity.PasswordCredentialVersionData;
 import org.cloudfoundry.credhub.repository.CredentialVersionRepository;
 import org.cloudfoundry.credhub.request.StringGenerationParameters;
-import org.cloudfoundry.credhub.service.EncryptionKeyCanaryMapper;
 import org.cloudfoundry.credhub.service.EncryptionKeyRotator;
 import org.cloudfoundry.credhub.service.EncryptionKeySet;
 import org.cloudfoundry.credhub.service.EncryptionService;
@@ -76,9 +75,6 @@ public class EncryptionKeyRotatorTest {
 
   @SpyBean
   private CredentialVersionDataService credentialVersionDataService;
-
-  @SpyBean
-  private EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
 
   @Autowired
   private CredentialDataService credentialDataService;
@@ -393,7 +389,7 @@ public class EncryptionKeyRotatorTest {
 
     doReturn(keys).when(encryptionKeysConfiguration).getKeys();
 
-    encryptionKeyCanaryMapper.mapUuidsToKeys();
+    keySet.reload();
   }
 }
 

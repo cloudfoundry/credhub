@@ -12,8 +12,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.Charset;
-import java.security.Key;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -31,7 +29,6 @@ public class EncryptionKeyCanaryMapper {
 
   private final EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
   private final EncryptionKeysConfiguration encryptionKeysConfiguration;
-  private EncryptionKeySet keySet;
   private final TimedRetry timedRetry;
   private final boolean keyCreationEnabled;
 
@@ -45,28 +42,23 @@ public class EncryptionKeyCanaryMapper {
       EncryptionKeyCanaryDataService encryptionKeyCanaryDataService,
       EncryptionKeysConfiguration encryptionKeysConfiguration,
       EncryptionService encryptionService,
-      EncryptionKeySet keySet,
       TimedRetry timedRetry,
       @Value("${encryption.key_creation_enabled}") boolean keyCreationEnabled
   ) {
     this.encryptionKeyCanaryDataService = encryptionKeyCanaryDataService;
     this.encryptionKeysConfiguration = encryptionKeysConfiguration;
     this.encryptionService = encryptionService;
-    this.keySet = keySet;
     this.timedRetry = timedRetry;
     this.keyCreationEnabled = keyCreationEnabled;
 
     logger = LogManager.getLogger();
-
-    mapUuidsToKeys();
   }
 
-  public void mapUuidsToKeys() {
-    keySet.reset();
+  void mapUuidsToKeys(EncryptionKeySet keySet) {
     createKeys();
     validateActiveKeyInList();
     createOrFindActiveCanary();
-    mapCanariesToKeys();
+    mapCanariesToKeys(keySet);
   }
 
   public void delete(List<UUID> uuids) {
@@ -84,10 +76,10 @@ public class EncryptionKeyCanaryMapper {
     });
   }
 
-  private void mapCanariesToKeys() {
+  private void mapCanariesToKeys(EncryptionKeySet keySet) {
     List<EncryptionKeyCanary> encryptionKeyCanaries = encryptionKeyCanaryDataService.findAll();
 
-    populateCanaries(encryptionKeyCanaries);
+    populateCanaries(encryptionKeyCanaries, keySet);
   }
 
   private void validateActiveKeyInList() {
@@ -96,7 +88,8 @@ public class EncryptionKeyCanaryMapper {
     }
   }
 
-  private void populateCanaries(List<EncryptionKeyCanary> encryptionKeyCanaries) {
+  private void populateCanaries(List<EncryptionKeyCanary> encryptionKeyCanaries,
+      EncryptionKeySet keySet) {
     keys.forEach(encryptionKey -> {
       findCanaryMatchingKey(encryptionKey, encryptionKeyCanaries)
           .ifPresent(canary -> {

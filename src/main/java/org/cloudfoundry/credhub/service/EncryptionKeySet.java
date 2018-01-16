@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
@@ -15,9 +16,17 @@ public class EncryptionKeySet {
 
   private Map<UUID, Key> keys;
   private UUID activeUUID;
+  private EncryptionKeyCanaryMapper canaryMapper;
 
+  // For testing
   public EncryptionKeySet() {
-    reset();
+    keys = new HashMap<>();
+  }
+
+  @Autowired
+  public EncryptionKeySet(EncryptionKeyCanaryMapper canaryMapper) {
+    this.canaryMapper = canaryMapper;
+    reload();
   }
 
   public void add(UUID uuid, Key key) {
@@ -52,8 +61,9 @@ public class EncryptionKeySet {
     return keys.get(activeUUID);
   }
 
-  public void reset() {
+  public void reload() {
     keys = new HashMap<>();
     activeUUID = null;
+    canaryMapper.mapUuidsToKeys(this);
   }
 }

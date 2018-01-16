@@ -17,7 +17,6 @@ public class RetryingEncryptionService {
 
   private final EncryptionService encryptionService;
   private EncryptionKeySet keySet;
-  private final EncryptionKeyCanaryMapper keyMapper;
   private final RemoteEncryptionConnectable remoteEncryptionConnectable;
   private final Logger logger;
   // for testing
@@ -27,11 +26,9 @@ public class RetryingEncryptionService {
   @Autowired
   public RetryingEncryptionService(EncryptionService encryptionService,
       EncryptionKeySet keySet,
-      EncryptionKeyCanaryMapper keyMapper,
       RemoteEncryptionConnectable remoteEncryptionConnectable) {
     this.encryptionService = encryptionService;
     this.keySet = keySet;
-    this.keyMapper = keyMapper;
     this.remoteEncryptionConnectable = remoteEncryptionConnectable;
 
     logger = LogManager.getLogger();
@@ -70,7 +67,7 @@ public class RetryingEncryptionService {
           if (needsReconnect()) {
             logger.info("Trying reconnect");
             remoteEncryptionConnectable.reconnect(e);
-            keyMapper.mapUuidsToKeys();
+            keySet.reload();
             clearNeedsReconnectFlag();
           }
         });
