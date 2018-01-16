@@ -16,20 +16,20 @@ import static org.mockito.Mockito.when;
 public class DecryptableDataDetectorTest {
 
   private CredentialVersionDataService credentialVersionDataService;
-  private EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
+  private EncryptionKeySet keySet;
   private DecryptableDataDetector decryptableDataDetector;
 
   @Before
   public void beforeEach() {
     credentialVersionDataService = mock(CredentialVersionDataService.class);
-    encryptionKeyCanaryMapper = mock(EncryptionKeyCanaryMapper.class);
+    keySet = new EncryptionKeySet();
   }
 
   @Test
   public void whenNoCredentialsCouldBeDecrypted_whenThereAreNoCredentials_doesNotError() {
     when(credentialVersionDataService.count()).thenReturn(0L);
     when(credentialVersionDataService.countEncryptedWithKeyUuidIn(any())).thenReturn(0L);
-    decryptableDataDetector = new DecryptableDataDetector(encryptionKeyCanaryMapper,
+    decryptableDataDetector = new DecryptableDataDetector(keySet,
         credentialVersionDataService);
     decryptableDataDetector.check();
   }
@@ -38,7 +38,7 @@ public class DecryptableDataDetectorTest {
   public void whenNoCredentialsCouldBeDecrypted_whenThereAreCredentials_andNoneCanBeDecrypted() {
     when(credentialVersionDataService.count()).thenReturn(4L);
     when(credentialVersionDataService.countEncryptedWithKeyUuidIn(any())).thenReturn(0L);
-    decryptableDataDetector = new DecryptableDataDetector(encryptionKeyCanaryMapper,
+    decryptableDataDetector = new DecryptableDataDetector(keySet,
         credentialVersionDataService);
     try {
       decryptableDataDetector.check();
@@ -53,7 +53,7 @@ public class DecryptableDataDetectorTest {
   public void whenCredentialsCanBeDecrypted_doesNotError() {
     when(credentialVersionDataService.count()).thenReturn(4L);
     when(credentialVersionDataService.countEncryptedWithKeyUuidIn(any())).thenReturn(1L);
-    decryptableDataDetector = new DecryptableDataDetector(encryptionKeyCanaryMapper,
+    decryptableDataDetector = new DecryptableDataDetector(keySet,
         credentialVersionDataService);
     decryptableDataDetector.check();
   }

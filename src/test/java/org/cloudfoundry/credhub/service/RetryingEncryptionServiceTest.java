@@ -44,10 +44,12 @@ public class RetryingEncryptionServiceTest {
   private UUID activeKeyUuid;
 
   private ReentrantReadWriteLock readWriteLock;
+  private EncryptionKeySet keySet;
 
   @Before
   public void beforeEach() {
     keyMapper = mock(EncryptionKeyCanaryMapper.class);
+    keySet = mock(EncryptionKeySet.class);
     firstKey = mock(Key.class, "first key");
     secondKey = mock(Key.class, "second key");
     encryptionService = mock(EncryptionService.class);
@@ -55,18 +57,18 @@ public class RetryingEncryptionServiceTest {
 
     activeKeyUuid = UUID.randomUUID();
 
-    when(keyMapper.getActiveUuid())
+    when(keySet.getActive())
         .thenReturn(activeKeyUuid);
 
-    when(keyMapper.getActiveKey())
+    when(keySet.getActiveKey())
         .thenReturn(firstKey)
         .thenReturn(secondKey);
 
-    when(keyMapper.getKeyForUuid(activeKeyUuid))
+    when(keySet.get(activeKeyUuid))
         .thenReturn(firstKey)
         .thenReturn(secondKey);
 
-    subject = new RetryingEncryptionService(encryptionService, keyMapper,
+    subject = new RetryingEncryptionService(encryptionService, keySet, keyMapper,
         remoteEncryptionConnectable);
 
     final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
@@ -304,7 +306,7 @@ public class RetryingEncryptionServiceTest {
   public void decrypt_whenTheEncryptionKeyCannotBeFound_throwsAnException() throws Exception {
     UUID fakeUuid = UUID.randomUUID();
     reset(encryptionService);
-    when(keyMapper.getKeyForUuid(fakeUuid)).thenReturn(null);
+    when(keySet.get(fakeUuid)).thenReturn(null);
     subject.decrypt(new EncryptedValue(fakeUuid, "something we cant read".getBytes(), "nonce".getBytes()));
   }
 
@@ -369,6 +371,7 @@ public class RetryingEncryptionServiceTest {
 
     RacingRetryingEncryptionServiceForTest(Thread firstThread, Thread secondThread, Object lock) {
       super(RetryingEncryptionServiceTest.this.encryptionService,
+          RetryingEncryptionServiceTest.this.keySet,
           RetryingEncryptionServiceTest.this.keyMapper,
           RetryingEncryptionServiceTest.this.remoteEncryptionConnectable);
       this.firstThread = firstThread;

@@ -16,6 +16,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class RetryingEncryptionService {
 
   private final EncryptionService encryptionService;
+  private EncryptionKeySet keySet;
   private final EncryptionKeyCanaryMapper keyMapper;
   private final RemoteEncryptionConnectable remoteEncryptionConnectable;
   private final Logger logger;
@@ -25,9 +26,11 @@ public class RetryingEncryptionService {
 
   @Autowired
   public RetryingEncryptionService(EncryptionService encryptionService,
+      EncryptionKeySet keySet,
       EncryptionKeyCanaryMapper keyMapper,
       RemoteEncryptionConnectable remoteEncryptionConnectable) {
     this.encryptionService = encryptionService;
+    this.keySet = keySet;
     this.keyMapper = keyMapper;
     this.remoteEncryptionConnectable = remoteEncryptionConnectable;
 
@@ -37,14 +40,14 @@ public class RetryingEncryptionService {
 
   public EncryptedValue encrypt(final String value) throws Exception {
     logger.info("Attempting encrypt");
-    return retryOnErrorWithRemappedKey(() -> encryptionService.encrypt(keyMapper.getActiveUuid(), keyMapper.getActiveKey(), value));
+    return retryOnErrorWithRemappedKey(() -> encryptionService.encrypt(keySet.getActive(), keySet.getActiveKey(), value));
   }
 
   public String decrypt(EncryptedValue encryptedValue)
       throws Exception {
     logger.info("Attempting decrypt");
     return retryOnErrorWithRemappedKey(() -> {
-      final Key key = keyMapper.getKeyForUuid(encryptedValue.getEncryptionKeyUuid());
+      final Key key = keySet.get(encryptedValue.getEncryptionKeyUuid());
 
       if (key == null) {
         throw new KeyNotFoundException("error.missing_encryption_key");

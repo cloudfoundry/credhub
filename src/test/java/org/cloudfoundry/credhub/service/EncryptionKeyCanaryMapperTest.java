@@ -163,7 +163,7 @@ public class EncryptionKeyCanaryMapperTest {
   public void mapCanariesToKeys_shouldContainAReferenceToActiveKey() {
     subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService,
         encryptionKeysConfiguration, encryptionService, keySet, timedRetry, true);
-    assertThat(keySet.getKeys(), hasItem(subject.getActiveKey()));
+    assertThat(keySet.getKeys(), hasItem(keySet.getActiveKey()));
   }
 
   @Test
@@ -207,8 +207,8 @@ public class EncryptionKeyCanaryMapperTest {
         encryptionKeysConfiguration, encryptionService, keySet, timedRetry, true);
 
     assertCanaryValueWasEncryptedAndSavedToDatabase();
-    assertThat(subject.getKeyForUuid(activeCanaryUuid), equalTo(activeKey));
-    assertThat(subject.getActiveUuid(), equalTo(activeCanaryUuid));
+    assertThat(keySet.get(activeCanaryUuid), equalTo(activeKey));
+    assertThat(keySet.getActive(), equalTo(activeCanaryUuid));
   }
 
   @Test
@@ -234,7 +234,7 @@ public class EncryptionKeyCanaryMapperTest {
 
     verify(encryptionKeyCanaryDataService, never()).save(any());
     verify(timedRetry).retryEverySecondUntil(eq(600L), any());
-    assertThat(subject.getActiveUuid(), equalTo(activeCanaryUuid));
+    assertThat(keySet.getActive(), equalTo(activeCanaryUuid));
   }
 
   @Test
@@ -356,10 +356,10 @@ public class EncryptionKeyCanaryMapperTest {
     subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService,
         encryptionKeysConfiguration, encryptionService, keySet, timedRetry, true);
 
-    assertThat(subject.getKeyForUuid(activeCanaryUuid), equalTo(activeKey));
+    assertThat(keySet.get(activeCanaryUuid), equalTo(activeKey));
     verify(encryptionService, times(0))
         .encrypt(eq(activeCanaryUuid), eq(activeKey), any(String.class));
-    assertThat(subject.getActiveUuid(), equalTo(activeCanaryUuid));
+    assertThat(keySet.getActive(), equalTo(activeCanaryUuid));
   }
 
   @Test
@@ -370,12 +370,12 @@ public class EncryptionKeyCanaryMapperTest {
     subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService,
         encryptionKeysConfiguration, encryptionService, keySet, timedRetry, true);
 
-    assertThat(subject.getKeyForUuid(activeCanaryUuid), equalTo(activeKey));
-    assertThat(subject.getKeyForUuid(existingCanaryUuid1), equalTo(existingKey1));
-    assertThat(subject.getKeyForUuid(existingCanaryUuid2), equalTo(existingKey2));
-    assertThat(subject.getCanaryUuidsWithKnownAndInactiveKeys().toArray(),
+    assertThat(keySet.get(activeCanaryUuid), equalTo(activeKey));
+    assertThat(keySet.get(existingCanaryUuid1), equalTo(existingKey1));
+    assertThat(keySet.get(existingCanaryUuid2), equalTo(existingKey2));
+    assertThat(keySet.getInactive().toArray(),
         arrayContainingInAnyOrder(existingCanaryUuid1, existingCanaryUuid2));
-    assertThat(subject.getActiveUuid(), equalTo(activeCanaryUuid));
+    assertThat(keySet.getActive(), equalTo(activeCanaryUuid));
   }
 
   @Test
@@ -387,10 +387,10 @@ public class EncryptionKeyCanaryMapperTest {
     subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService,
         encryptionKeysConfiguration, encryptionService, keySet, timedRetry, true);
 
-    assertThat(subject.getKeyForUuid(activeCanaryUuid), equalTo(activeKey));
-    assertThat(subject.getKeyForUuid(unknownCanaryUuid), equalTo(null));
-    assertThat(subject.getActiveUuid(), equalTo(activeCanaryUuid));
-    assertThat(subject.getCanaryUuidsWithKnownAndInactiveKeys().size(), equalTo(0));
+    assertThat(keySet.get(activeCanaryUuid), equalTo(activeKey));
+    assertThat(keySet.get(unknownCanaryUuid), equalTo(null));
+    assertThat(keySet.getActive(), equalTo(activeCanaryUuid));
+    assertThat(keySet.getInactive().size(), equalTo(0));
   }
 
   private void assertCanaryValueWasEncryptedAndSavedToDatabase() throws Exception {
@@ -415,12 +415,5 @@ public class EncryptionKeyCanaryMapperTest {
     when(encryptionService.decrypt(encryptionKey, encryptedValue.getBytes(), nonce.getBytes()))
         .thenReturn(CANARY_VALUE);
     return encryptionKeyCanary;
-  }
-
-  @Test
-  public void getNewActiveKey() {
-    subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService,
-        encryptionKeysConfiguration, encryptionService, keySet, timedRetry, true);
-    assertThat(keySet.getKeys(), hasItem(subject.getActiveKey()));
   }
 }

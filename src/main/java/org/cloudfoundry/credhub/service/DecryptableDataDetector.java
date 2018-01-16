@@ -9,17 +9,17 @@ import java.util.UUID;
 @Component
 public class DecryptableDataDetector {
 
-  private EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
+  private EncryptionKeySet keySet;
   private CredentialVersionDataService credentialVersionDataService;
 
-  DecryptableDataDetector(EncryptionKeyCanaryMapper encryptionKeyCanaryMapper,
+  DecryptableDataDetector(EncryptionKeySet keySet,
                           CredentialVersionDataService credentialVersionDataService) {
-    this.encryptionKeyCanaryMapper = encryptionKeyCanaryMapper;
+    this.keySet = keySet;
     this.credentialVersionDataService = credentialVersionDataService;
   }
 
   public void check() {
-    Collection<UUID> uuids = encryptionKeyCanaryMapper.getKnownCanaryUuids();
+    Collection<UUID> uuids = keySet.getUuids();
 
     Long countTotalCredentials = credentialVersionDataService.count();
     Long countCredentialsEncryptedWithKeyWeHave = credentialVersionDataService.countEncryptedWithKeyUuidIn(uuids);

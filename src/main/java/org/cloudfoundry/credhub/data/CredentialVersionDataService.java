@@ -31,7 +31,6 @@ public class CredentialVersionDataService {
   private final CredentialVersionRepository credentialVersionRepository;
   private final CredentialDataService credentialDataService;
   private final JdbcTemplate jdbcTemplate;
-  private final EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
   private final CredentialFactory credentialFactory;
   private CertificateVersionDataService certificateVersionDataService;
 
@@ -46,7 +45,6 @@ public class CredentialVersionDataService {
     this.credentialVersionRepository = credentialVersionRepository;
     this.credentialDataService = credentialDataService;
     this.jdbcTemplate = jdbcTemplate;
-    this.encryptionKeyCanaryMapper = encryptionKeyCanaryMapper;
     this.credentialFactory = credentialFactory;
     this.certificateVersionDataService = certificateVersionDataService;
   }

@@ -16,15 +16,18 @@ import java.util.UUID;
 public class EncryptionKeyRotator {
 
   private final EncryptedValueDataService encryptedValueDataService;
+  private EncryptionKeySet keySet;
   private final Logger logger;
   private final EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
 
   @Autowired
   EncryptionKeyRotator(
       EncryptedValueDataService encryptedValueDataService,
-      EncryptionKeyCanaryMapper encryptionKeyCanaryMapper
+      EncryptionKeyCanaryMapper encryptionKeyCanaryMapper,
+      EncryptionKeySet keySet
   ) {
     this.encryptedValueDataService = encryptedValueDataService;
+    this.keySet = keySet;
     this.logger = LogManager.getLogger(this.getClass());
     this.encryptionKeyCanaryMapper = encryptionKeyCanaryMapper;
   }
@@ -34,9 +37,9 @@ public class EncryptionKeyRotator {
     logger.info("Starting encryption key rotation.");
     int rotatedRecordCount = 0;
 
-    final long startingNotRotatedRecordCount = encryptedValueDataService.countAllByCanaryUuid(encryptionKeyCanaryMapper.getActiveUuid());
+    final long startingNotRotatedRecordCount = encryptedValueDataService.countAllByCanaryUuid(keySet.getActive());
 
-    List<UUID> inactiveCanaries = encryptionKeyCanaryMapper.getCanaryUuidsWithKnownAndInactiveKeys();
+    List<UUID> inactiveCanaries = keySet.getInactive();
     Slice<EncryptedValue> valuesEncryptedByOldKey = encryptedValueDataService
         .findByCanaryUuids(inactiveCanaries);
     while (valuesEncryptedByOldKey.hasContent()) {

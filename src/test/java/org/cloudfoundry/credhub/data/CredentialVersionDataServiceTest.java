@@ -15,9 +15,8 @@ import org.cloudfoundry.credhub.entity.PasswordCredentialVersionData;
 import org.cloudfoundry.credhub.entity.SshCredentialVersionData;
 import org.cloudfoundry.credhub.entity.ValueCredentialVersionData;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
-import org.cloudfoundry.credhub.helper.EncryptionCanaryHelper;
 import org.cloudfoundry.credhub.repository.CredentialVersionRepository;
-import org.cloudfoundry.credhub.service.EncryptionKeyCanaryMapper;
+import org.cloudfoundry.credhub.service.EncryptionKeySet;
 import org.cloudfoundry.credhub.util.CurrentTimeProvider;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.view.FindCredentialResult;
@@ -28,7 +27,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
@@ -70,8 +68,8 @@ public class CredentialVersionDataServiceTest {
   @Autowired
   CredentialDataService credentialDataService;
 
-  @SpyBean
-  EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
+  @Autowired
+  EncryptionKeySet keySet;
 
   @MockBean
   CurrentTimeProvider mockCurrentTimeProvider;
@@ -84,7 +82,6 @@ public class CredentialVersionDataServiceTest {
 
   private Consumer<Long> fakeTimeSetter;
   private UUID activeCanaryUuid;
-  private UUID unknownCanaryUuid;
   private PasswordCredentialVersionData passwordCredential2;
   private PasswordCredentialVersionData namedPasswordCredential1;
   private ValueCredentialVersionData valueCredentialData;
@@ -94,9 +91,7 @@ public class CredentialVersionDataServiceTest {
     fakeTimeSetter = mockOutCurrentTimeProvider(mockCurrentTimeProvider);
     fakeTimeSetter.accept(345345L);
 
-    activeCanaryUuid = encryptionKeyCanaryMapper.getActiveUuid();
-    unknownCanaryUuid = EncryptionCanaryHelper.addCanary(encryptionKeyCanaryDataService)
-        .getUuid();
+    activeCanaryUuid = keySet.getActive();
   }
 
   @Test

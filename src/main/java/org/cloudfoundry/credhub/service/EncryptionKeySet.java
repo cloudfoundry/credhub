@@ -20,15 +20,15 @@ public class EncryptionKeySet {
     reset();
   }
 
-  void add(UUID uuid, Key key) {
+  public void add(UUID uuid, Key key) {
     keys.put(uuid, key);
   }
 
-  void setActive(UUID uuid) {
+  public void setActive(UUID uuid) {
     activeUUID = uuid;
   }
 
-  Key get(UUID uuid) {
+  public Key get(UUID uuid) {
     return keys.get(uuid);
   }
 

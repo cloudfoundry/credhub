@@ -9,14 +9,12 @@ import org.cloudfoundry.credhub.entity.RsaCredentialVersionData;
 import org.cloudfoundry.credhub.entity.SshCredentialVersionData;
 import org.cloudfoundry.credhub.entity.ValueCredentialVersionData;
 import org.cloudfoundry.credhub.request.StringGenerationParameters;
-import org.cloudfoundry.credhub.service.EncryptionKeyCanaryMapper;
 import org.cloudfoundry.credhub.service.RetryingEncryptionService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import java.security.Key;
 import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -26,10 +24,6 @@ import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
 public class CredentialRotationTest {
-  private EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
-  private Key activeEncryptionKey;
-
-  private Key oldEncryptionKey;
 
   private UUID activeEncryptionKeyUuid;
   private UUID oldEncryptionKeyUuid;
@@ -41,22 +35,11 @@ public class CredentialRotationTest {
 
   @Before
   public void beforeEach() throws Exception {
-    encryptionKeyCanaryMapper = mock(EncryptionKeyCanaryMapper.class);
     encryptionService = mock(RetryingEncryptionService.class);
     encryptor = new Encryptor(encryptionService);
 
-    activeEncryptionKey = mock(Key.class);
-    oldEncryptionKey = mock(Key.class);
-
     oldEncryptionKeyUuid = UUID.randomUUID();
     activeEncryptionKeyUuid = UUID.randomUUID();
-
-    when(encryptionKeyCanaryMapper.getActiveUuid()).thenReturn(activeEncryptionKeyUuid);
-    when(encryptionKeyCanaryMapper.getActiveKey()).thenReturn(activeEncryptionKey);
-    when(encryptionKeyCanaryMapper.getKeyForUuid(activeEncryptionKeyUuid))
-        .thenReturn(activeEncryptionKey);
-    when(encryptionKeyCanaryMapper.getKeyForUuid(oldEncryptionKeyUuid))
-        .thenReturn(oldEncryptionKey);
 
     when(encryptionService.decrypt(new EncryptedValue(oldEncryptionKeyUuid, "old-encrypted-value".getBytes(), "old-nonce".getBytes())))
         .thenReturn("plaintext");

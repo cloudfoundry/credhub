@@ -69,26 +69,6 @@ public class EncryptionKeyCanaryMapper {
     mapCanariesToKeys();
   }
 
-  public Key getActiveKey() {
-    return keySet.getActiveKey();
-  }
-
-  public Key getKeyForUuid(UUID uuid) {
-    return keySet.get(uuid);
-  }
-
-  public UUID getActiveUuid() {
-    return keySet.getActive();
-  }
-
-  public Collection<UUID> getKnownCanaryUuids() {
-    return keySet.getUuids();
-  }
-
-  public List<UUID> getCanaryUuidsWithKnownAndInactiveKeys() {
-    return keySet.getInactive();
-  }
-
   public void delete(List<UUID> uuids) {
     encryptionKeyCanaryDataService.delete(uuids);
   }

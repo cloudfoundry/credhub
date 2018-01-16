@@ -29,12 +29,14 @@ public class EncryptionKeyRotatorTest {
   private EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
   private UUID oldUuid;
   private List<UUID> inactiveCanaries;
+  private EncryptionKeySet keySet;
 
   @Before
   public void beforeEach() {
     oldUuid = UUID.randomUUID();
 
     encryptedValueDataService = mock(EncryptedValueDataService.class);
+    keySet = mock(EncryptionKeySet.class);
 
     encryptedValue1 = mock(EncryptedValue.class);
     encryptedValue2 = mock(EncryptedValue.class);
@@ -42,15 +44,15 @@ public class EncryptionKeyRotatorTest {
 
     encryptionKeyCanaryMapper = mock(EncryptionKeyCanaryMapper.class);
     inactiveCanaries = newArrayList(oldUuid);
-    when(encryptionKeyCanaryMapper.getCanaryUuidsWithKnownAndInactiveKeys())
-        .thenReturn(inactiveCanaries);
+    when(keySet.getInactive()).thenReturn(inactiveCanaries);
     when(encryptedValueDataService.findByCanaryUuids(inactiveCanaries))
         .thenReturn(new SliceImpl<>(asList(encryptedValue1, encryptedValue2)))
         .thenReturn(new SliceImpl<>(asList(encryptedValue3)))
         .thenReturn(new SliceImpl<>(new ArrayList<>()));
 
     final EncryptionKeyRotator encryptionKeyRotator = new EncryptionKeyRotator(encryptedValueDataService,
-        encryptionKeyCanaryMapper);
+        encryptionKeyCanaryMapper,
+        keySet);
 
     encryptionKeyRotator.rotate();
   }

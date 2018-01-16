@@ -2,7 +2,7 @@ package org.cloudfoundry.credhub.controller.v1;
 
 import com.google.common.collect.ImmutableMap;
 import org.cloudfoundry.credhub.data.CredentialVersionDataService;
-import org.cloudfoundry.credhub.service.EncryptionKeyCanaryMapper;
+import org.cloudfoundry.credhub.service.EncryptionKeySet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -22,14 +22,14 @@ import java.util.UUID;
 public class KeyUsageController {
 
   private final CredentialVersionDataService credentialVersionDataService;
-  private final EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
+  private final EncryptionKeySet keySet;
 
   @Autowired
   public KeyUsageController(
       CredentialVersionDataService credentialVersionDataService,
-      EncryptionKeyCanaryMapper encryptionKeyCanaryMapper) {
+      EncryptionKeySet keySet) {
     this.credentialVersionDataService = credentialVersionDataService;
-    this.encryptionKeyCanaryMapper = encryptionKeyCanaryMapper;
+    this.keySet = keySet;
   }
 
   @RequestMapping(method = RequestMethod.GET, path = "")
@@ -40,11 +40,11 @@ public class KeyUsageController {
       totalCredCount += countByEncryptionKey.values().toArray(new Long[countByEncryptionKey.values().size()])[i];
     }
 
-    Long activeKeyCreds = countByEncryptionKey.getOrDefault(encryptionKeyCanaryMapper.getActiveUuid(), 0L);
+    Long activeKeyCreds = countByEncryptionKey.getOrDefault(keySet.getActive(), 0L);
 
     Long credsEncryptedByKnownKeys = 0L;
     for (UUID encryptionKeyUuid : countByEncryptionKey.keySet()) {
-      if (encryptionKeyCanaryMapper.getKnownCanaryUuids().contains(encryptionKeyUuid)) {
+      if (keySet.getUuids().contains(encryptionKeyUuid)) {
         credsEncryptedByKnownKeys += countByEncryptionKey.get(encryptionKeyUuid);
       }
     }
