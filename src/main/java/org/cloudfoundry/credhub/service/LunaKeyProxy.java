@@ -13,13 +13,13 @@ import javax.crypto.IllegalBlockSizeException;
 
 import static java.util.Collections.unmodifiableList;
 
-class DefaultKeyProxy implements KeyProxy {
+class LunaKeyProxy implements KeyProxy {
 
   private final List<Byte> salt;
   private final EncryptionService encryptionService;
   private Key key;
 
-  DefaultKeyProxy(Key key, EncryptionService encryptionService) {
+  LunaKeyProxy(Key key, EncryptionService encryptionService) {
     this.key = key;
     this.encryptionService = encryptionService;
     this.salt = unmodifiableList(new ArrayList<Byte>());

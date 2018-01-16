@@ -63,7 +63,7 @@ public class LunaEncryptionService extends EncryptionService {
 
   @Override
   KeyProxy createKeyProxy(EncryptionKeyMetadata encryptionKeyMetadata) {
-    return new DefaultKeyProxy(createKey(encryptionKeyMetadata, lunaConnection), this);
+    return new LunaKeyProxy(createKey(encryptionKeyMetadata, lunaConnection), this);
   }
 
   private Key createKey(EncryptionKeyMetadata encryptionKeyMetadata,

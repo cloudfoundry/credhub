@@ -22,8 +22,8 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Mockito.mock;
 
 @RunWith(JUnit4.class)
-public class DefaultKeyProxyTest {
-  private DefaultKeyProxy subject;
+public class LunaKeyProxyTest {
+  private LunaKeyProxy subject;
   private Key encryptionKey;
   private EncryptionKeyCanary canary;
   private EncryptionKeyCanary deprecatedCanary;
@@ -51,21 +51,21 @@ public class DefaultKeyProxyTest {
 
   @Test
   public void isMatchingCanary_whenCanaryMatches_returnsTrue() throws Exception {
-    subject = new DefaultKeyProxy(encryptionKey, new InternalEncryptionService(new PasswordKeyProxyFactoryTestImpl()));
+    subject = new LunaKeyProxy(encryptionKey, new InternalEncryptionService(new PasswordKeyProxyFactoryTestImpl()));
 
     assertThat(subject.matchesCanary(canary), equalTo(true));
   }
 
   @Test
   public void isMatchingCanary_usingOldCanaryValue_returnsTrue() throws Exception {
-    subject = new DefaultKeyProxy(encryptionKey, new InternalEncryptionService(new PasswordKeyProxyFactoryTestImpl()));
+    subject = new LunaKeyProxy(encryptionKey, new InternalEncryptionService(new PasswordKeyProxyFactoryTestImpl()));
 
     assertThat(subject.matchesCanary(deprecatedCanary), equalTo(true));
   }
 
   @Test
   public void isMatchingCanary_whenDecryptThrowsRelevantIllegalBlockSizeException_returnsFalse() throws Exception {
-    subject = new DefaultKeyProxy(encryptionKey,
+    subject = new LunaKeyProxy(encryptionKey,
         new InternalEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
           @Override
           public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
@@ -79,7 +79,7 @@ public class DefaultKeyProxyTest {
 
   @Test
   public void isMatchingCanary_whenDecryptThrowsAEADBadTagException_returnsFalse() throws Exception {
-    subject = new DefaultKeyProxy(encryptionKey,
+    subject = new LunaKeyProxy(encryptionKey,
         new InternalEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
           @Override
           public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
@@ -93,7 +93,7 @@ public class DefaultKeyProxyTest {
 
   @Test(expected = IncorrectKeyException.class)
   public void isMatchingCanary_whenDecryptThrowsBadPaddingException_throwsIncorrectKeyException() throws Exception {
-    subject = new DefaultKeyProxy(encryptionKey,
+    subject = new LunaKeyProxy(encryptionKey,
         new InternalEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
           @Override
           public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
@@ -107,7 +107,7 @@ public class DefaultKeyProxyTest {
 
   @Test(expected = IncorrectKeyException.class)
   public void isMatchingCanary_whenDecryptThrowsIllegalBlockSizeException_throwsIncorrectKeyException() throws Exception {
-    subject = new DefaultKeyProxy(encryptionKey,
+    subject = new LunaKeyProxy(encryptionKey,
         new InternalEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
           @Override
           public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
@@ -121,7 +121,7 @@ public class DefaultKeyProxyTest {
 
   @Test(expected = IncorrectKeyException.class)
   public void isMatchingCanary_whenDecryptThrowsOtherException_throwsIncorrectKeyException() throws Exception {
-    subject = new DefaultKeyProxy(encryptionKey,
+    subject = new LunaKeyProxy(encryptionKey,
         new InternalEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
           @Override
           public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)

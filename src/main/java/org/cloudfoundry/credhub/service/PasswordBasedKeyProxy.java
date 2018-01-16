@@ -20,7 +20,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
 import static org.apache.commons.lang3.ArrayUtils.toPrimitive;
 
-public class PasswordBasedKeyProxy extends DefaultKeyProxy implements KeyProxy {
+public class PasswordBasedKeyProxy extends LunaKeyProxy implements KeyProxy {
 
   private final SecureRandom secureRandom;
   private String password = null;
