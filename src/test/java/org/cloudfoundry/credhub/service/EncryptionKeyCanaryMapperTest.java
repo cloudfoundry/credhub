@@ -28,6 +28,7 @@ import static org.cloudfoundry.credhub.service.EncryptionKeyCanaryMapper.CANARY_
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.arrayContainingInAnyOrder;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.any;
@@ -151,7 +152,7 @@ public class EncryptionKeyCanaryMapperTest {
     subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService,
         encryptionKeysConfiguration, encryptionService, keySet, timedRetry, true);
 
-    final Collection<Key> keys = subject.getKeys();
+    final Collection<Key> keys = keySet.getKeys();
     assertThat(keys.size(), equalTo(3));
     assertThat(keys, containsInAnyOrder(
         activeKey, existingKey1, existingKey2
@@ -162,7 +163,7 @@ public class EncryptionKeyCanaryMapperTest {
   public void mapCanariesToKeys_shouldContainAReferenceToActiveKey() {
     subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService,
         encryptionKeysConfiguration, encryptionService, keySet, timedRetry, true);
-    assertThat(subject.getKeys(), hasItem(subject.getActiveKey()));
+    assertThat(keySet.getKeys(), hasItem(subject.getActiveKey()));
   }
 
   @Test
@@ -175,6 +176,18 @@ public class EncryptionKeyCanaryMapperTest {
     } catch (Exception e) {
       assertThat(e.getMessage(), equalTo("No active key was found"));
     }
+  }
+
+  @Test
+  public void mapCanariesToKeys_resetsTheKeySet() {
+    subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService,
+        encryptionKeysConfiguration, encryptionService, keySet, timedRetry, true);
+    assertThat(keySet.get(existingCanaryUuid1), equalTo(existingKey1));
+    UUID newUuid = UUID.randomUUID();
+    existingKeyCanary1.setUuid(newUuid);
+    subject.mapUuidsToKeys();
+    assertThat(keySet.get(existingCanaryUuid1), nullValue());
+    assertThat(keySet.get(newUuid), equalTo(existingKey1));
   }
 
   @Test
@@ -408,6 +421,6 @@ public class EncryptionKeyCanaryMapperTest {
   public void getNewActiveKey() {
     subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService,
         encryptionKeysConfiguration, encryptionService, keySet, timedRetry, true);
-    assertThat(subject.getKeys(), hasItem(subject.getActiveKey()));
+    assertThat(keySet.getKeys(), hasItem(subject.getActiveKey()));
   }
 }

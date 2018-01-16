@@ -62,14 +62,11 @@ public class EncryptionKeyCanaryMapper {
   }
 
   public void mapUuidsToKeys() {
+    keySet.reset();
     createKeys();
     validateActiveKeyInList();
     createOrFindActiveCanary();
     mapCanariesToKeys();
-  }
-
-  public Collection<Key> getKeys() {
-    return keySet.getKeys();
   }
 
   public Key getActiveKey() {

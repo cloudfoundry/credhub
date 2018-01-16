@@ -17,7 +17,7 @@ public class EncryptionKeySet {
   private UUID activeUUID;
 
   public EncryptionKeySet() {
-    keys = new HashMap<>();
+    reset();
   }
 
   void add(UUID uuid, Key key) {
@@ -50,5 +50,10 @@ public class EncryptionKeySet {
 
   public Key getActiveKey() {
     return keys.get(activeUUID);
+  }
+
+  public void reset() {
+    keys = new HashMap<>();
+    activeUUID = null;
   }
 }
