@@ -66,4 +66,5 @@ public class EncryptionKeyRotatorTest {
   public void deletesTheUnusedCanaries() {
     verify(encryptionKeyCanaryMapper).delete(inactiveCanaries);
   }
+
 }

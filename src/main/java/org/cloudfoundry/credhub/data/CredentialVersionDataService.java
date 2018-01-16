@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -188,7 +189,7 @@ public class CredentialVersionDataService {
     return credentialVersionRepository.count();
   }
 
-  public Long countEncryptedWithKeyUuidIn(List<UUID> uuids) {
+  public Long countEncryptedWithKeyUuidIn(Collection<UUID> uuids) {
     return credentialVersionRepository.countByEncryptedCredentialValueEncryptionKeyUuidIn(uuids);
   }
 

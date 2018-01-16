@@ -1,25 +1,22 @@
 package org.cloudfoundry.credhub.service;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cloudfoundry.credhub.config.EncryptionKeysConfiguration;
 import org.cloudfoundry.credhub.data.EncryptionKeyCanaryDataService;
 import org.cloudfoundry.credhub.entity.EncryptedValue;
 import org.cloudfoundry.credhub.entity.EncryptionKeyCanary;
 import org.cloudfoundry.credhub.util.TimedRetry;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.Charset;
 import java.security.Key;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.apache.commons.lang3.ArrayUtils.toPrimitive;
@@ -34,11 +31,10 @@ public class EncryptionKeyCanaryMapper {
 
   private final EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
   private final EncryptionKeysConfiguration encryptionKeysConfiguration;
-  private final Map<UUID, Key> encryptionKeyMap;
+  private EncryptionKeySet keySet;
   private final TimedRetry timedRetry;
   private final boolean keyCreationEnabled;
 
-  private UUID activeUuid;
   private List<KeyProxy> keys;
   private KeyProxy activeKey;
   private EncryptionService encryptionService;
@@ -49,53 +45,51 @@ public class EncryptionKeyCanaryMapper {
       EncryptionKeyCanaryDataService encryptionKeyCanaryDataService,
       EncryptionKeysConfiguration encryptionKeysConfiguration,
       EncryptionService encryptionService,
+      EncryptionKeySet keySet,
       TimedRetry timedRetry,
       @Value("${encryption.key_creation_enabled}") boolean keyCreationEnabled
   ) {
     this.encryptionKeyCanaryDataService = encryptionKeyCanaryDataService;
     this.encryptionKeysConfiguration = encryptionKeysConfiguration;
     this.encryptionService = encryptionService;
+    this.keySet = keySet;
     this.timedRetry = timedRetry;
     this.keyCreationEnabled = keyCreationEnabled;
 
     logger = LogManager.getLogger();
-    encryptionKeyMap = new HashMap<>();
 
     mapUuidsToKeys();
   }
 
   public void mapUuidsToKeys() {
-    encryptionKeyMap.clear();
     createKeys();
     validateActiveKeyInList();
     createOrFindActiveCanary();
     mapCanariesToKeys();
   }
 
-  public List<Key> getKeys() {
-    return keys.stream().map(KeyProxy::getKey).collect(Collectors.toList());
+  public Collection<Key> getKeys() {
+    return keySet.getKeys();
   }
 
   public Key getActiveKey() {
-    return activeKey.getKey();
+    return keySet.getActiveKey();
   }
 
   public Key getKeyForUuid(UUID uuid) {
-    return encryptionKeyMap.get(uuid);
+    return keySet.get(uuid);
   }
 
   public UUID getActiveUuid() {
-    return activeUuid;
+    return keySet.getActive();
   }
 
-  public ArrayList<UUID> getKnownCanaryUuids() {
-    return new ArrayList<>(encryptionKeyMap.keySet());
+  public Collection<UUID> getKnownCanaryUuids() {
+    return keySet.getUuids();
   }
 
   public List<UUID> getCanaryUuidsWithKnownAndInactiveKeys() {
-    List<UUID> list = getKnownCanaryUuids();
-    list.removeIf((uuid) -> activeUuid.equals(uuid));
-    return list;
+    return keySet.getInactive();
   }
 
   public void delete(List<UUID> uuids) {
@@ -128,7 +122,12 @@ public class EncryptionKeyCanaryMapper {
   private void populateCanaries(List<EncryptionKeyCanary> encryptionKeyCanaries) {
     keys.forEach(encryptionKey -> {
       findCanaryMatchingKey(encryptionKey, encryptionKeyCanaries)
-          .ifPresent(canary -> encryptionKeyMap.put(canary.getUuid(), encryptionKey.getKey()));
+          .ifPresent(canary -> {
+            keySet.add(canary.getUuid(), encryptionKey.getKey());
+            if (encryptionKey == activeKey) {
+              keySet.setActive(canary.getUuid());
+            }
+          });
     });
   }
 
@@ -172,7 +171,5 @@ public class EncryptionKeyCanaryMapper {
         return activeCanary[0] != null;
       });
     }
-
-    activeUuid = activeCanary[0].getUuid();
   }
 }
