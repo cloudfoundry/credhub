@@ -1,14 +1,11 @@
 package org.cloudfoundry.credhub.service;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
 import org.cloudfoundry.credhub.constants.CipherTypes;
 import org.cloudfoundry.credhub.util.TimedRetry;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.security.KeyStoreException;
@@ -20,9 +17,6 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 
-@SuppressWarnings("unused")
-@ConditionalOnProperty(value = "encryption.provider", havingValue = "hsm", matchIfMissing = true)
-@Component
 public class LunaEncryptionService extends EncryptionService {
 
   public static final int KEY_POPULATION_WAIT_SEC = 60 *10; // ten minutes
@@ -31,8 +25,6 @@ public class LunaEncryptionService extends EncryptionService {
   private TimedRetry timedRetry;
   private final Logger logger;
 
-
-  @Autowired
   public LunaEncryptionService(
       LunaConnection lunaConnection,
       @Value("${encryption.key_creation_enabled}")

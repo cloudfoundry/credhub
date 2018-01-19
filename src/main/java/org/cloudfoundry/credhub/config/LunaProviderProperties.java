@@ -1,17 +1,15 @@
 package org.cloudfoundry.credhub.config;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@ConditionalOnProperty(value = "encryption.provider", havingValue = "hsm")
 public class LunaProviderProperties {
 
-  @Value("${hsm.partition}")
+  @Value("${hsm.partition:#{null}}")
   String partitionName;
 
-  @Value("${hsm.partition_password}")
+  @Value("${hsm.partition_password:#{null}}")
   String partitionPassword;
 
   public String getPartitionName() {

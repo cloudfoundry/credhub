@@ -13,11 +13,6 @@ public class EncryptionKey {
     this.key = key;
   }
 
-  public EncryptionKey(Key key) {
-    this.key = key;
-    this.uuid = null;
-  }
-
   public Key getKey() {
     return key;
   }
