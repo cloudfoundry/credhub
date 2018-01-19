@@ -39,7 +39,6 @@ public class RetryingEncryptionServiceTest {
   private Key firstKey;
   private Key secondKey;
   private EncryptionService encryptionService;
-  private RemoteEncryptionConnectable remoteEncryptionConnectable;
   private UUID activeKeyUuid;
 
   private ReentrantReadWriteLock readWriteLock;
@@ -53,7 +52,6 @@ public class RetryingEncryptionServiceTest {
     firstKey = mock(Key.class, "first key");
     secondKey = mock(Key.class, "second key");
     encryptionService = mock(EncryptionService.class);
-    remoteEncryptionConnectable = mock(RemoteEncryptionConnectable.class);
 
     activeKeyUuid = UUID.randomUUID();
     firstActiveKey = new EncryptionKey(activeKeyUuid, firstKey);
@@ -67,7 +65,7 @@ public class RetryingEncryptionServiceTest {
         .thenReturn(firstActiveKey)
         .thenReturn(secondActiveKey);
 
-    subject = new RetryingEncryptionService(encryptionService, keySet, remoteEncryptionConnectable);
+    subject = new RetryingEncryptionService(encryptionService, keySet);
 
     final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
     readLock = spy(rwLock.readLock());
@@ -90,7 +88,7 @@ public class RetryingEncryptionServiceTest {
 
     assertThat(encryptedValue, equalTo(expectedEncryption));
 
-    verify(remoteEncryptionConnectable, times(0))
+    verify(encryptionService, times(0))
         .reconnect(any(IllegalBlockSizeException.class));
     verify(keySet, times(0)).reload();
   }
@@ -106,9 +104,9 @@ public class RetryingEncryptionServiceTest {
       // expected
     }
 
-    final InOrder inOrder = inOrder(encryptionService, remoteEncryptionConnectable);
+    final InOrder inOrder = inOrder(encryptionService);
     inOrder.verify(encryptionService).encrypt(eq(firstActiveKey), anyString());
-    inOrder.verify(remoteEncryptionConnectable).reconnect(any(ProviderException.class));
+    inOrder.verify(encryptionService).reconnect(any(ProviderException.class));
     inOrder.verify(encryptionService).encrypt(eq(secondActiveKey), anyString());
   }
 
@@ -157,7 +155,7 @@ public class RetryingEncryptionServiceTest {
 
     assertThat(subject.encrypt("fake-plaintext"), equalTo(expectedEncryption));
 
-    verify(remoteEncryptionConnectable, times(1))
+    verify(encryptionService, times(1))
         .reconnect(any(IllegalBlockSizeException.class));
     verify(keySet, times(1)).reload();
   }
@@ -220,7 +218,7 @@ public class RetryingEncryptionServiceTest {
         subject.decrypt(new EncryptedValue(activeKeyUuid, "fake-encrypted-value".getBytes(), "fake-nonce".getBytes())),
         equalTo("fake-plaintext"));
 
-    verify(remoteEncryptionConnectable, times(0)).reconnect(any(IllegalBlockSizeException.class));
+    verify(encryptionService, times(0)).reconnect(any(IllegalBlockSizeException.class));
     verify(keySet, times(0)).reload();
   }
 
@@ -235,9 +233,9 @@ public class RetryingEncryptionServiceTest {
       // expected
     }
 
-    final InOrder inOrder = inOrder(encryptionService, remoteEncryptionConnectable);
+    final InOrder inOrder = inOrder(encryptionService);
     inOrder.verify(encryptionService).decrypt(eq(firstActiveKey), any(byte[].class), any(byte[].class));
-    inOrder.verify(remoteEncryptionConnectable).reconnect(any(ProviderException.class));
+    inOrder.verify(encryptionService).reconnect(any(ProviderException.class));
     inOrder.verify(encryptionService)
         .decrypt(eq(secondActiveKey), any(byte[].class), any(byte[].class));
   }
@@ -266,7 +264,7 @@ public class RetryingEncryptionServiceTest {
     when(encryptionService.decrypt(any(EncryptionKey.class), any(byte[].class), any(byte[].class)))
         .thenThrow(new ProviderException("function 'C_GenerateRandom' returns 0x30"));
     reset(writeLock);
-    doThrow(new RuntimeException()).when(remoteEncryptionConnectable)
+    doThrow(new RuntimeException()).when(encryptionService)
         .reconnect(any(Exception.class));
 
     try {
@@ -297,7 +295,7 @@ public class RetryingEncryptionServiceTest {
             .decrypt(new EncryptedValue(activeKeyUuid, "fake-encrypted-value".getBytes(), "fake-nonce".getBytes())),
         equalTo("fake-plaintext"));
 
-    verify(remoteEncryptionConnectable, times(1))
+    verify(encryptionService, times(1))
         .reconnect(any(IllegalBlockSizeException.class));
     verify(keySet, times(1)).reload();
   }
@@ -323,7 +321,6 @@ public class RetryingEncryptionServiceTest {
   @Test
   public void usingTwoThread_wontRetryTwice() throws Exception {
     final Object lock = new Object();
-    final Key key = mock(Key.class);
     final Thread firstThread = new Thread("first") {
       @Override
       public void run() {
@@ -366,8 +363,7 @@ public class RetryingEncryptionServiceTest {
 
     RacingRetryingEncryptionServiceForTest(Thread firstThread, Thread secondThread, Object lock) {
       super(RetryingEncryptionServiceTest.this.encryptionService,
-          RetryingEncryptionServiceTest.this.keySet,
-          RetryingEncryptionServiceTest.this.remoteEncryptionConnectable);
+          RetryingEncryptionServiceTest.this.keySet);
       this.firstThread = firstThread;
       this.secondThread = secondThread;
       this.lock = lock;

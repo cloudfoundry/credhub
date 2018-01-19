@@ -85,4 +85,8 @@ public class LunaEncryptionService extends EncryptionService {
       throw new RuntimeException(e);
     }
   }
+  @Override
+  public synchronized void reconnect(Exception reasonForReconnect) {
+    lunaConnection.reconnect();
+  }
 }

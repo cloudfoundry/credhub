@@ -1,23 +1,21 @@
 package org.cloudfoundry.credhub.service;
 
-import org.cloudfoundry.credhub.entity.EncryptedValue;
-import org.cloudfoundry.credhub.exceptions.KeyNotFoundException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.cloudfoundry.credhub.entity.EncryptedValue;
+import org.cloudfoundry.credhub.exceptions.KeyNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.IllegalBlockSizeException;
-import java.security.Key;
 import java.security.ProviderException;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import javax.crypto.IllegalBlockSizeException;
 
 @Component
 public class RetryingEncryptionService {
 
   private final EncryptionService encryptionService;
   private EncryptionKeySet keySet;
-  private final RemoteEncryptionConnectable remoteEncryptionConnectable;
   private final Logger logger;
   // for testing
   ReentrantReadWriteLock readWriteLock;
@@ -25,11 +23,9 @@ public class RetryingEncryptionService {
 
   @Autowired
   public RetryingEncryptionService(EncryptionService encryptionService,
-      EncryptionKeySet keySet,
-      RemoteEncryptionConnectable remoteEncryptionConnectable) {
+      EncryptionKeySet keySet) {
     this.encryptionService = encryptionService;
     this.keySet = keySet;
-    this.remoteEncryptionConnectable = remoteEncryptionConnectable;
 
     logger = LogManager.getLogger();
     readWriteLock = new ReentrantReadWriteLock();
@@ -66,7 +62,7 @@ public class RetryingEncryptionService {
         withPreventCryptoLock(() -> {
           if (needsReconnect()) {
             logger.info("Trying reconnect");
-            remoteEncryptionConnectable.reconnect(e);
+            encryptionService.reconnect(e);
             keySet.reload();
             clearNeedsReconnectFlag();
           }

@@ -18,7 +18,7 @@ import javax.crypto.SecretKey;
 
 @Component
 @ConditionalOnProperty(value = "encryption.provider", havingValue = "hsm", matchIfMissing = true)
-class LunaConnection implements RemoteEncryptionConnectable {
+class LunaConnection {
 
   private final LunaProviderProperties lunaProviderProperties;
   private Provider provider;
@@ -35,7 +35,7 @@ class LunaConnection implements RemoteEncryptionConnectable {
     lunaSlotManager = Class.forName("com.safenetinc.luna.LunaSlotManager")
         .getDeclaredMethod("getInstance").invoke(null);
 
-    reconnect(null);
+    reconnect();
 
     // https://www.pivotaltracker.com/story/show/148107855
     // SecureRandom seed is 440 bits in accordance with NIST Special Publication 800-90A Revision 1, section 10.1
@@ -49,8 +49,7 @@ class LunaConnection implements RemoteEncryptionConnectable {
     aesKeyGenerator.init(128);
   }
 
-  @Override
-  public synchronized void reconnect(Exception reasonForReconnect) {
+  public synchronized void reconnect() {
     if (!isLoggedIn()) {
       try {
         reinitialize();

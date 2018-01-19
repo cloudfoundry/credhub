@@ -82,4 +82,8 @@ public abstract class EncryptionService {
       return wrappedCipher.doFinal(encryptedValue);
     }
   }
+
+  public void reconnect(Exception reasonForReconnect) throws Exception {
+    throw reasonForReconnect;
+  }
 }
