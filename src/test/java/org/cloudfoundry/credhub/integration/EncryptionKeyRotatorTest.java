@@ -19,6 +19,7 @@ import org.cloudfoundry.credhub.entity.EncryptionKeyCanary;
 import org.cloudfoundry.credhub.entity.PasswordCredentialVersionData;
 import org.cloudfoundry.credhub.repository.CredentialVersionRepository;
 import org.cloudfoundry.credhub.request.StringGenerationParameters;
+import org.cloudfoundry.credhub.service.EncryptionKey;
 import org.cloudfoundry.credhub.service.EncryptionKeyRotator;
 import org.cloudfoundry.credhub.service.EncryptionKeySet;
 import org.cloudfoundry.credhub.service.EncryptionService;
@@ -357,7 +358,7 @@ public class EncryptionKeyRotatorTest {
     oldCanary.setNonce(canaryEncryption.getNonce());
     oldCanary = encryptionKeyCanaryDataService.save(oldCanary);
 
-    keySet.add(oldCanary.getUuid(), oldKey);
+    keySet.add(new EncryptionKey(oldCanary.getUuid(), oldKey));
 
     return oldKey;
   }

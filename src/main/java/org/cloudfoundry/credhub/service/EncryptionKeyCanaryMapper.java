@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.service;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
 import org.cloudfoundry.credhub.config.EncryptionKeysConfiguration;
 import org.cloudfoundry.credhub.data.EncryptionKeyCanaryDataService;
 import org.cloudfoundry.credhub.entity.EncryptedValue;
@@ -13,10 +14,8 @@ import org.springframework.stereotype.Component;
 
 import java.nio.charset.Charset;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static org.apache.commons.lang3.ArrayUtils.toPrimitive;
 
 @Component
@@ -32,8 +31,6 @@ public class EncryptionKeyCanaryMapper {
   private final TimedRetry timedRetry;
   private final boolean keyCreationEnabled;
 
-  private List<KeyProxy> keys;
-  private KeyProxy activeKey;
   private EncryptionService encryptionService;
   private final Logger logger;
 
@@ -55,91 +52,75 @@ public class EncryptionKeyCanaryMapper {
   }
 
   void mapUuidsToKeys(EncryptionKeySet keySet) {
-    createKeys();
-    validateActiveKeyInList();
-    createOrFindActiveCanary();
-    mapCanariesToKeys(keySet);
+    List<EncryptionKeyCanary> encryptionKeyCanaries = encryptionKeyCanaryDataService.findAll();
+
+    for (EncryptionKeyMetadata keyMetadata : encryptionKeysConfiguration.getKeys()) {
+      KeyProxy keyProxy = encryptionService.createKeyProxy(keyMetadata);
+      EncryptionKeyCanary matchingCanary = null;
+      for (EncryptionKeyCanary canary : encryptionKeyCanaries) {
+        if (keyProxy.matchesCanary(canary)) {
+          matchingCanary = canary;
+        }
+      }
+
+      if (matchingCanary == null) {
+        if (keyMetadata.isActive()) {
+          matchingCanary = createCanary(keyProxy);
+        } else {
+          continue;
+        }
+      }
+      if (keyMetadata.isActive()) {
+        keySet.setActive(matchingCanary.getUuid());
+      }
+      keySet.add(new EncryptionKey(matchingCanary.getUuid(), keyProxy.getKey()));
+    }
+
+    if (keySet.getActive() == null) {
+      throw new RuntimeException("No active key was found");
+    }
+  }
+
+  private EncryptionKeyCanary createCanary(KeyProxy keyProxy) {
+    if (keyCreationEnabled) {
+      logger.info("Creating a new active key canary");
+      EncryptionKeyCanary canary = new EncryptionKeyCanary();
+
+      try {
+        EncryptedValue encryptionData = encryptionService
+            .encrypt(null, keyProxy.getKey(), CANARY_VALUE);
+        canary.setEncryptedCanaryValue(encryptionData.getEncryptedValue());
+        canary.setNonce(encryptionData.getNonce());
+        final List<Byte> salt = keyProxy.getSalt();
+        final Byte[] saltArray = new Byte[salt.size()];
+        canary.setSalt(toPrimitive(salt.toArray(saltArray)));
+
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+
+      return encryptionKeyCanaryDataService.save(canary);
+    } else {
+      final EncryptionKeyCanary[] matchingCanary = new EncryptionKeyCanary[1];
+      timedRetry.retryEverySecondUntil(CANARY_POPULATION_WAIT_SEC, () -> {
+        for (EncryptionKeyCanary encryptionKeyCanary : encryptionKeyCanaryDataService.findAll()) {
+          if (keyProxy.matchesCanary(encryptionKeyCanary)) {
+            matchingCanary[0] = encryptionKeyCanary;
+            return true;
+          }
+        }
+        logger.info("Waiting for the active key's canary");
+        return false;
+      });
+      if (matchingCanary[0] == null) {
+        throw new RuntimeException("Timed out waiting for active key canary to be created");
+      }
+      return matchingCanary[0];
+    }
   }
 
   public void delete(List<UUID> uuids) {
     encryptionKeyCanaryDataService.delete(uuids);
   }
 
-  private void createKeys() {
-    keys = newArrayList();
-    encryptionKeysConfiguration.getKeys().forEach(keyMetadata -> {
-      KeyProxy keyProxy = encryptionService.createKeyProxy(keyMetadata);
-      keys.add(keyProxy);
-      if (keyMetadata.isActive()) {
-        activeKey = keyProxy;
-      }
-    });
-  }
-
-  private void mapCanariesToKeys(EncryptionKeySet keySet) {
-    List<EncryptionKeyCanary> encryptionKeyCanaries = encryptionKeyCanaryDataService.findAll();
-
-    populateCanaries(encryptionKeyCanaries, keySet);
-  }
-
-  private void validateActiveKeyInList() {
-    if (activeKey == null || !keys.contains(activeKey)) {
-      throw new RuntimeException("No active key was found");
-    }
-  }
-
-  private void populateCanaries(List<EncryptionKeyCanary> encryptionKeyCanaries,
-      EncryptionKeySet keySet) {
-    keys.forEach(encryptionKey -> {
-      findCanaryMatchingKey(encryptionKey, encryptionKeyCanaries)
-          .ifPresent(canary -> {
-            keySet.add(canary.getUuid(), encryptionKey.getKey());
-            if (encryptionKey == activeKey) {
-              keySet.setActive(canary.getUuid());
-            }
-          });
-    });
-  }
-
-  private Optional<EncryptionKeyCanary> findCanaryMatchingKey(KeyProxy encryptionKey,
-      List<EncryptionKeyCanary> canaries) {
-    return canaries.stream().filter(encryptionKey::matchesCanary).findFirst();
-  }
-
-  private void createOrFindActiveCanary() {
-    EncryptionKeyCanary[] activeCanary = new EncryptionKeyCanary[1];
-
-    if (keyCreationEnabled) {
-      activeCanary[0] =
-          findCanaryMatchingKey(activeKey, encryptionKeyCanaryDataService.findAll())
-              .orElseGet(() -> {
-                logger.info("Creating a new active key canary");
-                EncryptionKeyCanary canary = new EncryptionKeyCanary();
-
-                try {
-                  EncryptedValue encryptionData = encryptionService
-                      .encrypt(null, activeKey.getKey(), CANARY_VALUE);
-                  canary.setEncryptedCanaryValue(encryptionData.getEncryptedValue());
-                  canary.setNonce(encryptionData.getNonce());
-                  final List<Byte> salt = activeKey.getSalt();
-                  final Byte[] saltArray = new Byte[salt.size()];
-                  canary.setSalt(toPrimitive(salt.toArray(saltArray)));
-
-                } catch (Exception e) {
-                  throw new RuntimeException(e);
-                }
-
-                return encryptionKeyCanaryDataService.save(canary);
-              });
-    } else {
-      timedRetry.retryEverySecondUntil(CANARY_POPULATION_WAIT_SEC, () -> {
-        activeCanary[0] = findCanaryMatchingKey(activeKey, encryptionKeyCanaryDataService.findAll())
-            .orElseGet(() -> {
-              logger.info("Waiting for the active key's canary");
-              return null;
-            });
-        return activeCanary[0] != null;
-      });
-    }
-  }
 }

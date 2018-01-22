@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.controller.v1;
 
 import org.cloudfoundry.credhub.data.CredentialVersionDataService;
 import org.cloudfoundry.credhub.data.EncryptionKeyCanaryDataService;
+import org.cloudfoundry.credhub.service.EncryptionKey;
 import org.cloudfoundry.credhub.service.EncryptionKeySet;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.junit.Before;
@@ -62,8 +63,8 @@ public class KeyUsageControllerTest {
     countByEncryptionKey.put(knownKey, 10L);
     countByEncryptionKey.put(unknownKey, 5L);
 
-    keySet.add(activeKey, mock(Key.class));
-    keySet.add(knownKey, mock(Key.class));
+    keySet.add(new EncryptionKey(activeKey, mock(Key.class)));
+    keySet.add(new EncryptionKey(knownKey, mock(Key.class)));
     keySet.setActive(activeKey);
     when(credentialVersionDataService.countByEncryptionKey()).thenReturn(countByEncryptionKey);
 

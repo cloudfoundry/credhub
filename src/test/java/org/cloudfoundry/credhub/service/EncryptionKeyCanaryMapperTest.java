@@ -8,13 +8,15 @@ import org.cloudfoundry.credhub.entity.EncryptedValue;
 import org.cloudfoundry.credhub.entity.EncryptionKeyCanary;
 import org.cloudfoundry.credhub.util.TimedRetry;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.ArgumentCaptor;
 
 import java.security.Key;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -68,6 +70,9 @@ public class EncryptionKeyCanaryMapperTest {
   private TimedRetry timedRetry;
 
   private EncryptionKeysConfiguration encryptionKeysConfiguration;
+
+  @Rule
+  public final ExpectedException exception = ExpectedException.none();
 
   @Before()
   public void beforeEach() throws Exception {
@@ -132,7 +137,7 @@ public class EncryptionKeyCanaryMapperTest {
     when(existingKey2Proxy.getKey()).thenReturn(existingKey2);
 
     when(encryptionKeyCanaryDataService.findAll())
-        .thenReturn(asList(existingKeyCanary1, activeKeyCanary, existingKeyCanary2));
+        .thenReturn(new ArrayList<>(asArrayList(existingKeyCanary1, activeKeyCanary, existingKeyCanary2)));
 
     timedRetry = mock(TimedRetry.class);
     when(timedRetry.retryEverySecondUntil(anyLong(), any(Supplier.class)))
@@ -170,18 +175,6 @@ public class EncryptionKeyCanaryMapperTest {
   }
 
   @Test
-  public void mapUuidsToKeys_whenThereIsNoActiveKey_raisesAnException() {
-    when(encryptionKeysConfiguration.getKeys()).thenReturn(asList());
-
-    try {
-      subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService,
-          encryptionKeysConfiguration, encryptionService, timedRetry, true);
-    } catch (Exception e) {
-      assertThat(e.getMessage(), equalTo("No active key was found"));
-    }
-  }
-
-  @Test
   public void mapUuidsToKeys_whenTheActiveKeyIsTheOnlyKey_andThereAreNoCanariesInTheDatabase_andKeyCreationIsEnabled_createsAndSavesACanaryToTheDatabase()
       throws Exception {
     when(encryptionKeysConfiguration.getKeys()).thenReturn(asList(activeKeyData));
@@ -207,18 +200,11 @@ public class EncryptionKeyCanaryMapperTest {
   public void mapUuidsToKeys_whenTheActiveKeyIsTheOnlyKey_andThereAreNoCanariesInTheDatabase_andKeyCreationIsDisabled_waitsForAnotherProcessToPutACanaryToTheDatabase()
       throws Exception {
     when(encryptionKeysConfiguration.getKeys()).thenReturn(asList(activeKeyData));
-    List<EncryptionKeyCanary> canaries = newArrayList();
-    when(encryptionKeyCanaryDataService.findAll()).thenReturn(canaries);
-
-    when(encryptionKeyCanaryDataService.save(any(EncryptionKeyCanary.class)))
-        .thenAnswer(invocation -> {
-          canaries.add(activeKeyCanary);
-          return activeKeyCanary;
-        });
 
     List<EncryptionKeyCanary> noCanaries = newArrayList();
     List<EncryptionKeyCanary> oneCanary = Lists.newArrayList(activeKeyCanary);
     when(encryptionKeyCanaryDataService.findAll())
+        .thenReturn(noCanaries)
         .thenReturn(noCanaries)
         .thenReturn(oneCanary);
     subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService,
@@ -228,6 +214,17 @@ public class EncryptionKeyCanaryMapperTest {
     verify(encryptionKeyCanaryDataService, never()).save(any());
     verify(timedRetry).retryEverySecondUntil(eq(600L), any());
     assertThat(keySet.getActive().getUuid(), equalTo(activeCanaryUuid));
+  }
+
+  @Test
+  public void mapUuidsToKeys_whenKeyCreationIsDisabled_AndNoKeyIsEverCreated_ThrowsAnException() {
+    when(encryptionKeysConfiguration.getKeys()).thenReturn(asList(activeKeyData));
+    when(encryptionKeyCanaryDataService.findAll()).thenReturn(newArrayList());
+    subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService,
+        encryptionKeysConfiguration, encryptionService, timedRetry, false);
+
+    exception.expectMessage("Timed out waiting for active key canary to be created");
+    subject.mapUuidsToKeys(keySet);
   }
 
   @Test
@@ -241,7 +238,7 @@ public class EncryptionKeyCanaryMapperTest {
     nonMatchingCanary.setNonce("fake-non-matching-nonce".getBytes());
 
     when(encryptionKeyCanaryDataService.findAll())
-        .thenReturn(Arrays.asList(nonMatchingCanary));
+        .thenReturn(asArrayList(nonMatchingCanary));
 
     when(encryptionService
         .decrypt(activeKey, nonMatchingCanary.getEncryptedCanaryValue(),
@@ -269,7 +266,7 @@ public class EncryptionKeyCanaryMapperTest {
     nonMatchingCanary.setNonce("fake-non-matching-nonce".getBytes());
 
     when(encryptionKeyCanaryDataService.findAll())
-        .thenReturn(Arrays.asList(nonMatchingCanary));
+        .thenReturn(asArrayList(nonMatchingCanary));
 
     when(encryptionService
         .decrypt(activeKey, nonMatchingCanary.getEncryptedCanaryValue(),
@@ -287,6 +284,17 @@ public class EncryptionKeyCanaryMapperTest {
   }
 
   @Test
+  public void mapUuidsToKeys_whenThereIsNoActiveKey() {
+    when(encryptionKeysConfiguration.getKeys()).thenReturn(asList(existingKey1Data, existingKey2Data));
+
+    subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService,
+        encryptionKeysConfiguration, encryptionService, timedRetry, true);
+
+    exception.expectMessage("No active key was found");
+    subject.mapUuidsToKeys(keySet);
+  }
+
+  @Test
   public void mapUuidsToKeys_whenTheActiveKeyIsTheOnlyKey_whenThereIsNoMatchingCanaryInTheDatabase_whenDecryptingWithTheWrongKeyRaisesAnHSMException_throwsTheException()
       throws Exception {
     when(encryptionKeysConfiguration.getKeys()).thenReturn(asList(activeKeyData));
@@ -297,7 +305,7 @@ public class EncryptionKeyCanaryMapperTest {
     nonMatchingCanary.setNonce("fake-non-matching-nonce".getBytes());
 
     when(encryptionKeyCanaryDataService.findAll())
-        .thenReturn(Arrays.asList(nonMatchingCanary));
+        .thenReturn(asArrayList(nonMatchingCanary));
 
     when(activeKeyProxy.matchesCanary(nonMatchingCanary))
         .thenThrow(new RuntimeException(new IllegalBlockSizeException(
@@ -308,12 +316,8 @@ public class EncryptionKeyCanaryMapperTest {
     subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService,
         encryptionKeysConfiguration, encryptionService, timedRetry, true);
 
-    try {
-      subject.mapUuidsToKeys(keySet);
-    } catch (RuntimeException e) {
-      assertThat(e.getMessage(), equalTo(
-          "javax.crypto.IllegalBlockSizeException: I don't know what 0x41 means and neither do you"));
-    }
+    exception.expectMessage("javax.crypto.IllegalBlockSizeException: I don't know what 0x41 means and neither do you");
+    subject.mapUuidsToKeys(keySet);
   }
 
   @Test
@@ -327,7 +331,7 @@ public class EncryptionKeyCanaryMapperTest {
     nonMatchingCanary.setNonce("fake-non-matching-nonce".getBytes());
 
     when(encryptionKeyCanaryDataService.findAll())
-        .thenReturn(Arrays.asList(nonMatchingCanary));
+        .thenReturn(asArrayList(nonMatchingCanary));
 
     when(encryptionService.decrypt(activeKey, nonMatchingCanary.getEncryptedCanaryValue(),
         nonMatchingCanary.getNonce()))
@@ -347,7 +351,7 @@ public class EncryptionKeyCanaryMapperTest {
   public void mapUuidsToKeys_whenTheActiveKeyIsTheOnlyKey_whenThereIsAMatchingCanaryInTheDatabase_shouldMapTheKeyToTheMatchingCanary()
       throws Exception {
     when(encryptionKeysConfiguration.getKeys()).thenReturn(asList(activeKeyData));
-    when(encryptionKeyCanaryDataService.findAll()).thenReturn(asList(activeKeyCanary));
+    when(encryptionKeyCanaryDataService.findAll()).thenReturn(asArrayList(activeKeyCanary));
     when(encryptionService
         .decrypt(activeKey, activeKeyCanary.getEncryptedCanaryValue(),
             activeKeyCanary.getNonce()))
@@ -385,7 +389,7 @@ public class EncryptionKeyCanaryMapperTest {
   public void mapUuidsToKeys_whenThereAreMultipleKeys_andCanariesForKeysWeDontHave_itShouldNotBeIncluded()
       throws Exception {
     when(encryptionKeyCanaryDataService.findAll())
-        .thenReturn(asList(unknownCanary, activeKeyCanary));
+        .thenReturn(asArrayList(unknownCanary, activeKeyCanary));
 
     subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService,
         encryptionKeysConfiguration, encryptionService, timedRetry, true);
@@ -395,6 +399,14 @@ public class EncryptionKeyCanaryMapperTest {
     assertThat(keySet.get(unknownCanaryUuid), equalTo(null));
     assertThat(keySet.getActive().getUuid(), equalTo(activeCanaryUuid));
     assertThat(keySet.getInactiveUuids().size(), equalTo(0));
+  }
+
+  private List<EncryptionKeyCanary> asArrayList(EncryptionKeyCanary... canaries) {
+    List<EncryptionKeyCanary> list = new ArrayList<>();
+    for (EncryptionKeyCanary canary : canaries) {
+      list.add(canary);
+    }
+    return list;
   }
 
   private void assertCanaryValueWasEncryptedAndSavedToDatabase() throws Exception {

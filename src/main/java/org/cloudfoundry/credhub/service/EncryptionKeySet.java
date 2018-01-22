@@ -3,7 +3,6 @@ package org.cloudfoundry.credhub.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.security.Key;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -29,8 +28,8 @@ public class EncryptionKeySet {
     reload();
   }
 
-  public void add(UUID uuid, Key key) {
-    keys.put(uuid, new EncryptionKey(uuid, key));
+  public void add(EncryptionKey key) {
+    keys.put(key.getUuid(), key);
   }
 
   public void setActive(UUID uuid) {
