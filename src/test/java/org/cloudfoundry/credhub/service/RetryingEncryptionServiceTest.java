@@ -52,7 +52,7 @@ public class RetryingEncryptionServiceTest {
     firstActiveKey = mock(EncryptionKey.class);
     secondActiveKey = mock(EncryptionKey.class);
 
-    subject = new RetryingEncryptionService(encryptionService, keySet);
+    subject = new RetryingEncryptionService(keySet);
 
     final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
     readLock = spy(rwLock.readLock());
@@ -99,9 +99,9 @@ public class RetryingEncryptionServiceTest {
       // expected
     }
 
-    final InOrder inOrder = inOrder(encryptionService,firstActiveKey,secondActiveKey);
+    final InOrder inOrder = inOrder(firstActiveKey);
     inOrder.verify(firstActiveKey).encrypt(anyString());
-    inOrder.verify(encryptionService).reconnect(any(ProviderException.class));
+    inOrder.verify(firstActiveKey).reconnect(any(ProviderException.class));
     inOrder.verify(firstActiveKey).encrypt(anyString());
   }
 
@@ -161,7 +161,8 @@ public class RetryingEncryptionServiceTest {
 
     assertThat(subject.encrypt("fake-plaintext"), equalTo(expectedEncryption));
 
-    verify(encryptionService, times(1))
+
+    verify(keySet.getActive(), times(1))
         .reconnect(any(IllegalBlockSizeException.class));
     verify(keySet, times(1)).reload();
   }
@@ -242,8 +243,12 @@ public class RetryingEncryptionServiceTest {
     when(keySet.get(activeKeyUuid))
         .thenReturn(firstActiveKey);
 
+    when(keySet.getActive())
+        .thenReturn(firstActiveKey);
+
     when(firstActiveKey.decrypt( any(byte[].class), any(byte[].class)))
         .thenThrow(new ProviderException("function 'C_GenerateRandom' returns 0x30"));
+
     try {
       subject.decrypt(new EncryptedValue(activeKeyUuid, "an encrypted value".getBytes(), "a nonce".getBytes()));
       fail("Expected exception");
@@ -251,9 +256,9 @@ public class RetryingEncryptionServiceTest {
       // expected
     }
 
-    final InOrder inOrder = inOrder(encryptionService, firstActiveKey);
+    final InOrder inOrder = inOrder(firstActiveKey);
     inOrder.verify(firstActiveKey).decrypt(any(byte[].class), any(byte[].class));
-    inOrder.verify(encryptionService).reconnect(any(ProviderException.class));
+    inOrder.verify(firstActiveKey).reconnect(any(ProviderException.class));
     inOrder.verify(firstActiveKey)
         .decrypt(any(byte[].class), any(byte[].class));
   }
@@ -262,6 +267,10 @@ public class RetryingEncryptionServiceTest {
   public void decrypt_whenThrowsErrors_unlocksAfterExceptionAndLocksAgainBeforeEncrypting() throws Exception {
 
     when(keySet.get(activeKeyUuid))
+        .thenReturn(firstActiveKey);
+
+
+    when(keySet.getActive())
         .thenReturn(firstActiveKey);
 
     when(firstActiveKey.decrypt(any(byte[].class), any(byte[].class)))
@@ -312,6 +321,9 @@ public class RetryingEncryptionServiceTest {
         .thenReturn(firstActiveKey)
         .thenReturn(secondActiveKey);
 
+    when(keySet.getActive())
+        .thenReturn(firstActiveKey);
+
     when(firstActiveKey
         .decrypt( "fake-encrypted-value".getBytes(), "fake-nonce".getBytes()))
         .thenThrow(new IllegalBlockSizeException("test exception"));
@@ -323,7 +335,7 @@ public class RetryingEncryptionServiceTest {
             .decrypt(new EncryptedValue(activeKeyUuid, "fake-encrypted-value".getBytes(), "fake-nonce".getBytes())),
         equalTo("fake-plaintext"));
 
-    verify(encryptionService, times(1))
+    verify(keySet.getActive(), times(1))
         .reconnect(any(IllegalBlockSizeException.class));
     verify(keySet, times(1)).reload();
   }
@@ -379,6 +391,10 @@ public class RetryingEncryptionServiceTest {
     when(keySet.get(activeKeyUuid))
         .thenReturn(firstActiveKey);
 
+    when(keySet.getActive())
+        .thenReturn(firstActiveKey);
+
+
     when(firstActiveKey.decrypt(any(byte[].class), any(byte[].class)))
         .thenThrow(new ProviderException("function 'C_GenerateRandom' returns 0x30"));
 
@@ -397,8 +413,7 @@ public class RetryingEncryptionServiceTest {
     private final Object lock;
 
     RacingRetryingEncryptionServiceForTest(Thread firstThread, Thread secondThread, Object lock) {
-      super(RetryingEncryptionServiceTest.this.encryptionService,
-          RetryingEncryptionServiceTest.this.keySet);
+      super(RetryingEncryptionServiceTest.this.keySet);
       this.firstThread = firstThread;
       this.secondThread = secondThread;
       this.lock = lock;

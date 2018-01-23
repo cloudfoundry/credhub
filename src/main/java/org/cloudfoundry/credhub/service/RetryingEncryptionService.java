@@ -14,7 +14,6 @@ import javax.crypto.IllegalBlockSizeException;
 @Component
 public class RetryingEncryptionService {
 
-  private final EncryptionService encryptionService;
   private EncryptionKeySet keySet;
   private final Logger logger;
   // for testing
@@ -22,9 +21,7 @@ public class RetryingEncryptionService {
   private volatile boolean needsReconnect; // volatile so all threads see changes
 
   @Autowired
-  public RetryingEncryptionService(EncryptionService encryptionService,
-      EncryptionKeySet keySet) {
-    this.encryptionService = encryptionService;
+  public RetryingEncryptionService(EncryptionKeySet keySet) {
     this.keySet = keySet;
 
     logger = LogManager.getLogger();
@@ -62,7 +59,7 @@ public class RetryingEncryptionService {
         withPreventCryptoLock(() -> {
           if (needsReconnect()) {
             logger.info("Trying reconnect");
-            encryptionService.reconnect(e);
+            keySet.getActive().reconnect(e);
             keySet.reload();
             clearNeedsReconnectFlag();
           }

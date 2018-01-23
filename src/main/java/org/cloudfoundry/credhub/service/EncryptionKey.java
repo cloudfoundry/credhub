@@ -36,4 +36,8 @@ public class EncryptionKey {
   public EncryptedValue encrypt(String value) throws Exception {
     return service.encrypt(this, value);
   }
+
+  public void reconnect(Exception e) throws Exception {
+    service.reconnect(e);
+  }
 }
