@@ -25,7 +25,7 @@ setup_tls_key_store() {
     openssl req -new -sha256 -key server_key.pem -subj "/CN=localhost" -out server.csr
 
     echo "Generate server certificate signed by our CA"
-    openssl x509 -req -in server.csr -CA server_ca_cert.pem -CAkey server_ca_private.pem \
+    openssl x509 -req -in server.csr -sha384 -CA server_ca_cert.pem -CAkey server_ca_private.pem \
         -CAcreateserial -out server.pem
 
     echo "Create a .p12 file that contains both server cert and private key"
