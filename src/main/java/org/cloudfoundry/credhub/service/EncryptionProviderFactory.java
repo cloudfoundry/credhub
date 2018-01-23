@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
+
 @Component
 public class EncryptionProviderFactory {
 
@@ -18,6 +20,7 @@ public class EncryptionProviderFactory {
   private PasswordKeyProxyFactory passwordKeyProxyFactory;
   private boolean keyCreationEnabled;
   private EncryptionService encryptionService;
+  private HashMap<ProviderType, EncryptionService> map;
 
 
   @Autowired
@@ -30,24 +33,30 @@ public class EncryptionProviderFactory {
     this.timedRetry = timedRetry;
     this.passwordKeyProxyFactory = passwordKeyProxyFactory;
     this.keyCreationEnabled = keyCreationEnabled;
-
-    setEncryptionService(encryptionKeysConfiguration.getProvider());
-
-  }
-
-  private void setEncryptionService(ProviderType type) throws Exception {
-    if (type.equals(ProviderType.HSM)) {
-      encryptionService = new LunaEncryptionService(new LunaConnection(lunaProviderProperties), keyCreationEnabled,
-          timedRetry);
-    }
-    else {
-       encryptionService = new InternalEncryptionService(passwordKeyProxyFactory);
-      }
+    map = new HashMap<>();
   }
 
   @Bean
-  public EncryptionService getEncryptionService(){
-    return encryptionService;
+  public EncryptionService getActiveEncryptionService() throws Exception {
+    return getEncryptionService(encryptionKeysConfiguration.getProvider());
   }
 
+
+  public EncryptionService getEncryptionService(ProviderType provider) throws Exception {
+    if (map.containsKey(provider)) {
+      return map.get(provider);
+    } else {
+      switch (provider) {
+        case HSM:
+          encryptionService = new LunaEncryptionService(new LunaConnection(lunaProviderProperties),
+              keyCreationEnabled,
+              timedRetry);
+          break;
+        case INTERNAL:
+          encryptionService = new InternalEncryptionService(passwordKeyProxyFactory);
+      }
+      map.put(provider, encryptionService);
+      return encryptionService;
+    }
+  }
 }

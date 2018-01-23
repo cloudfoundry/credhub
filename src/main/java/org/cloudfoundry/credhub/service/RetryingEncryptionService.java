@@ -32,8 +32,9 @@ public class RetryingEncryptionService {
   }
 
   public EncryptedValue encrypt(final String value) throws Exception {
+
     logger.info("Attempting encrypt");
-    return retryOnErrorWithRemappedKey(() -> encryptionService.encrypt(keySet.getActive(), value));
+    return retryOnErrorWithRemappedKey(() -> keySet.getActive().encrypt(value));
   }
 
   public String decrypt(EncryptedValue encryptedValue)
@@ -45,8 +46,7 @@ public class RetryingEncryptionService {
       if (key == null) {
         throw new KeyNotFoundException("error.missing_encryption_key");
       }
-
-      return encryptionService.decrypt(key, encryptedValue.getEncryptedValue(), encryptedValue.getNonce());
+        return key.decrypt(encryptedValue.getEncryptedValue(), encryptedValue.getNonce());
     });
   }
 

@@ -29,6 +29,7 @@ public class EncryptionKeyCanaryMapper {
   private final EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
   private final EncryptionKeysConfiguration encryptionKeysConfiguration;
   private final TimedRetry timedRetry;
+  private EncryptionProviderFactory providerFactory;
   private final boolean keyCreationEnabled;
 
   private EncryptionService encryptionService;
@@ -40,12 +41,14 @@ public class EncryptionKeyCanaryMapper {
       EncryptionKeysConfiguration encryptionKeysConfiguration,
       EncryptionService encryptionService,
       TimedRetry timedRetry,
+      EncryptionProviderFactory providerFactory,
       @Value("${encryption.key_creation_enabled}") boolean keyCreationEnabled
   ) {
     this.encryptionKeyCanaryDataService = encryptionKeyCanaryDataService;
     this.encryptionKeysConfiguration = encryptionKeysConfiguration;
     this.encryptionService = encryptionService;
     this.timedRetry = timedRetry;
+    this.providerFactory = providerFactory;
     this.keyCreationEnabled = keyCreationEnabled;
 
     logger = LogManager.getLogger();
@@ -73,7 +76,14 @@ public class EncryptionKeyCanaryMapper {
       if (keyMetadata.isActive()) {
         keySet.setActive(matchingCanary.getUuid());
       }
-      keySet.add(new EncryptionKey(matchingCanary.getUuid(), keyProxy.getKey()));
+      try {
+        keySet.add(new EncryptionKey(
+            providerFactory.getEncryptionService(encryptionKeysConfiguration.getProvider()),
+            matchingCanary.getUuid(),
+            keyProxy.getKey()));
+      } catch (Exception e) {
+        throw new RuntimeException("Failed to connect to encryption provider", e);
+      }
     }
 
     if (keySet.getActive() == null) {
