@@ -1,16 +1,17 @@
 package org.cloudfoundry.credhub.config;
 
+@SuppressWarnings("unused")
 public class EncryptionKeyMetadata {
 
   private String encryptionKeyName;
   private String encryptionPassword;
   private boolean active;
+  private ProviderType providerType;
 
   public String getEncryptionKeyName() {
     return encryptionKeyName;
   }
 
-  @SuppressWarnings("unused")
   public void setEncryptionKeyName(String encryptionKeyName) {
     this.encryptionKeyName = encryptionKeyName;
   }
@@ -19,7 +20,6 @@ public class EncryptionKeyMetadata {
     return active;
   }
 
-  @SuppressWarnings("unused")
   public void setActive(boolean active) {
     this.active = active;
   }
@@ -28,8 +28,15 @@ public class EncryptionKeyMetadata {
     return encryptionPassword;
   }
 
-  @SuppressWarnings("unused")
   public void setEncryptionPassword(String encryptionPassword) {
     this.encryptionPassword = encryptionPassword;
+  }
+
+  public ProviderType getProviderType() {
+    return providerType;
+  }
+
+  public void setProviderType(ProviderType providerType) {
+    this.providerType = providerType;
   }
 }

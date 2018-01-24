@@ -382,6 +382,7 @@ public class EncryptionKeyRotatorTest {
 
       clonedKey.setActive(false);
       clonedKey.setEncryptionPassword(encryptionKeyMetadata.getEncryptionPassword());
+      clonedKey.setProviderType(encryptionKeyMetadata.getProviderType());
 
       keys.add(clonedKey);
     }

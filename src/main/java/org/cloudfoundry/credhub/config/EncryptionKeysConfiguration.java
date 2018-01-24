@@ -10,7 +10,7 @@ import java.util.List;
 public class EncryptionKeysConfiguration {
 
   private List<EncryptionKeyMetadata> keys;
-  private ProviderType provider;
+  private boolean keyCreationEnabled;
 
   public List<EncryptionKeyMetadata> getKeys() {
     return keys;
@@ -20,11 +20,11 @@ public class EncryptionKeysConfiguration {
     this.keys = keys;
   }
 
-  public ProviderType getProvider() {
-    return provider;
+  public boolean isKeyCreationEnabled() {
+    return keyCreationEnabled;
   }
 
-  public void setProvider(ProviderType provider) {
-    this.provider = provider;
+  public void setKeyCreationEnabled(boolean keyCreationEnabled) {
+    this.keyCreationEnabled = keyCreationEnabled;
   }
 }

@@ -9,7 +9,6 @@ import org.cloudfoundry.credhub.entity.EncryptedValue;
 import org.cloudfoundry.credhub.entity.EncryptionKeyCanary;
 import org.cloudfoundry.credhub.util.TimedRetry;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.Charset;
@@ -30,8 +29,6 @@ public class EncryptionKeyCanaryMapper {
   private final EncryptionKeysConfiguration encryptionKeysConfiguration;
   private final TimedRetry timedRetry;
   private EncryptionProviderFactory providerFactory;
-  private final boolean keyCreationEnabled;
-
   private EncryptionService encryptionService;
   private final Logger logger;
 
@@ -41,15 +38,13 @@ public class EncryptionKeyCanaryMapper {
       EncryptionKeysConfiguration encryptionKeysConfiguration,
       EncryptionService encryptionService,
       TimedRetry timedRetry,
-      EncryptionProviderFactory providerFactory,
-      @Value("${encryption.key_creation_enabled}") boolean keyCreationEnabled
+      EncryptionProviderFactory providerFactory
   ) {
     this.encryptionKeyCanaryDataService = encryptionKeyCanaryDataService;
     this.encryptionKeysConfiguration = encryptionKeysConfiguration;
     this.encryptionService = encryptionService;
     this.timedRetry = timedRetry;
     this.providerFactory = providerFactory;
-    this.keyCreationEnabled = keyCreationEnabled;
 
     logger = LogManager.getLogger();
   }
@@ -78,7 +73,7 @@ public class EncryptionKeyCanaryMapper {
       }
       try {
         keySet.add(new EncryptionKey(
-            providerFactory.getEncryptionService(encryptionKeysConfiguration.getProvider()),
+            providerFactory.getEncryptionService(keyMetadata.getProviderType()),
             matchingCanary.getUuid(),
             keyProxy.getKey()));
       } catch (Exception e) {
@@ -92,7 +87,7 @@ public class EncryptionKeyCanaryMapper {
   }
 
   private EncryptionKeyCanary createCanary(KeyProxy keyProxy) {
-    if (keyCreationEnabled) {
+    if (encryptionKeysConfiguration.isKeyCreationEnabled()) {
       logger.info("Creating a new active key canary");
       EncryptionKeyCanary canary = new EncryptionKeyCanary();
 

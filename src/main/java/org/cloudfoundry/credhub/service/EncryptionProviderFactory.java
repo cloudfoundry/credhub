@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.service;
 
+import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
 import org.cloudfoundry.credhub.config.EncryptionKeysConfiguration;
 import org.cloudfoundry.credhub.config.LunaProviderProperties;
 import org.cloudfoundry.credhub.config.ProviderType;
@@ -10,6 +11,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class EncryptionProviderFactory {
@@ -38,7 +41,9 @@ public class EncryptionProviderFactory {
 
   @Bean
   public EncryptionService getActiveEncryptionService() throws Exception {
-    return getEncryptionService(encryptionKeysConfiguration.getProvider());
+    List<EncryptionKeyMetadata> metadata = encryptionKeysConfiguration.getKeys().stream().filter(encryptionKeyMetadata -> encryptionKeyMetadata.isActive()).collect(
+        Collectors.toList());
+    return getEncryptionService(metadata.get(0).getProviderType());
   }
 
 

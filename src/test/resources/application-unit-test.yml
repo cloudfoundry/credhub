@@ -2,11 +2,12 @@ auth_server:
   url: https://example.com:8443
 
 encryption:
-  provider: internal
   keys:
   - encryption_password: opensesame
+    provider_type: internal
     active: true
   - encryption_password: correcthorsebatterystaple
+    provider_type: internal
   key_creation_enabled: true
 
 security:

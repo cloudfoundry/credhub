@@ -37,6 +37,10 @@ public class EncryptionKey {
     return service.encrypt(this, value);
   }
 
+  public EncryptionService getService() {
+    return service;
+  }
+
   public void reconnect(Exception e) throws Exception {
     service.reconnect(e);
   }

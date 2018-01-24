@@ -1,9 +1,6 @@
 package org.cloudfoundry.credhub.service;
 
 import org.cloudfoundry.credhub.config.LunaProviderProperties;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.security.KeyStore;
@@ -16,8 +13,7 @@ import java.security.UnrecoverableKeyException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
-@Component
-@ConditionalOnProperty(value = "encryption.provider", havingValue = "hsm", matchIfMissing = true)
+
 class LunaConnection {
 
   private final LunaProviderProperties lunaProviderProperties;
@@ -27,7 +23,7 @@ class LunaConnection {
   private SecureRandom secureRandom;
   private KeyGenerator aesKeyGenerator;
 
-  @Autowired
+
   public LunaConnection(LunaProviderProperties lunaProviderProperties) throws Exception {
     this.lunaProviderProperties = lunaProviderProperties;
     provider = (Provider) Class.forName("com.safenetinc.luna.provider.LunaProvider").newInstance();
