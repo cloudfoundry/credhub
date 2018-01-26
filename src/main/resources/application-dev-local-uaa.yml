@@ -5,15 +5,3 @@ auth_server:
 security:
   oauth2:
     enabled: true
-    resource:
-      jwt:
-        key_value: |
-          -----BEGIN PUBLIC KEY-----
-          MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyEsIhHyxd2xwI1AqZkma
-          OzqvyrLVJiYXhNc555MWCa+cOP/YcGY8htZS1Z0r3t9o9pHcFmUe5BTgrlMRnvQC
-          04SFV1hS+hs1Pct9E//Fcf/Db2AmbWhAZjki9McE+40DeXz5sjRMKxzVXnNDEJVm
-          Ucr6T65PRdIzKud00JBvkhD2ZIodVh6TUjP8fJIB8BJVZagUQwhBpIOODwgc165g
-          SAn0TwAtrj9SFDy64i74kOPlF8wZ26JIPebisIMDBQmzzp9zoPZ9sSD3yo7bGdXp
-          UPu94Z3/oU7e3YnA3BFpryjuFogpq8/9MPb2cKhENywTr0ljF0zHaazKViPiTwfu
-          cwIDAQAB
-          -----END PUBLIC KEY-----

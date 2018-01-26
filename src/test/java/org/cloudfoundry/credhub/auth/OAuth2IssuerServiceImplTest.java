@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.auth;
 
+import org.cloudfoundry.credhub.config.OAuthProperties;
 import org.cloudfoundry.credhub.util.RestTemplateFactory;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,13 +37,18 @@ public class OAuth2IssuerServiceImplTest {
     String trustStore = "test-trust-store";
     String trustStorePassword = "test-trust-store-password";
 
+    OAuthProperties oAuthProperties = new OAuthProperties();
+    oAuthProperties.setTrustStore(trustStore);
+    oAuthProperties.setTrustStorePassword(trustStorePassword);
+    oAuthProperties.setUrl(AUTH_SERVER);
+
     RestTemplateFactory restTemplateFactory = mock(RestTemplateFactory.class);
     restTemplate = mock(RestTemplate.class);
 
     when(restTemplateFactory.createRestTemplate(trustStore, trustStorePassword))
         .thenReturn(restTemplate);
 
-    subject = new OAuth2IssuerServiceImpl(restTemplateFactory, AUTH_SERVER, trustStore, trustStorePassword);
+    subject = new OAuth2IssuerServiceImpl(restTemplateFactory, oAuthProperties);
   }
 
   @Test
