@@ -3,7 +3,7 @@ package org.cloudfoundry.credhub.jna.libcrypto;
 import com.sun.jna.Memory;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
-import org.cloudfoundry.credhub.service.EncryptionService;
+import org.cloudfoundry.credhub.service.RandomNumberGenerator;
 import org.cloudfoundry.credhub.util.CheckedConsumer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -33,9 +33,9 @@ public class CryptoWrapper {
   private final SecureRandom secureRandom;
 
   @Autowired
-  public CryptoWrapper(EncryptionService encryptionService) throws NoSuchAlgorithmException {
+  public CryptoWrapper(RandomNumberGenerator randomNumberGenerator) throws NoSuchAlgorithmException {
     keyFactory = KeyFactory.getInstance(ALGORITHM);
-    secureRandom = encryptionService.getSecureRandom();
+    secureRandom = randomNumberGenerator.getSecureRandom();
 
     initializeOpenssl();
   }

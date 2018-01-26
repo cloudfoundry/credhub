@@ -1,6 +1,6 @@
 package org.cloudfoundry.credhub.generator;
 
-import org.cloudfoundry.credhub.service.EncryptionService;
+import org.cloudfoundry.credhub.service.RandomNumberGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -14,14 +14,14 @@ public class RandomSerialNumberGenerator {
   *  http://crypto.stackexchange.com/questions/257/unpredictability-of-x-509-serial-numbers
   *  */
   private static final int NUM_BITS_IN_CERT_SERIAL_NUM = 159;
-  private final EncryptionService encryptionService;
+  private final RandomNumberGenerator randomNumberGenerator;
 
   @Autowired
-  public RandomSerialNumberGenerator(EncryptionService encryptionService) {
-    this.encryptionService = encryptionService;
+  public RandomSerialNumberGenerator(RandomNumberGenerator randomNumberGenerator) {
+    this.randomNumberGenerator = randomNumberGenerator;
   }
 
   public BigInteger generate() {
-    return new BigInteger(NUM_BITS_IN_CERT_SERIAL_NUM, encryptionService.getSecureRandom());
+    return new BigInteger(NUM_BITS_IN_CERT_SERIAL_NUM, randomNumberGenerator.getSecureRandom());
   }
 }

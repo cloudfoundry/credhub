@@ -1,6 +1,7 @@
 package org.cloudfoundry.credhub.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
@@ -44,6 +45,7 @@ public class EncryptionKeySet {
     return keys.values();
   }
 
+  @Bean
   public EncryptionKey getActive() {
     return keys.get(activeUUID);
   }

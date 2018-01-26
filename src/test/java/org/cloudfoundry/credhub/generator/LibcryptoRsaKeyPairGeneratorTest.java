@@ -1,8 +1,8 @@
 package org.cloudfoundry.credhub.generator;
 
 import org.cloudfoundry.credhub.jna.libcrypto.CryptoWrapper;
-import org.cloudfoundry.credhub.service.InternalEncryptionService;
-import org.cloudfoundry.credhub.service.PasswordKeyProxyFactory;
+import org.cloudfoundry.credhub.service.RandomNumberGenerator;
+import org.cloudfoundry.credhub.util.PseudoRandomNumberGenerator;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,7 +14,6 @@ import java.security.spec.InvalidKeySpecException;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
 
 @RunWith(JUnit4.class)
 public class LibcryptoRsaKeyPairGeneratorTest {
@@ -22,9 +21,9 @@ public class LibcryptoRsaKeyPairGeneratorTest {
 
   @Before
   public void beforeEach() throws Exception {
-    InternalEncryptionService encryptionService = new InternalEncryptionService(mock(PasswordKeyProxyFactory.class));
+    RandomNumberGenerator randomNumberGenerator = new PseudoRandomNumberGenerator();
 
-    subject = new LibcryptoRsaKeyPairGenerator(new CryptoWrapper(encryptionService));
+    subject = new LibcryptoRsaKeyPairGenerator(new CryptoWrapper(randomNumberGenerator));
   }
 
   @Test

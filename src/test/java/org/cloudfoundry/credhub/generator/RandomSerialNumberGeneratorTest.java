@@ -1,6 +1,6 @@
 package org.cloudfoundry.credhub.generator;
 
-import org.cloudfoundry.credhub.service.EncryptionService;
+import org.cloudfoundry.credhub.service.RandomNumberGenerator;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -15,12 +15,12 @@ import static org.mockito.Mockito.when;
 public class RandomSerialNumberGeneratorTest {
   @Test
   public void generate_usesEncryptionServiceRandomNumber() throws Exception {
-    EncryptionService encryptionService = mock(EncryptionService.class);
-    when(encryptionService.getSecureRandom()).thenReturn(new SecureRandom());
-    RandomSerialNumberGenerator subject = new RandomSerialNumberGenerator(encryptionService);
+    RandomNumberGenerator randomNumberGenerator = mock(RandomNumberGenerator.class);
+    when(randomNumberGenerator.getSecureRandom()).thenReturn(new SecureRandom());
+    RandomSerialNumberGenerator subject = new RandomSerialNumberGenerator(randomNumberGenerator);
 
     subject.generate();
 
-    verify(encryptionService).getSecureRandom();
+    verify(randomNumberGenerator).getSecureRandom();
   }
 }

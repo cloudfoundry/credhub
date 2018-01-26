@@ -1,8 +1,8 @@
 package org.cloudfoundry.credhub.jna.libcrypto;
 
 import com.sun.jna.Pointer;
-import org.cloudfoundry.credhub.service.InternalEncryptionService;
-import org.cloudfoundry.credhub.service.PasswordKeyProxyFactory;
+import org.cloudfoundry.credhub.service.RandomNumberGenerator;
+import org.cloudfoundry.credhub.util.PseudoRandomNumberGenerator;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,7 +20,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
 
 @RunWith(JUnit4.class)
 public class CryptoWrapperTest {
@@ -29,9 +28,9 @@ public class CryptoWrapperTest {
 
   @Before
   public void beforeEach() throws Exception {
-    InternalEncryptionService encryptionService = new InternalEncryptionService(mock(PasswordKeyProxyFactory.class));
+    RandomNumberGenerator randomNumberGenerator = new PseudoRandomNumberGenerator();
 
-    subject = new CryptoWrapper(encryptionService);
+    subject = new CryptoWrapper(randomNumberGenerator);
   }
 
   @Test

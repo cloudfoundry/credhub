@@ -3,9 +3,10 @@ package org.cloudfoundry.credhub.service;
 import org.cloudfoundry.credhub.entity.EncryptedValue;
 
 import java.security.Key;
+import java.security.SecureRandom;
 import java.util.UUID;
 
-public class EncryptionKey {
+public class EncryptionKey implements RandomNumberGenerator {
 
   private EncryptionService service;
   private UUID uuid;
@@ -43,5 +44,10 @@ public class EncryptionKey {
 
   public void reconnect(Exception e) throws Exception {
     service.reconnect(e);
+  }
+
+  @Override
+  public SecureRandom getSecureRandom() {
+    return service.getSecureRandom();
   }
 }
