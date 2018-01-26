@@ -23,7 +23,9 @@ import org.cloudfoundry.credhub.service.EncryptionKey;
 import org.cloudfoundry.credhub.service.EncryptionKeyRotator;
 import org.cloudfoundry.credhub.service.EncryptionKeySet;
 import org.cloudfoundry.credhub.service.EncryptionService;
+import org.cloudfoundry.credhub.service.InternalEncryptionService;
 import org.cloudfoundry.credhub.service.PasswordBasedKeyProxy;
+import org.cloudfoundry.credhub.service.PasswordKeyProxyFactory;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.junit.Before;
 import org.junit.Test;
@@ -87,6 +89,8 @@ public class EncryptionKeyRotatorTest {
   private EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
 
   @Autowired
+  private PasswordKeyProxyFactory passwordKeyProxyFactory;
+
   private EncryptionService encryptionService;
 
   @SpyBean
@@ -105,15 +109,17 @@ public class EncryptionKeyRotatorTest {
   private MockMvc mockMvc;
   private EncryptionKeyCanary unknownCanary;
   private EncryptionKeyCanary oldCanary;
-  private String passwordName;
+  private final String passwordName = "/test-password";
   private final String name = "/" + this.getClass().getSimpleName();
 
   @Before
-  public void beforeEach() {
+  public void beforeEach() throws Exception {
     mockMvc = MockMvcBuilders
         .webAppContextSetup(webApplicationContext)
         .apply(springSecurity())
         .build();
+
+    encryptionService = new InternalEncryptionService(passwordKeyProxyFactory);
 
     setActiveKey(0);
   }
@@ -301,7 +307,6 @@ public class EncryptionKeyRotatorTest {
   }
 
   private void createPasswordWithOldKey(Key oldKey) throws Exception {
-    passwordName = "/test-password";
     final EncryptedValue credentialEncryption = encryptionService
         .encrypt(oldCanary.getUuid(), oldKey, "test-password-plaintext");
     PasswordCredentialVersionData passwordCredentialData = new PasswordCredentialVersionData(passwordName);
@@ -374,7 +379,7 @@ public class EncryptionKeyRotatorTest {
     credentialVersionDataService.save(credentialWithCurrentKey);
   }
 
-  private void setActiveKey(int index) {
+  private void setActiveKey(int index) throws Exception {
     List<EncryptionKeyMetadata> keys = new ArrayList<>();
 
     for (EncryptionKeyMetadata encryptionKeyMetadata : encryptionKeysConfiguration.getKeys()) {

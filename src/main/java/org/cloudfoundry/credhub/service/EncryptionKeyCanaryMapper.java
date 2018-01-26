@@ -29,41 +29,41 @@ public class EncryptionKeyCanaryMapper {
   private final EncryptionKeysConfiguration encryptionKeysConfiguration;
   private final TimedRetry timedRetry;
   private EncryptionProviderFactory providerFactory;
-  private EncryptionService encryptionService;
   private final Logger logger;
 
   @Autowired
   EncryptionKeyCanaryMapper(
       EncryptionKeyCanaryDataService encryptionKeyCanaryDataService,
       EncryptionKeysConfiguration encryptionKeysConfiguration,
-      EncryptionService encryptionService,
       TimedRetry timedRetry,
       EncryptionProviderFactory providerFactory
   ) {
     this.encryptionKeyCanaryDataService = encryptionKeyCanaryDataService;
     this.encryptionKeysConfiguration = encryptionKeysConfiguration;
-    this.encryptionService = encryptionService;
     this.timedRetry = timedRetry;
     this.providerFactory = providerFactory;
 
     logger = LogManager.getLogger();
   }
 
-  void mapUuidsToKeys(EncryptionKeySet keySet) {
+  void mapUuidsToKeys(EncryptionKeySet keySet) throws Exception {
     List<EncryptionKeyCanary> encryptionKeyCanaries = encryptionKeyCanaryDataService.findAll();
 
     for (EncryptionKeyMetadata keyMetadata : encryptionKeysConfiguration.getKeys()) {
+      EncryptionService encryptionService = providerFactory.getEncryptionService(keyMetadata.getProviderType());
       KeyProxy keyProxy = encryptionService.createKeyProxy(keyMetadata);
       EncryptionKeyCanary matchingCanary = null;
+
       for (EncryptionKeyCanary canary : encryptionKeyCanaries) {
         if (keyProxy.matchesCanary(canary)) {
           matchingCanary = canary;
+          break;
         }
       }
 
       if (matchingCanary == null) {
         if (keyMetadata.isActive()) {
-          matchingCanary = createCanary(keyProxy);
+          matchingCanary = createCanary(keyProxy, encryptionService);
         } else {
           continue;
         }
@@ -86,7 +86,7 @@ public class EncryptionKeyCanaryMapper {
     }
   }
 
-  private EncryptionKeyCanary createCanary(KeyProxy keyProxy) {
+  private EncryptionKeyCanary createCanary(KeyProxy keyProxy, EncryptionService encryptionService) {
     if (encryptionKeysConfiguration.isKeyCreationEnabled()) {
       logger.info("Creating a new active key canary");
       EncryptionKeyCanary canary = new EncryptionKeyCanary();

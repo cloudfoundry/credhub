@@ -24,7 +24,7 @@ public class EncryptionKeySet {
   }
 
   @Autowired
-  public EncryptionKeySet(EncryptionKeyCanaryMapper canaryMapper) {
+  public EncryptionKeySet(EncryptionKeyCanaryMapper canaryMapper) throws Exception {
     this.canaryMapper = canaryMapper;
     reload();
   }
@@ -58,7 +58,7 @@ public class EncryptionKeySet {
     return keys.keySet();
   }
 
-  public void reload() {
+  public void reload() throws Exception {
     keys = new HashMap<>();
     activeUUID = null;
     canaryMapper.mapUuidsToKeys(this);

@@ -22,8 +22,7 @@ public class EncryptionProviderFactoryTest {
         mock(EncryptionKeysConfiguration.class),
         mock(LunaProviderProperties.class),
         mock(TimedRetry.class),
-        mock(PasswordKeyProxyFactory.class),
-        true
+        mock(PasswordKeyProxyFactory.class)
     );
 
     EncryptionService internal = subject.getEncryptionService(ProviderType.INTERNAL);
