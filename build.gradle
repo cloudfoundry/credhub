@@ -77,7 +77,7 @@ processResources {
 bootRun {
     addResources = true
     systemProperties = System.properties
-    systemProperties["spring.profiles.active"] = System.getProperty("spring.profiles.active", "dev")
+    systemProperties["spring.profiles.active"] = System.getProperty("spring.profiles.active", "dev, dev-h2")
 }
 
 task cleanAndAssemble(dependsOn: ['clean', 'assemble'])

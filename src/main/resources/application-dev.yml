@@ -38,4 +38,4 @@ server:
 
 spring:
   profiles:
-    include: dev-h2,dev-remote-uaa
+    include: dev-remote-uaa
