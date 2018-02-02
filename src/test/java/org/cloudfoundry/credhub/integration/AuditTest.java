@@ -264,23 +264,23 @@ public class AuditTest {
   }
 
   @Test
-  public void correctly_logs_exceptions_not_handled_specifically() throws Exception {
+  public void correctly_logs_exceptions() throws Exception {
     MockHttpServletRequestBuilder request = post("/api/v1/data")
         .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON);
     mockMvc.perform(request)
-        .andExpect(status().isInternalServerError());
+        .andExpect(status().isBadRequest());
 
     ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
     verify(logger).info(captor.capture());
 
-    assertThat(captor.getValue(), containsString("cs4Label=httpStatusCode cs4=500"));
+    assertThat(captor.getValue(), containsString("cs4Label=httpStatusCode cs4=400"));
 
     auditingHelper.verifyAuditing(
         AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
         "/api/v1/data",
-        500,
+        400,
         emptyList()
     );
   }
