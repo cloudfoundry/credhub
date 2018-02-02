@@ -74,7 +74,7 @@ public class LegacyGenerationHandler {
       String requestString, List<EventAuditRecordParameters> auditRecordParameters
   ) throws IOException {
     CredentialRegenerateRequest requestBody = objectMapper.readValue(requestString, CredentialRegenerateRequest.class);
-
+    requestBody.validate();
     return regenerateHandler.handleRegenerate(requestBody.getName(), auditRecordParameters);
   }
 
@@ -86,6 +86,8 @@ public class LegacyGenerationHandler {
     } catch (PathNotFoundException e) {
       // could have just returned null, that would have been pretty useful
       isRegenerateRequest = false;
+    } catch (IllegalArgumentException e) {
+      return false;
     }
     return isRegenerateRequest;
   }
