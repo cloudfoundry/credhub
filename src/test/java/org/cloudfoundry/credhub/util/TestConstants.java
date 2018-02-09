@@ -161,4 +161,32 @@ public class TestConstants {
       "OlKeNTSxn9AkyYx9PJ8i1TIx6GyFIX4pkJczLEu+XINm82MKSBGuRL1EUvkVddx3\n" +
       "6clZk5BLDXjmCtCr5DGZ01EbT0wsbsBM1GtoCS4+vUQkJVHb0r6/ZdM=\n" +
       "-----END RSA PRIVATE KEY-----";
+  public static String TEST_PRIVATE_KEY_PKCS8 = "-----BEGIN PRIVATE KEY-----\n" +
+      "MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDCoitXwekK4/K4\n" +
+      "npW/IbuBWFgkYA5fjOFyXGRMApPmuQTgt+PTjwZmwOCEr6kez61Wi1/KsnNgYmgQ\n" +
+      "FOf1bLuQ/mlCYtEXniKYPO16nXk6XKgmYtl9GBy3/wrLGSOCDc8pXDrwiI2GdOVh\n" +
+      "rDgIDJn/Xea/DZxYhiVqD0tXlHaJ9zK5tpiWXEmF1ZJetxtjGu2zWRGxRBOj32Mn\n" +
+      "Mq7vWZ4uKAyvJoyvLzG+O/VfxiOrezcu53qBZnoG5pppVUiMj1yUaBHUySAomBWR\n" +
+      "aM3MNGILFierUscKGj1uAqCJjinrTjM+T0zDgWG0Js6Kboc6wdOKY41ld8M2Z+wn\n" +
+      "3Al58DRTAgMBAAECggEATCxNzEW+4B1AVFL0hl48VS3vKSVS2sB3R1uzgTANFGJa\n" +
+      "71vo1VaHidV4yVU6Wi2rSFC5x8m5cAJzeb/E3H+WlPOM3IdyD806+tv1kWRqGpZC\n" +
+      "1Osg9V1nd/dgEQagp/ihmC1Zf+Phh7rePzC4qSXNa20jrqg0BU1S/URJF1iqX+nn\n" +
+      "8FVIlpUrht2RepgdfaPc+s93fQgLDHPRsZ3jVR0yIowmGWSEgRKwHxtx1EARoxLY\n" +
+      "5oUqYFghAXhG5jezK8WLMkO2n9ARh+PL21NeiR3dbOzp2dyf/LJ+9PT7IIONiw0C\n" +
+      "AW8GZ8c0GivLDEgt22Ake5z2g7YQ56DnxUpW3h66AQKBgQD/DFvb2lVqbDEXvWAr\n" +
+      "H+awFrmTDFXk3s2FMt1jIfCFBUStCXCfsOAnyot9mqafbfXKgakotmy7abF1G+l3\n" +
+      "2e86Jb5kX5+ytLxISzl0wSqGiMAubyu6v5jkzT9KT8DSUJtKZX5fu+apobPI12Af\n" +
+      "u1hUjFeMCjiwRg3oZ6+NQHUlAQKBgQDDXBkGGGwi9b2B9u4J2JMaV7NS4g7ejGO9\n" +
+      "JJM1RoYAHsZSoHbq2gGdeLqhCLmIa790JhTcIgs6RXuRNf//aeM59Yun+Q/7mdUo\n" +
+      "OAegD/SAvrT2yCt2CRDQp1neK66uKZ6q8OZTmGk+s1zDPvI8n8zTzW97zikerfDN\n" +
+      "UqmLV0w1UwKBgQDh7knFNODreFH4zKpPKWBKZqcXaxr/tprqvoc9FMiinWsbubwJ\n" +
+      "yj6XISZ2KrQlkNvl+vwlc4xYbKVlr0cfA3CW2u6QreCjBtWvWOvZ0G/iY2uS9qoP\n" +
+      "MUC4llTVeFbAN+WIfuX22lXXuMWxSZD+KxBxPS0kgb178WLKmGb7wrjDAQKBgQDB\n" +
+      "dsIdRDBKirtqKiRfQcejrbgbW1zITZU0KTVS7A0lr1RNXTWGq/AvhvCjKqW5kKKf\n" +
+      "nlrICTq/MTIGgsiKoszwh9cOuFp4mkX6N0pt238RxEonneFUWfP5/dDEcNPjC7pi\n" +
+      "pIAjxupqumshu4NeQA4yrd46Z9ZW2ICAhNz77a69mwKBgQCak3ZF8fE7eG4RYWgT\n" +
+      "stPL1ZO/gMMcj6Dw94JSk/ak39SZzMifJDg6Up41NLGf0CTJjH08nyLVMjHobIUh\n" +
+      "fimQlzMsS75cg2bzYwpIEa5EvURS+RV13HfpyVmTkEsNeOYK0KvkMZnTURtPTCxu\n" +
+      "wEzUa2gJLj69RCQlUdvSvr9l0w==\n" +
+      "-----END PRIVATE KEY-----";
 }

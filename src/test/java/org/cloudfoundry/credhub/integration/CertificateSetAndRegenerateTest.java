@@ -33,6 +33,7 @@ import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GR
 import static org.cloudfoundry.credhub.util.TestConstants.TEST_CA;
 import static org.cloudfoundry.credhub.util.TestConstants.TEST_CERTIFICATE;
 import static org.cloudfoundry.credhub.util.TestConstants.TEST_PRIVATE_KEY;
+import static org.cloudfoundry.credhub.util.TestConstants.TEST_PRIVATE_KEY_PKCS8;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
@@ -480,4 +481,23 @@ public class CertificateSetAndRegenerateTest {
     this.mockMvc.perform(certificateSetRequest)
         .andExpect(status().isBadRequest());
   }
+
+  @Test
+  public void certificateSetRequest_withInvalidKey_shouldReturnBadRequest() throws Exception {
+    final String setJson = JSONObject.toJSONString(
+        ImmutableMap.<String, String>builder()
+            .put("certificate", TEST_CERTIFICATE)
+            .put("private_key", TEST_PRIVATE_KEY_PKCS8)
+            .build());
+
+    MockHttpServletRequestBuilder certificateSetRequest = post("/api/v1/certificates/" + caCredentialUuid + "/versions")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{\"value\" : " + setJson + "}");
+
+    this.mockMvc.perform(certificateSetRequest)
+        .andExpect(status().isBadRequest());
+  }
+
 }

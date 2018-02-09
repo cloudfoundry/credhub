@@ -13,16 +13,33 @@ import java.security.PublicKey;
 
 public class PrivateKeyReader {
 
-  public static PrivateKey getPrivateKey(String privateKeyPem) throws IOException {
+    public static class UnsupportedFormatException extends Exception {
+        private static final long serialVersionUID = -2669429797326574839L;
+        public UnsupportedFormatException(String msg) {
+            super(msg);
+        }
+    }
+
+  public static PrivateKey getPrivateKey(String privateKeyPem) throws IOException, UnsupportedFormatException {
     PEMParser pemParser = new PEMParser(new StringReader(privateKeyPem));
-    PEMKeyPair pemKeyPair = (PEMKeyPair) pemParser.readObject();
+    Object parsed = pemParser.readObject();
+    pemParser.close();
+    if (!(parsed instanceof PEMKeyPair)) {
+      throw new UnsupportedFormatException("format of private key is not supported.");
+    }
+    PEMKeyPair pemKeyPair = (PEMKeyPair) parsed;
     PrivateKeyInfo privateKeyInfo = pemKeyPair.getPrivateKeyInfo();
     return new JcaPEMKeyConverter().getPrivateKey(privateKeyInfo);
   }
 
-  public static PublicKey getPublicKey(String privateKeyPem) throws IOException {
+  public static PublicKey getPublicKey(String privateKeyPem) throws IOException, UnsupportedFormatException {
     PEMParser pemParser = new PEMParser(new StringReader(privateKeyPem));
-    PEMKeyPair pemKeyPair = (PEMKeyPair) pemParser.readObject();
+    Object parsed = pemParser.readObject();
+    pemParser.close();
+    if (!(parsed instanceof PEMKeyPair)) {
+      throw new UnsupportedFormatException("format of private key is not supported.");
+    }
+    PEMKeyPair pemKeyPair = (PEMKeyPair) parsed;
     SubjectPublicKeyInfo publicKeyInfo = pemKeyPair.getPublicKeyInfo();
     return new JcaPEMKeyConverter().getPublicKey(publicKeyInfo);
   }

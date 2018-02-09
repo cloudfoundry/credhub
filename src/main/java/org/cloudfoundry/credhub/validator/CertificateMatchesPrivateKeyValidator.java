@@ -1,7 +1,9 @@
 package org.cloudfoundry.credhub.validator;
 
+import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.util.CertificateReader;
 import org.cloudfoundry.credhub.util.PrivateKeyReader;
+import org.cloudfoundry.credhub.util.PrivateKeyReader.UnsupportedFormatException;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Field;
@@ -44,6 +46,8 @@ public class CertificateMatchesPrivateKeyValidator implements ConstraintValidato
       final PublicKey publicKey = PrivateKeyReader.getPublicKey(privateKeyValue);
 
       return publicKey.equals(certificatePublicKey);
+    } catch (UnsupportedFormatException e) {
+      throw new ParameterizedValidationException("error.invalid_key_format", e.getMessage());
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
