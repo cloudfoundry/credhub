@@ -89,11 +89,11 @@ public class JsonTestHelper {
     }
   }
 
-  public static Matcher<ConstraintViolation> hasViolationWithMessage(String expectedMessage) {
-    return new BaseMatcher<ConstraintViolation>() {
+  public static Matcher<ConstraintViolation<?>> hasViolationWithMessage(String expectedMessage) {
+    return new BaseMatcher<ConstraintViolation<?>>() {
       @Override
       public boolean matches(final Object item) {
-        final ConstraintViolation violation = (ConstraintViolation) item;
+        final ConstraintViolation<?> violation = (ConstraintViolation<?>) item;
         return violation.getMessage().equals(expectedMessage);
       }
 
