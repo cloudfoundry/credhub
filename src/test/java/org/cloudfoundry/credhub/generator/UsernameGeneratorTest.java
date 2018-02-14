@@ -54,5 +54,6 @@ public class UsernameGeneratorTest {
     assertThat(actual.isExcludeUpper(), equalTo(false));
     assertThat(actual.isExcludeNumber(), equalTo(true));
     assertThat(actual.isIncludeSpecial(), equalTo(false));
+    assertThat(actual.isSecretKeyMode(), equalTo(false));
   }
 }
