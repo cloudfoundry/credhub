@@ -26,7 +26,7 @@ public class OAuth2IssuerServiceImpl implements OAuth2IssuerService {
   private final URI authServerUri;
   private final RestTemplate restTemplate;
 
-  private String issuer;
+  private String issuer =null;
 
   @Autowired
   OAuth2IssuerServiceImpl(
@@ -37,14 +37,15 @@ public class OAuth2IssuerServiceImpl implements OAuth2IssuerService {
     this.restTemplate = restTemplateFactory.createRestTemplate(oAuthProperties.getTrustStore(), oAuthProperties.getTrustStorePassword());
   }
 
-  public void fetchIssuer() {
+   String fetchIssuer() {
     ResponseEntity<HashMap> authResponse = restTemplate.getForEntity(authServerUri, HashMap.class);
     issuer = (String) authResponse.getBody().get("issuer");
+    return issuer;
   }
 
   @Override
   public String getIssuer() {
-    return issuer;
+    return issuer != null ? issuer : fetchIssuer();
   }
 
 
