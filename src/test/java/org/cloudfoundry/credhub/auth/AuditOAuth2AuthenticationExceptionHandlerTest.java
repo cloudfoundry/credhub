@@ -113,8 +113,7 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isUnauthorized())
-        .andExpect(jsonPath("$.error").value("invalid_token"))
-        .andExpect(jsonPath("$.error_description").value(errorMessage));
+        .andExpect(jsonPath("$.error").value(errorMessage));
   }
 
   @Test
@@ -125,8 +124,7 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isUnauthorized())
-        .andExpect(jsonPath("$.error").value("access_token_expired"))
-        .andExpect(jsonPath("$.error_description").value("Access token expired"));
+        .andExpect(jsonPath("$.error").value("Access token expired"));
   }
 
   @Test

@@ -88,7 +88,7 @@ public class OAuth2ExtraValidationFilterTest {
 
     this.mockMvc.perform(request)
         .andExpect(status().isUnauthorized())
-        .andExpect(jsonPath("$.error_description").value(ERROR_MESSAGE));
+        .andExpect(jsonPath("$.error").value(ERROR_MESSAGE));
 
     assertThat(authFailureAuditRecordRepository.count(), equalTo(1L));
   }
@@ -108,13 +108,13 @@ public class OAuth2ExtraValidationFilterTest {
 
     String response = this.mockMvc.perform(request)
         .andExpect(status().isUnauthorized())
-        .andExpect(jsonPath("$.error_description").value(ERROR_MESSAGE))
+        .andExpect(jsonPath("$.error").value(ERROR_MESSAGE))
         .andReturn()
         .getResponse()
         .getContentAsString();
 
     // The response originally concatenated the error and the credential.
-    String expectedResponse = "{\"error\":\"invalid_token\",\"error_description\":\"The request token identity zone does not match the UAA server authorized by CredHub. Please validate that your request token was issued by the UAA server authorized by CredHub and retry your request.\"}";
+    String expectedResponse = "{\"error\":\"The request token identity zone does not match the UAA server authorized by CredHub. Please validate that your request token was issued by the UAA server authorized by CredHub and retry your request.\"}";
 
     assertThat(response, equalTo(expectedResponse));
     assertThat(credentialVersionRepository.count(), equalTo(0L));
@@ -127,7 +127,7 @@ public class OAuth2ExtraValidationFilterTest {
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON))
         .andExpect(status().isUnauthorized())
-        .andExpect(jsonPath("$.error_description").value(ERROR_MESSAGE));
+        .andExpect(jsonPath("$.error").value(ERROR_MESSAGE));
 
     assertThat(authFailureAuditRecordRepository.count(), equalTo(1L));
   }
@@ -139,7 +139,7 @@ public class OAuth2ExtraValidationFilterTest {
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON))
         .andExpect(status().isUnauthorized())
-        .andExpect(jsonPath("$.error_description").value(ERROR_MESSAGE));
+        .andExpect(jsonPath("$.error").value(ERROR_MESSAGE));
 
     assertThat(authFailureAuditRecordRepository.count(), equalTo(1L));
   }
