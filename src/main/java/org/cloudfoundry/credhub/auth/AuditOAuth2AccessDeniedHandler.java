@@ -5,8 +5,6 @@ import org.cloudfoundry.credhub.data.RequestAuditRecordDataService;
 import org.cloudfoundry.credhub.domain.SecurityEventAuditRecord;
 import org.cloudfoundry.credhub.entity.RequestAuditRecord;
 import org.cloudfoundry.credhub.service.SecurityEventsLogService;
-import org.cloudfoundry.credhub.view.ResponseError;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.support.MessageSourceAccessor;
@@ -18,18 +16,16 @@ import org.springframework.security.oauth2.provider.authentication.OAuth2Authent
 import org.springframework.security.oauth2.provider.error.OAuth2AccessDeniedHandler;
 import org.springframework.security.oauth2.provider.error.WebResponseExceptionTranslator;
 import org.springframework.security.oauth2.provider.token.TokenStore;
-import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.HashMap;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @Component
 @ConditionalOnProperty(value = "security.oauth2.enabled")
-public class AuditOAuth2AccessDeniedHandler implements AccessDeniedHandler {
+public class AuditOAuth2AccessDeniedHandler extends OAuth2AccessDeniedHandler {
 
   private final TokenStore tokenStore;
   private final RequestAuditRecordDataService requestAuditRecordDataService;
@@ -59,39 +55,35 @@ public class AuditOAuth2AccessDeniedHandler implements AccessDeniedHandler {
   }
 
   @Override
-  public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException authException)
-      throws IOException {
+  public void handle(HttpServletRequest request, HttpServletResponse response,
+      AccessDeniedException authException) throws IOException, ServletException {
+    try {
+      super.handle(request, response, authException);
+    } finally {
+      String token = (String) request.getAttribute(OAuth2AuthenticationDetails.ACCESS_TOKEN_VALUE);
+      UserContext userContext = userContextFactory.createUserContext(tokenStore.readAuthentication(token), token);
+      RequestAuditRecord requestAuditRecord = auditLogFactory.createRequestAuditRecord(
+          request,
+          userContext,
+          response.getStatus()
+      );
 
-      ResponseError errorResponse = this.createErrorResponse(authException);
-
-      try {
-        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-        response.setContentType("application/json");
-        new ObjectMapper().writeValue(response.getWriter(), errorResponse);
-
-      } finally {
-        String token = (String) request.getAttribute(OAuth2AuthenticationDetails.ACCESS_TOKEN_VALUE);
-        UserContext userContext = userContextFactory.createUserContext(tokenStore.readAuthentication(token), token);
-        RequestAuditRecord requestAuditRecord = auditLogFactory.createRequestAuditRecord(
-            request,
-            userContext,
-            response.getStatus()
-        );
-
-        requestAuditRecordDataService.save(requestAuditRecord);
-        securityEventsLogService.log(new SecurityEventAuditRecord(requestAuditRecord, userContext.getActor()));
-      }
+      requestAuditRecordDataService.save(requestAuditRecord);
+      securityEventsLogService.log(new SecurityEventAuditRecord(requestAuditRecord, userContext.getActor()));
+    }
   }
 
-
-  protected ResponseError createErrorResponse(Exception authException) {
+  @Override
+  protected ResponseEntity<OAuth2Exception> enhanceResponse(ResponseEntity<OAuth2Exception> result, Exception authException) {
     if (authException.getCause() instanceof InsufficientScopeException) {
-
+      try {
         String errorMessage = messageSourceAccessor.getMessage("error.oauth.insufficient_scope");
-        return new ResponseError(errorMessage);
-
+        return this.exceptionTranslator.translate(new AccessDeniedException(errorMessage));
+      } catch (Exception e) {
+        return result;
+      }
     } else {
-      return new ResponseError(authException.getMessage());
+      return result;
     }
   }
 }
