@@ -3,6 +3,7 @@ package org.cloudfoundry.credhub.service;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
+import org.cloudfoundry.credhub.config.EncryptionKeyProvider;
 import org.cloudfoundry.credhub.config.EncryptionKeysConfiguration;
 import org.cloudfoundry.credhub.data.EncryptionKeyCanaryDataService;
 import org.cloudfoundry.credhub.entity.EncryptedValue;
@@ -27,6 +28,7 @@ public class EncryptionKeyCanaryMapper {
 
   private final EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
   private final EncryptionKeysConfiguration encryptionKeysConfiguration;
+
   private final TimedRetry timedRetry;
   private EncryptionProviderFactory providerFactory;
   private final Logger logger;
@@ -46,54 +48,57 @@ public class EncryptionKeyCanaryMapper {
     logger = LogManager.getLogger();
   }
 
+
   void mapUuidsToKeys(EncryptionKeySet keySet) throws Exception {
     List<EncryptionKeyCanary> encryptionKeyCanaries = encryptionKeyCanaryDataService.findAll();
+    for (EncryptionKeyProvider provider : encryptionKeysConfiguration.getProviders()) {
+      EncryptionProvider encryptionService = providerFactory.getEncryptionService(provider);
+      for (EncryptionKeyMetadata keyMetadata : provider.getKeys()) {
+        KeyProxy keyProxy = encryptionService.createKeyProxy(keyMetadata);
+        EncryptionKeyCanary matchingCanary = null;
 
-    for (EncryptionKeyMetadata keyMetadata : encryptionKeysConfiguration.getKeys()) {
-      EncryptionService encryptionService = providerFactory.getEncryptionService(keyMetadata.getProviderType());
-      KeyProxy keyProxy = encryptionService.createKeyProxy(keyMetadata);
-      EncryptionKeyCanary matchingCanary = null;
-
-      for (EncryptionKeyCanary canary : encryptionKeyCanaries) {
-        if (keyProxy.matchesCanary(canary)) {
-          matchingCanary = canary;
-          break;
+        for (EncryptionKeyCanary canary : encryptionKeyCanaries) {
+          if (keyProxy.matchesCanary(canary)) {
+            matchingCanary = canary;
+            break;
+          }
         }
-      }
 
-      if (matchingCanary == null) {
+        EncryptionKey encryptionKey = new EncryptionKey(encryptionService, null, keyProxy.getKey(), keyMetadata.getEncryptionKeyName());
+
+        if (matchingCanary == null) {
+          if (keyMetadata.isActive()) {
+            matchingCanary = createCanary(keyProxy, encryptionService, encryptionKey);
+          } else {
+            continue;
+          }
+        }
         if (keyMetadata.isActive()) {
-          matchingCanary = createCanary(keyProxy, encryptionService);
-        } else {
-          continue;
+          keySet.setActive(matchingCanary.getUuid());
         }
-      }
-      if (keyMetadata.isActive()) {
-        keySet.setActive(matchingCanary.getUuid());
-      }
-      try {
-        keySet.add(new EncryptionKey(
-            providerFactory.getEncryptionService(keyMetadata.getProviderType()),
-            matchingCanary.getUuid(),
-            keyProxy.getKey()));
-      } catch (Exception e) {
-        throw new RuntimeException("Failed to connect to encryption provider", e);
+
+        try {
+          encryptionKey.setUuid(matchingCanary.getUuid());
+          keySet.add(encryptionKey);
+        } catch (Exception e) {
+          throw new RuntimeException("Failed to connect to encryption provider", e);
+        }
       }
     }
-
     if (keySet.getActive() == null) {
       throw new RuntimeException("No active key was found");
     }
   }
 
-  private EncryptionKeyCanary createCanary(KeyProxy keyProxy, EncryptionService encryptionService) {
+
+  private EncryptionKeyCanary createCanary(KeyProxy keyProxy, EncryptionProvider encryptionProvider, EncryptionKey encryptionKey) {
     if (encryptionKeysConfiguration.isKeyCreationEnabled()) {
       logger.info("Creating a new active key canary");
       EncryptionKeyCanary canary = new EncryptionKeyCanary();
 
       try {
-        EncryptedValue encryptionData = encryptionService
-            .encrypt(null, keyProxy.getKey(), CANARY_VALUE);
+        EncryptedValue encryptionData = encryptionProvider
+            .encrypt(encryptionKey, CANARY_VALUE);
         canary.setEncryptedCanaryValue(encryptionData.getEncryptedValue());
         canary.setNonce(encryptionData.getNonce());
         final List<Byte> salt = keyProxy.getSalt();

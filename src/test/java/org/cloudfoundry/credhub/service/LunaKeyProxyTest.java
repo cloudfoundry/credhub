@@ -30,7 +30,7 @@ public class LunaKeyProxyTest {
 
   @Before
   public void beforeEach() throws Exception {
-    final InternalEncryptionService encryptionService = new InternalEncryptionService(
+    final PasswordEncryptionService encryptionService = new PasswordEncryptionService(
         new PasswordKeyProxyFactoryTestImpl()
     );
     EncryptionKeyMetadata keyMetadata = new EncryptionKeyMetadata();
@@ -51,14 +51,14 @@ public class LunaKeyProxyTest {
 
   @Test
   public void isMatchingCanary_whenCanaryMatches_returnsTrue() throws Exception {
-    subject = new LunaKeyProxy(encryptionKey, new InternalEncryptionService(new PasswordKeyProxyFactoryTestImpl()));
+    subject = new LunaKeyProxy(encryptionKey, new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl()));
 
     assertThat(subject.matchesCanary(canary), equalTo(true));
   }
 
   @Test
   public void isMatchingCanary_usingOldCanaryValue_returnsTrue() throws Exception {
-    subject = new LunaKeyProxy(encryptionKey, new InternalEncryptionService(new PasswordKeyProxyFactoryTestImpl()));
+    subject = new LunaKeyProxy(encryptionKey, new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl()));
 
     assertThat(subject.matchesCanary(deprecatedCanary), equalTo(true));
   }
@@ -66,7 +66,7 @@ public class LunaKeyProxyTest {
   @Test
   public void isMatchingCanary_whenDecryptThrowsRelevantIllegalBlockSizeException_returnsFalse() throws Exception {
     subject = new LunaKeyProxy(encryptionKey,
-        new InternalEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
+        new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
           @Override
           public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
               throws Exception {
@@ -80,7 +80,7 @@ public class LunaKeyProxyTest {
   @Test
   public void isMatchingCanary_whenDecryptThrowsAEADBadTagException_returnsFalse() throws Exception {
     subject = new LunaKeyProxy(encryptionKey,
-        new InternalEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
+        new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
           @Override
           public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
               throws Exception {
@@ -94,7 +94,7 @@ public class LunaKeyProxyTest {
   @Test(expected = IncorrectKeyException.class)
   public void isMatchingCanary_whenDecryptThrowsBadPaddingException_throwsIncorrectKeyException() throws Exception {
     subject = new LunaKeyProxy(encryptionKey,
-        new InternalEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
+        new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
           @Override
           public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
               throws Exception {
@@ -108,7 +108,7 @@ public class LunaKeyProxyTest {
   @Test(expected = IncorrectKeyException.class)
   public void isMatchingCanary_whenDecryptThrowsIllegalBlockSizeException_throwsIncorrectKeyException() throws Exception {
     subject = new LunaKeyProxy(encryptionKey,
-        new InternalEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
+        new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
           @Override
           public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
               throws Exception {
@@ -122,7 +122,7 @@ public class LunaKeyProxyTest {
   @Test(expected = IncorrectKeyException.class)
   public void isMatchingCanary_whenDecryptThrowsOtherException_throwsIncorrectKeyException() throws Exception {
     subject = new LunaKeyProxy(encryptionKey,
-        new InternalEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
+        new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
           @Override
           public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
               throws Exception {

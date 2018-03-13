@@ -1,22 +1,15 @@
 package org.cloudfoundry.credhub.service;
 
-import org.cloudfoundry.credhub.config.LunaProviderProperties;
+import org.cloudfoundry.credhub.config.EncryptionConfiguration;
 
-import java.security.Key;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.Provider;
-import java.security.SecureRandom;
-import java.security.Security;
-import java.security.UnrecoverableKeyException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+import java.security.*;
 
 
 class LunaConnection {
 
-  private final LunaProviderProperties lunaProviderProperties;
+  private final EncryptionConfiguration lunaProviderConfiguration;
   private Provider provider;
   private Object lunaSlotManager;
   private KeyStore keyStore;
@@ -24,8 +17,8 @@ class LunaConnection {
   private KeyGenerator aesKeyGenerator;
 
 
-  public LunaConnection(LunaProviderProperties lunaProviderProperties) throws Exception {
-    this.lunaProviderProperties = lunaProviderProperties;
+  public LunaConnection(EncryptionConfiguration lunaProviderConfiguration) throws Exception {
+    this.lunaProviderConfiguration = lunaProviderConfiguration;
     provider = (Provider) Class.forName("com.safenetinc.luna.provider.LunaProvider").newInstance();
     Security.addProvider(provider);
     lunaSlotManager = Class.forName("com.safenetinc.luna.LunaSlotManager")
@@ -49,8 +42,8 @@ class LunaConnection {
     if (!isLoggedIn()) {
       try {
         reinitialize();
-        login(lunaProviderProperties.getPartitionName(),
-            lunaProviderProperties.getPartitionPassword());
+        login(lunaProviderConfiguration.getPartition(),
+            lunaProviderConfiguration.getPartitionPassword());
         makeKeyStore();
       } catch (Exception e) {
         throw new RuntimeException(e);

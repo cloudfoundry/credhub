@@ -57,11 +57,15 @@ public class RetryingEncryptionService {
 
         setNeedsReconnectFlag();
         withPreventCryptoLock(() -> {
-          if (needsReconnect()) {
+          EncryptionProvider provider = keySet.getActive().getProvider();
+          if (needsReconnect() && provider instanceof LunaEncryptionService) {
             logger.info("Trying reconnect");
-            keySet.getActive().reconnect(e);
+            LunaEncryptionService lunaEncryptionService = (LunaEncryptionService) provider;
+            lunaEncryptionService.reconnect(e);
             keySet.reload();
             clearNeedsReconnectFlag();
+          }else if (needsReconnect()){
+            throw e;
           }
         });
 

@@ -26,7 +26,7 @@ public class EncryptionKeysConfigurationTest {
 
   @Test
   public void fillsTheListOfKeysFromApplicationYml() {
-    List<EncryptionKeyMetadata> keys = subject.getKeys();
+    List<EncryptionKeyMetadata> keys = subject.getProviders().get(0).getKeys();
     assertThat(keys.size(), equalTo(2));
 
     EncryptionKeyMetadata firstKey = keys.get(0);
@@ -38,4 +38,11 @@ public class EncryptionKeysConfigurationTest {
     assertThat(secondKey.getEncryptionPassword(), equalTo("correcthorsebatterystaple"));
     assertThat(secondKey.isActive(), equalTo(false));
   }
+
+  @Test
+  public void fillsTheConfigurationObject(){
+    EncryptionConfiguration config = subject.getProviders().get(0).getConfiguration();
+    assertThat(config.getHost(), equalTo("localhost"));
+    assertThat(config.getPort(), equalTo(50051));
+    }
 }

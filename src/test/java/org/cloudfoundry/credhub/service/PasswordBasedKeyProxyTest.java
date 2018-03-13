@@ -35,12 +35,12 @@ public class PasswordBasedKeyProxyTest {
   private PasswordBasedKeyProxy subject;
   private String password;
 
-  private InternalEncryptionService encryptionService;
+  private PasswordEncryptionService encryptionService;
 
   @Before
   public void beforeEach() throws Exception {
     password = "abcdefghijklmnopqrst";
-    encryptionService = new InternalEncryptionService(new PasswordKeyProxyFactoryTestImpl());
+    encryptionService = new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl());
     subject = new PasswordBasedKeyProxy(password, 1, encryptionService);
   }
 
@@ -127,7 +127,7 @@ public class PasswordBasedKeyProxyTest {
 
   @Test
   public void generateSalt_usesCorrectSecureRandom() {
-    EncryptionService mockEncryptionService = mock(EncryptionService.class);
+    InternalEncryptionService mockEncryptionService = mock(InternalEncryptionService.class);
     when(mockEncryptionService.getSecureRandom()).thenReturn(new SecureRandom());
 
     subject = new PasswordBasedKeyProxy("some password", 1, mockEncryptionService);

@@ -2,8 +2,9 @@ package org.cloudfoundry.credhub.config;
 
 public enum ProviderType {
 
-  INTERNAL ("internal"),
-  HSM ("hsm");
+  INTERNAL("internal"),
+  HSM("hsm"),
+  EXTERNAL("external");
 
   private String label;
 

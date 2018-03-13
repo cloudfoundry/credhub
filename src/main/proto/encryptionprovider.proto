@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "org.cloudfoundry.credhub.service.grpc";
+option java_outer_classname = "EncryptionProviderProto";
+option objc_class_prefix = "EPP";
+
+package grpc;
+
+service EncryptionProvider {
+    rpc Encrypt (EncryptionRequest) returns (EncryptionResponse) {}
+    rpc Decrypt (DecryptionRequest) returns (DecryptionResponse) {}
+}
+
+message EncryptionRequest {
+    string data = 1;
+    string key = 2;
+}
+
+message DecryptionRequest {
+    string data = 1;
+    string key = 2;
+    string nonce = 3;
+}
+
+message EncryptionResponse {
+    bytes data = 1;
+    bytes nonce = 2;
+}
+
+message DecryptionResponse {
+    string data = 1;
+}

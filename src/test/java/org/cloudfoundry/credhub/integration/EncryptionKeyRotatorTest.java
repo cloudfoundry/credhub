@@ -3,6 +3,7 @@ package org.cloudfoundry.credhub.integration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
+import org.cloudfoundry.credhub.config.EncryptionKeyProvider;
 import org.cloudfoundry.credhub.config.EncryptionKeysConfiguration;
 import org.cloudfoundry.credhub.data.CredentialDataService;
 import org.cloudfoundry.credhub.data.CredentialVersionDataService;
@@ -22,9 +23,9 @@ import org.cloudfoundry.credhub.request.StringGenerationParameters;
 import org.cloudfoundry.credhub.service.EncryptionKey;
 import org.cloudfoundry.credhub.service.EncryptionKeyRotator;
 import org.cloudfoundry.credhub.service.EncryptionKeySet;
-import org.cloudfoundry.credhub.service.EncryptionService;
 import org.cloudfoundry.credhub.service.InternalEncryptionService;
 import org.cloudfoundry.credhub.service.PasswordBasedKeyProxy;
+import org.cloudfoundry.credhub.service.PasswordEncryptionService;
 import org.cloudfoundry.credhub.service.PasswordKeyProxyFactory;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.junit.Before;
@@ -55,6 +56,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.hamcrest.core.IsNot.not;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.doReturn;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -91,7 +93,7 @@ public class EncryptionKeyRotatorTest {
   @Autowired
   private PasswordKeyProxyFactory passwordKeyProxyFactory;
 
-  private EncryptionService encryptionService;
+  private InternalEncryptionService encryptionService;
 
   @SpyBean
   private EncryptionKeySet keySet;
@@ -119,7 +121,7 @@ public class EncryptionKeyRotatorTest {
         .apply(springSecurity())
         .build();
 
-    encryptionService = new InternalEncryptionService(passwordKeyProxyFactory);
+    encryptionService = new PasswordEncryptionService(passwordKeyProxyFactory);
 
     setActiveKey(0);
   }
@@ -363,7 +365,7 @@ public class EncryptionKeyRotatorTest {
     oldCanary.setNonce(canaryEncryption.getNonce());
     oldCanary = encryptionKeyCanaryDataService.save(oldCanary);
 
-    keySet.add(new EncryptionKey(encryptionService, oldCanary.getUuid(), oldKey));
+    keySet.add(new EncryptionKey(encryptionService, oldCanary.getUuid(), oldKey, "key-name"));
 
     return oldKey;
   }
@@ -382,20 +384,22 @@ public class EncryptionKeyRotatorTest {
   private void setActiveKey(int index) throws Exception {
     List<EncryptionKeyMetadata> keys = new ArrayList<>();
 
-    for (EncryptionKeyMetadata encryptionKeyMetadata : encryptionKeysConfiguration.getKeys()) {
-      EncryptionKeyMetadata clonedKey = new EncryptionKeyMetadata();
+    List<EncryptionKeyProvider> providers = encryptionKeysConfiguration.getProviders();
+    for (EncryptionKeyProvider provider : providers) {
+      for (EncryptionKeyMetadata encryptionKeyMetadata : provider.getKeys()) {
+        EncryptionKeyMetadata clonedKey = new EncryptionKeyMetadata();
 
-      clonedKey.setActive(false);
-      clonedKey.setEncryptionPassword(encryptionKeyMetadata.getEncryptionPassword());
-      clonedKey.setProviderType(encryptionKeyMetadata.getProviderType());
+        clonedKey.setActive(false);
+        clonedKey.setEncryptionPassword(encryptionKeyMetadata.getEncryptionPassword());
 
-      keys.add(clonedKey);
+        keys.add(clonedKey);
+      }
+      keys.get(index).setActive(true);
+      provider.setKeys(keys);
+      provider.setProviderName("int");
     }
 
-    keys.get(index).setActive(true);
-
-    doReturn(keys).when(encryptionKeysConfiguration).getKeys();
-
+    doReturn(providers).when(encryptionKeysConfiguration).getProviders();
     keySet.reload();
   }
 }

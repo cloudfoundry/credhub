@@ -5,12 +5,17 @@ auth_server:
   trust_store_password: changeit
 
 encryption:
-  keys:
-  - encryption_password: opensesame
-    provider_type: internal
-    active: true
-  - encryption_password: correcthorsebatterystaple
-    provider_type: internal
+  providers:
+  - provider_name: ext
+    provider_type: external
+    keys:
+    - encryption_key_name: some-key-name-1
+      active: true
+    - encryption_key_name: correcthorsebatterystaple
+      active: false
+    configuration:
+      host: localhost
+      port: 50051
   key_creation_enabled: true
   
 security:

@@ -27,7 +27,7 @@ public class PasswordBasedKeyProxy extends LunaKeyProxy implements KeyProxy {
   private int numIterations;
   private List<Byte> salt;
 
-  public PasswordBasedKeyProxy(String password, int numIterations, EncryptionService encryptionService) {
+  public PasswordBasedKeyProxy(String password, int numIterations, InternalEncryptionService encryptionService) {
     super(null, encryptionService);
     this.password = password;
     this.numIterations = numIterations;

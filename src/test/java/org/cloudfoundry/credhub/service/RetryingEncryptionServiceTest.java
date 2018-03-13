@@ -34,7 +34,7 @@ public class RetryingEncryptionServiceTest {
 
   private ReentrantReadWriteLock.ReadLock readLock;
   private ReentrantReadWriteLock.WriteLock writeLock;
-  private EncryptionService encryptionService;
+  private InternalEncryptionService encryptionService;
   private UUID activeKeyUuid;
 
   private ReentrantReadWriteLock readWriteLock;
@@ -46,7 +46,7 @@ public class RetryingEncryptionServiceTest {
   @Before
   public void beforeEach() {
     keySet = mock(EncryptionKeySet.class);
-    encryptionService = mock(EncryptionService.class);
+    encryptionService = mock(LunaEncryptionService.class);
 
     activeKeyUuid = UUID.randomUUID();
     firstActiveKey = mock(EncryptionKey.class);
@@ -89,9 +89,11 @@ public class RetryingEncryptionServiceTest {
     when(keySet.getActive())
         .thenReturn(firstActiveKey);
 
-
     when(firstActiveKey.encrypt("a value"))
         .thenThrow(new ProviderException("function 'C_GenerateRandom' returns 0x30"));
+
+    when(firstActiveKey.getProvider()).thenReturn(encryptionService);
+
     try {
       subject.encrypt("a value");
       fail("Expected exception");
@@ -99,9 +101,9 @@ public class RetryingEncryptionServiceTest {
       // expected
     }
 
-    final InOrder inOrder = inOrder(firstActiveKey);
+    final InOrder inOrder = inOrder(firstActiveKey, encryptionService);
     inOrder.verify(firstActiveKey).encrypt(anyString());
-    inOrder.verify(firstActiveKey).reconnect(any(ProviderException.class));
+    inOrder.verify(encryptionService).reconnect(any(ProviderException.class));
     inOrder.verify(firstActiveKey).encrypt(anyString());
   }
 
@@ -133,9 +135,11 @@ public class RetryingEncryptionServiceTest {
     when(keySet.getActive())
         .thenReturn(firstActiveKey);
 
-
     when(firstActiveKey.encrypt(anyString()))
         .thenThrow(new ProviderException("function 'C_GenerateRandom' returns 0x30"));
+
+    when(firstActiveKey.getProvider()).thenReturn(encryptionService);
+
     try {
       subject.encrypt("a value");
       fail("Expected exception");
@@ -156,13 +160,15 @@ public class RetryingEncryptionServiceTest {
 
     when(firstActiveKey.encrypt("fake-plaintext"))
         .thenThrow(new IllegalBlockSizeException("test exception"));
+    when(firstActiveKey.getProvider()).thenReturn(encryptionService);
     when(secondActiveKey.encrypt( "fake-plaintext"))
         .thenReturn(expectedEncryption);
+    when(secondActiveKey.getProvider()).thenReturn(encryptionService);
 
     assertThat(subject.encrypt("fake-plaintext"), equalTo(expectedEncryption));
 
 
-    verify(keySet.getActive(), times(1))
+    verify(encryptionService, times(1))
         .reconnect(any(IllegalBlockSizeException.class));
     verify(keySet, times(1)).reload();
   }
@@ -211,6 +217,7 @@ public class RetryingEncryptionServiceTest {
         .thenReturn(firstActiveKey);
     when(firstActiveKey.encrypt(anyString()))
         .thenThrow(new ProviderException("function 'C_GenerateRandom' returns 0x30"));
+    when(firstActiveKey.getProvider()).thenReturn(encryptionService);
 
     firstThread.start();
 
@@ -249,6 +256,8 @@ public class RetryingEncryptionServiceTest {
     when(firstActiveKey.decrypt( any(byte[].class), any(byte[].class)))
         .thenThrow(new ProviderException("function 'C_GenerateRandom' returns 0x30"));
 
+    when(firstActiveKey.getProvider()).thenReturn(encryptionService);
+
     try {
       subject.decrypt(new EncryptedValue(activeKeyUuid, "an encrypted value".getBytes(), "a nonce".getBytes()));
       fail("Expected exception");
@@ -256,9 +265,9 @@ public class RetryingEncryptionServiceTest {
       // expected
     }
 
-    final InOrder inOrder = inOrder(firstActiveKey);
+    final InOrder inOrder = inOrder(firstActiveKey, encryptionService);
     inOrder.verify(firstActiveKey).decrypt(any(byte[].class), any(byte[].class));
-    inOrder.verify(firstActiveKey).reconnect(any(ProviderException.class));
+    inOrder.verify(encryptionService).reconnect(any(ProviderException.class));
     inOrder.verify(firstActiveKey)
         .decrypt(any(byte[].class), any(byte[].class));
   }
@@ -327,15 +336,18 @@ public class RetryingEncryptionServiceTest {
     when(firstActiveKey
         .decrypt( "fake-encrypted-value".getBytes(), "fake-nonce".getBytes()))
         .thenThrow(new IllegalBlockSizeException("test exception"));
+    when(firstActiveKey.getProvider()).thenReturn(encryptionService);
+
     when(secondActiveKey
         .decrypt("fake-encrypted-value".getBytes(), "fake-nonce".getBytes()))
         .thenReturn("fake-plaintext");
+    when(secondActiveKey.getProvider()).thenReturn(encryptionService);
 
     assertThat(subject
             .decrypt(new EncryptedValue(activeKeyUuid, "fake-encrypted-value".getBytes(), "fake-nonce".getBytes())),
         equalTo("fake-plaintext"));
 
-    verify(keySet.getActive(), times(1))
+    verify(encryptionService, times(1))
         .reconnect(any(IllegalBlockSizeException.class));
     verify(keySet, times(1)).reload();
   }
@@ -397,6 +409,8 @@ public class RetryingEncryptionServiceTest {
 
     when(firstActiveKey.decrypt(any(byte[].class), any(byte[].class)))
         .thenThrow(new ProviderException("function 'C_GenerateRandom' returns 0x30"));
+
+    when(firstActiveKey.getProvider()).thenReturn(encryptionService);
 
     firstThread.start();
 

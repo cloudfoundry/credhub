@@ -17,7 +17,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 
-public class LunaEncryptionService extends EncryptionService {
+public class LunaEncryptionService extends InternalEncryptionService {
 
   public static final int KEY_POPULATION_WAIT_SEC = 60 *10; // ten minutes
   private final LunaConnection lunaConnection;
@@ -54,7 +54,7 @@ public class LunaEncryptionService extends EncryptionService {
   }
 
   @Override
-  KeyProxy createKeyProxy(EncryptionKeyMetadata encryptionKeyMetadata) {
+  public KeyProxy createKeyProxy(EncryptionKeyMetadata encryptionKeyMetadata) {
     return new LunaKeyProxy(createKey(encryptionKeyMetadata, lunaConnection), this);
   }
 

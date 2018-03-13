@@ -39,8 +39,8 @@ public class EncryptionKeyRotatorTest {
 
     encryptedValueDataService = mock(EncryptedValueDataService.class);
     keySet = new EncryptionKeySet();
-    keySet.add(new EncryptionKey(mock(EncryptionService.class), oldUuid, mock(Key.class)));
-    keySet.add(new EncryptionKey(mock(EncryptionService.class), activeUuid, mock(Key.class)));
+    keySet.add(new EncryptionKey(mock(InternalEncryptionService.class), oldUuid, mock(Key.class), "key-name"));
+    keySet.add(new EncryptionKey(mock(InternalEncryptionService.class), activeUuid, mock(Key.class), "key-name"));
     keySet.setActive(activeUuid);
 
     encryptedValue1 = mock(EncryptedValue.class);

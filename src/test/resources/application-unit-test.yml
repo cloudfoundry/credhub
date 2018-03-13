@@ -2,12 +2,17 @@ auth_server:
   url: https://example.com:8443
 
 encryption:
-  keys:
-  - encryption_password: opensesame
+  providers:
+  - provider_name: int
     provider_type: internal
-    active: true
-  - encryption_password: correcthorsebatterystaple
-    provider_type: internal
+    keys:
+    - encryption_password: opensesame
+      active: true
+    - encryption_password: correcthorsebatterystaple
+      active: false
+    configuration: #not required for password encryption- but inserted for a unit test
+      host: localhost
+      port: 50051
   key_creation_enabled: true
 
 security:

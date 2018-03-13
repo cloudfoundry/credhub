@@ -13,7 +13,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class InternalEncryptionServiceTest {
   @Test
   public void createsPasswordBasedKeyProxy() throws Exception {
-    InternalEncryptionService subject = new InternalEncryptionService(new PasswordKeyProxyFactoryTestImpl());
+    PasswordEncryptionService subject = new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl());
 
     EncryptionKeyMetadata keyMetadata = new EncryptionKeyMetadata();
     keyMetadata.setEncryptionPassword("foobar");
