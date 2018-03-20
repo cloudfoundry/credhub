@@ -122,7 +122,7 @@ public class BulkRegenerateTest {
         .contentType(APPLICATION_JSON)
         //language=JSON
         .content("{\n"
-            + "  \"signed_by\" : \"/ca-to-rotate\"\n"
+            + "  \"signed_by\" : \"ca-to-rotate\"\n"
             + "}");
 
     String regenerateCertificatesResult = this.mockMvc.perform(regenerateCertificatesRequest)
