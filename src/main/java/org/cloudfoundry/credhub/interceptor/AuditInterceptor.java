@@ -1,5 +1,7 @@
 package org.cloudfoundry.credhub.interceptor;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cloudfoundry.credhub.audit.AuditLogFactory;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.auth.UserContext;
@@ -8,7 +10,6 @@ import org.cloudfoundry.credhub.data.RequestAuditRecordDataService;
 import org.cloudfoundry.credhub.domain.SecurityEventAuditRecord;
 import org.cloudfoundry.credhub.entity.RequestAuditRecord;
 import org.cloudfoundry.credhub.service.SecurityEventsLogService;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
@@ -21,7 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 @Component
 public class AuditInterceptor extends HandlerInterceptorAdapter {
 
-  private final org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
+  private final Logger logger = LogManager.getLogger("CEFAudit");
 
   private final RequestAuditRecordDataService requestAuditRecordDataService;
   private final SecurityEventsLogService securityEventsLogService;

@@ -21,6 +21,7 @@ public class CEFAuditRecord {
   private static final String CEF_VERSION = "0";
   private static final String DEVICE_VENDOR = "cloud_foundry";
   private static final String DEVICE_PRODUCT = "credhub";
+  private static final String SEVERITY = "0";
   private static final String CS1_LABEL = "userAuthenticationMechanism";
   private static final String CS2_LABEL = "resourceName";
   private static final String CS3_LABEL = "result";
@@ -31,7 +32,7 @@ public class CEFAuditRecord {
   private UUID uuid;
 
   // CEF Spec
-  private String signatureId, severity, extension, credhubServerVersion;
+  private String signatureId, extension, credhubServerVersion;
 
   // Data Inherited (somewhat) from CC
   private String timestamp, username, userGuid, authMechanism, requestPath,
@@ -62,7 +63,7 @@ public class CEFAuditRecord {
     builder.append(credhubServerVersion).append("|");
     builder.append(signatureId).append("|");
     builder.append(signatureId).append("|");
-    builder.append(severity).append("|");
+    builder.append(SEVERITY).append("|");
     builder.append("rt=").append(timestamp).append(" ");
     builder.append("suser=").append(username).append(" ");
     builder.append("suid=").append(userGuid).append(" ");
@@ -215,14 +216,6 @@ public class CEFAuditRecord {
 
   public void setOperation(OperationDeviceAction operation) {
     this.operation = operation;
-  }
-
-  public String getSeverity() {
-    return severity;
-  }
-
-  public void setSeverity(String severity) {
-    this.severity = severity;
   }
 
   public String getExtension() {
