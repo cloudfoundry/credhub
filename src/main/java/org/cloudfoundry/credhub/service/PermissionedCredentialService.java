@@ -167,11 +167,13 @@ public class PermissionedCredentialService {
     CredentialVersion credentialVersion = credentialVersionDataService.findByUuid(credentialUUID);
 
     auditRecord.setRequestDetails(new GetCredentialById(credentialUUID));
-    auditRecord.setCredential(credentialVersion.getCredential());
 
-    if (credentialVersion == null) {
+    if(credentialVersion != null) {
+      auditRecord.setCredential(credentialVersion.getCredential());
+    } else {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
+
     String credentialName = credentialVersion.getName();
     eventAuditRecordParameters.setCredentialName(credentialName);
 
