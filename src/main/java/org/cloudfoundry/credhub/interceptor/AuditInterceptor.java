@@ -1,6 +1,9 @@
 package org.cloudfoundry.credhub.interceptor;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.cloudfoundry.credhub.audit.AuditLogFactory;
+import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.auth.UserContextFactory;
 import org.cloudfoundry.credhub.data.RequestAuditRecordDataService;
@@ -19,21 +22,33 @@ import javax.servlet.http.HttpServletResponse;
 @Component
 public class AuditInterceptor extends HandlerInterceptorAdapter {
 
+  private final Logger logger = LogManager.getLogger("CEFAudit");
+
   private final RequestAuditRecordDataService requestAuditRecordDataService;
   private final SecurityEventsLogService securityEventsLogService;
   private final AuditLogFactory auditLogFactory;
   private final UserContextFactory userContextFactory;
+  private final CEFAuditRecord auditRecord;
+
 
   @Autowired
   AuditInterceptor(
       RequestAuditRecordDataService requestAuditRecordDataService,
       SecurityEventsLogService securityEventsLogService,
       AuditLogFactory auditLogFactory,
-      UserContextFactory userContextFactory) {
+      UserContextFactory userContextFactory,
+      CEFAuditRecord auditRecord) {
     this.requestAuditRecordDataService = requestAuditRecordDataService;
     this.securityEventsLogService = securityEventsLogService;
     this.auditLogFactory = auditLogFactory;
     this.userContextFactory = userContextFactory;
+    this.auditRecord = auditRecord;
+  }
+
+  @Override
+  public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+    auditRecord.setHttpRequest(request);
+    return true;
   }
 
   @Override
@@ -41,15 +56,22 @@ public class AuditInterceptor extends HandlerInterceptorAdapter {
       HttpServletRequest request,
       HttpServletResponse response,
       Object handler,
-      Exception exception
-  ) throws Exception {
+      Exception exception) {
     Principal userAuth = request.getUserPrincipal();
     if (userAuth == null) {
       return;
     }
     UserContext userContext = userContextFactory.createUserContext((Authentication) userAuth);
 
-    RequestAuditRecord requestAuditRecord = auditLogFactory.createRequestAuditRecord(request, userContext, response.getStatus());
+    RequestAuditRecord requestAuditRecord = auditLogFactory
+        .createRequestAuditRecord(request, userContext, response.getStatus());
+
+    auditRecord.setUsername(userAuth.getName());
+    auditRecord.setHttpStatusCode(response.getStatus());
+    auditRecord.setUserGuid(userContext.getActor());
+    auditRecord.setAuthMechanism(userContext.getAuthMethod());
+
+    logger.info(auditRecord.toString());
 
     try {
       requestAuditRecordDataService.save(requestAuditRecord);
