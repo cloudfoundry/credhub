@@ -4,7 +4,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 
-import static javax.servlet.http.HttpServletRequest.CLIENT_CERT_AUTH;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -22,7 +21,6 @@ public class CEFAuditRecordTest {
 
   @Test
   public void setHttpRequest() {
-    httpRequest.setAuthType(CLIENT_CERT_AUTH);
     httpRequest.setRequestURI("/foo/bar");
     httpRequest.setQueryString("baz=qux&hi=bye");
     httpRequest.setMethod("GET");
@@ -30,7 +28,6 @@ public class CEFAuditRecordTest {
     httpRequest.setServerName("credhub.example");
 
     auditRecord.setHttpRequest(httpRequest);
-    assertThat(auditRecord.getAuthMechanism(), is(equalTo(CLIENT_CERT_AUTH)));
     assertThat(auditRecord.getRequestPath(), is(equalTo("/foo/bar?baz=qux&hi=bye")));
     assertThat(auditRecord.getRequestMethod(), is(equalTo("GET")));
     assertThat(auditRecord.getSignatureId(), is(equalTo("GET /foo/bar")));

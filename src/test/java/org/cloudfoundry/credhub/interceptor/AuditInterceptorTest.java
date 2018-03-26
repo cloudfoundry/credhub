@@ -71,6 +71,7 @@ public class AuditInterceptorTest {
     userContext = mock(UserContext.class);
     when(userContextFactory.createUserContext(any())).thenReturn(userContext);
     when(userContext.getActor()).thenReturn("user");
+    when(userContext.getAuthMethod()).thenReturn(CLIENT_CERT_AUTH);
   }
 
   @Test
@@ -132,12 +133,14 @@ public class AuditInterceptorTest {
     Authentication authentication = mock(Authentication.class);
     when(authentication.getName()).thenReturn("foo");
     request.setUserPrincipal(authentication);
+    request.setAuthType(CLIENT_CERT_AUTH);
     response.setStatus(200);
 
     subject.afterCompletion(request, response, null, null);
     assertThat(auditRecord.getUsername(), is(equalTo("foo")));
     assertThat(auditRecord.getHttpStatusCode(), is(equalTo(200)));
     assertThat(auditRecord.getResult(), is(equalTo("success")));
+    assertThat(auditRecord.getAuthMechanism(), is(equalTo(CLIENT_CERT_AUTH)));
   }
 
   @Test
@@ -147,7 +150,6 @@ public class AuditInterceptorTest {
     request.setQueryString("baz=qux&hi=bye");
     request.setMethod("GET");
     subject.preHandle(request, response, null);
-    assertThat(auditRecord.getAuthMechanism(), is(equalTo(CLIENT_CERT_AUTH)));
     assertThat(auditRecord.getRequestPath(), is(equalTo("/foo/bar?baz=qux&hi=bye")));
     assertThat(auditRecord.getRequestMethod(), is(equalTo("GET")));
   }
