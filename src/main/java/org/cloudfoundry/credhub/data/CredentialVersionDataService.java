@@ -175,7 +175,7 @@ public class CredentialVersionDataService {
         return certificateVersionDataService.findActiveWithTransitional(name);
       }
       result.add(credentialFactory.makeCredentialFromEntity(credentialVersionData));
-
+      
       return result;
     } else {
       return newArrayList();
