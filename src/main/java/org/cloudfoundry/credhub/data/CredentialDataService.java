@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.data;
 
+import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.repository.CredentialRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,18 +13,25 @@ import java.util.UUID;
 public class CredentialDataService {
 
   private final CredentialRepository credentialRepository;
+  private CEFAuditRecord auditRecord;
 
   @Autowired
-  public CredentialDataService(CredentialRepository credentialRepository) {
+  public CredentialDataService(CredentialRepository credentialRepository, CEFAuditRecord auditRecord) {
     this.credentialRepository = credentialRepository;
+    this.auditRecord = auditRecord;
   }
 
   public Credential find(String name) {
-    return credentialRepository.findOneByNameIgnoreCase(name);
+    Credential credential = credentialRepository.findOneByNameIgnoreCase(name);
+    if(credential != null) {
+      auditRecord.setCredential(credential);
+    }
+    return credential;
   }
 
   public Credential findByUUID(UUID uuid) {
-    return credentialRepository.findOneByUuid(uuid);
+    Credential credential = credentialRepository.findOneByUuid(uuid);
+    return credential;
   }
 
   public Credential save(Credential credential) {

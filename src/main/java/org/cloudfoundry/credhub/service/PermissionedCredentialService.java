@@ -1,7 +1,9 @@
 package org.cloudfoundry.credhub.service;
 
 import org.cloudfoundry.credhub.audit.AuditingOperationCode;
+import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
+import org.cloudfoundry.credhub.audit.entity.GetCredentialById;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.constants.CredentialType;
 import org.cloudfoundry.credhub.constants.CredentialWriteMode;
@@ -46,6 +48,7 @@ public class PermissionedCredentialService {
   private PermissionCheckingService permissionCheckingService;
   private final UserContextHolder userContextHolder;
   private final CredentialDataService credentialDataService;
+  private final CEFAuditRecord auditRecord;
 
   @Autowired
   public PermissionedCredentialService(
@@ -54,13 +57,15 @@ public class PermissionedCredentialService {
       PermissionCheckingService permissionCheckingService,
       CertificateAuthorityService certificateAuthorityService,
       UserContextHolder userContextHolder,
-      CredentialDataService credentialDataService) {
+      CredentialDataService credentialDataService,
+      CEFAuditRecord auditRecord) {
     this.credentialVersionDataService = credentialVersionDataService;
     this.credentialFactory = credentialFactory;
     this.permissionCheckingService = permissionCheckingService;
     this.certificateAuthorityService = certificateAuthorityService;
     this.userContextHolder = userContextHolder;
     this.credentialDataService = credentialDataService;
+    this.auditRecord = auditRecord;
   }
 
   public CredentialVersion save(
@@ -160,6 +165,10 @@ public class PermissionedCredentialService {
     auditRecordParameters.add(eventAuditRecordParameters);
 
     CredentialVersion credentialVersion = credentialVersionDataService.findByUuid(credentialUUID);
+
+    auditRecord.setRequestDetails(new GetCredentialById(credentialUUID));
+    auditRecord.setCredential(credentialVersion.getCredential());
+
     if (credentialVersion == null) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
