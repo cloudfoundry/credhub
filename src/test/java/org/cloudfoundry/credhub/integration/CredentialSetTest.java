@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.integration;
 
+import org.apache.commons.lang3.StringUtils;
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.constants.CredentialWriteMode;
 import org.cloudfoundry.credhub.util.AuthConstants;
@@ -18,10 +19,12 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import static org.cloudfoundry.credhub.helper.RequestHelper.generatePassword;
 import static org.cloudfoundry.credhub.helper.RequestHelper.setPassword;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -34,6 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 public class CredentialSetTest {
   private static final String CREDENTIAL_NAME = "/set_credential";
+  private static final String CREDENTIAL_NAME_1024_CHARACTERS = StringUtils.rightPad("/", 1024, 'a');
 
   @Autowired
   private WebApplicationContext webApplicationContext;
@@ -124,11 +128,25 @@ public class CredentialSetTest {
   @Test
   public void credentialCanBeOverwrittenWhenModeIsSetToOverwriteInRequest() throws Exception {
     setPassword(mockMvc, CREDENTIAL_NAME, "original-password", CredentialWriteMode.NO_OVERWRITE.mode);
-
     String secondResponse = setPassword(mockMvc, CREDENTIAL_NAME, "new-password", CredentialWriteMode.OVERWRITE.mode);
     String updatedPassword = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(updatedPassword, equalTo("new-password"));
+  }
+
+  @Test
+  public void credentialNamesCanHaveALengthOf1024Characters() throws Exception {
+    assertThat(CREDENTIAL_NAME_1024_CHARACTERS.length(), is(equalTo(1024)));
+
+    String setResponse = setPassword(mockMvc, CREDENTIAL_NAME_1024_CHARACTERS, "foobar", CredentialWriteMode.NO_OVERWRITE.mode);
+    System.out.println("setResponse:" + setResponse);
+    String setPassword = (new JSONObject(setResponse)).getString("value");
+
+    assertThat(setPassword, equalTo("foobar"));
+
+    String getResponse = generatePassword(mockMvc, CREDENTIAL_NAME_1024_CHARACTERS, "overwrite", 14);
+    String getPassword = (new JSONObject(getResponse)).getString("value");
+    assertThat(getPassword.length(), equalTo(14));
   }
 
   @Test
