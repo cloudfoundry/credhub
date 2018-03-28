@@ -13,7 +13,7 @@ ALTER TABLE credential RENAME credential_old;
 
 ALTER TABLE credential_new RENAME credential;
 
---DROP TABLE credential_old;
+DROP TABLE credential_old;
 
 ALTER TABLE credential
   MODIFY COLUMN name VARCHAR(1024) NOT NULL;
