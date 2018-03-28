@@ -69,8 +69,6 @@ public class CredentialsHandler {
       String credentialUUID,
       List<EventAuditRecordParameters> auditRecordParametersList
   ) {
-    // credentialName, numberOfVersions, current
-    // auditRecord.setRequestDetails(new GetCredential(credentialName, numberOfVersions, current));
     return CredentialView.fromEntity(credentialService.findVersionByUuid(credentialUUID, auditRecordParametersList));
   }
 }

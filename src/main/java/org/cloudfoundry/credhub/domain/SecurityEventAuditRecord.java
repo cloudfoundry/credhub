@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.domain;
 
-import org.cloudfoundry.credhub.audit.Utils;
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.entity.RequestAuditRecord;
 import org.apache.commons.lang3.StringUtils;
@@ -30,7 +29,17 @@ public class SecurityEventAuditRecord {
 
   public String getResultCode() {
     int statusCode = delegate.getStatusCode();
-    return Utils.getResultCode(statusCode);
+    if (statusCode <= 199) {
+      return "info";
+    } else if (statusCode <= 299) {
+      return "success";
+    } else if (statusCode <= 399) {
+      return "redirect";
+    } else if (statusCode <= 499) {
+      return "clientError";
+    } else {
+      return "serverError";
+    }
   }
 
   public String getSignature() {

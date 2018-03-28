@@ -35,7 +35,6 @@ public class EventAuditLogService {
     this.requestUuid = requestUuid;
   }
 
-  @Deprecated
   public <T> T auditEvents(
       Function<List<EventAuditRecordParameters>, T> respondToRequestFunction
   ) {

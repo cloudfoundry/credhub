@@ -1,7 +1,6 @@
 package org.cloudfoundry.credhub.data;
 
 import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.repository.CredentialRepository;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
@@ -36,9 +35,6 @@ public class CredentialDataServiceTest {
 
   @Autowired
   private CredentialRepository credentialRepository;
-
-  @Autowired
-  private CEFAuditRecord auditRecord;
 
   @Test
   public void save_savesTheCredential() {
@@ -82,17 +78,6 @@ public class CredentialDataServiceTest {
   @Test
   public void find_whenTheCredentialDoesNotExist_returnsNull() {
     assertThat(subject.find(CREDENTIAL_NAME), equalTo(null));
-  }
-
-  @Test
-  public void find_AddsTheCredentialNameToTheAuditRecord() {
-    final Credential credential = new Credential(CREDENTIAL_NAME.toLowerCase());
-    credentialRepository.save(credential);
-
-    subject.find(CREDENTIAL_NAME);
-
-    assertThat(auditRecord.getResourceName(), equalTo(CREDENTIAL_NAME));
-    assertThat(auditRecord.getResourceUUID(), equalTo(credential.getUuid().toString()));
   }
 
   @Test
