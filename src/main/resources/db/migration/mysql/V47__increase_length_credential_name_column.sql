@@ -16,7 +16,7 @@ ALTER TABLE credential_new RENAME credential;
 DROP TABLE credential_old;
 
 ALTER TABLE credential
-  MODIFY COLUMN name VARCHAR(1024) NOT NULL;
+  MODIFY COLUMN name VARCHAR(255) NOT NULL;
 
 ALTER TABLE certificate_credential
   MODIFY COLUMN ca_name VARCHAR(1024);
