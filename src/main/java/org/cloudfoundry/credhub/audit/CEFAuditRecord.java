@@ -227,9 +227,6 @@ public class CEFAuditRecord {
   }
 
   public void setCredential(Credential credential) {
-    if(credential == null || credential.getUuid() == null){
-      return;
-    }
     this.resourceName = credential.getName();
     this.resourceUUID = credential.getUuid().toString();
   }
