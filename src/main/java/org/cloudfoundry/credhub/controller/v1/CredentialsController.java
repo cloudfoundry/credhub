@@ -4,8 +4,10 @@ import com.google.common.io.ByteStreams;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.EventAuditLogService;
 import org.cloudfoundry.credhub.exceptions.AuditSaveFailureException;
+import org.cloudfoundry.credhub.audit.entity.GetCredential;
 import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.handler.CredentialsHandler;
@@ -51,17 +53,21 @@ public class CredentialsController {
   private final SetHandler setHandler;
   private final CredentialsHandler credentialsHandler;
   private final LegacyGenerationHandler legacyGenerationHandler;
+  private CEFAuditRecord auditRecord;
 
   @Autowired
   public CredentialsController(PermissionedCredentialService credentialService,
-                               EventAuditLogService eventAuditLogService,
-                               CredentialsHandler credentialsHandler,
-                               SetHandler setHandler, LegacyGenerationHandler legacyGenerationHandler) {
+      EventAuditLogService eventAuditLogService,
+      CredentialsHandler credentialsHandler,
+      SetHandler setHandler,
+      LegacyGenerationHandler legacyGenerationHandler,
+      CEFAuditRecord auditRecord) {
     this.credentialService = credentialService;
     this.eventAuditLogService = eventAuditLogService;
     this.credentialsHandler = credentialsHandler;
     this.setHandler = setHandler;
     this.legacyGenerationHandler = legacyGenerationHandler;
+    this.auditRecord = auditRecord;
   }
 
   @RequestMapping(path = "", method = RequestMethod.POST)
@@ -138,11 +144,15 @@ public class CredentialsController {
 
     String credentialNameWithPrependedSlash = StringUtils.prependIfMissing(credentialName, "/");
 
+    auditRecord.setRequestDetails(new GetCredential(credentialName, numberOfVersions, current));
+
     return eventAuditLogService.auditEvents(eventAuditRecordParametersList -> {
       if (current) {
-        return credentialsHandler.getCurrentCredentialVersions(credentialNameWithPrependedSlash, eventAuditRecordParametersList);
+        return credentialsHandler
+            .getCurrentCredentialVersions(credentialNameWithPrependedSlash, eventAuditRecordParametersList);
       } else {
-        return credentialsHandler.getNCredentialVersions(credentialNameWithPrependedSlash, numberOfVersions, eventAuditRecordParametersList);
+        return credentialsHandler
+            .getNCredentialVersions(credentialNameWithPrependedSlash, numberOfVersions, eventAuditRecordParametersList);
       }
     });
   }

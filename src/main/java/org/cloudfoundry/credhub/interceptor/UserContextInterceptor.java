@@ -24,12 +24,12 @@ public class UserContextInterceptor extends HandlerInterceptorAdapter {
   }
 
   @Override
-  public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+  public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
     Authentication principal = (Authentication) request.getUserPrincipal();
     if (principal == null) {
       return false;
     }
     userContextHolder.setUserContext(userContextFactory.createUserContext(principal));
-    return super.preHandle(request, response, handler);
+    return true;
   }
 }

@@ -2,6 +2,8 @@ package org.cloudfoundry.credhub.controller.v1;
 
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.audit.AuditingOperationCode;
+import org.cloudfoundry.credhub.audit.CEFAuditRecord;
+import org.cloudfoundry.credhub.audit.entity.GetCredential;
 import org.cloudfoundry.credhub.data.CredentialVersionDataService;
 import org.cloudfoundry.credhub.domain.Encryptor;
 import org.cloudfoundry.credhub.domain.ValueCredentialVersion;
@@ -15,6 +17,7 @@ import org.cloudfoundry.credhub.util.AuthConstants;
 import org.cloudfoundry.credhub.util.CurrentTimeProvider;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +42,8 @@ import java.util.function.Consumer;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.cloudfoundry.credhub.helper.TestHelper.mockOutCurrentTimeProvider;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -58,6 +63,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @TestPropertySource(properties = "security.authorization.acls.enabled=false")
 @Transactional
 public class CredentialsControllerGetTest {
+
   private static final Instant FROZEN_TIME = Instant.ofEpochSecond(1400011001L);
   private static final String CREDENTIAL_NAME = "/my-namespace/controllerGetTest/credential-name";
   private static final String CREDENTIAL_VALUE = "test value";
@@ -130,7 +136,8 @@ public class CredentialsControllerGetTest {
         .andExpect(jsonPath("$.data[0]" + ".version_created_at").value(FROZEN_TIME.toString()));
 
     auditingHelper.verifyAuditing(
-        AuditingOperationCode.CREDENTIAL_ACCESS, CREDENTIAL_NAME, AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 200);
+        AuditingOperationCode.CREDENTIAL_ACCESS, CREDENTIAL_NAME, AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
+        "/api/v1/data", 200);
   }
 
   @Test
@@ -160,7 +167,8 @@ public class CredentialsControllerGetTest {
         .andExpect(jsonPath("$.data[0]" + ".value").value(CREDENTIAL_VALUE));
 
     auditingHelper.verifyAuditing(
-        AuditingOperationCode.CREDENTIAL_ACCESS, CREDENTIAL_NAME, AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 200);
+        AuditingOperationCode.CREDENTIAL_ACCESS, CREDENTIAL_NAME, AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
+        "/api/v1/data", 200);
   }
 
   @Test
@@ -191,7 +199,8 @@ public class CredentialsControllerGetTest {
   }
 
   @Test
-  public void gettingACredential_byName_whenTheCredentialDoesNotExist_andCurrentIsSetToTrue_returnsNotFound() throws Exception {
+  public void gettingACredential_byName_whenTheCredentialDoesNotExist_andCurrentIsSetToTrue_returnsNotFound()
+      throws Exception {
     doReturn(true)
         .when(permissionCheckingService).hasPermission(any(String.class),
         any(String.class), eq(PermissionOperation.READ));
@@ -218,7 +227,8 @@ public class CredentialsControllerGetTest {
   }
 
   @Test
-  public void gettingACredential_byName_whenTheUserDoesNotHavePermissionToAccessTheCredential_returnsNotFound() throws Exception {
+  public void gettingACredential_byName_whenTheUserDoesNotHavePermissionToAccessTheCredential_returnsNotFound()
+      throws Exception {
     doReturn(false)
         .when(permissionCheckingService).hasPermission(any(String.class),
         any(String.class), eq(PermissionOperation.READ));
@@ -246,15 +256,7 @@ public class CredentialsControllerGetTest {
 
   @Test
   public void gettingACredential_byName_withCurrentSetToTrue_returnsTheLatestCredential() throws Exception {
-    UUID uuid = UUID.randomUUID();
-    ValueCredentialVersion credential = new ValueCredentialVersion(CREDENTIAL_NAME)
-        .setEncryptor(encryptor)
-        .setUuid(uuid)
-        .setVersionCreatedAt(FROZEN_TIME);
-
-    doReturn(CREDENTIAL_VALUE).when(encryptor).decrypt(any());
-
-    doReturn(Arrays.asList(credential)).when(credentialVersionDataService).findActiveByName(CREDENTIAL_NAME);
+    setUpCredential();
 
     mockMvc.perform(get("/api/v1/data?current=true&name=" + CREDENTIAL_NAME)
         .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -293,7 +295,8 @@ public class CredentialsControllerGetTest {
   }
 
   @Test
-  public void gettingACredential_byName_withCurrentSetToFalse_andNumberOfVersions_returnsTheSpecifiedNumberOfVersions() throws Exception {
+  public void gettingACredential_byName_withCurrentSetToFalse_andNumberOfVersions_returnsTheSpecifiedNumberOfVersions()
+      throws Exception {
     UUID uuid = UUID.randomUUID();
 
     Instant credential1Instant = Instant.ofEpochSecond(1400000001L);
@@ -405,14 +408,47 @@ public class CredentialsControllerGetTest {
   @Test
   public void providingCurrentTrueAndVersions_throwsAnException() throws Exception {
     final MockHttpServletRequestBuilder get =
-        get("/api/v1/data?name=" + CREDENTIAL_NAME+"&current=true&versions=45")
+        get("/api/v1/data?name=" + CREDENTIAL_NAME + "&current=true&versions=45")
             .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
             .accept(APPLICATION_JSON);
 
     mockMvc.perform(get)
         .andExpect(status().isBadRequest())
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-        .andExpect(jsonPath("$.error").value("The query parameters current and versions cannot be provided in the same request."));
+        .andExpect(jsonPath("$.error")
+            .value("The query parameters current and versions cannot be provided in the same request."));
+  }
+
+  @Test
+  @Ignore
+  public void getCredential_addsToAuditRecord() throws Exception {
+    setUpCredential();
+
+    final MockHttpServletRequestBuilder request =
+        get("/api/v1/data?name=" + CREDENTIAL_NAME + "&current=true")
+            .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+            .accept(APPLICATION_JSON);
+
+    mockMvc.perform(request).andExpect(status().isOk());
+    CEFAuditRecord auditRecord = webApplicationContext.getBean(CEFAuditRecord.class);
+
+    GetCredential expectedDetails = new GetCredential();
+    expectedDetails.setName(CREDENTIAL_NAME);
+    expectedDetails.setCurrent(true);
+
+    assertThat(auditRecord.getRequestDetails(), is(equalTo(expectedDetails)));
+  }
+
+  private void setUpCredential() {
+    UUID uuid = UUID.randomUUID();
+    ValueCredentialVersion credential = new ValueCredentialVersion(CREDENTIAL_NAME)
+        .setEncryptor(encryptor)
+        .setUuid(uuid)
+        .setVersionCreatedAt(FROZEN_TIME);
+
+    doReturn(CREDENTIAL_VALUE).when(encryptor).decrypt(any());
+
+    doReturn(Arrays.asList(credential)).when(credentialVersionDataService).findActiveByName(CREDENTIAL_NAME);
   }
 
 
