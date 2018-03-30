@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.handler;
 
+import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.credential.CredentialValue;
 import org.cloudfoundry.credhub.domain.CertificateGenerationParameters;
@@ -20,15 +21,18 @@ public class RegenerateHandler {
   private PermissionedCredentialService credentialService;
   private UniversalCredentialGenerator credentialGenerator;
   private GenerationRequestGenerator generationRequestGenerator;
+  private CEFAuditRecord auditRecord;
 
   RegenerateHandler(
       PermissionedCredentialService credentialService,
       UniversalCredentialGenerator credentialGenerator,
-      GenerationRequestGenerator generationRequestGenerator) {
+      GenerationRequestGenerator generationRequestGenerator,
+      CEFAuditRecord auditRecord) {
     this.credentialService = credentialService;
     this.credentialService = credentialService;
     this.credentialGenerator = credentialGenerator;
     this.generationRequestGenerator = generationRequestGenerator;
+    this.auditRecord = auditRecord;
   }
 
   public CredentialView handleRegenerate(
@@ -46,6 +50,7 @@ public class RegenerateHandler {
         auditRecordParameters
     );
 
+    auditRecord.setCredential(credentialVersion.getCredential());
     return CredentialView.fromEntity(credentialVersion);
   }
 

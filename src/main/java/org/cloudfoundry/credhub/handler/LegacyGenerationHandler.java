@@ -7,8 +7,8 @@ import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.EventAuditLogService;
 import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.audit.entity.GenerateCredential;
+import org.cloudfoundry.credhub.audit.entity.RegenerateCredential;
 import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
-import org.cloudfoundry.credhub.request.BaseCredentialRequest;
 import org.cloudfoundry.credhub.request.CredentialRegenerateRequest;
 import org.cloudfoundry.credhub.util.StringUtil;
 import org.cloudfoundry.credhub.view.CredentialView;
@@ -72,7 +72,14 @@ public class LegacyGenerationHandler {
   ) throws IOException {
     BaseCredentialGenerateRequest requestBody = objectMapper.readValue(requestString, BaseCredentialGenerateRequest.class);
     requestBody.validate();
-    this.log(requestBody);
+
+    GenerateCredential generateCredential = new GenerateCredential();
+    generateCredential.setName(requestBody.getName());
+    generateCredential.setMode(requestBody.getMode());
+    generateCredential.setType(requestBody.getType());
+    generateCredential.setAdditionalPermissions(requestBody.getAdditionalPermissions());
+    auditRecord.setRequestDetails(generateCredential);
+
     return generateHandler.handle(requestBody, auditRecordParameters);
   }
 
@@ -81,16 +88,12 @@ public class LegacyGenerationHandler {
   ) throws IOException {
     CredentialRegenerateRequest requestBody = objectMapper.readValue(requestString, CredentialRegenerateRequest.class);
     requestBody.validate();
-    return regenerateHandler.handleRegenerate(requestBody.getName(), auditRecordParameters);
-  }
 
-  private void log(BaseCredentialRequest request){
-    GenerateCredential createCredential = new GenerateCredential();
-    createCredential.setName(request.getName());
-    createCredential.setMode(request.getMode());
-    createCredential.setType(request.getType());
-    createCredential.setAdditionalPermissions(request.getAdditionalPermissions());
-    auditRecord.setRequestDetails(createCredential);
+    RegenerateCredential regenerateCredential = new RegenerateCredential();
+    regenerateCredential.setName(requestBody.getName());
+    auditRecord.setRequestDetails(regenerateCredential);
+
+    return regenerateHandler.handleRegenerate(requestBody.getName(), auditRecordParameters);
   }
 
 
