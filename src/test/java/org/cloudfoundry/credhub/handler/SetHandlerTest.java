@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.handler;
 
+import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
@@ -10,6 +11,7 @@ import org.cloudfoundry.credhub.credential.UserCredentialValue;
 import org.cloudfoundry.credhub.data.CertificateAuthorityService;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
+import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.helper.TestHelper;
 import org.cloudfoundry.credhub.request.CertificateSetRequest;
 import org.cloudfoundry.credhub.request.PasswordSetRequest;
@@ -26,12 +28,13 @@ import org.junit.runners.JUnit4;
 import org.mockito.ArgumentCaptor;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -49,6 +52,10 @@ public class SetHandlerTest {
   private ArrayList<PermissionEntry> accessControlEntries;
   private UserContext userContext;
   private CredentialVersion credentialVersion;
+  private UUID uuid;
+  private String name;
+
+  private CEFAuditRecord auditRecord;
 
   @Before
   public void setUp() throws Exception {
@@ -57,16 +64,47 @@ public class SetHandlerTest {
     certificateAuthorityService = mock(CertificateAuthorityService.class);
     permissionService = mock(PermissionService.class);
 
+    auditRecord = new CEFAuditRecord();
+
     userContext = new UserContext();
     UserContextHolder userContextHolder = new UserContextHolder();
     userContextHolder.setUserContext(userContext);
-    subject = new SetHandler(credentialService, permissionService, certificateAuthorityService, userContextHolder);
+    subject = new SetHandler(credentialService, permissionService, certificateAuthorityService, userContextHolder, auditRecord);
 
     generationParameters = new StringGenerationParameters();
     accessControlEntries = new ArrayList<>();
     credentialVersion = mock(PasswordCredentialVersion.class);
+
+    uuid = UUID.randomUUID();
+    name = "federation";
+
+    Credential cred = new Credential(name);
+    cred.setUuid(uuid);
+
+    when(credentialVersion.getCredential()).thenReturn(cred);
     when(credentialService.save(anyObject(),anyObject(), anyObject(), anyList())).thenReturn(credentialVersion);
   }
+
+  @Test
+  public void handleSetRequest_AddsTheCredentialNameToTheAuditRecord() {
+    StringCredentialValue password = new StringCredentialValue("federation");
+    PasswordSetRequest setRequest = new PasswordSetRequest();
+
+    final ArrayList<EventAuditRecordParameters> eventAuditRecordParameters = new ArrayList<>();
+    setRequest.setType("password");
+    setRequest.setGenerationParameters(generationParameters);
+    setRequest.setPassword(password);
+    setRequest.setName("/captain");
+    setRequest.setAdditionalPermissions(accessControlEntries);
+    setRequest.setOverwrite(false);
+
+    subject.handle(setRequest, eventAuditRecordParameters);
+
+    verify(credentialService).save(null, password, setRequest, eventAuditRecordParameters);
+    assertThat(auditRecord.getResourceName(), equalTo("federation"));
+    assertThat(auditRecord.getResourceUUID(), equalTo(uuid.toString()));
+  }
+
 
   @Test
   public void handleSetRequest_whenOverwriteIsTrue_shouldSaveAccessControlEntries() {

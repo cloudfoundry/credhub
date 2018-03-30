@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.handler;
 
+import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
@@ -24,16 +25,18 @@ public class SetHandler {
   private PermissionService permissionService;
   private CertificateAuthorityService certificateAuthorityService;
   private UserContextHolder userContextHolder;
+  private CEFAuditRecord auditRecord;
 
   @Autowired
   public SetHandler(
       PermissionedCredentialService credentialService,
       PermissionService permissionService, CertificateAuthorityService certificateAuthorityService,
-      UserContextHolder userContextHolder) {
+      UserContextHolder userContextHolder, CEFAuditRecord auditRecord) {
     this.credentialService = credentialService;
     this.permissionService = permissionService;
     this.certificateAuthorityService = certificateAuthorityService;
     this.userContextHolder = userContextHolder;
+    this.auditRecord = auditRecord;
   }
 
   public CredentialView handle(
@@ -72,7 +75,7 @@ public class SetHandler {
     if (isNewCredential || setRequest.isOverwrite()) {
       permissionService.savePermissions(credentialVersion, setRequest.getAdditionalPermissions(), auditRecordParameters, isNewCredential, setRequest.getName());
     }
-
+    auditRecord.setCredential(credentialVersion.getCredential());
     return CredentialView.fromEntity(credentialVersion);
   }
 }

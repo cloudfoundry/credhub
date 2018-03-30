@@ -42,4 +42,22 @@ public class CEFAuditRecordTest {
     auditRecord.setHttpRequest(httpRequest);
     assertThat(auditRecord.getSourceAddress(), equalTo("192.168.0.1"));
   }
+
+  @Test
+  public void getHttpRequest() {
+    httpRequest.setRequestURI("/foo/bar");
+    httpRequest.setQueryString("baz=qux&hi=bye");
+    String data = "{\"name\":\"example-value\",\"value\":\"secret\"}";
+    httpRequest.setContent(data.getBytes());
+    httpRequest.setMethod("PUT");
+    httpRequest.setRemoteAddr("127.0.0.1");
+    httpRequest.setServerName("credhub.example");
+
+    auditRecord.setHttpRequest(httpRequest);
+    assertThat(auditRecord.getRequestPath(), is(equalTo("/foo/bar?baz=qux&hi=bye")));
+    assertThat(auditRecord.getRequestMethod(), is(equalTo("PUT")));
+    assertThat(auditRecord.getSignatureId(), is(equalTo("PUT /foo/bar")));
+    assertThat(auditRecord.getSourceAddress(), equalTo("127.0.0.1"));
+    assertThat(auditRecord.getDestinationAddress(), equalTo("credhub.example"));
+  }
 }
