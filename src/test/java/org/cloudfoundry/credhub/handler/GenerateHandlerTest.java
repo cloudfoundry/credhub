@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.handler;
 
+import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.credential.StringCredentialValue;
@@ -14,15 +15,17 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
 
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.internal.verification.VerificationModeFactory.times;
 
 @RunWith(JUnit4.class)
 public class GenerateHandlerTest {
@@ -37,13 +40,17 @@ public class GenerateHandlerTest {
   private UserContext userContext;
   private CredentialVersion credentialVersion;
 
+  @Mock
+  private CEFAuditRecord cefAuditRecord;
+
   @Before
   public void setUp() throws Exception {
+    MockitoAnnotations.initMocks(this);
     credentialService = mock(PermissionedCredentialService.class);
     universalCredentialGenerator = mock(UniversalCredentialGenerator.class);
     permissionService = mock(PermissionService.class);
 
-    subject = new GenerateHandler(credentialService, permissionService, universalCredentialGenerator);
+    subject = new GenerateHandler(credentialService, permissionService, universalCredentialGenerator, cefAuditRecord);
 
     generationParameters = new StringGenerationParameters();
     accessControlEntries = new ArrayList<>();
@@ -69,5 +76,22 @@ public class GenerateHandlerTest {
 
     verify(credentialService).save(null, null, generateRequest, eventAuditRecordParameters);
     verify(permissionService).savePermissions(credentialVersion, accessControlEntries, eventAuditRecordParameters, true, "/captain");
+  }
+
+  @Test
+  public void handleGenerateRequest_addsToCEFAuditRecord(){
+    StringCredentialValue password = new StringCredentialValue("federation");
+    PasswordGenerateRequest generateRequest = new PasswordGenerateRequest();
+
+
+    final ArrayList<EventAuditRecordParameters> eventAuditRecordParameters = new ArrayList<>();
+    generateRequest.setType("password");
+    generateRequest.setGenerationParameters(generationParameters);
+    generateRequest.setName("/captain");
+    generateRequest.setAdditionalPermissions(accessControlEntries);
+    generateRequest.setOverwrite(false);
+
+    subject.handle(generateRequest, eventAuditRecordParameters);
+    verify(cefAuditRecord, times(1)).setCredential(anyObject());
   }
 }

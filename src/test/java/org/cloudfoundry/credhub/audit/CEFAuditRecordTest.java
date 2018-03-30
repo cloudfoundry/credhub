@@ -17,15 +17,15 @@ public class CEFAuditRecordTest {
   public void setUp() {
     this.auditRecord = new CEFAuditRecord();
     this.httpRequest = new MockHttpServletRequest();
+    httpRequest.setRequestURI("/foo/bar");
+    httpRequest.setQueryString("baz=qux&hi=bye");
+    httpRequest.setRemoteAddr("127.0.0.1");
+    httpRequest.setServerName("credhub.example");
   }
 
   @Test
-  public void setHttpRequest() {
-    httpRequest.setRequestURI("/foo/bar");
-    httpRequest.setQueryString("baz=qux&hi=bye");
+  public void getHttpRequest() {
     httpRequest.setMethod("GET");
-    httpRequest.setRemoteAddr("127.0.0.1");
-    httpRequest.setServerName("credhub.example");
 
     auditRecord.setHttpRequest(httpRequest);
     assertThat(auditRecord.getRequestPath(), is(equalTo("/foo/bar?baz=qux&hi=bye")));
@@ -36,7 +36,7 @@ public class CEFAuditRecordTest {
   }
 
   @Test
-  public void setHttpRequest_setsSourceAddressIfProxied() {
+  public void getHttpRequest_setsSourceAddressIfProxied() {
     httpRequest.addHeader("X-FORWARDED-FOR", "192.168.0.1");
     httpRequest.setRemoteAddr("127.0.0.1");
     auditRecord.setHttpRequest(httpRequest);
@@ -44,14 +44,10 @@ public class CEFAuditRecordTest {
   }
 
   @Test
-  public void getHttpRequest() {
-    httpRequest.setRequestURI("/foo/bar");
-    httpRequest.setQueryString("baz=qux&hi=bye");
+  public void setHttpRequest() {
     String data = "{\"name\":\"example-value\",\"value\":\"secret\"}";
     httpRequest.setContent(data.getBytes());
     httpRequest.setMethod("PUT");
-    httpRequest.setRemoteAddr("127.0.0.1");
-    httpRequest.setServerName("credhub.example");
 
     auditRecord.setHttpRequest(httpRequest);
     assertThat(auditRecord.getRequestPath(), is(equalTo("/foo/bar?baz=qux&hi=bye")));

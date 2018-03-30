@@ -3,9 +3,12 @@ package org.cloudfoundry.credhub.handler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
+import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.EventAuditLogService;
 import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
+import org.cloudfoundry.credhub.audit.entity.GenerateCredential;
 import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
+import org.cloudfoundry.credhub.request.BaseCredentialRequest;
 import org.cloudfoundry.credhub.request.CredentialRegenerateRequest;
 import org.cloudfoundry.credhub.util.StringUtil;
 import org.cloudfoundry.credhub.view.CredentialView;
@@ -24,16 +27,19 @@ public class LegacyGenerationHandler {
   private final GenerateHandler generateHandler;
   private final RegenerateHandler regenerateHandler;
   private final EventAuditLogService eventAuditLogService;
+  private CEFAuditRecord auditRecord;
 
   @Autowired
   public LegacyGenerationHandler(ObjectMapper objectMapper,
                                  GenerateHandler generateHandler,
                                  RegenerateHandler regenerateHandler,
-                                 EventAuditLogService eventAuditLogService) {
+                                 EventAuditLogService eventAuditLogService,
+                                 CEFAuditRecord auditRecord) {
     this.objectMapper = objectMapper;
     this.generateHandler = generateHandler;
     this.regenerateHandler = regenerateHandler;
     this.eventAuditLogService = eventAuditLogService;
+    this.auditRecord = auditRecord;
   }
 
   public CredentialView auditedHandlePostRequest(InputStream inputStream) {
@@ -66,7 +72,7 @@ public class LegacyGenerationHandler {
   ) throws IOException {
     BaseCredentialGenerateRequest requestBody = objectMapper.readValue(requestString, BaseCredentialGenerateRequest.class);
     requestBody.validate();
-
+    this.log(requestBody);
     return generateHandler.handle(requestBody, auditRecordParameters);
   }
 
@@ -76,6 +82,15 @@ public class LegacyGenerationHandler {
     CredentialRegenerateRequest requestBody = objectMapper.readValue(requestString, CredentialRegenerateRequest.class);
     requestBody.validate();
     return regenerateHandler.handleRegenerate(requestBody.getName(), auditRecordParameters);
+  }
+
+  private void log(BaseCredentialRequest request){
+    GenerateCredential createCredential = new GenerateCredential();
+    createCredential.setName(request.getName());
+    createCredential.setMode(request.getMode());
+    createCredential.setType(request.getType());
+    createCredential.setAdditionalPermissions(request.getAdditionalPermissions());
+    auditRecord.setRequestDetails(createCredential);
   }
 
 

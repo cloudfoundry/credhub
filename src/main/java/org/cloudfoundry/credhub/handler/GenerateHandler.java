@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.handler;
 
+import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.credential.CredentialValue;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
@@ -18,14 +19,17 @@ public class GenerateHandler {
   private final PermissionedCredentialService credentialService;
   private PermissionService permissionService;
   private final UniversalCredentialGenerator credentialGenerator;
+  private CEFAuditRecord auditRecord;
 
   @Autowired
   public GenerateHandler(
       PermissionedCredentialService credentialService,
-      PermissionService permissionService, UniversalCredentialGenerator credentialGenerator) {
+      PermissionService permissionService, UniversalCredentialGenerator credentialGenerator,
+      CEFAuditRecord auditRecord) {
     this.credentialService = credentialService;
     this.permissionService = permissionService;
     this.credentialGenerator = credentialGenerator;
+    this.auditRecord = auditRecord;
   }
 
   public CredentialView handle(
@@ -42,7 +46,7 @@ public class GenerateHandler {
     if (isNewCredential || generateRequest.isOverwrite()) {
       permissionService.savePermissions(credentialVersion, generateRequest.getAdditionalPermissions(), auditRecordParameters, isNewCredential, generateRequest.getName());
     }
-
+    auditRecord.setCredential(credentialVersion.getCredential());
     return CredentialView.fromEntity(credentialVersion);
   }
 }

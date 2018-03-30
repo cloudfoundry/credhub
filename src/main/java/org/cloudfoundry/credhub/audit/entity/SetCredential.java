@@ -13,11 +13,11 @@ public class SetCredential implements RequestDetails {
   private CredentialWriteMode mode;
   private List<PermissionEntry> additionalPermissions;
 
-  public SetCredential(String credentialName, String credentialType, CredentialWriteMode credentialMode, List<PermissionEntry> credentailAdditionalPermissions) {
+  public SetCredential(String credentialName, String credentialType, CredentialWriteMode credentialMode, List<PermissionEntry> credentialAdditionalPermissions) {
     name = credentialName;
     type = credentialType;
     mode = credentialMode;
-    additionalPermissions = credentailAdditionalPermissions;
+    additionalPermissions = credentialAdditionalPermissions;
   }
 
   public SetCredential(){
