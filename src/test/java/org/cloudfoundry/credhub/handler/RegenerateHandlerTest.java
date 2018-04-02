@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.handler;
 
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
+import org.cloudfoundry.credhub.audit.entity.BulkRegenerateCredential;
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.credential.CredentialValue;
 import org.cloudfoundry.credhub.credential.StringCredentialValue;
@@ -9,6 +10,7 @@ import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.CertificateGenerationParameters;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
+import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
 import org.cloudfoundry.credhub.request.CertificateGenerateRequest;
 import org.cloudfoundry.credhub.request.PasswordGenerateRequest;
@@ -19,15 +21,20 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isOneOf;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
@@ -78,6 +85,36 @@ public class RegenerateHandlerTest {
     subject.handleRegenerate(CREDENTIAL_NAME, auditRecordParameters);
 
     verify(cefAuditRecord, times(1)).setCredential(anyObject());
+  }
+
+  @Test
+  public void handleBulkRegenerate_addsToAuditRecord() throws Exception {
+    String signedBy = "fooCA";
+    List<EventAuditRecordParameters> auditRecordParameters = newArrayList();
+    List<String> certificateCredentials = Arrays.asList("foo", "bar", "baz");
+    CredentialVersion credVersion = new CertificateCredentialVersion();
+    credVersion.setCredential(new Credential("foo"));
+    BulkRegenerateCredential bulkRegenerateCredential = new BulkRegenerateCredential(signedBy);
+
+    when(credentialService.findAllCertificateCredentialsByCaName(signedBy)).thenReturn(certificateCredentials);
+
+    CertificateGenerateRequest request = spy(CertificateGenerateRequest.class);
+    when(credentialService.findMostRecent(argThat(isOneOf("foo", "bar", "baz")))).thenReturn(credVersion);
+    when(generationRequestGenerator.createGenerateRequest(argThat(is(credVersion)),
+        argThat(isOneOf("foo", "bar", "baz")), argThat(is(auditRecordParameters))))
+        .thenReturn(request);
+    when(credentialGenerator.generate(request)).thenReturn(credValue);
+
+    when(credentialService.save(credVersion, credValue, request, auditRecordParameters)).thenReturn(credVersion);
+
+    CertificateGenerationParameters generationParams = mock(CertificateGenerationParameters.class);
+    when(generationParams.isCa()).thenReturn(true);
+    request.setCertificateGenerationParameters(generationParams);
+    when(request.getGenerationParameters()).thenReturn(generationParams);
+
+    subject.handleBulkRegenerate(signedBy, auditRecordParameters);
+    verify(cefAuditRecord, times(1)).setRequestDetails(bulkRegenerateCredential);
+    verify(cefAuditRecord, times(certificateCredentials.size())).addCredential(anyObject());
   }
 
   @Test

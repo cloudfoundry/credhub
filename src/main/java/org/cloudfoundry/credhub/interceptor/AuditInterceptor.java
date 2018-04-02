@@ -47,6 +47,7 @@ public class AuditInterceptor extends HandlerInterceptorAdapter {
 
   @Override
   public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+    auditRecord.initCredentials();
     auditRecord.setHttpRequest(request);
     return true;
   }

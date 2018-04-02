@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.handler;
 
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
+import org.cloudfoundry.credhub.audit.entity.BulkRegenerateCredential;
 import org.cloudfoundry.credhub.credential.CredentialValue;
 import org.cloudfoundry.credhub.domain.CertificateGenerationParameters;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
@@ -58,6 +59,8 @@ public class RegenerateHandler {
       String signerName,
       List<EventAuditRecordParameters> auditRecordParameters
   ) {
+    auditRecord.setRequestDetails(new BulkRegenerateCredential(signerName));
+
     BulkRegenerateResults results = new BulkRegenerateResults();
     TreeSet<String> certificateSet =  new TreeSet(String.CASE_INSENSITIVE_ORDER);
 
@@ -87,6 +90,8 @@ public class RegenerateHandler {
     CredentialVersion existingCredentialVersion = credentialService.findMostRecent(credentialName);
     CertificateGenerateRequest generateRequest = (CertificateGenerateRequest)generationRequestGenerator.createGenerateRequest(existingCredentialVersion, credentialName, auditRecordParameters);
     CredentialValue newCredentialValue = credentialGenerator.generate(generateRequest);
+
+    auditRecord.addCredential(existingCredentialVersion.getCredential());
 
     CredentialVersion credentialVersion = credentialService.save(
         existingCredentialVersion,

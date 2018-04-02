@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 
@@ -43,6 +45,7 @@ public class CEFAuditRecord {
   private String resourceName, resourceUUID;
   private OperationDeviceAction operation;
   private RequestDetails requestDetails;
+  private List<Credential> credentialList;
 
   @Autowired
   public CEFAuditRecord(RequestUuid requestUuid, VersionProvider versionProvider) {
@@ -56,6 +59,24 @@ public class CEFAuditRecord {
 
   @Override
   public String toString() {
+    if(credentialList == null || credentialList.isEmpty()){
+      return logRecord().toString();
+    }
+
+    StringBuilder builder = new StringBuilder();
+    for(int i = 0; i < credentialList.size(); i++){
+      if(i > 0){
+        builder.append(System.getProperty("line.separator"));
+      }
+      this.resourceName = credentialList.get(i).getName();
+      this.resourceUUID = credentialList.get(i).getUuid().toString();
+      builder.append(logRecord());
+    }
+
+    return builder.toString();
+  }
+
+  private StringBuilder logRecord(){
     StringBuilder builder = new StringBuilder();
     builder.append("CEF:").append(CEF_VERSION).append("|");
     builder.append(DEVICE_VENDOR).append("|");
@@ -86,8 +107,7 @@ public class CEFAuditRecord {
       builder.append("cs6Label=").append(CS6_LABEL).append(" ");
       builder.append("cs6=").append(requestDetails.toJSON()).append(" ");
     }
-
-    return builder.toString();
+    return builder;
   }
 
   public void setHttpRequest(HttpServletRequest request) {
@@ -230,8 +250,21 @@ public class CEFAuditRecord {
     if(credential == null || credential.getUuid() == null){
       return;
     }
+
     this.resourceName = credential.getName();
     this.resourceUUID = credential.getUuid().toString();
+  }
+
+  public void addCredential(Credential credential) {
+    if(credentialList == null){
+      credentialList = new ArrayList<>();
+    }
+
+    this.credentialList.add(credential);
+  }
+
+  public void initCredentials(){
+    this.credentialList = new ArrayList<>();
   }
 }
 
