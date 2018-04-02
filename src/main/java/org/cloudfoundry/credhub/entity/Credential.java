@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.entity;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.util.UUID;
@@ -21,8 +22,11 @@ public class Credential {
   @GenericGenerator(name = "uuid2", strategy = "uuid2")
   private UUID uuid;
 
-  @Column(unique = true, nullable = false)
+  @Column(nullable = false)
   private String name;
+
+  @Column(unique = true, nullable = false)
+  private String checksum;
 
   // Needed for hibernate
   @SuppressWarnings("unused")
@@ -48,6 +52,14 @@ public class Credential {
 
   public void setName(String name) {
     this.name = name;
+    if(name != null) {
+      setChecksum(DigestUtils.sha256Hex(name));
+    }
   }
 
+  public String getChecksum() { return checksum; }
+
+  public void setChecksum(String checksum) {
+    this.checksum = checksum;
+  }
 }

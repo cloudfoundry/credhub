@@ -1,0 +1,1 @@
+ALTER TABLE credential ADD checksum VARCHAR(100) UNIQUE;
