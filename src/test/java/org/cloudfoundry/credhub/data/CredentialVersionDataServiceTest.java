@@ -1,6 +1,7 @@
 package org.cloudfoundry.credhub.data;
 
 import org.cloudfoundry.credhub.CredentialManagerApp;
+import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.domain.Encryptor;
@@ -46,6 +47,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.junit.Assert.assertNotNull;
@@ -76,6 +78,9 @@ public class CredentialVersionDataServiceTest {
 
   @Autowired
   CredentialVersionDataService subject;
+
+  @Autowired
+  CEFAuditRecord cefAuditRecord;
 
   @Autowired
   Encryptor encryptor;
@@ -303,6 +308,15 @@ public class CredentialVersionDataServiceTest {
 
     assertThat(passwordCredential.getName(), equalTo("/my-CREDENTIAL"));
     assertThat(passwordCredential2.getEncryptedValueData().getEncryptedValue(), equalTo("/my-new-password".getBytes()));
+  }
+
+  @Test
+  public void findMostRecent_addsToAuditRecord(){
+    setupTestFixtureForFindMostRecent();
+    PasswordCredentialVersion passwordCredential = (PasswordCredentialVersion) subject.findMostRecent("/my-credential");
+
+    assertThat(cefAuditRecord.getResourceName(), is(passwordCredential.getCredential().getName()));
+    assertThat(cefAuditRecord.getResourceUUID(), is(passwordCredential.getCredential().getUuid().toString()));
   }
 
   @Test

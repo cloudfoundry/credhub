@@ -1,11 +1,13 @@
 package org.cloudfoundry.credhub.controller.v1;
 
+import org.apache.commons.lang3.StringUtils;
+import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.EventAuditLogService;
 import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
+import org.cloudfoundry.credhub.audit.entity.GetPermissions;
 import org.cloudfoundry.credhub.handler.PermissionsHandler;
 import org.cloudfoundry.credhub.request.PermissionsRequest;
 import org.cloudfoundry.credhub.view.PermissionsView;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -27,19 +29,24 @@ public class PermissionsController {
 
   private final PermissionsHandler permissionsHandler;
   private final EventAuditLogService eventAuditLogService;
+  private CEFAuditRecord auditRecord;
 
   @Autowired
   public PermissionsController(
       PermissionsHandler permissionsHandler,
-      EventAuditLogService eventAuditLogService) {
+      EventAuditLogService eventAuditLogService,
+      CEFAuditRecord auditRecord) {
     this.permissionsHandler = permissionsHandler;
     this.eventAuditLogService = eventAuditLogService;
+    this.auditRecord = auditRecord;
   }
 
   @GetMapping
   @ResponseStatus(HttpStatus.OK)
   public PermissionsView getAccessControlList(@RequestParam("credential_name") String credentialName) throws Exception {
     String credentialNameWithLeadingSlash = StringUtils.prependIfMissing(credentialName, "/");
+    auditRecord.setRequestDetails(new GetPermissions(credentialName));
+
     return eventAuditLogService
         .auditEvents(auditRecordParameters -> {
           return permissionsHandler
