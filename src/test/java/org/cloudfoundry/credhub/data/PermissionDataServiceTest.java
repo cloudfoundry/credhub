@@ -1,12 +1,13 @@
 package org.cloudfoundry.credhub.data;
 
+import org.apache.commons.lang3.StringUtils;
 import org.cloudfoundry.credhub.CredentialManagerApp;
+import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.entity.ValueCredentialVersionData;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
-import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,14 +21,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Collections.singletonList;
+import static junit.framework.TestCase.assertFalse;
 import static org.cloudfoundry.credhub.request.PermissionOperation.DELETE;
 import static org.cloudfoundry.credhub.request.PermissionOperation.READ;
 import static org.cloudfoundry.credhub.request.PermissionOperation.READ_ACL;
 import static org.cloudfoundry.credhub.request.PermissionOperation.WRITE;
 import static org.cloudfoundry.credhub.request.PermissionOperation.WRITE_ACL;
-import static java.util.Collections.singletonList;
-import static junit.framework.TestCase.assertFalse;
-import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -61,6 +61,9 @@ public class PermissionDataServiceTest {
 
   @Autowired
   private CredentialDataService credentialDataService;
+
+  @Autowired
+  private CEFAuditRecord auditRecord;
 
   private List<PermissionEntry> aces;
   private Credential credential;
@@ -99,6 +102,8 @@ public class PermissionDataServiceTest {
   public void getAllowedOperations_whenTheCredentialExists_andTheActorHasNoPermissions_returnsEmptyList() {
     assertThat(subject.getAllowedOperations(CREDENTIAL_NAME, DARTH).size(), equalTo(0));
   }
+
+
 
   @Test
   public void getAllowedOperations_whenTheCredentialDoesNotExist_returnsEmptyList() {
@@ -180,6 +185,12 @@ public class PermissionDataServiceTest {
   public void deleteAccessControlEntry_whenNonExistentAce_returnsFalse() {
     boolean deleted = subject.deletePermissions(CREDENTIAL_NAME, DARTH);
     assertFalse(deleted);
+  }
+
+  @Test
+  public void deletePermissions_addsToAuditRecord(){
+    subject.deletePermissions(CREDENTIAL_NAME, LUKE);
+    assertThat(auditRecord.getResourceName(), is(CREDENTIAL_NAME));
   }
 
   @Test

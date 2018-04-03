@@ -5,6 +5,7 @@ import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.EventAuditLogService;
 import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.audit.entity.AddPermission;
+import org.cloudfoundry.credhub.audit.entity.DeletePermissions;
 import org.cloudfoundry.credhub.audit.entity.GetPermissions;
 import org.cloudfoundry.credhub.handler.PermissionsHandler;
 import org.cloudfoundry.credhub.request.PermissionsRequest;
@@ -75,6 +76,9 @@ public class PermissionsController {
       @RequestParam("actor") String actor
   ) {
     String credentialNameWithPrependedSlash = StringUtils.prependIfMissing(credentialName, "/");
+
+    DeletePermissions deletePermissions = new DeletePermissions(credentialName, actor);
+    auditRecord.setRequestDetails(deletePermissions);
 
     eventAuditLogService.auditEvents(
         (List<EventAuditRecordParameters> auditRecordParameters) -> {
