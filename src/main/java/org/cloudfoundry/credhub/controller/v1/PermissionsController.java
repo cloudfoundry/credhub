@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.EventAuditLogService;
 import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
+import org.cloudfoundry.credhub.audit.entity.AddPermission;
 import org.cloudfoundry.credhub.audit.entity.GetPermissions;
 import org.cloudfoundry.credhub.handler.PermissionsHandler;
 import org.cloudfoundry.credhub.request.PermissionsRequest;
@@ -57,6 +58,10 @@ public class PermissionsController {
   @PostMapping(consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ResponseStatus(HttpStatus.CREATED)
   public void setAccessControlEntries(@Validated @RequestBody PermissionsRequest accessEntriesRequest) {
+
+    AddPermission addPermission = new AddPermission(accessEntriesRequest.getCredentialName(), accessEntriesRequest.getPermissions());
+    auditRecord.setRequestDetails(addPermission);
+
     eventAuditLogService.auditEvents(auditRecordParameters -> {
       permissionsHandler.setPermissions(accessEntriesRequest, auditRecordParameters);
       return null;
