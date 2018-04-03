@@ -7,7 +7,9 @@ import org.apache.logging.log4j.Logger;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.EventAuditLogService;
 import org.cloudfoundry.credhub.exceptions.AuditSaveFailureException;
+import org.cloudfoundry.credhub.audit.entity.DeleteCredential;
 import org.cloudfoundry.credhub.audit.entity.GetCredential;
+import org.cloudfoundry.credhub.audit.entity.RequestDetails;
 import org.cloudfoundry.credhub.audit.entity.SetCredential;
 import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
@@ -113,6 +115,9 @@ public class CredentialsController {
     }
 
     String credentialNameWithPrependedSlash = StringUtils.prependIfMissing(credentialName, "/");
+
+    RequestDetails requestDetails = new DeleteCredential(credentialNameWithPrependedSlash);
+    auditRecord.setRequestDetails(requestDetails);
 
     eventAuditLogService.auditEvents((eventAuditRecordParametersList) -> {
       credentialsHandler.deleteCredential(credentialNameWithPrependedSlash, eventAuditRecordParametersList);

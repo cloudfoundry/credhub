@@ -39,6 +39,7 @@ public class CredentialDataService {
   }
 
   public boolean delete(String credentialName) {
+    this.find(credentialName);
     return credentialRepository.deleteByNameIgnoreCase(credentialName) > 0;
   }
 
