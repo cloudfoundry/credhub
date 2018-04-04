@@ -246,6 +246,10 @@ public class CEFAuditRecord {
     this.extension = extension;
   }
 
+  public List<Credential> getCredentialList() {
+    return credentialList;
+  }
+
   public void setCredential(Credential credential) {
     if(credential == null || credential.getUuid() == null){
       return;

@@ -320,6 +320,18 @@ public class CredentialVersionDataServiceTest {
   }
 
   @Test
+  public void findNByName_addsToAuditRecord(){
+    setupTestFixtureForFindMostRecent();
+    PasswordCredentialVersion passwordCredential = (PasswordCredentialVersion) subject.findNByName("/my-credential", 1).get(0);
+    List<Credential> credentialList = cefAuditRecord.getCredentialList();
+    String name = credentialList.get(0).getName();
+    String uuid = credentialList.get(0).getUuid().toString();
+
+    assertThat(name, is(passwordCredential.getCredential().getName()));
+    assertThat(uuid, is(passwordCredential.getCredential().getUuid().toString()));
+  }
+
+  @Test
   public void findByUuid_givenAUuid_findsTheCredential() {
     PasswordCredentialVersionData passwordCredentialData = new PasswordCredentialVersionData("/my-credential");
     passwordCredentialData.setEncryptedValueData(new EncryptedValue()
@@ -663,7 +675,6 @@ public class CredentialVersionDataServiceTest {
     subject.save(namedPasswordCredential1);
     fakeTimeSetter.accept(345346L); // 1 second later
     subject.save(passwordCredential2);
-
   }
 
   private void setupTestFixturesForFindContainingName(String valueName,
