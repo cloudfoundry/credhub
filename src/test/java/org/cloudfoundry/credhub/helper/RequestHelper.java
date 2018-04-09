@@ -46,10 +46,19 @@ public class RequestHelper {
         .contentType(APPLICATION_JSON)
         .content(content);
 
-    String response = mockMvc.perform(put)
-        .andExpect(status().isOk())
-        .andDo(print())
-        .andReturn().getResponse().getContentAsString();
+    String response;
+    if(credentialName.length() <= 1024) {
+      response = mockMvc.perform(put)
+          .andExpect(status().isOk())
+          .andDo(print())
+          .andReturn().getResponse().getContentAsString();
+    }else{
+      response = mockMvc.perform(put)
+          .andExpect(status().isBadRequest())
+          .andDo(print())
+          .andReturn().getResponse().getContentAsString();
+    }
+
     return response;
   }
 
@@ -73,9 +82,16 @@ public class RequestHelper {
         .contentType(APPLICATION_JSON)
         .content(content);
 
-    String response = mockMvc.perform(post)
-        .andExpect(status().isOk())
-        .andReturn().getResponse().getContentAsString();
+    String response;
+    if(credentialName.length() <= 1024) {
+      response = mockMvc.perform(post)
+          .andExpect(status().isOk())
+          .andReturn().getResponse().getContentAsString();
+    }else{
+      response = mockMvc.perform(post)
+          .andExpect(status().isBadRequest())
+          .andReturn().getResponse().getContentAsString();
+    }
     return response;
   }
 

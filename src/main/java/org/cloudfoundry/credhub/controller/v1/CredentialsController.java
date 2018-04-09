@@ -5,7 +5,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.cloudfoundry.credhub.audit.EventAuditLogService;
+import org.cloudfoundry.credhub.exceptions.AuditSaveFailureException;
 import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException;
+import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.handler.CredentialsHandler;
 import org.cloudfoundry.credhub.handler.LegacyGenerationHandler;
 import org.cloudfoundry.credhub.handler.SetHandler;
@@ -19,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -80,6 +83,10 @@ public class CredentialsController {
   @ResponseStatus(HttpStatus.OK)
   public CredentialView set(@RequestBody BaseCredentialSetRequest requestBody) {
     requestBody.validate();
+
+    if(requestBody.getName() != null && requestBody.getName().length() > 1024){
+      throw new ParameterizedValidationException("error.name_has_too_many_characters");
+    }
 
     try {
       return auditedHandlePutRequest(requestBody);

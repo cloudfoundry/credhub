@@ -150,7 +150,6 @@ public class CredentialSetTest {
     assertThat(CREDENTIAL_NAME_1024_CHARACTERS.length(), is(equalTo(1024)));
 
     String setResponse = setPassword(mockMvc, CREDENTIAL_NAME_1024_CHARACTERS, "foobar", CredentialWriteMode.NO_OVERWRITE.mode);
-    System.out.println("setResponse:" + setResponse);
     String setPassword = (new JSONObject(setResponse)).getString("value");
 
     assertThat(setPassword, equalTo("foobar"));
@@ -158,5 +157,14 @@ public class CredentialSetTest {
     String getResponse = generatePassword(mockMvc, CREDENTIAL_NAME_1024_CHARACTERS, "overwrite", 14);
     String getPassword = (new JSONObject(getResponse)).getString("value");
     assertThat(getPassword.length(), equalTo(14));
+  }
+
+  @Test
+  public void credetialNamesThatExceedTheMaximumLengthShouldResultInA400() throws Exception{
+    String name1025 = CREDENTIAL_NAME_1024_CHARACTERS + "a";
+    assertThat(name1025.length(), is(equalTo(1025)));
+
+    setPassword(mockMvc, name1025, "foobar", CredentialWriteMode.NO_OVERWRITE.mode);
+    generatePassword(mockMvc, name1025, "foobar", 10);
   }
 }
