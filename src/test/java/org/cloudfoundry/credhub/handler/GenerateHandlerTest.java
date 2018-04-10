@@ -20,6 +20,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
 
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.mock;
@@ -92,6 +93,6 @@ public class GenerateHandlerTest {
     generateRequest.setOverwrite(false);
 
     subject.handle(generateRequest, eventAuditRecordParameters);
-    verify(cefAuditRecord, times(1)).setCredential(anyObject());
+    verify(cefAuditRecord, times(1)).setResource(any(CredentialVersion.class));
   }
 }

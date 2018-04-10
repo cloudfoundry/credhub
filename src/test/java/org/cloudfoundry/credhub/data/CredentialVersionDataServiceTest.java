@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.data;
 
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
+import org.cloudfoundry.credhub.audit.entity.Resource;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.domain.Encryptor;
@@ -323,9 +324,9 @@ public class CredentialVersionDataServiceTest {
   public void findNByName_addsToAuditRecord(){
     setupTestFixtureForFindMostRecent();
     PasswordCredentialVersion passwordCredential = (PasswordCredentialVersion) subject.findNByName("/my-credential", 1).get(0);
-    List<Credential> credentialList = cefAuditRecord.getCredentialList();
-    String name = credentialList.get(0).getName();
-    String uuid = credentialList.get(0).getUuid().toString();
+    List<Resource> credentialList = cefAuditRecord.getResourceList();
+    String name = credentialList.get(0).getResourceName();
+    String uuid = credentialList.get(0).getResourceId().toString();
 
     assertThat(name, is(passwordCredential.getCredential().getName()));
     assertThat(uuid, is(passwordCredential.getCredential().getUuid().toString()));

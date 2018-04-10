@@ -75,7 +75,7 @@ public class SetHandler {
     if (isNewCredential || setRequest.isOverwrite()) {
       permissionService.savePermissions(credentialVersion, setRequest.getAdditionalPermissions(), auditRecordParameters, isNewCredential, setRequest.getName());
     }
-    auditRecord.setCredential(credentialVersion.getCredential());
+    auditRecord.setResource(credentialVersion);
     return CredentialView.fromEntity(credentialVersion);
   }
 }

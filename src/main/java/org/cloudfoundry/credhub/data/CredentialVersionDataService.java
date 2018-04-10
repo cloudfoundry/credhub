@@ -143,7 +143,7 @@ public class CredentialVersionDataService {
 
   public List<CredentialVersion> findNByName(String name, int numberOfVersions) {
     Credential credential = credentialDataService.find(name);
-    auditRecord.addCredential(credential);
+    auditRecord.addResource(credential);
 
     if (credential != null) {
       List<CredentialVersionData> credentialVersionData = credentialVersionRepository

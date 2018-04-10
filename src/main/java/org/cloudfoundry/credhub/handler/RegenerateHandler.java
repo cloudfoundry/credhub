@@ -51,7 +51,7 @@ public class RegenerateHandler {
         auditRecordParameters
     );
 
-    auditRecord.setCredential(credentialVersion.getCredential());
+    auditRecord.setResource(credentialVersion);
     return CredentialView.fromEntity(credentialVersion);
   }
 
@@ -91,7 +91,7 @@ public class RegenerateHandler {
     CertificateGenerateRequest generateRequest = (CertificateGenerateRequest)generationRequestGenerator.createGenerateRequest(existingCredentialVersion, credentialName, auditRecordParameters);
     CredentialValue newCredentialValue = credentialGenerator.generate(generateRequest);
 
-    auditRecord.addCredential(existingCredentialVersion.getCredential());
+    auditRecord.addResource(existingCredentialVersion);
 
     CredentialVersion credentialVersion = credentialService.save(
         existingCredentialVersion,

@@ -84,7 +84,7 @@ public class RegenerateHandlerTest {
 
     subject.handleRegenerate(CREDENTIAL_NAME, auditRecordParameters);
 
-    verify(cefAuditRecord, times(1)).setCredential(anyObject());
+    verify(cefAuditRecord, times(1)).setResource(any(CredentialVersion.class));
   }
 
   @Test
@@ -114,7 +114,7 @@ public class RegenerateHandlerTest {
 
     subject.handleBulkRegenerate(signedBy, auditRecordParameters);
     verify(cefAuditRecord, times(1)).setRequestDetails(bulkRegenerateCredential);
-    verify(cefAuditRecord, times(certificateCredentials.size())).addCredential(anyObject());
+    verify(cefAuditRecord, times(certificateCredentials.size())).addResource(any(CredentialVersion.class));
   }
 
   @Test

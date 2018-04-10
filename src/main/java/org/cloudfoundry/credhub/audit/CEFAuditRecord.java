@@ -2,7 +2,9 @@ package org.cloudfoundry.credhub.audit;
 
 import org.apache.commons.lang3.StringUtils;
 import org.cloudfoundry.credhub.audit.entity.RequestDetails;
+import org.cloudfoundry.credhub.audit.entity.Resource;
 import org.cloudfoundry.credhub.config.VersionProvider;
+import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -45,7 +47,7 @@ public class CEFAuditRecord {
   private String resourceName, resourceUUID;
   private OperationDeviceAction operation;
   private RequestDetails requestDetails;
-  private List<Credential> credentialList;
+  private List<Resource> resourceList;
 
   @Autowired
   public CEFAuditRecord(RequestUuid requestUuid, VersionProvider versionProvider) {
@@ -59,17 +61,17 @@ public class CEFAuditRecord {
 
   @Override
   public String toString() {
-    if(credentialList == null || credentialList.isEmpty()){
+    if(resourceList == null || resourceList.isEmpty()){
       return logRecord().toString();
     }
 
     StringBuilder builder = new StringBuilder();
-    for(int i = 0; i < credentialList.size(); i++){
+    for(int i = 0; i < resourceList.size(); i++){
       if(i > 0){
         builder.append(System.getProperty("line.separator"));
       }
-      this.resourceName = credentialList.get(i).getName();
-      this.resourceUUID = credentialList.get(i).getUuid().toString();
+      this.resourceName = resourceList.get(i).getResourceName();
+      this.resourceUUID = resourceList.get(i).getResourceId().toString();
       builder.append(logRecord());
     }
 
@@ -246,11 +248,11 @@ public class CEFAuditRecord {
     this.extension = extension;
   }
 
-  public List<Credential> getCredentialList() {
-    return credentialList;
+  public List<Resource> getResourceList() {
+    return resourceList;
   }
 
-  public void setCredential(Credential credential) {
+  public void setResource(Credential credential) {
     if(credential == null || credential.getUuid() == null){
       return;
     }
@@ -259,16 +261,38 @@ public class CEFAuditRecord {
     this.resourceUUID = credential.getUuid().toString();
   }
 
-  public void addCredential(Credential credential) {
-    if(credentialList == null){
-      credentialList = new ArrayList<>();
+  public void setResource(CredentialVersion credentialVersion) {
+    if(credentialVersion == null || credentialVersion.getUuid() == null){
+      return;
     }
 
-    this.credentialList.add(credential);
+    this.resourceName = credentialVersion.getName();
+    this.resourceUUID = credentialVersion.getUuid().toString();
+  }
+
+  public void addResource(Credential credential) {
+    if(resourceList == null){
+      resourceList = new ArrayList<>();
+    }
+
+    if(credential != null) {
+      this.resourceList.add(new Resource(credential.getName(), credential.getUuid().toString()));
+    }
+  }
+
+  public void addResource(CredentialVersion credentialVersion) {
+    if(resourceList == null){
+      resourceList = new ArrayList<>();
+    }
+
+    if(credentialVersion != null) {
+      this.resourceList.add(new Resource(credentialVersion.getName(),
+          credentialVersion.getUuid().toString()));
+    }
   }
 
   public void initCredentials(){
-    this.credentialList = new ArrayList<>();
+    this.resourceList = new ArrayList<>();
   }
 }
 

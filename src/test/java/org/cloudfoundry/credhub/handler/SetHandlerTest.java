@@ -82,6 +82,8 @@ public class SetHandlerTest {
     cred.setUuid(uuid);
 
     when(credentialVersion.getCredential()).thenReturn(cred);
+    when(credentialVersion.getName()).thenReturn(cred.getName());
+    when(credentialVersion.getUuid()).thenReturn(cred.getUuid());
     when(credentialService.save(anyObject(),anyObject(), anyObject(), anyList())).thenReturn(credentialVersion);
   }
 

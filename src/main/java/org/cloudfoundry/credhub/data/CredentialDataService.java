@@ -24,7 +24,7 @@ public class CredentialDataService {
   public Credential find(String name) {
     Credential credential = credentialRepository.findOneByNameIgnoreCase(name);
     if(credential != null) {
-      auditRecord.setCredential(credential);
+      auditRecord.setResource(credential);
     }
     return credential;
   }

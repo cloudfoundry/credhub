@@ -169,7 +169,7 @@ public class PermissionedCredentialService {
     auditRecord.setRequestDetails(new GetCredentialById(credentialUUID));
 
     if(credentialVersion != null) {
-      auditRecord.setCredential(credentialVersion.getCredential());
+      auditRecord.setResource(credentialVersion);
     } else {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
