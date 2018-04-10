@@ -21,6 +21,7 @@ import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -82,6 +83,12 @@ public class ExceptionHandlers {
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ResponseError handleMissingParameterException(MissingServletRequestParameterException e) {
     return constructError("error.missing_query_parameter", e.getParameterName());
+  }
+
+  @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ResponseError handleHttpMediaTypeNotSupportedException(HttpMediaTypeNotSupportedException e) {
+    return constructError("error.invalid_content_type", e.getContentType().toString());
   }
 
   @ExceptionHandler(JsonParseException.class)
