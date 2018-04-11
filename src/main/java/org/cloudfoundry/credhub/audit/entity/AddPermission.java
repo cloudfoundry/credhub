@@ -37,6 +37,6 @@ public class AddPermission implements RequestDetails {
 
   @Override
   public OperationDeviceAction operation() {
-    return OperationDeviceAction.ADD_PERMISSION;
+    return OperationDeviceAction.ADD_PERMISSIONS;
   }
 }

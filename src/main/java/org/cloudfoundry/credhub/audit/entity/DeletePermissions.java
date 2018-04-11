@@ -34,6 +34,6 @@ public class DeletePermissions implements RequestDetails {
 
   @Override
   public OperationDeviceAction operation() {
-    return OperationDeviceAction.DELETE_PERMISSION;
+    return OperationDeviceAction.DELETE_PERMISSIONS;
   }
 }
