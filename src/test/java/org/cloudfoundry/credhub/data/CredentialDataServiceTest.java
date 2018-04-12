@@ -86,17 +86,6 @@ public class CredentialDataServiceTest {
   }
 
   @Test
-  public void find_AddsTheCredentialNameToTheAuditRecord() {
-    final Credential credential = new Credential(CREDENTIAL_NAME.toLowerCase());
-    credentialRepository.save(credential);
-
-    subject.find(CREDENTIAL_NAME);
-
-    assertThat(auditRecord.getResourceName(), equalTo(CREDENTIAL_NAME));
-    assertThat(auditRecord.getResourceUUID(), equalTo(credential.getUuid().toString()));
-  }
-
-  @Test
   public void findByUUID_whenTheCredentialExists_returnsTheCredential() {
     final Credential credential = new Credential(CREDENTIAL_NAME);
     credentialRepository.save(credential);

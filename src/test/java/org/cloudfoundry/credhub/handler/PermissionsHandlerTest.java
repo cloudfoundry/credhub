@@ -1,6 +1,7 @@
 package org.cloudfoundry.credhub.handler;
 
 import com.google.common.collect.Lists;
+import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.data.CredentialDataService;
@@ -53,6 +54,7 @@ public class PermissionsHandlerTest {
   private PermissionCheckingService permissionCheckingService;
   private CredentialDataService credentialDataService;
   private PermissionedCredentialService permissionedCredentialService;
+  private CEFAuditRecord auditRecord;
 
   private final Credential credential = new Credential(CREDENTIAL_NAME);
   private final CredentialVersion credentialVersion = new PasswordCredentialVersion(new PasswordCredentialVersionData(CREDENTIAL_NAME));
@@ -66,9 +68,10 @@ public class PermissionsHandlerTest {
     permissionCheckingService = mock(PermissionCheckingService.class);
     credentialDataService = mock(CredentialDataService.class);
     permissionedCredentialService = mock(PermissionedCredentialService.class);
+    auditRecord = mock(CEFAuditRecord.class);
     subject = new PermissionsHandler(
         permissionService,
-        permissionedCredentialService);
+        permissionedCredentialService, auditRecord);
 
     permissionsRequest = mock(PermissionsRequest.class);
     auditRecordParameters = new ArrayList<>();

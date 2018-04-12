@@ -23,9 +23,6 @@ public class CredentialDataService {
 
   public Credential find(String name) {
     Credential credential = credentialRepository.findOneByNameIgnoreCase(name);
-    if(credential != null) {
-      auditRecord.setResource(credential);
-    }
     return credential;
   }
 
@@ -39,7 +36,8 @@ public class CredentialDataService {
   }
 
   public boolean delete(String credentialName) {
-    this.find(credentialName);
+    Credential cred = this.find(credentialName);
+    auditRecord.setResource(cred);
     return credentialRepository.deleteByNameIgnoreCase(credentialName) > 0;
   }
 

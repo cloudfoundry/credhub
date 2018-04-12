@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.data;
 
+import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.entity.PermissionData;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.repository.PermissionRepository;
@@ -19,14 +20,17 @@ public class PermissionDataService {
 
   private PermissionRepository permissionRepository;
   private final CredentialDataService credentialDataService;
+  private CEFAuditRecord auditRecord;
 
   @Autowired
   public PermissionDataService(
       PermissionRepository permissionRepository,
-      CredentialDataService credentialDataService
+      CredentialDataService credentialDataService,
+      CEFAuditRecord auditRecord
   ) {
     this.permissionRepository = permissionRepository;
     this.credentialDataService = credentialDataService;
+    this.auditRecord = auditRecord;
   }
 
   public List<PermissionEntry> getPermissions(Credential credential) {
@@ -75,6 +79,7 @@ public class PermissionDataService {
 
   public boolean deletePermissions(String name, String actor) {
     Credential credential = credentialDataService.find(name);
+    auditRecord.setResource(credential);
     return permissionRepository.deleteByCredentialAndActor(credential, actor) > 0;
   }
 

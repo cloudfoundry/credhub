@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.handler;
 
+import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.domain.JsonCredentialVersion;
@@ -17,10 +18,12 @@ import java.util.Map;
 public class InterpolationHandler {
 
   private PermissionedCredentialService credentialService;
+  private CEFAuditRecord auditRecord;
 
   @Autowired
-  public InterpolationHandler(PermissionedCredentialService credentialService) {
+  public InterpolationHandler(PermissionedCredentialService credentialService, CEFAuditRecord auditRecord) {
     this.credentialService = credentialService;
+    this.auditRecord = auditRecord;
   }
 
   public Map<String, Object> interpolateCredHubReferences(
@@ -60,6 +63,8 @@ public class InterpolationHandler {
         }
 
         CredentialVersion credentialVersion = credentialVersions.get(0);
+
+        auditRecord.addResource(credentialVersion.getCredential());
 
         if (credentialVersion instanceof JsonCredentialVersion) {
           propertiesMap.put("credentials", ((JsonCredentialVersion) credentialVersion).getValue());

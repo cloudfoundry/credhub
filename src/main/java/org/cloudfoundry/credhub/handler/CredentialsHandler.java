@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.handler;
 
+import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
@@ -14,10 +15,12 @@ import java.util.List;
 @Component
 public class CredentialsHandler {
   private final PermissionedCredentialService credentialService;
+  private final CEFAuditRecord auditRecord;
 
   @Autowired
-  public CredentialsHandler(PermissionedCredentialService credentialService) {
+  public CredentialsHandler(PermissionedCredentialService credentialService, CEFAuditRecord auditRecord) {
     this.credentialService = credentialService;
+    this.auditRecord = auditRecord;
   }
 
   public void deleteCredential(String credentialName, List<EventAuditRecordParameters> eventAuditRecordParametersList) {
@@ -37,6 +40,10 @@ public class CredentialsHandler {
       credentialVersions = credentialService.findAllByName(credentialName, auditRecordParametersList);
     } else {
       credentialVersions = credentialService.findNByName(credentialName, numberOfVersions, auditRecordParametersList);
+
+      for (CredentialVersion credentialVersion :  credentialVersions) {
+      auditRecord.addResource(credentialVersion);
+      }
     }
 
     if (credentialVersions.isEmpty()) {

@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.handler;
 
+import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
@@ -43,6 +44,7 @@ public class CredentialsHandlerTest {
 
   private CredentialsHandler subject;
   private PermissionedCredentialService permissionedCredentialService;
+  private CEFAuditRecord auditRecord;
   private PermissionCheckingService permissionCheckingService;
 
   private UserContext userContext;
@@ -55,8 +57,9 @@ public class CredentialsHandlerTest {
     Encryptor encryptor = mock(Encryptor.class);
 
     permissionedCredentialService = mock(PermissionedCredentialService.class);
+    auditRecord = mock(CEFAuditRecord.class);
     permissionCheckingService = mock(PermissionCheckingService.class);
-    subject = new CredentialsHandler(permissionedCredentialService);
+    subject = new CredentialsHandler(permissionedCredentialService, auditRecord);
 
     userContext = mock(UserContext.class);
     when(userContext.getActor()).thenReturn(USER);

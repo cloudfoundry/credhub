@@ -107,7 +107,13 @@ public class PermissionedCredentialService {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
-    return credentialVersionDataService.findAllByName(credentialName);
+    List<CredentialVersion> credentialList = credentialVersionDataService.findAllByName(credentialName);
+
+    for (CredentialVersion credentialVersion :  credentialList) {
+      auditRecord.addResource(credentialVersion);
+    }
+
+    return credentialList;
   }
 
   public List<CredentialVersion> findNByName(String credentialName, Integer numberOfVersions,
@@ -134,8 +140,13 @@ public class PermissionedCredentialService {
         .hasPermission(userContextHolder.getUserContext().getActor(), credentialName, READ)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
+    List<CredentialVersion> credentialList = credentialVersionDataService.findActiveByName(credentialName);
 
-    return credentialVersionDataService.findActiveByName(credentialName);
+    for (CredentialVersion credentialVersion :  credentialList) {
+      auditRecord.addResource(credentialVersion);
+    }
+
+    return credentialList;
   }
 
   public Credential findByUuid(UUID credentialUUID, List<EventAuditRecordParameters> auditRecordParameters) {

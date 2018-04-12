@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.service;
 
+import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.domain.JsonCredentialVersion;
@@ -35,13 +36,15 @@ public class InterpolationHandlerTest {
   private List<EventAuditRecordParameters> eventAuditRecordParameters;
   private PermissionedCredentialService credentialService;
   private UserContext userContext;
+  private CEFAuditRecord auditRecord;
 
   @Before
   public void beforeEach() {
     credentialService = mock(PermissionedCredentialService.class);
     userContext = mock(UserContext.class);
+    auditRecord = mock(CEFAuditRecord.class);
 
-    subject = new InterpolationHandler(credentialService);
+    subject = new InterpolationHandler(credentialService, auditRecord);
     eventAuditRecordParameters = new ArrayList<>();
   }
 
