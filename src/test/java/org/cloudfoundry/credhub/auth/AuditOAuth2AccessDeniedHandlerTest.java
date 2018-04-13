@@ -119,6 +119,6 @@ public class AuditOAuth2AccessDeniedHandlerTest {
 
     response
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-        .andExpect(jsonPath("$.error").value(expectedError));
+        .andExpect(jsonPath("$.error_description").value(expectedError));
   }
 }

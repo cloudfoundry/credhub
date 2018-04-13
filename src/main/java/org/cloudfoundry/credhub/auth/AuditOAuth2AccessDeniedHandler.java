@@ -43,8 +43,7 @@ public class AuditOAuth2AccessDeniedHandler extends OAuth2AccessDeniedHandler {
       UserContextFactory userContextFactory,
       WebResponseExceptionTranslator exceptionTranslator,
       AuditLogFactory auditLogFactory,
-      MessageSourceAccessor messageSourceAccessor,
-      OAuthExceptionRenderer exceptionRenderer
+      MessageSourceAccessor messageSourceAccessor
   ) {
     this.userContextFactory = userContextFactory;
     this.tokenStore = tokenStore;
@@ -53,7 +52,6 @@ public class AuditOAuth2AccessDeniedHandler extends OAuth2AccessDeniedHandler {
     this.exceptionTranslator = exceptionTranslator;
     this.auditLogFactory = auditLogFactory;
     this.messageSourceAccessor = messageSourceAccessor;
-    this.setExceptionRenderer(exceptionRenderer);
   }
 
   @Override

@@ -43,15 +43,13 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
       CurrentTimeProvider currentTimeProvider,
       AuthFailureAuditRecordDataService authFailureAuditRecordDataService,
       MessageSourceAccessor messageSourceAccessor,
-      AuditLogFactory auditLogFactory,
-      OAuthExceptionRenderer exceptionRenderer
+      AuditLogFactory auditLogFactory
   ) {
     this.currentTimeProvider = currentTimeProvider;
     this.authFailureAuditRecordDataService = authFailureAuditRecordDataService;
     this.auditLogFactory = auditLogFactory;
     this.objectMapper = JsonParserFactory.create();
     this.messageSourceAccessor = messageSourceAccessor;
-    this.setExceptionRenderer(exceptionRenderer);
   }
 
   @Override
