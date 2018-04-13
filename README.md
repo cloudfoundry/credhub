@@ -109,7 +109,7 @@ For convenience, the CredHub team runs a public UAA whose IP is in the default `
 
 In order to run CredHub against a UAA running on your local machine, do the following:
 1. Start a UAA with Docker: `docker run -d --mount type=bind,source=$PWD/config/uaa.yml,target=/uaa/uaa.yml -p 127.0.0.1:8080:8080 pcfseceng/uaa:latest`
-1. Start CredHub server pointing at the local UAA: `./start_server.sh -Dspring.profiles.active=dev,dev-local-uaa`
+1. Start CredHub server pointing at the local UAA: `./start_server.sh -Dspring.profiles.active=dev,dev-h2,dev-local-uaa`
 
 #### Starting the server with different databases
 
