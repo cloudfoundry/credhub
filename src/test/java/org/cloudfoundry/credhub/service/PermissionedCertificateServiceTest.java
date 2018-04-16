@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.service;
 
+import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
@@ -55,7 +56,7 @@ public class PermissionedCertificateServiceTest {
     credentialVersionDataService = mock(CredentialVersionDataService.class);
     subject = new PermissionedCertificateService(permissionedCredentialService, certificateDataService,
         permissionCheckingService, userContextHolder, certificateVersionDataService, certificateCredentialFactory,
-        credentialVersionDataService);
+        credentialVersionDataService, new CEFAuditRecord());
   }
 
   @Test

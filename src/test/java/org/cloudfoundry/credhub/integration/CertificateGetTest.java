@@ -3,6 +3,7 @@ package org.cloudfoundry.credhub.integration;
 
 import com.jayway.jsonpath.JsonPath;
 import org.cloudfoundry.credhub.CredentialManagerApp;
+import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.constants.CredentialWriteMode;
 import org.cloudfoundry.credhub.helper.AuditingHelper;
 import org.cloudfoundry.credhub.helper.RequestHelper;
@@ -62,6 +63,9 @@ public class CertificateGetTest {
 
   @Autowired
   private RequestAuditRecordRepository requestAuditRecordRepository;
+
+  @Autowired
+  private CEFAuditRecord auditRecord;
 
   @Autowired
   private EventAuditRecordRepository eventAuditRecordRepository;

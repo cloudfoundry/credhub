@@ -1,6 +1,7 @@
 package org.cloudfoundry.credhub.handler;
 
 import org.cloudfoundry.credhub.audit.AuditingOperationCode;
+import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
@@ -29,17 +30,20 @@ public class CertificatesHandler {
   private PermissionedCertificateService permissionedCertificateService;
   private UniversalCredentialGenerator credentialGenerator;
   private GenerationRequestGenerator generationRequestGenerator;
+  private CEFAuditRecord auditRecord;
   private CertificateService certificateService;
 
   CertificatesHandler(
       PermissionedCertificateService permissionedCertificateService,
       CertificateService certificateService,
       UniversalCredentialGenerator credentialGenerator,
-      GenerationRequestGenerator generationRequestGenerator) {
+      GenerationRequestGenerator generationRequestGenerator,
+      CEFAuditRecord auditRecord) {
     this.permissionedCertificateService = permissionedCertificateService;
     this.certificateService = certificateService;
     this.credentialGenerator = credentialGenerator;
     this.generationRequestGenerator = generationRequestGenerator;
+    this.auditRecord = auditRecord;
   }
 
   public CredentialView handleRegenerate(
@@ -64,6 +68,8 @@ public class CertificatesHandler {
             auditRecordParameters
         );
 
+    auditRecord.setResource(credentialVersion);
+
     return new CertificateView(credentialVersion);
   }
 
@@ -74,6 +80,7 @@ public class CertificatesHandler {
         new CertificateCredentialView(credential.getName(), credential.getUuid())
     ).collect(Collectors.toList());
 
+    auditRecord.addAllCredentials(credentialList);
     return new CertificateCredentialsView(list);
   }
 

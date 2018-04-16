@@ -1,6 +1,7 @@
 package org.cloudfoundry.credhub.service;
 
 import org.cloudfoundry.credhub.audit.AuditingOperationCode;
+import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
@@ -34,6 +35,7 @@ public class PermissionedCertificateService {
   private final CertificateVersionDataService certificateVersionDataService;
   private final CertificateCredentialFactory certificateCredentialFactory;
   private final CredentialVersionDataService credentialVersionDataService;
+  private CEFAuditRecord auditRecord;
 
   @Autowired
   public PermissionedCertificateService(
@@ -41,7 +43,8 @@ public class PermissionedCertificateService {
       PermissionCheckingService permissionCheckingService, UserContextHolder userContextHolder,
       CertificateVersionDataService certificateVersionDataService,
       CertificateCredentialFactory certificateCredentialFactory,
-      CredentialVersionDataService credentialVersionDataService) {
+      CredentialVersionDataService credentialVersionDataService,
+      CEFAuditRecord auditRecord) {
     this.permissionedCredentialService = permissionedCredentialService;
     this.certificateDataService = certificateDataService;
     this.permissionCheckingService = permissionCheckingService;
@@ -49,6 +52,7 @@ public class PermissionedCertificateService {
     this.certificateVersionDataService = certificateVersionDataService;
     this.certificateCredentialFactory = certificateCredentialFactory;
     this.credentialVersionDataService = credentialVersionDataService;
+    this.auditRecord = auditRecord;
   }
 
   public CredentialVersion save(
@@ -147,7 +151,7 @@ public class PermissionedCertificateService {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
-    certificateVersionDataService.unsetTransitionalVerison(certificateUuid);
+    certificateVersionDataService.unsetTransitionalVersion(certificateUuid);
 
     if(newTransitionalVersionUuid != null) {
       CertificateCredentialVersion version = certificateVersionDataService.findVersion(newTransitionalVersionUuid);
@@ -157,7 +161,11 @@ public class PermissionedCertificateService {
       }
       certificateVersionDataService.setTransitionalVersion(newTransitionalVersionUuid);
     }
-    return certificateVersionDataService.findActiveWithTransitional(name);
+
+    List<CredentialVersion> credentialVersions = certificateVersionDataService.findActiveWithTransitional(name);
+    auditRecord.addAllResources(credentialVersions);
+
+    return credentialVersions;
   }
 
   public CertificateCredentialVersion deleteVersion(UUID certificateUuid, UUID versionUuid,

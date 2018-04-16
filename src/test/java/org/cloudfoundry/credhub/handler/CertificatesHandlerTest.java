@@ -1,12 +1,12 @@
 package org.cloudfoundry.credhub.handler;
 
 
+import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
-import org.cloudfoundry.credhub.domain.Encryptor;
 import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
 import org.cloudfoundry.credhub.request.CertificateRegenerateRequest;
 import org.cloudfoundry.credhub.service.CertificateService;
@@ -51,14 +51,13 @@ public class CertificatesHandlerTest {
 
   @Before
   public void beforeEach() {
-    Encryptor encryptor = mock(Encryptor.class);
-
     permissionedCertificateService = mock(PermissionedCertificateService.class);
     permissionCheckingService = mock(PermissionCheckingService.class);
     certificateService = mock(CertificateService.class);
     universalCredentialGenerator = mock(UniversalCredentialGenerator.class);
     generationRequestGenerator = mock(GenerationRequestGenerator.class);
-    subject = new CertificatesHandler(permissionedCertificateService, certificateService, universalCredentialGenerator, generationRequestGenerator);
+    subject = new CertificatesHandler(permissionedCertificateService, certificateService,
+        universalCredentialGenerator, generationRequestGenerator, new CEFAuditRecord());
 
     userContext = mock(UserContext.class);
     when(userContext.getActor()).thenReturn(USER);

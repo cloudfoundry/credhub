@@ -294,6 +294,16 @@ public class CEFAuditRecord {
   public void initCredentials(){
     this.resourceList = new ArrayList<>();
   }
+
+  public void addAllResources(List<CredentialVersion> credentialVersions) {
+    for(CredentialVersion version : credentialVersions){
+      this.addResource(version);
+    }
+  }
+
+  public void addAllCredentials(List<Credential> list) {
+    list.forEach(i -> this.addResource(i));
+  }
 }
 
 
