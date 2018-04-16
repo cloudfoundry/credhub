@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.service.regeneratables;
 
-import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
@@ -8,14 +7,10 @@ import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
 import org.cloudfoundry.credhub.request.PasswordGenerateRequest;
 import org.cloudfoundry.credhub.request.StringGenerationParameters;
 
-import java.util.List;
-
-import static org.cloudfoundry.credhub.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
-
 public class PasswordCredentialRegeneratable implements Regeneratable {
 
   @Override
-  public BaseCredentialGenerateRequest createGenerateRequest(CredentialVersion credentialVersion, List<EventAuditRecordParameters> auditRecordParameters) {
+  public BaseCredentialGenerateRequest createGenerateRequest(CredentialVersion credentialVersion) {
     PasswordCredentialVersion passwordCredential = (PasswordCredentialVersion) credentialVersion;
     PasswordGenerateRequest generateRequest = new PasswordGenerateRequest();
 
@@ -26,7 +21,6 @@ public class PasswordCredentialRegeneratable implements Regeneratable {
     generationParameters = passwordCredential.getGenerationParameters();
 
     if (generationParameters == null) {
-      auditRecordParameters.add(new EventAuditRecordParameters(CREDENTIAL_UPDATE, credentialVersion.getName()));
       throw new ParameterizedValidationException(
           "error.cannot_regenerate_non_generated_password");
     }

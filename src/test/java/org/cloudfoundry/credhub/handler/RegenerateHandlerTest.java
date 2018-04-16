@@ -76,7 +76,7 @@ public class RegenerateHandlerTest {
     List<EventAuditRecordParameters> auditRecordParameters = newArrayList();
     BaseCredentialGenerateRequest request = new PasswordGenerateRequest();
     when(credentialService.findMostRecent(CREDENTIAL_NAME)).thenReturn(credentialVersion);
-    when(generationRequestGenerator.createGenerateRequest(credentialVersion, CREDENTIAL_NAME, auditRecordParameters))
+    when(generationRequestGenerator.createGenerateRequest(credentialVersion))
         .thenReturn(request);
     when(credentialGenerator.generate(request)).thenReturn(credValue);
     when(credentialService.save(anyObject(), anyObject(), anyObject())).thenReturn(credentialVersion);
@@ -99,9 +99,7 @@ public class RegenerateHandlerTest {
 
     CertificateGenerateRequest request = spy(CertificateGenerateRequest.class);
     when(credentialService.findMostRecent(argThat(isOneOf("foo", "bar", "baz")))).thenReturn(credVersion);
-    when(generationRequestGenerator.createGenerateRequest(argThat(is(credVersion)),
-        argThat(isOneOf("foo", "bar", "baz")), argThat(is(auditRecordParameters))))
-        .thenReturn(request);
+    when(generationRequestGenerator.createGenerateRequest(argThat(is(credVersion)))).thenReturn(request);
     when(credentialGenerator.generate(request)).thenReturn(credValue);
 
     when(credentialService.save(credVersion, credValue, request)).thenReturn(credVersion);
@@ -139,7 +137,7 @@ public class RegenerateHandlerTest {
     when(generationParams2.isCa()).thenReturn(false);
     when(generateRequest2.getGenerationParameters()).thenReturn(generationParams2);
 
-    when(generationRequestGenerator.createGenerateRequest(any(CredentialVersion.class), any(String.class), any(List.class)))
+    when(generationRequestGenerator.createGenerateRequest(any(CredentialVersion.class)))
         .thenReturn(generateRequest1)
         .thenReturn(generateRequest2);
 
@@ -186,7 +184,7 @@ public class RegenerateHandlerTest {
     when(generationParams4.isCa()).thenReturn(false);
     when(generateRequest4.getGenerationParameters()).thenReturn(generationParams4);
 
-    when(generationRequestGenerator.createGenerateRequest(any(CredentialVersion.class), any(String.class), any(List.class)))
+    when(generationRequestGenerator.createGenerateRequest(any(CredentialVersion.class)))
         .thenReturn(generateRequest1)
         .thenReturn(generateRequest3)
         .thenReturn(generateRequest4)

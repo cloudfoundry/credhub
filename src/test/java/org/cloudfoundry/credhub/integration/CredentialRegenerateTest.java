@@ -14,9 +14,9 @@ import org.cloudfoundry.credhub.helper.AuditingHelper;
 import org.cloudfoundry.credhub.repository.EventAuditRecordRepository;
 import org.cloudfoundry.credhub.repository.RequestAuditRecordRepository;
 import org.cloudfoundry.credhub.request.StringGenerationParameters;
+import org.cloudfoundry.credhub.util.AuthConstants;
 import org.cloudfoundry.credhub.util.CurrentTimeProvider;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
-import org.cloudfoundry.credhub.util.AuthConstants;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,12 +35,11 @@ import org.springframework.web.context.WebApplicationContext;
 import java.time.Instant;
 import java.util.function.Consumer;
 
-import static org.cloudfoundry.credhub.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
-import static org.cloudfoundry.credhub.helper.RequestHelper.revokePermissions;
 import static org.cloudfoundry.credhub.helper.RequestHelper.expect404WhileRegeneratingCertificate;
 import static org.cloudfoundry.credhub.helper.RequestHelper.generateCa;
 import static org.cloudfoundry.credhub.helper.RequestHelper.generateCertificate;
 import static org.cloudfoundry.credhub.helper.RequestHelper.grantPermissions;
+import static org.cloudfoundry.credhub.helper.RequestHelper.revokePermissions;
 import static org.cloudfoundry.credhub.helper.TestHelper.mockOutCurrentTimeProvider;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -251,7 +250,7 @@ public class CredentialRegenerateTest {
   }
 
   @Test
-  public void regeneratingANonGeneratedPassword_returnsAnError_andPersistsAnAuditEntry() throws Exception {
+  public void regeneratingANonGeneratedPassword_returnsAnError() throws Exception {
     PasswordCredentialVersion originalCredential = new PasswordCredentialVersion("/my-password");
     originalCredential.setEncryptor(encryptor);
     originalCredential.setPasswordAndGenerationParameters("abcde", null);
@@ -271,12 +270,10 @@ public class CredentialRegenerateTest {
 
     mockMvc.perform(request)
         .andExpect(content().json(cannotRegenerateJson));
-
-    auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/my-password", AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 400);
   }
 
   @Test
-  public void regeneratingANonGeneratedUser_returnsAnError_andPersistsAnAuditEntry() throws Exception {
+  public void regeneratingANonGeneratedUser_returnsAnError() throws Exception {
     UserCredentialVersion originalCredential = new UserCredentialVersion("/my-user");
     originalCredential.setEncryptor(encryptor);
     originalCredential.setPassword("abcde");
@@ -298,8 +295,6 @@ public class CredentialRegenerateTest {
 
     mockMvc.perform(request)
         .andExpect(content().json(cannotRegenerateJson));
-
-    auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/my-user", AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 400);
   }
 
   @Test

@@ -41,7 +41,7 @@ public class RegenerateHandler {
       List<EventAuditRecordParameters> auditRecordParameters
   ) {
     CredentialVersion existingCredentialVersion = credentialService.findMostRecent(credentialName);
-    BaseCredentialGenerateRequest generateRequest = generationRequestGenerator.createGenerateRequest(existingCredentialVersion, credentialName, auditRecordParameters);
+    BaseCredentialGenerateRequest generateRequest = generationRequestGenerator.createGenerateRequest(existingCredentialVersion);
     CredentialValue credentialValue = credentialGenerator.generate(generateRequest);
 
     final CredentialVersion credentialVersion = credentialService.save(
@@ -87,7 +87,7 @@ public class RegenerateHandler {
   ) {
     TreeSet<String> results = new TreeSet(String.CASE_INSENSITIVE_ORDER);
     CredentialVersion existingCredentialVersion = credentialService.findMostRecent(credentialName);
-    CertificateGenerateRequest generateRequest = (CertificateGenerateRequest)generationRequestGenerator.createGenerateRequest(existingCredentialVersion, credentialName, auditRecordParameters);
+    CertificateGenerateRequest generateRequest = (CertificateGenerateRequest)generationRequestGenerator.createGenerateRequest(existingCredentialVersion);
     CredentialValue newCredentialValue = credentialGenerator.generate(generateRequest);
 
     auditRecord.addResource(existingCredentialVersion);

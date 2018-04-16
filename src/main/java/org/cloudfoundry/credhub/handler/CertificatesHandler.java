@@ -55,7 +55,7 @@ public class CertificatesHandler {
         .findByCredentialUuid(credentialUuid);
 
     BaseCredentialGenerateRequest generateRequest = generationRequestGenerator
-        .createGenerateRequest(existingCredentialVersion, existingCredentialVersion.getName(), auditRecordParameters);
+        .createGenerateRequest(existingCredentialVersion);
     CertificateCredentialValue credentialValue = (CertificateCredentialValue) credentialGenerator
         .generate(generateRequest);
     credentialValue.setTransitional(request.isTransitional());

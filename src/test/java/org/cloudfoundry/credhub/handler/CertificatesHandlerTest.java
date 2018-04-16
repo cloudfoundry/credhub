@@ -57,7 +57,7 @@ public class CertificatesHandlerTest {
     when(certificate.getName()).thenReturn("test");
 
     when(certificateService.findByCredentialUuid(eq(UUID_STRING))).thenReturn(certificate);
-    when(generationRequestGenerator.createGenerateRequest(eq(certificate), eq("test"), any()))
+    when(generationRequestGenerator.createGenerateRequest(eq(certificate)))
         .thenReturn(generateRequest);
     when(universalCredentialGenerator.generate(eq(generateRequest))).thenReturn(newValue);
     when(permissionedCertificateService.save(eq(certificate), any(), any(), any()))
