@@ -1,6 +1,8 @@
 package org.cloudfoundry.credhub.controller.v1;
 
 import com.google.common.collect.ImmutableMap;
+import org.cloudfoundry.credhub.audit.CEFAuditRecord;
+import org.cloudfoundry.credhub.audit.OperationDeviceAction;
 import org.cloudfoundry.credhub.config.VersionProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -16,16 +18,19 @@ public class VersionController {
   private static final String CREDHUB_NAME = "CredHub";
 
   private final String credhubVersion;
+  private CEFAuditRecord auditRecord;
 
   @Autowired
-  VersionController(
-      VersionProvider versionProvider
-  ) {
+  VersionController(VersionProvider versionProvider,
+      CEFAuditRecord auditRecord) {
+    this.auditRecord = auditRecord;
     this.credhubVersion = versionProvider.currentVersion();
   }
 
   @RequestMapping(method = RequestMethod.GET, path = "/version")
   public Map<String, ?> version() {
+    auditRecord.setRequestDetails(() -> OperationDeviceAction.VERSION);
+
     return ImmutableMap.of("version", credhubVersion);
   }
 }

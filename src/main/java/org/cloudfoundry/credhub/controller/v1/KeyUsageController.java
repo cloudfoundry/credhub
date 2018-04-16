@@ -1,6 +1,8 @@
 package org.cloudfoundry.credhub.controller.v1;
 
 import com.google.common.collect.ImmutableMap;
+import org.cloudfoundry.credhub.audit.CEFAuditRecord;
+import org.cloudfoundry.credhub.audit.OperationDeviceAction;
 import org.cloudfoundry.credhub.data.CredentialVersionDataService;
 import org.cloudfoundry.credhub.service.EncryptionKeySet;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,17 +25,22 @@ public class KeyUsageController {
 
   private final CredentialVersionDataService credentialVersionDataService;
   private final EncryptionKeySet keySet;
+  private CEFAuditRecord auditRecord;
 
   @Autowired
   public KeyUsageController(
       CredentialVersionDataService credentialVersionDataService,
-      EncryptionKeySet keySet) {
+      EncryptionKeySet keySet,
+      CEFAuditRecord auditRecord) {
     this.credentialVersionDataService = credentialVersionDataService;
     this.keySet = keySet;
+    this.auditRecord = auditRecord;
   }
 
   @RequestMapping(method = RequestMethod.GET, path = "")
   public ResponseEntity<Map> getKeyUsages() {
+    auditRecord.setRequestDetails(() -> OperationDeviceAction.KEY_USAGE);
+
     Long totalCredCount = 0L;
     final HashMap<UUID, Long> countByEncryptionKey = credentialVersionDataService.countByEncryptionKey();
     for (int i=0; i<countByEncryptionKey.size(); i++) {

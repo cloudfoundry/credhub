@@ -1,11 +1,13 @@
 package org.cloudfoundry.credhub.audit.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.cloudfoundry.credhub.audit.OperationDeviceAction;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 
 import java.io.IOException;
 
+@JsonIgnoreProperties(ignoreUnknown=true)
 public interface RequestDetails {
   default String toJSON() {
     String result;

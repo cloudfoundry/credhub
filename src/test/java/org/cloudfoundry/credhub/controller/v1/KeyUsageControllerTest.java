@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.controller.v1;
 
+import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.data.CredentialVersionDataService;
 import org.cloudfoundry.credhub.data.EncryptionKeyCanaryDataService;
 import org.cloudfoundry.credhub.service.EncryptionKey;
@@ -44,7 +45,7 @@ public class KeyUsageControllerTest {
     keySet = new EncryptionKeySet();
     encryptionKeyCanaryDataService = mock(EncryptionKeyCanaryDataService.class);
     final KeyUsageController keyUsageController = new KeyUsageController(credentialVersionDataService,
-        keySet);
+        keySet, new CEFAuditRecord());
 
     mockMvc = MockMvcBuilders
         .standaloneSetup(keyUsageController)
