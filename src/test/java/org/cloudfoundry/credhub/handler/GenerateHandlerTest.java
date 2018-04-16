@@ -75,7 +75,7 @@ public class GenerateHandlerTest {
     subject.handle(generateRequest, eventAuditRecordParameters);
 
     verify(credentialService).save(null, null, generateRequest);
-    verify(permissionService).savePermissions(credentialVersion, accessControlEntries, eventAuditRecordParameters, true, "/captain");
+    verify(permissionService).savePermissions(credentialVersion, accessControlEntries, true);
   }
 
   @Test

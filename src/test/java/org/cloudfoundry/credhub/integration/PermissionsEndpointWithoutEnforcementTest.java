@@ -1,8 +1,6 @@
 package org.cloudfoundry.credhub.integration;
 
 import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.audit.AuditingOperationCode;
-import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.constants.CredentialWriteMode;
 import org.cloudfoundry.credhub.helper.AuditingHelper;
 import org.cloudfoundry.credhub.helper.RequestHelper;
@@ -27,7 +25,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -106,8 +103,6 @@ public class PermissionsEndpointWithoutEnforcementTest {
         samePropertyValuesAs(
             new PermissionEntry("test-actor", asList(PermissionOperation.READ)))
     ));
-
-    verifyAudit(AuditingOperationCode.ACL_ACCESS, credentialName, 200);
   }
 
   @Test
@@ -129,8 +124,6 @@ public class PermissionsEndpointWithoutEnforcementTest {
         samePropertyValuesAs(
             new PermissionEntry("test-actor", asList(PermissionOperation.READ)))
     ));
-
-    verifyAudit(AuditingOperationCode.ACL_ACCESS, credentialName, 200);
   }
 
   @Test
@@ -152,8 +145,6 @@ public class PermissionsEndpointWithoutEnforcementTest {
         "/unicorn",
         AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN
     );
-
-    verifyAudit(AuditingOperationCode.ACL_ACCESS, "/unicorn", 404);
   }
 
   @Test
@@ -210,15 +201,6 @@ public class PermissionsEndpointWithoutEnforcementTest {
         AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN,
         "test-actor"
     );
-
-    auditingHelper.verifyAuditing(
-        AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
-        "/api/v1/permissions",
-        204,
-        newArrayList(
-            new EventAuditRecordParameters(AuditingOperationCode.ACL_DELETE, credentialName, PermissionOperation.READ, "test-actor")
-        )
-    );
   }
 
   @Test
@@ -236,13 +218,6 @@ public class PermissionsEndpointWithoutEnforcementTest {
         credentialName,
         AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN,
         "test-actor"
-    );
-
-    auditingHelper.verifyAuditing(
-        AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID,
-        "/api/v1/permissions",
-        204,
-        newArrayList(new EventAuditRecordParameters(AuditingOperationCode.ACL_DELETE, credentialName, PermissionOperation.READ, "test-actor"))
     );
   }
 
@@ -275,31 +250,12 @@ public class PermissionsEndpointWithoutEnforcementTest {
         "read", "write"
     );
 
-    auditingHelper.verifyAuditing(
-        AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
-        "/api/v1/permissions",
-        201,
-        newArrayList(
-            new EventAuditRecordParameters(AuditingOperationCode.ACL_UPDATE, credentialName, PermissionOperation.READ, "dan"),
-            new EventAuditRecordParameters(AuditingOperationCode.ACL_UPDATE, credentialName, PermissionOperation.WRITE, "dan")
-        )
-    );
-
     RequestHelper.grantPermissions(
         mockMvc,
         credentialName,
         AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN,
         "isobel",
         "delete"
-    );
-
-    auditingHelper.verifyAuditing(
-        AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
-        "/api/v1/permissions",
-        201,
-        newArrayList(
-            new EventAuditRecordParameters(AuditingOperationCode.ACL_UPDATE, credentialName, PermissionOperation.DELETE, "isobel")
-        )
     );
 
     PermissionsView permissions = RequestHelper
@@ -318,7 +274,6 @@ public class PermissionsEndpointWithoutEnforcementTest {
 
   @Test
   public void POST_whenTheUserHasPermissionToWritePermissions_updatesPermissions() throws Exception {
-    Long initialCount = eventAuditRecordRepository.count();
     RequestHelper.grantPermissions(
         mockMvc,
         credentialName,
@@ -333,19 +288,6 @@ public class PermissionsEndpointWithoutEnforcementTest {
         AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN,
         "dan",
         "read", "write"
-    );
-
-    // 2 from initialPost, 2 from updatePost
-    assertThat(eventAuditRecordRepository.count(), equalTo(4L + initialCount));
-
-    auditingHelper.verifyAuditing(
-        AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
-        "/api/v1/permissions",
-        201,
-        newArrayList(
-            new EventAuditRecordParameters(AuditingOperationCode.ACL_UPDATE, credentialName, PermissionOperation.READ, "dan"),
-            new EventAuditRecordParameters(AuditingOperationCode.ACL_UPDATE, credentialName, PermissionOperation.WRITE, "dan")
-        )
     );
 
     PermissionsView permissions = RequestHelper
@@ -370,16 +312,6 @@ public class PermissionsEndpointWithoutEnforcementTest {
         "dan",
         "read", "write"
     );
-
-    auditingHelper.verifyAuditing(
-        AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID,
-        "/api/v1/permissions",
-        201,
-        newArrayList(
-            new EventAuditRecordParameters(AuditingOperationCode.ACL_UPDATE, credentialName, PermissionOperation.READ, "dan"),
-            new EventAuditRecordParameters(AuditingOperationCode.ACL_UPDATE, credentialName, PermissionOperation.WRITE, "dan")
-        )
-    );
   }
 
   @Test
@@ -390,15 +322,6 @@ public class PermissionsEndpointWithoutEnforcementTest {
         AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN,
         "dan",
         "read"
-    );
-
-    auditingHelper.verifyAuditing(
-        AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
-        "/api/v1/permissions",
-        201,
-        newArrayList(
-            new EventAuditRecordParameters(AuditingOperationCode.ACL_UPDATE, credentialName, PermissionOperation.READ, "dan")
-        )
     );
 
     PermissionsView permissions = RequestHelper
@@ -454,15 +377,6 @@ public class PermissionsEndpointWithoutEnforcementTest {
         "dan",
         "read"
     );
-
-    auditingHelper.verifyAuditing(
-        AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
-        "/api/v1/permissions",
-        404,
-        newArrayList(
-            new EventAuditRecordParameters(AuditingOperationCode.ACL_UPDATE, "/this-is-a-fake-credential", PermissionOperation.READ, "dan")
-        )
-    );
   }
 
   @Test
@@ -482,9 +396,5 @@ public class PermissionsEndpointWithoutEnforcementTest {
         "/api/v1/permissions",
         400
     );
-  }
-
-  private void verifyAudit(AuditingOperationCode operation, String credentialName, int statusCode) {
-    auditingHelper.verifyAuditing(operation, credentialName, AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/permissions", statusCode);
   }
 }

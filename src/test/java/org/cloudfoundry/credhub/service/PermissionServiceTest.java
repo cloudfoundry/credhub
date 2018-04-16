@@ -22,8 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static org.cloudfoundry.credhub.audit.AuditingOperationCode.ACL_ACCESS;
-import static org.cloudfoundry.credhub.audit.AuditingOperationCode.ACL_DELETE;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -84,7 +82,7 @@ public class PermissionServiceTest {
   @Test
   public void saveAccessControlEntries_whenThereAreNoChanges_doesNothing() {
     ArrayList<PermissionEntry> expectedEntries = newArrayList();
-    subject.savePermissions(expectedCredentialVersion, expectedEntries, auditRecordParameters, false, CREDENTIAL_NAME);
+    subject.savePermissions(expectedCredentialVersion, expectedEntries, false);
 
     verify(permissionDataService, never()).savePermissions(any(), any());
   }
@@ -93,7 +91,7 @@ public class PermissionServiceTest {
   public void saveAccessControlEntries_withEntries_delegatesToDataService() {
     when(permissionCheckingService.userAllowedToOperateOnActor(eq(USER_NAME))).thenReturn(true);
     ArrayList<PermissionEntry> expectedEntries = newArrayList(new PermissionEntry(USER_NAME, PermissionOperation.READ));
-    subject.savePermissions(expectedCredentialVersion, expectedEntries, auditRecordParameters, false, CREDENTIAL_NAME);
+    subject.savePermissions(expectedCredentialVersion, expectedEntries, false);
 
     verify(permissionDataService).savePermissions(expectedCredentialVersion.getCredential(), expectedEntries);
   }
@@ -104,7 +102,7 @@ public class PermissionServiceTest {
     ArrayList<PermissionEntry> entries = newArrayList();
     entries.add(new PermissionEntry(USER_NAME, asList(PermissionOperation.WRITE_ACL)));
 
-    subject.savePermissions(expectedCredentialVersion, entries, auditRecordParameters, false, CREDENTIAL_NAME);
+    subject.savePermissions(expectedCredentialVersion, entries, false);
 
     verify(permissionCheckingService).hasPermission(USER_NAME, CREDENTIAL_NAME, PermissionOperation.WRITE_ACL);
   }
@@ -113,7 +111,7 @@ public class PermissionServiceTest {
   public void saveAccessControlEntries_whenCredentialHasNoACEs_shouldDoNothing() {
     ArrayList<PermissionEntry> entries = newArrayList();
 
-    subject.savePermissions(expectedCredentialVersion, entries, auditRecordParameters, false, CREDENTIAL_NAME);
+    subject.savePermissions(expectedCredentialVersion, entries, false);
 
     verify(permissionCheckingService, never()).hasPermission(USER_NAME, CREDENTIAL_NAME, PermissionOperation.WRITE_ACL);
   }
@@ -126,7 +124,7 @@ public class PermissionServiceTest {
     ArrayList<PermissionEntry> expectedEntries = newArrayList(new PermissionEntry(USER_NAME, PermissionOperation.READ));
 
     try {
-      subject.savePermissions(expectedCredentialVersion, expectedEntries, auditRecordParameters, false, CREDENTIAL_NAME);
+      subject.savePermissions(expectedCredentialVersion, expectedEntries, false);
       fail("expected exception");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), IsEqual.equalTo("error.credential.invalid_access"));
@@ -138,12 +136,9 @@ public class PermissionServiceTest {
     List<PermissionEntry> expectedPermissionEntries = newArrayList();
     when(permissionDataService.getPermissions(expectedCredential))
         .thenReturn(expectedPermissionEntries);
-    List<PermissionEntry> foundPermissionEntries = subject.getPermissions(expectedCredentialVersion, auditRecordParameters, CREDENTIAL_NAME);
+    List<PermissionEntry> foundPermissionEntries = subject.getPermissions(expectedCredentialVersion);
 
     assertThat(foundPermissionEntries, equalTo(expectedPermissionEntries));
-    assertThat(auditRecordParameters.size(), IsEqual.equalTo(1));
-    assertThat(auditRecordParameters.get(0).getCredentialName(), IsEqual.equalTo(CREDENTIAL_NAME));
-    assertThat(auditRecordParameters.get(0).getAuditingOperationCode(), IsEqual.equalTo(ACL_ACCESS));
   }
 
   @Test
@@ -155,12 +150,9 @@ public class PermissionServiceTest {
         .thenReturn(expectedPermissionEntries);
 
     try {
-      subject.getPermissions(expectedCredentialVersion, auditRecordParameters, CREDENTIAL_NAME);
+      subject.getPermissions(expectedCredentialVersion);
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), IsEqual.equalTo("error.credential.invalid_access"));
-      assertThat(auditRecordParameters.size(), IsEqual.equalTo(1));
-      assertThat(auditRecordParameters.get(0).getCredentialName(), IsEqual.equalTo(CREDENTIAL_NAME));
-      assertThat(auditRecordParameters.get(0).getAuditingOperationCode(), IsEqual.equalTo(ACL_ACCESS));
     }
   }
 
@@ -172,12 +164,9 @@ public class PermissionServiceTest {
         .thenReturn(true);
     when(permissionDataService.deletePermissions(CREDENTIAL_NAME, "other-actor"))
         .thenReturn(true);
-    boolean result = subject.deletePermissions(CREDENTIAL_NAME, "other-actor", auditRecordParameters);
+    boolean result = subject.deletePermissions(CREDENTIAL_NAME, "other-actor");
 
     assertThat(result, equalTo(true));
-    assertThat(auditRecordParameters.size(), equalTo(1));
-    assertThat(auditRecordParameters.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
-    assertThat(auditRecordParameters.get(0).getAuditingOperationCode(), equalTo(ACL_DELETE));
   }
 
   @Test
@@ -187,13 +176,10 @@ public class PermissionServiceTest {
     when(permissionDataService.deletePermissions(CREDENTIAL_NAME, "other-actor"))
         .thenReturn(true);
     try {
-      subject.deletePermissions(CREDENTIAL_NAME, "other-actor", auditRecordParameters);
+      subject.deletePermissions(CREDENTIAL_NAME, "other-actor");
       fail("should throw");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), IsEqual.equalTo("error.credential.invalid_access"));
-      assertThat(auditRecordParameters.size(), equalTo(1));
-      assertThat(auditRecordParameters.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
-      assertThat(auditRecordParameters.get(0).getAuditingOperationCode(), equalTo(ACL_DELETE));
     }
   }
 
@@ -204,13 +190,10 @@ public class PermissionServiceTest {
     when(permissionDataService.deletePermissions(CREDENTIAL_NAME, userContext.getActor()))
         .thenReturn(true);
     try {
-      subject.deletePermissions(CREDENTIAL_NAME, userContext.getActor(), auditRecordParameters);
+      subject.deletePermissions(CREDENTIAL_NAME, userContext.getActor());
       fail("should throw");
     } catch (InvalidPermissionOperationException iaoe) {
       assertThat(iaoe.getMessage(), IsEqual.equalTo("error.permission.invalid_update_operation"));
-      assertThat(auditRecordParameters.size(), equalTo(1));
-      assertThat(auditRecordParameters.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
-      assertThat(auditRecordParameters.get(0).getAuditingOperationCode(), equalTo(ACL_DELETE));
     }
   }
 
@@ -223,6 +206,6 @@ public class PermissionServiceTest {
         .userAllowedToOperateOnActor(USER_NAME))
         .thenReturn(true);
 
-    subject.savePermissions(null, newArrayList(), auditRecordParameters, false, CREDENTIAL_NAME);
+    subject.savePermissions(null, newArrayList(), false);
   }
 }

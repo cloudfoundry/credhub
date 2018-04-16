@@ -35,7 +35,7 @@ public class PermissionsHandler {
       List<EventAuditRecordParameters> auditRecordParameters) {
     CredentialVersion credentialVersion = permissionedCredentialService.findMostRecent(name);
 
-    final List<PermissionEntry> permissions = permissionService.getPermissions(credentialVersion, auditRecordParameters, name);
+    final List<PermissionEntry> permissions = permissionService.getPermissions(credentialVersion);
 
     auditRecord.setResource(credentialVersion.getCredential());
 
@@ -48,13 +48,13 @@ public class PermissionsHandler {
   ) {
     CredentialVersion credentialVersion = permissionedCredentialService.findMostRecent(request.getCredentialName());
 
-    permissionService.savePermissions(credentialVersion, request.getPermissions(), auditRecordParameters, false, request.getCredentialName());
+    permissionService.savePermissions(credentialVersion, request.getPermissions(), false);
 
     auditRecord.setResource(credentialVersion.getCredential());
     }
 
   public void deletePermissionEntry(String credentialName, String actor, List<EventAuditRecordParameters> auditRecordParameters) {
-    boolean successfullyDeleted = permissionService.deletePermissions(credentialName, actor, auditRecordParameters);
+    boolean successfullyDeleted = permissionService.deletePermissions(credentialName, actor);
     if (!successfullyDeleted) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
