@@ -1,7 +1,6 @@
 package org.cloudfoundry.credhub.controller.v1;
 
 import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.audit.AuditingOperationCode;
 import org.cloudfoundry.credhub.data.CredentialVersionDataService;
 import org.cloudfoundry.credhub.domain.Encryptor;
 import org.cloudfoundry.credhub.domain.ValueCredentialVersion;
@@ -195,14 +194,6 @@ public class CredentialsControllerGetTest {
         .andExpect(
             jsonPath("$.error").value(expectedError1)
         );
-
-    auditingHelper.verifyAuditing(
-        AuditingOperationCode.CREDENTIAL_ACCESS,
-        "/invalid_name",
-        AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
-        "/api/v1/data",
-        404
-    );
   }
 
   @Test
@@ -319,7 +310,7 @@ public class CredentialsControllerGetTest {
   }
 
   @Test
-  public void gettingACredential_byId_returnsTheCredentialAndPersistAnAuditEntry() throws Exception {
+  public void gettingACredential_byId_returnsTheCredential() throws Exception {
     UUID uuid = UUID.randomUUID();
     ValueCredentialVersion credential = new ValueCredentialVersion(CREDENTIAL_NAME)
         .setEncryptor(encryptor)
@@ -340,13 +331,6 @@ public class CredentialsControllerGetTest {
         .andExpect(jsonPath("$.value").value(CREDENTIAL_VALUE))
         .andExpect(jsonPath("$.id").value(uuid.toString()))
         .andExpect(jsonPath("$.version_created_at").value(FROZEN_TIME.toString()));
-
-    auditingHelper.verifyAuditing(
-        AuditingOperationCode.CREDENTIAL_ACCESS,
-        CREDENTIAL_NAME,
-        AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
-        "/api/v1/data/" + uuid.toString(),
-        200);
   }
 
   @Test

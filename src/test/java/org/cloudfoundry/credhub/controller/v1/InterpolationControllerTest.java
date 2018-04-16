@@ -1,8 +1,7 @@
 package org.cloudfoundry.credhub.controller.v1;
 
-import com.google.common.collect.Lists;
+import org.assertj.core.util.Maps;
 import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.data.CredentialVersionDataService;
 import org.cloudfoundry.credhub.domain.JsonCredentialVersion;
 import org.cloudfoundry.credhub.domain.ValueCredentialVersion;
@@ -10,7 +9,6 @@ import org.cloudfoundry.credhub.helper.AuditingHelper;
 import org.cloudfoundry.credhub.repository.EventAuditRecordRepository;
 import org.cloudfoundry.credhub.repository.RequestAuditRecordRepository;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
-import org.assertj.core.util.Maps;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,9 +27,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.util.Arrays;
 
-import static org.cloudfoundry.credhub.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static org.cloudfoundry.credhub.helper.JsonTestHelper.parse;
-import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
 import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -97,35 +93,6 @@ public class InterpolationControllerTest {
             .value(equalTo("secret1-value")))
         .andExpect(jsonPath("$.pp-something-else[0].credentials.secret2")
             .value(equalTo("secret2-value")));
-  }
-
-  @Test
-  public void POST_logsTheCredentialAccess() throws Exception {
-    JsonCredentialVersion jsonCredential = mock(JsonCredentialVersion.class);
-    doReturn(Maps.newHashMap("secret1", "secret1-value")).when(jsonCredential).getValue();
-    when(jsonCredential.getName()).thenReturn("/cred1");
-
-    JsonCredentialVersion jsonCredential1 = mock(JsonCredentialVersion.class);
-    doReturn(Maps.newHashMap("secret2", "secret2-value")).when(jsonCredential1).getValue();
-    when(jsonCredential1.getName()).thenReturn("/cred2");
-
-    doReturn(
-        Arrays.asList(jsonCredential)
-    ).when(mockCredentialVersionDataService).findNByName("/cred1", 1);
-
-    doReturn(
-        Arrays.asList(jsonCredential1)
-    ).when(mockCredentialVersionDataService).findNByName("/cred2", 1);
-
-    mockMvc.perform(makeValidPostRequest()).andExpect(status().isOk());
-
-    auditingHelper
-        .verifyAuditing(UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/interpolate",
-            200, Lists
-                .newArrayList(
-                    new EventAuditRecordParameters(CREDENTIAL_ACCESS, "/cred1"),
-                    new EventAuditRecordParameters(CREDENTIAL_ACCESS, "/cred2")
-                ));
   }
 
   @Test

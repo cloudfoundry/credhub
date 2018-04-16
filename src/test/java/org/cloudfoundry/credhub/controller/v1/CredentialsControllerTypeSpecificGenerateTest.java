@@ -2,7 +2,6 @@ package org.cloudfoundry.credhub.controller.v1;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.credential.CryptSaltFactory;
 import org.cloudfoundry.credhub.credential.RsaCredentialValue;
@@ -31,10 +30,10 @@ import org.cloudfoundry.credhub.request.DefaultCredentialGenerateRequest;
 import org.cloudfoundry.credhub.request.GenerationParameters;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.request.StringGenerationParameters;
+import org.cloudfoundry.credhub.util.AuthConstants;
 import org.cloudfoundry.credhub.util.CurrentTimeProvider;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.view.PermissionsView;
-import org.cloudfoundry.credhub.util.AuthConstants;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -66,10 +65,7 @@ import java.util.Collection;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static org.cloudfoundry.credhub.audit.AuditingOperationCode.ACL_UPDATE;
-import static org.cloudfoundry.credhub.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static org.cloudfoundry.credhub.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
+import static java.util.Arrays.asList;
 import static org.cloudfoundry.credhub.helper.TestHelper.mockOutCurrentTimeProvider;
 import static org.cloudfoundry.credhub.request.PermissionOperation.DELETE;
 import static org.cloudfoundry.credhub.request.PermissionOperation.READ;
@@ -77,14 +73,12 @@ import static org.cloudfoundry.credhub.request.PermissionOperation.READ_ACL;
 import static org.cloudfoundry.credhub.request.PermissionOperation.WRITE;
 import static org.cloudfoundry.credhub.request.PermissionOperation.WRITE_ACL;
 import static org.cloudfoundry.credhub.util.MultiJsonPathMatcher.multiJsonPath;
-import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.beans.SamePropertyValuesAs.samePropertyValuesAs;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -380,22 +374,6 @@ public class CredentialsControllerTypeSpecificGenerateTest {
   }
 
   @Test
-  public void generatingANewCredential_persistsAnAuditEntry() throws Exception {
-    MockHttpServletRequestBuilder request = createGenerateNewCredentialRequest();
-
-    mockMvc.perform(request);
-
-    auditingHelper.verifyAuditing(AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 200, newArrayList(
-        new EventAuditRecordParameters(CREDENTIAL_UPDATE, CREDENTIAL_NAME),
-        new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, READ, AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID),
-        new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, WRITE, AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID),
-        new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, DELETE, AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID),
-        new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, READ_ACL, AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID),
-        new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, WRITE_ACL, AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID)
-    ));
-  }
-
-  @Test
   public void generatingANewCredential_addsFullPermissionsForCurrentUser() throws Exception {
     MockHttpServletRequestBuilder request = createGenerateNewCredentialRequest();
 
@@ -450,22 +428,6 @@ public class CredentialsControllerTypeSpecificGenerateTest {
   }
 
   @Test
-  public void generatingANewCredentialVersion_withOverwrite_shouldPersistAnAuditRecord() throws Exception {
-    beforeEachExistingCredential();
-    MockHttpServletRequestBuilder request = beforeEachOverwriteSetToTrue();
-
-    mockMvc.perform(request);
-
-    auditingHelper.verifyAuditing(
-        CREDENTIAL_UPDATE,
-        CREDENTIAL_NAME,
-        AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
-        "/api/v1/data",
-        200
-    );
-  }
-
-  @Test
   public void generatingANewCredentialVersion_withOverwriteFalse_returnsThePreviousVersion() throws Exception {
     beforeEachExistingCredential();
     MockHttpServletRequestBuilder request = beforeEachOverwriteSetToFalse();
@@ -487,16 +449,6 @@ public class CredentialsControllerTypeSpecificGenerateTest {
     mockMvc.perform(request);
 
     verify(credentialVersionDataService, times(0)).save(any(CredentialVersion.class));
-  }
-
-  @Test
-  public void generatingANewCredentialVersion_withOverwriteFalse_persistsAnAuditEntry() throws Exception {
-    beforeEachExistingCredential();
-    MockHttpServletRequestBuilder request = beforeEachOverwriteSetToFalse();
-
-    mockMvc.perform(request);
-
-    auditingHelper.verifyAuditing(CREDENTIAL_ACCESS, CREDENTIAL_NAME, AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 200);
   }
 
   private MockHttpServletRequestBuilder createGenerateNewCredentialRequest() {

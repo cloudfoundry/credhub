@@ -33,7 +33,6 @@ import java.util.UUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
-import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -84,7 +83,7 @@ public class SetHandlerTest {
     when(credentialVersion.getCredential()).thenReturn(cred);
     when(credentialVersion.getName()).thenReturn(cred.getName());
     when(credentialVersion.getUuid()).thenReturn(cred.getUuid());
-    when(credentialService.save(anyObject(),anyObject(), anyObject(), anyList())).thenReturn(credentialVersion);
+    when(credentialService.save(anyObject(),anyObject(), anyObject())).thenReturn(credentialVersion);
   }
 
   @Test
@@ -102,7 +101,7 @@ public class SetHandlerTest {
 
     subject.handle(setRequest, eventAuditRecordParameters);
 
-    verify(credentialService).save(null, password, setRequest, eventAuditRecordParameters);
+    verify(credentialService).save(null, password, setRequest);
     assertThat(auditRecord.getResourceName(), equalTo("federation"));
     assertThat(auditRecord.getResourceUUID(), equalTo(uuid.toString()));
   }
@@ -125,7 +124,7 @@ public class SetHandlerTest {
 
     subject.handle(setRequest, eventAuditRecordParameters);
 
-    verify(credentialService).save(existingCredMock, password, setRequest, eventAuditRecordParameters);
+    verify(credentialService).save(existingCredMock, password, setRequest);
     verify(permissionService).savePermissions(credentialVersion, accessControlEntries, eventAuditRecordParameters, false, "/captain");
   }
 
@@ -145,7 +144,7 @@ public class SetHandlerTest {
 
     subject.handle(setRequest, eventAuditRecordParameters);
 
-    verify(credentialService).save(null, password, setRequest, eventAuditRecordParameters);
+    verify(credentialService).save(null, password, setRequest);
     verify(permissionService).savePermissions(credentialVersion, accessControlEntries, eventAuditRecordParameters, true, "/captain");
   }
 
@@ -169,8 +168,7 @@ public class SetHandlerTest {
     verify(credentialService).save(
         null,
         userCredentialValue,
-        setRequest,
-        eventAuditRecordParameters
+        setRequest
     );
     verify(permissionService).savePermissions(credentialVersion, accessControlEntries, eventAuditRecordParameters, true, "/captain");
   }
@@ -193,7 +191,7 @@ public class SetHandlerTest {
 
     subject.handle(setRequest, eventAuditRecordParameters);
 
-    verify(credentialService).save(null, certificateValue, setRequest, eventAuditRecordParameters);
+    verify(credentialService).save(null, certificateValue, setRequest);
     verify(permissionService).savePermissions(credentialVersion, accessControlEntries, eventAuditRecordParameters, true, "/captain");
   }
 
@@ -232,7 +230,7 @@ public class SetHandlerTest {
 
     subject.handle(setRequest, eventAuditRecordParameters);
 
-    verify(credentialService).save( eq(null), credentialValueArgumentCaptor.capture(), eq(setRequest), eq(eventAuditRecordParameters));
+    verify(credentialService).save( eq(null), credentialValueArgumentCaptor.capture(), eq(setRequest));
     assertThat(credentialValueArgumentCaptor.getValue(), samePropertyValuesAs(expectedCredentialValue));
     verify(permissionService).savePermissions(credentialVersion, accessControlEntries, eventAuditRecordParameters, true, "/captain");
   }

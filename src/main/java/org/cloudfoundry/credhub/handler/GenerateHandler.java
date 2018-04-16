@@ -39,7 +39,7 @@ public class GenerateHandler {
     CredentialVersion existingCredentialVersion = credentialService.findMostRecent(generateRequest.getName());
     CredentialValue value = credentialGenerator.generate(generateRequest);
 
-    final CredentialVersion credentialVersion = credentialService.save(existingCredentialVersion, value, generateRequest, auditRecordParameters);
+    final CredentialVersion credentialVersion = credentialService.save(existingCredentialVersion, value, generateRequest);
 
     final boolean isNewCredential = existingCredentialVersion == null;
 

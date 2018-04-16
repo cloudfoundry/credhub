@@ -66,8 +66,7 @@ public class SetHandler {
     final CredentialVersion credentialVersion = credentialService.save(
         existingCredentialVersion,
         setRequest.getCredentialValue(),
-        setRequest,
-        auditRecordParameters
+        setRequest
     );
 
     final boolean isNewCredential = existingCredentialVersion == null;

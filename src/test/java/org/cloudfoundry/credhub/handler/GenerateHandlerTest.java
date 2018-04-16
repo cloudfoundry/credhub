@@ -21,7 +21,6 @@ import org.mockito.MockitoAnnotations;
 import java.util.ArrayList;
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -57,7 +56,7 @@ public class GenerateHandlerTest {
     accessControlEntries = new ArrayList<>();
     userContext = new UserContext();
     credentialVersion = mock(PasswordCredentialVersion.class);
-    when(credentialService.save(anyObject(), anyObject(), anyObject(), anyList())).thenReturn(credentialVersion);
+    when(credentialService.save(anyObject(), anyObject(), anyObject())).thenReturn(credentialVersion);
   }
 
 
@@ -75,7 +74,7 @@ public class GenerateHandlerTest {
 
     subject.handle(generateRequest, eventAuditRecordParameters);
 
-    verify(credentialService).save(null, null, generateRequest, eventAuditRecordParameters);
+    verify(credentialService).save(null, null, generateRequest);
     verify(permissionService).savePermissions(credentialVersion, accessControlEntries, eventAuditRecordParameters, true, "/captain");
   }
 

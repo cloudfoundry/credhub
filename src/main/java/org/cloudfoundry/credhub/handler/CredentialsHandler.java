@@ -24,7 +24,7 @@ public class CredentialsHandler {
   }
 
   public void deleteCredential(String credentialName, List<EventAuditRecordParameters> eventAuditRecordParametersList) {
-    boolean deleteSucceeded = credentialService.delete(credentialName, eventAuditRecordParametersList);
+    boolean deleteSucceeded = credentialService.delete(credentialName);
     if (!deleteSucceeded) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
@@ -39,7 +39,7 @@ public class CredentialsHandler {
     if (numberOfVersions == null) {
       credentialVersions = credentialService.findAllByName(credentialName);
     } else {
-      credentialVersions = credentialService.findNByName(credentialName, numberOfVersions, auditRecordParametersList);
+      credentialVersions = credentialService.findNByName(credentialName, numberOfVersions);
 
       for (CredentialVersion credentialVersion :  credentialVersions) {
       auditRecord.addResource(credentialVersion);
@@ -63,7 +63,7 @@ public class CredentialsHandler {
       String credentialName,
       List<EventAuditRecordParameters> auditRecordParametersList
   ) {
-    List<CredentialVersion> credentialVersions = credentialService.findActiveByName(credentialName, auditRecordParametersList);
+    List<CredentialVersion> credentialVersions = credentialService.findActiveByName(credentialName);
 
     if (credentialVersions.isEmpty()) {
       throw new EntryNotFoundException("error.credential.invalid_access");
@@ -76,6 +76,6 @@ public class CredentialsHandler {
       String credentialUUID,
       List<EventAuditRecordParameters> auditRecordParametersList
   ) {
-    return CredentialView.fromEntity(credentialService.findVersionByUuid(credentialUUID, auditRecordParametersList));
+    return CredentialView.fromEntity(credentialService.findVersionByUuid(credentialUUID));
   }
 }

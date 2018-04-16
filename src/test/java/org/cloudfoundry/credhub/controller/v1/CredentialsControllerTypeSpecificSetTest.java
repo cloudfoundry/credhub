@@ -3,8 +3,8 @@ package org.cloudfoundry.credhub.controller.v1;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
+import net.minidev.json.JSONObject;
 import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.data.CredentialVersionDataService;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
@@ -25,9 +25,8 @@ import org.cloudfoundry.credhub.request.BaseCredentialSetRequest;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.util.CurrentTimeProvider;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
-import org.cloudfoundry.credhub.view.PermissionsView;
-import net.minidev.json.JSONObject;
 import org.cloudfoundry.credhub.util.TestConstants;
+import org.cloudfoundry.credhub.view.PermissionsView;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -39,21 +38,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.rules.SpringClassRule;
 import org.springframework.test.context.junit4.rules.SpringMethodRule;
-import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import java.io.InputStream;
 import java.time.Instant;
@@ -63,10 +57,7 @@ import java.util.Collection;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static org.cloudfoundry.credhub.audit.AuditingOperationCode.ACL_UPDATE;
-import static org.cloudfoundry.credhub.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static org.cloudfoundry.credhub.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
+import static java.util.Arrays.asList;
 import static org.cloudfoundry.credhub.helper.TestHelper.mockOutCurrentTimeProvider;
 import static org.cloudfoundry.credhub.request.PermissionOperation.DELETE;
 import static org.cloudfoundry.credhub.request.PermissionOperation.READ;
@@ -76,7 +67,6 @@ import static org.cloudfoundry.credhub.request.PermissionOperation.WRITE_ACL;
 import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
 import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.cloudfoundry.credhub.util.MultiJsonPathMatcher.multiJsonPath;
-import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.beans.SamePropertyValuesAs.samePropertyValuesAs;
@@ -445,35 +435,6 @@ public class CredentialsControllerTypeSpecificSetTest {
   }
 
   @Test
-  public void settingACredential_persistsAnAuditEntry() throws Exception {
-    MockHttpServletRequestBuilder request = put("/api/v1/data")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{" +
-            "\"name\":\"" + CREDENTIAL_NAME + "\"," +
-            "\"type\":\"" + parametizer.credentialType + "\"," +
-            "\"value\":" + parametizer.credentialValue + "," +
-            "\"overwrite\":" + false + "," +
-            "\"additional_permissions\": [" +
-            "{\"actor\": \"app1-guid\"," +
-            "\"operations\": [\"read\"]}]" +
-            "}");
-
-    mockMvc.perform(request);
-
-    auditingHelper.verifyAuditing(UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 200, newArrayList(
-        new EventAuditRecordParameters(CREDENTIAL_UPDATE, CREDENTIAL_NAME),
-        new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, READ, "app1-guid"),
-        new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, READ, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID),
-        new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, WRITE, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID),
-        new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, DELETE, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID),
-        new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, READ_ACL, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID),
-        new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, WRITE_ACL, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID)
-    ));
-  }
-
-  @Test
   public void creatingACredential_createsRequestedPermissions_andFullPermissionsForCurrentUser() throws Exception {
     MockHttpServletRequestBuilder putRequest = put("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -584,26 +545,6 @@ public class CredentialsControllerTypeSpecificSetTest {
   }
 
   @Test
-  public void updatingACredential_withTheOverwriteFlagSetToTrue_persistsAnAuditEntry() throws Exception {
-    doReturn(parametizer.createCredential(encryptor)).when(credentialVersionDataService).findMostRecent(CREDENTIAL_NAME);
-
-    final MockHttpServletRequestBuilder put = put("/api/v1/data")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{" +
-            "  \"type\":\"" + parametizer.credentialType + "\"," +
-            "  \"name\":\"" + CREDENTIAL_NAME + "\"," +
-            "  \"value\":" + parametizer.credentialValue + "," +
-            "  \"overwrite\":true" +
-            "}");
-
-    mockMvc.perform(put);
-
-    auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, CREDENTIAL_NAME, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 200);
-  }
-
-  @Test
   public void updatingACredential_withOverwriteSetToFalse_returnsThePreviousVersion() throws Exception {
     CredentialVersion expectedCredentialVersion = parametizer.createCredential(encryptor);
     doReturn(expectedCredentialVersion)
@@ -647,27 +588,6 @@ public class CredentialsControllerTypeSpecificSetTest {
     mockMvc.perform(request);
 
     verify(credentialVersionDataService, times(0)).save(any(CredentialVersion.class));
-  }
-
-  @Test
-  public void updatingACredential_withOverwriteSetToFalse_persistsAnAuditEntry() throws Exception {
-    CredentialVersion expectedCredentialVersion = parametizer.createCredential(encryptor);
-    doReturn(expectedCredentialVersion)
-        .when(credentialVersionDataService)
-        .findMostRecent(CREDENTIAL_NAME);
-    final MockHttpServletRequestBuilder request = put("/api/v1/data")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{"
-            + "\"type\":\"" + parametizer.credentialType + "\","
-            + "\"name\":\"" + CREDENTIAL_NAME + "\","
-            + "\"value\":" + parametizer.credentialValue
-            + "}");
-
-    mockMvc.perform(request);
-
-    auditingHelper.verifyAuditing(CREDENTIAL_ACCESS, CREDENTIAL_NAME, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 200);
   }
 
   private static abstract class TestParametizer {

@@ -23,13 +23,11 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import static org.cloudfoundry.credhub.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 import static org.cloudfoundry.credhub.helper.RequestHelper.setPassword;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -84,44 +82,6 @@ public class CredentialSetErrorHandlingTest {
         .andExpect(status().isBadRequest())
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
         .andExpect(jsonPath("$.error").value(expectedError));
-  }
-
-  @Test
-  public void whenTheTypeChanges_auditsTheFailure() throws Exception {
-    final MockHttpServletRequestBuilder setRequest = put("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{" +
-            "  \"type\":\"value\"," +
-            "  \"name\":\"" + CREDENTIAL_NAME + "\"," +
-            "  \"value\":\"" + CREDENTIAL_VALUE + "\"" +
-            "}");
-
-    mockMvc.perform(setRequest).andDo(print());
-
-    final MockHttpServletRequestBuilder updateRequest = put("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{" +
-            "  \"type\":\"password\"," +
-            "  \"name\":\"" + CREDENTIAL_NAME.toUpperCase() + "\"," +
-            "  \"value\":\"my-password\"," +
-            "  \"overwrite\":true" +
-            "}");
-    final String errorMessage = "The credential type cannot be modified. Please delete the credential if you wish to create it with a different type.";
-    mockMvc.perform(updateRequest)
-        .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error").value(errorMessage));
-
-    auditingHelper.verifyAuditing(
-        CREDENTIAL_UPDATE,
-        CREDENTIAL_NAME.toUpperCase(),
-        AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
-        "/api/v1/data",
-        400
-    );
   }
 
   @Test

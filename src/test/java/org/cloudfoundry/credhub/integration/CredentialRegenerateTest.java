@@ -102,7 +102,7 @@ public class CredentialRegenerateTest {
   }
 
   @Test
-  public void regeneratingAPassword_regeneratesThePassword_andPersistsAnAuditEntry() throws Exception {
+  public void regeneratingAPassword_regeneratesThePassword() throws Exception {
     PasswordCredentialVersion originalCredential = new PasswordCredentialVersion("/my-password");
     originalCredential.setEncryptor(encryptor);
     StringGenerationParameters generationParameters = new StringGenerationParameters();
@@ -131,12 +131,10 @@ public class CredentialRegenerateTest {
 
     assertThat(newPassword.getPassword(), not(equalTo("original-credential")));
     assertThat(newPassword.getGenerationParameters().isExcludeNumber(), equalTo(true));
-
-    auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/my-password", AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 200);
   }
 
   @Test
-  public void regeneratingAnRsaKey_regeneratesTheRsaKey_andPersistsAnAuditEntry() throws Exception {
+  public void regeneratingAnRsaKey_regeneratesTheRsaKey() throws Exception {
     RsaCredentialVersion originalCredential = new RsaCredentialVersion("/my-rsa");
     originalCredential.setEncryptor(encryptor);
     originalCredential.setPrivateKey("original value");
@@ -165,12 +163,10 @@ public class CredentialRegenerateTest {
     assertTrue(newRsa.getPrivateKey().contains("-----BEGIN RSA PRIVATE KEY-----"));
     assertThat(originalCredential.getPublicKey(), not(equalTo(newRsa.getPublicKey())));
     assertThat(originalCredential.getPrivateKey(), not(equalTo(newRsa.getPrivateKey())));
-
-    auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/my-rsa", AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 200);
   }
 
   @Test
-  public void regeneratingAnSshKey_regeneratesTheSshKey_andPersistsAnAuditEntry() throws Exception {
+  public void regeneratingAnSshKey_regeneratesTheSshKey() throws Exception {
     SshCredentialVersion originalCredential = new SshCredentialVersion("/my-ssh");
     originalCredential.setEncryptor(encryptor);
     originalCredential.setPrivateKey("original value");
@@ -198,12 +194,10 @@ public class CredentialRegenerateTest {
     assertThat(newSsh.getPublicKey(), containsString("ssh-rsa "));
     assertThat(newSsh.getPrivateKey(), not(equalTo(originalCredential.getPrivateKey())));
     assertThat(newSsh.getPublicKey(), not(equalTo(originalCredential.getPublicKey())));
-
-    auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/my-ssh", AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 200);
   }
 
   @Test
-  public void regeneratingAUser_regeneratesTheUser_andPersistsAnAuditEntry() throws Exception {
+  public void regeneratingAUser_regeneratesTheUser() throws Exception {
     UserCredentialVersion originalCredential = new UserCredentialVersion("/the-user");
     originalCredential.setEncryptor(encryptor);
     StringGenerationParameters generationParameters = new StringGenerationParameters();
@@ -237,12 +231,10 @@ public class CredentialRegenerateTest {
     assertThat(newUser.getPassword(), not(equalTo(originalCredential.getPassword())));
     assertThat(newUser.getGenerationParameters().isExcludeNumber(), equalTo(true));
     assertThat(newUser.getUsername(), equalTo(originalCredential.getUsername()));
-
-    auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/the-user", AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 200);
   }
 
   @Test
-  public void regeneratingACredentialThatDoesNotExist_returnsAnError_andPersistsAnAuditEntry() throws Exception {
+  public void regeneratingACredentialThatDoesNotExist_returnsAnError() throws Exception {
     MockHttpServletRequestBuilder request = post("/api/v1/data")
         .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
@@ -256,8 +248,6 @@ public class CredentialRegenerateTest {
     mockMvc.perform(request)
         .andExpect(status().isNotFound())
         .andExpect(content().json(notFoundJson));
-
-    auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/my-password", AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 404);
   }
 
   @Test

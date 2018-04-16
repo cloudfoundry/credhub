@@ -56,7 +56,7 @@ public class InterpolationHandler {
         String credentialName = getCredentialNameFromRef((String) credhubRef);
 
         List<CredentialVersion> credentialVersions = credentialService
-            .findNByName(credentialName, 1, auditRecordParameters);
+            .findNByName(credentialName, 1);
 
         if (credentialVersions.isEmpty()) {
           throw new EntryNotFoundException("error.credential.invalid_access");

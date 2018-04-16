@@ -1,11 +1,7 @@
 package org.cloudfoundry.credhub.integration;
 
 import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
-import org.cloudfoundry.credhub.helper.AuditingHelper;
 import org.cloudfoundry.credhub.helper.JsonTestHelper;
-import org.cloudfoundry.credhub.repository.EventAuditRecordRepository;
-import org.cloudfoundry.credhub.repository.RequestAuditRecordRepository;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.view.PermissionsView;
@@ -25,12 +21,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.util.List;
-
-import static com.google.common.collect.Lists.newArrayList;
-import static org.cloudfoundry.credhub.audit.AuditingOperationCode.ACL_UPDATE;
-import static org.cloudfoundry.credhub.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static org.cloudfoundry.credhub.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
+import static java.util.Arrays.asList;
 import static org.cloudfoundry.credhub.request.PermissionOperation.DELETE;
 import static org.cloudfoundry.credhub.request.PermissionOperation.READ;
 import static org.cloudfoundry.credhub.request.PermissionOperation.READ_ACL;
@@ -42,7 +33,6 @@ import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GR
 import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.cloudfoundry.credhub.util.CertificateReader.getCertificate;
 import static org.cloudfoundry.credhub.util.CertificateStringConstants.SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT;
-import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.beans.SamePropertyValuesAs.samePropertyValuesAs;
@@ -67,18 +57,12 @@ public class PermissionAndCredentialTest {
   public static final String MTLS_APP_GUID = "mtls-app:app1-guid";
   @Autowired
   private WebApplicationContext webApplicationContext;
-  @Autowired
-  private RequestAuditRecordRepository requestAuditRecordRepository;
-  @Autowired
-  private EventAuditRecordRepository eventAuditRecordRepository;
 
   private MockMvc mockMvc;
-  private AuditingHelper auditingHelper;
   private String requestBody;
 
   @Before
-  public void setUp() throws Exception {
-    auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
+  public void setUp() {
     mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
         .apply(springSecurity())
         .build();
@@ -97,7 +81,7 @@ public class PermissionAndCredentialTest {
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content(requestBody));
-    assertAclSuccessfullyCreatedAndAudited(
+    assertAclSuccessfullyCreated(
         result,
         UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
         UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
@@ -115,7 +99,7 @@ public class PermissionAndCredentialTest {
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content(requestBody));
-    assertAclSuccessfullyCreatedAndAudited(
+    assertAclSuccessfullyCreated(
         result,
         UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
         UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
@@ -135,7 +119,7 @@ public class PermissionAndCredentialTest {
         .contentType(APPLICATION_JSON)
         .content(requestBody));
 
-    assertAclSuccessfullyCreatedAndAudited(result, UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID, UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
+    assertAclSuccessfullyCreated(result, UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID, UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
   }
 
   @Test
@@ -151,7 +135,7 @@ public class PermissionAndCredentialTest {
         .contentType(APPLICATION_JSON)
         .content(requestBody));
 
-    assertAclSuccessfullyCreatedAndAudited(result, UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID, UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
+    assertAclSuccessfullyCreated(result, UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID, UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
   }
 
   @Test
@@ -168,7 +152,7 @@ public class PermissionAndCredentialTest {
         .contentType(APPLICATION_JSON)
         .content(requestBody));
 
-    assertAclSuccessfullyCreatedAndAudited(
+    assertAclSuccessfullyCreated(
         result,
         "mtls-app:a12345e5-b2b0-4648-a0d0-772d3d399dcb",
         UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
@@ -187,7 +171,7 @@ public class PermissionAndCredentialTest {
         .contentType(APPLICATION_JSON)
         .content(requestBody));
 
-    assertAclSuccessfullyCreatedAndAudited(
+    assertAclSuccessfullyCreated(
         result,
         "mtls-app:a12345e5-b2b0-4648-a0d0-772d3d399dcb",
         UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
@@ -195,7 +179,6 @@ public class PermissionAndCredentialTest {
 
   @Test
   public void put_withClientCredentialAndAnAce() throws Exception {
-    // language=JSON
     String requestBody = "{\n"
         + "  \"type\":\"password\",\n"
         + "  \"name\":\"/test-password\",\n"
@@ -213,12 +196,11 @@ public class PermissionAndCredentialTest {
         .contentType(APPLICATION_JSON)
         .content(requestBody));
 
-    assertCreatorAndExtraAclSuccessfullyCreatedAndAudited(result, UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID, UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
+    assertCreatorAndExtraAclSuccessfullyCreated(result, UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID, UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
   }
 
   @Test
   public void post_withClientCredentialAndAnAce() throws Exception {
-    // language=JSON
     String requestBody = "{\n"
         + "  \"type\":\"password\",\n"
         + "  \"name\":\"/test-password\",\n"
@@ -235,14 +217,13 @@ public class PermissionAndCredentialTest {
         .contentType(APPLICATION_JSON)
         .content(requestBody));
 
-    assertCreatorAndExtraAclSuccessfullyCreatedAndAudited(result, UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID, UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
+    assertCreatorAndExtraAclSuccessfullyCreated(result, UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID, UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
   }
 
   @Test
   public void put_withExistingCredentialAndAnAce_andOverwriteSetToTrue() throws Exception {
     createExistingCredential();
 
-    // language=JSON
     String requestBodyWithNewAces = "{\n"
         + "  \"type\":\"password\",\n"
         + "  \"name\":\"/test-password\",\n"
@@ -262,14 +243,13 @@ public class PermissionAndCredentialTest {
         .contentType(APPLICATION_JSON)
         .content(requestBodyWithNewAces));
 
-    assertAclUpdatedAndAudited(response, UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
+    assertAclUpdated(response, UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
   }
 
   @Test
   public void post_withExistingCredentialAndAnAce_andOverwriteSetToTrue() throws Exception {
     createExistingCredential();
 
-    // language=JSON
     String requestBodyWithNewAces = "{\n"
         + "  \"type\":\"password\",\n"
         + "  \"name\":\"/test-password\",\n"
@@ -289,14 +269,13 @@ public class PermissionAndCredentialTest {
         .content(requestBodyWithNewAces))
         .andDo(print());
 
-    assertAclUpdatedAndAudited(response, UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
+    assertAclUpdated(response, UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
   }
 
   @Test
   public void put_withExistingCredentialAndAnAce_andOverwriteSetToFalse() throws Exception {
     createExistingCredential();
 
-    // language=JSON
     String requestBodyWithNewAces = "{\n"
         + "  \"type\":\"password\",\n"
         + "  \"name\":\"/test-password\",\n"
@@ -316,14 +295,34 @@ public class PermissionAndCredentialTest {
         .contentType(APPLICATION_JSON)
         .content(requestBodyWithNewAces));
 
-    assertAclNotUpdatedButStillAudited(response);
+    response
+        .andExpect(status().isOk())
+        .andDo(print())
+        .andExpect(jsonPath("$.type", equalTo("password")));
+
+    MvcResult result = mockMvc
+        .perform(get("/api/v1/permissions?credential_name=" + "/test-password")
+            .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andReturn();
+    String content = result.getResponse().getContentAsString();
+    PermissionsView acl = JsonTestHelper
+        .deserialize(content, PermissionsView.class);
+    assertThat(acl.getCredentialName(), equalTo("/test-password"));
+    assertThat(acl.getPermissions(), containsInAnyOrder(
+        samePropertyValuesAs(
+            new PermissionEntry(UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
+                asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
+        samePropertyValuesAs(
+            new PermissionEntry(UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID,
+                asList(READ, WRITE)))));
   }
 
   @Test
   public void post_withExistingCredentialAndAnAce_andOverwriteSetToFalse() throws Exception {
     createExistingCredential();
 
-    // language=JSON
     String requestBodyWithNewAces = "{\n"
         + "  \"type\":\"password\",\n"
         + "  \"name\":\"/test-password\",\n"
@@ -342,7 +341,28 @@ public class PermissionAndCredentialTest {
         .contentType(APPLICATION_JSON)
         .content(requestBodyWithNewAces));
 
-    assertAclNotUpdatedButStillAudited(response);
+    response
+        .andExpect(status().isOk())
+        .andDo(print())
+        .andExpect(jsonPath("$.type", equalTo("password")));
+
+    MvcResult result = mockMvc
+        .perform(get("/api/v1/permissions?credential_name=" + "/test-password")
+            .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andReturn();
+    String content = result.getResponse().getContentAsString();
+    PermissionsView acl = JsonTestHelper
+        .deserialize(content, PermissionsView.class);
+    assertThat(acl.getCredentialName(), equalTo("/test-password"));
+    assertThat(acl.getPermissions(), containsInAnyOrder(
+        samePropertyValuesAs(
+            new PermissionEntry(UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
+                asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
+        samePropertyValuesAs(
+            new PermissionEntry(UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID,
+                asList(READ, WRITE)))));
   }
 
   @Test
@@ -412,69 +432,35 @@ public class PermissionAndCredentialTest {
         .andExpect(jsonPath("$.type", equalTo("password")));
   }
 
-  private void assertAclSuccessfullyCreatedAndAudited(ResultActions result, String actor, String token)
+  private void assertAclSuccessfullyCreated(ResultActions result, String actor, String token)
       throws Exception {
-    succeeds(result);
+    result
+        .andExpect(status().isOk())
+        .andDo(print())
+        .andExpect(jsonPath("$.type", equalTo("password")));
 
-    auditsTheRequest(actor);
     hasCreatorAcl(token, actor);
   }
 
-  private void assertCreatorAndExtraAclSuccessfullyCreatedAndAudited(ResultActions result, String actor, String token)
+  private void assertCreatorAndExtraAclSuccessfullyCreated(ResultActions result, String actor, String token)
       throws Exception {
-    succeeds(result);
+    result
+        .andExpect(status().isOk())
+        .andDo(print())
+        .andExpect(jsonPath("$.type", equalTo("password")));
 
-    auditsTheRequestWithExtraActor(actor);
     hasCreatorAndOtherAcl(token, actor);
   }
 
-  private void assertAclUpdatedAndAudited(ResultActions result, String token)
+  private void assertAclUpdated(ResultActions result, String token)
       throws Exception {
-    succeeds(result);
-
-    auditsTheRequestWithNewPermissions();
+    result
+        .andExpect(status().isOk())
+        .andDo(print())
+        .andExpect(jsonPath("$.type", equalTo("password")));
     hasEditedAcl(token);
   }
 
-
-  private void assertAclNotUpdatedButStillAudited(ResultActions response) throws Exception {
-    succeeds(response);
-
-    auditsTheRequestWithNoNewPermissions();
-    hasUnchangedAcl();
-  }
-
-  private void hasUnchangedAcl() throws Exception {
-    MvcResult result = mockMvc
-        .perform(get("/api/v1/permissions?credential_name=" + "/test-password")
-            .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
-        .andDo(print())
-        .andExpect(status().isOk())
-        .andReturn();
-    String content = result.getResponse().getContentAsString();
-    PermissionsView acl = JsonTestHelper
-        .deserialize(content, PermissionsView.class);
-    assertThat(acl.getCredentialName(), equalTo("/test-password"));
-    assertThat(acl.getPermissions(), containsInAnyOrder(
-        samePropertyValuesAs(
-            new PermissionEntry(UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
-                asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
-        samePropertyValuesAs(
-            new PermissionEntry(UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID,
-                asList(READ, WRITE)))));
-  }
-
-  private void auditsTheRequestWithNoNewPermissions() throws Exception {
-    List<EventAuditRecordParameters> auditRecordParameters = newArrayList(
-        new EventAuditRecordParameters(CREDENTIAL_ACCESS, "/test-password")
-    );
-    auditingHelper.verifyAuditing(
-        UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID,
-        "/api/v1/data",
-        200,
-        auditRecordParameters
-    );
-  }
 
   private void hasEditedAcl(String token) throws Exception {
     MvcResult result = mockMvc
@@ -497,22 +483,6 @@ public class PermissionAndCredentialTest {
         samePropertyValuesAs(
             new PermissionEntry(UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID,
                 asList(READ, WRITE, DELETE)))));
-  }
-
-  private void auditsTheRequestWithNewPermissions() {
-    List<EventAuditRecordParameters> auditRecordParameters = newArrayList(
-        new EventAuditRecordParameters(CREDENTIAL_UPDATE, "/test-password"),
-        new EventAuditRecordParameters(ACL_UPDATE, "/test-password", WRITE, MTLS_APP_GUID),
-        new EventAuditRecordParameters(ACL_UPDATE, "/test-password", READ, UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID),
-        new EventAuditRecordParameters(ACL_UPDATE, "/test-password", WRITE, UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID),
-        new EventAuditRecordParameters(ACL_UPDATE, "/test-password", DELETE, UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID)
-    );
-    auditingHelper.verifyAuditing(
-        UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID,
-        "/api/v1/data",
-        200,
-        auditRecordParameters
-    );
   }
 
   private PermissionsView getAcl(String token) throws Exception {
@@ -541,49 +511,5 @@ public class PermissionAndCredentialTest {
             asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
         samePropertyValuesAs(
             new PermissionEntry(MTLS_APP_GUID, asList(READ)))));
-  }
-
-  private void auditsTheRequest(String actor) {
-    List<EventAuditRecordParameters> auditRecordParameters = newArrayList(
-        new EventAuditRecordParameters(CREDENTIAL_UPDATE, "/test-password"),
-        new EventAuditRecordParameters(ACL_UPDATE, "/test-password", READ, actor),
-        new EventAuditRecordParameters(ACL_UPDATE, "/test-password", WRITE, actor),
-        new EventAuditRecordParameters(ACL_UPDATE, "/test-password", DELETE, actor),
-        new EventAuditRecordParameters(ACL_UPDATE, "/test-password", READ_ACL, actor),
-        new EventAuditRecordParameters(ACL_UPDATE, "/test-password", WRITE_ACL, actor)
-    );
-
-    auditingHelper.verifyAuditing(
-        actor,
-        "/api/v1/data",
-        200,
-        auditRecordParameters
-    );
-  }
-
-  private void auditsTheRequestWithExtraActor(String actor) {
-    List<EventAuditRecordParameters> auditRecordParameters = newArrayList(
-        new EventAuditRecordParameters(CREDENTIAL_UPDATE, "/test-password"),
-        new EventAuditRecordParameters(ACL_UPDATE, "/test-password", READ, MTLS_APP_GUID),
-        new EventAuditRecordParameters(ACL_UPDATE, "/test-password", READ, actor),
-        new EventAuditRecordParameters(ACL_UPDATE, "/test-password", WRITE, actor),
-        new EventAuditRecordParameters(ACL_UPDATE, "/test-password", DELETE, actor),
-        new EventAuditRecordParameters(ACL_UPDATE, "/test-password", READ_ACL, actor),
-        new EventAuditRecordParameters(ACL_UPDATE, "/test-password", WRITE_ACL, actor)
-    );
-
-    auditingHelper.verifyAuditing(
-        actor,
-        "/api/v1/data",
-        200,
-        auditRecordParameters
-    );
-  }
-
-  private void succeeds(ResultActions result) throws Exception {
-    result
-        .andExpect(status().isOk())
-        .andDo(print())
-        .andExpect(jsonPath("$.type", equalTo("password")));
   }
 }

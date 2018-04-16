@@ -171,7 +171,7 @@ public class CredentialsController {
 
     return eventAuditLogService
         .auditEvents(eventAuditRecordParametersList -> new FindCredentialResults(
-            credentialService.findStartingWithPath(path, eventAuditRecordParametersList)));
+            credentialService.findStartingWithPath(path)));
   }
 
   @RequestMapping(path = "", params = "paths=true", method = RequestMethod.GET)
@@ -182,7 +182,7 @@ public class CredentialsController {
     auditRecord.setRequestDetails(findCredential);
 
     return eventAuditLogService.auditEvents(eventAuditRecordParametersList -> {
-      List<String> paths = credentialService.findAllPaths(eventAuditRecordParametersList);
+      List<String> paths = credentialService.findAllPaths();
       return FindPathResults.fromEntity(paths);
     });
   }
@@ -196,7 +196,7 @@ public class CredentialsController {
 
     return eventAuditLogService
         .auditEvents(eventAuditRecordParametersList -> new FindCredentialResults(
-            credentialService.findContainingName(nameLike, eventAuditRecordParametersList)));
+            credentialService.findContainingName(nameLike)));
   }
 
 

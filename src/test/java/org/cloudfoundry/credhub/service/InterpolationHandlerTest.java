@@ -95,7 +95,7 @@ public class InterpolationHandlerTest {
     PasswordCredentialVersion passwordCredential = mock(PasswordCredentialVersion.class);
     when(passwordCredential.getName()).thenReturn("/password_cred");
 
-    doReturn(singletonList(passwordCredential)).when(credentialService).findNByName("/password_cred", 1, eventAuditRecordParameters);
+    doReturn(singletonList(passwordCredential)).when(credentialService).findNByName("/password_cred", 1);
 
     try {
       subject.interpolateCredHubReferences(deserialize(inputJson, Map.class), eventAuditRecordParameters);
@@ -254,11 +254,11 @@ public class InterpolationHandlerTest {
     jsonCredetials.put("secret3-2", "secret3-2-value");
     doReturn(jsonCredetials).when(jsonCredential2).getValue();
 
-    doReturn(singletonList(jsonCredential)).when(credentialService).findNByName("/cred1", 1, newArrayList());
+    doReturn(singletonList(jsonCredential)).when(credentialService).findNByName("/cred1", 1);
 
-    doReturn(singletonList(jsonCredential1)).when(credentialService).findNByName("/cred2", 1, newArrayList());
+    doReturn(singletonList(jsonCredential1)).when(credentialService).findNByName("/cred2", 1);
 
-    doReturn(singletonList(jsonCredential2)).when(credentialService).findNByName("/cred3", 1, newArrayList());
+    doReturn(singletonList(jsonCredential2)).when(credentialService).findNByName("/cred3", 1);
 
     response = subject.interpolateCredHubReferences(inputJson, eventAuditRecordParameters);
   }

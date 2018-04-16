@@ -7,11 +7,11 @@ import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.domain.Encryptor;
 import org.cloudfoundry.credhub.domain.SshCredentialVersion;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
+import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.cloudfoundry.credhub.service.PermissionCheckingService;
 import org.cloudfoundry.credhub.service.PermissionedCredentialService;
 import org.cloudfoundry.credhub.view.CredentialView;
 import org.cloudfoundry.credhub.view.DataResponse;
-import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,7 +27,6 @@ import static org.assertj.core.api.Java6Assertions.fail;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -76,20 +75,20 @@ public class CredentialsHandlerTest {
 
   @Test
   public void deleteCredential_whenTheDeletionSucceeds_deletesTheCredential() {
-    when(permissionedCredentialService.delete(eq(CREDENTIAL_NAME), eq(auditRecordParametersList))).thenReturn(true);
+    when(permissionedCredentialService.delete(eq(CREDENTIAL_NAME))).thenReturn(true);
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.DELETE))
         .thenReturn(true);
 
     subject.deleteCredential(CREDENTIAL_NAME, auditRecordParametersList);
 
-    verify(permissionedCredentialService, times(1)).delete(eq(CREDENTIAL_NAME), eq(auditRecordParametersList));
+    verify(permissionedCredentialService, times(1)).delete(eq(CREDENTIAL_NAME));
   }
 
   @Test
   public void deleteCredential_whenTheCredentialIsNotDeleted_throwsAnException() {
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.DELETE))
         .thenReturn(true);
-    when(permissionedCredentialService.delete(eq(CREDENTIAL_NAME), eq(auditRecordParametersList))).thenReturn(false);
+    when(permissionedCredentialService.delete(eq(CREDENTIAL_NAME))).thenReturn(false);
 
     try {
       subject.deleteCredential(CREDENTIAL_NAME, auditRecordParametersList);
@@ -135,7 +134,7 @@ public class CredentialsHandlerTest {
 
   @Test
   public void getMostRecentCredentialVersion_whenTheCredentialExists_returnsDataResponse() {
-    when(permissionedCredentialService.findActiveByName(eq(CREDENTIAL_NAME), eq(auditRecordParametersList)))
+    when(permissionedCredentialService.findActiveByName(eq(CREDENTIAL_NAME)))
         .thenReturn(Arrays.asList(version1));
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.READ))
         .thenReturn(true);
@@ -174,7 +173,7 @@ public class CredentialsHandlerTest {
 
   @Test
   public void getCredentialVersion_whenTheVersionExists_returnsDataResponse() {
-    when(permissionedCredentialService.findVersionByUuid(eq(UUID_STRING), any(List.class)))
+    when(permissionedCredentialService.findVersionByUuid(eq(UUID_STRING)))
         .thenReturn(version1);
 
     CredentialView credentialVersion = subject.getCredentialVersionByUUID(UUID_STRING, newArrayList());

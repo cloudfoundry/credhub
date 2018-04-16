@@ -4,12 +4,11 @@ package org.cloudfoundry.credhub.integration;
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.data.CredentialVersionDataService;
 import org.cloudfoundry.credhub.helper.AuditingHelper;
+import org.cloudfoundry.credhub.helper.RequestHelper;
 import org.cloudfoundry.credhub.repository.EventAuditRecordRepository;
 import org.cloudfoundry.credhub.repository.RequestAuditRecordRepository;
-import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
-import org.cloudfoundry.credhub.audit.AuditingOperationCode;
-import org.cloudfoundry.credhub.helper.RequestHelper;
 import org.cloudfoundry.credhub.util.AuthConstants;
+import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -114,9 +113,6 @@ public class CredentialDeleteTest {
 
     mockMvc.perform(request)
         .andExpect(status().isNoContent());
-
-    auditingHelper.verifyAuditing(
-        AuditingOperationCode.CREDENTIAL_DELETE, CREDENTIAL_NAME.toUpperCase(), AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 204);
   }
 
   @Test
@@ -128,9 +124,6 @@ public class CredentialDeleteTest {
 
     mockMvc.perform(request)
         .andExpect(status().isNoContent());
-
-    auditingHelper.verifyAuditing(
-        AuditingOperationCode.CREDENTIAL_DELETE, "/some-ca", AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 204);
   }
 
   @Test
@@ -143,8 +136,5 @@ public class CredentialDeleteTest {
 
     mockMvc.perform(request)
         .andExpect(status().isNoContent());
-
-    auditingHelper.verifyAuditing(
-        AuditingOperationCode.CREDENTIAL_DELETE, CREDENTIAL_NAME, AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 204);
   }
 }

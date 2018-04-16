@@ -20,9 +20,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import static org.cloudfoundry.credhub.audit.AuditingOperationCode.CREDENTIAL_FIND;
 import static org.cloudfoundry.credhub.helper.RequestHelper.generatePassword;
-import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
 import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.Assert.assertTrue;
@@ -71,13 +69,6 @@ public class CredentialFindTest {
     response.andExpect(status().isOk())
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
         .andExpect(jsonPath("$.credentials[0].name").value(credentialName));
-  }
-
-  @Test
-  public void findCredentials_byNameLike_whenSearchTermContainsNoSlash_persistsAnAuditEntry() throws Exception {
-    findCredentialsByNameLike();
-
-    auditingHelper.verifyAuditing(CREDENTIAL_FIND, null, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 200);
   }
 
   @Test
@@ -153,8 +144,6 @@ public class CredentialFindTest {
         .accept(APPLICATION_JSON);
 
     mockMvc.perform(request);
-
-    auditingHelper.verifyAuditing(CREDENTIAL_FIND, null, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 200);
   }
 
   @Test

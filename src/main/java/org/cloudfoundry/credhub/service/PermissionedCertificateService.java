@@ -66,7 +66,7 @@ public class PermissionedCertificateService {
       validateNoTransitionalVersionsAlreadyExist(generateRequest.getName());
     }
     return permissionedCredentialService
-        .save(existingCredentialVersion, credentialValue, generateRequest, auditRecordParameters);
+        .save(existingCredentialVersion, credentialValue, generateRequest);
   }
 
   private void validateNoTransitionalVersionsAlreadyExist(String name) {

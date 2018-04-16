@@ -24,7 +24,6 @@ import org.cloudfoundry.credhub.request.BaseCredentialRequest;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.cloudfoundry.credhub.request.StringGenerationParameters;
-import org.cloudfoundry.credhub.view.FindCredentialResult;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,10 +37,6 @@ import java.util.UUID;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.assertj.core.api.Java6Assertions.fail;
-import static org.cloudfoundry.credhub.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static org.cloudfoundry.credhub.audit.AuditingOperationCode.CREDENTIAL_DELETE;
-import static org.cloudfoundry.credhub.audit.AuditingOperationCode.CREDENTIAL_FIND;
-import static org.cloudfoundry.credhub.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 import static org.cloudfoundry.credhub.request.PermissionOperation.DELETE;
 import static org.cloudfoundry.credhub.request.PermissionOperation.READ;
 import static org.cloudfoundry.credhub.request.PermissionOperation.WRITE;
@@ -141,32 +136,7 @@ public class PermissionedCredentialServiceTest {
     when(request.getOverwriteMode()).thenReturn(CredentialWriteMode.NO_OVERWRITE.mode);
     when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredentialVersion);
 
-    subject.save(existingCredentialVersion, credentialValue, request, auditRecordParameters);
-  }
-
-  @Test
-  public void save_whenThereIsAnExistingCredentialAndOverwriteIsFalse_logsCREDENTIAL_ACCESS() {
-    when(request.getType()).thenReturn("password");
-    when(request.getOverwriteMode()).thenReturn(CredentialWriteMode.NO_OVERWRITE.mode);
-    when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredentialVersion);
-    subject.save(existingCredentialVersion, credentialValue, request, auditRecordParameters);
-
-    assertThat(auditRecordParameters.get(0).getAuditingOperationCode(), equalTo(CREDENTIAL_ACCESS));
-    assertThat(auditRecordParameters.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
-  }
-
-  @Test
-  public void save_whenThereIsAnExistingCredentialAndOverwriteIsTrue_logsCREDENTIAL_UPDATE() {
-    when(request.getType()).thenReturn("password");
-    when(request.getOverwriteMode()).thenReturn(CredentialWriteMode.OVERWRITE.mode);
-    when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredentialVersion);
-    when(credentialVersionDataService.save(any(CredentialVersion.class)))
-        .thenReturn(new PasswordCredentialVersion().setEncryptor(encryptor));
-
-    subject.save(existingCredentialVersion, credentialValue, request, auditRecordParameters);
-
-    assertThat(auditRecordParameters.get(0).getAuditingOperationCode(), equalTo(CREDENTIAL_UPDATE));
-    assertThat(auditRecordParameters.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
+    subject.save(existingCredentialVersion, credentialValue, request);
   }
 
   @Test
@@ -185,7 +155,7 @@ public class PermissionedCredentialServiceTest {
 
     accessControlEntries.add(new PermissionEntry("test-user", Arrays.asList(WRITE, WRITE_ACL)));
     try {
-      subject.save(existingCredentialVersion, credentialValue, request, auditRecordParameters);
+      subject.save(existingCredentialVersion, credentialValue, request);
     } catch (InvalidPermissionOperationException e) {
       assertThat(e.getMessage(), equalTo("error.permission.invalid_update_operation"));
     }
@@ -196,7 +166,7 @@ public class PermissionedCredentialServiceTest {
     when(request.getType()).thenReturn("password");
     when(request.getOverwriteMode()).thenReturn(CredentialWriteMode.NO_OVERWRITE.mode);
     when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredentialVersion);
-    subject.save(existingCredentialVersion, credentialValue, request, auditRecordParameters);
+    subject.save(existingCredentialVersion, credentialValue, request);
 
     verify(permissionCheckingService).hasPermission(userContext.getActor(),
         CREDENTIAL_NAME, WRITE);
@@ -208,7 +178,7 @@ public class PermissionedCredentialServiceTest {
     when(request.getOverwriteMode()).thenReturn(CredentialWriteMode.NO_OVERWRITE.mode);
     when(credentialVersionDataService.save(any(CredentialVersion.class)))
         .thenReturn(new PasswordCredentialVersion().setEncryptor(encryptor));
-    subject.save(existingCredentialVersion, credentialValue, request, auditRecordParameters);
+    subject.save(existingCredentialVersion, credentialValue, request);
   }
 
   @Test
@@ -224,7 +194,7 @@ public class PermissionedCredentialServiceTest {
         .add(new PermissionEntry("some_actor", Arrays.asList(PermissionOperation.READ_ACL)));
 
     try {
-      subject.save(existingCredentialVersion, credentialValue, request, auditRecordParameters);
+      subject.save(existingCredentialVersion, credentialValue, request);
     } catch (PermissionException pe) {
       assertThat(pe.getMessage(), equalTo("error.credential.invalid_access"));
     }
@@ -238,7 +208,7 @@ public class PermissionedCredentialServiceTest {
         .thenReturn(new PasswordCredentialVersion().setEncryptor(encryptor));
     when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredentialVersion);
 
-    subject.save(existingCredentialVersion, credentialValue, request, auditRecordParameters);
+    subject.save(existingCredentialVersion, credentialValue, request);
 
     assertThat(accessControlEntries, hasSize(0));
   }
@@ -258,7 +228,7 @@ public class PermissionedCredentialServiceTest {
         null,
         generationParameters)).thenReturn(newVersion);
 
-    subject.save(null, credentialValue, request, auditRecordParameters);
+    subject.save(null, credentialValue, request);
 
     verify(credentialVersionDataService).save(newVersion);
   }
@@ -270,14 +240,10 @@ public class PermissionedCredentialServiceTest {
         .thenReturn(false);
 
     try {
-      subject.delete(CREDENTIAL_NAME, auditRecordParameters);
+      subject.delete(CREDENTIAL_NAME);
       fail("Should throw exception");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
-      assertThat(auditRecordParameters, hasSize(1));
-      assertThat(auditRecordParameters.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
-      assertThat(auditRecordParameters.get(0).getAuditingOperationCode(),
-          equalTo(CREDENTIAL_DELETE));
     }
   }
 
@@ -300,14 +266,10 @@ public class PermissionedCredentialServiceTest {
         .thenReturn(false);
 
     try {
-      subject.findNByName(CREDENTIAL_NAME, 1, auditRecordParameters);
+      subject.findNByName(CREDENTIAL_NAME, 1);
       fail("Should throw exception");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
-      assertThat(auditRecordParameters, hasSize(1));
-      assertThat(auditRecordParameters.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
-      assertThat(auditRecordParameters.get(0).getAuditingOperationCode(),
-          equalTo(CREDENTIAL_ACCESS));
     }
   }
 
@@ -317,7 +279,7 @@ public class PermissionedCredentialServiceTest {
         .thenReturn(true);
 
     try {
-      subject.findNByName(CREDENTIAL_NAME, -1, auditRecordParameters);
+      subject.findNByName(CREDENTIAL_NAME, -1);
       fail("should throw exception");
     } catch (InvalidQueryParameterException e) {
       assertThat(e.getInvalidQueryParameter(), equalTo("versions"));
@@ -326,16 +288,11 @@ public class PermissionedCredentialServiceTest {
   }
 
   @Test
-  public void getCredentialVersion_whenTheVersionExists_setsCorrectAuditingParametersAndReturnsTheCredential() {
+  public void getCredentialVersion_whenTheVersionExists_returnsTheCredential() {
     final CredentialVersion credentialVersionFound = subject
-        .findVersionByUuid(VERSION_UUID_STRING, auditRecordParameters);
+        .findVersionByUuid(VERSION_UUID_STRING);
 
     assertThat(credentialVersionFound, equalTo(existingCredentialVersion));
-
-    assertThat(auditRecordParameters, hasSize(1));
-    assertThat(auditRecordParameters.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
-    assertThat(auditRecordParameters.get(0).getAuditingOperationCode(),
-        equalTo(CREDENTIAL_ACCESS));
   }
 
   @Test
@@ -344,7 +301,7 @@ public class PermissionedCredentialServiceTest {
         .thenReturn(null);
 
     try {
-      subject.findVersionByUuid(VERSION_UUID_STRING, auditRecordParameters);
+      subject.findVersionByUuid(VERSION_UUID_STRING);
       fail("should throw exception");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
@@ -357,14 +314,10 @@ public class PermissionedCredentialServiceTest {
         .thenReturn(false);
 
     try {
-      subject.findVersionByUuid(VERSION_UUID_STRING, auditRecordParameters);
+      subject.findVersionByUuid(VERSION_UUID_STRING);
       fail("should throw exception");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
-      assertThat(auditRecordParameters, hasSize(1));
-      assertThat(auditRecordParameters.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
-      assertThat(auditRecordParameters.get(0).getAuditingOperationCode(),
-          equalTo(CREDENTIAL_ACCESS));
     }
   }
 
@@ -397,26 +350,6 @@ public class PermissionedCredentialServiceTest {
   }
 
   @Test
-  public void findStartingWithPath_updatesAuditLoginWithFindRequest() {
-    when(credentialVersionDataService.findStartingWithPath("test_path"))
-        .thenReturn(new ArrayList<FindCredentialResult>());
-    subject.findStartingWithPath("test_path", auditRecordParameters);
-    assertThat(auditRecordParameters, hasSize(1));
-    assertThat(auditRecordParameters.get(0).getAuditingOperationCode(),
-        equalTo(CREDENTIAL_FIND));
-  }
-
-  @Test
-  public void findContainingName_updatesAuditLoginWithFindRequest() {
-    when(credentialVersionDataService.findContainingName("test_path"))
-        .thenReturn(new ArrayList<FindCredentialResult>());
-    subject.findContainingName("test_path", auditRecordParameters);
-    assertThat(auditRecordParameters, hasSize(1));
-    assertThat(auditRecordParameters.get(0).getAuditingOperationCode(),
-        equalTo(CREDENTIAL_FIND));
-  }
-
-  @Test
   public void save_whenThereIsAnExistingCredentialAndOverwriteModeIsConvergeAndParametersAreSame_DoesNotOverwriteCredential() {
     when(request.getType()).thenReturn("password");
     when(request.getOverwriteMode()).thenReturn(CredentialWriteMode.CONVERGE.mode);
@@ -437,7 +370,7 @@ public class PermissionedCredentialServiceTest {
         originalCredentialVersion,
         generationParameters)).thenReturn(newVersion);
 
-    subject.save(originalCredentialVersion, credentialValue, request, auditRecordParameters);
+    subject.save(originalCredentialVersion, credentialValue, request);
 
     verify(credentialVersionDataService, never()).save(newVersion);
   }
@@ -463,7 +396,7 @@ public class PermissionedCredentialServiceTest {
         originalCredentialVersion,
         generationParameters)).thenReturn(newVersion);
 
-    subject.save(originalCredentialVersion, credentialValue, request, auditRecordParameters);
+    subject.save(originalCredentialVersion, credentialValue, request);
 
     verify(credentialVersionDataService).save(newVersion);
   }
@@ -473,7 +406,7 @@ public class PermissionedCredentialServiceTest {
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(true);
 
-    assertThat(subject.findByUuid(CREDENTIAL_UUID, auditRecordParameters), equalTo(credential));
+    assertThat(subject.findByUuid(CREDENTIAL_UUID), equalTo(credential));
   }
 
   @Test
@@ -482,7 +415,7 @@ public class PermissionedCredentialServiceTest {
         .thenReturn(false);
 
     try {
-      subject.findByUuid(CREDENTIAL_UUID, auditRecordParameters);
+      subject.findByUuid(CREDENTIAL_UUID);
       fail("Should throw exception");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
@@ -490,18 +423,9 @@ public class PermissionedCredentialServiceTest {
   }
 
   @Test
-  public void findByUuid_recordsAuditParameters() {
-    subject.findByUuid(CREDENTIAL_UUID, auditRecordParameters);
-    assertThat(auditRecordParameters, hasSize(1));
-    assertThat(auditRecordParameters.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
-    assertThat(auditRecordParameters.get(0).getAuditingOperationCode(),
-        equalTo(CREDENTIAL_ACCESS));
-  }
-
-  @Test
   public void findByUuid_whenNoMatchingCredentialExists_throwsEntryNotFound() {
     try {
-      subject.findByUuid(UUID.randomUUID(), auditRecordParameters);
+      subject.findByUuid(UUID.randomUUID());
       fail("Should throw exception");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));

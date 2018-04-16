@@ -74,8 +74,7 @@ public class PermissionedCertificateServiceTest {
     Mockito.verify(generateRequest).setType(eq("certificate"));
     Mockito.verify(permissionedCredentialService).save(any(),
         eq(value),
-        eq(generateRequest),
-        any()
+        eq(generateRequest)
     );
   }
 
@@ -103,8 +102,7 @@ public class PermissionedCertificateServiceTest {
     Mockito.verify(generateRequest).setType(eq("certificate"));
     Mockito.verify(permissionedCredentialService).save(any(),
         eq(value),
-        eq(generateRequest),
-        any()
+        eq(generateRequest)
     );
   }
 

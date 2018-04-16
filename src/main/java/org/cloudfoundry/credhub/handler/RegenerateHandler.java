@@ -47,8 +47,7 @@ public class RegenerateHandler {
     final CredentialVersion credentialVersion = credentialService.save(
         existingCredentialVersion,
         credentialValue,
-        generateRequest,
-        auditRecordParameters
+        generateRequest
     );
 
     auditRecord.setResource(credentialVersion);
@@ -96,8 +95,7 @@ public class RegenerateHandler {
     CredentialVersion credentialVersion = credentialService.save(
         existingCredentialVersion,
         newCredentialValue,
-        generateRequest,
-        auditRecordParameters
+        generateRequest
     );
     results.add(credentialVersion.getName());
 

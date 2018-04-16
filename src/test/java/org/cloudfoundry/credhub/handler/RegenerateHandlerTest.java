@@ -28,7 +28,6 @@ import static com.google.common.collect.Lists.newArrayList;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isOneOf;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
@@ -80,7 +79,7 @@ public class RegenerateHandlerTest {
     when(generationRequestGenerator.createGenerateRequest(credentialVersion, CREDENTIAL_NAME, auditRecordParameters))
         .thenReturn(request);
     when(credentialGenerator.generate(request)).thenReturn(credValue);
-    when(credentialService.save(anyObject(), anyObject(), anyObject(), anyList())).thenReturn(credentialVersion);
+    when(credentialService.save(anyObject(), anyObject(), anyObject())).thenReturn(credentialVersion);
 
     subject.handleRegenerate(CREDENTIAL_NAME, auditRecordParameters);
 
@@ -105,7 +104,7 @@ public class RegenerateHandlerTest {
         .thenReturn(request);
     when(credentialGenerator.generate(request)).thenReturn(credValue);
 
-    when(credentialService.save(credVersion, credValue, request, auditRecordParameters)).thenReturn(credVersion);
+    when(credentialService.save(credVersion, credValue, request)).thenReturn(credVersion);
 
     CertificateGenerationParameters generationParams = mock(CertificateGenerationParameters.class);
     when(generationParams.isCa()).thenReturn(true);
@@ -124,7 +123,7 @@ public class RegenerateHandlerTest {
     when(credentialService.findMostRecent(anyString()))
         .thenReturn(mock(CredentialVersion.class));
     CredentialVersion credentialVersion = mock(CertificateCredentialVersion.class);
-    when(credentialService.save(anyObject(), anyObject(), anyObject(), anyList())).thenReturn(credentialVersion);
+    when(credentialService.save(anyObject(), anyObject(), anyObject())).thenReturn(credentialVersion);
     when(credentialVersion.getName()).thenReturn("someName");
 
     CertificateGenerateRequest generateRequest1 = mock(CertificateGenerateRequest.class);
@@ -146,8 +145,8 @@ public class RegenerateHandlerTest {
 
     subject.handleBulkRegenerate(SIGNER_NAME, newArrayList());
 
-    verify(credentialService).save(any(), any(), eq(generateRequest1), any());
-    verify(credentialService).save(any(), any(), eq(generateRequest2), any());
+    verify(credentialService).save(any(), any(), eq(generateRequest1));
+    verify(credentialService).save(any(), any(), eq(generateRequest2));
   }
   
   @Test
@@ -160,7 +159,7 @@ public class RegenerateHandlerTest {
         .thenReturn(mock(CredentialVersion.class));
 
     CredentialVersion credentialVersion = mock(CredentialVersion.class);
-    when(credentialService.save(anyObject(), anyObject(), anyObject(), anyList())).thenReturn(credentialVersion);
+    when(credentialService.save(anyObject(), anyObject(), anyObject())).thenReturn(credentialVersion);
     when(credentialVersion.getName()).thenReturn("placeholder");
 
     CertificateGenerateRequest generateRequest1 = mock(CertificateGenerateRequest.class);
@@ -195,10 +194,10 @@ public class RegenerateHandlerTest {
 
     subject.handleBulkRegenerate(SIGNER_NAME, newArrayList());
 
-    verify(credentialService).save(any(), any(), eq(generateRequest1), any());
-    verify(credentialService).save(any(), any(), eq(generateRequest3), any());
-    verify(credentialService).save(any(), any(), eq(generateRequest4), any());
-    verify(credentialService).save(any(), any(), eq(generateRequest2), any());
+    verify(credentialService).save(any(), any(), eq(generateRequest1));
+    verify(credentialService).save(any(), any(), eq(generateRequest3));
+    verify(credentialService).save(any(), any(), eq(generateRequest4));
+    verify(credentialService).save(any(), any(), eq(generateRequest2));
 
   }
 
