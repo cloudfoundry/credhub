@@ -64,17 +64,13 @@ public class CertificateServiceTest {
   }
 
   @Test
-  public void findByUuid_ReturnsCertificateWithMatchingUuidAndPersistsAuditEntry() {
+  public void findByUuid_ReturnsCertificateWithMatchingUuid() {
     when(permissionCheckingService.hasPermission(actor, credentialName, PermissionOperation.READ))
         .thenReturn(true);
 
     CertificateCredentialVersion certificate = subject.findByCredentialUuid(credentialUuid);
 
     assertThat(certificate, not(nullValue()));
-    assertThat(auditRecordParameters.size(), equalTo(1));
-    EventAuditRecordParameters auditRecord = this.auditRecordParameters.get(0);
-    assertThat(auditRecord.getAuditingOperationCode(), equalTo(AuditingOperationCode.CREDENTIAL_ACCESS));
-    assertThat(auditRecord.getCredentialName(), equalTo(credentialName));
   }
 
   @Test(expected = EntryNotFoundException.class)

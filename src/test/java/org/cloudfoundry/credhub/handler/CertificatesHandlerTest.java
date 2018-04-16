@@ -77,7 +77,7 @@ public class CertificatesHandlerTest {
     String certificateName = "some certificate";
 
     CredentialVersion credentialVersion = new CertificateCredentialVersion(certificateName);
-    when(permissionedCertificateService.getVersions(uuid, false, Collections.emptyList()))
+    when(permissionedCertificateService.getVersions(uuid, false))
         .thenReturn(Collections.singletonList(credentialVersion));
     List<CertificateView> certificateViews = subject
         .handleGetAllVersionsRequest(uuid.toString(), Collections.emptyList(), false);

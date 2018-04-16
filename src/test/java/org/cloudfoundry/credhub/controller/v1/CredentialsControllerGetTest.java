@@ -129,10 +129,6 @@ public class CredentialsControllerGetTest {
         .andExpect(jsonPath("$.data[0]" + ".value").value(CREDENTIAL_VALUE))
         .andExpect(jsonPath("$.data[0]" + ".id").value(uuid.toString()))
         .andExpect(jsonPath("$.data[0]" + ".version_created_at").value(FROZEN_TIME.toString()));
-
-    auditingHelper.verifyAuditing(
-        AuditingOperationCode.CREDENTIAL_ACCESS, CREDENTIAL_NAME, AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
-        "/api/v1/data", 200);
   }
 
   @Test
@@ -160,10 +156,6 @@ public class CredentialsControllerGetTest {
         .andExpect(status().isOk())
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
         .andExpect(jsonPath("$.data[0]" + ".value").value(CREDENTIAL_VALUE));
-
-    auditingHelper.verifyAuditing(
-        AuditingOperationCode.CREDENTIAL_ACCESS, CREDENTIAL_NAME, AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
-        "/api/v1/data", 200);
   }
 
   @Test
@@ -183,14 +175,6 @@ public class CredentialsControllerGetTest {
         .andExpect(
             jsonPath("$.error").value(expectedError1)
         );
-
-    auditingHelper.verifyAuditing(
-        AuditingOperationCode.CREDENTIAL_ACCESS,
-        "/invalid_name",
-        AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
-        "/api/v1/data",
-        404
-    );
   }
 
   @Test
@@ -239,14 +223,6 @@ public class CredentialsControllerGetTest {
         .andExpect(status().isNotFound())
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
         .andExpect(jsonPath("$.error").value(expectedError));
-
-    auditingHelper.verifyAuditing(
-        AuditingOperationCode.CREDENTIAL_ACCESS,
-        CREDENTIAL_NAME,
-        AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
-        "/api/v1/data",
-        404
-    );
   }
 
   @Test

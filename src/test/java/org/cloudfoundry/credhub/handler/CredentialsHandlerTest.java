@@ -102,7 +102,7 @@ public class CredentialsHandlerTest {
   @Test
   public void getAllCredentialVersions_whenTheCredentialExists_returnsADataResponse() {
     List<CredentialVersion> credentials = newArrayList(version1, version2);
-    when(permissionedCredentialService.findAllByName(eq(CREDENTIAL_NAME), eq(auditRecordParametersList)))
+    when(permissionedCredentialService.findAllByName(eq(CREDENTIAL_NAME)))
         .thenReturn(credentials);
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.READ))
         .thenReturn(true);
@@ -119,7 +119,7 @@ public class CredentialsHandlerTest {
 
   @Test
   public void getAllCredentialVersions_whenTheCredentialDoesNotExist_throwsException() {
-    when(permissionedCredentialService.findAllByName(eq(CREDENTIAL_NAME), eq(auditRecordParametersList)))
+    when(permissionedCredentialService.findAllByName(eq(CREDENTIAL_NAME)))
         .thenReturn(emptyList());
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.READ))
         .thenReturn(true);

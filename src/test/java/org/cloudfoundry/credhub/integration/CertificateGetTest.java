@@ -30,13 +30,11 @@ import java.util.List;
 import java.util.Map;
 
 import static org.cloudfoundry.credhub.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static org.cloudfoundry.credhub.audit.AuditingOperationCode.CREDENTIAL_FIND;
 import static org.cloudfoundry.credhub.helper.RequestHelper.generateCa;
 import static org.cloudfoundry.credhub.helper.RequestHelper.generateCertificateCredential;
 import static org.cloudfoundry.credhub.helper.RequestHelper.generatePassword;
 import static org.cloudfoundry.credhub.helper.RequestHelper.getCertificateCredentials;
 import static org.cloudfoundry.credhub.helper.RequestHelper.getCertificateCredentialsByName;
-import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID;
 import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN;
 import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
 import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
@@ -98,8 +96,6 @@ public class CertificateGetTest {
     assertThat(names, hasSize(2));
     assertThat(names, containsInAnyOrder("/first-certificate", "/second-certificate"));
     assertThat(names, not(containsInAnyOrder("/invalid-cert")));
-
-    auditingHelper.verifyAuditing(CREDENTIAL_FIND, null, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/certificates", 200);
   }
 
   @Test
@@ -135,7 +131,6 @@ public class CertificateGetTest {
 
     assertThat(names, hasSize(1));
     assertThat(names, containsInAnyOrder("/my-certificate"));
-    auditingHelper.verifyAuditing(CREDENTIAL_FIND, "/my-certificate", UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/certificates", 200);
   }
 
   @Test
@@ -151,7 +146,6 @@ public class CertificateGetTest {
         .andReturn().getResponse().getContentAsString();
 
     assertThat(response, containsString("The request could not be completed because the credential does not exist or you do not have sufficient authorization."));
-    auditingHelper.verifyAuditing(CREDENTIAL_FIND, "/some-other-certificate", UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/certificates", 404);
   }
 
   @Test
@@ -169,7 +163,6 @@ public class CertificateGetTest {
         .andReturn().getResponse().getContentAsString();
 
     assertThat(response, containsString("The request could not be completed because the credential does not exist or you do not have sufficient authorization."));
-    auditingHelper.verifyAuditing(CREDENTIAL_FIND, "/my-credential", UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/certificates", 404);
   }
 
   @Test
@@ -187,7 +180,6 @@ public class CertificateGetTest {
         .andReturn().getResponse().getContentAsString();
 
     assertThat(response, containsString("The request could not be completed because the credential does not exist or you do not have sufficient authorization."));
-    auditingHelper.verifyAuditing(CREDENTIAL_FIND, "/my-certificate", UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID, "/api/v1/certificates", 404);
   }
 
   @Test
@@ -217,9 +209,6 @@ public class CertificateGetTest {
     assertThat(certificates, hasSize(2));
     assertThat(certificates.get(0).get("id"), containsString(secondVersion));
     assertThat(certificates.get(1).get("id"), containsString(firstVersion));
-
-    auditingHelper.verifyAuditing(CREDENTIAL_ACCESS, "/first-certificate", UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/certificates/"+ certificateId+ "/versions", 200);
-
   }
 
   @Test

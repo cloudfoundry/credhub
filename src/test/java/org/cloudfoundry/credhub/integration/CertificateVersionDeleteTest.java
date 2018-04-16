@@ -3,7 +3,6 @@ package org.cloudfoundry.credhub.integration;
 
 import com.jayway.jsonpath.JsonPath;
 import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.audit.AuditingOperationCode;
 import org.cloudfoundry.credhub.constants.CredentialWriteMode;
 import org.cloudfoundry.credhub.helper.AuditingHelper;
 import org.cloudfoundry.credhub.helper.RequestHelper;
@@ -28,7 +27,6 @@ import org.springframework.web.context.WebApplicationContext;
 
 import static org.cloudfoundry.credhub.helper.RequestHelper.generateCertificateCredential;
 import static org.cloudfoundry.credhub.helper.RequestHelper.getCertificateCredentialsByName;
-import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
 import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -91,8 +89,6 @@ public class CertificateVersionDeleteTest {
         .andExpect(status().isOk())
         .andReturn().getResponse().getContentAsString();
 
-    auditingHelper.verifyAuditing(AuditingOperationCode.CREDENTIAL_DELETE, credentialName, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/certificates/" + uuid + "/versions/" + versionUuid, 200);
-
     String certificate = JsonPath.parse(response)
         .read("$.value.certificate");
     assertThat(certificate, equalTo(versionValue));
@@ -124,6 +120,5 @@ public class CertificateVersionDeleteTest {
     mockMvc.perform(request)
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error", equalTo("The minimum number of versions for a Certificate is 1.")));
-    auditingHelper.verifyAuditing(AuditingOperationCode.CREDENTIAL_DELETE, credentialName, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/certificates/" + uuid + "/versions/" + versionUuid, 400);
   }
 }

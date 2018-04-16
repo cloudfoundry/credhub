@@ -287,14 +287,10 @@ public class PermissionedCredentialServiceTest {
         .thenReturn(false);
 
     try {
-      subject.findAllByName(CREDENTIAL_NAME, auditRecordParameters);
+      subject.findAllByName(CREDENTIAL_NAME);
       fail("Should throw exception");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
-      assertThat(auditRecordParameters, hasSize(1));
-      assertThat(auditRecordParameters.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
-      assertThat(auditRecordParameters.get(0).getAuditingOperationCode(),
-          equalTo(CREDENTIAL_ACCESS));
     }
   }
 

@@ -37,7 +37,7 @@ public class CredentialsHandler {
   ) {
     List<CredentialVersion> credentialVersions;
     if (numberOfVersions == null) {
-      credentialVersions = credentialService.findAllByName(credentialName, auditRecordParametersList);
+      credentialVersions = credentialService.findAllByName(credentialName);
     } else {
       credentialVersions = credentialService.findNByName(credentialName, numberOfVersions, auditRecordParametersList);
 

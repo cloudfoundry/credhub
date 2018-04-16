@@ -11,8 +11,8 @@ import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
 import org.cloudfoundry.credhub.domain.ValueCredentialVersion;
 import org.cloudfoundry.credhub.entity.EventAuditRecord;
 import org.cloudfoundry.credhub.entity.RequestAuditRecord;
-import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.util.AuthConstants;
+import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,7 +31,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -49,7 +48,6 @@ import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
@@ -83,27 +81,6 @@ public class CredentialsControllerAuditLogTest {
     mockMvc = MockMvcBuilders.webAppContextSetup(applicationContext)
         .apply(springSecurity())
         .build();
-  }
-
-  @Test
-  public void gettingACredential_byName_makesACredentialAccessLogEntry() throws Exception {
-    doReturn(Arrays.asList(new PasswordCredentialVersion("/foo").setEncryptor(encryptor)))
-        .when(credentialVersionDataService).findAllByName(eq("foo"));
-
-    mockMvc.perform(get(CredentialsController.API_V1_DATA + "?name=foo")
-        .accept(MediaType.APPLICATION_JSON)
-        .contentType(MediaType.APPLICATION_JSON)
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-        .header("X-Forwarded-For", "1.1.1.1,2.2.2.2"));
-
-    ArgumentCaptor<List> recordCaptor = ArgumentCaptor
-        .forClass(List.class);
-    verify(eventAuditRecordDataService, times(1)).save(recordCaptor.capture());
-
-    EventAuditRecord auditRecord = (EventAuditRecord) recordCaptor.getValue().get(0);
-
-    assertThat(auditRecord.getCredentialName(), equalTo("/foo"));
-    assertThat(auditRecord.getOperation(), equalTo(CREDENTIAL_ACCESS.toString()));
   }
 
   @Test
