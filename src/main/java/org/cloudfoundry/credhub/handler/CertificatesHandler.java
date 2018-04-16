@@ -52,7 +52,7 @@ public class CertificatesHandler {
       CertificateRegenerateRequest request) {
 
     CertificateCredentialVersion existingCredentialVersion = certificateService
-        .findByCredentialUuid(credentialUuid, auditRecordParameters);
+        .findByCredentialUuid(credentialUuid);
 
     BaseCredentialGenerateRequest generateRequest = generationRequestGenerator
         .createGenerateRequest(existingCredentialVersion, existingCredentialVersion.getName(), auditRecordParameters);

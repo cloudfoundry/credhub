@@ -68,7 +68,7 @@ public class CertificateServiceTest {
     when(permissionCheckingService.hasPermission(actor, credentialName, PermissionOperation.READ))
         .thenReturn(true);
 
-    CertificateCredentialVersion certificate = subject.findByCredentialUuid(credentialUuid, auditRecordParameters);
+    CertificateCredentialVersion certificate = subject.findByCredentialUuid(credentialUuid);
 
     assertThat(certificate, not(nullValue()));
     assertThat(auditRecordParameters.size(), equalTo(1));
@@ -82,7 +82,7 @@ public class CertificateServiceTest {
     when(permissionCheckingService.hasPermission(actor, credentialName, PermissionOperation.READ))
         .thenReturn(false);
 
-    subject.findByCredentialUuid(credentialUuid, auditRecordParameters);
+    subject.findByCredentialUuid(credentialUuid);
     assertThat(auditRecordParameters.size(), equalTo(1));
     EventAuditRecordParameters auditRecord = this.auditRecordParameters.get(0);
     assertThat(auditRecord.getAuditingOperationCode(), equalTo(AuditingOperationCode.CREDENTIAL_ACCESS));
@@ -92,7 +92,7 @@ public class CertificateServiceTest {
   public void findByUuid_ThrowsEntryNotFoundIfUuidNotFoundAndPersistsAuditEntry() {
     when(certificateVersionDataService.findByCredentialUUID("UnknownUuid")).thenReturn(null);
 
-    subject.findByCredentialUuid("UnknownUuid", auditRecordParameters);
+    subject.findByCredentialUuid("UnknownUuid");
     assertThat(auditRecordParameters.size(), equalTo(1));
     EventAuditRecordParameters auditRecord = this.auditRecordParameters.get(0);
     assertThat(auditRecord.getAuditingOperationCode(), equalTo(AuditingOperationCode.CREDENTIAL_ACCESS));
@@ -103,6 +103,6 @@ public class CertificateServiceTest {
     CredentialVersion credentialVersion = new RsaCredentialVersion();
     when(certificateVersionDataService.findByCredentialUUID("rsaUuid")).thenReturn(null);
 
-    subject.findByCredentialUuid("rsaUuid", auditRecordParameters);
+    subject.findByCredentialUuid("rsaUuid");
   }
 }

@@ -11,8 +11,6 @@ import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 public class CertificateService {
 
@@ -31,10 +29,8 @@ public class CertificateService {
     this.userContextHolder = userContextHolder;
   }
 
-  public CertificateCredentialVersion findByCredentialUuid(String uuid,
-      List<EventAuditRecordParameters> auditRecordParameters) {
+  public CertificateCredentialVersion findByCredentialUuid(String uuid) {
     EventAuditRecordParameters eventAuditRecordParameters = new EventAuditRecordParameters(AuditingOperationCode.CREDENTIAL_ACCESS);
-    auditRecordParameters.add(eventAuditRecordParameters);
 
     CredentialVersion credentialVersion = this.certificateVersionDataService
         .findByCredentialUUID(uuid);
