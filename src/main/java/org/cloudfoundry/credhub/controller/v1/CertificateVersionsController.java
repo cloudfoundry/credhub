@@ -46,7 +46,7 @@ public class CertificateVersionsController {
       @RequestParam(value = "current", required = false, defaultValue = "false") boolean current) throws IOException {
     return eventAuditLogService
         .auditEvents((auditRecordParameters ->
-            certificatesHandler.handleGetAllVersionsRequest(certificateId, auditRecordParameters, current)
+            certificatesHandler.handleGetAllVersionsRequest(certificateId, current)
         ));
   }
 
@@ -56,7 +56,7 @@ public class CertificateVersionsController {
       @PathVariable String certificateId) throws IOException {
     return eventAuditLogService
         .auditEvents((auditRecordParameters ->
-            certificatesHandler.handleCreateVersionsRequest(certificateId, requestBody, auditRecordParameters)
+            certificatesHandler.handleCreateVersionsRequest(certificateId, requestBody)
         ));
   }
 
@@ -65,7 +65,7 @@ public class CertificateVersionsController {
   public CertificateView deleteVersion(@PathVariable String certificateId, @PathVariable String versionId) throws IOException {
     return eventAuditLogService
         .auditEvents((auditRecordParameters ->
-            certificatesHandler.handleDeleteVersionRequest(certificateId, versionId, auditRecordParameters)
+            certificatesHandler.handleDeleteVersionRequest(certificateId, versionId)
         ));
   }
 }

@@ -65,7 +65,7 @@ public class CertificatesController {
 
     return eventAuditLogService
         .auditEvents((auditRecordParameters ->
-            certificatesHandler.handleRegenerate(certificateId, auditRecordParameters, finalRequestBody)
+            certificatesHandler.handleRegenerate(certificateId, finalRequestBody)
         ));
   }
 
@@ -76,7 +76,7 @@ public class CertificatesController {
 
     return eventAuditLogService
         .auditEvents((auditRecordParameters ->
-          certificatesHandler.handleGetAllRequest(auditRecordParameters)
+          certificatesHandler.handleGetAllRequest()
         ));
   }
 
@@ -89,7 +89,7 @@ public class CertificatesController {
     auditRecord.setRequestDetails(details);
     return eventAuditLogService
         .auditEvents((auditRecordParameters ->
-            certificatesHandler.handleUpdateTransitionalVersion(certificateId, requestBody, auditRecordParameters)
+            certificatesHandler.handleUpdateTransitionalVersion(certificateId, requestBody)
         ));
   }
 
@@ -102,7 +102,7 @@ public class CertificatesController {
     auditRecord.setRequestDetails(details);
     return eventAuditLogService
         .auditEvents((auditRecordParameters ->
-          certificatesHandler.handleGetByNameRequest(credentialNameWithPrependedSlash, auditRecordParameters)
+          certificatesHandler.handleGetByNameRequest(credentialNameWithPrependedSlash)
         ));
   }
 }

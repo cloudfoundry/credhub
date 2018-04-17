@@ -58,8 +58,7 @@ public class PermissionedCertificateService {
   public CredentialVersion save(
       CredentialVersion existingCredentialVersion,
       CertificateCredentialValue credentialValue,
-      BaseCredentialGenerateRequest generateRequest,
-      List<EventAuditRecordParameters> auditRecordParameters
+      BaseCredentialGenerateRequest generateRequest
   ) {
     generateRequest.setType("certificate");
     if (credentialValue.isTransitional()) {
@@ -143,7 +142,7 @@ public class PermissionedCertificateService {
 
     certificateVersionDataService.unsetTransitionalVersion(certificateUuid);
 
-    if(newTransitionalVersionUuid != null) {
+    if (newTransitionalVersionUuid != null) {
       CertificateCredentialVersion version = certificateVersionDataService.findVersion(newTransitionalVersionUuid);
 
       if (versionDoesNotBelongToCertificate(credential, version)) {

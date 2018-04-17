@@ -1,8 +1,6 @@
 package org.cloudfoundry.credhub.handler;
 
-import org.cloudfoundry.credhub.audit.AuditingOperationCode;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
-import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
@@ -48,7 +46,6 @@ public class CertificatesHandler {
 
   public CredentialView handleRegenerate(
       String credentialUuid,
-      List<EventAuditRecordParameters> auditRecordParameters,
       CertificateRegenerateRequest request) {
 
     CertificateCredentialVersion existingCredentialVersion = certificateService
@@ -64,8 +61,7 @@ public class CertificatesHandler {
         .save(
             existingCredentialVersion,
             credentialValue,
-            generateRequest,
-            auditRecordParameters
+            generateRequest
         );
 
     auditRecord.setResource(credentialVersion);
@@ -73,7 +69,7 @@ public class CertificatesHandler {
     return new CertificateView(credentialVersion);
   }
 
-  public CertificateCredentialsView handleGetAllRequest(List<EventAuditRecordParameters> auditRecordParameters) {
+  public CertificateCredentialsView handleGetAllRequest() {
     final List<Credential> credentialList = permissionedCertificateService.getAll();
 
     List<CertificateCredentialView> list = credentialList.stream().map(credential ->
@@ -84,8 +80,7 @@ public class CertificatesHandler {
     return new CertificateCredentialsView(list);
   }
 
-  public CertificateCredentialsView handleGetByNameRequest(String name,
-      List<EventAuditRecordParameters> auditRecordParameters) {
+  public CertificateCredentialsView handleGetByNameRequest(String name) {
     final List<Credential> credentialList = permissionedCertificateService.getByName(name);
 
     List<CertificateCredentialView> list = credentialList.stream().map(credential ->
@@ -95,13 +90,11 @@ public class CertificatesHandler {
     return new CertificateCredentialsView(list);
   }
 
-  public List<CertificateView> handleGetAllVersionsRequest(String uuidString,
-      List<EventAuditRecordParameters> auditRecordParameters, boolean current) {
+  public List<CertificateView> handleGetAllVersionsRequest(String uuidString, boolean current) {
     UUID uuid;
     try {
       uuid = UUID.fromString(uuidString);
     } catch (IllegalArgumentException e) {
-      auditRecordParameters.add(new EventAuditRecordParameters(AuditingOperationCode.CREDENTIAL_ACCESS, null));
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
     final List<CredentialVersion> credentialList = permissionedCertificateService
@@ -115,24 +108,23 @@ public class CertificatesHandler {
   }
 
 
-  public CertificateView handleDeleteVersionRequest(String certificateId, String versionId,
-      List<EventAuditRecordParameters> auditRecordParameters) {
+  public CertificateView handleDeleteVersionRequest(String certificateId, String versionId) {
     CertificateCredentialVersion deletedVersion = permissionedCertificateService
         .deleteVersion(UUID.fromString(certificateId), UUID.fromString(versionId));
     return new CertificateView(deletedVersion);
   }
 
-  public List<CertificateView> handleUpdateTransitionalVersion(String certificateId, UpdateTransitionalVersionRequest requestBody,
-      List<EventAuditRecordParameters> auditRecordParameters) {
+  public List<CertificateView> handleUpdateTransitionalVersion(String certificateId,
+      UpdateTransitionalVersionRequest requestBody) {
     List<CredentialVersion> credentialList;
     UUID versionUUID = null;
 
-    if(requestBody.getVersionUuid() != null) {
+    if (requestBody.getVersionUuid() != null) {
       versionUUID = UUID.fromString(requestBody.getVersionUuid());
     }
 
-    credentialList = permissionedCertificateService.updateTransitionalVersion(UUID.fromString(certificateId), versionUUID);
-
+    credentialList = permissionedCertificateService
+        .updateTransitionalVersion(UUID.fromString(certificateId), versionUUID);
 
     List<CertificateView> list = credentialList.stream().map(credential ->
         new CertificateView((CertificateCredentialVersion) credential)
@@ -141,9 +133,7 @@ public class CertificatesHandler {
     return list;
   }
 
-  public CertificateView handleCreateVersionsRequest(String certificateId, CreateVersionRequest requestBody,
-      List<EventAuditRecordParameters> auditRecordParameters) {
-
+  public CertificateView handleCreateVersionsRequest(String certificateId, CreateVersionRequest requestBody) {
     CertificateCredentialValue certificateCredentialValue = requestBody.getValue();
     certificateCredentialValue.setTransitional(requestBody.isTransitional());
     final CertificateCredentialVersion credentialVersion = permissionedCertificateService.set(

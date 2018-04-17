@@ -67,8 +67,7 @@ public class PermissionedCertificateServiceTest {
     subject.save(
         mock(CredentialVersion.class),
         value,
-        generateRequest,
-        newArrayList()
+        generateRequest
     );
 
     Mockito.verify(generateRequest).setType(eq("certificate"));
@@ -95,8 +94,7 @@ public class PermissionedCertificateServiceTest {
     subject.save(
         mock(CredentialVersion.class),
         value,
-        generateRequest,
-        newArrayList()
+        generateRequest
     );
 
     Mockito.verify(generateRequest).setType(eq("certificate"));
@@ -124,8 +122,7 @@ public class PermissionedCertificateServiceTest {
       subject.save(
           mock(CredentialVersion.class),
           value,
-          generateRequest,
-          newArrayList()
+          generateRequest
       );
       fail("should throw exception");
     } catch (ParameterizedValidationException e) {

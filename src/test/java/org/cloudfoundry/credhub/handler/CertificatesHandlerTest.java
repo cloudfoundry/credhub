@@ -60,12 +60,12 @@ public class CertificatesHandlerTest {
     when(generationRequestGenerator.createGenerateRequest(eq(certificate)))
         .thenReturn(generateRequest);
     when(universalCredentialGenerator.generate(eq(generateRequest))).thenReturn(newValue);
-    when(permissionedCertificateService.save(eq(certificate), any(), any(), any()))
+    when(permissionedCertificateService.save(eq(certificate), any(), any()))
         .thenReturn(mock(CertificateCredentialVersion.class));
 
     CertificateRegenerateRequest regenerateRequest = new CertificateRegenerateRequest(true);
 
-    subject.handleRegenerate(UUID_STRING, Collections.emptyList(), regenerateRequest);
+    subject.handleRegenerate(UUID_STRING, regenerateRequest);
 
     verify(newValue).setTransitional(true);
 
@@ -80,7 +80,7 @@ public class CertificatesHandlerTest {
     when(permissionedCertificateService.getVersions(uuid, false))
         .thenReturn(Collections.singletonList(credentialVersion));
     List<CertificateView> certificateViews = subject
-        .handleGetAllVersionsRequest(uuid.toString(), Collections.emptyList(), false);
+        .handleGetAllVersionsRequest(uuid.toString(), false);
 
     assertThat(certificateViews.size(), equalTo(1));
     assertThat(certificateViews.get(0).getName(), equalTo(certificateName));
