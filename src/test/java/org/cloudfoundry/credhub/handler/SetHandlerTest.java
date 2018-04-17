@@ -1,7 +1,6 @@
 package org.cloudfoundry.credhub.handler;
 
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
-import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
@@ -91,7 +90,6 @@ public class SetHandlerTest {
     StringCredentialValue password = new StringCredentialValue("federation");
     PasswordSetRequest setRequest = new PasswordSetRequest();
 
-    final ArrayList<EventAuditRecordParameters> eventAuditRecordParameters = new ArrayList<>();
     setRequest.setType("password");
     setRequest.setGenerationParameters(generationParameters);
     setRequest.setPassword(password);
@@ -114,7 +112,6 @@ public class SetHandlerTest {
     CredentialVersion existingCredMock = mock(CredentialVersion.class);
 
     when(credentialService.findMostRecent("/captain")).thenReturn(existingCredMock);
-    final ArrayList<EventAuditRecordParameters> eventAuditRecordParameters = new ArrayList<>();
     setRequest.setType("password");
     setRequest.setGenerationParameters(generationParameters);
     setRequest.setPassword(password);
@@ -134,7 +131,6 @@ public class SetHandlerTest {
     StringCredentialValue password = new StringCredentialValue("federation");
     PasswordSetRequest setRequest = new PasswordSetRequest();
 
-    final ArrayList<EventAuditRecordParameters> eventAuditRecordParameters = new ArrayList<>();
     setRequest.setType("password");
     setRequest.setGenerationParameters(generationParameters);
     setRequest.setPassword(password);
@@ -156,7 +152,6 @@ public class SetHandlerTest {
         "Enterprise",
         "salt");
 
-    final ArrayList<EventAuditRecordParameters> eventAuditRecordParameters = new ArrayList<>();
     setRequest.setType("user");
     setRequest.setName("/captain");
     setRequest.setAdditionalPermissions(accessControlEntries);
@@ -182,7 +177,6 @@ public class SetHandlerTest {
         "Enterprise",
         null);
 
-    final ArrayList<EventAuditRecordParameters> eventAuditRecordParameters = new ArrayList<>();
     setRequest.setType("certificate");
     setRequest.setName("/captain");
     setRequest.setAdditionalPermissions(accessControlEntries);
@@ -213,7 +207,6 @@ public class SetHandlerTest {
         "Enterprise",
         "test-ca-name");
 
-    final ArrayList<EventAuditRecordParameters> eventAuditRecordParameters = new ArrayList<>();
     setRequest.setType("certificate");
     setRequest.setName("/captain");
     setRequest.setAdditionalPermissions(accessControlEntries);

@@ -1,7 +1,6 @@
 package org.cloudfoundry.credhub.service;
 
 import com.google.common.collect.Lists;
-import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.data.PermissionDataService;
@@ -47,7 +46,6 @@ public class PermissionServiceTest {
   private PermissionCheckingService permissionCheckingService;
   private Credential expectedCredential;
   private CredentialVersion expectedCredentialVersion;
-  private List<EventAuditRecordParameters> auditRecordParameters;
 
   @Before
   public void beforeEach() {
@@ -60,7 +58,6 @@ public class PermissionServiceTest {
     permissionCheckingService = mock(PermissionCheckingService.class);
     when(permissionCheckingService.hasPermission(anyString(), anyString(), any(PermissionOperation.class)))
         .thenReturn(true);
-    auditRecordParameters = newArrayList();
 
     UserContextHolder userContextHolder = new UserContextHolder();
     userContextHolder.setUserContext(userContext);

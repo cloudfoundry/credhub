@@ -1,7 +1,6 @@
 package org.cloudfoundry.credhub.handler;
 
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
-import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.domain.Encryptor;
@@ -49,7 +48,6 @@ public class CredentialsHandlerTest {
   private UserContext userContext;
   private SshCredentialVersion version1;
   private SshCredentialVersion version2;
-  List<EventAuditRecordParameters> auditRecordParametersList;
 
   @Before
   public void beforeEach() {

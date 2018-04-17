@@ -1,9 +1,6 @@
 package org.cloudfoundry.credhub.handler;
 
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
-import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
-import org.cloudfoundry.credhub.auth.UserContext;
-import org.cloudfoundry.credhub.credential.StringCredentialValue;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
 import org.cloudfoundry.credhub.request.PasswordGenerateRequest;
@@ -37,14 +34,13 @@ public class GenerateHandlerTest {
 
   private StringGenerationParameters generationParameters;
   private ArrayList<PermissionEntry> accessControlEntries;
-  private UserContext userContext;
   private CredentialVersion credentialVersion;
 
   @Mock
   private CEFAuditRecord cefAuditRecord;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     MockitoAnnotations.initMocks(this);
     credentialService = mock(PermissionedCredentialService.class);
     universalCredentialGenerator = mock(UniversalCredentialGenerator.class);
@@ -54,7 +50,6 @@ public class GenerateHandlerTest {
 
     generationParameters = new StringGenerationParameters();
     accessControlEntries = new ArrayList<>();
-    userContext = new UserContext();
     credentialVersion = mock(PasswordCredentialVersion.class);
     when(credentialService.save(anyObject(), anyObject(), anyObject())).thenReturn(credentialVersion);
   }
@@ -62,10 +57,8 @@ public class GenerateHandlerTest {
 
   @Test
   public void handleGenerateRequest_whenPasswordGenerateRequest_passesCorrectParametersIncludingGeneration() {
-    StringCredentialValue password = new StringCredentialValue("federation");
     PasswordGenerateRequest generateRequest = new PasswordGenerateRequest();
 
-    final ArrayList<EventAuditRecordParameters> eventAuditRecordParameters = new ArrayList<>();
     generateRequest.setType("password");
     generateRequest.setGenerationParameters(generationParameters);
     generateRequest.setName("/captain");
@@ -80,11 +73,8 @@ public class GenerateHandlerTest {
 
   @Test
   public void handleGenerateRequest_addsToCEFAuditRecord(){
-    StringCredentialValue password = new StringCredentialValue("federation");
     PasswordGenerateRequest generateRequest = new PasswordGenerateRequest();
 
-
-    final ArrayList<EventAuditRecordParameters> eventAuditRecordParameters = new ArrayList<>();
     generateRequest.setType("password");
     generateRequest.setGenerationParameters(generationParameters);
     generateRequest.setName("/captain");

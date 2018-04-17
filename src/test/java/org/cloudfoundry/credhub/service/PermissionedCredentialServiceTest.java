@@ -1,7 +1,6 @@
 package org.cloudfoundry.credhub.service;
 
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
-import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.constants.CredentialType;
@@ -83,15 +82,14 @@ public class PermissionedCredentialServiceTest {
   private PermissionedCredentialService subject;
   private CredentialVersion existingCredentialVersion;
   private UserContext userContext;
-  private List<EventAuditRecordParameters> auditRecordParameters;
   private StringGenerationParameters generationParameters;
   private CredentialValue credentialValue;
   private List<PermissionEntry> accessControlEntries;
-  BaseCredentialRequest request = mock(BaseCredentialRequest.class);
+  private BaseCredentialRequest request = mock(BaseCredentialRequest.class);
   private Credential credential;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     initMocks(this);
 
     userContext = mock(UserContext.class);
@@ -105,7 +103,6 @@ public class PermissionedCredentialServiceTest {
         certificateAuthorityService,
         userContextHolder, credentialDataService, auditRecord);
 
-    auditRecordParameters = new ArrayList<>();
     generationParameters = mock(StringGenerationParameters.class);
     credentialValue = mock(CredentialValue.class);
     credential = new Credential(CREDENTIAL_NAME);

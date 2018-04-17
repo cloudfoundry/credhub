@@ -1,7 +1,5 @@
 package org.cloudfoundry.credhub.service;
 
-import org.cloudfoundry.credhub.audit.AuditingOperationCode;
-import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.data.CertificateVersionDataService;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
@@ -30,15 +28,12 @@ public class CertificateService {
   }
 
   public CertificateCredentialVersion findByCredentialUuid(String uuid) {
-    EventAuditRecordParameters eventAuditRecordParameters = new EventAuditRecordParameters(AuditingOperationCode.CREDENTIAL_ACCESS);
-
     CredentialVersion credentialVersion = this.certificateVersionDataService
         .findByCredentialUUID(uuid);
 
     if(credentialVersion == null || !(credentialVersion instanceof CertificateCredentialVersion)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
-    eventAuditRecordParameters.setCredentialName(credentialVersion.getName());
     CertificateCredentialVersion certificate = (CertificateCredentialVersion) credentialVersion;
     if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), certificate.getName(), PermissionOperation.READ)) {
       throw new EntryNotFoundException("error.credential.invalid_access");

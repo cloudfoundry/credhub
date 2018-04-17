@@ -1,8 +1,6 @@
 package org.cloudfoundry.credhub.service;
 
-import org.cloudfoundry.credhub.audit.AuditingOperationCode;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
-import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.data.CertificateDataService;
@@ -130,12 +128,9 @@ public class PermissionedCertificateService {
   }
 
   public List<CredentialVersion> updateTransitionalVersion(UUID certificateUuid, UUID newTransitionalVersionUuid) {
-    EventAuditRecordParameters eventAuditRecordParameters = new EventAuditRecordParameters(
-        AuditingOperationCode.CREDENTIAL_UPDATE, null);
     Credential credential = findCertificateCredential(certificateUuid);
 
     String name = credential.getName();
-    eventAuditRecordParameters.setCredentialName(name);
 
     if (!permissionCheckingService
         .hasPermission(userContextHolder.getUserContext().getActor(), name, PermissionOperation.WRITE)) {
@@ -160,15 +155,12 @@ public class PermissionedCertificateService {
   }
 
   public CertificateCredentialVersion deleteVersion(UUID certificateUuid, UUID versionUuid) {
-    EventAuditRecordParameters eventAuditRecordParameters = new EventAuditRecordParameters(
-        AuditingOperationCode.CREDENTIAL_DELETE, null);
     Credential certificate = certificateDataService.findByUuid(certificateUuid);
     if (certificate == null || !permissionCheckingService
         .hasPermission(userContextHolder.getUserContext().getActor(), certificate.getName(),
             PermissionOperation.DELETE)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
-    eventAuditRecordParameters.setCredentialName(certificate.getName());
     CertificateCredentialVersion versionToDelete = certificateVersionDataService.findVersion(versionUuid);
     if (versionDoesNotBelongToCertificate(certificate, versionToDelete)) {
       throw new EntryNotFoundException("error.credential.invalid_access");

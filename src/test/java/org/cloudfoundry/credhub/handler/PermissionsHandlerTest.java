@@ -2,8 +2,6 @@ package org.cloudfoundry.credhub.handler;
 
 import com.google.common.collect.Lists;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
-import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
-import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.data.CredentialDataService;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
@@ -58,8 +56,6 @@ public class PermissionsHandlerTest {
 
   private final Credential credential = new Credential(CREDENTIAL_NAME);
   private final CredentialVersion credentialVersion = new PasswordCredentialVersion(new PasswordCredentialVersionData(CREDENTIAL_NAME));
-  private final UserContext userContext = mock(UserContext.class);
-  private List<EventAuditRecordParameters> auditRecordParameters;
   private PermissionsRequest permissionsRequest;
 
   @Before
@@ -74,7 +70,6 @@ public class PermissionsHandlerTest {
         permissionedCredentialService, auditRecord);
 
     permissionsRequest = mock(PermissionsRequest.class);
-    auditRecordParameters = new ArrayList<>();
 
     when(permissionedCredentialService.findMostRecent(CREDENTIAL_NAME)).thenReturn(credentialVersion);
     when(credentialDataService.find(any(String.class))).thenReturn(credential);

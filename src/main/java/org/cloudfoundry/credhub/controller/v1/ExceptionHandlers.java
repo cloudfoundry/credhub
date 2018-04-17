@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.jayway.jsonpath.InvalidJsonException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.cloudfoundry.credhub.exceptions.AuditSaveFailureException;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.exceptions.InvalidPermissionOperationException;
 import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException;
@@ -143,12 +142,6 @@ public class ExceptionHandlers {
   @ExceptionHandler(InvalidPermissionOperationException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ResponseError handleIncorrectAclOperation(InvalidPermissionOperationException e) {
-    return constructError(e.getMessage());
-  }
-
-  @ExceptionHandler(AuditSaveFailureException.class)
-  @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-  public ResponseError handleAuditSaveFailureException(AuditSaveFailureException e) {
     return constructError(e.getMessage());
   }
 
