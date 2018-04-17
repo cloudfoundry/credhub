@@ -20,7 +20,7 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "event_audit_record")
 @EntityListeners(AuditingEntityListener.class)
-public class EventAuditRecord {
+public class EventAuditRecord { // TODO remove?
   @Id
   @Column(length = UuidConstants.UUID_BYTES, columnDefinition = "VARBINARY")
   @GeneratedValue(generator = "uuid2")

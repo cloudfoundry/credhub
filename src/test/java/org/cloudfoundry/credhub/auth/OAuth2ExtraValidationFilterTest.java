@@ -1,10 +1,9 @@
 package org.cloudfoundry.credhub.auth;
 
 import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.repository.AuthFailureAuditRecordRepository;
 import org.cloudfoundry.credhub.repository.CredentialVersionRepository;
-import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.util.AuthConstants;
+import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,9 +40,6 @@ public class OAuth2ExtraValidationFilterTest {
   private OAuth2IssuerService oAuth2IssuerService;
 
   @Autowired
-  private AuthFailureAuditRecordRepository authFailureAuditRecordRepository;
-
-  @Autowired
   private CredentialVersionRepository credentialVersionRepository;
 
   private MockMvc mockMvc;
@@ -59,7 +55,7 @@ public class OAuth2ExtraValidationFilterTest {
   }
 
   @Test
-  public void whenGivenValidIssuer_returns200_andAuditsRequest() throws Exception {
+  public void whenGivenValidIssuer_returns200() throws Exception {
     when(oAuth2IssuerService.getIssuer()).thenReturn("https://valid-uaa:8443/uaa/oauth/token");
 
     this.mockMvc.perform(post("/api/v1/data")
@@ -74,7 +70,7 @@ public class OAuth2ExtraValidationFilterTest {
   }
 
   @Test
-  public void whenGivenInvalidIssuer_returns401_andAuditsRequest() throws Exception {
+  public void whenGivenInvalidIssuer_returns401() throws Exception {
     MockHttpServletRequestBuilder request = post("/api/v1/data?name=/picard")
         .header("Authorization", "Bearer " + AuthConstants.INVALID_ISSUER_JWT)
         .accept(APPLICATION_JSON)
@@ -89,8 +85,6 @@ public class OAuth2ExtraValidationFilterTest {
     this.mockMvc.perform(request)
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.error_description").value(ERROR_MESSAGE));
-
-    assertThat(authFailureAuditRecordRepository.count(), equalTo(1L));
   }
 
   @Test
@@ -121,26 +115,22 @@ public class OAuth2ExtraValidationFilterTest {
   }
 
   @Test
-  public void whenGivenNullIssuer_returns401_andAuditsRequest() throws Exception {
+  public void whenGivenNullIssuer_returns401() throws Exception {
     this.mockMvc.perform(post("/api/v1/data?name=/picard")
         .header("Authorization", "Bearer " + AuthConstants.NULL_ISSUER_JWT)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON))
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.error_description").value(ERROR_MESSAGE));
-
-    assertThat(authFailureAuditRecordRepository.count(), equalTo(1L));
   }
 
   @Test
-  public void whenEmptyIssuerSpecified_returns401_andAuditsRequest() throws Exception {
+  public void whenEmptyIssuerSpecified_returns401() throws Exception {
     this.mockMvc.perform(post("/api/v1/data?name=/picard")
         .header("Authorization", "Bearer " + AuthConstants.EMPTY_ISSUER_JWT)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON))
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.error_description").value(ERROR_MESSAGE));
-
-    assertThat(authFailureAuditRecordRepository.count(), equalTo(1L));
   }
 }

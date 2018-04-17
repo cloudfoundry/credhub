@@ -10,8 +10,6 @@ import org.cloudfoundry.credhub.domain.SshCredentialVersion;
 import org.cloudfoundry.credhub.domain.UserCredentialVersion;
 import org.cloudfoundry.credhub.entity.EncryptionKeyCanary;
 import org.cloudfoundry.credhub.entity.PasswordCredentialVersionData;
-import org.cloudfoundry.credhub.repository.EventAuditRecordRepository;
-import org.cloudfoundry.credhub.repository.RequestAuditRecordRepository;
 import org.cloudfoundry.credhub.request.StringGenerationParameters;
 import org.cloudfoundry.credhub.util.AuthConstants;
 import org.cloudfoundry.credhub.util.CurrentTimeProvider;
@@ -75,12 +73,6 @@ public class CredentialRegenerateTest {
 
   @MockBean
   private CurrentTimeProvider mockCurrentTimeProvider;
-
-  @Autowired
-  private RequestAuditRecordRepository requestAuditRecordRepository;
-
-  @Autowired
-  private EventAuditRecordRepository eventAuditRecordRepository;
 
   private MockMvc mockMvc;
   private Consumer<Long> fakeTimeSetter;

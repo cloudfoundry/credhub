@@ -19,7 +19,7 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "auth_failure_audit_record")
 @EntityListeners(AuditingEntityListener.class)
-public class AuthFailureAuditRecord {
+public class AuthFailureAuditRecord { // TODO remove?
 
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)

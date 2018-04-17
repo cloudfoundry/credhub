@@ -1,8 +1,6 @@
 package org.cloudfoundry.credhub.integration;
 
 import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.repository.EventAuditRecordRepository;
-import org.cloudfoundry.credhub.repository.RequestAuditRecordRepository;
 import org.cloudfoundry.credhub.util.AuthConstants;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.json.JSONObject;
@@ -42,12 +40,6 @@ public class RegenerationEndpointTest {
 
   @Autowired
   private WebApplicationContext webApplicationContext;
-
-  @Autowired
-  private RequestAuditRecordRepository requestAuditRecordRepository;
-
-  @Autowired
-  private EventAuditRecordRepository eventAuditRecordRepository;
 
   private MockMvc mockMvc;
   private String originalPassword;

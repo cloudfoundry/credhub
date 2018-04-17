@@ -7,8 +7,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.constants.CredentialWriteMode;
 import org.cloudfoundry.credhub.helper.RequestHelper;
-import org.cloudfoundry.credhub.repository.EventAuditRecordRepository;
-import org.cloudfoundry.credhub.repository.RequestAuditRecordRepository;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.json.JSONArray;
 import org.junit.Before;
@@ -51,17 +49,9 @@ public class CertificateSetAndRegenerateTest {
   @Autowired
   private WebApplicationContext webApplicationContext;
 
-  @Autowired
-  private RequestAuditRecordRepository requestAuditRecordRepository;
-
-  @Autowired
-  private EventAuditRecordRepository eventAuditRecordRepository;
-
   private MockMvc mockMvc;
   private String caCertificate;
-  private String caId;
   private String caCredentialUuid;
-  private String testSignedCert;
 
   @Before
   public void beforeEach() throws Exception {
@@ -93,7 +83,6 @@ public class CertificateSetAndRegenerateTest {
 
     caCertificate = JsonPath.parse(generateCaResponse)
         .read("$.value.certificate");
-    caId = JsonPath.parse(generateCaResponse).read("$.id");
     caCredentialUuid = getCertificateId(mockMvc, CA_NAME);
     assertNotNull(caCertificate);
   }

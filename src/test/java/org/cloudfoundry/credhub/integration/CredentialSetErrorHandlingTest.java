@@ -4,8 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import net.minidev.json.JSONObject;
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.constants.CredentialWriteMode;
-import org.cloudfoundry.credhub.repository.EventAuditRecordRepository;
-import org.cloudfoundry.credhub.repository.RequestAuditRecordRepository;
 import org.cloudfoundry.credhub.util.AuthConstants;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.util.TestConstants;
@@ -38,16 +36,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class CredentialSetErrorHandlingTest {
 
   private final String CREDENTIAL_NAME = "/my-namespace/secretForErrorHandlingSetTest/credential-name";
-  private final String CREDENTIAL_VALUE = "credential-value";
 
   @Autowired
   private WebApplicationContext webApplicationContext;
-
-  @Autowired
-  private RequestAuditRecordRepository requestAuditRecordRepository;
-
-  @Autowired
-  private EventAuditRecordRepository eventAuditRecordRepository;
 
   private MockMvc mockMvc;
 

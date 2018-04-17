@@ -3,8 +3,6 @@ package org.cloudfoundry.credhub.integration;
 
 import com.jayway.jsonpath.JsonPath;
 import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.repository.EventAuditRecordRepository;
-import org.cloudfoundry.credhub.repository.RequestAuditRecordRepository;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.json.JSONArray;
 import org.junit.Before;
@@ -45,12 +43,6 @@ public class CertificateUpdateTransitionalVersionTest {
 
   @Autowired
   private WebApplicationContext webApplicationContext;
-
-  @Autowired
-  private RequestAuditRecordRepository requestAuditRecordRepository;
-
-  @Autowired
-  private EventAuditRecordRepository eventAuditRecordRepository;
 
   private MockMvc mockMvc;
   private Object caCertificate;

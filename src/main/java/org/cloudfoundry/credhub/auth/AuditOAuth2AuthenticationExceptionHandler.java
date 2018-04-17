@@ -1,8 +1,5 @@
 package org.cloudfoundry.credhub.auth;
 
-import org.cloudfoundry.credhub.audit.AuditLogFactory;
-import org.cloudfoundry.credhub.data.AuthFailureAuditRecordDataService;
-import org.cloudfoundry.credhub.entity.AuthFailureAuditRecord;
 import org.cloudfoundry.credhub.exceptions.AccessTokenExpiredException;
 import org.cloudfoundry.credhub.util.CurrentTimeProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,21 +30,15 @@ import static org.springframework.security.oauth2.provider.token.AccessTokenConv
 public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2AuthenticationEntryPoint {
 
   private final CurrentTimeProvider currentTimeProvider;
-  private final AuthFailureAuditRecordDataService authFailureAuditRecordDataService;
-  private final AuditLogFactory auditLogFactory;
   private final JsonParser objectMapper;
   private final MessageSourceAccessor messageSourceAccessor;
 
   @Autowired
   AuditOAuth2AuthenticationExceptionHandler(
       CurrentTimeProvider currentTimeProvider,
-      AuthFailureAuditRecordDataService authFailureAuditRecordDataService,
-      MessageSourceAccessor messageSourceAccessor,
-      AuditLogFactory auditLogFactory
+      MessageSourceAccessor messageSourceAccessor
   ) {
     this.currentTimeProvider = currentTimeProvider;
-    this.authFailureAuditRecordDataService = authFailureAuditRecordDataService;
-    this.auditLogFactory = auditLogFactory;
     this.objectMapper = JsonParserFactory.create();
     this.messageSourceAccessor = messageSourceAccessor;
   }
@@ -75,12 +66,7 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
     }
     exception.setStackTrace(authException.getStackTrace());
 
-    try {
-      doHandle(request, response, exception);
-    } finally {
-      final String message = removeTokenFromMessage(exception.getMessage(), token);
-      logAuthFailureToDb(request, tokenInformation, response.getStatus(), message);
-    }
+    doHandle(request, response, exception);
   }
 
   private Throwable extractCause(AuthenticationException e) {
@@ -112,21 +98,6 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
     } catch (RuntimeException mie) {
       return null;
     }
-  }
-
-  private void logAuthFailureToDb(
-      HttpServletRequest request,
-      Map<String, Object> tokenInformation,
-      int statusCode,
-      String message
-  ) {
-    AuthFailureAuditRecord authFailureAuditRecord = auditLogFactory.createAuthFailureAuditRecord(
-        request,
-        tokenInformation,
-        statusCode,
-        message
-    );
-    authFailureAuditRecordDataService.save(authFailureAuditRecord);
   }
 
   private String removeTokenFromMessage(String message, String token) {
