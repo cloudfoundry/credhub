@@ -22,10 +22,8 @@ import org.cloudfoundry.credhub.view.DataResponse;
 import org.cloudfoundry.credhub.view.FindCredentialResults;
 import org.cloudfoundry.credhub.view.FindPathResults;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -70,36 +68,22 @@ public class CredentialsController {
 
   @RequestMapping(path = "", method = RequestMethod.POST)
   @ResponseStatus(HttpStatus.OK)
-  public CredentialView generate(InputStream inputStream) throws IOException {
+  public synchronized CredentialView generate(InputStream inputStream) throws IOException {
     InputStream requestInputStream = new ByteArrayInputStream(ByteStreams.toByteArray(inputStream));
-    try {
-      return legacyGenerationHandler.auditedHandlePostRequest(requestInputStream);
-    } catch (JpaSystemException | DataIntegrityViolationException e) {
-      requestInputStream.reset();
-      LOGGER.error(
-          "Exception \"" + e.getMessage() + "\" with class \"" + e.getClass().getCanonicalName()
-              + "\" while storing credential, possibly caused by race condition, retrying...");
-      return legacyGenerationHandler.auditedHandlePostRequest(requestInputStream);
-    }
+
+    return legacyGenerationHandler.auditedHandlePostRequest(requestInputStream);
   }
 
   @RequestMapping(path = "", method = RequestMethod.PUT)
   @ResponseStatus(HttpStatus.OK)
-  public CredentialView set(@RequestBody BaseCredentialSetRequest requestBody) {
+  public synchronized CredentialView set(@RequestBody BaseCredentialSetRequest requestBody) {
     requestBody.validate();
 
     if (requestBody.getName() != null && requestBody.getName().length() > 1024) {
       throw new ParameterizedValidationException("error.name_has_too_many_characters");
     }
 
-    try {
-      return auditedHandlePutRequest(requestBody);
-    } catch (JpaSystemException | DataIntegrityViolationException e) {
-      LOGGER.error(
-          "Exception \"" + e.getMessage() + "\" with class \"" + e.getClass().getCanonicalName()
-              + "\" while storing credential, possibly caused by race condition, retrying...");
-      return auditedHandlePutRequest(requestBody);
-    }
+    return auditedHandlePutRequest(requestBody);
   }
 
   @RequestMapping(path = "", method = RequestMethod.DELETE)
