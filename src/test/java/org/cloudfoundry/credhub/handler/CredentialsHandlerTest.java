@@ -79,7 +79,7 @@ public class CredentialsHandlerTest {
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.DELETE))
         .thenReturn(true);
 
-    subject.deleteCredential(CREDENTIAL_NAME, auditRecordParametersList);
+    subject.deleteCredential(CREDENTIAL_NAME);
 
     verify(permissionedCredentialService, times(1)).delete(eq(CREDENTIAL_NAME));
   }
@@ -91,7 +91,7 @@ public class CredentialsHandlerTest {
     when(permissionedCredentialService.delete(eq(CREDENTIAL_NAME))).thenReturn(false);
 
     try {
-      subject.deleteCredential(CREDENTIAL_NAME, auditRecordParametersList);
+      subject.deleteCredential(CREDENTIAL_NAME);
       fail("Should throw exception");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
@@ -106,7 +106,7 @@ public class CredentialsHandlerTest {
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.READ))
         .thenReturn(true);
 
-    DataResponse credentialVersions = subject.getAllCredentialVersions(CREDENTIAL_NAME, auditRecordParametersList);
+    DataResponse credentialVersions = subject.getAllCredentialVersions(CREDENTIAL_NAME);
 
     List<CredentialView> credentialViews = credentialVersions.getData();
     assertThat(credentialViews, hasSize(2));
@@ -124,7 +124,7 @@ public class CredentialsHandlerTest {
         .thenReturn(true);
 
     try {
-      subject.getAllCredentialVersions(CREDENTIAL_NAME, auditRecordParametersList
+      subject.getAllCredentialVersions(CREDENTIAL_NAME
       );
       fail("should throw exception");
     } catch (EntryNotFoundException e) {
@@ -140,8 +140,7 @@ public class CredentialsHandlerTest {
         .thenReturn(true);
 
     DataResponse dataResponse = subject.getCurrentCredentialVersions(
-        CREDENTIAL_NAME,
-        auditRecordParametersList
+        CREDENTIAL_NAME
     );
     CredentialView credentialView = dataResponse.getData().get(0);
     assertThat(credentialView.getName(), equalTo(CREDENTIAL_NAME));
@@ -151,7 +150,7 @@ public class CredentialsHandlerTest {
   @Test
   public void getMostRecentCredentialVersion_whenTheCredentialDoesNotExist_throwsException() {
     try {
-      subject.getCurrentCredentialVersions(CREDENTIAL_NAME, newArrayList());
+      subject.getCurrentCredentialVersions(CREDENTIAL_NAME);
       fail("should throw exception");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
@@ -164,7 +163,7 @@ public class CredentialsHandlerTest {
         .thenReturn(false);
 
     try {
-      subject.getCurrentCredentialVersions(CREDENTIAL_NAME, newArrayList());
+      subject.getCurrentCredentialVersions(CREDENTIAL_NAME);
       fail("should throw exception");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
@@ -176,7 +175,7 @@ public class CredentialsHandlerTest {
     when(permissionedCredentialService.findVersionByUuid(eq(UUID_STRING)))
         .thenReturn(version1);
 
-    CredentialView credentialVersion = subject.getCredentialVersionByUUID(UUID_STRING, newArrayList());
+    CredentialView credentialVersion = subject.getCredentialVersionByUUID(UUID_STRING);
     assertThat(credentialVersion.getName(), equalTo(CREDENTIAL_NAME));
     assertThat(credentialVersion.getVersionCreatedAt(), equalTo(VERSION1_CREATED_AT));
   }

@@ -5,7 +5,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
-import org.cloudfoundry.credhub.audit.EventAuditLogService;
 import org.cloudfoundry.credhub.audit.entity.DeleteCredential;
 import org.cloudfoundry.credhub.audit.entity.FindCredential;
 import org.cloudfoundry.credhub.audit.entity.GetCredential;
@@ -51,7 +50,6 @@ public class CredentialsController {
 
   private static final Logger LOGGER = LogManager.getLogger(CredentialsController.class);
   private final PermissionedCredentialService credentialService;
-  private final EventAuditLogService eventAuditLogService;
   private final SetHandler setHandler;
   private final CredentialsHandler credentialsHandler;
   private final LegacyGenerationHandler legacyGenerationHandler;
@@ -59,13 +57,11 @@ public class CredentialsController {
 
   @Autowired
   public CredentialsController(PermissionedCredentialService credentialService,
-      EventAuditLogService eventAuditLogService,
       CredentialsHandler credentialsHandler,
       SetHandler setHandler,
       LegacyGenerationHandler legacyGenerationHandler,
       CEFAuditRecord auditRecord) {
     this.credentialService = credentialService;
-    this.eventAuditLogService = eventAuditLogService;
     this.credentialsHandler = credentialsHandler;
     this.setHandler = setHandler;
     this.legacyGenerationHandler = legacyGenerationHandler;
@@ -92,7 +88,7 @@ public class CredentialsController {
   public CredentialView set(@RequestBody BaseCredentialSetRequest requestBody) {
     requestBody.validate();
 
-    if(requestBody.getName() != null && requestBody.getName().length() > 1024){
+    if (requestBody.getName() != null && requestBody.getName().length() > 1024) {
       throw new ParameterizedValidationException("error.name_has_too_many_characters");
     }
 
@@ -118,18 +114,13 @@ public class CredentialsController {
     RequestDetails requestDetails = new DeleteCredential(credentialNameWithPrependedSlash);
     auditRecord.setRequestDetails(requestDetails);
 
-    eventAuditLogService.auditEvents((eventAuditRecordParametersList) -> {
-      credentialsHandler.deleteCredential(credentialNameWithPrependedSlash, eventAuditRecordParametersList);
-      return true;
-    });
+    credentialsHandler.deleteCredential(credentialNameWithPrependedSlash);
   }
 
   @RequestMapping(path = "/{id}", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   public CredentialView getCredentialById(@PathVariable String id) {
-    return eventAuditLogService.auditEvents(eventAuditRecordParametersList -> {
-      return credentialsHandler.getCredentialVersionByUUID(id, eventAuditRecordParametersList);
-    });
+    return credentialsHandler.getCredentialVersionByUUID(id);
   }
 
   @GetMapping(path = "")
@@ -137,8 +128,7 @@ public class CredentialsController {
   public DataResponse getCredential(
       @RequestParam(value = "name") String credentialName,
       @RequestParam(value = "versions", required = false) Integer numberOfVersions,
-      @RequestParam(value = "current", required = false, defaultValue = "false") boolean current
-  ) {
+      @RequestParam(value = "current", required = false, defaultValue = "false") boolean current) {
     if (StringUtils.isEmpty(credentialName)) {
       throw new InvalidQueryParameterException("error.missing_query_parameter", "name");
     }
@@ -151,15 +141,13 @@ public class CredentialsController {
 
     auditRecord.setRequestDetails(new GetCredential(credentialName, numberOfVersions, current));
 
-    return eventAuditLogService.auditEvents(eventAuditRecordParametersList -> {
-      if (current) {
-        return credentialsHandler
-            .getCurrentCredentialVersions(credentialNameWithPrependedSlash, eventAuditRecordParametersList);
-      } else {
-        return credentialsHandler
-            .getNCredentialVersions(credentialNameWithPrependedSlash, numberOfVersions, eventAuditRecordParametersList);
-      }
-    });
+    if (current) {
+      return credentialsHandler
+          .getCurrentCredentialVersions(credentialNameWithPrependedSlash);
+    } else {
+      return credentialsHandler
+          .getNCredentialVersions(credentialNameWithPrependedSlash, numberOfVersions);
+    }
   }
 
   @RequestMapping(path = "", params = "path", method = RequestMethod.GET)
@@ -169,9 +157,7 @@ public class CredentialsController {
     findCredential.setPath(path);
     auditRecord.setRequestDetails(findCredential);
 
-    return eventAuditLogService
-        .auditEvents(eventAuditRecordParametersList -> new FindCredentialResults(
-            credentialService.findStartingWithPath(path)));
+    return new FindCredentialResults(credentialService.findStartingWithPath(path));
   }
 
   @RequestMapping(path = "", params = "paths=true", method = RequestMethod.GET)
@@ -181,10 +167,8 @@ public class CredentialsController {
     findCredential.setPaths(true);
     auditRecord.setRequestDetails(findCredential);
 
-    return eventAuditLogService.auditEvents(eventAuditRecordParametersList -> {
-      List<String> paths = credentialService.findAllPaths();
-      return FindPathResults.fromEntity(paths);
-    });
+    List<String> paths = credentialService.findAllPaths();
+    return FindPathResults.fromEntity(paths);
   }
 
   @RequestMapping(path = "", params = "name-like", method = RequestMethod.GET)
@@ -194,16 +178,14 @@ public class CredentialsController {
     findCredential.setNameLike(nameLike);
     auditRecord.setRequestDetails(findCredential);
 
-    return eventAuditLogService
-        .auditEvents(eventAuditRecordParametersList -> new FindCredentialResults(
-            credentialService.findContainingName(nameLike)));
+    return new FindCredentialResults(credentialService.findContainingName(nameLike));
   }
 
 
   private CredentialView auditedHandlePutRequest(@RequestBody BaseCredentialSetRequest requestBody) {
-    auditRecord.setRequestDetails(new SetCredential(requestBody.getName(),requestBody.getType(),requestBody.getMode(),requestBody.getAdditionalPermissions()));
-    return eventAuditLogService.auditEvents(
-        auditRecordParameters -> setHandler.handle(requestBody, auditRecordParameters));
+    auditRecord.setRequestDetails(new SetCredential(requestBody.getName(), requestBody.getType(), requestBody.getMode(),
+        requestBody.getAdditionalPermissions()));
+    return setHandler.handle(requestBody);
   }
 
 

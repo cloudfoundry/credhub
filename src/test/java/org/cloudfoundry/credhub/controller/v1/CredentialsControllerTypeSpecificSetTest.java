@@ -426,7 +426,7 @@ public class CredentialsControllerTypeSpecificSetTest {
     mockMvc.perform(request);
 
     verify(setHandler, times(1))
-        .handle(isA(BaseCredentialSetRequest.class), any());
+        .handle(isA(BaseCredentialSetRequest.class));
     verify(credentialVersionDataService, times(1)).save(argumentCaptor.capture());
 
     CredentialVersion newCredentialVersion = argumentCaptor.getValue();

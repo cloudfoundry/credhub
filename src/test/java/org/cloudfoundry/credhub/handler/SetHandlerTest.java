@@ -99,7 +99,7 @@ public class SetHandlerTest {
     setRequest.setAdditionalPermissions(accessControlEntries);
     setRequest.setOverwrite(false);
 
-    subject.handle(setRequest, eventAuditRecordParameters);
+    subject.handle(setRequest);
 
     verify(credentialService).save(null, password, setRequest);
     assertThat(auditRecord.getResourceName(), equalTo("federation"));
@@ -122,7 +122,7 @@ public class SetHandlerTest {
     setRequest.setAdditionalPermissions(accessControlEntries);
     setRequest.setOverwrite(true);
 
-    subject.handle(setRequest, eventAuditRecordParameters);
+    subject.handle(setRequest);
 
     verify(credentialService).save(existingCredMock, password, setRequest);
     verify(permissionService).savePermissions(credentialVersion, accessControlEntries, false);
@@ -142,7 +142,7 @@ public class SetHandlerTest {
     setRequest.setAdditionalPermissions(accessControlEntries);
     setRequest.setOverwrite(false);
 
-    subject.handle(setRequest, eventAuditRecordParameters);
+    subject.handle(setRequest);
 
     verify(credentialService).save(null, password, setRequest);
     verify(permissionService).savePermissions(credentialVersion, accessControlEntries, true);
@@ -163,7 +163,7 @@ public class SetHandlerTest {
     setRequest.setOverwrite(false);
     setRequest.setUserValue(userCredentialValue);
 
-    subject.handle(setRequest, eventAuditRecordParameters);
+    subject.handle(setRequest);
 
     verify(credentialService).save(
         null,
@@ -189,7 +189,7 @@ public class SetHandlerTest {
     setRequest.setOverwrite(false);
     setRequest.setCertificateValue(certificateValue);
 
-    subject.handle(setRequest, eventAuditRecordParameters);
+    subject.handle(setRequest);
 
     verify(credentialService).save(null, certificateValue, setRequest);
     verify(permissionService).savePermissions(credentialVersion, accessControlEntries, true);
@@ -228,7 +228,7 @@ public class SetHandlerTest {
     );
     ArgumentCaptor<CredentialValue> credentialValueArgumentCaptor = ArgumentCaptor.forClass(CredentialValue.class);
 
-    subject.handle(setRequest, eventAuditRecordParameters);
+    subject.handle(setRequest);
 
     verify(credentialService).save( eq(null), credentialValueArgumentCaptor.capture(), eq(setRequest));
     assertThat(credentialValueArgumentCaptor.getValue(), samePropertyValuesAs(expectedCredentialValue));
