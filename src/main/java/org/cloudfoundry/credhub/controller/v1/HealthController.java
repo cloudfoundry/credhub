@@ -15,6 +15,7 @@ import static com.google.common.collect.ImmutableMap.of;
 
 @Controller
 public class HealthController {
+
   private CEFAuditRecord auditRecord;
 
   @Autowired

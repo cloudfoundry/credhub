@@ -15,6 +15,7 @@ import java.util.Map;
 @RestController
 @RequestMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class InfoController {
+
   private static final String CREDHUB_NAME = "CredHub";
 
   private final String uaaUrl;

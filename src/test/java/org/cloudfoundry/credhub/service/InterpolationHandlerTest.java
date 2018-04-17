@@ -98,7 +98,7 @@ public class InterpolationHandlerTest {
     doReturn(singletonList(passwordCredential)).when(credentialService).findNByName("/password_cred", 1);
 
     try {
-      subject.interpolateCredHubReferences(deserialize(inputJson, Map.class), eventAuditRecordParameters);
+      subject.interpolateCredHubReferences(deserialize(inputJson, Map.class));
     } catch (ParameterizedValidationException exception) {
       assertThat(exception.getMessage(), equalTo("error.interpolation.invalid_type"));
     }
@@ -115,7 +115,7 @@ public class InterpolationHandlerTest {
         + "  }]"
         + "}", Map.class);
     Map<String, Object> response = subject
-        .interpolateCredHubReferences(inputJson, eventAuditRecordParameters);
+        .interpolateCredHubReferences(inputJson);
 
     assertThat(response, equalTo(inputJson));
     assertThat(eventAuditRecordParameters, hasSize(0));
@@ -132,7 +132,7 @@ public class InterpolationHandlerTest {
         + "  }]"
         + "}", Map.class);
     Map<String, Object> response = subject
-        .interpolateCredHubReferences(inputJson, eventAuditRecordParameters);
+        .interpolateCredHubReferences(inputJson);
 
     assertThat(response, equalTo(inputJson));
     assertThat(eventAuditRecordParameters, hasSize(0));
@@ -152,7 +152,7 @@ public class InterpolationHandlerTest {
         + "}";
     Map<String, Object> inputJson = deserialize(inputJsonString, Map.class);
     Map<String, Object> response = subject
-        .interpolateCredHubReferences(inputJson, eventAuditRecordParameters);
+        .interpolateCredHubReferences(inputJson);
 
     assertThat(response, equalTo(inputJson));
     assertThat(eventAuditRecordParameters, hasSize(0));
@@ -165,7 +165,7 @@ public class InterpolationHandlerTest {
         + "}";
     Map<String, Object> inputJson = deserialize(inputJsonString, Map.class);
     Map<String, Object> response = subject
-        .interpolateCredHubReferences(inputJson, eventAuditRecordParameters);
+        .interpolateCredHubReferences(inputJson);
 
     assertThat(response, equalTo(inputJson));
     assertThat(eventAuditRecordParameters, hasSize(0));
@@ -181,7 +181,7 @@ public class InterpolationHandlerTest {
         + "}";
     Map<String, Object> inputJson = deserialize(inputJsonString, Map.class);
     Map<String, Object> response = subject
-        .interpolateCredHubReferences(inputJson, eventAuditRecordParameters);
+        .interpolateCredHubReferences(inputJson);
 
     assertThat(response, equalTo(inputJson));
     assertThat(eventAuditRecordParameters, hasSize(0));
@@ -191,7 +191,7 @@ public class InterpolationHandlerTest {
   public void interpolateCredHubReferences_whenPropertiesAreEmpty_doesNotInterpolateIt() {
     Map<String, Object> inputJson = deserialize("{}", Map.class);
     Map<String, Object> response = subject
-        .interpolateCredHubReferences(inputJson, eventAuditRecordParameters);
+        .interpolateCredHubReferences(inputJson);
 
     assertThat(response, equalTo(inputJson));
     assertThat(eventAuditRecordParameters, hasSize(0));
@@ -208,7 +208,7 @@ public class InterpolationHandlerTest {
         + "  }"
         + "}";
     Map<String, Object> inputJson = deserialize(inputJsonString, Map.class);
-    Map response = subject.interpolateCredHubReferences(inputJson, eventAuditRecordParameters);
+    Map response = subject.interpolateCredHubReferences(inputJson);
 
     assertThat(response, equalTo(inputJson));
     assertThat(eventAuditRecordParameters, hasSize(0));
@@ -260,7 +260,7 @@ public class InterpolationHandlerTest {
 
     doReturn(singletonList(jsonCredential2)).when(credentialService).findNByName("/cred3", 1);
 
-    response = subject.interpolateCredHubReferences(inputJson, eventAuditRecordParameters);
+    response = subject.interpolateCredHubReferences(inputJson);
   }
 }
 

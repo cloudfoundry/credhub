@@ -1,7 +1,6 @@
 package org.cloudfoundry.credhub.handler;
 
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
-import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.request.PermissionEntry;
@@ -31,29 +30,20 @@ public class PermissionsHandler {
     this.auditRecord = auditRecord;
   }
 
-  public PermissionsView getPermissions(String name,
-      List<EventAuditRecordParameters> auditRecordParameters) {
+  public PermissionsView getPermissions(String name) {
     CredentialVersion credentialVersion = permissionedCredentialService.findMostRecent(name);
-
     final List<PermissionEntry> permissions = permissionService.getPermissions(credentialVersion);
-
     auditRecord.setResource(credentialVersion.getCredential());
-
     return new PermissionsView(credentialVersion.getName(), permissions);
   }
 
-  public void setPermissions(
-      PermissionsRequest request,
-      List<EventAuditRecordParameters> auditRecordParameters
-  ) {
+  public void setPermissions(PermissionsRequest request) {
     CredentialVersion credentialVersion = permissionedCredentialService.findMostRecent(request.getCredentialName());
-
     permissionService.savePermissions(credentialVersion, request.getPermissions(), false);
-
     auditRecord.setResource(credentialVersion.getCredential());
-    }
+  }
 
-  public void deletePermissionEntry(String credentialName, String actor, List<EventAuditRecordParameters> auditRecordParameters) {
+  public void deletePermissionEntry(String credentialName, String actor) {
     boolean successfullyDeleted = permissionService.deletePermissions(credentialName, actor);
     if (!successfullyDeleted) {
       throw new EntryNotFoundException("error.credential.invalid_access");

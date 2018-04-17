@@ -90,8 +90,8 @@ public class PermissionsHandlerTest {
         .thenReturn(true);
 
     PermissionsView response = subject.getPermissions(
-        CREDENTIAL_NAME,
-        auditRecordParameters);
+        CREDENTIAL_NAME
+    );
     assertThat(response.getCredentialName(), equalTo(CREDENTIAL_NAME));
 
   }
@@ -114,8 +114,8 @@ public class PermissionsHandlerTest {
         .thenReturn(accessControlList);
 
     PermissionsView response = subject.getPermissions(
-        CREDENTIAL_NAME,
-        auditRecordParameters);
+        CREDENTIAL_NAME
+    );
 
     List<PermissionEntry> accessControlEntries = response.getPermissions();
 
@@ -161,7 +161,7 @@ public class PermissionsHandlerTest {
     when(permissionsRequest.getCredentialName()).thenReturn(CREDENTIAL_NAME);
     when(permissionsRequest.getPermissions()).thenReturn(accessControlList);
 
-    subject.setPermissions(permissionsRequest, auditRecordParameters);
+    subject.setPermissions(permissionsRequest);
 
     ArgumentCaptor<List> permissionsListCaptor = ArgumentCaptor.forClass(List.class);
     verify(permissionService).savePermissions(eq(credentialVersion), permissionsListCaptor.capture(), eq(false));
@@ -191,7 +191,7 @@ public class PermissionsHandlerTest {
     when(permissionsRequest.getPermissions()).thenReturn(accessControlList);
 
     try {
-      subject.setPermissions(permissionsRequest, auditRecordParameters);
+      subject.setPermissions(permissionsRequest);
     } catch (InvalidPermissionOperationException e) {
       assertThat(e.getMessage(), equalTo("error.permission.invalid_update_operation"));
       verify(permissionService, times(0)).savePermissions(any(), any(), eq(false));
@@ -209,8 +209,8 @@ public class PermissionsHandlerTest {
         .userAllowedToOperateOnActor(ACTOR_NAME))
         .thenReturn(true);
 
-    subject.deletePermissionEntry(CREDENTIAL_NAME, ACTOR_NAME,
-        auditRecordParameters);
+    subject.deletePermissionEntry(CREDENTIAL_NAME, ACTOR_NAME
+    );
 
     verify(permissionService, times(1)).deletePermissions(
         CREDENTIAL_NAME, ACTOR_NAME);
@@ -223,8 +223,8 @@ public class PermissionsHandlerTest {
         .thenReturn(false);
 
     try {
-      subject.deletePermissionEntry(CREDENTIAL_NAME, ACTOR_NAME,
-          auditRecordParameters);
+      subject.deletePermissionEntry(CREDENTIAL_NAME, ACTOR_NAME
+      );
       fail("should throw");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));

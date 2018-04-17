@@ -1,7 +1,6 @@
 package org.cloudfoundry.credhub.controller.v1;
 
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
-import org.cloudfoundry.credhub.audit.EventAuditLogService;
 import org.cloudfoundry.credhub.audit.entity.InterpolateCredentials;
 import org.cloudfoundry.credhub.handler.InterpolationHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,28 +20,18 @@ public class InterpolationController {
 
   static final String API_V1 = "/api/v1";
   private final InterpolationHandler jsonInterpolationHandler;
-  private final EventAuditLogService eventAuditLogService;
   private CEFAuditRecord auditRecord;
 
   @Autowired
-  InterpolationController(
-      InterpolationHandler jsonInterpolationHandler,
-      EventAuditLogService eventAuditLogService,
-      CEFAuditRecord auditRecord) {
+  InterpolationController(InterpolationHandler jsonInterpolationHandler, CEFAuditRecord auditRecord) {
     this.jsonInterpolationHandler = jsonInterpolationHandler;
-    this.eventAuditLogService = eventAuditLogService;
     this.auditRecord = auditRecord;
   }
 
   @RequestMapping(method = RequestMethod.POST, path = "/interpolate")
   @ResponseStatus(HttpStatus.OK)
-  public Map<String, Object> interpolate(
-      @RequestBody Map<String, Object> requestBody
-  ) {
+  public Map<String, Object> interpolate(@RequestBody Map<String, Object> requestBody) {
     auditRecord.setRequestDetails(new InterpolateCredentials());
-    return eventAuditLogService.auditEvents((eventAuditRecordParametersList ->
-          jsonInterpolationHandler
-            .interpolateCredHubReferences(requestBody, eventAuditRecordParametersList))
-    );
+    return jsonInterpolationHandler.interpolateCredHubReferences(requestBody);
   }
 }

@@ -1,7 +1,6 @@
 package org.cloudfoundry.credhub.handler;
 
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
-import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.domain.JsonCredentialVersion;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
@@ -26,11 +25,7 @@ public class InterpolationHandler {
     this.auditRecord = auditRecord;
   }
 
-  public Map<String, Object> interpolateCredHubReferences(
-      Map<String, Object> servicesMap,
-      List<EventAuditRecordParameters> auditRecordParameters
-  ) {
-
+  public Map<String, Object> interpolateCredHubReferences(Map<String, Object> servicesMap) {
     for (Object serviceProperties : servicesMap.values()) {
       if (serviceProperties == null || !(serviceProperties instanceof ArrayList)) {
         continue;

@@ -2,8 +2,6 @@ package org.cloudfoundry.credhub.controller.v1;
 
 import org.apache.commons.lang3.StringUtils;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
-import org.cloudfoundry.credhub.audit.EventAuditLogService;
-import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.audit.entity.AddPermission;
 import org.cloudfoundry.credhub.audit.entity.DeletePermissions;
 import org.cloudfoundry.credhub.audit.entity.GetPermissions;
@@ -23,50 +21,36 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 @RestController
 @RequestMapping(path = "/api/v1/permissions", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class PermissionsController {
 
   private final PermissionsHandler permissionsHandler;
-  private final EventAuditLogService eventAuditLogService;
   private CEFAuditRecord auditRecord;
 
   @Autowired
-  public PermissionsController(
-      PermissionsHandler permissionsHandler,
-      EventAuditLogService eventAuditLogService,
-      CEFAuditRecord auditRecord) {
+  public PermissionsController(PermissionsHandler permissionsHandler, CEFAuditRecord auditRecord) {
     this.permissionsHandler = permissionsHandler;
-    this.eventAuditLogService = eventAuditLogService;
     this.auditRecord = auditRecord;
   }
 
   @GetMapping
   @ResponseStatus(HttpStatus.OK)
-  public PermissionsView getAccessControlList(@RequestParam("credential_name") String credentialName) throws Exception {
+  public PermissionsView getAccessControlList(@RequestParam("credential_name") String credentialName) {
     String credentialNameWithLeadingSlash = StringUtils.prependIfMissing(credentialName, "/");
     auditRecord.setRequestDetails(new GetPermissions(credentialName));
 
-    return eventAuditLogService
-        .auditEvents(auditRecordParameters -> {
-          return permissionsHandler
-              .getPermissions(credentialNameWithLeadingSlash, auditRecordParameters);
-        });
+    return permissionsHandler.getPermissions(credentialNameWithLeadingSlash);
   }
 
   @PostMapping(consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ResponseStatus(HttpStatus.CREATED)
   public void setAccessControlEntries(@Validated @RequestBody PermissionsRequest accessEntriesRequest) {
 
-    AddPermission addPermission = new AddPermission(accessEntriesRequest.getCredentialName(), accessEntriesRequest.getPermissions());
+    AddPermission addPermission = new AddPermission(accessEntriesRequest.getCredentialName(),
+        accessEntriesRequest.getPermissions());
     auditRecord.setRequestDetails(addPermission);
-
-    eventAuditLogService.auditEvents(auditRecordParameters -> {
-      permissionsHandler.setPermissions(accessEntriesRequest, auditRecordParameters);
-      return null;
-    });
+    permissionsHandler.setPermissions(accessEntriesRequest);
   }
 
   @DeleteMapping
@@ -80,10 +64,6 @@ public class PermissionsController {
     DeletePermissions deletePermissions = new DeletePermissions(credentialName, actor);
     auditRecord.setRequestDetails(deletePermissions);
 
-    eventAuditLogService.auditEvents(
-        (List<EventAuditRecordParameters> auditRecordParameters) -> {
-          permissionsHandler.deletePermissionEntry(credentialNameWithPrependedSlash, actor, auditRecordParameters);
-          return true;
-        });
+    permissionsHandler.deletePermissionEntry(credentialNameWithPrependedSlash, actor);
   }
 }

@@ -36,6 +36,7 @@ import static org.springframework.core.Ordered.HIGHEST_PRECEDENCE;
 @RestControllerAdvice
 @Order(HIGHEST_PRECEDENCE)
 public class ExceptionHandlers {
+
   private final MessageSourceAccessor messageSourceAccessor;
   private final Logger logger;
 
@@ -53,7 +54,8 @@ public class ExceptionHandlers {
 
   @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
   @ResponseStatus(HttpStatus.NOT_FOUND)
-  public void handleRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e) {}
+  public void handleRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e) {
+  }
 
   @ExceptionHandler(PermissionException.class)
   @ResponseStatus(HttpStatus.FORBIDDEN)
