@@ -1,7 +1,6 @@
 package org.cloudfoundry.credhub.controller.v1;
 
 import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.audit.EventAuditLogService;
 import org.cloudfoundry.credhub.handler.RegenerateHandler;
 import org.cloudfoundry.credhub.util.AuthConstants;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
@@ -12,7 +11,6 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -39,9 +37,6 @@ public class RegenerateControllerTest {
 
   @MockBean
   private RegenerateHandler regenerateHandler;
-
-  @SpyBean
-  private EventAuditLogService eventAuditLogService;
 
   private MockMvc mockMvc;
 

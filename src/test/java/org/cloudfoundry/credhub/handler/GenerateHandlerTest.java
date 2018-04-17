@@ -72,7 +72,7 @@ public class GenerateHandlerTest {
     generateRequest.setAdditionalPermissions(accessControlEntries);
     generateRequest.setOverwrite(false);
 
-    subject.handle(generateRequest, eventAuditRecordParameters);
+    subject.handle(generateRequest);
 
     verify(credentialService).save(null, null, generateRequest);
     verify(permissionService).savePermissions(credentialVersion, accessControlEntries, true);
@@ -91,7 +91,7 @@ public class GenerateHandlerTest {
     generateRequest.setAdditionalPermissions(accessControlEntries);
     generateRequest.setOverwrite(false);
 
-    subject.handle(generateRequest, eventAuditRecordParameters);
+    subject.handle(generateRequest);
     verify(cefAuditRecord, times(1)).setResource(any(CredentialVersion.class));
   }
 }

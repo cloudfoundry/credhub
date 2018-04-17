@@ -1,7 +1,6 @@
 package org.cloudfoundry.credhub.handler;
 
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
-import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.credential.CredentialValue;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
@@ -10,8 +9,6 @@ import org.cloudfoundry.credhub.service.PermissionedCredentialService;
 import org.cloudfoundry.credhub.view.CredentialView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class GenerateHandler {
@@ -32,14 +29,12 @@ public class GenerateHandler {
     this.auditRecord = auditRecord;
   }
 
-  public CredentialView handle(
-      BaseCredentialGenerateRequest generateRequest,
-      List<EventAuditRecordParameters> auditRecordParameters
-  ) {
+  public CredentialView handle(BaseCredentialGenerateRequest generateRequest) {
     CredentialVersion existingCredentialVersion = credentialService.findMostRecent(generateRequest.getName());
     CredentialValue value = credentialGenerator.generate(generateRequest);
 
-    final CredentialVersion credentialVersion = credentialService.save(existingCredentialVersion, value, generateRequest);
+    final CredentialVersion credentialVersion = credentialService
+        .save(existingCredentialVersion, value, generateRequest);
 
     final boolean isNewCredential = existingCredentialVersion == null;
 
