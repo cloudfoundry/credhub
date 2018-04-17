@@ -2,7 +2,6 @@ package org.cloudfoundry.credhub.controller.v1;
 
 import org.apache.commons.lang3.StringUtils;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
-import org.cloudfoundry.credhub.audit.EventAuditLogService;
 import org.cloudfoundry.credhub.audit.OperationDeviceAction;
 import org.cloudfoundry.credhub.audit.entity.GetCertificateByName;
 import org.cloudfoundry.credhub.audit.entity.RegenerateCertificate;
@@ -36,17 +35,12 @@ public class CertificatesController {
 
   static final String API_V1_CERTIFICATES = "api/v1/certificates";
 
-  private final EventAuditLogService eventAuditLogService;
   private CEFAuditRecord auditRecord;
   private CertificatesHandler certificatesHandler;
 
   @Autowired
-  public CertificatesController(
-      CertificatesHandler certificateHandler,
-      EventAuditLogService eventAuditLogService,
-      CEFAuditRecord auditRecord) {
+  public CertificatesController(CertificatesHandler certificateHandler, CEFAuditRecord auditRecord) {
     this.certificatesHandler = certificateHandler;
-    this.eventAuditLogService = eventAuditLogService;
     this.auditRecord = auditRecord;
   }
 
@@ -63,10 +57,7 @@ public class CertificatesController {
     certificate.setTransitional(requestBody.isTransitional());
     auditRecord.setRequestDetails(certificate);
 
-    return eventAuditLogService
-        .auditEvents((auditRecordParameters ->
-            certificatesHandler.handleRegenerate(certificateId, finalRequestBody)
-        ));
+    return certificatesHandler.handleRegenerate(certificateId, finalRequestBody);
   }
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -74,24 +65,17 @@ public class CertificatesController {
   public CertificateCredentialsView getAllCertificates() {
     auditRecord.setRequestDetails(() -> OperationDeviceAction.GET_ALL_CERTIFICATES);
 
-    return eventAuditLogService
-        .auditEvents((auditRecordParameters ->
-          certificatesHandler.handleGetAllRequest()
-        ));
+    return certificatesHandler.handleGetAllRequest();
   }
 
   @PutMapping(value = "/{certificateId}/update_transitional_version", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ResponseStatus(HttpStatus.OK)
-  // TODO: @Transactional?
   public List<CertificateView> updateTransitionalVersion(@RequestBody UpdateTransitionalVersionRequest requestBody,
       @PathVariable String certificateId) {
     UpdateTransitionalVersion details = new UpdateTransitionalVersion();
     details.setVersion(requestBody.getVersionUuid());
     auditRecord.setRequestDetails(details);
-    return eventAuditLogService
-        .auditEvents((auditRecordParameters ->
-            certificatesHandler.handleUpdateTransitionalVersion(certificateId, requestBody)
-        ));
+    return certificatesHandler.handleUpdateTransitionalVersion(certificateId, requestBody);
   }
 
   @GetMapping(value = "", params = "name", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -101,9 +85,6 @@ public class CertificatesController {
     GetCertificateByName details = new GetCertificateByName();
     details.setName(name);
     auditRecord.setRequestDetails(details);
-    return eventAuditLogService
-        .auditEvents((auditRecordParameters ->
-          certificatesHandler.handleGetByNameRequest(credentialNameWithPrependedSlash)
-        ));
+    return certificatesHandler.handleGetByNameRequest(credentialNameWithPrependedSlash);
   }
 }
