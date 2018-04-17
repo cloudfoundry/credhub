@@ -1,6 +1,6 @@
 package org.cloudfoundry.credhub.config;
 
-import org.cloudfoundry.credhub.auth.AuditOAuth2AuthenticationExceptionHandler;
+import org.cloudfoundry.credhub.auth.OAuth2AuthenticationExceptionHandler;
 import org.cloudfoundry.credhub.auth.OAuth2IssuerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -32,7 +32,7 @@ public class OAuth2ExtraValidationFilter extends OncePerRequestFilter {
 
   private final MessageSourceAccessor messageSourceAccessor;
   private TokenStore tokenStore;
-  private AuditOAuth2AuthenticationExceptionHandler oAuth2AuthenticationExceptionHandler;
+  private OAuth2AuthenticationExceptionHandler oAuth2AuthenticationExceptionHandler;
   private AuthenticationEventPublisher eventPublisher;
   private TokenExtractor tokenExtractor;
   private OAuth2IssuerService oAuth2IssuerService;
@@ -41,7 +41,7 @@ public class OAuth2ExtraValidationFilter extends OncePerRequestFilter {
   OAuth2ExtraValidationFilter(
       OAuth2IssuerService oAuth2IssuerService,
       TokenStore tokenStore,
-      AuditOAuth2AuthenticationExceptionHandler oAuth2AuthenticationExceptionHandler,
+      OAuth2AuthenticationExceptionHandler oAuth2AuthenticationExceptionHandler,
       MessageSourceAccessor messageSourceAccessor,
       AuthenticationEventPublisher eventPublisher
   ) {

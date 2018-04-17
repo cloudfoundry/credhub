@@ -27,14 +27,14 @@ import static org.springframework.security.oauth2.provider.token.AccessTokenConv
 
 @Service
 @ConditionalOnProperty(value = "security.oauth2.enabled")
-public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2AuthenticationEntryPoint {
+public class OAuth2AuthenticationExceptionHandler extends OAuth2AuthenticationEntryPoint {
 
   private final CurrentTimeProvider currentTimeProvider;
   private final JsonParser objectMapper;
   private final MessageSourceAccessor messageSourceAccessor;
 
   @Autowired
-  AuditOAuth2AuthenticationExceptionHandler(
+  OAuth2AuthenticationExceptionHandler(
       CurrentTimeProvider currentTimeProvider,
       MessageSourceAccessor messageSourceAccessor
   ) {
