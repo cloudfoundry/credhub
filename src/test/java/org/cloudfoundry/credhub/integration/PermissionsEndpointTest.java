@@ -2,10 +2,7 @@ package org.cloudfoundry.credhub.integration;
 
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.constants.CredentialWriteMode;
-import org.cloudfoundry.credhub.helper.AuditingHelper;
 import org.cloudfoundry.credhub.helper.RequestHelper;
-import org.cloudfoundry.credhub.repository.EventAuditRecordRepository;
-import org.cloudfoundry.credhub.repository.RequestAuditRecordRepository;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.cloudfoundry.credhub.util.AuthConstants;
@@ -49,12 +46,7 @@ public class PermissionsEndpointTest {
 
   @Autowired
   private WebApplicationContext webApplicationContext;
-  @Autowired
-  private RequestAuditRecordRepository requestAuditRecordRepository;
-  @Autowired
-  private EventAuditRecordRepository eventAuditRecordRepository;
 
-  private AuditingHelper auditingHelper;
   private MockMvc mockMvc;
   private String credentialNameWithoutLeadingSlash = this.getClass().getSimpleName();
   private String credentialName = "/" + credentialNameWithoutLeadingSlash;
@@ -67,8 +59,6 @@ public class PermissionsEndpointTest {
         .build();
 
     RequestHelper.setPassword(mockMvc, credentialName, "testpassword", CredentialWriteMode.NO_OVERWRITE.mode);
-
-    auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
   }
 
   @Test
@@ -165,11 +155,6 @@ public class PermissionsEndpointTest {
         null,
         AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "dan"
     );
-
-    auditingHelper.verifyRequestAuditing(
-        "/api/v1/permissions",
-        400
-    );
   }
 
   @Test
@@ -181,11 +166,6 @@ public class PermissionsEndpointTest {
         400, expectedErrorMessage,
         "octopus",
         AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN, null
-    );
-
-    auditingHelper.verifyRequestAuditing(
-        "/api/v1/permissions",
-        400
     );
   }
 
@@ -230,11 +210,6 @@ public class PermissionsEndpointTest {
 
     RequestHelper.expectErrorWhenDeletingPermissions(mockMvc, 404, expectedError, "/not-valid",
         AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "something"
-    );
-
-    auditingHelper.verifyRequestAuditing(
-        "/api/v1/permissions",
-        404
     );
   }
 
@@ -376,9 +351,5 @@ public class PermissionsEndpointTest {
         "unicorn"
     );
 
-    auditingHelper.verifyRequestAuditing(
-        "/api/v1/permissions",
-        400
-    );
   }
 }

@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.config;
 
-import org.cloudfoundry.credhub.auth.AuditOAuth2AccessDeniedHandler;
 import org.cloudfoundry.credhub.auth.AuditOAuth2AuthenticationExceptionHandler;
 import org.cloudfoundry.credhub.auth.PreAuthenticationFailureFilter;
 import org.cloudfoundry.credhub.auth.X509AuthenticationProvider;
@@ -32,7 +31,6 @@ public class AuthConfiguration extends ResourceServerConfigurerAdapter {
 
   private final ResourceServerProperties resourceServerProperties;
   private final AuditOAuth2AuthenticationExceptionHandler auditOAuth2AuthenticationExceptionHandler;
-  private final AuditOAuth2AccessDeniedHandler auditOAuth2AccessDeniedHandler;
   private final PreAuthenticationFailureFilter preAuthenticationFailureFilter;
   private final OAuth2ExtraValidationFilter oAuth2ExtraValidationFilter;
 
@@ -40,22 +38,19 @@ public class AuthConfiguration extends ResourceServerConfigurerAdapter {
   AuthConfiguration(
     ResourceServerProperties resourceServerProperties,
     AuditOAuth2AuthenticationExceptionHandler auditOAuth2AuthenticationExceptionHandler,
-    AuditOAuth2AccessDeniedHandler auditOAuth2AccessDeniedHandler,
     PreAuthenticationFailureFilter preAuthenticationFailureFilter,
     OAuth2ExtraValidationFilter oAuth2ExtraValidationFilter
   ) {
     this.resourceServerProperties = resourceServerProperties;
     this.auditOAuth2AuthenticationExceptionHandler = auditOAuth2AuthenticationExceptionHandler;
-    this.auditOAuth2AccessDeniedHandler = auditOAuth2AccessDeniedHandler;
     this.preAuthenticationFailureFilter = preAuthenticationFailureFilter;
     this.oAuth2ExtraValidationFilter = oAuth2ExtraValidationFilter;
   }
 
   @Override
-  public void configure(ResourceServerSecurityConfigurer resources) throws Exception {
+  public void configure(ResourceServerSecurityConfigurer resources) {
     resources.resourceId(resourceServerProperties.getResourceId());
     resources.authenticationEntryPoint(auditOAuth2AuthenticationExceptionHandler);
-    resources.accessDeniedHandler(auditOAuth2AccessDeniedHandler);
     resources.stateless(false);
   }
 

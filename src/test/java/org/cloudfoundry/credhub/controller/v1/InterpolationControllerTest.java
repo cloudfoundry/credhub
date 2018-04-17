@@ -5,9 +5,6 @@ import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.data.CredentialVersionDataService;
 import org.cloudfoundry.credhub.domain.JsonCredentialVersion;
 import org.cloudfoundry.credhub.domain.ValueCredentialVersion;
-import org.cloudfoundry.credhub.helper.AuditingHelper;
-import org.cloudfoundry.credhub.repository.EventAuditRecordRepository;
-import org.cloudfoundry.credhub.repository.RequestAuditRecordRepository;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,17 +45,10 @@ public class InterpolationControllerTest {
   @Autowired
   private WebApplicationContext webApplicationContext;
 
-  @Autowired
-  private RequestAuditRecordRepository requestAuditRecordRepository;
-
-  @Autowired
-  private EventAuditRecordRepository eventAuditRecordRepository;
-
   @SpyBean
   private CredentialVersionDataService mockCredentialVersionDataService;
 
   private MockMvc mockMvc;
-  private AuditingHelper auditingHelper;
 
   @Before
   public void beforeEach() {
@@ -66,8 +56,6 @@ public class InterpolationControllerTest {
         .webAppContextSetup(webApplicationContext)
         .apply(springSecurity())
         .build();
-
-    auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
   }
 
   @Test

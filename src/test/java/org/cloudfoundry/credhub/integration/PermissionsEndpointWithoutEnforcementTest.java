@@ -2,10 +2,7 @@ package org.cloudfoundry.credhub.integration;
 
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.constants.CredentialWriteMode;
-import org.cloudfoundry.credhub.helper.AuditingHelper;
 import org.cloudfoundry.credhub.helper.RequestHelper;
-import org.cloudfoundry.credhub.repository.EventAuditRecordRepository;
-import org.cloudfoundry.credhub.repository.RequestAuditRecordRepository;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.cloudfoundry.credhub.util.AuthConstants;
@@ -49,12 +46,7 @@ public class PermissionsEndpointWithoutEnforcementTest {
 
   @Autowired
   private WebApplicationContext webApplicationContext;
-  @Autowired
-  private RequestAuditRecordRepository requestAuditRecordRepository;
-  @Autowired
-  private EventAuditRecordRepository eventAuditRecordRepository;
 
-  private AuditingHelper auditingHelper;
   private MockMvc mockMvc;
   private String credentialNameWithoutLeadingSlash = this.getClass().getSimpleName();
   private String credentialName = "/" + credentialNameWithoutLeadingSlash;
@@ -67,8 +59,6 @@ public class PermissionsEndpointWithoutEnforcementTest {
         .build();
 
     RequestHelper.setPassword(mockMvc, credentialName, "testpassword", CredentialWriteMode.NO_OVERWRITE.mode);
-
-    auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
   }
 
   @Test
@@ -99,14 +89,16 @@ public class PermissionsEndpointWithoutEnforcementTest {
     assertThat(permissions.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
             new PermissionEntry(AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
-                asList(PermissionOperation.READ, PermissionOperation.WRITE, PermissionOperation.DELETE, PermissionOperation.READ_ACL, PermissionOperation.WRITE_ACL))),
+                asList(PermissionOperation.READ, PermissionOperation.WRITE, PermissionOperation.DELETE,
+                    PermissionOperation.READ_ACL, PermissionOperation.WRITE_ACL))),
         samePropertyValuesAs(
             new PermissionEntry("test-actor", asList(PermissionOperation.READ)))
     ));
   }
 
   @Test
-  public void GET_whenTheUserHasPermissionToAccessPermissions_andTheLeadingSlashIsMissing_returnsPermissions() throws Exception {
+  public void GET_whenTheUserHasPermissionToAccessPermissions_andTheLeadingSlashIsMissing_returnsPermissions()
+      throws Exception {
     RequestHelper.grantPermissions(
         mockMvc,
         credentialName,
@@ -120,7 +112,9 @@ public class PermissionsEndpointWithoutEnforcementTest {
     assertThat(permissions.getCredentialName(), equalTo(credentialName));
     assertThat(permissions.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
-            new PermissionEntry(AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, asList(PermissionOperation.READ, PermissionOperation.WRITE, PermissionOperation.DELETE, PermissionOperation.READ_ACL, PermissionOperation.WRITE_ACL))),
+            new PermissionEntry(AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
+                asList(PermissionOperation.READ, PermissionOperation.WRITE, PermissionOperation.DELETE,
+                    PermissionOperation.READ_ACL, PermissionOperation.WRITE_ACL))),
         samePropertyValuesAs(
             new PermissionEntry("test-actor", asList(PermissionOperation.READ)))
     ));
@@ -159,11 +153,6 @@ public class PermissionsEndpointWithoutEnforcementTest {
         AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN,
         "dan"
     );
-
-    auditingHelper.verifyRequestAuditing(
-        "/api/v1/permissions",
-        400
-    );
   }
 
   @Test
@@ -177,11 +166,6 @@ public class PermissionsEndpointWithoutEnforcementTest {
         "octopus",
         AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN,
         null
-    );
-
-    auditingHelper.verifyRequestAuditing(
-        "/api/v1/permissions",
-        400
     );
   }
 
@@ -204,7 +188,8 @@ public class PermissionsEndpointWithoutEnforcementTest {
   }
 
   @Test
-  public void DELETE_whenTheActorDoesNotHavePermissionToDeletePermissions_stillDeletesThePermissions() throws Exception {
+  public void DELETE_whenTheActorDoesNotHavePermissionToDeletePermissions_stillDeletesThePermissions()
+      throws Exception {
     RequestHelper.grantPermissions(
         mockMvc,
         credentialName,
@@ -233,11 +218,6 @@ public class PermissionsEndpointWithoutEnforcementTest {
         AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN,
         "something"
     );
-
-    auditingHelper.verifyRequestAuditing(
-        "/api/v1/permissions",
-        404
-    );
   }
 
   @Test
@@ -264,7 +244,9 @@ public class PermissionsEndpointWithoutEnforcementTest {
     assertThat(permissions.getCredentialName(), equalTo(credentialName));
     assertThat(permissions.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
-            new PermissionEntry(AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, asList(PermissionOperation.READ, PermissionOperation.WRITE, PermissionOperation.DELETE, PermissionOperation.READ_ACL, PermissionOperation.WRITE_ACL))),
+            new PermissionEntry(AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
+                asList(PermissionOperation.READ, PermissionOperation.WRITE, PermissionOperation.DELETE,
+                    PermissionOperation.READ_ACL, PermissionOperation.WRITE_ACL))),
         samePropertyValuesAs(
             new PermissionEntry("dan", asList(PermissionOperation.READ, PermissionOperation.WRITE))),
         samePropertyValuesAs(
@@ -296,7 +278,9 @@ public class PermissionsEndpointWithoutEnforcementTest {
     assertThat(permissions.getCredentialName(), equalTo(credentialName));
     assertThat(permissions.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
-            new PermissionEntry(AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, asList(PermissionOperation.READ, PermissionOperation.WRITE, PermissionOperation.DELETE, PermissionOperation.READ_ACL, PermissionOperation.WRITE_ACL))),
+            new PermissionEntry(AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
+                asList(PermissionOperation.READ, PermissionOperation.WRITE, PermissionOperation.DELETE,
+                    PermissionOperation.READ_ACL, PermissionOperation.WRITE_ACL))),
         samePropertyValuesAs(
             new PermissionEntry("dan", asList(
                 PermissionOperation.READ, PermissionOperation.WRITE, PermissionOperation.DELETE)))
@@ -304,7 +288,8 @@ public class PermissionsEndpointWithoutEnforcementTest {
   }
 
   @Test
-  public void POST_whenTheUserDoesNotHavePermissionToWritePermissions_stillAllowsThemToWritePermissions() throws Exception {
+  public void POST_whenTheUserDoesNotHavePermissionToWritePermissions_stillAllowsThemToWritePermissions()
+      throws Exception {
     RequestHelper.grantPermissions(
         mockMvc,
         credentialName,
@@ -330,7 +315,9 @@ public class PermissionsEndpointWithoutEnforcementTest {
     assertThat(permissions.getPermissions(), hasSize(2));
     assertThat(permissions.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
-            new PermissionEntry(AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, asList(PermissionOperation.READ, PermissionOperation.WRITE, PermissionOperation.DELETE, PermissionOperation.READ_ACL, PermissionOperation.WRITE_ACL))),
+            new PermissionEntry(AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
+                asList(PermissionOperation.READ, PermissionOperation.WRITE, PermissionOperation.DELETE,
+                    PermissionOperation.READ_ACL, PermissionOperation.WRITE_ACL))),
         samePropertyValuesAs(
             new PermissionEntry("dan", singletonList(PermissionOperation.READ)))
     ));
@@ -358,11 +345,6 @@ public class PermissionsEndpointWithoutEnforcementTest {
             "The request could not be fulfilled because the request path or body did"
                 + " not meet expectation. Please check the documentation for required "
                 + "formatting and retry your request.")));
-
-    auditingHelper.verifyRequestAuditing(
-        "/api/v1/permissions",
-        400
-    );
   }
 
   @Test
@@ -390,11 +372,6 @@ public class PermissionsEndpointWithoutEnforcementTest {
         AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN,
         "dan",
         "unicorn"
-    );
-
-    auditingHelper.verifyRequestAuditing(
-        "/api/v1/permissions",
-        400
     );
   }
 }

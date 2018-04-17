@@ -10,7 +10,6 @@ import org.cloudfoundry.credhub.domain.SshCredentialVersion;
 import org.cloudfoundry.credhub.domain.UserCredentialVersion;
 import org.cloudfoundry.credhub.entity.EncryptionKeyCanary;
 import org.cloudfoundry.credhub.entity.PasswordCredentialVersionData;
-import org.cloudfoundry.credhub.helper.AuditingHelper;
 import org.cloudfoundry.credhub.repository.EventAuditRecordRepository;
 import org.cloudfoundry.credhub.repository.RequestAuditRecordRepository;
 import org.cloudfoundry.credhub.request.StringGenerationParameters;
@@ -83,7 +82,6 @@ public class CredentialRegenerateTest {
   @Autowired
   private EventAuditRecordRepository eventAuditRecordRepository;
 
-  private AuditingHelper auditingHelper;
   private MockMvc mockMvc;
   private Consumer<Long> fakeTimeSetter;
 
@@ -96,8 +94,6 @@ public class CredentialRegenerateTest {
         .webAppContextSetup(webApplicationContext)
         .apply(springSecurity())
         .build();
-
-    auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
   }
 
   @Test

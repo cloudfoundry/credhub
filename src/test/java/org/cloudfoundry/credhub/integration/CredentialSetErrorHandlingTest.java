@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import net.minidev.json.JSONObject;
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.constants.CredentialWriteMode;
-import org.cloudfoundry.credhub.helper.AuditingHelper;
 import org.cloudfoundry.credhub.repository.EventAuditRecordRepository;
 import org.cloudfoundry.credhub.repository.RequestAuditRecordRepository;
 import org.cloudfoundry.credhub.util.AuthConstants;
@@ -50,7 +49,6 @@ public class CredentialSetErrorHandlingTest {
   @Autowired
   private EventAuditRecordRepository eventAuditRecordRepository;
 
-  private AuditingHelper auditingHelper;
   private MockMvc mockMvc;
 
   @Before
@@ -59,8 +57,6 @@ public class CredentialSetErrorHandlingTest {
         .webAppContextSetup(webApplicationContext)
         .apply(springSecurity())
         .build();
-
-    auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
   }
 
   @Test

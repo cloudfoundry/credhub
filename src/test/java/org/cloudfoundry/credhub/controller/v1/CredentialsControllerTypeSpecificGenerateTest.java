@@ -22,10 +22,7 @@ import org.cloudfoundry.credhub.generator.PasswordCredentialGenerator;
 import org.cloudfoundry.credhub.generator.RsaGenerator;
 import org.cloudfoundry.credhub.generator.SshGenerator;
 import org.cloudfoundry.credhub.generator.UserGenerator;
-import org.cloudfoundry.credhub.helper.AuditingHelper;
 import org.cloudfoundry.credhub.helper.JsonTestHelper;
-import org.cloudfoundry.credhub.repository.EventAuditRecordRepository;
-import org.cloudfoundry.credhub.repository.RequestAuditRecordRepository;
 import org.cloudfoundry.credhub.request.DefaultCredentialGenerateRequest;
 import org.cloudfoundry.credhub.request.GenerationParameters;
 import org.cloudfoundry.credhub.request.PermissionEntry;
@@ -95,6 +92,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = CredentialManagerApp.class)
 @Transactional
 public class CredentialsControllerTypeSpecificGenerateTest {
+
   @ClassRule
   public static final SpringClassRule SPRING_CLASS_RULE = new SpringClassRule();
 
@@ -136,12 +134,6 @@ public class CredentialsControllerTypeSpecificGenerateTest {
   @MockBean
   private UserGenerator userGenerator;
 
-  @Autowired
-  private RequestAuditRecordRepository requestAuditRecordRepository;
-
-  @Autowired
-  private EventAuditRecordRepository eventAuditRecordRepository;
-
   @SpyBean
   private ObjectMapper objectMapper;
 
@@ -151,7 +143,6 @@ public class CredentialsControllerTypeSpecificGenerateTest {
   @Autowired
   private CryptSaltFactory cryptSaltFactory;
 
-  private AuditingHelper auditingHelper;
   private MockMvc mockMvc;
 
   @Parameterized.Parameter
@@ -206,7 +197,8 @@ public class CredentialsControllerTypeSpecificGenerateTest {
       }
     };
 
-    TestParameterizer certificateParameterizer = new TestParameterizer("certificate", "{\"common_name\":\"my-common-name\",\"self_sign\":true}") {
+    TestParameterizer certificateParameterizer = new TestParameterizer("certificate",
+        "{\"common_name\":\"my-common-name\",\"self_sign\":true}") {
       ResultMatcher jsonAssertions() {
         return multiJsonPath(
             "$.value.certificate", "certificate",
@@ -288,7 +280,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
   }
 
   @Before
-  public void setup() throws Exception {
+  public void setup() {
     String fakeSalt = cryptSaltFactory.generateSalt(FAKE_PASSWORD);
     Consumer<Long> fakeTimeSetter = mockOutCurrentTimeProvider(mockCurrentTimeProvider);
 
@@ -312,8 +304,6 @@ public class CredentialsControllerTypeSpecificGenerateTest {
 
     when(userGenerator.generateCredential(any(GenerationParameters.class)))
         .thenReturn(new UserCredentialValue(USERNAME, FAKE_PASSWORD, fakeSalt));
-
-    auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
   }
 
 
@@ -328,7 +318,8 @@ public class CredentialsControllerTypeSpecificGenerateTest {
 
     mockMvc.perform(request)
         .andExpect(status().isBadRequest())
-        .andExpect(content().json("{\"error\":\"The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.\"}"));
+        .andExpect(content().json(
+            "{\"error\":\"The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.\"}"));
   }
 
   @Test
@@ -355,7 +346,8 @@ public class CredentialsControllerTypeSpecificGenerateTest {
   }
 
   @Test
-  public void generatingANewCredential_shouldReturnGeneratedCredentialAndAskDataServiceToPersistTheCredential() throws Exception {
+  public void generatingANewCredential_shouldReturnGeneratedCredentialAndAskDataServiceToPersistTheCredential()
+      throws Exception {
     MockHttpServletRequestBuilder request = createGenerateNewCredentialRequest();
 
     ResultActions response = mockMvc.perform(request);
@@ -470,7 +462,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
         .findMostRecent(CREDENTIAL_NAME);
   }
 
-  private MockHttpServletRequestBuilder beforeEachOverwriteSetToTrue() throws Exception {
+  private MockHttpServletRequestBuilder beforeEachOverwriteSetToTrue() {
     return post("/api/v1/data")
         .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
@@ -483,7 +475,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
             "}");
   }
 
-  private MockHttpServletRequestBuilder beforeEachOverwriteSetToFalse() throws Exception {
+  private MockHttpServletRequestBuilder beforeEachOverwriteSetToFalse() {
     return post("/api/v1/data")
         .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
@@ -497,6 +489,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
   }
 
   private static abstract class TestParameterizer {
+
     public final String credentialType;
     public final String generationParameters;
 

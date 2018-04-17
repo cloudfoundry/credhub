@@ -1,7 +1,6 @@
 package org.cloudfoundry.credhub.integration;
 
 import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.helper.AuditingHelper;
 import org.cloudfoundry.credhub.repository.EventAuditRecordRepository;
 import org.cloudfoundry.credhub.repository.RequestAuditRecordRepository;
 import org.cloudfoundry.credhub.util.AuthConstants;
@@ -52,7 +51,6 @@ public class RegenerationEndpointTest {
 
   private MockMvc mockMvc;
   private String originalPassword;
-  private AuditingHelper auditingHelper;
 
   @Before
   public void beforeEach() throws Exception {
@@ -60,7 +58,6 @@ public class RegenerationEndpointTest {
         .webAppContextSetup(webApplicationContext)
         .apply(springSecurity())
         .build();
-    auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
 
     MockHttpServletRequestBuilder generatePasswordRequest = post(API_V1_DATA_ENDPOINT)
         .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)

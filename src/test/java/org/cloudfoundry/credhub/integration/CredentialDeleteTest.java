@@ -3,7 +3,6 @@ package org.cloudfoundry.credhub.integration;
 
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.data.CredentialVersionDataService;
-import org.cloudfoundry.credhub.helper.AuditingHelper;
 import org.cloudfoundry.credhub.helper.RequestHelper;
 import org.cloudfoundry.credhub.repository.EventAuditRecordRepository;
 import org.cloudfoundry.credhub.repository.RequestAuditRecordRepository;
@@ -49,7 +48,6 @@ public class CredentialDeleteTest {
   private EventAuditRecordRepository eventAuditRecordRepository;
 
   private MockMvc mockMvc;
-  private AuditingHelper auditingHelper;
 
   @Before
   public void beforeEach() {
@@ -57,8 +55,6 @@ public class CredentialDeleteTest {
         .webAppContextSetup(webApplicationContext)
         .apply(springSecurity())
         .build();
-
-    auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
   }
 
   @Test

@@ -6,7 +6,6 @@ import net.minidev.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.constants.CredentialWriteMode;
-import org.cloudfoundry.credhub.helper.AuditingHelper;
 import org.cloudfoundry.credhub.helper.RequestHelper;
 import org.cloudfoundry.credhub.repository.EventAuditRecordRepository;
 import org.cloudfoundry.credhub.repository.RequestAuditRecordRepository;
@@ -58,8 +57,6 @@ public class CertificateSetAndRegenerateTest {
   @Autowired
   private EventAuditRecordRepository eventAuditRecordRepository;
 
-  private AuditingHelper auditingHelper;
-
   private MockMvc mockMvc;
   private String caCertificate;
   private String caId;
@@ -99,8 +96,6 @@ public class CertificateSetAndRegenerateTest {
     caId = JsonPath.parse(generateCaResponse).read("$.id");
     caCredentialUuid = getCertificateId(mockMvc, CA_NAME);
     assertNotNull(caCertificate);
-
-    auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
   }
 
   @Test

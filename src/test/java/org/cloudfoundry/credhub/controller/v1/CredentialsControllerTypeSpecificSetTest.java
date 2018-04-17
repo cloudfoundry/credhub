@@ -17,10 +17,7 @@ import org.cloudfoundry.credhub.domain.UserCredentialVersion;
 import org.cloudfoundry.credhub.domain.ValueCredentialVersion;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.handler.SetHandler;
-import org.cloudfoundry.credhub.helper.AuditingHelper;
 import org.cloudfoundry.credhub.helper.JsonTestHelper;
-import org.cloudfoundry.credhub.repository.EventAuditRecordRepository;
-import org.cloudfoundry.credhub.repository.RequestAuditRecordRepository;
 import org.cloudfoundry.credhub.request.BaseCredentialSetRequest;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.util.CurrentTimeProvider;
@@ -147,19 +144,12 @@ public class CredentialsControllerTypeSpecificSetTest {
   @MockBean
   private CurrentTimeProvider mockCurrentTimeProvider;
 
-  @Autowired
-  private RequestAuditRecordRepository requestAuditRecordRepository;
-
-  @Autowired
-  private EventAuditRecordRepository eventAuditRecordRepository;
-
   @SpyBean
   private ObjectMapper objectMapper;
 
   @Autowired
   private Encryptor encryptor;
 
-  private AuditingHelper auditingHelper;
   private MockMvc mockMvc;
 
   @Parameterized.Parameter
@@ -177,7 +167,7 @@ public class CredentialsControllerTypeSpecificSetTest {
       }
 
       void credentialAssertions(CredentialVersion credential) {
-        assertThat(((ValueCredentialVersion) credential).getValue(), equalTo(VALUE_VALUE));
+        assertThat(credential.getValue(), equalTo(VALUE_VALUE));
       }
 
       CredentialVersion createCredential(Encryptor encryptor) {
@@ -332,7 +322,7 @@ public class CredentialsControllerTypeSpecificSetTest {
   }
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     Consumer<Long> fakeTimeSetter = mockOutCurrentTimeProvider(mockCurrentTimeProvider);
 
     fakeTimeSetter.accept(FROZEN_TIME.toEpochMilli());
@@ -340,8 +330,6 @@ public class CredentialsControllerTypeSpecificSetTest {
         .webAppContextSetup(webApplicationContext)
         .apply(springSecurity())
         .build();
-
-    auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
   }
 
   @Test

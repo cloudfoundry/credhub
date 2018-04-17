@@ -5,9 +5,6 @@ import org.cloudfoundry.credhub.data.CredentialVersionDataService;
 import org.cloudfoundry.credhub.domain.Encryptor;
 import org.cloudfoundry.credhub.domain.ValueCredentialVersion;
 import org.cloudfoundry.credhub.exceptions.KeyNotFoundException;
-import org.cloudfoundry.credhub.helper.AuditingHelper;
-import org.cloudfoundry.credhub.repository.EventAuditRecordRepository;
-import org.cloudfoundry.credhub.repository.RequestAuditRecordRepository;
 import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.cloudfoundry.credhub.service.PermissionCheckingService;
 import org.cloudfoundry.credhub.util.AuthConstants;
@@ -31,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.time.Instant;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -71,19 +68,12 @@ public class CredentialsControllerGetTest {
   @SpyBean
   private PermissionCheckingService permissionCheckingService;
 
-  @Autowired
-  private RequestAuditRecordRepository requestAuditRecordRepository;
-
-  @Autowired
-  private EventAuditRecordRepository eventAuditRecordRepository;
-
   @SpyBean
   private CredentialVersionDataService credentialVersionDataService;
 
   @MockBean
   private CurrentTimeProvider mockCurrentTimeProvider;
 
-  private AuditingHelper auditingHelper;
   private MockMvc mockMvc;
 
   @Before
@@ -96,8 +86,6 @@ public class CredentialsControllerGetTest {
         .webAppContextSetup(webApplicationContext)
         .apply(springSecurity())
         .build();
-
-    auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
   }
 
   @Test
@@ -273,7 +261,7 @@ public class CredentialsControllerGetTest {
         .setEncryptor(encryptor)
         .setUuid(uuid)
         .setVersionCreatedAt(credential2Instant);
-    ValueCredentialVersion valueCredential3 = new ValueCredentialVersion(CREDENTIAL_NAME)
+    new ValueCredentialVersion(CREDENTIAL_NAME)
         .setEncryptor(encryptor)
         .setUuid(uuid)
         .setVersionCreatedAt(credential3Instant);
@@ -344,7 +332,7 @@ public class CredentialsControllerGetTest {
 
     doThrow(new KeyNotFoundException("error.missing_encryption_key"))
         .when(encryptor).decrypt(any());
-    doReturn(Arrays.asList(valueCredential)).when(credentialVersionDataService)
+    doReturn(Collections.singletonList(valueCredential)).when(credentialVersionDataService)
         .findAllByName(CREDENTIAL_NAME);
 
     final MockHttpServletRequestBuilder get =
@@ -383,7 +371,7 @@ public class CredentialsControllerGetTest {
 
     doReturn(CREDENTIAL_VALUE).when(encryptor).decrypt(any());
 
-    doReturn(Arrays.asList(credential)).when(credentialVersionDataService).findActiveByName(CREDENTIAL_NAME);
+    doReturn(Collections.singletonList(credential)).when(credentialVersionDataService).findActiveByName(CREDENTIAL_NAME);
   }
 
 

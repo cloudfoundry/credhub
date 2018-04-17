@@ -3,10 +3,7 @@ package org.cloudfoundry.credhub.integration;
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.data.CredentialVersionDataService;
 import org.cloudfoundry.credhub.entity.EncryptionKeyCanary;
-import org.cloudfoundry.credhub.helper.AuditingHelper;
 import org.cloudfoundry.credhub.repository.EncryptionKeyCanaryRepository;
-import org.cloudfoundry.credhub.repository.EventAuditRecordRepository;
-import org.cloudfoundry.credhub.repository.RequestAuditRecordRepository;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationVersion;
@@ -61,12 +58,6 @@ public class BulkRegenerateTest {
   private WebApplicationContext webApplicationContext;
 
   @Autowired
-  private RequestAuditRecordRepository requestAuditRecordRepository;
-
-  @Autowired
-  private EventAuditRecordRepository eventAuditRecordRepository;
-
-  @Autowired
   private CredentialVersionDataService credentialVersionDataService;
 
   @Autowired
@@ -76,7 +67,6 @@ public class BulkRegenerateTest {
   private EncryptionKeyCanaryRepository encryptionKeyCanaryRepository;
 
   private MockMvc mockMvc;
-  private AuditingHelper auditingHelper;
   private List<EncryptionKeyCanary> canaries;
 
   @Before
@@ -86,7 +76,6 @@ public class BulkRegenerateTest {
         .webAppContextSetup(webApplicationContext)
         .apply(springSecurity())
         .build();
-    auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
 
     generateRootCA("/ca-to-rotate", "original ca");
     generateRootCA("/other-ca", "other ca");

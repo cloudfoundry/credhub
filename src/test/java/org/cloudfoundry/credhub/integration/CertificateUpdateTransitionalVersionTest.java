@@ -3,7 +3,6 @@ package org.cloudfoundry.credhub.integration;
 
 import com.jayway.jsonpath.JsonPath;
 import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.helper.AuditingHelper;
 import org.cloudfoundry.credhub.repository.EventAuditRecordRepository;
 import org.cloudfoundry.credhub.repository.RequestAuditRecordRepository;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
@@ -54,8 +53,6 @@ public class CertificateUpdateTransitionalVersionTest {
   private EventAuditRecordRepository eventAuditRecordRepository;
 
   private MockMvc mockMvc;
-
-  private AuditingHelper auditingHelper;
   private Object caCertificate;
   private String caName = "/some-ca";
   private String caCredentialUuid;
@@ -74,8 +71,6 @@ public class CertificateUpdateTransitionalVersionTest {
     caCredentialUuid = JsonPath.parse(response)
         .read("$.certificates[0].id");
     assertNotNull(caCertificate);
-
-    auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
   }
 
   @Test
