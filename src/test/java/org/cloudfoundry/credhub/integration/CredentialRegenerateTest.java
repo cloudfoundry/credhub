@@ -10,13 +10,10 @@ import org.cloudfoundry.credhub.domain.SshCredentialVersion;
 import org.cloudfoundry.credhub.domain.UserCredentialVersion;
 import org.cloudfoundry.credhub.entity.EncryptionKeyCanary;
 import org.cloudfoundry.credhub.entity.PasswordCredentialVersionData;
-import org.cloudfoundry.credhub.helper.AuditingHelper;
-import org.cloudfoundry.credhub.repository.EventAuditRecordRepository;
-import org.cloudfoundry.credhub.repository.RequestAuditRecordRepository;
 import org.cloudfoundry.credhub.request.StringGenerationParameters;
+import org.cloudfoundry.credhub.util.AuthConstants;
 import org.cloudfoundry.credhub.util.CurrentTimeProvider;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
-import org.cloudfoundry.credhub.util.AuthConstants;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,12 +32,11 @@ import org.springframework.web.context.WebApplicationContext;
 import java.time.Instant;
 import java.util.function.Consumer;
 
-import static org.cloudfoundry.credhub.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
-import static org.cloudfoundry.credhub.helper.RequestHelper.revokePermissions;
 import static org.cloudfoundry.credhub.helper.RequestHelper.expect404WhileRegeneratingCertificate;
 import static org.cloudfoundry.credhub.helper.RequestHelper.generateCa;
 import static org.cloudfoundry.credhub.helper.RequestHelper.generateCertificate;
 import static org.cloudfoundry.credhub.helper.RequestHelper.grantPermissions;
+import static org.cloudfoundry.credhub.helper.RequestHelper.revokePermissions;
 import static org.cloudfoundry.credhub.helper.TestHelper.mockOutCurrentTimeProvider;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -78,13 +74,6 @@ public class CredentialRegenerateTest {
   @MockBean
   private CurrentTimeProvider mockCurrentTimeProvider;
 
-  @Autowired
-  private RequestAuditRecordRepository requestAuditRecordRepository;
-
-  @Autowired
-  private EventAuditRecordRepository eventAuditRecordRepository;
-
-  private AuditingHelper auditingHelper;
   private MockMvc mockMvc;
   private Consumer<Long> fakeTimeSetter;
 
@@ -97,12 +86,10 @@ public class CredentialRegenerateTest {
         .webAppContextSetup(webApplicationContext)
         .apply(springSecurity())
         .build();
-
-    auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
   }
 
   @Test
-  public void regeneratingAPassword_regeneratesThePassword_andPersistsAnAuditEntry() throws Exception {
+  public void regeneratingAPassword_regeneratesThePassword() throws Exception {
     PasswordCredentialVersion originalCredential = new PasswordCredentialVersion("/my-password");
     originalCredential.setEncryptor(encryptor);
     StringGenerationParameters generationParameters = new StringGenerationParameters();
@@ -131,12 +118,10 @@ public class CredentialRegenerateTest {
 
     assertThat(newPassword.getPassword(), not(equalTo("original-credential")));
     assertThat(newPassword.getGenerationParameters().isExcludeNumber(), equalTo(true));
-
-    auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/my-password", AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 200);
   }
 
   @Test
-  public void regeneratingAnRsaKey_regeneratesTheRsaKey_andPersistsAnAuditEntry() throws Exception {
+  public void regeneratingAnRsaKey_regeneratesTheRsaKey() throws Exception {
     RsaCredentialVersion originalCredential = new RsaCredentialVersion("/my-rsa");
     originalCredential.setEncryptor(encryptor);
     originalCredential.setPrivateKey("original value");
@@ -165,12 +150,10 @@ public class CredentialRegenerateTest {
     assertTrue(newRsa.getPrivateKey().contains("-----BEGIN RSA PRIVATE KEY-----"));
     assertThat(originalCredential.getPublicKey(), not(equalTo(newRsa.getPublicKey())));
     assertThat(originalCredential.getPrivateKey(), not(equalTo(newRsa.getPrivateKey())));
-
-    auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/my-rsa", AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 200);
   }
 
   @Test
-  public void regeneratingAnSshKey_regeneratesTheSshKey_andPersistsAnAuditEntry() throws Exception {
+  public void regeneratingAnSshKey_regeneratesTheSshKey() throws Exception {
     SshCredentialVersion originalCredential = new SshCredentialVersion("/my-ssh");
     originalCredential.setEncryptor(encryptor);
     originalCredential.setPrivateKey("original value");
@@ -198,12 +181,10 @@ public class CredentialRegenerateTest {
     assertThat(newSsh.getPublicKey(), containsString("ssh-rsa "));
     assertThat(newSsh.getPrivateKey(), not(equalTo(originalCredential.getPrivateKey())));
     assertThat(newSsh.getPublicKey(), not(equalTo(originalCredential.getPublicKey())));
-
-    auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/my-ssh", AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 200);
   }
 
   @Test
-  public void regeneratingAUser_regeneratesTheUser_andPersistsAnAuditEntry() throws Exception {
+  public void regeneratingAUser_regeneratesTheUser() throws Exception {
     UserCredentialVersion originalCredential = new UserCredentialVersion("/the-user");
     originalCredential.setEncryptor(encryptor);
     StringGenerationParameters generationParameters = new StringGenerationParameters();
@@ -237,12 +218,10 @@ public class CredentialRegenerateTest {
     assertThat(newUser.getPassword(), not(equalTo(originalCredential.getPassword())));
     assertThat(newUser.getGenerationParameters().isExcludeNumber(), equalTo(true));
     assertThat(newUser.getUsername(), equalTo(originalCredential.getUsername()));
-
-    auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/the-user", AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 200);
   }
 
   @Test
-  public void regeneratingACredentialThatDoesNotExist_returnsAnError_andPersistsAnAuditEntry() throws Exception {
+  public void regeneratingACredentialThatDoesNotExist_returnsAnError() throws Exception {
     MockHttpServletRequestBuilder request = post("/api/v1/data")
         .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
@@ -256,12 +235,10 @@ public class CredentialRegenerateTest {
     mockMvc.perform(request)
         .andExpect(status().isNotFound())
         .andExpect(content().json(notFoundJson));
-
-    auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/my-password", AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 404);
   }
 
   @Test
-  public void regeneratingANonGeneratedPassword_returnsAnError_andPersistsAnAuditEntry() throws Exception {
+  public void regeneratingANonGeneratedPassword_returnsAnError() throws Exception {
     PasswordCredentialVersion originalCredential = new PasswordCredentialVersion("/my-password");
     originalCredential.setEncryptor(encryptor);
     originalCredential.setPasswordAndGenerationParameters("abcde", null);
@@ -281,12 +258,10 @@ public class CredentialRegenerateTest {
 
     mockMvc.perform(request)
         .andExpect(content().json(cannotRegenerateJson));
-
-    auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/my-password", AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 400);
   }
 
   @Test
-  public void regeneratingANonGeneratedUser_returnsAnError_andPersistsAnAuditEntry() throws Exception {
+  public void regeneratingANonGeneratedUser_returnsAnError() throws Exception {
     UserCredentialVersion originalCredential = new UserCredentialVersion("/my-user");
     originalCredential.setEncryptor(encryptor);
     originalCredential.setPassword("abcde");
@@ -308,8 +283,6 @@ public class CredentialRegenerateTest {
 
     mockMvc.perform(request)
         .andExpect(content().json(cannotRegenerateJson));
-
-    auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/my-user", AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 400);
   }
 
   @Test

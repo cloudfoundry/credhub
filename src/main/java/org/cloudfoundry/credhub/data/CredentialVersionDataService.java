@@ -1,6 +1,7 @@
 package org.cloudfoundry.credhub.data;
 
 import org.apache.commons.lang3.StringUtils;
+import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.domain.CredentialFactory;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData;
@@ -32,6 +33,7 @@ public class CredentialVersionDataService {
   private final JdbcTemplate jdbcTemplate;
   private final CredentialFactory credentialFactory;
   private CertificateVersionDataService certificateVersionDataService;
+  private CEFAuditRecord auditRecord;
 
   @Autowired
   protected CredentialVersionDataService(
@@ -39,12 +41,14 @@ public class CredentialVersionDataService {
       CredentialDataService credentialDataService,
       JdbcTemplate jdbcTemplate,
       CredentialFactory credentialFactory,
-      CertificateVersionDataService certificateVersionDataService) {
+      CertificateVersionDataService certificateVersionDataService,
+      CEFAuditRecord auditRecord) {
     this.credentialVersionRepository = credentialVersionRepository;
     this.credentialDataService = credentialDataService;
     this.jdbcTemplate = jdbcTemplate;
     this.credentialFactory = credentialFactory;
     this.certificateVersionDataService = certificateVersionDataService;
+    this.auditRecord = auditRecord;
   }
 
   public <Z extends CredentialVersion> Z save(Z credentialVersion) {
@@ -175,6 +179,7 @@ public class CredentialVersionDataService {
         return certificateVersionDataService.findActiveWithTransitional(name);
       }
       result.add(credentialFactory.makeCredentialFromEntity(credentialVersionData));
+      
       return result;
     } else {
       return newArrayList();

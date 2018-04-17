@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.controller.v1;
 
+import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.config.VersionProvider;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.junit.Before;
@@ -34,7 +35,7 @@ public class InfoControllerTest {
   @Before
   public void beforeEach() {
     final InfoController infoController = new InfoController(
-        "https://uaa.url.example.com"
+        "https://uaa.url.example.com", new CEFAuditRecord()
     );
 
     mockMvc = MockMvcBuilders

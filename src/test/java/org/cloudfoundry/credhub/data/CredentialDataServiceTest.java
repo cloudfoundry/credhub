@@ -1,6 +1,7 @@
 package org.cloudfoundry.credhub.data;
 
 import org.cloudfoundry.credhub.CredentialManagerApp;
+import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.repository.CredentialRepository;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
 
@@ -35,6 +37,9 @@ public class CredentialDataServiceTest {
 
   @Autowired
   private CredentialRepository credentialRepository;
+
+  @Autowired
+  private CEFAuditRecord auditRecord;
 
   @Test
   public void save_savesTheCredential() {
@@ -93,6 +98,14 @@ public class CredentialDataServiceTest {
 
     assertThat(subject.delete(CREDENTIAL_NAME), equalTo(true));
     assertThat(credentialRepository.count(), equalTo(0L));
+  }
+
+  @Test
+  public void delete_addsToAuditRecord() {
+    credentialRepository.save(new Credential(CREDENTIAL_NAME));
+
+    assertThat(subject.delete(CREDENTIAL_NAME), equalTo(true));
+    assertThat(auditRecord.getResourceName(), is(CREDENTIAL_NAME));
   }
 
   @Test

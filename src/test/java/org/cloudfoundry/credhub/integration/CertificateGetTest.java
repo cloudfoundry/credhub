@@ -4,10 +4,7 @@ package org.cloudfoundry.credhub.integration;
 import com.jayway.jsonpath.JsonPath;
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.constants.CredentialWriteMode;
-import org.cloudfoundry.credhub.helper.AuditingHelper;
 import org.cloudfoundry.credhub.helper.RequestHelper;
-import org.cloudfoundry.credhub.repository.EventAuditRecordRepository;
-import org.cloudfoundry.credhub.repository.RequestAuditRecordRepository;
 import org.cloudfoundry.credhub.util.AuthConstants;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.json.JSONArray;
@@ -28,16 +25,12 @@ import org.springframework.web.context.WebApplicationContext;
 import java.util.List;
 import java.util.Map;
 
-import static org.cloudfoundry.credhub.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static org.cloudfoundry.credhub.audit.AuditingOperationCode.CREDENTIAL_FIND;
 import static org.cloudfoundry.credhub.helper.RequestHelper.generateCa;
 import static org.cloudfoundry.credhub.helper.RequestHelper.generateCertificateCredential;
 import static org.cloudfoundry.credhub.helper.RequestHelper.generatePassword;
 import static org.cloudfoundry.credhub.helper.RequestHelper.getCertificateCredentials;
 import static org.cloudfoundry.credhub.helper.RequestHelper.getCertificateCredentialsByName;
-import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID;
 import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN;
-import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
 import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -57,18 +50,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @TestPropertySource(properties = "security.authorization.acls.enabled=true")
 @Transactional
 public class CertificateGetTest {
+
   @Autowired
   private WebApplicationContext webApplicationContext;
 
-  @Autowired
-  private RequestAuditRecordRepository requestAuditRecordRepository;
-
-  @Autowired
-  private EventAuditRecordRepository eventAuditRecordRepository;
-
   private MockMvc mockMvc;
-
-  private AuditingHelper auditingHelper;
 
   @Before
   public void beforeEach() throws Exception {
@@ -76,15 +62,15 @@ public class CertificateGetTest {
         .webAppContextSetup(webApplicationContext)
         .apply(springSecurity())
         .build();
-
-    auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
   }
 
   @Test
   public void getCertificateCredentials_returnsAllCertificateCredentials() throws Exception {
     generateCertificateCredential(mockMvc, "/first-certificate", CredentialWriteMode.OVERWRITE.mode, "test", null);
-    generateCertificateCredential(mockMvc, "/second-certificate", CredentialWriteMode.OVERWRITE.mode, "first-version", null);
-    generateCertificateCredential(mockMvc, "/second-certificate", CredentialWriteMode.OVERWRITE.mode, "second-version", null);
+    generateCertificateCredential(mockMvc, "/second-certificate", CredentialWriteMode.OVERWRITE.mode, "first-version",
+        null);
+    generateCertificateCredential(mockMvc, "/second-certificate", CredentialWriteMode.OVERWRITE.mode, "second-version",
+        null);
     generatePassword(mockMvc, "invalid-cert", CredentialWriteMode.OVERWRITE.mode, null);
     String response = getCertificateCredentials(mockMvc);
 
@@ -94,8 +80,6 @@ public class CertificateGetTest {
     assertThat(names, hasSize(2));
     assertThat(names, containsInAnyOrder("/first-certificate", "/second-certificate"));
     assertThat(names, not(containsInAnyOrder("/invalid-cert")));
-
-    auditingHelper.verifyAuditing(CREDENTIAL_FIND, null, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/certificates", 200);
   }
 
   @Test
@@ -131,7 +115,6 @@ public class CertificateGetTest {
 
     assertThat(names, hasSize(1));
     assertThat(names, containsInAnyOrder("/my-certificate"));
-    auditingHelper.verifyAuditing(CREDENTIAL_FIND, "/my-certificate", UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/certificates", 200);
   }
 
   @Test
@@ -146,8 +129,8 @@ public class CertificateGetTest {
         .andExpect(status().isNotFound())
         .andReturn().getResponse().getContentAsString();
 
-    assertThat(response, containsString("The request could not be completed because the credential does not exist or you do not have sufficient authorization."));
-    auditingHelper.verifyAuditing(CREDENTIAL_FIND, "/some-other-certificate", UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/certificates", 404);
+    assertThat(response, containsString(
+        "The request could not be completed because the credential does not exist or you do not have sufficient authorization."));
   }
 
   @Test
@@ -164,12 +147,13 @@ public class CertificateGetTest {
         .andExpect(status().isNotFound())
         .andReturn().getResponse().getContentAsString();
 
-    assertThat(response, containsString("The request could not be completed because the credential does not exist or you do not have sufficient authorization."));
-    auditingHelper.verifyAuditing(CREDENTIAL_FIND, "/my-credential", UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/certificates", 404);
+    assertThat(response, containsString(
+        "The request could not be completed because the credential does not exist or you do not have sufficient authorization."));
   }
 
   @Test
-  public void getCertificateCredentials_whenNameIsProvided_andUserDoesNotHaveRequiredPermissions_returns404WithMessage() throws Exception {
+  public void getCertificateCredentials_whenNameIsProvided_andUserDoesNotHaveRequiredPermissions_returns404WithMessage()
+      throws Exception {
     generateCa(mockMvc, "my-certificate", UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
 
     MockHttpServletRequestBuilder get = get("/api/v1/certificates?name=" + "my-certificate")
@@ -182,21 +166,23 @@ public class CertificateGetTest {
         .andExpect(status().isNotFound())
         .andReturn().getResponse().getContentAsString();
 
-    assertThat(response, containsString("The request could not be completed because the credential does not exist or you do not have sufficient authorization."));
-    auditingHelper.verifyAuditing(CREDENTIAL_FIND, "/my-certificate", UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID, "/api/v1/certificates", 404);
+    assertThat(response, containsString(
+        "The request could not be completed because the credential does not exist or you do not have sufficient authorization."));
   }
 
   @Test
   public void getCertificateVersionsByCredentialId_returnsAllVersionsOfTheCertificateCredential() throws Exception {
-    String firstResponse = generateCertificateCredential(mockMvc, "/first-certificate", CredentialWriteMode.OVERWRITE.mode, "test", null);
-    String secondResponse = generateCertificateCredential(mockMvc, "/first-certificate", CredentialWriteMode.OVERWRITE.mode, "test", null);
+    String firstResponse = generateCertificateCredential(mockMvc, "/first-certificate",
+        CredentialWriteMode.OVERWRITE.mode, "test", null);
+    String secondResponse = generateCertificateCredential(mockMvc, "/first-certificate",
+        CredentialWriteMode.OVERWRITE.mode, "test", null);
 
     String firstVersion = JsonPath.parse(firstResponse).read("$.id");
     String secondVersion = JsonPath.parse(secondResponse).read("$.id");
 
     String response = getCertificateCredentialsByName(mockMvc, UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "/first-certificate");
 
-    String certificateId  = JsonPath.parse(response).read("$.certificates[0].id");
+    String certificateId = JsonPath.parse(response).read("$.certificates[0].id");
 
     MockHttpServletRequestBuilder getVersions = get("/api/v1/certificates/" + certificateId + "/versions")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -213,13 +199,11 @@ public class CertificateGetTest {
     assertThat(certificates, hasSize(2));
     assertThat(certificates.get(0).get("id"), containsString(secondVersion));
     assertThat(certificates.get(1).get("id"), containsString(firstVersion));
-
-    auditingHelper.verifyAuditing(CREDENTIAL_ACCESS, "/first-certificate", UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/certificates/"+ certificateId+ "/versions", 200);
-
   }
 
   @Test
-  public void getCertificateVersionsByCredentialId_withCurrentTrue_returnsCurrentVersionsOfTheCertificateCredential() throws Exception {
+  public void getCertificateVersionsByCredentialId_withCurrentTrue_returnsCurrentVersionsOfTheCertificateCredential()
+      throws Exception {
     String credentialName = "/test-certificate";
 
     generateCertificateCredential(mockMvc, credentialName, CredentialWriteMode.OVERWRITE.mode, "test", null);
@@ -263,7 +247,7 @@ public class CertificateGetTest {
         .andExpect(status().is4xxClientError())
         .andReturn().getResponse().getContentAsString();
 
-      assertThat(response, containsString("The request could not be completed because the credential does not exist or you do not have sufficient authorization."));
-      auditingHelper.verifyAuditing(CREDENTIAL_ACCESS, null, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/certificates/fake-uuid/versions", 404);
+    assertThat(response, containsString(
+        "The request could not be completed because the credential does not exist or you do not have sufficient authorization."));
   }
 }

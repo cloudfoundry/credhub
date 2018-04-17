@@ -1,8 +1,8 @@
 package org.cloudfoundry.credhub.controller.v1;
 
-import org.cloudfoundry.credhub.view.ResponseError;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.cloudfoundry.credhub.view.ResponseError;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.http.HttpStatus;
@@ -24,8 +24,7 @@ public class DefaultExceptionHandler {
 
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   @ExceptionHandler(Exception.class)
-  public ResponseError handleGeneralException(Exception e)
-      throws Exception {
+  public ResponseError handleGeneralException(Exception e) {
     String message = messageSourceAccessor.getMessage("error.internal_server_error");
     logger.error(message, e);
     return new ResponseError(message);

@@ -1,6 +1,7 @@
 package org.cloudfoundry.credhub.data;
 
 import org.cloudfoundry.credhub.CredentialManagerApp;
+import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.domain.Encryptor;
@@ -76,6 +77,9 @@ public class CredentialVersionDataServiceTest {
 
   @Autowired
   CredentialVersionDataService subject;
+
+  @Autowired
+  CEFAuditRecord cefAuditRecord;
 
   @Autowired
   Encryptor encryptor;
@@ -649,7 +653,6 @@ public class CredentialVersionDataServiceTest {
     subject.save(namedPasswordCredential1);
     fakeTimeSetter.accept(345346L); // 1 second later
     subject.save(passwordCredential2);
-
   }
 
   private void setupTestFixturesForFindContainingName(String valueName,

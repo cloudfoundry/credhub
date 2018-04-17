@@ -1,28 +1,24 @@
 package org.cloudfoundry.credhub.service;
 
-import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
-import org.cloudfoundry.credhub.auth.UserContext;
+import org.assertj.core.util.Maps;
+import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.domain.JsonCredentialVersion;
 import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.handler.InterpolationHandler;
-import org.assertj.core.util.Maps;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
-import static org.cloudfoundry.credhub.helper.JsonTestHelper.deserialize;
 import static java.util.Collections.singletonList;
+import static org.cloudfoundry.credhub.helper.JsonTestHelper.deserialize;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
-import static org.hibernate.validator.internal.util.CollectionHelper.newArrayList;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -32,21 +28,19 @@ public class InterpolationHandlerTest {
 
   private InterpolationHandler subject;
   private Map<String, Object> response;
-  private List<EventAuditRecordParameters> eventAuditRecordParameters;
   private PermissionedCredentialService credentialService;
-  private UserContext userContext;
+  private CEFAuditRecord auditRecord;
 
   @Before
   public void beforeEach() {
     credentialService = mock(PermissionedCredentialService.class);
-    userContext = mock(UserContext.class);
+    auditRecord = mock(CEFAuditRecord.class);
 
-    subject = new InterpolationHandler(credentialService);
-    eventAuditRecordParameters = new ArrayList<>();
+    subject = new InterpolationHandler(credentialService, auditRecord);
   }
 
   @Test
-  public void interpolateCredHubReferences_replacesTheCredHubRefWithSomethingElse() throws Exception {
+  public void interpolateCredHubReferences_replacesTheCredHubRefWithSomethingElse() {
     setupValidRequest();
 
     final ArrayList firstService = (ArrayList) response.get("pp-config-server");
@@ -75,8 +69,7 @@ public class InterpolationHandlerTest {
   }
 
   @Test
-  public void interpolateCredHubReferences_whenAReferencedCredentialIsNotJsonType_itThrowsAnException()
-      throws Exception {
+  public void interpolateCredHubReferences_whenAReferencedCredentialIsNotJsonType_itThrowsAnException() {
     //lang=JSON
     String inputJson = "{"
         + "  \"pp-config-server\": ["
@@ -92,10 +85,10 @@ public class InterpolationHandlerTest {
     PasswordCredentialVersion passwordCredential = mock(PasswordCredentialVersion.class);
     when(passwordCredential.getName()).thenReturn("/password_cred");
 
-    doReturn(singletonList(passwordCredential)).when(credentialService).findNByName("/password_cred", 1, eventAuditRecordParameters);
+    doReturn(singletonList(passwordCredential)).when(credentialService).findNByName("/password_cred", 1);
 
     try {
-      subject.interpolateCredHubReferences(deserialize(inputJson, Map.class), eventAuditRecordParameters);
+      subject.interpolateCredHubReferences(deserialize(inputJson, Map.class));
     } catch (ParameterizedValidationException exception) {
       assertThat(exception.getMessage(), equalTo("error.interpolation.invalid_type"));
     }
@@ -112,10 +105,9 @@ public class InterpolationHandlerTest {
         + "  }]"
         + "}", Map.class);
     Map<String, Object> response = subject
-        .interpolateCredHubReferences(inputJson, eventAuditRecordParameters);
+        .interpolateCredHubReferences(inputJson);
 
     assertThat(response, equalTo(inputJson));
-    assertThat(eventAuditRecordParameters, hasSize(0));
   }
 
   @Test
@@ -129,10 +121,9 @@ public class InterpolationHandlerTest {
         + "  }]"
         + "}", Map.class);
     Map<String, Object> response = subject
-        .interpolateCredHubReferences(inputJson, eventAuditRecordParameters);
+        .interpolateCredHubReferences(inputJson);
 
     assertThat(response, equalTo(inputJson));
-    assertThat(eventAuditRecordParameters, hasSize(0));
   }
 
   @Test
@@ -149,10 +140,9 @@ public class InterpolationHandlerTest {
         + "}";
     Map<String, Object> inputJson = deserialize(inputJsonString, Map.class);
     Map<String, Object> response = subject
-        .interpolateCredHubReferences(inputJson, eventAuditRecordParameters);
+        .interpolateCredHubReferences(inputJson);
 
     assertThat(response, equalTo(inputJson));
-    assertThat(eventAuditRecordParameters, hasSize(0));
   }
 
   @Test
@@ -162,10 +152,9 @@ public class InterpolationHandlerTest {
         + "}";
     Map<String, Object> inputJson = deserialize(inputJsonString, Map.class);
     Map<String, Object> response = subject
-        .interpolateCredHubReferences(inputJson, eventAuditRecordParameters);
+        .interpolateCredHubReferences(inputJson);
 
     assertThat(response, equalTo(inputJson));
-    assertThat(eventAuditRecordParameters, hasSize(0));
   }
 
   @Test
@@ -178,20 +167,18 @@ public class InterpolationHandlerTest {
         + "}";
     Map<String, Object> inputJson = deserialize(inputJsonString, Map.class);
     Map<String, Object> response = subject
-        .interpolateCredHubReferences(inputJson, eventAuditRecordParameters);
+        .interpolateCredHubReferences(inputJson);
 
     assertThat(response, equalTo(inputJson));
-    assertThat(eventAuditRecordParameters, hasSize(0));
   }
 
   @Test
   public void interpolateCredHubReferences_whenPropertiesAreEmpty_doesNotInterpolateIt() {
     Map<String, Object> inputJson = deserialize("{}", Map.class);
     Map<String, Object> response = subject
-        .interpolateCredHubReferences(inputJson, eventAuditRecordParameters);
+        .interpolateCredHubReferences(inputJson);
 
     assertThat(response, equalTo(inputJson));
-    assertThat(eventAuditRecordParameters, hasSize(0));
   }
 
   @Test
@@ -205,10 +192,9 @@ public class InterpolationHandlerTest {
         + "  }"
         + "}";
     Map<String, Object> inputJson = deserialize(inputJsonString, Map.class);
-    Map response = subject.interpolateCredHubReferences(inputJson, eventAuditRecordParameters);
+    Map response = subject.interpolateCredHubReferences(inputJson);
 
     assertThat(response, equalTo(inputJson));
-    assertThat(eventAuditRecordParameters, hasSize(0));
   }
 
   private void setupValidRequest() {
@@ -251,13 +237,13 @@ public class InterpolationHandlerTest {
     jsonCredetials.put("secret3-2", "secret3-2-value");
     doReturn(jsonCredetials).when(jsonCredential2).getValue();
 
-    doReturn(singletonList(jsonCredential)).when(credentialService).findNByName("/cred1", 1, newArrayList());
+    doReturn(singletonList(jsonCredential)).when(credentialService).findNByName("/cred1", 1);
 
-    doReturn(singletonList(jsonCredential1)).when(credentialService).findNByName("/cred2", 1, newArrayList());
+    doReturn(singletonList(jsonCredential1)).when(credentialService).findNByName("/cred2", 1);
 
-    doReturn(singletonList(jsonCredential2)).when(credentialService).findNByName("/cred3", 1, newArrayList());
+    doReturn(singletonList(jsonCredential2)).when(credentialService).findNByName("/cred3", 1);
 
-    response = subject.interpolateCredHubReferences(inputJson, eventAuditRecordParameters);
+    response = subject.interpolateCredHubReferences(inputJson);
   }
 }
 

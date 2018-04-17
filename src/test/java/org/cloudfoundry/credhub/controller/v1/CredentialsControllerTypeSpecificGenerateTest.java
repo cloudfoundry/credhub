@@ -2,7 +2,6 @@ package org.cloudfoundry.credhub.controller.v1;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.credential.CryptSaltFactory;
 import org.cloudfoundry.credhub.credential.RsaCredentialValue;
@@ -23,18 +22,15 @@ import org.cloudfoundry.credhub.generator.PasswordCredentialGenerator;
 import org.cloudfoundry.credhub.generator.RsaGenerator;
 import org.cloudfoundry.credhub.generator.SshGenerator;
 import org.cloudfoundry.credhub.generator.UserGenerator;
-import org.cloudfoundry.credhub.helper.AuditingHelper;
 import org.cloudfoundry.credhub.helper.JsonTestHelper;
-import org.cloudfoundry.credhub.repository.EventAuditRecordRepository;
-import org.cloudfoundry.credhub.repository.RequestAuditRecordRepository;
 import org.cloudfoundry.credhub.request.DefaultCredentialGenerateRequest;
 import org.cloudfoundry.credhub.request.GenerationParameters;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.request.StringGenerationParameters;
+import org.cloudfoundry.credhub.util.AuthConstants;
 import org.cloudfoundry.credhub.util.CurrentTimeProvider;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.view.PermissionsView;
-import org.cloudfoundry.credhub.util.AuthConstants;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -66,10 +62,7 @@ import java.util.Collection;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static org.cloudfoundry.credhub.audit.AuditingOperationCode.ACL_UPDATE;
-import static org.cloudfoundry.credhub.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static org.cloudfoundry.credhub.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
+import static java.util.Arrays.asList;
 import static org.cloudfoundry.credhub.helper.TestHelper.mockOutCurrentTimeProvider;
 import static org.cloudfoundry.credhub.request.PermissionOperation.DELETE;
 import static org.cloudfoundry.credhub.request.PermissionOperation.READ;
@@ -77,14 +70,12 @@ import static org.cloudfoundry.credhub.request.PermissionOperation.READ_ACL;
 import static org.cloudfoundry.credhub.request.PermissionOperation.WRITE;
 import static org.cloudfoundry.credhub.request.PermissionOperation.WRITE_ACL;
 import static org.cloudfoundry.credhub.util.MultiJsonPathMatcher.multiJsonPath;
-import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.beans.SamePropertyValuesAs.samePropertyValuesAs;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -101,6 +92,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = CredentialManagerApp.class)
 @Transactional
 public class CredentialsControllerTypeSpecificGenerateTest {
+
   @ClassRule
   public static final SpringClassRule SPRING_CLASS_RULE = new SpringClassRule();
 
@@ -142,12 +134,6 @@ public class CredentialsControllerTypeSpecificGenerateTest {
   @MockBean
   private UserGenerator userGenerator;
 
-  @Autowired
-  private RequestAuditRecordRepository requestAuditRecordRepository;
-
-  @Autowired
-  private EventAuditRecordRepository eventAuditRecordRepository;
-
   @SpyBean
   private ObjectMapper objectMapper;
 
@@ -157,7 +143,6 @@ public class CredentialsControllerTypeSpecificGenerateTest {
   @Autowired
   private CryptSaltFactory cryptSaltFactory;
 
-  private AuditingHelper auditingHelper;
   private MockMvc mockMvc;
 
   @Parameterized.Parameter
@@ -212,7 +197,8 @@ public class CredentialsControllerTypeSpecificGenerateTest {
       }
     };
 
-    TestParameterizer certificateParameterizer = new TestParameterizer("certificate", "{\"common_name\":\"my-common-name\",\"self_sign\":true}") {
+    TestParameterizer certificateParameterizer = new TestParameterizer("certificate",
+        "{\"common_name\":\"my-common-name\",\"self_sign\":true}") {
       ResultMatcher jsonAssertions() {
         return multiJsonPath(
             "$.value.certificate", "certificate",
@@ -294,7 +280,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
   }
 
   @Before
-  public void setup() throws Exception {
+  public void setup() {
     String fakeSalt = cryptSaltFactory.generateSalt(FAKE_PASSWORD);
     Consumer<Long> fakeTimeSetter = mockOutCurrentTimeProvider(mockCurrentTimeProvider);
 
@@ -318,8 +304,6 @@ public class CredentialsControllerTypeSpecificGenerateTest {
 
     when(userGenerator.generateCredential(any(GenerationParameters.class)))
         .thenReturn(new UserCredentialValue(USERNAME, FAKE_PASSWORD, fakeSalt));
-
-    auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
   }
 
 
@@ -334,7 +318,8 @@ public class CredentialsControllerTypeSpecificGenerateTest {
 
     mockMvc.perform(request)
         .andExpect(status().isBadRequest())
-        .andExpect(content().json("{\"error\":\"The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.\"}"));
+        .andExpect(content().json(
+            "{\"error\":\"The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.\"}"));
   }
 
   @Test
@@ -361,7 +346,8 @@ public class CredentialsControllerTypeSpecificGenerateTest {
   }
 
   @Test
-  public void generatingANewCredential_shouldReturnGeneratedCredentialAndAskDataServiceToPersistTheCredential() throws Exception {
+  public void generatingANewCredential_shouldReturnGeneratedCredentialAndAskDataServiceToPersistTheCredential()
+      throws Exception {
     MockHttpServletRequestBuilder request = createGenerateNewCredentialRequest();
 
     ResultActions response = mockMvc.perform(request);
@@ -377,22 +363,6 @@ public class CredentialsControllerTypeSpecificGenerateTest {
             "$.version_created_at", FROZEN_TIME.toString()))
         .andExpect(status().isOk())
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON));
-  }
-
-  @Test
-  public void generatingANewCredential_persistsAnAuditEntry() throws Exception {
-    MockHttpServletRequestBuilder request = createGenerateNewCredentialRequest();
-
-    mockMvc.perform(request);
-
-    auditingHelper.verifyAuditing(AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 200, newArrayList(
-        new EventAuditRecordParameters(CREDENTIAL_UPDATE, CREDENTIAL_NAME),
-        new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, READ, AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID),
-        new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, WRITE, AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID),
-        new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, DELETE, AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID),
-        new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, READ_ACL, AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID),
-        new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, WRITE_ACL, AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID)
-    ));
   }
 
   @Test
@@ -450,22 +420,6 @@ public class CredentialsControllerTypeSpecificGenerateTest {
   }
 
   @Test
-  public void generatingANewCredentialVersion_withOverwrite_shouldPersistAnAuditRecord() throws Exception {
-    beforeEachExistingCredential();
-    MockHttpServletRequestBuilder request = beforeEachOverwriteSetToTrue();
-
-    mockMvc.perform(request);
-
-    auditingHelper.verifyAuditing(
-        CREDENTIAL_UPDATE,
-        CREDENTIAL_NAME,
-        AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
-        "/api/v1/data",
-        200
-    );
-  }
-
-  @Test
   public void generatingANewCredentialVersion_withOverwriteFalse_returnsThePreviousVersion() throws Exception {
     beforeEachExistingCredential();
     MockHttpServletRequestBuilder request = beforeEachOverwriteSetToFalse();
@@ -489,16 +443,6 @@ public class CredentialsControllerTypeSpecificGenerateTest {
     verify(credentialVersionDataService, times(0)).save(any(CredentialVersion.class));
   }
 
-  @Test
-  public void generatingANewCredentialVersion_withOverwriteFalse_persistsAnAuditEntry() throws Exception {
-    beforeEachExistingCredential();
-    MockHttpServletRequestBuilder request = beforeEachOverwriteSetToFalse();
-
-    mockMvc.perform(request);
-
-    auditingHelper.verifyAuditing(CREDENTIAL_ACCESS, CREDENTIAL_NAME, AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/data", 200);
-  }
-
   private MockHttpServletRequestBuilder createGenerateNewCredentialRequest() {
     return post("/api/v1/data")
         .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -518,7 +462,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
         .findMostRecent(CREDENTIAL_NAME);
   }
 
-  private MockHttpServletRequestBuilder beforeEachOverwriteSetToTrue() throws Exception {
+  private MockHttpServletRequestBuilder beforeEachOverwriteSetToTrue() {
     return post("/api/v1/data")
         .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
@@ -531,7 +475,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
             "}");
   }
 
-  private MockHttpServletRequestBuilder beforeEachOverwriteSetToFalse() throws Exception {
+  private MockHttpServletRequestBuilder beforeEachOverwriteSetToFalse() {
     return post("/api/v1/data")
         .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
@@ -545,6 +489,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
   }
 
   private static abstract class TestParameterizer {
+
     public final String credentialType;
     public final String generationParameters;
 

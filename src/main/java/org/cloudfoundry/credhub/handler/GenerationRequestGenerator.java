@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.handler;
 
-import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
@@ -14,11 +13,8 @@ import org.cloudfoundry.credhub.service.regeneratables.UserCredentialRegeneratab
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
-
-import static org.cloudfoundry.credhub.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 
 @Component
 public class GenerationRequestGenerator {
@@ -33,14 +29,13 @@ public class GenerationRequestGenerator {
     this.regeneratableTypeProducers.put("certificate", CertificateCredentialRegeneratable::new);
   }
 
-  public BaseCredentialGenerateRequest createGenerateRequest(CredentialVersion credentialVersion, String credentialName, List<EventAuditRecordParameters> auditRecordParameters) {
+  public BaseCredentialGenerateRequest createGenerateRequest(CredentialVersion credentialVersion) {
     if (credentialVersion == null) {
-      auditRecordParameters.add(new EventAuditRecordParameters(CREDENTIAL_UPDATE, credentialName));
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
     Regeneratable regeneratable = regeneratableTypeProducers
         .getOrDefault(credentialVersion.getCredentialType(), NotRegeneratable::new)
         .get();
-    return regeneratable.createGenerateRequest(credentialVersion, auditRecordParameters);
+    return regeneratable.createGenerateRequest(credentialVersion);
   }
 }

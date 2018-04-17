@@ -3,12 +3,8 @@ package org.cloudfoundry.credhub.integration;
 
 import com.jayway.jsonpath.JsonPath;
 import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.audit.AuditingOperationCode;
 import org.cloudfoundry.credhub.constants.CredentialWriteMode;
-import org.cloudfoundry.credhub.helper.AuditingHelper;
 import org.cloudfoundry.credhub.helper.RequestHelper;
-import org.cloudfoundry.credhub.repository.EventAuditRecordRepository;
-import org.cloudfoundry.credhub.repository.RequestAuditRecordRepository;
 import org.cloudfoundry.credhub.util.AuthConstants;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.json.JSONArray;
@@ -28,7 +24,6 @@ import org.springframework.web.context.WebApplicationContext;
 
 import static org.cloudfoundry.credhub.helper.RequestHelper.generateCertificateCredential;
 import static org.cloudfoundry.credhub.helper.RequestHelper.getCertificateCredentialsByName;
-import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
 import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -48,15 +43,7 @@ public class CertificateVersionDeleteTest {
   @Autowired
   private WebApplicationContext webApplicationContext;
 
-  @Autowired
-  private RequestAuditRecordRepository requestAuditRecordRepository;
-
-  @Autowired
-  private EventAuditRecordRepository eventAuditRecordRepository;
-
   private MockMvc mockMvc;
-
-  private AuditingHelper auditingHelper;
 
   @Before
   public void beforeEach() throws Exception {
@@ -64,8 +51,6 @@ public class CertificateVersionDeleteTest {
         .webAppContextSetup(webApplicationContext)
         .apply(springSecurity())
         .build();
-
-    auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
   }
 
   @Test
@@ -90,8 +75,6 @@ public class CertificateVersionDeleteTest {
     response = mockMvc.perform(request)
         .andExpect(status().isOk())
         .andReturn().getResponse().getContentAsString();
-
-    auditingHelper.verifyAuditing(AuditingOperationCode.CREDENTIAL_DELETE, credentialName, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/certificates/" + uuid + "/versions/" + versionUuid, 200);
 
     String certificate = JsonPath.parse(response)
         .read("$.value.certificate");
@@ -124,6 +107,5 @@ public class CertificateVersionDeleteTest {
     mockMvc.perform(request)
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error", equalTo("The minimum number of versions for a Certificate is 1.")));
-    auditingHelper.verifyAuditing(AuditingOperationCode.CREDENTIAL_DELETE, credentialName, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/certificates/" + uuid + "/versions/" + versionUuid, 400);
   }
 }

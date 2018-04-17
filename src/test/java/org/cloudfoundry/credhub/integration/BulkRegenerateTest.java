@@ -1,14 +1,9 @@
 package org.cloudfoundry.credhub.integration;
 
-import com.jayway.jsonpath.JsonPath;
 import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.data.CredentialVersionDataService;
 import org.cloudfoundry.credhub.entity.EncryptionKeyCanary;
-import org.cloudfoundry.credhub.helper.AuditingHelper;
 import org.cloudfoundry.credhub.repository.EncryptionKeyCanaryRepository;
-import org.cloudfoundry.credhub.repository.EventAuditRecordRepository;
-import org.cloudfoundry.credhub.repository.RequestAuditRecordRepository;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationVersion;
@@ -32,12 +27,9 @@ import org.springframework.web.context.WebApplicationContext;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static org.cloudfoundry.credhub.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 import static org.cloudfoundry.credhub.helper.RequestHelper.getCertificateId;
 import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID;
 import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN;
-import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
 import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -46,10 +38,9 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -67,12 +58,6 @@ public class BulkRegenerateTest {
   private WebApplicationContext webApplicationContext;
 
   @Autowired
-  private RequestAuditRecordRepository requestAuditRecordRepository;
-
-  @Autowired
-  private EventAuditRecordRepository eventAuditRecordRepository;
-
-  @Autowired
   private CredentialVersionDataService credentialVersionDataService;
 
   @Autowired
@@ -82,7 +67,6 @@ public class BulkRegenerateTest {
   private EncryptionKeyCanaryRepository encryptionKeyCanaryRepository;
 
   private MockMvc mockMvc;
-  private AuditingHelper auditingHelper;
   private List<EncryptionKeyCanary> canaries;
 
   @Before
@@ -92,7 +76,6 @@ public class BulkRegenerateTest {
         .webAppContextSetup(webApplicationContext)
         .apply(springSecurity())
         .build();
-    auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
 
     generateRootCA("/ca-to-rotate", "original ca");
     generateRootCA("/other-ca", "other ca");
@@ -164,26 +147,6 @@ public class BulkRegenerateTest {
     assertThat(result.get(1), equalTo("/cert-to-regenerate"));
     assertThat(result.get(2), equalTo("/cert-to-regenerate-as-well"));
     assertThat(result.get(3), equalTo("/z-cert-to-regenerate"));
-  }
-
-  @Test
-  public void regenerating_PersistsAnAuditEntry() throws Exception {
-    MockHttpServletRequestBuilder request = post(API_V1_BULK_REGENERATE_ENDPOINT)
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{\n"
-            + "  \"signed_by\" : \"/ca-to-rotate\"\n"
-            + "}");
-
-    mockMvc.perform(request)
-        .andExpect(status().isOk())
-        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON));
-
-    auditingHelper.verifyAuditing(UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "/api/v1/bulk-regenerate", 200, newArrayList(
-        new EventAuditRecordParameters(CREDENTIAL_UPDATE, "/cert-to-regenerate-as-well"),
-        new EventAuditRecordParameters(CREDENTIAL_UPDATE, "/cert-to-regenerate")
-    ));
   }
 
   @Test
@@ -271,10 +234,6 @@ public class BulkRegenerateTest {
     mockMvc.perform(regenerateCertificatesRequest)
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.error", IsEqual.equalTo("The request could not be completed because the credential does not exist or you do not have sufficient authorization.")));
-
-    auditingHelper.verifyAuditing(UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID, "/api/v1/bulk-regenerate", 403, newArrayList(
-        new EventAuditRecordParameters(CREDENTIAL_UPDATE, "/cert-to-regenerate")
-    ));
   }
 
   @Test

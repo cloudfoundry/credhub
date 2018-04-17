@@ -5,12 +5,8 @@ import com.jayway.jsonpath.JsonPath;
 import net.minidev.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.audit.AuditingOperationCode;
 import org.cloudfoundry.credhub.constants.CredentialWriteMode;
-import org.cloudfoundry.credhub.helper.AuditingHelper;
 import org.cloudfoundry.credhub.helper.RequestHelper;
-import org.cloudfoundry.credhub.repository.EventAuditRecordRepository;
-import org.cloudfoundry.credhub.repository.RequestAuditRecordRepository;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.json.JSONArray;
 import org.junit.Before;
@@ -26,8 +22,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import static org.cloudfoundry.credhub.helper.RequestHelper.getCertificateCredentialsByName;
-import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
 import static org.cloudfoundry.credhub.helper.RequestHelper.getCertificateId;
 import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.cloudfoundry.credhub.util.TestConstants.TEST_CA;
@@ -55,19 +49,9 @@ public class CertificateSetAndRegenerateTest {
   @Autowired
   private WebApplicationContext webApplicationContext;
 
-  @Autowired
-  private RequestAuditRecordRepository requestAuditRecordRepository;
-
-  @Autowired
-  private EventAuditRecordRepository eventAuditRecordRepository;
-
-  private AuditingHelper auditingHelper;
-
   private MockMvc mockMvc;
   private String caCertificate;
-  private String caId;
   private String caCredentialUuid;
-  private String testSignedCert;
 
   @Before
   public void beforeEach() throws Exception {
@@ -99,11 +83,8 @@ public class CertificateSetAndRegenerateTest {
 
     caCertificate = JsonPath.parse(generateCaResponse)
         .read("$.value.certificate");
-    caId = JsonPath.parse(generateCaResponse).read("$.id");
     caCredentialUuid = getCertificateId(mockMvc, CA_NAME);
     assertNotNull(caCertificate);
-
-    auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
   }
 
   @Test
@@ -405,9 +386,6 @@ public class CertificateSetAndRegenerateTest {
         .andExpect(jsonPath("$.value.private_key", equalTo(TEST_PRIVATE_KEY)))
         .andExpect(jsonPath("$.name", equalTo(CA_NAME)))
         .andExpect(jsonPath("$.transitional", equalTo(false)));
-
-    auditingHelper.verifyAuditing(AuditingOperationCode.CREDENTIAL_UPDATE, CA_NAME, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
-        "/api/v1/certificates/" + caCredentialUuid + "/versions", 200);
 
     MockHttpServletRequestBuilder versionsGetRequest = get("/api/v1/certificates/" + caCredentialUuid + "/versions")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)

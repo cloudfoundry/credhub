@@ -1,26 +1,19 @@
 package org.cloudfoundry.credhub.service;
 
-import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.data.CertificateVersionDataService;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
-import org.cloudfoundry.credhub.domain.RsaCredentialVersion;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.request.PermissionOperation;
-import org.cloudfoundry.credhub.audit.AuditingOperationCode;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.Mock;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.mockito.Mockito.mock;
@@ -31,8 +24,6 @@ import static org.mockito.MockitoAnnotations.initMocks;
 public class CertificateServiceTest {
 
   CertificateService subject;
-
-  private List<EventAuditRecordParameters> auditRecordParameters;
 
   @Mock
   CertificateVersionDataService certificateVersionDataService;
@@ -51,7 +42,6 @@ public class CertificateServiceTest {
   @Before
   public void setup() {
     initMocks(this);
-    auditRecordParameters = new ArrayList<>();
     userContext = mock(UserContext.class);
     userContextHolder = new UserContextHolder();
     userContextHolder.setUserContext(userContext);
@@ -64,45 +54,34 @@ public class CertificateServiceTest {
   }
 
   @Test
-  public void findByUuid_ReturnsCertificateWithMatchingUuidAndPersistsAuditEntry() {
+  public void findByUuid_ReturnsCertificateWithMatchingUuid() {
     when(permissionCheckingService.hasPermission(actor, credentialName, PermissionOperation.READ))
         .thenReturn(true);
 
-    CertificateCredentialVersion certificate = subject.findByCredentialUuid(credentialUuid, auditRecordParameters);
+    CertificateCredentialVersion certificate = subject.findByCredentialUuid(credentialUuid);
 
     assertThat(certificate, not(nullValue()));
-    assertThat(auditRecordParameters.size(), equalTo(1));
-    EventAuditRecordParameters auditRecord = this.auditRecordParameters.get(0);
-    assertThat(auditRecord.getAuditingOperationCode(), equalTo(AuditingOperationCode.CREDENTIAL_ACCESS));
-    assertThat(auditRecord.getCredentialName(), equalTo(credentialName));
   }
 
   @Test(expected = EntryNotFoundException.class)
-  public void findByUuid_ThrowsIfUserDoesNotHaveReadAccessAndPersistsAuditEntry() {
+  public void findByUuid_ThrowsIfUserDoesNotHaveReadAccess() {
     when(permissionCheckingService.hasPermission(actor, credentialName, PermissionOperation.READ))
         .thenReturn(false);
 
-    subject.findByCredentialUuid(credentialUuid, auditRecordParameters);
-    assertThat(auditRecordParameters.size(), equalTo(1));
-    EventAuditRecordParameters auditRecord = this.auditRecordParameters.get(0);
-    assertThat(auditRecord.getAuditingOperationCode(), equalTo(AuditingOperationCode.CREDENTIAL_ACCESS));
+    subject.findByCredentialUuid(credentialUuid);
   }
 
   @Test(expected = EntryNotFoundException.class)
-  public void findByUuid_ThrowsEntryNotFoundIfUuidNotFoundAndPersistsAuditEntry() {
+  public void findByUuid_ThrowsEntryNotFoundIfUuidNotFound() {
     when(certificateVersionDataService.findByCredentialUUID("UnknownUuid")).thenReturn(null);
 
-    subject.findByCredentialUuid("UnknownUuid", auditRecordParameters);
-    assertThat(auditRecordParameters.size(), equalTo(1));
-    EventAuditRecordParameters auditRecord = this.auditRecordParameters.get(0);
-    assertThat(auditRecord.getAuditingOperationCode(), equalTo(AuditingOperationCode.CREDENTIAL_ACCESS));
+    subject.findByCredentialUuid("UnknownUuid");
   }
 
   @Test(expected = EntryNotFoundException.class)
   public void findByUuid_ThrowsEntryNotFoundIfUuidMatchesNonCertificateCredential() {
-    CredentialVersion credentialVersion = new RsaCredentialVersion();
     when(certificateVersionDataService.findByCredentialUUID("rsaUuid")).thenReturn(null);
 
-    subject.findByCredentialUuid("rsaUuid", auditRecordParameters);
+    subject.findByCredentialUuid("rsaUuid");
   }
 }

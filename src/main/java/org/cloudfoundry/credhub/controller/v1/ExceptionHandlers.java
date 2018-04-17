@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.jayway.jsonpath.InvalidJsonException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.cloudfoundry.credhub.exceptions.AuditSaveFailureException;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.exceptions.InvalidPermissionOperationException;
 import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException;
@@ -36,6 +35,7 @@ import static org.springframework.core.Ordered.HIGHEST_PRECEDENCE;
 @RestControllerAdvice
 @Order(HIGHEST_PRECEDENCE)
 public class ExceptionHandlers {
+
   private final MessageSourceAccessor messageSourceAccessor;
   private final Logger logger;
 
@@ -53,7 +53,8 @@ public class ExceptionHandlers {
 
   @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
   @ResponseStatus(HttpStatus.NOT_FOUND)
-  public void handleRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e) {}
+  public void handleRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e) {
+  }
 
   @ExceptionHandler(PermissionException.class)
   @ResponseStatus(HttpStatus.FORBIDDEN)
@@ -141,12 +142,6 @@ public class ExceptionHandlers {
   @ExceptionHandler(InvalidPermissionOperationException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ResponseError handleIncorrectAclOperation(InvalidPermissionOperationException e) {
-    return constructError(e.getMessage());
-  }
-
-  @ExceptionHandler(AuditSaveFailureException.class)
-  @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-  public ResponseError handleAuditSaveFailureException(AuditSaveFailureException e) {
     return constructError(e.getMessage());
   }
 

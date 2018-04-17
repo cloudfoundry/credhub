@@ -1,8 +1,7 @@
 package org.cloudfoundry.credhub.handler;
 
 import com.google.common.collect.Lists;
-import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
-import org.cloudfoundry.credhub.auth.UserContext;
+import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.data.CredentialDataService;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
@@ -53,11 +52,10 @@ public class PermissionsHandlerTest {
   private PermissionCheckingService permissionCheckingService;
   private CredentialDataService credentialDataService;
   private PermissionedCredentialService permissionedCredentialService;
+  private CEFAuditRecord auditRecord;
 
   private final Credential credential = new Credential(CREDENTIAL_NAME);
   private final CredentialVersion credentialVersion = new PasswordCredentialVersion(new PasswordCredentialVersionData(CREDENTIAL_NAME));
-  private final UserContext userContext = mock(UserContext.class);
-  private List<EventAuditRecordParameters> auditRecordParameters;
   private PermissionsRequest permissionsRequest;
 
   @Before
@@ -66,12 +64,12 @@ public class PermissionsHandlerTest {
     permissionCheckingService = mock(PermissionCheckingService.class);
     credentialDataService = mock(CredentialDataService.class);
     permissionedCredentialService = mock(PermissionedCredentialService.class);
+    auditRecord = mock(CEFAuditRecord.class);
     subject = new PermissionsHandler(
         permissionService,
-        permissionedCredentialService);
+        permissionedCredentialService, auditRecord);
 
     permissionsRequest = mock(PermissionsRequest.class);
-    auditRecordParameters = new ArrayList<>();
 
     when(permissionedCredentialService.findMostRecent(CREDENTIAL_NAME)).thenReturn(credentialVersion);
     when(credentialDataService.find(any(String.class))).thenReturn(credential);
@@ -80,15 +78,15 @@ public class PermissionsHandlerTest {
   @Test
   public void getPermissions_whenTheNameDoesntStartWithASlash_fixesTheName() {
     List<PermissionEntry> accessControlList = newArrayList();
-    when(permissionService.getPermissions(any(CredentialVersion.class), eq(auditRecordParameters), eq(CREDENTIAL_NAME)))
+    when(permissionService.getPermissions(any(CredentialVersion.class)))
         .thenReturn(accessControlList);
     when(permissionCheckingService
         .hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(PermissionOperation.READ_ACL)))
         .thenReturn(true);
 
     PermissionsView response = subject.getPermissions(
-        CREDENTIAL_NAME,
-        auditRecordParameters);
+        CREDENTIAL_NAME
+    );
     assertThat(response.getCredentialName(), equalTo(CREDENTIAL_NAME));
 
   }
@@ -107,12 +105,12 @@ public class PermissionsHandlerTest {
         operations
     );
     List<PermissionEntry> accessControlList = newArrayList(permissionEntry);
-    when(permissionService.getPermissions(credentialVersion, auditRecordParameters, CREDENTIAL_NAME))
+    when(permissionService.getPermissions(credentialVersion))
         .thenReturn(accessControlList);
 
     PermissionsView response = subject.getPermissions(
-        CREDENTIAL_NAME,
-        auditRecordParameters);
+        CREDENTIAL_NAME
+    );
 
     List<PermissionEntry> accessControlEntries = response.getPermissions();
 
@@ -152,16 +150,16 @@ public class PermissionsHandlerTest {
     List<PermissionEntry> expectedControlList = newArrayList(permissionEntry,
         preexistingPermissionEntry);
 
-    when(permissionService.getPermissions(credentialVersion, auditRecordParameters, CREDENTIAL_NAME))
+    when(permissionService.getPermissions(credentialVersion))
         .thenReturn(expectedControlList);
 
     when(permissionsRequest.getCredentialName()).thenReturn(CREDENTIAL_NAME);
     when(permissionsRequest.getPermissions()).thenReturn(accessControlList);
 
-    subject.setPermissions(permissionsRequest, auditRecordParameters);
+    subject.setPermissions(permissionsRequest);
 
     ArgumentCaptor<List> permissionsListCaptor = ArgumentCaptor.forClass(List.class);
-    verify(permissionService).savePermissions(eq(credentialVersion), permissionsListCaptor.capture(), eq(auditRecordParameters), eq(false), eq(CREDENTIAL_NAME));
+    verify(permissionService).savePermissions(eq(credentialVersion), permissionsListCaptor.capture(), eq(false));
 
     List<PermissionEntry> accessControlEntries = permissionsListCaptor.getValue();
 
@@ -188,10 +186,10 @@ public class PermissionsHandlerTest {
     when(permissionsRequest.getPermissions()).thenReturn(accessControlList);
 
     try {
-      subject.setPermissions(permissionsRequest, auditRecordParameters);
+      subject.setPermissions(permissionsRequest);
     } catch (InvalidPermissionOperationException e) {
       assertThat(e.getMessage(), equalTo("error.permission.invalid_update_operation"));
-      verify(permissionService, times(0)).savePermissions(any(), any(), eq(auditRecordParameters), eq(false), eq(CREDENTIAL_NAME));
+      verify(permissionService, times(0)).savePermissions(any(), any(), eq(false));
     }
   }
 
@@ -200,28 +198,28 @@ public class PermissionsHandlerTest {
     when(permissionCheckingService
         .hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(PermissionOperation.WRITE_ACL)))
         .thenReturn(true);
-    when(permissionService.deletePermissions(CREDENTIAL_NAME, ACTOR_NAME, auditRecordParameters))
+    when(permissionService.deletePermissions(CREDENTIAL_NAME, ACTOR_NAME))
         .thenReturn(true);
     when(permissionCheckingService
         .userAllowedToOperateOnActor(ACTOR_NAME))
         .thenReturn(true);
 
-    subject.deletePermissionEntry(CREDENTIAL_NAME, ACTOR_NAME,
-        auditRecordParameters);
+    subject.deletePermissionEntry(CREDENTIAL_NAME, ACTOR_NAME
+    );
 
     verify(permissionService, times(1)).deletePermissions(
-        CREDENTIAL_NAME, ACTOR_NAME, auditRecordParameters);
+        CREDENTIAL_NAME, ACTOR_NAME);
 
   }
 
   @Test
   public void deletePermissions_whenNothingIsDeleted_throwsAnException() {
-    when(permissionService.deletePermissions(CREDENTIAL_NAME, ACTOR_NAME, auditRecordParameters))
+    when(permissionService.deletePermissions(CREDENTIAL_NAME, ACTOR_NAME))
         .thenReturn(false);
 
     try {
-      subject.deletePermissionEntry(CREDENTIAL_NAME, ACTOR_NAME,
-          auditRecordParameters);
+      subject.deletePermissionEntry(CREDENTIAL_NAME, ACTOR_NAME
+      );
       fail("should throw");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));

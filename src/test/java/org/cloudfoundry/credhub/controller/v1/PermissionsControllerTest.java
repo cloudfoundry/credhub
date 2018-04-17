@@ -4,9 +4,6 @@ import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.data.PermissionDataService;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.handler.PermissionsHandler;
-import org.cloudfoundry.credhub.helper.AuditingHelper;
-import org.cloudfoundry.credhub.repository.EventAuditRecordRepository;
-import org.cloudfoundry.credhub.repository.RequestAuditRecordRepository;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.cloudfoundry.credhub.request.PermissionsRequest;
@@ -45,7 +42,6 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -59,28 +55,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = CredentialManagerApp.class)
 @Transactional
 public class PermissionsControllerTest {
+
   @MockBean
   private PermissionsHandler permissionsHandler;
 
   @Autowired
   private WebApplicationContext webApplicationContext;
 
-  @Autowired
-  private RequestAuditRecordRepository requestAuditRecordRepository;
-
-  @Autowired
-  private EventAuditRecordRepository eventAuditRecordRepository;
-
   @MockBean
   private PermissionDataService permissionDataService;
 
   private MockMvc mockMvc;
-  private AuditingHelper auditingHelper;
 
   @Before
   public void beforeEach() {
-    auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
-
     mockMvc = MockMvcBuilders
         .webAppContextSetup(webApplicationContext)
         .apply(springSecurity())
@@ -92,7 +80,7 @@ public class PermissionsControllerTest {
     PermissionsView permissionsView = new PermissionsView(
         "/test_credential_name", newArrayList());
 
-    when(permissionsHandler.getPermissions(eq("/test_credential_name"), any(List.class)))
+    when(permissionsHandler.getPermissions(eq("/test_credential_name")))
         .thenReturn(permissionsView);
 
     PermissionsView permissions = getPermissions(mockMvc, "/test_credential_name",
@@ -102,11 +90,12 @@ public class PermissionsControllerTest {
   }
 
   @Test
-  public void GET_whenTheCredentialNameDoesNotHaveALeadingSlash_returnsThePermissionsForTheCredential() throws Exception {
+  public void GET_whenTheCredentialNameDoesNotHaveALeadingSlash_returnsThePermissionsForTheCredential()
+      throws Exception {
     PermissionsView permissionsView = new PermissionsView(
         "/test_credential_name", newArrayList());
 
-    when(permissionsHandler.getPermissions(eq("/test_credential_name"), any(List.class)))
+    when(permissionsHandler.getPermissions(eq("/test_credential_name")))
         .thenReturn(permissionsView);
 
     PermissionsView permissions = getPermissions(mockMvc, "test_credential_name",
@@ -121,10 +110,7 @@ public class PermissionsControllerTest {
         "read", "write");
 
     ArgumentCaptor<PermissionsRequest> captor = ArgumentCaptor.forClass(PermissionsRequest.class);
-    verify(permissionsHandler, times(1)).setPermissions(
-        captor.capture(),
-        any(List.class)
-    );
+    verify(permissionsHandler, times(1)).setPermissions(captor.capture());
 
     PermissionsRequest permissionsRequest = captor.getValue();
     List<PermissionEntry> accessControlEntries = permissionsRequest.getPermissions();
@@ -167,7 +153,7 @@ public class PermissionsControllerTest {
     revokePermissions(mockMvc, "/test-name", UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "test-actor");
 
     verify(permissionsHandler, times(1))
-        .deletePermissionEntry(eq("/test-name"), eq("test-actor"), any(List.class));
+        .deletePermissionEntry(eq("/test-name"), eq("test-actor"));
   }
 
   @Test
@@ -178,7 +164,7 @@ public class PermissionsControllerTest {
     revokePermissions(mockMvc, "test-name", UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "test-actor");
 
     verify(permissionsHandler, times(1))
-        .deletePermissionEntry(eq("/test-name"), eq("test-actor"), any(List.class));
+        .deletePermissionEntry(eq("/test-name"), eq("test-actor"));
   }
 
   @Test
@@ -188,11 +174,11 @@ public class PermissionsControllerTest {
 
     Mockito.doThrow(new EntryNotFoundException("error.credential.invalid_access"))
         .when(permissionsHandler)
-        .deletePermissionEntry(eq("/incorrect-name"), eq("test-actor"), any(List.class));
+        .deletePermissionEntry(eq("/incorrect-name"), eq("test-actor"));
 
     expectStatusWhenDeletingPermissions(mockMvc, 404, "incorrect-name", "test-actor", UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
 
     verify(permissionsHandler, times(1))
-        .deletePermissionEntry(eq("/incorrect-name"), eq("test-actor"), any(List.class));
+        .deletePermissionEntry(eq("/incorrect-name"), eq("test-actor"));
   }
 }

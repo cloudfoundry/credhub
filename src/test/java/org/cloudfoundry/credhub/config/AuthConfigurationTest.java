@@ -3,22 +3,18 @@ package org.cloudfoundry.credhub.config;
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.data.CredentialVersionDataService;
 import org.cloudfoundry.credhub.data.PermissionDataService;
-import org.cloudfoundry.credhub.data.RequestAuditRecordDataService;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
-import org.cloudfoundry.credhub.entity.RequestAuditRecord;
-import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.util.AuthConstants;
 import org.cloudfoundry.credhub.util.CertificateReader;
 import org.cloudfoundry.credhub.util.CertificateStringConstants;
+import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.ActiveProfiles;
@@ -32,13 +28,8 @@ import org.springframework.web.context.WebApplicationContext;
 import java.time.Instant;
 import java.util.UUID;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.x509;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -60,9 +51,6 @@ public class AuthConfigurationTest {
 
   @MockBean
   PermissionDataService permissionDataService;
-
-  @SpyBean
-  RequestAuditRecordDataService requestAuditRecordDataService;
 
   private MockMvc mockMvc;
 
@@ -165,31 +153,6 @@ public class AuthConfigurationTest {
         .andExpect(jsonPath("$.version_created_at").exists())
         .andExpect(jsonPath("$.value").exists());
 
-  }
-
-  @Test
-  public void dataEndpoint_withMutualTLS_logsOrgUnitFromTheDN()
-      throws Exception {
-    setupDataEndpointMocks();
-
-    final MockHttpServletRequestBuilder post = post(dataApiPath)
-        .with(SecurityMockMvcRequestPostProcessors
-            .x509(CertificateReader.getCertificate(CertificateStringConstants.SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT)))
-        .accept(MediaType.APPLICATION_JSON)
-        .contentType(MediaType.APPLICATION_JSON)
-        .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
-
-    mockMvc.perform(post)
-        .andExpect(status().isOk());
-
-    ArgumentCaptor<RequestAuditRecord> argumentCaptor = ArgumentCaptor.forClass(
-        RequestAuditRecord.class
-    );
-    verify(requestAuditRecordDataService, times(1)).save(argumentCaptor.capture());
-
-    RequestAuditRecord requestAuditRecord = argumentCaptor.getValue();
-    assertThat(requestAuditRecord.getClientId(), equalTo(
-        "C=US,ST=NY,O=Test Org,OU=app:a12345e5-b2b0-4648-a0d0-772d3d399dcb,CN=example.com,E=test@example.com"));
   }
 
   @Test

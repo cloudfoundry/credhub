@@ -3,10 +3,6 @@ package org.cloudfoundry.credhub.integration;
 
 import com.jayway.jsonpath.JsonPath;
 import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.audit.AuditingOperationCode;
-import org.cloudfoundry.credhub.helper.AuditingHelper;
-import org.cloudfoundry.credhub.repository.EventAuditRecordRepository;
-import org.cloudfoundry.credhub.repository.RequestAuditRecordRepository;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.json.JSONArray;
 import org.junit.Before;
@@ -25,7 +21,6 @@ import org.springframework.web.context.WebApplicationContext;
 
 import static org.cloudfoundry.credhub.helper.RequestHelper.generateCa;
 import static org.cloudfoundry.credhub.helper.RequestHelper.getCertificateCredentialsByName;
-import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
 import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -49,15 +44,7 @@ public class CertificateUpdateTransitionalVersionTest {
   @Autowired
   private WebApplicationContext webApplicationContext;
 
-  @Autowired
-  private RequestAuditRecordRepository requestAuditRecordRepository;
-
-  @Autowired
-  private EventAuditRecordRepository eventAuditRecordRepository;
-
   private MockMvc mockMvc;
-
-  private AuditingHelper auditingHelper;
   private Object caCertificate;
   private String caName = "/some-ca";
   private String caCredentialUuid;
@@ -76,8 +63,6 @@ public class CertificateUpdateTransitionalVersionTest {
     caCredentialUuid = JsonPath.parse(response)
         .read("$.certificates[0].id");
     assertNotNull(caCertificate);
-
-    auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
   }
 
   @Test
@@ -123,9 +108,6 @@ public class CertificateUpdateTransitionalVersionTest {
         .andExpect(jsonPath("$[0].transitional", equalTo(false)))
         .andExpect(jsonPath("$[1].transitional", equalTo(true)))
         .andExpect(jsonPath("$[1].id", equalTo(originalVersionId)));
-
-    auditingHelper.verifyAuditing(AuditingOperationCode.CREDENTIAL_UPDATE, caName, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
-        "/api/v1/certificates/" + caCredentialUuid + "/update_transitional_version", 200);
   }
 
   @Test
@@ -166,9 +148,6 @@ public class CertificateUpdateTransitionalVersionTest {
         .andExpect(jsonPath("$[0].transitional", equalTo(false)))
         .andExpect(jsonPath("$[1].transitional", equalTo(true)))
         .andExpect(jsonPath("$[1].id", equalTo(originalVersionId)));
-
-    auditingHelper.verifyAuditing(AuditingOperationCode.CREDENTIAL_UPDATE, caName, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
-        "/api/v1/certificates/" + caCredentialUuid + "/update_transitional_version", 200);
   }
 
   @Test
@@ -205,9 +184,5 @@ public class CertificateUpdateTransitionalVersionTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[0].transitional", equalTo(false)))
         .andExpect(jsonPath("$[0].id", equalTo(regeneratedVersionId)));
-
-    auditingHelper.verifyAuditing(AuditingOperationCode.CREDENTIAL_UPDATE, caName, UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
-        "/api/v1/certificates/" + caCredentialUuid + "/update_transitional_version", 200);
   }
 }
-

@@ -53,7 +53,7 @@ public class DefaultExceptionHandlerTest {
 
   @Test
   public void wheGenericExceptionIsThrown_returns500() throws Exception {
-    when(credentialsHandler.getNCredentialVersions(eq("/foo"), any(), any())).thenThrow(new RuntimeException());
+    when(credentialsHandler.getNCredentialVersions(eq("/foo"), any())).thenThrow(new RuntimeException());
 
     final MockHttpServletRequestBuilder request = get("/api/v1/data?name=foo")
         .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)

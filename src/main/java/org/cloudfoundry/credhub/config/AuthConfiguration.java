@@ -1,7 +1,6 @@
 package org.cloudfoundry.credhub.config;
 
-import org.cloudfoundry.credhub.auth.AuditOAuth2AccessDeniedHandler;
-import org.cloudfoundry.credhub.auth.AuditOAuth2AuthenticationExceptionHandler;
+import org.cloudfoundry.credhub.auth.OAuth2AuthenticationExceptionHandler;
 import org.cloudfoundry.credhub.auth.PreAuthenticationFailureFilter;
 import org.cloudfoundry.credhub.auth.X509AuthenticationProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,31 +30,27 @@ public class AuthConfiguration extends ResourceServerConfigurerAdapter {
       "\\bOU=(app:[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[a-f0-9]{4}-[a-f0-9]{12})\\b";
 
   private final ResourceServerProperties resourceServerProperties;
-  private final AuditOAuth2AuthenticationExceptionHandler auditOAuth2AuthenticationExceptionHandler;
-  private final AuditOAuth2AccessDeniedHandler auditOAuth2AccessDeniedHandler;
+  private final OAuth2AuthenticationExceptionHandler oAuth2AuthenticationExceptionHandler;
   private final PreAuthenticationFailureFilter preAuthenticationFailureFilter;
   private final OAuth2ExtraValidationFilter oAuth2ExtraValidationFilter;
 
   @Autowired
   AuthConfiguration(
     ResourceServerProperties resourceServerProperties,
-    AuditOAuth2AuthenticationExceptionHandler auditOAuth2AuthenticationExceptionHandler,
-    AuditOAuth2AccessDeniedHandler auditOAuth2AccessDeniedHandler,
+    OAuth2AuthenticationExceptionHandler oAuth2AuthenticationExceptionHandler,
     PreAuthenticationFailureFilter preAuthenticationFailureFilter,
     OAuth2ExtraValidationFilter oAuth2ExtraValidationFilter
   ) {
     this.resourceServerProperties = resourceServerProperties;
-    this.auditOAuth2AuthenticationExceptionHandler = auditOAuth2AuthenticationExceptionHandler;
-    this.auditOAuth2AccessDeniedHandler = auditOAuth2AccessDeniedHandler;
+    this.oAuth2AuthenticationExceptionHandler = oAuth2AuthenticationExceptionHandler;
     this.preAuthenticationFailureFilter = preAuthenticationFailureFilter;
     this.oAuth2ExtraValidationFilter = oAuth2ExtraValidationFilter;
   }
 
   @Override
-  public void configure(ResourceServerSecurityConfigurer resources) throws Exception {
+  public void configure(ResourceServerSecurityConfigurer resources) {
     resources.resourceId(resourceServerProperties.getResourceId());
-    resources.authenticationEntryPoint(auditOAuth2AuthenticationExceptionHandler);
-    resources.accessDeniedHandler(auditOAuth2AccessDeniedHandler);
+    resources.authenticationEntryPoint(oAuth2AuthenticationExceptionHandler);
     resources.stateless(false);
   }
 

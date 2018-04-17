@@ -90,7 +90,7 @@ public class CertificateVersionDataService {
     credentialVersionRepository.save(newTransitionalCertificate);
   }
 
-  public void unsetTransitionalVerison(UUID certificateUuid) {
+  public void unsetTransitionalVersion(UUID certificateUuid) {
     CertificateCredentialVersionData transitionalCertificate = (CertificateCredentialVersionData)credentialVersionRepository.findTransitionalCertificateVersion(certificateUuid);
     if (transitionalCertificate != null) {
       transitionalCertificate.setTransitional(false);

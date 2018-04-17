@@ -1,7 +1,6 @@
 package org.cloudfoundry.credhub.service;
 
-import org.cloudfoundry.credhub.audit.AuditingOperationCode;
-import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
+import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.data.CertificateDataService;
@@ -18,6 +17,7 @@ import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
 import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
@@ -25,6 +25,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class PermissionedCertificateService {
 
   private final PermissionedCredentialService permissionedCredentialService;
@@ -34,6 +35,7 @@ public class PermissionedCertificateService {
   private final CertificateVersionDataService certificateVersionDataService;
   private final CertificateCredentialFactory certificateCredentialFactory;
   private final CredentialVersionDataService credentialVersionDataService;
+  private CEFAuditRecord auditRecord;
 
   @Autowired
   public PermissionedCertificateService(
@@ -41,7 +43,8 @@ public class PermissionedCertificateService {
       PermissionCheckingService permissionCheckingService, UserContextHolder userContextHolder,
       CertificateVersionDataService certificateVersionDataService,
       CertificateCredentialFactory certificateCredentialFactory,
-      CredentialVersionDataService credentialVersionDataService) {
+      CredentialVersionDataService credentialVersionDataService,
+      CEFAuditRecord auditRecord) {
     this.permissionedCredentialService = permissionedCredentialService;
     this.certificateDataService = certificateDataService;
     this.permissionCheckingService = permissionCheckingService;
@@ -49,25 +52,25 @@ public class PermissionedCertificateService {
     this.certificateVersionDataService = certificateVersionDataService;
     this.certificateCredentialFactory = certificateCredentialFactory;
     this.credentialVersionDataService = credentialVersionDataService;
+    this.auditRecord = auditRecord;
   }
 
   public CredentialVersion save(
       CredentialVersion existingCredentialVersion,
       CertificateCredentialValue credentialValue,
-      BaseCredentialGenerateRequest generateRequest,
-      List<EventAuditRecordParameters> auditRecordParameters
+      BaseCredentialGenerateRequest generateRequest
   ) {
     generateRequest.setType("certificate");
     if (credentialValue.isTransitional()) {
-      validateNoTransitionalVersionsAlreadyExist(generateRequest.getName(), auditRecordParameters);
+      validateNoTransitionalVersionsAlreadyExist(generateRequest.getName());
     }
     return permissionedCredentialService
-        .save(existingCredentialVersion, credentialValue, generateRequest, auditRecordParameters);
+        .save(existingCredentialVersion, credentialValue, generateRequest);
   }
 
-  private void validateNoTransitionalVersionsAlreadyExist(String name, List<EventAuditRecordParameters> auditRecordParameters) {
+  private void validateNoTransitionalVersionsAlreadyExist(String name) {
     List<CredentialVersion> credentialVersions = permissionedCredentialService
-        .findAllByName(name, auditRecordParameters);
+        .findAllByName(name);
 
     boolean transitionalVersionsAlreadyExist = credentialVersions.stream()
         .map(version -> (CertificateCredentialVersion) version)
@@ -78,9 +81,7 @@ public class PermissionedCertificateService {
     }
   }
 
-  public List<Credential> getAll(List<EventAuditRecordParameters> auditRecordParameters) {
-    auditRecordParameters.add(new EventAuditRecordParameters(AuditingOperationCode.CREDENTIAL_FIND, null));
-
+  public List<Credential> getAll() {
     final List<Credential> allCertificates = certificateDataService.findAll();
 
     return allCertificates.stream().filter(credential ->
@@ -89,9 +90,7 @@ public class PermissionedCertificateService {
     ).collect(Collectors.toList());
   }
 
-  public List<Credential> getByName(String name, List<EventAuditRecordParameters> auditRecordParameters) {
-    auditRecordParameters.add(new EventAuditRecordParameters(AuditingOperationCode.CREDENTIAL_FIND, name));
-
+  public List<Credential> getByName(String name) {
     final Credential certificate = certificateDataService.findByName(name);
 
     if (certificate == null || !permissionCheckingService
@@ -103,8 +102,7 @@ public class PermissionedCertificateService {
     return Collections.singletonList(certificate);
   }
 
-  public List<CredentialVersion> getVersions(UUID uuid, boolean current,
-      List<EventAuditRecordParameters> auditRecordParameters) {
+  public List<CredentialVersion> getVersions(UUID uuid, boolean current) {
     List<CredentialVersion> list;
     String name;
 
@@ -118,11 +116,8 @@ public class PermissionedCertificateService {
         name = !list.isEmpty() ? list.get(0).getName() : null;
       }
     } catch (IllegalArgumentException e) {
-      auditRecordParameters.add(new EventAuditRecordParameters(AuditingOperationCode.CREDENTIAL_ACCESS, null));
       throw new InvalidQueryParameterException("error.bad_request", "uuid");
     }
-
-    auditRecordParameters.add(new EventAuditRecordParameters(AuditingOperationCode.CREDENTIAL_ACCESS, name));
 
     if (list.isEmpty() || !permissionCheckingService
         .hasPermission(userContextHolder.getUserContext().getActor(), name, PermissionOperation.READ)) {
@@ -132,24 +127,19 @@ public class PermissionedCertificateService {
     return list;
   }
 
-  public List<CredentialVersion> updateTransitionalVersion(UUID certificateUuid, UUID newTransitionalVersionUuid,
-      List<EventAuditRecordParameters> auditRecordParameters) {
-    EventAuditRecordParameters eventAuditRecordParameters = new EventAuditRecordParameters(
-        AuditingOperationCode.CREDENTIAL_UPDATE, null);
-    auditRecordParameters.add(eventAuditRecordParameters);
+  public List<CredentialVersion> updateTransitionalVersion(UUID certificateUuid, UUID newTransitionalVersionUuid) {
     Credential credential = findCertificateCredential(certificateUuid);
 
     String name = credential.getName();
-    eventAuditRecordParameters.setCredentialName(name);
 
     if (!permissionCheckingService
         .hasPermission(userContextHolder.getUserContext().getActor(), name, PermissionOperation.WRITE)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
-    certificateVersionDataService.unsetTransitionalVerison(certificateUuid);
+    certificateVersionDataService.unsetTransitionalVersion(certificateUuid);
 
-    if(newTransitionalVersionUuid != null) {
+    if (newTransitionalVersionUuid != null) {
       CertificateCredentialVersion version = certificateVersionDataService.findVersion(newTransitionalVersionUuid);
 
       if (versionDoesNotBelongToCertificate(credential, version)) {
@@ -157,21 +147,20 @@ public class PermissionedCertificateService {
       }
       certificateVersionDataService.setTransitionalVersion(newTransitionalVersionUuid);
     }
-    return certificateVersionDataService.findActiveWithTransitional(name);
+
+    List<CredentialVersion> credentialVersions = certificateVersionDataService.findActiveWithTransitional(name);
+    auditRecord.addAllResources(credentialVersions);
+
+    return credentialVersions;
   }
 
-  public CertificateCredentialVersion deleteVersion(UUID certificateUuid, UUID versionUuid,
-      List<EventAuditRecordParameters> auditRecordParameters) {
-    EventAuditRecordParameters eventAuditRecordParameters = new EventAuditRecordParameters(
-        AuditingOperationCode.CREDENTIAL_DELETE, null);
-    auditRecordParameters.add(eventAuditRecordParameters);
+  public CertificateCredentialVersion deleteVersion(UUID certificateUuid, UUID versionUuid) {
     Credential certificate = certificateDataService.findByUuid(certificateUuid);
     if (certificate == null || !permissionCheckingService
         .hasPermission(userContextHolder.getUserContext().getActor(), certificate.getName(),
             PermissionOperation.DELETE)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
-    eventAuditRecordParameters.setCredentialName(certificate.getName());
     CertificateCredentialVersion versionToDelete = certificateVersionDataService.findVersion(versionUuid);
     if (versionDoesNotBelongToCertificate(certificate, versionToDelete)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
@@ -202,13 +191,8 @@ public class PermissionedCertificateService {
     return credential;
   }
 
-  public CertificateCredentialVersion set(UUID certificateUuid, CertificateCredentialValue value,
-      List<EventAuditRecordParameters> auditRecordParameters) {
+  public CertificateCredentialVersion set(UUID certificateUuid, CertificateCredentialValue value) {
     Credential credential = findCertificateCredential(certificateUuid);
-
-    EventAuditRecordParameters eventAuditRecordParameters = new EventAuditRecordParameters(
-        AuditingOperationCode.CREDENTIAL_UPDATE, credential.getName());
-    auditRecordParameters.add(eventAuditRecordParameters);
 
     if (!permissionCheckingService
         .hasPermission(userContextHolder.getUserContext().getActor(), credential.getName(),
@@ -217,7 +201,7 @@ public class PermissionedCertificateService {
     }
 
     if (value.isTransitional()) {
-      validateNoTransitionalVersionsAlreadyExist(credential.getName(), auditRecordParameters);
+      validateNoTransitionalVersionsAlreadyExist(credential.getName());
     }
 
     CertificateCredentialVersion certificateCredentialVersion = certificateCredentialFactory
