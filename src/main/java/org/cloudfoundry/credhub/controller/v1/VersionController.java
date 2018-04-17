@@ -15,7 +15,6 @@ import java.util.Map;
 @RestController
 @RequestMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class VersionController {
-  private static final String CREDHUB_NAME = "CredHub";
 
   private final String credhubVersion;
   private CEFAuditRecord auditRecord;
