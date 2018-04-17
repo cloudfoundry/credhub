@@ -82,6 +82,7 @@ public class CertificatesController {
 
   @PutMapping(value = "/{certificateId}/update_transitional_version", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ResponseStatus(HttpStatus.OK)
+  // TODO: @Transactional?
   public List<CertificateView> updateTransitionalVersion(@RequestBody UpdateTransitionalVersionRequest requestBody,
       @PathVariable String certificateId) {
     UpdateTransitionalVersion details = new UpdateTransitionalVersion();

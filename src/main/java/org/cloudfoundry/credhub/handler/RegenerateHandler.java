@@ -1,7 +1,6 @@
 package org.cloudfoundry.credhub.handler;
 
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
-import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.audit.entity.BulkRegenerateCredential;
 import org.cloudfoundry.credhub.credential.CredentialValue;
 import org.cloudfoundry.credhub.domain.CertificateGenerationParameters;
@@ -13,10 +12,9 @@ import org.cloudfoundry.credhub.view.BulkRegenerateResults;
 import org.cloudfoundry.credhub.view.CredentialView;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.TreeSet;
 
 @Service
-@SuppressWarnings("unchecked")
 public class RegenerateHandler {
 
   private PermissionedCredentialService credentialService;
@@ -36,12 +34,10 @@ public class RegenerateHandler {
     this.auditRecord = auditRecord;
   }
 
-  public CredentialView handleRegenerate(
-      String credentialName,
-      List<EventAuditRecordParameters> auditRecordParameters
-  ) {
+  public CredentialView handleRegenerate(String credentialName) {
     CredentialVersion existingCredentialVersion = credentialService.findMostRecent(credentialName);
-    BaseCredentialGenerateRequest generateRequest = generationRequestGenerator.createGenerateRequest(existingCredentialVersion);
+    BaseCredentialGenerateRequest generateRequest = generationRequestGenerator
+        .createGenerateRequest(existingCredentialVersion);
     CredentialValue credentialValue = credentialGenerator.generate(generateRequest);
 
     final CredentialVersion credentialVersion = credentialService.save(
@@ -54,40 +50,33 @@ public class RegenerateHandler {
     return CredentialView.fromEntity(credentialVersion);
   }
 
-  public BulkRegenerateResults handleBulkRegenerate(
-      String signerName,
-      List<EventAuditRecordParameters> auditRecordParameters
-  ) {
+  public BulkRegenerateResults handleBulkRegenerate(String signerName) {
     auditRecord.setRequestDetails(new BulkRegenerateCredential(signerName));
 
     BulkRegenerateResults results = new BulkRegenerateResults();
-    TreeSet<String> certificateSet =  new TreeSet(String.CASE_INSENSITIVE_ORDER);
+    TreeSet<String> certificateSet = new TreeSet(String.CASE_INSENSITIVE_ORDER);
 
-    certificateSet.addAll(regenerateCertificatesSignedByCA(signerName, auditRecordParameters));
+    certificateSet.addAll(regenerateCertificatesSignedByCA(signerName));
     results.setRegeneratedCredentials(certificateSet);
     return results;
   }
 
-  private TreeSet<String> regenerateCertificatesSignedByCA(
-      String signerName,
-      List<EventAuditRecordParameters> auditRecordParameters
-  ) {
-    TreeSet<String> results =  new TreeSet(String.CASE_INSENSITIVE_ORDER);
-    TreeSet<String> certificateNames =  new TreeSet(String.CASE_INSENSITIVE_ORDER);
+  private TreeSet<String> regenerateCertificatesSignedByCA(String signerName) {
+    TreeSet<String> results = new TreeSet(String.CASE_INSENSITIVE_ORDER);
+    TreeSet<String> certificateNames = new TreeSet(String.CASE_INSENSITIVE_ORDER);
 
     certificateNames.addAll(credentialService.findAllCertificateCredentialsByCaName(signerName));
-    certificateNames.stream().map(name -> this.regenerateCertificateAndDirectChildren(name, auditRecordParameters)).forEach(results::addAll);
+    certificateNames.stream().map(name -> this.regenerateCertificateAndDirectChildren(name))
+        .forEach(results::addAll);
 
     return results;
   }
 
-  private TreeSet<String> regenerateCertificateAndDirectChildren(
-      String credentialName,
-      List<EventAuditRecordParameters> auditRecordParameters
-  ) {
+  private TreeSet<String> regenerateCertificateAndDirectChildren(String credentialName) {
     TreeSet<String> results = new TreeSet(String.CASE_INSENSITIVE_ORDER);
     CredentialVersion existingCredentialVersion = credentialService.findMostRecent(credentialName);
-    CertificateGenerateRequest generateRequest = (CertificateGenerateRequest)generationRequestGenerator.createGenerateRequest(existingCredentialVersion);
+    CertificateGenerateRequest generateRequest = (CertificateGenerateRequest) generationRequestGenerator
+        .createGenerateRequest(existingCredentialVersion);
     CredentialValue newCredentialValue = credentialGenerator.generate(generateRequest);
 
     auditRecord.addResource(existingCredentialVersion);
@@ -99,9 +88,10 @@ public class RegenerateHandler {
     );
     results.add(credentialVersion.getName());
 
-    CertificateGenerationParameters generationParameters = (CertificateGenerationParameters)generateRequest.getGenerationParameters();
+    CertificateGenerationParameters generationParameters = (CertificateGenerationParameters) generateRequest
+        .getGenerationParameters();
     if (generationParameters.isCa()) {
-      results.addAll(this.regenerateCertificatesSignedByCA(generateRequest.getName(), auditRecordParameters));
+      results.addAll(this.regenerateCertificatesSignedByCA(generateRequest.getName()));
     }
     return results;
   }

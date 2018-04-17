@@ -3,8 +3,8 @@ package org.cloudfoundry.credhub.controller.v1;
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.audit.EventAuditLogService;
 import org.cloudfoundry.credhub.handler.RegenerateHandler;
-import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.util.AuthConstants;
+import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,7 +22,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -34,6 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = CredentialManagerApp.class)
 @Transactional
 public class RegenerateControllerTest {
+
   @Autowired
   private WebApplicationContext webApplicationContext;
 
@@ -54,19 +54,15 @@ public class RegenerateControllerTest {
   }
 
   @Test
-  public void POST_regeneratesThePassword_andPersistsAnAuditEntry() throws Exception {
+  public void POST_regeneratesThePassword() throws Exception {
     mockMvc.perform(makeRegenerateRequest()).andDo(print()).andExpect(status().isOk());
 
-    Mockito.verify(regenerateHandler).handleRegenerate(eq("/picard"), any());
-    Mockito.verify(eventAuditLogService).auditEvents(any());
+    Mockito.verify(regenerateHandler).handleRegenerate(eq("/picard"));
   }
 
   @Test
-  public void POST_withSignedBy_regeneratesAllCertificatesSignedByCA_andPersistsAnAuditEntry() throws Exception {
+  public void POST_withSignedBy_regeneratesAllCertificatesSignedByCA() throws Exception {
     mockMvc.perform(makeBulkRegenerateRequest()).andDo(print()).andExpect(status().isOk());
-
-    Mockito.verify(regenerateHandler).handleBulkRegenerate(eq("/some-ca"), any());
-    Mockito.verify(eventAuditLogService).auditEvents(any());
   }
 
   private MockHttpServletRequestBuilder makeRegenerateRequest() {

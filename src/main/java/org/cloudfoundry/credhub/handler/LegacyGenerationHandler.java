@@ -93,7 +93,7 @@ public class LegacyGenerationHandler {
     regenerateCredential.setName(requestBody.getName());
     auditRecord.setRequestDetails(regenerateCredential);
 
-    return regenerateHandler.handleRegenerate(requestBody.getName(), auditRecordParameters);
+    return regenerateHandler.handleRegenerate(requestBody.getName());
   }
 
 

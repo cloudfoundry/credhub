@@ -1,9 +1,7 @@
 package org.cloudfoundry.credhub.handler;
 
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
-import org.cloudfoundry.credhub.audit.EventAuditRecordParameters;
 import org.cloudfoundry.credhub.audit.entity.BulkRegenerateCredential;
-import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.credential.CredentialValue;
 import org.cloudfoundry.credhub.credential.StringCredentialValue;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
@@ -14,7 +12,6 @@ import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
 import org.cloudfoundry.credhub.request.CertificateGenerateRequest;
 import org.cloudfoundry.credhub.request.PasswordGenerateRequest;
-import org.cloudfoundry.credhub.service.PermissionService;
 import org.cloudfoundry.credhub.service.PermissionedCredentialService;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,10 +42,8 @@ public class RegenerateHandlerTest {
 
   private RegenerateHandler subject;
   private PermissionedCredentialService credentialService;
-  private PermissionService permissionService;
   private UniversalCredentialGenerator credentialGenerator;
   private GenerationRequestGenerator generationRequestGenerator;
-  private UserContext userContext;
   private CredentialVersion credentialVersion;
   private CEFAuditRecord cefAuditRecord;
   private CredentialValue credValue;
@@ -56,10 +51,8 @@ public class RegenerateHandlerTest {
   @Before
   public void beforeEach() {
     credentialService = mock(PermissionedCredentialService.class);
-    permissionService = mock(PermissionService.class);
     credentialGenerator = mock(UniversalCredentialGenerator.class);
     generationRequestGenerator = mock(GenerationRequestGenerator.class);
-    userContext = mock(UserContext.class);
     credentialVersion = mock(PasswordCredentialVersion.class);
     cefAuditRecord = mock(CEFAuditRecord.class);
     credValue = new StringCredentialValue("secret");
@@ -67,13 +60,13 @@ public class RegenerateHandlerTest {
         credentialService,
         credentialGenerator,
         generationRequestGenerator,
-        cefAuditRecord);
+        cefAuditRecord
+    );
   }
 
 
   @Test
-  public void handleRegenerate_addsToAuditRecord() throws Exception {
-    List<EventAuditRecordParameters> auditRecordParameters = newArrayList();
+  public void handleRegenerate_addsToAuditRecord() {
     BaseCredentialGenerateRequest request = new PasswordGenerateRequest();
     when(credentialService.findMostRecent(CREDENTIAL_NAME)).thenReturn(credentialVersion);
     when(generationRequestGenerator.createGenerateRequest(credentialVersion))
@@ -81,15 +74,14 @@ public class RegenerateHandlerTest {
     when(credentialGenerator.generate(request)).thenReturn(credValue);
     when(credentialService.save(anyObject(), anyObject(), anyObject())).thenReturn(credentialVersion);
 
-    subject.handleRegenerate(CREDENTIAL_NAME, auditRecordParameters);
+    subject.handleRegenerate(CREDENTIAL_NAME);
 
     verify(cefAuditRecord, times(1)).setResource(any(CredentialVersion.class));
   }
 
   @Test
-  public void handleBulkRegenerate_addsToAuditRecord() throws Exception {
+  public void handleBulkRegenerate_addsToAuditRecord() {
     String signedBy = "fooCA";
-    List<EventAuditRecordParameters> auditRecordParameters = newArrayList();
     List<String> certificateCredentials = Arrays.asList("foo", "bar", "baz");
     CredentialVersion credVersion = new CertificateCredentialVersion();
     credVersion.setCredential(new Credential("foo"));
@@ -109,13 +101,13 @@ public class RegenerateHandlerTest {
     request.setCertificateGenerationParameters(generationParams);
     when(request.getGenerationParameters()).thenReturn(generationParams);
 
-    subject.handleBulkRegenerate(signedBy, auditRecordParameters);
+    subject.handleBulkRegenerate(signedBy);
     verify(cefAuditRecord, times(1)).setRequestDetails(bulkRegenerateCredential);
     verify(cefAuditRecord, times(certificateCredentials.size())).addResource(any(CredentialVersion.class));
   }
 
   @Test
-  public void handleBulkRegenerate_regeneratesEverythingInTheList() throws Exception {
+  public void handleBulkRegenerate_regeneratesEverythingInTheList() {
     when(credentialService.findAllCertificateCredentialsByCaName(SIGNER_NAME))
         .thenReturn(newArrayList("firstExpectedName", "secondExpectedName"));
     when(credentialService.findMostRecent(anyString()))
@@ -141,14 +133,14 @@ public class RegenerateHandlerTest {
         .thenReturn(generateRequest1)
         .thenReturn(generateRequest2);
 
-    subject.handleBulkRegenerate(SIGNER_NAME, newArrayList());
+    subject.handleBulkRegenerate(SIGNER_NAME);
 
     verify(credentialService).save(any(), any(), eq(generateRequest1));
     verify(credentialService).save(any(), any(), eq(generateRequest2));
   }
   
   @Test
-  public void handleBulkRegenerate_regeneratesToNestedLevels() throws Exception {
+  public void handleBulkRegenerate_regeneratesToNestedLevels() {
     when(credentialService.findAllCertificateCredentialsByCaName(SIGNER_NAME))
         .thenReturn(newArrayList("/firstExpectedName", "/secondExpectedName"));
     when(credentialService.findAllCertificateCredentialsByCaName("/firstExpectedName"))
@@ -190,7 +182,7 @@ public class RegenerateHandlerTest {
         .thenReturn(generateRequest4)
         .thenReturn(generateRequest2);
 
-    subject.handleBulkRegenerate(SIGNER_NAME, newArrayList());
+    subject.handleBulkRegenerate(SIGNER_NAME);
 
     verify(credentialService).save(any(), any(), eq(generateRequest1));
     verify(credentialService).save(any(), any(), eq(generateRequest3));
