@@ -76,6 +76,7 @@ public class AuthWithoutOAuthConfiguration extends ResourceServerConfigurerAdapt
         .authorizeRequests()
         .antMatchers("/info").permitAll()
         .antMatchers("/health").permitAll()
+        .antMatchers("/management").permitAll()
         .antMatchers("**")
         .access(String.format("hasRole('%s')",
             X509AuthenticationProvider.MTLS_USER));
