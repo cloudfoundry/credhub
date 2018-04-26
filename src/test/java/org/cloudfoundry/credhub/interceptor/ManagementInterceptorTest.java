@@ -67,4 +67,12 @@ public class ManagementInterceptorTest {
     request.setMethod("POST");
     subject.preHandle(request, response, null);
   }
+
+  @Test
+  public void preHandle_continuesToServePostsToInterpolate(){
+    ManagementVariables.readOnlyMode = true;
+    request.setRequestURI("/interpolate");
+    request.setMethod("POST");
+    subject.preHandle(request, response, null);
+  }
 }
