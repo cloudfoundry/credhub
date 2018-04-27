@@ -102,6 +102,7 @@ public class SetHandlerTest {
     verify(credentialService).save(null, password, setRequest);
     assertThat(auditRecord.getResourceName(), equalTo("federation"));
     assertThat(auditRecord.getResourceUUID(), equalTo(uuid.toString()));
+    assertThat(auditRecord.getVersionUUID(), equalTo(credentialVersion.getUuid().toString()));
   }
 
 

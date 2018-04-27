@@ -44,10 +44,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 @RunWith(JUnit4.class)
@@ -255,6 +252,50 @@ public class PermissionedCredentialServiceTest {
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
     }
+  }
+
+  @Test
+  public void findAllByName_addsToTheAuditRecord() {
+    when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
+        .thenReturn(true);
+
+    ArrayList<CredentialVersion> expectedCredentials = newArrayList(existingCredentialVersion);
+    when(credentialVersionDataService.findAllByName(CREDENTIAL_NAME))
+        .thenReturn(expectedCredentials);
+
+      subject.findAllByName(CREDENTIAL_NAME);
+
+      verify(auditRecord, times(1)).addResource(any(Credential.class));
+      verify(auditRecord, times(1)).addVersion(any(CredentialVersion.class));
+
+  }
+
+  @Test
+  public void findActiveByName_addsToTheAuditRecord() {
+    when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
+        .thenReturn(true);
+
+    ArrayList<CredentialVersion> expectedCredentials = newArrayList(existingCredentialVersion);
+    when(credentialVersionDataService.findActiveByName(CREDENTIAL_NAME))
+        .thenReturn(expectedCredentials);
+
+      subject.findActiveByName(CREDENTIAL_NAME);
+
+      verify(auditRecord, times(1)).addResource(any(Credential.class));
+      verify(auditRecord, times(1)).addVersion(any(CredentialVersion.class));
+
+  }
+
+  @Test
+  public void findVersionByUuid_addsToTheAuditRecord() {
+    when(credentialVersionDataService.findByUuid(CREDENTIAL_UUID.toString()))
+        .thenReturn(existingCredentialVersion);
+
+    subject.findVersionByUuid(CREDENTIAL_UUID.toString());
+
+    verify(auditRecord, times(1)).setResource(any(Credential.class));
+    verify(auditRecord, times(1)).setVersion(any(CredentialVersion.class));
+
   }
 
   @Test

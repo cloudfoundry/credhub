@@ -100,6 +100,7 @@ public class CredentialsControllerGetTest {
         .setEncryptor(encryptor)
         .setUuid(uuid)
         .setVersionCreatedAt(FROZEN_TIME);
+    credential.getCredential().setUuid(UUID.randomUUID());
 
     doReturn(CREDENTIAL_VALUE).when(encryptor).decrypt(any());
 
@@ -130,6 +131,7 @@ public class CredentialsControllerGetTest {
         .setEncryptor(encryptor)
         .setUuid(uuid)
         .setVersionCreatedAt(FROZEN_TIME);
+    credential.getCredential().setUuid(UUID.randomUUID());
 
     doReturn(CREDENTIAL_VALUE).when(encryptor).decrypt(any());
 
@@ -225,10 +227,12 @@ public class CredentialsControllerGetTest {
         .setEncryptor(encryptor)
         .setUuid(uuid)
         .setVersionCreatedAt(FROZEN_TIME);
+    valueCredential1.getCredential().setUuid(UUID.randomUUID());
     ValueCredentialVersion valueCredential2 = new ValueCredentialVersion(CREDENTIAL_NAME)
         .setEncryptor(encryptor)
         .setUuid(uuid)
         .setVersionCreatedAt(FROZEN_TIME);
+    valueCredential2.getCredential().setUuid(UUID.randomUUID());
 
     doReturn(CREDENTIAL_VALUE).when(encryptor).decrypt(any());
 
@@ -257,14 +261,17 @@ public class CredentialsControllerGetTest {
         .setEncryptor(encryptor)
         .setUuid(uuid)
         .setVersionCreatedAt(credential1Instant);
+    valueCredential1.getCredential().setUuid(UUID.randomUUID());
     ValueCredentialVersion valueCredential2 = new ValueCredentialVersion(CREDENTIAL_NAME)
         .setEncryptor(encryptor)
         .setUuid(uuid)
         .setVersionCreatedAt(credential2Instant);
-    new ValueCredentialVersion(CREDENTIAL_NAME)
+    valueCredential2.getCredential().setUuid(UUID.randomUUID());
+    ValueCredentialVersion valueCredential3 = new ValueCredentialVersion(CREDENTIAL_NAME)
         .setEncryptor(encryptor)
         .setUuid(uuid)
         .setVersionCreatedAt(credential3Instant);
+    valueCredential3.getCredential().setUuid(UUID.randomUUID());
 
     doReturn(CREDENTIAL_VALUE).when(encryptor).decrypt(any());
 
@@ -329,6 +336,7 @@ public class CredentialsControllerGetTest {
             .setEncryptor(encryptor)
             .setUuid(uuid)
             .setVersionCreatedAt(FROZEN_TIME);
+    valueCredential.getCredential().setUuid(UUID.randomUUID());
 
     doThrow(new KeyNotFoundException("error.missing_encryption_key"))
         .when(encryptor).decrypt(any());
@@ -368,6 +376,7 @@ public class CredentialsControllerGetTest {
         .setEncryptor(encryptor)
         .setUuid(uuid)
         .setVersionCreatedAt(FROZEN_TIME);
+    credential.getCredential().setUuid(UUID.randomUUID());
 
     doReturn(CREDENTIAL_VALUE).when(encryptor).decrypt(any());
 

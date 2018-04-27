@@ -3,6 +3,7 @@ package org.cloudfoundry.credhub.handler;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
+import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.request.PasswordGenerateRequest;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.request.StringGenerationParameters;
@@ -82,6 +83,7 @@ public class GenerateHandlerTest {
     generateRequest.setOverwrite(false);
 
     subject.handle(generateRequest);
-    verify(cefAuditRecord, times(1)).setResource(any(CredentialVersion.class));
+    verify(cefAuditRecord, times(1)).setVersion(any(CredentialVersion.class));
+    verify(cefAuditRecord, times(1)).setResource(any(Credential.class));
   }
 }

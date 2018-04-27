@@ -3,6 +3,7 @@ package org.cloudfoundry.credhub.audit;
 import org.apache.commons.lang3.StringUtils;
 import org.cloudfoundry.credhub.audit.entity.RequestDetails;
 import org.cloudfoundry.credhub.audit.entity.Resource;
+import org.cloudfoundry.credhub.audit.entity.Version;
 import org.cloudfoundry.credhub.config.VersionProvider;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.entity.Credential;
@@ -28,7 +29,7 @@ public class CEFAuditRecord {
   private static final String SEVERITY = "0";
   private static final String CS1_LABEL = "userAuthenticationMechanism";
   private static final String CS2_LABEL = "resourceName";
-  private static final String CS3_LABEL = "result";
+  private static final String CS3_LABEL = "versionUuid";
   private static final String CS4_LABEL = "httpStatusCode";
   private static final String CS5_LABEL = "resourceUuid";
   private static final String CS6_LABEL = "requestDetails";
@@ -44,10 +45,11 @@ public class CEFAuditRecord {
   private Integer httpStatusCode;
 
   // CredHub-specific Data
-  private String resourceName, resourceUUID;
+  private String resourceName, resourceUUID, versionUUID;
   private OperationDeviceAction operation;
   private RequestDetails requestDetails;
   private List<Resource> resourceList;
+  private List<Version> versionList;
 
   @Autowired
   public CEFAuditRecord(RequestUuid requestUuid, VersionProvider versionProvider) {
@@ -71,7 +73,10 @@ public class CEFAuditRecord {
         builder.append(System.getProperty("line.separator"));
       }
       this.resourceName = resourceList.get(i).getResourceName();
-      this.resourceUUID = resourceList.get(i).getResourceId().toString();
+      this.resourceUUID = resourceList.get(i).getResourceId();
+      if (versionList != null && !versionList.isEmpty() && versionList.get(i) != null) {
+        this.versionUUID = versionList.get(i).getVersionId();
+      }
       builder.append(logRecord());
     }
 
@@ -95,7 +100,7 @@ public class CEFAuditRecord {
     builder.append("request=").append(requestPath).append(" ");
     builder.append("requestMethod=").append(requestMethod).append(" ");
     builder.append("cs3Label=").append(CS3_LABEL).append(" ");
-    builder.append("cs3=").append(result).append(" ");
+    builder.append("cs3=").append(versionUUID).append(" ");
     builder.append("cs4Label=").append(CS4_LABEL).append(" ");
     builder.append("cs4=").append(httpStatusCode).append(" ");
     builder.append("src=").append(sourceAddress).append(" ");
@@ -219,6 +224,14 @@ public class CEFAuditRecord {
     return resourceUUID;
   }
 
+  public void setVersionUUID(String versionUUID) {
+    this.versionUUID = versionUUID;
+  }
+
+  public String getVersionUUID() {
+    return versionUUID;
+  }
+
   public void setResourceUUID(String resourceUUID) {
     this.resourceUUID = resourceUUID;
   }
@@ -261,13 +274,12 @@ public class CEFAuditRecord {
     this.resourceUUID = credential.getUuid().toString();
   }
 
-  public void setResource(CredentialVersion credentialVersion) {
+  public void setVersion(CredentialVersion credentialVersion) {
     if(credentialVersion == null || credentialVersion.getUuid() == null){
       return;
     }
 
-    this.resourceName = credentialVersion.getName();
-    this.resourceUUID = credentialVersion.getUuid().toString();
+    this.versionUUID = credentialVersion.getUuid().toString();
   }
 
   public void addResource(Credential credential) {
@@ -280,24 +292,24 @@ public class CEFAuditRecord {
     }
   }
 
-  public void addResource(CredentialVersion credentialVersion) {
-    if(resourceList == null){
-      resourceList = new ArrayList<>();
+  public void addVersion(CredentialVersion credentialVersion) {
+    if(versionList == null){
+      versionList = new ArrayList<>();
     }
 
     if(credentialVersion != null) {
-      this.resourceList.add(new Resource(credentialVersion.getName(),
-          credentialVersion.getUuid().toString()));
+      this.versionList.add(new Version(credentialVersion.getUuid().toString()));
     }
   }
 
   public void initCredentials(){
     this.resourceList = new ArrayList<>();
+    this.versionList = new ArrayList<>();
   }
 
   public void addAllResources(List<CredentialVersion> credentialVersions) {
     for(CredentialVersion version : credentialVersions){
-      this.addResource(version);
+      this.addVersion(version);
     }
   }
 

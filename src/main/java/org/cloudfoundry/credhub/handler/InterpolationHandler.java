@@ -60,6 +60,7 @@ public class InterpolationHandler {
         CredentialVersion credentialVersion = credentialVersions.get(0);
 
         auditRecord.addResource(credentialVersion.getCredential());
+        auditRecord.addVersion(credentialVersion);
 
         if (credentialVersion instanceof JsonCredentialVersion) {
           propertiesMap.put("credentials", ((JsonCredentialVersion) credentialVersion).getValue());

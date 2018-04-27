@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.util.Arrays;
+import java.util.UUID;
 
 import static org.cloudfoundry.credhub.helper.JsonTestHelper.parse;
 import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
@@ -63,10 +64,12 @@ public class InterpolationControllerTest {
     JsonCredentialVersion jsonCredential = mock(JsonCredentialVersion.class);
     doReturn(Maps.newHashMap("secret1", "secret1-value")).when(jsonCredential).getValue();
     when(jsonCredential.getName()).thenReturn("/cred1");
+    when(jsonCredential.getUuid()).thenReturn(UUID.randomUUID());
 
     JsonCredentialVersion jsonCredential1 = mock(JsonCredentialVersion.class);
     doReturn(Maps.newHashMap("secret2", "secret2-value")).when(jsonCredential1).getValue();
     when(jsonCredential1.getName()).thenReturn("/cred2");
+    when(jsonCredential1.getUuid()).thenReturn(UUID.randomUUID());
 
     doReturn(
         Arrays.asList(jsonCredential)
@@ -87,6 +90,7 @@ public class InterpolationControllerTest {
   public void POST_whenAReferencedCredentialIsNotJsonType_throwsAnError() throws Exception {
     ValueCredentialVersion valueCredential = mock(ValueCredentialVersion.class);
     doReturn("something").when(valueCredential).getValue();
+    doReturn(UUID.randomUUID()).when(valueCredential).getUuid();
 
     doReturn(
         Arrays.asList(valueCredential)

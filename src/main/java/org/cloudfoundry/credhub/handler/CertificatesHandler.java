@@ -64,7 +64,7 @@ public class CertificatesHandler {
             generateRequest
         );
 
-    auditRecord.setResource(credentialVersion);
+    auditRecord.setVersion(credentialVersion);
 
     return new CertificateView(credentialVersion);
   }

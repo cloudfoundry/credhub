@@ -1,11 +1,13 @@
-package org.cloudfoundry.credhub.service;
+package org.cloudfoundry.credhub.handler;
 
 import org.assertj.core.util.Maps;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
+import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.domain.JsonCredentialVersion;
 import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
+import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
-import org.cloudfoundry.credhub.handler.InterpolationHandler;
+import org.cloudfoundry.credhub.service.PermissionedCredentialService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,9 +21,7 @@ import static org.cloudfoundry.credhub.helper.JsonTestHelper.deserialize;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.nullValue;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(JUnit4.class)
 public class InterpolationHandlerTest {
@@ -66,6 +66,15 @@ public class InterpolationHandlerTest {
     assertThat(secondServiceCredentials.size(), equalTo(2));
     assertThat(secondServiceCredentials.get("secret3-1"), equalTo("secret3-1-value"));
     assertThat(secondServiceCredentials.get("secret3-2"), equalTo("secret3-2-value"));
+  }
+
+  @Test
+  public void interpolateCredHub_addsToTheAuditRecord() {
+    setupValidRequest();
+
+    verify(auditRecord, times(3)).addResource(any(Credential.class));
+    verify(auditRecord, times(3)).addVersion(any(CredentialVersion.class));
+
   }
 
   @Test

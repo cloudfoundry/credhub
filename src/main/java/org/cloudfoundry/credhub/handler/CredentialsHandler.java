@@ -38,7 +38,8 @@ public class CredentialsHandler {
       credentialVersions = credentialService.findNByName(credentialName, numberOfVersions);
 
       for (CredentialVersion credentialVersion : credentialVersions) {
-        auditRecord.addResource(credentialVersion);
+        auditRecord.addVersion(credentialVersion);
+        auditRecord.addResource(credentialVersion.getCredential());
       }
     }
 

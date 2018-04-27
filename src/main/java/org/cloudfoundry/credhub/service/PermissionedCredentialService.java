@@ -96,7 +96,8 @@ public class PermissionedCredentialService {
     List<CredentialVersion> credentialList = credentialVersionDataService.findAllByName(credentialName);
 
     for (CredentialVersion credentialVersion : credentialList) {
-      auditRecord.addResource(credentialVersion);
+      auditRecord.addVersion(credentialVersion);
+      auditRecord.addResource(credentialVersion.getCredential());
     }
 
     return credentialList;
@@ -123,7 +124,8 @@ public class PermissionedCredentialService {
     List<CredentialVersion> credentialList = credentialVersionDataService.findActiveByName(credentialName);
 
     for (CredentialVersion credentialVersion : credentialList) {
-      auditRecord.addResource(credentialVersion);
+      auditRecord.addVersion(credentialVersion);
+      auditRecord.addResource(credentialVersion.getCredential());
     }
 
     return credentialList;
@@ -148,7 +150,8 @@ public class PermissionedCredentialService {
     auditRecord.setRequestDetails(new GetCredentialById(credentialUUID));
 
     if (credentialVersion != null) {
-      auditRecord.setResource(credentialVersion);
+      auditRecord.setVersion(credentialVersion);
+      auditRecord.setResource(credentialVersion.getCredential());
     } else {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }

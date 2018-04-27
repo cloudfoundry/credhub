@@ -41,7 +41,8 @@ public class GenerateHandler {
     if (isNewCredential || generateRequest.isOverwrite()) {
       permissionService.savePermissions(credentialVersion, generateRequest.getAdditionalPermissions(), isNewCredential);
     }
-    auditRecord.setResource(credentialVersion);
+    auditRecord.setVersion(credentialVersion);
+    auditRecord.setResource(credentialVersion.getCredential());
     return CredentialView.fromEntity(credentialVersion);
   }
 }
