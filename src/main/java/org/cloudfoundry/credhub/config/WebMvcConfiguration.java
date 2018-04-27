@@ -34,7 +34,7 @@ public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
 
   @Override
   public void addInterceptors(InterceptorRegistry registry) {
-    registry.addInterceptor(auditInterceptor);
+    registry.addInterceptor(auditInterceptor).excludePathPatterns("/info", "/health", "/key-usage");
     registry.addInterceptor(userContextInterceptor).excludePathPatterns("/info", "/health", "/key-usage");
   }
 }
