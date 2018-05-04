@@ -9,11 +9,13 @@ import com.jayway.jsonpath.InvalidJsonException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
+import org.cloudfoundry.credhub.exceptions.InvalidRemoteAddressException;
 import org.cloudfoundry.credhub.exceptions.InvalidPermissionOperationException;
 import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException;
 import org.cloudfoundry.credhub.exceptions.KeyNotFoundException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.exceptions.PermissionException;
+import org.cloudfoundry.credhub.exceptions.ReadOnlyException;
 import org.cloudfoundry.credhub.view.ResponseError;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.MessageSourceAccessor;
@@ -116,6 +118,18 @@ public class ExceptionHandlers {
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
   public ResponseError handleMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
     return constructError(exception.getBindingResult().getAllErrors().get(0).getDefaultMessage());
+  }
+
+  @ExceptionHandler(InvalidRemoteAddressException.class)
+  @ResponseStatus(value = HttpStatus.UNAUTHORIZED)
+  public ResponseError handleInvalidRemoteAddressException(){
+    return constructError("error.invalid_remote_address");
+  }
+
+  @ExceptionHandler(ReadOnlyException.class)
+  @ResponseStatus(value = HttpStatus.SERVICE_UNAVAILABLE)
+  public ResponseError handleReadOnlyException(){
+    return constructError("error.read_only_mode");
   }
 
   @ExceptionHandler({HttpMessageNotReadableException.class, InvalidJsonException.class, InvalidFormatException.class})
