@@ -1,12 +1,13 @@
 package org.cloudfoundry.credhub.config;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings("unused")
 public class EncryptionKeyProvider {
   private String providerName;
   private ProviderType providerType;
-  private List<EncryptionKeyMetadata> keys;
+  private List<EncryptionKeyMetadata> keys = new ArrayList<>();
   private EncryptionConfiguration configuration;
 
   public EncryptionConfiguration getConfiguration() {
