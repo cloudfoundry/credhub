@@ -6,7 +6,7 @@ buildscript {
         maven { url("https://plugins.gradle.org/m2/") }
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.5.10.RELEASE")
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.5.13.RELEASE")
         classpath("org.owasp:dependency-check-gradle:3.1.1")
         classpath("org.springframework.build.gradle:propdeps-plugin:0.0.7")
         classpath("com.google.protobuf:protobuf-gradle-plugin:0.8.3")
@@ -44,7 +44,7 @@ configurations.all {
     exclude module: "logback-classic"
 }
 
-ext['spring-security-oauth.version'] = '2.2.1.RELEASE'
+ext['spring-security-oauth.version'] = '2.2.2.RELEASE'
 
 def grpcVersion = '1.10.0'
 dependencies {
