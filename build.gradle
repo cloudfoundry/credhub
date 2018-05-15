@@ -31,7 +31,6 @@ jar {
     }
 }
 sourceCompatibility = 1.8
-
 targetCompatibility = 1.8
 
 repositories {
@@ -46,7 +45,9 @@ configurations.all {
 
 ext['spring-security-oauth.version'] = '2.2.2.RELEASE'
 
-def grpcVersion = '1.10.0'
+def grpcVersion = '1.12.0'
+def nettyTcNativeVersion = '2.0.7.Final'
+
 dependencies {
     // Spring stuff
     compile("org.springframework.boot:spring-boot-starter-web")
@@ -76,10 +77,12 @@ dependencies {
 
     //gRPC
     compile "com.google.api.grpc:proto-google-common-protos:1.0.0"
+    compile "io.grpc:grpc-services:${grpcVersion}"
+
+    //gRPC - Netty
     compile "io.grpc:grpc-netty:${grpcVersion}"
-    compile "io.grpc:grpc-protobuf:${grpcVersion}"
-    compile "io.grpc:protoc-gen-grpc-java:${grpcVersion}"
-    compile "io.grpc:grpc-stub:${grpcVersion}"
+    compile "io.netty:netty-tcnative-boringssl-static:${nettyTcNativeVersion}"
+
     testCompile("com.jayway.jsonpath:json-path-assert:2.4.0")
 }
 
@@ -139,7 +142,7 @@ protobuf {
     }
     plugins {
         grpc {
-            artifact = 'io.grpc:protoc-gen-grpc-java:1.10.0'
+            artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}"
         }
     }
     generateProtoTasks {

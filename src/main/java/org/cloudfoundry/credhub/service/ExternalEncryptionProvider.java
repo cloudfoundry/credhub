@@ -1,38 +1,38 @@
 package org.cloudfoundry.credhub.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
+import io.grpc.netty.GrpcSslContexts;
+import io.grpc.netty.NegotiationType;
+import io.grpc.netty.NettyChannelBuilder;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.SslProvider;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.cloudfoundry.credhub.config.EncryptionConfiguration;
 import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
 import org.cloudfoundry.credhub.entity.EncryptedValue;
-import org.cloudfoundry.credhub.service.grpc.DecryptionRequest;
-import org.cloudfoundry.credhub.service.grpc.DecryptionResponse;
-import org.cloudfoundry.credhub.service.grpc.EncryptionProviderGrpc;
-import org.cloudfoundry.credhub.service.grpc.EncryptionRequest;
-import org.cloudfoundry.credhub.service.grpc.EncryptionResponse;
+import org.cloudfoundry.credhub.service.grpc.*;
+
+import javax.net.ssl.SSLException;
+import java.io.File;
 
 public class ExternalEncryptionProvider implements EncryptionProvider {
   private static final Logger logger = LogManager.getLogger(ExternalEncryptionProvider.class.getName());
   private static final String CHARSET = "UTF-8";
-
-  private final ObjectMapper objectMapper;
   private final EncryptionProviderGrpc.EncryptionProviderBlockingStub blockingStub;
 
-  public ExternalEncryptionProvider(String host, int port){
-
-    this(ManagedChannelBuilder.forAddress(host, port)
-        // Channels are secure by default (via SSL/TLS). For the example we disable TLS to avoid
-        // needing certificates.
-        .usePlaintext(true)
+  public ExternalEncryptionProvider(EncryptionConfiguration configuration) throws SSLException {
+    this(NettyChannelBuilder.forAddress(configuration.getHost(), configuration.getPort())
+        .negotiationType(NegotiationType.TLS)
+        .sslContext(buildSslContext(configuration.getServerCa(), configuration.getClientCert(),
+            configuration.getClientKey()))
         .build());
   }
 
   ExternalEncryptionProvider(ManagedChannel channel){
     blockingStub = EncryptionProviderGrpc.newBlockingStub(channel);
-    objectMapper = new ObjectMapper();
   }
 
   @Override
@@ -53,7 +53,7 @@ public class ExternalEncryptionProvider implements EncryptionProvider {
     return new ExternalKeyProxy(encryptionKeyMetadata, this);
   }
 
-  private EncryptionResponse encrypt(String keyId, String value) throws Exception {
+  private EncryptionResponse encrypt(String keyId, String value) {
     EncryptionRequest request = EncryptionRequest.newBuilder().setData(value).setKey(keyId).build();
     EncryptionResponse response;
     try {
@@ -65,7 +65,7 @@ public class ExternalEncryptionProvider implements EncryptionProvider {
     return response;
   }
 
-  private DecryptionResponse decrypt(String value, String keyId, String nonce) throws Exception {
+  private DecryptionResponse decrypt(String value, String keyId, String nonce) {
     DecryptionRequest request = DecryptionRequest.newBuilder().
         setData(value).
         setKey(keyId).
@@ -81,4 +81,19 @@ public class ExternalEncryptionProvider implements EncryptionProvider {
     }
     return response;
   }
+
+  private static SslContext buildSslContext(String trustCertCollectionFilePath,
+                                     String clientCertChainFilePath,
+                                     String clientPrivateKeyFilePath) throws SSLException {
+    SslContextBuilder builder = GrpcSslContexts.forClient();
+    builder.sslProvider(SslProvider.OPENSSL);
+    if (trustCertCollectionFilePath != null) {
+      builder.trustManager(new File(trustCertCollectionFilePath));
+    }
+    if (clientCertChainFilePath != null && clientPrivateKeyFilePath != null) {
+      builder.keyManager(new File(clientCertChainFilePath), new File(clientPrivateKeyFilePath));
+    }
+    return builder.build();
+  }
+
 }

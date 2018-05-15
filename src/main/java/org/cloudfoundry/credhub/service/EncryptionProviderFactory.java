@@ -18,7 +18,7 @@ public class EncryptionProviderFactory {
 
   @Autowired
   public EncryptionProviderFactory(EncryptionKeysConfiguration keysConfiguration, TimedRetry timedRetry,
-      PasswordKeyProxyFactory passwordKeyProxyFactory) throws Exception {
+      PasswordKeyProxyFactory passwordKeyProxyFactory) {
     this.encryptionKeysConfiguration = keysConfiguration;
     this.timedRetry = timedRetry;
     this.passwordKeyProxyFactory = passwordKeyProxyFactory;
@@ -38,8 +38,7 @@ public class EncryptionProviderFactory {
               timedRetry);
           break;
         case EXTERNAL:
-          encryptionService = new ExternalEncryptionProvider(provider.getConfiguration().getHost(),
-              Integer.valueOf(provider.getConfiguration().getPort()));
+          encryptionService = new ExternalEncryptionProvider(provider.getConfiguration());
           break;
         default:
           encryptionService = new PasswordEncryptionService(passwordKeyProxyFactory);

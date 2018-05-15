@@ -2,7 +2,31 @@ package org.cloudfoundry.credhub.config;
 
 public class EncryptionConfiguration {
   private Integer port;
-  private String host, partition, partitionPassword;
+  private String host, partition, partitionPassword, serverCa, clientCert, clientKey;
+
+  public String getServerCa() {
+    return serverCa;
+  }
+
+  public void setServerCa(String serverCa) {
+    this.serverCa = serverCa;
+  }
+
+  public String getClientCert() {
+    return clientCert;
+  }
+
+  public void setClientCert(String clientCert) {
+    this.clientCert = clientCert;
+  }
+
+  public String getClientKey() {
+    return clientKey;
+  }
+
+  public void setClientKey(String clientKey) {
+    this.clientKey = clientKey;
+  }
 
   public Integer getPort() {
     return port;

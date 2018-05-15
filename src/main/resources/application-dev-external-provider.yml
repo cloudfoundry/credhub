@@ -1,0 +1,14 @@
+encryption:
+  key_creation_enabled: true
+  providers:
+  - provider_name: ext
+    provider_type: external
+    keys:
+    - encryption_key_name: some-key-name-1
+      active: true
+    configuration:
+      host: localhost
+      port: 50051
+      server_ca: src/test/resources/external_provider/ca.crt
+      client_cert: src/test/resources/external_provider/client.crt
+      client_key: src/test/resources/external_provider/client.pem
