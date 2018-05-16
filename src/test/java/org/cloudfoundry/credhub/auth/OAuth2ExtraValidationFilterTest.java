@@ -115,6 +115,60 @@ public class OAuth2ExtraValidationFilterTest {
   }
 
   @Test
+  public void whenGivenMalformedToken_onlyReturnsIntendedResponse() throws Exception {
+    MockHttpServletRequestBuilder request = post("/api/v1/data?name=/picard")
+        .header("Authorization", "Bearer " + AuthConstants.MALFORMED_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(
+            "{  " +
+                "  \"name\": \"/picard\", \n" +
+                "  \"type\": \"password\" \n" +
+                "}"
+        );
+
+    String response = this.mockMvc.perform(request)
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.error_description").value("The request token is malformed. Please validate that your request token was issued by the UAA server authorized by CredHub."))
+        .andReturn()
+        .getResponse()
+        .getContentAsString();
+
+    // The response originally concatenated the error and the credential.
+    String expectedResponse = "{\"error\":\"invalid_token\",\"error_description\":\"The request token is malformed. Please validate that your request token was issued by the UAA server authorized by CredHub.\"}";
+
+    assertThat(response, equalTo(expectedResponse));
+    assertThat(credentialVersionRepository.count(), equalTo(0L));
+  }
+
+  @Test
+  public void whenGivenValidTokenDoesNotMatchJWTSignature_onlyReturnsIntendedResponse() throws Exception {
+    MockHttpServletRequestBuilder request = post("/api/v1/data?name=/picard")
+        .header("Authorization", "Bearer " + AuthConstants.INVALID_SIGNATURE_JWT)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(
+            "{  " +
+                "  \"name\": \"/picard\", \n" +
+                "  \"type\": \"password\" \n" +
+                "}"
+        );
+
+    String response = this.mockMvc.perform(request)
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.error_description").value("The request token signature could not be verified. Please validate that your request token was issued by the UAA server authorized by CredHub."))
+        .andReturn()
+        .getResponse()
+        .getContentAsString();
+
+    // The response originally concatenated the error and the credential.
+    String expectedResponse = "{\"error\":\"invalid_token\",\"error_description\":\"The request token signature could not be verified. Please validate that your request token was issued by the UAA server authorized by CredHub.\"}";
+
+    assertThat(response, equalTo(expectedResponse));
+    assertThat(credentialVersionRepository.count(), equalTo(0L));
+  }
+
+  @Test
   public void whenGivenNullIssuer_returns401() throws Exception {
     this.mockMvc.perform(post("/api/v1/data?name=/picard")
         .header("Authorization", "Bearer " + AuthConstants.NULL_ISSUER_JWT)

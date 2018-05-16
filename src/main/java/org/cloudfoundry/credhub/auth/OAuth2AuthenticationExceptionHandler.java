@@ -5,7 +5,6 @@ import org.cloudfoundry.credhub.util.CurrentTimeProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.support.MessageSourceAccessor;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.jwt.Jwt;
 import org.springframework.security.jwt.JwtHelper;
 import org.springframework.security.jwt.crypto.sign.InvalidSignatureException;
@@ -43,33 +42,36 @@ public class OAuth2AuthenticationExceptionHandler extends OAuth2AuthenticationEn
     this.messageSourceAccessor = messageSourceAccessor;
   }
 
-  @Override
-  public void commence(HttpServletRequest request, HttpServletResponse response,
-      AuthenticationException authException)
+  public void handleException(HttpServletRequest request, HttpServletResponse response,
+      RuntimeException runtimeException)
       throws IOException, ServletException {
 
     String token = (String) request.getAttribute(OAuth2AuthenticationDetails.ACCESS_TOKEN_VALUE);
 
     final Map<String, Object> tokenInformation = extractTokenInformation(token);
 
-    Throwable cause = extractCause(authException);
+    Throwable cause = extractCause(runtimeException);
 
     Exception exception;
     if (tokenIsExpired(tokenInformation)) {
       exception = new AccessTokenExpiredException("Access token expired", cause);
-    } else if (cause instanceof InvalidSignatureException || cause instanceof SignatureException) {
-      exception = new InvalidTokenException(
-          messageSourceAccessor.getMessage("error.invalid_token_signature"), cause);
+    } else if (cause instanceof InvalidSignatureException) {
+      exception = new OAuthSignatureException(
+          removeTokenFromMessage(messageSourceAccessor.getMessage("error.invalid_token_signature"), token));
+    } else if (cause instanceof SignatureException){
+      exception = new OAuthSignatureException(
+          removeTokenFromMessage(messageSourceAccessor.getMessage("error.malformed_token"), token));
     } else {
       exception = new InvalidTokenException(
-          removeTokenFromMessage(authException.getMessage(), token), cause);
+          removeTokenFromMessage(runtimeException.getMessage(), token), cause);
     }
-    exception.setStackTrace(authException.getStackTrace());
+
+    exception.setStackTrace(runtimeException.getStackTrace());
 
     doHandle(request, response, exception);
   }
 
-  private Throwable extractCause(AuthenticationException e) {
+  private Throwable extractCause(RuntimeException e) {
     Throwable cause = e.getCause();
     Throwable nextCause = cause == null ? null : cause.getCause();
     while (nextCause != null && nextCause != cause) {

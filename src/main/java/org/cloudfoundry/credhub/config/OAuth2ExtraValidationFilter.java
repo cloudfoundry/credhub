@@ -10,6 +10,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.jwt.crypto.sign.InvalidSignatureException;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
 import org.springframework.security.oauth2.provider.authentication.BearerTokenExtractor;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.security.SignatureException;
 import java.util.Map;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -54,7 +56,8 @@ public class OAuth2ExtraValidationFilter extends OncePerRequestFilter {
   }
 
   @Override
-  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+      throws ServletException, IOException {
     Authentication authentication = tokenExtractor.extract(request);
 
     try {
@@ -78,10 +81,18 @@ public class OAuth2ExtraValidationFilter extends OncePerRequestFilter {
       filterChain.doFilter(request, response);
     } catch (OAuth2Exception exception) {
       SecurityContextHolder.clearContext();
-      InsufficientAuthenticationException authException = new InsufficientAuthenticationException(exception.getMessage(), exception);
+      InsufficientAuthenticationException authException = new InsufficientAuthenticationException(
+          exception.getMessage(), exception);
       eventPublisher.publishAuthenticationFailure(new BadCredentialsException(exception.getMessage(), exception),
           new PreAuthenticatedAuthenticationToken("access-token", "N/A"));
-      oAuth2AuthenticationExceptionHandler.commence(request, response, authException);
+      oAuth2AuthenticationExceptionHandler.handleException(request, response, authException);
+    } catch (RuntimeException exception) {
+      if (exception.getCause() instanceof SignatureException || exception
+          .getCause() instanceof InvalidSignatureException) {
+        oAuth2AuthenticationExceptionHandler.handleException(request, response, exception);
+      } else {
+        throw exception;
+      }
     }
   }
 }
