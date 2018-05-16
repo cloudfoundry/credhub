@@ -5,6 +5,7 @@ import org.cloudfoundry.credhub.util.CurrentTimeProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.support.MessageSourceAccessor;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.jwt.Jwt;
 import org.springframework.security.jwt.JwtHelper;
 import org.springframework.security.jwt.crypto.sign.InvalidSignatureException;
@@ -41,6 +42,13 @@ public class OAuth2AuthenticationExceptionHandler extends OAuth2AuthenticationEn
     this.objectMapper = JsonParserFactory.create();
     this.messageSourceAccessor = messageSourceAccessor;
   }
+
+ @Override
+  public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
+      throws IOException, ServletException {
+   handleException(request, response, authException);
+  }
+
 
   public void handleException(HttpServletRequest request, HttpServletResponse response,
       RuntimeException runtimeException)
