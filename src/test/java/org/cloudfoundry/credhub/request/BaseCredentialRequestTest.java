@@ -14,13 +14,10 @@ import java.util.List;
 import java.util.Set;
 import javax.validation.ConstraintViolation;
 
-import static org.cloudfoundry.credhub.helper.JsonTestHelper.deserialize;
-import static org.cloudfoundry.credhub.helper.JsonTestHelper.deserializeAndValidate;
 import static junit.framework.TestCase.fail;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
-import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 @RunWith(JUnit4.class)
@@ -202,7 +199,7 @@ public class BaseCredentialRequestTest {
 
   @Test
   public void whenNameContainsInvalidCharacter_shouldBeInvalid() {
-    for (char invalidCharacter: new char[]{'.', ' ', '\\', '?', '!', '$'}) {
+    for (char invalidCharacter: new char[]{' ', '\\', '*'}) {
       // language=JSON
       String json = "{"
           + "\"type\":\"value\","
@@ -214,6 +211,24 @@ public class BaseCredentialRequestTest {
           .deserializeAndValidate(json, BaseCredentialSetRequest.class);
 
       MatcherAssert.assertThat(violations, IsIterableContainingInOrder.contains(JsonTestHelper.hasViolationWithMessage("error.credential.invalid_character_in_name")));
+    }
+  }
+
+  @Test
+  public void whenNameContainsSpecialCharacters_shouldBeValid() {
+
+    for (char specialCharacter: new char[]{'.', ':', '(', ')','[',']','+'}) {
+      // language=JSON
+      String json = "{"
+          + "\"type\":\"value\","
+          + "\"name\":\"test" + specialCharacter + "name\","
+          + "\"value\":\"some-value\","
+          + "\"overwrite\":true"
+          + "}";
+      Set<ConstraintViolation<BaseCredentialSetRequest>> violations = JsonTestHelper
+          .deserializeAndValidate(json, BaseCredentialSetRequest.class);
+
+      MatcherAssert.assertThat(violations.size(), equalTo(0));
     }
   }
 

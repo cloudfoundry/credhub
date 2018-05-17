@@ -14,7 +14,8 @@ import javax.validation.Validation;
 import javax.validation.constraints.Pattern;
 
 public abstract class BaseCredentialRequest {
-  private static final String ONLY_VALID_CHARACTERS_IN_NAME = "^[a-zA-Z0-9-_/]*$";
+  private static final String ONLY_VALID_CHARACTERS_IN_NAME = "^[a-zA-Z0-9-_/.:,()\\[\\]+]*$";
+  // '.', ':', '(', ')','[',']','+'
   public static final String HAS_NO_DOUBLE_SLASHES_AND_DOES_NOT_END_WITH_A_SLASH
       = "^(/|(?>(?:/?[^/]+))*)$";
   private static final String IS_NOT_EMPTY = "^(.|\n){2,}$";
