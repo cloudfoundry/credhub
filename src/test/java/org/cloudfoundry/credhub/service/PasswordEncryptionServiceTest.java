@@ -10,7 +10,7 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 @RunWith(JUnit4.class)
-public class InternalEncryptionServiceTest {
+public class PasswordEncryptionServiceTest {
   @Test
   public void createsPasswordBasedKeyProxy() throws Exception {
     PasswordEncryptionService subject = new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl());

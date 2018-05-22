@@ -19,9 +19,9 @@ clean() {
 setup_tls_key_store() {
     echo "Generating a key store for the certificate the server presents during TLS"
     # generate keypair for the server cert
-	openssl genrsa -out server_key.pem 2048
+    openssl genrsa -out server_key.pem 2048
 
-	echo "Create CSR for the server cert"
+    echo "Create CSR for the server cert"
     openssl req -new -sha256 -key server_key.pem -subj "/CN=localhost" -out server.csr
 
     echo "Generate server certificate signed by our CA"

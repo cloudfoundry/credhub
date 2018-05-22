@@ -45,13 +45,10 @@ public class ExternalKeyProxy implements  KeyProxy {
           || Arrays.equals(EncryptionKeyCanaryMapper.DEPRECATED_CANARY_VALUE.getBytes(StringUtil.UTF_8), plaintext.getBytes(
           StringUtil.UTF_8));
     } catch (AEADBadTagException e) {
-      // internal key was wrong
     } catch (IllegalBlockSizeException e) {
-      // Our guess(es) at "HSM key was wrong":
       if (!e.getMessage().contains("returns 0x40")) {
         throw new IncorrectKeyException(e);
       }
-      // Could not process input data: function 'C_Decrypt' returns 0x40
     } catch (Exception e) {
       throw new IncorrectKeyException(e);
     }

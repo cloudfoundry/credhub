@@ -8,6 +8,7 @@ import io.grpc.netty.NettyChannelBuilder;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
+import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.cloudfoundry.credhub.config.EncryptionConfiguration;
@@ -15,30 +16,29 @@ import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
 import org.cloudfoundry.credhub.entity.EncryptedValue;
 import org.cloudfoundry.credhub.service.grpc.*;
 
-import javax.net.ssl.SSLException;
-import java.io.File;
+import java.io.IOException;
 
 public class ExternalEncryptionProvider implements EncryptionProvider {
   private static final Logger logger = LogManager.getLogger(ExternalEncryptionProvider.class.getName());
   private static final String CHARSET = "UTF-8";
   private final EncryptionProviderGrpc.EncryptionProviderBlockingStub blockingStub;
 
-  public ExternalEncryptionProvider(EncryptionConfiguration configuration) throws SSLException {
+  public ExternalEncryptionProvider(EncryptionConfiguration configuration) throws IOException {
     this(NettyChannelBuilder.forAddress(configuration.getHost(), configuration.getPort())
         .negotiationType(NegotiationType.TLS)
-        .sslContext(buildSslContext(configuration.getServerCa(), configuration.getClientCert(),
+        .sslContext(buildSslContext(configuration.getServerCa(), configuration.getClientCertificate(),
             configuration.getClientKey()))
         .build());
   }
 
-  ExternalEncryptionProvider(ManagedChannel channel){
+  ExternalEncryptionProvider(ManagedChannel channel) {
     blockingStub = EncryptionProviderGrpc.newBlockingStub(channel);
   }
 
   @Override
-  public EncryptedValue encrypt(EncryptionKey key, String value) throws Exception {
+  public EncryptedValue encrypt(EncryptionKey key, String value) {
     EncryptionResponse response = encrypt(key.getEncryptionKeyName(), value);
-    return new EncryptedValue(key.getUuid(),response.getData().toByteArray(),response.getNonce().toByteArray());
+    return new EncryptedValue(key.getUuid(), response.getData().toByteArray(), response.getNonce().toByteArray());
   }
 
 
@@ -60,7 +60,7 @@ public class ExternalEncryptionProvider implements EncryptionProvider {
       response = blockingStub.encrypt(request);
     } catch (StatusRuntimeException e) {
       logger.error("Error for request: " + request.getData(), e);
-      throw(e);
+      throw (e);
     }
     return response;
   }
@@ -77,21 +77,23 @@ public class ExternalEncryptionProvider implements EncryptionProvider {
       response = blockingStub.decrypt(request);
     } catch (StatusRuntimeException e) {
       logger.error("Error for request: " + request.getData(), e);
-      throw(e);
+      throw (e);
     }
     return response;
   }
 
-  private static SslContext buildSslContext(String trustCertCollectionFilePath,
-                                     String clientCertChainFilePath,
-                                     String clientPrivateKeyFilePath) throws SSLException {
+  private static SslContext buildSslContext(String serverCA,
+                                            String clientCertificate,
+                                            String clientPrivateKey) throws IOException {
     SslContextBuilder builder = GrpcSslContexts.forClient();
     builder.sslProvider(SslProvider.OPENSSL);
-    if (trustCertCollectionFilePath != null) {
-      builder.trustManager(new File(trustCertCollectionFilePath));
+    if (serverCA != null) {
+      builder.trustManager(IOUtils.toInputStream(serverCA, CHARSET));
     }
-    if (clientCertChainFilePath != null && clientPrivateKeyFilePath != null) {
-      builder.keyManager(new File(clientCertChainFilePath), new File(clientPrivateKeyFilePath));
+    if (clientCertificate != null && clientPrivateKey != null) {
+      builder.keyManager(IOUtils.toInputStream(clientCertificate, CHARSET), IOUtils.toInputStream(clientPrivateKey, CHARSET));
+    } else {
+      throw new RuntimeException("Unable to fetch client certificate or client private key for external provider.");
     }
     return builder.build();
   }
