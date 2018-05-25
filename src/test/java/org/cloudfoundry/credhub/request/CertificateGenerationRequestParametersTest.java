@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.request;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.junit.Before;
 import org.junit.Test;
@@ -336,11 +337,11 @@ public class CertificateGenerationRequestParametersTest {
 
   @Test
   public void validate_rejectsAlternativeNamesThatAreTooLong() {
-    String maxLengthAlternativeName = "64abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz012345.com";
+    String maxLengthAlternativeName = "*." + RandomStringUtils.randomAlphabetic(100) + "." + RandomStringUtils.randomNumeric(100) + ".local";
     subject.setAlternativeNames(new String[]{"abc.com", maxLengthAlternativeName});
     subject.validate();
 
-    String overlyLongAlternativeName = "65_abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz012345.com";
+    String overlyLongAlternativeName = "*." + RandomStringUtils.randomAlphabetic(400) + ".com";
     subject.setAlternativeNames(new String[]{"abc.com", overlyLongAlternativeName});
 
     try {
@@ -348,7 +349,7 @@ public class CertificateGenerationRequestParametersTest {
       fail("should throw");
     } catch (ParameterizedValidationException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_certificate_parameter"));
-      assertThat(e.getParameters(), equalTo(new Object[]{"alternative name", 64}));
+      assertThat(e.getParameters(), equalTo(new Object[]{"alternative name", 253}));
     }
   }
 }

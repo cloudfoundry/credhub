@@ -256,7 +256,7 @@ public class CertificateGenerationRequestParameters {
     validateParameterLength(locality, "locality", 128);
     validateParameterLength(state, "state", 128);
     validateParameterLength(country, "country", 2);
-    validateParameterLength(alternativeNames, "alternative name", 64);
+    validateParameterLength(alternativeNames, "alternative name", 253);
   }
 
   private static void validateParameterLength(String[] parameterArray, String parameterName, int parameterLength) {
