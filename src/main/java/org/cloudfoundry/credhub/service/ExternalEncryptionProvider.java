@@ -1,6 +1,8 @@
 package org.cloudfoundry.credhub.service;
 
+import com.google.protobuf.ByteString;
 import io.grpc.ManagedChannel;
+import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.NegotiationType;
@@ -14,9 +16,18 @@ import org.apache.logging.log4j.Logger;
 import org.cloudfoundry.credhub.config.EncryptionConfiguration;
 import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
 import org.cloudfoundry.credhub.entity.EncryptedValue;
-import org.cloudfoundry.credhub.service.grpc.*;
+import org.cloudfoundry.credhub.service.grpc.DecryptionRequest;
+import org.cloudfoundry.credhub.service.grpc.DecryptionResponse;
+import org.cloudfoundry.credhub.service.grpc.EncryptionProviderGrpc;
+import org.cloudfoundry.credhub.service.grpc.EncryptionRequest;
+import org.cloudfoundry.credhub.service.grpc.EncryptionResponse;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.concurrent.TimeUnit;
+import javax.crypto.AEADBadTagException;
+
+import static io.grpc.internal.GrpcUtil.DEFAULT_KEEPALIVE_TIME_NANOS;
 
 public class ExternalEncryptionProvider implements EncryptionProvider {
   private static final Logger logger = LogManager.getLogger(ExternalEncryptionProvider.class.getName());
@@ -28,6 +39,7 @@ public class ExternalEncryptionProvider implements EncryptionProvider {
         .negotiationType(NegotiationType.TLS)
         .sslContext(buildSslContext(configuration.getServerCa(), configuration.getClientCertificate(),
             configuration.getClientKey()))
+        .keepAliveTime(DEFAULT_KEEPALIVE_TIME_NANOS, TimeUnit.NANOSECONDS)
         .build());
   }
 
@@ -44,8 +56,8 @@ public class ExternalEncryptionProvider implements EncryptionProvider {
 
   @Override
   public String decrypt(EncryptionKey key, byte[] encryptedValue, byte[] nonce) throws Exception {
-    DecryptionResponse response = decrypt(new String(encryptedValue, CHARSET), key.getEncryptionKeyName(), new String(nonce, CHARSET));
-    return response.getData();
+    DecryptionResponse response = decrypt(encryptedValue, key.getEncryptionKeyName(), nonce);
+    return response.getData().toString(CHARSET);
   }
 
   @Override
@@ -54,7 +66,7 @@ public class ExternalEncryptionProvider implements EncryptionProvider {
   }
 
   private EncryptionResponse encrypt(String keyId, String value) {
-    EncryptionRequest request = EncryptionRequest.newBuilder().setData(value).setKey(keyId).build();
+    EncryptionRequest request = EncryptionRequest.newBuilder().setData(ByteString.copyFrom(value, Charset.forName(CHARSET))).setKey(keyId).build();
     EncryptionResponse response;
     try {
       response = blockingStub.encrypt(request);
@@ -65,17 +77,20 @@ public class ExternalEncryptionProvider implements EncryptionProvider {
     return response;
   }
 
-  private DecryptionResponse decrypt(String value, String keyId, String nonce) {
+  private DecryptionResponse decrypt(byte[] value, String keyId, byte[] nonce) throws AEADBadTagException {
     DecryptionRequest request = DecryptionRequest.newBuilder().
-        setData(value).
+        setData(ByteString.copyFrom(value)).
         setKey(keyId).
-        setNonce(nonce).
+        setNonce(ByteString.copyFrom(nonce)).
         build();
     DecryptionResponse response;
 
     try {
       response = blockingStub.decrypt(request);
     } catch (StatusRuntimeException e) {
+      if (e.getStatus().getCode() == Status.Code.INVALID_ARGUMENT) {
+        throw new AEADBadTagException(e.getMessage());
+      }
       logger.error("Error for request: " + request.getData(), e);
       throw (e);
     }

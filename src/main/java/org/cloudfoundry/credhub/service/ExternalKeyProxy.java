@@ -5,12 +5,12 @@ import org.cloudfoundry.credhub.entity.EncryptionKeyCanary;
 import org.cloudfoundry.credhub.exceptions.IncorrectKeyException;
 import org.cloudfoundry.credhub.util.StringUtil;
 
-import javax.crypto.AEADBadTagException;
-import javax.crypto.IllegalBlockSizeException;
 import java.security.Key;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import javax.crypto.AEADBadTagException;
+import javax.crypto.IllegalBlockSizeException;
 
 import static java.util.Collections.unmodifiableList;
 

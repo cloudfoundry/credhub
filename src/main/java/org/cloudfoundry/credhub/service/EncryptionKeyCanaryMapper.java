@@ -51,13 +51,13 @@ public class EncryptionKeyCanaryMapper {
 
   void mapUuidsToKeys(EncryptionKeySet keySet) throws Exception {
     List<EncryptionKeyCanary> encryptionKeyCanaries = encryptionKeyCanaryDataService.findAll();
-    for (EncryptionKeyProvider provider : encryptionKeysConfiguration.getProviders()) {
+    for (EncryptionKeyProvider provider : encryptionKeysConfiguration.getProviders()) { //int, ext
       EncryptionProvider encryptionService = providerFactory.getEncryptionService(provider);
       for (EncryptionKeyMetadata keyMetadata : provider.getKeys()) {
         KeyProxy keyProxy = encryptionService.createKeyProxy(keyMetadata);
         EncryptionKeyCanary matchingCanary = null;
 
-        for (EncryptionKeyCanary canary : encryptionKeyCanaries) {
+        for (EncryptionKeyCanary canary : encryptionKeyCanaries) { //ext, int
           if (keyProxy.matchesCanary(canary)) {
             matchingCanary = canary;
             break;
@@ -134,3 +134,9 @@ public class EncryptionKeyCanaryMapper {
   }
 
 }
+
+// int encrypt: encrypted value, nonce
+// ext encrypt: base64(encrypted value), base64(nonce)
+
+// int: key
+// ext: base64(key)

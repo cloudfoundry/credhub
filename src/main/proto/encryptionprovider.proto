@@ -13,14 +13,14 @@ service EncryptionProvider {
 }
 
 message EncryptionRequest {
-    string data = 1;
+    bytes data = 1;
     string key = 2;
 }
 
 message DecryptionRequest {
-    string data = 1;
+    bytes data = 1;
     string key = 2;
-    string nonce = 3;
+    bytes nonce = 3;
 }
 
 message EncryptionResponse {
@@ -29,5 +29,5 @@ message EncryptionResponse {
 }
 
 message DecryptionResponse {
-    string data = 1;
+    bytes data = 1;
 }
