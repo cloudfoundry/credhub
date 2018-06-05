@@ -71,6 +71,7 @@ public class PasswordCredentialVersion extends CredentialVersion<PasswordCredent
     return this;
   }
 
+  @Override
   public StringGenerationParameters getGenerationParameters() {
     String password = getPassword();
     Assert.notNull(password,
@@ -106,6 +107,7 @@ public class PasswordCredentialVersion extends CredentialVersion<PasswordCredent
     return delegate.getCredentialType();
   }
 
+  @Override
   public void rotate() {
     String decryptedPassword = this.getPassword();
     StringGenerationParameters decryptedGenerationParameters = this.getGenerationParameters();
