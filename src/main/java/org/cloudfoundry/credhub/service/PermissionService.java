@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.service;
 
+import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.data.PermissionDataService;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
@@ -29,8 +30,8 @@ public class PermissionService {
 
   @Autowired
   public PermissionService(PermissionDataService permissionDataService,
-      PermissionCheckingService permissionCheckingService,
-      UserContextHolder userContextHolder) {
+                           PermissionCheckingService permissionCheckingService,
+                           UserContextHolder userContextHolder) {
     this.permissionDataService = permissionDataService;
     this.permissionCheckingService = permissionCheckingService;
     this.userContextHolder = userContextHolder;
@@ -40,10 +41,9 @@ public class PermissionService {
     return permissionDataService.getAllowedOperations(credentialName, actor);
   }
 
-  public void savePermissions(CredentialVersion credentialVersion,
-      List<PermissionEntry> permissionEntryList,
-      boolean isNewCredential) {
-
+  public void savePermissionsForUser(CredentialVersion credentialVersion,
+                                     List<PermissionEntry> permissionEntryList,
+                                     boolean isNewCredential) {
     if (credentialVersion == null) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
@@ -54,19 +54,30 @@ public class PermissionService {
       }
     }
 
+    UserContext userContext = userContextHolder.getUserContext();
+
     if (isNewCredential) {
-      final PermissionEntry permissionEntry = new PermissionEntry(userContextHolder.getUserContext().getActor(), asList(READ, WRITE, DELETE, WRITE_ACL, READ_ACL));
+      final PermissionEntry permissionEntry = new PermissionEntry(userContext.getActor(), asList(READ, WRITE, DELETE, WRITE_ACL, READ_ACL));
       permissionEntryList.add(permissionEntry);
     }
 
     if (permissionEntryList.size() == 0) {
       return;
     }
-
-    if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), credentialVersion.getName(), WRITE_ACL)) {
+    if (!permissionCheckingService.hasPermission(userContext.getActor(), credentialVersion.getName(), WRITE_ACL)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
+    permissionDataService.savePermissions(credentialVersion.getCredential(), permissionEntryList);
+  }
+
+  public void savePermissions(CredentialVersion credentialVersion, List<PermissionEntry> permissionEntryList) {
+    if (permissionEntryList.size() == 0) {
+      return;
+    }
+    if (credentialVersion == null) {
+      return;
+    }
     permissionDataService.savePermissions(credentialVersion.getCredential(), permissionEntryList);
   }
 

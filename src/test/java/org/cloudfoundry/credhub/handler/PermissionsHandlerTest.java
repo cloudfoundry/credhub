@@ -159,7 +159,7 @@ public class PermissionsHandlerTest {
     subject.setPermissions(permissionsRequest);
 
     ArgumentCaptor<List> permissionsListCaptor = ArgumentCaptor.forClass(List.class);
-    verify(permissionService).savePermissions(eq(credentialVersion), permissionsListCaptor.capture(), eq(false));
+    verify(permissionService).savePermissionsForUser(eq(credentialVersion), permissionsListCaptor.capture(), eq(false));
 
     List<PermissionEntry> accessControlEntries = permissionsListCaptor.getValue();
 
@@ -189,7 +189,7 @@ public class PermissionsHandlerTest {
       subject.setPermissions(permissionsRequest);
     } catch (InvalidPermissionOperationException e) {
       assertThat(e.getMessage(), equalTo("error.permission.invalid_update_operation"));
-      verify(permissionService, times(0)).savePermissions(any(), any(), eq(false));
+      verify(permissionService, times(0)).savePermissionsForUser(any(), any(), eq(false));
     }
   }
 

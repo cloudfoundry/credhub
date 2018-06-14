@@ -39,7 +39,7 @@ public class GenerateHandler {
     final boolean isNewCredential = existingCredentialVersion == null;
 
     if (isNewCredential || generateRequest.isOverwrite()) {
-      permissionService.savePermissions(credentialVersion, generateRequest.getAdditionalPermissions(), isNewCredential);
+      permissionService.savePermissionsForUser(credentialVersion, generateRequest.getAdditionalPermissions(), isNewCredential);
     }
     auditRecord.setVersion(credentialVersion);
     auditRecord.setResource(credentialVersion.getCredential());

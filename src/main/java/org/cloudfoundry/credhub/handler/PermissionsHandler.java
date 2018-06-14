@@ -39,7 +39,7 @@ public class PermissionsHandler {
 
   public void setPermissions(PermissionsRequest request) {
     CredentialVersion credentialVersion = permissionedCredentialService.findMostRecent(request.getCredentialName());
-    permissionService.savePermissions(credentialVersion, request.getPermissions(), false);
+    permissionService.savePermissionsForUser(credentialVersion, request.getPermissions(), false);
     auditRecord.setResource(credentialVersion.getCredential());
   }
 

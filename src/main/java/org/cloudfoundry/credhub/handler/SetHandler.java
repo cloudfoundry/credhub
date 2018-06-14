@@ -65,7 +65,7 @@ public class SetHandler {
     final boolean isNewCredential = existingCredentialVersion == null;
 
     if (isNewCredential || setRequest.isOverwrite()) {
-      permissionService.savePermissions(credentialVersion, setRequest.getAdditionalPermissions(), isNewCredential);
+      permissionService.savePermissionsForUser(credentialVersion, setRequest.getAdditionalPermissions(), isNewCredential);
     }
     auditRecord.setVersion(credentialVersion);
     auditRecord.setResource(credentialVersion.getCredential());

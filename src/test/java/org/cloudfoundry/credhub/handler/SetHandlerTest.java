@@ -123,7 +123,7 @@ public class SetHandlerTest {
     subject.handle(setRequest);
 
     verify(credentialService).save(existingCredMock, password, setRequest);
-    verify(permissionService).savePermissions(credentialVersion, accessControlEntries, false);
+    verify(permissionService).savePermissionsForUser(credentialVersion, accessControlEntries, false);
   }
 
 
@@ -142,7 +142,7 @@ public class SetHandlerTest {
     subject.handle(setRequest);
 
     verify(credentialService).save(null, password, setRequest);
-    verify(permissionService).savePermissions(credentialVersion, accessControlEntries, true);
+    verify(permissionService).savePermissionsForUser(credentialVersion, accessControlEntries, true);
   }
 
   @Test
@@ -166,7 +166,7 @@ public class SetHandlerTest {
         userCredentialValue,
         setRequest
     );
-    verify(permissionService).savePermissions(credentialVersion, accessControlEntries, true);
+    verify(permissionService).savePermissionsForUser(credentialVersion, accessControlEntries, true);
   }
 
   @Test
@@ -187,7 +187,7 @@ public class SetHandlerTest {
     subject.handle(setRequest);
 
     verify(credentialService).save(null, certificateValue, setRequest);
-    verify(permissionService).savePermissions(credentialVersion, accessControlEntries, true);
+    verify(permissionService).savePermissionsForUser(credentialVersion, accessControlEntries, true);
   }
 
   @Test
@@ -226,6 +226,6 @@ public class SetHandlerTest {
 
     verify(credentialService).save( eq(null), credentialValueArgumentCaptor.capture(), eq(setRequest));
     assertThat(credentialValueArgumentCaptor.getValue(), samePropertyValuesAs(expectedCredentialValue));
-    verify(permissionService).savePermissions(credentialVersion, accessControlEntries, true);
+    verify(permissionService).savePermissionsForUser(credentialVersion, accessControlEntries, true);
   }
 }
