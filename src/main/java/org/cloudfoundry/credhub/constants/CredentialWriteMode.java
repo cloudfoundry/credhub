@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum CredentialWriteMode {
   OVERWRITE("overwrite"),
-  NO_OVERWRITE("no-overwrite"),
   CONVERGE("converge");
 
   public final String mode;

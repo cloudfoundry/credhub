@@ -58,7 +58,7 @@ public class CredentialModeSpecificGenerateTest {
             + "  \"name\" : \"name\",\n"
             + "  \"type\" : \"password\",\n"
             + "  \"overwrite\" : false,\n"
-            + "  \"mode\" : \"no-overwrite\"\n"
+            + "  \"mode\" : \"overwrite\"\n"
             + "}");
 
     String response = mockMvc.perform(post)
@@ -84,7 +84,7 @@ public class CredentialModeSpecificGenerateTest {
     String firstResponse = generatePassword(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.OVERWRITE.mode, null);
     String originalPassword = (new JSONObject(firstResponse)).getString("value");
 
-    String secondResponse = generatePassword(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.NO_OVERWRITE.mode, null);
+    String secondResponse = generatePassword(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, null);
     String samePassword = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalPassword, equalTo(samePassword));
@@ -128,7 +128,7 @@ public class CredentialModeSpecificGenerateTest {
     String firstResponse = generatePassword(mockMvc, "a-name", CredentialWriteMode.OVERWRITE.mode, 30);
     String originalPassword = (new JSONObject(firstResponse)).getString("value");
 
-    String secondResponse = generatePassword(mockMvc, "/a-name", CredentialWriteMode.NO_OVERWRITE.mode, 20);
+    String secondResponse = generatePassword(mockMvc, "/a-name", CredentialWriteMode.CONVERGE.mode, 30);
     String updatedPassword = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalPassword, equalTo(updatedPassword));

@@ -56,7 +56,7 @@ public abstract class BaseCredentialRequest {
     if (isOverwrite()) {
       return CredentialWriteMode.OVERWRITE.mode;
     }
-    return CredentialWriteMode.NO_OVERWRITE.mode;
+    return CredentialWriteMode.CONVERGE.mode;
   }
 
   public boolean isOverwrite() {

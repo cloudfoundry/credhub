@@ -58,7 +58,7 @@ public class PermissionsEndpointTest {
         .apply(springSecurity())
         .build();
 
-    RequestHelper.setPassword(mockMvc, credentialName, "testpassword", CredentialWriteMode.NO_OVERWRITE.mode);
+    RequestHelper.setPassword(mockMvc, credentialName, "testpassword", CredentialWriteMode.CONVERGE.mode);
   }
 
   @Test

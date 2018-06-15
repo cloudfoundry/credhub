@@ -532,51 +532,8 @@ public class CredentialsControllerTypeSpecificSetTest {
     parametizer.credentialAssertions(credentialVersion);
   }
 
-  @Test
-  public void updatingACredential_withOverwriteSetToFalse_returnsThePreviousVersion() throws Exception {
-    CredentialVersion expectedCredentialVersion = parametizer.createCredential(encryptor);
-    doReturn(expectedCredentialVersion)
-        .when(credentialVersionDataService)
-        .findMostRecent(CREDENTIAL_NAME);
-    final MockHttpServletRequestBuilder request = put("/api/v1/data")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{"
-            + "\"type\":\"" + parametizer.credentialType + "\","
-            + "\"name\":\"" + CREDENTIAL_NAME + "\","
-            + "\"value\":" + parametizer.credentialValue
-            + "}");
 
-    mockMvc.perform(request)
-        .andExpect(status().isOk())
-        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-        .andExpect(parametizer.jsonAssertions())
-        .andExpect(multiJsonPath(
-            "$.id", expectedCredentialVersion.getUuid().toString(),
-            "$.version_created_at", FROZEN_TIME.minusSeconds(1).toString()));
-  }
 
-  @Test
-  public void updatingACredential_withOverwriteSetToFalse_doesNotPersistTheCredential() throws Exception {
-    CredentialVersion expectedCredentialVersion = parametizer.createCredential(encryptor);
-    doReturn(expectedCredentialVersion)
-        .when(credentialVersionDataService)
-        .findMostRecent(CREDENTIAL_NAME);
-    final MockHttpServletRequestBuilder request = put("/api/v1/data")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{"
-            + "\"type\":\"" + parametizer.credentialType + "\","
-            + "\"name\":\"" + CREDENTIAL_NAME + "\","
-            + "\"value\":" + parametizer.credentialValue
-            + "}");
-
-    mockMvc.perform(request);
-
-    verify(credentialVersionDataService, times(0)).save(any(CredentialVersion.class));
-  }
 
   private static abstract class TestParametizer {
     public final String credentialType;

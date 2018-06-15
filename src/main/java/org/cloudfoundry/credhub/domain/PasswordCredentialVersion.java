@@ -6,7 +6,6 @@ import org.cloudfoundry.credhub.entity.PasswordCredentialVersionData;
 import org.cloudfoundry.credhub.request.GenerationParameters;
 import org.cloudfoundry.credhub.request.StringGenerationParameters;
 import org.cloudfoundry.credhub.util.JsonObjectMapper;
-import org.springframework.util.Assert;
 
 import java.io.IOException;
 
@@ -74,8 +73,6 @@ public class PasswordCredentialVersion extends CredentialVersion<PasswordCredent
   @Override
   public StringGenerationParameters getGenerationParameters() {
     String password = getPassword();
-    Assert.notNull(password,
-        "Password length generation parameter cannot be restored without an existing password");
 
     if (delegate.getEncryptedGenerationParameters() == null) {
       return null;
@@ -99,6 +96,12 @@ public class PasswordCredentialVersion extends CredentialVersion<PasswordCredent
 
   @Override
   public boolean matchesGenerationParameters(GenerationParameters generationParameters) {
+    if(generationParameters == null && getGenerationParameters() == null){
+      return true;
+    }
+    if(generationParameters == null || getGenerationParameters() == null){
+      return false;
+    }
     return generationParameters.equals(getGenerationParameters());
   }
 

@@ -87,4 +87,137 @@ public class PasswordRegenerationTest {
     assertThat(regeneratedPassword, notNullValue());
     assertThat(regeneratedPassword, not(equalTo(originalPassword)));
   }
+
+  @Test
+  public void passwordRegeneration_withoutOverwrite_shouldNotRegeneratePassword() throws Exception {
+    MockHttpServletRequestBuilder post = post("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        //language=JSON
+        .content("{\n"
+            + "  \"name\" : \"picard\",\n"
+            + "  \"type\" : \"password\"\n"
+            + "}");
+
+    String caResult = this.mockMvc.perform(post)
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andReturn().getResponse().getContentAsString();
+
+    String originalPassword = (new JSONObject(caResult)).getString("value");
+
+    assertThat(originalPassword, notNullValue());
+
+    MockHttpServletRequestBuilder regeneratePost = post("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        //language=JSON
+        .content("{\n"
+            + "  \"name\" : \"picard\",\n"
+            + "  \"type\" : \"password\"\n"
+            + "}");
+
+    String regenerateResult = this.mockMvc.perform(regeneratePost)
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andReturn().getResponse().getContentAsString();
+
+    String regeneratedPassword = (new JSONObject(regenerateResult)).getString("value");
+
+    assertThat(regeneratedPassword, notNullValue());
+    assertThat(regeneratedPassword, equalTo(originalPassword));
+  }
+
+  @Test
+  public void passwordRegeneration_withOverwrite_shouldRegeneratePassword() throws Exception {
+    MockHttpServletRequestBuilder post = post("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        //language=JSON
+        .content("{\n"
+            + "  \"name\" : \"picard\",\n"
+            + "  \"type\" : \"password\"\n"
+            + "}");
+
+    String caResult = this.mockMvc.perform(post)
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andReturn().getResponse().getContentAsString();
+
+    String originalPassword = (new JSONObject(caResult)).getString("value");
+
+    assertThat(originalPassword, notNullValue());
+
+    MockHttpServletRequestBuilder regeneratePost = post("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        //language=JSON
+        .content("{\n"
+            + "  \"name\" : \"picard\",\n"
+            + "  \"type\" : \"password\",\n"
+            + "  \"overwrite\" : true }");
+
+    String regenerateResult = this.mockMvc.perform(regeneratePost)
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andReturn().getResponse().getContentAsString();
+
+    String regeneratedPassword = (new JSONObject(regenerateResult)).getString("value");
+
+    assertThat(regeneratedPassword, notNullValue());
+    assertThat(regeneratedPassword, not(equalTo(originalPassword)));
+  }
+
+  @Test
+  public void passwordRegeneration_withoutOverwrite_butChangingParameter_shouldRegeneratePassword() throws Exception {
+    MockHttpServletRequestBuilder post = post("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        //language=JSON
+        .content("{\n"
+            + "  \"name\" : \"picard\",\n"
+            + "  \"type\" : \"password\",\n"
+            + "  \"parameters\" : {\n"
+            + "  \"length\" : 20"
+            + "}"
+            + "}");
+
+    String caResult = this.mockMvc.perform(post)
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andReturn().getResponse().getContentAsString();
+
+    String originalPassword = (new JSONObject(caResult)).getString("value");
+
+    assertThat(originalPassword, notNullValue());
+
+    MockHttpServletRequestBuilder regeneratePost = post("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        //language=JSON
+        .content("{\n"
+            + "  \"name\" : \"picard\",\n"
+            + "  \"type\" : \"password\",\n"
+            + "  \"parameters\" : {\n"
+            + "  \"length\" : 40"
+            + "}"
+            + "}");
+
+    String regenerateResult = this.mockMvc.perform(regeneratePost)
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andReturn().getResponse().getContentAsString();
+
+    String regeneratedPassword = (new JSONObject(regenerateResult)).getString("value");
+
+    assertThat(regeneratedPassword, notNullValue());
+    assertThat(regeneratedPassword, not(equalTo(originalPassword)));
+  }
+
 }

@@ -64,7 +64,7 @@ public class CredentialSetTest {
             + "  \"type\" : \"password\",\n"
             + "  \"overwrite\" : false,\n"
             + "  \"value\" : \"some-password\",\n"
-            + "  \"mode\" : \"no-overwrite\"\n"
+            + "  \"mode\" : \"overwrite\"\n"
             + "}");
 
     String response = mockMvc.perform(put)
@@ -127,7 +127,7 @@ public class CredentialSetTest {
 
   @Test
   public void credentialCanBeOverwrittenWhenModeIsSetToOverwriteInRequest() throws Exception {
-    setPassword(mockMvc, CREDENTIAL_NAME, "original-password", CredentialWriteMode.NO_OVERWRITE.mode);
+    setPassword(mockMvc, CREDENTIAL_NAME, "original-password", CredentialWriteMode.CONVERGE.mode);
 
     String secondResponse = setPassword(mockMvc, CREDENTIAL_NAME, "new-password", CredentialWriteMode.OVERWRITE.mode);
     String updatedPassword = (new JSONObject(secondResponse)).getString("value");
@@ -137,9 +137,9 @@ public class CredentialSetTest {
 
   @Test
   public void credentialNotOverwrittenWhenModeIsSetToNotOverwriteInRequest() throws Exception {
-    setPassword(mockMvc, CREDENTIAL_NAME, "original-password", CredentialWriteMode.NO_OVERWRITE.mode);
+    setPassword(mockMvc, CREDENTIAL_NAME, "original-password", CredentialWriteMode.CONVERGE.mode);
 
-    String secondResponse = setPassword(mockMvc, CREDENTIAL_NAME, "new-password", CredentialWriteMode.NO_OVERWRITE.mode);
+    String secondResponse = setPassword(mockMvc, CREDENTIAL_NAME, "new-password", CredentialWriteMode.CONVERGE.mode);
     String updatedPassword = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(updatedPassword, equalTo("original-password"));
@@ -149,7 +149,7 @@ public class CredentialSetTest {
   public void credentialNamesCanHaveALengthOf1024Characters() throws Exception {
     assertThat(CREDENTIAL_NAME_1024_CHARACTERS.length(), is(equalTo(1024)));
 
-    String setResponse = setPassword(mockMvc, CREDENTIAL_NAME_1024_CHARACTERS, "foobar", CredentialWriteMode.NO_OVERWRITE.mode);
+    String setResponse = setPassword(mockMvc, CREDENTIAL_NAME_1024_CHARACTERS, "foobar", CredentialWriteMode.CONVERGE.mode);
     String setPassword = (new JSONObject(setResponse)).getString("value");
 
     assertThat(setPassword, equalTo("foobar"));
@@ -164,7 +164,7 @@ public class CredentialSetTest {
     String name1025 = CREDENTIAL_NAME_1024_CHARACTERS + "a";
     assertThat(name1025.length(), is(equalTo(1025)));
 
-    setPassword(mockMvc, name1025, "foobar", CredentialWriteMode.NO_OVERWRITE.mode);
+    setPassword(mockMvc, name1025, "foobar", CredentialWriteMode.CONVERGE.mode);
     generatePassword(mockMvc, name1025, "foobar", 10);
   }
 }

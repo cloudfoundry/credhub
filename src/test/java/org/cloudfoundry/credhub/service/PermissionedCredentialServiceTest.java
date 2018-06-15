@@ -127,7 +127,7 @@ public class PermissionedCredentialServiceTest {
   @Test(expected = ParameterizedValidationException.class)
   public void save_whenGivenTypeAndExistingTypeDontMatch_throwsException() {
     when(request.getType()).thenReturn("user");
-    when(request.getOverwriteMode()).thenReturn(CredentialWriteMode.NO_OVERWRITE.mode);
+    when(request.getOverwriteMode()).thenReturn(CredentialWriteMode.CONVERGE.mode);
     when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredentialVersion);
 
     subject.save(existingCredentialVersion, credentialValue, request);
@@ -158,7 +158,7 @@ public class PermissionedCredentialServiceTest {
   @Test
   public void save_whenThereIsAnExistingCredential_shouldCallVerifyCredentialWritePermission() {
     when(request.getType()).thenReturn("password");
-    when(request.getOverwriteMode()).thenReturn(CredentialWriteMode.NO_OVERWRITE.mode);
+    when(request.getOverwriteMode()).thenReturn(CredentialWriteMode.CONVERGE.mode);
     when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredentialVersion);
     subject.save(existingCredentialVersion, credentialValue, request);
 
@@ -169,7 +169,7 @@ public class PermissionedCredentialServiceTest {
   @Test
   public void save_whenThereIsNoExistingCredential_shouldNotCallVerifyCredentialWritePermission() {
     when(request.getType()).thenReturn("password");
-    when(request.getOverwriteMode()).thenReturn(CredentialWriteMode.NO_OVERWRITE.mode);
+    when(request.getOverwriteMode()).thenReturn(CredentialWriteMode.CONVERGE.mode);
     when(credentialVersionDataService.save(any(CredentialVersion.class)))
         .thenReturn(new PasswordCredentialVersion().setEncryptor(encryptor));
     subject.save(existingCredentialVersion, credentialValue, request);
@@ -178,7 +178,7 @@ public class PermissionedCredentialServiceTest {
   @Test
   public void save_whenThereIsAnExistingCredentialWithACEs_shouldThrowAnExceptionIfItLacksPermission() {
     when(request.getType()).thenReturn("password");
-    when(request.getOverwriteMode()).thenReturn(CredentialWriteMode.NO_OVERWRITE.mode);
+    when(request.getOverwriteMode()).thenReturn(CredentialWriteMode.CONVERGE.mode);
     when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredentialVersion);
     when(permissionCheckingService
         .hasPermission(userContext.getActor(), CREDENTIAL_NAME, WRITE_ACL))
