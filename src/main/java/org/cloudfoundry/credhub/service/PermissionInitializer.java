@@ -1,6 +1,6 @@
 package org.cloudfoundry.credhub.service;
 
-import org.cloudfoundry.credhub.config.AuthorizationConfiguration;
+import org.cloudfoundry.credhub.config.Permissions;
 import org.cloudfoundry.credhub.data.CredentialVersionDataService;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
@@ -16,27 +16,27 @@ import java.util.ArrayList;
 @Component
 public class PermissionInitializer {
   private PermissionService permissionService;
-  private AuthorizationConfiguration authorization;
+  private Permissions permissions;
   private CredentialVersionDataService credentialVersionDataService;
 
   @Autowired
   public PermissionInitializer(
       PermissionService permissionService,
-      AuthorizationConfiguration authorizationConfig,
+      Permissions authorizationConfig,
       CredentialVersionDataService credentialVersionDataService
   ) {
     this.permissionService = permissionService;
-    this.authorization = authorizationConfig;
+    this.permissions = authorizationConfig;
     this.credentialVersionDataService = credentialVersionDataService;
   }
 
   @EventListener(ContextRefreshedEvent.class)
   public void seed() {
-    if (authorization == null || authorization.getAuthorization() == null || authorization.getAuthorization().getPermissions() == null) {
+    if (permissions == null ||  permissions.getPermissions() == null) {
       return;
     }
 
-    for (AuthorizationConfiguration.Authorization.Permission permission : authorization.getAuthorization().getPermissions()) {
+    for (Permissions.Permission permission : permissions.getPermissions()) {
       CredentialVersion credentialVersion = credentialVersionDataService.findMostRecent(permission.getPath());
       ArrayList<PermissionEntry> permissionEntries = new ArrayList<>();
       for (String actor : permission.getActors()) {

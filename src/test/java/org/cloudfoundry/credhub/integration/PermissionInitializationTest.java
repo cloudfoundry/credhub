@@ -1,7 +1,7 @@
 package org.cloudfoundry.credhub.integration;
 
 import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.config.AuthorizationConfiguration;
+import org.cloudfoundry.credhub.config.Permissions;
 import org.cloudfoundry.credhub.constants.CredentialType;
 import org.cloudfoundry.credhub.credential.StringCredentialValue;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
@@ -54,7 +54,7 @@ public class PermissionInitializationTest {
   private PermissionedCredentialService permissionedCredentialService;
 
   @Autowired
-  private AuthorizationConfiguration authorizationConfiguration;
+  private Permissions permissions;
 
   @Autowired
   private ApplicationContext applicationContext;
@@ -69,14 +69,14 @@ public class PermissionInitializationTest {
 
   @Before
   public void beforeEach() throws Exception {
-    List<AuthorizationConfiguration.Authorization.Permission> permissions = new ArrayList<>();
-    AuthorizationConfiguration.Authorization.Permission permission = new AuthorizationConfiguration.Authorization.Permission();
+    List<Permissions.Permission> permissions = new ArrayList<>();
+    Permissions.Permission permission = new Permissions.Permission();
     permission.setPath(credentialPath);
 
     permission.setActors(actors);
     permission.setOperations(Arrays.asList(PermissionOperation.READ, PermissionOperation.WRITE));
     permissions.add(permission);
-    this.authorizationConfiguration.getAuthorization().setPermissions(permissions);
+    this.permissions.setPermissions(permissions);
 
     StringCredentialValue password = new StringCredentialValue("password");
     PasswordSetRequest passwordSetRequest = new PasswordSetRequest();
@@ -117,27 +117,18 @@ public class PermissionInitializationTest {
 
   @Test(expected = EntryNotFoundException.class)
   public void itThrowsAnExceptionIfCredentialDoesntExist() {
-    AuthorizationConfiguration.Authorization.Permission permission = new AuthorizationConfiguration.Authorization.Permission();
+    Permissions.Permission permission = new Permissions.Permission();
     permission.setPath("/doesnt/exist");
     permission.setActors(actors);
     permission.setOperations(Arrays.asList(PermissionOperation.READ));
-    this.authorizationConfiguration.getAuthorization().setPermissions(Arrays.asList(permission));
+    this.permissions.setPermissions(Arrays.asList(permission));
 
     applicationEventPublisher.publishEvent(new ContextRefreshedEvent(applicationContext));
   }
 
   @Test
-  public void itDoesntThrowAnExceptionIfPermissionsIsEmpty() {
-    AuthorizationConfiguration authorizationConfiguration = new AuthorizationConfiguration();
-    authorizationConfiguration.setAuthorization(new AuthorizationConfiguration.Authorization());
-
-    PermissionInitializer initializer = new PermissionInitializer(null, authorizationConfiguration,null);
-    initializer.seed();
-  }
-
-  @Test
   public void itDoesntThrowAnExceptionIfAuthorizationIsEmpty() {
-    PermissionInitializer initializer = new PermissionInitializer(null, new AuthorizationConfiguration(),null);
+    PermissionInitializer initializer = new PermissionInitializer(null, new Permissions(),null);
     initializer.seed();
   }
 
