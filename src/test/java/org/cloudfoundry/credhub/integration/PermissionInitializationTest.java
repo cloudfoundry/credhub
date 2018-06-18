@@ -110,8 +110,8 @@ public class PermissionInitializationTest {
     assertThat(savedPermissions, hasSize(2));
     assertThat(savedPermissions.stream().map(p -> p.getActor()).collect(Collectors.toList()), containsInAnyOrder(actors.get(0), actors.get(1)));
     assertThat(savedPermissions.stream().allMatch(p -> p.hasReadPermission() && p.hasWritePermission()), is(true));
-    assertThat(savedPermissions.get(0).hasWriteAclPermission() && savedPermissions.get(0).hasReadAclPermission(), is(true));
-    assertThat(savedPermissions.get(1).hasWriteAclPermission() || savedPermissions.get(1).hasReadAclPermission(), is(false));
+    assertThat(savedPermissions.get(0).hasWriteAclPermission() && savedPermissions.get(1).hasWriteAclPermission(), is(false));
+    assertThat(savedPermissions.get(0).hasReadAclPermission() && savedPermissions.get(1).hasReadAclPermission(), is(false));
     assertThat(savedPermissions.stream().allMatch(p -> p.hasDeletePermission()), is(false));
   }
 
