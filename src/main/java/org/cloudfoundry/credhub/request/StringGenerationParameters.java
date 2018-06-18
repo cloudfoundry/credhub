@@ -24,6 +24,7 @@ public class StringGenerationParameters implements GenerationParameters{
   private boolean excludeNumber;
   private boolean excludeUpper;
   private boolean includeSpecial;
+  private boolean secretKeyMode;
 
   public int getLength() {
     return length;
@@ -40,6 +41,13 @@ public class StringGenerationParameters implements GenerationParameters{
 
   public StringGenerationParameters setUsername(String username) {
     this.username = username;
+    return this;
+  }
+
+  public boolean isSecretKeyMode() { return secretKeyMode; }
+
+  public StringGenerationParameters setSecretKeyMode(boolean secretKeyMode) {
+    this.secretKeyMode = secretKeyMode;
     return this;
   }
 
@@ -103,19 +111,21 @@ public class StringGenerationParameters implements GenerationParameters{
         excludeNumber == that.excludeNumber &&
         excludeUpper == that.excludeUpper &&
         includeSpecial == that.includeSpecial &&
+        Objects.equals(secretKeyMode, that.secretKeyMode) &&
         Objects.equals(length, that.length) &&
         Objects.equals(username, that.username);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(length, username, excludeLower, excludeNumber, excludeUpper, includeSpecial);
+    return Objects.hash(length, secretKeyMode, username, excludeLower, excludeNumber, excludeUpper, includeSpecial);
   }
 
   public boolean passwordOptionsEqual(StringGenerationParameters that) {
     return excludeLower == that.excludeLower &&
         excludeNumber == that.excludeNumber &&
         excludeUpper == that.excludeUpper &&
-        includeSpecial == that.includeSpecial;
+        includeSpecial == that.includeSpecial &&
+        secretKeyMode == that.secretKeyMode;
   }
 }

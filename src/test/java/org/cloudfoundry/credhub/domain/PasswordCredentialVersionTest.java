@@ -51,6 +51,7 @@ public class PasswordCredentialVersionTest {
 
     generationParameters = new StringGenerationParameters()
         .setExcludeLower(true)
+        .setSecretKeyMode(true)
         .setLength(10);
 
     String generationParametersJson = new JsonObjectMapper().writeValueAsString(generationParameters);
@@ -58,8 +59,7 @@ public class PasswordCredentialVersionTest {
     when(encryptor.encrypt(null))
         .thenReturn(new EncryptedValue(canaryUuid, "", ""));
     final EncryptedValue encryption = new EncryptedValue(canaryUuid, encryptedValue, nonce);
-    when(encryptor.encrypt(PASSWORD))
-        .thenReturn(encryption);
+    when(encryptor.encrypt(PASSWORD)).thenReturn(encryption);
     final EncryptedValue parametersEncryption = new EncryptedValue(canaryUuid, encryptedParametersValue, parametersNonce);
     when(encryptor.encrypt(eq(generationParametersJson)))
         .thenReturn(parametersEncryption);
@@ -81,7 +81,7 @@ public class PasswordCredentialVersionTest {
 
   @Test
   public void getGenerationParameters_shouldCallDecryptTwice() {
-    subject.setPasswordAndGenerationParameters(PASSWORD, new StringGenerationParameters().setExcludeLower(true));
+    subject.setPasswordAndGenerationParameters(PASSWORD, new StringGenerationParameters().setExcludeLower(true).setSecretKeyMode(true));
 
     subject.getGenerationParameters();
 
@@ -117,6 +117,7 @@ public class PasswordCredentialVersionTest {
     MatcherAssert.assertThat(subject.getGenerationParameters().getLength(), equalTo(11));
     MatcherAssert.assertThat(subject.getGenerationParameters().isExcludeLower(), equalTo(true));
     MatcherAssert.assertThat(subject.getGenerationParameters().isExcludeUpper(), equalTo(false));
+    MatcherAssert.assertThat(subject.getGenerationParameters().isSecretKeyMode(), equalTo(true));
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -141,7 +142,7 @@ public class PasswordCredentialVersionTest {
   @Test
   public void setPasswordAndGenerationParameters_shouldSaveGenerationParams_AsSnakeCaseJson() {
     subject.setPasswordAndGenerationParameters(PASSWORD, generationParameters);
-    String expectedJsonString = "{\"exclude_lower\":true}";
+    String expectedJsonString = "{\"exclude_lower\":true,\"secret_key_mode\":true}";
     verify(encryptor, times(1)).encrypt(expectedJsonString);
   }
 }

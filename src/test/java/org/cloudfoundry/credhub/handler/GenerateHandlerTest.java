@@ -55,7 +55,6 @@ public class GenerateHandlerTest {
     when(credentialService.save(anyObject(), anyObject(), anyObject())).thenReturn(credentialVersion);
   }
 
-
   @Test
   public void handleGenerateRequest_whenPasswordGenerateRequest_passesCorrectParametersIncludingGeneration() {
     PasswordGenerateRequest generateRequest = new PasswordGenerateRequest();
