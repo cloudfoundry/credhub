@@ -37,6 +37,10 @@ public class ValueCredentialVersion extends CredentialVersion<ValueCredentialVer
 
   @Override
   public boolean matchesGenerationParameters(GenerationParameters generationParameters) {
+    if(generationParameters == null){
+      return true;
+    }
+
     return false;
   }
 

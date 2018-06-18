@@ -91,6 +91,10 @@ public class CertificateCredentialVersion extends CredentialVersion<CertificateC
   }
 
   public boolean matchesGenerationParameters(GenerationParameters generationParameters) {
+    if(generationParameters == null){
+      return true;
+    }
+
     final CertificateGenerationParameters parameters = (CertificateGenerationParameters) generationParameters;
     final CertificateGenerationParameters existingGenerationParameters = new CertificateGenerationParameters(getParsedCertificate(), getCaName());
     return existingGenerationParameters.equals(parameters);

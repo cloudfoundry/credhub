@@ -103,7 +103,7 @@ public class StringGenerationParameters implements GenerationParameters{
         excludeNumber == that.excludeNumber &&
         excludeUpper == that.excludeUpper &&
         includeSpecial == that.includeSpecial &&
-        Objects.equals(length, that.length) &&
+        (Objects.equals(length, that.length)) &&
         Objects.equals(username, that.username);
   }
 

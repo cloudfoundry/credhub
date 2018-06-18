@@ -96,11 +96,8 @@ public class PasswordCredentialVersion extends CredentialVersion<PasswordCredent
 
   @Override
   public boolean matchesGenerationParameters(GenerationParameters generationParameters) {
-    if(generationParameters == null && getGenerationParameters() == null){
+    if(generationParameters == null){
       return true;
-    }
-    if(generationParameters == null || getGenerationParameters() == null){
-      return false;
     }
     return generationParameters.equals(getGenerationParameters());
   }

@@ -1,10 +1,6 @@
 package org.cloudfoundry.credhub.domain;
 
 import com.google.common.net.InetAddresses;
-import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
-import org.cloudfoundry.credhub.request.CertificateGenerationRequestParameters;
-import org.cloudfoundry.credhub.request.GenerationParameters;
-import org.cloudfoundry.credhub.util.CertificateReader;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
 import org.bouncycastle.asn1.x509.GeneralName;
@@ -12,6 +8,10 @@ import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.GeneralNamesBuilder;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.KeyUsage;
+import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
+import org.cloudfoundry.credhub.request.CertificateGenerationRequestParameters;
+import org.cloudfoundry.credhub.request.GenerationParameters;
+import org.cloudfoundry.credhub.util.CertificateReader;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
@@ -19,6 +19,8 @@ import java.util.Objects;
 import javax.security.auth.x500.X500Principal;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static org.apache.commons.lang3.StringUtils.join;
+import static org.apache.commons.lang3.StringUtils.prependIfMissing;
 import static org.cloudfoundry.credhub.request.CertificateGenerationRequestParameters.CLIENT_AUTH;
 import static org.cloudfoundry.credhub.request.CertificateGenerationRequestParameters.CODE_SIGNING;
 import static org.cloudfoundry.credhub.request.CertificateGenerationRequestParameters.CRL_SIGN;
@@ -33,8 +35,6 @@ import static org.cloudfoundry.credhub.request.CertificateGenerationRequestParam
 import static org.cloudfoundry.credhub.request.CertificateGenerationRequestParameters.NON_REPUDIATION;
 import static org.cloudfoundry.credhub.request.CertificateGenerationRequestParameters.SERVER_AUTH;
 import static org.cloudfoundry.credhub.request.CertificateGenerationRequestParameters.TIMESTAMPING;
-import static org.apache.commons.lang3.StringUtils.join;
-import static org.apache.commons.lang3.StringUtils.prependIfMissing;
 
 public class CertificateGenerationParameters implements GenerationParameters{
 
@@ -60,7 +60,7 @@ public class CertificateGenerationParameters implements GenerationParameters{
         duration == that.duration &&
         selfSigned == that.selfSigned &&
         isCa == that.isCa &&
-        Objects.equals(caName, that.caName) &&
+        (Objects.equals(caName, that.caName) || caName == null || that.caName == null) &&
         new X500Name(that.x500Principal.getName()).equals(new X500Name(this.x500Principal.getName())) &&
         Objects.equals(alternativeNames, that.alternativeNames) &&
         Objects.equals(extendedKeyUsage, that.extendedKeyUsage) &&

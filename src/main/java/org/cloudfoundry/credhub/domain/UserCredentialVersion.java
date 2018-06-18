@@ -123,6 +123,10 @@ public class UserCredentialVersion extends CredentialVersion<UserCredentialVersi
 
   @Override
   public boolean matchesGenerationParameters(GenerationParameters generationParameters) {
+    if(generationParameters == null){
+      return true;
+    }
+
     final StringGenerationParameters existingGenerationParameters = getGenerationParameters();
     final StringGenerationParameters newGenerationParameters = (StringGenerationParameters) generationParameters;
 

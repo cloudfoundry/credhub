@@ -62,6 +62,9 @@ public class JsonCredentialVersion extends CredentialVersion<JsonCredentialVersi
 
   @Override
   public boolean matchesGenerationParameters(GenerationParameters generationParameters) {
+    if(generationParameters == null){
+      return true;
+    }
     return false;
   }
 

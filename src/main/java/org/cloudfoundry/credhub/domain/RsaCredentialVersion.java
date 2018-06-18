@@ -60,6 +60,10 @@ public class RsaCredentialVersion extends CredentialVersion<RsaCredentialVersion
 
   @Override
   public boolean matchesGenerationParameters(GenerationParameters generationParameters) {
+    if(generationParameters == null){
+      return true;
+    }
+
     return ((RsaGenerationParameters) generationParameters).getKeyLength() == getKeyLength();
   }
 
