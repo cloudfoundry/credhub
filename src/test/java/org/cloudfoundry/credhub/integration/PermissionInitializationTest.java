@@ -35,7 +35,6 @@ import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 
@@ -109,7 +108,7 @@ public class PermissionInitializationTest {
 
     List<PermissionData> savedPermissions = permissionRepository.findAllByCredentialUuid(credentialUUID);
     assertThat(savedPermissions, hasSize(2));
-    assertThat(savedPermissions.stream().map(p -> p.getActor()).collect(Collectors.toList()), equalTo(actors));
+    assertThat(savedPermissions.stream().map(p -> p.getActor()).collect(Collectors.toList()), containsInAnyOrder(actors.get(0), actors.get(1)));
     assertThat(savedPermissions.stream().allMatch(p -> p.hasReadPermission() && p.hasWritePermission()), is(true));
     assertThat(savedPermissions.get(0).hasWriteAclPermission() && savedPermissions.get(0).hasReadAclPermission(), is(true));
     assertThat(savedPermissions.get(1).hasWriteAclPermission() || savedPermissions.get(1).hasReadAclPermission(), is(false));
