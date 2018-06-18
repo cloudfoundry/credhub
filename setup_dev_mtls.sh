@@ -13,7 +13,7 @@ UAA_CA=ca/dev_uaa.pem
 
 clean() {
     echo "Removing any existing key stores and certs..."
-    rm -f "${DIRNAME}"/*.jks "${DIRNAME}"/*.csr "${DIRNAME}"/*.srl "${DIRNAME}"/*.pem
+    rm -f *.jks *.csr *.srl *.pem
 }
 
 setup_tls_key_store() {
