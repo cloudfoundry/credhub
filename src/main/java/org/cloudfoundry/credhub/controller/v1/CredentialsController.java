@@ -20,7 +20,6 @@ import org.cloudfoundry.credhub.service.PermissionedCredentialService;
 import org.cloudfoundry.credhub.view.CredentialView;
 import org.cloudfoundry.credhub.view.DataResponse;
 import org.cloudfoundry.credhub.view.FindCredentialResults;
-import org.cloudfoundry.credhub.view.FindPathResults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -36,7 +35,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 
 @RestController
 @RequestMapping(
@@ -143,17 +141,7 @@ public class CredentialsController {
 
     return new FindCredentialResults(credentialService.findStartingWithPath(path));
   }
-
-  @RequestMapping(path = "", params = "paths=true", method = RequestMethod.GET)
-  @ResponseStatus(HttpStatus.OK)
-  public FindPathResults findPaths() {
-    FindCredential findCredential = new FindCredential();
-    findCredential.setPaths(true);
-    auditRecord.setRequestDetails(findCredential);
-
-    List<String> paths = credentialService.findAllPaths();
-    return FindPathResults.fromEntity(paths);
-  }
+  
 
   @RequestMapping(path = "", params = "name-like", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)

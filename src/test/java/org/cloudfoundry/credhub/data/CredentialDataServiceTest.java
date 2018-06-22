@@ -13,15 +13,11 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 @RunWith(SpringRunner.class)
@@ -121,22 +117,4 @@ public class CredentialDataServiceTest {
     assertThat(credentialRepository.count(), equalTo(0L));
   }
 
-  @Test
-  public void findAll_whenThereAreNoCredentials_returnsAnEmptyList() {
-    assertThat(subject.findAll().isEmpty(), equalTo(true));
-  }
-
-  @Test
-  public void findAll_whenThereAreCredentials_returnsTheListOfNames() {
-    credentialRepository.save(new Credential(CREDENTIAL_NAME));
-    credentialRepository.save(new Credential(CREDENTIAL_NAME2));
-
-    List<Credential> credentials = subject.findAll();
-    List<String> names = credentials.stream()
-        .map(Credential::getName)
-        .collect(Collectors.toList());
-
-    assertThat(names, hasSize(2));
-    assertThat(names, containsInAnyOrder(CREDENTIAL_NAME, CREDENTIAL_NAME2));
-  }
 }

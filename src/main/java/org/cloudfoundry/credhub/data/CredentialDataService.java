@@ -6,7 +6,6 @@ import org.cloudfoundry.credhub.repository.CredentialRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -41,7 +40,4 @@ public class CredentialDataService {
     return credentialRepository.deleteByNameIgnoreCase(credentialName) > 0;
   }
 
-  public List<Credential> findAll() {
-    return credentialRepository.findAll();
-  }
 }

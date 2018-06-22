@@ -178,9 +178,6 @@ public class PermissionedCredentialService {
     return credentialVersionDataService.findStartingWithPath(path);
   }
 
-  public List<String> findAllPaths() {
-    return credentialVersionDataService.findAllPaths();
-  }
 
   public List<FindCredentialResult> findContainingName(String name) {
     return credentialVersionDataService.findContainingName(name);

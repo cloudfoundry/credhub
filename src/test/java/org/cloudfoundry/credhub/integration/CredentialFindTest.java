@@ -133,22 +133,6 @@ public class CredentialFindTest {
     mockMvc.perform(request);
   }
 
-  @Test
-  public void findCredentials_findingAllPaths_returnsAllPossibleCredentialsPaths() throws Exception {
-    final MockHttpServletRequestBuilder getRequest = get("/api/v1/data?paths=true")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-        .accept(APPLICATION_JSON);
-
-    generatePassword(mockMvc, "my-namespace/subTree/credential", CredentialWriteMode.OVERWRITE.mode, 20);
-
-    mockMvc.perform(getRequest)
-        .andExpect(status().isOk())
-        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-        .andExpect(jsonPath("$.paths[0].path").value("/"))
-        .andExpect(jsonPath("$.paths[1].path").value("/my-namespace/"))
-        .andExpect(jsonPath("$.paths[2].path").value("/my-namespace/subTree/"));
-  }
-
   private ResultActions findCredentialsByNameLike() throws Exception {
     generatePassword(mockMvc, credentialName, CredentialWriteMode.OVERWRITE.mode, 20);
     String substring = credentialName.substring(4).toUpperCase();

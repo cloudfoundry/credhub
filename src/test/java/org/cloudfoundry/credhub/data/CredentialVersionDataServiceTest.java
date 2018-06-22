@@ -37,7 +37,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static org.cloudfoundry.credhub.helper.TestHelper.mockOutCurrentTimeProvider;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -462,8 +461,6 @@ public class CredentialVersionDataServiceTest {
         certificateCredentialData);
     subject.save(certificateCredential);
 
-    assertThat(subject.findAllPaths(),
-        equalTo(newArrayList("/", "/certif/", "/certif/ic/", "/password/", "/value/")));
   }
 
   @Test
