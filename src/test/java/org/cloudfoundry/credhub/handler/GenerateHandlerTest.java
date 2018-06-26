@@ -18,11 +18,8 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 
 @RunWith(JUnit4.class)
@@ -52,7 +49,8 @@ public class GenerateHandlerTest {
     generationParameters = new StringGenerationParameters();
     accessControlEntries = new ArrayList<>();
     credentialVersion = mock(PasswordCredentialVersion.class);
-    when(credentialService.save(anyObject(), anyObject(), anyObject())).thenReturn(credentialVersion);
+    when(credentialVersion.getCredential()).thenReturn(mock(Credential.class));
+    when(credentialService.save(any(), any(), any())).thenReturn(credentialVersion);
   }
 
 

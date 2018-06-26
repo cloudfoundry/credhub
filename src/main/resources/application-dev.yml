@@ -1,4 +1,4 @@
-auth_server:
+auth-server:
   # Public dummy UAA for local development usage only!
   # Username/password: credhub/password
   trust_store: src/test/resources/auth_server_trust_store.jks

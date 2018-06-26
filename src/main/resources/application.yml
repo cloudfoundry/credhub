@@ -2,8 +2,6 @@ security:
   oauth2:
     resource:
       id: credhub
-  basic:
-    enabled: false
   authorization:
     acls:
       enabled: false

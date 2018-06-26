@@ -1,17 +1,6 @@
 package org.cloudfoundry.credhub.generator;
 
-import org.cloudfoundry.credhub.config.BouncyCastleProviderConfiguration;
-import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
-import org.cloudfoundry.credhub.domain.CertificateGenerationParameters;
-import org.cloudfoundry.credhub.request.CertificateGenerationRequestParameters;
-import org.cloudfoundry.credhub.util.CertificateReader;
-import org.cloudfoundry.credhub.util.PrivateKeyReader;
-import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
-import org.bouncycastle.asn1.x509.BasicConstraints;
-import org.bouncycastle.asn1.x509.Extension;
-import org.bouncycastle.asn1.x509.GeneralName;
-import org.bouncycastle.asn1.x509.GeneralNamesBuilder;
-import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
+import org.bouncycastle.asn1.x509.*;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
@@ -20,6 +9,12 @@ import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.cloudfoundry.credhub.config.BouncyCastleProviderConfiguration;
+import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
+import org.cloudfoundry.credhub.domain.CertificateGenerationParameters;
+import org.cloudfoundry.credhub.request.CertificateGenerationRequestParameters;
+import org.cloudfoundry.credhub.util.CertificateReader;
+import org.cloudfoundry.credhub.util.PrivateKeyReader;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,6 +23,7 @@ import org.springframework.data.auditing.DateTimeProvider;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.security.auth.x500.X500Principal;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyPair;
@@ -35,22 +31,18 @@ import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
-import javax.security.auth.x500.X500Principal;
+import java.util.Optional;
 
+import static org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils.parseExtensionValue;
 import static org.cloudfoundry.credhub.helper.TestHelper.getBouncyCastleProvider;
-import static org.cloudfoundry.credhub.request.CertificateGenerationRequestParameters.CODE_SIGNING;
-import static org.cloudfoundry.credhub.request.CertificateGenerationRequestParameters.DIGITAL_SIGNATURE;
-import static org.cloudfoundry.credhub.request.CertificateGenerationRequestParameters.KEY_ENCIPHERMENT;
-import static org.cloudfoundry.credhub.request.CertificateGenerationRequestParameters.SERVER_AUTH;
+import static org.cloudfoundry.credhub.request.CertificateGenerationRequestParameters.*;
 import static org.cloudfoundry.credhub.util.CertificateStringConstants.CERTSTRAP_GENERATED_CA_CERTIFICATE;
 import static org.cloudfoundry.credhub.util.CertificateStringConstants.CERTSTRAP_GENERATED_CA_PRIVATE_KEY;
-import static org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils.parseExtensionValue;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -67,8 +59,8 @@ public class SignedCertificateGeneratorTest {
   private KeyPairGenerator generator;
   private RandomSerialNumberGenerator serialNumberGenerator;
   private DateTimeProvider timeProvider;
-  private Calendar now;
-  private Calendar later;
+  private Instant now;
+  private Instant later;
   private CertificateCredentialValue ca;
   private final int expectedDurationInDays = 10;
   private final String caName = "CN=ca DN,O=credhub";
@@ -94,11 +86,9 @@ public class SignedCertificateGeneratorTest {
   @Before
   public void beforeEach() throws Exception {
     timeProvider = mock(DateTimeProvider.class);
-    now = Calendar.getInstance();
-    now.setTimeInMillis(1493066824);
-    later = (Calendar) now.clone();
-    later.add(Calendar.DAY_OF_YEAR, expectedDurationInDays);
-    when(timeProvider.getNow()).thenReturn(now);
+    now = Instant.ofEpochMilli(1493066824);
+    later = now.plus(Duration.ofDays(expectedDurationInDays));
+    when(timeProvider.getNow()).thenReturn(Optional.of(now));
     serialNumberGenerator = mock(RandomSerialNumberGenerator.class);
     when(serialNumberGenerator.generate()).thenReturn(BigInteger.valueOf(1337));
     jcaX509ExtensionUtils = new JcaX509ExtensionUtils();
@@ -126,8 +116,8 @@ public class SignedCertificateGeneratorTest {
     JcaX509v3CertificateBuilder x509v3CertificateBuilder = new JcaX509v3CertificateBuilder(
         issuerDn,
         caSerialNumber,
-        Date.from(now.toInstant()),
-        Date.from(later.toInstant()),
+        Date.from(now),
+        Date.from(later),
         issuerDn,
         issuerKey.getPublic()
     );
@@ -173,8 +163,8 @@ public class SignedCertificateGeneratorTest {
     assertThat(generatedCertificate.getIssuerDN().getName(), containsString("O=credhub"));
 
     assertThat(generatedCertificate.getSerialNumber(), equalTo(BigInteger.valueOf(1337l)));
-    assertThat(generatedCertificate.getNotBefore().toString(), equalTo(Date.from(now.toInstant()).toString()));
-    assertThat(generatedCertificate.getNotAfter().toString(), equalTo(Date.from(later.toInstant()).toString()));
+    assertThat(generatedCertificate.getNotBefore().toString(), equalTo(Date.from(now).toString()));
+    assertThat(generatedCertificate.getNotAfter().toString(), equalTo(Date.from(later).toString()));
     assertThat(generatedCertificate.getSubjectDN().toString(), containsString("CN=my cert name"));
     assertThat(generatedCertificate.getPublicKey(), equalTo(generatedCertificateKeyPair.getPublic()));
     assertThat(generatedCertificate.getSigAlgName(), equalTo("SHA256WITHRSA"));

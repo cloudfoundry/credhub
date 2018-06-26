@@ -5,6 +5,5 @@ spring:
     url: jdbc:mariadb://localhost:3306/credhub_dev
   profiles:
     include: dev
-
-flyway:
-  locations: classpath:/db/migration/common,classpath:/db/migration/mysql
+  flyway:
+    locations: classpath:/db/migration/common,classpath:/db/migration/mysql

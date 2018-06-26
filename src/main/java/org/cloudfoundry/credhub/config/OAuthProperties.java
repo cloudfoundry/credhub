@@ -10,7 +10,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Paths;
 
 @Configuration
-@ConfigurationProperties("auth_server")
+@ConfigurationProperties("auth-server")
 @ConditionalOnProperty(value = "security.oauth2.enabled")
 public class OAuthProperties {
   private final static String ISSUER_PATH = "/.well-known/openid-configuration";

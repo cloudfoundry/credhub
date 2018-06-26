@@ -76,7 +76,7 @@ public class CertificateVersionDataService {
   }
 
   public void deleteVersion(UUID versionUuid) {
-    credentialVersionRepository.delete(versionUuid);
+    credentialVersionRepository.deleteById(versionUuid);
   }
 
   public CertificateCredentialVersion findVersion(UUID versionUuid) {

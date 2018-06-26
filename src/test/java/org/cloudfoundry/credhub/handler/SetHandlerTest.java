@@ -12,11 +12,7 @@ import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.helper.TestHelper;
-import org.cloudfoundry.credhub.request.CertificateSetRequest;
-import org.cloudfoundry.credhub.request.PasswordSetRequest;
-import org.cloudfoundry.credhub.request.PermissionEntry;
-import org.cloudfoundry.credhub.request.StringGenerationParameters;
-import org.cloudfoundry.credhub.request.UserSetRequest;
+import org.cloudfoundry.credhub.request.*;
 import org.cloudfoundry.credhub.service.PermissionService;
 import org.cloudfoundry.credhub.service.PermissionedCredentialService;
 import org.cloudfoundry.credhub.util.TestConstants;
@@ -32,11 +28,8 @@ import java.util.UUID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
-import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(JUnit4.class)
 public class SetHandlerTest {
@@ -82,7 +75,7 @@ public class SetHandlerTest {
     when(credentialVersion.getCredential()).thenReturn(cred);
     when(credentialVersion.getName()).thenReturn(cred.getName());
     when(credentialVersion.getUuid()).thenReturn(cred.getUuid());
-    when(credentialService.save(anyObject(),anyObject(), anyObject())).thenReturn(credentialVersion);
+    when(credentialService.save(any(),any(), any())).thenReturn(credentialVersion);
   }
 
   @Test

@@ -1,4 +1,4 @@
-auth_server:
+auth-server:
   url: https://example.com:8443
 
 encryption:
@@ -16,8 +16,6 @@ encryption:
   key_creation_enabled: true
 
 security:
-  basic:
-    enabled: false
   oauth2:
     enabled: true
     resource:

@@ -157,7 +157,7 @@ public class EncryptionKeyCanaryMapperTest {
     timedRetry = mock(TimedRetry.class);
     when(timedRetry.retryEverySecondUntil(anyLong(), any(Supplier.class)))
         .thenAnswer(answer -> {
-          Supplier<Boolean> retryableOperation = answer.getArgumentAt(1, Supplier.class);
+          Supplier<Boolean> retryableOperation = answer.getArgument(1);
           for (int i = 0; i < 10; ++i) {
             if (retryableOperation.get()) {
               return true;

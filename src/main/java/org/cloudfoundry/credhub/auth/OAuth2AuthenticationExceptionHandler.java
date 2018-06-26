@@ -16,12 +16,13 @@ import org.springframework.security.oauth2.provider.authentication.OAuth2Authent
 import org.springframework.security.oauth2.provider.error.OAuth2AuthenticationEntryPoint;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.security.SignatureException;
-import java.util.Map;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.security.SignatureException;
+import java.time.temporal.ChronoField;
+import java.util.Map;
 
 import static org.springframework.security.oauth2.provider.token.AccessTokenConverter.EXP;
 
@@ -91,7 +92,7 @@ public class OAuth2AuthenticationExceptionHandler extends OAuth2AuthenticationEn
 
   private boolean tokenIsExpired(Map<String, Object> tokenInformation) {
     Long exp = tokenInformation != null ? (Long) tokenInformation.get(EXP) : null;
-    return exp != null && exp <= currentTimeProvider.getNow().getTimeInMillis() / 1000;
+    return exp != null && exp <= currentTimeProvider.getNow().get().get(ChronoField.INSTANT_SECONDS);
   }
 
   private Map<String, Object> extractTokenInformation(String token) {

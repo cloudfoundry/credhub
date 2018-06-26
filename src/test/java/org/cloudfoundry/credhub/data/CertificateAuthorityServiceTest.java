@@ -20,7 +20,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -70,7 +69,7 @@ public class CertificateAuthorityServiceTest {
   @Test
   public void findActiveVersion_whenACaDoesNotExistAndPermissionsAreNotEnforced_throwsException() {
     when(certificateVersionDataService.findActive(any(String.class))).thenReturn(null);
-    when(permissionCheckingService.hasPermission(anyString(), anyString(), anyObject())).thenReturn(true);
+    when(permissionCheckingService.hasPermission(anyString(), anyString(), any())).thenReturn(true);
     try {
       certificateAuthorityService.findActiveVersion("any ca name");
     } catch (EntryNotFoundException pe) {

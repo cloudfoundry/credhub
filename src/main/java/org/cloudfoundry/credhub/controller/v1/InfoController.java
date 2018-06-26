@@ -20,7 +20,7 @@ public class InfoController {
 
   @Autowired
   InfoController(
-      @Value("${auth_server.url:}") String uaaUrl
+      @Value("${auth-server.url:}") String uaaUrl
   ) {
     this.uaaUrl = uaaUrl;
   }

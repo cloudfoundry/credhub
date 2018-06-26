@@ -92,7 +92,7 @@ public class BulkRegenerateTest {
     flyway.setTarget(MigrationVersion.LATEST);
     flyway.migrate();
 
-    encryptionKeyCanaryRepository.save(canaries);
+    encryptionKeyCanaryRepository.saveAll(canaries);
     encryptionKeyCanaryRepository.flush();
   }
 

@@ -261,8 +261,7 @@ public class AuthConfigurationTest {
 
   private void setupDataEndpointMocks() {
     when(credentialVersionDataService.save(any(CredentialVersion.class))).thenAnswer(invocation -> {
-      PasswordCredentialVersion passwordCredential = invocation
-          .getArgumentAt(0, PasswordCredentialVersion.class);
+      PasswordCredentialVersion passwordCredential = invocation.getArgument(0);
       passwordCredential.setUuid(UUID.randomUUID());
       passwordCredential.setVersionCreatedAt(Instant.now());
       return passwordCredential;

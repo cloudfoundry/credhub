@@ -90,7 +90,8 @@ public class SignedCertificateGenerator {
       SubjectKeyIdentifier caSubjectKeyIdentifier,
       KeyPair keyPair,
       CertificateGenerationParameters params) throws Exception {
-    Instant now = timeProvider.getNow().toInstant();
+    Instant now = Instant.from(timeProvider.getNow().get());
+    // TODO: check if timeProvider.getNow() is present
 
     BigInteger certificateSerialNumber = serialNumberGenerator.generate();
     BigInteger caSerialNumber =

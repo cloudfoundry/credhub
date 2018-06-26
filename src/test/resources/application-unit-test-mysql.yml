@@ -2,6 +2,5 @@ spring:
   datasource:
     username: root
     url: jdbc:mariadb://localhost:3306/credhub_test
-
-flyway:
-  locations: classpath:/db/migration/common,classpath:/db/migration/mysql
+  flyway:
+    locations: classpath:/db/migration/common,classpath:/db/migration/mysql

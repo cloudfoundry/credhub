@@ -233,14 +233,17 @@ public class InterpolationHandlerTest {
     Map<String, Object> inputJson = deserialize(inputJsonString, Map.class);
 
     JsonCredentialVersion jsonCredential = mock(JsonCredentialVersion.class);
+    when(jsonCredential.getCredential()).thenReturn(mock(Credential.class));
     when(jsonCredential.getName()).thenReturn("/cred1");
     doReturn(Maps.newHashMap("secret1", "secret1-value")).when(jsonCredential).getValue();
 
     JsonCredentialVersion jsonCredential1 = mock(JsonCredentialVersion.class);
+    when(jsonCredential1.getCredential()).thenReturn(mock(Credential.class));
     when(jsonCredential1.getName()).thenReturn("/cred2");
     doReturn(Maps.newHashMap("secret2", "secret2-value")).when(jsonCredential1).getValue();
 
     JsonCredentialVersion jsonCredential2 = mock(JsonCredentialVersion.class);
+    when(jsonCredential2.getCredential()).thenReturn(mock(Credential.class));
     when(jsonCredential2.getName()).thenReturn("/cred3");
     Map<String, String> jsonCredetials = Maps.newHashMap("secret3-1", "secret3-1-value");
     jsonCredetials.put("secret3-2", "secret3-2-value");

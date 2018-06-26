@@ -274,7 +274,7 @@ public class CertificateGeneratorTest {
 
     CurrentTimeProvider currentTimeProvider = new CurrentTimeProvider();
 
-    Instant now = currentTimeProvider.getNow().toInstant();
+    Instant now = Instant.from(currentTimeProvider.getNow().get());
 
     X509v3CertificateBuilder x509v3CertificateBuilder = new X509v3CertificateBuilder(
         caDn,

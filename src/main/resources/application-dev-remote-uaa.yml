@@ -1,4 +1,4 @@
-auth_server:
+auth-server:
   # Public dummy UAA for local development usage only!
   # Username/password: credhub/password
   url: https://34.206.233.195:8443

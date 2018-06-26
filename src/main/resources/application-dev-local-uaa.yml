@@ -1,4 +1,4 @@
-auth_server:
+auth-server:
   # Username/password: credhub/password
   url: http://localhost:8080/uaa
 

@@ -24,15 +24,11 @@ import java.util.List;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isOneOf;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 
 @RunWith(JUnit4.class)
@@ -64,15 +60,15 @@ public class RegenerateHandlerTest {
     );
   }
 
-
   @Test
   public void handleRegenerate_addsToAuditRecord() {
     BaseCredentialGenerateRequest request = new PasswordGenerateRequest();
+    when(credentialVersion.getCredential()).thenReturn(mock(Credential.class));
     when(credentialService.findMostRecent(CREDENTIAL_NAME)).thenReturn(credentialVersion);
     when(generationRequestGenerator.createGenerateRequest(credentialVersion))
         .thenReturn(request);
     when(credentialGenerator.generate(request)).thenReturn(credValue);
-    when(credentialService.save(anyObject(), anyObject(), anyObject())).thenReturn(credentialVersion);
+    when(credentialService.save(any(), any(), any())).thenReturn(credentialVersion);
 
     subject.handleRegenerate(CREDENTIAL_NAME);
 
@@ -115,7 +111,7 @@ public class RegenerateHandlerTest {
     when(credentialService.findMostRecent(anyString()))
         .thenReturn(mock(CredentialVersion.class));
     CredentialVersion credentialVersion = mock(CertificateCredentialVersion.class);
-    when(credentialService.save(anyObject(), anyObject(), anyObject())).thenReturn(credentialVersion);
+    when(credentialService.save(any(), any(), any())).thenReturn(credentialVersion);
     when(credentialVersion.getName()).thenReturn("someName");
 
     CertificateGenerateRequest generateRequest1 = mock(CertificateGenerateRequest.class);
@@ -127,7 +123,7 @@ public class RegenerateHandlerTest {
 
     CertificateGenerateRequest generateRequest2 = mock(CertificateGenerateRequest.class);
     when(generateRequest2.getName()).thenReturn("/secondExpectedName");
-    CertificateGenerationParameters generationParams2= mock(CertificateGenerationParameters.class);
+    CertificateGenerationParameters generationParams2 = mock(CertificateGenerationParameters.class);
     when(generationParams2.isCa()).thenReturn(false);
     when(generateRequest2.getGenerationParameters()).thenReturn(generationParams2);
 
@@ -140,7 +136,7 @@ public class RegenerateHandlerTest {
     verify(credentialService).save(any(), any(), eq(generateRequest1));
     verify(credentialService).save(any(), any(), eq(generateRequest2));
   }
-  
+
   @Test
   public void handleBulkRegenerate_regeneratesToNestedLevels() {
     when(credentialService.findAllCertificateCredentialsByCaName(SIGNER_NAME))
@@ -151,7 +147,7 @@ public class RegenerateHandlerTest {
         .thenReturn(mock(CredentialVersion.class));
 
     CredentialVersion credentialVersion = mock(CredentialVersion.class);
-    when(credentialService.save(anyObject(), anyObject(), anyObject())).thenReturn(credentialVersion);
+    when(credentialService.save(any(), any(), any())).thenReturn(credentialVersion);
     when(credentialVersion.getName()).thenReturn("placeholder");
 
     CertificateGenerateRequest generateRequest1 = mock(CertificateGenerateRequest.class);
@@ -162,19 +158,19 @@ public class RegenerateHandlerTest {
 
     CertificateGenerateRequest generateRequest2 = mock(CertificateGenerateRequest.class);
     when(generateRequest2.getName()).thenReturn("/secondExpectedName");
-    CertificateGenerationParameters generationParams2= mock(CertificateGenerationParameters.class);
+    CertificateGenerationParameters generationParams2 = mock(CertificateGenerationParameters.class);
     when(generationParams2.isCa()).thenReturn(false);
     when(generateRequest2.getGenerationParameters()).thenReturn(generationParams2);
 
     CertificateGenerateRequest generateRequest3 = mock(CertificateGenerateRequest.class);
     when(generateRequest3.getName()).thenReturn("/thirdExpectedName");
-    CertificateGenerationParameters generationParams3= mock(CertificateGenerationParameters.class);
+    CertificateGenerationParameters generationParams3 = mock(CertificateGenerationParameters.class);
     when(generationParams3.isCa()).thenReturn(false);
     when(generateRequest3.getGenerationParameters()).thenReturn(generationParams3);
 
     CertificateGenerateRequest generateRequest4 = mock(CertificateGenerateRequest.class);
     when(generateRequest4.getName()).thenReturn("/fourthExpectedName");
-    CertificateGenerationParameters generationParams4= mock(CertificateGenerationParameters.class);
+    CertificateGenerationParameters generationParams4 = mock(CertificateGenerationParameters.class);
     when(generationParams4.isCa()).thenReturn(false);
     when(generateRequest4.getGenerationParameters()).thenReturn(generationParams4);
 
