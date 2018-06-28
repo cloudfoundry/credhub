@@ -39,11 +39,10 @@ spring:
     hibernate:
       ddl_auto: validate
   datasource:
-    tomcat:
-      max-active: 4
-      max-idle: 0
-      min-idle: 0
-      min-evictable-idle-time-millis: 500
+    hikari:
+      maximum-pool-size: 4
+      idle-timeout: 500
+      minimum-idle: 2
 
 logging:
   level:
