@@ -161,7 +161,6 @@ public class SignedCertificateGeneratorTest {
 
     assertThat(authorityKeyId, equalTo(expectedSubjectKeyIdentifier));
     assertThat(generatedCertificate.getSerialNumber(), equalTo(BigInteger.valueOf(1337)));
-    assertThat(authorityKeyIdentifier.getAuthorityCertSerialNumber(), equalTo(BigInteger.valueOf(1337)));
   }
 
   @Test
@@ -208,10 +207,6 @@ public class SignedCertificateGeneratorTest {
         AuthorityKeyIdentifier.getInstance(parseExtensionValue(authorityKeyIdDer));
 
     assertThat(authorityKeyIdentifier.getKeyIdentifier(), equalTo(caSubjectKeyIdentifier.getKeyIdentifier()));
-    assertThat(authorityKeyIdentifier.getAuthorityCertSerialNumber(), equalTo(caSerialNumber));
-    String certIssuerName = authorityKeyIdentifier.getAuthorityCertIssuer().getNames()[0].getName().toString();
-    assertThat(certIssuerName, containsString("CN=ca DN"));
-    assertThat(certIssuerName, containsString("O=credhub"));
   }
 
   @Test

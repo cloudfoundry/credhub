@@ -126,7 +126,7 @@ public class SignedCertificateGenerator {
     if (caSubjectKeyIdentifier.getKeyIdentifier() != null) {
       PublicKey issuerPublicKey = issuerCertificate != null ? issuerCertificate.getPublicKey() : keyPair.getPublic();
       AuthorityKeyIdentifier authorityKeyIdentifier = jcaX509ExtensionUtils
-          .createAuthorityKeyIdentifier(issuerPublicKey, issuerDn, caSerialNumber);
+          .createAuthorityKeyIdentifier(issuerPublicKey);
 
       certificateBuilder
           .addExtension(Extension.authorityKeyIdentifier, false, authorityKeyIdentifier);
