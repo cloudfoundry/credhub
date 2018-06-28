@@ -2,10 +2,10 @@ package org.cloudfoundry.credhub.request;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.validator.constraints.NotEmpty;
 
 import java.util.List;
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 
 @JsonAutoDetect
 @SuppressWarnings("unused")

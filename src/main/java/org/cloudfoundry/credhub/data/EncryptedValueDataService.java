@@ -34,7 +34,7 @@ public class EncryptedValueDataService {
   public Slice<EncryptedValue> findByCanaryUuids(List<UUID> canaryUuids) {
     return encryptedValueRepository
         .findByEncryptionKeyUuidIn(canaryUuids,
-            new PageRequest(0, BATCH_SIZE)
+            PageRequest.of(0, BATCH_SIZE)
         );
   }
 

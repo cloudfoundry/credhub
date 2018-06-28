@@ -41,13 +41,10 @@ import static org.assertj.core.api.Assertions.fail;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
 @RunWith(JUnit4.class)
 public class CertificateGeneratorTest {
@@ -210,7 +207,7 @@ public class CertificateGeneratorTest {
   @Test
   public void whenSelfSignIsTrue_itGeneratesAValidSelfSignedCertificate() throws Exception {
     final X509Certificate certificate = new JcaX509CertificateConverter().setProvider(BouncyCastleProvider.PROVIDER_NAME)
-            .getCertificate(generateX509SelfSignedCert());
+        .getCertificate(generateX509SelfSignedCert());
 
     generationParameters.setCaName(null);
     generationParameters.setSelfSigned(true);

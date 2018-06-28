@@ -6,18 +6,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.passay.CharacterRule;
 import org.passay.PasswordGenerator;
-
-import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyList;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -27,10 +21,6 @@ public class PassayStringCredentialValueGeneratorTest {
 
   private PasswordGenerator passwordGenerator;
   private PassayStringCredentialGenerator subject;
-
-  @Captor
-  private ArgumentCaptor<List<CharacterRule>> captor;
-
 
   @Before
   public void beforeEach() {
@@ -42,7 +32,7 @@ public class PassayStringCredentialValueGeneratorTest {
   public void canGenerateCredential() {
     StringGenerationParameters generationParameters = new StringGenerationParameters();
 
-    when(passwordGenerator.generatePassword(eq(subject.DEFAULT_LENGTH), any(List.class)))
+    when(passwordGenerator.generatePassword(eq(subject.DEFAULT_LENGTH), anyList()))
         .thenReturn("very-credential");
 
     StringCredentialValue stringCredentialValue = subject.generateCredential(generationParameters);

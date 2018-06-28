@@ -38,7 +38,7 @@ import java.time.Instant;
 import java.util.function.Consumer;
 
 import static org.cloudfoundry.credhub.helper.TestHelper.mockOutCurrentTimeProvider;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;

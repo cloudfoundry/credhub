@@ -8,13 +8,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
-public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
+public class WebMvcConfiguration implements WebMvcConfigurer {
   private final AuditInterceptor auditInterceptor;
-  private ManagementInterceptor managementInterceptor;
   private final UserContextInterceptor userContextInterceptor;
+  private ManagementInterceptor managementInterceptor;
 
   @Autowired
   public WebMvcConfiguration(

@@ -13,7 +13,6 @@ import javax.crypto.AEADBadTagException;
 import javax.crypto.IllegalBlockSizeException;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 @RunWith(JUnit4.class)

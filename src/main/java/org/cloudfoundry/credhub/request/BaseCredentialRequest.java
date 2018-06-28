@@ -3,7 +3,6 @@ package org.cloudfoundry.credhub.request;
 import org.apache.commons.lang3.StringUtils;
 import org.cloudfoundry.credhub.constants.CredentialWriteMode;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
-import org.hibernate.validator.constraints.NotEmpty;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +10,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
 
 public abstract class BaseCredentialRequest {

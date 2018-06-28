@@ -3,9 +3,10 @@ package org.cloudfoundry.credhub.credential;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.cloudfoundry.credhub.util.EmptyStringToNull;
 import org.apache.commons.codec.digest.Crypt;
-import org.hibernate.validator.constraints.NotEmpty;
+import org.cloudfoundry.credhub.util.EmptyStringToNull;
+
+import javax.validation.constraints.NotEmpty;
 
 import static com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY;
 
