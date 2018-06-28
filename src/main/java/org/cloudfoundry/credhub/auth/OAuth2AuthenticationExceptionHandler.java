@@ -92,7 +92,7 @@ public class OAuth2AuthenticationExceptionHandler extends OAuth2AuthenticationEn
 
   private boolean tokenIsExpired(Map<String, Object> tokenInformation) {
     Long exp = tokenInformation != null ? (Long) tokenInformation.get(EXP) : null;
-    return exp != null && exp <= currentTimeProvider.getNow().get().get(ChronoField.INSTANT_SECONDS);
+    return exp != null && exp <= currentTimeProvider.getInstant().get(ChronoField.INSTANT_SECONDS);
   }
 
   private Map<String, Object> extractTokenInformation(String token) {

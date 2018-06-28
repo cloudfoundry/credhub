@@ -14,6 +14,7 @@ import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.domain.CertificateGenerationParameters;
 import org.cloudfoundry.credhub.request.CertificateGenerationRequestParameters;
 import org.cloudfoundry.credhub.util.CertificateReader;
+import org.cloudfoundry.credhub.util.CurrentTimeProvider;
 import org.cloudfoundry.credhub.util.PrivateKeyReader;
 import org.junit.Before;
 import org.junit.Test;
@@ -58,7 +59,7 @@ public class SignedCertificateGeneratorTest {
   private CertificateGenerationParameters certificateGenerationParameters;
   private KeyPairGenerator generator;
   private RandomSerialNumberGenerator serialNumberGenerator;
-  private DateTimeProvider timeProvider;
+  private CurrentTimeProvider timeProvider;
   private Instant now;
   private Instant later;
   private CertificateCredentialValue ca;
@@ -85,10 +86,10 @@ public class SignedCertificateGeneratorTest {
 
   @Before
   public void beforeEach() throws Exception {
-    timeProvider = mock(DateTimeProvider.class);
+    timeProvider = mock(CurrentTimeProvider.class);
     now = Instant.ofEpochMilli(1493066824);
     later = now.plus(Duration.ofDays(expectedDurationInDays));
-    when(timeProvider.getNow()).thenReturn(Optional.of(now));
+    when(timeProvider.getInstant()).thenReturn(now);
     serialNumberGenerator = mock(RandomSerialNumberGenerator.class);
     when(serialNumberGenerator.generate()).thenReturn(BigInteger.valueOf(1337));
     jcaX509ExtensionUtils = new JcaX509ExtensionUtils();
