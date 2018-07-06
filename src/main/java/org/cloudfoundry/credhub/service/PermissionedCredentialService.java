@@ -4,7 +4,6 @@ import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.entity.GetCredentialById;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.constants.CredentialType;
-import org.cloudfoundry.credhub.constants.CredentialWriteMode;
 import org.cloudfoundry.credhub.credential.CredentialValue;
 import org.cloudfoundry.credhub.data.CertificateAuthorityService;
 import org.cloudfoundry.credhub.data.CredentialDataService;
@@ -17,7 +16,9 @@ import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.exceptions.PermissionException;
+import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
 import org.cloudfoundry.credhub.request.BaseCredentialRequest;
+import org.cloudfoundry.credhub.request.BaseCredentialSetRequest;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.cloudfoundry.credhub.view.FindCredentialResult;
@@ -199,26 +200,33 @@ public class PermissionedCredentialService {
   }
 
   private boolean shouldWriteNewCredential(CredentialVersion existingCredentialVersion, BaseCredentialRequest request) {
-    boolean shouldWriteNewCredential;
+    if(request instanceof BaseCredentialSetRequest) {
+      return true;
+    }
+
     if (existingCredentialVersion == null) {
-      shouldWriteNewCredential = true;
-    } else if (request.getOverwriteMode().equals(CredentialWriteMode.CONVERGE.mode)) {
-      if (existingCredentialVersion instanceof CertificateCredentialVersion) {
-        final CertificateCredentialVersion certificateCredentialVersion = (CertificateCredentialVersion) existingCredentialVersion;
-        if (certificateCredentialVersion.getCaName() != null) {
-          boolean updatedCA = !certificateCredentialVersion.getCa().equals(
-              certificateAuthorityService.findActiveVersion(certificateCredentialVersion.getCaName()).getCertificate());
-          if (updatedCA) {
-            return true;
-          }
+      return true;
+    }
+
+    if (existingCredentialVersion instanceof CertificateCredentialVersion) {
+      final CertificateCredentialVersion certificateCredentialVersion = (CertificateCredentialVersion) existingCredentialVersion;
+      if (certificateCredentialVersion.getCaName() != null) {
+        boolean updatedCA = !certificateCredentialVersion.getCa().equals(
+            certificateAuthorityService.findActiveVersion(certificateCredentialVersion.getCaName()).getCertificate());
+        if (updatedCA) {
+          return true;
         }
       }
-      shouldWriteNewCredential = !existingCredentialVersion
-          .matchesGenerationParameters(request.getGenerationParameters());
-    } else {
-      shouldWriteNewCredential = request.getOverwriteMode().equals(CredentialWriteMode.OVERWRITE.mode);
     }
-    return shouldWriteNewCredential;
+
+    if (!existingCredentialVersion.matchesGenerationParameters(request.getGenerationParameters())) {
+      return true;
+    }
+
+
+      BaseCredentialGenerateRequest generateRequest = (BaseCredentialGenerateRequest) request;
+      return generateRequest.isOverwrite();
+
   }
 
   private void validateCredentialSave(String credentialName, String type, List<PermissionEntry> accessControlEntries,

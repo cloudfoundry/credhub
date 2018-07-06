@@ -37,8 +37,8 @@ public abstract class BaseCredentialSetRequest<T extends CredentialValue> extend
       throw new ParameterizedValidationException("error.invalid_type_with_set_prompt");
     }
 
-    if (getMode() != null && getRawOverwriteValue() != null) {
-      throw new ParameterizedValidationException("error.overwrite_and_mode_both_provided");
+    if (getName() != null && getName().length() > 1024) {
+      throw new ParameterizedValidationException("error.name_has_too_many_characters");
     }
 
     if (getName() != null && getName().length() > 1024) {

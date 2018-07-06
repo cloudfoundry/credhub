@@ -22,8 +22,7 @@ public class PasswordSetRequestTest {
     String json = "{"
         + "\"name\":\"some-name\","
         + "\"type\":\"password\","
-        + "\"value\":\"fake-password\","
-        + "\"overwrite\":true"
+        + "\"value\":\"fake-password\""
         + "}";
     PasswordSetRequest deserialize = deserialize(json, PasswordSetRequest.class);
 
@@ -35,8 +34,7 @@ public class PasswordSetRequestTest {
     String json = "{"
         + "\"name\":\"some-name\","
         + "\"type\":\"password\","
-        + "\"value\":\"fake-password\","
-        + "\"overwrite\":true"
+        + "\"value\":\"fake-password\""
         + "}";
     Set<ConstraintViolation<PasswordSetRequest>> constraintViolations =
         deserializeAndValidate(json, PasswordSetRequest.class);
@@ -49,8 +47,7 @@ public class PasswordSetRequestTest {
     String json = "{"
         + "\"name\":\"some-name\","
         + "\"type\":\"PasSWorD\","
-        + "\"value\":\"fake-password\","
-        + "\"overwrite\":true"
+        + "\"value\":\"fake-password\""
         + "}";
     Set<ConstraintViolation<PasswordSetRequest>> constraintViolations =
         deserializeAndValidate(json, PasswordSetRequest.class);
@@ -62,8 +59,7 @@ public class PasswordSetRequestTest {
   public void whenPasswordIsNotSet_shouldBeInvalid() {
     String json = "{"
         + "\"name\":\"some-name\","
-        + "\"type\":\"password\","
-        + "\"overwrite\":true"
+        + "\"type\":\"password\""
         + "}";
     Set<ConstraintViolation<PasswordSetRequest>> constraintViolations =
         deserializeAndValidate(json, PasswordSetRequest.class);
@@ -76,7 +72,6 @@ public class PasswordSetRequestTest {
     String json = "{"
         + "\"name\":\"some-name\","
         + "\"type\":\"password\","
-        + "\"overwrite\":true,"
         + "\"value\":\"\""
         + "}";
     Set<ConstraintViolation<PasswordSetRequest>> constraintViolations =

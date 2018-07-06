@@ -182,7 +182,6 @@ public class PermissionAndCredentialTest {
     String requestBody = "{\n"
         + "  \"type\":\"password\",\n"
         + "  \"name\":\"/test-password\",\n"
-        + "  \"overwrite\":true, \n"
         + "  \"value\":\"ORIGINAL-VALUE\",\n"
         + "  \"additional_permissions\": [{\n"
         + "  \"actor\": \"" + MTLS_APP_GUID + "\",\n"
@@ -221,13 +220,12 @@ public class PermissionAndCredentialTest {
   }
 
   @Test
-  public void put_withExistingCredentialAndAnAce_andOverwriteSetToTrue() throws Exception {
+  public void put_withExistingCredentialAndAnAce() throws Exception {
     createExistingCredential();
 
     String requestBodyWithNewAces = "{\n"
         + "  \"type\":\"password\",\n"
         + "  \"name\":\"/test-password\",\n"
-        + "  \"overwrite\":true, \n"
         + "  \"value\":\"ORIGINAL-VALUE\", \n"
         + "  \"additional_permissions\": [{\n"
         + "      \"actor\": \"" + MTLS_APP_GUID + "\",\n"
@@ -270,53 +268,6 @@ public class PermissionAndCredentialTest {
         .andDo(print());
 
     assertAclUpdated(response, UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
-  }
-
-  @Test
-  public void put_withExistingCredentialAndAnAce_andOverwriteSetToFalse() throws Exception {
-    createExistingCredential();
-
-    String requestBodyWithNewAces = "{\n"
-        + "  \"type\":\"password\",\n"
-        + "  \"name\":\"/test-password\",\n"
-        + "  \"overwrite\":false, \n"
-        + "  \"value\":\"ORIGINAL-VALUE\", \n"
-        + "  \"additional_permissions\": [{\n"
-        + "      \"actor\": \"" + MTLS_APP_GUID + "\",\n"
-        + "      \"operations\": [\"write\"]},\n"
-        + "    { \"actor\": \"uaa-client:credhub_test\",\n"
-        + "      \"operations\": [\"read\", \"write\", \"delete\"]}\n"
-        + "  ]\n"
-        + "}";
-
-    ResultActions response = mockMvc.perform(put("/api/v1/data")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(requestBodyWithNewAces));
-
-    response
-        .andExpect(status().isOk())
-        .andDo(print())
-        .andExpect(jsonPath("$.type", equalTo("password")));
-
-    MvcResult result = mockMvc
-        .perform(get("/api/v1/permissions?credential_name=" + "/test-password")
-            .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
-        .andDo(print())
-        .andExpect(status().isOk())
-        .andReturn();
-    String content = result.getResponse().getContentAsString();
-    PermissionsView acl = JsonTestHelper
-        .deserialize(content, PermissionsView.class);
-    assertThat(acl.getCredentialName(), equalTo("/test-password"));
-    assertThat(acl.getPermissions(), containsInAnyOrder(
-        samePropertyValuesAs(
-            new PermissionEntry(UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
-                asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
-        samePropertyValuesAs(
-            new PermissionEntry(UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID,
-                asList(READ, WRITE)))));
   }
 
   @Test
@@ -374,7 +325,6 @@ public class PermissionAndCredentialTest {
         .content("{\n"
             + "  \"type\":\"password\",\n"
             + "  \"name\":\"/test-password\",\n"
-            + "  \"overwrite\":true, \n"
             + "  \"value\":\"ORIGINAL-VALUE\", \n"
             + "  \"additional_permissions\": [{\n"
             + "    \"actor\": \"" + MTLS_APP_GUID + "\",\n"
@@ -398,7 +348,6 @@ public class PermissionAndCredentialTest {
         .content("{\n"
             + "  \"type\":\"password\",\n"
             + "  \"name\":\"/test-password\",\n"
-            + "  \"overwrite\":true, \n"
             + "  \"additional_permissions\": [{\n"
             + "    \"actor\": \"" + MTLS_APP_GUID + "\",\n"
             + "    \"operations\": [\"unicorn\"]\n"

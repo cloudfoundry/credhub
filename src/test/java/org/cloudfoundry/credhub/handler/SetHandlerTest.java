@@ -87,7 +87,6 @@ public class SetHandlerTest {
     setRequest.setPassword(password);
     setRequest.setName("/captain");
     setRequest.setAdditionalPermissions(accessControlEntries);
-    setRequest.setOverwrite(false);
 
     subject.handle(setRequest);
 
@@ -97,9 +96,8 @@ public class SetHandlerTest {
     assertThat(auditRecord.getVersionUUID(), equalTo(credentialVersion.getUuid().toString()));
   }
 
-
   @Test
-  public void handleSetRequest_whenOverwriteIsTrue_shouldSaveAccessControlEntries() {
+  public void handleSetRequest_shouldSaveAccessControlEntries() {
     StringCredentialValue password = new StringCredentialValue("federation");
     PasswordSetRequest setRequest = new PasswordSetRequest();
     CredentialVersion existingCredMock = mock(CredentialVersion.class);
@@ -110,7 +108,6 @@ public class SetHandlerTest {
     setRequest.setPassword(password);
     setRequest.setName("/captain");
     setRequest.setAdditionalPermissions(accessControlEntries);
-    setRequest.setOverwrite(true);
 
     subject.handle(setRequest);
 
@@ -129,7 +126,6 @@ public class SetHandlerTest {
     setRequest.setPassword(password);
     setRequest.setName("/captain");
     setRequest.setAdditionalPermissions(accessControlEntries);
-    setRequest.setOverwrite(false);
 
     subject.handle(setRequest);
 
@@ -148,7 +144,6 @@ public class SetHandlerTest {
     setRequest.setType("user");
     setRequest.setName("/captain");
     setRequest.setAdditionalPermissions(accessControlEntries);
-    setRequest.setOverwrite(false);
     setRequest.setUserValue(userCredentialValue);
 
     subject.handle(setRequest);
@@ -173,7 +168,6 @@ public class SetHandlerTest {
     setRequest.setType("certificate");
     setRequest.setName("/captain");
     setRequest.setAdditionalPermissions(accessControlEntries);
-    setRequest.setOverwrite(false);
     setRequest.setCertificateValue(certificateValue);
 
     subject.handle(setRequest);
@@ -203,7 +197,6 @@ public class SetHandlerTest {
     setRequest.setType("certificate");
     setRequest.setName("/captain");
     setRequest.setAdditionalPermissions(accessControlEntries);
-    setRequest.setOverwrite(false);
     setRequest.setCertificateValue(credentialValue);
 
     CertificateCredentialValue expectedCredentialValue = new CertificateCredentialValue(

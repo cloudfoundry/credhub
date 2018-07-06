@@ -2,7 +2,6 @@ package org.cloudfoundry.credhub.integration;
 
 import org.apache.commons.lang3.StringUtils;
 import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.constants.CredentialWriteMode;
 import org.cloudfoundry.credhub.util.AuthConstants;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.json.JSONObject;
@@ -51,27 +50,6 @@ public class CredentialSetTest {
         .webAppContextSetup(webApplicationContext)
         .apply(springSecurity())
         .build();
-  }
-
-  @Test
-  public void whenUserProvidesBothOverwriteAndMode_returnsAnError() throws Exception {
-    MockHttpServletRequestBuilder put = put("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{\n"
-            + "  \"name\" : \"name\",\n"
-            + "  \"type\" : \"password\",\n"
-            + "  \"overwrite\" : false,\n"
-            + "  \"value\" : \"some-password\",\n"
-            + "  \"mode\" : \"overwrite\"\n"
-            + "}");
-
-    String response = mockMvc.perform(put)
-        .andExpect(status().isBadRequest())
-        .andReturn().getResponse().getContentAsString();
-
-    assertThat(response, containsString("The parameters overwrite and mode cannot be combined. Please update and retry your request."));
   }
 
   @Test
@@ -126,45 +104,35 @@ public class CredentialSetTest {
   }
 
   @Test
-  public void credentialCanBeOverwrittenWhenModeIsSetToOverwriteInRequest() throws Exception {
-    setPassword(mockMvc, CREDENTIAL_NAME, "original-password", CredentialWriteMode.CONVERGE.mode);
+  public void credentialShouldAlwaysBeOverwrittenInSetRequest() throws Exception {
+    setPassword(mockMvc, CREDENTIAL_NAME, "original-password");
 
-    String secondResponse = setPassword(mockMvc, CREDENTIAL_NAME, "new-password", CredentialWriteMode.OVERWRITE.mode);
+    String secondResponse = setPassword(mockMvc, CREDENTIAL_NAME, "new-password");
     String updatedPassword = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(updatedPassword, equalTo("new-password"));
   }
 
   @Test
-  public void credentialNotOverwrittenWhenModeIsSetToNotOverwriteInRequest() throws Exception {
-    setPassword(mockMvc, CREDENTIAL_NAME, "original-password", CredentialWriteMode.CONVERGE.mode);
-
-    String secondResponse = setPassword(mockMvc, CREDENTIAL_NAME, "new-password", CredentialWriteMode.CONVERGE.mode);
-    String updatedPassword = (new JSONObject(secondResponse)).getString("value");
-
-    assertThat(updatedPassword, equalTo("original-password"));
-  }
-
-  @Test
   public void credentialNamesCanHaveALengthOf1024Characters() throws Exception {
     assertThat(CREDENTIAL_NAME_1024_CHARACTERS.length(), is(equalTo(1024)));
 
-    String setResponse = setPassword(mockMvc, CREDENTIAL_NAME_1024_CHARACTERS, "foobar", CredentialWriteMode.CONVERGE.mode);
+    String setResponse = setPassword(mockMvc, CREDENTIAL_NAME_1024_CHARACTERS, "foobar");
     String setPassword = (new JSONObject(setResponse)).getString("value");
 
     assertThat(setPassword, equalTo("foobar"));
 
-    String getResponse = generatePassword(mockMvc, CREDENTIAL_NAME_1024_CHARACTERS, "overwrite", 14);
+    String getResponse = generatePassword(mockMvc, CREDENTIAL_NAME_1024_CHARACTERS, true, 14);
     String getPassword = (new JSONObject(getResponse)).getString("value");
     assertThat(getPassword.length(), equalTo(14));
   }
 
   @Test
-  public void credetialNamesThatExceedTheMaximumLengthShouldResultInA400() throws Exception{
+  public void credentialNamesThatExceedTheMaximumLengthShouldResultInA400() throws Exception{
     String name1025 = CREDENTIAL_NAME_1024_CHARACTERS + "a";
     assertThat(name1025.length(), is(equalTo(1025)));
 
-    setPassword(mockMvc, name1025, "foobar", CredentialWriteMode.CONVERGE.mode);
-    generatePassword(mockMvc, name1025, "converge", 10);
+    setPassword(mockMvc, name1025, "foobar");
+    generatePassword(mockMvc, name1025, false, 10);
   }
 }

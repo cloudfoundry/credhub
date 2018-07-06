@@ -41,23 +41,6 @@ public class BaseCredentialGenerateRequestTest {
     }
   }
 
-  @Test
-  public void validate_whenBothOverwriteAndModeAreSet_throwsException() {
-    try {
-      String json = "{"
-          + "\"name\":\"some-name\","
-          + "\"type\":\"password\","
-          + "\"overwrite\":true,"
-          + "\"mode\":\"overwrite\""
-          + "}";
-
-      BaseCredentialGenerateRequest request = JsonTestHelper
-          .deserialize(json, BaseCredentialGenerateRequest.class);
-      request.validate();
-    } catch (ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo("error.overwrite_and_mode_both_provided"));
-    }
-  }
 
   @Test
   public void validate_whenTypeIsValue_throwsException() {

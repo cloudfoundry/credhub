@@ -342,7 +342,6 @@ public class CredentialsControllerTypeSpecificSetTest {
             "\"name\":\"" + CREDENTIAL_NAME + "\"," +
             "\"type\":\"" + parametizer.credentialType.toUpperCase() + "\"," +
             "\"value\":" + parametizer.credentialValue + "," +
-            "\"overwrite\":" + false + "," +
             "\"additional_permissions\": [" +
             "{\"actor\": \"app1-guid\"," +
             "\"operations\": [\"read\"]}]" +
@@ -374,7 +373,6 @@ public class CredentialsControllerTypeSpecificSetTest {
             "\"name\":\"" + CREDENTIAL_NAME + "\"," +
             "\"type\":\"" + parametizer.credentialType + "\"," +
             "\"value\":" + parametizer.credentialValue + "," +
-            "\"overwrite\":" + false + "," +
             "\"additional_permissions\": [" +
             "{\"actor\": \"app1-guid\"," +
             "\"operations\": [\"read\"]}]" +
@@ -404,7 +402,6 @@ public class CredentialsControllerTypeSpecificSetTest {
             "\"name\":\"" + CREDENTIAL_NAME + "\"," +
             "\"type\":\"" + parametizer.credentialType + "\"," +
             "\"value\":" + parametizer.credentialValue + "," +
-            "\"overwrite\":" + false + "," +
             "\"additional_permissions\": [" +
             "{\"actor\": \"app1-guid\"," +
             "\"operations\": [\"read\"]}]" +
@@ -432,7 +429,6 @@ public class CredentialsControllerTypeSpecificSetTest {
             "\"name\":\"" + CREDENTIAL_NAME + "\"," +
             "\"type\":\"" + parametizer.credentialType + "\"," +
             "\"value\":" + parametizer.credentialValue + "," +
-            "\"overwrite\":" + false + "," +
             "\"additional_permissions\": [" +
             "{\"actor\": \"app1-guid\"," +
             "\"operations\": [\"read\"]}]" +
@@ -467,7 +463,6 @@ public class CredentialsControllerTypeSpecificSetTest {
             "\"name\":\"" + CREDENTIAL_NAME + "\"," +
             "\"type\":\"" + parametizer.credentialType + "\"," +
             "\"value\":" + parametizer.credentialValue + "," +
-            "\"overwrite\":" + false + "," +
             "\"additional_permissions\": [" +
             "{\"actor\": \"app1-guid\"," +
             "\"operations\": [\"read\"]}]" +
@@ -483,7 +478,7 @@ public class CredentialsControllerTypeSpecificSetTest {
   }
 
   @Test
-  public void updatingACredential_withTheOverwriteFlagSetToTrue_returnsTheExistingCredentialVersion() throws Exception {
+  public void updatingACredential_returnsTheExistingCredentialVersion() throws Exception {
     doReturn(parametizer.createCredential(encryptor)).when(credentialVersionDataService).findMostRecent(CREDENTIAL_NAME);
 
     final MockHttpServletRequestBuilder put = put("/api/v1/data")
@@ -493,8 +488,7 @@ public class CredentialsControllerTypeSpecificSetTest {
         .content("{" +
             "  \"type\":\"" + parametizer.credentialType + "\"," +
             "  \"name\":\"" + CREDENTIAL_NAME + "\"," +
-            "  \"value\":" + parametizer.credentialValue + "," +
-            "  \"overwrite\":true" +
+            "  \"value\":" + parametizer.credentialValue +
             "}");
 
     ResultActions response = mockMvc.perform(put);
@@ -512,7 +506,7 @@ public class CredentialsControllerTypeSpecificSetTest {
   }
 
   @Test
-  public void updatingACredential_withTheOverwriteFlagSetToTrue_persistsTheCredential() throws Exception {
+  public void updatingACredential_persistsTheCredential() throws Exception {
     doReturn(parametizer.createCredential(encryptor)).when(credentialVersionDataService).findMostRecent(CREDENTIAL_NAME);
 
     final MockHttpServletRequestBuilder put = put("/api/v1/data")
@@ -523,7 +517,6 @@ public class CredentialsControllerTypeSpecificSetTest {
             "  \"type\":\"" + parametizer.credentialType + "\"," +
             "  \"name\":\"" + CREDENTIAL_NAME + "\"," +
             "  \"value\":" + parametizer.credentialValue + "," +
-            "  \"overwrite\":true" +
             "}");
 
     mockMvc.perform(put);

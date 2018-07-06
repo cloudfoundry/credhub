@@ -41,8 +41,7 @@ public class BaseCredentialRequestTest {
     String json = "{"
         + "\"type\":\"value\","
         + "\"name\":\"/some/NAME/with_all-valid_CHARACTERS/0123456789\","
-        + /* it thinks this name has a slash in it*/ "\"value\":\"some-value\","
-        + /* it thinks this name has a slash in it*/ "\"mode\":\"overwrite\""
+        + /* it thinks this name has a slash in it*/ "\"value\":\"some-value\""
         + "}";
     Set<ConstraintViolation<BaseCredentialSetRequest>> violations = JsonTestHelper.deserializeAndValidate(json,
         BaseCredentialSetRequest.class);
@@ -77,32 +76,6 @@ public class BaseCredentialRequestTest {
     assertThat(credentialSetRequest.getName(), equalTo("/some-name"));
   }
 
-  @Test
-  public void isOverwrite_defaultsToFalse() {
-    // language=JSON
-    String json = "{"
-        + "\"type\":\"value\","
-        + "\"name\":\"some-name\","
-        + "\"value\":\"some-value\""
-        + "}";
-    BaseCredentialSetRequest credentialSetRequest = JsonTestHelper.deserialize(json, BaseCredentialSetRequest.class);
-
-    assertThat(credentialSetRequest.isOverwrite(), equalTo(false));
-  }
-
-  @Test
-  public void isOverwrite_shouldTakeProvidedValue() {
-    // language=JSON
-    String json = "{"
-        + "\"type\":\"value\","
-        + "\"name\":\"some-name\","
-        + "\"value\":\"some-value\","
-        + "\"overwrite\":true"
-        + "}";
-    BaseCredentialSetRequest credentialSetRequest = JsonTestHelper.deserialize(json, BaseCredentialSetRequest.class);
-
-    assertThat(credentialSetRequest.isOverwrite(), equalTo(true));
-  }
 
   @Test
   public void whenNameEndsWithSlash_shouldBeInvalid() {
@@ -110,8 +83,7 @@ public class BaseCredentialRequestTest {
     String json = "{"
         + "\"type\":\"value\","
         + "\"name\":\"badname/\","
-        + "\"value\":\"some-value\","
-        + "\"overwrite\":true"
+        + "\"value\":\"some-value\""
         + "}";
     Set<ConstraintViolation<BaseCredentialSetRequest>> violations = JsonTestHelper
         .deserializeAndValidate(json, BaseCredentialSetRequest.class);
@@ -125,8 +97,7 @@ public class BaseCredentialRequestTest {
     String json = "{"
         + "\"type\":\"value\","
         + "\"name\":\"bad//name\","
-        + "\"value\":\"some-value\","
-        + "\"overwrite\":true"
+        + "\"value\":\"some-value\""
         + "}";
     Set<ConstraintViolation<BaseCredentialSetRequest>> violations = JsonTestHelper
         .deserializeAndValidate(json, BaseCredentialSetRequest.class);
@@ -144,8 +115,7 @@ public class BaseCredentialRequestTest {
         + "com/foo/com/foo/com/foo/com/foo/com/foo/com/foo/com/foo/com/foo/com/foo/com/foo/"
         + "com/foo/com/foo/com/\","
 
-        + "\"value\":\"some-value\","
-        + "\"overwrite\":true"
+        + "\"value\":\"some-value\""
         + "}";
     Set<ConstraintViolation<BaseCredentialSetRequest>> violations = JsonTestHelper
         .deserializeAndValidate(json, BaseCredentialSetRequest.class);
@@ -158,8 +128,7 @@ public class BaseCredentialRequestTest {
     // language=JSON
     String json = "{"
         + "\"type\":\"value\","
-        + "\"value\":\"some-value\","
-        + "\"overwrite\":true"
+        + "\"value\":\"some-value\""
         + "}";
     Set<ConstraintViolation<BaseCredentialSetRequest>> violations = JsonTestHelper
         .deserializeAndValidate(json, BaseCredentialSetRequest.class);
@@ -173,8 +142,7 @@ public class BaseCredentialRequestTest {
     String json = "{"
         + "\"name\":\"\","
         + "\"type\":\"value\","
-        + "\"value\":\"some-value\","
-        + "\"overwrite\":true"
+        + "\"value\":\"some-value\""
         + "}";
     Set<ConstraintViolation<BaseCredentialSetRequest>> violations = JsonTestHelper
         .deserializeAndValidate(json, BaseCredentialSetRequest.class);
@@ -188,8 +156,7 @@ public class BaseCredentialRequestTest {
     String json = "{"
         + "\"name\":\"/\","
         + "\"type\":\"value\","
-        + "\"value\":\"some-value\","
-        + "\"overwrite\":true"
+        + "\"value\":\"some-value\""
         + "}";
     Set<ConstraintViolation<BaseCredentialSetRequest>> violations = JsonTestHelper
         .deserializeAndValidate(json, BaseCredentialSetRequest.class);
@@ -204,8 +171,7 @@ public class BaseCredentialRequestTest {
       String json = "{"
           + "\"type\":\"value\","
           + "\"name\":\"test" + invalidCharacter + "name\","
-          + "\"value\":\"some-value\","
-          + "\"overwrite\":true"
+          + "\"value\":\"some-value\""
           + "}";
       Set<ConstraintViolation<BaseCredentialSetRequest>> violations = JsonTestHelper
           .deserializeAndValidate(json, BaseCredentialSetRequest.class);
@@ -222,8 +188,7 @@ public class BaseCredentialRequestTest {
       String json = "{"
           + "\"type\":\"value\","
           + "\"name\":\"test" + specialCharacter + "name\","
-          + "\"value\":\"some-value\","
-          + "\"overwrite\":true"
+          + "\"value\":\"some-value\""
           + "}";
       Set<ConstraintViolation<BaseCredentialSetRequest>> violations = JsonTestHelper
           .deserializeAndValidate(json, BaseCredentialSetRequest.class);
@@ -237,8 +202,7 @@ public class BaseCredentialRequestTest {
     // language=JSON
     String json = "{ \"name\": \"some-name\",\n"
         + "  \"type\": \"value\",\n"
-        + "  \"value\": \"some-value\",\n"
-        + "  \"overwrite\": true\n"
+        + "  \"value\": \"some-value\""
         + "}";
 
     final BaseCredentialSetRequest request = JsonTestHelper
@@ -253,7 +217,6 @@ public class BaseCredentialRequestTest {
         + "  \"name\": \"some-name\",\n"
         + "  \"type\": \"value\",\n"
         + "  \"value\": \"some-value\",\n"
-        + "  \"overwrite\": true,\n"
         + "  \"additional_permissions\": [\n"
         + "    {\n"
         + "      \"actor\": \"some-actor\",\n"

@@ -63,7 +63,6 @@ public class LegacyGenerationHandler {
 
     GenerateCredential generateCredential = new GenerateCredential();
     generateCredential.setName(requestBody.getName());
-    generateCredential.setMode(requestBody.getMode());
     generateCredential.setType(requestBody.getType());
     generateCredential.setAdditionalPermissions(requestBody.getAdditionalPermissions());
     auditRecord.setRequestDetails(generateCredential);

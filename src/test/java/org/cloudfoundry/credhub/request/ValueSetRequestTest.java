@@ -23,7 +23,6 @@ public class ValueSetRequestTest {
     String json = "{"
         + "\"name\":\"some-name\","
         + "\"type\":\"value\","
-        + "\"overwrite\":true,"
         + "\"value\":\"some-value\""
         + "}";
     BaseCredentialSetRequest request = deserialize(json, BaseCredentialSetRequest.class);
@@ -36,7 +35,6 @@ public class ValueSetRequestTest {
     String json = "{"
         + "\"name\":\"some-name\","
         + "\"type\":\"value\","
-        + "\"overwrite\":true,"
         + "\"value\":\"some-value\""
         + "}";
     Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
@@ -50,7 +48,6 @@ public class ValueSetRequestTest {
     String json = "{"
         + "\"name\":\"some-name\","
         + "\"type\":\"VaLuE\","
-        + "\"overwrite\":true,"
         + "\"value\":\"some-value\""
         + "}";
     ValueSetRequest valueSetRequest = (ValueSetRequest) deserialize(json,
@@ -64,8 +61,7 @@ public class ValueSetRequestTest {
   public void whenValueIsNotSet_shouldBeInvalid() {
     String json = "{"
         + "\"name\":\"some-name\","
-        + "\"type\":\"value\","
-        + "\"overwrite\":true"
+        + "\"type\":\"value\""
         + "}";
     ValueSetRequest valueSetRequest = (ValueSetRequest) deserialize(json,
         BaseCredentialSetRequest.class);
@@ -79,7 +75,6 @@ public class ValueSetRequestTest {
     String json = "{"
         + "\"name\":\"some-name\","
         + "\"type\":\"value\","
-        + "\"overwrite\":true,"
         + "\"value\":\"\""
         + "}";
     ValueSetRequest valueSetRequest = (ValueSetRequest) deserialize(json,

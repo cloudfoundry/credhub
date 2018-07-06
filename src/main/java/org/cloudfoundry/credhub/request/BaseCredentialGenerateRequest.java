@@ -22,6 +22,16 @@ import static com.google.common.collect.Lists.newArrayList;
     @JsonSubTypes.Type(name = "user", value = UserGenerateRequest.class)
 })
 public abstract class BaseCredentialGenerateRequest extends BaseCredentialRequest {
+  private Boolean overwrite;
+
+  public boolean isOverwrite() {
+    return overwrite == null ? false : overwrite;
+  }
+
+  public void setOverwrite(Boolean overwrite) {
+    this.overwrite = overwrite;
+  }
+
   @Override
   public abstract GenerationParameters getGenerationParameters();
 
@@ -35,10 +45,6 @@ public abstract class BaseCredentialGenerateRequest extends BaseCredentialReques
 
     if (isInvalidTypeForGeneration(getType())) {
       throw new ParameterizedValidationException("error.cannot_generate_type");
-    }
-
-    if (getMode() != null && getRawOverwriteValue() != null) {
-      throw new ParameterizedValidationException("error.overwrite_and_mode_both_provided");
     }
 
     if (getGenerationParameters() != null) {

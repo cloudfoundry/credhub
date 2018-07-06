@@ -1,8 +1,9 @@
 package org.cloudfoundry.credhub.integration;
 
 import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.util.AuthConstants;
+import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
+import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,12 +12,18 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -44,35 +51,75 @@ public class UpdatingACredentialTest {
 
   @Test
   public void post_shouldAllowTheCredentialToBeUpdated() throws Exception {
-      String requestBody = "{"
-          + "\"type\":\"password\","
-          + "\"name\":\""
-          + passwordName + "\",\"value\":\"ORIGINAL-VALUE\","
-          + "\"overwrite\":true"
-          + "}";
-      mockMvc.perform(put("/api/v1/data")
-          .header("Authorization", "Bearer "
-              + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN).accept(APPLICATION_JSON)
-          .contentType(APPLICATION_JSON)
-          .content(requestBody)
-      )
-          .andExpect(status().is2xxSuccessful())
-          .andExpect(jsonPath("$.value").value("ORIGINAL-VALUE"));
+    String requestBody = "{"
+        + "\"type\":\"password\","
+        + "\"name\":\""
+        + passwordName + "\","
+        + "\"overwrite\":true"
+        + "}";
+    MvcResult result = mockMvc.perform(post("/api/v1/data")
+        .header("Authorization", "Bearer "
+            + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN).accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(requestBody)
+    )
+        .andExpect(status().is2xxSuccessful())
+        .andReturn();
 
-      requestBody = "{"
-          + "\"type\":\"password\","
-          + "\"name\":\""
-          + passwordName + "\",\"value\":\"NEW-VALUE\","
-          + "\"overwrite\":true"
-          + "}";
+    JSONObject jsonObject = new JSONObject(result.getResponse().getContentAsString());
+    String firstPassword = jsonObject.getString("value");
 
-      mockMvc.perform(put("/api/v1/data")
-          .header("Authorization", "Bearer "
-              + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN).accept(APPLICATION_JSON)
-          .contentType(APPLICATION_JSON)
-          .content(requestBody)
-      )
-          .andExpect(status().is2xxSuccessful())
-          .andExpect(jsonPath("$.value").value("NEW-VALUE"));
-    }
+    requestBody = "{"
+        + "\"type\":\"password\","
+        + "\"name\":\""
+        + passwordName + "\","
+        + "\"overwrite\":true"
+        + "}";
+
+    result = mockMvc.perform(post("/api/v1/data")
+        .header("Authorization", "Bearer "
+            + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN).accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(requestBody)
+    )
+        .andExpect(status().is2xxSuccessful())
+        .andReturn();
+
+    jsonObject = new JSONObject(result.getResponse().getContentAsString());
+    String lastPassword = jsonObject.getString("value");
+
+    assertThat(firstPassword, is(not(equalTo(lastPassword))));
+  }
+
+  @Test
+  public void put_shouldAllowTheCredentialToBeUpdated() throws Exception {
+    String requestBody = "{"
+        + "\"type\":\"password\","
+        + "\"name\":\""
+        + passwordName + "\",\"value\":\"ORIGINAL-VALUE\""
+        + "}";
+    mockMvc.perform(put("/api/v1/data")
+        .header("Authorization", "Bearer "
+            + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN).accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(requestBody)
+    )
+        .andExpect(status().is2xxSuccessful())
+        .andExpect(jsonPath("$.value").value("ORIGINAL-VALUE"));
+
+    requestBody = "{"
+        + "\"type\":\"password\","
+        + "\"name\":\""
+        + passwordName + "\",\"value\":\"NEW-VALUE\""
+        + "}";
+
+    mockMvc.perform(put("/api/v1/data")
+        .header("Authorization", "Bearer "
+            + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN).accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(requestBody)
+    )
+        .andExpect(status().is2xxSuccessful())
+        .andExpect(jsonPath("$.value").value("NEW-VALUE"));
+  }
 }

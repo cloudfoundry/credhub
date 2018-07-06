@@ -1,7 +1,6 @@
 package org.cloudfoundry.credhub.integration;
 
 import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.constants.CredentialWriteMode;
 import org.cloudfoundry.credhub.helper.RequestHelper;
 import org.cloudfoundry.credhub.util.AuthConstants;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
@@ -50,7 +49,7 @@ public class CertificateGenerateWithoutAclEnforcementTest {
     RequestHelper.generateCa(mockMvc, CA_NAME, AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
     //This request uses the PASSWORD GRANT TOKEN under the hood and hence should fail if permissions are enforced.
     String firstResponse = RequestHelper
-        .generateCertificateCredential(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, "some-common-name", CA_NAME);
+        .generateCertificateCredential(mockMvc, CREDENTIAL_NAME, false, "some-common-name", CA_NAME);
     assertThat(firstResponse, containsString(CREDENTIAL_NAME));
   }
 

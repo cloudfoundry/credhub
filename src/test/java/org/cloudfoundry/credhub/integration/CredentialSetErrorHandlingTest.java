@@ -3,7 +3,6 @@ package org.cloudfoundry.credhub.integration;
 import com.google.common.collect.ImmutableMap;
 import net.minidev.json.JSONObject;
 import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.constants.CredentialWriteMode;
 import org.cloudfoundry.credhub.util.AuthConstants;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.util.TestConstants;
@@ -52,7 +51,7 @@ public class CredentialSetErrorHandlingTest {
 
   @Test
   public void whenTheTypeChanges_returns400() throws Exception {
-    setPassword(mockMvc, CREDENTIAL_NAME, "some password", CredentialWriteMode.OVERWRITE.mode);
+    setPassword(mockMvc, CREDENTIAL_NAME, "some password");
 
     final MockHttpServletRequestBuilder request = put("/api/v1/data")
         .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)

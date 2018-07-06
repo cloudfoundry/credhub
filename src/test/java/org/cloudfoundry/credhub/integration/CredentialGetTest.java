@@ -2,7 +2,6 @@ package org.cloudfoundry.credhub.integration;
 
 import com.jayway.jsonpath.JsonPath;
 import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.constants.CredentialWriteMode;
 import org.cloudfoundry.credhub.helper.RequestHelper;
 import org.cloudfoundry.credhub.util.AuthConstants;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
@@ -58,7 +57,7 @@ public class CredentialGetTest {
   public void getCertificateCredentials_whenCurrentFalseReturnsAllCertificateCredentials() throws Exception {
     String credentialName = "/first-certificate";
 
-    generateCertificateCredential(mockMvc, credentialName, CredentialWriteMode.OVERWRITE.mode, "test", null);
+    generateCertificateCredential(mockMvc, credentialName, true, "test", null);
 
     String response = getCertificateCredentialsByName(mockMvc, UAA_OAUTH2_PASSWORD_GRANT_TOKEN, credentialName);
     String uuid = JsonPath.parse(response)
@@ -85,7 +84,7 @@ public class CredentialGetTest {
   public void getCertificateCredentials_whenCurrentTrueReturnsOnlyTransitionalAndLatest() throws Exception {
     String credentialName = "/second-certificate";
 
-    generateCertificateCredential(mockMvc, credentialName, CredentialWriteMode.OVERWRITE.mode, "test", null);
+    generateCertificateCredential(mockMvc, credentialName, true, "test", null);
 
     String response = getCertificateCredentialsByName(mockMvc, UAA_OAUTH2_PASSWORD_GRANT_TOKEN, credentialName);
     String uuid = JsonPath.parse(response)

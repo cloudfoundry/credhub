@@ -1,7 +1,6 @@
 package org.cloudfoundry.credhub.integration;
 
 import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.constants.CredentialWriteMode;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.junit.Before;
 import org.junit.Test;
@@ -61,7 +60,7 @@ public class CredentialFindTest {
   @Test
   public void findCredentials_byPath_returnsCredentialMetaData() throws Exception {
     String substring = credentialName.substring(0, credentialName.lastIndexOf("/"));
-    generatePassword(mockMvc, credentialName, CredentialWriteMode.OVERWRITE.mode, 20);
+    generatePassword(mockMvc, credentialName, true, 20);
 
     final MockHttpServletRequestBuilder getResponse = get("/api/v1/data?path=" + substring)
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -92,7 +91,7 @@ public class CredentialFindTest {
   public void findCredentials_byPath_shouldReturnAllChildrenPrefixedWithThePathCaseInsensitively() throws Exception {
     final String path = "/my-namespace";
 
-    generatePassword(mockMvc, credentialName, CredentialWriteMode.OVERWRITE.mode, 20);
+    generatePassword(mockMvc, credentialName, true, 20);
 
     assertTrue(credentialName.startsWith(path));
 
@@ -124,7 +123,7 @@ public class CredentialFindTest {
   public void findCredentials_byPath_savesTheAuditLog() throws Exception {
     String substring = credentialName.substring(0, credentialName.lastIndexOf("/"));
 
-    generatePassword(mockMvc, credentialName, CredentialWriteMode.OVERWRITE.mode, 20);
+    generatePassword(mockMvc, credentialName, true, 20);
 
     final MockHttpServletRequestBuilder request = get("/api/v1/data?path=" + substring)
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -134,7 +133,7 @@ public class CredentialFindTest {
   }
 
   private ResultActions findCredentialsByNameLike() throws Exception {
-    generatePassword(mockMvc, credentialName, CredentialWriteMode.OVERWRITE.mode, 20);
+    generatePassword(mockMvc, credentialName, true, 20);
     String substring = credentialName.substring(4).toUpperCase();
 
     final MockHttpServletRequestBuilder get = get("/api/v1/data?name-like=" + substring)

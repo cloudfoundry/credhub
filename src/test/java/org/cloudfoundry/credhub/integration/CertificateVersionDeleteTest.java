@@ -3,7 +3,6 @@ package org.cloudfoundry.credhub.integration;
 
 import com.jayway.jsonpath.JsonPath;
 import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.constants.CredentialWriteMode;
 import org.cloudfoundry.credhub.helper.RequestHelper;
 import org.cloudfoundry.credhub.util.AuthConstants;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
@@ -57,7 +56,7 @@ public class CertificateVersionDeleteTest {
   public void deleteCertificateVersion_whenThereAreOtherVersionsOfTheCertificate_deletesTheSpecifiedVersion() throws Exception {
     String credentialName = "/test-certificate";
 
-    String response = generateCertificateCredential(mockMvc, credentialName, CredentialWriteMode.OVERWRITE.mode, "test", null);
+    String response = generateCertificateCredential(mockMvc, credentialName, true, "test", null);
     String nonDeletedVersion = JsonPath.parse(response).read("$.value.certificate");
 
     response = getCertificateCredentialsByName(mockMvc, UAA_OAUTH2_PASSWORD_GRANT_TOKEN, credentialName);
@@ -93,7 +92,7 @@ public class CertificateVersionDeleteTest {
   public void deleteCertificateVersion_whenThereAreNoOtherVersionsOfTheCertificate_returnsAnError() throws Exception {
     String credentialName = "/test-certificate";
 
-    String response = generateCertificateCredential(mockMvc, credentialName, CredentialWriteMode.OVERWRITE.mode, "test", null);
+    String response = generateCertificateCredential(mockMvc, credentialName, true, "test", null);
     String versionUuid = JsonPath.parse(response).read("$.id");
 
     response = getCertificateCredentialsByName(mockMvc, UAA_OAUTH2_PASSWORD_GRANT_TOKEN, credentialName);

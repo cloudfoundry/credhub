@@ -1,7 +1,6 @@
 package org.cloudfoundry.credhub.integration;
 
 import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.constants.CredentialWriteMode;
 import org.cloudfoundry.credhub.helper.RequestHelper;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.request.PermissionOperation;
@@ -58,7 +57,7 @@ public class PermissionsEndpointTest {
         .apply(springSecurity())
         .build();
 
-    RequestHelper.setPassword(mockMvc, credentialName, "testpassword", CredentialWriteMode.CONVERGE.mode);
+    RequestHelper.setPassword(mockMvc, credentialName, "testpassword");
   }
 
   @Test

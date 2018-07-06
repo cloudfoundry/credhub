@@ -30,7 +30,6 @@ public class UserSetRequestTest {
     validSetRequestJson = "{\n" +
         "  \"name\": \"some-name\",\n" +
         "  \"type\": \"user\",\n" +
-        "  \"overwrite\": true,\n" +
         "  \"value\": {\n" +
         "    \"username\": \"dan\",\n" +
         "    \"password\": \"example-password\"\n" +
@@ -68,7 +67,6 @@ public class UserSetRequestTest {
     String json = "{\n" +
         "  \"name\": \"some-name\",\n" +
         "  \"type\": \"UseR\",\n" +
-        "  \"overwrite\": true,\n" +
         "  \"value\": {\n" +
         "    \"username\": \"dan\",\n" +
         "    \"password\": \"example-password\"\n" +
@@ -84,8 +82,7 @@ public class UserSetRequestTest {
     // language=JSON
     String json = "{\n" +
         "  \"name\": \"some-name\",\n" +
-        "  \"type\": \"user\",\n" +
-        "  \"overwrite\": true\n" +
+        "  \"type\": \"user\"" +
         "}";
     UserSetRequest userSetRequest = deserialize(json,
         UserSetRequest.class);
@@ -99,7 +96,6 @@ public class UserSetRequestTest {
     String invalidSetRequestJson = "{\n" +
         "  \"name\": \"some-name\",\n" +
         "  \"type\": \"user\",\n" +
-        "  \"overwrite\": true,\n" +
         "  \"value\": {\n" +
         "    \"username\": \"dan\"\n" +
         "  }\n" +

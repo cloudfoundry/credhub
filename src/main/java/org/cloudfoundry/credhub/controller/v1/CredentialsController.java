@@ -150,7 +150,7 @@ public class CredentialsController {
 
 
   private CredentialView auditedHandlePutRequest(@RequestBody BaseCredentialSetRequest requestBody) {
-    auditRecord.setRequestDetails(new SetCredential(requestBody.getName(), requestBody.getType(), requestBody.getMode(),
+    auditRecord.setRequestDetails(new SetCredential(requestBody.getName(), requestBody.getType(),
         requestBody.getAdditionalPermissions()));
     return setHandler.handle(requestBody);
   }

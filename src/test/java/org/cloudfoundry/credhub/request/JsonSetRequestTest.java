@@ -26,7 +26,6 @@ public class JsonSetRequestTest {
     String requestJson = "{\"name\":\"/my-namespace/subTree/credential-name\","
         + "\"type\":\"json\","
         + "\"value\":{\"key\":\"value\",\"fancy\":{\"num\":10},\"array\":[\"foo\",\"bar\"]},"
-        + "\"overwrite\":false,"
         + "\"additional_permissions\": [{\"actor\": \"app1-guid\",\"operations\": [\"read\"]}]}";
 
     JsonSetRequest deserialize = deserialize(requestJson,
@@ -48,7 +47,6 @@ public class JsonSetRequestTest {
     request.setName("some-name");
     request.setType("json");
     request.setValue(new JsonCredentialValue(value));
-    request.setOverwrite(true);
 
     Set<ConstraintViolation<JsonSetRequest>> constraintViolations = validate(request);
 
@@ -60,7 +58,6 @@ public class JsonSetRequestTest {
     String requestJson = "{\"name\":\"/my-namespace/subTree/credential-name\","
         + "\"type\":\"JsOn\","
         + "\"value\":{\"key\":\"value\",\"fancy\":{\"num\":10},\"array\":[\"foo\",\"bar\"]},"
-        + "\"overwrite\":false,"
         + "\"additional_permissions\": [{\"actor\": \"app1-guid\",\"operations\": [\"read\"]}]}";
 
     Set<ConstraintViolation<JsonSetRequest>> constraintViolations = deserializeAndValidate(requestJson, JsonSetRequest.class);
@@ -73,7 +70,6 @@ public class JsonSetRequestTest {
     JsonSetRequest request = new JsonSetRequest();
     request.setName("some-name");
     request.setType("json");
-    request.setOverwrite(true);
 
     Set<ConstraintViolation<JsonSetRequest>> constraintViolations = validate(request);
 

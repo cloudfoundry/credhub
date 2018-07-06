@@ -27,14 +27,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 public class RequestHelper {
 
-  public static String setPassword(MockMvc mockMvc, String credentialName, String passwordValue, String overwriteMode)
+  public static String setPassword(MockMvc mockMvc, String credentialName, String passwordValue)
       throws Exception {
     Map<String, Object> passwordRequestBody = new HashMap() {
       {
         put("name", credentialName);
         put("type", "password");
         put("value", passwordValue);
-        put("mode", overwriteMode);
       }
     };
 
@@ -62,19 +61,23 @@ public class RequestHelper {
     return response;
   }
 
-  public static String generatePassword(MockMvc mockMvc, String credentialName, String mode, Integer length)
+  public static String generatePassword(MockMvc mockMvc, String credentialName, boolean overwrite, Integer length)
       throws Exception {
     Map<String, Object> passwordRequestBody = new HashMap() {
       {
         put("name", credentialName);
         put("type", "password");
-        put("mode", mode);
       }
     };
+
+    if (overwrite) {
+      passwordRequestBody.put("overwrite", true);
+    }
 
     if (length != null) {
       passwordRequestBody.put("parameters", ImmutableMap.of("length", length));
     }
+
     String content = JsonTestHelper.serializeToString(passwordRequestBody);
     MockHttpServletRequestBuilder post = post("/api/v1/data")
         .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -95,15 +98,18 @@ public class RequestHelper {
     return response;
   }
 
-  public static String generateUser(MockMvc mockMvc, String credentialName, String mode, Integer length, String username, boolean excludeUpper)
+  public static String generateUser(MockMvc mockMvc, String credentialName, boolean overwrite, Integer length, String username, boolean excludeUpper)
       throws Exception {
-    Map<String, Object> passwordRequestBody = new HashMap() {
+    Map<String, Object> userRequestBody = new HashMap() {
       {
         put("name", credentialName);
         put("type", "user");
-        put("mode", mode);
       }
     };
+
+    if (overwrite) {
+      userRequestBody.put("overwrite", true);
+    }
 
     Map parameters = new HashMap<String, Object>();
 
@@ -119,9 +125,9 @@ public class RequestHelper {
       parameters.put("exclude_upper", true);
     }
 
-    passwordRequestBody.put("parameters", parameters);
+    userRequestBody.put("parameters", parameters);
 
-    String content = JsonTestHelper.serializeToString(passwordRequestBody);
+    String content = JsonTestHelper.serializeToString(userRequestBody);
     MockHttpServletRequestBuilder post = post("/api/v1/data")
         .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
@@ -134,15 +140,18 @@ public class RequestHelper {
     return response;
   }
 
-  public static String generateSsh(MockMvc mockMvc, String credentialName, String mode, Integer length, String sshComment)
+  public static String generateSsh(MockMvc mockMvc, String credentialName, boolean overwrite, Integer length, String sshComment)
       throws Exception {
-    Map<String, Object> passwordRequestBody = new HashMap() {
+    Map<String, Object> sshRequestBody = new HashMap() {
       {
         put("name", credentialName);
         put("type", "ssh");
-        put("mode", mode);
       }
     };
+
+    if (overwrite) {
+      sshRequestBody.put("overwrite", true);
+    }
 
     Map parameters = new HashMap<String, Object>();
 
@@ -154,8 +163,8 @@ public class RequestHelper {
       parameters.put("ssh_comment", sshComment);
     }
 
-    passwordRequestBody.put("parameters", parameters);
-    String content = JsonTestHelper.serializeToString(passwordRequestBody);
+    sshRequestBody.put("parameters", parameters);
+    String content = JsonTestHelper.serializeToString(sshRequestBody);
     MockHttpServletRequestBuilder post = post("/api/v1/data")
         .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
@@ -208,15 +217,18 @@ public class RequestHelper {
         .read("$.certificates[0].id");
   }
 
-  public static String generateCertificateCredential(MockMvc mockMvc, String credentialName, String mode, String commonName, String caName)
+  public static String generateCertificateCredential(MockMvc mockMvc, String credentialName, boolean overwrite, String commonName, String caName)
       throws Exception {
     Map<String, Object> certRequestBody = new HashMap() {
       {
         put("name", credentialName);
         put("type", "certificate");
-        put("mode", mode);
       }
     };
+
+    if (overwrite) {
+      certRequestBody.put("overwrite", true);
+    }
 
     Map parameters = new HashMap<String, Object>();
     if(caName == null) {
@@ -242,20 +254,23 @@ public class RequestHelper {
     return response;
   }
 
-  public static String generateRsa(MockMvc mockMvc, String credentialName, String mode, Integer length)
+  public static String generateRsa(MockMvc mockMvc, String credentialName, boolean overwrite, Integer length)
       throws Exception {
-    Map<String, Object> passwordRequestBody = new HashMap() {
+    Map<String, Object> rsaRequestBody = new HashMap() {
       {
         put("name", credentialName);
         put("type", "rsa");
-        put("mode", mode);
       }
     };
 
-    if (length != null) {
-      passwordRequestBody.put("parameters", ImmutableMap.of("key_length", length));
+    if (overwrite) {
+      rsaRequestBody.put("overwrite", true);
     }
-    String content = JsonTestHelper.serializeToString(passwordRequestBody);
+
+    if (length != null) {
+      rsaRequestBody.put("parameters", ImmutableMap.of("key_length", length));
+    }
+    String content = JsonTestHelper.serializeToString(rsaRequestBody);
     MockHttpServletRequestBuilder post = post("/api/v1/data")
         .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)

@@ -3,7 +3,6 @@ package org.cloudfoundry.credhub.request;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
-import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.helper.JsonTestHelper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,20 +32,6 @@ public class BaseCredentialSetRequestTest {
     JsonTestHelper.deserializeChecked(json, BaseCredentialSetRequest.class);
   }
 
-  @Test(expected = ParameterizedValidationException.class)
-  public void whenModeAndOverwriteAreBothSet_throwsException() throws IOException {
-    String json = "{" +
-        "\"name\":\"some-name\"," +
-        "\"type\":\"password\"," +
-        "\"overwrite\":true," +
-        "\"value\":\"some-value\"," +
-        "\"mode\":\"overwrite\"" +
-        "}";
-
-    BaseCredentialSetRequest request = JsonTestHelper
-        .deserialize(json, BaseCredentialSetRequest.class);
-    request.validate();
-  }
 
   @Test(expected = InvalidTypeIdException.class)
   public void whenTypeIsEmptyString_throwsException() throws IOException {
@@ -90,8 +75,7 @@ public class BaseCredentialSetRequestTest {
     String json = "{\n" +
         "\"name\":\"some-name\"," +
         "\"type\":\"password\"," +
-        "\"value\":\"some-value\"," +
-        "\"overwrite\":true" +
+        "\"value\":\"some-value\"" +
         "}";
     BaseCredentialSetRequest setRequest = JsonTestHelper.deserialize(json, BaseCredentialSetRequest.class);
     PermissionEntry expectedEntry = new PermissionEntry("my-actor", Arrays.asList(READ, WRITE));
@@ -108,7 +92,6 @@ public class BaseCredentialSetRequestTest {
         "\"name\":\"some-name\"," +
         "\"type\":\"password\"," +
         "\"value\":\"some-value\"," +
-        "\"overwrite\":true, \n" +
         "\"additional_permissions\": [{\n" +
         "  \"actor\": \"my-other-actor\",\n" +
         "  \"operations\": [\"read\"]\n" +
@@ -133,7 +116,6 @@ public class BaseCredentialSetRequestTest {
         "\"name\":\"some-name\"," +
         "\"type\":\"password\"," +
         "\"value\":\"some-value\"," +
-        "\"overwrite\":true, \n" +
         "\"additional_permissions\": [{\n" +
         "  \"actor\": \"my-actor\",\n" +
         "  \"operations\": [\"read\"]\n" +

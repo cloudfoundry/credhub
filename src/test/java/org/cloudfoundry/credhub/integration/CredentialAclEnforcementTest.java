@@ -225,7 +225,6 @@ public class CredentialAclEnforcementTest {
             + "  \"name\" : \"" + CREDENTIAL_NAME + "\",\n"
             + "  \"value\" : \"Resistance is futile\",\n"
             + "  \"type\" : \"password\",\n"
-            + "  \"overwrite\" : true,\n"
             + "  \"additional_permissions\": [\n"
             + "     { \n"
             + "       \"actor\": \"uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d\",\n"

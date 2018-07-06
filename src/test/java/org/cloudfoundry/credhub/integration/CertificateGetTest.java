@@ -3,7 +3,6 @@ package org.cloudfoundry.credhub.integration;
 
 import com.jayway.jsonpath.JsonPath;
 import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.constants.CredentialWriteMode;
 import org.cloudfoundry.credhub.helper.RequestHelper;
 import org.cloudfoundry.credhub.util.AuthConstants;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
@@ -66,12 +65,12 @@ public class CertificateGetTest {
 
   @Test
   public void getCertificateCredentials_returnsAllCertificateCredentials() throws Exception {
-    generateCertificateCredential(mockMvc, "/first-certificate", CredentialWriteMode.OVERWRITE.mode, "test", null);
-    generateCertificateCredential(mockMvc, "/second-certificate", CredentialWriteMode.OVERWRITE.mode, "first-version",
+    generateCertificateCredential(mockMvc, "/first-certificate", true, "test", null);
+    generateCertificateCredential(mockMvc, "/second-certificate", true, "first-version",
         null);
-    generateCertificateCredential(mockMvc, "/second-certificate", CredentialWriteMode.OVERWRITE.mode, "second-version",
+    generateCertificateCredential(mockMvc, "/second-certificate", true, "second-version",
         null);
-    generatePassword(mockMvc, "invalid-cert", CredentialWriteMode.OVERWRITE.mode, null);
+    generatePassword(mockMvc, "invalid-cert", true, null);
     String response = getCertificateCredentials(mockMvc);
 
     List<String> names = JsonPath.parse(response)
@@ -135,7 +134,7 @@ public class CertificateGetTest {
 
   @Test
   public void getCertificateCredentialsByName_doesNotReturnOtherCredentialTypes() throws Exception {
-    generatePassword(mockMvc, "my-credential", CredentialWriteMode.OVERWRITE.mode, 10);
+    generatePassword(mockMvc, "my-credential", true, 10);
 
     MockHttpServletRequestBuilder get = get("/api/v1/certificates?name=" + "my-credential")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -173,9 +172,9 @@ public class CertificateGetTest {
   @Test
   public void getCertificateVersionsByCredentialId_returnsAllVersionsOfTheCertificateCredential() throws Exception {
     String firstResponse = generateCertificateCredential(mockMvc, "/first-certificate",
-        CredentialWriteMode.OVERWRITE.mode, "test", null);
+        true, "test", null);
     String secondResponse = generateCertificateCredential(mockMvc, "/first-certificate",
-        CredentialWriteMode.OVERWRITE.mode, "test", null);
+        true, "test", null);
 
     String firstVersion = JsonPath.parse(firstResponse).read("$.id");
     String secondVersion = JsonPath.parse(secondResponse).read("$.id");
@@ -206,7 +205,7 @@ public class CertificateGetTest {
       throws Exception {
     String credentialName = "/test-certificate";
 
-    generateCertificateCredential(mockMvc, credentialName, CredentialWriteMode.OVERWRITE.mode, "test", null);
+    generateCertificateCredential(mockMvc, credentialName, true, "test", null);
 
     String response = getCertificateCredentialsByName(mockMvc, UAA_OAUTH2_PASSWORD_GRANT_TOKEN, credentialName);
     String uuid = JsonPath.parse(response)
