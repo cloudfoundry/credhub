@@ -11,7 +11,6 @@ import org.cloudfoundry.credhub.audit.entity.GetCredential;
 import org.cloudfoundry.credhub.audit.entity.RequestDetails;
 import org.cloudfoundry.credhub.audit.entity.SetCredential;
 import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException;
-import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.handler.CredentialsHandler;
 import org.cloudfoundry.credhub.handler.LegacyGenerationHandler;
 import org.cloudfoundry.credhub.handler.SetHandler;
@@ -76,10 +75,6 @@ public class CredentialsController {
   @ResponseStatus(HttpStatus.OK)
   public synchronized CredentialView set(@RequestBody BaseCredentialSetRequest requestBody) {
     requestBody.validate();
-
-    if (requestBody.getName() != null && requestBody.getName().length() > 1024) {
-      throw new ParameterizedValidationException("error.name_has_too_many_characters");
-    }
 
     return auditedHandlePutRequest(requestBody);
   }

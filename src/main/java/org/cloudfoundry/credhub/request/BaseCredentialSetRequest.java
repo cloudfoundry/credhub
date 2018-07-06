@@ -40,6 +40,10 @@ public abstract class BaseCredentialSetRequest<T extends CredentialValue> extend
     if (getMode() != null && getRawOverwriteValue() != null) {
       throw new ParameterizedValidationException("error.overwrite_and_mode_both_provided");
     }
+
+    if (getName() != null && getName().length() > 1024) {
+      throw new ParameterizedValidationException("error.name_has_too_many_characters");
+    }
   }
 
   private boolean isInvalidTypeForSet(String type) {

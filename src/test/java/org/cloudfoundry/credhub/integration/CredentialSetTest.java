@@ -165,6 +165,6 @@ public class CredentialSetTest {
     assertThat(name1025.length(), is(equalTo(1025)));
 
     setPassword(mockMvc, name1025, "foobar", CredentialWriteMode.CONVERGE.mode);
-    generatePassword(mockMvc, name1025, "foobar", 10);
+    generatePassword(mockMvc, name1025, "converge", 10);
   }
 }

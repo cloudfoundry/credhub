@@ -44,6 +44,10 @@ public abstract class BaseCredentialGenerateRequest extends BaseCredentialReques
     if (getGenerationParameters() != null) {
       getGenerationParameters().validate();
     }
+
+    if (getName() != null && getName().length() > 1024) {
+      throw new ParameterizedValidationException("error.name_has_too_many_characters");
+    }
   }
 
   private boolean isInvalidCredentialType(String type) {
