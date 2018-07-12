@@ -2,8 +2,6 @@ package org.cloudfoundry.credhub.service;
 
 import org.cloudfoundry.credhub.config.Permissions;
 import org.cloudfoundry.credhub.data.CredentialVersionDataService;
-import org.cloudfoundry.credhub.domain.CredentialVersion;
-import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -32,21 +30,18 @@ public class PermissionInitializer {
 
   @EventListener(ContextRefreshedEvent.class)
   public void seed() {
+
     if (permissions == null ||  permissions.getPermissions() == null) {
       return;
     }
 
     for (Permissions.Permission permission : permissions.getPermissions()) {
-      CredentialVersion credentialVersion = credentialVersionDataService.findMostRecent(permission.getPath());
       ArrayList<PermissionEntry> permissionEntries = new ArrayList<>();
       for (String actor : permission.getActors()) {
-        permissionEntries.add(new PermissionEntry(actor, permission.getOperations()));
+        permissionEntries.add(new PermissionEntry(actor, permission.getPath(), permission.getOperations()));
       }
 
-      if (credentialVersion == null) {
-        throw new EntryNotFoundException("error.resource_not_found");
-      }
-      permissionService.savePermissions(credentialVersion, permissionEntries);
+      permissionService.savePermissions(permissionEntries);
     }
   }
 }

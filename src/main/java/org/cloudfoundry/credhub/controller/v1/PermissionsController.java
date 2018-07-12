@@ -46,7 +46,6 @@ public class PermissionsController {
   @PostMapping(consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ResponseStatus(HttpStatus.CREATED)
   public void setAccessControlEntries(@Validated @RequestBody PermissionsRequest accessEntriesRequest) {
-
     AddPermission addPermission = new AddPermission(accessEntriesRequest.getCredentialName(),
         accessEntriesRequest.getPermissions());
     auditRecord.setRequestDetails(addPermission);

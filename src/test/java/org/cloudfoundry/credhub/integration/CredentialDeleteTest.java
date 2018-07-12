@@ -48,7 +48,7 @@ public class CredentialDeleteTest {
   @Test
   public void delete_whenNoCredentialExistsWithTheName_returnsAnError() throws Exception {
     final MockHttpServletRequestBuilder delete = delete("/api/v1/data?name=invalid_name")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON);
 
     String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
@@ -61,7 +61,7 @@ public class CredentialDeleteTest {
   @Test
   public void delete_whenNameIsEmpty_returnAnError() throws Exception {
     final MockHttpServletRequestBuilder delete = delete("/api/v1/data?name=")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON);
 
     mockMvc.perform(delete)
@@ -76,7 +76,7 @@ public class CredentialDeleteTest {
   @Test
   public void delete_whenNameIsMissing_returnAnError() throws Exception {
     final MockHttpServletRequestBuilder delete = delete("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON);
 
     mockMvc.perform(delete)
@@ -90,10 +90,10 @@ public class CredentialDeleteTest {
 
   @Test
   public void delete_whenThereIsOneCredentialVersionWithTheCaseInsensitiveName_deletesTheCredential() throws Exception {
-    RequestHelper.generateCa(mockMvc, CREDENTIAL_NAME, AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+    RequestHelper.generateCa(mockMvc, CREDENTIAL_NAME, AuthConstants.ALL_PERMISSIONS_TOKEN);
 
     MockHttpServletRequestBuilder request = delete("/api/v1/data?name=" + CREDENTIAL_NAME.toUpperCase())
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN);
 
     mockMvc.perform(request)
         .andExpect(status().isNoContent());
@@ -101,10 +101,10 @@ public class CredentialDeleteTest {
 
   @Test
   public void delete_whenThereIsOneCredentialVersionWithTheSlashPrependedName_deletesTheCredential() throws Exception {
-    RequestHelper.generateCa(mockMvc, "/some-ca", AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+    RequestHelper.generateCa(mockMvc, "/some-ca", AuthConstants.ALL_PERMISSIONS_TOKEN);
 
     MockHttpServletRequestBuilder request = delete("/api/v1/data?name=" + "some-ca")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN);
 
     mockMvc.perform(request)
         .andExpect(status().isNoContent());
@@ -112,11 +112,11 @@ public class CredentialDeleteTest {
 
   @Test
   public void delete_whenThereAreMultipleCredentialVersionsWithTheName_deletesAllVersions() throws Exception {
-    RequestHelper.generateCa(mockMvc, CREDENTIAL_NAME, AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
-    RequestHelper.generateCa(mockMvc, CREDENTIAL_NAME, AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+    RequestHelper.generateCa(mockMvc, CREDENTIAL_NAME, AuthConstants.ALL_PERMISSIONS_TOKEN);
+    RequestHelper.generateCa(mockMvc, CREDENTIAL_NAME, AuthConstants.ALL_PERMISSIONS_TOKEN);
 
     MockHttpServletRequestBuilder request = delete("/api/v1/data?name=" + CREDENTIAL_NAME)
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN);
 
     mockMvc.perform(request)
         .andExpect(status().isNoContent());

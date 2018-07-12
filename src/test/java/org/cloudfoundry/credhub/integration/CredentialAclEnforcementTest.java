@@ -3,10 +3,9 @@ package org.cloudfoundry.credhub.integration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
-import org.cloudfoundry.credhub.util.AuthConstants;
 import org.cloudfoundry.credhub.util.CertificateReader;
 import org.cloudfoundry.credhub.util.CertificateStringConstants;
+import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,7 +14,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -24,23 +22,19 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import static org.cloudfoundry.credhub.util.AuthConstants.*;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.x509;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
-@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(value = {"unit-test", "unit-test-permissions"}, resolver = DatabaseProfileResolver.class)
 @Transactional
-@TestPropertySource(properties = "security.authorization.acls.enabled=true")
 public class CredentialAclEnforcementTest {
 
   private static final String CREDENTIAL_NAME = "/TEST/CREDENTIAL";
@@ -64,7 +58,7 @@ public class CredentialAclEnforcementTest {
   public void GET_byCredentialName_whenTheUserHasPermissionToReadCredential_returnsTheCredential()
       throws Exception {
     final MockHttpServletRequestBuilder get = get("/api/v1/data?name=" + CREDENTIAL_NAME)
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
+        .header("Authorization", "Bearer " + USER_A_TOKEN);
     mockMvc.perform(get)
         .andDo(print())
         .andExpect(status().isOk())
@@ -89,7 +83,7 @@ public class CredentialAclEnforcementTest {
   public void GET_byId_whenTheUserHasPermissionToReadCredential_returnsTheCredential()
       throws Exception {
     final MockHttpServletRequestBuilder get = get("/api/v1/data/" + uuid)
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
+        .header("Authorization", "Bearer " + USER_A_TOKEN);
     mockMvc.perform(get)
         .andDo(print())
         .andExpect(status().isOk())
@@ -114,7 +108,7 @@ public class CredentialAclEnforcementTest {
   public void GET_byVersions_whenTheUserHasPermissionToReadCredential_returnsCredentialVersions()
       throws Exception {
     final MockHttpServletRequestBuilder get = get("/api/v1/data?name=" + CREDENTIAL_NAME + "&versions=2")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
+        .header("Authorization", "Bearer " + USER_A_TOKEN);
     mockMvc.perform(get)
         .andDo(print())
         .andExpect(status().isOk())
@@ -139,9 +133,8 @@ public class CredentialAclEnforcementTest {
 
   @Test
   public void PUT_whenTheUserLacksPermissionToReadTheAcl_returnsAccessDenied() throws Exception {
-    // UAA_OAUTH2_PASSWORD_GRANT_TOKEN attempts to edit the credential
     final MockHttpServletRequestBuilder edit = put("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
+        .header("Authorization", "Bearer " + USER_A_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         // language=JSON
@@ -162,9 +155,8 @@ public class CredentialAclEnforcementTest {
 
   @Test
   public void PUT_whenTheUserHasPermissionToWriteAnAcl_succeeds() throws Exception {
-    // UAA_OAUTH2_PASSWORD_GRANT_TOKEN attempts to edit the credential
     final MockHttpServletRequestBuilder edit = put("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         // language=JSON
@@ -187,9 +179,8 @@ public class CredentialAclEnforcementTest {
 
   @Test
   public void PUT_whenTheUserLacksPermissionToWriteAnAcl_returnsAccessDenied() throws Exception {
-    // UAA_OAUTH2_PASSWORD_GRANT_TOKEN attempts to edit the credential
     final MockHttpServletRequestBuilder edit = put("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
+        .header("Authorization", "Bearer " + USER_A_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         // language=JSON
@@ -215,9 +206,8 @@ public class CredentialAclEnforcementTest {
 
   @Test
   public void PUT_whenTheUserUpdatesOwnPermission_returnsBadRequest() throws Exception {
-    // UAA_OAUTH2_PASSWORD_GRANT_TOKEN attempts to edit the credential
     final MockHttpServletRequestBuilder edit = put("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         // language=JSON
@@ -227,7 +217,7 @@ public class CredentialAclEnforcementTest {
             + "  \"type\" : \"password\",\n"
             + "  \"additional_permissions\": [\n"
             + "     { \n"
-            + "       \"actor\": \"uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d\",\n"
+            + "       \"actor\": \"" + ALL_PERMISSIONS_ACTOR_ID + "\",\n"
             + "       \"operations\": [\"read\", \"read_acl\", \"write\"]\n"
             + "     }]"
             + "}")
@@ -244,7 +234,7 @@ public class CredentialAclEnforcementTest {
   @Test
   public void POST_whenTheUserUpdatesOwnPermission_returnsBadRequest() throws Exception {
     final MockHttpServletRequestBuilder post = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{"
@@ -252,7 +242,7 @@ public class CredentialAclEnforcementTest {
             + "  \"type\": \"password\","
             + "  \"additional_permissions\": [\n"
             + "     { \n"
-            + "       \"actor\": \"uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d\",\n"
+            + "       \"actor\": \"" + ALL_PERMISSIONS_ACTOR_ID + "\",\n"
             + "       \"operations\": [\"read\"]\n"
             + "     }]"
             + "}");
@@ -267,9 +257,8 @@ public class CredentialAclEnforcementTest {
 
   @Test
   public void POST_whenTheUserLacksPermissionToReadTheAcl_returnsAccessDenied() throws Exception {
-    // UAA_OAUTH2_PASSWORD_GRANT_TOKEN attempts to edit the credential
     final MockHttpServletRequestBuilder edit = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
+        .header("Authorization", "Bearer " + USER_A_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         // language=JSON
@@ -289,9 +278,8 @@ public class CredentialAclEnforcementTest {
 
   @Test
   public void POST_whenTheUserHasPermissionToWriteAnAcl_succeeds() throws Exception {
-    // UAA_OAUTH2_PASSWORD_GRANT_TOKEN attempts to edit the credential
     final MockHttpServletRequestBuilder edit = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         // language=JSON
@@ -308,9 +296,8 @@ public class CredentialAclEnforcementTest {
 
   @Test
   public void POST_whenTheUserLacksPermissionToWriteAnAcl_returnsAccessDenied() throws Exception {
-    // UAA_OAUTH2_PASSWORD_GRANT_TOKEN attempts to edit the credential
     final MockHttpServletRequestBuilder edit = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
+        .header("Authorization", "Bearer " + USER_A_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         // language=JSON
@@ -337,12 +324,12 @@ public class CredentialAclEnforcementTest {
   public void DELETE_whenTheUserHasPermissionToDeleteTheCredential_succeeds() throws Exception {
     final MockHttpServletRequestBuilder deleteRequest = delete(
         "/api/v1/data?name=" + CREDENTIAL_NAME)
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN);
     mockMvc.perform(deleteRequest)
         .andExpect(status().isNoContent());
 
     final MockHttpServletRequestBuilder getRequest = get("/api/v1/data?name=" + CREDENTIAL_NAME)
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN);
     mockMvc.perform(getRequest)
         .andExpect(status().isNotFound());
   }
@@ -351,19 +338,19 @@ public class CredentialAclEnforcementTest {
   public void DELETE_whenTheUserLacksPermissionToDeleteTheCredential_returns404() throws Exception {
     final MockHttpServletRequestBuilder deleteRequest = delete(
         "/api/v1/data?name=" + CREDENTIAL_NAME)
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
+        .header("Authorization", "Bearer " + USER_A_TOKEN);
     mockMvc.perform(deleteRequest)
         .andExpect(status().isNotFound());
 
     final MockHttpServletRequestBuilder getRequest = get("/api/v1/data?name=" + CREDENTIAL_NAME)
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN);
     mockMvc.perform(getRequest)
         .andExpect(status().isOk());
   }
 
   private void seedCredentials() throws Exception {
     final MockHttpServletRequestBuilder post = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
@@ -373,7 +360,7 @@ public class CredentialAclEnforcementTest {
             + "  \"overwrite\": true,\n"
             + "  \"additional_permissions\": [\n"
             + "    {\n"
-            + "      \"actor\": \"uaa-client:credhub_test\",\n"
+            + "      \"actor\": \"" + USER_A_ACTOR_ID + "\",\n"
             + "      \"operations\": [\n"
             + "        \"read\"\n"
             + "      ]\n"
@@ -390,7 +377,7 @@ public class CredentialAclEnforcementTest {
         .andReturn();
 
     final MockHttpServletRequestBuilder otherPost = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{"
@@ -398,7 +385,7 @@ public class CredentialAclEnforcementTest {
             + "  \"type\": \"password\","
             + "  \"additional_permissions\": [\n"
             + "     { \n"
-            + "       \"actor\": \"uaa-client:credhub_test\",\n"
+            + "       \"actor\": \"" + USER_A_ACTOR_ID + "\",\n"
             + "       \"operations\": [\"read\", \"read_acl\", \"write\"]\n"
             + "     }]"
             + "}");
@@ -414,11 +401,11 @@ public class CredentialAclEnforcementTest {
 
   @Test
   public void interpolate_whenTheUserHasAccessToAllReferencedCredentials_returnsInterpolatedBody() throws Exception {
-    makeJsonCredential(AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "secret1");
-    makeJsonCredential(AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "secret2");
+    makeJsonCredential(ALL_PERMISSIONS_TOKEN, "secret1");
+    makeJsonCredential(ALL_PERMISSIONS_TOKEN, "secret2");
 
     MockHttpServletRequestBuilder request = post("/api/v1/interpolate")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .contentType(MediaType.APPLICATION_JSON)
         .content(
             "{" +
@@ -451,11 +438,11 @@ public class CredentialAclEnforcementTest {
 
   @Test
   public void interpolate_whenTheUserDoesNotHaveAccessToAllReferencedCredentials_returnsAnError() throws Exception {
-    makeJsonCredential(AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "secret1");
-    makeJsonCredential(AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN, "secret2");
+    makeJsonCredential(ALL_PERMISSIONS_TOKEN, "secret1");
+    makeJsonCredential(USER_A_TOKEN, USER_A_PATH + "secret2");
 
     MockHttpServletRequestBuilder request = post("/api/v1/interpolate")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + USER_A_TOKEN)
         .contentType(MediaType.APPLICATION_JSON)
         .content(
             "{" +
@@ -470,7 +457,7 @@ public class CredentialAclEnforcementTest {
                 "    \"pp-something-else\": [" +
                 "      {" +
                 "        \"credentials\": {" +
-                "          \"credhub-ref\": \"/secret2\"" +
+                "          \"credhub-ref\": \"" + USER_A_PATH + "secret2\"" +
                 "        }," +
                 "        \"something\": [\"pp-config-server\"]" +
                 "      }" +

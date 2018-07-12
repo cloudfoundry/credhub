@@ -49,7 +49,7 @@ public class UserRegenerationTest {
   @Test
   public void userRegeneration_withDefaultParametersAndStaticUsernameInValue_shouldRegenerateUserPassword() throws Exception {
     MockHttpServletRequestBuilder post = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
@@ -72,7 +72,7 @@ public class UserRegenerationTest {
     assertThat(originalPassword, notNullValue());
 
     MockHttpServletRequestBuilder regeneratePost = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
@@ -99,7 +99,7 @@ public class UserRegenerationTest {
   @Test
   public void userRegeneration_withDefaultParametersAndStaticUsernameInParameters_shouldRegenerateUserPassword() throws Exception {
     MockHttpServletRequestBuilder post = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
@@ -123,7 +123,7 @@ public class UserRegenerationTest {
     assertThat(originalPassword, notNullValue());
 
     MockHttpServletRequestBuilder regeneratePost = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
@@ -150,7 +150,7 @@ public class UserRegenerationTest {
   @Test
   public void userRegeneration_withDefaultParametersAndGeneratedUsername_shouldRegenerateUserPasswordButNotUsername() throws Exception {
     MockHttpServletRequestBuilder post = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
@@ -173,7 +173,7 @@ public class UserRegenerationTest {
     assertThat(originalPassword, notNullValue());
 
     MockHttpServletRequestBuilder regeneratePost = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON

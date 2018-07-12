@@ -80,36 +80,36 @@ public class PermissionServiceTest {
   @Test
   public void saveAccessControlEntries_whenThereAreNoChanges_doesNothing() {
     ArrayList<PermissionEntry> expectedEntries = newArrayList();
-    subject.savePermissionsForUser(expectedCredentialVersion, expectedEntries, false);
+    subject.savePermissionsForUser(expectedEntries);
 
-    verify(permissionDataService, never()).savePermissions(any(), any());
+    verify(permissionDataService, never()).savePermissionsWithLogging(any());
   }
 
   @Test
   public void saveAccessControlEntries_withEntries_delegatesToDataService() {
     when(permissionCheckingService.userAllowedToOperateOnActor(eq(USER_NAME))).thenReturn(true);
-    ArrayList<PermissionEntry> expectedEntries = newArrayList(new PermissionEntry(USER_NAME, PermissionOperation.READ));
-    subject.savePermissionsForUser(expectedCredentialVersion, expectedEntries, false);
+    ArrayList<PermissionEntry> expectedEntries = newArrayList(new PermissionEntry(USER_NAME, "test-path", PermissionOperation.READ));
+    subject.savePermissionsForUser(expectedEntries);
 
-    verify(permissionDataService).savePermissions(expectedCredentialVersion.getCredential(), expectedEntries);
+    verify(permissionDataService).savePermissionsWithLogging(expectedEntries);
   }
 
   @Test
   public void saveAccessControlEntries_whenCredentialHasACEs_shouldCallVerifyAclWritePermission() {
     when(permissionCheckingService.userAllowedToOperateOnActor(eq(USER_NAME))).thenReturn(true);
     ArrayList<PermissionEntry> entries = newArrayList();
-    entries.add(new PermissionEntry(USER_NAME, asList(PermissionOperation.WRITE_ACL)));
+    entries.add(new PermissionEntry(USER_NAME, "test-path", asList(PermissionOperation.WRITE_ACL)));
 
-    subject.savePermissionsForUser(expectedCredentialVersion, entries, false);
+    subject.savePermissionsForUser(entries);
 
-    verify(permissionCheckingService).hasPermission(USER_NAME, CREDENTIAL_NAME, PermissionOperation.WRITE_ACL);
+    verify(permissionCheckingService).hasPermission(USER_NAME, "test-path", PermissionOperation.WRITE_ACL);
   }
 
   @Test
   public void saveAccessControlEntries_whenCredentialHasNoACEs_shouldDoNothing() {
     ArrayList<PermissionEntry> entries = newArrayList();
 
-    subject.savePermissionsForUser(expectedCredentialVersion, entries, false);
+    subject.savePermissionsForUser(entries);
 
     verify(permissionCheckingService, never()).hasPermission(USER_NAME, CREDENTIAL_NAME, PermissionOperation.WRITE_ACL);
   }
@@ -117,12 +117,12 @@ public class PermissionServiceTest {
   @Test
   public void saveAccessControlEntries_whenUserCantWrite_throws() {
     when(permissionCheckingService.userAllowedToOperateOnActor(eq(USER_NAME))).thenReturn(true);
-    when(permissionCheckingService.hasPermission(USER_NAME, CREDENTIAL_NAME, PermissionOperation.WRITE_ACL))
+    when(permissionCheckingService.hasPermission(USER_NAME, "test-path", PermissionOperation.WRITE_ACL))
         .thenReturn(false);
-    ArrayList<PermissionEntry> expectedEntries = newArrayList(new PermissionEntry(USER_NAME, PermissionOperation.READ));
+    ArrayList<PermissionEntry> expectedEntries = newArrayList(new PermissionEntry(USER_NAME, "test-path", PermissionOperation.READ));
 
     try {
-      subject.savePermissionsForUser(expectedCredentialVersion, expectedEntries, false);
+      subject.savePermissionsForUser(expectedEntries);
       fail("expected exception");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), IsEqual.equalTo("error.credential.invalid_access"));
@@ -134,10 +134,10 @@ public class PermissionServiceTest {
     when(userContextHolder.getUserContext()).thenReturn(null);
     when(permissionCheckingService.userAllowedToOperateOnActor(eq(USER_NAME))).thenReturn(true);
 
-    ArrayList<PermissionEntry> expectedEntries = newArrayList(new PermissionEntry(USER_NAME, PermissionOperation.READ));
-    subject.savePermissions(expectedCredentialVersion, expectedEntries);
+    ArrayList<PermissionEntry> expectedEntries = newArrayList(new PermissionEntry(USER_NAME, CREDENTIAL_NAME, PermissionOperation.READ));
+    subject.savePermissions(expectedEntries);
 
-    verify(permissionDataService).savePermissions(expectedCredentialVersion.getCredential(), expectedEntries);
+    verify(permissionDataService).savePermissions(expectedEntries);
   }
 
   @Test

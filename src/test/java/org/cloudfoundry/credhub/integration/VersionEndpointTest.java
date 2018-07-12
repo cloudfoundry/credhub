@@ -41,7 +41,7 @@ public class VersionEndpointTest {
 
     MockHttpServletRequestBuilder getRequest = get(
         "/version")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN);
     mockMvc.perform(getRequest)
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.version", anything()));

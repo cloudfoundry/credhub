@@ -13,7 +13,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -24,18 +23,10 @@ import org.springframework.web.context.WebApplicationContext;
 import java.util.List;
 import java.util.Map;
 
-import static org.cloudfoundry.credhub.helper.RequestHelper.generateCa;
-import static org.cloudfoundry.credhub.helper.RequestHelper.generateCertificateCredential;
-import static org.cloudfoundry.credhub.helper.RequestHelper.generatePassword;
-import static org.cloudfoundry.credhub.helper.RequestHelper.getCertificateCredentials;
-import static org.cloudfoundry.credhub.helper.RequestHelper.getCertificateCredentialsByName;
-import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN;
-import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
+import static org.cloudfoundry.credhub.helper.RequestHelper.*;
+import static org.cloudfoundry.credhub.util.AuthConstants.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.*;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -44,9 +35,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(value = "unit-test,unit-test-permissions", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
-@TestPropertySource(properties = "security.authorization.acls.enabled=true")
 @Transactional
 public class CertificateGetTest {
 
@@ -65,50 +55,51 @@ public class CertificateGetTest {
 
   @Test
   public void getCertificateCredentials_returnsAllCertificateCredentials() throws Exception {
-    generateCertificateCredential(mockMvc, "/first-certificate", true, "test", null);
-    generateCertificateCredential(mockMvc, "/second-certificate", true, "first-version",
-        null);
-    generateCertificateCredential(mockMvc, "/second-certificate", true, "second-version",
-        null);
-    generatePassword(mockMvc, "invalid-cert", true, null);
-    String response = getCertificateCredentials(mockMvc);
+    generateCertificateCredential(mockMvc, "/user-a/first-certificate", true, "test", null, USER_A_TOKEN);
+    generateCertificateCredential(mockMvc, "/user-a/second-certificate", true, "first-version",
+        null, USER_A_TOKEN);
+    generateCertificateCredential(mockMvc, "/user-a/second-certificate", true, "second-version",
+        null, USER_A_TOKEN);
+    generatePassword(mockMvc, "/user-a/invalid-cert", true, null, USER_A_TOKEN);
+    String response = getCertificateCredentials(mockMvc, USER_A_TOKEN);
 
     List<String> names = JsonPath.parse(response)
         .read("$.certificates[*].name");
 
     assertThat(names, hasSize(2));
-    assertThat(names, containsInAnyOrder("/first-certificate", "/second-certificate"));
-    assertThat(names, not(containsInAnyOrder("/invalid-cert")));
+    assertThat(names, containsInAnyOrder("/user-a/first-certificate", "/user-a/second-certificate"));
+    assertThat(names, not(containsInAnyOrder("/user-a/invalid-cert")));
   }
 
   @Test
   public void getCertificateCredentials_returnsOnlyCertificatesTheUserCanAccess() throws Exception {
-    generateCa(mockMvc, "my-certificate", UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
-    generateCa(mockMvc, "your-certificate", UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
+    generateCa(mockMvc, "/user-a/certificate", USER_A_TOKEN);
+    generateCa(mockMvc, "/user-b/certificate", USER_B_TOKEN);
+    generateCa(mockMvc, "/shared-read-only/certificate", ALL_PERMISSIONS_TOKEN);
 
-    String response = getCertificateCredentials(mockMvc, UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+    String response = getCertificateCredentials(mockMvc, USER_A_TOKEN);
     List<String> names = JsonPath.parse(response)
         .read("$.certificates[*].name");
 
-    assertThat(names, hasSize(1));
-    assertThat(names, containsInAnyOrder("/my-certificate"));
-    assertThat(names, not(containsInAnyOrder("/your-certificate")));
+    assertThat(names, hasSize(2));
+    assertThat(names, containsInAnyOrder("/user-a/certificate", "/shared-read-only/certificate"));
+    assertThat(names, not(containsInAnyOrder("/user-b/certificate")));
 
-    response = getCertificateCredentials(mockMvc, UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
+    response = getCertificateCredentials(mockMvc, USER_B_TOKEN);
     names = JsonPath.parse(response)
         .read("$.certificates[*].name");
 
-    assertThat(names, hasSize(1));
-    assertThat(names, not(containsInAnyOrder("/my-certificate")));
-    assertThat(names, containsInAnyOrder("/your-certificate"));
+    assertThat(names, hasSize(2));
+    assertThat(names, containsInAnyOrder("/user-b/certificate", "/shared-read-only/certificate"));
+    assertThat(names, not(containsInAnyOrder("/user-a/certificate")));
   }
 
   @Test
   public void getCertificateCredentials_withNameProvided_returnsACertificateWithThatName() throws Exception {
-    generateCa(mockMvc, "my-certificate", UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
-    generateCa(mockMvc, "also-my-certificate", UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+    generateCa(mockMvc, "my-certificate", ALL_PERMISSIONS_TOKEN);
+    generateCa(mockMvc, "also-my-certificate", ALL_PERMISSIONS_TOKEN);
 
-    String response = getCertificateCredentialsByName(mockMvc, UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "my-certificate");
+    String response = getCertificateCredentialsByName(mockMvc, ALL_PERMISSIONS_TOKEN, "my-certificate");
     List<String> names = JsonPath.parse(response)
         .read("$.certificates[*].name");
 
@@ -119,7 +110,7 @@ public class CertificateGetTest {
   @Test
   public void getCertificateCredentials_whenNameDoesNotMatchACredential_returns404WithMessage() throws Exception {
     MockHttpServletRequestBuilder get = get("/api/v1/certificates?name=" + "some-other-certificate")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON);
 
@@ -134,10 +125,10 @@ public class CertificateGetTest {
 
   @Test
   public void getCertificateCredentialsByName_doesNotReturnOtherCredentialTypes() throws Exception {
-    generatePassword(mockMvc, "my-credential", true, 10);
+    generatePassword(mockMvc, "my-credential", true, 10, ALL_PERMISSIONS_TOKEN);
 
     MockHttpServletRequestBuilder get = get("/api/v1/certificates?name=" + "my-credential")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON);
 
@@ -153,10 +144,10 @@ public class CertificateGetTest {
   @Test
   public void getCertificateCredentials_whenNameIsProvided_andUserDoesNotHaveRequiredPermissions_returns404WithMessage()
       throws Exception {
-    generateCa(mockMvc, "my-certificate", UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+    generateCa(mockMvc, "my-certificate", ALL_PERMISSIONS_TOKEN);
 
     MockHttpServletRequestBuilder get = get("/api/v1/certificates?name=" + "my-certificate")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
+        .header("Authorization", "Bearer " + NO_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON);
 
@@ -172,19 +163,19 @@ public class CertificateGetTest {
   @Test
   public void getCertificateVersionsByCredentialId_returnsAllVersionsOfTheCertificateCredential() throws Exception {
     String firstResponse = generateCertificateCredential(mockMvc, "/first-certificate",
-        true, "test", null);
+        true, "test", null, ALL_PERMISSIONS_TOKEN);
     String secondResponse = generateCertificateCredential(mockMvc, "/first-certificate",
-        true, "test", null);
+        true, "test", null, ALL_PERMISSIONS_TOKEN);
 
     String firstVersion = JsonPath.parse(firstResponse).read("$.id");
     String secondVersion = JsonPath.parse(secondResponse).read("$.id");
 
-    String response = getCertificateCredentialsByName(mockMvc, UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "/first-certificate");
+    String response = getCertificateCredentialsByName(mockMvc, ALL_PERMISSIONS_TOKEN, "/first-certificate");
 
     String certificateId = JsonPath.parse(response).read("$.certificates[0].id");
 
     MockHttpServletRequestBuilder getVersions = get("/api/v1/certificates/" + certificateId + "/versions")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON);
 
@@ -204,21 +195,20 @@ public class CertificateGetTest {
   public void getCertificateVersionsByCredentialId_withCurrentTrue_returnsCurrentVersionsOfTheCertificateCredential()
       throws Exception {
     String credentialName = "/test-certificate";
+    generateCertificateCredential(mockMvc, credentialName, true, "test", null, ALL_PERMISSIONS_TOKEN);
 
-    generateCertificateCredential(mockMvc, credentialName, true, "test", null);
-
-    String response = getCertificateCredentialsByName(mockMvc, UAA_OAUTH2_PASSWORD_GRANT_TOKEN, credentialName);
+    String response = getCertificateCredentialsByName(mockMvc, ALL_PERMISSIONS_TOKEN, credentialName);
     String uuid = JsonPath.parse(response)
         .read("$.certificates[0].id");
 
-    String transitionalCertificate = JsonPath.parse(RequestHelper.regenerateCertificate(mockMvc, uuid, true))
+    String transitionalCertificate = JsonPath.parse(RequestHelper.regenerateCertificate(mockMvc, uuid, true, ALL_PERMISSIONS_TOKEN))
         .read("$.value.certificate");
 
-    String nonTransitionalCertificate = JsonPath.parse(RequestHelper.regenerateCertificate(mockMvc, uuid, false))
+    String nonTransitionalCertificate = JsonPath.parse(RequestHelper.regenerateCertificate(mockMvc, uuid, false, ALL_PERMISSIONS_TOKEN))
         .read("$.value.certificate");
 
     final MockHttpServletRequestBuilder request = get("/api/v1/certificates/" + uuid + "/versions?current=true")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON);
 
     response = mockMvc.perform(request)
@@ -237,7 +227,7 @@ public class CertificateGetTest {
   public void getCertificateVersionsByCredentialId_returnsError_whenUUIDIsInvalid() throws Exception {
 
     MockHttpServletRequestBuilder get = get("/api/v1/certificates/" + "fake-uuid" + "/versions")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON);
 

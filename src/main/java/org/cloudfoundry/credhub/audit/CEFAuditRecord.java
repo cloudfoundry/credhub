@@ -7,17 +7,18 @@ import org.cloudfoundry.credhub.audit.entity.Version;
 import org.cloudfoundry.credhub.config.VersionProvider;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.entity.Credential;
+import org.cloudfoundry.credhub.entity.PermissionData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.WebApplicationContext;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import javax.servlet.http.HttpServletRequest;
 
 @Component
 @Scope(scopeName = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
@@ -274,6 +275,15 @@ public class CEFAuditRecord {
     this.resourceUUID = credential.getUuid().toString();
   }
 
+  public void setResource(PermissionData data) {
+    if(data == null || data.getUuid() == null){
+      return;
+    }
+
+    this.resourceName = data.getPath();
+    this.resourceUUID = data.getUuid().toString();
+  }
+
   public void setVersion(CredentialVersion credentialVersion) {
     if(credentialVersion == null || credentialVersion.getUuid() == null){
       return;
@@ -283,14 +293,21 @@ public class CEFAuditRecord {
   }
 
   public void addResource(Credential credential) {
-    if(resourceList == null){
-      resourceList = new ArrayList<>();
-    }
+    initResourceList();
 
     if(credential != null) {
       this.resourceList.add(new Resource(credential.getName(), credential.getUuid().toString()));
     }
   }
+
+  public void addResource(PermissionData permissionData) {
+    initResourceList();
+
+    if(permissionData != null) {
+      this.resourceList.add(new Resource(permissionData.getPath(), permissionData.getUuid().toString()));
+    }
+  }
+
 
   public void addVersion(CredentialVersion credentialVersion) {
     if(versionList == null){
@@ -307,14 +324,22 @@ public class CEFAuditRecord {
     this.versionList = new ArrayList<>();
   }
 
-  public void addAllResources(List<CredentialVersion> credentialVersions) {
-    for(CredentialVersion version : credentialVersions){
-      this.addVersion(version);
-    }
+  public void addAllVersions(List<CredentialVersion> credentialVersions) {
+    credentialVersions.forEach(i -> addVersion(i));
+  }
+
+  public void addAllResources(List<PermissionData> permissionData) {
+    permissionData.forEach(i -> addResource(i));
   }
 
   public void addAllCredentials(List<Credential> list) {
     list.forEach(i -> this.addResource(i));
+  }
+
+  private void initResourceList(){
+    if(resourceList == null){
+      resourceList = new ArrayList<>();
+    }
   }
 }
 

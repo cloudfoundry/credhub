@@ -114,7 +114,7 @@ public class CredentialsControllerGenerateTest {
   @Test
   public void generatingACredential_returnsAnErrorMessageForUnknownType() throws Exception {
     final MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{\"type\":\"foo\",\"name\":\"" + CREDENTIAL_NAME + "\"}");
@@ -130,7 +130,7 @@ public class CredentialsControllerGenerateTest {
   @Test
   public void generatingACredential_returnsAnErrorForValueType() throws Exception {
     final MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{\"type\":\"value\",\"name\":\"" + CREDENTIAL_NAME + "\"}");
@@ -146,7 +146,7 @@ public class CredentialsControllerGenerateTest {
   @Test
   public void generatingACredential_returnsAnErrorForJsonType() throws Exception {
     final MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{\"type\":\"json\",\"name\":\"" + CREDENTIAL_NAME + "\"}");
@@ -164,7 +164,7 @@ public class CredentialsControllerGenerateTest {
     String expectedError = "The request does not include a valid type. Valid values for generate include 'password', 'user', 'certificate', 'ssh' and 'rsa'.";
 
     mockMvc.perform(post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .content("{\"name\":\"some-new-credential-name\"}")
     )
@@ -176,7 +176,7 @@ public class CredentialsControllerGenerateTest {
   public void generatingACredential_whenNameIsEmpty_throws400() throws Exception {
     String expectedError = "A credential name must be provided. Please validate your input and retry your request.";
     mockMvc.perform(post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .content("{\"type\":\"password\",\"name\":\"\"}")
     )
@@ -189,7 +189,7 @@ public class CredentialsControllerGenerateTest {
     String expectedError = "A credential name must be provided. Please validate your input and retry your request.";
 
     mockMvc.perform(post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .content("{\"type\":\"password\"}")
     )
@@ -202,7 +202,7 @@ public class CredentialsControllerGenerateTest {
     String expectedError = "The request includes an unrecognized parameter 'some_unknown_param'. Please update or remove this parameter and retry your request.";
 
     mockMvc.perform(post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         //language=JSON
         .content("{" +
@@ -222,7 +222,7 @@ public class CredentialsControllerGenerateTest {
   public void regeneratingACredential_withEmptyName_returns400() throws Exception {
     String expectedError = "A credential name must be provided. Please validate your input and retry your request.";
     mockMvc.perform(post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         //language=JSON
         .content("{" +

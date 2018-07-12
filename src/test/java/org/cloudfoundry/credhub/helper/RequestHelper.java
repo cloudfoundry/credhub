@@ -2,8 +2,8 @@ package org.cloudfoundry.credhub.helper;
 
 import com.google.common.collect.ImmutableMap;
 import com.jayway.jsonpath.JsonPath;
-import org.cloudfoundry.credhub.view.PermissionsView;
 import org.cloudfoundry.credhub.util.AuthConstants;
+import org.cloudfoundry.credhub.view.PermissionsView;
 import org.hamcrest.core.IsEqual;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -13,22 +13,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static java.lang.String.join;
-import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
+import static org.cloudfoundry.credhub.util.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 public class RequestHelper {
-
-  public static String setPassword(MockMvc mockMvc, String credentialName, String passwordValue)
-      throws Exception {
+  public static String setPassword(MockMvc mockMvc, String credentialName, String passwordValue, String token) throws Exception {
     Map<String, Object> passwordRequestBody = new HashMap() {
       {
         put("name", credentialName);
@@ -40,7 +33,7 @@ public class RequestHelper {
     String content = JsonTestHelper.serializeToString(passwordRequestBody);
 
     MockHttpServletRequestBuilder put = put("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + token)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content(content);
@@ -61,8 +54,7 @@ public class RequestHelper {
     return response;
   }
 
-  public static String generatePassword(MockMvc mockMvc, String credentialName, boolean overwrite, Integer length)
-      throws Exception {
+  public static String generatePassword(MockMvc mockMvc, String credentialName, boolean overwrite, Integer length, String token) throws Exception {
     Map<String, Object> passwordRequestBody = new HashMap() {
       {
         put("name", credentialName);
@@ -80,7 +72,7 @@ public class RequestHelper {
 
     String content = JsonTestHelper.serializeToString(passwordRequestBody);
     MockHttpServletRequestBuilder post = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + token)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content(content);
@@ -129,7 +121,7 @@ public class RequestHelper {
 
     String content = JsonTestHelper.serializeToString(userRequestBody);
     MockHttpServletRequestBuilder post = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content(content);
@@ -166,7 +158,7 @@ public class RequestHelper {
     sshRequestBody.put("parameters", parameters);
     String content = JsonTestHelper.serializeToString(sshRequestBody);
     MockHttpServletRequestBuilder post = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content(content);
@@ -175,10 +167,6 @@ public class RequestHelper {
         .andExpect(status().isOk())
         .andReturn().getResponse().getContentAsString();
     return response;
-  }
-
-  public static String getCertificateCredentials(MockMvc mockMvc) throws Exception {
-    return getCertificateCredentials(mockMvc, AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
   }
 
   public static String getCertificateCredentials(MockMvc mockMvc, String token)
@@ -212,13 +200,12 @@ public class RequestHelper {
   }
 
   public static String getCertificateId(MockMvc mockMvc, String certificateName) throws Exception {
-    String response = getCertificateCredentialsByName(mockMvc, UAA_OAUTH2_PASSWORD_GRANT_TOKEN, certificateName);
+    String response = getCertificateCredentialsByName(mockMvc, ALL_PERMISSIONS_TOKEN, certificateName);
     return JsonPath.parse(response)
         .read("$.certificates[0].id");
   }
 
-  public static String generateCertificateCredential(MockMvc mockMvc, String credentialName, boolean overwrite, String commonName, String caName)
-      throws Exception {
+  public static String generateCertificateCredential(MockMvc mockMvc, String credentialName, boolean overwrite, String commonName, String caName, String token) throws Exception {
     Map<String, Object> certRequestBody = new HashMap() {
       {
         put("name", credentialName);
@@ -243,7 +230,7 @@ public class RequestHelper {
     certRequestBody.put("parameters", parameters);
     String content = JsonTestHelper.serializeToString(certRequestBody);
     MockHttpServletRequestBuilder post = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + token)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content(content);
@@ -272,7 +259,7 @@ public class RequestHelper {
     }
     String content = JsonTestHelper.serializeToString(rsaRequestBody);
     MockHttpServletRequestBuilder post = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content(content);
@@ -487,15 +474,15 @@ public class RequestHelper {
             + "  \"permissions\": [\n"
             + "     { \n"
             + "       \"actor\": \"" + grantee + "\",\n"
+            + "       \"path\": \"" + credentialName + "\",\n"
             + "       \"operations\": [\"" + join("\", \"", permissions) + "\"]\n"
             + "     }]"
             + "}");
   }
 
-  public static String regenerateCertificate(MockMvc mockMvc, String uuid,
-      boolean transitional) throws Exception{
+  public static String regenerateCertificate(MockMvc mockMvc, String uuid, boolean transitional, String token) throws Exception{
     MockHttpServletRequestBuilder regenerateRequest = post("/api/v1/certificates/" + uuid + "/regenerate")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + token)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON

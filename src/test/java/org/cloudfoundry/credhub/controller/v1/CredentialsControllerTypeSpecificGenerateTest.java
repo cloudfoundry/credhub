@@ -2,36 +2,17 @@ package org.cloudfoundry.credhub.controller.v1;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
-import org.cloudfoundry.credhub.credential.CryptSaltFactory;
-import org.cloudfoundry.credhub.credential.RsaCredentialValue;
-import org.cloudfoundry.credhub.credential.SshCredentialValue;
-import org.cloudfoundry.credhub.credential.StringCredentialValue;
-import org.cloudfoundry.credhub.credential.UserCredentialValue;
+import org.cloudfoundry.credhub.credential.*;
 import org.cloudfoundry.credhub.data.CredentialVersionDataService;
-import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
-import org.cloudfoundry.credhub.domain.CredentialVersion;
-import org.cloudfoundry.credhub.domain.Encryptor;
-import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
-import org.cloudfoundry.credhub.domain.RsaCredentialVersion;
-import org.cloudfoundry.credhub.domain.SshCredentialVersion;
-import org.cloudfoundry.credhub.domain.UserCredentialVersion;
+import org.cloudfoundry.credhub.domain.*;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
-import org.cloudfoundry.credhub.generator.CertificateGenerator;
-import org.cloudfoundry.credhub.generator.PasswordCredentialGenerator;
-import org.cloudfoundry.credhub.generator.RsaGenerator;
-import org.cloudfoundry.credhub.generator.SshGenerator;
-import org.cloudfoundry.credhub.generator.UserGenerator;
-import org.cloudfoundry.credhub.helper.JsonTestHelper;
+import org.cloudfoundry.credhub.generator.*;
 import org.cloudfoundry.credhub.request.DefaultCredentialGenerateRequest;
 import org.cloudfoundry.credhub.request.GenerationParameters;
-import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.request.StringGenerationParameters;
 import org.cloudfoundry.credhub.util.AuthConstants;
 import org.cloudfoundry.credhub.util.CurrentTimeProvider;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
-import org.cloudfoundry.credhub.view.PermissionsView;
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -48,7 +29,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.rules.SpringClassRule;
 import org.springframework.test.context.junit4.rules.SpringMethodRule;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -62,27 +42,15 @@ import java.util.Collection;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import static java.util.Arrays.asList;
 import static org.cloudfoundry.credhub.helper.TestHelper.mockOutCurrentTimeProvider;
-import static org.cloudfoundry.credhub.request.PermissionOperation.DELETE;
-import static org.cloudfoundry.credhub.request.PermissionOperation.READ;
-import static org.cloudfoundry.credhub.request.PermissionOperation.READ_ACL;
-import static org.cloudfoundry.credhub.request.PermissionOperation.WRITE;
-import static org.cloudfoundry.credhub.request.PermissionOperation.WRITE_ACL;
 import static org.cloudfoundry.credhub.util.MultiJsonPathMatcher.multiJsonPath;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.beans.SamePropertyValuesAs.samePropertyValuesAs;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -436,7 +404,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
   @Test
   public void shouldAcceptAnyCasingForType() throws Exception {
     MockHttpServletRequestBuilder request = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{" +
@@ -474,29 +442,6 @@ public class CredentialsControllerTypeSpecificGenerateTest {
             "$.version_created_at", FROZEN_TIME.toString()))
         .andExpect(status().isOk())
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON));
-  }
-
-  @Test
-  public void generatingANewCredential_addsFullPermissionsForCurrentUser() throws Exception {
-    MockHttpServletRequestBuilder request = createGenerateNewCredentialRequest();
-
-    mockMvc.perform(request);
-
-    MockHttpServletRequestBuilder getRequest = get("/api/v1/permissions?credential_name=" + CREDENTIAL_NAME)
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
-
-    MvcResult result = mockMvc.perform(getRequest)
-        .andExpect(status().isOk())
-        .andReturn();
-    String content = result.getResponse().getContentAsString();
-    PermissionsView acl = JsonTestHelper
-        .deserialize(content, PermissionsView.class);
-
-    assertThat(acl.getCredentialName(), equalTo(CREDENTIAL_NAME));
-    assertThat(acl.getPermissions(), Matchers.contains(
-        samePropertyValuesAs(
-            new PermissionEntry(AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
-                asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL)))));
   }
 
   @Test
@@ -556,7 +501,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
 
   private MockHttpServletRequestBuilder createGenerateNewCredentialRequest() {
     return post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{" +
@@ -575,7 +520,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
 
   private MockHttpServletRequestBuilder beforeEachOverwriteSetToTrue() {
     return post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{" +
@@ -588,7 +533,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
 
   private MockHttpServletRequestBuilder beforeEachOverwriteSetToFalse() {
     return post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{" +

@@ -29,10 +29,9 @@ import org.springframework.web.context.WebApplicationContext;
 import java.util.List;
 import java.util.function.Supplier;
 
-import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN;
-import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.cloudfoundry.credhub.util.AuthConstants.*;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -45,8 +44,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 @SpringBootTest(classes = CredentialManagerApp.class)
 //Not a Transactional test since manual cleanup plays more nicely with threads
 public class NoOverwriteTest {
-
   private static final String CREDENTIAL_NAME = "TEST-SECRET";
+
   @Autowired
   private WebApplicationContext webApplicationContext;
 
@@ -71,7 +70,7 @@ public class NoOverwriteTest {
   }
 
   @After
-  public void afterEach() throws Exception {
+  public void afterEach() {
     flyway.clean();
     flyway.setTarget(MigrationVersion.LATEST);
     flyway.migrate();
@@ -104,7 +103,7 @@ public class NoOverwriteTest {
 
     MockHttpServletResponse response1 = mockMvc
         .perform(get("/api/v1/data?name=/" + CREDENTIAL_NAME)
-            .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
+            .header("Authorization", "Bearer " + USER_A_TOKEN))
         .andDo(print())
         .andReturn().getResponse();
 
@@ -124,7 +123,7 @@ public class NoOverwriteTest {
       @Override
       public void run() {
         final MockHttpServletRequestBuilder requestBuilder = requestBuilderProvider.get()
-            .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+            .header("Authorization", "Bearer " + USER_A_TOKEN)
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)
             .content(
@@ -134,8 +133,8 @@ public class NoOverwriteTest {
                     + "\"overwrite\":false,"
                     + "\"name\":\"" + credentialName + "\","
                     + "\"additional_permissions\":[{"
-                    + "\"actor\":\"uaa-client:a-different-actor\","
-                    + "\"operations\": [\"read\"]"
+                    + "  \"actor\":\"uaa-client:a-different-actor\","
+                    + "  \"operations\": [\"read\"]"
                     + "}]"
                     + additionalJsonPayload1
                     + "\n" +
@@ -153,7 +152,7 @@ public class NoOverwriteTest {
       @Override
       public void run() {
         final MockHttpServletRequestBuilder post = requestBuilderProvider.get()
-            .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
+            .header("Authorization", "Bearer " + USER_B_TOKEN)
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)
             .content(

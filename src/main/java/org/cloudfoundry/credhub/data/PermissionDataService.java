@@ -1,14 +1,15 @@
 package org.cloudfoundry.credhub.data;
 
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
-import org.cloudfoundry.credhub.entity.PermissionData;
 import org.cloudfoundry.credhub.entity.Credential;
+import org.cloudfoundry.credhub.entity.PermissionData;
 import org.cloudfoundry.credhub.repository.PermissionRepository;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -18,8 +19,8 @@ import static com.google.common.collect.Lists.newArrayList;
 @Component
 public class PermissionDataService {
 
-  private PermissionRepository permissionRepository;
   private final CredentialDataService credentialDataService;
+  private PermissionRepository permissionRepository;
   private CEFAuditRecord auditRecord;
 
   @Autowired
@@ -37,24 +38,25 @@ public class PermissionDataService {
     return createViewsFromPermissionsFor(credential);
   }
 
-  public void savePermissions(
-      Credential credential,
-      List<PermissionEntry> permissions
-  ) {
-    List<PermissionData> existingPermissions = permissionRepository
-        .findAllByCredentialUuid(credential.getUuid());
+  public void savePermissionsWithLogging(List<PermissionEntry> permissions){
+    auditRecord.addAllResources(savePermissions(permissions));
+  }
 
+  public List<PermissionData> savePermissions(List<PermissionEntry> permissions) {
+    List<PermissionData> result = new ArrayList<>();
     for (PermissionEntry permission : permissions) {
-      upsertPermissions(credential, existingPermissions, permission.getActor(),
-          permission.getAllowedOperations());
+      String path = permission.getPath();
+      List<PermissionData> existingPermissions = permissionRepository.findAllByPath(path);
+      result.add(upsertPermissions(path, existingPermissions, permission.getActor(),
+          permission.getAllowedOperations()));
     }
+
+    return result;
   }
 
   public List<PermissionOperation> getAllowedOperations(String name, String actor) {
     List<PermissionOperation> operations = newArrayList();
-    Credential credential = credentialDataService.find(name);
-    PermissionData permissionData = permissionRepository
-        .findByCredentialAndActor(credential, actor);
+    PermissionData permissionData = permissionRepository.findByPathAndActor(name, actor);
 
     if (permissionData != null) {
       if (permissionData.hasReadPermission()) {
@@ -78,9 +80,8 @@ public class PermissionDataService {
   }
 
   public boolean deletePermissions(String name, String actor) {
-    Credential credential = credentialDataService.find(name);
-    auditRecord.setResource(credential);
-    return permissionRepository.deleteByCredentialAndActor(credential, actor) > 0;
+    auditRecord.setResource(permissionRepository.findByPathAndActor(name, actor));
+    return permissionRepository.deleteByPathAndActor(name, actor) > 0;
   }
 
   public boolean hasNoDefinedAccessControl(String name) {
@@ -88,26 +89,42 @@ public class PermissionDataService {
     if (credential == null) {
       return false;
     }
-    return (permissionRepository.findAllByCredentialUuid(credential.getUuid()).size() == 0);
+    return (permissionRepository.findAllByPath(name).size() == 0);
   }
 
-  public boolean hasPermission(String user, String name, PermissionOperation requiredPermission) {
-    Credential credential = credentialDataService.find(name);
-    final PermissionData permissionData =
-        permissionRepository.findByCredentialAndActor(credential, user);
-    return permissionData != null && permissionData.hasPermission(requiredPermission);
+  public boolean hasPermission(String user, String path, PermissionOperation requiredPermission) {
+    for (PermissionData permissionData : permissionRepository.findByPathsAndActor(findAllPaths(path), user)) {
+      if (permissionData.hasPermission(requiredPermission)) {
+        return true;
+      }
+    }
+    return false;
   }
 
-  private void upsertPermissions(Credential credential,
+  private PermissionData upsertPermissions(String path,
                                  List<PermissionData> accessEntries, String actor, List<PermissionOperation> operations) {
     PermissionData entry = findAccessEntryForActor(accessEntries, actor);
 
     if (entry == null) {
-      entry = new PermissionData(credential, actor);
+      entry = new PermissionData(path, actor);
     }
 
     entry.enableOperations(operations);
     permissionRepository.saveAndFlush(entry);
+
+    return entry;
+  }
+
+  private List<String> findAllPaths(String path) {
+    List<String> result = new ArrayList<>();
+    result.add(path);
+    for (int i = 0; i < path.length(); i++) {
+      if (path.charAt(i) == '/') {
+        result.add(path.substring(0, i + 1) + "*");
+      }
+    }
+
+    return result;
   }
 
   private PermissionEntry createViewFor(PermissionData data) {
@@ -117,15 +134,16 @@ public class PermissionDataService {
     PermissionEntry entry = new PermissionEntry();
     List<PermissionOperation> operations = data.generateAccessControlOperations();
     entry.setAllowedOperations(operations);
+    entry.setPath(data.getPath());
     entry.setActor(data.getActor());
     return entry;
   }
 
   private List<PermissionEntry> createViewsFromPermissionsFor(Credential credential) {
-    return permissionRepository.findAllByCredentialUuid(credential.getUuid())
-        .stream()
-        .map(this::createViewFor)
-        .collect(Collectors.toList());
+    List<PermissionData> data = permissionRepository.findAllByPath(credential.getName());
+    auditRecord.addAllResources(data);
+
+    return data.stream().map(this::createViewFor).collect(Collectors.toList());
   }
 
   private PermissionData findAccessEntryForActor(List<PermissionData> accessEntries,

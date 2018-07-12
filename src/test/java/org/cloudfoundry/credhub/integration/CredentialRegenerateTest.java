@@ -3,15 +3,10 @@ package org.cloudfoundry.credhub.integration;
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.data.CredentialVersionDataService;
 import org.cloudfoundry.credhub.data.EncryptionKeyCanaryDataService;
-import org.cloudfoundry.credhub.domain.Encryptor;
-import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
-import org.cloudfoundry.credhub.domain.RsaCredentialVersion;
-import org.cloudfoundry.credhub.domain.SshCredentialVersion;
-import org.cloudfoundry.credhub.domain.UserCredentialVersion;
+import org.cloudfoundry.credhub.domain.*;
 import org.cloudfoundry.credhub.entity.EncryptionKeyCanary;
 import org.cloudfoundry.credhub.entity.PasswordCredentialVersionData;
 import org.cloudfoundry.credhub.request.StringGenerationParameters;
-import org.cloudfoundry.credhub.util.AuthConstants;
 import org.cloudfoundry.credhub.util.CurrentTimeProvider;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.junit.Before;
@@ -21,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -32,29 +26,21 @@ import org.springframework.web.context.WebApplicationContext;
 import java.time.Instant;
 import java.util.function.Consumer;
 
-import static org.cloudfoundry.credhub.helper.RequestHelper.expect404WhileRegeneratingCertificate;
-import static org.cloudfoundry.credhub.helper.RequestHelper.generateCa;
-import static org.cloudfoundry.credhub.helper.RequestHelper.generateCertificate;
-import static org.cloudfoundry.credhub.helper.RequestHelper.grantPermissions;
-import static org.cloudfoundry.credhub.helper.RequestHelper.revokePermissions;
+import static org.cloudfoundry.credhub.helper.RequestHelper.*;
 import static org.cloudfoundry.credhub.helper.TestHelper.mockOutCurrentTimeProvider;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
+import static org.cloudfoundry.credhub.util.AuthConstants.*;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringRunner.class)
-@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(value = {"unit-test", "unit-test-permissions"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
-@TestPropertySource(properties = "security.authorization.acls.enabled=true")
 @Transactional
 public class CredentialRegenerateTest {
   private static final Instant FROZEN_TIME = Instant.ofEpochSecond(1400011001L);
@@ -103,7 +89,7 @@ public class CredentialRegenerateTest {
     fakeTimeSetter.accept(FROZEN_TIME.plusSeconds(10).toEpochMilli());
 
     MockHttpServletRequestBuilder request = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{\"regenerate\":true,\"name\":\"my-password\"}");
@@ -132,7 +118,7 @@ public class CredentialRegenerateTest {
     fakeTimeSetter.accept(FROZEN_TIME.plusSeconds(10).toEpochMilli());
 
     MockHttpServletRequestBuilder request = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{\"regenerate\":true,\"name\":\"my-rsa\"}");
@@ -164,7 +150,7 @@ public class CredentialRegenerateTest {
     fakeTimeSetter.accept(FROZEN_TIME.plusSeconds(10).toEpochMilli());
 
     MockHttpServletRequestBuilder request = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{\"regenerate\":true,\"name\":\"my-ssh\"}");
@@ -190,8 +176,7 @@ public class CredentialRegenerateTest {
     StringGenerationParameters generationParameters = new StringGenerationParameters();
     generationParameters.setExcludeNumber(true);
     generationParameters.setUsername("Darth Vader");
-    originalCredential
-        .setPassword("original-password");
+    originalCredential.setPassword("original-password");
     originalCredential.setUsername("Darth Vader");
     originalCredential.setSalt("pepper");
     originalCredential.setGenerationParameters(generationParameters);
@@ -202,7 +187,7 @@ public class CredentialRegenerateTest {
     fakeTimeSetter.accept(FROZEN_TIME.plusSeconds(10).toEpochMilli());
 
     MockHttpServletRequestBuilder request = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{\"regenerate\":true,\"name\":\"the-user\"}");
@@ -223,7 +208,7 @@ public class CredentialRegenerateTest {
   @Test
   public void regeneratingACredentialThatDoesNotExist_returnsAnError() throws Exception {
     MockHttpServletRequestBuilder request = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{\"regenerate\":true,\"name\":\"my-password\"}");
@@ -251,7 +236,7 @@ public class CredentialRegenerateTest {
         "}";
 
     MockHttpServletRequestBuilder request = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{\"regenerate\":true,\"name\":\"my-password\"}");
@@ -276,7 +261,7 @@ public class CredentialRegenerateTest {
         "}";
 
     MockHttpServletRequestBuilder request = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{\"regenerate\":true,\"name\":\"my-user\"}");
@@ -308,7 +293,7 @@ public class CredentialRegenerateTest {
         "}";
 
     MockHttpServletRequestBuilder request = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{\"regenerate\":true,\"name\":\"my-password\"}");
@@ -321,16 +306,15 @@ public class CredentialRegenerateTest {
 
   @Test
   public void certificateRegeneration_whenUserNotAuthorizedToReadCa_shouldReturnCorrectError() throws Exception {
-    generateCa(mockMvc, "picard", AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+    generateCa(mockMvc, "ca", ALL_PERMISSIONS_TOKEN);
 
-    grantPermissions(mockMvc, "/picard", AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "uaa-client:credhub_test",
-        "read");
+    grantPermissions(mockMvc, "/ca", ALL_PERMISSIONS_TOKEN, USER_A_ACTOR_ID, "read");
 
-    generateCertificate(mockMvc, "riker", "picard", AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
+    generateCertificate(mockMvc, "/user-a/cert", "ca", USER_A_TOKEN);
 
-    revokePermissions(mockMvc, "/picard", AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "uaa-client:credhub_test");
+    revokePermissions(mockMvc, "/ca", ALL_PERMISSIONS_TOKEN, USER_A_ACTOR_ID);
 
-    expect404WhileRegeneratingCertificate(mockMvc, "riker", AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN,
+    expect404WhileRegeneratingCertificate(mockMvc, "/user-a/cert", USER_A_TOKEN,
         "The request could not be completed because the credential does not exist or you do not have sufficient authorization.");
   }
 }

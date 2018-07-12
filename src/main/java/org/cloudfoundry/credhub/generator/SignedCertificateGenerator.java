@@ -16,6 +16,7 @@ import org.cloudfoundry.credhub.util.CurrentTimeProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.security.auth.x500.X500Principal;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyPair;
@@ -26,7 +27,6 @@ import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
-import javax.security.auth.x500.X500Principal;
 
 import static org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils.parseExtensionValue;
 

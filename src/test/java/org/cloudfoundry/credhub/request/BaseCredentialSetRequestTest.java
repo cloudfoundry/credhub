@@ -78,7 +78,7 @@ public class BaseCredentialSetRequestTest {
         "\"value\":\"some-value\"" +
         "}";
     BaseCredentialSetRequest setRequest = JsonTestHelper.deserialize(json, BaseCredentialSetRequest.class);
-    PermissionEntry expectedEntry = new PermissionEntry("my-actor", Arrays.asList(READ, WRITE));
+    PermissionEntry expectedEntry = new PermissionEntry("my-actor", "test-path", Arrays.asList(READ, WRITE));
 
     setRequest.addCurrentUser(expectedEntry);
 
@@ -86,22 +86,23 @@ public class BaseCredentialSetRequestTest {
   }
 
   @Test
-  public void addCurrentUser_whenTheArePermissionsInRequest_addsPermissionsForCurrentUser() {
+  public void addCurrentUser_whenThereArePermissionsInRequest_addsPermissionsForCurrentUser() {
     // language=JSON
     String json = "{\n" +
-        "\"name\":\"some-name\"," +
+        "\"name\":\"test-path\"," +
         "\"type\":\"password\"," +
         "\"value\":\"some-value\"," +
         "\"additional_permissions\": [{\n" +
         "  \"actor\": \"my-other-actor\",\n" +
-        "  \"operations\": [\"read\"]\n" +
+        "  \"operations\": [\"read\"],\n" +
+        "  \"path\": \"test-path\"\n" +
         "}]\n" +
         "}";
     BaseCredentialSetRequest setRequest = JsonTestHelper.deserialize(json, BaseCredentialSetRequest.class);
     PermissionEntry currentUserPermissionEntry =
-        new PermissionEntry("my-actor", Arrays.asList(READ, WRITE));
+        new PermissionEntry("my-actor", "test-path", Arrays.asList(READ, WRITE));
     PermissionEntry passedPermissionEntry =
-        new PermissionEntry("my-other-actor", Arrays.asList(READ));
+        new PermissionEntry("my-other-actor", "test-path", Arrays.asList(READ));
     setRequest.addCurrentUser(currentUserPermissionEntry);
     assertThat(setRequest.getAdditionalPermissions(),
         containsInAnyOrder(
@@ -122,7 +123,7 @@ public class BaseCredentialSetRequestTest {
         "}]\n" +
         "}";
     BaseCredentialSetRequest setRequest = JsonTestHelper.deserialize(json, BaseCredentialSetRequest.class);
-    PermissionEntry expectedEntry = new PermissionEntry("my-actor", Arrays.asList(READ, WRITE));
+    PermissionEntry expectedEntry = new PermissionEntry("my-actor", "test-path", Arrays.asList(READ, WRITE));
 
     setRequest.addCurrentUser(expectedEntry);
 

@@ -13,8 +13,11 @@ import static com.google.common.collect.Lists.newArrayList;
 @JsonAutoDetect
 @Validated
 public class PermissionEntry {
-  @NotEmpty(message = "error.acl.missing_actor")
+  @NotEmpty(message = "error.permission.missing_actor")
   private String actor;
+
+  @NotEmpty(message = "error.permission.missing_path")
+  private String path;
 
   @NotEmpty(message = "error.permission.missing_operations")
   @JsonProperty("operations")
@@ -23,12 +26,13 @@ public class PermissionEntry {
   public PermissionEntry() {
   }
 
-  public PermissionEntry(String actor, PermissionOperation... operations) {
-    this(actor, newArrayList(operations));
+  public PermissionEntry(String actor, String path, PermissionOperation... operations) {
+    this(actor, path, newArrayList(operations));
   }
 
-  public PermissionEntry(String actor, List<PermissionOperation> operations) {
+  public PermissionEntry(String actor, String path, List<PermissionOperation> operations) {
     this.actor = actor;
+    this.path = path;
     this.allowedOperations = operations;
   }
 
@@ -46,5 +50,13 @@ public class PermissionEntry {
 
   public void setAllowedOperations(List<PermissionOperation> allowedOperations) {
     this.allowedOperations = allowedOperations;
+  }
+
+  public String getPath() {
+    return path;
+  }
+
+  public void setPath(String path) {
+    this.path = path;
   }
 }

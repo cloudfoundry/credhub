@@ -50,7 +50,7 @@ import java.util.stream.Collectors;
 
 import static org.cloudfoundry.credhub.helper.JsonTestHelper.parse;
 import static org.cloudfoundry.credhub.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
-import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
+import static org.cloudfoundry.credhub.util.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -192,7 +192,7 @@ public class EncryptionKeyRotatorTest {
     String passwordName = name + "-password";
 
     MockHttpServletRequestBuilder post = post("/api/v1/data")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{"
@@ -229,7 +229,7 @@ public class EncryptionKeyRotatorTest {
         not(equalTo(secondEncryption.getEncryptedGenerationParameters())));
 
     final MockHttpServletRequestBuilder get = get("/api/v1/data?name=" + passwordName)
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN);
     this.mockMvc.perform(get).andExpect(status().isOk())
         .andExpect(jsonPath(".data[0].value").value(originalPassword));
   }
@@ -239,7 +239,7 @@ public class EncryptionKeyRotatorTest {
     String certificateName = name + "-certificate";
 
     MockHttpServletRequestBuilder post = post("/api/v1/data")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{"
@@ -275,7 +275,7 @@ public class EncryptionKeyRotatorTest {
     assertThat(firstEncryption, not(equalTo(secondEncryption.getEncryptedValueData().getEncryptedValue())));
 
     final MockHttpServletRequestBuilder get = get("/api/v1/data?name=" + certificateName)
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN);
     this.mockMvc.perform(get).andExpect(status().isOk())
         .andExpect(jsonPath("$.data[0].value.private_key").value(originalCert));
   }

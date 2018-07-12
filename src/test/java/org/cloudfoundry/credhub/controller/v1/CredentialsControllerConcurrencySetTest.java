@@ -84,7 +84,7 @@ public class CredentialsControllerConcurrencySetTest {
       @Override
       public void run() {
         final MockHttpServletRequestBuilder putReq = put("/api/v1/data")
-            .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+            .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)
             .content("{"
@@ -104,7 +104,7 @@ public class CredentialsControllerConcurrencySetTest {
       @Override
       public void run() {
         final MockHttpServletRequestBuilder put = put("/api/v1/data")
-            .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+            .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)
             .content("{"

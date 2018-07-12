@@ -6,7 +6,6 @@ import org.cloudfoundry.credhub.constants.CredentialType;
 import org.cloudfoundry.credhub.credential.StringCredentialValue;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.entity.PermissionData;
-import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.repository.PermissionRepository;
 import org.cloudfoundry.credhub.request.PasswordSetRequest;
 import org.cloudfoundry.credhub.request.PermissionEntry;
@@ -34,9 +33,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
@@ -90,7 +87,7 @@ public class PermissionInitializationTest {
   public void itAddsNewPermissions() {
     applicationEventPublisher.publishEvent(new ContextRefreshedEvent(applicationContext));
 
-    List<PermissionData> savedPermissions = permissionRepository.findAllByCredentialUuid(credentialUUID);
+    List<PermissionData> savedPermissions = permissionRepository.findAllByPath(credentialPath);
     assertThat(savedPermissions, hasSize(2));
     assertThat(savedPermissions.stream().map(p -> p.getActor()).collect(Collectors.toList()), containsInAnyOrder(actors.get(0), actors.get(1)));
     assertThat(savedPermissions.stream().allMatch(p -> p.hasReadPermission() && p.hasWritePermission()), is(true));
@@ -102,11 +99,12 @@ public class PermissionInitializationTest {
     PermissionEntry permissionEntry = new PermissionEntry();
     permissionEntry.setActor(actors.get(0));
     permissionEntry.setAllowedOperations(Arrays.asList(PermissionOperation.READ, PermissionOperation.WRITE, PermissionOperation.READ_ACL, PermissionOperation.WRITE_ACL));
-    permissionService.savePermissions(credentialVersion, Arrays.asList(permissionEntry));
+    permissionEntry.setPath("/test/path");
+    permissionService.savePermissions(Arrays.asList(permissionEntry));
 
     applicationEventPublisher.publishEvent(new ContextRefreshedEvent(applicationContext));
 
-    List<PermissionData> savedPermissions = permissionRepository.findAllByCredentialUuid(credentialUUID);
+    List<PermissionData> savedPermissions = permissionRepository.findAllByPath(credentialPath);
     assertThat(savedPermissions, hasSize(2));
     assertThat(savedPermissions.stream().map(p -> p.getActor()).collect(Collectors.toList()), containsInAnyOrder(actors.get(0), actors.get(1)));
     assertThat(savedPermissions.stream().allMatch(p -> p.hasReadPermission() && p.hasWritePermission()), is(true));
@@ -115,19 +113,9 @@ public class PermissionInitializationTest {
     assertThat(savedPermissions.stream().allMatch(p -> p.hasDeletePermission()), is(false));
   }
 
-  @Test(expected = EntryNotFoundException.class)
-  public void itThrowsAnExceptionIfCredentialDoesntExist() {
-    Permissions.Permission permission = new Permissions.Permission();
-    permission.setPath("/doesnt/exist");
-    permission.setActors(actors);
-    permission.setOperations(Arrays.asList(PermissionOperation.READ));
-    this.permissions.setPermissions(Arrays.asList(permission));
-
-    applicationEventPublisher.publishEvent(new ContextRefreshedEvent(applicationContext));
-  }
 
   @Test
-  public void itDoesntThrowAnExceptionIfAuthorizationIsEmpty() {
+  public void itThrowsAnExceptionIfAuthorizationIsEmpty() {
     PermissionInitializer initializer = new PermissionInitializer(null, new Permissions(),null);
     initializer.seed();
   }

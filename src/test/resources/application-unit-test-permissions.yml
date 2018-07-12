@@ -1,0 +1,32 @@
+security:
+  authorization:
+    acls:
+      enabled: true
+    permissions:
+    - path: /*
+      operations: [read, write, delete, read_acl, write_acl]
+      actors: ["uaa-client:all-permissions"]
+
+    - path: /user-a/*
+      operations: [read, write, delete, read_acl, write_acl]
+      actors: ["uaa-client:user-a"]
+
+    - path: /user-a-cred
+      operations: [read, write, delete, read_acl, write_acl]
+      actors: ["uaa-client:user-a"]
+
+    - path: /user-b/*
+      operations: [read, write, delete, read_acl, write_acl]
+      actors: ["uaa-client:user-b"]
+
+    - path: /user-b-cred
+      operations: [read, write, delete, read_acl, write_acl]
+      actors: ["uaa-client:user-b"]
+
+    - path: /shared-read-write-delete/*
+      operations: [read, write, delete]
+      actors: ["uaa-client:user-a", "uaa-client:user-b"]
+
+    - path: /shared-read-only/*
+      operations: [read]
+      actors: ["uaa-client:user-a", "uaa-client:user-b"]

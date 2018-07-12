@@ -12,7 +12,11 @@ import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.helper.TestHelper;
-import org.cloudfoundry.credhub.request.*;
+import org.cloudfoundry.credhub.request.CertificateSetRequest;
+import org.cloudfoundry.credhub.request.PasswordSetRequest;
+import org.cloudfoundry.credhub.request.PermissionEntry;
+import org.cloudfoundry.credhub.request.StringGenerationParameters;
+import org.cloudfoundry.credhub.request.UserSetRequest;
 import org.cloudfoundry.credhub.service.PermissionService;
 import org.cloudfoundry.credhub.service.PermissionedCredentialService;
 import org.cloudfoundry.credhub.util.TestConstants;
@@ -112,7 +116,7 @@ public class SetHandlerTest {
     subject.handle(setRequest);
 
     verify(credentialService).save(existingCredMock, password, setRequest);
-    verify(permissionService).savePermissionsForUser(credentialVersion, accessControlEntries, false);
+    verify(permissionService).savePermissionsForUser(accessControlEntries);
   }
 
 
@@ -130,7 +134,7 @@ public class SetHandlerTest {
     subject.handle(setRequest);
 
     verify(credentialService).save(null, password, setRequest);
-    verify(permissionService).savePermissionsForUser(credentialVersion, accessControlEntries, true);
+    verify(permissionService).savePermissionsForUser(accessControlEntries);
   }
 
   @Test
@@ -153,7 +157,7 @@ public class SetHandlerTest {
         userCredentialValue,
         setRequest
     );
-    verify(permissionService).savePermissionsForUser(credentialVersion, accessControlEntries, true);
+    verify(permissionService).savePermissionsForUser(accessControlEntries);
   }
 
   @Test
@@ -173,7 +177,7 @@ public class SetHandlerTest {
     subject.handle(setRequest);
 
     verify(credentialService).save(null, certificateValue, setRequest);
-    verify(permissionService).savePermissionsForUser(credentialVersion, accessControlEntries, true);
+    verify(permissionService).savePermissionsForUser(accessControlEntries);
   }
 
   @Test
@@ -211,6 +215,6 @@ public class SetHandlerTest {
 
     verify(credentialService).save( eq(null), credentialValueArgumentCaptor.capture(), eq(setRequest));
     assertThat(credentialValueArgumentCaptor.getValue(), samePropertyValuesAs(expectedCredentialValue));
-    verify(permissionService).savePermissionsForUser(credentialVersion, accessControlEntries, true);
+    verify(permissionService).savePermissionsForUser(accessControlEntries);
   }
 }

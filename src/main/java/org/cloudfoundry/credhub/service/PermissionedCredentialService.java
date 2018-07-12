@@ -231,12 +231,10 @@ public class PermissionedCredentialService {
 
   private void validateCredentialSave(String credentialName, String type, List<PermissionEntry> accessControlEntries,
       CredentialVersion existingCredentialVersion) {
-    if (existingCredentialVersion != null) {
-      verifyCredentialWritePermission(credentialName);
-    }
-
-    if (existingCredentialVersion != null && accessControlEntries.size() > 0) {
       verifyWritePermission(credentialName);
+
+    if (accessControlEntries.size() > 0) {
+      verifyWriteAclPermission(credentialName);
     }
 
     if (existingCredentialVersion != null && !existingCredentialVersion.getCredentialType().equals(type)) {
@@ -244,14 +242,24 @@ public class PermissionedCredentialService {
     }
   }
 
-  private void verifyCredentialWritePermission(String credentialName) {
+  private void verifyWritePermission(String credentialName) {
+//    System.out.println(userContextHolder.);
+//    if (userContextHolder.getUserContext() == null) {
+//      System.out.println("**********************the user context is nulllllll");
+//    }
+//    System.out.println(userContextHolder.getUserContext().toString());
+
+    if(userContextHolder.getUserContext() == null){
+      return;
+    }
+
     if (!permissionCheckingService
         .hasPermission(userContextHolder.getUserContext().getActor(), credentialName, WRITE)) {
       throw new PermissionException("error.credential.invalid_access");
     }
   }
 
-  private void verifyWritePermission(String credentialName) {
+  private void verifyWriteAclPermission(String credentialName) {
     if (!permissionCheckingService
         .hasPermission(userContextHolder.getUserContext().getActor(), credentialName, WRITE_ACL)) {
       throw new PermissionException("error.credential.invalid_access");

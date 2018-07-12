@@ -67,7 +67,7 @@ public class GenerateHandlerTest {
     subject.handle(generateRequest);
 
     verify(credentialService).save(null, null, generateRequest);
-    verify(permissionService).savePermissionsForUser(credentialVersion, accessControlEntries, true);
+    verify(permissionService).savePermissionsForUser(accessControlEntries);
   }
 
   @Test

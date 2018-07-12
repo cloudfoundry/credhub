@@ -56,7 +56,7 @@ public class DefaultExceptionHandlerTest {
     when(credentialsHandler.getNCredentialVersions(eq("/foo"), any())).thenThrow(new RuntimeException());
 
     final MockHttpServletRequestBuilder request = get("/api/v1/data?name=foo")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON);
 
     String expectedError = "An application error occurred. Please contact your CredHub administrator.";

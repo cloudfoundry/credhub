@@ -33,14 +33,14 @@ public class PermissionsHandler {
   public PermissionsView getPermissions(String name) {
     CredentialVersion credentialVersion = permissionedCredentialService.findMostRecent(name);
     final List<PermissionEntry> permissions = permissionService.getPermissions(credentialVersion);
-    auditRecord.setResource(credentialVersion.getCredential());
     return new PermissionsView(credentialVersion.getName(), permissions);
   }
 
   public void setPermissions(PermissionsRequest request) {
-    CredentialVersion credentialVersion = permissionedCredentialService.findMostRecent(request.getCredentialName());
-    permissionService.savePermissionsForUser(credentialVersion, request.getPermissions(), false);
-    auditRecord.setResource(credentialVersion.getCredential());
+    for(PermissionEntry entry : request.getPermissions()){
+      entry.setPath(request.getCredentialName());
+    }
+    permissionService.savePermissionsForUser(request.getPermissions());
   }
 
   public void deletePermissionEntry(String credentialName, String actor) {

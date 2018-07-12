@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import static org.cloudfoundry.credhub.helper.RequestHelper.generatePassword;
-import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
+import static org.cloudfoundry.credhub.util.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -60,10 +60,10 @@ public class CredentialFindTest {
   @Test
   public void findCredentials_byPath_returnsCredentialMetaData() throws Exception {
     String substring = credentialName.substring(0, credentialName.lastIndexOf("/"));
-    generatePassword(mockMvc, credentialName, true, 20);
+    generatePassword(mockMvc, credentialName, true, 20, ALL_PERMISSIONS_TOKEN);
 
     final MockHttpServletRequestBuilder getResponse = get("/api/v1/data?path=" + substring)
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON);
 
     mockMvc.perform(getResponse)
@@ -79,7 +79,7 @@ public class CredentialFindTest {
     assertTrue(credentialName.contains(path));
 
     MockHttpServletRequestBuilder request = get("/api/v1/data?path=" + path.toUpperCase())
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON);
 
     mockMvc.perform(request).andExpect(status().isOk())
@@ -90,13 +90,12 @@ public class CredentialFindTest {
   @Test
   public void findCredentials_byPath_shouldReturnAllChildrenPrefixedWithThePathCaseInsensitively() throws Exception {
     final String path = "/my-namespace";
-
-    generatePassword(mockMvc, credentialName, true, 20);
+    generatePassword(mockMvc, credentialName, true, 20, ALL_PERMISSIONS_TOKEN);
 
     assertTrue(credentialName.startsWith(path));
 
     final MockHttpServletRequestBuilder getRequest = get("/api/v1/data?path=" + path.toUpperCase())
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON);
 
     mockMvc.perform(getRequest).andExpect(status().isOk())
@@ -111,7 +110,7 @@ public class CredentialFindTest {
     assertTrue(credentialName.startsWith(path));
 
     final MockHttpServletRequestBuilder get = get("/api/v1/data?path=" + path)
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON);
 
     mockMvc.perform(get).andExpect(status().isOk())
@@ -122,22 +121,21 @@ public class CredentialFindTest {
   @Test
   public void findCredentials_byPath_savesTheAuditLog() throws Exception {
     String substring = credentialName.substring(0, credentialName.lastIndexOf("/"));
-
-    generatePassword(mockMvc, credentialName, true, 20);
+    generatePassword(mockMvc, credentialName, true, 20, ALL_PERMISSIONS_TOKEN);
 
     final MockHttpServletRequestBuilder request = get("/api/v1/data?path=" + substring)
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON);
 
     mockMvc.perform(request);
   }
 
   private ResultActions findCredentialsByNameLike() throws Exception {
-    generatePassword(mockMvc, credentialName, true, 20);
+    generatePassword(mockMvc, credentialName, true, 20, ALL_PERMISSIONS_TOKEN);
     String substring = credentialName.substring(4).toUpperCase();
 
     final MockHttpServletRequestBuilder get = get("/api/v1/data?name-like=" + substring)
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON);
 
     return mockMvc.perform(get);

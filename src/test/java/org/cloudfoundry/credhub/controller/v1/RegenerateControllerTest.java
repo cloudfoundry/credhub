@@ -62,7 +62,7 @@ public class RegenerateControllerTest {
 
   private MockHttpServletRequestBuilder makeRegenerateRequest() {
     return post("/api/v1/regenerate")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON)
         .content("{\n"
@@ -72,7 +72,7 @@ public class RegenerateControllerTest {
 
   private MockHttpServletRequestBuilder makeBulkRegenerateRequest() {
     return post("/api/v1/bulk-regenerate")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON)
         .content("{\n"

@@ -121,4 +121,19 @@ public class UserContext {
     final RDN[] rdNs = dnName.getRDNs(BCStyle.OU);
     return rdNs[0].getFirst().getValue().toString();
   }
+
+  @Override
+  public String toString() {
+    return "UserContext{" +
+        "userId='" + userId + '\'' +
+        ", userName='" + userName + '\'' +
+        ", issuer='" + issuer + '\'' +
+        ", validFrom=" + validFrom +
+        ", validUntil=" + validUntil +
+        ", clientId='" + clientId + '\'' +
+        ", scope='" + scope + '\'' +
+        ", grantType='" + grantType + '\'' +
+        ", authMethod='" + authMethod + '\'' +
+        '}';
+  }
 }

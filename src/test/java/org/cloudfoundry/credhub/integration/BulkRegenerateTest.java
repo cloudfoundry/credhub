@@ -16,8 +16,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -28,26 +28,22 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.cloudfoundry.credhub.helper.RequestHelper.getCertificateId;
-import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID;
-import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN;
-import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
+import static org.cloudfoundry.credhub.util.AuthConstants.*;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(value = {"unit-test", "unit-test-permissions"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
-@TestPropertySource(properties = "security.authorization.acls.enabled=true")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class BulkRegenerateTest {
 
   private static final String API_V1_DATA_ENDPOINT = "/api/v1/data";
@@ -96,11 +92,10 @@ public class BulkRegenerateTest {
     encryptionKeyCanaryRepository.flush();
   }
 
-
   @Test
   public void regeneratingCertificatesSignedByCA_shouldRegenerateCertificates() throws Exception {
     MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
-        .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
+        .header("Authorization", "Bearer " + USER_A_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
@@ -126,7 +121,7 @@ public class BulkRegenerateTest {
     generateSignedCertificate("/a-cert-to-regenerate", "cert to regenerate", "/ca-to-rotate");
 
     MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
-        .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
+        .header("Authorization", "Bearer " + USER_A_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
@@ -150,11 +145,9 @@ public class BulkRegenerateTest {
   }
 
   @Test
-  public void regeneratingCertificatesSignedByCA_whenUserCannotReadCa_shouldFailAndNotRotateAnyCertificates()
-      throws Exception {
-    //revoke read access to ca
-    MockHttpServletRequestBuilder revokeCaReadAccess = delete(API_V1_PERMISSION_ENDPOINT + "?credential_name=/ca-to-rotate&actor=" + UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID)
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+  public void regeneratingCertificatesSignedByCA_whenUserCannotReadCa_shouldFailAndNotRotateAnyCertificates() throws Exception {
+    MockHttpServletRequestBuilder revokeCaReadAccess = delete(API_V1_PERMISSION_ENDPOINT + "?credential_name=/ca-to-rotate&actor=" + USER_A_ACTOR_ID)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON);
 
     mockMvc.perform(revokeCaReadAccess)
@@ -164,7 +157,7 @@ public class BulkRegenerateTest {
     assertThat(credentialVersionDataService.findAllByName("/cert-to-regenerate-as-well").size(), equalTo(1));
 
     MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
-        .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
+        .header("Authorization", "Bearer " + USER_A_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
@@ -181,20 +174,17 @@ public class BulkRegenerateTest {
   }
 
   @Test
-  public void regeneratingCertificatesSignedByCA_whenUserCannotWriteToOneOfTheCertificates_shouldFailAndNotRotateAnyCertificates()
-      throws Exception {
-    //revoke write access to second certificate
+  public void regeneratingCertificatesSignedByCA_whenUserCannotWriteToOneOfTheCertificates_shouldFailAndNotRotateAnyCertificates() throws Exception {
     MockHttpServletRequestBuilder revokeWriteAccessRequest =
-        delete(API_V1_PERMISSION_ENDPOINT + "?credential_name=/cert-to-regenerate&actor=" +
-            UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID)
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        delete(API_V1_PERMISSION_ENDPOINT + "?credential_name=/cert-to-regenerate&actor=" + USER_A_ACTOR_ID)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON);
 
     mockMvc.perform(revokeWriteAccessRequest)
         .andExpect(status().isNoContent());
 
     MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
-        .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
+        .header("Authorization", "Bearer " + USER_A_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
@@ -212,18 +202,16 @@ public class BulkRegenerateTest {
 
   @Test
   public void regeneratingByCA_PersistsAnAuditEntry_whenRegenerationFails() throws Exception {
-    //revoke write access to second certificate
     MockHttpServletRequestBuilder revokeWriteAccessRequest =
-        delete(API_V1_PERMISSION_ENDPOINT + "?credential_name=/cert-to-regenerate&actor=" +
-            UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID)
-            .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        delete(API_V1_PERMISSION_ENDPOINT + "?credential_name=/cert-to-regenerate&actor=" + USER_A_ACTOR_ID)
+            .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
             .accept(APPLICATION_JSON);
 
     mockMvc.perform(revokeWriteAccessRequest)
         .andExpect(status().isNoContent());
 
     MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
-        .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
+        .header("Authorization", "Bearer " + USER_A_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
@@ -237,18 +225,16 @@ public class BulkRegenerateTest {
   }
 
   @Test
-  public void regeneratingCertificatesSignedByCA_whenUserCannotWriteToAllOfTheCertificates_shouldFailAndNotRotateAnyCertificates()
-      throws Exception {
-    //revoke read access to ca
-    MockHttpServletRequestBuilder revokeCaReadAccess = delete(API_V1_PERMISSION_ENDPOINT + "?credential_name=/cert-to-regenerate-as-well&actor=" + UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID)
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+  public void regeneratingCertificatesSignedByCA_whenUserCannotWriteToAllOfTheCertificates_shouldFailAndNotRotateAnyCertificates() throws Exception {
+    MockHttpServletRequestBuilder revokeCaReadAccess = delete(API_V1_PERMISSION_ENDPOINT + "?credential_name=/cert-to-regenerate-as-well&actor=" + USER_A_ACTOR_ID)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON);
 
     mockMvc.perform(revokeCaReadAccess)
         .andExpect(status().isNoContent());
 
     MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
-        .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
+        .header("Authorization", "Bearer " + USER_A_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
@@ -267,7 +253,7 @@ public class BulkRegenerateTest {
   @Test
   public void regeneratingCertificatesSignedByCA_whenSignedByIsMissing_returns400() throws Exception {
     MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
-        .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
@@ -285,7 +271,7 @@ public class BulkRegenerateTest {
     generateSignedCertificate("/leaf-cert", "cert to regenerate", "/intermediate-cert");
 
     MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
-        .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
@@ -315,16 +301,15 @@ public class BulkRegenerateTest {
     generateIntermediateCA("/intermediate-cert", "cert to regenerate", "/ca-cert");
     generateSignedCertificate("/leaf-cert", "cert to regenerate", "/intermediate-cert");
 
-    //revoke  access to one certificate
-    MockHttpServletRequestBuilder revokeReadAccess = delete(API_V1_PERMISSION_ENDPOINT + "?credential_name=/leaf-cert&actor=" + UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID)
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+    MockHttpServletRequestBuilder revokeReadAccess = delete(API_V1_PERMISSION_ENDPOINT + "?credential_name=/leaf-cert&actor=" + USER_A_ACTOR_ID)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON);
 
     mockMvc.perform(revokeReadAccess)
         .andExpect(status().isNoContent());
 
     MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
-        .header("Authorization", "Bearer " +  UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
+        .header("Authorization", "Bearer " +  USER_A_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
@@ -343,7 +328,7 @@ public class BulkRegenerateTest {
   private void verifyVersionCountForCertificate(String certificateName, int expectedVersionCount) throws Exception {
     String certificateId = getCertificateId(mockMvc, certificateName);
     MockHttpServletRequestBuilder getVersionsRequest = get("/api/v1/certificates/" + certificateId + "/versions")
-        .header("Authorization", "Bearer " +  UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " +  ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON);
 
@@ -356,7 +341,7 @@ public class BulkRegenerateTest {
 
   private String generateRootCA(String caName, String caCommonName) throws Exception {
     MockHttpServletRequestBuilder generateCAToRotateRequest = post(API_V1_DATA_ENDPOINT)
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
@@ -368,7 +353,7 @@ public class BulkRegenerateTest {
             + "     \"common_name\": \"" + caCommonName + "\"\n"
             + "   },\n"
             + "\"additional_permissions\": [{"
-            + "   \"actor\": \"" + UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID + "\",\n"
+            + "   \"actor\": \"" + USER_A_ACTOR_ID + "\",\n"
             + "   \"operations\": [\"read\"]\n"
             + "}]}");
 
@@ -380,7 +365,7 @@ public class BulkRegenerateTest {
 
   private void generateSignedCertificate(String certificateName, String certificatCN, String signingCA) throws Exception {
     MockHttpServletRequestBuilder generateCertSignedByOriginalCARequest = post(API_V1_DATA_ENDPOINT)
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
@@ -395,8 +380,8 @@ public class BulkRegenerateTest {
             + "  \"additional_permissions\": \n"
             + "    [\n"
             + "      {\n"
-            + "        \"actor\": \"" + UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID + "\",\n"
-            + "        \"operations\": [\"write\"]\n"
+            + "        \"actor\": \"" + USER_A_ACTOR_ID + "\",\n"
+            + "        \"operations\": [\"read\", \"write\"]\n"
             + "      }\n"
             + "    ]\n"
             + "}");
@@ -410,7 +395,7 @@ public class BulkRegenerateTest {
 
   private String generateIntermediateCA(String certificateName, String certificatCN, String signingCA) throws Exception {
     MockHttpServletRequestBuilder generateCertSignedByOriginalCARequest = post(API_V1_DATA_ENDPOINT)
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
@@ -426,7 +411,7 @@ public class BulkRegenerateTest {
             + "  \"additional_permissions\": \n"
             + "    [\n"
             + "      {\n"
-            + "        \"actor\": \"" + UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID + "\",\n"
+            + "        \"actor\": \"" + USER_A_ACTOR_ID + "\",\n"
             + "        \"operations\": [\"write\", \"read\"]\n"
             + "      }\n"
             + "    ]\n"

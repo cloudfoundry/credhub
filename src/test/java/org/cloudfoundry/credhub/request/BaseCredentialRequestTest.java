@@ -8,11 +8,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import javax.validation.ConstraintViolation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import javax.validation.ConstraintViolation;
 
 import static junit.framework.TestCase.fail;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -233,7 +233,7 @@ public class BaseCredentialRequestTest {
     final List<PermissionOperation> operations = new ArrayList<>(
         Arrays.asList(PermissionOperation.READ, PermissionOperation.WRITE));
     final List<PermissionEntry> expectedAces = new ArrayList<>(
-        Arrays.asList(new PermissionEntry("some-actor", operations)));
+        Arrays.asList(new PermissionEntry("some-actor", "test-path", operations)));
 
     assertThat(request.getAdditionalPermissions(), samePropertyValuesAs(expectedAces));
   }

@@ -149,7 +149,7 @@ public class PermissionedCertificateService {
     }
 
     List<CredentialVersion> credentialVersions = certificateVersionDataService.findActiveWithTransitional(name);
-    auditRecord.addAllResources(credentialVersions);
+    auditRecord.addAllVersions(credentialVersions);
 
     return credentialVersions;
   }

@@ -95,7 +95,7 @@ public class AuthConfigurationTest {
     setupDataEndpointMocks();
 
     final MockHttpServletRequestBuilder post = post(dataApiPath)
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON)
         .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
@@ -249,7 +249,7 @@ public class AuthConfigurationTest {
   @Test
   public void interpolateEndpoint_withAcceptedToken_allowsAccess() throws Exception {
     final MockHttpServletRequestBuilder post = post("/api/v1/interpolate")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON)
         .content("{}");

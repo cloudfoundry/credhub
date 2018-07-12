@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.data;
 
-import org.apache.commons.lang3.StringUtils;
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.entity.Credential;
@@ -23,18 +22,10 @@ import java.util.List;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Collections.singletonList;
 import static junit.framework.TestCase.assertFalse;
-import static org.cloudfoundry.credhub.request.PermissionOperation.DELETE;
-import static org.cloudfoundry.credhub.request.PermissionOperation.READ;
-import static org.cloudfoundry.credhub.request.PermissionOperation.READ_ACL;
-import static org.cloudfoundry.credhub.request.PermissionOperation.WRITE;
-import static org.cloudfoundry.credhub.request.PermissionOperation.WRITE_ACL;
+import static org.cloudfoundry.credhub.request.PermissionOperation.*;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.*;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
@@ -46,7 +37,6 @@ import static org.hamcrest.core.IsEqual.equalTo;
 @Transactional
 public class PermissionDataServiceTest {
   private static final String CREDENTIAL_NAME = "/lightsaber";
-  private static final String CREDENTIAL_NAME_WITHOUT_LEADING_SLASH = StringUtils.removeStart(CREDENTIAL_NAME, "/");
   private static final String CREDENTIAL_NAME_DOES_NOT_EXIST = "/this/credential/does/not/exist";
 
   private static final String LUKE = "Luke";
@@ -122,10 +112,10 @@ public class PermissionDataServiceTest {
   @Test
   public void setAccessControlEntries_whenGivenAnExistingAce_returnsTheAcl() {
     aces = singletonList(
-        new PermissionEntry(LUKE, singletonList(READ))
+        new PermissionEntry(LUKE, CREDENTIAL_NAME, singletonList(READ))
     );
 
-    subject.savePermissions(credential, aces);
+    subject.savePermissionsWithLogging(aces);
 
     List<PermissionEntry> response = subject.getPermissions(credential);
 
@@ -147,9 +137,9 @@ public class PermissionDataServiceTest {
 
     credentialDataService.save(credential2);
     aces = singletonList(
-        new PermissionEntry(LUKE, singletonList(READ)));
+        new PermissionEntry(LUKE,credential2.getName(),singletonList(READ)));
 
-    subject.savePermissions(credential2, aces);
+    subject.savePermissionsWithLogging(aces);
 
     List<PermissionEntry> response = subject.getPermissions(credential2);
 
@@ -319,29 +309,14 @@ public class PermissionDataServiceTest {
   private void seedDatabase() {
     ValueCredentialVersionData valueCredentialData = new ValueCredentialVersionData(CREDENTIAL_NAME);
     credential = valueCredentialData.getCredential();
-    ValueCredentialVersionData noAccessValueCredentialData = new ValueCredentialVersionData(
-        NO_ACCESS_CREDENTIAL_NAME);
-    Credential noAccessValueCredential = noAccessValueCredentialData.getCredential();
-
-    Credential noAccessCredential = credentialDataService.save(noAccessValueCredential);
     this.credential = credentialDataService.save(this.credential);
 
-    subject.savePermissions(
-        this.credential,
-        singletonList(new PermissionEntry(LUKE,
-            newArrayList(WRITE, DELETE)))
-    );
+    ValueCredentialVersionData noAccessValueCredentialData = new ValueCredentialVersionData(NO_ACCESS_CREDENTIAL_NAME);
+    Credential noAccessValueCredential = noAccessValueCredentialData.getCredential();
+    credentialDataService.save(noAccessValueCredential);
 
-    subject.savePermissions(
-        this.credential,
-        singletonList(new PermissionEntry(LEIA,
-            singletonList(READ)))
-    );
-
-    subject.savePermissions(
-        this.credential,
-        singletonList(new PermissionEntry(HAN_SOLO,
-            newArrayList(READ_ACL, WRITE_ACL)))
-    );
+    subject.savePermissionsWithLogging(singletonList(new PermissionEntry(LUKE, CREDENTIAL_NAME, newArrayList(WRITE, DELETE))));
+    subject.savePermissionsWithLogging(singletonList(new PermissionEntry(LEIA, CREDENTIAL_NAME, singletonList(READ))));
+    subject.savePermissionsWithLogging(singletonList(new PermissionEntry(HAN_SOLO, CREDENTIAL_NAME, newArrayList(READ_ACL, WRITE_ACL))));
   }
 }

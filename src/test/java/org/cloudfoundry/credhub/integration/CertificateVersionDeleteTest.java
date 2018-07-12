@@ -4,7 +4,6 @@ package org.cloudfoundry.credhub.integration;
 import com.jayway.jsonpath.JsonPath;
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.helper.RequestHelper;
-import org.cloudfoundry.credhub.util.AuthConstants;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.json.JSONArray;
 import org.junit.Before;
@@ -23,7 +22,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import static org.cloudfoundry.credhub.helper.RequestHelper.generateCertificateCredential;
 import static org.cloudfoundry.credhub.helper.RequestHelper.getCertificateCredentialsByName;
-import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
+import static org.cloudfoundry.credhub.util.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -34,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(value = {"unit-test", "unit-test-permissions"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 @TestPropertySource(properties = "security.authorization.acls.enabled=true")
 @Transactional
@@ -56,19 +55,19 @@ public class CertificateVersionDeleteTest {
   public void deleteCertificateVersion_whenThereAreOtherVersionsOfTheCertificate_deletesTheSpecifiedVersion() throws Exception {
     String credentialName = "/test-certificate";
 
-    String response = generateCertificateCredential(mockMvc, credentialName, true, "test", null);
+    String response = generateCertificateCredential(mockMvc, credentialName, true, "test", null, ALL_PERMISSIONS_TOKEN);
     String nonDeletedVersion = JsonPath.parse(response).read("$.value.certificate");
 
-    response = getCertificateCredentialsByName(mockMvc, UAA_OAUTH2_PASSWORD_GRANT_TOKEN, credentialName);
+    response = getCertificateCredentialsByName(mockMvc, ALL_PERMISSIONS_TOKEN, credentialName);
     String uuid = JsonPath.parse(response)
         .read("$.certificates[0].id");
 
-    String version = RequestHelper.regenerateCertificate(mockMvc, uuid, false);
+    String version = RequestHelper.regenerateCertificate(mockMvc, uuid, false, ALL_PERMISSIONS_TOKEN);
     String versionUuid = JsonPath.parse(version).read("$.id");
     String versionValue = JsonPath.parse(version).read("$.value.certificate");
 
     final MockHttpServletRequestBuilder request = delete("/api/v1/certificates/" + uuid + "/versions/" + versionUuid)
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON);
 
     response = mockMvc.perform(request)
@@ -80,7 +79,7 @@ public class CertificateVersionDeleteTest {
     assertThat(certificate, equalTo(versionValue));
 
     response = mockMvc.perform(get("/api/v1/certificates/" + uuid + "/versions")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)).andReturn().getResponse().getContentAsString();
 
     JSONArray jsonArray = new JSONArray(response);
@@ -92,15 +91,15 @@ public class CertificateVersionDeleteTest {
   public void deleteCertificateVersion_whenThereAreNoOtherVersionsOfTheCertificate_returnsAnError() throws Exception {
     String credentialName = "/test-certificate";
 
-    String response = generateCertificateCredential(mockMvc, credentialName, true, "test", null);
+    String response = generateCertificateCredential(mockMvc, credentialName, true, "test", null, ALL_PERMISSIONS_TOKEN);
     String versionUuid = JsonPath.parse(response).read("$.id");
 
-    response = getCertificateCredentialsByName(mockMvc, UAA_OAUTH2_PASSWORD_GRANT_TOKEN, credentialName);
+    response = getCertificateCredentialsByName(mockMvc, ALL_PERMISSIONS_TOKEN, credentialName);
     String uuid = JsonPath.parse(response)
         .read("$.certificates[0].id");
 
     final MockHttpServletRequestBuilder request = delete("/api/v1/certificates/" + uuid + "/versions/" + versionUuid)
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON);
 
     mockMvc.perform(request)

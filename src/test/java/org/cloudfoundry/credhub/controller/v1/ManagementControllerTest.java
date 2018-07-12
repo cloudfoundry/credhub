@@ -49,7 +49,7 @@ public class ManagementControllerTest {
   @Test
   public void settingReadOnlyMode_updatesTheGlobalManagementVariable() throws Exception{
     MockHttpServletRequestBuilder request = post("/management")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .header("content-type", APPLICATION_JSON)
         .content("{\"read_only_mode\":\"true\"}");
     mockMvc.perform(request).andExpect(status().isOk());
@@ -57,7 +57,7 @@ public class ManagementControllerTest {
     assertThat(ManagementVariables.readOnlyMode, is(true));
 
     request = post("/management")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .header("content-type", APPLICATION_JSON)
         .content("{\"read_only_mode\":\"false\"}");
     mockMvc.perform(request).andExpect(status().isOk());
@@ -70,7 +70,7 @@ public class ManagementControllerTest {
     ManagementVariables.readOnlyMode = true;
 
     MockHttpServletRequestBuilder request = get("/management")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON);
     mockMvc.perform(request)
         .andExpect(status().isOk())
@@ -80,7 +80,7 @@ public class ManagementControllerTest {
     ManagementVariables.readOnlyMode = false;
 
     request = get("/management")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON);
     mockMvc.perform(request)
         .andExpect(status().isOk())
@@ -91,7 +91,7 @@ public class ManagementControllerTest {
   @Test
   public void providingAnInvalidRequestBody_returns400() throws Exception{
     MockHttpServletRequestBuilder request = post("/management")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .header("content-type", APPLICATION_JSON)
         .content("{\"read_only_mode\":\"pizza\"}");
     mockMvc.perform(request).andExpect(status().isBadRequest());

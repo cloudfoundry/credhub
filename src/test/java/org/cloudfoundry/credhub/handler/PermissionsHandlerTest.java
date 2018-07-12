@@ -102,6 +102,7 @@ public class PermissionsHandlerTest {
         .thenReturn(true);
     PermissionEntry permissionEntry = new PermissionEntry(
         ACTOR_NAME,
+        "test-path",
         operations
     );
     List<PermissionEntry> accessControlList = newArrayList(permissionEntry);
@@ -140,11 +141,12 @@ public class PermissionsHandlerTest {
         PermissionOperation.READ,
         PermissionOperation.WRITE
     );
-    PermissionEntry permissionEntry = new PermissionEntry(ACTOR_NAME, operations);
+    PermissionEntry permissionEntry = new PermissionEntry(ACTOR_NAME, "test-path", operations);
     List<PermissionEntry> accessControlList = newArrayList(permissionEntry);
 
     PermissionEntry preexistingPermissionEntry = new PermissionEntry(
         ACTOR_NAME2,
+        "test-path",
         Lists.newArrayList(PermissionOperation.READ)
     );
     List<PermissionEntry> expectedControlList = newArrayList(permissionEntry,
@@ -159,12 +161,13 @@ public class PermissionsHandlerTest {
     subject.setPermissions(permissionsRequest);
 
     ArgumentCaptor<List> permissionsListCaptor = ArgumentCaptor.forClass(List.class);
-    verify(permissionService).savePermissionsForUser(eq(credentialVersion), permissionsListCaptor.capture(), eq(false));
+    verify(permissionService).savePermissionsForUser(permissionsListCaptor.capture());
 
     List<PermissionEntry> accessControlEntries = permissionsListCaptor.getValue();
 
     PermissionEntry entry = accessControlEntries.get(0);
     assertThat(entry.getActor(), equalTo(ACTOR_NAME));
+    assertThat(entry.getPath(), equalTo(CREDENTIAL_NAME));
     assertThat(entry.getAllowedOperations(), contains(
         equalTo(PermissionOperation.READ),
         equalTo(PermissionOperation.WRITE)
@@ -180,7 +183,7 @@ public class PermissionsHandlerTest {
         .userAllowedToOperateOnActor(ACTOR_NAME))
         .thenReturn(false);
 
-    List<PermissionEntry> accessControlList = Arrays.asList(new PermissionEntry(ACTOR_NAME, Arrays.asList(
+    List<PermissionEntry> accessControlList = Arrays.asList(new PermissionEntry(ACTOR_NAME, "test-path", Arrays.asList(
         PermissionOperation.READ)));
     when(permissionsRequest.getCredentialName()).thenReturn(CREDENTIAL_NAME);
     when(permissionsRequest.getPermissions()).thenReturn(accessControlList);
@@ -189,7 +192,7 @@ public class PermissionsHandlerTest {
       subject.setPermissions(permissionsRequest);
     } catch (InvalidPermissionOperationException e) {
       assertThat(e.getMessage(), equalTo("error.permission.invalid_update_operation"));
-      verify(permissionService, times(0)).savePermissionsForUser(any(), any(), eq(false));
+      verify(permissionService, times(0)).savePermissionsForUser(any());
     }
   }
 

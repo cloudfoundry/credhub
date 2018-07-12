@@ -4,6 +4,7 @@ import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.credential.CredentialValue;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
+import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.service.PermissionService;
 import org.cloudfoundry.credhub.service.PermissionedCredentialService;
 import org.cloudfoundry.credhub.view.CredentialView;
@@ -38,8 +39,12 @@ public class GenerateHandler {
 
     final boolean isNewCredential = existingCredentialVersion == null;
 
+    for(PermissionEntry entry : generateRequest.getAdditionalPermissions()){
+      entry.setPath(generateRequest.getName());
+    }
+
     if (isNewCredential || generateRequest.isOverwrite()) {
-      permissionService.savePermissionsForUser(credentialVersion, generateRequest.getAdditionalPermissions(), isNewCredential);
+      permissionService.savePermissionsForUser(generateRequest.getAdditionalPermissions());
     }
     auditRecord.setVersion(credentialVersion);
     auditRecord.setResource(credentialVersion.getCredential());

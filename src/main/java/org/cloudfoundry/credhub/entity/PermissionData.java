@@ -1,19 +1,13 @@
 package org.cloudfoundry.credhub.entity;
 
-import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.cloudfoundry.credhub.constants.UuidConstants;
+import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.hibernate.annotations.GenericGenerator;
 
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
 
 @Entity
 @Table(name = "permission")
@@ -27,9 +21,8 @@ public class PermissionData {
   @GenericGenerator(name = "uuid2", strategy = "uuid2")
   private UUID uuid;
 
-  @ManyToOne
-  @JoinColumn(name = "credential_uuid", nullable = false)
-  private Credential credential;
+  @Column(nullable = false)
+  private String path;
 
   @Column(nullable = false)
   private String actor;
@@ -54,14 +47,14 @@ public class PermissionData {
     this(null, null, new ArrayList<>());
   }
 
-  public PermissionData(Credential credential, String actor,
+  public PermissionData(String path, String actor,
                         List<PermissionOperation> operations) {
-    this(credential, actor);
+    this(path, actor);
     enableOperations(operations);
   }
 
-  public PermissionData(Credential credential, String actor) {
-    this.credential = credential;
+  public PermissionData(String path, String actor) {
+    this.path = path;
     this.actor = actor;
   }
 
@@ -71,14 +64,6 @@ public class PermissionData {
 
   public void setUuid(UUID uuid) {
     this.uuid = uuid;
-  }
-
-  public Credential getCredential() {
-    return credential;
-  }
-
-  public void setCredential(Credential credential) {
-    this.credential = credential;
   }
 
   public String getActor() {
@@ -193,5 +178,13 @@ public class PermissionData {
       default:
         throw new RuntimeException();
     }
+  }
+
+  public String getPath() {
+    return path;
+  }
+
+  public void setPath(String path) {
+    this.path = path;
   }
 }

@@ -18,7 +18,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -38,20 +37,15 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringRunner.class)
-@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(value = {"unit-test","unit-test-permissions"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
-@TestPropertySource(properties = "security.authorization.acls.enabled=false")
 @Transactional
 public class CredentialsControllerGetTest {
 
@@ -107,7 +101,7 @@ public class CredentialsControllerGetTest {
     doReturn(newArrayList(credential)).when(credentialVersionDataService).findAllByName(CREDENTIAL_NAME);
 
     final MockHttpServletRequestBuilder request = get("/api/v1/data?name=" + CREDENTIAL_NAME)
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON);
 
     mockMvc.perform(request)
@@ -138,7 +132,7 @@ public class CredentialsControllerGetTest {
     doReturn(newArrayList(credential)).when(credentialVersionDataService).findAllByName(CREDENTIAL_NAME);
 
     final MockHttpServletRequestBuilder request = get("/api/v1/data?name=" + CREDENTIAL_NAME)
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON);
 
     mockMvc.perform(request)
@@ -154,7 +148,7 @@ public class CredentialsControllerGetTest {
         any(String.class), eq(PermissionOperation.READ));
 
     final MockHttpServletRequestBuilder get1 = get("/api/v1/data?name=invalid_name")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON);
 
     String expectedError1 = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
@@ -174,7 +168,7 @@ public class CredentialsControllerGetTest {
         any(String.class), eq(PermissionOperation.READ));
 
     final MockHttpServletRequestBuilder get1 = get("/api/v1/data?name=invalid_name&current=true")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON);
 
     String expectedError1 = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
@@ -193,7 +187,7 @@ public class CredentialsControllerGetTest {
         .when(permissionCheckingService).hasPermission(any(String.class),
         any(String.class), eq(PermissionOperation.READ));
     final MockHttpServletRequestBuilder get1 = get("/api/v1/data?name=" + CREDENTIAL_NAME)
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.NO_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON);
 
     ResultActions response = mockMvc.perform(get1);
@@ -211,7 +205,7 @@ public class CredentialsControllerGetTest {
     setUpCredential();
 
     mockMvc.perform(get("/api/v1/data?current=true&name=" + CREDENTIAL_NAME)
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -241,7 +235,7 @@ public class CredentialsControllerGetTest {
     ).when(credentialVersionDataService).findAllByName(CREDENTIAL_NAME);
 
     mockMvc.perform(get("/api/v1/data?current=false&name=" + CREDENTIAL_NAME)
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -280,7 +274,7 @@ public class CredentialsControllerGetTest {
     ).when(credentialVersionDataService).findNByName(CREDENTIAL_NAME, 2);
 
     mockMvc.perform(get("/api/v1/data?current=false&name=" + CREDENTIAL_NAME + "&versions=2")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -292,7 +286,7 @@ public class CredentialsControllerGetTest {
   @Test
   public void gettingACredential_byName_returnsAnErrorWhenTheNameIsNotGiven() throws Exception {
     final MockHttpServletRequestBuilder get = get("/api/v1/data?name=")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON);
 
     mockMvc.perform(get)
@@ -316,7 +310,7 @@ public class CredentialsControllerGetTest {
     doReturn(credential).when(credentialVersionDataService).findByUuid(uuid.toString());
 
     final MockHttpServletRequestBuilder request = get("/api/v1/data/" + uuid)
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON);
 
     mockMvc.perform(request)
@@ -345,7 +339,7 @@ public class CredentialsControllerGetTest {
 
     final MockHttpServletRequestBuilder get =
         get("/api/v1/data?name=" + CREDENTIAL_NAME)
-            .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+            .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
             .accept(APPLICATION_JSON);
 
     String expectedError = "The credential could not be accessed with the provided encryption keys. You must update your deployment configuration to continue.";
@@ -360,7 +354,7 @@ public class CredentialsControllerGetTest {
   public void providingCurrentTrueAndVersions_throwsAnException() throws Exception {
     final MockHttpServletRequestBuilder get =
         get("/api/v1/data?name=" + CREDENTIAL_NAME + "&current=true&versions=45")
-            .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+            .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
             .accept(APPLICATION_JSON);
 
     mockMvc.perform(get)

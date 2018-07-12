@@ -4,7 +4,6 @@ import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.helper.RequestHelper;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.request.PermissionOperation;
-import org.cloudfoundry.credhub.util.AuthConstants;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.view.PermissionsView;
 import org.junit.Before;
@@ -12,8 +11,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -23,8 +22,8 @@ import org.springframework.web.context.WebApplicationContext;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasSize;
+import static org.cloudfoundry.credhub.util.AuthConstants.*;
+import static org.hamcrest.Matchers.*;
 import static org.hamcrest.beans.SamePropertyValuesAs.samePropertyValuesAs;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
@@ -32,17 +31,14 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
-@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(value = {"unit-test", "unit-test-permissions"}, resolver = DatabaseProfileResolver.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @Transactional
-@TestPropertySource(properties = "security.authorization.acls.enabled=true")
 public class PermissionsEndpointTest {
-
   @Autowired
   private WebApplicationContext webApplicationContext;
 
@@ -57,7 +53,7 @@ public class PermissionsEndpointTest {
         .apply(springSecurity())
         .build();
 
-    RequestHelper.setPassword(mockMvc, credentialName, "testpassword");
+    RequestHelper.setPassword(mockMvc, credentialName, "testpassword", ALL_PERMISSIONS_TOKEN);
   }
 
   @Test
@@ -69,52 +65,43 @@ public class PermissionsEndpointTest {
         mockMvc,
         400, expectedErrorMessage,
         null,
-        AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN
+        ALL_PERMISSIONS_TOKEN
     );
   }
 
   @Test
   public void GET_whenTheUserHasPermissionToAccessPermissions_returnPermissions() throws Exception {
-    RequestHelper.grantPermissions(mockMvc, credentialName, AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "dan", "read");
+    RequestHelper.grantPermissions(mockMvc, credentialName, ALL_PERMISSIONS_TOKEN, USER_A_ACTOR_ID, "read");
 
     PermissionsView permissions = RequestHelper.getPermissions(mockMvc, credentialName,
-        AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+        ALL_PERMISSIONS_TOKEN);
     assertThat(permissions.getCredentialName(), equalTo(credentialName));
-    assertThat(permissions.getPermissions(), containsInAnyOrder(
+    assertThat(permissions.getPermissions(), contains(
         samePropertyValuesAs(
-            new PermissionEntry(AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
-                asList(PermissionOperation.READ, PermissionOperation.WRITE, PermissionOperation.DELETE, PermissionOperation.READ_ACL, PermissionOperation.WRITE_ACL))),
-        samePropertyValuesAs(
-            new PermissionEntry("dan", asList(PermissionOperation.READ)))
+            new PermissionEntry(USER_A_ACTOR_ID, credentialName, asList(PermissionOperation.READ)))
     ));
   }
 
   @Test
   public void GET_whenTheUserHasPermissionToAccessPermissions_andTheLeadingSlashIsMissing_returnsPermissions()
       throws Exception {
-    RequestHelper.grantPermissions(mockMvc, credentialName, AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "dan", "read");
+    RequestHelper.grantPermissions(mockMvc, credentialName, ALL_PERMISSIONS_TOKEN, USER_A_ACTOR_ID, "read");
 
-    PermissionsView permissions = RequestHelper.getPermissions(mockMvc, credentialNameWithoutLeadingSlash,
-        AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+    PermissionsView permissions = RequestHelper.getPermissions(mockMvc, credentialNameWithoutLeadingSlash, ALL_PERMISSIONS_TOKEN);
     assertThat(permissions.getCredentialName(), equalTo(credentialName));
-    assertThat(permissions.getPermissions(), containsInAnyOrder(
-        samePropertyValuesAs(
-            new PermissionEntry(AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
-                asList(PermissionOperation.READ, PermissionOperation.WRITE, PermissionOperation.DELETE, PermissionOperation.READ_ACL, PermissionOperation.WRITE_ACL))),
-        samePropertyValuesAs(
-            new PermissionEntry("dan", asList(PermissionOperation.READ)))
+    assertThat(permissions.getPermissions(), contains(
+        samePropertyValuesAs(new PermissionEntry(USER_A_ACTOR_ID, credentialName, asList(PermissionOperation.READ)))
     ));
   }
 
   @Test
   public void GET_whenTheUserLacksPermissionToReadPermissions_returnsNotFound() throws Exception {
-    // Credential was created with UAA_OAUTH2_PASSWORD_GRANT_TOKEN
     String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
     RequestHelper.expectErrorWhenGettingPermissions(
         mockMvc,
         404, expectedError,
         credentialName,
-        AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN
+        USER_A_TOKEN
     );
   }
 
@@ -126,22 +113,21 @@ public class PermissionsEndpointTest {
         mockMvc,
         404, expectedErrorMessage,
         "/unicorn",
-        AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+        ALL_PERMISSIONS_TOKEN);
   }
 
   @Test
   public void DELETE_whenTheActorIsAllowedToDeletePermissions_shouldDeleteThePermissionEntry()
       throws Exception {
-    RequestHelper.grantPermissions(mockMvc, credentialName, AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "dan", "read");
-
-    RequestHelper.revokePermissions(mockMvc, credentialName, AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "dan");
+    RequestHelper.grantPermissions(mockMvc, credentialName, ALL_PERMISSIONS_TOKEN, USER_A_ACTOR_ID, "read");
+    RequestHelper.revokePermissions(mockMvc, credentialName, ALL_PERMISSIONS_TOKEN, USER_A_ACTOR_ID);
 
     mockMvc.perform(
         get("/api/v1/permissions?credential_name=" + credentialName)
-            .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+            .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
     )
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.permissions", hasSize(1)));
+        .andExpect(jsonPath("$.permissions", is(empty())));
   }
 
   @Test
@@ -152,7 +138,7 @@ public class PermissionsEndpointTest {
         mockMvc,
         400, expectedErrorMessage,
         null,
-        AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "dan"
+        ALL_PERMISSIONS_TOKEN, USER_A_ACTOR_ID
     );
   }
 
@@ -164,29 +150,28 @@ public class PermissionsEndpointTest {
         mockMvc,
         400, expectedErrorMessage,
         "octopus",
-        AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN, null
+        ALL_PERMISSIONS_TOKEN, null
     );
   }
 
   @Test
   public void DELETE_whenTheActorIsDeletingOwnPermissions_returnsBadRequest() throws Exception {
-    RequestHelper.grantPermissions(mockMvc, credentialName, AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "dan", "read");
+    RequestHelper.grantPermissions(mockMvc, credentialName, ALL_PERMISSIONS_TOKEN, USER_A_ACTOR_ID, "read");
 
     RequestHelper.expectStatusWhenDeletingPermissions(
         mockMvc,
         400, credentialName,
-        AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
-        AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN
+        ALL_PERMISSIONS_ACTOR_ID,
+        ALL_PERMISSIONS_TOKEN
     );
   }
 
   @Test
-  public void DELETE_whenTheActorDoesNotHavePermissionToDeletePermissions_returnsNotFound()
-      throws Exception {
+  public void DELETE_whenTheActorDoesNotHavePermissionToDeletePermissions_returnsNotFound() throws Exception {
     RequestHelper.grantPermissions(
         mockMvc,
         credentialName,
-        AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "dan",
+        ALL_PERMISSIONS_TOKEN, USER_A_ACTOR_ID,
         "read"
     );
 
@@ -194,13 +179,12 @@ public class PermissionsEndpointTest {
         mockMvc,
         404,
         credentialName,
-        "dan",
-        AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN
+        USER_A_ACTOR_ID,
+        USER_A_TOKEN
     );
 
-    PermissionsView permissions = RequestHelper.getPermissions(mockMvc, credentialName,
-        AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
-    assertThat(permissions.getPermissions(), hasSize(2));
+    PermissionsView permissions = RequestHelper.getPermissions(mockMvc, credentialName, ALL_PERMISSIONS_TOKEN);
+    assertThat(permissions.getPermissions(), hasSize(1));
   }
 
   @Test
@@ -208,65 +192,57 @@ public class PermissionsEndpointTest {
     String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
 
     RequestHelper.expectErrorWhenDeletingPermissions(mockMvc, 404, expectedError, "/not-valid",
-        AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "something"
+        ALL_PERMISSIONS_TOKEN, "something"
     );
   }
 
   @Test
-  public void POST_whenTheUserHasPermissionToWritePermissions_returnsPermissions()
-      throws Exception {
+  public void POST_whenTheUserHasPermissionToWritePermissions_returnsPermissions() throws Exception {
     RequestHelper
-        .grantPermissions(mockMvc, credentialName, AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "dan", "read", "write");
+        .grantPermissions(mockMvc, credentialName, ALL_PERMISSIONS_TOKEN, USER_A_ACTOR_ID, "read", "write");
     RequestHelper
-        .grantPermissions(mockMvc, credentialName, AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "isobel", "delete");
+        .grantPermissions(mockMvc, credentialName, ALL_PERMISSIONS_TOKEN, USER_B_ACTOR_ID, "delete");
 
     PermissionsView permissions = RequestHelper
-        .getPermissions(mockMvc, credentialName, AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
-    assertThat(permissions.getPermissions(), hasSize(3));
+        .getPermissions(mockMvc, credentialName, ALL_PERMISSIONS_TOKEN);
+    assertThat(permissions.getPermissions(), hasSize(2));
     assertThat(permissions.getCredentialName(), equalTo(credentialName));
     assertThat(permissions.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
-            new PermissionEntry(AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
-                asList(PermissionOperation.READ, PermissionOperation.WRITE, PermissionOperation.DELETE, PermissionOperation.READ_ACL, PermissionOperation.WRITE_ACL))),
+            new PermissionEntry(USER_A_ACTOR_ID, credentialName, asList(PermissionOperation.READ, PermissionOperation.WRITE))),
         samePropertyValuesAs(
-            new PermissionEntry("dan", asList(PermissionOperation.READ, PermissionOperation.WRITE))),
-        samePropertyValuesAs(
-            new PermissionEntry("isobel", asList(PermissionOperation.DELETE)))
+            new PermissionEntry(USER_B_ACTOR_ID, credentialName, asList(PermissionOperation.DELETE)))
     ));
   }
 
   @Test
   public void POST_whenTheUserHasPermissionToWritePermissions_updatesPermissions()
       throws Exception {
-    RequestHelper.grantPermissions(mockMvc, credentialName, AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "dan", "read", "delete");
+    RequestHelper.grantPermissions(mockMvc, credentialName, ALL_PERMISSIONS_TOKEN, USER_A_ACTOR_ID, "read", "delete");
 
     RequestHelper
-        .grantPermissions(mockMvc, credentialName, AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "dan", "write", "read");
+        .grantPermissions(mockMvc, credentialName, ALL_PERMISSIONS_TOKEN, USER_A_ACTOR_ID, "write", "read");
 
     PermissionsView acl = RequestHelper
-        .getPermissions(mockMvc, credentialName, AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
-    assertThat(acl.getPermissions(), hasSize(2));
+        .getPermissions(mockMvc, credentialName, ALL_PERMISSIONS_TOKEN);
+    assertThat(acl.getPermissions(), hasSize(1));
     assertThat(acl.getCredentialName(), equalTo(credentialName));
-    assertThat(acl.getPermissions(), containsInAnyOrder(
+    assertThat(acl.getPermissions(), contains(
         samePropertyValuesAs(
-            new PermissionEntry(AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
-                asList(PermissionOperation.READ, PermissionOperation.WRITE, PermissionOperation.DELETE, PermissionOperation.READ_ACL, PermissionOperation.WRITE_ACL))),
-        samePropertyValuesAs(
-            new PermissionEntry("dan", asList(
+            new PermissionEntry(USER_A_ACTOR_ID, credentialName, asList(
                 PermissionOperation.READ, PermissionOperation.WRITE, PermissionOperation.DELETE)))
     ));
   }
 
   @Test
-  public void POST_whenTheUserDoesNotHavePermissionToWritePermissions_returnsNotFound()
-      throws Exception {
+  public void POST_whenTheUserDoesNotHavePermissionToWritePermissions_returnsNotFound() throws Exception {
     final String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
     RequestHelper.expectErrorWhenAddingPermissions(
         mockMvc,
         404,
         expectedError,
         credentialName,
-        AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN, "dan",
+        USER_A_TOKEN, USER_A_ACTOR_ID,
         "read", "write"
     );
   }
@@ -278,26 +254,23 @@ public class PermissionsEndpointTest {
         mockMvc,
         400, expectedError,
         credentialName,
-        AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN, AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
+        ALL_PERMISSIONS_TOKEN, ALL_PERMISSIONS_ACTOR_ID,
         "read", "write"
     );
   }
 
   @Test
   public void POST_whenTheLeadingSlashIsMissing_prependsTheSlashCorrectly() throws Exception {
-    RequestHelper.grantPermissions(mockMvc, credentialName, AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "dan",
+    RequestHelper.grantPermissions(mockMvc, credentialName, ALL_PERMISSIONS_TOKEN, USER_A_ACTOR_ID,
         "read");
 
     PermissionsView acl = RequestHelper
-        .getPermissions(mockMvc, credentialName, AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+        .getPermissions(mockMvc, credentialName, ALL_PERMISSIONS_TOKEN);
     assertThat(acl.getCredentialName(), equalTo(credentialName));
-    assertThat(acl.getPermissions(), hasSize(2));
-    assertThat(acl.getPermissions(), containsInAnyOrder(
+    assertThat(acl.getPermissions(), hasSize(1));
+    assertThat(acl.getPermissions(), contains(
         samePropertyValuesAs(
-            new PermissionEntry(AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
-                asList(PermissionOperation.READ, PermissionOperation.WRITE, PermissionOperation.DELETE, PermissionOperation.READ_ACL, PermissionOperation.WRITE_ACL))),
-        samePropertyValuesAs(
-            new PermissionEntry("dan", singletonList(PermissionOperation.READ)))
+            new PermissionEntry(USER_A_ACTOR_ID, credentialName, singletonList(PermissionOperation.READ)))
     ));
   }
 
@@ -312,7 +285,7 @@ public class PermissionsEndpointTest {
         + "     }]"
         + "}";
     final MockHttpServletRequestBuilder post = post("/api/v1/permissions")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content(malformedJson);
@@ -326,15 +299,10 @@ public class PermissionsEndpointTest {
   }
 
   @Test
-  public void POST_whenTheCredentialDoesntExist_returnsNotFound() throws Exception {
-    String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
-    RequestHelper.expectErrorWhenAddingPermissions(
-        mockMvc,
-        404, expectedError,
-        "/this-is-a-fake-credential",
-        AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "dan",
-        "read"
-    );
+  public void POST_whenTheCredentialDoesntExist_succeeds() throws Exception {
+    RequestHelper
+        .grantPermissions(mockMvc, "/this-is-a-fake-credential", ALL_PERMISSIONS_TOKEN, USER_A_ACTOR_ID,
+            "read", "write");
   }
 
   @Test
@@ -346,9 +314,8 @@ public class PermissionsEndpointTest {
         mockMvc,
         400, expectedErrorMessage,
         credentialName,
-        AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "dan",
+        ALL_PERMISSIONS_TOKEN, USER_A_ACTOR_ID,
         "unicorn"
     );
-
   }
 }

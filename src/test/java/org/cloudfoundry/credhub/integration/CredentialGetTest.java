@@ -3,7 +3,6 @@ package org.cloudfoundry.credhub.integration;
 import com.jayway.jsonpath.JsonPath;
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.helper.RequestHelper;
-import org.cloudfoundry.credhub.util.AuthConstants;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -12,7 +11,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -24,7 +22,7 @@ import java.util.List;
 
 import static org.cloudfoundry.credhub.helper.RequestHelper.generateCertificateCredential;
 import static org.cloudfoundry.credhub.helper.RequestHelper.getCertificateCredentialsByName;
-import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
+import static org.cloudfoundry.credhub.util.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -34,9 +32,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(value = {"unit-test", "unit-test-permissions"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
-@TestPropertySource(properties = "security.authorization.acls.enabled=true")
 @Transactional
 public class CredentialGetTest {
 
@@ -57,17 +54,17 @@ public class CredentialGetTest {
   public void getCertificateCredentials_whenCurrentFalseReturnsAllCertificateCredentials() throws Exception {
     String credentialName = "/first-certificate";
 
-    generateCertificateCredential(mockMvc, credentialName, true, "test", null);
+    generateCertificateCredential(mockMvc, credentialName, true, "test", null, ALL_PERMISSIONS_TOKEN);
 
-    String response = getCertificateCredentialsByName(mockMvc, UAA_OAUTH2_PASSWORD_GRANT_TOKEN, credentialName);
+    String response = getCertificateCredentialsByName(mockMvc, ALL_PERMISSIONS_TOKEN, credentialName);
     String uuid = JsonPath.parse(response)
         .read("$.certificates[0].id");
 
-    RequestHelper.regenerateCertificate(mockMvc, uuid, true);
-    RequestHelper.regenerateCertificate(mockMvc, uuid, false);
+    RequestHelper.regenerateCertificate(mockMvc, uuid, true, ALL_PERMISSIONS_TOKEN);
+    RequestHelper.regenerateCertificate(mockMvc, uuid, false, ALL_PERMISSIONS_TOKEN);
 
     final MockHttpServletRequestBuilder request = get("/api/v1/data?name=" + credentialName + "&current=false")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON);
 
     response = mockMvc.perform(request)
@@ -84,20 +81,20 @@ public class CredentialGetTest {
   public void getCertificateCredentials_whenCurrentTrueReturnsOnlyTransitionalAndLatest() throws Exception {
     String credentialName = "/second-certificate";
 
-    generateCertificateCredential(mockMvc, credentialName, true, "test", null);
+    generateCertificateCredential(mockMvc, credentialName, true, "test", null, ALL_PERMISSIONS_TOKEN);
 
-    String response = getCertificateCredentialsByName(mockMvc, UAA_OAUTH2_PASSWORD_GRANT_TOKEN, credentialName);
+    String response = getCertificateCredentialsByName(mockMvc, ALL_PERMISSIONS_TOKEN, credentialName);
     String uuid = JsonPath.parse(response)
         .read("$.certificates[0].id");
 
-    String transitionalCertificate = JsonPath.parse(RequestHelper.regenerateCertificate(mockMvc, uuid, true))
+    String transitionalCertificate = JsonPath.parse(RequestHelper.regenerateCertificate(mockMvc, uuid, true, ALL_PERMISSIONS_TOKEN))
         .read("$.value.certificate");
 
-    String nonTransitionalCertificate = JsonPath.parse(RequestHelper.regenerateCertificate(mockMvc, uuid, false))
+    String nonTransitionalCertificate = JsonPath.parse(RequestHelper.regenerateCertificate(mockMvc, uuid, false, ALL_PERMISSIONS_TOKEN))
         .read("$.value.certificate");
 
     final MockHttpServletRequestBuilder request = get("/api/v1/data?name=" + credentialName + "&current=true")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON);
 
     response = mockMvc.perform(request)

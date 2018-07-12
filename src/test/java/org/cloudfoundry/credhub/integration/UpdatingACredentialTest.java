@@ -59,7 +59,7 @@ public class UpdatingACredentialTest {
         + "}";
     MvcResult result = mockMvc.perform(post("/api/v1/data")
         .header("Authorization", "Bearer "
-            + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN).accept(APPLICATION_JSON)
+            + AuthConstants.ALL_PERMISSIONS_TOKEN).accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content(requestBody)
     )
@@ -78,7 +78,7 @@ public class UpdatingACredentialTest {
 
     result = mockMvc.perform(post("/api/v1/data")
         .header("Authorization", "Bearer "
-            + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN).accept(APPLICATION_JSON)
+            + AuthConstants.ALL_PERMISSIONS_TOKEN).accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content(requestBody)
     )
@@ -91,6 +91,7 @@ public class UpdatingACredentialTest {
     assertThat(firstPassword, is(not(equalTo(lastPassword))));
   }
 
+
   @Test
   public void put_shouldAllowTheCredentialToBeUpdated() throws Exception {
     String requestBody = "{"
@@ -100,7 +101,7 @@ public class UpdatingACredentialTest {
         + "}";
     mockMvc.perform(put("/api/v1/data")
         .header("Authorization", "Bearer "
-            + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN).accept(APPLICATION_JSON)
+            + AuthConstants.ALL_PERMISSIONS_TOKEN).accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content(requestBody)
     )
@@ -115,7 +116,7 @@ public class UpdatingACredentialTest {
 
     mockMvc.perform(put("/api/v1/data")
         .header("Authorization", "Bearer "
-            + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN).accept(APPLICATION_JSON)
+            + AuthConstants.ALL_PERMISSIONS_TOKEN).accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content(requestBody)
     )

@@ -14,7 +14,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
+import static org.cloudfoundry.credhub.util.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.hamcrest.core.IsAnything.anything;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -41,7 +41,7 @@ public class KeyUsageEndpointTest {
 
     MockHttpServletRequestBuilder getRequest = get(
         "/api/v1/key-usage")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN);
     mockMvc.perform(getRequest)
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.active_key", anything()))

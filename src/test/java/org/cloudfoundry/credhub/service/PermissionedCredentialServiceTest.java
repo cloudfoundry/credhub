@@ -149,7 +149,7 @@ public class PermissionedCredentialServiceTest {
         .hasPermission(userContext.getActor(), CREDENTIAL_NAME, WRITE_ACL))
         .thenReturn(true);
 
-    accessControlEntries.add(new PermissionEntry("test-user", Arrays.asList(WRITE, WRITE_ACL)));
+    accessControlEntries.add(new PermissionEntry("test-user", "test-path", Arrays.asList(WRITE, WRITE_ACL)));
     try {
       subject.save(existingCredentialVersion, credentialValue, request);
     } catch (InvalidPermissionOperationException e) {
@@ -184,7 +184,7 @@ public class PermissionedCredentialServiceTest {
         .thenReturn(false);
 
     accessControlEntries
-        .add(new PermissionEntry("some_actor", Arrays.asList(PermissionOperation.READ_ACL)));
+        .add(new PermissionEntry("some_actor", "test-path", Arrays.asList(PermissionOperation.READ_ACL)));
 
     try {
       subject.save(existingCredentialVersion, credentialValue, request);

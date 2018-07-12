@@ -30,22 +30,13 @@ import java.util.Collections;
 import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static org.cloudfoundry.credhub.helper.RequestHelper.expectStatusWhenDeletingPermissions;
-import static org.cloudfoundry.credhub.helper.RequestHelper.getPermissions;
-import static org.cloudfoundry.credhub.helper.RequestHelper.grantPermissions;
-import static org.cloudfoundry.credhub.helper.RequestHelper.revokePermissions;
-import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
+import static org.cloudfoundry.credhub.helper.RequestHelper.*;
+import static org.cloudfoundry.credhub.util.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -83,8 +74,7 @@ public class PermissionsControllerTest {
     when(permissionsHandler.getPermissions(eq("/test_credential_name")))
         .thenReturn(permissionsView);
 
-    PermissionsView permissions = getPermissions(mockMvc, "/test_credential_name",
-        UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+    PermissionsView permissions = getPermissions(mockMvc, "/test_credential_name", ALL_PERMISSIONS_TOKEN);
     assertThat(permissions.getCredentialName(), equalTo("/test_credential_name"));
     assertThat(permissions.getPermissions(), hasSize(0));
   }
@@ -98,16 +88,14 @@ public class PermissionsControllerTest {
     when(permissionsHandler.getPermissions(eq("/test_credential_name")))
         .thenReturn(permissionsView);
 
-    PermissionsView permissions = getPermissions(mockMvc, "test_credential_name",
-        UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+    PermissionsView permissions = getPermissions(mockMvc, "test_credential_name", ALL_PERMISSIONS_TOKEN);
     assertThat(permissions.getCredentialName(), equalTo("/test_credential_name"));
     assertThat(permissions.getPermissions(), hasSize(0));
   }
 
   @Test
   public void POST_returnsASuccessfulEmptyResponse() throws Exception {
-    grantPermissions(mockMvc, "test-credential-name", UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "test-actor",
-        "read", "write");
+    grantPermissions(mockMvc, "test-credential-name", ALL_PERMISSIONS_TOKEN, "test-actor", "read", "write");
 
     ArgumentCaptor<PermissionsRequest> captor = ArgumentCaptor.forClass(PermissionsRequest.class);
     verify(permissionsHandler, times(1)).setPermissions(captor.capture());
@@ -137,7 +125,7 @@ public class PermissionsControllerTest {
         "}";
 
     MockHttpServletRequestBuilder request = post("/api/v1/permissions")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .contentType(MediaType.APPLICATION_JSON)
         .content(accessControlEntriesJson);
 
@@ -150,7 +138,7 @@ public class PermissionsControllerTest {
     when(permissionDataService.getAllowedOperations("/test-name", "test-actor"))
         .thenReturn(Collections.singletonList(PermissionOperation.WRITE));
 
-    revokePermissions(mockMvc, "/test-name", UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "test-actor");
+    revokePermissions(mockMvc, "/test-name", ALL_PERMISSIONS_TOKEN, "test-actor");
 
     verify(permissionsHandler, times(1))
         .deletePermissionEntry(eq("/test-name"), eq("test-actor"));
@@ -161,7 +149,7 @@ public class PermissionsControllerTest {
     when(permissionDataService.getAllowedOperations("/test-name", "test-actor"))
         .thenReturn(Collections.singletonList(PermissionOperation.WRITE));
 
-    revokePermissions(mockMvc, "test-name", UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "test-actor");
+    revokePermissions(mockMvc, "test-name", ALL_PERMISSIONS_TOKEN, "test-actor");
 
     verify(permissionsHandler, times(1))
         .deletePermissionEntry(eq("/test-name"), eq("test-actor"));
@@ -176,7 +164,7 @@ public class PermissionsControllerTest {
         .when(permissionsHandler)
         .deletePermissionEntry(eq("/incorrect-name"), eq("test-actor"));
 
-    expectStatusWhenDeletingPermissions(mockMvc, 404, "incorrect-name", "test-actor", UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+    expectStatusWhenDeletingPermissions(mockMvc, 404, "incorrect-name", "test-actor", ALL_PERMISSIONS_TOKEN);
 
     verify(permissionsHandler, times(1))
         .deletePermissionEntry(eq("/incorrect-name"), eq("test-actor"));

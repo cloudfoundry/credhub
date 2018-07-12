@@ -3,7 +3,6 @@ package org.cloudfoundry.credhub.service;
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.data.PermissionDataService;
-import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,13 +10,9 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import static org.cloudfoundry.credhub.request.PermissionOperation.DELETE;
-import static org.cloudfoundry.credhub.request.PermissionOperation.READ;
-import static org.cloudfoundry.credhub.request.PermissionOperation.READ_ACL;
-import static org.cloudfoundry.credhub.request.PermissionOperation.WRITE;
-import static org.cloudfoundry.credhub.request.PermissionOperation.WRITE_ACL;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
+import static org.cloudfoundry.credhub.request.PermissionOperation.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Mockito.mock;
@@ -31,7 +26,6 @@ public class PermissionCheckingServiceTest {
 
   private UserContext userContext;
   private PermissionDataService permissionDataService;
-  private Credential expectedCredential;
 
   @Before
   public void beforeEach() {
@@ -45,9 +39,8 @@ public class PermissionCheckingServiceTest {
   }
 
   @Test
-  public void hasPermission_returnsWhetherTheUserHasThePermissionForTheCredential(){
+  public void hasPermission_returnsWhetherTheUserHasThePermissionForTheCredential() {
     initializeEnforcement(true);
-    when(permissionDataService.hasNoDefinedAccessControl(CREDENTIAL_NAME)).thenReturn(false);
 
     assertConditionallyHasPermission("test-actor", CREDENTIAL_NAME, READ_ACL, true);
     assertConditionallyHasPermission("test-actor", CREDENTIAL_NAME, READ_ACL, false);
@@ -62,9 +55,8 @@ public class PermissionCheckingServiceTest {
   }
 
   @Test
-  public void hasPermission_ifPermissionsNotEnforced_returnsTrue(){
+  public void hasPermission_ifPermissionsNotEnforced_returnsTrue() {
     initializeEnforcement(false);
-    when(permissionDataService.hasNoDefinedAccessControl(CREDENTIAL_NAME)).thenReturn(false);
 
     assertAlwaysHasPermission("test-actor", CREDENTIAL_NAME, READ_ACL, true);
     assertAlwaysHasPermission("test-actor", CREDENTIAL_NAME, READ_ACL, false);
@@ -78,22 +70,6 @@ public class PermissionCheckingServiceTest {
     assertAlwaysHasPermission("test-actor", CREDENTIAL_NAME, DELETE, false);
   }
 
-  @Test
-  public void hasPermission_whenNoDefinedAccessControl_returnsTrue() {
-    initializeEnforcement(true);
-    when(permissionDataService.hasNoDefinedAccessControl(CREDENTIAL_NAME)).thenReturn(true);
-
-    assertAlwaysHasPermission("test-actor", CREDENTIAL_NAME, READ_ACL, true);
-    assertAlwaysHasPermission("test-actor", CREDENTIAL_NAME, READ_ACL, false);
-    assertAlwaysHasPermission("test-actor", CREDENTIAL_NAME, WRITE_ACL, true);
-    assertAlwaysHasPermission("test-actor", CREDENTIAL_NAME, WRITE_ACL, false);
-    assertAlwaysHasPermission("test-actor", CREDENTIAL_NAME, READ, true);
-    assertAlwaysHasPermission("test-actor", CREDENTIAL_NAME, READ, false);
-    assertAlwaysHasPermission("test-actor", CREDENTIAL_NAME, WRITE, true);
-    assertAlwaysHasPermission("test-actor", CREDENTIAL_NAME, WRITE, false);
-    assertAlwaysHasPermission("test-actor", CREDENTIAL_NAME, DELETE, true);
-    assertAlwaysHasPermission("test-actor", CREDENTIAL_NAME, DELETE, false);
-  }
   @Test
   public void validDeleteOperation_withoutEnforcement_returnsTrue() {
     initializeEnforcement(false);
@@ -141,7 +117,7 @@ public class PermissionCheckingServiceTest {
   }
 
   private void assertConditionallyHasPermission(String user, String credentialName,
-      PermissionOperation permission, boolean isGranted) {
+                                                PermissionOperation permission, boolean isGranted) {
     when(permissionDataService
         .hasPermission(user, credentialName, permission))
         .thenReturn(isGranted);
@@ -150,7 +126,7 @@ public class PermissionCheckingServiceTest {
   }
 
   private void assertAlwaysHasPermission(String user, String credentialName,
-      PermissionOperation permission, boolean isGranted) {
+                                         PermissionOperation permission, boolean isGranted) {
     when(permissionDataService
         .hasPermission(user, credentialName, permission))
         .thenReturn(isGranted);

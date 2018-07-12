@@ -16,7 +16,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
+import static org.cloudfoundry.credhub.util.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -49,7 +49,7 @@ public class PasswordRegenerationTest {
   @Test
   public void passwordRegeneration_withDefaultParameters_shouldRegeneratePassword() throws Exception {
     MockHttpServletRequestBuilder post = post("/api/v1/data")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
@@ -68,7 +68,7 @@ public class PasswordRegenerationTest {
     assertThat(originalPassword, notNullValue());
 
     MockHttpServletRequestBuilder regeneratePost = post("/api/v1/data")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
@@ -91,7 +91,7 @@ public class PasswordRegenerationTest {
   @Test
   public void passwordRegeneration_withoutOverwrite_shouldNotRegeneratePassword() throws Exception {
     MockHttpServletRequestBuilder post = post("/api/v1/data")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
@@ -110,7 +110,7 @@ public class PasswordRegenerationTest {
     assertThat(originalPassword, notNullValue());
 
     MockHttpServletRequestBuilder regeneratePost = post("/api/v1/data")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
@@ -133,7 +133,7 @@ public class PasswordRegenerationTest {
   @Test
   public void passwordRegeneration_withOverwrite_shouldRegeneratePassword() throws Exception {
     MockHttpServletRequestBuilder post = post("/api/v1/data")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
@@ -152,7 +152,7 @@ public class PasswordRegenerationTest {
     assertThat(originalPassword, notNullValue());
 
     MockHttpServletRequestBuilder regeneratePost = post("/api/v1/data")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
@@ -175,7 +175,7 @@ public class PasswordRegenerationTest {
   @Test
   public void passwordRegeneration_withoutOverwrite_butChangingParameter_shouldRegeneratePassword() throws Exception {
     MockHttpServletRequestBuilder post = post("/api/v1/data")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
@@ -197,7 +197,7 @@ public class PasswordRegenerationTest {
     assertThat(originalPassword, notNullValue());
 
     MockHttpServletRequestBuilder regeneratePost = post("/api/v1/data")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON

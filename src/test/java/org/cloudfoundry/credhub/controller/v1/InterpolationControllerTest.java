@@ -26,12 +26,10 @@ import java.util.Arrays;
 import java.util.UUID;
 
 import static org.cloudfoundry.credhub.helper.JsonTestHelper.parse;
-import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
+import static org.cloudfoundry.credhub.util.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -99,7 +97,7 @@ public class InterpolationControllerTest {
     String expectedMessage = "The credential '/cred1' is not the expected type. A credhub-ref credential must be of type 'JSON'.";
 
     mockMvc.perform(post("/api/v1/interpolate")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .contentType(MediaType.APPLICATION_JSON)
         .content(
             "{"
@@ -125,7 +123,7 @@ public class InterpolationControllerTest {
 
     String expectedMessage = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
     mockMvc.perform(post("/api/v1/interpolate")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .contentType(MediaType.APPLICATION_JSON)
         .content(
             "{"
@@ -154,7 +152,7 @@ public class InterpolationControllerTest {
         + "    }]"
         + "}";
     MockHttpServletResponse response = mockMvc.perform(post("/api/v1/interpolate")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .contentType(MediaType.APPLICATION_JSON)
         .content(inputJsonString)
     ).andExpect(status().isOk()).andReturn().getResponse();
@@ -168,7 +166,7 @@ public class InterpolationControllerTest {
     String expectedMessage = "The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.";
 
     mockMvc.perform(post("/api/v1/interpolate")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .contentType(MediaType.APPLICATION_JSON)
         .content(inputJsonString)
     )
@@ -178,7 +176,7 @@ public class InterpolationControllerTest {
 
   private MockHttpServletRequestBuilder makeValidPostRequest() {
     return post("/api/v1/interpolate")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .contentType(MediaType.APPLICATION_JSON)
         .content(
             "{"
