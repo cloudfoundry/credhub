@@ -15,12 +15,15 @@ encryption:
       active: true
     - encryption_password: correcthorsebatterystaple
       provider_type: internal
-  
+
 security:
   authorization:
     acls:
-      # Change to true to enable ACL enforcement
-      enabled: false
+      enabled: true
+    permissions:
+    - path: /*
+      actors: ["uaa-client:credhub_client"]
+      operations: [read,write,delete,read_acl,write_acl]
 
 logging:
   config: src/main/resources/log4j2.properties
