@@ -22,7 +22,9 @@ security:
       enabled: true
     permissions:
     - path: /*
-      actors: ["uaa-client:credhub_client"]
+      actors:
+      - "uaa-client:credhub_client"
+      - "uaa-user:6e7f6e83-ef55-4d20-bad3-0b98af73550c"
       operations: [read,write,delete,read_acl,write_acl]
 
 logging:
