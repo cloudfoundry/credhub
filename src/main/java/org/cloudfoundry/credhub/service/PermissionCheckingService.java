@@ -1,13 +1,15 @@
 package org.cloudfoundry.credhub.service;
 
+import org.apache.commons.lang3.StringUtils;
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.data.PermissionDataService;
 import org.cloudfoundry.credhub.request.PermissionOperation;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class PermissionCheckingService {
@@ -27,6 +29,15 @@ public class PermissionCheckingService {
   public boolean hasPermission(String user, String credentialName, PermissionOperation permission) {
     if (enforcePermissions) {
       return permissionDataService.hasPermission(user, credentialName, permission);
+    }
+    return true;
+  }
+
+  public boolean hasPermissions(String user, String path, List<PermissionOperation> permissions) {
+    for (PermissionOperation permission : permissions) {
+      if (!permissionDataService.hasPermission(user, path, permission)) {
+        return false;
+      }
     }
     return true;
   }

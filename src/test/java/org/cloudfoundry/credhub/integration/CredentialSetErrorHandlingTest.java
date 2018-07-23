@@ -144,7 +144,7 @@ public class CredentialSetErrorHandlingTest {
   }
 
   @Test
-  public void whenTypeIsMissing_returns400() throws Exception {
+  public void whenTypeIsMissing_returns422() throws Exception {
     final MockHttpServletRequestBuilder request = put("/api/v1/data")
         .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
@@ -156,13 +156,13 @@ public class CredentialSetErrorHandlingTest {
 
     String expectedError = "The request does not include a valid type. Valid values include 'value', 'json', 'password', 'user', 'certificate', 'ssh' and 'rsa'.";
     mockMvc.perform(request)
-        .andExpect(status().isBadRequest())
+        .andExpect(status().isUnprocessableEntity())
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
         .andExpect(jsonPath("$.error").value(expectedError));
   }
 
   @Test
-  public void whenTypeIsEmpty_returns400() throws Exception {
+  public void whenTypeIsEmpty_returns422() throws Exception {
     final MockHttpServletRequestBuilder request = put("/api/v1/data")
         .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
@@ -175,13 +175,13 @@ public class CredentialSetErrorHandlingTest {
 
     String expectedError = "The request does not include a valid type. Valid values include 'value', 'json', 'password', 'user', 'certificate', 'ssh' and 'rsa'.";
     mockMvc.perform(request)
-        .andExpect(status().isBadRequest())
+        .andExpect(status().isUnprocessableEntity())
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
         .andExpect(jsonPath("$.error").value(expectedError));
   }
 
   @Test
-  public void whenTypeIsInvalid_returns400() throws Exception {
+  public void whenTypeIsInvalid_returns422() throws Exception {
     final MockHttpServletRequestBuilder request = put("/api/v1/data")
         .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
@@ -194,7 +194,7 @@ public class CredentialSetErrorHandlingTest {
 
     String expectedError = "The request does not include a valid type. Valid values include 'value', 'json', 'password', 'user', 'certificate', 'ssh' and 'rsa'.";
     mockMvc.perform(request)
-        .andExpect(status().isBadRequest())
+        .andExpect(status().isUnprocessableEntity())
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
         .andExpect(jsonPath("$.error").value(expectedError));
   }
@@ -218,7 +218,7 @@ public class CredentialSetErrorHandlingTest {
   }
 
   @Test
-  public void whenAnUnknownTopLevelKeyIsPresent_returns400() throws Exception {
+  public void whenAnUnknownTopLevelKeyIsPresent_returns422() throws Exception {
     final MockHttpServletRequestBuilder request = put("/api/v1/data")
         .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
@@ -232,7 +232,7 @@ public class CredentialSetErrorHandlingTest {
 
     String expectedError = "The request includes an unrecognized parameter 'invalid_key'. Please update or remove this parameter and retry your request.";
     mockMvc.perform(request)
-        .andExpect(status().isBadRequest())
+        .andExpect(status().isUnprocessableEntity())
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
         .andExpect(jsonPath("$.error").value(expectedError));
   }

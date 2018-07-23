@@ -22,11 +22,18 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import static org.cloudfoundry.credhub.util.AuthConstants.*;
+import static org.cloudfoundry.credhub.util.AuthConstants.ALL_PERMISSIONS_ACTOR_ID;
+import static org.cloudfoundry.credhub.util.AuthConstants.ALL_PERMISSIONS_TOKEN;
+import static org.cloudfoundry.credhub.util.AuthConstants.USER_A_ACTOR_ID;
+import static org.cloudfoundry.credhub.util.AuthConstants.USER_A_PATH;
+import static org.cloudfoundry.credhub.util.AuthConstants.USER_A_TOKEN;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -368,11 +375,30 @@ public class CredentialAclEnforcementTest {
             + "  ]\n"
             + "}");
 
-    mockMvc.perform(post)
+        mockMvc.perform(post)
         .andExpect(status().isOk())
         .andReturn();
 
-    final MvcResult result = mockMvc.perform(post)
+    final MockHttpServletRequestBuilder postAddPermissions = post("/api/v1/data")
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        //language=JSON
+        .content("{\n"
+            + "  \"name\": \"" + CREDENTIAL_NAME + "\",\n"
+            + "  \"type\": \"password\",\n"
+            + "  \"overwrite\": true,\n"
+            + "  \"additional_permissions\": [\n"
+            + "    {\n"
+            + "      \"actor\": \"" + USER_A_ACTOR_ID + "\",\n"
+            + "      \"operations\": [\"read\", \"read_acl\"]\n"
+            + "    }\n"
+            + "  ]\n"
+            + "}");
+
+
+
+    final MvcResult result = mockMvc.perform(postAddPermissions)
         .andExpect(status().isOk())
         .andReturn();
 

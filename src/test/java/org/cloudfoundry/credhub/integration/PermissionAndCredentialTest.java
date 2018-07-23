@@ -265,7 +265,7 @@ public class PermissionAndCredentialTest {
             + "  }]\n"
             + "}");
 
-    this.mockMvc.perform(post).andExpect(status().is4xxClientError())
+    this.mockMvc.perform(post).andExpect(status().isUnprocessableEntity())
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
         .andExpect(jsonPath("$.error").value(
             "The provided operation is not supported."

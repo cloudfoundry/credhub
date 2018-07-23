@@ -7,6 +7,7 @@ import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.exceptions.InvalidPermissionOperationException;
+import org.cloudfoundry.credhub.exceptions.PermissionAlreadyExistsException;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,8 +50,10 @@ public class PermissionService {
       if (!permissionCheckingService.userAllowedToOperateOnActor(permissionEntry.getActor())) {
         throw new InvalidPermissionOperationException("error.permission.invalid_update_operation");
       }
+      if (permissionCheckingService.hasPermissions(permissionEntry.getActor(), permissionEntry.getPath(), permissionEntry.getAllowedOperations())) {
+        throw new PermissionAlreadyExistsException("error.permission.already_exists");
+      }
     }
-
     permissionDataService.savePermissionsWithLogging(permissionEntryList);
   }
 

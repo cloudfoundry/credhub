@@ -312,7 +312,7 @@ public class PermissionsEndpointTest {
 
     RequestHelper.expectErrorWhenAddingPermissions(
         mockMvc,
-        400, expectedErrorMessage,
+        422, expectedErrorMessage,
         credentialName,
         ALL_PERMISSIONS_TOKEN, USER_A_ACTOR_ID,
         "unicorn"

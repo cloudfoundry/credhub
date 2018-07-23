@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
-import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 
 @JsonAutoDetect
@@ -33,7 +32,6 @@ public class PermissionsRequest {
     this.credentialName = StringUtils.prependIfMissing(credentialName, "/");
   }
 
-  @Valid
   public List<PermissionEntry> getPermissions() {
     return permissions;
   }

@@ -5,12 +5,15 @@ import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.request.PermissionsRequest;
+import org.cloudfoundry.credhub.request.PermissionsV2Request;
 import org.cloudfoundry.credhub.service.PermissionService;
 import org.cloudfoundry.credhub.service.PermissionedCredentialService;
+import org.cloudfoundry.credhub.view.PermissionsV2View;
 import org.cloudfoundry.credhub.view.PermissionsView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -48,5 +51,13 @@ public class PermissionsHandler {
     if (!successfullyDeleted) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
+  }
+
+  public PermissionsV2View setPermissions(PermissionsV2Request request) {
+
+    PermissionEntry permission = new PermissionEntry(request.getActor(), request.getPath(), request.getOperations());
+    permissionService.savePermissionsForUser(Collections.singletonList(permission));
+
+    return new PermissionsV2View(request.getPath(),request.getOperations(),request.getActor());
   }
 }

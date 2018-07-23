@@ -336,7 +336,7 @@ public class PermissionsEndpointWithoutEnforcementTest {
     String expectedErrorMessage = "The provided operation is not supported. Valid values include read, write, delete, read_acl, and write_acl.";
     RequestHelper.expectErrorWhenAddingPermissions(
         mockMvc,
-        400,
+        422,
         expectedErrorMessage,
         "/this-is-a-fake-credential",
         NO_PERMISSIONS_TOKEN,

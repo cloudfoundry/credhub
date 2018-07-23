@@ -28,14 +28,18 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.cloudfoundry.credhub.helper.RequestHelper.getCertificateId;
-import static org.cloudfoundry.credhub.util.AuthConstants.*;
+import static org.cloudfoundry.credhub.util.AuthConstants.ALL_PERMISSIONS_TOKEN;
+import static org.cloudfoundry.credhub.util.AuthConstants.USER_A_ACTOR_ID;
+import static org.cloudfoundry.credhub.util.AuthConstants.USER_A_TOKEN;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -76,10 +80,10 @@ public class BulkRegenerateTest {
     generateRootCA("/ca-to-rotate", "original ca");
     generateRootCA("/other-ca", "other ca");
 
-    generateSignedCertificate("/cert-to-regenerate", "cert to regenerate", "/ca-to-rotate");
-    generateSignedCertificate("/cert-to-regenerate", "cert to regenerate", "/ca-to-rotate");
-    generateSignedCertificate("/cert-to-regenerate-as-well", "cert to regenerate as well", "/ca-to-rotate");
-    generateSignedCertificate("/cert-not-to-regenerate", "cert not to regenerate", "/other-ca");
+    generateSignedCertificate("/cert-to-regenerate", "cert to regenerate", "/ca-to-rotate", Arrays.asList("read", "write"));
+    generateSignedCertificate("/cert-to-regenerate", "cert to regenerate", "/ca-to-rotate", Arrays.asList("read", "write", "delete"));
+    generateSignedCertificate("/cert-to-regenerate-as-well", "cert to regenerate as well", "/ca-to-rotate", Arrays.asList("read", "write"));
+    generateSignedCertificate("/cert-not-to-regenerate", "cert not to regenerate", "/other-ca", Arrays.asList("read", "write"));
   }
 
   @After
@@ -117,8 +121,8 @@ public class BulkRegenerateTest {
 
   @Test
   public void regeneratingCertificatesSignedByCA_shouldRegenerateCertificatesInAlphabeticalOrder() throws Exception {
-    generateSignedCertificate("/z-cert-to-regenerate", "cert to regenerate", "/ca-to-rotate");
-    generateSignedCertificate("/a-cert-to-regenerate", "cert to regenerate", "/ca-to-rotate");
+    generateSignedCertificate("/z-cert-to-regenerate", "cert to regenerate", "/ca-to-rotate", Arrays.asList("read", "write"));
+    generateSignedCertificate("/a-cert-to-regenerate", "cert to regenerate", "/ca-to-rotate", Arrays.asList("read", "write"));
 
     MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
         .header("Authorization", "Bearer " + USER_A_TOKEN)
@@ -268,7 +272,7 @@ public class BulkRegenerateTest {
   public void regeneratingCertificatesSignedByCa_recursivelyRegeneratesLeafCertificatesInChain() throws Exception  {
     generateRootCA("/ca-cert", "cert");
     generateIntermediateCA("/intermediate-cert", "cert to regenerate", "/ca-cert");
-    generateSignedCertificate("/leaf-cert", "cert to regenerate", "/intermediate-cert");
+    generateSignedCertificate("/leaf-cert", "cert to regenerate", "/intermediate-cert", Arrays.asList("read", "write"));
 
     MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
         .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
@@ -299,7 +303,7 @@ public class BulkRegenerateTest {
   public void regeneratingCertificatesSignedByCa_willFailIfAnyChildCertificateIsNotWritable() throws Exception  {
     generateRootCA("/ca-cert", "cert");
     generateIntermediateCA("/intermediate-cert", "cert to regenerate", "/ca-cert");
-    generateSignedCertificate("/leaf-cert", "cert to regenerate", "/intermediate-cert");
+    generateSignedCertificate("/leaf-cert", "cert to regenerate", "/intermediate-cert", Arrays.asList("read", "write"));
 
     MockHttpServletRequestBuilder revokeReadAccess = delete(API_V1_PERMISSION_ENDPOINT + "?credential_name=/leaf-cert&actor=" + USER_A_ACTOR_ID)
         .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
@@ -363,7 +367,13 @@ public class BulkRegenerateTest {
         .andReturn().getResponse().getContentAsString();
   }
 
-  private void generateSignedCertificate(String certificateName, String certificatCN, String signingCA) throws Exception {
+  private void generateSignedCertificate(String certificateName, String certificatCN, String signingCA, List<String> params) throws Exception {
+
+
+
+     String operations = "\"" + String.join("\", \"", params ) + "\"";
+
+
     MockHttpServletRequestBuilder generateCertSignedByOriginalCARequest = post(API_V1_DATA_ENDPOINT)
         .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
@@ -381,7 +391,7 @@ public class BulkRegenerateTest {
             + "    [\n"
             + "      {\n"
             + "        \"actor\": \"" + USER_A_ACTOR_ID + "\",\n"
-            + "        \"operations\": [\"read\", \"write\"]\n"
+            + "        \"operations\": [ " + operations + "]\n"
             + "      }\n"
             + "    ]\n"
             + "}");
