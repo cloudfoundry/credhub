@@ -18,7 +18,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.util.Arrays;
 import java.util.Collections;
 
 import static org.cloudfoundry.credhub.util.AuthConstants.ALL_PERMISSIONS_TOKEN;
@@ -26,7 +25,9 @@ import static org.cloudfoundry.credhub.util.AuthConstants.NO_PERMISSIONS_TOKEN;
 import static org.cloudfoundry.credhub.util.AuthConstants.USER_A_ACTOR_ID;
 import static org.cloudfoundry.credhub.util.AuthConstants.USER_A_TOKEN;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -71,6 +72,7 @@ public class PermissionsEndpointV2Test {
     assertThat(returnValue.getActor(), equalTo(USER_A_ACTOR_ID));
     assertThat(returnValue.getPath(), equalTo(credentialName));
     assertThat(returnValue.getOperations(), equalTo(Collections.singletonList(PermissionOperation.WRITE)));
+    assertThat(returnValue.getUuid(), notNullValue());
 
 
     MockHttpServletRequestBuilder writeCredentialRequest = put("/api/v1/data")
@@ -173,12 +175,6 @@ public class PermissionsEndpointV2Test {
     returnValue = JsonTestHelper.deserialize(content, PermissionsV2View.class);
     assertThat(returnValue.getActor(), equalTo(USER_A_ACTOR_ID));
     assertThat(returnValue.getPath(), equalTo(credentialName));
-    assertThat(returnValue.getOperations(), equalTo(Arrays.asList(PermissionOperation.WRITE, PermissionOperation.READ)));
-
-
-
-
-
-
+    assertThat(returnValue.getOperations(), containsInAnyOrder(PermissionOperation.WRITE, PermissionOperation.READ));
   }
 }

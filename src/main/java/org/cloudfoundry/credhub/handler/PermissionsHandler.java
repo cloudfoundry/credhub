@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.handler;
 
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
+import org.cloudfoundry.credhub.entity.PermissionData;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.request.PermissionsRequest;
@@ -19,6 +20,7 @@ import java.util.List;
 @Component
 public class PermissionsHandler {
 
+  public static final String INVALID_NUMBER_OF_PERMISSIONS = "Can set one permission per call";
   private final PermissionService permissionService;
   private final PermissionedCredentialService permissionedCredentialService;
   private final CEFAuditRecord auditRecord;
@@ -56,8 +58,13 @@ public class PermissionsHandler {
   public PermissionsV2View setPermissions(PermissionsV2Request request) {
 
     PermissionEntry permission = new PermissionEntry(request.getActor(), request.getPath(), request.getOperations());
-    permissionService.savePermissionsForUser(Collections.singletonList(permission));
+    List<PermissionData> permissionDatas = permissionService.savePermissionsForUser(Collections.singletonList(permission));
 
-    return new PermissionsV2View(request.getPath(),request.getOperations(),request.getActor());
+    if (permissionDatas.size() == 1) {
+      PermissionData perm = permissionDatas.get(0);
+      return new PermissionsV2View(perm.getPath(),perm.generateAccessControlOperations(),perm.getActor(), perm.getUuid());
+    } else {
+      throw new IllegalArgumentException(INVALID_NUMBER_OF_PERMISSIONS);
+    }
   }
 }

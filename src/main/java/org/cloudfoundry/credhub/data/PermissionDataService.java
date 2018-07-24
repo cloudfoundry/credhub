@@ -38,8 +38,10 @@ public class PermissionDataService {
     return createViewsFromPermissionsFor(credential);
   }
 
-  public void savePermissionsWithLogging(List<PermissionEntry> permissions){
-    auditRecord.addAllResources(savePermissions(permissions));
+  public List<PermissionData> savePermissionsWithLogging(List<PermissionEntry> permissions){
+    List<PermissionData> permissionDatas = savePermissions(permissions);
+    auditRecord.addAllResources(permissionDatas);
+    return permissionDatas;
   }
 
   public List<PermissionData> savePermissions(List<PermissionEntry> permissions) {

@@ -7,11 +7,13 @@ import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.entity.PasswordCredentialVersionData;
+import org.cloudfoundry.credhub.entity.PermissionData;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.exceptions.InvalidPermissionOperationException;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.cloudfoundry.credhub.request.PermissionsRequest;
+import org.cloudfoundry.credhub.request.PermissionsV2Request;
 import org.cloudfoundry.credhub.service.PermissionCheckingService;
 import org.cloudfoundry.credhub.service.PermissionService;
 import org.cloudfoundry.credhub.service.PermissionedCredentialService;
@@ -27,6 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static org.cloudfoundry.credhub.handler.PermissionsHandler.INVALID_NUMBER_OF_PERMISSIONS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
@@ -57,6 +60,7 @@ public class PermissionsHandlerTest {
   private final Credential credential = new Credential(CREDENTIAL_NAME);
   private final CredentialVersion credentialVersion = new PasswordCredentialVersion(new PasswordCredentialVersionData(CREDENTIAL_NAME));
   private PermissionsRequest permissionsRequest;
+  private PermissionsV2Request permissionsV2Request;
 
   @Before
   public void beforeEach() {
@@ -70,6 +74,7 @@ public class PermissionsHandlerTest {
         permissionedCredentialService, auditRecord);
 
     permissionsRequest = mock(PermissionsRequest.class);
+    permissionsV2Request = new PermissionsV2Request();
 
     when(permissionedCredentialService.findMostRecent(CREDENTIAL_NAME)).thenReturn(credentialVersion);
     when(credentialDataService.find(any(String.class))).thenReturn(credential);
@@ -84,9 +89,7 @@ public class PermissionsHandlerTest {
         .hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(PermissionOperation.READ_ACL)))
         .thenReturn(true);
 
-    PermissionsView response = subject.getPermissions(
-        CREDENTIAL_NAME
-    );
+    PermissionsView response = subject.getPermissions(CREDENTIAL_NAME);
     assertThat(response.getCredentialName(), equalTo(CREDENTIAL_NAME));
 
   }
@@ -144,10 +147,7 @@ public class PermissionsHandlerTest {
     PermissionEntry permissionEntry = new PermissionEntry(ACTOR_NAME, "test-path", operations);
     List<PermissionEntry> accessControlList = newArrayList(permissionEntry);
 
-    PermissionEntry preexistingPermissionEntry = new PermissionEntry(
-        ACTOR_NAME2,
-        "test-path",
-        Lists.newArrayList(PermissionOperation.READ)
+    PermissionEntry preexistingPermissionEntry = new PermissionEntry(ACTOR_NAME2, "test-path", Lists.newArrayList(PermissionOperation.READ)
     );
     List<PermissionEntry> expectedControlList = newArrayList(permissionEntry,
         preexistingPermissionEntry);
@@ -163,15 +163,41 @@ public class PermissionsHandlerTest {
     ArgumentCaptor<List> permissionsListCaptor = ArgumentCaptor.forClass(List.class);
     verify(permissionService).savePermissionsForUser(permissionsListCaptor.capture());
 
-    List<PermissionEntry> accessControlEntries = permissionsListCaptor.getValue();
-
-    PermissionEntry entry = accessControlEntries.get(0);
+    PermissionEntry entry = accessControlList.get(0);
     assertThat(entry.getActor(), equalTo(ACTOR_NAME));
     assertThat(entry.getPath(), equalTo(CREDENTIAL_NAME));
-    assertThat(entry.getAllowedOperations(), contains(
-        equalTo(PermissionOperation.READ),
-        equalTo(PermissionOperation.WRITE)
-    ));
+    assertThat(entry.getAllowedOperations(), contains(equalTo(PermissionOperation.READ), equalTo(PermissionOperation.WRITE)));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void setPermissionsCalledWithOnePermission_whenPermissionServiceReturnsMultiplePermissions_throwsException(){
+    when(permissionCheckingService.hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(PermissionOperation.WRITE_ACL))).thenReturn(true);
+    when(permissionCheckingService.userAllowedToOperateOnActor(ACTOR_NAME)).thenReturn(true);
+
+    ArrayList<PermissionData> permissionList = new ArrayList<>();
+    permissionList.add(new PermissionData());
+    permissionList.add(new PermissionData());
+
+    when(permissionService.savePermissionsForUser(any())).thenReturn(permissionList);
+
+    ArrayList<PermissionOperation> operations = newArrayList(PermissionOperation.READ, PermissionOperation.WRITE);
+    PermissionEntry permissionEntry = new PermissionEntry(ACTOR_NAME, "test-path", operations);
+
+    PermissionEntry preexistingPermissionEntry = new PermissionEntry(ACTOR_NAME2, "test-path", Lists.newArrayList(PermissionOperation.READ));
+    List<PermissionEntry> expectedControlList = newArrayList(permissionEntry, preexistingPermissionEntry);
+
+    when(permissionService.getPermissions(credentialVersion)).thenReturn(expectedControlList);
+
+    permissionsV2Request.setOperations(operations);
+    permissionsV2Request.setPath(CREDENTIAL_NAME);
+
+    try{
+      subject.setPermissions(permissionsV2Request);
+    } catch (Exception e) {
+      assertThat(e.getMessage(), equalTo(INVALID_NUMBER_OF_PERMISSIONS));
+      throw e;
+    }
+
   }
 
   @Test

@@ -5,6 +5,7 @@ import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.data.PermissionDataService;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.entity.Credential;
+import org.cloudfoundry.credhub.entity.PermissionData;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.exceptions.InvalidPermissionOperationException;
 import org.cloudfoundry.credhub.exceptions.PermissionAlreadyExistsException;
@@ -13,9 +14,11 @@ import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import static org.cloudfoundry.credhub.request.PermissionOperation.*;
+import static org.cloudfoundry.credhub.request.PermissionOperation.READ_ACL;
+import static org.cloudfoundry.credhub.request.PermissionOperation.WRITE_ACL;
 
 @Service
 public class PermissionService {
@@ -37,9 +40,10 @@ public class PermissionService {
     return permissionDataService.getAllowedOperations(credentialName, actor);
   }
 
-  public void savePermissionsForUser(List<PermissionEntry> permissionEntryList) {
+  public List<PermissionData> savePermissionsForUser(List<PermissionEntry> permissionEntryList) {
+
     if (permissionEntryList.size() == 0) {
-      return;
+      return new ArrayList<>();
     }
 
     UserContext userContext = userContextHolder.getUserContext();
@@ -54,7 +58,7 @@ public class PermissionService {
         throw new PermissionAlreadyExistsException("error.permission.already_exists");
       }
     }
-    permissionDataService.savePermissionsWithLogging(permissionEntryList);
+    return permissionDataService.savePermissionsWithLogging(permissionEntryList);
   }
 
   public void savePermissions(List<PermissionEntry> permissionEntryList) {

@@ -4,10 +4,14 @@ import org.cloudfoundry.credhub.constants.UuidConstants;
 import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 @Entity
 @Table(name = "permission")
