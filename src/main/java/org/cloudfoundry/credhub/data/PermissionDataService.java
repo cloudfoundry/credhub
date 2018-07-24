@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -36,6 +37,12 @@ public class PermissionDataService {
 
   public List<PermissionEntry> getPermissions(Credential credential) {
     return createViewsFromPermissionsFor(credential);
+  }
+
+  public PermissionData getPermission(UUID guid) {
+    PermissionData data = permissionRepository.findByUuid(guid);
+    auditRecord.setResource(data);
+    return data;
   }
 
   public List<PermissionData> savePermissionsWithLogging(List<PermissionEntry> permissions){

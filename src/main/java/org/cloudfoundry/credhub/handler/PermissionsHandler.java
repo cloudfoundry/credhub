@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 @Component
 public class PermissionsHandler {
@@ -66,5 +67,11 @@ public class PermissionsHandler {
     } else {
       throw new IllegalArgumentException(INVALID_NUMBER_OF_PERMISSIONS);
     }
+  }
+
+  public PermissionsV2View getPermissions(UUID guid) {
+
+    final PermissionData permission = permissionService.getPermissions(guid);
+    return new PermissionsV2View(permission.getPath(), permission.generateAccessControlOperations(), permission.getActor(), guid);
   }
 }

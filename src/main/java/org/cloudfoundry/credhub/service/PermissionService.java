@@ -7,6 +7,7 @@ import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.entity.PermissionData;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
+import org.cloudfoundry.credhub.exceptions.InvalidPermissionException;
 import org.cloudfoundry.credhub.exceptions.InvalidPermissionOperationException;
 import org.cloudfoundry.credhub.exceptions.PermissionAlreadyExistsException;
 import org.cloudfoundry.credhub.request.PermissionEntry;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static org.cloudfoundry.credhub.request.PermissionOperation.READ_ACL;
 import static org.cloudfoundry.credhub.request.PermissionOperation.WRITE_ACL;
@@ -79,6 +81,20 @@ public class PermissionService {
 
     return getPermissions(credentialVersion.getCredential());
   }
+
+  public PermissionData getPermissions(UUID guid) {
+    if (guid == null) {
+      throw new EntryNotFoundException("error.resource_not_found");
+    }
+
+    if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), guid, READ_ACL)) {
+      throw new InvalidPermissionException("error.invalid_permission");
+    }
+
+    return permissionDataService.getPermission(guid);
+  }
+
+
 
   public boolean deletePermissions(String credentialName, String actor) {
     if (!permissionCheckingService

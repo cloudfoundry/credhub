@@ -14,6 +14,8 @@ public interface PermissionRepository extends JpaRepository<PermissionData, UUID
 
   PermissionData findByPathAndActor(String path, String actor);
 
+  PermissionData findByUuid(UUID uuid);
+
   @Query(value = "select * from permission where path IN ?1 AND actor=?2",  nativeQuery = true)
   List<PermissionData> findByPathsAndActor(List<String> paths, String actor);
 

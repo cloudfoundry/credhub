@@ -6,11 +6,15 @@ import org.cloudfoundry.credhub.view.PermissionsV2View;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping(path = "/api/v2/permissions", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -25,5 +29,11 @@ public class PermissionsV2Controller {
   @ResponseStatus(HttpStatus.CREATED)
   public PermissionsV2View setPermissions(@Validated @RequestBody PermissionsV2Request permissionsRequest) {
     return permissionsHandler.setPermissions(permissionsRequest);
+  }
+
+  @RequestMapping(path = "/{guid}", method = RequestMethod.GET)
+  @ResponseStatus(HttpStatus.OK)
+  public PermissionsV2View getPermissions(@PathVariable String guid){
+   return permissionsHandler.getPermissions(UUID.fromString(guid));
   }
 }

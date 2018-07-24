@@ -19,17 +19,20 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.util.Collections;
+import java.util.UUID;
 
 import static org.cloudfoundry.credhub.util.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.cloudfoundry.credhub.util.AuthConstants.NO_PERMISSIONS_TOKEN;
 import static org.cloudfoundry.credhub.util.AuthConstants.USER_A_ACTOR_ID;
 import static org.cloudfoundry.credhub.util.AuthConstants.USER_A_TOKEN;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -57,23 +60,7 @@ public class PermissionsEndpointV2Test {
   public void POST_whenUserHasPermissionOnPath_theyCanAddAPermission() throws Exception {
     String credentialName = "/test";
 
-    MockHttpServletRequestBuilder addPermissionRequest = post("/api/v2/permissions")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{"
-            + "  \"actor\": \"" + USER_A_ACTOR_ID + "\",\n"
-            + "  \"path\": \"" + credentialName + "\",\n"
-            + "  \"operations\": [\"write\"]\n"
-            + "}");
-
-    String content = mockMvc.perform(addPermissionRequest).andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
-    PermissionsV2View returnValue = JsonTestHelper.deserialize(content, PermissionsV2View.class);
-    assertThat(returnValue.getActor(), equalTo(USER_A_ACTOR_ID));
-    assertThat(returnValue.getPath(), equalTo(credentialName));
-    assertThat(returnValue.getOperations(), equalTo(Collections.singletonList(PermissionOperation.WRITE)));
-    assertThat(returnValue.getUuid(), notNullValue());
-
+    this.setPermissions(credentialName);
 
     MockHttpServletRequestBuilder writeCredentialRequest = put("/api/v1/data")
         .header("Authorization", "Bearer " + USER_A_TOKEN)
@@ -86,8 +73,6 @@ public class PermissionsEndpointV2Test {
             + "}");
 
     mockMvc.perform(writeCredentialRequest).andExpect(status().isOk());
-
-
   }
 
   @Test
@@ -145,6 +130,56 @@ public class PermissionsEndpointV2Test {
   public void POST_whenUserTriesToAddAnAdditionalOperationToAPermissionThatAlreadyExists_theySucceed() throws Exception {
     String credentialName = "/test";
 
+    UUID credentialUuid = this.setPermissions(credentialName);
+
+    MockHttpServletRequestBuilder addPermissionRequestWithRead = post("/api/v2/permissions")
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{"
+            + "  \"actor\": \"" + USER_A_ACTOR_ID + "\",\n"
+            + "  \"path\": \"" + credentialName + "\",\n"
+            + "  \"operations\": [\"write\", \"read\"]\n"
+            + "}");
+
+    String content = mockMvc.perform(addPermissionRequestWithRead).andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+    PermissionsV2View returnValue = JsonTestHelper.deserialize(content, PermissionsV2View.class);
+    assertThat(returnValue.getActor(), equalTo(USER_A_ACTOR_ID));
+    assertThat(returnValue.getPath(), equalTo(credentialName));
+    assertThat(returnValue.getOperations(), containsInAnyOrder(PermissionOperation.WRITE, PermissionOperation.READ));
+    assertThat(returnValue.getUuid(), equalTo(credentialUuid));
+  }
+
+  @Test
+  public void GET_whenUserGivesAPermissionGuid_theyReceiveThePermissions() throws Exception {
+    String credentialName = "/test";
+    UUID credentialUuid = this.setPermissions(credentialName);
+
+    MockHttpServletRequestBuilder getUuidRequest = get("/api/v2/permissions/" + credentialUuid)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+        .accept(APPLICATION_JSON);
+
+    String content = mockMvc.perform(getUuidRequest).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+    PermissionsV2View returnValue = JsonTestHelper.deserialize(content, PermissionsV2View.class);
+    assertThat(returnValue.getActor(), equalTo(USER_A_ACTOR_ID));
+    assertThat(returnValue.getPath(), equalTo(credentialName));
+    assertThat(returnValue.getOperations(), contains(PermissionOperation.WRITE));
+    assertThat(returnValue.getUuid(), equalTo(credentialUuid));
+  }
+
+  @Test
+  public void GET_whenUserGivesAPermissionGuid_whenTheyDontHaveREADACLPermission_theyReceiveA403() throws Exception {
+    String credentialName = "/test";
+    UUID credentialUuid = this.setPermissions(credentialName);
+
+    MockHttpServletRequestBuilder getUuidRequest = get("/api/v2/permissions/" + credentialUuid)
+        .header("Authorization", "Bearer " + USER_A_TOKEN)
+        .accept(APPLICATION_JSON);
+
+    String content = mockMvc.perform(getUuidRequest).andExpect(status().isForbidden()).andReturn().getResponse().getContentAsString();
+  }
+
+  private UUID setPermissions(String credentialName) throws Exception{
     MockHttpServletRequestBuilder addPermissionRequest = post("/api/v2/permissions")
         .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
@@ -160,21 +195,10 @@ public class PermissionsEndpointV2Test {
     assertThat(returnValue.getActor(), equalTo(USER_A_ACTOR_ID));
     assertThat(returnValue.getPath(), equalTo(credentialName));
     assertThat(returnValue.getOperations(), equalTo(Collections.singletonList(PermissionOperation.WRITE)));
+    assertThat(returnValue.getUuid(), notNullValue());
+    UUID credentialUuid = returnValue.getUuid();
 
-    MockHttpServletRequestBuilder addPermissionRequestWithRead = post("/api/v2/permissions")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{"
-            + "  \"actor\": \"" + USER_A_ACTOR_ID + "\",\n"
-            + "  \"path\": \"" + credentialName + "\",\n"
-            + "  \"operations\": [\"write\", \"read\"]\n"
-            + "}");
-
-    content = mockMvc.perform(addPermissionRequestWithRead).andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
-    returnValue = JsonTestHelper.deserialize(content, PermissionsV2View.class);
-    assertThat(returnValue.getActor(), equalTo(USER_A_ACTOR_ID));
-    assertThat(returnValue.getPath(), equalTo(credentialName));
-    assertThat(returnValue.getOperations(), containsInAnyOrder(PermissionOperation.WRITE, PermissionOperation.READ));
+    return credentialUuid;
   }
+
 }

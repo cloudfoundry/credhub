@@ -9,6 +9,7 @@ import com.jayway.jsonpath.InvalidJsonException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
+import org.cloudfoundry.credhub.exceptions.InvalidPermissionException;
 import org.cloudfoundry.credhub.exceptions.InvalidPermissionOperationException;
 import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException;
 import org.cloudfoundry.credhub.exceptions.InvalidRemoteAddressException;
@@ -154,6 +155,12 @@ public class ExceptionHandlers {
   @ExceptionHandler(InvalidPermissionOperationException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ResponseError handleIncorrectAclOperation(InvalidPermissionOperationException e) {
+    return constructError(e.getMessage());
+  }
+
+  @ExceptionHandler(InvalidPermissionException.class)
+  @ResponseStatus(HttpStatus.FORBIDDEN)
+  public ResponseError handleInvalidPermission(InvalidPermissionException e) {
     return constructError(e.getMessage());
   }
 

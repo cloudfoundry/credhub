@@ -18,14 +18,23 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Collections.singletonList;
 import static junit.framework.TestCase.assertFalse;
-import static org.cloudfoundry.credhub.request.PermissionOperation.*;
+import static org.cloudfoundry.credhub.request.PermissionOperation.DELETE;
+import static org.cloudfoundry.credhub.request.PermissionOperation.READ;
+import static org.cloudfoundry.credhub.request.PermissionOperation.READ_ACL;
+import static org.cloudfoundry.credhub.request.PermissionOperation.WRITE;
+import static org.cloudfoundry.credhub.request.PermissionOperation.WRITE_ACL;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
@@ -180,6 +189,13 @@ public class PermissionDataServiceTest {
   @Test
   public void deletePermissions_addsToAuditRecord(){
     subject.deletePermissions(CREDENTIAL_NAME, LUKE);
+    assertThat(auditRecord.getResourceName(), is(CREDENTIAL_NAME));
+  }
+
+  @Test
+  public void getPermissionsByUUID_addsToAuditRecord(){
+    UUID guid = subject.savePermissions(singletonList(new PermissionEntry(LUKE, CREDENTIAL_NAME, newArrayList(WRITE, DELETE)))).get(0).getUuid();
+    subject.getPermission(guid);
     assertThat(auditRecord.getResourceName(), is(CREDENTIAL_NAME));
   }
 

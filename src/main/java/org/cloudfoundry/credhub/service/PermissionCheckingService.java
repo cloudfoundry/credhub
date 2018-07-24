@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.UUID;
 
 @Component
 public class PermissionCheckingService {
@@ -29,6 +30,13 @@ public class PermissionCheckingService {
   public boolean hasPermission(String user, String credentialName, PermissionOperation permission) {
     if (enforcePermissions) {
       return permissionDataService.hasPermission(user, credentialName, permission);
+    }
+    return true;
+  }
+
+  public boolean hasPermission(String user, UUID guid, PermissionOperation permission) {
+    if (enforcePermissions) {
+      return permissionDataService.hasPermission(user, permissionDataService.getPermission(guid).getPath(), permission);
     }
     return true;
   }
