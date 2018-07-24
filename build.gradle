@@ -45,7 +45,7 @@ configurations.all {
 }
 
 def grpcVersion = '1.12.0'
-def nettyTcNativeVersion = '2.0.12.Final'
+def nettyTcNativeVersion = '2.0.7.Final'
 
 dependencies {
     // Spring stuff
