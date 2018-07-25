@@ -162,4 +162,8 @@ public class PermissionDataService {
         .findFirst();
     return temp.orElse(null);
   }
+
+  public boolean permissionExists(String user, String path) {
+    return permissionRepository.findByPathAndActor(path, user) != null;
+  }
 }

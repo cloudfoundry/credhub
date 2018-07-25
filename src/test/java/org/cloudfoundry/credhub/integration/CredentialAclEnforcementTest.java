@@ -7,6 +7,7 @@ import org.cloudfoundry.credhub.util.CertificateReader;
 import org.cloudfoundry.credhub.util.CertificateStringConstants;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = CredentialManagerApp.class)
 @ActiveProfiles(value = {"unit-test", "unit-test-permissions"}, resolver = DatabaseProfileResolver.class)
 @Transactional
+@Ignore
 public class CredentialAclEnforcementTest {
 
   private static final String CREDENTIAL_NAME = "/TEST/CREDENTIAL";

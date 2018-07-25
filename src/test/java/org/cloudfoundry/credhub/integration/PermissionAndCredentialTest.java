@@ -1,12 +1,16 @@
 package org.cloudfoundry.credhub.integration;
 
 import org.cloudfoundry.credhub.CredentialManagerApp;
+import org.cloudfoundry.credhub.entity.PermissionData;
 import org.cloudfoundry.credhub.helper.JsonTestHelper;
+import org.cloudfoundry.credhub.repository.PermissionRepository;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.view.PermissionsView;
+import org.json.JSONObject;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,18 +29,27 @@ import java.util.Collections;
 import java.util.List;
 
 import static java.util.Arrays.asList;
-import static org.cloudfoundry.credhub.request.PermissionOperation.*;
-import static org.cloudfoundry.credhub.util.AuthConstants.*;
+import static org.cloudfoundry.credhub.request.PermissionOperation.DELETE;
+import static org.cloudfoundry.credhub.request.PermissionOperation.READ;
+import static org.cloudfoundry.credhub.request.PermissionOperation.WRITE;
+import static org.cloudfoundry.credhub.util.AuthConstants.ALL_PERMISSIONS_TOKEN;
+import static org.cloudfoundry.credhub.util.AuthConstants.USER_A_ACTOR_ID;
+import static org.cloudfoundry.credhub.util.AuthConstants.USER_B_ACTOR_ID;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.beans.SamePropertyValuesAs.samePropertyValuesAs;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
 @RunWith(SpringRunner.class)
@@ -48,6 +61,9 @@ public class PermissionAndCredentialTest {
   public static final String MTLS_APP_GUID = "mtls-app:app1-guid";
   @Autowired
   private WebApplicationContext webApplicationContext;
+
+  @Autowired
+  private PermissionRepository permissionRepository;
 
   private MockMvc mockMvc;
 
@@ -91,7 +107,7 @@ public class PermissionAndCredentialTest {
     assertCredentialCreated(result);
   }
 
-    @Test
+  @Test
   public void put_withNewPermission() throws Exception {
     String requestBody = "{\n"
         + "  \"type\":\"password\",\n"
@@ -136,6 +152,58 @@ public class PermissionAndCredentialTest {
   }
 
   @Test
+  public void post_withNewPermission_FailsWith400WhenPathIsSetInPermissions() throws Exception {
+    String requestBody = "{\n"
+        + "  \"type\":\"password\",\n"
+        + "  \"name\":\"/test-password\",\n"
+        + "  \"overwrite\":true, \n"
+        + "  \"additional_permissions\": [{\n"
+        + "    \"actor\": \"" + USER_B_ACTOR_ID + "\",\n"
+        + "    \"path\": \"/test-password\",\n"
+        + "    \"operations\": [\"read\"]\n"
+        + "  }]\n"
+        + "}";
+
+    final ResultActions result = mockMvc.perform(post("/api/v1/data")
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(requestBody));
+
+    result.andExpect(status().isBadRequest());
+
+    String responseJson = result.andReturn().getResponse().getContentAsString();
+    String errorMessage = new JSONObject(responseJson).getString("error");
+
+    assertThat(errorMessage, is(equalTo("The request includes an unrecognized parameter 'path'. Please update or remove this parameter and retry your request.")));
+  }
+
+  @Test
+  public void post_withNewPermission_alwaysSetsPath() throws Exception {
+    String requestBody = "{\n"
+        + "  \"type\":\"password\",\n"
+        + "  \"name\":\"/test-password\",\n"
+        + "  \"overwrite\":true, \n"
+        + "  \"additional_permissions\": [{\n"
+        + "    \"actor\": \"" + USER_B_ACTOR_ID + "\",\n"
+        + "    \"operations\": [\"read\"]\n"
+        + "  }]\n"
+        + "}";
+
+    final ResultActions result = mockMvc.perform(post("/api/v1/data")
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content(requestBody));
+
+    result.andExpect(status().isOk());
+
+    PermissionData data = permissionRepository.findByPathAndActor("/test-password", USER_B_ACTOR_ID);
+    assertThat(data.getPath(), is(equalTo("/test-password")));
+  }
+
+  @Test
+  @Ignore
   public void put_withExistingCredentialAndAnAce() throws Exception {
     createExistingCredential();
 
@@ -161,6 +229,7 @@ public class PermissionAndCredentialTest {
   }
 
   @Test
+  @Ignore
   public void post_withExistingCredentialAndAPermission_andOverwriteSetToTrue_itDoesUpdatePermissions() throws Exception {
     createExistingCredential();
 

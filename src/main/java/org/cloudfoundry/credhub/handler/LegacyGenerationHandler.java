@@ -6,8 +6,10 @@ import com.jayway.jsonpath.PathNotFoundException;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.entity.GenerateCredential;
 import org.cloudfoundry.credhub.audit.entity.RegenerateCredential;
+import org.cloudfoundry.credhub.exceptions.InvalidAdditionalPermissionsException;
 import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
 import org.cloudfoundry.credhub.request.CredentialRegenerateRequest;
+import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.util.StringUtil;
 import org.cloudfoundry.credhub.view.CredentialView;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 @Component
 public class LegacyGenerationHandler {
@@ -61,13 +64,26 @@ public class LegacyGenerationHandler {
         .readValue(requestString, BaseCredentialGenerateRequest.class);
     requestBody.validate();
 
+    String credentialName = requestBody.getName();
+
     GenerateCredential generateCredential = new GenerateCredential();
-    generateCredential.setName(requestBody.getName());
+    generateCredential.setName(credentialName);
     generateCredential.setType(requestBody.getType());
-    generateCredential.setAdditionalPermissions(requestBody.getAdditionalPermissions());
+
+    List<PermissionEntry> permissionEntries = requestBody.getAdditionalPermissions();
+    permissionEntries.forEach(i -> validatePermissionAndPath(i, credentialName));
+
+    generateCredential.setAdditionalPermissions(permissionEntries);
     auditRecord.setRequestDetails(generateCredential);
 
     return generateHandler.handle(requestBody);
+  }
+
+  private void validatePermissionAndPath(PermissionEntry entry, String credentialName) {
+    if(entry.getPath() != null){
+      throw new InvalidAdditionalPermissionsException("path");
+    }
+    entry.setPath(credentialName);
   }
 
   private CredentialView handleRegenerateRequest(String requestString) throws IOException {
