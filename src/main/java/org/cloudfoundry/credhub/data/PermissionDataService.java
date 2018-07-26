@@ -4,6 +4,7 @@ import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.entity.PermissionData;
 import org.cloudfoundry.credhub.exceptions.PermissionDoesNotExistException;
+import org.cloudfoundry.credhub.exceptions.PermissionInvalidPathAndActorException;
 import org.cloudfoundry.credhub.repository.PermissionRepository;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.request.PermissionOperation;
@@ -169,13 +170,25 @@ public class PermissionDataService {
     return permissionRepository.findByPathAndActor(path, user) != null;
   }
 
-  public PermissionData putPermissions(PermissionsV2Request permissionsRequest) {
-    PermissionData existingPermissionData = permissionRepository.findByPathAndActor(permissionsRequest.getPath(),
-        permissionsRequest.getActor());
+  public PermissionData putPermissions(String guid, PermissionsV2Request permissionsRequest) {
+    PermissionData existingPermissionData = null;
 
+    try{
+      existingPermissionData = permissionRepository.findByUuid(UUID.fromString(guid));
+    }catch (IllegalArgumentException e){
+      if(e.getMessage().startsWith("Invalid UUID string:")){
+        throw new PermissionDoesNotExistException("error.permission.does_not_exist");
+      }
+    }
     if (existingPermissionData == null) {
       throw new PermissionDoesNotExistException("error.permission.does_not_exist");
     }
+
+    if(!(existingPermissionData.getPath().equals(permissionsRequest.getPath()) &&
+          existingPermissionData.getActor().equals(permissionsRequest.getActor()))){
+      throw new PermissionInvalidPathAndActorException("error.permission.wrong_path_and_actor");
+    }
+
 
     PermissionData permissionData = new PermissionData(permissionsRequest.getPath(),
         permissionsRequest.getActor(), permissionsRequest.getOperations());

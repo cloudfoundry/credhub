@@ -114,8 +114,8 @@ public class PermissionService {
     return permissionDataService.getPermissions(credential);
   }
 
-  public PermissionData putPermissions(PermissionsV2Request permissionsRequest) {
-    return permissionDataService.putPermissions(permissionsRequest);
+  public PermissionData putPermissions(String guid, PermissionsV2Request permissionsRequest) {
+    return permissionDataService.putPermissions(guid, permissionsRequest);
   }
 
   public PermissionData patchPermissions(String guid, List<PermissionOperation> operations) {

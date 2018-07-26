@@ -184,10 +184,6 @@ public class PermissionsEndpointV2Test {
     String content = mockMvc.perform(getUuidRequest).andExpect(status().isForbidden()).andReturn().getResponse().getContentAsString();
   }
 
-  // TODO
-//audit record
-  //permission does not exist
-
   @Test
   public void PATCH_whenUserGivesAPermission_forAPathAndActorThatDoesNotExist_theyReceiveA404() throws Exception{
     String invalidGuid = "invalid";
@@ -239,11 +235,11 @@ public class PermissionsEndpointV2Test {
     String credentialName = "/test";
     String passwordValue = "passwordValue";
 
-    this.setPermissions(credentialName, PermissionOperation.READ);
+    UUID credUUID = this.setPermissions(credentialName, PermissionOperation.READ);
 
     setPassword(mockMvc, credentialName, passwordValue, USER_A_TOKEN).andExpect(status().isForbidden());
 
-    MockHttpServletRequestBuilder putPermissionRequest = put("/api/v2/permissions/")
+    MockHttpServletRequestBuilder putPermissionRequest = put("/api/v2/permissions/" + credUUID)
         .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
@@ -255,6 +251,7 @@ public class PermissionsEndpointV2Test {
 
     String content = mockMvc.perform(putPermissionRequest).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
     PermissionsV2View returnValue = JsonTestHelper.deserialize(content, PermissionsV2View.class);
+    assertThat(returnValue.getUuid(), equalTo(credUUID));
     assertThat(returnValue.getActor(), equalTo(USER_A_ACTOR_ID));
     assertThat(returnValue.getPath(), equalTo(credentialName));
     assertThat(returnValue.getOperations(), equalTo(Collections.singletonList(PermissionOperation.WRITE)));
@@ -263,10 +260,77 @@ public class PermissionsEndpointV2Test {
   }
 
   @Test
+  public void PUT_whenUUIDDoesNotMatchGivenActorAndPath_ReturnStatusBadRequest() throws Exception{
+    String credentialName = "/test";
+    String badCredentialName = "/wrongName";
+    String passwordValue = "passwordValue";
+
+    UUID credUUID = this.setPermissions(credentialName, PermissionOperation.READ);
+
+    setPassword(mockMvc, credentialName, passwordValue, USER_A_TOKEN).andExpect(status().isForbidden());
+
+    MockHttpServletRequestBuilder putPermissionRequest = put("/api/v2/permissions/" + credUUID)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{"
+            + "  \"actor\": \"" + USER_A_ACTOR_ID + "\",\n"
+            + "  \"path\": \"" + badCredentialName + "\",\n"
+            + "  \"operations\": [\"" + "write" + "\"]\n"
+            + "}");
+
+    String responseJson = mockMvc.perform(putPermissionRequest).andExpect(status().isBadRequest()).andReturn().getResponse().getContentAsString();
+    String errorMessage = new JSONObject(responseJson).getString("error");
+
+    assertThat(errorMessage, is(IsEqual.equalTo("The permission guid does not match the provided actor and path.")));
+  }
+
+  @Test
+  public void PUT_whenUUIDDoesNotExist_ReturnStatusNotFound() throws Exception{
+    String credUUID = "1550919c-b7e1-4288-85fd-c73220e6ac5f";
+
+    MockHttpServletRequestBuilder putPermissionRequest = put("/api/v2/permissions/" + credUUID)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{"
+            + "  \"actor\": \"" + USER_A_ACTOR_ID + "\",\n"
+            + "  \"path\": \"" + "badCredentialName" + "\",\n"
+            + "  \"operations\": [\"" + "write" + "\"]\n"
+            + "}");
+
+    String responseJson = mockMvc.perform(putPermissionRequest).andExpect(status().isNotFound()).andReturn().getResponse().getContentAsString();
+    String errorMessage = new JSONObject(responseJson).getString("error");
+
+    assertThat(errorMessage, is(IsEqual.equalTo("The request includes a permission that does not exist.")));
+  }
+
+  @Test
+  public void PUT_whenUUIDIsInvalid_ReturnStatusNotFound() throws Exception{
+    String credUUID = "not-a-uuid";
+
+    MockHttpServletRequestBuilder putPermissionRequest = put("/api/v2/permissions/" + credUUID)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{"
+            + "  \"actor\": \"" + USER_A_ACTOR_ID + "\",\n"
+            + "  \"path\": \"" + "badCredentialName" + "\",\n"
+            + "  \"operations\": [\"" + "write" + "\"]\n"
+            + "}");
+
+    String responseJson = mockMvc.perform(putPermissionRequest).andExpect(status().isNotFound()).andReturn().getResponse().getContentAsString();
+    String errorMessage = new JSONObject(responseJson).getString("error");
+
+    assertThat(errorMessage, is(IsEqual.equalTo("The request includes a permission that does not exist.")));
+  }
+
+  @Test
   public void PUT_whenUserGivesAPermission_forAPathAndActorThatDoesNotExist_theyReceiveA404() throws Exception{
     String credentialName = "does_not_exist";
+    String fakeUUID = "fake_guid";
 
-    MockHttpServletRequestBuilder putPermissionRequest = put("/api/v2/permissions/")
+    MockHttpServletRequestBuilder putPermissionRequest = put("/api/v2/permissions/"+ fakeUUID)
         .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)

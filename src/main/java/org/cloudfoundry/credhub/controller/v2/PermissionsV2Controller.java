@@ -38,10 +38,11 @@ public class PermissionsV2Controller {
    return permissionsHandler.getPermissions(UUID.fromString(guid));
   }
 
-  @RequestMapping(method = RequestMethod.PUT)
+  @RequestMapping(path = "/{guid}", method = RequestMethod.PUT)
   @ResponseStatus(HttpStatus.OK)
-  public PermissionsV2View putPermissions(@Validated @RequestBody PermissionsV2Request permissionsRequest){
-    return permissionsHandler.putPermissions(permissionsRequest);
+  public PermissionsV2View putPermissions(@Validated @RequestBody PermissionsV2Request permissionsRequest,
+                                          @PathVariable String guid){
+    return permissionsHandler.putPermissions(guid, permissionsRequest);
   }
 
   @RequestMapping(path = "/{guid}", method = RequestMethod.PATCH)
