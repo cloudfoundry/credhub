@@ -2,10 +2,14 @@ package org.cloudfoundry.credhub.data;
 
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
+import org.cloudfoundry.credhub.audit.entity.Resource;
 import org.cloudfoundry.credhub.entity.Credential;
+import org.cloudfoundry.credhub.entity.PermissionData;
 import org.cloudfoundry.credhub.entity.ValueCredentialVersionData;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.request.PermissionEntry;
+import org.cloudfoundry.credhub.request.PermissionOperation;
+import org.cloudfoundry.credhub.request.PermissionsV2Request;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.hamcrest.Matchers;
 import org.junit.Before;
@@ -17,6 +21,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -190,6 +195,61 @@ public class PermissionDataServiceTest {
   public void deletePermissions_addsToAuditRecord(){
     subject.deletePermissions(CREDENTIAL_NAME, LUKE);
     assertThat(auditRecord.getResourceName(), is(CREDENTIAL_NAME));
+  }
+
+  @Test
+  public void patchPermissions_addsToAuditRecord(){
+    List<PermissionEntry> permissions = new ArrayList<>();
+    List<PermissionOperation> operations = new ArrayList<>();
+    operations.add(PermissionOperation.READ);
+
+    PermissionEntry permissionEntry = new PermissionEntry();
+    permissionEntry.setPath(CREDENTIAL_NAME);
+    permissionEntry.setActor(LUKE);
+    permissionEntry.setAllowedOperations(operations);
+
+    permissions.add(permissionEntry);
+
+    PermissionData permissionData = subject.savePermissionsWithLogging(permissions).get(0);
+
+    List<PermissionOperation> newOperations = new ArrayList<>();
+    newOperations.add(PermissionOperation.READ);
+    subject.patchPermissions(permissionData.getUuid().toString(), newOperations);
+    assertThat(auditRecord.getResourceUUID(), is(permissionData.getUuid().toString()));
+  }
+
+  @Test
+  public void putPermissions_addsToAuditRecord(){
+    PermissionsV2Request request = new PermissionsV2Request();
+    List<PermissionOperation> operations = new ArrayList<>();
+    operations.add(PermissionOperation.READ);
+    request.setPath(CREDENTIAL_NAME);
+    request.setActor(LUKE);
+    request.setOperations(operations);
+    subject.putPermissions(request);
+
+    assertThat(auditRecord.getResourceName(), is(CREDENTIAL_NAME));
+  }
+
+  @Test
+  public void savePermissions_addsToAuditRecord(){
+    List<PermissionEntry> permissions = new ArrayList<>();
+    List<PermissionOperation> operations = new ArrayList<>();
+    operations.add(PermissionOperation.READ);
+
+    PermissionEntry permissionEntry = new PermissionEntry();
+    permissionEntry.setPath(CREDENTIAL_NAME);
+    permissionEntry.setActor(LUKE);
+    permissionEntry.setAllowedOperations(operations);
+
+    permissions.add(permissionEntry);
+
+    subject.savePermissionsWithLogging(permissions);
+    System.out.println(auditRecord.toString());
+
+    List<Resource> resources = auditRecord.getResourceList();
+
+    assertThat(resources.get(resources.size() - 1).getResourceName(), is(CREDENTIAL_NAME));
   }
 
   @Test

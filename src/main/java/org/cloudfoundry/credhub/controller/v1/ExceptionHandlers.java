@@ -17,6 +17,7 @@ import org.cloudfoundry.credhub.exceptions.InvalidRemoteAddressException;
 import org.cloudfoundry.credhub.exceptions.KeyNotFoundException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.exceptions.PermissionAlreadyExistsException;
+import org.cloudfoundry.credhub.exceptions.PermissionDoesNotExistException;
 import org.cloudfoundry.credhub.exceptions.PermissionException;
 import org.cloudfoundry.credhub.exceptions.ReadOnlyException;
 import org.cloudfoundry.credhub.view.ResponseError;
@@ -178,6 +179,12 @@ public class ExceptionHandlers {
     return constructError(e.getMessage());
   }
 
+  @ExceptionHandler(PermissionDoesNotExistException.class)
+  @ResponseStatus(HttpStatus.NOT_FOUND)
+  public ResponseError handlePermissionDoesNotExist(PermissionDoesNotExistException e) {
+    return constructError(e.getMessage());
+  }
+
   @ExceptionHandler(KeyNotFoundException.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   public ResponseError handleKeyNotFoundException(KeyNotFoundException e) {
@@ -227,7 +234,6 @@ public class ExceptionHandlers {
 
 
   private ResponseError constructError(String error) {
-
     String message = messageSourceAccessor.getMessage(error);
     logger.error(message);
     return new ResponseError(message);

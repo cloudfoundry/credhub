@@ -12,6 +12,7 @@ import org.cloudfoundry.credhub.exceptions.InvalidPermissionOperationException;
 import org.cloudfoundry.credhub.exceptions.PermissionAlreadyExistsException;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.request.PermissionOperation;
+import org.cloudfoundry.credhub.request.PermissionsV2Request;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -111,5 +112,13 @@ public class PermissionService {
 
   private List<PermissionEntry> getPermissions(Credential credential) {
     return permissionDataService.getPermissions(credential);
+  }
+
+  public PermissionData putPermissions(PermissionsV2Request permissionsRequest) {
+    return permissionDataService.putPermissions(permissionsRequest);
+  }
+
+  public PermissionData patchPermissions(String guid, List<PermissionOperation> operations) {
+    return permissionDataService.patchPermissions(guid, operations);
   }
 }
