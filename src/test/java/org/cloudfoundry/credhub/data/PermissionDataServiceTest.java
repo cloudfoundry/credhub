@@ -3,6 +3,7 @@ package org.cloudfoundry.credhub.data;
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.entity.Resource;
+import org.cloudfoundry.credhub.audit.entity.V2Permission;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.entity.PermissionData;
 import org.cloudfoundry.credhub.entity.ValueCredentialVersionData;
@@ -213,9 +214,13 @@ public class PermissionDataServiceTest {
     PermissionData permissionData = subject.savePermissionsWithLogging(permissions).get(0);
 
     List<PermissionOperation> newOperations = new ArrayList<>();
-    newOperations.add(PermissionOperation.READ);
+    newOperations.add(PermissionOperation.WRITE);
+
     subject.patchPermissions(permissionData.getUuid().toString(), newOperations);
+
     assertThat(auditRecord.getResourceUUID(), is(permissionData.getUuid().toString()));
+    V2Permission requestDetails = (V2Permission) auditRecord.getRequestDetails();
+    assertThat(requestDetails.getOperations(), containsInAnyOrder(PermissionOperation.WRITE));
   }
 
   @Test
@@ -236,7 +241,7 @@ public class PermissionDataServiceTest {
     PermissionData permissionData = subject.savePermissionsWithLogging(permissions).get(0);
 
     List<PermissionOperation> newOperations = new ArrayList<>();
-    newOperations.add(PermissionOperation.READ);
+    newOperations.add(PermissionOperation.WRITE);
 
     request.setPath(CREDENTIAL_NAME);
     request.setActor(LUKE);
@@ -245,6 +250,10 @@ public class PermissionDataServiceTest {
     subject.putPermissions(permissionData.getUuid().toString(), request);
 
     assertThat(auditRecord.getResourceName(), is(CREDENTIAL_NAME));
+    V2Permission requestDetails = (V2Permission) auditRecord.getRequestDetails();
+    assertThat(requestDetails.getPath(), is(CREDENTIAL_NAME));
+    assertThat(requestDetails.getActor(), is(LUKE));
+    assertThat(requestDetails.getOperations(), contains(PermissionOperation.WRITE));
   }
 
   @Test
@@ -266,6 +275,9 @@ public class PermissionDataServiceTest {
     List<Resource> resources = auditRecord.getResourceList();
 
     assertThat(resources.get(resources.size() - 1).getResourceName(), is(CREDENTIAL_NAME));
+    V2Permission requestDetails = (V2Permission) auditRecord.getRequestDetails();
+    assertThat(requestDetails.getPath(), is(CREDENTIAL_NAME));
+    assertThat(requestDetails.getActor(), is(LUKE));
   }
 
   @Test
