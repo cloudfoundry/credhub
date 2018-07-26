@@ -5,6 +5,7 @@ import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.entity.PermissionData;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.request.PermissionEntry;
+import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.cloudfoundry.credhub.request.PermissionsRequest;
 import org.cloudfoundry.credhub.request.PermissionsV2Request;
 import org.cloudfoundry.credhub.service.PermissionService;
@@ -72,6 +73,19 @@ public class PermissionsHandler {
   public PermissionsV2View getPermissions(UUID guid) {
 
     final PermissionData permission = permissionService.getPermissions(guid);
-    return new PermissionsV2View(permission.getPath(), permission.generateAccessControlOperations(), permission.getActor(), guid);
+    return new PermissionsV2View(permission.getPath(), permission.generateAccessControlOperations(),
+        permission.getActor(), guid);
+  }
+
+  public PermissionsV2View putPermissions(PermissionsV2Request permissionsRequest) {
+    final PermissionData permission = permissionService.putPermissions(permissionsRequest);
+    return new PermissionsV2View(permission.getPath(), permission.generateAccessControlOperations(),
+        permission.getActor(), permission.getUuid());
+  }
+
+  public PermissionsV2View patchPermissions(String guid, List<PermissionOperation> operations) {
+    PermissionData permission = permissionService.patchPermissions(guid, operations);
+    return new PermissionsV2View(permission.getPath(), permission.generateAccessControlOperations(),
+        permission.getActor(), permission.getUuid());
   }
 }

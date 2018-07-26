@@ -3,9 +3,11 @@ package org.cloudfoundry.credhub.data;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.entity.PermissionData;
+import org.cloudfoundry.credhub.exceptions.PermissionDoesNotExistException;
 import org.cloudfoundry.credhub.repository.PermissionRepository;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.request.PermissionOperation;
+import org.cloudfoundry.credhub.request.PermissionsV2Request;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -165,5 +167,48 @@ public class PermissionDataService {
 
   public boolean permissionExists(String user, String path) {
     return permissionRepository.findByPathAndActor(path, user) != null;
+  }
+
+  public PermissionData putPermissions(PermissionsV2Request permissionsRequest) {
+    PermissionData existingPermissionData = permissionRepository.findByPathAndActor(permissionsRequest.getPath(),
+        permissionsRequest.getActor());
+
+    if (existingPermissionData == null) {
+      throw new PermissionDoesNotExistException("error.permission.does_not_exist");
+    }
+
+    PermissionData permissionData = new PermissionData(permissionsRequest.getPath(),
+        permissionsRequest.getActor(), permissionsRequest.getOperations());
+
+    permissionData.setUuid(existingPermissionData.getUuid());
+    permissionRepository.save(permissionData);
+    auditRecord.setResource(permissionData);
+
+    return permissionData;
+  }
+
+  public PermissionData patchPermissions(String guid, List<PermissionOperation> operations) {
+    PermissionData existingPermissionData = null;
+
+    try{
+      existingPermissionData = permissionRepository.findByUuid(UUID.fromString(guid));
+    }catch (IllegalArgumentException e){
+      if(e.getMessage().startsWith("Invalid UUID string:")){
+        throw new PermissionDoesNotExistException("error.permission.does_not_exist");
+      }
+    }
+
+    if (existingPermissionData == null) {
+      throw new PermissionDoesNotExistException("error.permission.does_not_exist");
+    }
+
+    PermissionData patchedRecord = new PermissionData(existingPermissionData.getPath(),
+        existingPermissionData.getActor(), operations);
+    patchedRecord.setUuid(existingPermissionData.getUuid());
+
+    permissionRepository.save(patchedRecord);
+    auditRecord.setResource(patchedRecord);
+
+    return patchedRecord;
   }
 }

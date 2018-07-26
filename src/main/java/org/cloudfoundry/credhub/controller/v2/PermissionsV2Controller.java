@@ -1,6 +1,7 @@
 package org.cloudfoundry.credhub.controller.v2;
 
 import org.cloudfoundry.credhub.handler.PermissionsHandler;
+import org.cloudfoundry.credhub.request.PermissionsV2PatchRequest;
 import org.cloudfoundry.credhub.request.PermissionsV2Request;
 import org.cloudfoundry.credhub.view.PermissionsV2View;
 import org.springframework.http.HttpStatus;
@@ -36,4 +37,18 @@ public class PermissionsV2Controller {
   public PermissionsV2View getPermissions(@PathVariable String guid){
    return permissionsHandler.getPermissions(UUID.fromString(guid));
   }
+
+  @RequestMapping(method = RequestMethod.PUT)
+  @ResponseStatus(HttpStatus.OK)
+  public PermissionsV2View putPermissions(@Validated @RequestBody PermissionsV2Request permissionsRequest){
+    return permissionsHandler.putPermissions(permissionsRequest);
+  }
+
+  @RequestMapping(path = "/{guid}", method = RequestMethod.PATCH)
+  @ResponseStatus(HttpStatus.OK)
+  public PermissionsV2View patchPermissions(@Validated @RequestBody PermissionsV2PatchRequest request,
+                                            @PathVariable String guid){
+    return permissionsHandler.patchPermissions(guid, request.getOperations());
+  }
+
 }
