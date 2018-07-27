@@ -38,6 +38,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -378,6 +379,74 @@ public class PermissionsEndpointV2Test {
             + "}");
 
     String responseJson = mockMvc.perform(putPermissionRequest).andExpect(status().isNotFound()).andReturn().getResponse().getContentAsString();
+    String errorMessage = new JSONObject(responseJson).getString("error");
+
+    assertThat(errorMessage, is(IsEqual.equalTo("The request includes a permission that does not exist.")));
+  }
+
+  @Test
+  public void DELETE_whenPermissionIsDeletedForUserA_UserACannotAccessCredentialInAnyWay() throws Exception{
+    String credentialName = "/test";
+    String passwordValue = "passwordValue";
+
+    UUID credUUID = this.setPermissions(credentialName, PermissionOperation.WRITE);
+
+    setPassword(mockMvc, credentialName, passwordValue, USER_A_TOKEN).andExpect(status().isOk());
+
+    MockHttpServletRequestBuilder deletePermissionRequest = delete("/api/v2/permissions/" + credUUID)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+        .accept(APPLICATION_JSON);
+
+    String content = mockMvc.perform(deletePermissionRequest).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+    PermissionsV2View returnValue = JsonTestHelper.deserialize(content, PermissionsV2View.class);
+    assertThat(returnValue.getUuid(), equalTo(credUUID));
+    assertThat(returnValue.getActor(), equalTo(USER_A_ACTOR_ID));
+    assertThat(returnValue.getPath(), equalTo(credentialName));
+    assertThat(returnValue.getOperations(), equalTo(Collections.singletonList(PermissionOperation.WRITE)));
+
+    setPassword(mockMvc, credentialName, passwordValue, USER_A_TOKEN).andExpect(status().isForbidden());
+  }
+
+  @Test
+  public void DELETE_whenUserDoesNotHavePermission_CannotDeleteThePermission() throws Exception{
+    String credentialName = "/test";
+    String passwordValue = "passwordValue";
+
+    UUID credUUID = this.setPermissions(credentialName, PermissionOperation.WRITE);
+
+    setPassword(mockMvc, credentialName, passwordValue, USER_A_TOKEN).andExpect(status().isOk());
+
+    MockHttpServletRequestBuilder deletePermissionRequest = delete("/api/v2/permissions/" + credUUID)
+        .header("Authorization", "Bearer " + NO_PERMISSIONS_TOKEN)
+        .accept(APPLICATION_JSON);
+
+    mockMvc.perform(deletePermissionRequest).andExpect(status().isNotFound()).andReturn().getResponse().getContentAsString();
+    setPassword(mockMvc, credentialName, passwordValue, USER_A_TOKEN).andExpect(status().isOk());
+  }
+
+  @Test
+  public void DELETE_whenUserDeletesAPermission_withAnInvalidGuid_theyReceiveA404() throws Exception{
+    String invalidGuid = "invalid";
+
+    MockHttpServletRequestBuilder patchPermissionRequest = delete("/api/v2/permissions/" + invalidGuid)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+        .accept(APPLICATION_JSON);
+
+    String responseJson = mockMvc.perform(patchPermissionRequest).andExpect(status().isNotFound()).andReturn().getResponse().getContentAsString();
+    String errorMessage = new JSONObject(responseJson).getString("error");
+
+    assertThat(errorMessage, is(IsEqual.equalTo("The request includes a permission that does not exist.")));
+  }
+
+  @Test
+  public void DELETE_whenUserDeletesAPermission_withAGuidThatDoeNotExist_theyReceiveA404() throws Exception{
+    String nonExistingGuid = UUID.randomUUID().toString();
+
+    MockHttpServletRequestBuilder patchPermissionRequest = delete("/api/v2/permissions/" + nonExistingGuid)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+        .accept(APPLICATION_JSON);
+
+    String responseJson = mockMvc.perform(patchPermissionRequest).andExpect(status().isNotFound()).andReturn().getResponse().getContentAsString();
     String errorMessage = new JSONObject(responseJson).getString("error");
 
     assertThat(errorMessage, is(IsEqual.equalTo("The request includes a permission that does not exist.")));

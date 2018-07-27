@@ -52,4 +52,9 @@ public class PermissionsV2Controller {
     return permissionsHandler.patchPermissions(guid, request.getOperations());
   }
 
+  @RequestMapping(path = "/{guid}", method = RequestMethod.DELETE)
+  @ResponseStatus(HttpStatus.OK)
+  public PermissionsV2View deletePermissions(@PathVariable String guid){
+    return permissionsHandler.deletePermissions(guid);
+  }
 }
