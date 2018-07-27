@@ -38,39 +38,33 @@ import static org.mockito.Mockito.*;
 public class SetHandlerTest {
   private PermissionedCredentialService credentialService;
   private CertificateAuthorityService certificateAuthorityService;
-  private PermissionService permissionService;
 
   private SetHandler subject;
 
   private StringGenerationParameters generationParameters;
-  private ArrayList<PermissionEntry> accessControlEntries;
-  private UserContext userContext;
   private CredentialVersion credentialVersion;
   private UUID uuid;
-  private String name;
 
   private CEFAuditRecord auditRecord;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     TestHelper.getBouncyCastleProvider();
     credentialService = mock(PermissionedCredentialService.class);
     certificateAuthorityService = mock(CertificateAuthorityService.class);
-    permissionService = mock(PermissionService.class);
 
     auditRecord = new CEFAuditRecord();
 
-    userContext = new UserContext();
+    UserContext userContext = new UserContext();
     UserContextHolder userContextHolder = new UserContextHolder();
     userContextHolder.setUserContext(userContext);
-    subject = new SetHandler(credentialService, permissionService, certificateAuthorityService, userContextHolder, auditRecord);
+    subject = new SetHandler(credentialService, certificateAuthorityService, auditRecord);
 
     generationParameters = new StringGenerationParameters();
-    accessControlEntries = new ArrayList<>();
     credentialVersion = mock(PasswordCredentialVersion.class);
 
     uuid = UUID.randomUUID();
-    name = "federation";
+    String name = "federation";
 
     Credential cred = new Credential(name);
     cred.setUuid(uuid);
@@ -90,7 +84,6 @@ public class SetHandlerTest {
     setRequest.setGenerationParameters(generationParameters);
     setRequest.setPassword(password);
     setRequest.setName("/captain");
-    setRequest.setAdditionalPermissions(accessControlEntries);
 
     subject.handle(setRequest);
 
@@ -101,26 +94,6 @@ public class SetHandlerTest {
   }
 
   @Test
-  public void handleSetRequest_shouldSaveAccessControlEntries() {
-    StringCredentialValue password = new StringCredentialValue("federation");
-    PasswordSetRequest setRequest = new PasswordSetRequest();
-    CredentialVersion existingCredMock = mock(CredentialVersion.class);
-
-    when(credentialService.findMostRecent("/captain")).thenReturn(existingCredMock);
-    setRequest.setType("password");
-    setRequest.setGenerationParameters(generationParameters);
-    setRequest.setPassword(password);
-    setRequest.setName("/captain");
-    setRequest.setAdditionalPermissions(accessControlEntries);
-
-    subject.handle(setRequest);
-
-    verify(credentialService).save(existingCredMock, password, setRequest);
-    verify(permissionService).savePermissionsForUser(accessControlEntries);
-  }
-
-
-  @Test
   public void handleSetRequest_whenPasswordSetRequest_passesCorrectParametersIncludingGeneration() {
     StringCredentialValue password = new StringCredentialValue("federation");
     PasswordSetRequest setRequest = new PasswordSetRequest();
@@ -129,12 +102,10 @@ public class SetHandlerTest {
     setRequest.setGenerationParameters(generationParameters);
     setRequest.setPassword(password);
     setRequest.setName("/captain");
-    setRequest.setAdditionalPermissions(accessControlEntries);
 
     subject.handle(setRequest);
 
     verify(credentialService).save(null, password, setRequest);
-    verify(permissionService).savePermissionsForUser(accessControlEntries);
   }
 
   @Test
@@ -147,17 +118,11 @@ public class SetHandlerTest {
 
     setRequest.setType("user");
     setRequest.setName("/captain");
-    setRequest.setAdditionalPermissions(accessControlEntries);
     setRequest.setUserValue(userCredentialValue);
 
     subject.handle(setRequest);
 
-    verify(credentialService).save(
-        null,
-        userCredentialValue,
-        setRequest
-    );
-    verify(permissionService).savePermissionsForUser(accessControlEntries);
+    verify(credentialService).save(null, userCredentialValue, setRequest);
   }
 
   @Test
@@ -171,13 +136,11 @@ public class SetHandlerTest {
 
     setRequest.setType("certificate");
     setRequest.setName("/captain");
-    setRequest.setAdditionalPermissions(accessControlEntries);
     setRequest.setCertificateValue(certificateValue);
 
     subject.handle(setRequest);
 
     verify(credentialService).save(null, certificateValue, setRequest);
-    verify(permissionService).savePermissionsForUser(accessControlEntries);
   }
 
   @Test
@@ -200,7 +163,6 @@ public class SetHandlerTest {
 
     setRequest.setType("certificate");
     setRequest.setName("/captain");
-    setRequest.setAdditionalPermissions(accessControlEntries);
     setRequest.setCertificateValue(credentialValue);
 
     CertificateCredentialValue expectedCredentialValue = new CertificateCredentialValue(
@@ -215,6 +177,5 @@ public class SetHandlerTest {
 
     verify(credentialService).save( eq(null), credentialValueArgumentCaptor.capture(), eq(setRequest));
     assertThat(credentialValueArgumentCaptor.getValue(), samePropertyValuesAs(expectedCredentialValue));
-    verify(permissionService).savePermissionsForUser(accessControlEntries);
   }
 }

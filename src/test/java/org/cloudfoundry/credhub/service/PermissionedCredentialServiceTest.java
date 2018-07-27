@@ -125,7 +125,6 @@ public class PermissionedCredentialServiceTest {
 
     when(request.getName()).thenReturn(CREDENTIAL_NAME);
     when(request.getGenerationParameters()).thenReturn(generationParameters);
-    when(request.getAdditionalPermissions()).thenReturn(accessControlEntries);
   }
 
   @Test(expected = ParameterizedValidationException.class)
@@ -390,7 +389,6 @@ public class PermissionedCredentialServiceTest {
     BaseCredentialGenerateRequest generateRequest = mock(BaseCredentialGenerateRequest.class);
     when(generateRequest.getName()).thenReturn(CREDENTIAL_NAME);
     when(generateRequest.getGenerationParameters()).thenReturn(generationParameters);
-    when(generateRequest.getAdditionalPermissions()).thenReturn(accessControlEntries);
 
     when(generateRequest.getType()).thenReturn("password");
     when(credentialVersionDataService.save(any(CredentialVersion.class)))

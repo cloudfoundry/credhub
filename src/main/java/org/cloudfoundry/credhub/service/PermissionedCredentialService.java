@@ -67,11 +67,9 @@ public class PermissionedCredentialService {
       CredentialVersion existingCredentialVersion,
       CredentialValue credentialValue,
       BaseCredentialRequest generateRequest) {
-    List<PermissionEntry> accessControlEntries = generateRequest.getAdditionalPermissions();
     boolean shouldWriteNewCredential = shouldWriteNewCredential(existingCredentialVersion, generateRequest);
 
-    validateCredentialSave(generateRequest.getName(), generateRequest.getType(), accessControlEntries,
-        existingCredentialVersion);
+    validateCredentialSave(generateRequest.getName(), generateRequest.getType(), existingCredentialVersion);
 
     if (!shouldWriteNewCredential) {
       return existingCredentialVersion;
@@ -81,16 +79,14 @@ public class PermissionedCredentialService {
   }
 
   public boolean delete(String credentialName) {
-    if (!permissionCheckingService
-        .hasPermission(userContextHolder.getUserContext().getActor(), credentialName, DELETE)) {
+    if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), credentialName, DELETE)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
     return credentialVersionDataService.delete(credentialName);
   }
 
   public List<CredentialVersion> findAllByName(String credentialName) {
-    if (!permissionCheckingService
-        .hasPermission(userContextHolder.getUserContext().getActor(), credentialName, READ)) {
+    if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), credentialName, READ)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
@@ -109,8 +105,7 @@ public class PermissionedCredentialService {
       throw new InvalidQueryParameterException("error.invalid_query_parameter", "versions");
     }
 
-    if (!permissionCheckingService
-        .hasPermission(userContextHolder.getUserContext().getActor(), credentialName, READ)) {
+    if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), credentialName, READ)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
@@ -118,8 +113,7 @@ public class PermissionedCredentialService {
   }
 
   public List<CredentialVersion> findActiveByName(String credentialName) {
-    if (!permissionCheckingService
-        .hasPermission(userContextHolder.getUserContext().getActor(), credentialName, READ)) {
+    if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), credentialName, READ)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
     List<CredentialVersion> credentialList = credentialVersionDataService.findActiveByName(credentialName);
@@ -138,8 +132,7 @@ public class PermissionedCredentialService {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
-    if (!permissionCheckingService
-        .hasPermission(userContextHolder.getUserContext().getActor(), credential.getName(), READ)) {
+    if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), credential.getName(), READ)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
     return credential;
@@ -159,16 +152,14 @@ public class PermissionedCredentialService {
 
     String credentialName = credentialVersion.getName();
 
-    if (!permissionCheckingService
-        .hasPermission(userContextHolder.getUserContext().getActor(), credentialName, READ)) {
+    if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), credentialName, READ)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
     return credentialVersionDataService.findByUuid(credentialUUID);
   }
 
   public List<String> findAllCertificateCredentialsByCaName(String caName) {
-    if (!permissionCheckingService
-        .hasPermission(userContextHolder.getUserContext().getActor(), caName, PermissionOperation.READ)) {
+    if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), caName, PermissionOperation.READ)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
@@ -229,13 +220,8 @@ public class PermissionedCredentialService {
 
   }
 
-  private void validateCredentialSave(String credentialName, String type, List<PermissionEntry> accessControlEntries,
-      CredentialVersion existingCredentialVersion) {
-      verifyWritePermission(credentialName);
-
-    if (accessControlEntries.size() > 0) {
-      verifyWriteAclPermission(credentialName);
-    }
+  private void validateCredentialSave(String credentialName, String type, CredentialVersion existingCredentialVersion) {
+    verifyWritePermission(credentialName);
 
     if (existingCredentialVersion != null && !existingCredentialVersion.getCredentialType().equals(type)) {
       throw new ParameterizedValidationException("error.type_mismatch");
@@ -247,15 +233,13 @@ public class PermissionedCredentialService {
       return;
     }
 
-    if (!permissionCheckingService
-        .hasPermission(userContextHolder.getUserContext().getActor(), credentialName, WRITE)) {
+    if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), credentialName, WRITE)) {
       throw new PermissionException("error.credential.invalid_access");
     }
   }
 
   private void verifyWriteAclPermission(String credentialName) {
-    if (!permissionCheckingService
-        .hasPermission(userContextHolder.getUserContext().getActor(), credentialName, WRITE_ACL)) {
+    if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), credentialName, WRITE_ACL)) {
       throw new PermissionException("error.credential.invalid_access");
     }
   }

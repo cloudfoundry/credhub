@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -63,12 +64,11 @@ public class CertificateGetTest {
     generatePassword(mockMvc, "/user-a/invalid-cert", true, null, USER_A_TOKEN);
     String response = getCertificateCredentials(mockMvc, USER_A_TOKEN);
 
-    List<String> names = JsonPath.parse(response)
-        .read("$.certificates[*].name");
+    List<String> names = JsonPath.parse(response).read("$.certificates[*].name");
 
-    assertThat(names, hasSize(2));
-    assertThat(names, containsInAnyOrder("/user-a/first-certificate", "/user-a/second-certificate"));
-    assertThat(names, not(containsInAnyOrder("/user-a/invalid-cert")));
+    assertThat(names.size(), greaterThanOrEqualTo(2));
+    assertThat(names, hasItems("/user-a/first-certificate", "/user-a/second-certificate"));
+    assertThat(names, not(hasItems("/user-a/invalid-cert")));
   }
 
   @Test
@@ -81,17 +81,17 @@ public class CertificateGetTest {
     List<String> names = JsonPath.parse(response)
         .read("$.certificates[*].name");
 
-    assertThat(names, hasSize(2));
-    assertThat(names, containsInAnyOrder("/user-a/certificate", "/shared-read-only/certificate"));
-    assertThat(names, not(containsInAnyOrder("/user-b/certificate")));
+    assertThat(names.size(), greaterThanOrEqualTo(2));
+    assertThat(names, hasItems("/user-a/certificate", "/shared-read-only/certificate"));
+    assertThat(names, not(hasItems("/user-b/certificate")));
 
     response = getCertificateCredentials(mockMvc, USER_B_TOKEN);
     names = JsonPath.parse(response)
         .read("$.certificates[*].name");
 
-    assertThat(names, hasSize(2));
-    assertThat(names, containsInAnyOrder("/user-b/certificate", "/shared-read-only/certificate"));
-    assertThat(names, not(containsInAnyOrder("/user-a/certificate")));
+    assertThat(names.size(), greaterThanOrEqualTo(2));
+    assertThat(names, hasItems("/user-b/certificate", "/shared-read-only/certificate"));
+    assertThat(names, not(hasItems("/user-a/certificate")));
   }
 
   @Test

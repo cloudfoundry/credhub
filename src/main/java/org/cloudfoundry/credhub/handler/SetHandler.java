@@ -1,15 +1,12 @@
 package org.cloudfoundry.credhub.handler;
 
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
-import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.data.CertificateAuthorityService;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.request.BaseCredentialSetRequest;
 import org.cloudfoundry.credhub.request.CertificateSetRequest;
-import org.cloudfoundry.credhub.request.PermissionEntry;
-import org.cloudfoundry.credhub.service.PermissionService;
 import org.cloudfoundry.credhub.service.PermissionedCredentialService;
 import org.cloudfoundry.credhub.util.CertificateReader;
 import org.cloudfoundry.credhub.view.CredentialView;
@@ -20,20 +17,16 @@ import org.springframework.stereotype.Component;
 public class SetHandler {
 
   private PermissionedCredentialService credentialService;
-  private PermissionService permissionService;
   private CertificateAuthorityService certificateAuthorityService;
-  private UserContextHolder userContextHolder;
   private CEFAuditRecord auditRecord;
 
   @Autowired
   public SetHandler(
       PermissionedCredentialService credentialService,
-      PermissionService permissionService, CertificateAuthorityService certificateAuthorityService,
-      UserContextHolder userContextHolder, CEFAuditRecord auditRecord) {
+      CertificateAuthorityService certificateAuthorityService,
+      CEFAuditRecord auditRecord) {
     this.credentialService = credentialService;
-    this.permissionService = permissionService;
     this.certificateAuthorityService = certificateAuthorityService;
-    this.userContextHolder = userContextHolder;
     this.auditRecord = auditRecord;
   }
 
@@ -62,14 +55,6 @@ public class SetHandler {
         setRequest.getCredentialValue(),
         setRequest
     );
-
-    final boolean isNewCredential = existingCredentialVersion == null;
-
-    for(PermissionEntry entry : setRequest.getAdditionalPermissions()){
-      entry.setPath(setRequest.getName());
-    }
-
-    permissionService.savePermissionsForUser(setRequest.getAdditionalPermissions());
 
     auditRecord.setVersion(credentialVersion);
     auditRecord.setResource(credentialVersion.getCredential());

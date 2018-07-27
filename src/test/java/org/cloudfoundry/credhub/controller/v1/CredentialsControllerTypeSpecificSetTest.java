@@ -303,10 +303,7 @@ public class CredentialsControllerTypeSpecificSetTest {
         .content("{" +
             "\"name\":\"" + CREDENTIAL_NAME + "\"," +
             "\"type\":\"" + parametizer.credentialType.toUpperCase() + "\"," +
-            "\"value\":" + parametizer.credentialValue + "," +
-            "\"additional_permissions\": [" +
-            "{\"actor\": \"app1-guid\"," +
-            "\"operations\": [\"read\"]}]" +
+            "\"value\":" + parametizer.credentialValue +
             "}");
 
     ResultActions response = mockMvc.perform(request);
@@ -334,10 +331,7 @@ public class CredentialsControllerTypeSpecificSetTest {
         .content("{" +
             "\"name\":\"" + CREDENTIAL_NAME + "\"," +
             "\"type\":\"" + parametizer.credentialType + "\"," +
-            "\"value\":" + parametizer.credentialValue + "," +
-            "\"additional_permissions\": [" +
-            "{\"actor\": \"app1-guid\"," +
-            "\"operations\": [\"read\"]}]" +
+            "\"value\":" + parametizer.credentialValue +
             "}");
 
     ResultActions response = mockMvc.perform(request);
@@ -363,10 +357,7 @@ public class CredentialsControllerTypeSpecificSetTest {
         .content("{" +
             "\"name\":\"" + CREDENTIAL_NAME + "\"," +
             "\"type\":\"" + parametizer.credentialType + "\"," +
-            "\"value\":" + parametizer.credentialValue + "," +
-            "\"additional_permissions\": [" +
-            "{\"actor\": \"app1-guid\"," +
-            "\"operations\": [\"read\"]}]" +
+            "\"value\":" + parametizer.credentialValue +
             "}");
     ArgumentCaptor<CredentialVersion> argumentCaptor = ArgumentCaptor.forClass(CredentialVersion.class);
 
@@ -390,10 +381,7 @@ public class CredentialsControllerTypeSpecificSetTest {
         .content("{" +
             "\"name\":\"" + CREDENTIAL_NAME + "\"," +
             "\"type\":\"" + parametizer.credentialType + "\"," +
-            "\"value\":" + parametizer.credentialValue + "," +
-            "\"additional_permissions\": [" +
-            "{\"actor\": \"app1-guid\"," +
-            "\"operations\": [\"read\"]}]" +
+            "\"value\":" + parametizer.credentialValue +
             "}");
 
     BaseCredentialSetRequest requestObject = mock(BaseCredentialSetRequest.class);

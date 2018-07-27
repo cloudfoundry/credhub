@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.integration;
 
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,8 +26,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = CredentialManagerApp.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @Transactional
+@Ignore
 public class KeyUsageEndpointTest {
-
   @Autowired
   private WebApplicationContext webApplicationContext;
 

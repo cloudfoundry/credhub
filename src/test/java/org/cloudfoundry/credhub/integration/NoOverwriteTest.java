@@ -56,7 +56,6 @@ public class NoOverwriteTest {
   private EncryptionKeyCanaryRepository encryptionKeyCanaryRepository;
 
   private MockMvc mockMvc;
-  private ResultActions[] responses;
   private List<EncryptionKeyCanary> canaries;
 
   @Before
@@ -80,13 +79,12 @@ public class NoOverwriteTest {
   }
 
   @Test
-  public void whenMultipleThreadsGenerateCredentialWithSameNameAndConverge_AndSameParameters_itShouldNotOverwrite()
-      throws Exception {
+  public void whenMultipleThreadsGenerateCredentialWithSameNameAndConverge_AndSameParameters_itShouldNotOverwrite() throws Exception {
     // We need to set the parameters so that we can determine which actor's request won,
     // even with authorization enforcement disabled.
-    runRequestsConcurrently(CREDENTIAL_NAME,
-        ",\"parameters\":{\"exclude_lower\":true,\"exclude_upper\":true}",
-        ",\"parameters\":{\"exclude_lower\":true,\"exclude_upper\":true}",
+    ResultActions[] responses = runRequestsConcurrently(CREDENTIAL_NAME,
+        "\"parameters\":{\"exclude_lower\":true,\"exclude_upper\":true}",
+        "\"parameters\":{\"exclude_lower\":true,\"exclude_upper\":true}",
         () -> post("/api/v1/data"));
 
     MvcResult result1 = responses[0]
@@ -117,7 +115,7 @@ public class NoOverwriteTest {
       String additionalJsonPayload1,
       String additionalJsonPayload2,
       Supplier<MockHttpServletRequestBuilder> requestBuilderProvider) throws InterruptedException {
-    responses = new ResultActions[2];
+    ResultActions[] responses = new ResultActions[2];
 
     Thread thread1 = new Thread("thread1") {
       @Override
@@ -132,10 +130,6 @@ public class NoOverwriteTest {
                     + "\"type\":\"password\","
                     + "\"overwrite\":false,"
                     + "\"name\":\"" + credentialName + "\","
-                    + "\"additional_permissions\":[{"
-                    + "  \"actor\":\"uaa-client:a-different-actor\","
-                    + "  \"operations\": [\"read\"]"
-                    + "}]"
                     + additionalJsonPayload1
                     + "\n" +
                     "}");
@@ -161,10 +155,6 @@ public class NoOverwriteTest {
                     + "\"type\":\"password\","
                     + "\"overwrite\":false,"
                     + "\"name\":\"" + credentialName + "\", "
-                    + "\"additional_permissions\":[{"
-                    + "\"actor\":\"uaa-client:a-different-actor\","
-                    + "\"operations\": [\"read\"]"
-                    + "}]"
                     + additionalJsonPayload2
                     + "}");
 

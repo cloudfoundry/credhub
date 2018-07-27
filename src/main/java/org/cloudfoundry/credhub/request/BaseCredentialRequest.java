@@ -3,14 +3,11 @@ package org.cloudfoundry.credhub.request;
 import org.apache.commons.lang3.StringUtils;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
+import java.util.Set;
 
 public abstract class BaseCredentialRequest {
   private static final String ONLY_VALID_CHARACTERS_IN_NAME = "^[a-zA-Z0-9-_/.:,()\\[\\]+]*$";
@@ -27,7 +24,6 @@ public abstract class BaseCredentialRequest {
   })
   private String name;
   private String type;
-  private List<PermissionEntry> additionalPermissions = new ArrayList<>();
   private GenerationParameters generationParameters = null;
 
   public String getType() {
@@ -44,22 +40,6 @@ public abstract class BaseCredentialRequest {
 
   public void setName(String name) {
     this.name = StringUtils.prependIfMissing(name, "/");
-  }
-
-  public List<PermissionEntry> getAdditionalPermissions() {
-    return additionalPermissions;
-  }
-
-  public void setAdditionalPermissions(List<PermissionEntry> additionalPermissions) {
-    this.additionalPermissions = additionalPermissions;
-  }
-
-  public void addCurrentUser(PermissionEntry entry) {
-    additionalPermissions = additionalPermissions
-        .stream()
-        .filter(ace -> !(ace.getActor().equals(entry.getActor())))
-        .collect(Collectors.toList());
-    additionalPermissions.add(entry);
   }
 
   public void validate() {

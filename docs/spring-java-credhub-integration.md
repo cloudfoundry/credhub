@@ -16,58 +16,6 @@ Service brokers and client applications running on the Cloud Foundry platform us
 
 The Cloud Foundry Java Buildpack installs and configures the Java runtime environment for applications deployed to Cloud Foundry. Starting with versions 3.17 and 4.1, the Java Buildpack will automatically configure the JRE to use the mutual TLS certificate and key provided in application containers. Applications staged with Java Buildpack do not require any additional configuration to authenticate to CredHub. 
 
-#### Service Brokers
-
-Service brokers written using Java and Spring can use Spring CredHub to easily store credentials in the binding flow. A service broker would first add Spring CredHub as a dependency and configure a CredHubTemplate as shown on the project page. 
-
-Once the CredHubTemplate bean has been configured and is available to the service broker application code, a method like the example below could be used to store the raw credentials created by the broker while processing a binding request and build new credentials containing a CredHub reference.
-
-```
-/** 
- * Store the provided credentials in CredHub. 
- * 
- * @param bindingGuid the GUID of the binding, provided by Cloud Controller
- * @param appGuid the GUID of the application being bound to the service,
- *                provided by Cloud Controller
- * @param credentials the “raw” credentials for the service binding, 
- *                    provided by the service broker
- * @return new credentials containing the CredHub reference that should
- *         be returned to Cloud Controller by the service broker
- */
-Map<String, Object> writeCredentials(String bindingGuid, 
-                                     String appGuid, 
-                                     Map<String, Object> rawCredentials) {
-    ServiceInstanceCredentialName credentialName = 
-        ServiceInstanceCredentialName.builder()
-            .serviceBrokerName("my-service-broker")
-            .serviceOfferingName("my-service")
-            .serviceBindingId(bindingGuid)
-            .credentialName("credentials")
-            .build();
-
-    AdditionalPermissions permission = AdditionalPermissions.builder()
-        .app(appGuid)
-        .operation(AdditionalPermission.Operation.READ)
-        .build();
-
-
-    JsonCredentialRequest request = JsonCredentialRequest.builder()
-        .name(credentialName)
-        .additionalPermission(permission)
-        .value(rawCredentials)
-        .build());
-
-    credHubTemplate.write(request);
-
-    Map<String, Object> credHubCredentials = new HashMap<>(1);
-    credHubCredentials.put("credhub-ref", 
-                           "((" + credentialName.getName() + "))");
-    return credHubCredentials;
-} 
-```
-
-This example code uses the GUID of the application that is being bound to the service instance to set up READ permissions for the application. 
-
 #### Client Applications
 
 Spring Cloud Connectors is a library that is used by Spring applications to consume bound services on Cloud Foundry. The library parses the JSON in the VCAP_SERVICES environment variable into Java objects that applications can query and use via a low-level Java API. It also has the ability to create Spring beans for well-known connection types (e.g relational databases, MongoDB, Redis, RabbitMQ). Extension libraries provide the ability to create Spring beans and configure applications to consume additional services including Spring Cloud Services, Single Sign-On Service, and GemFire.

@@ -25,11 +25,9 @@ public class JsonSetRequestTest {
   public void deserializesToJsonSetRequest() {
     String requestJson = "{\"name\":\"/my-namespace/subTree/credential-name\","
         + "\"type\":\"json\","
-        + "\"value\":{\"key\":\"value\",\"fancy\":{\"num\":10},\"array\":[\"foo\",\"bar\"]},"
-        + "\"additional_permissions\": [{\"actor\": \"app1-guid\",\"operations\": [\"read\"]}]}";
+        + "\"value\":{\"key\":\"value\",\"fancy\":{\"num\":10},\"array\":[\"foo\",\"bar\"]}}";
 
-    JsonSetRequest deserialize = deserialize(requestJson,
-        JsonSetRequest.class);
+    JsonSetRequest deserialize = deserialize(requestJson, JsonSetRequest.class);
 
     assertThat(deserialize, instanceOf(JsonSetRequest.class));
   }
@@ -57,8 +55,7 @@ public class JsonSetRequestTest {
   public void whenTypeHasUnusualCasing_shouldBeValid() {
     String requestJson = "{\"name\":\"/my-namespace/subTree/credential-name\","
         + "\"type\":\"JsOn\","
-        + "\"value\":{\"key\":\"value\",\"fancy\":{\"num\":10},\"array\":[\"foo\",\"bar\"]},"
-        + "\"additional_permissions\": [{\"actor\": \"app1-guid\",\"operations\": [\"read\"]}]}";
+        + "\"value\":{\"key\":\"value\",\"fancy\":{\"num\":10},\"array\":[\"foo\",\"bar\"]}}";
 
     Set<ConstraintViolation<JsonSetRequest>> constraintViolations = deserializeAndValidate(requestJson, JsonSetRequest.class);
 

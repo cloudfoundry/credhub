@@ -5,11 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
-import org.cloudfoundry.credhub.audit.entity.DeleteCredential;
-import org.cloudfoundry.credhub.audit.entity.FindCredential;
-import org.cloudfoundry.credhub.audit.entity.GetCredential;
-import org.cloudfoundry.credhub.audit.entity.RequestDetails;
-import org.cloudfoundry.credhub.audit.entity.SetCredential;
+import org.cloudfoundry.credhub.audit.entity.*;
 import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException;
 import org.cloudfoundry.credhub.handler.CredentialsHandler;
 import org.cloudfoundry.credhub.handler.LegacyGenerationHandler;
@@ -22,14 +18,7 @@ import org.cloudfoundry.credhub.view.FindCredentialResults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -117,11 +106,9 @@ public class CredentialsController {
     auditRecord.setRequestDetails(new GetCredential(credentialName, numberOfVersions, current));
 
     if (current) {
-      return credentialsHandler
-          .getCurrentCredentialVersions(credentialNameWithPrependedSlash);
+      return credentialsHandler.getCurrentCredentialVersions(credentialNameWithPrependedSlash);
     } else {
-      return credentialsHandler
-          .getNCredentialVersions(credentialNameWithPrependedSlash, numberOfVersions);
+      return credentialsHandler.getNCredentialVersions(credentialNameWithPrependedSlash, numberOfVersions);
     }
   }
 
@@ -146,8 +133,7 @@ public class CredentialsController {
   }
 
   private CredentialView auditedHandlePutRequest(@RequestBody BaseCredentialSetRequest requestBody) {
-    auditRecord.setRequestDetails(new SetCredential(requestBody.getName(), requestBody.getType(),
-        requestBody.getAdditionalPermissions()));
+    auditRecord.setRequestDetails(new SetCredential(requestBody.getName(), requestBody.getType()));
     return setHandler.handle(requestBody);
   }
 }

@@ -31,8 +31,6 @@ public class GenerateHandlerTest {
   private GenerateHandler subject;
 
   private StringGenerationParameters generationParameters;
-  private ArrayList<PermissionEntry> accessControlEntries;
-  private CredentialVersion credentialVersion;
 
   @Mock
   private CEFAuditRecord cefAuditRecord;
@@ -44,11 +42,10 @@ public class GenerateHandlerTest {
     universalCredentialGenerator = mock(UniversalCredentialGenerator.class);
     permissionService = mock(PermissionService.class);
 
-    subject = new GenerateHandler(credentialService, permissionService, universalCredentialGenerator, cefAuditRecord);
+    subject = new GenerateHandler(credentialService, universalCredentialGenerator, cefAuditRecord);
 
     generationParameters = new StringGenerationParameters();
-    accessControlEntries = new ArrayList<>();
-    credentialVersion = mock(PasswordCredentialVersion.class);
+    CredentialVersion credentialVersion = mock(PasswordCredentialVersion.class);
     when(credentialVersion.getCredential()).thenReturn(mock(Credential.class));
     when(credentialService.save(any(), any(), any())).thenReturn(credentialVersion);
   }
@@ -61,13 +58,11 @@ public class GenerateHandlerTest {
     generateRequest.setType("password");
     generateRequest.setGenerationParameters(generationParameters);
     generateRequest.setName("/captain");
-    generateRequest.setAdditionalPermissions(accessControlEntries);
     generateRequest.setOverwrite(false);
 
     subject.handle(generateRequest);
 
     verify(credentialService).save(null, null, generateRequest);
-    verify(permissionService).savePermissionsForUser(accessControlEntries);
   }
 
   @Test
@@ -77,7 +72,6 @@ public class GenerateHandlerTest {
     generateRequest.setType("password");
     generateRequest.setGenerationParameters(generationParameters);
     generateRequest.setName("/captain");
-    generateRequest.setAdditionalPermissions(accessControlEntries);
     generateRequest.setOverwrite(false);
 
     subject.handle(generateRequest);

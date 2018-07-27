@@ -2,19 +2,14 @@ package org.cloudfoundry.credhub.audit.entity;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.cloudfoundry.credhub.audit.OperationDeviceAction;
-import org.cloudfoundry.credhub.request.PermissionEntry;
-
-import java.util.List;
 
 public class SetCredential implements RequestDetails {
   private String name;
   private String type;
-  private List<PermissionEntry> additionalPermissions;
 
-  public SetCredential(String credentialName, String credentialType, List<PermissionEntry> credentialAdditionalPermissions) {
+  public SetCredential(String credentialName, String credentialType) {
     name = credentialName;
     type = credentialType;
-    additionalPermissions = credentialAdditionalPermissions;
   }
 
   public SetCredential(){
@@ -36,7 +31,6 @@ public class SetCredential implements RequestDetails {
     return new EqualsBuilder()
         .append(name, that.name)
         .append(type, that.type)
-        .append(additionalPermissions, that.additionalPermissions)
         .isEquals();
   }
 
@@ -56,9 +50,4 @@ public class SetCredential implements RequestDetails {
   public String getType() { return type; }
 
   public void setType(String type) { this.type = type; }
-
-  public void setAdditionalPermissions(List<PermissionEntry> additionalPermissions) {
-    this.additionalPermissions = additionalPermissions;
-  }
-
 }

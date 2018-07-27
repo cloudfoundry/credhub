@@ -218,12 +218,10 @@ public class PermissionsEndpointTest {
 
   @Test
   @Ignore
-  public void POST_whenTheUserHasPermissionToWritePermissions_updatesPermissions()
-      throws Exception {
+  public void POST_whenTheUserHasPermissionToWritePermissions_updatesPermissions() throws Exception {
     RequestHelper.grantPermissions(mockMvc, credentialName, ALL_PERMISSIONS_TOKEN, USER_A_ACTOR_ID, "read", "delete");
 
-    RequestHelper
-        .grantPermissions(mockMvc, credentialName, ALL_PERMISSIONS_TOKEN, USER_A_ACTOR_ID, "write", "read");
+    RequestHelper.grantPermissions(mockMvc, credentialName, ALL_PERMISSIONS_TOKEN, USER_A_ACTOR_ID, "write", "read");
 
     PermissionsView acl = RequestHelper
         .getPermissions(mockMvc, credentialName, ALL_PERMISSIONS_TOKEN);

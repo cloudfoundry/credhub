@@ -198,47 +198,6 @@ public class BaseCredentialRequestTest {
   }
 
   @Test
-  public void permissionsDefaultToEmptyList() {
-    // language=JSON
-    String json = "{ \"name\": \"some-name\",\n"
-        + "  \"type\": \"value\",\n"
-        + "  \"value\": \"some-value\""
-        + "}";
-
-    final BaseCredentialSetRequest request = JsonTestHelper
-        .deserialize(json, BaseCredentialSetRequest.class);
-    assertThat(request.getAdditionalPermissions(), empty());
-  }
-
-  @Test
-  public void permissionsShouldContainPermissionsFromRequest() {
-    // language=JSON
-    String json = "{\n"
-        + "  \"name\": \"some-name\",\n"
-        + "  \"type\": \"value\",\n"
-        + "  \"value\": \"some-value\",\n"
-        + "  \"additional_permissions\": [\n"
-        + "    {\n"
-        + "      \"actor\": \"some-actor\",\n"
-        + "      \"operations\": [\n"
-        + "        \"read\",\n"
-        + "        \"write\"\n"
-        + "      ]\n"
-        + "    }\n"
-        + "  ]\n"
-        + "}";
-    final BaseCredentialSetRequest request = JsonTestHelper
-        .deserialize(json, BaseCredentialSetRequest.class);
-
-    final List<PermissionOperation> operations = new ArrayList<>(
-        Arrays.asList(PermissionOperation.READ, PermissionOperation.WRITE));
-    final List<PermissionEntry> expectedAces = new ArrayList<>(
-        Arrays.asList(new PermissionEntry("some-actor", "test-path", operations)));
-
-    assertThat(request.getAdditionalPermissions(), samePropertyValuesAs(expectedAces));
-  }
-
-  @Test
   public void validate_throwsWhenNameHasInvalidSlash() {
     // language=JSON
     String json = "{\n"
