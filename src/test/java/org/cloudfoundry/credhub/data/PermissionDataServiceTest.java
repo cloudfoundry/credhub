@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.data;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.entity.Resource;
@@ -35,6 +36,7 @@ import static org.cloudfoundry.credhub.request.PermissionOperation.READ_ACL;
 import static org.cloudfoundry.credhub.request.PermissionOperation.WRITE;
 import static org.cloudfoundry.credhub.request.PermissionOperation.WRITE_ACL;
 import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -200,18 +202,17 @@ public class PermissionDataServiceTest {
 
   @Test
   public void patchPermissions_addsToAuditRecord(){
-    List<PermissionEntry> permissions = new ArrayList<>();
     List<PermissionOperation> operations = new ArrayList<>();
+    String pathName = RandomStringUtils.random(50);
     operations.add(PermissionOperation.READ);
 
-    PermissionEntry permissionEntry = new PermissionEntry();
-    permissionEntry.setPath(CREDENTIAL_NAME);
-    permissionEntry.setActor(LUKE);
-    permissionEntry.setAllowedOperations(operations);
+    PermissionsV2Request permission = new PermissionsV2Request();
+    permission.setPath(pathName);
+    permission.setActor(LUKE);
+    permission.setOperations(operations);
 
-    permissions.add(permissionEntry);
-
-    PermissionData permissionData = subject.savePermissionsWithLogging(permissions).get(0);
+    PermissionData permissionData = subject.saveV2Permissions(permission);
+    assertThat(permissionData.getUuid(), notNullValue());
 
     List<PermissionOperation> newOperations = new ArrayList<>();
     newOperations.add(PermissionOperation.WRITE);
@@ -270,13 +271,31 @@ public class PermissionDataServiceTest {
     permissions.add(permissionEntry);
 
     subject.savePermissionsWithLogging(permissions);
-    System.out.println(auditRecord.toString());
 
     List<Resource> resources = auditRecord.getResourceList();
 
     assertThat(resources.get(resources.size() - 1).getResourceName(), is(CREDENTIAL_NAME));
     V2Permission requestDetails = (V2Permission) auditRecord.getRequestDetails();
     assertThat(requestDetails.getPath(), is(CREDENTIAL_NAME));
+    assertThat(requestDetails.getActor(), is(LUKE));
+  }
+
+  @Test
+  public void saveV2Permissions_addsToAuditRecord(){
+    String path = "/a" + RandomStringUtils.random(50);
+    PermissionsV2Request permission = new PermissionsV2Request();
+    List<PermissionOperation> operations = new ArrayList<>();
+    operations.add(PermissionOperation.READ);
+
+    permission.setPath(path);
+    permission.setActor(LUKE);
+    permission.setOperations(operations);
+
+    subject.saveV2Permissions(permission);
+
+    assertThat(auditRecord.getResourceName(), is(path));
+    V2Permission requestDetails = (V2Permission) auditRecord.getRequestDetails();
+    assertThat(requestDetails.getPath(), is(path));
     assertThat(requestDetails.getActor(), is(LUKE));
   }
 

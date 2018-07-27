@@ -88,4 +88,10 @@ public class PermissionsHandler {
     return new PermissionsV2View(permission.getPath(), permission.generateAccessControlOperations(),
         permission.getActor(), permission.getUuid());
   }
+
+  public PermissionsV2View setV2Permissions(PermissionsV2Request permissionsRequest) {
+    final PermissionData permission = permissionService.saveV2Permissions(permissionsRequest);
+    return new PermissionsV2View(permission.getPath(), permission.generateAccessControlOperations(),
+        permission.getActor(), permission.getUuid());
+  }
 }

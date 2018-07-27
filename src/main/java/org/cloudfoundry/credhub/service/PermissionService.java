@@ -10,6 +10,7 @@ import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.exceptions.InvalidPermissionException;
 import org.cloudfoundry.credhub.exceptions.InvalidPermissionOperationException;
 import org.cloudfoundry.credhub.exceptions.PermissionAlreadyExistsException;
+import org.cloudfoundry.credhub.exceptions.PermissionDoesNotExistException;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.cloudfoundry.credhub.request.PermissionsV2Request;
@@ -115,10 +116,48 @@ public class PermissionService {
   }
 
   public PermissionData putPermissions(String guid, PermissionsV2Request permissionsRequest) {
+    UserContext userContext = userContextHolder.getUserContext();
+    UUID permissionUUID = parseUUID(guid);
+    checkActorPermissions(permissionUUID, userContext.getActor());
+
     return permissionDataService.putPermissions(guid, permissionsRequest);
   }
 
   public PermissionData patchPermissions(String guid, List<PermissionOperation> operations) {
+    UserContext userContext = userContextHolder.getUserContext();
+    UUID permissionUUID = parseUUID(guid);
+    checkActorPermissions(permissionUUID, userContext.getActor());
+
     return permissionDataService.patchPermissions(guid, operations);
+  }
+
+  public PermissionData saveV2Permissions(PermissionsV2Request permissionsRequest) {
+    UserContext userContext = userContextHolder.getUserContext();
+    if (!permissionCheckingService.hasPermission(userContext.getActor(), permissionsRequest.getPath(), WRITE_ACL)) {
+      throw new EntryNotFoundException("error.credential.invalid_access");
+    }
+    if (!permissionCheckingService.userAllowedToOperateOnActor(permissionsRequest.getActor())) {
+      throw new InvalidPermissionOperationException("error.permission.invalid_update_operation");
+    }
+    return permissionDataService.saveV2Permissions(permissionsRequest);
+  }
+
+  private void checkActorPermissions(UUID permissionUUID, String actor) {
+    if (!permissionCheckingService.hasPermission(actor, permissionUUID, WRITE_ACL)) {
+      throw new EntryNotFoundException("error.permission.does_not_exist");
+    }
+    if (!permissionCheckingService.userAllowedToOperateOnActor(permissionUUID)) {
+      throw new InvalidPermissionOperationException("error.permission.invalid_update_operation");
+    }
+  }
+
+  private UUID parseUUID(String guid) {
+    UUID permissionUUID;
+    try{
+      permissionUUID = UUID.fromString(guid);
+    }catch (IllegalArgumentException e){
+      throw new PermissionDoesNotExistException("error.permission.does_not_exist");
+    }
+    return permissionUUID;
   }
 }

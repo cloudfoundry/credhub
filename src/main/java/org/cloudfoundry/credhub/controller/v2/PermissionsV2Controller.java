@@ -29,7 +29,7 @@ public class PermissionsV2Controller {
   @PostMapping(consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ResponseStatus(HttpStatus.CREATED)
   public PermissionsV2View setPermissions(@Validated @RequestBody PermissionsV2Request permissionsRequest) {
-    return permissionsHandler.setPermissions(permissionsRequest);
+    return permissionsHandler.setV2Permissions(permissionsRequest);
   }
 
   @RequestMapping(path = "/{guid}", method = RequestMethod.GET)

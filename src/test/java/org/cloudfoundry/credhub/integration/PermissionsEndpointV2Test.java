@@ -181,7 +181,7 @@ public class PermissionsEndpointV2Test {
         .header("Authorization", "Bearer " + USER_A_TOKEN)
         .accept(APPLICATION_JSON);
 
-    String content = mockMvc.perform(getUuidRequest).andExpect(status().isForbidden()).andReturn().getResponse().getContentAsString();
+    mockMvc.perform(getUuidRequest).andExpect(status().isForbidden()).andReturn().getResponse().getContentAsString();
   }
 
   @Test
@@ -227,6 +227,43 @@ public class PermissionsEndpointV2Test {
     assertThat(returnValue.getOperations(), equalTo(Collections.singletonList(PermissionOperation.WRITE)));
 
     setPassword(mockMvc, credentialName, passwordValue, USER_A_TOKEN).andExpect(status().isOk());
+  }
+
+
+  @Test
+  public void PATCH_whenUserDoesNotHavePermissionOnPath_theyCannotAddAPermission() throws Exception {
+    String credentialName = "/test";
+
+    UUID permissionUUID = this.setPermissions(credentialName, PermissionOperation.READ);
+
+    MockHttpServletRequestBuilder patchPermissionRequest = patch("/api/v2/permissions/" + permissionUUID)
+        .header("Authorization", "Bearer " + NO_PERMISSIONS_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{"
+            + "  \"operations\": [\"write\"]\n"
+            + "}");
+
+    mockMvc.perform(patchPermissionRequest).andExpect(status().isNotFound());
+  }
+
+  @Test
+  public void PUT_whenUserDoesNotHavePermissionOnPath_theyCannotAddAPermission() throws Exception {
+    String credentialName = "/test";
+
+    UUID permissionUUID = this.setPermissions(credentialName, PermissionOperation.READ);
+
+    MockHttpServletRequestBuilder putPermissionRequest = put("/api/v2/permissions/" + permissionUUID)
+        .header("Authorization", "Bearer " + NO_PERMISSIONS_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{"
+            + "  \"actor\": \"" + USER_A_ACTOR_ID + "\",\n"
+            + "  \"path\": \"" + credentialName + "\",\n"
+            + "  \"operations\": [\"" + "write" + "\"]\n"
+            + "}");
+
+    mockMvc.perform(putPermissionRequest).andExpect(status().isNotFound());
   }
 
 

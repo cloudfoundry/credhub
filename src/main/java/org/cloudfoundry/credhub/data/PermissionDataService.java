@@ -5,6 +5,7 @@ import org.cloudfoundry.credhub.audit.OperationDeviceAction;
 import org.cloudfoundry.credhub.audit.entity.V2Permission;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.entity.PermissionData;
+import org.cloudfoundry.credhub.exceptions.PermissionAlreadyExistsException;
 import org.cloudfoundry.credhub.exceptions.PermissionDoesNotExistException;
 import org.cloudfoundry.credhub.exceptions.PermissionInvalidPathAndActorException;
 import org.cloudfoundry.credhub.repository.PermissionRepository;
@@ -215,13 +216,7 @@ public class PermissionDataService {
   public PermissionData patchPermissions(String guid, List<PermissionOperation> operations) {
     PermissionData existingPermissionData = null;
 
-    try{
-      existingPermissionData = permissionRepository.findByUuid(UUID.fromString(guid));
-    }catch (IllegalArgumentException e){
-      if(e.getMessage().startsWith("Invalid UUID string:")){
-        throw new PermissionDoesNotExistException("error.permission.does_not_exist");
-      }
-    }
+    existingPermissionData = permissionRepository.findByUuid(UUID.fromString(guid));
 
     if (existingPermissionData == null) {
       throw new PermissionDoesNotExistException("error.permission.does_not_exist");
@@ -240,5 +235,29 @@ public class PermissionDataService {
     auditRecord.setRequestDetails(requestDetails);
 
     return patchedRecord;
+  }
+
+  public PermissionData saveV2Permissions(PermissionsV2Request permissionsRequest) {
+    PermissionData existingPermissionData = permissionRepository.findByPathAndActor(permissionsRequest.getPath(),
+        permissionsRequest.getActor());
+
+    if (existingPermissionData != null) {
+      throw new PermissionAlreadyExistsException("error.permission.already_exists");
+    }
+
+    PermissionData record = new PermissionData();
+    record.setPath(permissionsRequest.getPath());
+    record.setActor(permissionsRequest.getActor());
+    record.enableOperations(permissionsRequest.getOperations());
+
+    permissionRepository.save(record);
+
+    auditRecord.setResource(record);
+
+    V2Permission requestDetails = new V2Permission(record.getPath(), record.getActor(),
+        record.generateAccessControlOperations(), OperationDeviceAction.ADD_PERMISSIONS);
+    auditRecord.setRequestDetails(requestDetails);
+
+    return record;
   }
 }

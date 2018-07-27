@@ -10,9 +10,15 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.UUID;
+
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
-import static org.cloudfoundry.credhub.request.PermissionOperation.*;
+import static org.cloudfoundry.credhub.request.PermissionOperation.DELETE;
+import static org.cloudfoundry.credhub.request.PermissionOperation.READ;
+import static org.cloudfoundry.credhub.request.PermissionOperation.READ_ACL;
+import static org.cloudfoundry.credhub.request.PermissionOperation.WRITE;
+import static org.cloudfoundry.credhub.request.PermissionOperation.WRITE_ACL;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Mockito.mock;
@@ -71,6 +77,12 @@ public class PermissionCheckingServiceTest {
   }
 
   @Test
+  public void hasPermission_ifUUIDisNull_returnsFalse() {
+    initializeEnforcement(true);
+    assertFalse(subject.hasPermission("test-actor", UUID.randomUUID(), READ));
+  }
+
+  @Test
   public void validDeleteOperation_withoutEnforcement_returnsTrue() {
     initializeEnforcement(false);
 
@@ -105,10 +117,11 @@ public class PermissionCheckingServiceTest {
 
   @Test
   public void validDeleteOperation_withEnforcement_whenAclUserAndActorAreNull_returnsFalse() {
+    String input = null;
     initializeEnforcement(true);
     when(userContext.getActor()).thenReturn(null);
 
-    assertFalse(subject.userAllowedToOperateOnActor(null));
+    assertFalse(subject.userAllowedToOperateOnActor(input));
   }
 
   private void initializeEnforcement(boolean enabled) {
