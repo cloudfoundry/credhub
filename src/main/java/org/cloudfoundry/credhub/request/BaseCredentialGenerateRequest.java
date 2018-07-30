@@ -3,6 +3,7 @@ package org.cloudfoundry.credhub.request;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
+import org.cloudfoundry.credhub.exceptions.InvalidModeException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -23,6 +24,7 @@ import static com.google.common.collect.Lists.newArrayList;
 })
 public abstract class BaseCredentialGenerateRequest extends BaseCredentialRequest {
   private Boolean overwrite;
+  private String mode;
 
   public boolean isOverwrite() {
     return overwrite == null ? false : overwrite;
@@ -39,6 +41,10 @@ public abstract class BaseCredentialGenerateRequest extends BaseCredentialReques
   public void validate() {
     super.validate();
 
+    if (getGenerationParameters() != null && isInvalidMode(getGenerationParameters().getMode())) {
+      throw new InvalidModeException("error.invalid_mode");
+    }
+
     if (isInvalidCredentialType(getType())) {
       throw new ParameterizedValidationException("error.invalid_type_with_generate_prompt");
     }
@@ -54,6 +60,10 @@ public abstract class BaseCredentialGenerateRequest extends BaseCredentialReques
     if (getName() != null && getName().length() > 1024) {
       throw new ParameterizedValidationException("error.name_has_too_many_characters");
     }
+  }
+
+  private boolean isInvalidMode(String mode){
+    return mode != null && !mode.equals("converge");
   }
 
   private boolean isInvalidCredentialType(String type) {

@@ -219,6 +219,47 @@ public class CredentialsControllerGenerateTest {
   }
 
   @Test
+  public void generatingACredential_whenInvalidModeIsSet_returns400() throws Exception {
+    final MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{" +
+            "\"type\":\"password\"," +
+            "\"name\":\"" + CREDENTIAL_NAME + "\"," +
+            "\"parameters\":{" +
+            "\"mode\": \"no-overwrite\"" +
+            "}" +
+            "}");
+
+    String expectedError = "The request includes an invalid value for the parameter 'mode'. Only 'converge' is allowed.";
+
+    mockMvc.perform(postRequest)
+        .andExpect(status().isBadRequest())
+        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+        .andExpect(jsonPath("$.error").value(expectedError));
+  }
+
+  @Test
+  public void generatingACredential_whenDefaultModeIsSet_returns200() throws Exception {
+    final MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{" +
+            "\"type\":\"password\"," +
+            "\"name\":\"" + CREDENTIAL_NAME + "\"," +
+            "\"parameters\":{" +
+            "\"mode\": \"converge\"" +
+            "}" +
+            "}");
+
+    mockMvc.perform(postRequest)
+        .andExpect(status().isOk())
+        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON));
+  }
+
+  @Test
   public void regeneratingACredential_withEmptyName_returns400() throws Exception {
     String expectedError = "A credential name must be provided. Please validate your input and retry your request.";
     mockMvc.perform(post("/api/v1/data")
@@ -231,7 +272,5 @@ public class CredentialsControllerGenerateTest {
             "}"))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error").value(expectedError));
-
-
   }
 }
