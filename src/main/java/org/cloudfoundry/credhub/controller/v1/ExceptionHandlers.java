@@ -19,6 +19,7 @@ import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.exceptions.PermissionAlreadyExistsException;
 import org.cloudfoundry.credhub.exceptions.PermissionDoesNotExistException;
 import org.cloudfoundry.credhub.exceptions.PermissionException;
+import org.cloudfoundry.credhub.exceptions.PermissionInvalidPathAndActorException;
 import org.cloudfoundry.credhub.exceptions.ReadOnlyException;
 import org.cloudfoundry.credhub.view.ResponseError;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -182,6 +183,12 @@ public class ExceptionHandlers {
   @ExceptionHandler(PermissionDoesNotExistException.class)
   @ResponseStatus(HttpStatus.NOT_FOUND)
   public ResponseError handlePermissionDoesNotExist(PermissionDoesNotExistException e) {
+    return constructError(e.getMessage());
+  }
+
+  @ExceptionHandler(PermissionInvalidPathAndActorException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ResponseError handlePermissionHasInvalidPathAndActor(PermissionInvalidPathAndActorException e) {
     return constructError(e.getMessage());
   }
 

@@ -221,12 +221,28 @@ public class PermissionDataServiceTest {
   @Test
   public void putPermissions_addsToAuditRecord(){
     PermissionsV2Request request = new PermissionsV2Request();
+
+    List<PermissionEntry> permissions = new ArrayList<>();
     List<PermissionOperation> operations = new ArrayList<>();
     operations.add(PermissionOperation.READ);
+
+    PermissionEntry permissionEntry = new PermissionEntry();
+    permissionEntry.setPath(CREDENTIAL_NAME);
+    permissionEntry.setActor(LUKE);
+    permissionEntry.setAllowedOperations(operations);
+
+    permissions.add(permissionEntry);
+
+    PermissionData permissionData = subject.savePermissionsWithLogging(permissions).get(0);
+
+    List<PermissionOperation> newOperations = new ArrayList<>();
+    newOperations.add(PermissionOperation.READ);
+
     request.setPath(CREDENTIAL_NAME);
     request.setActor(LUKE);
-    request.setOperations(operations);
-    subject.putPermissions(request);
+    request.setOperations(newOperations);
+
+    subject.putPermissions(permissionData.getUuid().toString(), request);
 
     assertThat(auditRecord.getResourceName(), is(CREDENTIAL_NAME));
   }

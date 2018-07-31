@@ -77,8 +77,8 @@ public class PermissionsHandler {
         permission.getActor(), guid);
   }
 
-  public PermissionsV2View putPermissions(PermissionsV2Request permissionsRequest) {
-    final PermissionData permission = permissionService.putPermissions(permissionsRequest);
+  public PermissionsV2View putPermissions(String guid, PermissionsV2Request permissionsRequest) {
+    final PermissionData permission = permissionService.putPermissions(guid, permissionsRequest);
     return new PermissionsV2View(permission.getPath(), permission.generateAccessControlOperations(),
         permission.getActor(), permission.getUuid());
   }
