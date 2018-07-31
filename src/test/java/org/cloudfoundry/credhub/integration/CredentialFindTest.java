@@ -1,7 +1,10 @@
 package org.cloudfoundry.credhub.integration;
 
 import org.cloudfoundry.credhub.CredentialManagerApp;
+import org.cloudfoundry.credhub.helper.JsonTestHelper;
+import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
+import org.cloudfoundry.credhub.view.PermissionsV2View;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,19 +19,29 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import static org.cloudfoundry.credhub.helper.RequestHelper.generatePassword;
 import static org.cloudfoundry.credhub.util.AuthConstants.ALL_PERMISSIONS_TOKEN;
+import static org.cloudfoundry.credhub.util.AuthConstants.USER_A_ACTOR_ID;
+import static org.cloudfoundry.credhub.util.AuthConstants.USER_A_TOKEN;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(value = {"unit-test","unit-test-permissions"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 @Transactional
 public class CredentialFindTest {
@@ -128,6 +141,97 @@ public class CredentialFindTest {
         .accept(APPLICATION_JSON);
 
     mockMvc.perform(request);
+  }
+
+  @Test
+  public void findCredentials_byPath_returnsNoCredentialsIfUserDoesNotHaveReadAccess() throws Exception {
+    generateCredentials();
+
+    final MockHttpServletRequestBuilder request = get("/api/v1/data?path=/")
+        .header("Authorization", "Bearer " + USER_A_TOKEN)
+        .accept(APPLICATION_JSON);
+
+    mockMvc.perform(request).andExpect(status().isOk())
+        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+        .andExpect(jsonPath("$.credentials", hasSize(0)));
+  }
+
+  @Test
+  public void findCredentials_byPath_returnsAllCredentialsWhenUserHasAllPermissions() throws Exception {
+    generateCredentials();
+
+    final MockHttpServletRequestBuilder request = get("/api/v1/data?path=/")
+        .header("Authorization", "Bearer " + USER_A_TOKEN)
+        .accept(APPLICATION_JSON);
+
+    setPermissions("/*", PermissionOperation.READ);
+
+    mockMvc.perform(request).andExpect(status().isOk())
+        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+        .andExpect(jsonPath("$.credentials", hasSize(5)));
+  }
+
+  @Test
+  public void findCredentials_byPath_returnsSubsetWithFullPermissionPath() throws Exception {
+    String credentialName = "/other_path/credentialC";
+    generateCredentials();
+
+    final MockHttpServletRequestBuilder request = get("/api/v1/data?path=/")
+        .header("Authorization", "Bearer " + USER_A_TOKEN)
+        .accept(APPLICATION_JSON);
+
+    setPermissions(credentialName, PermissionOperation.READ);
+
+    mockMvc.perform(request).andExpect(status().isOk())
+        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+        .andExpect(jsonPath("$.credentials", hasSize(1)))
+        .andExpect(jsonPath("$.credentials[0].name").value(credentialName));
+  }
+
+  @Test
+  public void findCredentials_byPath_returnsSubsetWithAsteriskInPermissionPath() throws Exception {
+    generateCredentials();
+
+    final MockHttpServletRequestBuilder request = get("/api/v1/data?path=/")
+        .header("Authorization", "Bearer " + USER_A_TOKEN)
+        .accept(APPLICATION_JSON);
+
+    setPermissions("/path/to/*", PermissionOperation.READ);
+
+    mockMvc.perform(request).andExpect(status().isOk())
+        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+        .andExpect(jsonPath("$.credentials", hasSize(2)))
+        .andExpect(jsonPath("$.credentials[1].name").value("/path/to/credentialA"))
+        .andExpect(jsonPath("$.credentials[0].name").value("/path/to/credentialB"));
+  }
+
+  private void generateCredentials() throws Exception{
+    List<String> names = Arrays.asList(new String[] {"/path/to/credentialA", "/path/something",
+        "/path/to/credentialB", "/other_path/credentialC", "/another/credentialC"});
+
+    for(String name : names){
+      generatePassword(mockMvc, name, true, 20, ALL_PERMISSIONS_TOKEN);
+    }
+  }
+
+  private void setPermissions(String path, PermissionOperation operation) throws Exception{
+    MockHttpServletRequestBuilder addPermissionRequest = post("/api/v2/permissions")
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{"
+            + "  \"actor\": \"" + USER_A_ACTOR_ID + "\",\n"
+            + "  \"path\": \"" + path + "\",\n"
+            + "  \"operations\": [\"" + operation.getOperation() + "\"]\n"
+            + "}");
+
+    String content = mockMvc.perform(addPermissionRequest).andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+    PermissionsV2View returnValue = JsonTestHelper.deserialize(content, PermissionsV2View.class);
+    assertThat(returnValue.getActor(), equalTo(USER_A_ACTOR_ID));
+    assertThat(returnValue.getPath(), equalTo(path));
+    assertThat(returnValue.getOperations(), equalTo(Collections.singletonList(operation)));
+
+    assertThat(returnValue.getUuid(), notNullValue());
   }
 
   private ResultActions findCredentialsByNameLike() throws Exception {

@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.data;
 
 import org.apache.commons.lang3.StringUtils;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
+import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.domain.CredentialFactory;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData;
@@ -11,6 +12,7 @@ import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.repository.CredentialVersionRepository;
 import org.cloudfoundry.credhub.view.FindCredentialResult;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -28,24 +31,33 @@ import static com.google.common.collect.Lists.newArrayList;
 public class CredentialVersionDataService {
 
   private final CredentialVersionRepository credentialVersionRepository;
+  private PermissionDataService permissionDataService;
   private final CredentialDataService credentialDataService;
   private final JdbcTemplate jdbcTemplate;
   private final CredentialFactory credentialFactory;
+  private UserContextHolder userContextHolder;
   private CertificateVersionDataService certificateVersionDataService;
   private CEFAuditRecord auditRecord;
+
+  @Value("${security.authorization.acls.enabled}")
+  private boolean enforcePermissions;
 
   @Autowired
   protected CredentialVersionDataService(
       CredentialVersionRepository credentialVersionRepository,
+      PermissionDataService permissionDataService,
       CredentialDataService credentialDataService,
       JdbcTemplate jdbcTemplate,
       CredentialFactory credentialFactory,
+      UserContextHolder userContextHolder,
       CertificateVersionDataService certificateVersionDataService,
       CEFAuditRecord auditRecord) {
     this.credentialVersionRepository = credentialVersionRepository;
+    this.permissionDataService = permissionDataService;
     this.credentialDataService = credentialDataService;
     this.jdbcTemplate = jdbcTemplate;
     this.credentialFactory = credentialFactory;
+    this.userContextHolder = userContextHolder;
     this.certificateVersionDataService = certificateVersionDataService;
     this.auditRecord = auditRecord;
   }
@@ -100,8 +112,17 @@ public class CredentialVersionDataService {
     path = StringUtils.prependIfMissing(path, "/");
     path = StringUtils.appendIfMissing(path, "/");
 
-    return findMatchingName(path + "%");
+    List<FindCredentialResult> unfilteredResult = findMatchingName(path + "%");
+
+    if(!enforcePermissions){
+      return unfilteredResult;
+    }
+
+    String actor = userContextHolder.getUserContext().getActor();
+
+    return filterCredentials(unfilteredResult, permissionDataService.findAllPathsByActor(actor));
   }
+
 
   public boolean delete(String name) {
     return credentialDataService.delete(name);
@@ -153,7 +174,7 @@ public class CredentialVersionDataService {
         return certificateVersionDataService.findActiveWithTransitional(name);
       }
       result.add(credentialFactory.makeCredentialFromEntity(credentialVersionData));
-      
+
       return result;
     } else {
       return newArrayList();
@@ -167,6 +188,47 @@ public class CredentialVersionDataService {
   public Long countEncryptedWithKeyUuidIn(Collection<UUID> uuids) {
     return credentialVersionRepository.countByEncryptedCredentialValueEncryptionKeyUuidIn(uuids);
   }
+
+  private List<FindCredentialResult> filterCredentials(List<FindCredentialResult> unfilteredResult, Set<String> permissions) {
+    if(permissions.contains("/*")) {
+      return unfilteredResult;
+    }
+    if(permissions.isEmpty()) {
+      return new ArrayList<>();
+    }
+
+    List<FindCredentialResult> filteredResult = new ArrayList<>();
+
+    for(FindCredentialResult credentialResult : unfilteredResult) {
+      String credentialName = credentialResult.getName();
+      if(permissions.contains(credentialName)){
+        filteredResult.add(credentialResult);
+      }
+
+      for(String credentialPath : tokenizePath(credentialName)){
+        if(permissions.contains(credentialPath)){
+          filteredResult.add(credentialResult);
+          break;
+        }
+      }
+    }
+    return filteredResult;
+  }
+
+  private List<String> tokenizePath(String credentialName) {
+    List<String> result = new ArrayList<>();
+    String subPath;
+
+    for(int i = 1; i < credentialName.length(); i++){
+      if(credentialName.charAt(i) == '/'){
+        subPath = credentialName.substring(0, i) + "/*";
+        result.add(subPath);
+      }
+    }
+
+    return result;
+  }
+
 
   private List<FindCredentialResult> findMatchingName(String nameLike) {
     final List<FindCredentialResult> credentialResults = jdbcTemplate.query(

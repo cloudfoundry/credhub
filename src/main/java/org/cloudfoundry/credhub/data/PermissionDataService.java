@@ -16,8 +16,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -102,6 +104,14 @@ public class PermissionDataService {
   public boolean deletePermissions(String name, String actor) {
     auditRecord.setResource(permissionRepository.findByPathAndActor(name, actor));
     return permissionRepository.deleteByPathAndActor(name, actor) > 0;
+  }
+
+  public Set<String> findAllPathsByActor(String actor){
+    Set<String> result = new HashSet<>();
+
+    permissionRepository.findAllPathsForActorWithReadPermission(actor).forEach(i -> result.add(i));
+
+    return result;
   }
 
   public boolean hasNoDefinedAccessControl(String name) {

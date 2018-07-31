@@ -243,12 +243,6 @@ public class PermissionedCredentialService {
   }
 
   private void verifyWritePermission(String credentialName) {
-//    System.out.println(userContextHolder.);
-//    if (userContextHolder.getUserContext() == null) {
-//      System.out.println("**********************the user context is nulllllll");
-//    }
-//    System.out.println(userContextHolder.getUserContext().toString());
-
     if(userContextHolder.getUserContext() == null){
       return;
     }
