@@ -1,6 +1,8 @@
 package org.cloudfoundry.credhub.data;
 
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
+import org.cloudfoundry.credhub.audit.OperationDeviceAction;
+import org.cloudfoundry.credhub.audit.entity.V2Permission;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.entity.PermissionData;
 import org.cloudfoundry.credhub.exceptions.PermissionDoesNotExistException;
@@ -51,6 +53,11 @@ public class PermissionDataService {
   public List<PermissionData> savePermissionsWithLogging(List<PermissionEntry> permissions){
     List<PermissionData> permissionDatas = savePermissions(permissions);
     auditRecord.addAllResources(permissionDatas);
+
+    V2Permission requestDetails = new V2Permission(permissionDatas.get(0).getPath(),
+        permissionDatas.get(0).getActor(), permissionDatas.get(0).generateAccessControlOperations(),
+        OperationDeviceAction.ADD_PERMISSIONS);
+    auditRecord.setRequestDetails(requestDetails);
     return permissionDatas;
   }
 
@@ -197,6 +204,11 @@ public class PermissionDataService {
     permissionRepository.save(permissionData);
     auditRecord.setResource(permissionData);
 
+    V2Permission requestDetails = new V2Permission(permissionData.getPath(),
+        permissionData.getActor(), permissionData.generateAccessControlOperations(),
+        OperationDeviceAction.PUT_PERMISSIONS);
+    auditRecord.setRequestDetails(requestDetails);
+
     return permissionData;
   }
 
@@ -221,6 +233,11 @@ public class PermissionDataService {
 
     permissionRepository.save(patchedRecord);
     auditRecord.setResource(patchedRecord);
+
+    V2Permission requestDetails = new V2Permission(patchedRecord.getPath(),
+        patchedRecord.getActor(), patchedRecord.generateAccessControlOperations(),
+        OperationDeviceAction.PATCH_PERMISSIONS);
+    auditRecord.setRequestDetails(requestDetails);
 
     return patchedRecord;
   }
