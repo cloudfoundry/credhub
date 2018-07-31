@@ -3,6 +3,7 @@ package org.cloudfoundry.credhub.data;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
+import org.cloudfoundry.credhub.audit.OperationDeviceAction;
 import org.cloudfoundry.credhub.audit.entity.Resource;
 import org.cloudfoundry.credhub.audit.entity.V2Permission;
 import org.cloudfoundry.credhub.entity.Credential;
@@ -24,6 +25,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -222,6 +224,7 @@ public class PermissionDataServiceTest {
     assertThat(auditRecord.getResourceUUID(), is(permissionData.getUuid().toString()));
     V2Permission requestDetails = (V2Permission) auditRecord.getRequestDetails();
     assertThat(requestDetails.getOperations(), containsInAnyOrder(PermissionOperation.WRITE));
+    assertThat(requestDetails.operation(), is(OperationDeviceAction.PATCH_PERMISSIONS));
   }
 
   @Test
@@ -255,6 +258,8 @@ public class PermissionDataServiceTest {
     assertThat(requestDetails.getPath(), is(CREDENTIAL_NAME));
     assertThat(requestDetails.getActor(), is(LUKE));
     assertThat(requestDetails.getOperations(), contains(PermissionOperation.WRITE));
+    assertThat(requestDetails.operation(), is(OperationDeviceAction.PUT_PERMISSIONS));
+
   }
 
   @Test
@@ -297,6 +302,31 @@ public class PermissionDataServiceTest {
     V2Permission requestDetails = (V2Permission) auditRecord.getRequestDetails();
     assertThat(requestDetails.getPath(), is(path));
     assertThat(requestDetails.getActor(), is(LUKE));
+    assertThat(requestDetails.operation(), is(OperationDeviceAction.ADD_PERMISSIONS));
+
+  }
+
+  @Test
+  public void deleteV2Permissions_addsToAuditRecord(){
+    PermissionsV2Request request = new PermissionsV2Request();
+
+    List<PermissionOperation> operations = Collections.singletonList(PermissionOperation.READ);
+
+    String credentialName = "/a" + RandomStringUtils.random(15);
+    request.setPath(credentialName);
+    request.setActor(LUKE);
+    request.setOperations(operations);
+
+    PermissionData permissionData = subject.saveV2Permissions(request);
+
+    subject.deletePermissions(permissionData.getUuid());
+
+    assertThat(auditRecord.getResourceName(), is(credentialName));
+    V2Permission requestDetails = (V2Permission) auditRecord.getRequestDetails();
+    assertThat(requestDetails.getPath(), is(credentialName));
+    assertThat(requestDetails.getActor(), is(LUKE));
+    assertThat(requestDetails.getOperations(), contains(PermissionOperation.READ));
+    assertThat(requestDetails.operation(), is(OperationDeviceAction.DELETE_PERMISSIONS));
   }
 
   @Test

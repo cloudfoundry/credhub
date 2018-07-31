@@ -94,4 +94,10 @@ public class PermissionsHandler {
     return new PermissionsV2View(permission.getPath(), permission.generateAccessControlOperations(),
         permission.getActor(), permission.getUuid());
   }
+
+  public PermissionsV2View deletePermissions(String guid) {
+    PermissionData permission = permissionService.deletePermissions(guid);
+    return new PermissionsV2View(permission.getPath(), permission.generateAccessControlOperations(),
+        permission.getActor(), permission.getUuid());
+  }
 }

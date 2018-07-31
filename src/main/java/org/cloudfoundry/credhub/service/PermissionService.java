@@ -142,6 +142,13 @@ public class PermissionService {
     return permissionDataService.saveV2Permissions(permissionsRequest);
   }
 
+  public PermissionData deletePermissions(String guid) {
+    UserContext userContext = userContextHolder.getUserContext();
+    UUID permissionUUID = parseUUID(guid);
+    checkActorPermissions(permissionUUID, userContext.getActor());
+    return permissionDataService.deletePermissions(permissionUUID);
+  }
+
   private void checkActorPermissions(UUID permissionUUID, String actor) {
     if (!permissionCheckingService.hasPermission(actor, permissionUUID, WRITE_ACL)) {
       throw new EntryNotFoundException("error.permission.does_not_exist");

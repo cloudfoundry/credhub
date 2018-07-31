@@ -260,4 +260,17 @@ public class PermissionDataService {
 
     return record;
   }
+
+  public PermissionData deletePermissions(UUID guid) {
+    PermissionData existingPermission = permissionRepository.findByUuid(guid);
+    permissionRepository.delete(existingPermission);
+
+    V2Permission requestDetails = new V2Permission(existingPermission.getPath(),
+        existingPermission.getActor(), existingPermission.generateAccessControlOperations(),
+        OperationDeviceAction.DELETE_PERMISSIONS);
+    auditRecord.setRequestDetails(requestDetails);
+    auditRecord.setResource(existingPermission);
+
+    return existingPermission;
+  }
 }
