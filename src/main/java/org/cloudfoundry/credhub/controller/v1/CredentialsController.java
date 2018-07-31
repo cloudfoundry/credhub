@@ -67,7 +67,6 @@ public class CredentialsController {
   @ResponseStatus(HttpStatus.OK)
   public synchronized CredentialView generate(InputStream inputStream) throws IOException {
     InputStream requestInputStream = new ByteArrayInputStream(ByteStreams.toByteArray(inputStream));
-
     return legacyGenerationHandler.auditedHandlePostRequest(requestInputStream);
   }
 
@@ -75,7 +74,6 @@ public class CredentialsController {
   @ResponseStatus(HttpStatus.OK)
   public synchronized CredentialView set(@RequestBody BaseCredentialSetRequest requestBody) {
     requestBody.validate();
-
     return auditedHandlePutRequest(requestBody);
   }
 

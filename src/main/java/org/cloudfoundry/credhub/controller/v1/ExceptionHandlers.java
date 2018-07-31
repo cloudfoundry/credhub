@@ -10,6 +10,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.exceptions.InvalidAdditionalPermissionsException;
+import org.cloudfoundry.credhub.exceptions.InvalidModeException;
 import org.cloudfoundry.credhub.exceptions.InvalidPermissionException;
 import org.cloudfoundry.credhub.exceptions.InvalidPermissionOperationException;
 import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException;
@@ -171,6 +172,12 @@ public class ExceptionHandlers {
   @ExceptionHandler(InvalidPermissionException.class)
   @ResponseStatus(HttpStatus.FORBIDDEN)
   public ResponseError handleInvalidPermission(InvalidPermissionException e) {
+    return constructError(e.getMessage());
+  }
+
+  @ExceptionHandler({InvalidModeException.class})
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ResponseError handleInvalidMode(InvalidModeException e){
     return constructError(e.getMessage());
   }
 

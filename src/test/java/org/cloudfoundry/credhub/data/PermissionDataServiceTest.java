@@ -32,19 +32,11 @@ import java.util.UUID;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Collections.singletonList;
 import static junit.framework.TestCase.assertFalse;
-import static org.cloudfoundry.credhub.request.PermissionOperation.DELETE;
-import static org.cloudfoundry.credhub.request.PermissionOperation.READ;
-import static org.cloudfoundry.credhub.request.PermissionOperation.READ_ACL;
-import static org.cloudfoundry.credhub.request.PermissionOperation.WRITE;
-import static org.cloudfoundry.credhub.request.PermissionOperation.WRITE_ACL;
+import static org.cloudfoundry.credhub.request.PermissionOperation.*;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.*;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
@@ -112,8 +104,6 @@ public class PermissionDataServiceTest {
     assertThat(subject.getAllowedOperations(CREDENTIAL_NAME, DARTH).size(), equalTo(0));
   }
 
-
-
   @Test
   public void getAllowedOperations_whenTheCredentialDoesNotExist_returnsEmptyList() {
     assertThat(subject.getAllowedOperations("/unicorn", LEIA).size(), equalTo(0));
@@ -138,7 +128,7 @@ public class PermissionDataServiceTest {
 
     List<PermissionEntry> response = subject.getPermissions(credential);
 
-        assertThat(response, containsInAnyOrder(
+    assertThat(response, containsInAnyOrder(
         allOf(hasProperty("actor", equalTo(LUKE)),
             hasProperty("allowedOperations",
                 hasItems(READ, WRITE))),
@@ -156,7 +146,7 @@ public class PermissionDataServiceTest {
 
     credentialDataService.save(credential2);
     aces = singletonList(
-        new PermissionEntry(LUKE,credential2.getName(),singletonList(READ)));
+        new PermissionEntry(LUKE, credential2.getName(), singletonList(READ)));
 
     subject.savePermissionsWithLogging(aces);
 
@@ -197,15 +187,15 @@ public class PermissionDataServiceTest {
   }
 
   @Test
-  public void deletePermissions_addsToAuditRecord(){
+  public void deletePermissions_addsToAuditRecord() {
     subject.deletePermissions(CREDENTIAL_NAME, LUKE);
     assertThat(auditRecord.getResourceName(), is(CREDENTIAL_NAME));
   }
 
   @Test
-  public void patchPermissions_addsToAuditRecord(){
+  public void patchPermissions_addsToAuditRecord() {
     List<PermissionOperation> operations = new ArrayList<>();
-    String pathName = RandomStringUtils.random(50);
+    String pathName = randomCredentialPath();
     operations.add(PermissionOperation.READ);
 
     PermissionsV2Request permission = new PermissionsV2Request();
@@ -228,7 +218,7 @@ public class PermissionDataServiceTest {
   }
 
   @Test
-  public void putPermissions_addsToAuditRecord(){
+  public void putPermissions_addsToAuditRecord() {
     PermissionsV2Request request = new PermissionsV2Request();
 
     List<PermissionEntry> permissions = new ArrayList<>();
@@ -263,7 +253,7 @@ public class PermissionDataServiceTest {
   }
 
   @Test
-  public void savePermissions_addsToAuditRecord(){
+  public void savePermissions_addsToAuditRecord() {
     List<PermissionEntry> permissions = new ArrayList<>();
     List<PermissionOperation> operations = new ArrayList<>();
     operations.add(PermissionOperation.READ);
@@ -286,8 +276,8 @@ public class PermissionDataServiceTest {
   }
 
   @Test
-  public void saveV2Permissions_addsToAuditRecord(){
-    String path = "/a" + RandomStringUtils.random(50);
+  public void saveV2Permissions_addsToAuditRecord() {
+    String path = randomCredentialPath();
     PermissionsV2Request permission = new PermissionsV2Request();
     List<PermissionOperation> operations = new ArrayList<>();
     operations.add(PermissionOperation.READ);
@@ -307,12 +297,12 @@ public class PermissionDataServiceTest {
   }
 
   @Test
-  public void deleteV2Permissions_addsToAuditRecord(){
+  public void deleteV2Permissions_addsToAuditRecord() {
     PermissionsV2Request request = new PermissionsV2Request();
 
     List<PermissionOperation> operations = Collections.singletonList(PermissionOperation.READ);
 
-    String credentialName = "/a" + RandomStringUtils.random(15);
+    String credentialName = randomCredentialPath();
     request.setPath(credentialName);
     request.setActor(LUKE);
     request.setOperations(operations);
@@ -330,7 +320,7 @@ public class PermissionDataServiceTest {
   }
 
   @Test
-  public void getPermissionsByUUID_addsToAuditRecord(){
+  public void getPermissionsByUUID_addsToAuditRecord() {
     UUID guid = subject.savePermissions(singletonList(new PermissionEntry(LUKE, CREDENTIAL_NAME, newArrayList(WRITE, DELETE)))).get(0).getUuid();
     subject.getPermission(guid);
     assertThat(auditRecord.getResourceName(), is(CREDENTIAL_NAME));
@@ -471,5 +461,9 @@ public class PermissionDataServiceTest {
     subject.savePermissionsWithLogging(singletonList(new PermissionEntry(LUKE, CREDENTIAL_NAME, newArrayList(WRITE, DELETE))));
     subject.savePermissionsWithLogging(singletonList(new PermissionEntry(LEIA, CREDENTIAL_NAME, singletonList(READ))));
     subject.savePermissionsWithLogging(singletonList(new PermissionEntry(HAN_SOLO, CREDENTIAL_NAME, newArrayList(READ_ACL, WRITE_ACL))));
+  }
+
+  private String randomCredentialPath() {
+    return "/" + RandomStringUtils.randomAlphanumeric(50);
   }
 }

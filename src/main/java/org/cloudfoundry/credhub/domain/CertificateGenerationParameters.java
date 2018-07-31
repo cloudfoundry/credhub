@@ -36,7 +36,7 @@ import static org.cloudfoundry.credhub.request.CertificateGenerationRequestParam
 import static org.cloudfoundry.credhub.request.CertificateGenerationRequestParameters.SERVER_AUTH;
 import static org.cloudfoundry.credhub.request.CertificateGenerationRequestParameters.TIMESTAMPING;
 
-public class CertificateGenerationParameters implements GenerationParameters{
+public class CertificateGenerationParameters extends GenerationParameters{
 
   private int keyLength;
   private int duration;

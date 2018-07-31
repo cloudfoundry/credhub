@@ -51,8 +51,7 @@ public class LegacyGenerationHandler {
       if (readRegenerateFlagFrom(requestString)) {
         return handleRegenerateRequest(requestString);
       } else {
-        return handleGenerateRequest(requestString
-        );
+        return handleGenerateRequest(requestString);
       }
     } catch (IOException e) {
       throw new RuntimeException(e);

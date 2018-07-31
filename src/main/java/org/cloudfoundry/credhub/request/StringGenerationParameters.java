@@ -12,7 +12,7 @@ import java.util.Objects;
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT;
 
 @JsonInclude(NON_DEFAULT)
-public class StringGenerationParameters implements GenerationParameters{
+public class StringGenerationParameters extends GenerationParameters{
 
   // Value Parameters
   @JsonProperty(access = Access.WRITE_ONLY)
