@@ -27,7 +27,6 @@ import static org.cloudfoundry.credhub.util.AuthConstants.USER_A_ACTOR_ID;
 import static org.cloudfoundry.credhub.util.AuthConstants.USER_A_TOKEN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -127,7 +126,7 @@ public class PermissionsEndpointV2Test {
   }
 
   @Test
-  public void POST_whenUserTriesToAddAnAdditionalOperationToAPermissionThatAlreadyExists_theySucceed() throws Exception {
+  public void POST_whenUserTriesToAddAnAdditionalOperationToAPermissionThatAlreadyExists_theyReceiveAConflict() throws Exception {
     String credentialName = "/test";
 
     UUID credentialUuid = this.setPermissions(credentialName);
@@ -142,12 +141,7 @@ public class PermissionsEndpointV2Test {
             + "  \"operations\": [\"write\", \"read\"]\n"
             + "}");
 
-    String content = mockMvc.perform(addPermissionRequestWithRead).andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
-    PermissionsV2View returnValue = JsonTestHelper.deserialize(content, PermissionsV2View.class);
-    assertThat(returnValue.getActor(), equalTo(USER_A_ACTOR_ID));
-    assertThat(returnValue.getPath(), equalTo(credentialName));
-    assertThat(returnValue.getOperations(), containsInAnyOrder(PermissionOperation.WRITE, PermissionOperation.READ));
-    assertThat(returnValue.getUuid(), equalTo(credentialUuid));
+    mockMvc.perform(addPermissionRequestWithRead).andExpect(status().isConflict());
   }
 
   @Test

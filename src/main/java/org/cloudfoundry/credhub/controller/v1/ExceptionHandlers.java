@@ -9,6 +9,7 @@ import com.jayway.jsonpath.InvalidJsonException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
+import org.cloudfoundry.credhub.exceptions.InvalidAdditionalPermissionsException;
 import org.cloudfoundry.credhub.exceptions.InvalidPermissionException;
 import org.cloudfoundry.credhub.exceptions.InvalidPermissionOperationException;
 import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException;
@@ -117,6 +118,13 @@ public class ExceptionHandlers {
   public ResponseError handleUnrecognizedPropertyException(UnrecognizedPropertyException exception) {
     return constructError("error.invalid_json_key", exception.getPropertyName());
   }
+
+  @ExceptionHandler(InvalidAdditionalPermissionsException.class)
+  @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+  public ResponseError handleUnrecognizedPropertyException(InvalidAdditionalPermissionsException exception) {
+    return constructError("error.invalid_json_key", exception.getField());
+  }
+
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)

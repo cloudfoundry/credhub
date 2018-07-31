@@ -136,7 +136,6 @@ public class CredentialsController {
 
     return new FindCredentialResults(credentialService.findStartingWithPath(path));
   }
-  
 
   @RequestMapping(path = "", params = "name-like", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
@@ -148,12 +147,9 @@ public class CredentialsController {
     return new FindCredentialResults(credentialService.findContainingName(nameLike));
   }
 
-
   private CredentialView auditedHandlePutRequest(@RequestBody BaseCredentialSetRequest requestBody) {
     auditRecord.setRequestDetails(new SetCredential(requestBody.getName(), requestBody.getType(),
         requestBody.getAdditionalPermissions()));
     return setHandler.handle(requestBody);
   }
-
-
 }

@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -41,13 +40,8 @@ public class PermissionCheckingService {
     return true;
   }
 
-  public boolean hasPermissions(String user, String path, List<PermissionOperation> permissions) {
-    for (PermissionOperation permission : permissions) {
-      if (!permissionDataService.hasPermission(user, path, permission)) {
-        return false;
-      }
-    }
-    return true;
+  public boolean permissionForActorExists(String user, String path) {
+    return permissionDataService.permissionExists(user, path);
   }
 
   public boolean userAllowedToOperateOnActor(String actor) {
