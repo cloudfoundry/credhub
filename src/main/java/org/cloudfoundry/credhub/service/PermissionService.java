@@ -58,7 +58,7 @@ public class PermissionService {
       if (!permissionCheckingService.userAllowedToOperateOnActor(permissionEntry.getActor())) {
         throw new InvalidPermissionOperationException("error.permission.invalid_update_operation");
       }
-      if (permissionCheckingService.permissionForActorExists(permissionEntry.getActor(), permissionEntry.getPath())) {
+      if (permissionCheckingService.hasPermissions(permissionEntry.getActor(), permissionEntry.getPath(), permissionEntry.getAllowedOperations())) {
         throw new PermissionAlreadyExistsException("error.permission.already_exists");
       }
     }
