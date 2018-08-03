@@ -241,6 +241,25 @@ public class CredentialsControllerGenerateTest {
   }
 
   @Test
+  public void generatingACertificate_withoutParameters_returns400() throws Exception {
+    final MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{" +
+            "\"type\":\"certificate\"," +
+            "\"name\":\"" + CREDENTIAL_NAME + "\"" +
+            "}");
+
+    String expectedError = "This request must include a value for 'parameters'.";
+
+    mockMvc.perform(postRequest)
+        .andExpect(status().isBadRequest())
+        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+        .andExpect(jsonPath("$.error").value(expectedError));
+  }
+
+  @Test
   public void generatingACredential_whenDefaultModeIsSet_returns200() throws Exception {
     final MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
         .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)

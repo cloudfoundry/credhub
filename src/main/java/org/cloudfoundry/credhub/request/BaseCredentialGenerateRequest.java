@@ -40,7 +40,6 @@ public abstract class BaseCredentialGenerateRequest extends BaseCredentialReques
   @Override
   public void validate() {
     super.validate();
-
     if (getGenerationParameters() != null && isInvalidMode(getGenerationParameters().getMode())) {
       throw new InvalidModeException("error.invalid_mode");
     }

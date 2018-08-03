@@ -57,7 +57,6 @@ public class LegacyGenerationHandler {
 
   private CredentialView handleGenerateRequest(String requestString) throws IOException {
     BaseCredentialGenerateRequest requestBody = objectMapper.readValue(requestString, BaseCredentialGenerateRequest.class);
-    requestBody.validate();
 
     String credentialName = requestBody.getName();
 
@@ -65,6 +64,7 @@ public class LegacyGenerationHandler {
     generateCredential.setName(credentialName);
     generateCredential.setType(requestBody.getType());
     auditRecord.setRequestDetails(generateCredential);
+    requestBody.validate();
 
     return generateHandler.handle(requestBody);
   }

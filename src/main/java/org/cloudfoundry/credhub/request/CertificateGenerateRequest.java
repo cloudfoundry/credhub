@@ -3,6 +3,7 @@ package org.cloudfoundry.credhub.request;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.cloudfoundry.credhub.domain.CertificateGenerationParameters;
+import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 
 public class CertificateGenerateRequest extends BaseCredentialGenerateRequest {
 
@@ -27,6 +28,10 @@ public class CertificateGenerateRequest extends BaseCredentialGenerateRequest {
   @Override
   @JsonIgnore
   public GenerationParameters getGenerationParameters() {
+    if(certificateGenerationParameters == null && requestGenerationParameters == null){
+      throw new ParameterizedValidationException("error.no_certificate_parameters");
+    }
+
     if (certificateGenerationParameters == null) {
       certificateGenerationParameters = new CertificateGenerationParameters(requestGenerationParameters);
     }
@@ -36,7 +41,6 @@ public class CertificateGenerateRequest extends BaseCredentialGenerateRequest {
   @Override
   public void validate() {
     super.validate();
-
     getGenerationRequestParameters().validate();
   }
 
