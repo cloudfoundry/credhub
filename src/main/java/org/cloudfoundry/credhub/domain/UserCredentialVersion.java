@@ -127,15 +127,6 @@ public class UserCredentialVersion extends CredentialVersion<UserCredentialVersi
       return true;
     }
 
-    final StringGenerationParameters existingGenerationParameters = getGenerationParameters();
-    final StringGenerationParameters newGenerationParameters = (StringGenerationParameters) generationParameters;
-
-    final boolean lengthsMatch = newGenerationParameters.getLength() == existingGenerationParameters.getLength();
-    final boolean usernamesMatch = getUsername().equals(newGenerationParameters.getUsername()) ||
-        existingGenerationParameters.getUsername() == newGenerationParameters.getUsername();
-    final boolean passwordGenerationParamsMatch = existingGenerationParameters.passwordOptionsEqual(newGenerationParameters);
-
-
-    return lengthsMatch && usernamesMatch && passwordGenerationParamsMatch;
+    return generationParameters.equals(getGenerationParameters());
   }
 }

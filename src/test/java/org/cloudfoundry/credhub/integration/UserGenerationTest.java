@@ -28,12 +28,13 @@ import org.springframework.web.context.WebApplicationContext;
 import static org.apache.commons.lang3.math.NumberUtils.isDigits;
 import static org.cloudfoundry.credhub.helper.RequestHelper.generateUser;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.IsNot.not;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -90,6 +91,80 @@ public class UserGenerationTest {
 
     assertThat(jsonCred1.getString("username"), not(equalTo(jsonCred2.getString("username"))));
     assertThat(jsonCred1.getString("password"), not(equalTo(jsonCred2.getString("password"))));
+  }
+
+  @Test
+  public void generateAUserCredential_afterSettingTheCredential_whenTheParametersAreNull_overwritesTheCredential() throws Exception{
+    String user = "userA";
+    String password = "passwordA";
+
+    MockHttpServletRequestBuilder setRequest = put("/api/v1/data")
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON_UTF8)
+        .content("{" +
+            "\"type\":\"user\"," +
+            "\"name\":\"" + credentialName1 + "\"," +
+            "\"value\": {\"username\":\"" + user + "\",\"password\":\"" + password + "\"} " +
+            "}");
+
+    mockMvc.perform(setRequest)
+        .andDo(print())
+        .andExpect(status().isOk());
+
+    MockHttpServletRequestBuilder generateRequest = post("/api/v1/data")
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON_UTF8)
+        .content("{\"type\":\"user\",\"name\":\"" + credentialName1 + "\"}");
+
+    DocumentContext response = JsonPath.parse(mockMvc.perform(generateRequest).andExpect(status().isOk())
+        .andDo(print())
+        .andReturn()
+        .getResponse()
+        .getContentAsString());
+
+    assertThat(response.read("$.value.password").toString(), is(not(equalTo(password))));
+  }
+
+  @Test
+  public void generateAUserCredential_afterSettingTheCredential_whenTheParametersAreNotNull_doesNotOverwriteTheCredential() throws Exception{
+    String user = "userA";
+    String password = "passwordA";
+
+    MockHttpServletRequestBuilder setRequest = put("/api/v1/data")
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON_UTF8)
+        .content("{" +
+            "\"type\":\"user\"," +
+            "\"name\":\"" + credentialName1 + "\"," +
+            "\"value\": {\"username\":\"" + user + "\",\"password\":\"" + password + "\"} " +
+            "}");
+
+    mockMvc.perform(setRequest)
+        .andDo(print())
+        .andExpect(status().isOk());
+
+    MockHttpServletRequestBuilder generateRequest = post("/api/v1/data")
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON_UTF8)
+        .content("{" +
+            "\"type\":\"user\"," +
+            "\"name\":\"" + credentialName1 + "\"," +
+            "\"parameters\": {" +
+            "    \"length\": 99" +
+            "  }" +
+            "}");
+
+    DocumentContext response = JsonPath.parse(mockMvc.perform(generateRequest).andExpect(status().isOk())
+        .andDo(print())
+        .andReturn()
+        .getResponse()
+        .getContentAsString());
+
+    assertThat(response.read("$.value.password").toString().length(), equalTo(99));
   }
 
   @Test
