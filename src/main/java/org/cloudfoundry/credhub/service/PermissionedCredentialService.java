@@ -4,6 +4,7 @@ import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.entity.GetCredentialById;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.constants.CredentialType;
+import org.cloudfoundry.credhub.constants.CredentialWriteMode;
 import org.cloudfoundry.credhub.credential.CredentialValue;
 import org.cloudfoundry.credhub.data.CertificateAuthorityService;
 import org.cloudfoundry.credhub.data.CredentialDataService;
@@ -16,11 +17,7 @@ import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.exceptions.PermissionException;
-import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
-import org.cloudfoundry.credhub.request.BaseCredentialRequest;
-import org.cloudfoundry.credhub.request.BaseCredentialSetRequest;
-import org.cloudfoundry.credhub.request.PermissionEntry;
-import org.cloudfoundry.credhub.request.PermissionOperation;
+import org.cloudfoundry.credhub.request.*;
 import org.cloudfoundry.credhub.view.FindCredentialResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -196,6 +193,18 @@ public class PermissionedCredentialService {
     }
 
     if (existingCredentialVersion == null) {
+      return true;
+    }
+
+    GenerationParameters parameters = request.getGenerationParameters();
+
+    if(parameters != null && parameters.getMode() != null &&
+        parameters.getMode().equals(CredentialWriteMode.NO_OVERWRITE)) {
+      return false;
+    }
+
+    if(parameters != null && parameters.getMode() != null &&
+        parameters.getMode().equals(CredentialWriteMode.OVERWRITE)) {
       return true;
     }
 

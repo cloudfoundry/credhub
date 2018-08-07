@@ -3,8 +3,12 @@ package org.cloudfoundry.credhub.request;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
+import org.cloudfoundry.credhub.constants.CredentialWriteMode;
 import org.cloudfoundry.credhub.exceptions.InvalidModeException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
+
+import java.util.Arrays;
+import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
 
@@ -24,7 +28,8 @@ import static com.google.common.collect.Lists.newArrayList;
 })
 public abstract class BaseCredentialGenerateRequest extends BaseCredentialRequest {
   private Boolean overwrite;
-  private String mode;
+  private String rawOverwrite;
+  private CredentialWriteMode mode;
 
   public boolean isOverwrite() {
     return overwrite == null ? false : overwrite;
@@ -32,6 +37,7 @@ public abstract class BaseCredentialGenerateRequest extends BaseCredentialReques
 
   public void setOverwrite(Boolean overwrite) {
     this.overwrite = overwrite;
+    rawOverwrite = String.valueOf(overwrite);
   }
 
   @Override
@@ -40,7 +46,7 @@ public abstract class BaseCredentialGenerateRequest extends BaseCredentialReques
   @Override
   public void validate() {
     super.validate();
-    if (getGenerationParameters() != null && isInvalidMode(getGenerationParameters().getMode())) {
+    if (getGenerationParameters() != null && !isValidMode(getGenerationParameters().getMode())) {
       throw new InvalidModeException("error.invalid_mode");
     }
 
@@ -52,6 +58,11 @@ public abstract class BaseCredentialGenerateRequest extends BaseCredentialReques
       throw new ParameterizedValidationException("error.cannot_generate_type");
     }
 
+    if (getGenerationParameters() != null &&
+        getGenerationParameters().getMode() != null && getRawOverwriteValue() != null) {
+      throw new ParameterizedValidationException("error.overwrite_and_mode_both_provided");
+    }
+
     if (getGenerationParameters() != null) {
       getGenerationParameters().validate();
     }
@@ -61,8 +72,24 @@ public abstract class BaseCredentialGenerateRequest extends BaseCredentialReques
     }
   }
 
-  private boolean isInvalidMode(String mode){
-    return mode != null && !mode.equals("converge");
+  private String getRawOverwriteValue() {
+    return rawOverwrite;
+  }
+
+  private boolean isValidMode(CredentialWriteMode mode){
+    if(mode == null){
+      return true;
+    }
+
+    List<CredentialWriteMode> modes = Arrays.asList(CredentialWriteMode.values());
+
+    for(CredentialWriteMode writeMode : modes){
+      if(writeMode.equals(mode)){
+        return true;
+      }
+    }
+
+    return false;
   }
 
   private boolean isInvalidCredentialType(String type) {

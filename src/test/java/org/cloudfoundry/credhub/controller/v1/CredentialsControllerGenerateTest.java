@@ -219,28 +219,6 @@ public class CredentialsControllerGenerateTest {
   }
 
   @Test
-  public void generatingACredential_whenInvalidModeIsSet_returns400() throws Exception {
-    final MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{" +
-            "\"type\":\"password\"," +
-            "\"name\":\"" + CREDENTIAL_NAME + "\"," +
-            "\"parameters\":{" +
-            "\"mode\": \"no-overwrite\"" +
-            "}" +
-            "}");
-
-    String expectedError = "The request includes an invalid value for the parameter 'mode'. Only 'converge' is allowed.";
-
-    mockMvc.perform(postRequest)
-        .andExpect(status().isBadRequest())
-        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-        .andExpect(jsonPath("$.error").value(expectedError));
-  }
-
-  @Test
   public void generatingACertificate_withoutParameters_returns400() throws Exception {
     final MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
         .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)

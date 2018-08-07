@@ -1,15 +1,17 @@
 package org.cloudfoundry.credhub.request;
 
+import org.cloudfoundry.credhub.constants.CredentialWriteMode;
+
 public abstract class GenerationParameters {
-  private String mode;
+  private CredentialWriteMode mode;
 
   public void validate(){}
 
-  public String getMode(){
+  public CredentialWriteMode getMode(){
     return mode;
   }
 
-  public void setMode(String mode){
+  public void setMode(CredentialWriteMode mode){
     this.mode = mode;
   }
 }
