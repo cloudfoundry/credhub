@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
 
 import java.io.IOException;
 
@@ -37,5 +38,9 @@ public class JsonObjectMapper {
 
   public <T> T readValue(String stringValue, Class<T> type) throws IOException {
     return snakeCaseMapper.readValue(stringValue, type);
+  }
+
+  public JsonNode readTree(String stringValue) throws IOException {
+    return snakeCaseMapper.readTree(stringValue);
   }
 }

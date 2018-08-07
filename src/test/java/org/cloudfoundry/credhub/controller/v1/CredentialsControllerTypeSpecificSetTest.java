@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.controller.v1;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import net.minidev.json.JSONObject;
 import org.cloudfoundry.credhub.CredentialManagerApp;
@@ -36,6 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.io.InputStream;
+import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -99,6 +101,7 @@ public class CredentialsControllerTypeSpecificSetTest {
           .put("username", USERNAME_VALUE)
           .put("password", PASSWORD_VALUE)
           .build());
+  private static final JsonNode jsonNode;
   @Rule
   public final SpringMethodRule springMethodRule = new SpringMethodRule();
   @Parameterized.Parameter
@@ -116,6 +119,16 @@ public class CredentialsControllerTypeSpecificSetTest {
   @Autowired
   private Encryptor encryptor;
   private MockMvc mockMvc;
+
+  static {
+    JsonNode tmp = null;
+    try {
+      tmp = new ObjectMapper().readTree(JSON_VALUE_JSON_STRING);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    jsonNode = tmp;
+  }
 
   @Parameterized.Parameters(name = "{0}")
   public static Collection<Object> parameters() {
@@ -237,13 +250,13 @@ public class CredentialsControllerTypeSpecificSetTest {
 
       void credentialAssertions(CredentialVersion credential) {
         JsonCredentialVersion jsonCredential = (JsonCredentialVersion) credential;
-        assertThat(jsonCredential.getValue(), equalTo(jsonValueMap));
+        assertThat(jsonCredential.getValue(), equalTo(jsonNode));
       }
 
       CredentialVersion createCredential(Encryptor encryptor) {
         return new JsonCredentialVersion(CREDENTIAL_NAME)
             .setEncryptor(encryptor)
-            .setValue(jsonValueMap)
+            .setValue(jsonNode)
             .setUuid(credentialUuid)
             .setVersionCreatedAt(FROZEN_TIME.minusSeconds(1));
       }

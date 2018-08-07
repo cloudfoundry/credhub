@@ -1,7 +1,7 @@
 package org.cloudfoundry.credhub.domain;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.common.collect.ImmutableMap;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.cloudfoundry.credhub.constants.CredentialType;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.credential.JsonCredentialValue;
@@ -19,6 +19,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.UUID;
 
@@ -33,14 +34,21 @@ public class CredentialFactoryTest {
 
   private static final String CREDENTIAL_NAME = "/test";
   private static final String PLAINTEXT_VALUE = "test-value";
-  private final ImmutableMap<String, Object> jsonValueMap = ImmutableMap.<String, Object>builder()
-      .put("key", "value")
-      .put("array", Arrays.asList("foo", "bar"))
-      .build();
-  private final String jsonValueJsonString = JSONObject.toJSONString(jsonValueMap);
+  private static final String jsonValueJsonString = "{\"key\":\"value\",\"array\":[\"foo\",\"bar\"]}";
+  private static final JsonNode jsonNode;
   private CredentialFactory subject;
   private JsonObjectMapper objectMapper;
   private StringGenerationParameters generationParameters;
+
+  static {
+    JsonNode tmp = null;
+    try {
+      tmp = new JsonObjectMapper().readTree(jsonValueJsonString);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    jsonNode = tmp;
+  }
 
   @Before
   public void setup() throws JsonProcessingException {
@@ -171,7 +179,7 @@ public class CredentialFactoryTest {
 
   @Test
   public void makeCredentialFromRequest_givenJsonType_andNoExisting_returnsJsonCredential() throws Exception {
-    JsonCredentialValue jsonValue = new JsonCredentialValue(jsonValueMap);
+    JsonCredentialValue jsonValue = new JsonCredentialValue(jsonNode);
 
     JsonCredentialVersion credential =
         (JsonCredentialVersion) subject.makeNewCredentialVersion(
@@ -181,7 +189,7 @@ public class CredentialFactoryTest {
             null,
             null);
     assertThat(credential.getCredential().getName(), equalTo(CREDENTIAL_NAME));
-    assertThat(credential.getValue(), equalTo(jsonValueMap));
+    assertThat(credential.getValue(), equalTo(jsonNode));
   }
 
   @Test

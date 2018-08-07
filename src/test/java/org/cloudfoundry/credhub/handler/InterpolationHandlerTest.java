@@ -1,6 +1,8 @@
 package org.cloudfoundry.credhub.handler;
 
-import org.assertj.core.util.Maps;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.domain.JsonCredentialVersion;
@@ -13,6 +15,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -46,26 +49,26 @@ public class InterpolationHandlerTest {
     final ArrayList firstService = (ArrayList) response.get("pp-config-server");
     final ArrayList secondService = (ArrayList) response.get("pp-something-else");
 
-    Map<String, Object> firstCredentialsBlock = (Map<String, Object>) ((Map<String, Object>) firstService.get(0))
+    JsonNode firstCredentialsBlock = (JsonNode) ((Map<String, Object>) firstService.get(0))
         .get("credentials");
-    Map<String, Object> secondCredentialsBlock = (Map<String, Object>) ((Map<String, Object>) firstService.get(1))
+    JsonNode secondCredentialsBlock = (JsonNode) ((Map<String, Object>) firstService.get(1))
         .get("credentials");
 
-    Map<String, Object> secondServiceCredentials = (Map<String, Object>) ((Map<String, Object>) secondService.get(0))
+    JsonNode secondServiceCredentials = (JsonNode) ((Map<String, Object>) secondService.get(0))
         .get("credentials");
 
     assertThat(firstCredentialsBlock.get("credhub-ref"), nullValue());
     assertThat(firstCredentialsBlock.size(), equalTo(1));
-    assertThat(firstCredentialsBlock.get("secret1"), equalTo("secret1-value"));
+    assertThat(firstCredentialsBlock.get("secret1").toString(), equalTo("\"secret1-value\""));
 
     assertThat(secondCredentialsBlock.get("credhub-ref"), nullValue());
     assertThat(secondCredentialsBlock.size(), equalTo(1));
-    assertThat(secondCredentialsBlock.get("secret2"), equalTo("secret2-value"));
+    assertThat(secondCredentialsBlock.get("secret2").toString(), equalTo("\"secret2-value\""));
 
     assertThat(secondServiceCredentials.get("credhub-ref"), nullValue());
     assertThat(secondServiceCredentials.size(), equalTo(2));
-    assertThat(secondServiceCredentials.get("secret3-1"), equalTo("secret3-1-value"));
-    assertThat(secondServiceCredentials.get("secret3-2"), equalTo("secret3-2-value"));
+    assertThat(secondServiceCredentials.get("secret3-1").toString(), equalTo("\"secret3-1-value\""));
+    assertThat(secondServiceCredentials.get("secret3-2").toString(), equalTo("\"secret3-2-value\""));
   }
 
   @Test
@@ -232,28 +235,47 @@ public class InterpolationHandlerTest {
         + "}";
     Map<String, Object> inputJson = deserialize(inputJsonString, Map.class);
 
-    JsonCredentialVersion jsonCredential = mock(JsonCredentialVersion.class);
-    when(jsonCredential.getCredential()).thenReturn(mock(Credential.class));
-    when(jsonCredential.getName()).thenReturn("/cred1");
-    doReturn(Maps.newHashMap("secret1", "secret1-value")).when(jsonCredential).getValue();
-
     JsonCredentialVersion jsonCredential1 = mock(JsonCredentialVersion.class);
     when(jsonCredential1.getCredential()).thenReturn(mock(Credential.class));
-    when(jsonCredential1.getName()).thenReturn("/cred2");
-    doReturn(Maps.newHashMap("secret2", "secret2-value")).when(jsonCredential1).getValue();
+    when(jsonCredential1.getName()).thenReturn("/cred1");
+    String credJson1 = "{\"secret1\":\"secret1-value\"}";
+    JsonNode jsonNode1;
+    try {
+        jsonNode1 = new ObjectMapper().readTree(credJson1);
+    } catch (IOException e) {
+        throw new RuntimeException(e);
+    }
+    doReturn(jsonNode1).when(jsonCredential1).getValue();
 
     JsonCredentialVersion jsonCredential2 = mock(JsonCredentialVersion.class);
     when(jsonCredential2.getCredential()).thenReturn(mock(Credential.class));
-    when(jsonCredential2.getName()).thenReturn("/cred3");
-    Map<String, String> jsonCredetials = Maps.newHashMap("secret3-1", "secret3-1-value");
-    jsonCredetials.put("secret3-2", "secret3-2-value");
-    doReturn(jsonCredetials).when(jsonCredential2).getValue();
+    when(jsonCredential2.getName()).thenReturn("/cred2");
+    String credJson2 = "{\"secret2\":\"secret2-value\"}";
+    JsonNode jsonNode2;
+    try {
+        jsonNode2 = new ObjectMapper().readTree(credJson2);
+    } catch (IOException e) {
+        throw new RuntimeException(e);
+    }
+    doReturn(jsonNode2).when(jsonCredential2).getValue();
 
-    doReturn(singletonList(jsonCredential)).when(credentialService).findNByName("/cred1", 1);
+    JsonCredentialVersion jsonCredential3 = mock(JsonCredentialVersion.class);
+    when(jsonCredential3.getCredential()).thenReturn(mock(Credential.class));
+    when(jsonCredential3.getName()).thenReturn("/cred3");
+    String credJson3 = "{\"secret3-1\":\"secret3-1-value\",\"secret3-2\":\"secret3-2-value\"}";
+    JsonNode jsonNode3;
+    try {
+        jsonNode3 = new ObjectMapper().readTree(credJson3);
+    } catch (IOException e) {
+        throw new RuntimeException(e);
+    }
+    doReturn(jsonNode3).when(jsonCredential3).getValue();
 
-    doReturn(singletonList(jsonCredential1)).when(credentialService).findNByName("/cred2", 1);
+    doReturn(singletonList(jsonCredential1)).when(credentialService).findNByName("/cred1", 1);
 
-    doReturn(singletonList(jsonCredential2)).when(credentialService).findNByName("/cred3", 1);
+    doReturn(singletonList(jsonCredential2)).when(credentialService).findNByName("/cred2", 1);
+
+    doReturn(singletonList(jsonCredential3)).when(credentialService).findNByName("/cred3", 1);
 
     response = subject.interpolateCredHubReferences(inputJson);
   }

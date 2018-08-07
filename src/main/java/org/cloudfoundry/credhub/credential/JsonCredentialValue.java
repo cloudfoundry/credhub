@@ -2,21 +2,23 @@ package org.cloudfoundry.credhub.credential;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.databind.JsonNode;
 
-import javax.validation.constraints.NotEmpty;
-import java.util.Map;
+import javax.validation.constraints.NotNull;
 
+@JsonAutoDetect
 public class JsonCredentialValue implements CredentialValue {
-  @NotEmpty(message = "error.missing_value")
-  private final Map<String, Object> value;
+  @NotNull(message = "error.missing_value")
+  private final JsonNode value;
 
   @JsonCreator
-  public JsonCredentialValue(Map<String, Object> json) {
+  public JsonCredentialValue(JsonNode json) {
     this.value = json;
   }
 
   @JsonValue
-  public Map<String, Object> getValue() {
+  public JsonNode getValue() {
     return value;
   }
 }
