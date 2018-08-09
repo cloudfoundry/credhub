@@ -46,7 +46,7 @@ public abstract class BaseCredentialGenerateRequest extends BaseCredentialReques
   @Override
   public void validate() {
     super.validate();
-    if (getGenerationParameters() != null && !isValidMode(getGenerationParameters().getMode())) {
+    if (!isValidMode(this.getMode())) {
       throw new InvalidModeException("error.invalid_mode");
     }
 
@@ -58,8 +58,7 @@ public abstract class BaseCredentialGenerateRequest extends BaseCredentialReques
       throw new ParameterizedValidationException("error.cannot_generate_type");
     }
 
-    if (getGenerationParameters() != null &&
-        getGenerationParameters().getMode() != null && getRawOverwriteValue() != null) {
+    if (this.getMode() != null && getRawOverwriteValue() != null) {
       throw new ParameterizedValidationException("error.overwrite_and_mode_both_provided");
     }
 
@@ -98,5 +97,13 @@ public abstract class BaseCredentialGenerateRequest extends BaseCredentialReques
 
   private boolean isInvalidTypeForGeneration(String type) {
     return !newArrayList("password", "certificate", "rsa", "ssh", "user").contains(type);
+  }
+
+  public CredentialWriteMode getMode() {
+    return mode;
+  }
+
+  public void setMode(CredentialWriteMode mode) {
+    this.mode = mode;
   }
 }

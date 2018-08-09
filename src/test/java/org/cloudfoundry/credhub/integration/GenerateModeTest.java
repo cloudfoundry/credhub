@@ -92,9 +92,7 @@ public class GenerateModeTest {
         .content("{" +
             "\"type\":\"password\"," +
             "\"name\":\"" + CREDENTIAL_NAME + "\"," +
-            "\"parameters\":{" +
             "\"mode\": \"no-overwrite\"" +
-            "}" +
             "}");
 
     response = JsonPath.parse(mockMvc.perform(postRequest).andExpect(status().isOk())
@@ -135,8 +133,8 @@ public class GenerateModeTest {
         .content("{" +
             "\"type\":\"password\"," +
             "\"name\":\"" + CREDENTIAL_NAME + "\"," +
-            "\"parameters\":{" +
             "\"mode\": \"overwrite\"," +
+            "\"parameters\":{" +
             "\"length\":30" +
             "}" +
             "}");
@@ -161,9 +159,7 @@ public class GenerateModeTest {
         .content("{" +
             "\"type\":\"password\"," +
             "\"name\":\"" + CREDENTIAL_NAME + "\"," +
-            "\"parameters\":{" +
             "\"mode\": \"invalid\"" +
-            "}" +
             "}");
 
     String expectedError = "The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.";
@@ -183,8 +179,8 @@ public class GenerateModeTest {
         .content("{" +
             "\"type\":\"password\"," +
             "\"name\":\"" + CREDENTIAL_NAME + "\"," +
-            "\"parameters\":{" +
             "\"mode\": \"no-overwrite\"," +
+            "\"parameters\":{" +
             "\"length\":30" +
             "}" +
             "}");
@@ -208,8 +204,8 @@ public class GenerateModeTest {
         .content("{" +
             "\"type\":\"password\"," +
             "\"name\":\"" + CREDENTIAL_NAME + "\"," +
-            "\"parameters\":{" +
             "\"mode\": \"converge\"," +
+            "\"parameters\":{" +
             "\"length\":30" +
             "}" +
             "}");
@@ -234,15 +230,35 @@ public class GenerateModeTest {
             "\"type\":\"password\"," +
             "\"name\":\"" + CREDENTIAL_NAME + "\"," +
             "\"overwrite\": false," +
-            "\"parameters\":{" +
             "\"mode\": \"converge\"" +
-            "}" +
             "}");
 
     String expectedError = "The parameters overwrite and mode cannot be combined. Please update and retry your request.";
 
     mockMvc.perform(postRequest)
         .andExpect(status().isBadRequest())
+        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+        .andExpect(jsonPath("$.error").value(expectedError));
+  }
+
+  @Test
+  public void generatingACredential_whenModeIsSetAsParameter_returnsA400() throws Exception {
+    MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON_UTF8)
+        .content("{" +
+            "\"type\":\"password\"," +
+            "\"name\":\"" + CREDENTIAL_NAME + "\"," +
+            "\"parameters\":{" +
+            "\"length\":30," +
+            "\"mode\": \"converge\"" +
+            "}" +
+            "}");
+
+    String expectedError = "The request includes an unrecognized parameter 'mode'. Please update or remove this parameter and retry your request.";
+
+    mockMvc.perform(postRequest).andExpect(status().isBadRequest())
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
         .andExpect(jsonPath("$.error").value(expectedError));
   }

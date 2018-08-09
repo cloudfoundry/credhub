@@ -196,16 +196,16 @@ public class PermissionedCredentialService {
       return true;
     }
 
-    GenerationParameters parameters = request.getGenerationParameters();
+    if(request instanceof BaseCredentialGenerateRequest) {
+      BaseCredentialGenerateRequest generateRequest = (BaseCredentialGenerateRequest) request;
 
-    if(parameters != null && parameters.getMode() != null &&
-        parameters.getMode().equals(CredentialWriteMode.NO_OVERWRITE)) {
-      return false;
-    }
+      if(generateRequest.getMode() != null && generateRequest.getMode().equals(CredentialWriteMode.NO_OVERWRITE)) {
+        return false;
+      }
 
-    if(parameters != null && parameters.getMode() != null &&
-        parameters.getMode().equals(CredentialWriteMode.OVERWRITE)) {
-      return true;
+      if(generateRequest.getMode() != null && generateRequest.getMode().equals(CredentialWriteMode.OVERWRITE)) {
+        return true;
+      }
     }
 
     if (existingCredentialVersion instanceof CertificateCredentialVersion) {
