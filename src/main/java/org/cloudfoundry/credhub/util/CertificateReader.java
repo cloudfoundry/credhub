@@ -19,6 +19,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
+import java.time.Instant;
 import javax.security.auth.x500.X500Principal;
 
 import static org.cloudfoundry.credhub.util.StringUtil.UTF_8;
@@ -127,5 +128,13 @@ public class CertificateReader {
     }
 
     return basicConstraints != null && basicConstraints.isCA();
+  }
+
+  public Instant getNotAfter() {
+    if(certificate == null || certificate.getNotAfter() == null) {
+      return null;
+    }
+
+    return certificate.getNotAfter().toInstant();
   }
 }

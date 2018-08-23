@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.credential;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.cloudfoundry.credhub.util.CertificateReader;
 import org.cloudfoundry.credhub.util.EmptyStringToNull;
 import org.cloudfoundry.credhub.validator.MutuallyExclusive;
 import org.cloudfoundry.credhub.validator.RequireAnyOf;
@@ -11,6 +12,8 @@ import org.cloudfoundry.credhub.validator.RequireValidCA;
 import org.cloudfoundry.credhub.validator.RequireValidCertificate;
 import org.cloudfoundry.credhub.validator.ValidCertificateLength;
 import org.apache.commons.lang3.StringUtils;
+
+import java.time.Instant;
 
 @RequireAnyOf(message = "error.missing_certificate_credentials", fields = {"ca", "certificate", "privateKey"})
 @MutuallyExclusive(message = "error.mixed_ca_name_and_ca", fields = {"ca", "caName"})
@@ -32,6 +35,7 @@ public class CertificateCredentialValue implements CredentialValue {
   private String caName;
 
   private boolean transitional;
+  private Instant expiryDate;
 
   @SuppressWarnings("unused")
   public CertificateCredentialValue() {}
@@ -86,5 +90,9 @@ public class CertificateCredentialValue implements CredentialValue {
 
   public void setTransitional(boolean transitional) {
     this.transitional = transitional;
+  }
+
+  public Instant getExpiryDate() {
+    return new CertificateReader(certificate).getNotAfter();
   }
 }

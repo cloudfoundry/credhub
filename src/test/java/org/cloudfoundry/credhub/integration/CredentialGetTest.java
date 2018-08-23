@@ -18,6 +18,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.time.temporal.ChronoUnit;
+import java.util.Calendar;
 import java.util.List;
 
 import static org.cloudfoundry.credhub.helper.RequestHelper.generateCertificateCredential;
@@ -109,4 +111,32 @@ public class CredentialGetTest {
     assertThat(certificates, containsInAnyOrder(transitionalCertificate, nonTransitionalCertificate));
   }
 
+  @Test
+  public void getCertificate_andExpectExpiryDate() throws Exception {
+
+    String credentialName = "/test-certificate";
+
+    generateCertificateCredential(mockMvc, credentialName, true, "test", null, ALL_PERMISSIONS_TOKEN);
+
+
+    final MockHttpServletRequestBuilder request = get("/api/v1/data?name=" + credentialName + "&current=true")
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+        .accept(APPLICATION_JSON);
+
+    String response = mockMvc.perform(request)
+        .andExpect(status().isOk())
+        .andReturn().getResponse().getContentAsString();
+
+    System.out.println("\n\n\n\n RESPONSE:" + response);
+
+    String expiryDate = JsonPath.parse(response).read("$.data[0].expiry_date");
+    String truncatedExpiryDate = expiryDate.substring(0, expiryDate.indexOf('T'));
+
+    Calendar calendar = Calendar.getInstance();
+    calendar.add(Calendar.DATE, 365);
+    String expectedTime = calendar.getTime().toInstant().truncatedTo(ChronoUnit.SECONDS).toString();
+    String truncatedExpected = expectedTime.substring(0, expectedTime.indexOf('T'));
+    assertThat(truncatedExpiryDate, equalTo(truncatedExpected));
+
+  }
 }

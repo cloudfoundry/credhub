@@ -1,12 +1,15 @@
 package org.cloudfoundry.credhub.entity;
 
 import org.apache.commons.lang3.StringUtils;
+import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.SecondaryTable;
+
+import java.time.Instant;
 
 import static org.cloudfoundry.credhub.entity.CertificateCredentialVersionData.CREDENTIAL_DATABASE_TYPE;
 
@@ -33,6 +36,9 @@ public class CertificateCredentialVersionData extends CredentialVersionData<Cert
 
   @Column(table = CertificateCredentialVersionData.TABLE_NAME)
   private boolean transitional;
+
+  @Column(table = CertificateCredentialVersionData.TABLE_NAME)
+  private Instant expiryDate;
 
   public CertificateCredentialVersionData() {
   }
@@ -69,6 +75,13 @@ public class CertificateCredentialVersionData extends CredentialVersionData<Cert
 
   public CertificateCredentialVersionData setCaName(String caName) {
     this.caName = !StringUtils.isEmpty(caName) ? StringUtils.prependIfMissing(caName, "/") : caName;
+    return this;
+  }
+
+  public Instant getExpiryDate() { return expiryDate; }
+
+  public CertificateCredentialVersionData setExpiryDate(Instant expiryDate) {
+    this.expiryDate = expiryDate;
     return this;
   }
 

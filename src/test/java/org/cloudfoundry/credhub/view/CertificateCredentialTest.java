@@ -25,6 +25,7 @@ public class CertificateCredentialTest {
   private String credentialName;
   private UUID uuid;
   private Encryptor encryptor;
+  private Instant expiryDate;
 
 
   @Before
@@ -33,6 +34,7 @@ public class CertificateCredentialTest {
     UUID canaryUuid = UUID.randomUUID();
     byte[] encryptedValue = "fake-encrypted-value".getBytes();
     byte[] nonce = "fake-nonce".getBytes();
+    expiryDate = Instant.now();
 
     encryptor = mock(Encryptor.class);
     final EncryptedValue encryption = new EncryptedValue(canaryUuid, encryptedValue, nonce);
@@ -46,6 +48,7 @@ public class CertificateCredentialTest {
         .setCa("ca")
         .setCertificate("cert")
         .setPrivateKey("priv")
+        .setExpiryDate(expiryDate)
         .setUuid(uuid);
   }
 
@@ -54,8 +57,10 @@ public class CertificateCredentialTest {
     final CredentialView subject = CertificateView.fromEntity(entity);
     String json = JsonTestHelper.serializeToString(subject);
 
+    Instant expiryDateWithoutMillis = Instant.ofEpochSecond(expiryDate.getEpochSecond());
     assertThat(json, equalTo("{"
         + "\"type\":\"certificate\","
+        + "\"expiry_date\":\"" + expiryDateWithoutMillis + "\","
         + "\"transitional\":false,"
         + "\"version_created_at\":null,"
         + "\"id\":\"" + uuid.toString() + "\","
@@ -90,6 +95,7 @@ public class CertificateCredentialTest {
 
     assertThat(json, equalTo("{"
         + "\"type\":\"certificate\","
+        + "\"expiry_date\":null,"
         + "\"transitional\":false,"
         + "\"version_created_at\":null,"
         + "\"id\":\""

@@ -36,7 +36,6 @@ public class CertificateReaderTest {
   @Test
   public void isCa_whenTheCaBasicConstraintIsFalse_returnsFalse() {
     CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT);
-
     assertThat(certificateReader.isCa(), equalTo(false));
   }
 

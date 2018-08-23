@@ -29,6 +29,14 @@ import org.springframework.web.context.WebApplicationContext;
 import java.io.ByteArrayInputStream;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalField;
+import java.time.temporal.TemporalUnit;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,6 +46,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.IsNot.not;
+import static org.junit.Assert.assertTrue;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -82,7 +91,8 @@ public class CertificateGenerateTest {
             + "  \"parameters\" : {\n"
             + "    \"common_name\" : \"federation\",\n"
             + "    \"is_ca\" : true,\n"
-            + "    \"self_sign\" : true\n"
+            + "    \"self_sign\" : true,\n"
+            + "    \"duration\" : 1 \n"
             + "  }\n"
             + "}");
 
@@ -91,9 +101,23 @@ public class CertificateGenerateTest {
         .andExpect(status().isOk())
         .andReturn().getResponse().getContentAsString();
 
+
     String picardCert = (new JSONObject(caResult)).getJSONObject("value").getString("certificate");
     String picardCA = (new JSONObject(caResult)).getJSONObject("value").getString("ca");
     assertThat(picardCert, equalTo(picardCA));
+
+    String expiryDate = (new JSONObject(caResult)).getString("expiry_date");
+    String truncatedExpiryDate = expiryDate.substring(0, expiryDate.indexOf('T'));
+
+    Calendar calendar = Calendar.getInstance();
+    calendar.add(Calendar.DATE, 1);
+    String expectedTime = calendar.getTime().toInstant().truncatedTo(ChronoUnit.SECONDS).toString();
+    String truncatedExpected = expectedTime.substring(0, expectedTime.indexOf('T'));
+
+
+
+    assertThat(truncatedExpiryDate, equalTo(truncatedExpected));
+
 
     assertThat(picardCert, notNullValue());
 
@@ -120,6 +144,7 @@ public class CertificateGenerateTest {
     String cert = (new JSONObject(certResult)).getJSONObject("value").getString("certificate");
 
     assertThat(certCa, equalTo(picardCert));
+
 
     CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
     X509Certificate caPem = (X509Certificate) certificateFactory

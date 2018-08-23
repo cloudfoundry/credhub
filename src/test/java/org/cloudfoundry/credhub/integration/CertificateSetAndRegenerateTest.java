@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.jayway.jsonpath.JsonPath;
 import net.minidev.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.helper.RequestHelper;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
@@ -21,8 +22,13 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.io.ByteArrayInputStream;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+
 import static org.cloudfoundry.credhub.helper.RequestHelper.getCertificateId;
 import static org.cloudfoundry.credhub.util.AuthConstants.ALL_PERMISSIONS_TOKEN;
+import static org.cloudfoundry.credhub.util.StringUtil.UTF_8;
 import static org.cloudfoundry.credhub.util.TestConstants.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -30,6 +36,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -469,4 +476,32 @@ public class CertificateSetAndRegenerateTest {
         .andExpect(status().isBadRequest());
   }
 
+  @Test
+  public void certificateSetRequest_returnsWithExpiryDate() throws Exception {
+    final String setJson = JSONObject.toJSONString(
+        ImmutableMap.<String, String>builder()
+            .put("ca_name", "")
+            .put("certificate", TEST_CERTIFICATE)
+            .put("private_key", TEST_PRIVATE_KEY)
+            .build());
+
+    MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        //language=JSON
+        .content("{\n"
+            + "  \"name\" : \"/certificate\",\n"
+            + "  \"type\" : \"certificate\",\n"
+            + "  \"value\" : " + setJson + "}");
+
+    X509Certificate certificate = (X509Certificate) CertificateFactory
+        .getInstance("X.509", BouncyCastleProvider.PROVIDER_NAME)
+        .generateCertificate(new ByteArrayInputStream(TEST_CERTIFICATE.getBytes(UTF_8)));
+
+    this.mockMvc.perform(certificateSetRequest)
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.expiry_date", equalTo(certificate.getNotAfter().toInstant().toString())));
+  }
 }
