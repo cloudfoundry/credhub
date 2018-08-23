@@ -1,15 +1,13 @@
 package org.cloudfoundry.credhub.entity;
 
 import org.apache.commons.lang3.StringUtils;
-import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 
+import java.time.Instant;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.SecondaryTable;
-
-import java.time.Instant;
 
 import static org.cloudfoundry.credhub.entity.CertificateCredentialVersionData.CREDENTIAL_DATABASE_TYPE;
 
@@ -97,5 +95,16 @@ public class CertificateCredentialVersionData extends CredentialVersionData<Cert
 
   public boolean isTransitional() {
     return transitional;
+  }
+
+  @Override
+  public String toString() {
+    return "CertificateCredentialVersionData{" +
+        "ca='" + ca + '\'' +
+        ", certificate='" + certificate + '\'' +
+        ", caName='" + caName + '\'' +
+        ", transitional=" + transitional +
+        ", expiryDate=" + expiryDate +
+        '}';
   }
 }

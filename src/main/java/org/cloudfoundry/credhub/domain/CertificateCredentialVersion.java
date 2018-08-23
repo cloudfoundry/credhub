@@ -1,14 +1,12 @@
 package org.cloudfoundry.credhub.domain;
 
+import org.apache.commons.lang3.StringUtils;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData;
 import org.cloudfoundry.credhub.request.GenerationParameters;
 import org.cloudfoundry.credhub.util.CertificateReader;
-import org.apache.commons.lang3.StringUtils;
 
 import java.time.Instant;
-import java.util.Calendar;
-import java.util.TimeZone;
 
 public class CertificateCredentialVersion extends CredentialVersion<CertificateCredentialVersion> {
 

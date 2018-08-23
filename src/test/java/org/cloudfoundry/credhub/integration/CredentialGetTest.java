@@ -112,7 +112,7 @@ public class CredentialGetTest {
   }
 
   @Test
-  public void getCertificate_andExpectExpiryDate() throws Exception {
+  public void getCertificate_withNonNullExpiryDate_andExpectExpiryDate() throws Exception {
 
     String credentialName = "/test-certificate";
 
@@ -126,8 +126,6 @@ public class CredentialGetTest {
     String response = mockMvc.perform(request)
         .andExpect(status().isOk())
         .andReturn().getResponse().getContentAsString();
-
-    System.out.println("\n\n\n\n RESPONSE:" + response);
 
     String expiryDate = JsonPath.parse(response).read("$.data[0].expiry_date");
     String truncatedExpiryDate = expiryDate.substring(0, expiryDate.indexOf('T'));
