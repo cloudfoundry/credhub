@@ -1,6 +1,7 @@
 package org.cloudfoundry.credhub.domain;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.cloudfoundry.credhub.credential.JsonCredentialValue;
 import org.cloudfoundry.credhub.entity.JsonCredentialVersionData;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
@@ -8,7 +9,6 @@ import org.cloudfoundry.credhub.request.GenerationParameters;
 import org.cloudfoundry.credhub.util.JsonObjectMapper;
 
 import java.io.IOException;
-import java.util.Map;
 
 public class JsonCredentialVersion extends CredentialVersion<JsonCredentialVersion> {
 
@@ -47,14 +47,14 @@ public class JsonCredentialVersion extends CredentialVersion<JsonCredentialVersi
 
   @Override
   public void rotate() {
-    Map<String, Object> value = this.getValue();
+    JsonNode value = this.getValue();
     this.setValue(value);
   }
 
-  public Map<String, Object> getValue() {
+  public JsonNode getValue() {
     String serializedValue = (String) super.getValue();
     try {
-      return objectMapper.readValue(serializedValue, Map.class);
+      return objectMapper.readTree(serializedValue);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -68,7 +68,7 @@ public class JsonCredentialVersion extends CredentialVersion<JsonCredentialVersi
     return false;
   }
 
-  public JsonCredentialVersion setValue(Map<String, Object> value) {
+  public JsonCredentialVersion setValue(JsonNode value) {
     if (value == null) {
       throw new ParameterizedValidationException("error.missing_value");
     }

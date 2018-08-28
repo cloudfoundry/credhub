@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.domain;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.cloudfoundry.credhub.entity.EncryptedValue;
 import org.cloudfoundry.credhub.entity.JsonCredentialVersionData;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
@@ -10,8 +11,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.IOException;
 import java.util.UUID;
 
 import static junit.framework.TestCase.fail;
@@ -25,20 +25,22 @@ import static org.mockito.Mockito.when;
 public class JsonCredentialVersionTest {
 
   private JsonCredentialVersion subject;
-  private Map<String, Object> value;
+  private JsonNode value;
 
   private JsonCredentialVersionData jsonCredentialData;
 
   @Before
   public void beforeEach() throws JsonProcessingException {
-    Map<String, Object> nested = new HashMap<>();
-    nested.put("key", "value");
+    String jsonString = "{\"simple\":\"just-a-string\",\"complex\":{\"key\":\"value\"}}";
+    ObjectMapper objectMapper = new ObjectMapper();
+    String serializedValue = new String();
 
-    value = new HashMap<>();
-    value.put("simple", "just-a-string");
-    value.put("complex", nested);
-
-    String serializedValue = new ObjectMapper().writeValueAsString(value);
+    try {
+      value = objectMapper.readTree(jsonString);
+      serializedValue = objectMapper.writeValueAsString(value);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
 
     Encryptor encryptor = mock(Encryptor.class);
     byte[] encryptedValue = "fake-encrypted-value".getBytes();
@@ -77,7 +79,7 @@ public class JsonCredentialVersionTest {
   @Test
   public void setValue_whenValueIsNull_throwsException() {
     try {
-      subject.setValue((Map) null);
+      subject.setValue((JsonNode) null);
       fail("should throw");
     } catch (ParameterizedValidationException e) {
       assertThat(e.getMessage(), equalTo("error.missing_value"));

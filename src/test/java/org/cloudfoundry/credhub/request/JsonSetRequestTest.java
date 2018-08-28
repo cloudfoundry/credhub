@@ -1,12 +1,13 @@
 package org.cloudfoundry.credhub.request;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cloudfoundry.credhub.credential.JsonCredentialValue;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.IOException;
 import java.util.Set;
 import javax.validation.ConstraintViolation;
 
@@ -34,12 +35,13 @@ public class JsonSetRequestTest {
 
   @Test
   public void whenAllFieldsAreSet_shouldBeValid() {
-    Map<String, Object> nested = new HashMap<>();
-    nested.put("key", 3);
-
-    Map<String, Object> value = new HashMap<>();
-    value.put("foo", "bar");
-    value.put("nested", nested);
+    String jsonString = "{\"foo\":\"bar\",\"nested\":{\"key\":3}}";
+    JsonNode value;
+    try {
+      value = new ObjectMapper().readTree(jsonString);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
 
     JsonSetRequest request = new JsonSetRequest();
     request.setName("some-name");
