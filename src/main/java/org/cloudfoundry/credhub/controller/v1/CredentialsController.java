@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(
@@ -114,22 +115,35 @@ public class CredentialsController {
 
   @RequestMapping(path = "", params = "path", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
-  public FindCredentialResults findByPath(@RequestParam("path") String path) {
+  public FindCredentialResults findByPath(@RequestParam("path") String path,
+                                          @RequestParam("expires-within-days") Optional <String> expiresWithinDays) {
     FindCredential findCredential = new FindCredential();
     findCredential.setPath(path);
+    String expiryDate = "";
+    if(expiresWithinDays.isPresent()){
+      expiryDate = expiresWithinDays.get();
+    }
+    findCredential.setExpiresWithinDays(expiryDate);
     auditRecord.setRequestDetails(findCredential);
 
-    return new FindCredentialResults(credentialService.findStartingWithPath(path));
+    return new FindCredentialResults(credentialService.findStartingWithPath(path, expiryDate));
   }
 
+  //TODO complete this method
   @RequestMapping(path = "", params = "name-like", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
-  public FindCredentialResults findByNameLike(@RequestParam("name-like") String nameLike) {
+  public FindCredentialResults findByNameLike(@RequestParam("name-like") String nameLike,
+                                              @RequestParam("expires-within-days") Optional <String> expiresWithinDays) {
     FindCredential findCredential = new FindCredential();
     findCredential.setNameLike(nameLike);
+    String expiryDate = "";
+    if(expiresWithinDays.isPresent()){
+      expiryDate = expiresWithinDays.get();
+    }
+    findCredential.setExpiresWithinDays(expiryDate);
     auditRecord.setRequestDetails(findCredential);
 
-    return new FindCredentialResults(credentialService.findContainingName(nameLike));
+    return new FindCredentialResults(credentialService.findContainingName(nameLike, expiryDate));
   }
 
   private CredentialView auditedHandlePutRequest(@RequestBody BaseCredentialSetRequest requestBody) {

@@ -10,19 +10,18 @@ import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.entity.CredentialVersionData;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.repository.CredentialVersionRepository;
+import org.cloudfoundry.credhub.view.FindCertificateResult;
 import org.cloudfoundry.credhub.view.FindCredentialResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -105,21 +104,36 @@ public class CredentialVersionDataService {
   }
 
   public List<FindCredentialResult> findContainingName(String name) {
+    return findContainingName(name, "");
+  }
+
+  public List<FindCredentialResult> findContainingName(String name, String expiresWithinDays) {
+    if(!expiresWithinDays.equals("")) {
+      return filterCertificates("%" + name + "%", expiresWithinDays);
+    }
     return findMatchingName("%" + name + "%");
   }
 
   public List<FindCredentialResult> findStartingWithPath(String path) {
+    return findStartingWithPath(path, "");
+  }
+
+  public List<FindCredentialResult> findStartingWithPath(String path, String expiresWithinDays) {
     path = StringUtils.prependIfMissing(path, "/");
     path = StringUtils.appendIfMissing(path, "/");
 
-    List<FindCredentialResult> unfilteredResult = findMatchingName(path + "%");
+    if(!expiresWithinDays.equals("")) {
+      return filterPermissions(filterCertificates(path + "%", expiresWithinDays));
+    }
 
+    return filterPermissions(findMatchingName(path + "%"));
+  }
+
+  private List<FindCredentialResult> filterPermissions(List<FindCredentialResult> unfilteredResult) {
     if(!enforcePermissions){
       return unfilteredResult;
     }
-
     String actor = userContextHolder.getUserContext().getActor();
-
     return filterCredentials(unfilteredResult, permissionDataService.findAllPathsByActor(actor));
   }
 
@@ -215,7 +229,41 @@ public class CredentialVersionDataService {
     return filteredResult;
   }
 
-  private List<String> tokenizePath(String credentialName) {
+
+  private List<FindCredentialResult> filterCertificates(String path, String expiresWithinDays) {
+    Timestamp expiresTimestamp = Timestamp.from(Instant.now().plus(Duration.ofDays(Long.parseLong(expiresWithinDays))));
+
+      String query = "select name.name, credential_version.version_created_at, "
+      + "certificate_credential.expiry_date from ("
+      + "   select "
+      + "   max(version_created_at) as version_created_at,"
+      + "     credential_uuid, uuid"
+      + "   from credential_version group by credential_uuid, uuid"
+      + " ) as credential_version inner join ("
+      + "   select * from credential"
+      + "     where lower(name) like lower(?)"
+      + " ) as name"
+      + " on credential_version.credential_uuid = name.uuid"
+      + " inner join ( select * from certificate_credential"
+      + "   where expiry_date <= ?"
+      + " ) as certificate_credential "
+      + " on credential_version.uuid = certificate_credential.uuid"
+      + " order by version_created_at desc";
+
+    final List<FindCredentialResult> certificateResults = jdbcTemplate.query(query,
+        new Object[]{path, expiresTimestamp},
+        (rowSet, rowNum) -> {
+          final Instant versionCreatedAt = Instant
+              .ofEpochMilli(rowSet.getLong("version_created_at"));
+          final String name = rowSet.getString("name");
+          final Instant expiryDate = rowSet.getTimestamp("expiry_date").toInstant();
+          return new FindCertificateResult(versionCreatedAt, name, expiryDate);
+        }
+    );
+    return certificateResults;
+  }
+
+    private List<String> tokenizePath(String credentialName) {
     List<String> result = new ArrayList<>();
     String subPath;
 
@@ -228,7 +276,6 @@ public class CredentialVersionDataService {
 
     return result;
   }
-
 
   private List<FindCredentialResult> findMatchingName(String nameLike) {
     final List<FindCredentialResult> credentialResults = jdbcTemplate.query(

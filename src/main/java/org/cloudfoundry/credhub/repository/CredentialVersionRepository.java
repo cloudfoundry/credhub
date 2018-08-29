@@ -4,7 +4,9 @@ import org.cloudfoundry.credhub.entity.CredentialVersionData;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.time.Instant;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -46,4 +48,5 @@ public interface CredentialVersionRepository extends JpaRepository<CredentialVer
       + "inner join certificate_credential on credential_version.uuid = certificate_credential.uuid "
       + "where expiry_date IS NULL", nativeQuery = true)
   List<CredentialVersionData> findAllVersionsWithNullExpirationDate();
+
 }

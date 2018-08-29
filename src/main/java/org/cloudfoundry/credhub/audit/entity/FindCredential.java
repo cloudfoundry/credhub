@@ -6,6 +6,12 @@ public class FindCredential implements RequestDetails {
   private String nameLike, path;
   private Boolean paths;
 
+  private String expiresWithinDays;
+
+  public String getExpiresWithinDays() { return expiresWithinDays; }
+
+  public void setExpiresWithinDays(String expiresWithinDays) { this.expiresWithinDays = expiresWithinDays; }
+
   public String getNameLike() {
     return nameLike;
   }
