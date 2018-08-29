@@ -43,7 +43,7 @@ public interface CredentialVersionRepository extends JpaRepository<CredentialVer
   CredentialVersionData findFirstByCredentialUuidOrderByVersionCreatedAtDesc(UUID uuid);
 
   @Query(value = "select * from credential_version "
-      + "left join certificate_credential on credential_version.uuid = certificate_credential.uuid "
-      + "where expiry_date IS NULL ", nativeQuery = true)
+      + "inner join certificate_credential on credential_version.uuid = certificate_credential.uuid "
+      + "where expiry_date IS NULL", nativeQuery = true)
   List<CredentialVersionData> findAllVersionsWithNullExpirationDate();
 }
