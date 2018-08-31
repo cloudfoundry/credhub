@@ -129,7 +129,6 @@ public class CredentialsController {
     return new FindCredentialResults(credentialService.findStartingWithPath(path, expiryDate));
   }
 
-  //TODO complete this method
   @RequestMapping(path = "", params = "name-like", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   public FindCredentialResults findByNameLike(@RequestParam("name-like") String nameLike,
