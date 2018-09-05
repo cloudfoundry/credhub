@@ -5,7 +5,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
-import org.cloudfoundry.credhub.audit.entity.*;
+import org.cloudfoundry.credhub.audit.entity.DeleteCredential;
+import org.cloudfoundry.credhub.audit.entity.FindCredential;
+import org.cloudfoundry.credhub.audit.entity.GetCredential;
+import org.cloudfoundry.credhub.audit.entity.RequestDetails;
+import org.cloudfoundry.credhub.audit.entity.SetCredential;
 import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException;
 import org.cloudfoundry.credhub.handler.CredentialsHandler;
 import org.cloudfoundry.credhub.handler.LegacyGenerationHandler;
@@ -18,12 +22,18 @@ import org.cloudfoundry.credhub.view.FindCredentialResults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Optional;
 
 @RestController
 @RequestMapping(
@@ -115,34 +125,28 @@ public class CredentialsController {
 
   @RequestMapping(path = "", params = "path", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
-  public FindCredentialResults findByPath(@RequestParam("path") String path,
-                                          @RequestParam("expires-within-days") Optional <String> expiresWithinDays) {
+  public FindCredentialResults findByPath(
+      @RequestParam("path") String path,
+      @RequestParam(value = "expires-within-days", required = false, defaultValue = "") String expiresWithinDays) {
     FindCredential findCredential = new FindCredential();
     findCredential.setPath(path);
-    String expiryDate = "";
-    if(expiresWithinDays.isPresent()){
-      expiryDate = expiresWithinDays.get();
-    }
-    findCredential.setExpiresWithinDays(expiryDate);
+    findCredential.setExpiresWithinDays(expiresWithinDays);
     auditRecord.setRequestDetails(findCredential);
 
-    return new FindCredentialResults(credentialService.findStartingWithPath(path, expiryDate));
+    return new FindCredentialResults(credentialService.findStartingWithPath(path, expiresWithinDays));
   }
 
   @RequestMapping(path = "", params = "name-like", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
-  public FindCredentialResults findByNameLike(@RequestParam("name-like") String nameLike,
-                                              @RequestParam("expires-within-days") Optional <String> expiresWithinDays) {
+  public FindCredentialResults findByNameLike(
+      @RequestParam("name-like") String nameLike,
+      @RequestParam(value = "expires-within-days", required = false, defaultValue = "") String expiresWithinDays) {
     FindCredential findCredential = new FindCredential();
     findCredential.setNameLike(nameLike);
-    String expiryDate = "";
-    if(expiresWithinDays.isPresent()){
-      expiryDate = expiresWithinDays.get();
-    }
-    findCredential.setExpiresWithinDays(expiryDate);
+    findCredential.setExpiresWithinDays(expiresWithinDays);
     auditRecord.setRequestDetails(findCredential);
 
-    return new FindCredentialResults(credentialService.findContainingName(nameLike, expiryDate));
+    return new FindCredentialResults(credentialService.findContainingName(nameLike, expiresWithinDays));
   }
 
   private CredentialView auditedHandlePutRequest(@RequestBody BaseCredentialSetRequest requestBody) {
