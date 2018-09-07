@@ -56,7 +56,7 @@ dependencies {
 
     compile("org.springframework.security:spring-security-web")
     compile('org.springframework.boot:spring-boot-starter-security')
-    compile('org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:2.0.1.RELEASE')
+    compile('org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:2.0.4.RELEASE')
     compile('org.springframework.security.oauth:spring-security-oauth2:2.3.3.RELEASE')
 
     // DB
