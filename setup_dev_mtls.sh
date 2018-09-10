@@ -99,8 +99,8 @@ main() {
         echo e.g., curl -H \"Content-Type: application/json\" \
             -X POST -d "'{\"name\":\"cred\",\"type\":\"password\"}'" \
             https://localhost:9000/api/v1/data --cacert "${PWD}/server_ca_cert.pem" \
-            --cert "${GOPATH}/src/github.com/cloudfoundry-incubator/credhub-acceptance-tests/certs/client.pem" \
-            --key "${GOPATH}"/src/github.com/cloudfoundry-incubator/credhub-acceptance-tests/certs/client_key.pem
+            --cert "${GOPATH:-$HOME/go}/src/github.com/cloudfoundry-incubator/credhub-acceptance-tests/certs/client.pem" \
+            --key "${GOPATH:-$HOME/go}/src/github.com/cloudfoundry-incubator/credhub-acceptance-tests/certs/client_key.pem"
 
     popd >/dev/null
 }
