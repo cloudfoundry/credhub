@@ -5,7 +5,7 @@ buildscript {
         maven { url("https://plugins.gradle.org/m2/") }
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.0.4.RELEASE")
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.0.5.RELEASE") // Spring Boot Version
         classpath("org.owasp:dependency-check-gradle:3.1.1")
         classpath("org.springframework.build.gradle:propdeps-plugin:0.0.7")
         classpath("com.google.protobuf:protobuf-gradle-plugin:0.8.6")
@@ -45,7 +45,7 @@ configurations.all {
 
 // https://github.com/grpc/grpc-java/blob/master/SECURITY.md#netty
 def grpcVersion = '1.14.0'
-def nettyTcNativeVersion = '2.0.12.Final'
+def nettyTcNativeVersion = '2.0.13.Final'
 dependencies {
     // Spring stuff
     compile("org.springframework.boot:spring-boot-starter-web")
