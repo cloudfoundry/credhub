@@ -2,7 +2,7 @@ package org.cloudfoundry.credhub.config;
 
 public class EncryptionConfiguration {
   private Integer port;
-  private String host, partition, partitionPassword, serverCa, clientCertificate, clientKey;
+  private String host, partition, partitionPassword, serverCa, clientCertificate, clientKey, endpoint;
 
   public String getServerCa() {
     return serverCa;
@@ -60,6 +60,10 @@ public class EncryptionConfiguration {
     this.partitionPassword = partitionPassword;
   }
 
+  public String getEndpoint() { return endpoint; }
+
+  public void setEndpoint(String endpoint) { this.endpoint = endpoint; }
+
   @Override
   public String toString() {
     return "EncryptionConfiguration{" +
@@ -67,6 +71,7 @@ public class EncryptionConfiguration {
         ", host='" + host + '\'' +
         ", partition='" + partition + '\'' +
         ", partitionPassword='" + partitionPassword + '\'' +
+        ", endpoint='" + endpoint + '\'' +
         '}';
   }
 }

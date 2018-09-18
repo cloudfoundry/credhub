@@ -4,7 +4,7 @@ public enum ProviderType {
 
   INTERNAL("internal"),
   HSM("hsm"),
-  EXTERNAL("external");
+  KMS_PLUGIN("kms-plugin");
 
   private String label;
 

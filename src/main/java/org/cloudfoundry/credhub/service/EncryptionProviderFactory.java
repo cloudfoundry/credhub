@@ -37,7 +37,7 @@ public class EncryptionProviderFactory {
               encryptionKeysConfiguration.isKeyCreationEnabled(),
               timedRetry);
           break;
-        case EXTERNAL:
+        case KMS_PLUGIN:
           encryptionService = new ExternalEncryptionProvider(provider.getConfiguration());
           break;
         default:

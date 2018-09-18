@@ -45,7 +45,7 @@ configurations.all {
 
 // https://github.com/grpc/grpc-java/blob/master/SECURITY.md#netty
 def grpcVersion = '1.14.0'
-def nettyTcNativeVersion = '2.0.13.Final'
+def nettyVersion = '4.1.29.Final'
 dependencies {
     // Spring stuff
     compile("org.springframework.boot:spring-boot-starter-web")
@@ -82,7 +82,10 @@ dependencies {
 
     //gRPC - Netty
     compile "io.grpc:grpc-netty:${grpcVersion}"
-    compile "io.netty:netty-tcnative-boringssl-static:${nettyTcNativeVersion}"
+
+    //Netty
+    compile "io.netty:netty-transport-native-unix-common:${nettyVersion}"
+    compile "io.netty:netty-all:${nettyVersion}"
 
     testCompile("com.jayway.jsonpath:json-path-assert:2.4.0")
 }
