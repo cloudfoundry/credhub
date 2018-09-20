@@ -7,12 +7,12 @@ encryption:
   key_creation_enabled: true
   providers:
   - provider_name: ext
-    provider_type: external
+    provider_type: kms-plugin
     keys:
     - encryption_key_name: some-key-name-1
       active: true
     configuration:
-      endpoint: /tmp/sock
+      endpoint: /tmp/mySocket.sock
 EOF
 
 $DIR/start_server.sh -Dspring.profiles.active=dev,dev-external-provider,dev-h2
