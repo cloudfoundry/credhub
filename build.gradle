@@ -94,7 +94,12 @@ processResources {
     outputs.upToDateWhen { false }
 }
 
+task updateVersionFile(type: Exec) {
+    commandLine './fetch-version.sh'
+}
+
 bootRun {
+    dependsOn updateVersionFile
     sourceResources sourceSets.main
     systemProperties = System.properties
     systemProperties["spring.profiles.active"] = System.getProperty("spring.profiles.active", "dev, dev-h2")
