@@ -4,8 +4,14 @@ set -euo pipefail
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 VERSION_FILE="$DIR/src/main/resources/version"
+CREDHUB_VERSION=${CREDHUB_SERVER_VERSION:-}
 
-branch=$(git show-ref --heads | grep `git rev-parse HEAD` | cut -d ' ' -f2 | cut -d '/' -f3)
+if [ ! -z ${CREDHUB_VERSION} ]; then
+  echo "$CREDHUB_VERSION" > "$VERSION_FILE"
+  exit 0
+fi
+
+branch=$(git branch | grep '\*' | cut -d ' ' -f2)
 
 if [[ $branch =~ ^[0-9]*.[0-9]*.x$ ]]; then
   echo "$branch" | sed 's/x/0-dev/' > "$VERSION_FILE"
