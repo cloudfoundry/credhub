@@ -24,7 +24,7 @@ security:
     - path: /*
       actors:
       - "uaa-client:credhub_client"
-      - "uaa-user:6e7f6e83-ef55-4d20-bad3-0b98af73550c"
+      - "uaa-user:a1cabe85-077a-4899-b6ec-44656e5b949d"
       operations: [read,write,delete,read_acl,write_acl]
 
 logging:
