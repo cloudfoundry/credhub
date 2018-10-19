@@ -15,12 +15,15 @@ import org.cloudfoundry.credhub.exceptions.InvalidPermissionOperationException;
 import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException;
 import org.cloudfoundry.credhub.exceptions.InvalidRemoteAddressException;
 import org.cloudfoundry.credhub.exceptions.KeyNotFoundException;
+import org.cloudfoundry.credhub.exceptions.MalformedCertificateException;
+import org.cloudfoundry.credhub.exceptions.MissingCertificateException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.exceptions.PermissionAlreadyExistsException;
 import org.cloudfoundry.credhub.exceptions.PermissionDoesNotExistException;
 import org.cloudfoundry.credhub.exceptions.PermissionException;
 import org.cloudfoundry.credhub.exceptions.PermissionInvalidPathAndActorException;
 import org.cloudfoundry.credhub.exceptions.ReadOnlyException;
+import org.cloudfoundry.credhub.exceptions.UnreadableCertificateException;
 import org.cloudfoundry.credhub.view.ResponseError;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.MessageSourceAccessor;
@@ -137,6 +140,24 @@ public class ExceptionHandlers {
   @ResponseStatus(value = HttpStatus.SERVICE_UNAVAILABLE)
   public ResponseError handleReadOnlyException(){
     return constructError("error.read_only_mode");
+  }
+
+  @ExceptionHandler(UnreadableCertificateException.class)
+  @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+  public ResponseError handleUnreadableCertificateException(){
+    return constructError("error.unreadable_certificate");
+  }
+
+  @ExceptionHandler(MissingCertificateException.class)
+  @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+  public ResponseError handleMissingCertificateException(){
+    return constructError("error.missing_certificate");
+  }
+
+  @ExceptionHandler(MalformedCertificateException.class)
+  @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+  public ResponseError handleMalformedCertificateException(){
+    return constructError("error.invalid_certificate");
   }
 
   @ExceptionHandler({InvalidJsonException.class})

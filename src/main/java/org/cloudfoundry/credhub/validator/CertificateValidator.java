@@ -1,14 +1,17 @@
 package org.cloudfoundry.credhub.validator;
 
-import org.cloudfoundry.credhub.util.CertificateReader;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.cloudfoundry.credhub.exceptions.UnreadableCertificateException;
+import org.cloudfoundry.credhub.util.CertificateReader;
 
 import java.lang.reflect.Field;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
 public class CertificateValidator implements ConstraintValidator<RequireValidCertificate, Object> {
-
+  private static final Logger LOGGER = LogManager.getLogger(CertificateValidator.class);
   private String[] fields;
 
   @Override
@@ -31,6 +34,11 @@ public class CertificateValidator implements ConstraintValidator<RequireValidCer
         return reader.isValid();
       } catch (NoSuchFieldException | IllegalAccessException e) {
         throw new RuntimeException(e);
+      } catch (Exception e){
+        if(e.getClass().equals(RuntimeException.class) && e.getMessage().contains("java.io.IOException")){
+          LOGGER.error("Exception reading certificate", e);
+          throw new UnreadableCertificateException();
+        }
       }
     }
     return true;

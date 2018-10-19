@@ -211,6 +211,92 @@ public class CertificateSetAndRegenerateTest {
   }
 
   @Test
+  public void certificateSetRequest_whenProvidedAMalformedCertificate_returnsAValidationError() throws Exception {
+    final String setJson = JSONObject.toJSONString(
+        ImmutableMap.<String, String>builder()
+            .put("certificate", "-----BEGIN CERTIFICATE-----") // missing END CERTIFICATE tag
+            .build());
+
+    MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{\n"
+            + "  \"name\" : \"/crusher\",\n"
+            + "  \"type\" : \"certificate\",\n"
+            + "  \"value\" : " + setJson + "}");
+
+    this.mockMvc.perform(certificateSetRequest)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error", equalTo("Unable to parse the certificate.")));
+  }
+
+  @Test
+  public void certificateSetRequest_whenOmittingACertificate_returnsAValidationError() throws Exception {
+    final String setJson = JSONObject.toJSONString(
+        ImmutableMap.<String, String>builder()
+            .put("private_key", TEST_PRIVATE_KEY)
+            .build());
+
+    MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{\n"
+            + "  \"name\" : \"/crusher\",\n"
+            + "  \"type\" : \"certificate\",\n"
+            + "  \"value\" : " + setJson + "}");
+
+    this.mockMvc.perform(certificateSetRequest)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error", equalTo("You must provide a certificate.")));
+  }
+
+  @Test
+  public void certificateSetRequest_whenSettingAMalformedCertificateAndMalformedKey_returnsAValidationError() throws Exception {
+    final String setJson = JSONObject.toJSONString(
+        ImmutableMap.<String, String>builder()
+            .put("certificate", "-----BEGIN CERTIFICATE-----") // missing END CERTIFICATE tag
+            .put("private_key", "not a key")
+            .build());
+
+    MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{\n"
+            + "  \"name\" : \"/crusher\",\n"
+            + "  \"type\" : \"certificate\",\n"
+            + "  \"value\" : " + setJson + "}");
+
+    this.mockMvc.perform(certificateSetRequest)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error", equalTo("Unable to parse the certificate.")));
+  }
+
+  @Test
+  public void certificateSetRequest_whenSettingAMalformedKey_returnsAValidationError() throws Exception {
+    final String setJson = JSONObject.toJSONString(
+        ImmutableMap.<String, String>builder()
+            .put("certificate", "-----BEGIN CERTIFICATE-----\\\n...\\\n-----END CERTIFICATE-----") // missing END CERTIFICATE tag
+            .put("private_key", "not a key")
+            .build());
+
+    MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{\n"
+            + "  \"name\" : \"/crusher\",\n"
+            + "  \"type\" : \"certificate\",\n"
+            + "  \"value\" : " + setJson + "}");
+
+    this.mockMvc.perform(certificateSetRequest)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error", equalTo("The provided certificate is not valid.")));
+  }
+
+  @Test
   public void certificateSetRequest_whenProvidedACertificateValueThatIsTooLong_returnsAValidationError()
       throws Exception {
     int repetitionCount = 7001 - TEST_CERTIFICATE.length();

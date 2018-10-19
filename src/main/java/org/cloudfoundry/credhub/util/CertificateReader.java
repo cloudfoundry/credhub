@@ -1,5 +1,7 @@
 package org.cloudfoundry.credhub.util;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
 import org.bouncycastle.asn1.x509.Extension;
@@ -9,8 +11,12 @@ import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMParser;
+import org.cloudfoundry.credhub.exceptions.MalformedCertificateException;
+import org.cloudfoundry.credhub.exceptions.MissingCertificateException;
+import org.cloudfoundry.credhub.exceptions.UnreadableCertificateException;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.StringReader;
 import java.security.InvalidKeyException;
 import java.security.NoSuchProviderException;
@@ -22,23 +28,31 @@ import java.security.interfaces.RSAPublicKey;
 import java.time.Instant;
 import javax.security.auth.x500.X500Principal;
 
-import static org.cloudfoundry.credhub.util.StringUtil.UTF_8;
 import static java.lang.Math.toIntExact;
 import static java.time.temporal.ChronoUnit.DAYS;
+import static org.cloudfoundry.credhub.util.StringUtil.UTF_8;
 
 public class CertificateReader {
+  private static final Logger LOGGER = LogManager.getLogger(CertificateReader.class);
 
   private final X509Certificate certificate;
   private final X509CertificateHolder certificateHolder;
   private X500Principal subjectName;
 
   public CertificateReader(String pemString) {
+    if(pemString == null) {
+      throw new MissingCertificateException();
+    }
     try {
       certificate = (X509Certificate) CertificateFactory
           .getInstance("X.509", BouncyCastleProvider.PROVIDER_NAME)
           .generateCertificate(new ByteArrayInputStream(pemString.getBytes(UTF_8)));
       certificateHolder = (X509CertificateHolder) (new PEMParser((new StringReader(pemString)))
           .readObject());
+    } catch (IOException e) {
+      throw new UnreadableCertificateException();
+    } catch (CertificateException e) {
+      throw new MalformedCertificateException();
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
