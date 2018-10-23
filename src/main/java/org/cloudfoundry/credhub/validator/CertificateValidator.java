@@ -3,6 +3,7 @@ package org.cloudfoundry.credhub.validator;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.cloudfoundry.credhub.exceptions.MalformedCertificateException;
 import org.cloudfoundry.credhub.exceptions.UnreadableCertificateException;
 import org.cloudfoundry.credhub.util.CertificateReader;
 
@@ -30,8 +31,12 @@ public class CertificateValidator implements ConstraintValidator<RequireValidCer
           return true;
         }
 
-        CertificateReader reader = new CertificateReader((String) field.get(value));
-        return reader.isValid();
+        String certificate = (String) field.get(value);
+        CertificateReader reader = new CertificateReader(certificate);
+
+        return true;
+      } catch (MalformedCertificateException e) {
+        return false;
       } catch (NoSuchFieldException | IllegalAccessException e) {
         throw new RuntimeException(e);
       } catch (Exception e){
@@ -41,6 +46,7 @@ public class CertificateValidator implements ConstraintValidator<RequireValidCer
         }
       }
     }
+
     return true;
   }
 }

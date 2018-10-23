@@ -71,9 +71,10 @@ public class CredentialAclEnforcementTest {
 
   @Test
   public void GET_byCredentialName_whenTheUserDoesntHavePermissionToReadCredential_returns404() throws Exception {
+    CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT);
     final MockHttpServletRequestBuilder get = get("/api/v1/data?name=" + CREDENTIAL_NAME)
         .with(SecurityMockMvcRequestPostProcessors
-            .x509(CertificateReader.getCertificate(CertificateStringConstants.SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT)));
+            .x509(certificateReader.getCertificate()));
     String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
     mockMvc.perform(get)
         .andDo(print())
@@ -94,9 +95,10 @@ public class CredentialAclEnforcementTest {
 
   @Test
   public void GET_byId_whenTheUserDoesntHavePermissionToReadCredential_returns404() throws Exception {
+    CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT);
     final MockHttpServletRequestBuilder get = get("/api/v1/data/" + uuid)
         .with(SecurityMockMvcRequestPostProcessors
-            .x509(CertificateReader.getCertificate(CertificateStringConstants.SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT)));
+            .x509(certificateReader.getCertificate()));
     String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
     mockMvc.perform(get)
         .andDo(print())
@@ -119,9 +121,10 @@ public class CredentialAclEnforcementTest {
 
   @Test
   public void GET_byVersions_whenTheUserDoesntHavePermissionToReadCredential_returns404() throws Exception {
+    CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT);
     final MockHttpServletRequestBuilder get = get("/api/v1/data?name=" + CREDENTIAL_NAME + "&versions=2")
         .with(SecurityMockMvcRequestPostProcessors
-            .x509(CertificateReader.getCertificate(CertificateStringConstants.SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT)));
+            .x509(certificateReader.getCertificate()));
     String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
     mockMvc.perform(get)
         .andDo(print())

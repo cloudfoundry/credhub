@@ -4,10 +4,12 @@ import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.Encryptor;
 import org.cloudfoundry.credhub.entity.EncryptedValue;
 import org.cloudfoundry.credhub.helper.JsonTestHelper;
+import org.cloudfoundry.credhub.util.CertificateStringConstants;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.skyscreamer.jsonassert.JSONAssert;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -38,27 +40,28 @@ public class CertificateCredentialTest {
 
     encryptor = mock(Encryptor.class);
     final EncryptedValue encryption = new EncryptedValue(canaryUuid, encryptedValue, nonce);
-    when(encryptor.encrypt("priv")).thenReturn(encryption);
-    when(encryptor.decrypt(encryption)).thenReturn("priv");
+    when(encryptor.encrypt(CertificateStringConstants.PRIVATE_KEY)).thenReturn(encryption);
+    when(encryptor.decrypt(encryption)).thenReturn(CertificateStringConstants.PRIVATE_KEY);
 
     credentialName = "/foo";
     uuid = UUID.randomUUID();
     entity = new CertificateCredentialVersion(credentialName)
         .setEncryptor(encryptor)
-        .setCa("ca")
-        .setCertificate("cert")
-        .setPrivateKey("priv")
+        .setCa(CertificateStringConstants.SELF_SIGNED_CA_CERT)
+        .setCertificate(CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT)
+        .setPrivateKey(CertificateStringConstants.PRIVATE_KEY)
         .setExpiryDate(expiryDate)
         .setUuid(uuid);
   }
 
   @Test
-  public void createsAViewFromEntity() {
+  public void createsAViewFromEntity() throws Exception {
     final CredentialView subject = CertificateView.fromEntity(entity);
-    String json = JsonTestHelper.serializeToString(subject);
+    String actualJson = JsonTestHelper.serializeToString(subject);
 
     Instant expiryDateWithoutMillis = Instant.ofEpochSecond(expiryDate.getEpochSecond());
-    assertThat(json, equalTo("{"
+
+    String expectedJson = "{"
         + "\"type\":\"certificate\","
         + "\"expiry_date\":\"" + expiryDateWithoutMillis + "\","
         + "\"transitional\":false,"
@@ -66,11 +69,13 @@ public class CertificateCredentialTest {
         + "\"id\":\"" + uuid.toString() + "\","
         + "\"name\":\"" + credentialName + "\","
         + "\"value\":{"
-        + "\"ca\":\"ca\","
-        + "\"certificate\":\"cert\","
-        + "\"private_key\":\"priv\""
+        + "\"ca\":\"" + CertificateStringConstants.SELF_SIGNED_CA_CERT + "\","
+        + "\"certificate\":\"" + CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT + "\","
+        + "\"private_key\":\"" + CertificateStringConstants.PRIVATE_KEY + "\""
         + "}"
-        + "}"));
+        + "}";
+
+    JSONAssert.assertEquals(actualJson, expectedJson, true);
   }
 
   @Test
@@ -88,12 +93,12 @@ public class CertificateCredentialTest {
   }
 
   @Test
-  public void includesKeysWithNullValues() {
+  public void includesKeysWithNullValues() throws Exception {
     final CredentialView subject = CertificateView
         .fromEntity(new CertificateCredentialVersion(credentialName).setEncryptor(encryptor).setUuid(uuid));
-    final String json = JsonTestHelper.serializeToString(subject);
+    final String actualJson = JsonTestHelper.serializeToString(subject);
 
-    assertThat(json, equalTo("{"
+    String expectedJson = "{"
         + "\"type\":\"certificate\","
         + "\"expiry_date\":null,"
         + "\"transitional\":false,"
@@ -105,6 +110,8 @@ public class CertificateCredentialTest {
         + "\"certificate\":null,"
         + "\"private_key\":null"
         + "}"
-        + "}"));
+        + "}";
+
+    JSONAssert.assertEquals(actualJson, expectedJson, true);
   }
 }

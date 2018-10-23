@@ -1,9 +1,9 @@
 package org.cloudfoundry.credhub.request;
 
 import com.google.common.collect.ImmutableMap;
-import org.cloudfoundry.credhub.helper.TestHelper;
 import net.minidev.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
+import org.cloudfoundry.credhub.helper.TestHelper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -231,7 +231,8 @@ public class CertificateSetRequestTest {
             .put("certificate", TEST_CERTIFICATE)
             .put("private_key", TEST_PRIVATE_KEY)
             .put("ca", TEST_CA)
-            .build());
+            .build()
+    );
     String json = "{\n"
         + "  \"name\": \"/example/certificate\",\n"
         + "  \"type\": \"certificate\",\n"
@@ -252,7 +253,8 @@ public class CertificateSetRequestTest {
             .put("ca_name", "CA_NAME")
             .put("certificate", "invalid x509 certificate")
             .put("private_key", TEST_PRIVATE_KEY)
-            .build());
+            .build()
+    );
 
     String json = "{\n"
         + "  \"name\": \"/example/certificate\",\n"
@@ -274,7 +276,8 @@ public class CertificateSetRequestTest {
             .put("ca_name", "CA_NAME")
             .put("certificate", TEST_CERTIFICATE + "this is a comment at the end of a valid cert")
             .put("private_key", TEST_PRIVATE_KEY)
-            .build());
+            .build()
+    );
 
     String json = "{\n"
         + "  \"name\": \"/example/certificate\",\n"
@@ -297,7 +300,8 @@ public class CertificateSetRequestTest {
             .put("ca_name", "CA_NAME")
             .put("certificate", TEST_CERTIFICATE + StringUtils.repeat("a", repetitionCount))
             .put("private_key", TEST_PRIVATE_KEY)
-            .build());
+            .build()
+    );
 
     String json = "{\n"
         + "  \"name\": \"/example/certificate\",\n"
@@ -320,7 +324,8 @@ public class CertificateSetRequestTest {
             .put("ca", TEST_CA + StringUtils.repeat("a", repetitionCount))
             .put("certificate", TEST_CERTIFICATE)
             .put("private_key", TEST_PRIVATE_KEY)
-            .build());
+            .build()
+    );
 
     String json = "{\n"
         + "  \"name\": \"/example/certificate\",\n"
@@ -342,7 +347,8 @@ public class CertificateSetRequestTest {
             .put("ca", "CA")
             .put("certificate", TEST_CERTIFICATE)
             .put("private_key", TEST_PRIVATE_KEY)
-            .build());
+            .build()
+    );
 
     String json = "{\n"
         + "  \"name\": \"/example/certificate\",\n"
@@ -364,7 +370,8 @@ public class CertificateSetRequestTest {
             .put("ca", TEST_CERTIFICATE)
             .put("certificate", TEST_CERTIFICATE)
             .put("private_key", TEST_PRIVATE_KEY)
-            .build());
+            .build()
+    );
 
     String json = "{\n"
         + "  \"name\": \"/example/certificate\",\n"
@@ -383,10 +390,11 @@ public class CertificateSetRequestTest {
   public void whenCertificateDoesNotMatchPrivateKey_isInvalid() {
     final String setJson = JSONObject.toJSONString(
         ImmutableMap.<String, String>builder()
-            .put("ca", TEST_CA  )
+            .put("ca", TEST_CA)
             .put("certificate", TEST_CERTIFICATE)
             .put("private_key", PRIVATE_KEY_4096)
-            .build());
+            .build()
+    );
 
     String json = "{\n"
         + "  \"name\": \"/example/certificate\",\n"

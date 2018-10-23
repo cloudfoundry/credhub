@@ -1,9 +1,9 @@
 package org.cloudfoundry.credhub.domain;
 
-import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData;
 import org.cloudfoundry.credhub.entity.EncryptedValue;
 import org.cloudfoundry.credhub.helper.TestHelper;
+import org.cloudfoundry.credhub.util.CertificateStringConstants;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,9 +46,9 @@ public class CertificateCredentialVersionTest {
     certificateCredentialData = new CertificateCredentialVersionData("/Foo");
     subject = new CertificateCredentialVersion(certificateCredentialData)
         .setEncryptor(encryptor)
-        .setCa("my-ca")
-        .setCertificate("my-cert")
-        .setPrivateKey("my-priv");
+        .setCa(CertificateStringConstants.SELF_SIGNED_CA_CERT)
+        .setCertificate(CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT)
+        .setPrivateKey(CertificateStringConstants.PRIVATE_KEY);
 
   }
 
@@ -83,16 +83,5 @@ public class CertificateCredentialVersionTest {
 
     subject.setCaName(null);
     assertThat(subject.getCaName(), equalTo(null));
-  }
-
-  @Test
-  public void CertificateCredential_withMissingCertificateValue_shouldNotError() {
-    final CertificateCredentialValue certificateCredentialValue = new CertificateCredentialValue("someCa", "", "my-priv", "/aCaName");
-    final CertificateCredentialVersion certificateCredential = new CertificateCredentialVersion(certificateCredentialValue, encryptor);
-
-    assertThat(certificateCredential.getCa(), equalTo("someCa"));
-    assertThat(certificateCredential.getCertificate(), equalTo(""));
-    assertThat(certificateCredential.getPrivateKey(), equalTo("my-priv"));
-    assertThat(certificateCredential.getCaName(), equalTo("/aCaName"));
   }
 }

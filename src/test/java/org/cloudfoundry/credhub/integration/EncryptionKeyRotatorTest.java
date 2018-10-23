@@ -27,6 +27,7 @@ import org.cloudfoundry.credhub.service.InternalEncryptionService;
 import org.cloudfoundry.credhub.service.PasswordBasedKeyProxy;
 import org.cloudfoundry.credhub.service.PasswordEncryptionService;
 import org.cloudfoundry.credhub.service.PasswordKeyProxyFactory;
+import org.cloudfoundry.credhub.util.CertificateStringConstants;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.junit.Before;
 import org.junit.Test;
@@ -374,7 +375,7 @@ public class EncryptionKeyRotatorTest {
     credentialWithCurrentKey
         .setEncryptor(encryptor)
         .setCa("my-ca")
-        .setCertificate("my-cert")
+        .setCertificate(CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT)
         .setPrivateKey("cert-private-key");
 
     credentialVersionDataService.save(credentialWithCurrentKey);

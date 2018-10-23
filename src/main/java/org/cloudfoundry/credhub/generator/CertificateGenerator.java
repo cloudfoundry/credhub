@@ -61,10 +61,13 @@ public class CertificateGenerator implements CredentialGenerator<CertificateCred
       String caCertificate = ca.getCertificate();
 
         try {
+
+          CertificateReader certificateReader = new CertificateReader(caCertificate);
+
           X509Certificate cert = signedCertificateGenerator.getSignedByIssuer(
               keyPair,
               params,
-              CertificateReader.getCertificate(caCertificate),
+              certificateReader.getCertificate(),
               PrivateKeyReader.getPrivateKey(ca.getPrivateKey())
           );
           return new CertificateCredentialValue(caCertificate, pemOf(cert), privatePem, caName);

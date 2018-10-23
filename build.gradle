@@ -87,6 +87,7 @@ dependencies {
     compile "io.netty:netty-transport-native-unix-common:${nettyVersion}"
     compile "io.netty:netty-all:${nettyVersion}"
 
+    testCompile("org.skyscreamer:jsonassert:1.5.0")
     testCompile("com.jayway.jsonpath:json-path-assert:2.4.0")
 }
 

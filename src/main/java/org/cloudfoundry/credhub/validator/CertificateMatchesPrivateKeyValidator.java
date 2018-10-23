@@ -37,12 +37,10 @@ public class CertificateMatchesPrivateKeyValidator implements ConstraintValidato
       if (StringUtils.isEmpty(certificateValue) || StringUtils.isEmpty(privateKeyValue)) {
         return true;
       }
-      CertificateReader reader = new CertificateReader(certificateValue);
-      if(!reader.isValid()) {
-        return true;
-      }
 
-      final X509Certificate certificate = CertificateReader.getCertificate(certificateValue);
+      CertificateReader certificateReader = new CertificateReader(certificateValue);
+
+      final X509Certificate certificate = certificateReader.getCertificate();
       final PublicKey certificatePublicKey = certificate.getPublicKey();
 
       final PublicKey publicKey = PrivateKeyReader.getPublicKey(privateKeyValue);
@@ -51,7 +49,7 @@ public class CertificateMatchesPrivateKeyValidator implements ConstraintValidato
     } catch (UnsupportedFormatException e) {
       throw new ParameterizedValidationException("error.invalid_key_format", e.getMessage());
     } catch (MalformedCertificateException | UnreadableCertificateException e) {
-      throw e;
+      return false;
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

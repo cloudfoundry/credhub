@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.domain;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cloudfoundry.credhub.constants.CredentialType;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.credential.JsonCredentialValue;
@@ -11,8 +12,8 @@ import org.cloudfoundry.credhub.credential.StringCredentialValue;
 import org.cloudfoundry.credhub.credential.UserCredentialValue;
 import org.cloudfoundry.credhub.entity.EncryptedValue;
 import org.cloudfoundry.credhub.request.StringGenerationParameters;
+import org.cloudfoundry.credhub.util.CertificateStringConstants;
 import org.cloudfoundry.credhub.util.JsonObjectMapper;
-import net.minidev.json.JSONObject;
 import org.hamcrest.MatcherAssert;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,7 +21,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.security.Security;
 import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -52,6 +53,11 @@ public class CredentialFactoryTest {
 
   @Before
   public void setup() throws JsonProcessingException {
+
+    if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+      Security.addProvider(new BouncyCastleProvider());
+    }
+
     Encryptor encryptor = mock(Encryptor.class);
     subject = new CredentialFactory(encryptor);
     objectMapper = new JsonObjectMapper();
@@ -121,10 +127,11 @@ public class CredentialFactoryTest {
   @Test
   public void makeCredentialFromRequest_givenCertificateType_andNoExisting_returnsCertificateCredential() throws Exception {
     CertificateCredentialValue certificateValue = new CertificateCredentialValue(
-        "ca-certificate",
-        "certificate",
+        CertificateStringConstants.SELF_SIGNED_CA_CERT,
+        CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT,
         PLAINTEXT_VALUE,
-        "my-ca");
+        "my-ca"
+    );
 
     CertificateCredentialVersion credential =
         (CertificateCredentialVersion) subject.makeNewCredentialVersion(
@@ -134,8 +141,8 @@ public class CredentialFactoryTest {
             null,
             null);
     MatcherAssert.assertThat(credential.getCredential().getName(), equalTo(CREDENTIAL_NAME));
-    assertThat(credential.getCa(), equalTo("ca-certificate"));
-    assertThat(credential.getCertificate(), equalTo("certificate"));
+    assertThat(credential.getCa(), equalTo(CertificateStringConstants.SELF_SIGNED_CA_CERT));
+    assertThat(credential.getCertificate(), equalTo(CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT));
     assertThat(credential.getPrivateKey(), equalTo(PLAINTEXT_VALUE));
     assertThat(credential.getCaName(), equalTo("/my-ca"));
   }

@@ -1,7 +1,8 @@
 package org.cloudfoundry.credhub.validator;
 
-import org.cloudfoundry.credhub.util.CertificateReader;
 import org.apache.commons.lang3.StringUtils;
+import org.cloudfoundry.credhub.exceptions.MalformedCertificateException;
+import org.cloudfoundry.credhub.util.CertificateReader;
 
 import java.lang.reflect.Field;
 import javax.validation.ConstraintValidator;
@@ -34,6 +35,8 @@ public class CertificateSignedByCAValidator implements ConstraintValidator<Requi
       final CertificateReader certificateReader = new CertificateReader(certificateValue);
       return certificateReader.isSignedByCa(caValue);
 
+    } catch (MalformedCertificateException e) {
+      throw e;
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

@@ -29,13 +29,18 @@ import java.security.cert.X509Certificate;
 import static org.cloudfoundry.credhub.helper.RequestHelper.getCertificateId;
 import static org.cloudfoundry.credhub.util.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.cloudfoundry.credhub.util.StringUtil.UTF_8;
-import static org.cloudfoundry.credhub.util.TestConstants.*;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.cloudfoundry.credhub.util.TestConstants.TEST_CA;
+import static org.cloudfoundry.credhub.util.TestConstants.TEST_CERTIFICATE;
+import static org.cloudfoundry.credhub.util.TestConstants.TEST_PRIVATE_KEY;
+import static org.cloudfoundry.credhub.util.TestConstants.TEST_PRIVATE_KEY_PKCS8;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -207,7 +212,7 @@ public class CertificateSetAndRegenerateTest {
 
     this.mockMvc.perform(certificateSetRequest)
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error", equalTo("The provided certificate value is not a valid X509 certificate.")));
+        .andExpect(jsonPath("$.error", equalTo("The provided certificate does not match the private key.")));
   }
 
   @Test
@@ -271,7 +276,7 @@ public class CertificateSetAndRegenerateTest {
 
     this.mockMvc.perform(certificateSetRequest)
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error", equalTo("Unable to parse the certificate.")));
+        .andExpect(jsonPath("$.error", equalTo("The provided certificate does not match the private key.")));
   }
 
   @Test
@@ -293,7 +298,7 @@ public class CertificateSetAndRegenerateTest {
 
     this.mockMvc.perform(certificateSetRequest)
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error", equalTo("The provided certificate is not valid.")));
+        .andExpect(jsonPath("$.error", equalTo("The provided certificate does not match the private key.")));
   }
 
   @Test

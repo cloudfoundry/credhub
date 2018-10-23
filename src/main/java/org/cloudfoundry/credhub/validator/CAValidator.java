@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.validator;
 
+import org.cloudfoundry.credhub.exceptions.MalformedCertificateException;
 import org.cloudfoundry.credhub.util.CertificateReader;
 import org.apache.commons.lang3.StringUtils;
 
@@ -27,9 +28,11 @@ public class CAValidator implements ConstraintValidator<RequireValidCA, Object> 
           return true;
         }
 
-        CertificateReader reader = new CertificateReader((String) field.get(value));
-        return reader.isValid() && reader.isCa();
-
+        String certificate = (String) field.get(value);
+        CertificateReader reader = new CertificateReader(certificate);
+        return reader.isCa();
+      } catch (MalformedCertificateException e) {
+        return false;
       } catch (NoSuchFieldException | IllegalAccessException e) {
         throw new RuntimeException(e);
       }

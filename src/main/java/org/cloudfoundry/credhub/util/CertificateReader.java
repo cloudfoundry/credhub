@@ -1,7 +1,5 @@
 package org.cloudfoundry.credhub.util;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
 import org.bouncycastle.asn1.x509.Extension;
@@ -33,20 +31,16 @@ import static java.time.temporal.ChronoUnit.DAYS;
 import static org.cloudfoundry.credhub.util.StringUtil.UTF_8;
 
 public class CertificateReader {
-  private static final Logger LOGGER = LogManager.getLogger(CertificateReader.class);
-
   private final X509Certificate certificate;
   private final X509CertificateHolder certificateHolder;
-  private X500Principal subjectName;
 
   public CertificateReader(String pemString) {
-    if(pemString == null) {
+    if (pemString == null) {
       throw new MissingCertificateException();
     }
+
     try {
-      certificate = (X509Certificate) CertificateFactory
-          .getInstance("X.509", BouncyCastleProvider.PROVIDER_NAME)
-          .generateCertificate(new ByteArrayInputStream(pemString.getBytes(UTF_8)));
+      certificate = parseStringIntoCertificate(pemString);
       certificateHolder = (X509CertificateHolder) (new PEMParser((new StringReader(pemString)))
           .readObject());
     } catch (IOException e) {
@@ -56,17 +50,14 @@ public class CertificateReader {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+
+    if (certificate == null) {
+      throw new MalformedCertificateException();
+    }
   }
 
-  public static X509Certificate getCertificate(String pemString)
-      throws CertificateException, NoSuchProviderException {
-    return (X509Certificate) CertificateFactory
-        .getInstance("X.509", BouncyCastleProvider.PROVIDER_NAME)
-        .generateCertificate(new ByteArrayInputStream(pemString.getBytes(UTF_8)));
-  }
-
-  public boolean isValid() {
-    return certificate != null;
+  public X509Certificate getCertificate() {
+    return certificate;
   }
 
   public GeneralNames getAlternativeNames() {
@@ -88,14 +79,14 @@ public class CertificateReader {
   }
 
   public X500Principal getSubjectName() {
-    subjectName = new X500Principal(certificate.getSubjectDN().getName());
-    return subjectName;
+    return new X500Principal(certificate.getSubjectDN().getName());
   }
 
   public boolean isSignedByCa(String caValue) {
     try {
-      X509Certificate ca = getCertificate(caValue);
+      X509Certificate ca = parseStringIntoCertificate(caValue);
       if(ca != null) {
+
         certificate.verify(ca.getPublicKey());
         return true;
       }
@@ -150,5 +141,11 @@ public class CertificateReader {
     }
 
     return certificate.getNotAfter().toInstant();
+  }
+
+  private X509Certificate parseStringIntoCertificate(String pemString) throws CertificateException, NoSuchProviderException {
+    return (X509Certificate) CertificateFactory
+        .getInstance("X.509", BouncyCastleProvider.PROVIDER_NAME)
+        .generateCertificate(new ByteArrayInputStream(pemString.getBytes(UTF_8)));
   }
 }

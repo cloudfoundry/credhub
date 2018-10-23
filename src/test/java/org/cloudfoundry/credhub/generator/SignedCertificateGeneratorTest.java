@@ -1,6 +1,11 @@
 package org.cloudfoundry.credhub.generator;
 
-import org.bouncycastle.asn1.x509.*;
+import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
+import org.bouncycastle.asn1.x509.BasicConstraints;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.GeneralNamesBuilder;
+import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
@@ -23,7 +28,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import javax.security.auth.x500.X500Principal;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyPair;
@@ -35,13 +39,19 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Date;
+import javax.security.auth.x500.X500Principal;
 
 import static org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils.parseExtensionValue;
 import static org.cloudfoundry.credhub.helper.TestHelper.getBouncyCastleProvider;
-import static org.cloudfoundry.credhub.request.CertificateGenerationRequestParameters.*;
+import static org.cloudfoundry.credhub.request.CertificateGenerationRequestParameters.CODE_SIGNING;
+import static org.cloudfoundry.credhub.request.CertificateGenerationRequestParameters.DIGITAL_SIGNATURE;
+import static org.cloudfoundry.credhub.request.CertificateGenerationRequestParameters.KEY_ENCIPHERMENT;
+import static org.cloudfoundry.credhub.request.CertificateGenerationRequestParameters.SERVER_AUTH;
 import static org.cloudfoundry.credhub.util.CertificateStringConstants.CERTSTRAP_GENERATED_CA_CERTIFICATE;
 import static org.cloudfoundry.credhub.util.CertificateStringConstants.CERTSTRAP_GENERATED_CA_PRIVATE_KEY;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -268,8 +278,8 @@ public class SignedCertificateGeneratorTest {
 
   @Test
   public void getSignedByIssuer_preservesIssuerBytes() throws Exception {
-    X509Certificate caCertificate = CertificateReader
-        .getCertificate(CERTSTRAP_GENERATED_CA_CERTIFICATE);
+    CertificateReader certificateReader = new CertificateReader(CERTSTRAP_GENERATED_CA_CERTIFICATE);
+    X509Certificate caCertificate = certificateReader.getCertificate();
     PrivateKey caPrivateKey = PrivateKeyReader.getPrivateKey(CERTSTRAP_GENERATED_CA_PRIVATE_KEY);
     X509Certificate generatedCertificate = subject
         .getSignedByIssuer(generatedCertificateKeyPair, certificateGenerationParameters, caCertificate, caPrivateKey);

@@ -5,6 +5,7 @@ import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.cloudfoundry.credhub.exceptions.MalformedCertificateException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,6 +14,7 @@ import org.junit.runners.JUnit4;
 import java.security.Security;
 
 import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -48,17 +50,22 @@ public class CertificateReaderTest {
   }
 
   @Test
-  public void isValid_returnsTrueForValidCert() {
-    assertThat(new CertificateReader(CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT).isValid(), equalTo(true));
-    assertThat(new CertificateReader(CertificateStringConstants.V3_CERT_WITHOUT_BASIC_CONSTRAINTS).isValid(), equalTo(true));
-    assertThat(new CertificateReader(CertificateStringConstants.SELF_SIGNED_CA_CERT).isValid(), equalTo(true));
-    assertThat(new CertificateReader(CertificateStringConstants.BIG_TEST_CERT).isValid(), equalTo(true));
+  public void certificateReader_whenCertificateIsValid_doesNotThrowException() {
+    new CertificateReader(CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT);
+    new CertificateReader(CertificateStringConstants.V3_CERT_WITHOUT_BASIC_CONSTRAINTS);
+    new CertificateReader(CertificateStringConstants.SELF_SIGNED_CA_CERT);
+    new CertificateReader(CertificateStringConstants.BIG_TEST_CERT);
   }
 
   @Test
-  public void isValid_returnsFalseForInvalidCert() {
-    assertThat(new CertificateReader("penguin").isValid(), equalTo(false));
-    assertThat(new CertificateReader("").isValid(), equalTo(false));
+  public void certificateReader_whenCertificateIsInvalid_throwsException() {
+    assertThatThrownBy(() -> {
+      new CertificateReader("penguin");
+    }).isInstanceOf(MalformedCertificateException.class);
+
+    assertThatThrownBy(() -> {
+      new CertificateReader("");
+    }).isInstanceOf(MalformedCertificateException.class);
   }
 
   @Test
@@ -143,5 +150,3 @@ public class CertificateReaderTest {
     assertThat(certificateReader.getSubjectName().toString(), equalTo(distinguishedName));
   }
 }
-
-

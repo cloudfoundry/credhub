@@ -140,9 +140,11 @@ public class AuthConfigurationTest {
       throws Exception {
     setupDataEndpointMocks();
 
+    CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT);
+
     final MockHttpServletRequestBuilder post = post(dataApiPath)
         .with(SecurityMockMvcRequestPostProcessors
-            .x509(CertificateReader.getCertificate(CertificateStringConstants.SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT)))
+            .x509(certificateReader.getCertificate()))
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON)
         .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
@@ -160,9 +162,11 @@ public class AuthConfigurationTest {
       throws Exception {
     setupDataEndpointMocks();
 
+    CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.TEST_CERT_WITH_INVALID_UUID_IN_ORGANIZATION_UNIT);
+
     final MockHttpServletRequestBuilder post = post(dataApiPath)
         .with(SecurityMockMvcRequestPostProcessors.x509(
-            CertificateReader.getCertificate(CertificateStringConstants.TEST_CERT_WITH_INVALID_UUID_IN_ORGANIZATION_UNIT)))
+            certificateReader.getCertificate()))
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON)
         .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
@@ -180,9 +184,11 @@ public class AuthConfigurationTest {
       throws Exception {
     setupDataEndpointMocks();
 
+    CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.TEST_CERT_WITH_INVALID_ORGANIZATION_UNIT_PREFIX);
+
     final MockHttpServletRequestBuilder post = post(dataApiPath)
         .with(SecurityMockMvcRequestPostProcessors.x509(
-            CertificateReader.getCertificate(CertificateStringConstants.TEST_CERT_WITH_INVALID_ORGANIZATION_UNIT_PREFIX)))
+            certificateReader.getCertificate()))
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON)
         .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
@@ -199,9 +205,11 @@ public class AuthConfigurationTest {
   public void dataEndpoint_withMutualTLS_deniesClientCertsWithoutOrgUnit() throws Exception {
     setupDataEndpointMocks();
 
+    CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.TEST_CERT_WITHOUT_ORGANIZATION_UNIT);
+
     final MockHttpServletRequestBuilder post = post(dataApiPath)
         .with(SecurityMockMvcRequestPostProcessors
-            .x509(CertificateReader.getCertificate(CertificateStringConstants.TEST_CERT_WITHOUT_ORGANIZATION_UNIT)))
+            .x509(certificateReader.getCertificate()))
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON)
         .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
@@ -220,9 +228,11 @@ public class AuthConfigurationTest {
       throws Exception {
     setupDataEndpointMocks();
 
+    CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.SELF_SIGNED_CERT_WITH_NO_CLIENT_AUTH_EXT);
+
     final MockHttpServletRequestBuilder post = post(dataApiPath)
         .with(SecurityMockMvcRequestPostProcessors
-            .x509(CertificateReader.getCertificate(CertificateStringConstants.SELF_SIGNED_CERT_WITH_NO_CLIENT_AUTH_EXT)))
+            .x509(certificateReader.getCertificate()))
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON)
         .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
