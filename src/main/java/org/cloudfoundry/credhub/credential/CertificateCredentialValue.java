@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.credential;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.apache.commons.lang3.StringUtils;
 import org.cloudfoundry.credhub.util.CertificateReader;
 import org.cloudfoundry.credhub.util.EmptyStringToNull;
 import org.cloudfoundry.credhub.validator.MutuallyExclusive;
@@ -11,7 +12,6 @@ import org.cloudfoundry.credhub.validator.RequireCertificateSignedByCA;
 import org.cloudfoundry.credhub.validator.RequireValidCA;
 import org.cloudfoundry.credhub.validator.RequireValidCertificate;
 import org.cloudfoundry.credhub.validator.ValidCertificateLength;
-import org.apache.commons.lang3.StringUtils;
 
 import java.time.Instant;
 
@@ -20,7 +20,7 @@ import java.time.Instant;
 @ValidCertificateLength(message = "error.invalid_certificate_length", fields = {"certificate", "ca"})
 @RequireValidCertificate(message = "error.invalid_certificate_value", fields = {"certificate"})
 @RequireCertificateSignedByCA(message = "error.certificate_was_not_signed_by_ca", fields = {"ca"})
-@RequireCertificateMatchesPrivateKey(message = "error.mismatched_certificate_and_private_key", fields = {})
+@RequireCertificateMatchesPrivateKey(message = "error.mismatched_certificate_and_private_key", fields = {"certificate", "privateKey"})
 @RequireValidCA(message = "error.invalid_ca_value", fields = {"ca"})
 public class CertificateCredentialValue implements CredentialValue {
 
@@ -35,7 +35,6 @@ public class CertificateCredentialValue implements CredentialValue {
   private String caName;
 
   private boolean transitional;
-  private Instant expiryDate;
 
   @SuppressWarnings("unused")
   public CertificateCredentialValue() {}

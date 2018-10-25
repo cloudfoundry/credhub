@@ -11,7 +11,9 @@ import org.junit.runners.JUnit4;
 
 import java.util.Set;
 import javax.validation.ConstraintViolation;
+import javax.validation.ValidationException;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.cloudfoundry.credhub.helper.JsonTestHelper.deserialize;
 import static org.cloudfoundry.credhub.helper.JsonTestHelper.deserializeAndValidate;
 import static org.cloudfoundry.credhub.helper.JsonTestHelper.hasViolationWithMessage;
@@ -261,12 +263,13 @@ public class CertificateSetRequestTest {
         + "  \"type\": \"certificate\",\n"
         + "  \"value\": " + setJson
         + "}";
-    Set<ConstraintViolation<CertificateSetRequest>> violations = deserializeAndValidate(
-        json,
-        CertificateSetRequest.class
-    );
 
-    assertThat(violations, hasItem(hasViolationWithMessage("error.invalid_certificate_value")));
+    assertThatThrownBy(() -> {
+      deserializeAndValidate(
+          json,
+          CertificateSetRequest.class
+      );
+    }).isInstanceOf(ValidationException.class);
   }
 
   @Test

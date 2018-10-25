@@ -212,7 +212,7 @@ public class CertificateSetAndRegenerateTest {
 
     this.mockMvc.perform(certificateSetRequest)
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error", equalTo("The provided certificate does not match the private key.")));
+        .andExpect(jsonPath("$.error", equalTo("The provided certificate value is not a valid X509 certificate.")));
   }
 
   @Test
@@ -276,7 +276,7 @@ public class CertificateSetAndRegenerateTest {
 
     this.mockMvc.perform(certificateSetRequest)
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error", equalTo("The provided certificate does not match the private key.")));
+        .andExpect(jsonPath("$.error", equalTo("Unable to parse the certificate.")));
   }
 
   @Test
@@ -298,7 +298,7 @@ public class CertificateSetAndRegenerateTest {
 
     this.mockMvc.perform(certificateSetRequest)
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error", equalTo("The provided certificate does not match the private key.")));
+        .andExpect(jsonPath("$.error", equalTo("The provided certificate value is not a valid X509 certificate.")));
   }
 
   @Test

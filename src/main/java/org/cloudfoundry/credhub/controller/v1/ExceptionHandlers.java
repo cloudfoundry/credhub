@@ -157,7 +157,7 @@ public class ExceptionHandlers {
   @ExceptionHandler(MalformedCertificateException.class)
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
   public ResponseError handleMalformedCertificateException(){
-    return constructError("error.invalid_certificate");
+    return constructError("error.invalid_certificate_value");
   }
 
   @ExceptionHandler({InvalidJsonException.class})

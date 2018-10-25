@@ -49,7 +49,7 @@ public class CertificateMatchesPrivateKeyValidator implements ConstraintValidato
     } catch (UnsupportedFormatException e) {
       throw new ParameterizedValidationException("error.invalid_key_format", e.getMessage());
     } catch (MalformedCertificateException | UnreadableCertificateException e) {
-      return false;
+      throw e;
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

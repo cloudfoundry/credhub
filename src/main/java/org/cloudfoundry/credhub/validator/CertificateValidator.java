@@ -32,11 +32,11 @@ public class CertificateValidator implements ConstraintValidator<RequireValidCer
         }
 
         String certificate = (String) field.get(value);
-        CertificateReader reader = new CertificateReader(certificate);
+        new CertificateReader(certificate);
 
         return true;
       } catch (MalformedCertificateException e) {
-        return false;
+        throw e;
       } catch (NoSuchFieldException | IllegalAccessException e) {
         throw new RuntimeException(e);
       } catch (Exception e){
