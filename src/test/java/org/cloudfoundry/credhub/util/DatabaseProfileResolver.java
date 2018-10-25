@@ -7,7 +7,7 @@ public class DatabaseProfileResolver extends DefaultActiveProfilesResolver {
 
   @Override
   public String[] resolve(Class<?> testClass) {
-    return (String[]) ArrayUtils.addAll(new String[]{System.getProperty("spring.profiles.active")},
+    return (String[]) ArrayUtils.addAll(new String[]{System.getProperty(SpringUtilities.activeProfilesString)},
         super.resolve(testClass));
   }
 }

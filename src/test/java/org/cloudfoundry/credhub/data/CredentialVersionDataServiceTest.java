@@ -15,11 +15,15 @@ import org.cloudfoundry.credhub.entity.EncryptedValue;
 import org.cloudfoundry.credhub.entity.PasswordCredentialVersionData;
 import org.cloudfoundry.credhub.entity.SshCredentialVersionData;
 import org.cloudfoundry.credhub.entity.ValueCredentialVersionData;
+import org.cloudfoundry.credhub.exceptions.MaximumSizeException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
+import org.cloudfoundry.credhub.repository.CredentialRepository;
 import org.cloudfoundry.credhub.repository.CredentialVersionRepository;
 import org.cloudfoundry.credhub.service.EncryptionKeySet;
 import org.cloudfoundry.credhub.util.CurrentTimeProvider;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
+import org.cloudfoundry.credhub.util.DatabaseUtilities;
+import org.cloudfoundry.credhub.util.SpringUtilities;
 import org.cloudfoundry.credhub.view.FindCredentialResult;
 import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.Before;
@@ -37,6 +41,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.cloudfoundry.credhub.helper.TestHelper.mockOutCurrentTimeProvider;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -61,6 +66,8 @@ public class CredentialVersionDataServiceTest {
   @Autowired
   CredentialVersionRepository credentialVersionRepository;
 
+  @Autowired
+  CredentialRepository credentialRepository;
 
   @Autowired
   EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
@@ -597,7 +604,7 @@ public class CredentialVersionDataServiceTest {
   }
 
   private CertificateCredentialVersion saveCertificate(long timeMillis, String name, String caName, UUID canaryUuid,
-      boolean transitional) {
+                                                       boolean transitional) {
     fakeTimeSetter.accept(timeMillis);
     Credential credential = credentialDataService.find(name);
     if (credential == null) {
@@ -653,8 +660,8 @@ public class CredentialVersionDataServiceTest {
   }
 
   private void setupTestFixturesForFindContainingName(String valueName,
-      String passwordName,
-      String certificateName) {
+                                                      String passwordName,
+                                                      String certificateName) {
 
     fakeTimeSetter.accept(2000000000123L);
     valueCredentialData = new ValueCredentialVersionData(valueName);
@@ -692,6 +699,30 @@ public class CredentialVersionDataServiceTest {
         certificateName);
     certificateCredential = new CertificateCredentialVersion(certificateCredentialData);
     subject.save(certificateCredential);
+  }
+
+  @Test
+  public void shouldThrowAnMaximumSizeException_whenDataExceedsMaximumSize() {
+    if (System.getProperty(SpringUtilities.activeProfilesString).equals(SpringUtilities.unitTestPostgresProfile)) {
+      return;
+    }
+
+    byte[] exceedsMaxBlobStoreValue = DatabaseUtilities.getExceedsMaxBlobStoreSizeBytes();
+
+    String credentialName = "some_name";
+    ValueCredentialVersionData entity = new ValueCredentialVersionData();
+    Credential credential = credentialRepository.save(new Credential(credentialName));
+    entity.setCredential(credential);
+    entity.setEncryptedValueData(
+        new EncryptedValue()
+            .setEncryptedValue(exceedsMaxBlobStoreValue)
+            .setEncryptionKeyUuid(activeCanaryUuid)
+            .setNonce("nonce".getBytes())
+    );
+
+    assertThatThrownBy(() -> {
+      subject.save(entity);
+    }).isInstanceOf(MaximumSizeException.class);
   }
 
   private void setupTestFixtureForFindStartingWithPath() {

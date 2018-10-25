@@ -16,6 +16,7 @@ import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException;
 import org.cloudfoundry.credhub.exceptions.InvalidRemoteAddressException;
 import org.cloudfoundry.credhub.exceptions.KeyNotFoundException;
 import org.cloudfoundry.credhub.exceptions.MalformedCertificateException;
+import org.cloudfoundry.credhub.exceptions.MaximumSizeException;
 import org.cloudfoundry.credhub.exceptions.MissingCertificateException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.exceptions.PermissionAlreadyExistsException;
@@ -43,6 +44,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import static org.springframework.core.Ordered.HIGHEST_PRECEDENCE;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.PAYLOAD_TOO_LARGE;
 
 @RestControllerAdvice
 @Order(HIGHEST_PRECEDENCE)
@@ -222,6 +224,12 @@ public class ExceptionHandlers {
   @ResponseStatus(value = BAD_REQUEST)
   public ResponseError handleInvalidTypeAccess(InvalidObjectException exception) {
     return constructError(exception.getMessage());
+  }
+
+  @ExceptionHandler(MaximumSizeException.class)
+  @ResponseStatus(value = PAYLOAD_TOO_LARGE)
+  public ResponseError handleMaximumSizeException(MaximumSizeException exception) {
+    return constructError("error.exceeds_maximum_size");
   }
 
   @ExceptionHandler({HttpMessageNotReadableException.class, InvalidFormatException.class})

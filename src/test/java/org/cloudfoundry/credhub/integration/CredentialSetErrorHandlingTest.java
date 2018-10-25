@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableMap;
 import net.minidev.json.JSONObject;
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
+import org.cloudfoundry.credhub.util.DatabaseUtilities;
+import org.cloudfoundry.credhub.util.SpringUtilities;
 import org.cloudfoundry.credhub.util.TestConstants;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,13 +20,17 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.Base64;
+
 import static org.cloudfoundry.credhub.helper.RequestHelper.setPassword;
 import static org.cloudfoundry.credhub.util.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -347,6 +353,34 @@ public class CredentialSetErrorHandlingTest {
 
     mockMvc.perform(request)
         .andExpect(status().isBadRequest())
+        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+        .andExpect(jsonPath("$.error").value(expectedError));
+  }
+
+  @Test
+  public void givenAPayloadThatExceedsTheMaximumSize_returnsA413() throws Exception{
+    if (System.getProperty(SpringUtilities.activeProfilesString).equals(SpringUtilities.unitTestPostgresProfile)) {
+      return;
+    }
+
+    byte[] exceedsMaxBlobStoreSizeBytes = DatabaseUtilities.getExceedsMaxBlobStoreSizeBytes();
+    String exceedsMaxBlobStoreSizeValue = Base64.getEncoder().encodeToString(exceedsMaxBlobStoreSizeBytes);
+
+    System.out.println("string is: " + exceedsMaxBlobStoreSizeValue);
+
+    final MockHttpServletRequestBuilder request = put("/api/v1/data")
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{" +
+            "  \"type\":\"value\"," +
+            "  \"name\":\"foo\"," +
+            "  \"value\":\"" + exceedsMaxBlobStoreSizeValue + "\"" +
+            "}");
+
+    String expectedError = "Value exceeds the maximum size.";
+    mockMvc.perform(request)
+        .andExpect(status().isPayloadTooLarge())
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
         .andExpect(jsonPath("$.error").value(expectedError));
   }

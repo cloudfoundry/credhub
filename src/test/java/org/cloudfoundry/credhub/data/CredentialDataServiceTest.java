@@ -26,7 +26,6 @@ import static org.hamcrest.core.IsEqual.equalTo;
 @Transactional
 public class CredentialDataServiceTest {
   private static final String CREDENTIAL_NAME = "/test/credential";
-  private static final String CREDENTIAL_NAME2 = "/test/credential2";
 
   @Autowired
   private CredentialDataService subject;
@@ -116,5 +115,4 @@ public class CredentialDataServiceTest {
     assertThat(subject.delete(CREDENTIAL_NAME.toLowerCase()), equalTo(true));
     assertThat(credentialRepository.count(), equalTo(0L));
   }
-
 }
