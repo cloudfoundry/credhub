@@ -1,6 +1,7 @@
 # <div align="center"><img src="docs/images/logo.png" alt="CredHub"></div>
 
 [![slack.cloudfoundry.org](https://slack.cloudfoundry.org/badge.svg)](https://slack.cloudfoundry.org)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fcloudfoundry-incubator%2Fcredhub.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fcloudfoundry-incubator%2Fcredhub?ref=badge_shield)
 
 CredHub manages credentials like passwords, certificates, certificate authorities, ssh keys, rsa keys and arbitrary values (strings and JSON blobs). CredHub provides a CLI and API to get, set, generate and securely store such credentials.
 
@@ -31,6 +32,9 @@ Follow these steps to make a contribution to any of our open source repositories
 
         git config --global user.name "Firstname Lastname"
         git config --global user.email "your_email@example.com"
+
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fcloudfoundry-incubator%2Fcredhub.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fcloudfoundry-incubator%2Fcredhub?ref=badge_large)
 
 ## Reporting a Vulnerability
 
