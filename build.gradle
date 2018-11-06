@@ -64,7 +64,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 
     // DB
-    implementation("org.postgresql:postgresql")
+    implementation("org.postgresql:postgresql:42.2.4")
     implementation("org.mariadb.jdbc:mariadb-java-client")
     implementation("org.flywaydb:flyway-core")
     implementation("com.h2database:h2")
