@@ -7,7 +7,7 @@ function set_bash_error_handling() {
 }
 
 function get_version_file() {
-  local -r script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+  local -r script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}")"/.. && pwd )"
   VERSION_FILE="$script_dir/src/main/resources/version"
 }
 

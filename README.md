@@ -109,7 +109,7 @@ For convenience, the CredHub team runs a public UAA whose IP is in the default `
 
 In order to run CredHub against a UAA running on your local machine, do the following:
 1. Start a UAA with Docker: `docker run -d --mount type=bind,source=$PWD/config/uaa.yml,target=/uaa/uaa.yml -p 127.0.0.1:8080:8080 pcfseceng/uaa:latest`
-1. Start CredHub server pointing at the local UAA: `./start_server.sh -Dspring.profiles.active=dev,dev-h2,dev-local-uaa`
+1. Start CredHub server pointing at the local UAA: `./scripts/start_server.sh -Dspring.profiles.active=dev,dev-h2,dev-local-uaa`
 
 #### Starting the server with different databases
 
@@ -118,7 +118,7 @@ In order to run CredHub against a UAA running on your local machine, do the foll
 H2 datasource configuration is in `application-dev-h2.yml`.
 
 ```sh
-./start_server.sh
+./scripts/start_server.sh
 ```
 
 ##### PostgreSQL
@@ -134,7 +134,7 @@ createdb credhub_dev
 Then to run in development mode with Postgres
 
 ```sh
-./start_server.sh -Dspring.profiles.active=dev,dev-postgres
+./scripts/start_server.sh -Dspring.profiles.active=dev,dev-postgres
 ```
 
 ##### MariaDB
@@ -154,7 +154,7 @@ If you're on a Mac using Homebrew and you run into a problem where you install M
 Then to run in development mode with MariaDB:
 
 ```sh
-./start_server.sh -Dspring.profiles.active=dev,dev-mysql
+./scripts/start_server.sh -Dspring.profiles.active=dev,dev-mysql
 ```
 
 #### Running tests with different databases
@@ -186,7 +186,7 @@ Make sure your development server is running. When it starts up for the first ti
 Pull [credhub-acceptance-tests](https://github.com/cloudfoundry-incubator/credhub-acceptance-tests) and run:
 
 ```shell
-CREDENTIAL_ROOT=/path/to/credhub/repo/plus/src/test/resources ./run_tests.sh
+CREDENTIAL_ROOT=/path/to/credhub/repo/plus/src/test/resources ./scripts/run_tests.sh
 ```
 
 Assuming it works, that will generate some test client certificates for testing mutual TLS (in `certs/` in the acceptance test directory) and run the acceptance test suite against your locally running credhub server.

@@ -2,7 +2,7 @@
 
 set -eu
 
-DIRNAME=$(dirname "$0")
+DIRNAME="$( cd "$( dirname "${BASH_SOURCE[0]}" )"/.. && pwd )"
 
 KEYSTORE_PASSWORD=changeit
 

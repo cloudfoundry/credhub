@@ -106,7 +106,7 @@ processResources {
 }
 
 task updateVersionFile(type: Exec) {
-    commandLine './fetch-version.sh'
+    commandLine './scripts/fetch-version.sh'
 }
 
 bootRun {

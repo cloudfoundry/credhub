@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DIR="$(cd "$(dirname "$0")" && pwd)"
+DIR="$(cd "$(dirname "$0")"/.. && pwd)"
 
 cat > $DIR/src/main/resources/application-dev-external-provider.yml <<-EOF
 encryption:
@@ -15,4 +15,4 @@ encryption:
       endpoint: /tmp/mySocket.sock
 EOF
 
-$DIR/start_server.sh -Dspring.profiles.active=dev,dev-external-provider,dev-h2
+$DIR/scripts/start_server.sh -Dspring.profiles.active=dev,dev-external-provider,dev-h2
