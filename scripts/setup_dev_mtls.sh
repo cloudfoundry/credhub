@@ -95,7 +95,7 @@ main() {
 
         echo "Finished setting up key stores for TLS and mTLS!"
 
-        echo "Run run_tests.sh in credhub-acceptance-tests to generate client certs"
+        echo "Run ./scripts/run_tests.sh in credhub-acceptance-tests to generate client certs"
         echo e.g., curl -H \"Content-Type: application/json\" \
             -X POST -d "'{\"name\":\"cred\",\"type\":\"password\"}'" \
             https://localhost:9000/api/v1/data --cacert "${PWD}/server_ca_cert.pem" \
