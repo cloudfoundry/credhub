@@ -1,6 +1,7 @@
 package org.cloudfoundry.credhub.validator;
 
 import org.apache.commons.lang3.StringUtils;
+import org.bouncycastle.openssl.PEMException;
 import org.cloudfoundry.credhub.exceptions.MalformedCertificateException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.exceptions.UnreadableCertificateException;
@@ -46,7 +47,7 @@ public class CertificateMatchesPrivateKeyValidator implements ConstraintValidato
       final PublicKey publicKey = PrivateKeyReader.getPublicKey(privateKeyValue);
 
       return publicKey.equals(certificatePublicKey);
-    } catch (UnsupportedFormatException e) {
+    } catch (UnsupportedFormatException | PEMException e) {
       throw new ParameterizedValidationException("error.invalid_key_format", e.getMessage());
     } catch (MalformedCertificateException | UnreadableCertificateException e) {
       throw e;
