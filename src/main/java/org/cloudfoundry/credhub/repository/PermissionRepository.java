@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.repository;
 
 
 import org.cloudfoundry.credhub.entity.PermissionData;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
@@ -9,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.UUID;
 
+@Profile("!stub-repositories")
 public interface PermissionRepository extends JpaRepository<PermissionData, UUID> {
   List<PermissionData> findAllByPath(String path);
 

@@ -167,4 +167,8 @@ public class PermissionService {
     }
     return permissionUUID;
   }
+
+  public PermissionData findByPathAndActor(String path, String actor) {
+    return permissionDataService.findByPathAndActor(path, actor);
+  }
 }

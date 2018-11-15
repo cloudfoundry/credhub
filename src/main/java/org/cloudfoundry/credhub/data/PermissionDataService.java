@@ -28,8 +28,8 @@ import static com.google.common.collect.Lists.newArrayList;
 @Component
 public class PermissionDataService {
 
-  private final CredentialDataService credentialDataService;
   private PermissionRepository permissionRepository;
+  private final CredentialDataService credentialDataService;
   private CEFAuditRecord auditRecord;
 
   @Autowired
@@ -282,5 +282,10 @@ public class PermissionDataService {
     auditRecord.setResource(existingPermission);
 
     return existingPermission;
+  }
+
+  public PermissionData findByPathAndActor(String path, String actor) {
+    PermissionData permissionData = permissionRepository.findByPathAndActor(path, actor);
+    return permissionData;
   }
 }

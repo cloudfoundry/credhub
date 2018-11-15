@@ -1,6 +1,7 @@
 buildscript {
     ext {
         springBootVersion = '2.0.6.RELEASE'
+        springCloudContractVersion = '2.0.2.RELEASE'
         grpcVersion = '1.14.0'
         jsonPathVersion = '2.4.0'
 
@@ -17,6 +18,7 @@ buildscript {
         classpath("org.owasp:dependency-check-gradle:3.1.1")
         classpath("org.springframework.build.gradle:propdeps-plugin:0.0.7")
         classpath("com.google.protobuf:protobuf-gradle-plugin:0.8.6")
+        classpath("org.springframework.cloud:spring-cloud-contract-gradle-plugin:$springCloudContractVersion")
     }
 }
 
@@ -28,8 +30,10 @@ apply plugin: "java"
 apply plugin: "idea"
 apply plugin: "org.springframework.boot"
 apply plugin: 'io.spring.dependency-management'
+apply plugin: 'spring-cloud-contract'
 apply plugin: "org.owasp.dependencycheck"
 apply plugin: "com.google.protobuf"
+apply from: "spring-cloud-contract-config.gradle"
 
 jar {
     baseName = "credhub"
@@ -62,6 +66,7 @@ dependencies {
     implementation('org.springframework.security.oauth:spring-security-oauth2:2.3.3.RELEASE')
     testImplementation("org.springframework.security:spring-security-test")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation('org.springframework.cloud:spring-cloud-starter-contract-verifier')
 
     // DB
     implementation("org.postgresql:postgresql:42.2.4")
@@ -98,6 +103,7 @@ dependencies {
 dependencyManagement {
     imports {
         mavenBom("org.springframework.boot:spring-boot-dependencies:${springBootVersion}")
+        mavenBom "org.springframework.cloud:spring-cloud-contract-dependencies:${springCloudContractVersion}"
     }
 }
 

@@ -7,6 +7,7 @@ import org.cloudfoundry.credhub.data.PermissionDataService;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
 import org.cloudfoundry.credhub.entity.Credential;
+import org.cloudfoundry.credhub.entity.PermissionData;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.exceptions.InvalidPermissionOperationException;
 import org.cloudfoundry.credhub.request.PermissionEntry;
@@ -148,6 +149,19 @@ public class PermissionServiceTest {
     List<PermissionEntry> foundPermissionEntries = subject.getPermissions(expectedCredentialVersion);
 
     assertThat(foundPermissionEntries, equalTo(expectedPermissionEntries));
+  }
+
+  @Test
+  public void findPermissionByPathAndActor_whenGivenPathAndActor_returnsPermissionData() {
+    String path = "/some-path";
+    String actor = "some-actor";
+
+    PermissionData expectedPermissionData = new PermissionData(path, actor);
+
+    when(permissionDataService.findByPathAndActor(path, actor))
+      .thenReturn(expectedPermissionData);
+
+    assertThat(subject.findByPathAndActor(path, actor), equalTo(expectedPermissionData));
   }
 
   @Test

@@ -81,21 +81,33 @@ public class PermissionDataServiceTest {
     assertThat(accessControlEntries, hasSize(3));
 
     assertThat(accessControlEntries, containsInAnyOrder(
-        allOf(hasProperty("actor", equalTo(LUKE)),
-            hasProperty("allowedOperations", hasItems(WRITE))),
-        allOf(hasProperty("actor", equalTo(LEIA)),
-            hasProperty("allowedOperations", hasItems(READ))),
-        allOf(hasProperty("actor", equalTo(HAN_SOLO)),
-            hasProperty("allowedOperations",
-                hasItems(READ_ACL))))
+      allOf(hasProperty("actor", equalTo(LUKE)),
+        hasProperty("allowedOperations", hasItems(WRITE))),
+      allOf(hasProperty("actor", equalTo(LEIA)),
+        hasProperty("allowedOperations", hasItems(READ))),
+      allOf(hasProperty("actor", equalTo(HAN_SOLO)),
+        hasProperty("allowedOperations",
+          hasItems(READ_ACL))))
+    );
+  }
+
+  @Test
+  public void findByActorAndPath_givenAnActorAndPath_returnsPermissionData() {
+    PermissionData actualPermission = subject.findByPathAndActor(CREDENTIAL_NAME, LUKE);
+    PermissionData expectedPermission = new PermissionData(CREDENTIAL_NAME, LUKE, newArrayList(WRITE, DELETE));
+    expectedPermission.setUuid(actualPermission.getUuid());
+
+    assertThat(
+      actualPermission,
+      equalTo(expectedPermission)
     );
   }
 
   @Test
   public void getAllowedOperations_whenTheCredentialExists_andTheActorHasPermissions_returnsListOfActivePermissions() {
     assertThat(subject.getAllowedOperations(CREDENTIAL_NAME, LUKE), containsInAnyOrder(
-        WRITE,
-        DELETE
+      WRITE,
+      DELETE
     ));
   }
 
@@ -121,7 +133,7 @@ public class PermissionDataServiceTest {
   @Test
   public void setAccessControlEntries_whenGivenAnExistingAce_returnsTheAcl() {
     aces = singletonList(
-        new PermissionEntry(LUKE, CREDENTIAL_NAME, singletonList(READ))
+      new PermissionEntry(LUKE, CREDENTIAL_NAME, singletonList(READ))
     );
 
     subject.savePermissionsWithLogging(aces);
@@ -129,14 +141,14 @@ public class PermissionDataServiceTest {
     List<PermissionEntry> response = subject.getPermissions(credential);
 
     assertThat(response, containsInAnyOrder(
-        allOf(hasProperty("actor", equalTo(LUKE)),
-            hasProperty("allowedOperations",
-                hasItems(READ, WRITE))),
-        allOf(hasProperty("actor", equalTo(LEIA)),
-            hasProperty("allowedOperations", hasItems(READ))),
-        allOf(hasProperty("actor", equalTo(HAN_SOLO)),
-            hasProperty("allowedOperations",
-                hasItems(READ_ACL)))));
+      allOf(hasProperty("actor", equalTo(LUKE)),
+        hasProperty("allowedOperations",
+          hasItems(READ, WRITE))),
+      allOf(hasProperty("actor", equalTo(LEIA)),
+        hasProperty("allowedOperations", hasItems(READ))),
+      allOf(hasProperty("actor", equalTo(HAN_SOLO)),
+        hasProperty("allowedOperations",
+          hasItems(READ_ACL)))));
   }
 
   @Test
@@ -146,7 +158,7 @@ public class PermissionDataServiceTest {
 
     credentialDataService.save(credential2);
     aces = singletonList(
-        new PermissionEntry(LUKE, credential2.getName(), singletonList(READ)));
+      new PermissionEntry(LUKE, credential2.getName(), singletonList(READ)));
 
     subject.savePermissionsWithLogging(aces);
 
@@ -166,12 +178,12 @@ public class PermissionDataServiceTest {
     subject.deletePermissions(CREDENTIAL_NAME, LUKE);
 
     final List<PermissionEntry> accessControlList = subject
-        .getPermissions(credential);
+      .getPermissions(credential);
 
     assertThat(accessControlList, hasSize(2));
 
     assertThat(accessControlList,
-        not(contains(hasProperty("actor", equalTo(LUKE)))));
+      not(contains(hasProperty("actor", equalTo(LUKE)))));
   }
 
   @Test
@@ -329,73 +341,73 @@ public class PermissionDataServiceTest {
   @Test
   public void hasAclReadPermission_whenActorHasAclRead_returnsTrue() {
     assertThat(subject.hasPermission(HAN_SOLO, CREDENTIAL_NAME, READ_ACL),
-        is(true));
+      is(true));
   }
 
   @Test
   public void hasAclReadPermission_whenActorHasReadButNotReadAcl_returnsFalse() {
     assertThat(subject.hasPermission(LUKE, CREDENTIAL_NAME, READ),
-        is(false));
+      is(false));
   }
 
   @Test
   public void hasAclReadPermission_whenActorHasNoPermissions_returnsFalse() {
     assertThat(subject.hasPermission(CHEWIE, CREDENTIAL_NAME, READ),
-        is(false));
+      is(false));
   }
 
   @Test
   public void hasAclReadPermission_whenCredentialDoesNotExist_returnsFalse() {
     assertThat(subject.hasPermission(LUKE, CREDENTIAL_NAME_DOES_NOT_EXIST, READ),
-        is(false));
+      is(false));
   }
 
   @Test
   public void hasAclWritePermission_whenActorHasAclWrite_returnsTrue() {
     assertThat(subject.hasPermission(HAN_SOLO, CREDENTIAL_NAME, WRITE_ACL),
-        is(true));
+      is(true));
   }
 
   @Test
   public void hasAclWritePermission_whenActorHasWriteButNotWriteAcl_returnsFalse() {
     assertThat(subject.hasPermission(LUKE, CREDENTIAL_NAME, WRITE_ACL),
-        is(false));
+      is(false));
   }
 
   @Test
   public void hasAclWritePermission_whenActorHasNoPermissions_returnsFalse() {
     assertThat(subject.hasPermission(CHEWIE, CREDENTIAL_NAME, WRITE_ACL),
-        is(false));
+      is(false));
   }
 
   @Test
   public void hasAclWritePermission_whenCredentialDoesNotExist_returnsFalse() {
     assertThat(subject.hasPermission(LUKE, CREDENTIAL_NAME_DOES_NOT_EXIST, WRITE_ACL),
-        is(false));
+      is(false));
   }
 
   @Test
   public void hasReadPermission_whenActorHasRead_returnsTrue() {
     assertThat(subject.hasPermission(LEIA, CREDENTIAL_NAME, READ),
-        is(true));
+      is(true));
   }
 
   @Test
   public void hasReadPermission_givenNameWithoutLeadingSlashAndHasRead_returnsTrue() {
     assertThat(subject.hasPermission(LEIA, CREDENTIAL_NAME, READ),
-        is(true));
+      is(true));
   }
 
   @Test
   public void hasReadPermission_whenActorHasWriteButNotRead_returnsFalse() {
     assertThat(subject.hasPermission(LUKE, CREDENTIAL_NAME, READ),
-        is(false));
+      is(false));
   }
 
   @Test
   public void hasReadPermission_whenActorHasNoPermissions_returnsFalse() {
     assertThat(subject.hasPermission(CHEWIE, CREDENTIAL_NAME, READ),
-        is(false));
+      is(false));
   }
 
   @Test
@@ -431,7 +443,7 @@ public class PermissionDataServiceTest {
   @Test
   public void hasReadPermission_whenCredentialDoesNotExist_returnsFalse() {
     assertThat(subject.hasPermission(LUKE, CREDENTIAL_NAME_DOES_NOT_EXIST, READ),
-        is(false));
+      is(false));
   }
 
   @Test

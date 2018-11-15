@@ -6,6 +6,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -190,5 +191,25 @@ public class PermissionData {
 
   public void setPath(String path) {
     this.path = path;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    PermissionData that = (PermissionData) o;
+    return readPermission == that.readPermission &&
+      writePermission == that.writePermission &&
+      deletePermission == that.deletePermission &&
+      readAclPermission == that.readAclPermission &&
+      writeAclPermission == that.writeAclPermission &&
+      Objects.equals(uuid, that.uuid) &&
+      Objects.equals(path, that.path) &&
+      Objects.equals(actor, that.actor);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(uuid, path, actor, readPermission, writePermission, deletePermission, readAclPermission, writeAclPermission);
   }
 }

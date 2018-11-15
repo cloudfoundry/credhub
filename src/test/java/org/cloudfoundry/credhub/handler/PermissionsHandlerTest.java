@@ -17,6 +17,7 @@ import org.cloudfoundry.credhub.request.PermissionsV2Request;
 import org.cloudfoundry.credhub.service.PermissionCheckingService;
 import org.cloudfoundry.credhub.service.PermissionService;
 import org.cloudfoundry.credhub.service.PermissionedCredentialService;
+import org.cloudfoundry.credhub.view.PermissionsV2View;
 import org.cloudfoundry.credhub.view.PermissionsView;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,9 +27,11 @@ import org.mockito.ArgumentCaptor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Collections.emptyList;
 import static org.cloudfoundry.credhub.handler.PermissionsHandler.INVALID_NUMBER_OF_PERMISSIONS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -78,6 +81,28 @@ public class PermissionsHandlerTest {
 
     when(permissionedCredentialService.findMostRecent(CREDENTIAL_NAME)).thenReturn(credentialVersion);
     when(credentialDataService.find(any(String.class))).thenReturn(credential);
+  }
+
+  @Test
+  public void findByPathAndActor_whenGivenAPathAndActor_returnsPermissionsV2View() {
+    String path = "some-path";
+    String actor = "some-actor";
+
+    PermissionsV2View expectedPermissionsV2View = new PermissionsV2View(
+      path,
+      emptyList(),
+      actor,
+      null
+    );
+
+    when(permissionService.findByPathAndActor(path, actor))
+      .thenReturn(new PermissionData(path, actor));
+
+    PermissionsV2View actualPermissionsV2View = subject.findByPathAndActor(path, actor);
+    assertThat(
+      actualPermissionsV2View,
+      equalTo(expectedPermissionsV2View)
+    );
   }
 
   @Test

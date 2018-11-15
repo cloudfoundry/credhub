@@ -100,4 +100,10 @@ public class PermissionsHandler {
     return new PermissionsV2View(permission.getPath(), permission.generateAccessControlOperations(),
         permission.getActor(), permission.getUuid());
   }
+
+  public PermissionsV2View findByPathAndActor(String path, String actor) {
+    PermissionData permissionData = permissionService.findByPathAndActor(path, actor);
+    return new PermissionsV2View(permissionData.getPath(), permissionData.generateAccessControlOperations(),
+      permissionData.getActor(), permissionData.getUuid());
+  }
 }
