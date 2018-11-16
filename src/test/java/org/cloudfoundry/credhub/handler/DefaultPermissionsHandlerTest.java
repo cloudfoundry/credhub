@@ -27,12 +27,11 @@ import org.mockito.ArgumentCaptor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Collections.emptyList;
-import static org.cloudfoundry.credhub.handler.PermissionsHandler.INVALID_NUMBER_OF_PERMISSIONS;
+import static org.cloudfoundry.credhub.handler.DefaultPermissionsHandler.INVALID_NUMBER_OF_PERMISSIONS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
@@ -46,13 +45,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
-public class PermissionsHandlerTest {
+public class DefaultPermissionsHandlerTest {
   private static final String CREDENTIAL_NAME = "/test-credential";
   private static final String ACTOR_NAME = "test-actor";
   private static final String ACTOR_NAME2 = "someone-else";
   private static final String USER = "test-user";
 
-  private PermissionsHandler subject;
+  private DefaultPermissionsHandler subject;
 
   private PermissionService permissionService;
   private PermissionCheckingService permissionCheckingService;
@@ -72,7 +71,7 @@ public class PermissionsHandlerTest {
     credentialDataService = mock(CredentialDataService.class);
     permissionedCredentialService = mock(PermissionedCredentialService.class);
     auditRecord = mock(CEFAuditRecord.class);
-    subject = new PermissionsHandler(
+    subject = new DefaultPermissionsHandler(
         permissionService,
         permissionedCredentialService, auditRecord);
 

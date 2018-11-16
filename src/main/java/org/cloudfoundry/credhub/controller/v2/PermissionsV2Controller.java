@@ -12,8 +12,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping(path = "/api/v2/permissions", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(path = PermissionsV2Controller.endpoint, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class PermissionsV2Controller {
+
+  static final String endpoint = "/api/v2/permissions";
+
   private final PermissionsHandler permissionsHandler;
 
   public PermissionsV2Controller(PermissionsHandler permissionsHandler) {

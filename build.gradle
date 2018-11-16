@@ -2,6 +2,7 @@ buildscript {
     ext {
         springBootVersion = '2.0.6.RELEASE'
         springCloudContractVersion = '2.0.2.RELEASE'
+        springRestDocsVersion = '2.0.2.RELEASE'
         grpcVersion = '1.14.0'
         jsonPathVersion = '2.4.0'
 
@@ -24,6 +25,7 @@ buildscript {
 
 plugins {
     id 'com.github.ben-manes.versions' version '0.17.0'
+    id "org.asciidoctor.convert" version "1.5.3"
 }
 
 apply plugin: "java"
@@ -34,6 +36,7 @@ apply plugin: 'spring-cloud-contract'
 apply plugin: "org.owasp.dependencycheck"
 apply plugin: "com.google.protobuf"
 apply from: "spring-cloud-contract-config.gradle"
+apply from: "spring-rest-docs-config.gradle"
 
 jar {
     baseName = "credhub"
@@ -67,6 +70,8 @@ dependencies {
     testImplementation("org.springframework.security:spring-security-test")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation('org.springframework.cloud:spring-cloud-starter-contract-verifier')
+    testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc:$springRestDocsVersion")
+    asciidoctor("org.springframework.restdocs:spring-restdocs-asciidoctor:$springRestDocsVersion")
 
     // DB
     implementation("org.postgresql:postgresql:42.2.4")
@@ -162,6 +167,7 @@ sourceSets {
         }
     }
 }
+
 protobuf {
     protoc {
         artifact = "com.google.protobuf:protoc:3.6.1"

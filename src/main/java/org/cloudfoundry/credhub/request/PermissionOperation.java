@@ -2,6 +2,9 @@ package org.cloudfoundry.credhub.request;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 public enum PermissionOperation {
   READ("read"),
   WRITE("write"),
@@ -18,5 +21,11 @@ public enum PermissionOperation {
   @JsonValue
   public String getOperation() {
     return operation;
+  }
+
+  public static String getCommaSeparatedPermissionOperations() {
+    return Arrays.stream(PermissionOperation.values())
+      .map(PermissionOperation::getOperation)
+      .collect(Collectors.joining(", "));
   }
 }
