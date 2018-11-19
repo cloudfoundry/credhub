@@ -90,13 +90,11 @@ public class PermissionService {
     }
 
     if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), guid, READ_ACL)) {
-      throw new InvalidPermissionException("error.invalid_permission");
+      throw new InvalidPermissionException("error.credential.invalid_access");
     }
 
     return permissionDataService.getPermission(guid);
   }
-
-
 
   public boolean deletePermissions(String credentialName, String actor) {
     if (!permissionCheckingService
@@ -149,6 +147,14 @@ public class PermissionService {
     return permissionDataService.deletePermissions(permissionUUID);
   }
 
+  public PermissionData findByPathAndActor(String path, String actor) {
+    UserContext userContext = userContextHolder.getUserContext();
+    if (!permissionCheckingService.hasPermission(userContext.getActor(), path, READ_ACL)) {
+      throw new EntryNotFoundException("error.credential.invalid_access");
+    }
+    return permissionDataService.findByPathAndActor(path, actor);
+  }
+
   private void checkActorPermissions(UUID permissionUUID, String actor) {
     if (!permissionCheckingService.hasPermission(actor, permissionUUID, WRITE_ACL)) {
       throw new EntryNotFoundException("error.permission.does_not_exist");
@@ -166,9 +172,5 @@ public class PermissionService {
       throw new PermissionDoesNotExistException("error.permission.does_not_exist");
     }
     return permissionUUID;
-  }
-
-  public PermissionData findByPathAndActor(String path, String actor) {
-    return permissionDataService.findByPathAndActor(path, actor);
   }
 }

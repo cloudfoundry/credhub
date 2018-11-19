@@ -23,6 +23,7 @@ import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.fail;
@@ -153,8 +154,26 @@ public class PermissionServiceTest {
 
   @Test
   public void findPermissionByPathAndActor_whenGivenPathAndActor_returnsPermissionData() {
-    String path = "/some-path";
+    when(permissionCheckingService.hasPermission(USER_NAME, CREDENTIAL_NAME, PermissionOperation.READ_ACL))
+      .thenReturn(true);
+
     String actor = "some-actor";
+
+    PermissionData expectedPermissionData = new PermissionData(CREDENTIAL_NAME, actor);
+
+    when(permissionDataService.findByPathAndActor(CREDENTIAL_NAME, actor))
+      .thenReturn(expectedPermissionData);
+
+    assertThat(subject.findByPathAndActor(CREDENTIAL_NAME, actor), equalTo(expectedPermissionData));
+  }
+
+  @Test
+  public void findPermissionByNestedPathAndActor_whenAccessedByUserWithREADACL_returnPermissionData() {
+    when(permissionCheckingService.hasPermission(USER_NAME, CREDENTIAL_NAME, PermissionOperation.READ_ACL))
+      .thenReturn(true);
+
+    String actor = "some-actor";
+    String path = CREDENTIAL_NAME + "/foo";
 
     PermissionData expectedPermissionData = new PermissionData(path, actor);
 
@@ -162,6 +181,19 @@ public class PermissionServiceTest {
       .thenReturn(expectedPermissionData);
 
     assertThat(subject.findByPathAndActor(path, actor), equalTo(expectedPermissionData));
+
+  }
+
+  @Test
+  public void findPermissionByPathAndActor_whenAccessedByAUserWithoutREADACL_throwsAnException() {
+    when(permissionCheckingService.hasPermission(USER_NAME, CREDENTIAL_NAME, PermissionOperation.READ_ACL))
+      .thenReturn(false);
+
+    String actor = "some-actor";
+
+    assertThatThrownBy(() -> {
+      subject.findByPathAndActor(CREDENTIAL_NAME, actor);
+    }).isInstanceOf(EntryNotFoundException.class);
   }
 
   @Test

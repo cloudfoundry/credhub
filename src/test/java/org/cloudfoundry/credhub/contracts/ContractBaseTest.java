@@ -31,9 +31,9 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 
-@ActiveProfiles(profiles = {"dev-h2"/*, "contract-test-securityFOO"*/, "unit-test", "stub-repositories"})
+@ActiveProfiles(profiles = {"dev-h2", "unit-test", "stub-repositories"})
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {CredentialManagerApp.class} /*, ContractTestSecurityConfiguration.class}*/)
+@SpringBootTest(classes = {CredentialManagerApp.class})
 @AutoConfigureMockMvc
 public abstract class ContractBaseTest {
 

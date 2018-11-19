@@ -185,7 +185,7 @@ public class ExceptionHandlers {
   }
 
   @ExceptionHandler(InvalidPermissionException.class)
-  @ResponseStatus(HttpStatus.FORBIDDEN)
+  @ResponseStatus(HttpStatus.NOT_FOUND)
   public ResponseError handleInvalidPermission(InvalidPermissionException e) {
     return constructError(e.getMessage());
   }

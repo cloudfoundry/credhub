@@ -1,20 +1,14 @@
 package org.cloudfoundry.credhub.repository;
 
 import org.cloudfoundry.credhub.entity.PermissionData;
-import org.cloudfoundry.credhub.repository.PermissionRepository;
-import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Repository;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
-import static java.util.Collections.emptyList;
 
 public class StubPermissionRepository implements PermissionRepository {
 

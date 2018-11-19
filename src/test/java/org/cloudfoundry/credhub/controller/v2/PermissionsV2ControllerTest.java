@@ -1,6 +1,6 @@
 package org.cloudfoundry.credhub.controller.v2;
 
-import org.cloudfoundry.credhub.handler.StubPermissionsHandler;
+import org.cloudfoundry.credhub.handler.SpyPermissionsHandler;
 import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.cloudfoundry.credhub.view.PermissionsV2View;
 import org.junit.Before;
@@ -18,6 +18,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.util.UUID;
 
 import static java.util.Collections.emptyList;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
@@ -33,15 +35,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class PermissionsV2ControllerTest {
 
   private MockMvc mockMvc;
-  private StubPermissionsHandler stubPermissionsHandler;
+  private SpyPermissionsHandler spyPermissionsHandler;
 
   @Rule
   public final JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation();
 
   @Before
   public void setUp() {
-    stubPermissionsHandler = new StubPermissionsHandler();
-    final PermissionsV2Controller permissionsV2Controller = new PermissionsV2Controller(stubPermissionsHandler);
+    spyPermissionsHandler = new SpyPermissionsHandler();
+    final PermissionsV2Controller permissionsV2Controller = new PermissionsV2Controller(spyPermissionsHandler);
 
     mockMvc = MockMvcBuilders
       .standaloneSetup(permissionsV2Controller)
@@ -58,7 +60,7 @@ public class PermissionsV2ControllerTest {
       "some-actor",
       UUID.nameUUIDFromBytes("some-uuid".getBytes())
     );
-    stubPermissionsHandler.setReturn_findByPathAndActor(permissionsV2View);
+    spyPermissionsHandler.setReturn_findByPathAndActor(permissionsV2View);
 
     MvcResult mvcResult = mockMvc
       .perform(
@@ -86,6 +88,8 @@ public class PermissionsV2ControllerTest {
       )
       .andReturn();
 
+    assertThat(spyPermissionsHandler.getFindByPathAndActorCalledWithActor(), equalTo("some-actor"));
+    assertThat(spyPermissionsHandler.getFindByPathAndActorCalledWithPath(), equalTo("/some-path"));
     String actualResponseBody = mvcResult.getResponse().getContentAsString();
     String expectedResponseBody = "{\"path\":\"some-path\",\"operations\":[],\"actor\":\"some-actor\",\"uuid\":\"48faba92-5492-3e23-b262-75e30a7ddb6a\"}";
     JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true);

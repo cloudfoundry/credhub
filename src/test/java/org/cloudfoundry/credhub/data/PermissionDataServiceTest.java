@@ -92,7 +92,7 @@ public class PermissionDataServiceTest {
   }
 
   @Test
-  public void findByActorAndPath_givenAnActorAndPath_returnsPermissionData() {
+  public void findByPathAndActor_givenAnActorAndPath_returnsPermissionData() {
     PermissionData actualPermission = subject.findByPathAndActor(CREDENTIAL_NAME, LUKE);
     PermissionData expectedPermission = new PermissionData(CREDENTIAL_NAME, LUKE, newArrayList(WRITE, DELETE));
     expectedPermission.setUuid(actualPermission.getUuid());
