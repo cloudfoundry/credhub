@@ -23,7 +23,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static org.cloudfoundry.credhub.helper.RequestHelper.generateCertificateCredential;
 import static org.cloudfoundry.credhub.helper.RequestHelper.generatePassword;
 import static org.cloudfoundry.credhub.util.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.cloudfoundry.credhub.util.AuthConstants.USER_A_ACTOR_ID;
@@ -43,7 +42,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@ActiveProfiles(value = {"unit-test","unit-test-permissions"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(value = {"unit-test", "unit-test-permissions"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 @Transactional
 public class CredentialFindTest {
@@ -58,18 +57,58 @@ public class CredentialFindTest {
   @Before
   public void beforeEach() {
     mockMvc = MockMvcBuilders
-        .webAppContextSetup(webApplicationContext)
-        .apply(springSecurity())
-        .build();
+      .webAppContextSetup(webApplicationContext)
+      .apply(springSecurity())
+      .build();
   }
 
   @Test
   public void findCredentials_byNameLike_whenSearchTermContainsNoSlash_returnsCredentialMetadata() throws Exception {
-    ResultActions response = findCredentialsByNameLike();
+    generatePassword(mockMvc, credentialName, true, 20, ALL_PERMISSIONS_TOKEN);
+    ResultActions response = findCredentialsByNameLike(credentialName.substring(4).toUpperCase(),
+      ALL_PERMISSIONS_TOKEN);
 
     response.andExpect(status().isOk())
-        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-        .andExpect(jsonPath("$.credentials[0].name").value(credentialName));
+      .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+      .andExpect(jsonPath("$.credentials[0].name").value(credentialName));
+  }
+
+  @Test
+  public void findCredentials_byNameLike_returnsNoCredentialsIfUserDoesNotHaveReadAccess() throws Exception {
+    generateCredentials();
+    ResultActions response = findCredentialsByNameLike("/", USER_A_TOKEN);
+
+    response.andExpect(status().isOk())
+      .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+      .andExpect(jsonPath("$.credentials", hasSize(0)));
+  }
+
+  @Test
+  public void findCredentials_byNameLike_returnsAllCredentialsWhenUserHasAllPermissions() throws Exception {
+    generateCredentials();
+
+    setPermissions("/*", PermissionOperation.READ, USER_A_ACTOR_ID);
+
+    ResultActions response = findCredentialsByNameLike("/", USER_A_TOKEN);
+
+    response.andExpect(status().isOk())
+      .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+      .andExpect(jsonPath("$.credentials", hasSize(5)));
+  }
+
+  @Test
+  public void findCredentials_byNameLike_returnsSubsetWithFullPermissionPath() throws Exception {
+    String credentialName = "/other_path/credentialC";
+    generateCredentials();
+
+    setPermissions(credentialName, PermissionOperation.READ, USER_A_ACTOR_ID);
+
+    ResultActions response = findCredentialsByNameLike("/", USER_A_TOKEN);
+
+    response.andExpect(status().isOk())
+      .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+      .andExpect(jsonPath("$.credentials", hasSize(1)))
+      .andExpect(jsonPath("$.credentials[0].name").value(credentialName));
   }
 
   @Test
@@ -77,29 +116,25 @@ public class CredentialFindTest {
     String substring = credentialName.substring(0, credentialName.lastIndexOf("/"));
     generatePassword(mockMvc, credentialName, true, 20, ALL_PERMISSIONS_TOKEN);
 
-    final MockHttpServletRequestBuilder getResponse = get("/api/v1/data?path=" + substring)
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON);
+    ResultActions response = findCredentialsByPath(substring, ALL_PERMISSIONS_TOKEN);
 
-    mockMvc.perform(getResponse)
-        .andExpect(status().isOk())
-        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-        .andExpect(jsonPath("$.credentials[0].name").value(credentialName));
+    response.andExpect(status().isOk())
+      .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+      .andExpect(jsonPath("$.credentials[0].name").value(credentialName));
   }
 
   @Test
-  public void findCredentials_byPath_shouldOnlyFindPathsThatBeginWithSpecifiedSubstringCaseInsensitively() throws Exception {
+  public void findCredentials_byPath_shouldOnlyFindPathsThatBeginWithSpecifiedSubstringCaseInsensitively()
+    throws Exception {
     final String path = "namespace";
 
     assertTrue(credentialName.contains(path));
 
-    MockHttpServletRequestBuilder request = get("/api/v1/data?path=" + path.toUpperCase())
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON);
+    ResultActions response = findCredentialsByPath(path.toUpperCase(), ALL_PERMISSIONS_TOKEN);
 
-    mockMvc.perform(request).andExpect(status().isOk())
-        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-        .andExpect(jsonPath("$.credentials", hasSize(0)));
+    response.andExpect(status().isOk())
+      .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+      .andExpect(jsonPath("$.credentials", hasSize(0)));
   }
 
   @Test
@@ -109,13 +144,11 @@ public class CredentialFindTest {
 
     assertTrue(credentialName.startsWith(path));
 
-    final MockHttpServletRequestBuilder getRequest = get("/api/v1/data?path=" + path.toUpperCase())
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON);
+    ResultActions response = findCredentialsByPath(path.toUpperCase(), ALL_PERMISSIONS_TOKEN);
 
-    mockMvc.perform(getRequest).andExpect(status().isOk())
-        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-        .andExpect(jsonPath("$.credentials", hasSize(1)));
+    response.andExpect(status().isOk())
+      .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+      .andExpect(jsonPath("$.credentials", hasSize(1)));
   }
 
   @Test
@@ -124,53 +157,35 @@ public class CredentialFindTest {
 
     assertTrue(credentialName.startsWith(path));
 
-    final MockHttpServletRequestBuilder get = get("/api/v1/data?path=" + path)
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON);
+    ResultActions response = findCredentialsByPath(path, ALL_PERMISSIONS_TOKEN);
 
-    mockMvc.perform(get).andExpect(status().isOk())
-        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-        .andExpect(jsonPath("$.credentials", hasSize(0)));
-  }
-
-  @Test
-  public void findCredentials_byPath_savesTheAuditLog() throws Exception {
-    String substring = credentialName.substring(0, credentialName.lastIndexOf("/"));
-    generatePassword(mockMvc, credentialName, true, 20, ALL_PERMISSIONS_TOKEN);
-
-    final MockHttpServletRequestBuilder request = get("/api/v1/data?path=" + substring)
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON);
-
-    mockMvc.perform(request);
+    response.andExpect(status().isOk())
+      .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+      .andExpect(jsonPath("$.credentials", hasSize(0)));
   }
 
   @Test
   public void findCredentials_byPath_returnsNoCredentialsIfUserDoesNotHaveReadAccess() throws Exception {
     generateCredentials();
 
-    final MockHttpServletRequestBuilder request = get("/api/v1/data?path=/")
-        .header("Authorization", "Bearer " + USER_A_TOKEN)
-        .accept(APPLICATION_JSON);
+    ResultActions response = findCredentialsByPath("/", USER_A_TOKEN);
 
-    mockMvc.perform(request).andExpect(status().isOk())
-        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-        .andExpect(jsonPath("$.credentials", hasSize(0)));
+    response.andExpect(status().isOk())
+      .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+      .andExpect(jsonPath("$.credentials", hasSize(0)));
   }
 
   @Test
   public void findCredentials_byPath_returnsAllCredentialsWhenUserHasAllPermissions() throws Exception {
     generateCredentials();
 
-    final MockHttpServletRequestBuilder request = get("/api/v1/data?path=/")
-        .header("Authorization", "Bearer " + USER_A_TOKEN)
-        .accept(APPLICATION_JSON);
+    setPermissions("/*", PermissionOperation.READ, USER_A_ACTOR_ID);
 
-    setPermissions("/*", PermissionOperation.READ);
+    ResultActions response = findCredentialsByPath("/", USER_A_TOKEN);
 
-    mockMvc.perform(request).andExpect(status().isOk())
-        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-        .andExpect(jsonPath("$.credentials", hasSize(5)));
+    response.andExpect(status().isOk())
+      .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+      .andExpect(jsonPath("$.credentials", hasSize(5)));
   }
 
   @Test
@@ -178,198 +193,158 @@ public class CredentialFindTest {
     String credentialName = "/other_path/credentialC";
     generateCredentials();
 
-    final MockHttpServletRequestBuilder request = get("/api/v1/data?path=/")
-        .header("Authorization", "Bearer " + USER_A_TOKEN)
-        .accept(APPLICATION_JSON);
+    setPermissions(credentialName, PermissionOperation.READ, USER_A_ACTOR_ID);
 
-    setPermissions(credentialName, PermissionOperation.READ);
+    ResultActions response = findCredentialsByPath("/", USER_A_TOKEN);
 
-    mockMvc.perform(request).andExpect(status().isOk())
-        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-        .andExpect(jsonPath("$.credentials", hasSize(1)))
-        .andExpect(jsonPath("$.credentials[0].name").value(credentialName));
+    response.andExpect(status().isOk())
+      .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+      .andExpect(jsonPath("$.credentials", hasSize(1)))
+      .andExpect(jsonPath("$.credentials[0].name").value(credentialName));
   }
 
   @Test
   public void findCredentials_byPath_returnsSubsetWithAsteriskInPermissionPath() throws Exception {
     generateCredentials();
 
-    final MockHttpServletRequestBuilder request = get("/api/v1/data?path=/")
-        .header("Authorization", "Bearer " + USER_A_TOKEN)
-        .accept(APPLICATION_JSON);
+    setPermissions("/path/to/*", PermissionOperation.READ, USER_A_ACTOR_ID);
 
-    setPermissions("/path/to/*", PermissionOperation.READ);
+    ResultActions response = findCredentialsByPath("/", USER_A_TOKEN);
 
-    mockMvc.perform(request).andExpect(status().isOk())
-        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-        .andExpect(jsonPath("$.credentials", hasSize(2)))
-        .andExpect(jsonPath("$.credentials[1].name").value("/path/to/credentialA"))
-        .andExpect(jsonPath("$.credentials[0].name").value("/path/to/credentialB"));
+    response.andExpect(status().isOk())
+      .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+      .andExpect(jsonPath("$.credentials", hasSize(2)))
+      .andExpect(jsonPath("$.credentials[1].name").value("/path/to/credentialA"))
+      .andExpect(jsonPath("$.credentials[0].name").value("/path/to/credentialB"));
   }
 
   @Test
   public void findCredentialsByPath_withExpiryDate() throws Exception {
 
-   this.mockMvc.perform( post("/api/v1/data")
-       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-       .accept(APPLICATION_JSON)
-       .contentType(APPLICATION_JSON)
-       //language=JSON
-       .content("{\n"
-           + "  \"name\" : \"notExpiring\",\n"
-           + "  \"type\" : \"certificate\",\n"
-           + "  \"parameters\" : {\n"
-           + "    \"common_name\" : \"federation\",\n"
-           + "    \"is_ca\" : true,\n"
-           + "    \"self_sign\" : true,\n"
-           + "    \"duration\" : 32 \n"
-           + "  }\n"
-           + "}"))
-        .andDo(print())
-        .andExpect(status().isOk());
+    this.mockMvc.perform(post("/api/v1/data")
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{\n"
+        + "  \"name\" : \"notExpiring\",\n"
+        + "  \"type\" : \"certificate\",\n"
+        + "  \"parameters\" : {\n"
+        + "    \"common_name\" : \"federation\",\n"
+        + "    \"is_ca\" : true,\n"
+        + "    \"self_sign\" : true,\n"
+        + "    \"duration\" : 32 \n"
+        + "  }\n"
+        + "}"))
+      .andDo(print())
+      .andExpect(status().isOk());
 
-    this.mockMvc.perform( post("/api/v1/data")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        //language=JSON
-        .content("{\n"
-            + "  \"name\" : \"willExpire\",\n"
-            + "  \"type\" : \"certificate\",\n"
-            + "  \"parameters\" : {\n"
-            + "    \"common_name\" : \"federation\",\n"
-            + "    \"is_ca\" : true,\n"
-            + "    \"self_sign\" : true,\n"
-            + "    \"duration\" : 29 \n"
-            + "  }\n"
-            + "}"))
-        .andDo(print())
-        .andExpect(status().isOk());
-
-//    this.mockMvc.perform( post("/api/v1/data")
-//        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-//        .accept(APPLICATION_JSON)
-//        .contentType(APPLICATION_JSON)
-//        //language=JSON
-//        .content("{\n"
-//            + "  \"name\" : \"expired\",\n"
-//            + "  \"type\" : \"certificate\",\n"
-//            + "  \"parameters\" : {\n"
-//            + "    \"common_name\" : \"federation\",\n"
-//            + "    \"is_ca\" : true,\n"
-//            + "    \"self_sign\" : true,\n"
-//            + "    \"duration\" : -1 \n"
-//            + "  }\n"
-//            + "}"))
-//        .andDo(print())
-//        .andExpect(status().isOk());
-
+    this.mockMvc.perform(post("/api/v1/data")
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{\n"
+        + "  \"name\" : \"willExpire\",\n"
+        + "  \"type\" : \"certificate\",\n"
+        + "  \"parameters\" : {\n"
+        + "    \"common_name\" : \"federation\",\n"
+        + "    \"is_ca\" : true,\n"
+        + "    \"self_sign\" : true,\n"
+        + "    \"duration\" : 29 \n"
+        + "  }\n"
+        + "}"))
+      .andDo(print())
+      .andExpect(status().isOk());
 
     String expiresWithinDays = "30";
-    final MockHttpServletRequestBuilder request = get("/api/v1/data?path=/&expires-within-days="+ expiresWithinDays)
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .content("expires-within-days:30")
-        .accept(APPLICATION_JSON);
+    final MockHttpServletRequestBuilder request = get("/api/v1/data?path=/&expires-within-days=" + expiresWithinDays)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .content("expires-within-days:30")
+      .accept(APPLICATION_JSON);
 
     mockMvc.perform(request).andExpect(status().isOk())
-        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-        .andExpect(jsonPath("$.credentials", hasSize(1)))
-        .andExpect(jsonPath("$.credentials[0].name").value("/willExpire"));
+      .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+      .andExpect(jsonPath("$.credentials", hasSize(1)))
+      .andExpect(jsonPath("$.credentials[0].name").value("/willExpire"));
 
   }
 
   @Test
   public void findCredentialsByName_withExpiryDate() throws Exception {
 
-    this.mockMvc.perform( post("/api/v1/data")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        //language=JSON
-        .content("{\n"
-            + "  \"name\" : \"notExpiring\",\n"
-            + "  \"type\" : \"certificate\",\n"
-            + "  \"parameters\" : {\n"
-            + "    \"common_name\" : \"federation\",\n"
-            + "    \"is_ca\" : true,\n"
-            + "    \"self_sign\" : true,\n"
-            + "    \"duration\" : 32 \n"
-            + "  }\n"
-            + "}"))
-        .andDo(print())
-        .andExpect(status().isOk());
+    this.mockMvc.perform(post("/api/v1/data")
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{\n"
+        + "  \"name\" : \"notExpiring\",\n"
+        + "  \"type\" : \"certificate\",\n"
+        + "  \"parameters\" : {\n"
+        + "    \"common_name\" : \"federation\",\n"
+        + "    \"is_ca\" : true,\n"
+        + "    \"self_sign\" : true,\n"
+        + "    \"duration\" : 32 \n"
+        + "  }\n"
+        + "}"))
+      .andDo(print())
+      .andExpect(status().isOk());
 
-    this.mockMvc.perform( post("/api/v1/data")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        //language=JSON
-        .content("{\n"
-            + "  \"name\" : \"willExpire\",\n"
-            + "  \"type\" : \"certificate\",\n"
-            + "  \"parameters\" : {\n"
-            + "    \"common_name\" : \"federation\",\n"
-            + "    \"is_ca\" : true,\n"
-            + "    \"self_sign\" : true,\n"
-            + "    \"duration\" : 29 \n"
-            + "  }\n"
-            + "}"))
-        .andDo(print())
-        .andExpect(status().isOk());
-
-//    this.mockMvc.perform( post("/api/v1/data")
-//        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-//        .accept(APPLICATION_JSON)
-//        .contentType(APPLICATION_JSON)
-//        //language=JSON
-//        .content("{\n"
-//            + "  \"name\" : \"expired\",\n"
-//            + "  \"type\" : \"certificate\",\n"
-//            + "  \"parameters\" : {\n"
-//            + "    \"common_name\" : \"federation\",\n"
-//            + "    \"is_ca\" : true,\n"
-//            + "    \"self_sign\" : true,\n"
-//            + "    \"duration\" : -1 \n"
-//            + "  }\n"
-//            + "}"))
-//        .andDo(print())
-//        .andExpect(status().isOk());
-
+    this.mockMvc.perform(post("/api/v1/data")
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{\n"
+        + "  \"name\" : \"willExpire\",\n"
+        + "  \"type\" : \"certificate\",\n"
+        + "  \"parameters\" : {\n"
+        + "    \"common_name\" : \"federation\",\n"
+        + "    \"is_ca\" : true,\n"
+        + "    \"self_sign\" : true,\n"
+        + "    \"duration\" : 29 \n"
+        + "  }\n"
+        + "}"))
+      .andDo(print())
+      .andExpect(status().isOk());
 
     String expiresWithinDays = "30";
-    final MockHttpServletRequestBuilder request = get("/api/v1/data?name-like=ex&expires-within-days="+ expiresWithinDays)
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .content("expires-within-days:30")
-        .accept(APPLICATION_JSON);
+    final MockHttpServletRequestBuilder request = get(
+      "/api/v1/data?name-like=ex&expires-within-days=" + expiresWithinDays)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .content("expires-within-days:30")
+      .accept(APPLICATION_JSON);
 
     mockMvc.perform(request).andExpect(status().isOk())
-        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-        .andExpect(jsonPath("$.credentials", hasSize(1)))
-        .andExpect(jsonPath("$.credentials[0].name").value("/willExpire"));
+      .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+      .andExpect(jsonPath("$.credentials", hasSize(1)))
+      .andExpect(jsonPath("$.credentials[0].name").value("/willExpire"));
 
   }
 
-  private void generateCredentials() throws Exception{
-    List<String> names = Arrays.asList(new String[] {"/path/to/credentialA", "/path/something",
-        "/path/to/credentialB", "/other_path/credentialC", "/another/credentialC"});
+  private void generateCredentials() throws Exception {
+    List<String> names = Arrays.asList(new String[]{"/path/to/credentialA", "/path/something",
+      "/path/to/credentialB", "/other_path/credentialC", "/another/credentialC"});
 
-    for(String name : names){
+    for (String name : names) {
       generatePassword(mockMvc, name, true, 20, ALL_PERMISSIONS_TOKEN);
     }
   }
 
-  private void setPermissions(String path, PermissionOperation operation) throws Exception{
+  private void setPermissions(String path, PermissionOperation operation, String actorID) throws Exception {
     MockHttpServletRequestBuilder addPermissionRequest = post("/api/v2/permissions")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{"
-            + "  \"actor\": \"" + USER_A_ACTOR_ID + "\",\n"
-            + "  \"path\": \"" + path + "\",\n"
-            + "  \"operations\": [\"" + operation.getOperation() + "\"]\n"
-            + "}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      .content("{"
+        + "  \"actor\": \"" + actorID + "\",\n"
+        + "  \"path\": \"" + path + "\",\n"
+        + "  \"operations\": [\"" + operation.getOperation() + "\"]\n"
+        + "}");
 
-    String content = mockMvc.perform(addPermissionRequest).andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+    String content = mockMvc.perform(addPermissionRequest).andExpect(status().isCreated()).andReturn().getResponse()
+      .getContentAsString();
     PermissionsV2View returnValue = JsonTestHelper.deserialize(content, PermissionsV2View.class);
     assertThat(returnValue.getActor(), equalTo(USER_A_ACTOR_ID));
     assertThat(returnValue.getPath(), equalTo(path));
@@ -378,13 +353,18 @@ public class CredentialFindTest {
     assertThat(returnValue.getUuid(), notNullValue());
   }
 
-  private ResultActions findCredentialsByNameLike() throws Exception {
-    generatePassword(mockMvc, credentialName, true, 20, ALL_PERMISSIONS_TOKEN);
-    String substring = credentialName.substring(4).toUpperCase();
+  private ResultActions findCredentialsByNameLike(String pattern, String permissionsToken) throws Exception {
+    final MockHttpServletRequestBuilder get = get("/api/v1/data?name-like=" + pattern)
+      .header("Authorization", "Bearer " + permissionsToken)
+      .accept(APPLICATION_JSON);
 
-    final MockHttpServletRequestBuilder get = get("/api/v1/data?name-like=" + substring)
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON);
+    return mockMvc.perform(get);
+  }
+
+  private ResultActions findCredentialsByPath(String path, String permissionsToken) throws Exception {
+    final MockHttpServletRequestBuilder get = get("/api/v1/data?path=" + path)
+      .header("Authorization", "Bearer " + permissionsToken)
+      .accept(APPLICATION_JSON);
 
     return mockMvc.perform(get);
   }

@@ -118,9 +118,9 @@ public class CredentialVersionDataService {
 
   public List<FindCredentialResult> findContainingName(String name, String expiresWithinDays) {
     if (!expiresWithinDays.equals("")) {
-      return filterCertificates("%" + name + "%", expiresWithinDays);
+      return filterPermissions(filterCertificates("%" + name + "%", expiresWithinDays));
     }
-    return findMatchingName("%" + name + "%");
+    return filterPermissions(findMatchingName("%" + name + "%"));
   }
 
   public List<FindCredentialResult> findStartingWithPath(String path) {
