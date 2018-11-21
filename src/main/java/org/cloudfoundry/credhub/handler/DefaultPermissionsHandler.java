@@ -102,6 +102,10 @@ public class DefaultPermissionsHandler implements PermissionsHandler {
 
   public PermissionsV2View findByPathAndActor(String path, String actor) {
     PermissionData permissionData = permissionService.findByPathAndActor(path, actor);
+    if(permissionData == null) {
+      throw new EntryNotFoundException("error.credential.invalid_access");
+    }
+
     return new PermissionsV2View(permissionData.getPath(), permissionData.generateAccessControlOperations(),
       permissionData.getActor(), permissionData.getUuid());
   }

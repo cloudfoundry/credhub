@@ -130,7 +130,7 @@ public class GetPermissionsV2EndToEndTest {
     MockHttpServletRequestBuilder getUuidRequest = get("/api/v2/permissions")
       .param("path", credentialName)
       .param("actor", actor)
-      .header("Authorization", "Bearer " + USER_A_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON);
 
     String content = mockMvc.perform(getUuidRequest).andExpect(status().isNotFound()).andReturn().getResponse().getContentAsString();
@@ -146,7 +146,7 @@ public class GetPermissionsV2EndToEndTest {
     MockHttpServletRequestBuilder getUuidRequest = get("/api/v2/permissions")
       .param("path", credentialName)
       .param("actor", actor)
-      .header("Authorization", "Bearer " + USER_A_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON);
 
     String content = mockMvc.perform(getUuidRequest).andExpect(status().isNotFound()).andReturn().getResponse().getContentAsString();
