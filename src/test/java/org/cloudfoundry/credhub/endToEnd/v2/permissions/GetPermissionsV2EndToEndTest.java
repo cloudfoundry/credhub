@@ -119,7 +119,7 @@ public class GetPermissionsV2EndToEndTest {
 
     String content = mockMvc.perform(getUuidRequest).andExpect(status().isNotFound()).andReturn().getResponse().getContentAsString();
     String errorMessage = new JSONObject(content).getString("error");
-    assertThat(errorMessage, is(equalTo(messageSource.getMessage("error.credential.invalid_access", null, null, Locale.ENGLISH))));
+    assertThat(errorMessage, is(equalTo(messageSource.getMessage("error.permission.invalid_access", null, null, Locale.ENGLISH))));
   }
 
   @Test
@@ -135,7 +135,7 @@ public class GetPermissionsV2EndToEndTest {
 
     String content = mockMvc.perform(getUuidRequest).andExpect(status().isNotFound()).andReturn().getResponse().getContentAsString();
     String errorMessage = new JSONObject(content).getString("error");
-    assertThat(errorMessage, is(equalTo(messageSource.getMessage("error.credential.invalid_access", null, null, Locale.ENGLISH))));
+    assertThat(errorMessage, is(equalTo(messageSource.getMessage("error.permission.invalid_access", null, null, Locale.ENGLISH))));
   }
 
   @Test
@@ -151,6 +151,6 @@ public class GetPermissionsV2EndToEndTest {
 
     String content = mockMvc.perform(getUuidRequest).andExpect(status().isNotFound()).andReturn().getResponse().getContentAsString();
     String errorMessage = new JSONObject(content).getString("error");
-    assertThat(errorMessage, is(equalTo(messageSource.getMessage("error.credential.invalid_access", null, null, Locale.ENGLISH))));
+    assertThat(errorMessage, is(equalTo(messageSource.getMessage("error.permission.invalid_access", null, null, Locale.ENGLISH))));
   }
 }

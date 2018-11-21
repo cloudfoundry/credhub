@@ -150,7 +150,7 @@ public class PermissionService {
   public PermissionData findByPathAndActor(String path, String actor) {
     UserContext userContext = userContextHolder.getUserContext();
     if (!permissionCheckingService.hasPermission(userContext.getActor(), path, READ_ACL)) {
-      throw new EntryNotFoundException("error.credential.invalid_access");
+      throw new EntryNotFoundException("error.permission.invalid_access");
     }
     return permissionDataService.findByPathAndActor(path, actor);
   }
