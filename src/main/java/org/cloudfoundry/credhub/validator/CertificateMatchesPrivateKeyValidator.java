@@ -2,7 +2,9 @@ package org.cloudfoundry.credhub.validator;
 
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.openssl.PEMException;
+import org.bouncycastle.util.encoders.DecoderException;
 import org.cloudfoundry.credhub.exceptions.MalformedCertificateException;
+import org.cloudfoundry.credhub.exceptions.MalformedPrivateKeyException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.exceptions.UnreadableCertificateException;
 import org.cloudfoundry.credhub.util.CertificateReader;
@@ -40,7 +42,6 @@ public class CertificateMatchesPrivateKeyValidator implements ConstraintValidato
       }
 
       CertificateReader certificateReader = new CertificateReader(certificateValue);
-
       final X509Certificate certificate = certificateReader.getCertificate();
       final PublicKey certificatePublicKey = certificate.getPublicKey();
 
@@ -51,6 +52,8 @@ public class CertificateMatchesPrivateKeyValidator implements ConstraintValidato
       throw new ParameterizedValidationException("error.invalid_key_format", e.getMessage());
     } catch (MalformedCertificateException | UnreadableCertificateException e) {
       throw e;
+    } catch (DecoderException e){
+      throw new MalformedPrivateKeyException();
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

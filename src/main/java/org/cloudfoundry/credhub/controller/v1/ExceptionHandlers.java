@@ -8,23 +8,7 @@ import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.jayway.jsonpath.InvalidJsonException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
-import org.cloudfoundry.credhub.exceptions.InvalidModeException;
-import org.cloudfoundry.credhub.exceptions.InvalidPermissionException;
-import org.cloudfoundry.credhub.exceptions.InvalidPermissionOperationException;
-import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException;
-import org.cloudfoundry.credhub.exceptions.InvalidRemoteAddressException;
-import org.cloudfoundry.credhub.exceptions.KeyNotFoundException;
-import org.cloudfoundry.credhub.exceptions.MalformedCertificateException;
-import org.cloudfoundry.credhub.exceptions.MaximumSizeException;
-import org.cloudfoundry.credhub.exceptions.MissingCertificateException;
-import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
-import org.cloudfoundry.credhub.exceptions.PermissionAlreadyExistsException;
-import org.cloudfoundry.credhub.exceptions.PermissionDoesNotExistException;
-import org.cloudfoundry.credhub.exceptions.PermissionException;
-import org.cloudfoundry.credhub.exceptions.PermissionInvalidPathAndActorException;
-import org.cloudfoundry.credhub.exceptions.ReadOnlyException;
-import org.cloudfoundry.credhub.exceptions.UnreadableCertificateException;
+import org.cloudfoundry.credhub.exceptions.*;
 import org.cloudfoundry.credhub.view.ResponseError;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.MessageSourceAccessor;
@@ -39,8 +23,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.io.InvalidObjectException;
 import javax.servlet.http.HttpServletResponse;
+import java.io.InvalidObjectException;
 
 import static org.springframework.core.Ordered.HIGHEST_PRECEDENCE;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -230,6 +214,12 @@ public class ExceptionHandlers {
   @ResponseStatus(value = PAYLOAD_TOO_LARGE)
   public ResponseError handleMaximumSizeException(MaximumSizeException exception) {
     return constructError("error.exceeds_maximum_size");
+  }
+
+  @ExceptionHandler(MalformedPrivateKeyException.class)
+  @ResponseStatus(value = BAD_REQUEST)
+  public ResponseError handleMalformedPrivateKey(MalformedPrivateKeyException exception) {
+    return constructError("error.malformed_private_key");
   }
 
   @ExceptionHandler({HttpMessageNotReadableException.class, InvalidFormatException.class})
