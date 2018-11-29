@@ -3,17 +3,18 @@ package org.cloudfoundry.credhub.interceptor;
 import org.cloudfoundry.credhub.exceptions.InvalidRemoteAddressException;
 import org.cloudfoundry.credhub.exceptions.ReadOnlyException;
 import org.cloudfoundry.credhub.variables.ManagementVariables;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.test.context.junit4.SpringRunner;
 
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
-@RunWith(JUnit4.class)
+@RunWith(SpringRunner.class)
 public class ManagementInterceptorTest {
   private ManagementInterceptor subject;
   private MockHttpServletRequest request;
@@ -24,6 +25,11 @@ public class ManagementInterceptorTest {
     subject = new ManagementInterceptor();
     request = new MockHttpServletRequest();
     response = new MockHttpServletResponse();
+  }
+
+  @After
+  public void tearDown() {
+    ManagementVariables.readOnlyMode = false;
   }
 
   @Test(expected = InvalidRemoteAddressException.class)

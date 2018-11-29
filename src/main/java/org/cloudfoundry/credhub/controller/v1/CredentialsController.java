@@ -37,11 +37,11 @@ import java.io.InputStream;
 
 @RestController
 @RequestMapping(
-    path = CredentialsController.API_V1_DATA,
+    path = CredentialsController.endpoint,
     produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class CredentialsController {
 
-  public static final String API_V1_DATA = "/api/v1/data";
+  public static final String endpoint = "/api/v1/data";
 
   private static final Logger LOGGER = LogManager.getLogger(CredentialsController.class);
   private final PermissionedCredentialService credentialService;
