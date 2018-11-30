@@ -29,6 +29,7 @@ buildscript {
 plugins {
     id 'com.github.ben-manes.versions' version '0.17.0'
     id "org.asciidoctor.convert" version "1.5.3"
+    id "com.github.spotbugs" version "1.6.5"
 }
 
 apply plugin: "java"
@@ -45,6 +46,18 @@ apply from: "spring-cloud-contract-config.gradle"
 apply from: "spring-rest-docs-config.gradle"
 apply from: "ktlint.gradle"
 apply from: "checkstyle-config.gradle"
+
+spotbugs {
+    toolVersion = '3.1.9'
+    excludeFilter = file("$rootProject.projectDir/config/findbugs/exclude-filter.xml")
+}
+
+tasks.withType(com.github.spotbugs.SpotBugsTask) {
+    reports {
+        xml.enabled = false
+        html.enabled = true
+    }
+}
 
 jar {
     baseName = "credhub"
@@ -85,7 +98,7 @@ dependencies {
     implementation('com.fasterxml.jackson.module:jackson-module-kotlin')
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
-    
+
     // DB
     implementation("org.postgresql:postgresql:42.2.4")
     implementation("org.mariadb.jdbc:mariadb-java-client")
@@ -102,7 +115,7 @@ dependencies {
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
     implementation("net.java.dev.jna:jna:4.5.1")
     implementation("org.apache.httpcomponents:httpclient:4.5.5")
-    
+
     // Java 11 (backfill modules that were used in Java 8)
     implementation("javax.xml.bind:jaxb-api:2.3.1")
     implementation("org.glassfish.jaxb:jaxb-runtime:2.3.1")
