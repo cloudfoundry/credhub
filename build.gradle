@@ -43,6 +43,7 @@ apply plugin: "com.google.protobuf"
 apply from: "kotlin.gradle"
 apply from: "spring-cloud-contract-config.gradle"
 apply from: "spring-rest-docs-config.gradle"
+apply from: "ktlint.gradle"
 
 jar {
     baseName = "credhub"
