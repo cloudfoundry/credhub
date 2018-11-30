@@ -1,5 +1,8 @@
 package org.cloudfoundry.credhub.view;
 
+import java.time.Instant;
+import java.util.UUID;
+
 import org.cloudfoundry.credhub.domain.Encryptor;
 import org.cloudfoundry.credhub.domain.SshCredentialVersion;
 import org.cloudfoundry.credhub.entity.EncryptedValue;
@@ -9,9 +12,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.time.Instant;
-import java.util.UUID;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -30,13 +30,13 @@ public class SshViewTest {
     Encryptor encryptor = mock(Encryptor.class);
     final EncryptedValue encryption = new EncryptedValue(UUID.randomUUID(), "encrypted".getBytes(), "nonce".getBytes());
     when(encryptor.encrypt(TestConstants.PRIVATE_KEY_4096)).thenReturn(
-        encryption);
+      encryption);
     when(encryptor.decrypt(encryption))
-        .thenReturn(TestConstants.PRIVATE_KEY_4096);
+      .thenReturn(TestConstants.PRIVATE_KEY_4096);
     entity = new SshCredentialVersion(CREDENTIAL_NAME)
-        .setEncryptor(encryptor)
-        .setPublicKey(TestConstants.SSH_PUBLIC_KEY_4096_WITH_COMMENT)
-        .setPrivateKey(TestConstants.PRIVATE_KEY_4096);
+      .setEncryptor(encryptor)
+      .setPublicKey(TestConstants.SSH_PUBLIC_KEY_4096_WITH_COMMENT)
+      .setPrivateKey(TestConstants.PRIVATE_KEY_4096);
     entity.setUuid(CREDENTIAL_UUID);
   }
 
@@ -47,16 +47,16 @@ public class SshViewTest {
     String escapedPrivateKey = TestConstants.PRIVATE_KEY_4096.replaceAll("\\\\n", "\\n");
     System.out.println(escapedPrivateKey);
     String expected = "{"
-        + "\"type\":\"ssh\","
-        + "\"version_created_at\":null,"
-        + "\"id\":\"" + CREDENTIAL_UUID.toString() + "\","
-        + "\"name\":\"/foo\","
-        + "\"value\":{"
-        + "\"public_key\":\"" + TestConstants.SSH_PUBLIC_KEY_4096_WITH_COMMENT + "\","
-        + "\"private_key\":\"" + escapedPrivateKey + "\","
-        + "\"public_key_fingerprint\":\"UmqxK9UJJR4Jrcw0DcwqJlCgkeQoKp8a+HY+0p0nOgc\""
-        + "}"
-        + "}";
+      + "\"type\":\"ssh\","
+      + "\"version_created_at\":null,"
+      + "\"id\":\"" + CREDENTIAL_UUID.toString() + "\","
+      + "\"name\":\"/foo\","
+      + "\"value\":{"
+      + "\"public_key\":\"" + TestConstants.SSH_PUBLIC_KEY_4096_WITH_COMMENT + "\","
+      + "\"private_key\":\"" + escapedPrivateKey + "\","
+      + "\"public_key_fingerprint\":\"UmqxK9UJJR4Jrcw0DcwqJlCgkeQoKp8a+HY+0p0nOgc\""
+      + "}"
+      + "}";
 
     String json = JsonTestHelper.serializeToString(subject);
     assertThat(json.replaceAll("\\\\n", "\n"), equalTo(expected));

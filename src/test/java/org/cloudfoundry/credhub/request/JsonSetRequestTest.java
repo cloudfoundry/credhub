@@ -1,15 +1,16 @@
 package org.cloudfoundry.credhub.request;
 
+import java.io.IOException;
+import java.util.Set;
+
+import javax.validation.ConstraintViolation;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cloudfoundry.credhub.credential.JsonCredentialValue;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.io.IOException;
-import java.util.Set;
-import javax.validation.ConstraintViolation;
 
 import static org.cloudfoundry.credhub.helper.JsonTestHelper.deserialize;
 import static org.cloudfoundry.credhub.helper.JsonTestHelper.deserializeAndValidate;
@@ -25,8 +26,8 @@ public class JsonSetRequestTest {
   @Test
   public void deserializesToJsonSetRequest() {
     String requestJson = "{\"name\":\"/my-namespace/subTree/credential-name\","
-        + "\"type\":\"json\","
-        + "\"value\":{\"key\":\"value\",\"fancy\":{\"num\":10},\"array\":[\"foo\",\"bar\"]}}";
+      + "\"type\":\"json\","
+      + "\"value\":{\"key\":\"value\",\"fancy\":{\"num\":10},\"array\":[\"foo\",\"bar\"]}}";
 
     JsonSetRequest deserialize = deserialize(requestJson, JsonSetRequest.class);
 
@@ -56,8 +57,8 @@ public class JsonSetRequestTest {
   @Test
   public void whenTypeHasUnusualCasing_shouldBeValid() {
     String requestJson = "{\"name\":\"/my-namespace/subTree/credential-name\","
-        + "\"type\":\"JsOn\","
-        + "\"value\":{\"key\":\"value\",\"fancy\":{\"num\":10},\"array\":[\"foo\",\"bar\"]}}";
+      + "\"type\":\"JsOn\","
+      + "\"value\":{\"key\":\"value\",\"fancy\":{\"num\":10},\"array\":[\"foo\",\"bar\"]}}";
 
     Set<ConstraintViolation<JsonSetRequest>> constraintViolations = deserializeAndValidate(requestJson, JsonSetRequest.class);
 

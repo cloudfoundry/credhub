@@ -33,8 +33,8 @@ public class PasswordGeneratorTest {
     final StringCredentialValue credential = new StringCredentialValue("fake-generated-password");
 
     when(passayStringCredentialGenerator.generateCredential(stringGenerationParameters))
-        .thenReturn(credential);
-    
+      .thenReturn(credential);
+
     assertThat(subject.generateCredential(stringGenerationParameters), equalTo(credential));
   }
 }

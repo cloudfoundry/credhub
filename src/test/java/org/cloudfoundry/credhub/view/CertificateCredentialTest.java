@@ -1,5 +1,8 @@
 package org.cloudfoundry.credhub.view;
 
+import java.time.Instant;
+import java.util.UUID;
+
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.Encryptor;
 import org.cloudfoundry.credhub.entity.EncryptedValue;
@@ -10,9 +13,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.skyscreamer.jsonassert.JSONAssert;
-
-import java.time.Instant;
-import java.util.UUID;
 
 import static org.cloudfoundry.credhub.helper.TestHelper.getBouncyCastleProvider;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -46,12 +46,12 @@ public class CertificateCredentialTest {
     credentialName = "/foo";
     uuid = UUID.randomUUID();
     entity = new CertificateCredentialVersion(credentialName)
-        .setEncryptor(encryptor)
-        .setCa(CertificateStringConstants.SELF_SIGNED_CA_CERT)
-        .setCertificate(CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT)
-        .setPrivateKey(CertificateStringConstants.PRIVATE_KEY)
-        .setExpiryDate(expiryDate)
-        .setUuid(uuid);
+      .setEncryptor(encryptor)
+      .setCa(CertificateStringConstants.SELF_SIGNED_CA_CERT)
+      .setCertificate(CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT)
+      .setPrivateKey(CertificateStringConstants.PRIVATE_KEY)
+      .setExpiryDate(expiryDate)
+      .setUuid(uuid);
   }
 
   @Test
@@ -62,18 +62,18 @@ public class CertificateCredentialTest {
     Instant expiryDateWithoutMillis = Instant.ofEpochSecond(expiryDate.getEpochSecond());
 
     String expectedJson = "{"
-        + "\"type\":\"certificate\","
-        + "\"expiry_date\":\"" + expiryDateWithoutMillis + "\","
-        + "\"transitional\":false,"
-        + "\"version_created_at\":null,"
-        + "\"id\":\"" + uuid.toString() + "\","
-        + "\"name\":\"" + credentialName + "\","
-        + "\"value\":{"
-        + "\"ca\":\"" + CertificateStringConstants.SELF_SIGNED_CA_CERT + "\","
-        + "\"certificate\":\"" + CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT + "\","
-        + "\"private_key\":\"" + CertificateStringConstants.PRIVATE_KEY + "\""
-        + "}"
-        + "}";
+      + "\"type\":\"certificate\","
+      + "\"expiry_date\":\"" + expiryDateWithoutMillis + "\","
+      + "\"transitional\":false,"
+      + "\"version_created_at\":null,"
+      + "\"id\":\"" + uuid.toString() + "\","
+      + "\"name\":\"" + credentialName + "\","
+      + "\"value\":{"
+      + "\"ca\":\"" + CertificateStringConstants.SELF_SIGNED_CA_CERT + "\","
+      + "\"certificate\":\"" + CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT + "\","
+      + "\"private_key\":\"" + CertificateStringConstants.PRIVATE_KEY + "\""
+      + "}"
+      + "}";
 
     JSONAssert.assertEquals(actualJson, expectedJson, true);
   }
@@ -95,22 +95,22 @@ public class CertificateCredentialTest {
   @Test
   public void includesKeysWithNullValues() throws Exception {
     final CredentialView subject = CertificateView
-        .fromEntity(new CertificateCredentialVersion(credentialName).setEncryptor(encryptor).setUuid(uuid));
+      .fromEntity(new CertificateCredentialVersion(credentialName).setEncryptor(encryptor).setUuid(uuid));
     final String actualJson = JsonTestHelper.serializeToString(subject);
 
     String expectedJson = "{"
-        + "\"type\":\"certificate\","
-        + "\"expiry_date\":null,"
-        + "\"transitional\":false,"
-        + "\"version_created_at\":null,"
-        + "\"id\":\""
-        + uuid.toString() + "\",\"name\":\""
-        + credentialName + "\",\"value\":{"
-        + "\"ca\":null,"
-        + "\"certificate\":null,"
-        + "\"private_key\":null"
-        + "}"
-        + "}";
+      + "\"type\":\"certificate\","
+      + "\"expiry_date\":null,"
+      + "\"transitional\":false,"
+      + "\"version_created_at\":null,"
+      + "\"id\":\""
+      + uuid.toString() + "\",\"name\":\""
+      + credentialName + "\",\"value\":{"
+      + "\"ca\":null,"
+      + "\"certificate\":null,"
+      + "\"private_key\":null"
+      + "}"
+      + "}";
 
     JSONAssert.assertEquals(actualJson, expectedJson, true);
   }

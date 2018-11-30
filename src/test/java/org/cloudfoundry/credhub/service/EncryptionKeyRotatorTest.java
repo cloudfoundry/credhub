@@ -1,17 +1,18 @@
 package org.cloudfoundry.credhub.service;
 
+import java.security.Key;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.data.domain.SliceImpl;
+
 import org.cloudfoundry.credhub.data.EncryptedValueDataService;
 import org.cloudfoundry.credhub.entity.EncryptedValue;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.springframework.data.domain.SliceImpl;
-
-import java.security.Key;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
@@ -51,13 +52,13 @@ public class EncryptionKeyRotatorTest {
     inactiveCanaries = newArrayList(oldUuid);
 
     when(encryptedValueDataService.findByCanaryUuids(inactiveCanaries))
-        .thenReturn(new SliceImpl<>(asList(encryptedValue1, encryptedValue2)))
-        .thenReturn(new SliceImpl<>(asList(encryptedValue3)))
-        .thenReturn(new SliceImpl<>(new ArrayList<>()));
+      .thenReturn(new SliceImpl<>(asList(encryptedValue1, encryptedValue2)))
+      .thenReturn(new SliceImpl<>(asList(encryptedValue3)))
+      .thenReturn(new SliceImpl<>(new ArrayList<>()));
 
     final EncryptionKeyRotator encryptionKeyRotator = new EncryptionKeyRotator(encryptedValueDataService,
-        encryptionKeyCanaryMapper,
-        keySet);
+      encryptionKeyCanaryMapper,
+      keySet);
 
     encryptionKeyRotator.rotate();
   }

@@ -1,5 +1,16 @@
 package org.cloudfoundry.credhub.data;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.OperationDeviceAction;
 import org.cloudfoundry.credhub.audit.entity.V2Permission;
@@ -12,31 +23,21 @@ import org.cloudfoundry.credhub.repository.PermissionRepository;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.cloudfoundry.credhub.request.PermissionsV2Request;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
 
 @Component
 public class PermissionDataService {
 
-  private PermissionRepository permissionRepository;
   private final CredentialDataService credentialDataService;
+  private PermissionRepository permissionRepository;
   private CEFAuditRecord auditRecord;
 
   @Autowired
   public PermissionDataService(
-      PermissionRepository permissionRepository,
-      CredentialDataService credentialDataService,
-      CEFAuditRecord auditRecord
+    PermissionRepository permissionRepository,
+    CredentialDataService credentialDataService,
+    CEFAuditRecord auditRecord
   ) {
     this.permissionRepository = permissionRepository;
     this.credentialDataService = credentialDataService;
@@ -53,13 +54,13 @@ public class PermissionDataService {
     return data;
   }
 
-  public List<PermissionData> savePermissionsWithLogging(List<PermissionEntry> permissions){
+  public List<PermissionData> savePermissionsWithLogging(List<PermissionEntry> permissions) {
     List<PermissionData> permissionDatas = savePermissions(permissions);
     auditRecord.addAllResources(permissionDatas);
 
     V2Permission requestDetails = new V2Permission(permissionDatas.get(0).getPath(),
-        permissionDatas.get(0).getActor(), permissionDatas.get(0).generateAccessControlOperations(),
-        OperationDeviceAction.ADD_PERMISSIONS);
+      permissionDatas.get(0).getActor(), permissionDatas.get(0).generateAccessControlOperations(),
+      OperationDeviceAction.ADD_PERMISSIONS);
     auditRecord.setRequestDetails(requestDetails);
     return permissionDatas;
   }
@@ -70,7 +71,7 @@ public class PermissionDataService {
       String path = permission.getPath();
       List<PermissionData> existingPermissions = permissionRepository.findAllByPath(path);
       result.add(upsertPermissions(path, existingPermissions, permission.getActor(),
-          permission.getAllowedOperations()));
+        permission.getAllowedOperations()));
     }
 
     return result;
@@ -106,7 +107,7 @@ public class PermissionDataService {
     return permissionRepository.deleteByPathAndActor(name, actor) > 0;
   }
 
-  public Set<String> findAllPathsByActor(String actor){
+  public Set<String> findAllPathsByActor(String actor) {
     Set<String> result = new HashSet<>();
 
     permissionRepository.findAllPathsForActorWithReadPermission(actor).forEach(i -> result.add(i));
@@ -132,7 +133,7 @@ public class PermissionDataService {
   }
 
   private PermissionData upsertPermissions(String path,
-                                 List<PermissionData> accessEntries, String actor, List<PermissionOperation> operations) {
+                                           List<PermissionData> accessEntries, String actor, List<PermissionOperation> operations) {
     PermissionData entry = findAccessEntryForActor(accessEntries, actor);
 
     if (entry == null) {
@@ -179,8 +180,8 @@ public class PermissionDataService {
   private PermissionData findAccessEntryForActor(List<PermissionData> accessEntries,
                                                  String actor) {
     Optional<PermissionData> temp = accessEntries.stream()
-        .filter(permissionData -> permissionData.getActor().equals(actor))
-        .findFirst();
+      .filter(permissionData -> permissionData.getActor().equals(actor))
+      .findFirst();
     return temp.orElse(null);
   }
 
@@ -191,10 +192,10 @@ public class PermissionDataService {
   public PermissionData putPermissions(String guid, PermissionsV2Request permissionsRequest) {
     PermissionData existingPermissionData = null;
 
-    try{
+    try {
       existingPermissionData = permissionRepository.findByUuid(UUID.fromString(guid));
-    }catch (IllegalArgumentException e){
-      if(e.getMessage().startsWith("Invalid UUID string:")){
+    } catch (IllegalArgumentException e) {
+      if (e.getMessage().startsWith("Invalid UUID string:")) {
         throw new PermissionDoesNotExistException("error.permission.does_not_exist");
       }
     }
@@ -202,22 +203,22 @@ public class PermissionDataService {
       throw new PermissionDoesNotExistException("error.permission.does_not_exist");
     }
 
-    if(!(existingPermissionData.getPath().equals(permissionsRequest.getPath()) &&
-          existingPermissionData.getActor().equals(permissionsRequest.getActor()))){
+    if (!(existingPermissionData.getPath().equals(permissionsRequest.getPath()) &&
+      existingPermissionData.getActor().equals(permissionsRequest.getActor()))) {
       throw new PermissionInvalidPathAndActorException("error.permission.wrong_path_and_actor");
     }
 
 
     PermissionData permissionData = new PermissionData(permissionsRequest.getPath(),
-        permissionsRequest.getActor(), permissionsRequest.getOperations());
+      permissionsRequest.getActor(), permissionsRequest.getOperations());
 
     permissionData.setUuid(existingPermissionData.getUuid());
     permissionRepository.save(permissionData);
     auditRecord.setResource(permissionData);
 
     V2Permission requestDetails = new V2Permission(permissionData.getPath(),
-        permissionData.getActor(), permissionData.generateAccessControlOperations(),
-        OperationDeviceAction.PUT_PERMISSIONS);
+      permissionData.getActor(), permissionData.generateAccessControlOperations(),
+      OperationDeviceAction.PUT_PERMISSIONS);
     auditRecord.setRequestDetails(requestDetails);
 
     return permissionData;
@@ -233,15 +234,15 @@ public class PermissionDataService {
     }
 
     PermissionData patchedRecord = new PermissionData(existingPermissionData.getPath(),
-        existingPermissionData.getActor(), operations);
+      existingPermissionData.getActor(), operations);
     patchedRecord.setUuid(existingPermissionData.getUuid());
 
     permissionRepository.save(patchedRecord);
     auditRecord.setResource(patchedRecord);
 
     V2Permission requestDetails = new V2Permission(patchedRecord.getPath(),
-        patchedRecord.getActor(), patchedRecord.generateAccessControlOperations(),
-        OperationDeviceAction.PATCH_PERMISSIONS);
+      patchedRecord.getActor(), patchedRecord.generateAccessControlOperations(),
+      OperationDeviceAction.PATCH_PERMISSIONS);
     auditRecord.setRequestDetails(requestDetails);
 
     return patchedRecord;
@@ -249,7 +250,7 @@ public class PermissionDataService {
 
   public PermissionData saveV2Permissions(PermissionsV2Request permissionsRequest) {
     PermissionData existingPermissionData = permissionRepository.findByPathAndActor(permissionsRequest.getPath(),
-        permissionsRequest.getActor());
+      permissionsRequest.getActor());
 
     if (existingPermissionData != null) {
       throw new PermissionAlreadyExistsException("error.permission.already_exists");
@@ -265,7 +266,7 @@ public class PermissionDataService {
     auditRecord.setResource(record);
 
     V2Permission requestDetails = new V2Permission(record.getPath(), record.getActor(),
-        record.generateAccessControlOperations(), OperationDeviceAction.ADD_PERMISSIONS);
+      record.generateAccessControlOperations(), OperationDeviceAction.ADD_PERMISSIONS);
     auditRecord.setRequestDetails(requestDetails);
 
     return record;
@@ -276,8 +277,8 @@ public class PermissionDataService {
     permissionRepository.delete(existingPermission);
 
     V2Permission requestDetails = new V2Permission(existingPermission.getPath(),
-        existingPermission.getActor(), existingPermission.generateAccessControlOperations(),
-        OperationDeviceAction.DELETE_PERMISSIONS);
+      existingPermission.getActor(), existingPermission.generateAccessControlOperations(),
+      OperationDeviceAction.DELETE_PERMISSIONS);
     auditRecord.setRequestDetails(requestDetails);
     auditRecord.setResource(existingPermission);
 

@@ -1,10 +1,10 @@
 package org.cloudfoundry.credhub.util;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.JsonNode;
-
 import java.io.IOException;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static com.fasterxml.jackson.databind.PropertyNamingStrategy.LOWER_CAMEL_CASE;
 import static com.fasterxml.jackson.databind.PropertyNamingStrategy.SNAKE_CASE;
@@ -16,8 +16,8 @@ public class JsonObjectMapper {
 
   public JsonObjectMapper() {
     snakeCaseMapper = new ObjectMapper()
-        .registerModule(createTimeModule())
-        .setPropertyNamingStrategy(SNAKE_CASE);
+      .registerModule(createTimeModule())
+      .setPropertyNamingStrategy(SNAKE_CASE);
 
   }
 
@@ -30,8 +30,8 @@ public class JsonObjectMapper {
       return snakeCaseMapper.readValue(stringValue, type);
     } catch (Exception e) {
       ObjectMapper camelCaseMapper = new ObjectMapper()
-          .registerModule(createTimeModule())
-          .setPropertyNamingStrategy(LOWER_CAMEL_CASE);
+        .registerModule(createTimeModule())
+        .setPropertyNamingStrategy(LOWER_CAMEL_CASE);
       return camelCaseMapper.readValue(stringValue, type);
     }
   }

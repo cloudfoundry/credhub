@@ -46,8 +46,8 @@ public class CertificateServiceTest {
     userContextHolder = new UserContextHolder();
     userContextHolder.setUserContext(userContext);
     subject = new CertificateService(certificateVersionDataService,
-        permissionCheckingService,
-        userContextHolder);
+      permissionCheckingService,
+      userContextHolder);
     credentialVersion.createName(credentialName);
     when(userContext.getActor()).thenReturn(actor);
     when(certificateVersionDataService.findByCredentialUUID(credentialUuid)).thenReturn(credentialVersion);
@@ -56,7 +56,7 @@ public class CertificateServiceTest {
   @Test
   public void findByUuid_ReturnsCertificateWithMatchingUuid() {
     when(permissionCheckingService.hasPermission(actor, credentialName, PermissionOperation.READ))
-        .thenReturn(true);
+      .thenReturn(true);
 
     CertificateCredentialVersion certificate = subject.findByCredentialUuid(credentialUuid);
 
@@ -66,7 +66,7 @@ public class CertificateServiceTest {
   @Test(expected = EntryNotFoundException.class)
   public void findByUuid_ThrowsIfUserDoesNotHaveReadAccess() {
     when(permissionCheckingService.hasPermission(actor, credentialName, PermissionOperation.READ))
-        .thenReturn(false);
+      .thenReturn(false);
 
     subject.findByCredentialUuid(credentialUuid);
   }

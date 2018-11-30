@@ -1,5 +1,7 @@
 package org.cloudfoundry.credhub.request;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -7,12 +9,10 @@ import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.generator.PassayStringCredentialGenerator;
 
-import java.util.Objects;
-
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT;
 
 @JsonInclude(NON_DEFAULT)
-public class StringGenerationParameters extends GenerationParameters{
+public class StringGenerationParameters extends GenerationParameters {
 
   // Value Parameters
   @JsonProperty(access = Access.WRITE_ONLY)
@@ -82,9 +82,9 @@ public class StringGenerationParameters extends GenerationParameters{
   @JsonIgnore
   public boolean isValid() {
     return !(!includeSpecial
-        && excludeNumber
-        && excludeUpper
-        && excludeLower
+      && excludeNumber
+      && excludeUpper
+      && excludeLower
     );
   }
 
@@ -96,15 +96,21 @@ public class StringGenerationParameters extends GenerationParameters{
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o) {
+      return true;
+    }
+
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
     StringGenerationParameters that = (StringGenerationParameters) o;
     return excludeLower == that.excludeLower &&
-        excludeNumber == that.excludeNumber &&
-        excludeUpper == that.excludeUpper &&
-        includeSpecial == that.includeSpecial &&
-        (Objects.equals(length, that.length)) &&
-        Objects.equals(username, that.username);
+      excludeNumber == that.excludeNumber &&
+      excludeUpper == that.excludeUpper &&
+      includeSpecial == that.includeSpecial &&
+      (Objects.equals(length, that.length)) &&
+      Objects.equals(username, that.username);
   }
 
   @Override
@@ -114,8 +120,8 @@ public class StringGenerationParameters extends GenerationParameters{
 
   public boolean passwordOptionsEqual(StringGenerationParameters that) {
     return excludeLower == that.excludeLower &&
-        excludeNumber == that.excludeNumber &&
-        excludeUpper == that.excludeUpper &&
-        includeSpecial == that.includeSpecial;
+      excludeNumber == that.excludeNumber &&
+      excludeUpper == that.excludeUpper &&
+      includeSpecial == that.includeSpecial;
   }
 }

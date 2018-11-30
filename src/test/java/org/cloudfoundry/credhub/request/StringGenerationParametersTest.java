@@ -17,7 +17,7 @@ public class StringGenerationParametersTest {
 
   @Test
   public void whenAllCharsetsAreExcluded_isInvalid() {
-    assertThat(makeParameters(true, true, true, true  ).isValid(), is(true));
+    assertThat(makeParameters(true, true, true, true).isValid(), is(true));
     assertThat(makeParameters(true, true, true, false).isValid(), is(true));
     assertThat(makeParameters(true, true, false, true).isValid(), is(false));
     assertThat(makeParameters(true, true, false, false).isValid(), is(true));
@@ -42,19 +42,19 @@ public class StringGenerationParametersTest {
 
     parameters = makeParameters(true, true, true, false);
     assertThat(objectMapper.writeValueAsString(parameters), equalTo("{"
-        + "\"exclude_lower\":true,"
-        + "\"exclude_upper\":true,"
-        + "\"include_special\":true"
-        + "}"));
+      + "\"exclude_lower\":true,"
+      + "\"exclude_upper\":true,"
+      + "\"include_special\":true"
+      + "}"));
   }
 
   private StringGenerationParameters makeParameters(boolean excludeLower, boolean excludeUpper,
-      boolean includeSpecial, boolean excludeNumber) {
+                                                    boolean includeSpecial, boolean excludeNumber) {
     return new StringGenerationParameters()
-        .setLength(30)
-        .setExcludeLower(excludeLower)
-        .setExcludeUpper(excludeUpper)
-        .setExcludeNumber(excludeNumber)
-        .setIncludeSpecial(includeSpecial);
+      .setLength(30)
+      .setExcludeLower(excludeLower)
+      .setExcludeUpper(excludeUpper)
+      .setExcludeNumber(excludeNumber)
+      .setIncludeSpecial(includeSpecial);
   }
 }

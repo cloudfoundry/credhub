@@ -1,11 +1,11 @@
 package org.cloudfoundry.credhub.request;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.cloudfoundry.credhub.credential.StringCredentialValue;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
 public class PasswordSetRequest extends BaseCredentialSetRequest<StringCredentialValue> {
 
@@ -24,12 +24,12 @@ public class PasswordSetRequest extends BaseCredentialSetRequest<StringCredentia
     this.password = password;
   }
 
-  public void setGenerationParameters(StringGenerationParameters generationParameters) {
-    this.generationParameters = generationParameters;
-  }
-
   public StringGenerationParameters getGenerationParameters() {
     return generationParameters;
+  }
+
+  public void setGenerationParameters(StringGenerationParameters generationParameters) {
+    this.generationParameters = generationParameters;
   }
 
   @Override

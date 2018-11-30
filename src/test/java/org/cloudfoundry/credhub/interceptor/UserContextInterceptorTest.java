@@ -1,5 +1,9 @@
 package org.cloudfoundry.credhub.interceptor;
 
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.security.core.Authentication;
+
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.auth.UserContextFactory;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
@@ -7,9 +11,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.springframework.security.core.Authentication;
-
-import javax.servlet.http.HttpServletRequest;
 
 import static junit.framework.TestCase.assertFalse;
 import static org.hamcrest.MatcherAssert.assertThat;

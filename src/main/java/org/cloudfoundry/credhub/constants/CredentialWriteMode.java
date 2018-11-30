@@ -9,17 +9,17 @@ public enum CredentialWriteMode {
 
   public final String mode;
 
+  CredentialWriteMode(String mode) {
+    this.mode = mode;
+  }
+
   @JsonValue
   public String forJackson() {
     return mode;
   }
 
-  CredentialWriteMode(String mode) {
-    this.mode = mode;
-  }
-
   @Override
-  public String toString(){
+  public String toString() {
     return mode;
   }
 }

@@ -1,8 +1,9 @@
 package org.cloudfoundry.credhub.service;
 
-import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
+
+import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
 
 import static org.cloudfoundry.credhub.constants.EncryptionConstants.ITERATIONS;
 

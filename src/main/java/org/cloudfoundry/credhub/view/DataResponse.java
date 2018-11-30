@@ -1,10 +1,10 @@
 package org.cloudfoundry.credhub.view;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import org.cloudfoundry.credhub.domain.CredentialVersion;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.cloudfoundry.credhub.domain.CredentialVersion;
 
 import static com.google.common.collect.Lists.newArrayList;
 

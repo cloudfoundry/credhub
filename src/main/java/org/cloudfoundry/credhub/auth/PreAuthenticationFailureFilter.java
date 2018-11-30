@@ -1,14 +1,15 @@
 package org.cloudfoundry.credhub.auth;
 
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
+import java.io.IOException;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 @Component
 public class PreAuthenticationFailureFilter extends OncePerRequestFilter {
@@ -20,9 +21,9 @@ public class PreAuthenticationFailureFilter extends OncePerRequestFilter {
 
   @Override
   protected void doFilterInternal(
-      HttpServletRequest request,
-      HttpServletResponse response,
-      FilterChain filterChain
+    HttpServletRequest request,
+    HttpServletResponse response,
+    FilterChain filterChain
   ) throws ServletException, IOException {
     try {
       filterChain.doFilter(request, response);

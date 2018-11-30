@@ -1,5 +1,9 @@
 package org.cloudfoundry.credhub.view;
 
+import java.io.IOException;
+import java.time.Instant;
+import java.util.UUID;
+
 import org.cloudfoundry.credhub.domain.Encryptor;
 import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
 import org.cloudfoundry.credhub.helper.JsonTestHelper;
@@ -7,10 +11,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.io.IOException;
-import java.time.Instant;
-import java.util.UUID;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -30,11 +30,11 @@ public class PasswordViewTest {
     encryptor = mock(Encryptor.class);
     uuid = UUID.randomUUID();
     entity = new PasswordCredentialVersion("/foo")
-        .setEncryptor(encryptor)
-        .setUuid(uuid);
+      .setEncryptor(encryptor)
+      .setUuid(uuid);
 
     when(encryptor.decrypt(any()))
-        .thenReturn("fake-plaintext-value");
+      .thenReturn("fake-plaintext-value");
   }
 
 
@@ -42,12 +42,12 @@ public class PasswordViewTest {
   public void itCanCreateViewFromEntity() throws IOException {
     PasswordView actual = (PasswordView) PasswordView.fromEntity(entity);
     assertThat(JsonTestHelper.serializeToString(actual), equalTo("{"
-        + "\"type\":\"password\","
-        + "\"version_created_at\":null,"
-        + "\"id\":\""
-        + uuid.toString() + "\",\"name\":\"/foo\","
-        + "\"value\":\"fake-plaintext-value\""
-        + "}"));
+      + "\"type\":\"password\","
+      + "\"version_created_at\":null,"
+      + "\"id\":\""
+      + uuid.toString() + "\",\"name\":\"/foo\","
+      + "\"value\":\"fake-plaintext-value\""
+      + "}"));
   }
 
   @Test

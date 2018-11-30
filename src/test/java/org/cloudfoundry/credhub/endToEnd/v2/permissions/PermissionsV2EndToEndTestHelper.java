@@ -1,16 +1,17 @@
 package org.cloudfoundry.credhub.endToEnd.v2.permissions;
 
-import org.cloudfoundry.credhub.helper.JsonTestHelper;
-import org.cloudfoundry.credhub.request.PermissionOperation;
-import org.cloudfoundry.credhub.view.PermissionsV2View;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+
+import org.cloudfoundry.credhub.helper.JsonTestHelper;
+import org.cloudfoundry.credhub.request.PermissionOperation;
+import org.cloudfoundry.credhub.view.PermissionsV2View;
 
 import static org.cloudfoundry.credhub.util.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.cloudfoundry.credhub.util.AuthConstants.USER_A_ACTOR_ID;
@@ -22,7 +23,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-class PermissionsV2EndToEndTestHelper {
+final class PermissionsV2EndToEndTestHelper {
+
+  private PermissionsV2EndToEndTestHelper() {
+  }
 
   static UUID setPermissions(MockMvc mockMvc, String credentialName, PermissionOperation operation) throws Exception {
     MockHttpServletRequestBuilder addPermissionRequest = post("/api/v2/permissions")
@@ -47,7 +51,7 @@ class PermissionsV2EndToEndTestHelper {
   }
 
   static ResultActions setPassword(MockMvc mockMvc, String credentialName, String passwordValue, String token) throws Exception {
-    Map<String, String> passwordRequestBody =  new HashMap<>();
+    Map<String, String> passwordRequestBody = new HashMap<>();
 
     passwordRequestBody.put("name", credentialName);
     passwordRequestBody.put("type", "password");

@@ -1,8 +1,5 @@
 package org.cloudfoundry.credhub.entity;
 
-import org.hibernate.annotations.NotFound;
-import org.hibernate.annotations.NotFoundAction;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
@@ -12,11 +9,14 @@ import javax.persistence.OneToOne;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.SecondaryTable;
 
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
+
 @Entity
 @DiscriminatorValue("user")
 @SecondaryTable(
-    name = UserCredentialVersionData.TABLE_NAME,
-    pkJoinColumns = {@PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")}
+  name = UserCredentialVersionData.TABLE_NAME,
+  pkJoinColumns = {@PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")}
 )
 public class UserCredentialVersionData extends CredentialVersionData<UserCredentialVersionData> {
   public static final String TABLE_NAME = "user_credential";
@@ -55,21 +55,21 @@ public class UserCredentialVersionData extends CredentialVersionData<UserCredent
     return this;
   }
 
+  public String getSalt() {
+    return salt;
+  }
+
   public UserCredentialVersionData setSalt(String salt) {
     this.salt = salt;
     return this;
   }
 
-  public String getSalt() {
-    return salt;
+  public EncryptedValue getEncryptedGenerationParameters() {
+    return encryptedGenerationParameters;
   }
 
   public UserCredentialVersionData setEncryptedGenerationParameters(EncryptedValue encryptedGenerationParameters) {
     this.encryptedGenerationParameters = encryptedGenerationParameters;
     return this;
-  }
-
-  public EncryptedValue getEncryptedGenerationParameters() {
-    return encryptedGenerationParameters;
   }
 }

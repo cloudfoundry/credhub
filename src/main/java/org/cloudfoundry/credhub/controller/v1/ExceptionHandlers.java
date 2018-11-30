@@ -1,15 +1,9 @@
 package org.cloudfoundry.credhub.controller.v1;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
-import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
-import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
-import com.jayway.jsonpath.InvalidJsonException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.cloudfoundry.credhub.exceptions.*;
-import org.cloudfoundry.credhub.view.ResponseError;
+import java.io.InvalidObjectException;
+
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.core.annotation.Order;
@@ -23,8 +17,33 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.InvalidObjectException;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import com.jayway.jsonpath.InvalidJsonException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
+import org.cloudfoundry.credhub.exceptions.InvalidModeException;
+import org.cloudfoundry.credhub.exceptions.InvalidPermissionException;
+import org.cloudfoundry.credhub.exceptions.InvalidPermissionOperationException;
+import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException;
+import org.cloudfoundry.credhub.exceptions.InvalidRemoteAddressException;
+import org.cloudfoundry.credhub.exceptions.KeyNotFoundException;
+import org.cloudfoundry.credhub.exceptions.MalformedCertificateException;
+import org.cloudfoundry.credhub.exceptions.MalformedPrivateKeyException;
+import org.cloudfoundry.credhub.exceptions.MaximumSizeException;
+import org.cloudfoundry.credhub.exceptions.MissingCertificateException;
+import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
+import org.cloudfoundry.credhub.exceptions.PermissionAlreadyExistsException;
+import org.cloudfoundry.credhub.exceptions.PermissionDoesNotExistException;
+import org.cloudfoundry.credhub.exceptions.PermissionException;
+import org.cloudfoundry.credhub.exceptions.PermissionInvalidPathAndActorException;
+import org.cloudfoundry.credhub.exceptions.ReadOnlyException;
+import org.cloudfoundry.credhub.exceptions.UnreadableCertificateException;
+import org.cloudfoundry.credhub.view.ResponseError;
 
 import static org.springframework.core.Ordered.HIGHEST_PRECEDENCE;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -97,66 +116,66 @@ public class ExceptionHandlers {
   }
 
   @ExceptionHandler(ParameterizedValidationException.class)
-  @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ResponseError handleParameterizedValidationException(
-      ParameterizedValidationException exception
+    ParameterizedValidationException exception
   ) {
     return constructError(exception.getMessage(), exception.getParameters());
   }
 
   @ExceptionHandler(UnrecognizedPropertyException.class)
-  @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ResponseError handleUnrecognizedPropertyException(UnrecognizedPropertyException exception) {
     return constructError("error.invalid_json_key", exception.getPropertyName());
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
-  @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ResponseError handleMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
     return constructError(exception.getBindingResult().getAllErrors().get(0).getDefaultMessage());
   }
 
   @ExceptionHandler(InvalidRemoteAddressException.class)
-  @ResponseStatus(value = HttpStatus.UNAUTHORIZED)
-  public ResponseError handleInvalidRemoteAddressException(){
+  @ResponseStatus(HttpStatus.UNAUTHORIZED)
+  public ResponseError handleInvalidRemoteAddressException() {
     return constructError("error.invalid_remote_address");
   }
 
   @ExceptionHandler(ReadOnlyException.class)
-  @ResponseStatus(value = HttpStatus.SERVICE_UNAVAILABLE)
-  public ResponseError handleReadOnlyException(){
+  @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+  public ResponseError handleReadOnlyException() {
     return constructError("error.read_only_mode");
   }
 
   @ExceptionHandler(UnreadableCertificateException.class)
-  @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-  public ResponseError handleUnreadableCertificateException(){
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ResponseError handleUnreadableCertificateException() {
     return constructError("error.unreadable_certificate");
   }
 
   @ExceptionHandler(MissingCertificateException.class)
-  @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-  public ResponseError handleMissingCertificateException(){
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ResponseError handleMissingCertificateException() {
     return constructError("error.missing_certificate");
   }
 
   @ExceptionHandler(MalformedCertificateException.class)
-  @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-  public ResponseError handleMalformedCertificateException(){
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ResponseError handleMalformedCertificateException() {
     return constructError("error.invalid_certificate_value");
   }
 
   @ExceptionHandler({InvalidJsonException.class})
-  @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ResponseError handleInputNotReadableException(Exception exception) {
 
     final Throwable cause = exception.getCause() == null ? exception : exception.getCause();
-    
+
     if (cause instanceof UnrecognizedPropertyException) {
       return constructError("error.invalid_json_key", ((UnrecognizedPropertyException) cause).getPropertyName());
     } else if (cause instanceof InvalidTypeIdException
-        || (cause instanceof JsonMappingException && cause.getMessage()
-        .contains("missing property 'type'"))) {
+      || (cause instanceof JsonMappingException && cause.getMessage()
+      .contains("missing property 'type'"))) {
       return constructError("error.invalid_type_with_set_prompt");
     }
     return badRequestResponse();
@@ -176,7 +195,7 @@ public class ExceptionHandlers {
 
   @ExceptionHandler({InvalidModeException.class})
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ResponseError handleInvalidMode(InvalidModeException e){
+  public ResponseError handleInvalidMode(InvalidModeException e) {
     return constructError(e.getMessage());
   }
 
@@ -205,19 +224,19 @@ public class ExceptionHandlers {
   }
 
   @ExceptionHandler(InvalidObjectException.class)
-  @ResponseStatus(value = BAD_REQUEST)
+  @ResponseStatus(BAD_REQUEST)
   public ResponseError handleInvalidTypeAccess(InvalidObjectException exception) {
     return constructError(exception.getMessage());
   }
 
   @ExceptionHandler(MaximumSizeException.class)
-  @ResponseStatus(value = PAYLOAD_TOO_LARGE)
+  @ResponseStatus(PAYLOAD_TOO_LARGE)
   public ResponseError handleMaximumSizeException(MaximumSizeException exception) {
     return constructError("error.exceeds_maximum_size");
   }
 
   @ExceptionHandler(MalformedPrivateKeyException.class)
-  @ResponseStatus(value = BAD_REQUEST)
+  @ResponseStatus(BAD_REQUEST)
   public ResponseError handleMalformedPrivateKey(MalformedPrivateKeyException exception) {
     return constructError("error.malformed_private_key");
   }
@@ -242,7 +261,7 @@ public class ExceptionHandlers {
 
     } else if (cause instanceof InvalidFormatException) {
       for (InvalidFormatException.Reference reference : ((InvalidFormatException) cause)
-          .getPath()) {
+        .getPath()) {
         if ("operations".equals(reference.getFieldName())) {
           return constructError("error.permission.invalid_operation");
         }

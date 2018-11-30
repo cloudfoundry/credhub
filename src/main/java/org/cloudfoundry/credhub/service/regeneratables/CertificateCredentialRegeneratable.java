@@ -19,12 +19,12 @@ public class CertificateCredentialRegeneratable implements Regeneratable {
 
     if ((isEmpty(certificateCredential.getCaName()) && !reader.isSelfSigned())) {
       throw new ParameterizedValidationException(
-          "error.cannot_regenerate_non_generated_certificate");
+        "error.cannot_regenerate_non_generated_certificate");
     }
 
     CertificateGenerationParameters certificateGenerationParameters = new CertificateGenerationParameters(
-        reader,
-        certificateCredential.getCaName()
+      reader,
+      certificateCredential.getCaName()
     );
 
     CertificateGenerateRequest generateRequest = new CertificateGenerateRequest();

@@ -19,7 +19,8 @@ public class SshCredentialValue implements CredentialValue {
   private String publicKeyFingerprint;
 
   @SuppressWarnings("unused")
-  public SshCredentialValue() {}
+  public SshCredentialValue() {
+  }
 
   public SshCredentialValue(String publicKey, String privateKey, String publicKeyFingerprint) {
     this.publicKey = publicKey;

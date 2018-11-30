@@ -1,5 +1,17 @@
 package org.cloudfoundry.credhub.integration;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.WebApplicationContext;
+
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import org.cloudfoundry.credhub.CredentialManagerApp;
@@ -13,17 +25,6 @@ import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.context.WebApplicationContext;
 
 import static org.apache.commons.lang3.math.NumberUtils.isDigits;
 import static org.cloudfoundry.credhub.helper.RequestHelper.generateUser;
@@ -34,7 +35,9 @@ import static org.hamcrest.core.IsNot.not;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -45,20 +48,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 public class UserGenerationTest {
 
-  @Autowired
-  private WebApplicationContext webApplicationContext;
-
-  private MockMvc mockMvc;
-
   private final String credentialName1 = "/" + this.getClass().getSimpleName() + "1";
   private final String credentialName2 = "/" + this.getClass().getSimpleName() + "2";
+  @Autowired
+  private WebApplicationContext webApplicationContext;
+  private MockMvc mockMvc;
 
   @Before
   public void beforeEach() throws Exception {
     mockMvc = MockMvcBuilders
-        .webAppContextSetup(webApplicationContext)
-        .apply(springSecurity())
-        .build();
+      .webAppContextSetup(webApplicationContext)
+      .apply(springSecurity())
+      .build();
   }
 
   @Test
@@ -67,24 +68,24 @@ public class UserGenerationTest {
     getPost(credentialName2);
 
     MvcResult cred1 = this.mockMvc.perform(get("/api/v1/data?name=" + credentialName1)
-        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.data[0].value.username", isUsername()))
-        .andExpect(jsonPath("$.data[0].value.password", isPassword()))
-        .andReturn();
+      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.data[0].value.username", isUsername()))
+      .andExpect(jsonPath("$.data[0].value.password", isPassword()))
+      .andReturn();
 
 
     MvcResult cred2 = this.mockMvc.perform(get("/api/v1/data?name=" + credentialName2)
-        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON))
-        .andDo(print())
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.data[0].value.username", isUsername()))
-        .andExpect(jsonPath("$.data[0].value.password", isPassword()))
-        .andReturn();
+      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON))
+      .andDo(print())
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.data[0].value.username", isUsername()))
+      .andExpect(jsonPath("$.data[0].value.password", isPassword()))
+      .andReturn();
 
     JSONObject jsonCred1 = getJsonObject(cred1);
     JSONObject jsonCred2 = getJsonObject(cred2);
@@ -94,75 +95,75 @@ public class UserGenerationTest {
   }
 
   @Test
-  public void generateAUserCredential_afterSettingTheCredential_whenTheParametersAreNull_overwritesTheCredential() throws Exception{
+  public void generateAUserCredential_afterSettingTheCredential_whenTheParametersAreNull_overwritesTheCredential() throws Exception {
     String user = "userA";
     String password = "passwordA";
 
     MockHttpServletRequestBuilder setRequest = put("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON_UTF8)
-        .content("{" +
-            "\"type\":\"user\"," +
-            "\"name\":\"" + credentialName1 + "\"," +
-            "\"value\": {\"username\":\"" + user + "\",\"password\":\"" + password + "\"} " +
-            "}");
+      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON_UTF8)
+      .content("{" +
+        "\"type\":\"user\"," +
+        "\"name\":\"" + credentialName1 + "\"," +
+        "\"value\": {\"username\":\"" + user + "\",\"password\":\"" + password + "\"} " +
+        "}");
 
     mockMvc.perform(setRequest)
-        .andDo(print())
-        .andExpect(status().isOk());
+      .andDo(print())
+      .andExpect(status().isOk());
 
     MockHttpServletRequestBuilder generateRequest = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON_UTF8)
-        .content("{\"type\":\"user\",\"name\":\"" + credentialName1 + "\"}");
+      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON_UTF8)
+      .content("{\"type\":\"user\",\"name\":\"" + credentialName1 + "\"}");
 
     DocumentContext response = JsonPath.parse(mockMvc.perform(generateRequest).andExpect(status().isOk())
-        .andDo(print())
-        .andReturn()
-        .getResponse()
-        .getContentAsString());
+      .andDo(print())
+      .andReturn()
+      .getResponse()
+      .getContentAsString());
 
     assertThat(response.read("$.value.password").toString(), is(not(equalTo(password))));
   }
 
   @Test
-  public void generateAUserCredential_afterSettingTheCredential_whenTheParametersAreNotNull_doesNotOverwriteTheCredential() throws Exception{
+  public void generateAUserCredential_afterSettingTheCredential_whenTheParametersAreNotNull_doesNotOverwriteTheCredential() throws Exception {
     String user = "userA";
     String password = "passwordA";
 
     MockHttpServletRequestBuilder setRequest = put("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON_UTF8)
-        .content("{" +
-            "\"type\":\"user\"," +
-            "\"name\":\"" + credentialName1 + "\"," +
-            "\"value\": {\"username\":\"" + user + "\",\"password\":\"" + password + "\"} " +
-            "}");
+      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON_UTF8)
+      .content("{" +
+        "\"type\":\"user\"," +
+        "\"name\":\"" + credentialName1 + "\"," +
+        "\"value\": {\"username\":\"" + user + "\",\"password\":\"" + password + "\"} " +
+        "}");
 
     mockMvc.perform(setRequest)
-        .andDo(print())
-        .andExpect(status().isOk());
+      .andDo(print())
+      .andExpect(status().isOk());
 
     MockHttpServletRequestBuilder generateRequest = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON_UTF8)
-        .content("{" +
-            "\"type\":\"user\"," +
-            "\"name\":\"" + credentialName1 + "\"," +
-            "\"parameters\": {" +
-            "    \"length\": 99" +
-            "  }" +
-            "}");
+      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON_UTF8)
+      .content("{" +
+        "\"type\":\"user\"," +
+        "\"name\":\"" + credentialName1 + "\"," +
+        "\"parameters\": {" +
+        "    \"length\": 99" +
+        "  }" +
+        "}");
 
     DocumentContext response = JsonPath.parse(mockMvc.perform(generateRequest).andExpect(status().isOk())
-        .andDo(print())
-        .andReturn()
-        .getResponse()
-        .getContentAsString());
+      .andDo(print())
+      .andReturn()
+      .getResponse()
+      .getContentAsString());
 
     assertThat(response.read("$.value.password").toString().length(), equalTo(99));
   }
@@ -170,82 +171,82 @@ public class UserGenerationTest {
   @Test
   public void generatesOnlyPasswordWhenGivenStaticUsernameProvidedInValues() throws Exception {
     MockHttpServletRequestBuilder post = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        //language=JSON
-        .content("{  \"name\": \"" + credentialName1 + "\", \n" +
-            "  \"type\": \"user\", \n" +
-            "  \"value\": {\n" +
-            "    \"username\": \"luke\" \n" +
-            "  }\n" +
-            "}");
+      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{  \"name\": \"" + credentialName1 + "\", \n" +
+        "  \"type\": \"user\", \n" +
+        "  \"value\": {\n" +
+        "    \"username\": \"luke\" \n" +
+        "  }\n" +
+        "}");
 
     this.mockMvc.perform(post)
-        .andDo(print())
-        .andExpect(status().isOk());
+      .andDo(print())
+      .andExpect(status().isOk());
 
     this.mockMvc.perform(get("/api/v1/data?name=" + credentialName1)
-        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON))
-        .andDo(print())
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.data[0].value.username", equalTo("luke")))
-        .andExpect(jsonPath("$.data[0].value.password", isPassword()))
-        .andReturn();
+      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON))
+      .andDo(print())
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.data[0].value.username", equalTo("luke")))
+      .andExpect(jsonPath("$.data[0].value.password", isPassword()))
+      .andReturn();
   }
 
   @Test
   public void generatesOnlyPasswordWhenGivenStaticUsernameProvidedInParams() throws Exception {
     MockHttpServletRequestBuilder post = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        //language=JSON
-        .content("{  \"name\": \"" + credentialName1 + "\", \n" +
-            "  \"type\": \"user\", \n" +
-            "  \"parameters\": {\n" +
-            "    \"username\": \"luke\" \n" +
-            "  }\n" +
-            "}");
+      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{  \"name\": \"" + credentialName1 + "\", \n" +
+        "  \"type\": \"user\", \n" +
+        "  \"parameters\": {\n" +
+        "    \"username\": \"luke\" \n" +
+        "  }\n" +
+        "}");
 
     this.mockMvc.perform(post)
-        .andDo(print())
-        .andExpect(status().isOk());
+      .andDo(print())
+      .andExpect(status().isOk());
 
     this.mockMvc.perform(get("/api/v1/data?name=" + credentialName1)
-        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON))
-        .andDo(print())
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.data[0].value.username", equalTo("luke")))
-        .andExpect(jsonPath("$.data[0].value.password", isPassword()))
-        .andReturn();
+      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON))
+      .andDo(print())
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.data[0].value.username", equalTo("luke")))
+      .andExpect(jsonPath("$.data[0].value.password", isPassword()))
+      .andReturn();
   }
 
   @Test
   public void whenGivenPasswordParameters_shouldGeneratePasswordFromParameters() throws Exception {
     MockHttpServletRequestBuilder post = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{" +
-            "\"name\": \"" + credentialName1 + "\"," +
-            "\"type\": \"user\"," +
-            "\"parameters\": {" +
-            "\"length\": 40," +
-            "\"exclude_upper\": true," +
-            "\"exclude_lower\": true," +
-            "\"exclude_number\": false," +
-            "\"include_special\": false" +
-            "}" +
-            "}"
-        );
+      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      .content("{" +
+        "\"name\": \"" + credentialName1 + "\"," +
+        "\"type\": \"user\"," +
+        "\"parameters\": {" +
+        "\"length\": 40," +
+        "\"exclude_upper\": true," +
+        "\"exclude_lower\": true," +
+        "\"exclude_number\": false," +
+        "\"include_special\": false" +
+        "}" +
+        "}"
+      );
 
     final MockHttpServletResponse response = this.mockMvc.perform(post).andExpect(status()
-        .isOk()).andReturn().getResponse();
+      .isOk()).andReturn().getResponse();
 
     final DocumentContext parsedResponse = JsonPath.parse(response.getContentAsString());
 
@@ -261,27 +262,27 @@ public class UserGenerationTest {
   @Test
   public void whenGivenAUsernameAndPasswordParameters_usesUsernameAndGeneratesPassword() throws Exception {
     MockHttpServletRequestBuilder post = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{" +
-            "\"name\": \"" + credentialName1 + "\"," +
-            "\"type\": \"user\"," +
-            "\"value\": {" +
-            "\"username\": \"test-username\"" +
-            "}," +
-            "\"parameters\": {" +
-            "\"length\": 40," +
-            "\"exclude_upper\": true," +
-            "\"exclude_lower\": true," +
-            "\"exclude_number\": false," +
-            "\"include_special\": false" +
-            "}" +
-            "}"
-        );
+      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      .content("{" +
+        "\"name\": \"" + credentialName1 + "\"," +
+        "\"type\": \"user\"," +
+        "\"value\": {" +
+        "\"username\": \"test-username\"" +
+        "}," +
+        "\"parameters\": {" +
+        "\"length\": 40," +
+        "\"exclude_upper\": true," +
+        "\"exclude_lower\": true," +
+        "\"exclude_number\": false," +
+        "\"include_special\": false" +
+        "}" +
+        "}"
+      );
 
     final MockHttpServletResponse response = this.mockMvc.perform(post).andExpect(status()
-        .isOk()).andReturn().getResponse();
+      .isOk()).andReturn().getResponse();
 
     final DocumentContext parsedResponse = JsonPath.parse(response.getContentAsString());
 
@@ -296,32 +297,32 @@ public class UserGenerationTest {
   @Test
   public void returnsAConsistentPasswordHash() throws Exception {
     MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{" +
-            "\"name\": \"" + credentialName1 + "\"," +
-            "\"type\": \"user\"," +
-            "\"value\": {" +
-            "\"username\": \"test-username\"" +
-            "}" +
-            "}"
-        );
+      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      .content("{" +
+        "\"name\": \"" + credentialName1 + "\"," +
+        "\"type\": \"user\"," +
+        "\"value\": {" +
+        "\"username\": \"test-username\"" +
+        "}" +
+        "}"
+      );
 
     final MockHttpServletResponse postResponse = this.mockMvc.perform(postRequest)
-        .andExpect(status().isOk())
-        .andReturn()
-        .getResponse();
+      .andExpect(status().isOk())
+      .andReturn()
+      .getResponse();
 
     final MockHttpServletRequestBuilder getRequest = get("/api/v1/data?name=" + credentialName1)
-        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON);
+      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON);
 
     final MockHttpServletResponse getResponse = this.mockMvc.perform(getRequest)
-        .andExpect(status().isOk())
-        .andReturn()
-        .getResponse();
+      .andExpect(status().isOk())
+      .andReturn()
+      .getResponse();
 
 
     final DocumentContext parsedPostResponse = JsonPath.parse(postResponse.getContentAsString());
@@ -415,23 +416,23 @@ public class UserGenerationTest {
   private JSONObject getJsonObject(MvcResult cred1) throws Exception {
     JSONObject jsonCred1 = new JSONObject(cred1.getResponse().getContentAsString());
     return jsonCred1
-        .getJSONArray("data")
-        .getJSONObject(0)
-        .getJSONObject("value");
+      .getJSONArray("data")
+      .getJSONObject(0)
+      .getJSONObject("value");
   }
 
   private void getPost(String name) throws Exception {
     MockHttpServletRequestBuilder post = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{"
-            + "  \"name\": \"" + name + "\","
-            + "  \"type\": \"user\""
-            + "}");
+      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      .content("{"
+        + "  \"name\": \"" + name + "\","
+        + "  \"type\": \"user\""
+        + "}");
 
     this.mockMvc.perform(post)
-        .andExpect(status().isOk());
+      .andExpect(status().isOk());
   }
 
   private Matcher<String> isUsername() {

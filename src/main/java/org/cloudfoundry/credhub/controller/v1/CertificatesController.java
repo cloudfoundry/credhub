@@ -1,17 +1,7 @@
 package org.cloudfoundry.credhub.controller.v1;
 
-import org.apache.commons.lang3.StringUtils;
-import org.cloudfoundry.credhub.audit.CEFAuditRecord;
-import org.cloudfoundry.credhub.audit.OperationDeviceAction;
-import org.cloudfoundry.credhub.audit.entity.GetCertificateByName;
-import org.cloudfoundry.credhub.audit.entity.RegenerateCertificate;
-import org.cloudfoundry.credhub.audit.entity.UpdateTransitionalVersion;
-import org.cloudfoundry.credhub.handler.CertificatesHandler;
-import org.cloudfoundry.credhub.request.CertificateRegenerateRequest;
-import org.cloudfoundry.credhub.request.UpdateTransitionalVersionRequest;
-import org.cloudfoundry.credhub.view.CertificateCredentialsView;
-import org.cloudfoundry.credhub.view.CertificateView;
-import org.cloudfoundry.credhub.view.CredentialView;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -25,7 +15,18 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import org.apache.commons.lang3.StringUtils;
+import org.cloudfoundry.credhub.audit.CEFAuditRecord;
+import org.cloudfoundry.credhub.audit.OperationDeviceAction;
+import org.cloudfoundry.credhub.audit.entity.GetCertificateByName;
+import org.cloudfoundry.credhub.audit.entity.RegenerateCertificate;
+import org.cloudfoundry.credhub.audit.entity.UpdateTransitionalVersion;
+import org.cloudfoundry.credhub.handler.CertificatesHandler;
+import org.cloudfoundry.credhub.request.CertificateRegenerateRequest;
+import org.cloudfoundry.credhub.request.UpdateTransitionalVersionRequest;
+import org.cloudfoundry.credhub.view.CertificateCredentialsView;
+import org.cloudfoundry.credhub.view.CertificateView;
+import org.cloudfoundry.credhub.view.CredentialView;
 
 import static org.cloudfoundry.credhub.controller.v1.CertificatesController.API_V1_CERTIFICATES;
 
@@ -47,7 +48,7 @@ public class CertificatesController {
   @PostMapping(value = "/{certificateId}/regenerate", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ResponseStatus(HttpStatus.OK)
   public CredentialView regenerate(@RequestBody(required = false) CertificateRegenerateRequest requestBody,
-      @PathVariable String certificateId) {
+                                   @PathVariable String certificateId) {
     if (requestBody == null) {
       requestBody = new CertificateRegenerateRequest();
     }
@@ -71,7 +72,7 @@ public class CertificatesController {
   @PutMapping(value = "/{certificateId}/update_transitional_version", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ResponseStatus(HttpStatus.OK)
   public List<CertificateView> updateTransitionalVersion(@RequestBody UpdateTransitionalVersionRequest requestBody,
-      @PathVariable String certificateId) {
+                                                         @PathVariable String certificateId) {
     UpdateTransitionalVersion details = new UpdateTransitionalVersion();
     details.setVersion(requestBody.getVersionUuid());
     auditRecord.setRequestDetails(details);

@@ -6,15 +6,16 @@ import org.cloudfoundry.credhub.domain.ValueCredentialVersion;
 @SuppressWarnings("unused")
 public class ValueView extends CredentialView {
 
-  public ValueView() {}
+  public ValueView() {
+  }
 
   ValueView(ValueCredentialVersion valueCredential) {
     super(
-        valueCredential.getVersionCreatedAt(),
-        valueCredential.getUuid(),
-        valueCredential.getName(),
-        valueCredential.getCredentialType(),
-        new StringCredentialValue((String) valueCredential.getValue())
+      valueCredential.getVersionCreatedAt(),
+      valueCredential.getUuid(),
+      valueCredential.getName(),
+      valueCredential.getCredentialType(),
+      new StringCredentialValue((String) valueCredential.getValue())
     );
   }
 }

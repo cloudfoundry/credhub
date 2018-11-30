@@ -1,15 +1,8 @@
 package org.cloudfoundry.credhub.endToEnd.v2.permissions;
 
-import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.helper.JsonTestHelper;
-import org.cloudfoundry.credhub.request.PermissionOperation;
-import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
-import org.cloudfoundry.credhub.view.PermissionsV2View;
-import org.hamcrest.core.IsEqual;
-import org.json.JSONObject;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import java.util.Collections;
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -20,8 +13,16 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.util.Collections;
-import java.util.UUID;
+import org.cloudfoundry.credhub.CredentialManagerApp;
+import org.cloudfoundry.credhub.helper.JsonTestHelper;
+import org.cloudfoundry.credhub.request.PermissionOperation;
+import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
+import org.cloudfoundry.credhub.view.PermissionsV2View;
+import org.hamcrest.core.IsEqual;
+import org.json.JSONObject;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import static org.cloudfoundry.credhub.util.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.cloudfoundry.credhub.util.AuthConstants.NO_PERMISSIONS_TOKEN;
@@ -55,7 +56,7 @@ public class DeletePermissionsV2EndToEndTest {
   }
 
   @Test
-  public void DELETE_whenPermissionIsDeletedForUserA_UserACannotAccessCredentialInAnyWay() throws Exception{
+  public void DELETE_whenPermissionIsDeletedForUserA_UserACannotAccessCredentialInAnyWay() throws Exception {
     String credentialName = "/test";
     String passwordValue = "passwordValue";
 
@@ -78,7 +79,7 @@ public class DeletePermissionsV2EndToEndTest {
   }
 
   @Test
-  public void DELETE_whenUserDoesNotHavePermission_CannotDeleteThePermission() throws Exception{
+  public void DELETE_whenUserDoesNotHavePermission_CannotDeleteThePermission() throws Exception {
     String credentialName = "/test";
     String passwordValue = "passwordValue";
 
@@ -95,7 +96,7 @@ public class DeletePermissionsV2EndToEndTest {
   }
 
   @Test
-  public void DELETE_whenUserDeletesAPermission_withAnInvalidGuid_theyReceiveA404() throws Exception{
+  public void DELETE_whenUserDeletesAPermission_withAnInvalidGuid_theyReceiveA404() throws Exception {
     String invalidGuid = "invalid";
 
     MockHttpServletRequestBuilder patchPermissionRequest = delete("/api/v2/permissions/" + invalidGuid)
@@ -109,7 +110,7 @@ public class DeletePermissionsV2EndToEndTest {
   }
 
   @Test
-  public void DELETE_whenUserDeletesAPermission_withAGuidThatDoeNotExist_theyReceiveA404() throws Exception{
+  public void DELETE_whenUserDeletesAPermission_withAGuidThatDoeNotExist_theyReceiveA404() throws Exception {
     String nonExistingGuid = UUID.randomUUID().toString();
 
     MockHttpServletRequestBuilder patchPermissionRequest = delete("/api/v2/permissions/" + nonExistingGuid)

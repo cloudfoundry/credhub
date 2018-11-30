@@ -14,6 +14,10 @@ function lint_scripts() {
     shellcheck scripts/*
 }
 
+function lint_java() {
+    ./gradlew checkstyleMain checkstyleTest
+}
+
 function lint_kotlin() {
     ./gradlew ktlint
 }
@@ -23,6 +27,7 @@ function main() {
     go_to_project_root_directory
     lint_scripts
     lint_kotlin
+    lint_java
 }
 
 main "$@"

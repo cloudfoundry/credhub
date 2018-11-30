@@ -2,8 +2,10 @@ package db.migration.common;
 
 import java.util.List;
 import java.util.UUID;
-import org.flywaydb.core.api.migration.spring.SpringJdbcMigration;
+
 import org.springframework.jdbc.core.JdbcTemplate;
+
+import org.flywaydb.core.api.migration.spring.SpringJdbcMigration;
 
 public class V11_1__set_uuid_in_named_certificate_authority_where_null implements
     SpringJdbcMigration {

@@ -4,6 +4,8 @@ import org.cloudfoundry.credhub.audit.OperationDeviceAction;
 
 public class GetPermissions implements RequestDetails {
 
+  private String credentialName;
+
   public GetPermissions() {
 
   }
@@ -11,8 +13,6 @@ public class GetPermissions implements RequestDetails {
   public GetPermissions(String credentialName) {
     this.credentialName = credentialName;
   }
-
-  private String credentialName;
 
   public String getCredentialName() {
     return credentialName;

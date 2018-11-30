@@ -1,9 +1,10 @@
 package org.cloudfoundry.credhub.domain;
 
-import org.cloudfoundry.credhub.entity.EncryptedValue;
-import org.cloudfoundry.credhub.service.RetryingEncryptionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import org.cloudfoundry.credhub.entity.EncryptedValue;
+import org.cloudfoundry.credhub.service.RetryingEncryptionService;
 
 @Component
 public class Encryptor {
@@ -28,9 +29,9 @@ public class Encryptor {
 
   public String decrypt(EncryptedValue encryption) {
     if (encryption == null ||
-        encryption.getEncryptionKeyUuid() == null ||
-        encryption.getEncryptedValue() == null ||
-        encryption.getNonce() == null) {
+      encryption.getEncryptionKeyUuid() == null ||
+      encryption.getEncryptedValue() == null ||
+      encryption.getNonce() == null) {
       return null;
     }
     try {

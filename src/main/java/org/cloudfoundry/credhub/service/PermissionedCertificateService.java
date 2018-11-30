@@ -1,5 +1,14 @@
 package org.cloudfoundry.credhub.service;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
@@ -15,14 +24,6 @@ import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
 import org.cloudfoundry.credhub.request.PermissionOperation;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -39,12 +40,12 @@ public class PermissionedCertificateService {
 
   @Autowired
   public PermissionedCertificateService(
-      PermissionedCredentialService permissionedCredentialService, CertificateDataService certificateDataService,
-      PermissionCheckingService permissionCheckingService, UserContextHolder userContextHolder,
-      CertificateVersionDataService certificateVersionDataService,
-      CertificateCredentialFactory certificateCredentialFactory,
-      CredentialVersionDataService credentialVersionDataService,
-      CEFAuditRecord auditRecord) {
+    PermissionedCredentialService permissionedCredentialService, CertificateDataService certificateDataService,
+    PermissionCheckingService permissionCheckingService, UserContextHolder userContextHolder,
+    CertificateVersionDataService certificateVersionDataService,
+    CertificateCredentialFactory certificateCredentialFactory,
+    CredentialVersionDataService credentialVersionDataService,
+    CEFAuditRecord auditRecord) {
     this.permissionedCredentialService = permissionedCredentialService;
     this.certificateDataService = certificateDataService;
     this.permissionCheckingService = permissionCheckingService;
@@ -56,25 +57,25 @@ public class PermissionedCertificateService {
   }
 
   public CredentialVersion save(
-      CredentialVersion existingCredentialVersion,
-      CertificateCredentialValue credentialValue,
-      BaseCredentialGenerateRequest generateRequest
+    CredentialVersion existingCredentialVersion,
+    CertificateCredentialValue credentialValue,
+    BaseCredentialGenerateRequest generateRequest
   ) {
     generateRequest.setType("certificate");
     if (credentialValue.isTransitional()) {
       validateNoTransitionalVersionsAlreadyExist(generateRequest.getName());
     }
     return permissionedCredentialService
-        .save(existingCredentialVersion, credentialValue, generateRequest);
+      .save(existingCredentialVersion, credentialValue, generateRequest);
   }
 
   private void validateNoTransitionalVersionsAlreadyExist(String name) {
     List<CredentialVersion> credentialVersions = permissionedCredentialService
-        .findAllByName(name);
+      .findAllByName(name);
 
     boolean transitionalVersionsAlreadyExist = credentialVersions.stream()
-        .map(version -> (CertificateCredentialVersion) version)
-        .anyMatch(version -> version.isVersionTransitional());
+      .map(version -> (CertificateCredentialVersion) version)
+      .anyMatch(version -> version.isVersionTransitional());
 
     if (transitionalVersionsAlreadyExist) {
       throw new ParameterizedValidationException("error.too_many_transitional_versions");
@@ -85,8 +86,8 @@ public class PermissionedCertificateService {
     final List<Credential> allCertificates = certificateDataService.findAll();
 
     return allCertificates.stream().filter(credential ->
-        permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), credential.getName(),
-            PermissionOperation.READ)
+      permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), credential.getName(),
+        PermissionOperation.READ)
     ).collect(Collectors.toList());
   }
 
@@ -94,8 +95,8 @@ public class PermissionedCertificateService {
     final Credential certificate = certificateDataService.findByName(name);
 
     if (certificate == null || !permissionCheckingService
-        .hasPermission(userContextHolder.getUserContext().getActor(), certificate.getName(),
-            PermissionOperation.READ)) {
+      .hasPermission(userContextHolder.getUserContext().getActor(), certificate.getName(),
+        PermissionOperation.READ)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
@@ -120,7 +121,7 @@ public class PermissionedCertificateService {
     }
 
     if (list.isEmpty() || !permissionCheckingService
-        .hasPermission(userContextHolder.getUserContext().getActor(), name, PermissionOperation.READ)) {
+      .hasPermission(userContextHolder.getUserContext().getActor(), name, PermissionOperation.READ)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
@@ -133,7 +134,7 @@ public class PermissionedCertificateService {
     String name = credential.getName();
 
     if (!permissionCheckingService
-        .hasPermission(userContextHolder.getUserContext().getActor(), name, PermissionOperation.WRITE)) {
+      .hasPermission(userContextHolder.getUserContext().getActor(), name, PermissionOperation.WRITE)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
@@ -157,8 +158,8 @@ public class PermissionedCertificateService {
   public CertificateCredentialVersion deleteVersion(UUID certificateUuid, UUID versionUuid) {
     Credential certificate = certificateDataService.findByUuid(certificateUuid);
     if (certificate == null || !permissionCheckingService
-        .hasPermission(userContextHolder.getUserContext().getActor(), certificate.getName(),
-            PermissionOperation.DELETE)) {
+      .hasPermission(userContextHolder.getUserContext().getActor(), certificate.getName(),
+        PermissionOperation.DELETE)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
     CertificateCredentialVersion versionToDelete = certificateVersionDataService.findVersion(versionUuid);
@@ -195,8 +196,8 @@ public class PermissionedCertificateService {
     Credential credential = findCertificateCredential(certificateUuid);
 
     if (!permissionCheckingService
-        .hasPermission(userContextHolder.getUserContext().getActor(), credential.getName(),
-            PermissionOperation.WRITE)) {
+      .hasPermission(userContextHolder.getUserContext().getActor(), credential.getName(),
+        PermissionOperation.WRITE)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
@@ -205,7 +206,7 @@ public class PermissionedCertificateService {
     }
 
     CertificateCredentialVersion certificateCredentialVersion = certificateCredentialFactory
-        .makeNewCredentialVersion(credential, value);
+      .makeNewCredentialVersion(credential, value);
 
     return credentialVersionDataService.save(certificateCredentialVersion);
   }

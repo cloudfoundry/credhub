@@ -1,14 +1,13 @@
 package org.cloudfoundry.credhub.util;
 
-import org.apache.commons.codec.digest.DigestUtils;
-import org.springframework.stereotype.Component;
-
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Base64;
+
+import org.apache.commons.codec.digest.DigestUtils;
 
 public class SshPublicKeyParser {
 
@@ -19,7 +18,8 @@ public class SshPublicKeyParser {
   private Base64.Encoder encoder = Base64.getEncoder().withoutPadding();
   private Base64.Decoder decoder = Base64.getDecoder();
 
-  public SshPublicKeyParser() {}
+  public SshPublicKeyParser() {
+  }
 
   public void setPublicKey(String publicKey) {
     if (this.publicKey != null) {
@@ -77,7 +77,7 @@ public class SshPublicKeyParser {
       fingerprint = fingerprintOf(decodedIsolatedPublicKey);
 
       DataInputStream dataStream = new DataInputStream(
-          new ByteArrayInputStream(decodedIsolatedPublicKey)
+        new ByteArrayInputStream(decodedIsolatedPublicKey)
       );
 
       readAndRemoveType(dataStream);

@@ -1,10 +1,10 @@
 package org.cloudfoundry.credhub.request;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import org.cloudfoundry.credhub.credential.JsonCredentialValue;
-
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.cloudfoundry.credhub.credential.JsonCredentialValue;
 
 public class JsonSetRequest extends BaseCredentialSetRequest<JsonCredentialValue> {
 

@@ -1,12 +1,14 @@
 package org.cloudfoundry.credhub.request;
 
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import org.springframework.validation.annotation.Validated;
+import java.util.List;
 
 import javax.validation.constraints.NotEmpty;
-import java.util.List;
+
+import org.springframework.validation.annotation.Validated;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import static com.google.common.collect.Lists.newArrayList;
 

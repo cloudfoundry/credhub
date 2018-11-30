@@ -1,7 +1,14 @@
 package org.cloudfoundry.credhub.config;
 
-import org.cloudfoundry.credhub.auth.OAuth2AuthenticationExceptionHandler;
-import org.cloudfoundry.credhub.auth.OAuth2IssuerService;
+import java.io.IOException;
+import java.security.SignatureException;
+import java.util.Map;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.support.MessageSourceAccessor;
@@ -20,16 +27,11 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
-import java.security.SignatureException;
-import java.util.Map;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import org.cloudfoundry.credhub.auth.OAuth2AuthenticationExceptionHandler;
+import org.cloudfoundry.credhub.auth.OAuth2IssuerService;
 
 @Component
-@ConditionalOnProperty(value = "security.oauth2.enabled")
+@ConditionalOnProperty("security.oauth2.enabled")
 public class OAuth2ExtraValidationFilter extends OncePerRequestFilter {
 
   private final MessageSourceAccessor messageSourceAccessor;
@@ -41,11 +43,11 @@ public class OAuth2ExtraValidationFilter extends OncePerRequestFilter {
 
   @Autowired
   OAuth2ExtraValidationFilter(
-      OAuth2IssuerService oAuth2IssuerService,
-      TokenStore tokenStore,
-      OAuth2AuthenticationExceptionHandler oAuth2AuthenticationExceptionHandler,
-      MessageSourceAccessor messageSourceAccessor,
-      AuthenticationEventPublisher eventPublisher
+    OAuth2IssuerService oAuth2IssuerService,
+    TokenStore tokenStore,
+    OAuth2AuthenticationExceptionHandler oAuth2AuthenticationExceptionHandler,
+    MessageSourceAccessor messageSourceAccessor,
+    AuthenticationEventPublisher eventPublisher
   ) {
     this.oAuth2IssuerService = oAuth2IssuerService;
     this.tokenStore = tokenStore;
@@ -57,7 +59,7 @@ public class OAuth2ExtraValidationFilter extends OncePerRequestFilter {
 
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-      throws ServletException, IOException {
+    throws ServletException, IOException {
     Authentication authentication = tokenExtractor.extract(request);
 
     try {
@@ -82,13 +84,13 @@ public class OAuth2ExtraValidationFilter extends OncePerRequestFilter {
     } catch (OAuth2Exception exception) {
       SecurityContextHolder.clearContext();
       InsufficientAuthenticationException authException = new InsufficientAuthenticationException(
-          exception.getMessage(), exception);
+        exception.getMessage(), exception);
       eventPublisher.publishAuthenticationFailure(new BadCredentialsException(exception.getMessage(), exception),
-          new PreAuthenticatedAuthenticationToken("access-token", "N/A"));
+        new PreAuthenticatedAuthenticationToken("access-token", "N/A"));
       oAuth2AuthenticationExceptionHandler.handleException(request, response, authException);
     } catch (RuntimeException exception) {
       if (exception.getCause() instanceof SignatureException || exception
-          .getCause() instanceof InvalidSignatureException) {
+        .getCause() instanceof InvalidSignatureException) {
         oAuth2AuthenticationExceptionHandler.handleException(request, response, exception);
       } else {
         throw exception;

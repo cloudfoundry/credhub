@@ -1,15 +1,17 @@
 package org.cloudfoundry.credhub.util;
 
-import org.apache.commons.codec.binary.Base64;
-import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
-
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.security.interfaces.RSAPublicKey;
 
-public class CertificateFormatter {
+import org.apache.commons.codec.binary.Base64;
+import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
+
+final public class CertificateFormatter {
+
+  private CertificateFormatter() { }
 
   public static final String SSH_RSA = "ssh-rsa";
 
@@ -38,7 +40,7 @@ public class CertificateFormatter {
   }
 
   private static void writeBytesToDataStream(byte[] bytes, DataOutputStream dataStream)
-      throws IOException {
+    throws IOException {
     dataStream.writeInt(bytes.length);
     dataStream.write(bytes);
   }

@@ -1,11 +1,5 @@
 package org.cloudfoundry.credhub.integration;
 
-import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.request.PermissionOperation;
-import org.cloudfoundry.credhub.service.PermissionCheckingService;
-import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
@@ -13,7 +7,19 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.cloudfoundry.credhub.util.AuthConstants.*;
+import org.cloudfoundry.credhub.CredentialManagerApp;
+import org.cloudfoundry.credhub.request.PermissionOperation;
+import org.cloudfoundry.credhub.service.PermissionCheckingService;
+import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import static org.cloudfoundry.credhub.util.AuthConstants.ALL_PERMISSIONS_ACTOR_ID;
+import static org.cloudfoundry.credhub.util.AuthConstants.NO_PERMISSIONS_ACTOR_ID;
+import static org.cloudfoundry.credhub.util.AuthConstants.USER_A_ACTOR_ID;
+import static org.cloudfoundry.credhub.util.AuthConstants.USER_A_PATH;
+import static org.cloudfoundry.credhub.util.AuthConstants.USER_B_ACTOR_ID;
+import static org.cloudfoundry.credhub.util.AuthConstants.USER_B_PATH;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
@@ -23,20 +29,19 @@ import static org.hamcrest.Matchers.is;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @Transactional
 public class PermissionsTest {
+  private static final String PATH = "/my/credential";
+  private static final String OTHER_PATH = "/my/other-credential";
   @Autowired
   private PermissionCheckingService subject;
 
-  private static final String PATH = "/my/credential";
-  private static final String OTHER_PATH = "/my/other-credential";
-
   @Test
-  public void testPermissionsWithoutWildcard(){
+  public void testPermissionsWithoutWildcard() {
     assertThat(subject.hasPermission(USER_A_ACTOR_ID, "/user-a-cred", PermissionOperation.READ), is(true));
     assertThat(subject.hasPermission(USER_A_ACTOR_ID, "/user-b-cred", PermissionOperation.READ), is(false));
   }
 
   @Test
-  public void testPermissionsWithWildcard(){
+  public void testPermissionsWithWildcard() {
     assertThat(subject.hasPermission(USER_A_ACTOR_ID, USER_A_PATH + "anything", PermissionOperation.READ), is(true));
     assertThat(subject.hasPermission(USER_A_ACTOR_ID, USER_A_PATH + "anything", PermissionOperation.WRITE), is(true));
     assertThat(subject.hasPermission(USER_A_ACTOR_ID, USER_B_PATH + "anything", PermissionOperation.READ), is(false));
@@ -55,7 +60,7 @@ public class PermissionsTest {
   }
 
   @Test
-  public void testUnauthorizedPermissions(){
+  public void testUnauthorizedPermissions() {
     assertThat(subject.hasPermission(NO_PERMISSIONS_ACTOR_ID, PATH, PermissionOperation.READ), is(false));
     assertThat(subject.hasPermission(NO_PERMISSIONS_ACTOR_ID, OTHER_PATH, PermissionOperation.READ), is(false));
   }

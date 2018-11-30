@@ -1,5 +1,15 @@
 package org.cloudfoundry.credhub.repository;
 
+import java.util.Arrays;
+import java.util.UUID;
+import java.util.stream.Stream;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
+
 import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.entity.EncryptedValue;
@@ -9,15 +19,6 @@ import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
-
-import java.util.Arrays;
-import java.util.UUID;
-import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -63,13 +64,13 @@ public class CredentialVersionDataRepositoryTest {
     entity.setCa(longString);
     entity.setCertificate(longString);
     entity.setEncryptedValueData(new EncryptedValue()
-        .setEncryptionKeyUuid(canaryUuid)
-        .setEncryptedValue(encryptedValue)
-        .setNonce("nonce".getBytes()));
+      .setEncryptionKeyUuid(canaryUuid)
+      .setEncryptedValue(encryptedValue)
+      .setNonce("nonce".getBytes()));
 
     subject.save(entity);
     CertificateCredentialVersionData credentialData = (CertificateCredentialVersionData) subject
-        .findFirstByCredentialUuidOrderByVersionCreatedAtDesc(credential.getUuid());
+      .findFirstByCredentialUuidOrderByVersionCreatedAtDesc(credential.getUuid());
     assertThat(credentialData.getCa().length(), equalTo(7000));
     assertThat(credentialData.getCertificate().length(), equalTo(7000));
     assertThat(credentialData.getEncryptedValueData().getEncryptedValue(), equalTo(encryptedValue));
@@ -93,6 +94,6 @@ public class CredentialVersionDataRepositoryTest {
 
     subject.save(entity);
     assertThat(subject.findFirstByCredentialUuidOrderByVersionCreatedAtDesc(credential.getUuid())
-        .getEncryptedValueData().getEncryptedValue().length, equalTo(7016));
+      .getEncryptedValueData().getEncryptedValue().length, equalTo(7016));
   }
 }

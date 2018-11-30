@@ -247,11 +247,11 @@ public class CertificateGenerationRequestParametersTest {
 
   @Test
   public void validate_rejectsOrganizationsThatAreTooLong() {
-    String maxLengthOrganization= "64abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789";
+    String maxLengthOrganization = "64abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789";
     subject.setOrganization(maxLengthOrganization);
     subject.validate();
 
-    String overlyLongOrganization= "65_abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789";
+    String overlyLongOrganization = "65_abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789";
     subject.setOrganization(overlyLongOrganization);
 
     try {
@@ -338,13 +338,13 @@ public class CertificateGenerationRequestParametersTest {
   @Test
   public void validate_rejectsAlternativeNamesThatAreTooLong() {
     String maxLengthAlternativeName = RandomStringUtils.randomAlphabetic(57) + "." + RandomStringUtils.randomNumeric(63) +
-        "." + RandomStringUtils.randomAlphabetic(63) + "." + RandomStringUtils.randomAlphabetic(63) + ".com";
+      "." + RandomStringUtils.randomAlphabetic(63) + "." + RandomStringUtils.randomAlphabetic(63) + ".com";
     subject.setAlternativeNames(new String[]{"abc.com", maxLengthAlternativeName});
     subject.validate();
 
 
     String overlyLongAlternativeName = "." + RandomStringUtils.randomAlphabetic(58) + "." + RandomStringUtils.randomNumeric(63) +
-        "." + RandomStringUtils.randomAlphabetic(63) + "." + RandomStringUtils.randomAlphabetic(63) + ".co";
+      "." + RandomStringUtils.randomAlphabetic(63) + "." + RandomStringUtils.randomAlphabetic(63) + ".co";
     subject.setAlternativeNames(new String[]{"abc.com", overlyLongAlternativeName});
 
     try {

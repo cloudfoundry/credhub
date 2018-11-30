@@ -1,7 +1,5 @@
 package org.cloudfoundry.credhub.config;
 
-import org.cloudfoundry.credhub.auth.PreAuthenticationFailureFilter;
-import org.cloudfoundry.credhub.auth.X509AuthenticationProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties;
@@ -19,6 +17,9 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Res
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
 
+import org.cloudfoundry.credhub.auth.PreAuthenticationFailureFilter;
+import org.cloudfoundry.credhub.auth.X509AuthenticationProvider;
+
 @ConditionalOnProperty(value = "security.oauth2.enabled", havingValue = "false", matchIfMissing = true)
 @Configuration
 @EnableResourceServer
@@ -27,15 +28,15 @@ public class AuthWithoutOAuthConfiguration extends ResourceServerConfigurerAdapt
 
   // Only valid for v4 UUID by design.
   private static final String VALID_MTLS_ID =
-      "\\bOU=(app:[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[a-f0-9]{4}-[a-f0-9]{12})\\b";
+    "\\bOU=(app:[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[a-f0-9]{4}-[a-f0-9]{12})\\b";
 
   private final ResourceServerProperties resourceServerProperties;
   private final PreAuthenticationFailureFilter preAuthenticationFailureFilter;
 
   @Autowired
   AuthWithoutOAuthConfiguration(
-      ResourceServerProperties resourceServerProperties,
-      PreAuthenticationFailureFilter preAuthenticationFailureFilter
+    ResourceServerProperties resourceServerProperties,
+    PreAuthenticationFailureFilter preAuthenticationFailureFilter
   ) {
     this.resourceServerProperties = resourceServerProperties;
     this.preAuthenticationFailureFilter = preAuthenticationFailureFilter;
@@ -59,27 +60,27 @@ public class AuthWithoutOAuthConfiguration extends ResourceServerConfigurerAdapt
      */
 
     http.x509()
-        .subjectPrincipalRegex(VALID_MTLS_ID)
-        .userDetailsService(mtlsSUserDetailsService())
-        .withObjectPostProcessor(new ObjectPostProcessor<X509AuthenticationFilter>() {
-          @Override
-          public <O extends X509AuthenticationFilter> O postProcess(O filter) {
-            filter.setContinueFilterChainOnUnsuccessfulAuthentication(false);
-            return filter;
-          }
-        });
+      .subjectPrincipalRegex(VALID_MTLS_ID)
+      .userDetailsService(mtlsSUserDetailsService())
+      .withObjectPostProcessor(new ObjectPostProcessor<X509AuthenticationFilter>() {
+        @Override
+        public <O extends X509AuthenticationFilter> O postProcess(O filter) {
+          filter.setContinueFilterChainOnUnsuccessfulAuthentication(false);
+          return filter;
+        }
+      });
 
     http.addFilterBefore(preAuthenticationFailureFilter, X509AuthenticationFilter.class)
-        .authenticationProvider(getPreAuthenticatedAuthenticationProvider());
+      .authenticationProvider(getPreAuthenticatedAuthenticationProvider());
 
     http
-        .authorizeRequests()
-        .antMatchers("/info").permitAll()
-        .antMatchers("/health").permitAll()
-        .antMatchers("/management").permitAll()
-        .antMatchers("**")
-        .access(String.format("hasRole('%s')",
-            X509AuthenticationProvider.MTLS_USER));
+      .authorizeRequests()
+      .antMatchers("/info").permitAll()
+      .antMatchers("/health").permitAll()
+      .antMatchers("/management").permitAll()
+      .antMatchers("**")
+      .access(String.format("hasRole('%s')",
+        X509AuthenticationProvider.MTLS_USER));
 
     http.httpBasic().disable();
   }

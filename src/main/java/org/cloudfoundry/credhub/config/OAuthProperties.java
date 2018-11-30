@@ -1,17 +1,17 @@
 package org.cloudfoundry.credhub.config;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Paths;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.Paths;
-
 @Configuration
 @ConfigurationProperties("auth-server")
-@ConditionalOnProperty(value = "security.oauth2.enabled")
+@ConditionalOnProperty("security.oauth2.enabled")
 public class OAuthProperties {
   private final static String ISSUER_PATH = "/.well-known/openid-configuration";
   private final static String JWK_KEYS_PATH = "/token_keys";
@@ -59,7 +59,7 @@ public class OAuthProperties {
   }
 
 
-  private  URI getResolvedUri(String extension) throws URISyntaxException {
+  private URI getResolvedUri(String extension) throws URISyntaxException {
     String authServer = internalUrl != null ? internalUrl : url;
     URI base = new URI(authServer);
     String path = Paths.get(base.getPath(), extension).toString();

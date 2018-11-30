@@ -7,10 +7,6 @@ public class PasswordGenerateRequest extends BaseCredentialGenerateRequest {
   @JsonProperty("parameters")
   private StringGenerationParameters generationParameters;
 
-  public void setGenerationParameters(StringGenerationParameters generationParameters) {
-    this.generationParameters = generationParameters;
-  }
-
   @Override
   @JsonIgnore
   public GenerationParameters getGenerationParameters() {
@@ -18,5 +14,9 @@ public class PasswordGenerateRequest extends BaseCredentialGenerateRequest {
       generationParameters = new StringGenerationParameters();
     }
     return generationParameters;
+  }
+
+  public void setGenerationParameters(StringGenerationParameters generationParameters) {
+    this.generationParameters = generationParameters;
   }
 }

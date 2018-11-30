@@ -1,15 +1,8 @@
 package org.cloudfoundry.credhub.entity;
 
-import org.cloudfoundry.credhub.constants.UuidConstants;
-import org.cloudfoundry.credhub.util.InstantMillisecondsConverter;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.NotFound;
-import org.hibernate.annotations.NotFoundAction;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
 import java.time.Instant;
 import java.util.UUID;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
@@ -25,6 +18,15 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import org.cloudfoundry.credhub.constants.UuidConstants;
+import org.cloudfoundry.credhub.util.InstantMillisecondsConverter;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
 @Entity
 @Table(name = "credential_version")
@@ -59,7 +61,7 @@ public abstract class CredentialVersionData<Z extends CredentialVersionData> {
 
   //this is mapped with updatable and insertable false since it's managed by the DiscriminatorColumn annotation
   //surfacing property here lets us use it in JPA queries
-  @Column(name="type", insertable = false, updatable = false)
+  @Column(name = "type", insertable = false, updatable = false)
   private String type;
 
   public CredentialVersionData(Credential name) {
@@ -95,17 +97,17 @@ public abstract class CredentialVersionData<Z extends CredentialVersionData> {
     this.credential = credential;
   }
 
-  public Z setEncryptedValueData(EncryptedValue encryptedValue){
-    encryptedCredentialValue = encryptedValue;
-    return (Z) this;
-  }
-
   public EncryptedValue getEncryptedValueData() {
     return encryptedCredentialValue;
   }
 
+  public Z setEncryptedValueData(EncryptedValue encryptedValue) {
+    encryptedCredentialValue = encryptedValue;
+    return (Z) this;
+  }
+
   public byte[] getNonce() {
-    return encryptedCredentialValue !=null ? this.encryptedCredentialValue.getNonce() : null;
+    return encryptedCredentialValue != null ? this.encryptedCredentialValue.getNonce() : null;
   }
 
   public abstract String getCredentialType();

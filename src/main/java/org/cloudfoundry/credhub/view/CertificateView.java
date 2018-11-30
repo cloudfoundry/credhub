@@ -1,9 +1,9 @@
 package org.cloudfoundry.credhub.view;
 
+import java.time.Instant;
+
 import org.cloudfoundry.credhub.credential.CredentialValue;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
-
-import java.time.Instant;
 
 @SuppressWarnings("unused")
 public class CertificateView extends CredentialView {
@@ -15,11 +15,11 @@ public class CertificateView extends CredentialView {
 
   public CertificateView(CertificateCredentialVersion version) {
     super(
-        version.getVersionCreatedAt(),
-        version.getUuid(),
-        version.getName(),
-        version.getCredentialType(),
-        null
+      version.getVersionCreatedAt(),
+      version.getUuid(),
+      version.getName(),
+      version.getCredentialType(),
+      null
     );
     this.version = version;
     this.expiryDate = version.getExpiryDate();

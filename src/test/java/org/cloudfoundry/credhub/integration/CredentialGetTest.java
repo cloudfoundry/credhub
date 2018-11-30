@@ -1,13 +1,9 @@
 package org.cloudfoundry.credhub.integration;
 
-import com.jayway.jsonpath.JsonPath;
-import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.helper.RequestHelper;
-import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
-import org.json.JSONObject;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import java.time.temporal.ChronoUnit;
+import java.util.Calendar;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -18,9 +14,14 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.time.temporal.ChronoUnit;
-import java.util.Calendar;
-import java.util.List;
+import com.jayway.jsonpath.JsonPath;
+import org.cloudfoundry.credhub.CredentialManagerApp;
+import org.cloudfoundry.credhub.helper.RequestHelper;
+import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
+import org.json.JSONObject;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import static org.cloudfoundry.credhub.helper.RequestHelper.generateCertificateCredential;
 import static org.cloudfoundry.credhub.helper.RequestHelper.getCertificateCredentialsByName;
@@ -47,9 +48,9 @@ public class CredentialGetTest {
   @Before
   public void beforeEach() throws Exception {
     mockMvc = MockMvcBuilders
-        .webAppContextSetup(webApplicationContext)
-        .apply(springSecurity())
-        .build();
+      .webAppContextSetup(webApplicationContext)
+      .apply(springSecurity())
+      .build();
   }
 
   @Test
@@ -60,18 +61,18 @@ public class CredentialGetTest {
 
     String response = getCertificateCredentialsByName(mockMvc, ALL_PERMISSIONS_TOKEN, credentialName);
     String uuid = JsonPath.parse(response)
-        .read("$.certificates[0].id");
+      .read("$.certificates[0].id");
 
     RequestHelper.regenerateCertificate(mockMvc, uuid, true, ALL_PERMISSIONS_TOKEN);
     RequestHelper.regenerateCertificate(mockMvc, uuid, false, ALL_PERMISSIONS_TOKEN);
 
     final MockHttpServletRequestBuilder request = get("/api/v1/data?name=" + credentialName + "&current=false")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON);
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON);
 
     response = mockMvc.perform(request)
-        .andExpect(status().isOk())
-        .andReturn().getResponse().getContentAsString();
+      .andExpect(status().isOk())
+      .andReturn().getResponse().getContentAsString();
 
     JSONObject responseObject = new JSONObject(response);
 
@@ -87,27 +88,27 @@ public class CredentialGetTest {
 
     String response = getCertificateCredentialsByName(mockMvc, ALL_PERMISSIONS_TOKEN, credentialName);
     String uuid = JsonPath.parse(response)
-        .read("$.certificates[0].id");
+      .read("$.certificates[0].id");
 
     String transitionalCertificate = JsonPath.parse(RequestHelper.regenerateCertificate(mockMvc, uuid, true, ALL_PERMISSIONS_TOKEN))
-        .read("$.value.certificate");
+      .read("$.value.certificate");
 
     String nonTransitionalCertificate = JsonPath.parse(RequestHelper.regenerateCertificate(mockMvc, uuid, false, ALL_PERMISSIONS_TOKEN))
-        .read("$.value.certificate");
+      .read("$.value.certificate");
 
     final MockHttpServletRequestBuilder request = get("/api/v1/data?name=" + credentialName + "&current=true")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON);
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON);
 
     response = mockMvc.perform(request)
-        .andExpect(status().isOk())
-        .andReturn().getResponse().getContentAsString();
+      .andExpect(status().isOk())
+      .andReturn().getResponse().getContentAsString();
 
     JSONObject responseObject = new JSONObject(response);
 
     assertThat(responseObject.getJSONArray("data").length(), equalTo(2));
     List<String> certificates = JsonPath.parse(response)
-        .read("$.data[*].value.certificate");
+      .read("$.data[*].value.certificate");
     assertThat(certificates, containsInAnyOrder(transitionalCertificate, nonTransitionalCertificate));
   }
 
@@ -120,12 +121,12 @@ public class CredentialGetTest {
 
 
     final MockHttpServletRequestBuilder request = get("/api/v1/data?name=" + credentialName + "&current=true")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON);
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON);
 
     String response = mockMvc.perform(request)
-        .andExpect(status().isOk())
-        .andReturn().getResponse().getContentAsString();
+      .andExpect(status().isOk())
+      .andReturn().getResponse().getContentAsString();
 
     String expiryDate = JsonPath.parse(response).read("$.data[0].expiry_date");
     String truncatedExpiryDate = expiryDate.substring(0, expiryDate.indexOf('T'));

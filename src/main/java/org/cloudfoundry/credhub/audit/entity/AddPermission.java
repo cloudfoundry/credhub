@@ -1,23 +1,22 @@
 package org.cloudfoundry.credhub.audit.entity;
 
+import java.util.List;
+
 import org.cloudfoundry.credhub.audit.OperationDeviceAction;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 
-import java.util.List;
-
 public class AddPermission implements RequestDetails {
+
+  private String credentialName;
+  private List<PermissionEntry> permissions;
 
   public AddPermission() {
 
   }
-
   public AddPermission(String credentialName, List<PermissionEntry> permissions) {
     this.credentialName = credentialName;
     this.permissions = permissions;
   }
-
-  private String credentialName;
-  private List<PermissionEntry> permissions;
 
   public String getCredentialName() {
     return credentialName;

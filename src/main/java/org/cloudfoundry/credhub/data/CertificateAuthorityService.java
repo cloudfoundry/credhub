@@ -1,15 +1,16 @@
 package org.cloudfoundry.credhub.data;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
-import org.cloudfoundry.credhub.service.PermissionCheckingService;
 import org.cloudfoundry.credhub.request.PermissionOperation;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.cloudfoundry.credhub.service.PermissionCheckingService;
 
 @Component
 public class CertificateAuthorityService {
@@ -20,15 +21,15 @@ public class CertificateAuthorityService {
 
   @Autowired
   public CertificateAuthorityService(CertificateVersionDataService certificateVersionDataService,
-      PermissionCheckingService permissionCheckingService,
-      UserContextHolder userContextHolder) {
+                                     PermissionCheckingService permissionCheckingService,
+                                     UserContextHolder userContextHolder) {
     this.certificateVersionDataService = certificateVersionDataService;
     this.permissionCheckingService = permissionCheckingService;
     this.userContextHolder = userContextHolder;
   }
 
   public CertificateCredentialValue findActiveVersion(String caName) {
-    if(!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), caName, PermissionOperation.READ)) {
+    if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), caName, PermissionOperation.READ)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
@@ -48,6 +49,6 @@ public class CertificateAuthorityService {
     }
 
     return new CertificateCredentialValue(null, certificateCredential.getCertificate(),
-        certificateCredential.getPrivateKey(), null, certificateCredential.isVersionTransitional());
+      certificateCredential.getPrivateKey(), null, certificateCredential.isVersionTransitional());
   }
 }

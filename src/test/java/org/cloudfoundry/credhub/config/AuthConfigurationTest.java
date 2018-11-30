@@ -1,17 +1,8 @@
 package org.cloudfoundry.credhub.config;
 
-import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.data.CredentialVersionDataService;
-import org.cloudfoundry.credhub.data.PermissionDataService;
-import org.cloudfoundry.credhub.domain.CredentialVersion;
-import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
-import org.cloudfoundry.credhub.util.AuthConstants;
-import org.cloudfoundry.credhub.util.CertificateReader;
-import org.cloudfoundry.credhub.util.CertificateStringConstants;
-import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import java.time.Instant;
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -25,8 +16,18 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.time.Instant;
-import java.util.UUID;
+import org.cloudfoundry.credhub.CredentialManagerApp;
+import org.cloudfoundry.credhub.data.CredentialVersionDataService;
+import org.cloudfoundry.credhub.data.PermissionDataService;
+import org.cloudfoundry.credhub.domain.CredentialVersion;
+import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
+import org.cloudfoundry.credhub.util.AuthConstants;
+import org.cloudfoundry.credhub.util.CertificateReader;
+import org.cloudfoundry.credhub.util.CertificateStringConstants;
+import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -43,40 +44,36 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 public class AuthConfigurationTest {
 
-  @Autowired
-  WebApplicationContext applicationContext;
-
-  @MockBean
-  CredentialVersionDataService credentialVersionDataService;
-
-  @MockBean
-  PermissionDataService permissionDataService;
-
-  private MockMvc mockMvc;
-
   private final String dataApiPath = "/api/v1/data";
   private final String credentialName = "test";
+  @Autowired
+  WebApplicationContext applicationContext;
+  @MockBean
+  CredentialVersionDataService credentialVersionDataService;
+  @MockBean
+  PermissionDataService permissionDataService;
+  private MockMvc mockMvc;
 
   @Before
   public void beforeEach() {
     mockMvc = MockMvcBuilders
-        .webAppContextSetup(applicationContext)
-        .apply(springSecurity())
-        .build();
+      .webAppContextSetup(applicationContext)
+      .apply(springSecurity())
+      .build();
   }
 
   @Test
-  public void infoCanBeAccessedWithoutAuthentication()throws Exception {
+  public void infoCanBeAccessedWithoutAuthentication() throws Exception {
     mockMvc.perform(get("/info").accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.auth-server.url").isNotEmpty());
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.auth-server.url").isNotEmpty());
   }
 
   @Test
-  public void healthCanBeAccessWithoutAuthentication() throws Exception{
+  public void healthCanBeAccessWithoutAuthentication() throws Exception {
     mockMvc.perform(get("/health").accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.status").isNotEmpty());
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.status").isNotEmpty());
   }
 
   @Test
@@ -84,9 +81,9 @@ public class AuthConfigurationTest {
     setupDataEndpointMocks();
 
     mockMvc.perform(post(dataApiPath)
-        .accept(MediaType.APPLICATION_JSON)
-        .contentType(MediaType.APPLICATION_JSON)
-        .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}")
+      .accept(MediaType.APPLICATION_JSON)
+      .contentType(MediaType.APPLICATION_JSON)
+      .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}")
     ).andExpect(status().isUnauthorized());
   }
 
@@ -95,16 +92,16 @@ public class AuthConfigurationTest {
     setupDataEndpointMocks();
 
     final MockHttpServletRequestBuilder post = post(dataApiPath)
-        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-        .accept(MediaType.APPLICATION_JSON)
-        .contentType(MediaType.APPLICATION_JSON)
-        .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
+      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .accept(MediaType.APPLICATION_JSON)
+      .contentType(MediaType.APPLICATION_JSON)
+      .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
 
     mockMvc.perform(post)
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.type").value("password"))
-        .andExpect(jsonPath("$.version_created_at").exists())
-        .andExpect(jsonPath("$.value").exists());
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.type").value("password"))
+      .andExpect(jsonPath("$.version_created_at").exists())
+      .andExpect(jsonPath("$.value").exists());
   }
 
   @Test
@@ -112,13 +109,13 @@ public class AuthConfigurationTest {
     setupDataEndpointMocks();
 
     final MockHttpServletRequestBuilder post = post(dataApiPath)
-        .header("Authorization", "Bearer " + AuthConstants.INVALID_SCOPE_KEY_JWT)
-        .accept(MediaType.APPLICATION_JSON)
-        .contentType(MediaType.APPLICATION_JSON)
-        .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
+      .header("Authorization", "Bearer " + AuthConstants.INVALID_SCOPE_KEY_JWT)
+      .accept(MediaType.APPLICATION_JSON)
+      .contentType(MediaType.APPLICATION_JSON)
+      .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
 
     mockMvc.perform(post)
-        .andExpect(status().isForbidden());
+      .andExpect(status().isForbidden());
 
   }
 
@@ -127,9 +124,9 @@ public class AuthConfigurationTest {
     setupDataEndpointMocks();
 
     final MockHttpServletRequestBuilder post = post(dataApiPath)
-        .accept(MediaType.APPLICATION_JSON)
-        .contentType(MediaType.APPLICATION_JSON)
-        .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
+      .accept(MediaType.APPLICATION_JSON)
+      .contentType(MediaType.APPLICATION_JSON)
+      .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
 
     mockMvc.perform(post).andExpect(status().isUnauthorized());
 
@@ -137,68 +134,68 @@ public class AuthConfigurationTest {
 
   @Test
   public void dataEndpoint_withMutualTLS_allowsAllClientCertsWithValidOrgUnitAndClientAuthExtensions()
-      throws Exception {
+    throws Exception {
     setupDataEndpointMocks();
 
     CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT);
 
     final MockHttpServletRequestBuilder post = post(dataApiPath)
-        .with(SecurityMockMvcRequestPostProcessors
-            .x509(certificateReader.getCertificate()))
-        .accept(MediaType.APPLICATION_JSON)
-        .contentType(MediaType.APPLICATION_JSON)
-        .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
+      .with(SecurityMockMvcRequestPostProcessors
+        .x509(certificateReader.getCertificate()))
+      .accept(MediaType.APPLICATION_JSON)
+      .contentType(MediaType.APPLICATION_JSON)
+      .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
 
     mockMvc.perform(post)
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.type").value("password"))
-        .andExpect(jsonPath("$.version_created_at").exists())
-        .andExpect(jsonPath("$.value").exists());
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.type").value("password"))
+      .andExpect(jsonPath("$.version_created_at").exists())
+      .andExpect(jsonPath("$.value").exists());
 
   }
 
   @Test
   public void dataEndpoint_withMutualTLS_deniesClientCertsWithOrgUnitsThatDontContainV4UUID()
-      throws Exception {
+    throws Exception {
     setupDataEndpointMocks();
 
     CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.TEST_CERT_WITH_INVALID_UUID_IN_ORGANIZATION_UNIT);
 
     final MockHttpServletRequestBuilder post = post(dataApiPath)
-        .with(SecurityMockMvcRequestPostProcessors.x509(
-            certificateReader.getCertificate()))
-        .accept(MediaType.APPLICATION_JSON)
-        .contentType(MediaType.APPLICATION_JSON)
-        .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
+      .with(SecurityMockMvcRequestPostProcessors.x509(
+        certificateReader.getCertificate()))
+      .accept(MediaType.APPLICATION_JSON)
+      .contentType(MediaType.APPLICATION_JSON)
+      .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
 
     final String expectedError = "The provided authentication mechanism does not "
-        + "provide a valid identity. Please contact your system administrator.";
+      + "provide a valid identity. Please contact your system administrator.";
 
     mockMvc.perform(post)
-        .andExpect(status().isUnauthorized())
-        .andExpect(jsonPath("$.error").value(expectedError));
+      .andExpect(status().isUnauthorized())
+      .andExpect(jsonPath("$.error").value(expectedError));
   }
 
   @Test
   public void dataEndpoint_withMutualTLS_deniesClientCertsWithOrgUnitNotPrefixedAccurately()
-      throws Exception {
+    throws Exception {
     setupDataEndpointMocks();
 
     CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.TEST_CERT_WITH_INVALID_ORGANIZATION_UNIT_PREFIX);
 
     final MockHttpServletRequestBuilder post = post(dataApiPath)
-        .with(SecurityMockMvcRequestPostProcessors.x509(
-            certificateReader.getCertificate()))
-        .accept(MediaType.APPLICATION_JSON)
-        .contentType(MediaType.APPLICATION_JSON)
-        .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
+      .with(SecurityMockMvcRequestPostProcessors.x509(
+        certificateReader.getCertificate()))
+      .accept(MediaType.APPLICATION_JSON)
+      .contentType(MediaType.APPLICATION_JSON)
+      .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
 
     final String expectedError = "The provided authentication mechanism does not provide a "
-        + "valid identity. Please contact your system administrator.";
+      + "valid identity. Please contact your system administrator.";
 
     mockMvc.perform(post)
-        .andExpect(status().isUnauthorized())
-        .andExpect(jsonPath("$.error").value(expectedError));
+      .andExpect(status().isUnauthorized())
+      .andExpect(jsonPath("$.error").value(expectedError));
   }
 
   @Test
@@ -208,50 +205,50 @@ public class AuthConfigurationTest {
     CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.TEST_CERT_WITHOUT_ORGANIZATION_UNIT);
 
     final MockHttpServletRequestBuilder post = post(dataApiPath)
-        .with(SecurityMockMvcRequestPostProcessors
-            .x509(certificateReader.getCertificate()))
-        .accept(MediaType.APPLICATION_JSON)
-        .contentType(MediaType.APPLICATION_JSON)
-        .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
+      .with(SecurityMockMvcRequestPostProcessors
+        .x509(certificateReader.getCertificate()))
+      .accept(MediaType.APPLICATION_JSON)
+      .contentType(MediaType.APPLICATION_JSON)
+      .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
 
     final String expectedError = "The provided authentication mechanism does not provide a "
-        + "valid identity. Please contact your system administrator.";
+      + "valid identity. Please contact your system administrator.";
 
     mockMvc.perform(post)
-        .andExpect(status().isUnauthorized())
-        .andExpect(jsonPath("$.error").value(expectedError));
+      .andExpect(status().isUnauthorized())
+      .andExpect(jsonPath("$.error").value(expectedError));
 
   }
 
   @Test
   public void dataEndpoint_withMutualTLS_deniesClientCertsWithoutClientAuthExtension()
-      throws Exception {
+    throws Exception {
     setupDataEndpointMocks();
 
     CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.SELF_SIGNED_CERT_WITH_NO_CLIENT_AUTH_EXT);
 
     final MockHttpServletRequestBuilder post = post(dataApiPath)
-        .with(SecurityMockMvcRequestPostProcessors
-            .x509(certificateReader.getCertificate()))
-        .accept(MediaType.APPLICATION_JSON)
-        .contentType(MediaType.APPLICATION_JSON)
-        .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
+      .with(SecurityMockMvcRequestPostProcessors
+        .x509(certificateReader.getCertificate()))
+      .accept(MediaType.APPLICATION_JSON)
+      .contentType(MediaType.APPLICATION_JSON)
+      .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
 
     mockMvc.perform(post)
-        .andDo(print())
-        .andExpect(status().isUnauthorized())
-        .andExpect(jsonPath("$.error")
-            .value(
-                "The provided certificate is not authorized to be used for client authentication."));
+      .andDo(print())
+      .andExpect(status().isUnauthorized())
+      .andExpect(jsonPath("$.error")
+        .value(
+          "The provided certificate is not authorized to be used for client authentication."));
 
   }
 
   @Test
   public void interpolateEndpoint_deniesAccessWithoutAuthentication() throws Exception {
     mockMvc.perform(post("/api/v1/interpolate")
-        .accept(MediaType.APPLICATION_JSON)
-        .contentType(MediaType.APPLICATION_JSON)
-        .content("{}")
+      .accept(MediaType.APPLICATION_JSON)
+      .contentType(MediaType.APPLICATION_JSON)
+      .content("{}")
     ).andExpect(status().isUnauthorized());
 
   }
@@ -259,13 +256,13 @@ public class AuthConfigurationTest {
   @Test
   public void interpolateEndpoint_withAcceptedToken_allowsAccess() throws Exception {
     final MockHttpServletRequestBuilder post = post("/api/v1/interpolate")
-        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-        .accept(MediaType.APPLICATION_JSON)
-        .contentType(MediaType.APPLICATION_JSON)
-        .content("{}");
+      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .accept(MediaType.APPLICATION_JSON)
+      .contentType(MediaType.APPLICATION_JSON)
+      .content("{}");
 
     mockMvc.perform(post)
-        .andExpect(status().isOk());
+      .andExpect(status().isOk());
 
   }
 

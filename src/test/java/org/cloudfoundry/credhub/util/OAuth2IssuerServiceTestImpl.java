@@ -1,8 +1,9 @@
 package org.cloudfoundry.credhub.util;
 
-import org.cloudfoundry.credhub.auth.OAuth2IssuerService;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
+
+import org.cloudfoundry.credhub.auth.OAuth2IssuerService;
 
 @Primary
 @Component

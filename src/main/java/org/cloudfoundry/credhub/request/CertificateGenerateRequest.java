@@ -28,7 +28,7 @@ public class CertificateGenerateRequest extends BaseCredentialGenerateRequest {
   @Override
   @JsonIgnore
   public GenerationParameters getGenerationParameters() {
-    if(certificateGenerationParameters == null && requestGenerationParameters == null){
+    if (certificateGenerationParameters == null && requestGenerationParameters == null) {
       throw new ParameterizedValidationException("error.no_certificate_parameters");
     }
 

@@ -39,12 +39,12 @@ public class RsaGenerationParametersTest {
 
   @Test
   public void describe_withAnInvalidLength_ThrowsAnException() throws Exception {
-      try {
-        subject.setKeyLength(1024);
-        subject.validate();
-        fail("should throw");
-      } catch (ParameterizedValidationException e) {
-        assertThat(e.getMessage(), equalTo("error.invalid_key_length"));
-      }
+    try {
+      subject.setKeyLength(1024);
+      subject.validate();
+      fail("should throw");
+    } catch (ParameterizedValidationException e) {
+      assertThat(e.getMessage(), equalTo("error.invalid_key_length"));
+    }
   }
 }

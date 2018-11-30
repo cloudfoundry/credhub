@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.exceptions;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
 import javax.validation.ValidationException;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -22,13 +23,9 @@ public class ParameterizedValidationException extends ValidationException {
     super(messageCode);
 
     this.parameters = newArrayList(parameters)
-        .stream()
-        .map(ParameterizedValidationException::scrubSpecialCharacter)
-        .collect(Collectors.toList());
-  }
-
-  public Object[] getParameters() {
-    return parameters.toArray();
+      .stream()
+      .map(ParameterizedValidationException::scrubSpecialCharacter)
+      .collect(Collectors.toList());
   }
 
   private static Object scrubSpecialCharacter(Object raw) {
@@ -37,5 +34,9 @@ public class ParameterizedValidationException extends ValidationException {
     } else {
       return raw;
     }
+  }
+
+  public Object[] getParameters() {
+    return parameters.toArray();
   }
 }

@@ -1,13 +1,14 @@
 package org.cloudfoundry.credhub.generator;
 
-import org.cloudfoundry.credhub.request.StringGenerationParameters;
-import org.cloudfoundry.credhub.credential.StringCredentialValue;
-import org.passay.CharacterRule;
-import org.passay.PasswordGenerator;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import org.cloudfoundry.credhub.credential.StringCredentialValue;
+import org.cloudfoundry.credhub.request.StringGenerationParameters;
+import org.passay.CharacterRule;
+import org.passay.PasswordGenerator;
 
 @Component
 public class PassayStringCredentialGenerator {
@@ -28,7 +29,7 @@ public class PassayStringCredentialGenerator {
     List<CharacterRule> characterRules = CharacterRuleProvider.getCharacterRules(parameters);
 
     return new StringCredentialValue(
-        passwordGenerator.generatePassword(passwordLength, characterRules));
+      passwordGenerator.generatePassword(passwordLength, characterRules));
   }
 
   private int normalizedLength(int length) {

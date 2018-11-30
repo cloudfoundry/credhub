@@ -1,13 +1,13 @@
 package org.cloudfoundry.credhub.domain;
 
+import java.io.IOException;
+
 import org.cloudfoundry.credhub.credential.UserCredentialValue;
 import org.cloudfoundry.credhub.entity.EncryptedValue;
 import org.cloudfoundry.credhub.entity.UserCredentialVersionData;
 import org.cloudfoundry.credhub.request.GenerationParameters;
 import org.cloudfoundry.credhub.request.StringGenerationParameters;
 import org.cloudfoundry.credhub.util.JsonObjectMapper;
-
-import java.io.IOException;
 
 public class UserCredentialVersion extends CredentialVersion<UserCredentialVersion> {
   private final UserCredentialVersionData delegate;
@@ -30,9 +30,9 @@ public class UserCredentialVersion extends CredentialVersion<UserCredentialVersi
   }
 
   public UserCredentialVersion(
-      UserCredentialValue userValue,
-      StringGenerationParameters generationParameters,
-      Encryptor encryptor
+    UserCredentialValue userValue,
+    StringGenerationParameters generationParameters,
+    Encryptor encryptor
   ) {
     this();
     this.setEncryptor(encryptor);
@@ -56,6 +56,11 @@ public class UserCredentialVersion extends CredentialVersion<UserCredentialVersi
     setGenerationParameters(decryptedGenerationParameters);
   }
 
+  public String getPassword() {
+    this.password = (String) super.getValue();
+    return this.password;
+  }
+
   public UserCredentialVersion setPassword(String password) {
     if (password != null) {
       super.setValue(password);
@@ -63,18 +68,13 @@ public class UserCredentialVersion extends CredentialVersion<UserCredentialVersi
     return this;
   }
 
-  public String getPassword() {
-    this.password = (String) super.getValue();
-    return this.password;
+  public String getUsername() {
+    return delegate.getUsername();
   }
 
   public UserCredentialVersion setUsername(String username) {
     delegate.setUsername(username);
     return this;
-  }
-
-  public String getUsername() {
-    return delegate.getUsername();
   }
 
   public String getSalt() {
@@ -83,23 +83,6 @@ public class UserCredentialVersion extends CredentialVersion<UserCredentialVersi
 
   public UserCredentialVersion setSalt(String salt) {
     delegate.setSalt(salt);
-    return this;
-  }
-
-  public UserCredentialVersion setGenerationParameters(StringGenerationParameters generationParameters) {
-    EncryptedValue encryptedParameters;
-    try {
-      String generationParameterJson =
-          generationParameters != null ? jsonObjectMapper.writeValueAsString(generationParameters)
-              : null;
-      if (generationParameterJson != null) {
-        encryptedParameters = encryptor.encrypt(generationParameterJson);
-        delegate.setEncryptedGenerationParameters(encryptedParameters);
-      }
-
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
     return this;
   }
 
@@ -113,7 +96,7 @@ public class UserCredentialVersion extends CredentialVersion<UserCredentialVersi
 
     try {
       StringGenerationParameters generationParameters = jsonObjectMapper
-          .deserializeBackwardsCompatibleValue(parameterJson, StringGenerationParameters.class);
+        .deserializeBackwardsCompatibleValue(parameterJson, StringGenerationParameters.class);
       generationParameters.setLength(password.length());
       return generationParameters;
     } catch (IOException e) {
@@ -121,9 +104,26 @@ public class UserCredentialVersion extends CredentialVersion<UserCredentialVersi
     }
   }
 
+  public UserCredentialVersion setGenerationParameters(StringGenerationParameters generationParameters) {
+    EncryptedValue encryptedParameters;
+    try {
+      String generationParameterJson =
+        generationParameters != null ? jsonObjectMapper.writeValueAsString(generationParameters)
+          : null;
+      if (generationParameterJson != null) {
+        encryptedParameters = encryptor.encrypt(generationParameterJson);
+        delegate.setEncryptedGenerationParameters(encryptedParameters);
+      }
+
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+    return this;
+  }
+
   @Override
   public boolean matchesGenerationParameters(GenerationParameters generationParameters) {
-    if(generationParameters == null){
+    if (generationParameters == null) {
       return true;
     }
 

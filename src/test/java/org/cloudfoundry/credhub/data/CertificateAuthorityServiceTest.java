@@ -46,13 +46,13 @@ public class CertificateAuthorityServiceTest {
     when(userContext.getActor()).thenReturn(USER_NAME);
     when(certificateCredential.getName()).thenReturn(CREDENTIAL_NAME);
     when(permissionCheckingService.hasPermission(USER_NAME, CREDENTIAL_NAME, PermissionOperation.READ))
-        .thenReturn(true);
+      .thenReturn(true);
 
     certificateVersionDataService = mock(CertificateVersionDataService.class);
     UserContextHolder userContextHolder = new UserContextHolder();
     userContextHolder.setUserContext(userContext);
     certificateAuthorityService = new CertificateAuthorityService(certificateVersionDataService,
-        permissionCheckingService, userContextHolder);
+      permissionCheckingService, userContextHolder);
   }
 
   @Test
@@ -81,7 +81,7 @@ public class CertificateAuthorityServiceTest {
   public void findActiveVersion_whenCaNameRefersToNonCa_throwsException() {
     when(certificateVersionDataService.findActive(any(String.class))).thenReturn(mock(PasswordCredentialVersion.class));
     when(permissionCheckingService.hasPermission(USER_NAME, "any non-ca name", PermissionOperation.READ))
-        .thenReturn(true);
+      .thenReturn(true);
 
     try {
       certificateAuthorityService.findActiveVersion("any non-ca name");
@@ -100,13 +100,13 @@ public class CertificateAuthorityServiceTest {
     when(certificateCredential.getCertificate()).thenReturn(CertificateStringConstants.SELF_SIGNED_CA_CERT);
 
     assertThat(certificateAuthorityService.findActiveVersion(CREDENTIAL_NAME),
-        samePropertyValuesAs(certificate));
+      samePropertyValuesAs(certificate));
   }
 
   @Test
   public void findActiveVersion_whenCredentialIsNotACa_throwsException() {
     when(certificateVersionDataService.findActive("actually-a-password"))
-        .thenReturn(new PasswordCredentialVersion());
+      .thenReturn(new PasswordCredentialVersion());
 
     try {
       certificateAuthorityService.findActiveVersion("actually-a-password");
@@ -121,7 +121,7 @@ public class CertificateAuthorityServiceTest {
     when(notACertificateAuthority.getParsedCertificate()).thenReturn(mock(CertificateReader.class));
     when(notACertificateAuthority.getCertificate()).thenReturn(CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT);
     when(certificateVersionDataService.findActive(CREDENTIAL_NAME))
-        .thenReturn(notACertificateAuthority);
+      .thenReturn(notACertificateAuthority);
 
     try {
       certificateAuthorityService.findActiveVersion(CREDENTIAL_NAME);

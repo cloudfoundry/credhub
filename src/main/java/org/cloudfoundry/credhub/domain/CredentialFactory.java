@@ -1,5 +1,11 @@
 package org.cloudfoundry.credhub.domain;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import org.cloudfoundry.credhub.constants.CredentialType;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.credential.CredentialValue;
@@ -18,11 +24,6 @@ import org.cloudfoundry.credhub.entity.UserCredentialVersionData;
 import org.cloudfoundry.credhub.entity.ValueCredentialVersionData;
 import org.cloudfoundry.credhub.request.GenerationParameters;
 import org.cloudfoundry.credhub.request.StringGenerationParameters;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 public class CredentialFactory {
@@ -67,19 +68,19 @@ public class CredentialFactory {
   }
 
   public CredentialVersion makeNewCredentialVersion(
-      CredentialType type,
-      String name,
-      CredentialValue credentialValue,
-      CredentialVersion existingCredentialVersion,
-      GenerationParameters passwordGenerationParameters
+    CredentialType type,
+    String name,
+    CredentialValue credentialValue,
+    CredentialVersion existingCredentialVersion,
+    GenerationParameters passwordGenerationParameters
   ) {
     CredentialVersion credentialVersion;
     switch (type) {
       case password:
         credentialVersion = new PasswordCredentialVersion(
-            (StringCredentialValue) credentialValue,
-            (StringGenerationParameters) passwordGenerationParameters,
-            encryptor);
+          (StringCredentialValue) credentialValue,
+          (StringGenerationParameters) passwordGenerationParameters,
+          encryptor);
         break;
       case certificate:
         credentialVersion = new CertificateCredentialVersion((CertificateCredentialValue) credentialValue, encryptor);
@@ -98,9 +99,9 @@ public class CredentialFactory {
         break;
       case user:
         credentialVersion = new UserCredentialVersion(
-            (UserCredentialValue) credentialValue,
-            (StringGenerationParameters) passwordGenerationParameters,
-            encryptor);
+          (UserCredentialValue) credentialValue,
+          (StringGenerationParameters) passwordGenerationParameters,
+          encryptor);
         break;
       default:
         throw new RuntimeException("Unrecognized type: " + type);

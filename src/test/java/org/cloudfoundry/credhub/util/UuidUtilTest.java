@@ -1,11 +1,12 @@
 package org.cloudfoundry.credhub.util;
 
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThat;
-
 import java.nio.ByteBuffer;
 import java.util.UUID;
+
 import org.junit.Test;
+
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertThat;
 
 public class UuidUtilTest {
 

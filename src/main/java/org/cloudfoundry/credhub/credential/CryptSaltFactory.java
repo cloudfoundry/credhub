@@ -1,7 +1,8 @@
 package org.cloudfoundry.credhub.credential;
 
-import org.apache.commons.codec.digest.Crypt;
 import org.springframework.stereotype.Component;
+
+import org.apache.commons.codec.digest.Crypt;
 
 @Component
 public class CryptSaltFactory {

@@ -1,13 +1,5 @@
 package org.cloudfoundry.credhub.jna.libcrypto;
 
-import com.sun.jna.Memory;
-import com.sun.jna.Native;
-import com.sun.jna.Pointer;
-import org.cloudfoundry.credhub.service.RandomNumberGenerator;
-import org.cloudfoundry.credhub.util.CheckedConsumer;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -18,6 +10,15 @@ import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPrivateCrtKeySpec;
 import java.security.spec.RSAPublicKeySpec;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import com.sun.jna.Memory;
+import com.sun.jna.Native;
+import com.sun.jna.Pointer;
+import org.cloudfoundry.credhub.service.RandomNumberGenerator;
+import org.cloudfoundry.credhub.util.CheckedConsumer;
 
 @Component
 public class CryptoWrapper {
@@ -41,12 +42,12 @@ public class CryptoWrapper {
   }
 
   public synchronized <E extends Throwable> void generateKeyPair(int keyLength, CheckedConsumer<Pointer, E> consumer) throws E {
-    if (keyLength < 1024 || keyLength > 8096 ){
+    if (keyLength < 1024 || keyLength > 8096) {
       throw new IllegalArgumentException(String.format("Invalid key length: %d", keyLength));
     }
 
     Pointer bne = Crypto.BN_new();
-    if (bne == Pointer.NULL){
+    if (bne == Pointer.NULL) {
       // No need to `free` as implicit `malloc` failed
       throw new RuntimeException(String.format("RSA key generation failed: %s", getError()));
     }
@@ -54,7 +55,7 @@ public class CryptoWrapper {
     try {
       Crypto.BN_set_word(bne, Crypto.RSA_F4);
       Pointer rsa = Crypto.RSA_new();
-      if (rsa == Pointer.NULL){
+      if (rsa == Pointer.NULL) {
         // No need to `free` as implicit `malloc` failed
         throw new RuntimeException(String.format("RSA key generation failed: %s", getError()));
       }
@@ -86,13 +87,13 @@ public class CryptoWrapper {
   }
 
   synchronized BigInteger convert(Pointer bn) throws IllegalArgumentException {
-    if (bn == Pointer.NULL){
+    if (bn == Pointer.NULL) {
       throw new IllegalArgumentException("Pointer 'bn' cannot be null");
     }
 
     BIGNUM.ByReference bignum = new BIGNUM.ByReference(bn);
     bignum.read();
-    if (bignum.dp == null){
+    if (bignum.dp == null) {
       throw new RuntimeException("Failed to correctly parse BigNumber");
     }
 
@@ -124,14 +125,14 @@ public class CryptoWrapper {
 
   private RSAPrivateCrtKeySpec getRsaPrivateCrtKeySpec(RSA.ByReference rsa) {
     return new RSAPrivateCrtKeySpec(
-        convert(rsa.np),
-        convert(rsa.ep),
-        convert(rsa.dp),
-        convert(rsa.pp),
-        convert(rsa.qp),
-        convert(rsa.dmp1),
-        convert(rsa.dmq1),
-        convert(rsa.iqmp)
+      convert(rsa.np),
+      convert(rsa.ep),
+      convert(rsa.dp),
+      convert(rsa.pp),
+      convert(rsa.qp),
+      convert(rsa.dmp1),
+      convert(rsa.dmq1),
+      convert(rsa.iqmp)
     );
   }
 

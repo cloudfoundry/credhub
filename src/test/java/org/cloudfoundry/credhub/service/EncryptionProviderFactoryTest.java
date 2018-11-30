@@ -23,16 +23,16 @@ public class EncryptionProviderFactoryTest {
   private EncryptionKeyProvider provider;
 
   @Before
-  public void setUp(){
+  public void setUp() {
     MockitoAnnotations.initMocks(this);
   }
 
   @Test
   public void getEncryptionService_whenEncryptionServiceIsAlreadyInitialized() throws Exception {
     EncryptionProviderFactory subject = new EncryptionProviderFactory(
-        mock(EncryptionKeysConfiguration.class),
-        mock(TimedRetry.class),
-        mock(PasswordKeyProxyFactory.class)
+      mock(EncryptionKeysConfiguration.class),
+      mock(TimedRetry.class),
+      mock(PasswordKeyProxyFactory.class)
     );
 
     when(provider.getProviderType()).thenReturn(ProviderType.INTERNAL);

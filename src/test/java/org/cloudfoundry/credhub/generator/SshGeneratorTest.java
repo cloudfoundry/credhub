@@ -1,5 +1,8 @@
 package org.cloudfoundry.credhub.generator;
 
+import java.security.KeyPair;
+import java.security.interfaces.RSAPublicKey;
+
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.credential.SshCredentialValue;
 import org.cloudfoundry.credhub.request.SshGenerationParameters;
@@ -8,9 +11,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.security.KeyPair;
-import java.security.interfaces.RSAPublicKey;
 
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
@@ -46,7 +46,7 @@ public class SshGeneratorTest {
     verify(keyPairGeneratorMock).generateKeyPair(2048);
 
     assertThat(ssh.getPublicKey(),
-        equalTo(CertificateFormatter.derOf((RSAPublicKey) keyPair.getPublic())));
+      equalTo(CertificateFormatter.derOf((RSAPublicKey) keyPair.getPublic())));
     assertThat(ssh.getPrivateKey(), equalTo(CertificateFormatter.pemOf(keyPair.getPrivate())));
   }
 
@@ -68,7 +68,7 @@ public class SshGeneratorTest {
     final SshCredentialValue ssh = subject.generateCredential(sshGenerationParameters);
 
     String expectedPublicKey = CertificateFormatter.derOf((RSAPublicKey) keyPair.getPublic())
-        + " this is an ssh comment";
+      + " this is an ssh comment";
 
     assertThat(ssh.getPublicKey(), equalTo(expectedPublicKey));
   }

@@ -1,5 +1,7 @@
 package org.cloudfoundry.credhub.credential;
 
+import java.time.Instant;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.apache.commons.lang3.StringUtils;
@@ -12,8 +14,6 @@ import org.cloudfoundry.credhub.validator.RequireCertificateSignedByCA;
 import org.cloudfoundry.credhub.validator.RequireValidCA;
 import org.cloudfoundry.credhub.validator.RequireValidCertificate;
 import org.cloudfoundry.credhub.validator.ValidCertificateLength;
-
-import java.time.Instant;
 
 @RequireAnyOf(message = "error.missing_certificate_credentials", fields = {"ca", "certificate", "privateKey"})
 @MutuallyExclusive(message = "error.mixed_ca_name_and_ca", fields = {"ca", "caName"})
@@ -37,22 +37,23 @@ public class CertificateCredentialValue implements CredentialValue {
   private boolean transitional;
 
   @SuppressWarnings("unused")
-  public CertificateCredentialValue() {}
+  public CertificateCredentialValue() {
+  }
 
   public CertificateCredentialValue(
-      String ca,
-      String certificate,
-      String privateKey,
-      String caName) {
+    String ca,
+    String certificate,
+    String privateKey,
+    String caName) {
     this(ca, certificate, privateKey, caName, false);
   }
 
   public CertificateCredentialValue(
-      String ca,
-      String certificate,
-      String privateKey,
-      String caName,
-      boolean transitional) {
+    String ca,
+    String certificate,
+    String privateKey,
+    String caName,
+    boolean transitional) {
     this.ca = ca;
     this.certificate = certificate;
     this.privateKey = privateKey;
@@ -67,6 +68,7 @@ public class CertificateCredentialValue implements CredentialValue {
   public void setCa(String ca) {
     this.ca = ca;
   }
+
   public String getCertificate() {
     return certificate;
   }

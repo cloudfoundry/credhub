@@ -1,12 +1,12 @@
 package org.cloudfoundry.credhub.entity;
 
+import java.util.Arrays;
+
 import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.util.Arrays;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

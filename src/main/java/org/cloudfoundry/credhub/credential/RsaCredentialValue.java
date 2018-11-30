@@ -15,7 +15,8 @@ public class RsaCredentialValue implements CredentialValue {
   private String privateKey;
 
   @SuppressWarnings("unused")
-  public RsaCredentialValue() {}
+  public RsaCredentialValue() {
+  }
 
   public RsaCredentialValue(String publicKey, String privateKey) {
     this.publicKey = publicKey;

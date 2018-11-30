@@ -1,13 +1,5 @@
 package org.cloudfoundry.credhub.controller.v1;
 
-import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.handler.RegenerateHandler;
-import org.cloudfoundry.credhub.util.AuthConstants;
-import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -19,6 +11,15 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
+
+import org.cloudfoundry.credhub.CredentialManagerApp;
+import org.cloudfoundry.credhub.handler.RegenerateHandler;
+import org.cloudfoundry.credhub.util.AuthConstants;
+import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -43,9 +44,9 @@ public class RegenerateControllerTest {
   @Before
   public void beforeEach() {
     mockMvc = MockMvcBuilders
-        .webAppContextSetup(webApplicationContext)
-        .apply(springSecurity())
-        .build();
+      .webAppContextSetup(webApplicationContext)
+      .apply(springSecurity())
+      .build();
   }
 
   @Test
@@ -62,21 +63,21 @@ public class RegenerateControllerTest {
 
   private MockHttpServletRequestBuilder makeRegenerateRequest() {
     return post("/api/v1/regenerate")
-        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-        .accept(MediaType.APPLICATION_JSON)
-        .contentType(MediaType.APPLICATION_JSON)
-        .content("{\n"
-            + "  \"name\" : \"picard\"\n"
-            + "}");
+      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .accept(MediaType.APPLICATION_JSON)
+      .contentType(MediaType.APPLICATION_JSON)
+      .content("{\n"
+        + "  \"name\" : \"picard\"\n"
+        + "}");
   }
 
   private MockHttpServletRequestBuilder makeBulkRegenerateRequest() {
     return post("/api/v1/bulk-regenerate")
-        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-        .accept(MediaType.APPLICATION_JSON)
-        .contentType(MediaType.APPLICATION_JSON)
-        .content("{\n"
-            + "  \"signed_by\" : \"/some-ca\"\n"
-            + "}");
+      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .accept(MediaType.APPLICATION_JSON)
+      .contentType(MediaType.APPLICATION_JSON)
+      .content("{\n"
+        + "  \"signed_by\" : \"/some-ca\"\n"
+        + "}");
   }
 }

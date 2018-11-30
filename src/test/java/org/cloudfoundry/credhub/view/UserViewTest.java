@@ -1,15 +1,15 @@
 package org.cloudfoundry.credhub.view;
 
+import java.io.IOException;
+import java.util.UUID;
+
+import org.apache.commons.codec.digest.Crypt;
 import org.cloudfoundry.credhub.credential.CryptSaltFactory;
 import org.cloudfoundry.credhub.domain.UserCredentialVersion;
 import org.cloudfoundry.credhub.helper.JsonTestHelper;
-import org.apache.commons.codec.digest.Crypt;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.io.IOException;
-import java.util.UUID;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -36,14 +36,14 @@ public class UserViewTest {
     UserView actual = (UserView) UserView.fromEntity(userCredential);
 
     assertThat(JsonTestHelper.serializeToString(actual), equalTo("{"
-        + "\"type\":\"user\","
-        + "\"version_created_at\":null,"
-        + "\"id\":\"" + uuid.toString() + "\","
-        + "\"name\":\"/foo\","
-        + "\"value\":{"
-        + "\"username\":\"test-username\","
-        + "\"password\":\"test-password\","
-        + "\"password_hash\":\"" + passwordHash + "\""
-        + "}}"));
+      + "\"type\":\"user\","
+      + "\"version_created_at\":null,"
+      + "\"id\":\"" + uuid.toString() + "\","
+      + "\"name\":\"/foo\","
+      + "\"value\":{"
+      + "\"username\":\"test-username\","
+      + "\"password\":\"test-password\","
+      + "\"password_hash\":\"" + passwordHash + "\""
+      + "}}"));
   }
 }

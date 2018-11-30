@@ -1,9 +1,7 @@
 package org.cloudfoundry.credhub.controller.v2;
 
-import org.cloudfoundry.credhub.handler.PermissionsHandler;
-import org.cloudfoundry.credhub.request.PermissionsV2PatchRequest;
-import org.cloudfoundry.credhub.request.PermissionsV2Request;
-import org.cloudfoundry.credhub.view.PermissionsV2View;
+import java.util.UUID;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
@@ -16,7 +14,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.UUID;
+import org.cloudfoundry.credhub.handler.PermissionsHandler;
+import org.cloudfoundry.credhub.request.PermissionsV2PatchRequest;
+import org.cloudfoundry.credhub.request.PermissionsV2Request;
+import org.cloudfoundry.credhub.view.PermissionsV2View;
 
 @RestController
 @RequestMapping(path = PermissionsV2Controller.endpoint, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -51,14 +52,14 @@ public class PermissionsV2Controller {
   @RequestMapping(path = "/{guid}", method = RequestMethod.PUT)
   @ResponseStatus(HttpStatus.OK)
   public PermissionsV2View putPermissions(@Validated @RequestBody PermissionsV2Request permissionsRequest,
-    @PathVariable String guid) {
+                                          @PathVariable String guid) {
     return permissionsHandler.putPermissions(guid, permissionsRequest);
   }
 
   @RequestMapping(path = "/{guid}", method = RequestMethod.PATCH)
   @ResponseStatus(HttpStatus.OK)
   public PermissionsV2View patchPermissions(@Validated @RequestBody PermissionsV2PatchRequest request,
-    @PathVariable String guid) {
+                                            @PathVariable String guid) {
     return permissionsHandler.patchPermissions(guid, request.getOperations());
   }
 

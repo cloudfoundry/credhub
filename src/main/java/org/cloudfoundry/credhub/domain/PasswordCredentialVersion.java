@@ -1,13 +1,13 @@
 package org.cloudfoundry.credhub.domain;
 
+import java.io.IOException;
+
 import org.cloudfoundry.credhub.credential.StringCredentialValue;
 import org.cloudfoundry.credhub.entity.EncryptedValue;
 import org.cloudfoundry.credhub.entity.PasswordCredentialVersionData;
 import org.cloudfoundry.credhub.request.GenerationParameters;
 import org.cloudfoundry.credhub.request.StringGenerationParameters;
 import org.cloudfoundry.credhub.util.JsonObjectMapper;
-
-import java.io.IOException;
 
 public class PasswordCredentialVersion extends CredentialVersion<PasswordCredentialVersion> {
 
@@ -30,9 +30,9 @@ public class PasswordCredentialVersion extends CredentialVersion<PasswordCredent
   }
 
   public PasswordCredentialVersion(
-      StringCredentialValue password,
-      StringGenerationParameters generationParameters,
-      Encryptor encryptor
+    StringCredentialValue password,
+    StringGenerationParameters generationParameters,
+    Encryptor encryptor
   ) {
     this();
     setEncryptor(encryptor);
@@ -48,15 +48,17 @@ public class PasswordCredentialVersion extends CredentialVersion<PasswordCredent
 
   public PasswordCredentialVersion setPasswordAndGenerationParameters(String password,
                                                                       StringGenerationParameters generationParameters) {
-    EncryptedValue encryptedParameters, encryptedPassword;
+    EncryptedValue encryptedParameters;
+    EncryptedValue encryptedPassword;
+
     if (password == null) {
       throw new IllegalArgumentException("password cannot be null");
     }
 
     try {
       String generationParameterJson =
-          generationParameters != null ? jsonObjectMapper.writeValueAsString(generationParameters)
-              : null;
+        generationParameters != null ? jsonObjectMapper.writeValueAsString(generationParameters)
+          : null;
       if (generationParameterJson != null) {
         encryptedParameters = encryptor.encrypt(generationParameterJson);
         delegate.setEncryptedGenerationParameters(encryptedParameters);
@@ -86,7 +88,7 @@ public class PasswordCredentialVersion extends CredentialVersion<PasswordCredent
 
     try {
       StringGenerationParameters passwordGenerationParameters = jsonObjectMapper
-          .deserializeBackwardsCompatibleValue(parameterJson, StringGenerationParameters.class);
+        .deserializeBackwardsCompatibleValue(parameterJson, StringGenerationParameters.class);
       passwordGenerationParameters.setLength(password.length());
       return passwordGenerationParameters;
     } catch (IOException e) {
@@ -96,7 +98,7 @@ public class PasswordCredentialVersion extends CredentialVersion<PasswordCredent
 
   @Override
   public boolean matchesGenerationParameters(GenerationParameters generationParameters) {
-    if(generationParameters == null){
+    if (generationParameters == null) {
       return true;
     }
     return generationParameters.equals(getGenerationParameters());

@@ -1,10 +1,11 @@
 package db.migration.common;
 
-import org.flywaydb.core.api.migration.spring.SpringJdbcMigration;
-import org.springframework.jdbc.core.JdbcTemplate;
-
 import java.sql.Types;
 import java.util.List;
+
+import org.springframework.jdbc.core.JdbcTemplate;
+
+import org.flywaydb.core.api.migration.spring.SpringJdbcMigration;
 
 import static org.cloudfoundry.credhub.util.UuidUtil.makeUuid;
 

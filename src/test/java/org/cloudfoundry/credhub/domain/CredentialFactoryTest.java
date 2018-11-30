@@ -1,5 +1,9 @@
 package org.cloudfoundry.credhub.domain;
 
+import java.io.IOException;
+import java.security.Security;
+import java.util.UUID;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -20,10 +24,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import java.io.IOException;
-import java.security.Security;
-import java.util.UUID;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.beans.SamePropertyValuesAs.samePropertyValuesAs;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -37,9 +37,6 @@ public class CredentialFactoryTest {
   private static final String PLAINTEXT_VALUE = "test-value";
   private static final String jsonValueJsonString = "{\"key\":\"value\",\"array\":[\"foo\",\"bar\"]}";
   private static final JsonNode jsonNode;
-  private CredentialFactory subject;
-  private JsonObjectMapper objectMapper;
-  private StringGenerationParameters generationParameters;
 
   static {
     JsonNode tmp = null;
@@ -50,6 +47,10 @@ public class CredentialFactoryTest {
     }
     jsonNode = tmp;
   }
+
+  private CredentialFactory subject;
+  private JsonObjectMapper objectMapper;
+  private StringGenerationParameters generationParameters;
 
   @Before
   public void setup() throws JsonProcessingException {
@@ -73,7 +74,7 @@ public class CredentialFactoryTest {
     when(encryptor.encrypt(generationParametersJsonString)).thenReturn(parametersEncryption);
     when(encryptor.decrypt(parametersEncryption)).thenReturn(generationParametersJsonString);
 
-    EncryptedValue jsonEncryption =  new EncryptedValue(encryptionKeyUuid, jsonValueJsonString.getBytes(), "test-nonce".getBytes());
+    EncryptedValue jsonEncryption = new EncryptedValue(encryptionKeyUuid, jsonValueJsonString.getBytes(), "test-nonce".getBytes());
     when(encryptor.encrypt(jsonValueJsonString)).thenReturn(jsonEncryption);
     when(encryptor.decrypt(jsonEncryption)).thenReturn(jsonValueJsonString);
   }
@@ -84,12 +85,12 @@ public class CredentialFactoryTest {
 
     CredentialVersion existingCredentialVersion = new PasswordCredentialVersion(CREDENTIAL_NAME);
     CredentialVersion credentialVersion =
-        subject.makeNewCredentialVersion(
-            CredentialType.valueOf("password"),
-            CREDENTIAL_NAME,
-            passwordValue,
-            existingCredentialVersion,
-            generationParameters);
+      subject.makeNewCredentialVersion(
+        CredentialType.valueOf("password"),
+        CREDENTIAL_NAME,
+        passwordValue,
+        existingCredentialVersion,
+        generationParameters);
     assertThat(credentialVersion.getCredential(), equalTo(existingCredentialVersion.getCredential()));
   }
 
@@ -98,12 +99,12 @@ public class CredentialFactoryTest {
     StringCredentialValue passwordValue = new StringCredentialValue(PLAINTEXT_VALUE);
 
     PasswordCredentialVersion credential =
-        (PasswordCredentialVersion) subject.makeNewCredentialVersion(
-            CredentialType.valueOf("password"),
-            CREDENTIAL_NAME,
-            passwordValue,
-            null,
-            generationParameters);
+      (PasswordCredentialVersion) subject.makeNewCredentialVersion(
+        CredentialType.valueOf("password"),
+        CREDENTIAL_NAME,
+        passwordValue,
+        null,
+        generationParameters);
     MatcherAssert.assertThat(credential.getCredential().getName(), equalTo(CREDENTIAL_NAME));
     assertThat(credential.getPassword(), equalTo(PLAINTEXT_VALUE));
     assertThat(credential.getGenerationParameters(), samePropertyValuesAs(generationParameters));
@@ -114,12 +115,12 @@ public class CredentialFactoryTest {
     StringCredentialValue passwordValue = new StringCredentialValue(PLAINTEXT_VALUE);
 
     ValueCredentialVersion credential =
-        (ValueCredentialVersion) subject.makeNewCredentialVersion(
-            CredentialType.valueOf("value"),
-            CREDENTIAL_NAME,
-            passwordValue,
-            null,
-            null);
+      (ValueCredentialVersion) subject.makeNewCredentialVersion(
+        CredentialType.valueOf("value"),
+        CREDENTIAL_NAME,
+        passwordValue,
+        null,
+        null);
     MatcherAssert.assertThat(credential.getCredential().getName(), equalTo(CREDENTIAL_NAME));
     assertThat(credential.getValue(), equalTo(PLAINTEXT_VALUE));
   }
@@ -127,19 +128,19 @@ public class CredentialFactoryTest {
   @Test
   public void makeCredentialFromRequest_givenCertificateType_andNoExisting_returnsCertificateCredential() throws Exception {
     CertificateCredentialValue certificateValue = new CertificateCredentialValue(
-        CertificateStringConstants.SELF_SIGNED_CA_CERT,
-        CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT,
-        PLAINTEXT_VALUE,
-        "my-ca"
+      CertificateStringConstants.SELF_SIGNED_CA_CERT,
+      CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT,
+      PLAINTEXT_VALUE,
+      "my-ca"
     );
 
     CertificateCredentialVersion credential =
-        (CertificateCredentialVersion) subject.makeNewCredentialVersion(
-            CredentialType.valueOf("certificate"),
-            CREDENTIAL_NAME,
-            certificateValue,
-            null,
-            null);
+      (CertificateCredentialVersion) subject.makeNewCredentialVersion(
+        CredentialType.valueOf("certificate"),
+        CREDENTIAL_NAME,
+        certificateValue,
+        null,
+        null);
     MatcherAssert.assertThat(credential.getCredential().getName(), equalTo(CREDENTIAL_NAME));
     assertThat(credential.getCa(), equalTo(CertificateStringConstants.SELF_SIGNED_CA_CERT));
     assertThat(credential.getCertificate(), equalTo(CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT));
@@ -150,16 +151,16 @@ public class CredentialFactoryTest {
   @Test
   public void makeCredentialFromRequest_givenRsaType_andNoExisting_returnsRsaCredential() throws Exception {
     RsaCredentialValue rsaValue = new RsaCredentialValue(
-        "public-key",
-        PLAINTEXT_VALUE);
+      "public-key",
+      PLAINTEXT_VALUE);
 
     RsaCredentialVersion credential =
-        (RsaCredentialVersion) subject.makeNewCredentialVersion(
-            CredentialType.valueOf("rsa"),
-            CREDENTIAL_NAME,
-            rsaValue,
-            null,
-            null);
+      (RsaCredentialVersion) subject.makeNewCredentialVersion(
+        CredentialType.valueOf("rsa"),
+        CREDENTIAL_NAME,
+        rsaValue,
+        null,
+        null);
     MatcherAssert.assertThat(credential.getCredential().getName(), equalTo(CREDENTIAL_NAME));
     assertThat(credential.getPublicKey(), equalTo("public-key"));
     assertThat(credential.getPrivateKey(), equalTo(PLAINTEXT_VALUE));
@@ -168,17 +169,17 @@ public class CredentialFactoryTest {
   @Test
   public void makeCredentialFromRequest_givenSshType_andNoExisting_returnsSshCredential() throws Exception {
     SshCredentialValue sshValue = new SshCredentialValue(
-        "public-key",
-        PLAINTEXT_VALUE,
-        null);
+      "public-key",
+      PLAINTEXT_VALUE,
+      null);
 
     SshCredentialVersion credential =
-        (SshCredentialVersion) subject.makeNewCredentialVersion(
-            CredentialType.valueOf("ssh"),
-            CREDENTIAL_NAME,
-            sshValue,
-            null,
-            null);
+      (SshCredentialVersion) subject.makeNewCredentialVersion(
+        CredentialType.valueOf("ssh"),
+        CREDENTIAL_NAME,
+        sshValue,
+        null,
+        null);
     MatcherAssert.assertThat(credential.getCredential().getName(), equalTo(CREDENTIAL_NAME));
     assertThat(credential.getPublicKey(), equalTo("public-key"));
     assertThat(credential.getPrivateKey(), equalTo(PLAINTEXT_VALUE));
@@ -189,12 +190,12 @@ public class CredentialFactoryTest {
     JsonCredentialValue jsonValue = new JsonCredentialValue(jsonNode);
 
     JsonCredentialVersion credential =
-        (JsonCredentialVersion) subject.makeNewCredentialVersion(
-            CredentialType.valueOf("json"),
-            CREDENTIAL_NAME,
-            jsonValue,
-            null,
-            null);
+      (JsonCredentialVersion) subject.makeNewCredentialVersion(
+        CredentialType.valueOf("json"),
+        CREDENTIAL_NAME,
+        jsonValue,
+        null,
+        null);
     assertThat(credential.getCredential().getName(), equalTo(CREDENTIAL_NAME));
     assertThat(credential.getValue(), equalTo(jsonNode));
   }
@@ -204,12 +205,12 @@ public class CredentialFactoryTest {
     UserCredentialValue userValue = new UserCredentialValue("username", PLAINTEXT_VALUE, "salt");
 
     UserCredentialVersion credential =
-        (UserCredentialVersion) subject.makeNewCredentialVersion(
-            CredentialType.valueOf("user"),
-            CREDENTIAL_NAME,
-            userValue,
-            null,
-            generationParameters);
+      (UserCredentialVersion) subject.makeNewCredentialVersion(
+        CredentialType.valueOf("user"),
+        CREDENTIAL_NAME,
+        userValue,
+        null,
+        generationParameters);
     MatcherAssert.assertThat(credential.getCredential().getName(), equalTo(CREDENTIAL_NAME));
     assertThat(credential.getUsername(), equalTo("username"));
     assertThat(credential.getPassword(), equalTo(PLAINTEXT_VALUE));

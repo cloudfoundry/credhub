@@ -1,5 +1,8 @@
 package org.cloudfoundry.credhub.service;
 
+import javax.crypto.AEADBadTagException;
+import javax.crypto.IllegalBlockSizeException;
+
 import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
 import org.cloudfoundry.credhub.entity.EncryptionKeyCanary;
 import org.cloudfoundry.credhub.exceptions.IncorrectKeyException;
@@ -9,11 +12,15 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.ArgumentCaptor;
 
-import javax.crypto.AEADBadTagException;
-import javax.crypto.IllegalBlockSizeException;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
 public class ExternalKeyProxyTest {

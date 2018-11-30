@@ -1,8 +1,8 @@
 package org.cloudfoundry.credhub.util;
 
-import org.cloudfoundry.credhub.service.RandomNumberGenerator;
-
 import java.security.SecureRandom;
+
+import org.cloudfoundry.credhub.service.RandomNumberGenerator;
 
 public class PseudoRandomNumberGenerator implements RandomNumberGenerator {
 

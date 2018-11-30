@@ -4,17 +4,16 @@ import org.cloudfoundry.credhub.audit.OperationDeviceAction;
 
 public class DeletePermissions implements RequestDetails {
 
+  private String credentialName;
+  private String actor;
+
   public DeletePermissions() {
 
   }
-
   public DeletePermissions(String credentialName, String actor) {
     this.credentialName = credentialName;
     this.actor = actor;
   }
-
-  private String credentialName;
-  private String actor;
 
   public String getCredentialName() {
     return credentialName;

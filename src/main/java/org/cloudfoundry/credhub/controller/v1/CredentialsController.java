@@ -1,5 +1,21 @@
 package org.cloudfoundry.credhub.controller.v1;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.google.common.io.ByteStreams;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -19,26 +35,11 @@ import org.cloudfoundry.credhub.service.PermissionedCredentialService;
 import org.cloudfoundry.credhub.view.CredentialView;
 import org.cloudfoundry.credhub.view.DataResponse;
 import org.cloudfoundry.credhub.view.FindCredentialResults;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 
 @RestController
 @RequestMapping(
-    path = CredentialsController.endpoint,
-    produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+  path = CredentialsController.endpoint,
+  produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class CredentialsController {
 
   public static final String endpoint = "/api/v1/data";
@@ -51,11 +52,13 @@ public class CredentialsController {
   private CEFAuditRecord auditRecord;
 
   @Autowired
-  public CredentialsController(PermissionedCredentialService credentialService,
-      CredentialsHandler credentialsHandler,
-      SetHandler setHandler,
-      LegacyGenerationHandler legacyGenerationHandler,
-      CEFAuditRecord auditRecord) {
+  public CredentialsController(
+    PermissionedCredentialService credentialService,
+    CredentialsHandler credentialsHandler,
+    SetHandler setHandler,
+    LegacyGenerationHandler legacyGenerationHandler,
+    CEFAuditRecord auditRecord
+  ) {
     this.credentialService = credentialService;
     this.credentialsHandler = credentialsHandler;
     this.setHandler = setHandler;
@@ -79,7 +82,7 @@ public class CredentialsController {
 
   @RequestMapping(path = "", method = RequestMethod.DELETE)
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  public void delete(@RequestParam(value = "name") String credentialName) {
+  public void delete(@RequestParam("name") String credentialName) {
     if (StringUtils.isEmpty(credentialName)) {
       throw new InvalidQueryParameterException("error.missing_query_parameter", "name");
     }
@@ -101,9 +104,9 @@ public class CredentialsController {
   @GetMapping(path = "")
   @ResponseStatus(HttpStatus.OK)
   public DataResponse getCredential(
-      @RequestParam(value = "name") String credentialName,
-      @RequestParam(value = "versions", required = false) Integer numberOfVersions,
-      @RequestParam(value = "current", required = false, defaultValue = "false") boolean current) {
+    @RequestParam("name") String credentialName,
+    @RequestParam(value = "versions", required = false) Integer numberOfVersions,
+    @RequestParam(value = "current", required = false, defaultValue = "false") boolean current) {
     if (StringUtils.isEmpty(credentialName)) {
       throw new InvalidQueryParameterException("error.missing_query_parameter", "name");
     }
@@ -126,8 +129,8 @@ public class CredentialsController {
   @RequestMapping(path = "", params = "path", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   public FindCredentialResults findByPath(
-      @RequestParam("path") String path,
-      @RequestParam(value = "expires-within-days", required = false, defaultValue = "") String expiresWithinDays) {
+    @RequestParam("path") String path,
+    @RequestParam(value = "expires-within-days", required = false, defaultValue = "") String expiresWithinDays) {
     FindCredential findCredential = new FindCredential();
     findCredential.setPath(path);
     findCredential.setExpiresWithinDays(expiresWithinDays);
@@ -139,8 +142,8 @@ public class CredentialsController {
   @RequestMapping(path = "", params = "name-like", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   public FindCredentialResults findByNameLike(
-      @RequestParam("name-like") String nameLike,
-      @RequestParam(value = "expires-within-days", required = false, defaultValue = "") String expiresWithinDays) {
+    @RequestParam("name-like") String nameLike,
+    @RequestParam(value = "expires-within-days", required = false, defaultValue = "") String expiresWithinDays) {
     FindCredential findCredential = new FindCredential();
     findCredential.setNameLike(nameLike);
     findCredential.setExpiresWithinDays(expiresWithinDays);

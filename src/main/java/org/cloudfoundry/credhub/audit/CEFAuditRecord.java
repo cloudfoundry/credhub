@@ -1,5 +1,18 @@
 package org.cloudfoundry.credhub.audit;
 
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.stereotype.Component;
+import org.springframework.web.context.WebApplicationContext;
+
 import org.apache.commons.lang3.StringUtils;
 import org.cloudfoundry.credhub.audit.entity.RequestDetails;
 import org.cloudfoundry.credhub.audit.entity.Resource;
@@ -8,17 +21,6 @@ import org.cloudfoundry.credhub.config.VersionProvider;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.entity.PermissionData;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
-import org.springframework.stereotype.Component;
-import org.springframework.web.context.WebApplicationContext;
-
-import javax.servlet.http.HttpServletRequest;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 
 @Component
 @Scope(scopeName = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
@@ -38,15 +40,26 @@ public class CEFAuditRecord {
   private UUID uuid;
 
   // CEF Spec
-  private String signatureId, extension, credhubServerVersion;
+  private String signatureId;
+  private String extension;
+  private String credhubServerVersion;
 
   // Data Inherited (somewhat) from CC
-  private String timestamp, username, userGuid, authMechanism, requestPath,
-      requestMethod, result, sourceAddress, destinationAddress;
+  private String timestamp;
+  private String username;
+  private String userGuid;
+  private String authMechanism;
+  private String requestPath;
+  private String requestMethod;
+  private String result;
+  private String sourceAddress;
+  private String destinationAddress;
   private Integer httpStatusCode;
 
   // CredHub-specific Data
-  private String resourceName, resourceUUID, versionUUID;
+  private String resourceName;
+  private String resourceUUID;
+  private String versionUUID;
   private OperationDeviceAction operation;
   private RequestDetails requestDetails;
   private List<Resource> resourceList;
@@ -64,13 +77,13 @@ public class CEFAuditRecord {
 
   @Override
   public String toString() {
-    if(resourceList == null || resourceList.isEmpty()){
+    if (resourceList == null || resourceList.isEmpty()) {
       return logRecord().toString();
     }
 
     StringBuilder builder = new StringBuilder();
-    for(int i = 0; i < resourceList.size(); i++){
-      if(i > 0){
+    for (int i = 0; i < resourceList.size(); i++) {
+      if (i > 0) {
         builder.append(System.getProperty("line.separator"));
       }
       this.resourceName = resourceList.get(i).getResourceName();
@@ -84,7 +97,7 @@ public class CEFAuditRecord {
     return builder.toString();
   }
 
-  private StringBuilder logRecord(){
+  private StringBuilder logRecord() {
     StringBuilder builder = new StringBuilder();
     builder.append("CEF:").append(CEF_VERSION).append("|");
     builder.append(DEVICE_VENDOR).append("|");
@@ -225,16 +238,16 @@ public class CEFAuditRecord {
     return resourceUUID;
   }
 
-  public void setVersionUUID(String versionUUID) {
-    this.versionUUID = versionUUID;
+  public void setResourceUUID(String resourceUUID) {
+    this.resourceUUID = resourceUUID;
   }
 
   public String getVersionUUID() {
     return versionUUID;
   }
 
-  public void setResourceUUID(String resourceUUID) {
-    this.resourceUUID = resourceUUID;
+  public void setVersionUUID(String versionUUID) {
+    this.versionUUID = versionUUID;
   }
 
   public RequestDetails getRequestDetails() {
@@ -267,7 +280,7 @@ public class CEFAuditRecord {
   }
 
   public void setResource(Credential credential) {
-    if(credential == null || credential.getUuid() == null){
+    if (credential == null || credential.getUuid() == null) {
       return;
     }
 
@@ -276,7 +289,7 @@ public class CEFAuditRecord {
   }
 
   public void setResource(PermissionData data) {
-    if(data == null || data.getUuid() == null){
+    if (data == null || data.getUuid() == null) {
       return;
     }
 
@@ -285,7 +298,7 @@ public class CEFAuditRecord {
   }
 
   public void setVersion(CredentialVersion credentialVersion) {
-    if(credentialVersion == null || credentialVersion.getUuid() == null){
+    if (credentialVersion == null || credentialVersion.getUuid() == null) {
       return;
     }
 
@@ -295,7 +308,7 @@ public class CEFAuditRecord {
   public void addResource(Credential credential) {
     initResourceList();
 
-    if(credential != null) {
+    if (credential != null) {
       this.resourceList.add(new Resource(credential.getName(), credential.getUuid().toString()));
     }
   }
@@ -303,23 +316,23 @@ public class CEFAuditRecord {
   public void addResource(PermissionData permissionData) {
     initResourceList();
 
-    if(permissionData != null) {
+    if (permissionData != null) {
       this.resourceList.add(new Resource(permissionData.getPath(), permissionData.getUuid().toString()));
     }
   }
 
 
   public void addVersion(CredentialVersion credentialVersion) {
-    if(versionList == null){
+    if (versionList == null) {
       versionList = new ArrayList<>();
     }
 
-    if(credentialVersion != null) {
+    if (credentialVersion != null) {
       this.versionList.add(new Version(credentialVersion.getUuid().toString()));
     }
   }
 
-  public void initCredentials(){
+  public void initCredentials() {
     this.resourceList = new ArrayList<>();
     this.versionList = new ArrayList<>();
   }
@@ -336,8 +349,8 @@ public class CEFAuditRecord {
     list.forEach(i -> this.addResource(i));
   }
 
-  private void initResourceList(){
-    if(resourceList == null){
+  private void initResourceList() {
+    if (resourceList == null) {
       resourceList = new ArrayList<>();
     }
   }

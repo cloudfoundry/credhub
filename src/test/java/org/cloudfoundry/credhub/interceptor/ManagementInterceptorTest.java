@@ -1,5 +1,9 @@
 package org.cloudfoundry.credhub.interceptor;
 
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.test.context.junit4.SpringRunner;
+
 import org.cloudfoundry.credhub.exceptions.InvalidRemoteAddressException;
 import org.cloudfoundry.credhub.exceptions.ReadOnlyException;
 import org.cloudfoundry.credhub.variables.ManagementVariables;
@@ -7,9 +11,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
@@ -33,7 +34,7 @@ public class ManagementInterceptorTest {
   }
 
   @Test(expected = InvalidRemoteAddressException.class)
-  public void preHandle_throwsAnExceptionWhenRemoteAddressDoesNotMatchLocalAddress(){
+  public void preHandle_throwsAnExceptionWhenRemoteAddressDoesNotMatchLocalAddress() {
     request.setRemoteAddr("10.0.0.1");
     request.setLocalAddr("127.0.0.1");
     request.setRequestURI("/management");
@@ -42,7 +43,7 @@ public class ManagementInterceptorTest {
   }
 
   @Test
-  public void preHandle_doesNotThrowAnExceptionWhenRemoteAddressMatchesLocalAddress(){
+  public void preHandle_doesNotThrowAnExceptionWhenRemoteAddressMatchesLocalAddress() {
     request.setRemoteAddr("127.0.0.1");
     request.setLocalAddr("127.0.0.1");
     request.setRequestURI("/management");
@@ -50,7 +51,7 @@ public class ManagementInterceptorTest {
   }
 
   @Test(expected = ReadOnlyException.class)
-  public void preHandle_throwsAnExceptionWhenTheRequestMethodIsNotGetInReadOnlyMode(){
+  public void preHandle_throwsAnExceptionWhenTheRequestMethodIsNotGetInReadOnlyMode() {
     ManagementVariables.readOnlyMode = true;
     request.setRequestURI("/api/v1/data");
     request.setMethod("POST");
@@ -59,7 +60,7 @@ public class ManagementInterceptorTest {
   }
 
   @Test
-  public void preHandle_throwsNoExceptionWhenTheRequestMethodGetInReadOnlyMode(){
+  public void preHandle_throwsNoExceptionWhenTheRequestMethodGetInReadOnlyMode() {
     ManagementVariables.readOnlyMode = true;
     request.setRequestURI("/api/v1/data");
     request.setMethod("GET");
@@ -67,7 +68,7 @@ public class ManagementInterceptorTest {
   }
 
   @Test
-  public void preHandle_postsToManagementStillWork(){
+  public void preHandle_postsToManagementStillWork() {
     ManagementVariables.readOnlyMode = true;
     request.setRequestURI("/management");
     request.setMethod("POST");
@@ -75,7 +76,7 @@ public class ManagementInterceptorTest {
   }
 
   @Test
-  public void preHandle_continuesToServePostsToInterpolate(){
+  public void preHandle_continuesToServePostsToInterpolate() {
     ManagementVariables.readOnlyMode = true;
     request.setRequestURI("/interpolate");
     request.setMethod("POST");

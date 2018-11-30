@@ -1,11 +1,11 @@
 package org.cloudfoundry.credhub.request;
 
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
-
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 
 @SuppressWarnings("unused")
 public class CertificateSetRequest extends BaseCredentialSetRequest<CertificateCredentialValue> {
@@ -20,7 +20,7 @@ public class CertificateSetRequest extends BaseCredentialSetRequest<CertificateC
   }
 
   public void setCertificateValue(
-      CertificateCredentialValue certificateValue) {
+    CertificateCredentialValue certificateValue) {
     this.certificateValue = certificateValue;
   }
 

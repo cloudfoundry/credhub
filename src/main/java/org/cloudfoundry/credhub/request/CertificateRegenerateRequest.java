@@ -7,16 +7,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @SuppressWarnings("unused")
 public class CertificateRegenerateRequest {
 
+  @JsonProperty("set_as_transitional")
+  private boolean transitional;
+
   public CertificateRegenerateRequest() {
-        /* this needs to be there for jackson to be happy */
+    /* this needs to be there for jackson to be happy */
   }
 
   public CertificateRegenerateRequest(boolean transitional) {
     this.transitional = transitional;
   }
-
-  @JsonProperty("set_as_transitional")
-  private boolean transitional;
 
   public boolean isTransitional() {
     return transitional;

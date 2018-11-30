@@ -1,10 +1,10 @@
 package org.cloudfoundry.credhub.auth;
 
+import java.time.Instant;
+
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStyle;
-
-import java.time.Instant;
 
 public class UserContext {
 
@@ -28,18 +28,19 @@ public class UserContext {
   private String authMethod;
 
   // Needed for UserContextArgumentResolver
-  public UserContext() {}
+  public UserContext() {
+  }
 
   public UserContext(
-      String userId,
-      String userName,
-      String issuer,
-      long validFrom,
-      long validUntil,
-      String clientId,
-      String scope,
-      String grantType,
-      String authMethod
+    String userId,
+    String userName,
+    String issuer,
+    long validFrom,
+    long validUntil,
+    String clientId,
+    String scope,
+    String grantType,
+    String authMethod
   ) {
     this.userId = userId;
     this.userName = userName;
@@ -53,10 +54,10 @@ public class UserContext {
   }
 
   public UserContext(
-      long validFrom,
-      long validUntil,
-      String clientId,
-      String authMethod
+    long validFrom,
+    long validUntil,
+    String clientId,
+    String authMethod
   ) {
     this.validFrom = validFrom;
     this.validUntil = validUntil;
@@ -125,15 +126,15 @@ public class UserContext {
   @Override
   public String toString() {
     return "UserContext{" +
-        "userId='" + userId + '\'' +
-        ", userName='" + userName + '\'' +
-        ", issuer='" + issuer + '\'' +
-        ", validFrom=" + validFrom +
-        ", validUntil=" + validUntil +
-        ", clientId='" + clientId + '\'' +
-        ", scope='" + scope + '\'' +
-        ", grantType='" + grantType + '\'' +
-        ", authMethod='" + authMethod + '\'' +
-        '}';
+      "userId='" + userId + '\'' +
+      ", userName='" + userName + '\'' +
+      ", issuer='" + issuer + '\'' +
+      ", validFrom=" + validFrom +
+      ", validUntil=" + validUntil +
+      ", clientId='" + clientId + '\'' +
+      ", scope='" + scope + '\'' +
+      ", grantType='" + grantType + '\'' +
+      ", authMethod='" + authMethod + '\'' +
+      '}';
   }
 }

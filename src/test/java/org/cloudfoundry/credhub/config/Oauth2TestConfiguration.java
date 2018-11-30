@@ -20,56 +20,56 @@ import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 @Profile({"unit-test"})
 public class Oauth2TestConfiguration {
 
-    @Bean
-    public ResourceServerProperties resourceServerProperties() {
-      return new ResourceServerProperties();
-    }
+  @Bean
+  public ResourceServerProperties resourceServerProperties() {
+    return new ResourceServerProperties();
+  }
 
-    @Bean
-    public JwtAccessTokenConverter jwtAccessTokenConverter() throws Exception {
-      DefaultAccessTokenConverter defaultAccessTokenConverter = new DefaultAccessTokenConverter();
-      defaultAccessTokenConverter.setIncludeGrantType(true);
-      JwtAccessTokenConverter jwtAccessTokenConverter = new JwtAccessTokenConverter();
-      jwtAccessTokenConverter.setAccessTokenConverter(defaultAccessTokenConverter);
-      jwtAccessTokenConverter.setVerifierKey(resourceServerProperties().getJwt().getKeyValue());
-      jwtAccessTokenConverter.afterPropertiesSet();
-      return jwtAccessTokenConverter;
-    }
+  @Bean
+  public JwtAccessTokenConverter jwtAccessTokenConverter() throws Exception {
+    DefaultAccessTokenConverter defaultAccessTokenConverter = new DefaultAccessTokenConverter();
+    defaultAccessTokenConverter.setIncludeGrantType(true);
+    JwtAccessTokenConverter jwtAccessTokenConverter = new JwtAccessTokenConverter();
+    jwtAccessTokenConverter.setAccessTokenConverter(defaultAccessTokenConverter);
+    jwtAccessTokenConverter.setVerifierKey(resourceServerProperties().getJwt().getKeyValue());
+    jwtAccessTokenConverter.afterPropertiesSet();
+    return jwtAccessTokenConverter;
+  }
 
-    @Bean
-    public TokenStore tokenStore(JwtAccessTokenConverter jwtAccessTokenConverter) {
-      return new JwtTokenStore(jwtAccessTokenConverter);
-    }
+  @Bean
+  public TokenStore tokenStore(JwtAccessTokenConverter jwtAccessTokenConverter) {
+    return new JwtTokenStore(jwtAccessTokenConverter);
+  }
 
-    @Bean
-    public ResourceServerTokenServices resourceServerTokenServices(TokenStore tokenStore) {
-      DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
-      defaultTokenServices.setTokenStore(tokenStore);
-      return defaultTokenServices;
-    }
+  @Bean
+  public ResourceServerTokenServices resourceServerTokenServices(TokenStore tokenStore) {
+    DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
+    defaultTokenServices.setTokenStore(tokenStore);
+    return defaultTokenServices;
+  }
 
-    @Bean
-    public AuthenticationManagerBuilder authenticationManagerBuilder() {
-      final ObjectPostProcessor<Object> objectPostProcessor = new ObjectPostProcessor<Object>() {
-        @Override
-        public <O extends Object> O postProcess(O object) {
+  @Bean
+  public AuthenticationManagerBuilder authenticationManagerBuilder() {
+    final ObjectPostProcessor<Object> objectPostProcessor = new ObjectPostProcessor<Object>() {
+      @Override
+      public <O extends Object> O postProcess(O object) {
         return object;
-        }
-      };
-      final AuthenticationManagerBuilder authenticationManagerBuilder =
-        new AuthenticationManagerBuilder(objectPostProcessor);
-      authenticationManagerBuilder.parentAuthenticationManager(authenticationManager());
-      return authenticationManagerBuilder;
-    }
-
-      @Bean
-      public AuthenticationManager authenticationManager() {
-        return authentication -> authentication;
       }
+    };
+    final AuthenticationManagerBuilder authenticationManagerBuilder =
+      new AuthenticationManagerBuilder(objectPostProcessor);
+    authenticationManagerBuilder.parentAuthenticationManager(authenticationManager());
+    return authenticationManagerBuilder;
+  }
 
-      @Bean
-      public WebResponseExceptionTranslator webResponseExceptionTranslator() {
-        return new DefaultWebResponseExceptionTranslator();
-      }
+  @Bean
+  public AuthenticationManager authenticationManager() {
+    return authentication -> authentication;
+  }
+
+  @Bean
+  public WebResponseExceptionTranslator webResponseExceptionTranslator() {
+    return new DefaultWebResponseExceptionTranslator();
+  }
 
 }

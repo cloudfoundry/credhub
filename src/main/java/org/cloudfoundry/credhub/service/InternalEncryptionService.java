@@ -1,7 +1,5 @@
 package org.cloudfoundry.credhub.service;
 
-import org.cloudfoundry.credhub.entity.EncryptedValue;
-
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
@@ -9,10 +7,13 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.UUID;
+
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+
+import org.cloudfoundry.credhub.entity.EncryptedValue;
 
 import static org.cloudfoundry.credhub.constants.EncryptionConstants.NONCE_SIZE;
 import static org.cloudfoundry.credhub.service.EncryptionKeyCanaryMapper.CHARSET;
@@ -62,6 +63,10 @@ public abstract class InternalEncryptionService implements EncryptionProvider {
     return nonce;
   }
 
+  public void reconnect(Exception reasonForReconnect) throws Exception {
+    throw reasonForReconnect;
+  }
+
   static class CipherWrapper {
 
     private Cipher wrappedCipher;
@@ -71,16 +76,12 @@ public abstract class InternalEncryptionService implements EncryptionProvider {
     }
 
     public void init(int encryptMode, Key key, AlgorithmParameterSpec parameterSpec)
-        throws InvalidAlgorithmParameterException, InvalidKeyException {
+      throws InvalidAlgorithmParameterException, InvalidKeyException {
       wrappedCipher.init(encryptMode, key, parameterSpec);
     }
 
     byte[] doFinal(byte[] encryptedValue) throws BadPaddingException, IllegalBlockSizeException {
       return wrappedCipher.doFinal(encryptedValue);
     }
-  }
-
-  public void reconnect(Exception reasonForReconnect) throws Exception {
-    throw reasonForReconnect;
   }
 }

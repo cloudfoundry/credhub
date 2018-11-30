@@ -1,14 +1,15 @@
 package org.cloudfoundry.credhub.service;
 
+import java.util.function.Supplier;
+
+import javax.crypto.SecretKey;
+
 import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
 import org.cloudfoundry.credhub.util.TimedRetry;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.util.function.Supplier;
-import javax.crypto.SecretKey;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -38,8 +39,8 @@ public class LunaEncryptionServiceTest {
     timedRetry = mock(TimedRetry.class);
     when(timedRetry.retryEverySecondUntil(anyLong(), any(Supplier.class))).thenAnswer(answer -> {
       Supplier<Boolean> retryingOperation = answer.getArgument(1);
-      for(int i=0; i < 10; i++) {
-        if(retryingOperation.get()) {
+      for (int i = 0; i < 10; i++) {
+        if (retryingOperation.get()) {
           return true;
         }
       }
@@ -92,8 +93,8 @@ public class LunaEncryptionServiceTest {
 
   private void setupAnotherProcessCreatesKey() throws Exception {
     when(connection.containsAlias("fake_key_name"))
-        .thenReturn(false)
-        .thenReturn(true);
+      .thenReturn(false)
+      .thenReturn(true);
   }
 
   private void setupKeyExists() throws Exception {

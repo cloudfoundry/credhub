@@ -1,5 +1,7 @@
 package org.cloudfoundry.credhub.request;
 
+import java.io.IOException;
+
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.DatabindContext;
 import com.fasterxml.jackson.databind.JavaType;
@@ -12,8 +14,6 @@ import org.cloudfoundry.credhub.entity.RsaCredentialVersionData;
 import org.cloudfoundry.credhub.entity.SshCredentialVersionData;
 import org.cloudfoundry.credhub.entity.UserCredentialVersionData;
 import org.cloudfoundry.credhub.entity.ValueCredentialVersionData;
-
-import java.io.IOException;
 
 public class SetRequestTypeIdResolver implements TypeIdResolver {
   private JavaType baseType;

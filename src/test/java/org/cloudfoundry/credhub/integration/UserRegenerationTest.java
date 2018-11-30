@@ -1,12 +1,5 @@
 package org.cloudfoundry.credhub.integration;
 
-import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
-import org.cloudfoundry.credhub.util.AuthConstants;
-import org.json.JSONObject;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -16,6 +9,14 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
+
+import org.cloudfoundry.credhub.CredentialManagerApp;
+import org.cloudfoundry.credhub.util.AuthConstants;
+import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
+import org.json.JSONObject;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -41,30 +42,30 @@ public class UserRegenerationTest {
   @Before
   public void beforeEach() throws Exception {
     mockMvc = MockMvcBuilders
-        .webAppContextSetup(webApplicationContext)
-        .apply(springSecurity())
-        .build();
+      .webAppContextSetup(webApplicationContext)
+      .apply(springSecurity())
+      .build();
   }
 
   @Test
   public void userRegeneration_withDefaultParametersAndStaticUsernameInValue_shouldRegenerateUserPassword() throws Exception {
     MockHttpServletRequestBuilder post = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        //language=JSON
-        .content("{"
-            + "\"name\": \"/example/user\","
-            + "\"type\": \"user\","
-            + "\"value\": {"
-            + "\"username\":\"darth-vader\""
-            + "}"
-            + "}");
+      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{"
+        + "\"name\": \"/example/user\","
+        + "\"type\": \"user\","
+        + "\"value\": {"
+        + "\"username\":\"darth-vader\""
+        + "}"
+        + "}");
 
     String userResult = this.mockMvc.perform(post)
-        .andDo(print())
-        .andExpect(status().isOk())
-        .andReturn().getResponse().getContentAsString();
+      .andDo(print())
+      .andExpect(status().isOk())
+      .andReturn().getResponse().getContentAsString();
 
     String originalPassword = (new JSONObject(userResult)).getJSONObject("value").getString("password");
     String originalUsername = (new JSONObject(userResult)).getJSONObject("value").getString("username");
@@ -72,19 +73,19 @@ public class UserRegenerationTest {
     assertThat(originalPassword, notNullValue());
 
     MockHttpServletRequestBuilder regeneratePost = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        //language=JSON
-        .content("{\n"
-            + "  \"name\" : \"/example/user\",\n"
-            + "  \"regenerate\" : true\n"
-            + "}");
+      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{\n"
+        + "  \"name\" : \"/example/user\",\n"
+        + "  \"regenerate\" : true\n"
+        + "}");
 
     String regenerateResult = this.mockMvc.perform(regeneratePost)
-        .andDo(print())
-        .andExpect(status().isOk())
-        .andReturn().getResponse().getContentAsString();
+      .andDo(print())
+      .andExpect(status().isOk())
+      .andReturn().getResponse().getContentAsString();
 
     String regeneratedPassword = (new JSONObject(regenerateResult)).getJSONObject("value").getString("password");
     String regeneratedUsername = (new JSONObject(regenerateResult)).getJSONObject("value").getString("username");
@@ -99,23 +100,23 @@ public class UserRegenerationTest {
   @Test
   public void userRegeneration_withDefaultParametersAndStaticUsernameInParameters_shouldRegenerateUserPassword() throws Exception {
     MockHttpServletRequestBuilder post = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        //language=JSON
-        .content("{"
-            + "\"name\": \"/example/user\","
-            + "\"type\": \"user\","
-            + "\"parameters\": {"
-            + "\"username\":\"darth-vader\","
-            + "\"exclude_lower\":\"true\""
-            + "}"
-            + "}");
+      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{"
+        + "\"name\": \"/example/user\","
+        + "\"type\": \"user\","
+        + "\"parameters\": {"
+        + "\"username\":\"darth-vader\","
+        + "\"exclude_lower\":\"true\""
+        + "}"
+        + "}");
 
     String userResult = this.mockMvc.perform(post)
-        .andDo(print())
-        .andExpect(status().isOk())
-        .andReturn().getResponse().getContentAsString();
+      .andDo(print())
+      .andExpect(status().isOk())
+      .andReturn().getResponse().getContentAsString();
 
     String originalPassword = (new JSONObject(userResult)).getJSONObject("value").getString("password");
     String originalUsername = (new JSONObject(userResult)).getJSONObject("value").getString("username");
@@ -123,19 +124,19 @@ public class UserRegenerationTest {
     assertThat(originalPassword, notNullValue());
 
     MockHttpServletRequestBuilder regeneratePost = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        //language=JSON
-        .content("{\n"
-            + "  \"name\" : \"/example/user\",\n"
-            + "  \"regenerate\" : true\n"
-            + "}");
+      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{\n"
+        + "  \"name\" : \"/example/user\",\n"
+        + "  \"regenerate\" : true\n"
+        + "}");
 
     String regenerateResult = this.mockMvc.perform(regeneratePost)
-        .andDo(print())
-        .andExpect(status().isOk())
-        .andReturn().getResponse().getContentAsString();
+      .andDo(print())
+      .andExpect(status().isOk())
+      .andReturn().getResponse().getContentAsString();
 
     String regeneratedPassword = (new JSONObject(regenerateResult)).getJSONObject("value").getString("password");
     String regeneratedUsername = (new JSONObject(regenerateResult)).getJSONObject("value").getString("username");
@@ -150,22 +151,22 @@ public class UserRegenerationTest {
   @Test
   public void userRegeneration_withDefaultParametersAndGeneratedUsername_shouldRegenerateUserPasswordButNotUsername() throws Exception {
     MockHttpServletRequestBuilder post = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        //language=JSON
-        .content("{"
-            + "\"name\": \"/example/user\","
-            + "\"type\": \"user\","
-            + "\"parameters\": {"
-            + "\"exclude_lower\":\"true\""
-            + "}"
-            + "}");
+      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{"
+        + "\"name\": \"/example/user\","
+        + "\"type\": \"user\","
+        + "\"parameters\": {"
+        + "\"exclude_lower\":\"true\""
+        + "}"
+        + "}");
 
     String userResult = this.mockMvc.perform(post)
-        .andDo(print())
-        .andExpect(status().isOk())
-        .andReturn().getResponse().getContentAsString();
+      .andDo(print())
+      .andExpect(status().isOk())
+      .andReturn().getResponse().getContentAsString();
 
     String originalPassword = (new JSONObject(userResult)).getJSONObject("value").getString("password");
     String originalUsername = (new JSONObject(userResult)).getJSONObject("value").getString("username");
@@ -173,19 +174,19 @@ public class UserRegenerationTest {
     assertThat(originalPassword, notNullValue());
 
     MockHttpServletRequestBuilder regeneratePost = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        //language=JSON
-        .content("{\n"
-            + "  \"name\" : \"/example/user\",\n"
-            + "  \"regenerate\" : true\n"
-            + "}");
+      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{\n"
+        + "  \"name\" : \"/example/user\",\n"
+        + "  \"regenerate\" : true\n"
+        + "}");
 
     String regenerateResult = this.mockMvc.perform(regeneratePost)
-        .andDo(print())
-        .andExpect(status().isOk())
-        .andReturn().getResponse().getContentAsString();
+      .andDo(print())
+      .andExpect(status().isOk())
+      .andReturn().getResponse().getContentAsString();
 
     String regeneratedPassword = (new JSONObject(regenerateResult)).getJSONObject("value").getString("password");
     String regeneratedUsername = (new JSONObject(regenerateResult)).getJSONObject("value").getString("username");

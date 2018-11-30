@@ -60,7 +60,7 @@ public class RsaCredentialVersion extends CredentialVersion<RsaCredentialVersion
 
   @Override
   public boolean matchesGenerationParameters(GenerationParameters generationParameters) {
-    if(generationParameters == null){
+    if (generationParameters == null) {
       return true;
     }
 

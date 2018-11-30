@@ -5,7 +5,7 @@ import org.cloudfoundry.credhub.audit.OperationDeviceAction;
 public class GetCredentialById implements RequestDetails {
   private String uuid;
 
-  public GetCredentialById(String uuid){
+  public GetCredentialById(String uuid) {
     this.uuid = uuid;
   }
 

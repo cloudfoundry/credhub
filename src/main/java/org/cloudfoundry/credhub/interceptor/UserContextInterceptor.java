@@ -1,14 +1,15 @@
 package org.cloudfoundry.credhub.interceptor;
 
-import org.cloudfoundry.credhub.auth.UserContextFactory;
-import org.cloudfoundry.credhub.auth.UserContextHolder;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import org.cloudfoundry.credhub.auth.UserContextFactory;
+import org.cloudfoundry.credhub.auth.UserContextHolder;
 
 @Component
 public class UserContextInterceptor extends HandlerInterceptorAdapter {
@@ -17,8 +18,8 @@ public class UserContextInterceptor extends HandlerInterceptorAdapter {
 
   @Autowired
   UserContextInterceptor(
-      UserContextFactory userContextFactory,
-      UserContextHolder userContextHolder) {
+    UserContextFactory userContextFactory,
+    UserContextHolder userContextHolder) {
     this.userContextFactory = userContextFactory;
     this.userContextHolder = userContextHolder;
   }

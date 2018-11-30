@@ -1,12 +1,12 @@
 package org.cloudfoundry.credhub.util;
 
+import java.io.IOException;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.cloudfoundry.credhub.request.StringGenerationParameters;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.io.IOException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -30,7 +30,7 @@ public class JsonObjectMapperTest {
     StringGenerationParameters generationParameters = new StringGenerationParameters().setExcludeLower(true).setIncludeSpecial(true);
 
     final StringGenerationParameters actualGenerationParameters = new JsonObjectMapper()
-        .deserializeBackwardsCompatibleValue(testSnakeCaseString, StringGenerationParameters.class);
+      .deserializeBackwardsCompatibleValue(testSnakeCaseString, StringGenerationParameters.class);
 
     assertThat(generationParameters, equalTo(actualGenerationParameters));
   }
@@ -41,7 +41,7 @@ public class JsonObjectMapperTest {
     StringGenerationParameters generationParameters = new StringGenerationParameters().setExcludeLower(true).setIncludeSpecial(true);
 
     final StringGenerationParameters actualGenerationParameters = new JsonObjectMapper()
-        .deserializeBackwardsCompatibleValue(testSnakeCaseString, StringGenerationParameters.class);
+      .deserializeBackwardsCompatibleValue(testSnakeCaseString, StringGenerationParameters.class);
 
     assertThat(generationParameters, equalTo(actualGenerationParameters));
   }
@@ -52,7 +52,7 @@ public class JsonObjectMapperTest {
     StringGenerationParameters generationParameters = new StringGenerationParameters().setExcludeLower(true).setIncludeSpecial(true);
 
     final StringGenerationParameters actualGenerationParameters = new JsonObjectMapper()
-        .readValue(testSnakeCaseString, StringGenerationParameters.class);
+      .readValue(testSnakeCaseString, StringGenerationParameters.class);
 
     assertThat(generationParameters, equalTo(actualGenerationParameters));
   }

@@ -1,9 +1,9 @@
 package org.cloudfoundry.credhub.service;
 
-import org.cloudfoundry.credhub.entity.EncryptionKeyCanary;
-
 import java.security.Key;
 import java.util.List;
+
+import org.cloudfoundry.credhub.entity.EncryptionKeyCanary;
 
 public interface KeyProxy {
 

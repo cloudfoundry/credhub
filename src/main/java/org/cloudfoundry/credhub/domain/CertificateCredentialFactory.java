@@ -1,9 +1,10 @@
 package org.cloudfoundry.credhub.domain;
 
-import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
-import org.cloudfoundry.credhub.entity.Credential;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
+import org.cloudfoundry.credhub.entity.Credential;
 
 @Component
 public class CertificateCredentialFactory {
@@ -16,8 +17,8 @@ public class CertificateCredentialFactory {
   }
 
   public CertificateCredentialVersion makeNewCredentialVersion(
-      Credential certificateCredential,
-      CertificateCredentialValue credentialValue
+    Credential certificateCredential,
+    CertificateCredentialValue credentialValue
   ) {
     CertificateCredentialVersion version = new CertificateCredentialVersion(credentialValue, encryptor);
     version.setCredential(certificateCredential);

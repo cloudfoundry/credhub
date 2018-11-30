@@ -1,15 +1,8 @@
 package org.cloudfoundry.credhub.endToEnd.v2.permissions;
 
-import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.helper.JsonTestHelper;
-import org.cloudfoundry.credhub.request.PermissionOperation;
-import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
-import org.cloudfoundry.credhub.view.PermissionsV2View;
-import org.hamcrest.core.IsEqual;
-import org.json.JSONObject;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import java.util.Collections;
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -20,8 +13,16 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.util.Collections;
-import java.util.UUID;
+import org.cloudfoundry.credhub.CredentialManagerApp;
+import org.cloudfoundry.credhub.helper.JsonTestHelper;
+import org.cloudfoundry.credhub.request.PermissionOperation;
+import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
+import org.cloudfoundry.credhub.view.PermissionsV2View;
+import org.hamcrest.core.IsEqual;
+import org.json.JSONObject;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import static org.cloudfoundry.credhub.util.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.cloudfoundry.credhub.util.AuthConstants.NO_PERMISSIONS_TOKEN;
@@ -56,7 +57,7 @@ public class UpdatePermissionsV2EndToEndTest {
   }
 
   @Test
-  public void PATCH_whenUserGivesAPermission_forAPathAndActorThatDoesNotExist_theyReceiveA404() throws Exception{
+  public void PATCH_whenUserGivesAPermission_forAPathAndActorThatDoesNotExist_theyReceiveA404() throws Exception {
     String invalidGuid = "invalid";
 
     MockHttpServletRequestBuilder patchPermissionRequest = patch("/api/v2/permissions/" + invalidGuid)
@@ -74,7 +75,7 @@ public class UpdatePermissionsV2EndToEndTest {
   }
 
   @Test
-  public void PATCH_whenWriteIsEnabledOnExistingPermissionForUserA_UserACanCreateCredentials() throws Exception{
+  public void PATCH_whenWriteIsEnabledOnExistingPermissionForUserA_UserACanCreateCredentials() throws Exception {
     String credentialName = "/test";
     String passwordValue = "passwordValue";
 
@@ -139,7 +140,7 @@ public class UpdatePermissionsV2EndToEndTest {
 
 
   @Test
-  public void PUT_whenWriteIsEnabledOnExistingPermissionForUserA_UserACanCreateCredentials() throws Exception{
+  public void PUT_whenWriteIsEnabledOnExistingPermissionForUserA_UserACanCreateCredentials() throws Exception {
     String credentialName = "/test";
     String passwordValue = "passwordValue";
 
@@ -168,7 +169,7 @@ public class UpdatePermissionsV2EndToEndTest {
   }
 
   @Test
-  public void PUT_whenUUIDDoesNotMatchGivenActorAndPath_ReturnStatusBadRequest() throws Exception{
+  public void PUT_whenUUIDDoesNotMatchGivenActorAndPath_ReturnStatusBadRequest() throws Exception {
     String credentialName = "/test";
     String badCredentialName = "/wrongName";
     String passwordValue = "passwordValue";
@@ -194,7 +195,7 @@ public class UpdatePermissionsV2EndToEndTest {
   }
 
   @Test
-  public void PUT_whenUUIDDoesNotExist_ReturnStatusNotFound() throws Exception{
+  public void PUT_whenUUIDDoesNotExist_ReturnStatusNotFound() throws Exception {
     String credUUID = "1550919c-b7e1-4288-85fd-c73220e6ac5f";
 
     MockHttpServletRequestBuilder putPermissionRequest = put("/api/v2/permissions/" + credUUID)
@@ -214,7 +215,7 @@ public class UpdatePermissionsV2EndToEndTest {
   }
 
   @Test
-  public void PUT_whenUUIDIsInvalid_ReturnStatusNotFound() throws Exception{
+  public void PUT_whenUUIDIsInvalid_ReturnStatusNotFound() throws Exception {
     String credUUID = "not-a-uuid";
 
     MockHttpServletRequestBuilder putPermissionRequest = put("/api/v2/permissions/" + credUUID)
@@ -234,11 +235,11 @@ public class UpdatePermissionsV2EndToEndTest {
   }
 
   @Test
-  public void PUT_whenUserGivesAPermission_forAPathAndActorThatDoesNotExist_theyReceiveA404() throws Exception{
+  public void PUT_whenUserGivesAPermission_forAPathAndActorThatDoesNotExist_theyReceiveA404() throws Exception {
     String credentialName = "does_not_exist";
     String fakeUUID = "fake_guid";
 
-    MockHttpServletRequestBuilder putPermissionRequest = put("/api/v2/permissions/"+ fakeUUID)
+    MockHttpServletRequestBuilder putPermissionRequest = put("/api/v2/permissions/" + fakeUUID)
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)

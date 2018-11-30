@@ -1,11 +1,11 @@
 package org.cloudfoundry.credhub.generator;
 
-import org.springframework.stereotype.Component;
-
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+
+import org.springframework.stereotype.Component;
 
 @Component
 public class FakeKeyPairGenerator {
@@ -14,7 +14,7 @@ public class FakeKeyPairGenerator {
 
   public KeyPair generate() throws NoSuchProviderException, NoSuchAlgorithmException {
     KeyPairGenerator generator = KeyPairGenerator
-        .getInstance("RSA");
+      .getInstance("RSA");
     generator.initialize(KEY_LENGTH_FOR_TESTING);
     return generator.generateKeyPair();
   }

@@ -1,8 +1,11 @@
 package org.cloudfoundry.credhub.handler;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Map;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.domain.JsonCredentialVersion;
@@ -15,16 +18,17 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Map;
-
 import static java.util.Collections.singletonList;
 import static org.cloudfoundry.credhub.helper.JsonTestHelper.deserialize;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.nullValue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
 public class InterpolationHandlerTest {
@@ -50,12 +54,12 @@ public class InterpolationHandlerTest {
     final ArrayList secondService = (ArrayList) response.get("pp-something-else");
 
     JsonNode firstCredentialsBlock = (JsonNode) ((Map<String, Object>) firstService.get(0))
-        .get("credentials");
+      .get("credentials");
     JsonNode secondCredentialsBlock = (JsonNode) ((Map<String, Object>) firstService.get(1))
-        .get("credentials");
+      .get("credentials");
 
     JsonNode secondServiceCredentials = (JsonNode) ((Map<String, Object>) secondService.get(0))
-        .get("credentials");
+      .get("credentials");
 
     assertThat(firstCredentialsBlock.get("credhub-ref"), nullValue());
     assertThat(firstCredentialsBlock.size(), equalTo(1));
@@ -84,15 +88,15 @@ public class InterpolationHandlerTest {
   public void interpolateCredHubReferences_whenAReferencedCredentialIsNotJsonType_itThrowsAnException() {
     //lang=JSON
     String inputJson = "{"
-        + "  \"pp-config-server\": ["
-        + "    {"
-        + "      \"credentials\": {"
-        + "        \"credhub-ref\": \"((/password_cred))\""
-        + "      },"
-        + "      \"label\": \"pp-config-server\""
-        + "    }"
-        + "  ]"
-        + "}";
+      + "  \"pp-config-server\": ["
+      + "    {"
+      + "      \"credentials\": {"
+      + "        \"credhub-ref\": \"((/password_cred))\""
+      + "      },"
+      + "      \"label\": \"pp-config-server\""
+      + "    }"
+      + "  ]"
+      + "}";
 
     PasswordCredentialVersion passwordCredential = mock(PasswordCredentialVersion.class);
     when(passwordCredential.getName()).thenReturn("/password_cred");
@@ -109,15 +113,15 @@ public class InterpolationHandlerTest {
   @Test
   public void interpolateCredHubReferences_whenTheServicePropertiesLackCredentials_doesNotInterpolateIt() {
     Map<String, Object> inputJson = deserialize("{"
-        + "  \"pp-config-server\": [{"
-        + "    \"blah\": {"
-        + "      \"credhub-ref\": \"((/cred1))\""
-        + "     },"
-        + "    \"label\": \"pp-config-server\""
-        + "  }]"
-        + "}", Map.class);
+      + "  \"pp-config-server\": [{"
+      + "    \"blah\": {"
+      + "      \"credhub-ref\": \"((/cred1))\""
+      + "     },"
+      + "    \"label\": \"pp-config-server\""
+      + "  }]"
+      + "}", Map.class);
     Map<String, Object> response = subject
-        .interpolateCredHubReferences(inputJson);
+      .interpolateCredHubReferences(inputJson);
 
     assertThat(response, equalTo(inputJson));
   }
@@ -125,15 +129,15 @@ public class InterpolationHandlerTest {
   @Test
   public void interpolateCredHubReferences_whenTheCredentialsPropertyHasNoRefs_doesNotInterpolateIt() {
     Map<String, Object> inputJson = deserialize("{"
-        + "  \"pp-config-server\": [{"
-        + "    \"credentials\": {"
-        + "      \"key\": \"((value))\""
-        + "     },"
-        + "    \"label\": \"pp-config-server\""
-        + "  }]"
-        + "}", Map.class);
+      + "  \"pp-config-server\": [{"
+      + "    \"credentials\": {"
+      + "      \"key\": \"((value))\""
+      + "     },"
+      + "    \"label\": \"pp-config-server\""
+      + "  }]"
+      + "}", Map.class);
     Map<String, Object> response = subject
-        .interpolateCredHubReferences(inputJson);
+      .interpolateCredHubReferences(inputJson);
 
     assertThat(response, equalTo(inputJson));
   }
@@ -141,18 +145,18 @@ public class InterpolationHandlerTest {
   @Test
   public void interpolateCredHubReferences_whenTheCredentialsPropertyIsFormattedUnexpectedly_doesNotInterpolateIt() {
     String inputJsonString = "{"
-        + "  \"pp-config-server\": [{"
-        + "    \"foo\": {"
-        + "      \"credentials\": {"
-        + "        \"credhub-ref\": \"((/cred1))\""
-        + "       }"
-        + "     },"
-        + "    \"label\": \"pp-config-server\""
-        + "  }]"
-        + "}";
+      + "  \"pp-config-server\": [{"
+      + "    \"foo\": {"
+      + "      \"credentials\": {"
+      + "        \"credhub-ref\": \"((/cred1))\""
+      + "       }"
+      + "     },"
+      + "    \"label\": \"pp-config-server\""
+      + "  }]"
+      + "}";
     Map<String, Object> inputJson = deserialize(inputJsonString, Map.class);
     Map<String, Object> response = subject
-        .interpolateCredHubReferences(inputJson);
+      .interpolateCredHubReferences(inputJson);
 
     assertThat(response, equalTo(inputJson));
   }
@@ -160,11 +164,11 @@ public class InterpolationHandlerTest {
   @Test
   public void interpolateCredHubReferences_whenThePropertiesAreNotAHash_doesNotInterpolateIt() {
     String inputJsonString = "{"
-        + "  \"pp-config-server\": [\"what is this?\"]"
-        + "}";
+      + "  \"pp-config-server\": [\"what is this?\"]"
+      + "}";
     Map<String, Object> inputJson = deserialize(inputJsonString, Map.class);
     Map<String, Object> response = subject
-        .interpolateCredHubReferences(inputJson);
+      .interpolateCredHubReferences(inputJson);
 
     assertThat(response, equalTo(inputJson));
   }
@@ -172,14 +176,14 @@ public class InterpolationHandlerTest {
   @Test
   public void interpolateCredHubReferences_whenTheCredentialsAreNotAHashInAnArray_doesNotInterpolateIt() {
     String inputJsonString = "{"
-        + "  \"pp-config-server\": [{"
-        + "    \"credentials\": \"moose\","
-        + "    \"label\": \"squirrel\""
-        + "  }]"
-        + "}";
+      + "  \"pp-config-server\": [{"
+      + "    \"credentials\": \"moose\","
+      + "    \"label\": \"squirrel\""
+      + "  }]"
+      + "}";
     Map<String, Object> inputJson = deserialize(inputJsonString, Map.class);
     Map<String, Object> response = subject
-        .interpolateCredHubReferences(inputJson);
+      .interpolateCredHubReferences(inputJson);
 
     assertThat(response, equalTo(inputJson));
   }
@@ -188,7 +192,7 @@ public class InterpolationHandlerTest {
   public void interpolateCredHubReferences_whenPropertiesAreEmpty_doesNotInterpolateIt() {
     Map<String, Object> inputJson = deserialize("{}", Map.class);
     Map<String, Object> response = subject
-        .interpolateCredHubReferences(inputJson);
+      .interpolateCredHubReferences(inputJson);
 
     assertThat(response, equalTo(inputJson));
   }
@@ -196,13 +200,13 @@ public class InterpolationHandlerTest {
   @Test
   public void interpolateCredHubReferences_whenServicePropertiesAreNotArrays_doesNotInterpolateIt() {
     String inputJsonString = "{"
-        + "  \"pp-config-server\": {"
-        + "    \"credentials\": {"
-        + "      \"credhub-ref\": \"((/cred1))\""
-        + "     },"
-        + "    \"label\": \"pp-config-server\""
-        + "  }"
-        + "}";
+      + "  \"pp-config-server\": {"
+      + "    \"credentials\": {"
+      + "      \"credhub-ref\": \"((/cred1))\""
+      + "     },"
+      + "    \"label\": \"pp-config-server\""
+      + "  }"
+      + "}";
     Map<String, Object> inputJson = deserialize(inputJsonString, Map.class);
     Map response = subject.interpolateCredHubReferences(inputJson);
 
@@ -211,28 +215,28 @@ public class InterpolationHandlerTest {
 
   private void setupValidRequest() {
     String inputJsonString = "{"
-        + "  \"pp-config-server\": ["
-        + "    {"
-        + "      \"credentials\": {"
-        + "        \"credhub-ref\": \"((/cred1))\""
-        + "      },"
-        + "      \"label\": \"pp-config-server\""
-        + "    },"
-        + "    {"
-        + "      \"credentials\": {"
-        + "        \"credhub-ref\": \"((/cred2))\""
-        + "      }"
-        + "    }"
-        + "  ],"
-        + "  \"pp-something-else\": ["
-        + "    {"
-        + "      \"credentials\": {"
-        + "        \"credhub-ref\": \"((/cred3))\""
-        + "      },"
-        + "      \"something\": [\"pp-config-server\"]"
-        + "    }"
-        + "  ]"
-        + "}";
+      + "  \"pp-config-server\": ["
+      + "    {"
+      + "      \"credentials\": {"
+      + "        \"credhub-ref\": \"((/cred1))\""
+      + "      },"
+      + "      \"label\": \"pp-config-server\""
+      + "    },"
+      + "    {"
+      + "      \"credentials\": {"
+      + "        \"credhub-ref\": \"((/cred2))\""
+      + "      }"
+      + "    }"
+      + "  ],"
+      + "  \"pp-something-else\": ["
+      + "    {"
+      + "      \"credentials\": {"
+      + "        \"credhub-ref\": \"((/cred3))\""
+      + "      },"
+      + "      \"something\": [\"pp-config-server\"]"
+      + "    }"
+      + "  ]"
+      + "}";
     Map<String, Object> inputJson = deserialize(inputJsonString, Map.class);
 
     JsonCredentialVersion jsonCredential1 = mock(JsonCredentialVersion.class);
@@ -241,9 +245,9 @@ public class InterpolationHandlerTest {
     String credJson1 = "{\"secret1\":\"secret1-value\"}";
     JsonNode jsonNode1;
     try {
-        jsonNode1 = new ObjectMapper().readTree(credJson1);
+      jsonNode1 = new ObjectMapper().readTree(credJson1);
     } catch (IOException e) {
-        throw new RuntimeException(e);
+      throw new RuntimeException(e);
     }
     doReturn(jsonNode1).when(jsonCredential1).getValue();
 
@@ -253,9 +257,9 @@ public class InterpolationHandlerTest {
     String credJson2 = "{\"secret2\":\"secret2-value\"}";
     JsonNode jsonNode2;
     try {
-        jsonNode2 = new ObjectMapper().readTree(credJson2);
+      jsonNode2 = new ObjectMapper().readTree(credJson2);
     } catch (IOException e) {
-        throw new RuntimeException(e);
+      throw new RuntimeException(e);
     }
     doReturn(jsonNode2).when(jsonCredential2).getValue();
 
@@ -265,9 +269,9 @@ public class InterpolationHandlerTest {
     String credJson3 = "{\"secret3-1\":\"secret3-1-value\",\"secret3-2\":\"secret3-2-value\"}";
     JsonNode jsonNode3;
     try {
-        jsonNode3 = new ObjectMapper().readTree(credJson3);
+      jsonNode3 = new ObjectMapper().readTree(credJson3);
     } catch (IOException e) {
-        throw new RuntimeException(e);
+      throw new RuntimeException(e);
     }
     doReturn(jsonNode3).when(jsonCredential3).getValue();
 

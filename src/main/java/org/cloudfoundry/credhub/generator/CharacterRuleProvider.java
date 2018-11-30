@@ -1,13 +1,16 @@
 package org.cloudfoundry.credhub.generator;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.cloudfoundry.credhub.request.StringGenerationParameters;
 import org.passay.CharacterRule;
 import org.passay.EnglishCharacterData;
 
-import java.util.ArrayList;
-import java.util.List;
+final public class CharacterRuleProvider {
 
-public class CharacterRuleProvider {
+  private CharacterRuleProvider() {
+  }
 
   public static List<CharacterRule> getCharacterRules(StringGenerationParameters parameters) {
     List<CharacterRule> characterRules = new ArrayList<>();

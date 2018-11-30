@@ -1,14 +1,15 @@
 package org.cloudfoundry.credhub.request;
 
+import java.io.IOException;
+import java.util.Set;
+
+import javax.validation.ConstraintViolation;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import javax.validation.ConstraintViolation;
-import java.io.IOException;
-import java.util.Set;
 
 import static org.cloudfoundry.credhub.helper.JsonTestHelper.deserializeAndValidate;
 import static org.cloudfoundry.credhub.helper.JsonTestHelper.hasViolationWithMessage;
@@ -23,10 +24,10 @@ public class PermissionEntryTest {
   @Test
   public void validation_allowsGoodJson() throws IOException {
     String json = "{ \n"
-        + "\"actor\": \"" + USER_A_ACTOR_ID + "\",\n"
-        + "\"operations\": [\"read\"],\n"
-        + "\"path\": \"" + USER_A_PATH + "\""
-        + "}";
+      + "\"actor\": \"" + USER_A_ACTOR_ID + "\",\n"
+      + "\"operations\": [\"read\"],\n"
+      + "\"path\": \"" + USER_A_PATH + "\""
+      + "}";
     ObjectMapper om = new ObjectMapper();
     PermissionEntry permissionEntry = om.readValue(json, PermissionEntry.class);
     assertThat(permissionEntry.getActor(), equalTo(USER_A_ACTOR_ID));
@@ -36,9 +37,9 @@ public class PermissionEntryTest {
   @Test
   public void validation_ensuresPresenceOfActor() {
     String json = "{ \n"
-        + "\"operations\": [\"read\"],\n"
-        + "\"path\": \"" + USER_A_PATH + "\""
-        + "}";
+      + "\"operations\": [\"read\"],\n"
+      + "\"path\": \"" + USER_A_PATH + "\""
+      + "}";
     Set<ConstraintViolation<PermissionEntry>> constraintViolations = deserializeAndValidate(json, PermissionEntry.class);
     assertThat(constraintViolations, contains(hasViolationWithMessage("error.permission.missing_actor")));
   }
@@ -46,10 +47,10 @@ public class PermissionEntryTest {
   @Test
   public void validation_ensuresActorIsNotEmpty() {
     String json = "{ \n"
-        + "\"actor\":\"\","
-        + "\"operations\": [\"read\"],\n"
-        + "\"path\": \"" + USER_A_PATH + "\""
-        + "}";
+      + "\"actor\":\"\","
+      + "\"operations\": [\"read\"],\n"
+      + "\"path\": \"" + USER_A_PATH + "\""
+      + "}";
     Set<ConstraintViolation<PermissionEntry>> constraintViolations = deserializeAndValidate(json, PermissionEntry.class);
     assertThat(constraintViolations, contains(hasViolationWithMessage("error.permission.missing_actor")));
   }
@@ -57,9 +58,9 @@ public class PermissionEntryTest {
   @Test
   public void validation_ensuresOperationsIsNotNull() {
     String json = "{"
-        + "\"actor\": \"" + USER_A_ACTOR_ID + "\","
-        + "\"path\": \"" + USER_A_PATH + "\""
-        + "}";
+      + "\"actor\": \"" + USER_A_ACTOR_ID + "\","
+      + "\"path\": \"" + USER_A_PATH + "\""
+      + "}";
     Set<ConstraintViolation<PermissionEntry>> constraintViolations = deserializeAndValidate(json, PermissionEntry.class);
     assertThat(constraintViolations, contains(hasViolationWithMessage("error.permission.missing_operations")));
   }
@@ -67,10 +68,10 @@ public class PermissionEntryTest {
   @Test
   public void validation_ensuresOperationsIsNotEmpty() {
     String json = "{"
-        + "\"actor\": \"" + USER_A_ACTOR_ID + "\","
-        + "\"operations\": [],"
-        + "\"path\": \"" + USER_A_PATH + "\""
-        + "}";
+      + "\"actor\": \"" + USER_A_ACTOR_ID + "\","
+      + "\"operations\": [],"
+      + "\"path\": \"" + USER_A_PATH + "\""
+      + "}";
     Set<ConstraintViolation<PermissionEntry>> constraintViolations = deserializeAndValidate(json, PermissionEntry.class);
     assertThat(constraintViolations, contains(hasViolationWithMessage("error.permission.missing_operations")));
   }
@@ -78,10 +79,10 @@ public class PermissionEntryTest {
   @Test(expected = InvalidFormatException.class)
   public void validation_ensuresOperationsAreAllValid() throws Throwable {
     String json = "{ \n"
-        + "\"actor\": \"" + USER_A_ACTOR_ID + "\",\n"
-        + "\"operations\": [\"foo\", \"read\"],\n"
-        + "\"path\": \"" + USER_A_PATH + "\""
-        + "}";
+      + "\"actor\": \"" + USER_A_ACTOR_ID + "\",\n"
+      + "\"operations\": [\"foo\", \"read\"],\n"
+      + "\"path\": \"" + USER_A_PATH + "\""
+      + "}";
     try {
       deserializeAndValidate(json, PermissionEntry.class);
     } catch (RuntimeException e) {
@@ -92,9 +93,9 @@ public class PermissionEntryTest {
   @Test
   public void validation_ensuresPathIsNotEmpty() {
     String json = "{"
-        + "\"actor\": \"" + USER_A_ACTOR_ID + "\","
-        + "\"operations\": [\"read\"]"
-        + "}";
+      + "\"actor\": \"" + USER_A_ACTOR_ID + "\","
+      + "\"operations\": [\"read\"]"
+      + "}";
     Set<ConstraintViolation<PermissionEntry>> constraintViolations = deserializeAndValidate(json, PermissionEntry.class);
     assertThat(constraintViolations, contains(hasViolationWithMessage("error.permission.missing_path")));
   }

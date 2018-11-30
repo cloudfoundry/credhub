@@ -1,5 +1,12 @@
 package org.cloudfoundry.credhub.service;
 
+import java.nio.charset.Charset;
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
@@ -9,12 +16,6 @@ import org.cloudfoundry.credhub.data.EncryptionKeyCanaryDataService;
 import org.cloudfoundry.credhub.entity.EncryptedValue;
 import org.cloudfoundry.credhub.entity.EncryptionKeyCanary;
 import org.cloudfoundry.credhub.util.TimedRetry;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.nio.charset.Charset;
-import java.util.List;
-import java.util.UUID;
 
 import static org.apache.commons.lang3.ArrayUtils.toPrimitive;
 
@@ -35,10 +36,10 @@ public class EncryptionKeyCanaryMapper {
 
   @Autowired
   EncryptionKeyCanaryMapper(
-      EncryptionKeyCanaryDataService encryptionKeyCanaryDataService,
-      EncryptionKeysConfiguration encryptionKeysConfiguration,
-      TimedRetry timedRetry,
-      EncryptionProviderFactory providerFactory
+    EncryptionKeyCanaryDataService encryptionKeyCanaryDataService,
+    EncryptionKeysConfiguration encryptionKeysConfiguration,
+    TimedRetry timedRetry,
+    EncryptionProviderFactory providerFactory
   ) {
     this.encryptionKeyCanaryDataService = encryptionKeyCanaryDataService;
     this.encryptionKeysConfiguration = encryptionKeysConfiguration;
@@ -98,7 +99,7 @@ public class EncryptionKeyCanaryMapper {
 
       try {
         EncryptedValue encryptionData = encryptionProvider
-            .encrypt(encryptionKey, CANARY_VALUE);
+          .encrypt(encryptionKey, CANARY_VALUE);
         canary.setEncryptedCanaryValue(encryptionData.getEncryptedValue());
         canary.setNonce(encryptionData.getNonce());
         final List<Byte> salt = keyProxy.getSalt();

@@ -1,15 +1,17 @@
 package org.cloudfoundry.credhub.generator;
 
-import org.cloudfoundry.credhub.jna.libcrypto.CryptoWrapper;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import org.cloudfoundry.credhub.jna.libcrypto.CryptoWrapper;
+
 @Component
-class LibcryptoRsaKeyPairGenerator {
+public class LibcryptoRsaKeyPairGenerator {
 
   private final CryptoWrapper cryptoWrapper;
 
@@ -19,10 +21,10 @@ class LibcryptoRsaKeyPairGenerator {
   }
 
   public synchronized KeyPair generateKeyPair(int keyLength)
-      throws InvalidKeyException, InvalidKeySpecException {
+    throws InvalidKeyException, InvalidKeySpecException {
     final KeyPair[] keyPair = {null};
     cryptoWrapper.generateKeyPair(keyLength,
-        byReference -> keyPair[0] = cryptoWrapper.toKeyPair(byReference));
+      byReference -> keyPair[0] = cryptoWrapper.toKeyPair(byReference));
     return keyPair[0];
   }
 }

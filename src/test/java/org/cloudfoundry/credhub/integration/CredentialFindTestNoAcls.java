@@ -1,10 +1,8 @@
 package org.cloudfoundry.credhub.integration;
 
-import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import java.util.Arrays;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -16,8 +14,11 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.util.Arrays;
-import java.util.List;
+import org.cloudfoundry.credhub.CredentialManagerApp;
+import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import static org.cloudfoundry.credhub.helper.RequestHelper.generatePassword;
 import static org.cloudfoundry.credhub.util.AuthConstants.ALL_PERMISSIONS_TOKEN;
@@ -45,9 +46,9 @@ public class CredentialFindTestNoAcls {
   @Before
   public void beforeEach() {
     mockMvc = MockMvcBuilders
-        .webAppContextSetup(webApplicationContext)
-        .apply(springSecurity())
-        .build();
+      .webAppContextSetup(webApplicationContext)
+      .apply(springSecurity())
+      .build();
   }
 
   @Test
@@ -55,19 +56,19 @@ public class CredentialFindTestNoAcls {
     generateCredentials();
 
     final MockHttpServletRequestBuilder request = get("/api/v1/data?path=/")
-        .header("Authorization", "Bearer " + USER_A_TOKEN)
-        .accept(APPLICATION_JSON);
+      .header("Authorization", "Bearer " + USER_A_TOKEN)
+      .accept(APPLICATION_JSON);
 
     mockMvc.perform(request).andExpect(status().isOk())
-        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-        .andExpect(jsonPath("$.credentials", hasSize(5)));
+      .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+      .andExpect(jsonPath("$.credentials", hasSize(5)));
   }
 
-  private void generateCredentials() throws Exception{
-    List<String> names = Arrays.asList(new String[] {"/path/to/credentialA", "/path/something",
-        "/path/to/credentialB", "/other_path/credentialC", "/another/credentialC"});
+  private void generateCredentials() throws Exception {
+    List<String> names = Arrays.asList(new String[]{"/path/to/credentialA", "/path/something",
+      "/path/to/credentialB", "/other_path/credentialC", "/another/credentialC"});
 
-    for(String name : names){
+    for (String name : names) {
       generatePassword(mockMvc, name, true, 20, ALL_PERMISSIONS_TOKEN);
     }
   }

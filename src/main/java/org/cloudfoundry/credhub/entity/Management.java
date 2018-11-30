@@ -3,11 +3,11 @@ package org.cloudfoundry.credhub.entity;
 public class Management {
   private boolean readOnlyMode;
 
-  public Management(){
+  public Management() {
     // no arg constructor required by Jackson
   }
 
-  public Management(Boolean readOnlyMode){
+  public Management(Boolean readOnlyMode) {
     this.readOnlyMode = readOnlyMode;
   }
 
@@ -20,7 +20,7 @@ public class Management {
   }
 
   @Override
-  public String toString(){
+  public String toString() {
     return "isReadOnly: " + isReadOnlyMode();
   }
 }

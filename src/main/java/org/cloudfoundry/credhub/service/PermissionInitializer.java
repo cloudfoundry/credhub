@@ -1,14 +1,15 @@
 package org.cloudfoundry.credhub.service;
 
-import org.cloudfoundry.credhub.config.Permissions;
-import org.cloudfoundry.credhub.data.CredentialVersionDataService;
-import org.cloudfoundry.credhub.request.PermissionEntry;
+import java.util.ArrayList;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
+import org.cloudfoundry.credhub.config.Permissions;
+import org.cloudfoundry.credhub.data.CredentialVersionDataService;
+import org.cloudfoundry.credhub.request.PermissionEntry;
 
 
 @Component
@@ -19,9 +20,9 @@ public class PermissionInitializer {
 
   @Autowired
   public PermissionInitializer(
-      PermissionService permissionService,
-      Permissions authorizationConfig,
-      CredentialVersionDataService credentialVersionDataService
+    PermissionService permissionService,
+    Permissions authorizationConfig,
+    CredentialVersionDataService credentialVersionDataService
   ) {
     this.permissionService = permissionService;
     this.permissions = authorizationConfig;
@@ -31,7 +32,7 @@ public class PermissionInitializer {
   @EventListener(ContextRefreshedEvent.class)
   public void seed() {
 
-    if (permissions == null ||  permissions.getPermissions() == null) {
+    if (permissions == null || permissions.getPermissions() == null) {
       return;
     }
 

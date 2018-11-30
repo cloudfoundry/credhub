@@ -15,14 +15,14 @@ public class ParameterizedValidationExceptionTest {
   @Test
   public void exception_extendValidationException() {
     ParameterizedValidationException subject = new ParameterizedValidationException(
-        "message.code", "foo");
+      "message.code", "foo");
     assertThat(subject, instanceOf(ParameterizedValidationException.class));
   }
 
   @Test
   public void exception_canTakeAMessageCodeWithoutAParamater() {
     ParameterizedValidationException subject = new ParameterizedValidationException(
-        "message.code");
+      "message.code");
     assertThat(subject.getMessage(), equalTo("message.code"));
     assertThat(subject.getParameters(), equalTo(new Object[]{}));
   }
@@ -30,7 +30,7 @@ public class ParameterizedValidationExceptionTest {
   @Test
   public void exception_canTakeAMessageCodeAndParameterInTheConstructor() {
     ParameterizedValidationException subject = new ParameterizedValidationException(
-        "message.code", "foo");
+      "message.code", "foo");
     assertThat(subject.getMessage(), equalTo("message.code"));
     assertThat(subject.getParameters(), equalTo(new Object[]{"foo"}));
   }
@@ -38,36 +38,36 @@ public class ParameterizedValidationExceptionTest {
   @Test
   public void exception_formatsTheOutputOfJsonPathKeysAndRemovesSpecialCharacters() {
     ParameterizedValidationException subject = new ParameterizedValidationException(
-        "message.code", "$['iasjdoiasd']");
+      "message.code", "$['iasjdoiasd']");
     assertThat(subject.getParameters(), equalTo(new Object[]{"iasjdoiasd"}));
   }
 
   @Test
   public void exception_formatsTheOutputOfJsonPathKeysToPutDotsBetweenNestedKeys() {
     ParameterizedValidationException subject = new ParameterizedValidationException(
-        "message.code", "$['parameters']['alternative_names']");
+      "message.code", "$['parameters']['alternative_names']");
     assertThat(subject.getParameters(), equalTo(new Object[]{"parameters.alternative_names"}));
 
     subject = new ParameterizedValidationException("message.code",
-        "$['parameters']['alternative_names'][*]");
+      "$['parameters']['alternative_names'][*]");
     assertThat(subject.getParameters(), equalTo(new Object[]{"parameters.alternative_names.*"}));
   }
 
   @Test
   public void exception_formatsTheKeysCorrectlyWhenThereAreMultipleParameters() {
     ParameterizedValidationException subject = new ParameterizedValidationException(
-        "message.code", new String[]{"$['parameters']['alternative_names']", "$['iasjdoiasd']"});
+      "message.code", new String[]{"$['parameters']['alternative_names']", "$['iasjdoiasd']"});
     assertThat(subject.getParameters(), equalTo(new Object[]{"parameters.alternative_names", "iasjdoiasd"}));
 
     subject = new ParameterizedValidationException("message.code",
-        new String[]{"$['parameters']['alternative_names'][*]", "$['iasjdoiasd']"});
+      new String[]{"$['parameters']['alternative_names'][*]", "$['iasjdoiasd']"});
     assertThat(subject.getParameters(), equalTo(new Object[]{"parameters.alternative_names.*", "iasjdoiasd"}));
   }
 
   @Test
   public void getParameter_returnsAnArrayWithOneParamWhenPresentOrNullWhenNot() {
     ParameterizedValidationException subject = new ParameterizedValidationException(
-        "message.code", "foo");
+      "message.code", "foo");
     assertThat(subject.getParameters(), array(equalTo("foo")));
 
     subject = new ParameterizedValidationException("message.code");

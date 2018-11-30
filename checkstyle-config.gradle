@@ -1,0 +1,7 @@
+apply plugin: "checkstyle"
+
+checkstyleTest.source = "src/test/java"
+
+[checkstyleMain, checkstyleTest].each() {
+    it.exclude '**/grpc/**.java'
+}

@@ -11,14 +11,14 @@ import org.springframework.stereotype.Component;
 @Component
 @EnableAsync
 @Profile({"prod", "dev"})
-class AsyncEncryptionKeyRotationScheduler {
+public class AsyncEncryptionKeyRotationScheduler {
 
   private EncryptionKeyRotator encryptionKeyRotator;
 
   @Autowired
   public AsyncEncryptionKeyRotationScheduler(
-      EncryptionKeyRotator encryptionKeyRotator,
-      DecryptableDataDetector decryptableDataDetector
+    EncryptionKeyRotator encryptionKeyRotator,
+    DecryptableDataDetector decryptableDataDetector
   ) {
     this.encryptionKeyRotator = encryptionKeyRotator;
 

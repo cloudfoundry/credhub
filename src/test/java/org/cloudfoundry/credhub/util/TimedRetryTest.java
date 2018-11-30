@@ -1,10 +1,10 @@
 package org.cloudfoundry.credhub.util;
 
+import java.util.function.Supplier;
+
 import org.cloudfoundry.credhub.helper.FakeCurrentTimeProvider;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.function.Supplier;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -62,7 +62,7 @@ public class TimedRetryTest {
     assertThat(subject.retryEverySecondUntil(durationInSeconds, () -> false), equalTo(false));
     assertThat(currentTimeProvider.currentTimeMillis(), equalTo(endTime));
   }
-  
+
   private boolean incrementCountToTen() {
     if (retryCount < 10) {
       retryCount++;

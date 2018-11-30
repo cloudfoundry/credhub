@@ -1,14 +1,14 @@
 package org.cloudfoundry.credhub.util;
 
-import org.cloudfoundry.credhub.entity.RsaCredentialVersionData;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang3.StringUtils;
-
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
+
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
+import org.cloudfoundry.credhub.entity.RsaCredentialVersionData;
 
 public class RsaCredentialHelper {
 
@@ -31,9 +31,9 @@ public class RsaCredentialHelper {
 
     try {
       String key = publicKey
-          .replaceFirst(RSA_START, "")
-          .replaceFirst(RSA_END, "")
-          .replaceAll(NEW_LINE, "");
+        .replaceFirst(RSA_START, "")
+        .replaceFirst(RSA_END, "")
+        .replaceAll(NEW_LINE, "");
       byte[] byteKey = Base64.decodeBase64(key.getBytes(StringUtil.UTF_8));
       X509EncodedKeySpec x509publicKey = new X509EncodedKeySpec(byteKey);
       KeyFactory kf = KeyFactory.getInstance("RSA");

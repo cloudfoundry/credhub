@@ -39,11 +39,11 @@ public class UserGeneratorTest {
     StringCredentialValue generatedPassword = new StringCredentialValue("fake-generated-password");
 
     when(usernameGenerator.generateCredential())
-        .thenReturn(generatedUsername);
+      .thenReturn(generatedUsername);
     when(passwordGenerator.generateCredential(eq(passwordParameters)))
-        .thenReturn(generatedPassword);
+      .thenReturn(generatedPassword);
     when(cryptSaltFactory.generateSalt(generatedPassword.getStringCredential()))
-        .thenReturn("fake-generated-salt");
+      .thenReturn("fake-generated-salt");
   }
 
   @Test

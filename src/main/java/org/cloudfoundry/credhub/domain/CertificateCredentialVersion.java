@@ -1,12 +1,12 @@
 package org.cloudfoundry.credhub.domain;
 
+import java.time.Instant;
+
 import org.apache.commons.lang3.StringUtils;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData;
 import org.cloudfoundry.credhub.request.GenerationParameters;
 import org.cloudfoundry.credhub.util.CertificateReader;
-
-import java.time.Instant;
 
 public class CertificateCredentialVersion extends CredentialVersion<CertificateCredentialVersion> {
 
@@ -94,7 +94,7 @@ public class CertificateCredentialVersion extends CredentialVersion<CertificateC
   }
 
   public boolean matchesGenerationParameters(GenerationParameters generationParameters) {
-    if(generationParameters == null){
+    if (generationParameters == null) {
       return true;
     }
 
@@ -108,13 +108,13 @@ public class CertificateCredentialVersion extends CredentialVersion<CertificateC
     return this;
   }
 
+  public Instant getExpiryDate() {
+    return delegate.getExpiryDate();
+  }
+
   public CertificateCredentialVersion setExpiryDate(Instant expiryDate) {
     delegate.setExpiryDate(expiryDate);
     return this;
-  }
-
-  public Instant getExpiryDate() {
-    return delegate.getExpiryDate();
   }
 
   public boolean isVersionTransitional() {

@@ -1,11 +1,12 @@
 package org.cloudfoundry.credhub.util;
 
-import com.google.common.base.Charsets;
-import com.google.common.io.Resources;
-import org.springframework.stereotype.Component;
-
 import java.io.IOException;
 import java.net.URL;
+
+import org.springframework.stereotype.Component;
+
+import com.google.common.base.Charsets;
+import com.google.common.io.Resources;
 
 @Component
 public class ResourceReader {

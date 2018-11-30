@@ -1,12 +1,13 @@
 package org.cloudfoundry.credhub.service;
 
-import org.cloudfoundry.credhub.config.EncryptionKeyProvider;
-import org.cloudfoundry.credhub.config.EncryptionKeysConfiguration;
-import org.cloudfoundry.credhub.util.TimedRetry;
+import java.util.HashMap;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
+import org.cloudfoundry.credhub.config.EncryptionKeyProvider;
+import org.cloudfoundry.credhub.config.EncryptionKeysConfiguration;
+import org.cloudfoundry.credhub.util.TimedRetry;
 
 @Component
 public class EncryptionProviderFactory {
@@ -18,7 +19,7 @@ public class EncryptionProviderFactory {
 
   @Autowired
   public EncryptionProviderFactory(EncryptionKeysConfiguration keysConfiguration, TimedRetry timedRetry,
-      PasswordKeyProxyFactory passwordKeyProxyFactory) {
+                                   PasswordKeyProxyFactory passwordKeyProxyFactory) {
     this.encryptionKeysConfiguration = keysConfiguration;
     this.timedRetry = timedRetry;
     this.passwordKeyProxyFactory = passwordKeyProxyFactory;
@@ -34,8 +35,8 @@ public class EncryptionProviderFactory {
       switch (provider.getProviderType()) {
         case HSM:
           encryptionService = new LunaEncryptionService(new LunaConnection(provider.getConfiguration()),
-              encryptionKeysConfiguration.isKeyCreationEnabled(),
-              timedRetry);
+            encryptionKeysConfiguration.isKeyCreationEnabled(),
+            timedRetry);
           break;
         case KMS_PLUGIN:
           encryptionService = new ExternalEncryptionProvider(provider.getConfiguration());

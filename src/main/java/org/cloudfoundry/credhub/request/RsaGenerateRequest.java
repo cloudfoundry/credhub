@@ -7,10 +7,6 @@ public class RsaGenerateRequest extends BaseCredentialGenerateRequest {
   @JsonProperty("parameters")
   private RsaGenerationParameters generationParameters;
 
-  public void setGenerationParameters(RsaGenerationParameters generationParameters) {
-    this.generationParameters = generationParameters;
-  }
-
   @Override
   @JsonIgnore
   public GenerationParameters getGenerationParameters() {
@@ -18,5 +14,9 @@ public class RsaGenerateRequest extends BaseCredentialGenerateRequest {
       generationParameters = new RsaGenerationParameters();
     }
     return generationParameters;
+  }
+
+  public void setGenerationParameters(RsaGenerationParameters generationParameters) {
+    this.generationParameters = generationParameters;
   }
 }

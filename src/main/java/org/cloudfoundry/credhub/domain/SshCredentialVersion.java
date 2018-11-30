@@ -63,7 +63,7 @@ public class SshCredentialVersion extends CredentialVersion<SshCredentialVersion
 
   @Override
   public boolean matchesGenerationParameters(GenerationParameters generationParameters) {
-    if(generationParameters == null){
+    if (generationParameters == null) {
       return true;
     }
 

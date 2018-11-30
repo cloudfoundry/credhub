@@ -1,7 +1,11 @@
 package org.cloudfoundry.credhub.auth;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.cloudfoundry.credhub.view.ResponseError;
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.http.HttpStatus;
@@ -9,10 +13,8 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.cloudfoundry.credhub.view.ResponseError;
 
 import static org.cloudfoundry.credhub.auth.X509AuthenticationProvider.CLIENT_AUTH_EXTENDED_KEY_USAGE;
 import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON;
@@ -28,8 +30,8 @@ public class X509AuthenticationFailureHandler implements AuthenticationFailureHa
 
   @Autowired
   X509AuthenticationFailureHandler(
-      MessageSourceAccessor messageSourceAccessor,
-      ObjectMapper objectMapper
+    MessageSourceAccessor messageSourceAccessor,
+    ObjectMapper objectMapper
   ) {
     this.objectMapper = objectMapper;
     this.messageSourceAccessor = messageSourceAccessor;
@@ -37,9 +39,9 @@ public class X509AuthenticationFailureHandler implements AuthenticationFailureHa
 
   @Override
   public void onAuthenticationFailure(
-      HttpServletRequest request,
-      HttpServletResponse response,
-      AuthenticationException exception
+    HttpServletRequest request,
+    HttpServletResponse response,
+    AuthenticationException exception
   ) throws IOException, ServletException {
     if (exception.getMessage().contains(INVALID_DN_MESSAGE)) {
       writeUnauthorizedResponse(response, INVALID_MTLS_ID_RESPONSE);
@@ -52,7 +54,7 @@ public class X509AuthenticationFailureHandler implements AuthenticationFailureHa
 
   private void writeUnauthorizedResponse(HttpServletResponse response, String message) throws IOException {
     ResponseError responseError = new ResponseError(
-        messageSourceAccessor.getMessage(message, new String[]{ "foo" })
+      messageSourceAccessor.getMessage(message, new String[]{"foo"})
     );
 
     response.setStatus(HttpStatus.UNAUTHORIZED.value());

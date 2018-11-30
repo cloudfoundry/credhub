@@ -3,7 +3,9 @@ package org.cloudfoundry.credhub.jna.libcrypto;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 
-class Crypto {
+final public class Crypto {
+
+  private Crypto() { }
 
   static final long RSA_F4 = 0x10001L;
   static final int RSA_PKCS1_PADDING = 1;
@@ -33,7 +35,7 @@ class Crypto {
   public static native int RSA_size(Pointer rsa);
 
   public static native int RSA_private_encrypt(int flen, byte[] from, byte[] to, Pointer rsa,
-      int padding);
+                                               int padding);
 
   public static native void RSA_free(Pointer r);
 

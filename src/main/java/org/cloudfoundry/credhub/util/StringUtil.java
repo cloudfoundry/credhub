@@ -1,15 +1,17 @@
 package org.cloudfoundry.credhub.util;
 
-import com.google.common.base.Charsets;
-import com.google.common.io.ByteSource;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 
-public class StringUtil {
+import com.google.common.base.Charsets;
+import com.google.common.io.ByteSource;
 
-  public static final Charset UTF_8 =Charset.forName("UTF-8");
+final public class StringUtil {
+
+  private StringUtil() { }
+
+  public static final Charset UTF_8 = Charset.forName("UTF-8");
 
   public static String fromInputStream(InputStream requestBody) throws IOException {
     ByteSource requestByteSource = new ByteSource() {

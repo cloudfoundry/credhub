@@ -1,5 +1,7 @@
 package org.cloudfoundry.credhub.generator;
 
+import java.security.KeyPair;
+
 import org.cloudfoundry.credhub.credential.RsaCredentialValue;
 import org.cloudfoundry.credhub.request.RsaGenerationParameters;
 import org.cloudfoundry.credhub.util.CertificateFormatter;
@@ -7,8 +9,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.security.KeyPair;
 
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;

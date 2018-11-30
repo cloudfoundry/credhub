@@ -1,17 +1,17 @@
 package org.cloudfoundry.credhub.view;
 
+import java.io.IOException;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 import org.cloudfoundry.credhub.domain.Encryptor;
 import org.cloudfoundry.credhub.domain.JsonCredentialVersion;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.io.IOException;
-import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 import static org.cloudfoundry.credhub.helper.JsonTestHelper.serializeToString;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -41,23 +41,23 @@ public class JsonViewTest {
     encryptor = mock(Encryptor.class);
     uuid = UUID.randomUUID();
     entity = new JsonCredentialVersion("/foo")
-        .setEncryptor(encryptor)
-        .setUuid(uuid);
+      .setEncryptor(encryptor)
+      .setUuid(uuid);
 
     when(encryptor.decrypt(any()))
-        .thenReturn(serializedValue);
+      .thenReturn(serializedValue);
   }
 
   @Test
   public void itCanCreateViewFromEntity() throws IOException {
     JsonView actual = (JsonView) JsonView.fromEntity(entity);
     assertThat(serializeToString(actual), equalTo("{"
-        + "\"type\":\"json\","
-        + "\"version_created_at\":null,"
-        + "\"id\":\"" + uuid.toString() + "\","
-        + "\"name\":\"/foo\","
-        + "\"value\":" + serializedValue
-        + "}"));
+      + "\"type\":\"json\","
+      + "\"version_created_at\":null,"
+      + "\"id\":\"" + uuid.toString() + "\","
+      + "\"name\":\"/foo\","
+      + "\"value\":" + serializedValue
+      + "}"));
   }
 
   @Test

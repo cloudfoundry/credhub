@@ -1,5 +1,13 @@
 package org.cloudfoundry.credhub.jna.libcrypto;
 
+import java.math.BigInteger;
+import java.security.GeneralSecurityException;
+import java.security.KeyPair;
+import java.security.PrivateKey;
+import java.security.spec.InvalidKeySpecException;
+
+import javax.crypto.Cipher;
+
 import com.sun.jna.Pointer;
 import org.cloudfoundry.credhub.service.RandomNumberGenerator;
 import org.cloudfoundry.credhub.util.PseudoRandomNumberGenerator;
@@ -7,13 +15,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.math.BigInteger;
-import java.security.GeneralSecurityException;
-import java.security.KeyPair;
-import java.security.PrivateKey;
-import java.security.spec.InvalidKeySpecException;
-import javax.crypto.Cipher;
 
 import static org.cloudfoundry.credhub.jna.libcrypto.Crypto.RSA_PKCS1_PADDING;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -52,7 +53,7 @@ public class CryptoWrapperTest {
         assertThat(secondKeyPair.getPublic(), notNullValue());
 
         assertThat(secondKeyPair.getPublic().getEncoded(),
-            not(equalTo(firstKeyPair.getPublic().getEncoded())));
+          not(equalTo(firstKeyPair.getPublic().getEncoded())));
       });
     });
   }
@@ -66,7 +67,7 @@ public class CryptoWrapperTest {
 
       byte[] ciphertext = new byte[Crypto.RSA_size(rsa)];
       int result = Crypto
-          .RSA_private_encrypt(plaintext.length, plaintext, ciphertext, rsa, RSA_PKCS1_PADDING);
+        .RSA_private_encrypt(plaintext.length, plaintext, ciphertext, rsa, RSA_PKCS1_PADDING);
       if (result == -1) {
         System.out.println(subject.getError());
       }
@@ -80,7 +81,7 @@ public class CryptoWrapperTest {
       byte[] javaCipherText = cipher.doFinal(plaintext);
 
       assertThat("Encryption should work the same inside and outside openssl", javaCipherText,
-          equalTo(ciphertext));
+        equalTo(ciphertext));
     });
   }
 

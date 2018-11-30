@@ -1,13 +1,13 @@
 package org.cloudfoundry.credhub.domain;
 
+import java.util.UUID;
+
 import org.cloudfoundry.credhub.entity.EncryptedValue;
 import org.cloudfoundry.credhub.entity.ValueCredentialVersionData;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.util.UUID;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -31,9 +31,9 @@ public class ValueCredentialVersionTest {
     byte[] nonce = "fake-nonce".getBytes();
     final EncryptedValue encryption = new EncryptedValue(canaryUuid, encryptedValue, nonce);
     when(encryptor.encrypt("my-value"))
-        .thenReturn(encryption);
+      .thenReturn(encryption);
     when(encryptor.decrypt(encryption))
-        .thenReturn("my-value");
+      .thenReturn("my-value");
 
     subject = new ValueCredentialVersion("Foo");
   }

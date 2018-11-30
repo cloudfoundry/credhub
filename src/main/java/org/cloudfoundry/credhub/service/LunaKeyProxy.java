@@ -1,15 +1,16 @@
 package org.cloudfoundry.credhub.service;
 
-import org.cloudfoundry.credhub.entity.EncryptionKeyCanary;
-import org.cloudfoundry.credhub.exceptions.IncorrectKeyException;
-import org.cloudfoundry.credhub.util.StringUtil;
-
 import java.security.Key;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import javax.crypto.AEADBadTagException;
 import javax.crypto.IllegalBlockSizeException;
+
+import org.cloudfoundry.credhub.entity.EncryptionKeyCanary;
+import org.cloudfoundry.credhub.exceptions.IncorrectKeyException;
+import org.cloudfoundry.credhub.util.StringUtil;
 
 import static java.util.Collections.unmodifiableList;
 
@@ -44,9 +45,9 @@ class LunaKeyProxy implements KeyProxy {
     try {
       plaintext = encryptionService.decrypt(key, canary.getEncryptedCanaryValue(), canary.getNonce());
       return Arrays.equals(
-          EncryptionKeyCanaryMapper.CANARY_VALUE.getBytes(StringUtil.UTF_8), plaintext.getBytes(StringUtil.UTF_8))
-          || Arrays.equals(EncryptionKeyCanaryMapper.DEPRECATED_CANARY_VALUE.getBytes(StringUtil.UTF_8), plaintext.getBytes(
-          StringUtil.UTF_8));
+        EncryptionKeyCanaryMapper.CANARY_VALUE.getBytes(StringUtil.UTF_8), plaintext.getBytes(StringUtil.UTF_8))
+        || Arrays.equals(EncryptionKeyCanaryMapper.DEPRECATED_CANARY_VALUE.getBytes(StringUtil.UTF_8), plaintext.getBytes(
+        StringUtil.UTF_8));
     } catch (AEADBadTagException e) {
       // internal key was wrong
     } catch (IllegalBlockSizeException e) {

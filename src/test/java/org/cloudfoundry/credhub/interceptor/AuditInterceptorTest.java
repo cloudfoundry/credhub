@@ -1,5 +1,9 @@
 package org.cloudfoundry.credhub.interceptor;
 
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.core.Authentication;
+
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.auth.UserContextFactory;
@@ -7,9 +11,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.security.core.Authentication;
 
 import static javax.servlet.http.HttpServletRequest.CLIENT_CERT_AUTH;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -37,8 +38,8 @@ public class AuditInterceptorTest {
     auditRecord = new CEFAuditRecord();
 
     subject = new AuditInterceptor(
-        userContextFactory,
-        auditRecord
+      userContextFactory,
+      auditRecord
     );
     request = new MockHttpServletRequest();
     response = new MockHttpServletResponse();

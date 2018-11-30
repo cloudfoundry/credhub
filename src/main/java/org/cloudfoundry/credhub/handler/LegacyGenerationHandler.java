@@ -1,5 +1,11 @@
 package org.cloudfoundry.credhub.handler;
 
+import java.io.IOException;
+import java.io.InputStream;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
@@ -10,11 +16,6 @@ import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
 import org.cloudfoundry.credhub.request.CredentialRegenerateRequest;
 import org.cloudfoundry.credhub.util.StringUtil;
 import org.cloudfoundry.credhub.view.CredentialView;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.io.IOException;
-import java.io.InputStream;
 
 @Component
 public class LegacyGenerationHandler {
@@ -27,9 +28,9 @@ public class LegacyGenerationHandler {
 
   @Autowired
   public LegacyGenerationHandler(ObjectMapper objectMapper,
-      GenerateHandler generateHandler,
-      RegenerateHandler regenerateHandler,
-      CEFAuditRecord auditRecord) {
+                                 GenerateHandler generateHandler,
+                                 RegenerateHandler regenerateHandler,
+                                 CEFAuditRecord auditRecord) {
     this.objectMapper = objectMapper;
     this.generateHandler = generateHandler;
     this.regenerateHandler = regenerateHandler;

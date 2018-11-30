@@ -1,11 +1,11 @@
 package org.cloudfoundry.credhub.view;
 
+import java.time.Instant;
+import java.util.List;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.time.Instant;
-import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -25,9 +25,9 @@ public class FindCredentialResultsTest {
     String certificateName = "certificateSecret";
 
     List<FindCredentialResult> credentialViews = newArrayList(
-        new FindCredentialResult(versionCreatedAt3, certificateName),
-        new FindCredentialResult(versionCreatedAt2, valueName),
-        new FindCredentialResult(versionCreatedAt1, passwordName)
+      new FindCredentialResult(versionCreatedAt3, certificateName),
+      new FindCredentialResult(versionCreatedAt2, valueName),
+      new FindCredentialResult(versionCreatedAt1, passwordName)
     );
 
     assertThat(new FindCredentialResults(credentialViews).getCredentials(), equalTo(credentialViews));

@@ -1,5 +1,11 @@
 package org.cloudfoundry.credhub.service;
 
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.entity.GetCredentialById;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
@@ -17,13 +23,11 @@ import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.exceptions.PermissionException;
-import org.cloudfoundry.credhub.request.*;
+import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
+import org.cloudfoundry.credhub.request.BaseCredentialRequest;
+import org.cloudfoundry.credhub.request.BaseCredentialSetRequest;
+import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.cloudfoundry.credhub.view.FindCredentialResult;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.UUID;
 
 import static org.cloudfoundry.credhub.request.PermissionOperation.DELETE;
 import static org.cloudfoundry.credhub.request.PermissionOperation.READ;
@@ -37,20 +41,20 @@ public class PermissionedCredentialService {
 
   private final CredentialFactory credentialFactory;
   private final CertificateAuthorityService certificateAuthorityService;
-  private PermissionCheckingService permissionCheckingService;
   private final UserContextHolder userContextHolder;
   private final CredentialDataService credentialDataService;
   private final CEFAuditRecord auditRecord;
+  private PermissionCheckingService permissionCheckingService;
 
   @Autowired
   public PermissionedCredentialService(
-      CredentialVersionDataService credentialVersionDataService,
-      CredentialFactory credentialFactory,
-      PermissionCheckingService permissionCheckingService,
-      CertificateAuthorityService certificateAuthorityService,
-      UserContextHolder userContextHolder,
-      CredentialDataService credentialDataService,
-      CEFAuditRecord auditRecord) {
+    CredentialVersionDataService credentialVersionDataService,
+    CredentialFactory credentialFactory,
+    PermissionCheckingService permissionCheckingService,
+    CertificateAuthorityService certificateAuthorityService,
+    UserContextHolder userContextHolder,
+    CredentialDataService credentialDataService,
+    CEFAuditRecord auditRecord) {
     this.credentialVersionDataService = credentialVersionDataService;
     this.credentialFactory = credentialFactory;
     this.permissionCheckingService = permissionCheckingService;
@@ -61,9 +65,9 @@ public class PermissionedCredentialService {
   }
 
   public CredentialVersion save(
-      CredentialVersion existingCredentialVersion,
-      CredentialValue credentialValue,
-      BaseCredentialRequest generateRequest) {
+    CredentialVersion existingCredentialVersion,
+    CredentialValue credentialValue,
+    BaseCredentialRequest generateRequest) {
     boolean shouldWriteNewCredential = shouldWriteNewCredential(existingCredentialVersion, generateRequest);
 
     validateCredentialSave(generateRequest.getName(), generateRequest.getType(), existingCredentialVersion);
@@ -181,18 +185,18 @@ public class PermissionedCredentialService {
   }
 
   private CredentialVersion makeAndSaveNewCredential(CredentialVersion existingCredentialVersion,
-      CredentialValue credentialValue, BaseCredentialRequest request) {
+                                                     CredentialValue credentialValue, BaseCredentialRequest request) {
     CredentialVersion newVersion = credentialFactory.makeNewCredentialVersion(
-        CredentialType.valueOf(request.getType()),
-        request.getName(),
-        credentialValue,
-        existingCredentialVersion,
-        request.getGenerationParameters());
+      CredentialType.valueOf(request.getType()),
+      request.getName(),
+      credentialValue,
+      existingCredentialVersion,
+      request.getGenerationParameters());
     return credentialVersionDataService.save(newVersion);
   }
 
   private boolean shouldWriteNewCredential(CredentialVersion existingCredentialVersion, BaseCredentialRequest request) {
-    if(request instanceof BaseCredentialSetRequest) {
+    if (request instanceof BaseCredentialSetRequest) {
       return true;
     }
 
@@ -200,14 +204,14 @@ public class PermissionedCredentialService {
       return true;
     }
 
-    if(request instanceof BaseCredentialGenerateRequest) {
+    if (request instanceof BaseCredentialGenerateRequest) {
       BaseCredentialGenerateRequest generateRequest = (BaseCredentialGenerateRequest) request;
 
-      if(generateRequest.getMode() != null && generateRequest.getMode().equals(CredentialWriteMode.NO_OVERWRITE)) {
+      if (generateRequest.getMode() != null && generateRequest.getMode().equals(CredentialWriteMode.NO_OVERWRITE)) {
         return false;
       }
 
-      if(generateRequest.getMode() != null && generateRequest.getMode().equals(CredentialWriteMode.OVERWRITE)) {
+      if (generateRequest.getMode() != null && generateRequest.getMode().equals(CredentialWriteMode.OVERWRITE)) {
         return true;
       }
     }
@@ -216,7 +220,7 @@ public class PermissionedCredentialService {
       final CertificateCredentialVersion certificateCredentialVersion = (CertificateCredentialVersion) existingCredentialVersion;
       if (certificateCredentialVersion.getCaName() != null) {
         boolean updatedCA = !certificateCredentialVersion.getCa().equals(
-            certificateAuthorityService.findActiveVersion(certificateCredentialVersion.getCaName()).getCertificate());
+          certificateAuthorityService.findActiveVersion(certificateCredentialVersion.getCaName()).getCertificate());
         if (updatedCA) {
           return true;
         }
@@ -228,8 +232,8 @@ public class PermissionedCredentialService {
     }
 
 
-      BaseCredentialGenerateRequest generateRequest = (BaseCredentialGenerateRequest) request;
-      return generateRequest.isOverwrite();
+    BaseCredentialGenerateRequest generateRequest = (BaseCredentialGenerateRequest) request;
+    return generateRequest.isOverwrite();
 
   }
 
@@ -242,7 +246,7 @@ public class PermissionedCredentialService {
   }
 
   private void verifyWritePermission(String credentialName) {
-    if(userContextHolder.getUserContext() == null){
+    if (userContextHolder.getUserContext() == null) {
       return;
     }
 

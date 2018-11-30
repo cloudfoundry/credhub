@@ -1,5 +1,9 @@
 package org.cloudfoundry.credhub.auth;
 
+import java.security.cert.X509Certificate;
+import java.util.Map;
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
@@ -10,14 +14,20 @@ import org.springframework.security.oauth2.provider.token.ResourceServerTokenSer
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.stereotype.Component;
 
-import java.security.cert.X509Certificate;
-import java.util.Map;
-import java.util.Set;
-
 @Component
 public class UserContextFactory {
   @Autowired(required = false)
   private ResourceServerTokenServices resourceServerTokenServices;
+
+  /*
+   * The "iat" and "exp" claims are parsed by Jackson as integers, because JWT defines these
+   * as seconds since Epoch (https://tools.ietf.org/html/rfc7519#section-2). That means it has a
+   * Year-2038 bug. To adapt to our local model, hoping JWT will some day be improved, this
+   * function returns a numeric value as long.
+   */
+  private static long claimValueAsLong(Map<String, Object> additionalInformation) {
+    return ((Number) additionalInformation.get("iat")).longValue();
+  }
 
   public UserContext createUserContext(Authentication authentication) {
     if (authentication instanceof PreAuthenticatedAuthenticationToken) {
@@ -40,7 +50,7 @@ public class UserContextFactory {
 
     if (token == null) {
       OAuth2AuthenticationDetails authDetails = (OAuth2AuthenticationDetails) authentication
-          .getDetails();
+        .getDetails();
       token = authDetails.getTokenValue();
     }
 
@@ -61,15 +71,15 @@ public class UserContextFactory {
     }
 
     return new UserContext(
-        userId,
-        userName,
-        issuer,
-        validFrom,
-        validUntil,
-        clientId,
-        scope,
-        grantType,
-        UserContext.AUTH_METHOD_UAA
+      userId,
+      userName,
+      issuer,
+      validFrom,
+      validUntil,
+      clientId,
+      scope,
+      grantType,
+      UserContext.AUTH_METHOD_UAA
     );
   }
 
@@ -77,20 +87,10 @@ public class UserContextFactory {
     X509Certificate certificate = (X509Certificate) authentication.getCredentials();
 
     return new UserContext(
-        certificate.getNotBefore().toInstant().getEpochSecond(),
-        certificate.getNotAfter().toInstant().getEpochSecond(),
-        certificate.getSubjectDN().getName(),
-        UserContext.AUTH_METHOD_MUTUAL_TLS
+      certificate.getNotBefore().toInstant().getEpochSecond(),
+      certificate.getNotAfter().toInstant().getEpochSecond(),
+      certificate.getSubjectDN().getName(),
+      UserContext.AUTH_METHOD_MUTUAL_TLS
     );
-  }
-
-  /*
-   * The "iat" and "exp" claims are parsed by Jackson as integers, because JWT defines these
-   * as seconds since Epoch (https://tools.ietf.org/html/rfc7519#section-2). That means it has a
-   * Year-2038 bug. To adapt to our local model, hoping JWT will some day be improved, this
-   * function returns a numeric value as long.
-   */
-  private static long claimValueAsLong(Map<String, Object> additionalInformation) {
-    return ((Number) additionalInformation.get("iat")).longValue();
   }
 }

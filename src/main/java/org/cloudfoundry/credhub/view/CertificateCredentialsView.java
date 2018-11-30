@@ -1,8 +1,8 @@
 package org.cloudfoundry.credhub.view;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class CertificateCredentialsView {
 

@@ -1,5 +1,12 @@
 package org.cloudfoundry.credhub.helper;
 
+import java.io.IOException;
+import java.util.Set;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,25 +15,22 @@ import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 
-import java.io.IOException;
-import java.util.Set;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-
 import static com.fasterxml.jackson.databind.PropertyNamingStrategy.SNAKE_CASE;
 
-public class JsonTestHelper {
+final public class JsonTestHelper {
+
+  private JsonTestHelper() {
+  }
 
   private static final ObjectMapper OBJECT_MAPPER = createObjectMapper();
 
   private static final Validator VALIDATOR = Validation.buildDefaultValidatorFactory()
-      .getValidator();
+    .getValidator();
 
   public static ObjectMapper createObjectMapper() {
     return new ObjectMapper()
-        .registerModule(TimeModuleFactory.createTimeModule())
-        .setPropertyNamingStrategy(SNAKE_CASE);
+      .registerModule(TimeModuleFactory.createTimeModule())
+      .setPropertyNamingStrategy(SNAKE_CASE);
   }
 
   public static byte[] serialize(Object object) {
@@ -70,7 +74,7 @@ public class JsonTestHelper {
   }
 
   public static <T> Set<ConstraintViolation<T>> deserializeAndValidate(String json,
-      Class<T> klass) {
+                                                                       Class<T> klass) {
     try {
       T object = OBJECT_MAPPER.readValue(json, klass);
       return VALIDATOR.validate(object);
@@ -80,7 +84,7 @@ public class JsonTestHelper {
   }
 
   public static <T> Set<ConstraintViolation<T>> deserializeAndValidate(byte[] json,
-      Class<T> klass) {
+                                                                       Class<T> klass) {
     try {
       T object = OBJECT_MAPPER.readValue(json, klass);
       return VALIDATOR.validate(object);

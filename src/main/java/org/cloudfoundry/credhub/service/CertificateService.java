@@ -1,27 +1,27 @@
 package org.cloudfoundry.credhub.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.data.CertificateVersionDataService;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.request.PermissionOperation;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
 public class CertificateService {
 
   private final CertificateVersionDataService certificateVersionDataService;
-
-  private PermissionCheckingService permissionCheckingService;
   private final UserContextHolder userContextHolder;
+  private PermissionCheckingService permissionCheckingService;
 
   @Autowired
   public CertificateService(
-      CertificateVersionDataService certificateVersionDataService,
-      PermissionCheckingService permissionCheckingService,
-      UserContextHolder userContextHolder) {
+    CertificateVersionDataService certificateVersionDataService,
+    PermissionCheckingService permissionCheckingService,
+    UserContextHolder userContextHolder) {
     this.certificateVersionDataService = certificateVersionDataService;
     this.permissionCheckingService = permissionCheckingService;
     this.userContextHolder = userContextHolder;
@@ -29,9 +29,9 @@ public class CertificateService {
 
   public CertificateCredentialVersion findByCredentialUuid(String uuid) {
     CredentialVersion credentialVersion = this.certificateVersionDataService
-        .findByCredentialUUID(uuid);
+      .findByCredentialUUID(uuid);
 
-    if(credentialVersion == null || !(credentialVersion instanceof CertificateCredentialVersion)) {
+    if (credentialVersion == null || !(credentialVersion instanceof CertificateCredentialVersion)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
     CertificateCredentialVersion certificate = (CertificateCredentialVersion) credentialVersion;

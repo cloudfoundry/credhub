@@ -1,10 +1,11 @@
 package org.cloudfoundry.credhub.request;
 
+import java.util.List;
+
+import javax.validation.constraints.NotEmpty;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import org.apache.commons.lang3.StringUtils;
-
-import java.util.List;
-import javax.validation.constraints.NotEmpty;
 
 @JsonAutoDetect
 @SuppressWarnings("unused")
@@ -16,7 +17,7 @@ public class PermissionsV2Request {
   private List<PermissionOperation> operations;
 
   public PermissionsV2Request() {
-        /* this needs to be there for jackson to be happy */
+    /* this needs to be there for jackson to be happy */
   }
 
   public PermissionsV2Request(String path, String actor, List<PermissionOperation> operations) {

@@ -1,9 +1,9 @@
 package org.cloudfoundry.credhub.request;
 
+import javax.validation.constraints.NotNull;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import org.apache.commons.lang3.StringUtils;
-
-import javax.validation.constraints.NotNull;
 
 @JsonAutoDetect
 @SuppressWarnings("unused")
@@ -13,7 +13,7 @@ public class BulkRegenerateRequest {
   private String signedBy;
 
   public BulkRegenerateRequest() {
-        /* this needs to be there for jackson to be happy */
+    /* this needs to be there for jackson to be happy */
   }
 
   public BulkRegenerateRequest(String signedBy) {
@@ -25,6 +25,6 @@ public class BulkRegenerateRequest {
   }
 
   public void setSignedBy(String signedBy) {
-      this.signedBy = StringUtils.prependIfMissing(signedBy, "/");
-    }
+    this.signedBy = StringUtils.prependIfMissing(signedBy, "/");
+  }
 }

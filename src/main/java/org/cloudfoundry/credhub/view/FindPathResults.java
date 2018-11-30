@@ -1,9 +1,10 @@
 package org.cloudfoundry.credhub.view;
 
-import static com.google.common.collect.Lists.newArrayList;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.List;
+
+import static com.google.common.collect.Lists.newArrayList;
 
 public class FindPathResults {
 

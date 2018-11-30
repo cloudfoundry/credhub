@@ -1,9 +1,10 @@
 package db.migration.common;
 
-import org.apache.commons.codec.digest.DigestUtils;
-import org.flywaydb.core.api.migration.spring.SpringJdbcMigration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
+
+import org.apache.commons.codec.digest.DigestUtils;
+import org.flywaydb.core.api.migration.spring.SpringJdbcMigration;
 
 
 public class V47_2__insert_checksum_values_for_existing_credentials implements SpringJdbcMigration {

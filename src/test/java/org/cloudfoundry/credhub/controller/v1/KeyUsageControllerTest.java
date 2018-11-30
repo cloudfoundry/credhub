@@ -1,5 +1,15 @@
 package org.cloudfoundry.credhub.controller.v1;
 
+import java.security.Key;
+import java.util.HashMap;
+import java.util.UUID;
+
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
 import org.cloudfoundry.credhub.data.CredentialVersionDataService;
 import org.cloudfoundry.credhub.data.EncryptionKeyCanaryDataService;
 import org.cloudfoundry.credhub.service.EncryptionKey;
@@ -10,15 +20,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
-import java.security.Key;
-import java.util.HashMap;
-import java.util.UUID;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -33,10 +34,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 public class KeyUsageControllerTest {
 
-  private MockMvc mockMvc;
   CredentialVersionDataService credentialVersionDataService;
   EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
   EncryptionKeySet keySet;
+  private MockMvc mockMvc;
 
   @Before
   public void beforeEach() {
@@ -44,17 +45,17 @@ public class KeyUsageControllerTest {
     keySet = new EncryptionKeySet();
     encryptionKeyCanaryDataService = mock(EncryptionKeyCanaryDataService.class);
     final KeyUsageController keyUsageController = new KeyUsageController(credentialVersionDataService,
-        keySet);
+      keySet);
 
     mockMvc = MockMvcBuilders
-        .standaloneSetup(keyUsageController)
-        .alwaysDo(print())
-        .build();
+      .standaloneSetup(keyUsageController)
+      .alwaysDo(print())
+      .build();
   }
 
   @Test
   public void getKeyUsages_getsKeyDistributionAcrossActiveInactiveAndUnknownEncryptionKeys()
-      throws Exception {
+    throws Exception {
     final UUID activeKey = UUID.randomUUID();
     final UUID knownKey = UUID.randomUUID();
     final UUID unknownKey = UUID.randomUUID();
@@ -70,11 +71,11 @@ public class KeyUsageControllerTest {
     when(credentialVersionDataService.countByEncryptionKey()).thenReturn(countByEncryptionKey);
 
     mockMvc.perform(get("/api/v1/key-usage"))
-        .andExpect(status().isOk())
-        .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-        .andExpect(jsonPath("$.active_key").value(200))
-        .andExpect(jsonPath("$.inactive_keys").value(10))
-        .andExpect(jsonPath("$.unknown_keys").value(5));
+      .andExpect(status().isOk())
+      .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+      .andExpect(jsonPath("$.active_key").value(200))
+      .andExpect(jsonPath("$.inactive_keys").value(10))
+      .andExpect(jsonPath("$.unknown_keys").value(5));
   }
 
 }

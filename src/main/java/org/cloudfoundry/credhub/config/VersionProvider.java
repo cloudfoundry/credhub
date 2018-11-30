@@ -1,10 +1,11 @@
 package org.cloudfoundry.credhub.config;
 
 
-import org.cloudfoundry.credhub.util.ResourceReader;
+import java.io.IOException;
+
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
+import org.cloudfoundry.credhub.util.ResourceReader;
 
 @Component
 public class VersionProvider {

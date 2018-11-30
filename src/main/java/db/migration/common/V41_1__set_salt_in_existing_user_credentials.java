@@ -1,13 +1,14 @@
 package db.migration.common;
 
-import org.cloudfoundry.credhub.credential.CryptSaltFactory;
-import org.cloudfoundry.credhub.util.UuidUtil;
-import org.flywaydb.core.api.migration.spring.SpringJdbcMigration;
-import org.springframework.jdbc.core.JdbcTemplate;
-
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.UUID;
+
+import org.springframework.jdbc.core.JdbcTemplate;
+
+import org.cloudfoundry.credhub.credential.CryptSaltFactory;
+import org.cloudfoundry.credhub.util.UuidUtil;
+import org.flywaydb.core.api.migration.spring.SpringJdbcMigration;
 
 @SuppressWarnings("unused")
 public class V41_1__set_salt_in_existing_user_credentials implements SpringJdbcMigration {

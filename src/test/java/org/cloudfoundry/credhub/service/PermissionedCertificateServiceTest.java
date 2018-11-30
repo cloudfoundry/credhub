@@ -1,5 +1,9 @@
 package org.cloudfoundry.credhub.service;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
@@ -19,10 +23,6 @@ import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.assertj.core.api.Fail.fail;
@@ -55,8 +55,8 @@ public class PermissionedCertificateServiceTest {
     certificateCredentialFactory = mock(CertificateCredentialFactory.class);
     credentialVersionDataService = mock(CredentialVersionDataService.class);
     subject = new PermissionedCertificateService(permissionedCredentialService, certificateDataService,
-        permissionCheckingService, userContextHolder, certificateVersionDataService, certificateCredentialFactory,
-        credentialVersionDataService, new CEFAuditRecord());
+      permissionCheckingService, userContextHolder, certificateVersionDataService, certificateCredentialFactory,
+      credentialVersionDataService, new CEFAuditRecord());
   }
 
   @Test
@@ -65,15 +65,15 @@ public class PermissionedCertificateServiceTest {
     when(value.isTransitional()).thenReturn(false);
     BaseCredentialGenerateRequest generateRequest = mock(BaseCredentialGenerateRequest.class);
     subject.save(
-        mock(CredentialVersion.class),
-        value,
-        generateRequest
+      mock(CredentialVersion.class),
+      value,
+      generateRequest
     );
 
     Mockito.verify(generateRequest).setType(eq("certificate"));
     Mockito.verify(permissionedCredentialService).save(any(),
-        eq(value),
-        eq(generateRequest)
+      eq(value),
+      eq(generateRequest)
     );
   }
 
@@ -89,18 +89,18 @@ public class PermissionedCertificateServiceTest {
     when(previousVersion.isVersionTransitional()).thenReturn(false);
 
     when(permissionedCredentialService.findAllByName(eq("/some-name")))
-        .thenReturn(newArrayList(previousVersion));
+      .thenReturn(newArrayList(previousVersion));
 
     subject.save(
-        mock(CredentialVersion.class),
-        value,
-        generateRequest
+      mock(CredentialVersion.class),
+      value,
+      generateRequest
     );
 
     Mockito.verify(generateRequest).setType(eq("certificate"));
     Mockito.verify(permissionedCredentialService).save(any(),
-        eq(value),
-        eq(generateRequest)
+      eq(value),
+      eq(generateRequest)
     );
   }
 
@@ -116,13 +116,13 @@ public class PermissionedCertificateServiceTest {
     when(previousVersion.isVersionTransitional()).thenReturn(true);
 
     when(permissionedCredentialService.findAllByName(eq("/some-name")))
-        .thenReturn(newArrayList(previousVersion));
+      .thenReturn(newArrayList(previousVersion));
 
     try {
       subject.save(
-          mock(CredentialVersion.class),
-          value,
-          generateRequest
+        mock(CredentialVersion.class),
+        value,
+        generateRequest
       );
       fail("should throw exception");
     } catch (ParameterizedValidationException e) {
@@ -147,7 +147,7 @@ public class PermissionedCertificateServiceTest {
     when(permissionCheckingService.hasPermission(user, "your-credential", PermissionOperation.READ)).thenReturn(false);
 
     when(certificateDataService.findAll())
-        .thenReturn(newArrayList(myCredential, yourCredential));
+      .thenReturn(newArrayList(myCredential, yourCredential));
 
     final List<Credential> certificates = subject.getAll();
     assertThat(certificates, equalTo(newArrayList(myCredential)));
@@ -170,7 +170,7 @@ public class PermissionedCertificateServiceTest {
     when(permissionCheckingService.hasPermission(user, "other-credential", PermissionOperation.READ)).thenReturn(true);
 
     when(certificateDataService.findByName("my-credential"))
-        .thenReturn(myCredential);
+      .thenReturn(myCredential);
 
     final List<Credential> certificates = subject.getByName("my-credential");
     assertThat(certificates, equalTo(newArrayList(myCredential)));
@@ -195,7 +195,7 @@ public class PermissionedCertificateServiceTest {
 
     uuid = UUID.randomUUID();
     when(certificateVersionDataService.findAllVersions(uuid))
-        .thenReturn(versions);
+      .thenReturn(versions);
 
     final List<CredentialVersion> certificates = subject.getVersions(uuid, false);
     assertThat(certificates, equalTo(versions));
@@ -221,9 +221,9 @@ public class PermissionedCertificateServiceTest {
     when(permissionCheckingService.hasPermission(user, "my-credential", PermissionOperation.READ)).thenReturn(true);
 
     when(certificateDataService.findByUuid(uuid))
-        .thenReturn(aCredential);
+      .thenReturn(aCredential);
     when(certificateVersionDataService.findActiveWithTransitional("my-credential"))
-        .thenReturn(versions);
+      .thenReturn(versions);
 
     final List<CredentialVersion> certificates = subject.getVersions(uuid, true);
     assertThat(certificates, equalTo(versions));
@@ -265,7 +265,7 @@ public class PermissionedCertificateServiceTest {
     when(permissionCheckingService.hasPermission(user, "my-credential", PermissionOperation.READ)).thenReturn(false);
 
     when(certificateVersionDataService.findAllVersions(uuid))
-        .thenReturn(versions);
+      .thenReturn(versions);
 
     subject.getVersions(uuid, false);
   }
@@ -294,7 +294,7 @@ public class PermissionedCertificateServiceTest {
     when(versionToDelete.getCredential()).thenReturn(certificate);
 
     CertificateCredentialVersion certificateCredentialVersion = subject
-        .deleteVersion(certificateUuid, versionUuid);
+      .deleteVersion(certificateUuid, versionUuid);
 
     assertThat(certificateCredentialVersion, equalTo(versionToDelete));
   }

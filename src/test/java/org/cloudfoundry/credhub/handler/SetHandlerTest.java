@@ -1,5 +1,7 @@
 package org.cloudfoundry.credhub.handler;
 
+import java.util.UUID;
+
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
@@ -14,10 +16,8 @@ import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.helper.TestHelper;
 import org.cloudfoundry.credhub.request.CertificateSetRequest;
 import org.cloudfoundry.credhub.request.PasswordSetRequest;
-import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.request.StringGenerationParameters;
 import org.cloudfoundry.credhub.request.UserSetRequest;
-import org.cloudfoundry.credhub.service.PermissionService;
 import org.cloudfoundry.credhub.service.PermissionedCredentialService;
 import org.cloudfoundry.credhub.util.TestConstants;
 import org.junit.Before;
@@ -26,13 +26,14 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.ArgumentCaptor;
 
-import java.util.ArrayList;
-import java.util.UUID;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
 public class SetHandlerTest {
@@ -72,7 +73,7 @@ public class SetHandlerTest {
     when(credentialVersion.getCredential()).thenReturn(cred);
     when(credentialVersion.getName()).thenReturn(cred.getName());
     when(credentialVersion.getUuid()).thenReturn(cred.getUuid());
-    when(credentialService.save(any(),any(), any())).thenReturn(credentialVersion);
+    when(credentialService.save(any(), any(), any())).thenReturn(credentialVersion);
   }
 
   @Test
@@ -112,9 +113,9 @@ public class SetHandlerTest {
   public void handleSetRequest_whenNonPasswordSetRequest_passesCorrectParametersWithNullGeneration() {
     UserSetRequest setRequest = new UserSetRequest();
     final UserCredentialValue userCredentialValue = new UserCredentialValue(
-        "Picard",
-        "Enterprise",
-        "salt");
+      "Picard",
+      "Enterprise",
+      "salt");
 
     setRequest.setType("user");
     setRequest.setName("/captain");
@@ -129,10 +130,10 @@ public class SetHandlerTest {
   public void handleSetRequest_withACertificateSetRequest_andNoCaName_usesCorrectParameters() {
     CertificateSetRequest setRequest = new CertificateSetRequest();
     final CertificateCredentialValue certificateValue = new CertificateCredentialValue(
-        null,
-        "Picard",
-        "Enterprise",
-        null);
+      null,
+      "Picard",
+      "Enterprise",
+      null);
 
     setRequest.setType("certificate");
     setRequest.setName("/captain");
@@ -146,36 +147,36 @@ public class SetHandlerTest {
   @Test
   public void handleSetRequest_withACertificateSetRequest_andACaName_providesCaCertificate() {
     CertificateCredentialValue cerificateAuthority = new CertificateCredentialValue(
-        null,
-        TestConstants.TEST_CA,
-        null,
-        null
+      null,
+      TestConstants.TEST_CA,
+      null,
+      null
     );
     when(certificateAuthorityService.findActiveVersion("/test-ca-name"))
-        .thenReturn(cerificateAuthority);
+      .thenReturn(cerificateAuthority);
 
     CertificateSetRequest setRequest = new CertificateSetRequest();
     final CertificateCredentialValue credentialValue = new CertificateCredentialValue(
-        null,
-        TestConstants.TEST_CERTIFICATE,
-        "Enterprise",
-        "test-ca-name");
+      null,
+      TestConstants.TEST_CERTIFICATE,
+      "Enterprise",
+      "test-ca-name");
 
     setRequest.setType("certificate");
     setRequest.setName("/captain");
     setRequest.setCertificateValue(credentialValue);
 
     CertificateCredentialValue expectedCredentialValue = new CertificateCredentialValue(
-        TestConstants.TEST_CA,
-        TestConstants.TEST_CERTIFICATE,
-        "Enterprise",
-        "/test-ca-name"
+      TestConstants.TEST_CA,
+      TestConstants.TEST_CERTIFICATE,
+      "Enterprise",
+      "/test-ca-name"
     );
     ArgumentCaptor<CredentialValue> credentialValueArgumentCaptor = ArgumentCaptor.forClass(CredentialValue.class);
 
     subject.handle(setRequest);
 
-    verify(credentialService).save( eq(null), credentialValueArgumentCaptor.capture(), eq(setRequest));
+    verify(credentialService).save(eq(null), credentialValueArgumentCaptor.capture(), eq(setRequest));
     assertThat(credentialValueArgumentCaptor.getValue(), samePropertyValuesAs(expectedCredentialValue));
   }
 }

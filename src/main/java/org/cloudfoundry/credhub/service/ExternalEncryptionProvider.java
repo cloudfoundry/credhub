@@ -1,5 +1,10 @@
 package org.cloudfoundry.credhub.service;
 
+import java.nio.charset.Charset;
+import java.util.concurrent.TimeUnit;
+
+import javax.crypto.AEADBadTagException;
+
 import com.google.protobuf.ByteString;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
@@ -19,10 +24,6 @@ import org.cloudfoundry.credhub.service.grpc.EncryptRequest;
 import org.cloudfoundry.credhub.service.grpc.EncryptResponse;
 import org.cloudfoundry.credhub.service.grpc.KeyManagementServiceGrpc;
 
-import java.nio.charset.Charset;
-import java.util.concurrent.TimeUnit;
-import javax.crypto.AEADBadTagException;
-
 import static io.grpc.internal.GrpcUtil.DEFAULT_KEEPALIVE_TIME_NANOS;
 
 public class ExternalEncryptionProvider implements EncryptionProvider {
@@ -32,7 +33,7 @@ public class ExternalEncryptionProvider implements EncryptionProvider {
 
   public ExternalEncryptionProvider(EncryptionConfiguration configuration) {
     blockingStub = KeyManagementServiceGrpc.newBlockingStub(
-        NettyChannelBuilder.forAddress(new DomainSocketAddress(configuration.getEndpoint()))
+      NettyChannelBuilder.forAddress(new DomainSocketAddress(configuration.getEndpoint()))
         .eventLoopGroup(new EpollEventLoopGroup())
         .channelType(EpollDomainSocketChannel.class)
         .negotiationType(NegotiationType.PLAINTEXT)

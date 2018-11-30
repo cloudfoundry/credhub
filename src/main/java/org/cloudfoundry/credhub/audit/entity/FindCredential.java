@@ -3,14 +3,19 @@ package org.cloudfoundry.credhub.audit.entity;
 import org.cloudfoundry.credhub.audit.OperationDeviceAction;
 
 public class FindCredential implements RequestDetails {
-  private String nameLike, path;
+  private String nameLike;
+  private String path;
   private Boolean paths;
 
   private String expiresWithinDays;
 
-  public String getExpiresWithinDays() { return expiresWithinDays; }
+  public String getExpiresWithinDays() {
+    return expiresWithinDays;
+  }
 
-  public void setExpiresWithinDays(String expiresWithinDays) { this.expiresWithinDays = expiresWithinDays; }
+  public void setExpiresWithinDays(String expiresWithinDays) {
+    this.expiresWithinDays = expiresWithinDays;
+  }
 
   public String getNameLike() {
     return nameLike;

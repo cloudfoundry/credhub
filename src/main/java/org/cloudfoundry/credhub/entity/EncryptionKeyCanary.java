@@ -1,14 +1,15 @@
 package org.cloudfoundry.credhub.entity;
 
-import org.cloudfoundry.credhub.constants.UuidConstants;
-import org.hibernate.annotations.GenericGenerator;
-
 import java.util.UUID;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
+import org.cloudfoundry.credhub.constants.UuidConstants;
+import org.hibernate.annotations.GenericGenerator;
 
 import static org.cloudfoundry.credhub.constants.EncryptionConstants.ENCRYPTED_BYTES;
 import static org.cloudfoundry.credhub.constants.EncryptionConstants.NONCE_SIZE;
@@ -46,7 +47,7 @@ public class EncryptionKeyCanary {
   }
 
   public byte[] getEncryptedCanaryValue() {
-    return encryptedCanaryValue  == null ? null : encryptedCanaryValue.clone();
+    return encryptedCanaryValue == null ? null : encryptedCanaryValue.clone();
   }
 
   public EncryptionKeyCanary setEncryptedCanaryValue(byte[] encryptedCanaryValue) {

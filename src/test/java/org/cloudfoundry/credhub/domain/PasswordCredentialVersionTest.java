@@ -1,5 +1,7 @@
 package org.cloudfoundry.credhub.domain;
 
+import java.util.UUID;
+
 import org.cloudfoundry.credhub.entity.EncryptedValue;
 import org.cloudfoundry.credhub.entity.PasswordCredentialVersionData;
 import org.cloudfoundry.credhub.request.StringGenerationParameters;
@@ -9,8 +11,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.util.UUID;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -50,24 +50,24 @@ public class PasswordCredentialVersionTest {
     parametersNonce = "fake-parameters-nonce".getBytes();
 
     generationParameters = new StringGenerationParameters()
-        .setExcludeLower(true)
-        .setLength(10);
+      .setExcludeLower(true)
+      .setLength(10);
 
     String generationParametersJson = new JsonObjectMapper().writeValueAsString(generationParameters);
 
     when(encryptor.encrypt(null))
-        .thenReturn(new EncryptedValue(canaryUuid, "", ""));
+      .thenReturn(new EncryptedValue(canaryUuid, "", ""));
     final EncryptedValue encryption = new EncryptedValue(canaryUuid, encryptedValue, nonce);
     when(encryptor.encrypt(PASSWORD))
-        .thenReturn(encryption);
+      .thenReturn(encryption);
     final EncryptedValue parametersEncryption = new EncryptedValue(canaryUuid, encryptedParametersValue, parametersNonce);
     when(encryptor.encrypt(eq(generationParametersJson)))
-        .thenReturn(parametersEncryption);
+      .thenReturn(parametersEncryption);
 
     when(encryptor.decrypt(encryption))
-        .thenReturn(PASSWORD);
+      .thenReturn(PASSWORD);
     when(encryptor.decrypt(parametersEncryption))
-        .thenReturn(generationParametersJson);
+      .thenReturn(generationParametersJson);
 
     passwordCredentialData = new PasswordCredentialVersionData("/Foo");
     subject = new PasswordCredentialVersion(passwordCredentialData);
@@ -93,7 +93,7 @@ public class PasswordCredentialVersionTest {
     subject = new PasswordCredentialVersion("/Foo");
     subject.setEncryptor(encryptor);
     when(encryptor.encrypt(null))
-        .thenReturn(new EncryptedValue(canaryUuid, "", ""));
+      .thenReturn(new EncryptedValue(canaryUuid, "", ""));
     subject.setPasswordAndGenerationParameters(PASSWORD, null);
 
     subject.getPassword();

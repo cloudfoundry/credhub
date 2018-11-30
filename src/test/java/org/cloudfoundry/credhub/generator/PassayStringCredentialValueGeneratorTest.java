@@ -33,7 +33,7 @@ public class PassayStringCredentialValueGeneratorTest {
     StringGenerationParameters generationParameters = new StringGenerationParameters();
 
     when(passwordGenerator.generatePassword(eq(subject.DEFAULT_LENGTH), anyList()))
-        .thenReturn("very-credential");
+      .thenReturn("very-credential");
 
     StringCredentialValue stringCredentialValue = subject.generateCredential(generationParameters);
     assertThat(stringCredentialValue.getStringCredential(), equalTo("very-credential"));
@@ -53,7 +53,7 @@ public class PassayStringCredentialValueGeneratorTest {
   @Test
   public void ignoresTooSmallLengthValues() {
     when(passwordGenerator.generatePassword(eq(subject.DEFAULT_LENGTH), anyList()))
-        .thenReturn("very-credential");
+      .thenReturn("very-credential");
 
     StringGenerationParameters generationParameters = new StringGenerationParameters();
     generationParameters.setLength(3);
@@ -65,7 +65,7 @@ public class PassayStringCredentialValueGeneratorTest {
   @Test
   public void ignoresTooLargeLengthValues() {
     when(passwordGenerator.generatePassword(eq(subject.DEFAULT_LENGTH), anyList()))
-        .thenReturn("very-credential");
+      .thenReturn("very-credential");
 
     StringGenerationParameters generationParameters = new StringGenerationParameters();
     generationParameters.setLength(201);

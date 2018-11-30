@@ -22,7 +22,7 @@ public class UserTest {
   public void getPasswordHash_returnsAConsistentPasswordHash() {
     String salt = new CryptSaltFactory().generateSalt();
     UserCredentialValue subject = new UserCredentialValue("test-username", "test-password",
-        salt);
+      salt);
 
     assertThat(subject.getPasswordHash().matches("^\\$6\\$[a-zA-Z0-9/.]{8}\\$[a-zA-Z0-9/.]+$"), equalTo(true));
     assertThat(subject.getPasswordHash(), equalTo(subject.getPasswordHash()));

@@ -1,23 +1,25 @@
 package org.cloudfoundry.credhub.service;
 
+import java.security.ProviderException;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import javax.crypto.IllegalBlockSizeException;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.cloudfoundry.credhub.entity.EncryptedValue;
 import org.cloudfoundry.credhub.exceptions.KeyNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.security.ProviderException;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import javax.crypto.IllegalBlockSizeException;
 
 @Component
 public class RetryingEncryptionService {
 
-  private EncryptionKeySet keySet;
   private final Logger logger;
   // for testing
   ReentrantReadWriteLock readWriteLock;
+  private EncryptionKeySet keySet;
   private volatile boolean needsReconnect; // volatile so all threads see changes
 
   @Autowired
@@ -35,7 +37,7 @@ public class RetryingEncryptionService {
   }
 
   public String decrypt(EncryptedValue encryptedValue)
-      throws Exception {
+    throws Exception {
     logger.info("Attempting decrypt");
     return retryOnErrorWithRemappedKey(() -> {
       final EncryptionKey key = keySet.get(encryptedValue.getEncryptionKeyUuid());
@@ -43,12 +45,12 @@ public class RetryingEncryptionService {
       if (key == null) {
         throw new KeyNotFoundException("error.missing_encryption_key");
       }
-        return key.decrypt(encryptedValue.getEncryptedValue(), encryptedValue.getNonce());
+      return key.decrypt(encryptedValue.getEncryptedValue(), encryptedValue.getNonce());
     });
   }
 
   private <T> T retryOnErrorWithRemappedKey(ThrowingFunction<T> operation)
-      throws Exception {
+    throws Exception {
     return withPreventReconnectLock(() -> {
       try {
         return operation.apply();
@@ -64,7 +66,7 @@ public class RetryingEncryptionService {
             lunaEncryptionService.reconnect(e);
             keySet.reload();
             clearNeedsReconnectFlag();
-          }else if (needsReconnect()){
+          } else if (needsReconnect()) {
             throw e;
           }
         });

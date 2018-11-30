@@ -1,14 +1,15 @@
 package org.cloudfoundry.credhub.controller.v1;
 
-import com.google.common.collect.ImmutableMap;
-import org.cloudfoundry.credhub.config.VersionProvider;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
+import com.google.common.collect.ImmutableMap;
+import org.cloudfoundry.credhub.config.VersionProvider;
 
 @RestController
 @RequestMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -18,7 +19,7 @@ public class VersionController {
 
   @Autowired
   VersionController(
-      VersionProvider versionProvider
+    VersionProvider versionProvider
   ) {
     this.credhubVersion = versionProvider.currentVersion();
   }

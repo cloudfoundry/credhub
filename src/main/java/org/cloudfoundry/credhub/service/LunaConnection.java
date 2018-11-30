@@ -1,13 +1,21 @@
 package org.cloudfoundry.credhub.service;
 
-import org.cloudfoundry.credhub.config.EncryptionConfiguration;
+import java.security.Key;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.Provider;
+import java.security.SecureRandom;
+import java.security.Security;
+import java.security.UnrecoverableKeyException;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
-import java.security.*;
+
+import org.cloudfoundry.credhub.config.EncryptionConfiguration;
 
 
-class LunaConnection {
+public class LunaConnection {
 
   private final EncryptionConfiguration lunaProviderConfiguration;
   private Provider provider;
@@ -22,7 +30,7 @@ class LunaConnection {
     provider = (Provider) Class.forName("com.safenetinc.luna.provider.LunaProvider").newInstance();
     Security.addProvider(provider);
     lunaSlotManager = Class.forName("com.safenetinc.luna.LunaSlotManager")
-        .getDeclaredMethod("getInstance").invoke(null);
+      .getDeclaredMethod("getInstance").invoke(null);
 
     reconnect();
 
@@ -43,7 +51,7 @@ class LunaConnection {
       try {
         reinitialize();
         login(lunaProviderConfiguration.getPartition(),
-            lunaProviderConfiguration.getPartitionPassword());
+          lunaProviderConfiguration.getPartitionPassword());
         makeKeyStore();
       } catch (Exception e) {
         throw new RuntimeException(e);
@@ -71,7 +79,7 @@ class LunaConnection {
   private void login(String partitionName, String partitionPassword) {
     try {
       lunaSlotManager.getClass().getMethod("login", String.class, String.class)
-          .invoke(lunaSlotManager, partitionName, partitionPassword);
+        .invoke(lunaSlotManager, partitionName, partitionPassword);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -100,11 +108,11 @@ class LunaConnection {
   }
 
   public void setKeyEntry(String encryptionKeyAlias, SecretKey aesKey) throws KeyStoreException {
-    keyStore.setKeyEntry(encryptionKeyAlias, aesKey, null , null);
+    keyStore.setKeyEntry(encryptionKeyAlias, aesKey, null, null);
   }
 
   public Key getKey(String encryptionKeyAlias)
-      throws UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException {
+    throws UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException {
     return keyStore.getKey(encryptionKeyAlias, null);
   }
 }

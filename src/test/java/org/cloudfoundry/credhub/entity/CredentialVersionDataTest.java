@@ -35,7 +35,7 @@ public class CredentialVersionDataTest {
   public void nonce_doesNotStoreOrPassByReference() throws Exception {
     byte[] toModify = "foobar".getBytes();
     passwordCredentialData.setEncryptedValueData(new EncryptedValue().setEncryptedValue(toModify)
-        .setNonce(toModify));
+      .setNonce(toModify));
     byte[] unModified = toModify.clone();
 
     toModify[0] = (byte) 'a';

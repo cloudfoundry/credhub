@@ -1,5 +1,22 @@
 package org.cloudfoundry.credhub.data;
 
+import java.sql.Timestamp;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Service;
+
 import org.apache.commons.lang3.StringUtils;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
@@ -13,22 +30,6 @@ import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.repository.CredentialVersionRepository;
 import org.cloudfoundry.credhub.view.FindCertificateResult;
 import org.cloudfoundry.credhub.view.FindCredentialResult;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Service;
-
-import java.sql.Timestamp;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
 
@@ -49,14 +50,14 @@ public class CredentialVersionDataService {
 
   @Autowired
   protected CredentialVersionDataService(
-      CredentialVersionRepository credentialVersionRepository,
-      PermissionDataService permissionDataService,
-      CredentialDataService credentialDataService,
-      JdbcTemplate jdbcTemplate,
-      CredentialFactory credentialFactory,
-      UserContextHolder userContextHolder,
-      CertificateVersionDataService certificateVersionDataService,
-      CEFAuditRecord auditRecord) {
+    CredentialVersionRepository credentialVersionRepository,
+    PermissionDataService permissionDataService,
+    CredentialDataService credentialDataService,
+    JdbcTemplate jdbcTemplate,
+    CredentialFactory credentialFactory,
+    UserContextHolder userContextHolder,
+    CertificateVersionDataService certificateVersionDataService,
+    CEFAuditRecord auditRecord) {
     this.credentialVersionRepository = credentialVersionRepository;
     this.permissionDataService = permissionDataService;
     this.credentialDataService = credentialDataService;
@@ -79,14 +80,14 @@ public class CredentialVersionDataService {
     } else {
       CredentialVersion existingCredentialVersion = findMostRecent(credential.getName());
       if (existingCredentialVersion != null && !existingCredentialVersion.getCredentialType()
-          .equals(credentialVersionData.getCredentialType())) {
+        .equals(credentialVersionData.getCredentialType())) {
         throw new ParameterizedValidationException("error.type_mismatch");
       }
     }
 
     try {
       return (Z) credentialFactory
-          .makeCredentialFromEntity(credentialVersionRepository.saveAndFlush(credentialVersionData));
+        .makeCredentialFromEntity(credentialVersionRepository.saveAndFlush(credentialVersionData));
     } catch (DataIntegrityViolationException e) {
       throw new MaximumSizeException(e.getMessage());
     }
@@ -99,13 +100,13 @@ public class CredentialVersionDataService {
       return null;
     } else {
       return credentialFactory.makeCredentialFromEntity(credentialVersionRepository
-          .findFirstByCredentialUuidOrderByVersionCreatedAtDesc(credential.getUuid()));
+        .findFirstByCredentialUuidOrderByVersionCreatedAtDesc(credential.getUuid()));
     }
   }
 
   public CredentialVersion findByUuid(String uuid) {
     return credentialFactory
-        .makeCredentialFromEntity(credentialVersionRepository.findOneByUuid(UUID.fromString(uuid)));
+      .makeCredentialFromEntity(credentialVersionRepository.findOneByUuid(UUID.fromString(uuid)));
   }
 
   public List<String> findAllCertificateCredentialsByCaName(String caName) {
@@ -155,8 +156,8 @@ public class CredentialVersionDataService {
     Credential credential = credentialDataService.find(name);
 
     return credential != null ? credentialFactory.makeCredentialsFromEntities(
-        credentialVersionRepository.findAllByCredentialUuidOrderByVersionCreatedAtDesc(credential.getUuid()))
-        : newArrayList();
+      credentialVersionRepository.findAllByCredentialUuidOrderByVersionCreatedAtDesc(credential.getUuid()))
+      : newArrayList();
   }
 
   public List<CredentialVersion> findNByName(String name, int numberOfVersions) {
@@ -164,10 +165,10 @@ public class CredentialVersionDataService {
 
     if (credential != null) {
       List<CredentialVersionData> credentialVersionData = credentialVersionRepository
-          .findAllByCredentialUuidOrderByVersionCreatedAtDesc(credential.getUuid())
-          .stream()
-          .limit(numberOfVersions)
-          .collect(Collectors.toList());
+        .findAllByCredentialUuidOrderByVersionCreatedAtDesc(credential.getUuid())
+        .stream()
+        .limit(numberOfVersions)
+        .collect(Collectors.toList());
       return credentialFactory.makeCredentialsFromEntities(credentialVersionData);
     } else {
       return newArrayList();
@@ -177,10 +178,10 @@ public class CredentialVersionDataService {
   public HashMap<UUID, Long> countByEncryptionKey() {
     HashMap<UUID, Long> map = new HashMap<>();
     jdbcTemplate.query(
-        " SELECT count(*), encryption_key_uuid FROM credential_version " +
-            "LEFT JOIN encrypted_value ON credential_version.encrypted_value_uuid = encrypted_value.uuid " +
-            "GROUP BY encrypted_value.encryption_key_uuid",
-        (rowSet, rowNum) -> map.put(UUID.fromString(rowSet.getString("encryption_key_uuid")), rowSet.getLong("count"))
+      " SELECT count(*), encryption_key_uuid FROM credential_version " +
+        "LEFT JOIN encrypted_value ON credential_version.encrypted_value_uuid = encrypted_value.uuid " +
+        "GROUP BY encrypted_value.encryption_key_uuid",
+      (rowSet, rowNum) -> map.put(UUID.fromString(rowSet.getString("encryption_key_uuid")), rowSet.getLong("count"))
     );
     return map;
   }
@@ -191,7 +192,7 @@ public class CredentialVersionDataService {
     ArrayList<CredentialVersion> result = newArrayList();
     if (credential != null) {
       credentialVersionData = credentialVersionRepository
-          .findFirstByCredentialUuidOrderByVersionCreatedAtDesc(credential.getUuid());
+        .findFirstByCredentialUuidOrderByVersionCreatedAtDesc(credential.getUuid());
 
       if (credentialVersionData.getCredentialType().equals(CertificateCredentialVersionData.CREDENTIAL_TYPE)) {
         return certificateVersionDataService.findActiveWithTransitional(name);
@@ -243,31 +244,31 @@ public class CredentialVersionDataService {
     Timestamp expiresTimestamp = Timestamp.from(Instant.now().plus(Duration.ofDays(Long.parseLong(expiresWithinDays))));
 
     String query = "select name.name, credential_version.version_created_at, "
-        + "certificate_credential.expiry_date from ("
-        + "   select "
-        + "   max(version_created_at) as version_created_at,"
-        + "     credential_uuid, uuid"
-        + "   from credential_version group by credential_uuid, uuid"
-        + " ) as credential_version inner join ("
-        + "   select * from credential"
-        + "     where lower(name) like lower(?)"
-        + " ) as name"
-        + " on credential_version.credential_uuid = name.uuid"
-        + " inner join ( select * from certificate_credential"
-        + "   where expiry_date <= ?"
-        + " ) as certificate_credential "
-        + " on credential_version.uuid = certificate_credential.uuid"
-        + " order by version_created_at desc";
+      + "certificate_credential.expiry_date from ("
+      + "   select "
+      + "   max(version_created_at) as version_created_at,"
+      + "     credential_uuid, uuid"
+      + "   from credential_version group by credential_uuid, uuid"
+      + " ) as credential_version inner join ("
+      + "   select * from credential"
+      + "     where lower(name) like lower(?)"
+      + " ) as name"
+      + " on credential_version.credential_uuid = name.uuid"
+      + " inner join ( select * from certificate_credential"
+      + "   where expiry_date <= ?"
+      + " ) as certificate_credential "
+      + " on credential_version.uuid = certificate_credential.uuid"
+      + " order by version_created_at desc";
 
     final List<FindCredentialResult> certificateResults = jdbcTemplate.query(query,
-        new Object[]{path, expiresTimestamp},
-        (rowSet, rowNum) -> {
-          final Instant versionCreatedAt = Instant
-              .ofEpochMilli(rowSet.getLong("version_created_at"));
-          final String name = rowSet.getString("name");
-          final Instant expiryDate = rowSet.getTimestamp("expiry_date").toInstant();
-          return new FindCertificateResult(versionCreatedAt, name, expiryDate);
-        }
+      new Object[]{path, expiresTimestamp},
+      (rowSet, rowNum) -> {
+        final Instant versionCreatedAt = Instant
+          .ofEpochMilli(rowSet.getLong("version_created_at"));
+        final String name = rowSet.getString("name");
+        final Instant expiryDate = rowSet.getTimestamp("expiry_date").toInstant();
+        return new FindCertificateResult(versionCreatedAt, name, expiryDate);
+      }
     );
     return certificateResults;
   }
@@ -288,35 +289,35 @@ public class CredentialVersionDataService {
 
   private List<FindCredentialResult> findMatchingName(String nameLike) {
     final List<FindCredentialResult> credentialResults = jdbcTemplate.query(
-        " select name.name, credential_version.version_created_at from ("
-            + "   select"
-            + "     max(version_created_at) as version_created_at,"
-            + "     credential_uuid"
-            + "   from credential_version group by credential_uuid"
-            + " ) as credential_version inner join ("
-            + "   select * from credential"
-            + "     where lower(name) like lower(?)"
-            + " ) as name"
-            + " on credential_version.credential_uuid = name.uuid"
-            + " order by version_created_at desc",
-        new Object[]{nameLike},
-        (rowSet, rowNum) -> {
-          final Instant versionCreatedAt = Instant
-              .ofEpochMilli(rowSet.getLong("version_created_at"));
-          final String name = rowSet.getString("name");
-          return new FindCredentialResult(versionCreatedAt, name);
-        }
+      " select name.name, credential_version.version_created_at from ("
+        + "   select"
+        + "     max(version_created_at) as version_created_at,"
+        + "     credential_uuid"
+        + "   from credential_version group by credential_uuid"
+        + " ) as credential_version inner join ("
+        + "   select * from credential"
+        + "     where lower(name) like lower(?)"
+        + " ) as name"
+        + " on credential_version.credential_uuid = name.uuid"
+        + " order by version_created_at desc",
+      new Object[]{nameLike},
+      (rowSet, rowNum) -> {
+        final Instant versionCreatedAt = Instant
+          .ofEpochMilli(rowSet.getLong("version_created_at"));
+        final String name = rowSet.getString("name");
+        return new FindCredentialResult(versionCreatedAt, name);
+      }
     );
     return credentialResults;
   }
 
   private List<String> findCertificateNamesByCaName(String caName) {
     String query = "select distinct credential.name from "
-        + "credential, credential_version, certificate_credential "
-        + "where credential.uuid=credential_version.credential_uuid "
-        + "and credential_version.uuid=certificate_credential.uuid "
-        + "and lower(certificate_credential.ca_name) "
-        + "like lower(?)";
+      + "credential, credential_version, certificate_credential "
+      + "where credential.uuid=credential_version.credential_uuid "
+      + "and credential_version.uuid=certificate_credential.uuid "
+      + "and lower(certificate_credential.ca_name) "
+      + "like lower(?)";
     return jdbcTemplate.queryForList(query, String.class, caName);
   }
 }

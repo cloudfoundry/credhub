@@ -1,5 +1,7 @@
 package org.cloudfoundry.credhub.data;
 
+import java.util.List;
+
 import org.cloudfoundry.credhub.domain.CredentialFactory;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.entity.Credential;
@@ -9,8 +11,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -34,9 +34,9 @@ public class CertificateVersionDataServiceTest {
     factory = mock(CredentialFactory.class);
     dataService = mock(CredentialDataService.class);
     subject = new CertificateVersionDataService(
-        versionRepository,
-        factory,
-        dataService
+      versionRepository,
+      factory,
+      dataService
     );
   }
 

@@ -1,5 +1,20 @@
 package org.cloudfoundry.credhub.integration;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
+
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.config.Permissions;
 import org.cloudfoundry.credhub.constants.CredentialType;
@@ -17,23 +32,11 @@ import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
@@ -41,28 +44,22 @@ import static org.hamcrest.Matchers.*;
 @Transactional
 public class PermissionInitializationTest {
 
-  @Autowired
-  private PermissionRepository permissionRepository;
-
-  @Autowired
-  private PermissionService permissionService;
-
-  @Autowired
-  private PermissionedCredentialService permissionedCredentialService;
-
-  @Autowired
-  private Permissions permissions;
-
-  @Autowired
-  private ApplicationContext applicationContext;
-
-  @Autowired
-  private ApplicationEventPublisher applicationEventPublisher;
-
   List<String> actors = Arrays.asList("uaa-user:test1", "uaa-user:test2");
   String credentialPath = "/my/credential";
   UUID credentialUUID;
   CredentialVersion credentialVersion;
+  @Autowired
+  private PermissionRepository permissionRepository;
+  @Autowired
+  private PermissionService permissionService;
+  @Autowired
+  private PermissionedCredentialService permissionedCredentialService;
+  @Autowired
+  private Permissions permissions;
+  @Autowired
+  private ApplicationContext applicationContext;
+  @Autowired
+  private ApplicationEventPublisher applicationEventPublisher;
 
   @Before
   public void beforeEach() throws Exception {
@@ -116,13 +113,13 @@ public class PermissionInitializationTest {
 
   @Test
   public void itThrowsAnExceptionIfAuthorizationIsEmpty() {
-    PermissionInitializer initializer = new PermissionInitializer(null, new Permissions(),null);
+    PermissionInitializer initializer = new PermissionInitializer(null, new Permissions(), null);
     initializer.seed();
   }
 
   @Test
   public void itDoesntThrowAnExceptionIfAuthorizationConfigIsEmpty() {
-    PermissionInitializer initializer = new PermissionInitializer(null, null,null);
+    PermissionInitializer initializer = new PermissionInitializer(null, null, null);
     initializer.seed();
   }
 }

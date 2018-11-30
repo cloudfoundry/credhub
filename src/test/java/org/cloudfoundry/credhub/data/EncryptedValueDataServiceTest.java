@@ -1,5 +1,16 @@
 package org.cloudfoundry.credhub.data;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
+
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.domain.Encryptor;
 import org.cloudfoundry.credhub.entity.EncryptedValue;
@@ -8,16 +19,6 @@ import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -65,7 +66,7 @@ public class EncryptedValueDataServiceTest {
   @Test
   public void rotate() throws Exception {
     EncryptedValue newEncryption = new EncryptedValue(UUID.randomUUID(), "expected value".getBytes(),
-        "nonce".getBytes());
+      "nonce".getBytes());
     EncryptedValue value = new EncryptedValue();
     value.setEncryptedValue("bytes".getBytes());
     value.setEncryptionKeyUuid(UUID.randomUUID());

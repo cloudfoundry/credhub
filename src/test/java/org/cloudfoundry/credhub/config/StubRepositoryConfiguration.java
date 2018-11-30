@@ -1,14 +1,15 @@
 package org.cloudfoundry.credhub.config;
 
-import org.cloudfoundry.credhub.entity.PermissionData;
-import org.cloudfoundry.credhub.repository.PermissionRepository;
-import org.cloudfoundry.credhub.request.PermissionOperation;
-import org.cloudfoundry.credhub.repository.StubPermissionRepository;
+import java.util.UUID;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
-import java.util.UUID;
+import org.cloudfoundry.credhub.entity.PermissionData;
+import org.cloudfoundry.credhub.repository.PermissionRepository;
+import org.cloudfoundry.credhub.repository.StubPermissionRepository;
+import org.cloudfoundry.credhub.request.PermissionOperation;
 
 import static com.google.common.collect.Lists.newArrayList;
 

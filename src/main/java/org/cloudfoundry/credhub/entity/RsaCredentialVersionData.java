@@ -1,17 +1,18 @@
 package org.cloudfoundry.credhub.entity;
 
-import org.cloudfoundry.credhub.util.RsaCredentialHelper;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.SecondaryTable;
 
+import org.cloudfoundry.credhub.util.RsaCredentialHelper;
+
 @Entity
 @DiscriminatorValue(RsaCredentialVersionData.CREDENTIAL_TYPE)
 @SecondaryTable(
-    name = RsaCredentialVersionData.TABLE_NAME,
-    pkJoinColumns = {@PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")}
+  name = RsaCredentialVersionData.TABLE_NAME,
+  pkJoinColumns = {@PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")}
 )
 public class RsaCredentialVersionData extends CredentialVersionData<RsaCredentialVersionData> {
 

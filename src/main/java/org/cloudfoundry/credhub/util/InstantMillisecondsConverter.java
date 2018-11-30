@@ -1,6 +1,7 @@
 package org.cloudfoundry.credhub.util;
 
 import java.time.Instant;
+
 import javax.persistence.AttributeConverter;
 
 public class InstantMillisecondsConverter implements AttributeConverter<Instant, Long> {

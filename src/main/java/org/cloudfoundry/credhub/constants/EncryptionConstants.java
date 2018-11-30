@@ -1,6 +1,9 @@
 package org.cloudfoundry.credhub.constants;
 
-public class EncryptionConstants {
+final public class EncryptionConstants {
+
+  private EncryptionConstants() {
+  }
 
   public static final int NONCE_SIZE = 12;
   public static final int ENCRYPTED_BYTES = 7000;

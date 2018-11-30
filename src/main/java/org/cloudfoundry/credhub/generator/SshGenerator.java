@@ -1,15 +1,16 @@
 package org.cloudfoundry.credhub.generator;
 
-import org.cloudfoundry.credhub.credential.SshCredentialValue;
-import org.cloudfoundry.credhub.request.GenerationParameters;
-import org.cloudfoundry.credhub.request.SshGenerationParameters;
-import org.cloudfoundry.credhub.util.CertificateFormatter;
+import java.security.KeyPair;
+import java.security.interfaces.RSAPublicKey;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import java.security.KeyPair;
-import java.security.interfaces.RSAPublicKey;
+import org.cloudfoundry.credhub.credential.SshCredentialValue;
+import org.cloudfoundry.credhub.request.GenerationParameters;
+import org.cloudfoundry.credhub.request.SshGenerationParameters;
+import org.cloudfoundry.credhub.util.CertificateFormatter;
 
 @Component
 public class SshGenerator implements CredentialGenerator<SshCredentialValue> {
@@ -30,7 +31,7 @@ public class SshGenerator implements CredentialGenerator<SshCredentialValue> {
       String sshCommentMessage = StringUtils.isEmpty(sshComment) ? "" : " " + sshComment;
 
       String publicKey =
-          CertificateFormatter.derOf((RSAPublicKey) keyPair.getPublic()) + sshCommentMessage;
+        CertificateFormatter.derOf((RSAPublicKey) keyPair.getPublic()) + sshCommentMessage;
       String privateKey = CertificateFormatter.pemOf(keyPair.getPrivate());
 
       return new SshCredentialValue(publicKey, privateKey, null);

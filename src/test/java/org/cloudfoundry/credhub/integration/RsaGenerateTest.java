@@ -1,11 +1,5 @@
 package org.cloudfoundry.credhub.integration;
 
-import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
-import org.json.JSONObject;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -14,6 +8,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
+
+import org.cloudfoundry.credhub.CredentialManagerApp;
+import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
+import org.json.JSONObject;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import static org.cloudfoundry.credhub.helper.RequestHelper.generateRsa;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -36,9 +37,9 @@ public class RsaGenerateTest {
   @Before
   public void setup() {
     mockMvc = MockMvcBuilders
-        .webAppContextSetup(webApplicationContext)
-        .apply(springSecurity())
-        .build();
+      .webAppContextSetup(webApplicationContext)
+      .apply(springSecurity())
+      .build();
   }
 
   @Test

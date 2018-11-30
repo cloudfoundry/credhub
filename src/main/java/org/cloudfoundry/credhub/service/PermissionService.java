@@ -1,5 +1,12 @@
 package org.cloudfoundry.credhub.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.data.PermissionDataService;
@@ -14,12 +21,6 @@ import org.cloudfoundry.credhub.exceptions.PermissionDoesNotExistException;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.cloudfoundry.credhub.request.PermissionsV2Request;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 
 import static org.cloudfoundry.credhub.request.PermissionOperation.READ_ACL;
 import static org.cloudfoundry.credhub.request.PermissionOperation.WRITE_ACL;
@@ -98,7 +99,7 @@ public class PermissionService {
 
   public boolean deletePermissions(String credentialName, String actor) {
     if (!permissionCheckingService
-        .hasPermission(userContextHolder.getUserContext().getActor(), credentialName, WRITE_ACL)) {
+      .hasPermission(userContextHolder.getUserContext().getActor(), credentialName, WRITE_ACL)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
@@ -166,9 +167,9 @@ public class PermissionService {
 
   private UUID parseUUID(String guid) {
     UUID permissionUUID;
-    try{
+    try {
       permissionUUID = UUID.fromString(guid);
-    }catch (IllegalArgumentException e){
+    } catch (IllegalArgumentException e) {
       throw new PermissionDoesNotExistException("error.permission.does_not_exist");
     }
     return permissionUUID;

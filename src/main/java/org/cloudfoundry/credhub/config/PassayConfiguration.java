@@ -1,9 +1,10 @@
 package org.cloudfoundry.credhub.config;
 
-import org.cloudfoundry.credhub.service.RandomNumberGenerator;
-import org.passay.PasswordGenerator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import org.cloudfoundry.credhub.service.RandomNumberGenerator;
+import org.passay.PasswordGenerator;
 
 @Configuration
 public class PassayConfiguration {

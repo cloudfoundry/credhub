@@ -1,12 +1,5 @@
 package org.cloudfoundry.credhub.integration;
 
-import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.util.AuthConstants;
-import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
-import org.json.JSONObject;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -16,6 +9,14 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
+
+import org.cloudfoundry.credhub.CredentialManagerApp;
+import org.cloudfoundry.credhub.util.AuthConstants;
+import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
+import org.json.JSONObject;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -45,45 +46,45 @@ public class UpdatingACredentialTest {
     passwordName = "test-password";
 
     mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
-        .apply(springSecurity())
-        .build();
+      .apply(springSecurity())
+      .build();
   }
 
   @Test
   public void post_shouldAllowTheCredentialToBeUpdated() throws Exception {
     String requestBody = "{"
-        + "\"type\":\"password\","
-        + "\"name\":\""
-        + passwordName + "\","
-        + "\"overwrite\":true"
-        + "}";
+      + "\"type\":\"password\","
+      + "\"name\":\""
+      + passwordName + "\","
+      + "\"overwrite\":true"
+      + "}";
     MvcResult result = mockMvc.perform(post("/api/v1/data")
-        .header("Authorization", "Bearer "
-            + AuthConstants.ALL_PERMISSIONS_TOKEN).accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(requestBody)
+      .header("Authorization", "Bearer "
+        + AuthConstants.ALL_PERMISSIONS_TOKEN).accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      .content(requestBody)
     )
-        .andExpect(status().is2xxSuccessful())
-        .andReturn();
+      .andExpect(status().is2xxSuccessful())
+      .andReturn();
 
     JSONObject jsonObject = new JSONObject(result.getResponse().getContentAsString());
     String firstPassword = jsonObject.getString("value");
 
     requestBody = "{"
-        + "\"type\":\"password\","
-        + "\"name\":\""
-        + passwordName + "\","
-        + "\"overwrite\":true"
-        + "}";
+      + "\"type\":\"password\","
+      + "\"name\":\""
+      + passwordName + "\","
+      + "\"overwrite\":true"
+      + "}";
 
     result = mockMvc.perform(post("/api/v1/data")
-        .header("Authorization", "Bearer "
-            + AuthConstants.ALL_PERMISSIONS_TOKEN).accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(requestBody)
+      .header("Authorization", "Bearer "
+        + AuthConstants.ALL_PERMISSIONS_TOKEN).accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      .content(requestBody)
     )
-        .andExpect(status().is2xxSuccessful())
-        .andReturn();
+      .andExpect(status().is2xxSuccessful())
+      .andReturn();
 
     jsonObject = new JSONObject(result.getResponse().getContentAsString());
     String lastPassword = jsonObject.getString("value");
@@ -95,32 +96,32 @@ public class UpdatingACredentialTest {
   @Test
   public void put_shouldAllowTheCredentialToBeUpdated() throws Exception {
     String requestBody = "{"
-        + "\"type\":\"password\","
-        + "\"name\":\""
-        + passwordName + "\",\"value\":\"ORIGINAL-VALUE\""
-        + "}";
+      + "\"type\":\"password\","
+      + "\"name\":\""
+      + passwordName + "\",\"value\":\"ORIGINAL-VALUE\""
+      + "}";
     mockMvc.perform(put("/api/v1/data")
-        .header("Authorization", "Bearer "
-            + AuthConstants.ALL_PERMISSIONS_TOKEN).accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(requestBody)
+      .header("Authorization", "Bearer "
+        + AuthConstants.ALL_PERMISSIONS_TOKEN).accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      .content(requestBody)
     )
-        .andExpect(status().is2xxSuccessful())
-        .andExpect(jsonPath("$.value").value("ORIGINAL-VALUE"));
+      .andExpect(status().is2xxSuccessful())
+      .andExpect(jsonPath("$.value").value("ORIGINAL-VALUE"));
 
     requestBody = "{"
-        + "\"type\":\"password\","
-        + "\"name\":\""
-        + passwordName + "\",\"value\":\"NEW-VALUE\""
-        + "}";
+      + "\"type\":\"password\","
+      + "\"name\":\""
+      + passwordName + "\",\"value\":\"NEW-VALUE\""
+      + "}";
 
     mockMvc.perform(put("/api/v1/data")
-        .header("Authorization", "Bearer "
-            + AuthConstants.ALL_PERMISSIONS_TOKEN).accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(requestBody)
+      .header("Authorization", "Bearer "
+        + AuthConstants.ALL_PERMISSIONS_TOKEN).accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      .content(requestBody)
     )
-        .andExpect(status().is2xxSuccessful())
-        .andExpect(jsonPath("$.value").value("NEW-VALUE"));
+      .andExpect(status().is2xxSuccessful())
+      .andExpect(jsonPath("$.value").value("NEW-VALUE"));
   }
 }

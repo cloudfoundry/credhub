@@ -1,5 +1,7 @@
 package org.cloudfoundry.credhub.util;
 
+import java.security.Security;
+
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
@@ -10,8 +12,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.security.Security;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -44,7 +44,7 @@ public class CertificateReaderTest {
   @Test
   public void isCa_whenTheCertificateIsX509V3_andDoesNotHaveBasicConstraints_returnsFalse() {
     CertificateReader certificateReader = new CertificateReader(
-        CertificateStringConstants.V3_CERT_WITHOUT_BASIC_CONSTRAINTS);
+      CertificateStringConstants.V3_CERT_WITHOUT_BASIC_CONSTRAINTS);
 
     assertThat(certificateReader.isCa(), equalTo(false));
   }
@@ -71,9 +71,9 @@ public class CertificateReaderTest {
   @Test
   public void givenASelfSignedCertificate_setsCertificateFieldsCorrectly() {
     final String distinguishedName =
-        "O=test-org, ST=Jupiter, C=MilkyWay, CN=test-common-name, OU=test-org-unit, L=Europa";
+      "O=test-org, ST=Jupiter, C=MilkyWay, CN=test-common-name, OU=test-org-unit, L=Europa";
     final GeneralNames generalNames = new GeneralNames(
-        new GeneralName(GeneralName.dNSName, "SolarSystem"));
+      new GeneralName(GeneralName.dNSName, "SolarSystem"));
 
     CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.BIG_TEST_CERT);
 
@@ -81,9 +81,9 @@ public class CertificateReaderTest {
     assertThat(certificateReader.getKeyLength(), equalTo(4096));
     assertThat(certificateReader.getAlternativeNames(), equalTo(generalNames));
     assertThat(asList(certificateReader.getExtendedKeyUsage().getUsages()),
-        containsInAnyOrder(KeyPurposeId.id_kp_serverAuth, KeyPurposeId.id_kp_clientAuth));
+      containsInAnyOrder(KeyPurposeId.id_kp_serverAuth, KeyPurposeId.id_kp_clientAuth));
     assertThat(certificateReader.getKeyUsage().hasUsages(KeyUsage.digitalSignature),
-        equalTo(true));
+      equalTo(true));
     assertThat(certificateReader.getDurationDays(), equalTo(30));
     assertThat(certificateReader.isSelfSigned(), equalTo(false));
     assertThat(certificateReader.isCa(), equalTo(false));
@@ -94,7 +94,7 @@ public class CertificateReaderTest {
     CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT);
 
     assertThat(certificateReader.getSubjectName().toString(), equalTo(
-        "CN=test.example.com, OU=app:b67446e5-b2b0-4648-a0d0-772d3d399dcb, L=exampletown")
+      "CN=test.example.com, OU=app:b67446e5-b2b0-4648-a0d0-772d3d399dcb, L=exampletown")
     );
     assertThat(certificateReader.getKeyLength(), equalTo(2048));
     assertThat(certificateReader.getAlternativeNames(), equalTo(null));
@@ -136,17 +136,17 @@ public class CertificateReaderTest {
   @Test
   public void returnsParametersCorrectly() {
     final String distinguishedName =
-        "O=test-org, ST=Jupiter, C=MilkyWay, CN=test-common-name, OU=test-org-unit, L=Europa";
+      "O=test-org, ST=Jupiter, C=MilkyWay, CN=test-common-name, OU=test-org-unit, L=Europa";
     final GeneralNames generalNames = new GeneralNames(
-        new GeneralName(GeneralName.dNSName, "SolarSystem"));
+      new GeneralName(GeneralName.dNSName, "SolarSystem"));
 
     CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.BIG_TEST_CERT);
 
     assertThat(certificateReader.getAlternativeNames(), equalTo(generalNames));
     assertThat(asList(certificateReader.getExtendedKeyUsage().getUsages()),
-        containsInAnyOrder(KeyPurposeId.id_kp_serverAuth, KeyPurposeId.id_kp_clientAuth));
+      containsInAnyOrder(KeyPurposeId.id_kp_serverAuth, KeyPurposeId.id_kp_clientAuth));
     assertThat(certificateReader.getKeyUsage().hasUsages(KeyUsage.digitalSignature),
-        equalTo(true));
+      equalTo(true));
     assertThat(certificateReader.getSubjectName().toString(), equalTo(distinguishedName));
   }
 }

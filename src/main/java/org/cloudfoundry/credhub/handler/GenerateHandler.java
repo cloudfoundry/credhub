@@ -1,13 +1,14 @@
 package org.cloudfoundry.credhub.handler;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.credential.CredentialValue;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
 import org.cloudfoundry.credhub.service.PermissionedCredentialService;
 import org.cloudfoundry.credhub.view.CredentialView;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
 public class GenerateHandler {
@@ -18,9 +19,9 @@ public class GenerateHandler {
 
   @Autowired
   public GenerateHandler(
-      PermissionedCredentialService credentialService,
-      UniversalCredentialGenerator credentialGenerator,
-      CEFAuditRecord auditRecord) {
+    PermissionedCredentialService credentialService,
+    UniversalCredentialGenerator credentialGenerator,
+    CEFAuditRecord auditRecord) {
     this.credentialService = credentialService;
     this.credentialGenerator = credentialGenerator;
     this.auditRecord = auditRecord;

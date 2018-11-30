@@ -1,15 +1,15 @@
 package org.cloudfoundry.credhub.service;
 
-import org.cloudfoundry.credhub.entity.EncryptedValue;
-
 import java.security.Key;
 import java.security.SecureRandom;
 import java.util.UUID;
 
+import org.cloudfoundry.credhub.entity.EncryptedValue;
+
 public class EncryptionKey implements RandomNumberGenerator {
+  private final Key key;
   private EncryptionProvider provider;
   private UUID uuid;
-  private final Key key;
   private String encryptionKeyName;
 
   public EncryptionKey(EncryptionProvider provider, UUID uuid, Key key, String encryptionKeyName) {

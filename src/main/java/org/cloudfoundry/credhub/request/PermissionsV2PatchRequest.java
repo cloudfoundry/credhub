@@ -1,8 +1,8 @@
 package org.cloudfoundry.credhub.request;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 
 @JsonAutoDetect
 public class PermissionsV2PatchRequest {

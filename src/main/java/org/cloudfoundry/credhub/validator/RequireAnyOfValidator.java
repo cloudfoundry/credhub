@@ -1,8 +1,10 @@
 package org.cloudfoundry.credhub.validator;
 
 import java.lang.reflect.Field;
+
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
+
 import org.apache.commons.lang3.StringUtils;
 
 public class RequireAnyOfValidator implements ConstraintValidator<RequireAnyOf, Object> {

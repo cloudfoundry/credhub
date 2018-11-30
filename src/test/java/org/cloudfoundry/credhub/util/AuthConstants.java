@@ -1,6 +1,10 @@
 package org.cloudfoundry.credhub.util;
 
-public class AuthConstants {
+final public class AuthConstants {
+
+  private AuthConstants() {
+  }
+
   // Actor ID: uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d
   // Grant type: password
   // Client ID: credhub_cli

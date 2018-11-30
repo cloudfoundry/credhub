@@ -1,11 +1,7 @@
 package org.cloudfoundry.credhub.controller.v1;
 
-import org.cloudfoundry.credhub.exceptions.PermissionException;
-import org.cloudfoundry.credhub.handler.RegenerateHandler;
-import org.cloudfoundry.credhub.request.BulkRegenerateRequest;
-import org.cloudfoundry.credhub.request.RegenerateRequest;
-import org.cloudfoundry.credhub.view.BulkRegenerateResults;
-import org.cloudfoundry.credhub.view.CredentialView;
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -16,7 +12,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.Valid;
+import org.cloudfoundry.credhub.exceptions.PermissionException;
+import org.cloudfoundry.credhub.handler.RegenerateHandler;
+import org.cloudfoundry.credhub.request.BulkRegenerateRequest;
+import org.cloudfoundry.credhub.request.RegenerateRequest;
+import org.cloudfoundry.credhub.view.BulkRegenerateResults;
+import org.cloudfoundry.credhub.view.CredentialView;
 
 @RestController
 public class RegenerateController {
@@ -32,18 +33,18 @@ public class RegenerateController {
   }
 
   @PostMapping(
-      path = RegenerateController.API_V1_REGENERATE,
-      produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    path = RegenerateController.API_V1_REGENERATE,
+    produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ResponseStatus(HttpStatus.OK)
   public CredentialView regenerate(@RequestBody @Validated RegenerateRequest requestBody) {
     return regenerateHandler.handleRegenerate(requestBody.getName());
   }
 
   @PostMapping(
-      path = RegenerateController.API_V1_BULK_REGENERATE,
-      produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    path = RegenerateController.API_V1_BULK_REGENERATE,
+    produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ResponseStatus(HttpStatus.OK)
-  @Transactional(rollbackFor=PermissionException.class)
+  @Transactional(rollbackFor = PermissionException.class)
   public BulkRegenerateResults bulkRegenerate(@RequestBody @Valid BulkRegenerateRequest requestBody) {
     return regenerateHandler.handleBulkRegenerate(requestBody.getSignedBy());
   }

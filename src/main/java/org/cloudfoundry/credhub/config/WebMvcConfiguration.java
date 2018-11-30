@@ -1,14 +1,15 @@
 package org.cloudfoundry.credhub.config;
 
-import org.cloudfoundry.credhub.interceptor.AuditInterceptor;
-import org.cloudfoundry.credhub.interceptor.ManagementInterceptor;
-import org.cloudfoundry.credhub.interceptor.UserContextInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import org.cloudfoundry.credhub.interceptor.AuditInterceptor;
+import org.cloudfoundry.credhub.interceptor.ManagementInterceptor;
+import org.cloudfoundry.credhub.interceptor.UserContextInterceptor;
 
 @Configuration
 public class WebMvcConfiguration implements WebMvcConfigurer {
@@ -18,9 +19,9 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
 
   @Autowired
   public WebMvcConfiguration(
-      AuditInterceptor auditInterceptor,
-      UserContextInterceptor userContextInterceptor,
-      ManagementInterceptor managementInterceptor) {
+    AuditInterceptor auditInterceptor,
+    UserContextInterceptor userContextInterceptor,
+    ManagementInterceptor managementInterceptor) {
     this.userContextInterceptor = userContextInterceptor;
     this.auditInterceptor = auditInterceptor;
     this.managementInterceptor = managementInterceptor;

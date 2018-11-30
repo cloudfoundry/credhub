@@ -1,8 +1,9 @@
 package org.cloudfoundry.credhub.view;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import org.cloudfoundry.credhub.request.PermissionEntry;
-import java.util.List;
 
 @JsonAutoDetect
 @SuppressWarnings("unused")
@@ -15,7 +16,7 @@ public class PermissionsView {
   }
 
   public PermissionsView(String credentialName,
-      List<PermissionEntry> permissions) {
+                         List<PermissionEntry> permissions) {
     this.credentialName = credentialName;
     this.permissions = permissions;
   }

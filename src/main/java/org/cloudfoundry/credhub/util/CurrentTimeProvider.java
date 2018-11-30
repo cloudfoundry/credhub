@@ -1,11 +1,11 @@
 package org.cloudfoundry.credhub.util;
 
-import org.springframework.data.auditing.DateTimeProvider;
-import org.springframework.stereotype.Component;
-
 import java.time.Instant;
 import java.time.temporal.TemporalAccessor;
 import java.util.Optional;
+
+import org.springframework.data.auditing.DateTimeProvider;
+import org.springframework.stereotype.Component;
 
 @Component
 public class CurrentTimeProvider implements DateTimeProvider {
@@ -23,6 +23,6 @@ public class CurrentTimeProvider implements DateTimeProvider {
   }
 
   public void sleep(long sleepTimeInMillis) throws InterruptedException {
-      Thread.sleep(sleepTimeInMillis);
+    Thread.sleep(sleepTimeInMillis);
   }
 }

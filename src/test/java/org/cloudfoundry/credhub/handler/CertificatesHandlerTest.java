@@ -1,5 +1,9 @@
 package org.cloudfoundry.credhub.handler;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
@@ -13,10 +17,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -45,7 +45,7 @@ public class CertificatesHandlerTest {
     universalCredentialGenerator = mock(UniversalCredentialGenerator.class);
     generationRequestGenerator = mock(GenerationRequestGenerator.class);
     subject = new CertificatesHandler(permissionedCertificateService, certificateService,
-        universalCredentialGenerator, generationRequestGenerator, new CEFAuditRecord());
+      universalCredentialGenerator, generationRequestGenerator, new CEFAuditRecord());
   }
 
   @Test
@@ -58,10 +58,10 @@ public class CertificatesHandlerTest {
 
     when(certificateService.findByCredentialUuid(eq(UUID_STRING))).thenReturn(certificate);
     when(generationRequestGenerator.createGenerateRequest(eq(certificate)))
-        .thenReturn(generateRequest);
+      .thenReturn(generateRequest);
     when(universalCredentialGenerator.generate(eq(generateRequest))).thenReturn(newValue);
     when(permissionedCertificateService.save(eq(certificate), any(), any()))
-        .thenReturn(mock(CertificateCredentialVersion.class));
+      .thenReturn(mock(CertificateCredentialVersion.class));
 
     CertificateRegenerateRequest regenerateRequest = new CertificateRegenerateRequest(true);
 
@@ -78,9 +78,9 @@ public class CertificatesHandlerTest {
 
     CredentialVersion credentialVersion = new CertificateCredentialVersion(certificateName);
     when(permissionedCertificateService.getVersions(uuid, false))
-        .thenReturn(Collections.singletonList(credentialVersion));
+      .thenReturn(Collections.singletonList(credentialVersion));
     List<CertificateView> certificateViews = subject
-        .handleGetAllVersionsRequest(uuid.toString(), false);
+      .handleGetAllVersionsRequest(uuid.toString(), false);
 
     assertThat(certificateViews.size(), equalTo(1));
     assertThat(certificateViews.get(0).getName(), equalTo(certificateName));

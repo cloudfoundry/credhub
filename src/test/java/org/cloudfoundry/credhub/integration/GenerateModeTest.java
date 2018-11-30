@@ -1,15 +1,8 @@
 package org.cloudfoundry.credhub.integration;
 
-import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.JsonPath;
-import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.auth.UserContext;
-import org.cloudfoundry.credhub.util.AuthConstants;
-import org.cloudfoundry.credhub.util.CurrentTimeProvider;
-import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import java.time.Instant;
+import java.util.function.Consumer;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -21,11 +14,22 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.time.Instant;
-import java.util.function.Consumer;
+import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.JsonPath;
+import org.cloudfoundry.credhub.CredentialManagerApp;
+import org.cloudfoundry.credhub.auth.UserContext;
+import org.cloudfoundry.credhub.util.AuthConstants;
+import org.cloudfoundry.credhub.util.CurrentTimeProvider;
+import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import static org.cloudfoundry.credhub.helper.TestHelper.mockOutCurrentTimeProvider;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -61,89 +65,89 @@ public class GenerateModeTest {
 
     fakeTimeSetter.accept(FROZEN_TIME.toEpochMilli());
     mockMvc = MockMvcBuilders
-        .webAppContextSetup(webApplicationContext)
-        .apply(springSecurity())
-        .build();
+      .webAppContextSetup(webApplicationContext)
+      .apply(springSecurity())
+      .build();
   }
 
   @Test
-  public void generatingACredential_inNoOverwriteMode_doesNotUpdateTheCredential() throws Exception{
+  public void generatingACredential_inNoOverwriteMode_doesNotUpdateTheCredential() throws Exception {
     MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{" +
-            "\"type\":\"password\"," +
-            "\"name\":\"" + CREDENTIAL_NAME + "\"" +
-            "}");
+      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      .content("{" +
+        "\"type\":\"password\"," +
+        "\"name\":\"" + CREDENTIAL_NAME + "\"" +
+        "}");
 
     DocumentContext response = JsonPath.parse(mockMvc.perform(postRequest).andExpect(status().isOk())
-        .andDo(print())
-        .andReturn()
-        .getResponse()
-        .getContentAsString());
+      .andDo(print())
+      .andReturn()
+      .getResponse()
+      .getContentAsString());
 
     String versionId = response.read("$.id").toString();
 
     postRequest = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{" +
-            "\"type\":\"password\"," +
-            "\"name\":\"" + CREDENTIAL_NAME + "\"," +
-            "\"mode\": \"no-overwrite\"" +
-            "}");
+      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      .content("{" +
+        "\"type\":\"password\"," +
+        "\"name\":\"" + CREDENTIAL_NAME + "\"," +
+        "\"mode\": \"no-overwrite\"" +
+        "}");
 
     response = JsonPath.parse(mockMvc.perform(postRequest).andExpect(status().isOk())
-        .andDo(print())
-        .andReturn()
-        .getResponse()
-        .getContentAsString());
+      .andDo(print())
+      .andReturn()
+      .getResponse()
+      .getContentAsString());
 
     assertThat(response.read("$.id").toString(), is(equalTo(versionId)));
   }
 
   @Test
-  public void generatingACredential_inOverwriteMode_doesUpdateTheCredential() throws Exception{
+  public void generatingACredential_inOverwriteMode_doesUpdateTheCredential() throws Exception {
     MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON_UTF8)
-        .content("{" +
-            "\"type\":\"password\"," +
-            "\"name\":\"" + CREDENTIAL_NAME + "\"," +
-            "\"parameters\":{" +
-            "\"length\":30" +
-            "}" +
-            "}");
+      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON_UTF8)
+      .content("{" +
+        "\"type\":\"password\"," +
+        "\"name\":\"" + CREDENTIAL_NAME + "\"," +
+        "\"parameters\":{" +
+        "\"length\":30" +
+        "}" +
+        "}");
 
     DocumentContext response = JsonPath.parse(mockMvc.perform(postRequest).andExpect(status().isOk())
-        .andDo(print())
-        .andReturn()
-        .getResponse()
-        .getContentAsString());
+      .andDo(print())
+      .andReturn()
+      .getResponse()
+      .getContentAsString());
 
     String firstVersionId = response.read("$.id").toString();
 
     postRequest = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON_UTF8)
-        .content("{" +
-            "\"type\":\"password\"," +
-            "\"name\":\"" + CREDENTIAL_NAME + "\"," +
-            "\"mode\": \"overwrite\"," +
-            "\"parameters\":{" +
-            "\"length\":30" +
-            "}" +
-            "}");
+      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON_UTF8)
+      .content("{" +
+        "\"type\":\"password\"," +
+        "\"name\":\"" + CREDENTIAL_NAME + "\"," +
+        "\"mode\": \"overwrite\"," +
+        "\"parameters\":{" +
+        "\"length\":30" +
+        "}" +
+        "}");
 
     response = JsonPath.parse(mockMvc.perform(postRequest).andExpect(status().isOk())
-        .andDo(print())
-        .andReturn()
-        .getResponse()
-        .getContentAsString());
+      .andDo(print())
+      .andReturn()
+      .getResponse()
+      .getContentAsString());
 
     String secondVersionId = response.read("$.id").toString();
 
@@ -153,43 +157,43 @@ public class GenerateModeTest {
   @Test
   public void generatingACredential_whenInvalidModeIsSet_returns400() throws Exception {
     final MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{" +
-            "\"type\":\"password\"," +
-            "\"name\":\"" + CREDENTIAL_NAME + "\"," +
-            "\"mode\": \"invalid\"" +
-            "}");
+      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      .content("{" +
+        "\"type\":\"password\"," +
+        "\"name\":\"" + CREDENTIAL_NAME + "\"," +
+        "\"mode\": \"invalid\"" +
+        "}");
 
     String expectedError = "The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.";
 
     mockMvc.perform(postRequest)
-        .andExpect(status().isBadRequest())
-        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-        .andExpect(jsonPath("$.error").value(expectedError));
+      .andExpect(status().isBadRequest())
+      .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+      .andExpect(jsonPath("$.error").value(expectedError));
   }
 
   @Test
   public void generatingACredential_whenNoOverwriteIsSet_andTheCredentialDoesNotExist_createsTheCredential() throws Exception {
     MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON_UTF8)
-        .content("{" +
-            "\"type\":\"password\"," +
-            "\"name\":\"" + CREDENTIAL_NAME + "\"," +
-            "\"mode\": \"no-overwrite\"," +
-            "\"parameters\":{" +
-            "\"length\":30" +
-            "}" +
-            "}");
+      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON_UTF8)
+      .content("{" +
+        "\"type\":\"password\"," +
+        "\"name\":\"" + CREDENTIAL_NAME + "\"," +
+        "\"mode\": \"no-overwrite\"," +
+        "\"parameters\":{" +
+        "\"length\":30" +
+        "}" +
+        "}");
 
     DocumentContext response = JsonPath.parse(mockMvc.perform(postRequest).andExpect(status().isOk())
-        .andDo(print())
-        .andReturn()
-        .getResponse()
-        .getContentAsString());
+      .andDo(print())
+      .andReturn()
+      .getResponse()
+      .getContentAsString());
 
     String versionId = response.read("$.id").toString();
     assertThat(versionId, is(notNullValue()));
@@ -198,68 +202,68 @@ public class GenerateModeTest {
   @Test
   public void generatingACredential_whenConvergeIsSet_andTheCredentialDoesNotExist_createsTheCredential() throws Exception {
     MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON_UTF8)
-        .content("{" +
-            "\"type\":\"password\"," +
-            "\"name\":\"" + CREDENTIAL_NAME + "\"," +
-            "\"mode\": \"converge\"," +
-            "\"parameters\":{" +
-            "\"length\":30" +
-            "}" +
-            "}");
+      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON_UTF8)
+      .content("{" +
+        "\"type\":\"password\"," +
+        "\"name\":\"" + CREDENTIAL_NAME + "\"," +
+        "\"mode\": \"converge\"," +
+        "\"parameters\":{" +
+        "\"length\":30" +
+        "}" +
+        "}");
 
     DocumentContext response = JsonPath.parse(mockMvc.perform(postRequest).andExpect(status().isOk())
-        .andDo(print())
-        .andReturn()
-        .getResponse()
-        .getContentAsString());
+      .andDo(print())
+      .andReturn()
+      .getResponse()
+      .getContentAsString());
 
     String versionId = response.read("$.id").toString();
     assertThat(versionId, is(notNullValue()));
   }
 
   @Test
-  public void generatingACredential_whenBothModeAndOverwriteAreSet_returnsA400() throws Exception{
+  public void generatingACredential_whenBothModeAndOverwriteAreSet_returnsA400() throws Exception {
     final MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{" +
-            "\"type\":\"password\"," +
-            "\"name\":\"" + CREDENTIAL_NAME + "\"," +
-            "\"overwrite\": false," +
-            "\"mode\": \"converge\"" +
-            "}");
+      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      .content("{" +
+        "\"type\":\"password\"," +
+        "\"name\":\"" + CREDENTIAL_NAME + "\"," +
+        "\"overwrite\": false," +
+        "\"mode\": \"converge\"" +
+        "}");
 
     String expectedError = "The parameters overwrite and mode cannot be combined. Please update and retry your request.";
 
     mockMvc.perform(postRequest)
-        .andExpect(status().isBadRequest())
-        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-        .andExpect(jsonPath("$.error").value(expectedError));
+      .andExpect(status().isBadRequest())
+      .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+      .andExpect(jsonPath("$.error").value(expectedError));
   }
 
   @Test
   public void generatingACredential_whenModeIsSetAsParameter_returnsA400() throws Exception {
     MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON_UTF8)
-        .content("{" +
-            "\"type\":\"password\"," +
-            "\"name\":\"" + CREDENTIAL_NAME + "\"," +
-            "\"parameters\":{" +
-            "\"length\":30," +
-            "\"mode\": \"converge\"" +
-            "}" +
-            "}");
+      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON_UTF8)
+      .content("{" +
+        "\"type\":\"password\"," +
+        "\"name\":\"" + CREDENTIAL_NAME + "\"," +
+        "\"parameters\":{" +
+        "\"length\":30," +
+        "\"mode\": \"converge\"" +
+        "}" +
+        "}");
 
     String expectedError = "The request includes an unrecognized parameter 'mode'. Please update or remove this parameter and retry your request.";
 
     mockMvc.perform(postRequest).andExpect(status().isBadRequest())
-        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-        .andExpect(jsonPath("$.error").value(expectedError));
+      .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+      .andExpect(jsonPath("$.error").value(expectedError));
   }
 }

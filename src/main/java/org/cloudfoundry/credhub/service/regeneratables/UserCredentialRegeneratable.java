@@ -23,7 +23,7 @@ public class UserCredentialRegeneratable implements Regeneratable {
 
     if (generationParameters == null) {
       throw new ParameterizedValidationException(
-          "error.cannot_regenerate_non_generated_user");
+        "error.cannot_regenerate_non_generated_user");
     }
 
     generationParameters.setUsername(userCredential.getUsername());

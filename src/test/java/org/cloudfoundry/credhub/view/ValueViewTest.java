@@ -1,5 +1,9 @@
 package org.cloudfoundry.credhub.view;
 
+import java.io.IOException;
+import java.time.Instant;
+import java.util.UUID;
+
 import org.cloudfoundry.credhub.domain.Encryptor;
 import org.cloudfoundry.credhub.domain.ValueCredentialVersion;
 import org.cloudfoundry.credhub.helper.JsonTestHelper;
@@ -7,10 +11,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.io.IOException;
-import java.time.Instant;
-import java.util.UUID;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -32,22 +32,22 @@ public class ValueViewTest {
     uuid = UUID.randomUUID();
     encryptor = mock(Encryptor.class);
     when(encryptor.decrypt(any()))
-        .thenReturn("fake-plaintext-value");
+      .thenReturn("fake-plaintext-value");
     entity = new ValueCredentialVersion("/foo")
-        .setEncryptor(encryptor)
-        .setUuid(uuid);
+      .setEncryptor(encryptor)
+      .setUuid(uuid);
   }
 
   @Test
   public void itCanCreateViewFromEntity() throws IOException {
     ValueView actual = (ValueView) ValueView.fromEntity(entity);
     assertThat(JsonTestHelper.serializeToString(actual), equalTo("{"
-        + "\"type\":\"value\","
-        + "\"version_created_at\":null,"
-        + "\"id\":\""
-        + uuid.toString() + "\",\"name\":\"/foo\","
-        + "\"value\":\"fake-plaintext-value\""
-        + "}"));
+      + "\"type\":\"value\","
+      + "\"version_created_at\":null,"
+      + "\"id\":\""
+      + uuid.toString() + "\",\"name\":\"/foo\","
+      + "\"value\":\"fake-plaintext-value\""
+      + "}"));
   }
 
   @Test

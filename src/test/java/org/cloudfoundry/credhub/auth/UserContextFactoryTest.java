@@ -1,9 +1,14 @@
 package org.cloudfoundry.credhub.auth;
 
-import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import java.security.Principal;
+import java.security.cert.X509Certificate;
+import java.time.Instant;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -16,14 +21,10 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.security.Principal;
-import java.security.cert.X509Certificate;
-import java.time.Instant;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import org.cloudfoundry.credhub.CredentialManagerApp;
+import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import static org.cloudfoundry.credhub.auth.UserContext.AUTH_METHOD_MUTUAL_TLS;
 import static org.cloudfoundry.credhub.auth.UserContext.AUTH_METHOD_UAA;
@@ -96,7 +97,7 @@ public class UserContextFactoryTest {
     UserContext context = subject.createUserContext(oauth2Authentication);
 
     assertThat(context.getActor(),
-        equalTo("uaa-user:TEST_USER_ID"));
+      equalTo("uaa-user:TEST_USER_ID"));
   }
 
   @Test
@@ -105,7 +106,7 @@ public class UserContextFactoryTest {
     UserContext context = subject.createUserContext(oauth2Authentication);
 
     assertThat(context.getActor(),
-        equalTo("uaa-client:TEST_CLIENT_ID"));
+      equalTo("uaa-client:TEST_CLIENT_ID"));
   }
 
   @Test
@@ -114,22 +115,22 @@ public class UserContextFactoryTest {
     UserContext context = subject.createUserContext(authenticationToken);
 
     assertThat(context.getActor(),
-        equalTo("mtls-app:e054393e-c9c3-478b-9047-e6d05c307bf2"));
+      equalTo("mtls-app:e054393e-c9c3-478b-9047-e6d05c307bf2"));
   }
 
 
   private OAuth2Authentication setupOAuthMock(String grantType) {
     OAuth2Authentication authentication = mock(OAuth2Authentication.class);
     OAuth2Request oauth2Request = spy(new OAuth2Request(
-        null,
-        "TEST_CLIENT_ID",
-        null,
-        false,
-        null,
-        null,
-        null,
-        null,
-        null));
+      null,
+      "TEST_CLIENT_ID",
+      null,
+      false,
+      null,
+      null,
+      null,
+      null,
+      null));
     OAuth2AccessToken token = mock(OAuth2AccessToken.class);
     OAuth2AuthenticationDetails authDetails = mock(OAuth2AuthenticationDetails.class);
 

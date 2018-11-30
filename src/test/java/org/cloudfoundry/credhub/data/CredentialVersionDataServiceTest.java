@@ -1,5 +1,17 @@
 package org.cloudfoundry.credhub.data;
 
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+import java.util.function.Consumer;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
+
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
@@ -29,17 +41,6 @@ import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
-import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.cloudfoundry.credhub.helper.TestHelper.mockOutCurrentTimeProvider;
@@ -108,9 +109,9 @@ public class CredentialVersionDataServiceTest {
   public void save_givenANewCredential_savesTheCredential() {
     PasswordCredentialVersionData passwordCredentialData = new PasswordCredentialVersionData("/my-credential");
     passwordCredentialData.setEncryptedValueData(new EncryptedValue(
-        activeCanaryUuid,
-        "credential-password",
-        ""
+      activeCanaryUuid,
+      "credential-password",
+      ""
     ));
     PasswordCredentialVersion credential = new PasswordCredentialVersion(passwordCredentialData);
     credential.setEncryptor(encryptor);
@@ -119,25 +120,25 @@ public class CredentialVersionDataServiceTest {
     assertNotNull(savedCredentialVersion);
 
     PasswordCredentialVersion savedPasswordCredential = (PasswordCredentialVersion) subject
-        .findMostRecent("/my-credential");
+      .findMostRecent("/my-credential");
     CredentialVersionData credentialVersionData = credentialVersionRepository
-        .findOneByUuid(savedCredentialVersion.getUuid());
+      .findOneByUuid(savedCredentialVersion.getUuid());
 
     assertThat(savedPasswordCredential.getName(), equalTo(credential.getName()));
     assertThat(savedPasswordCredential.getUuid(), equalTo(credential.getUuid()));
 
     assertThat(credentialVersionData.getCredential().getName(), equalTo("/my-credential"));
     assertThat(credentialVersionData.getEncryptedValueData().getEncryptedValue(),
-        equalTo("credential-password".getBytes()));
+      equalTo("credential-password".getBytes()));
   }
 
   @Test
   public void save_givenAnExistingCredential_updatesTheCredential() {
     PasswordCredentialVersionData passwordCredentialData = new PasswordCredentialVersionData("/my-credential-2");
     passwordCredentialData.setEncryptedValueData(new EncryptedValue(
-        activeCanaryUuid,
-        "credential-password",
-        "nonce"
+      activeCanaryUuid,
+      "credential-password",
+      "nonce"
     ));
     PasswordCredentialVersion credential = new PasswordCredentialVersion(passwordCredentialData);
 
@@ -148,13 +149,13 @@ public class CredentialVersionDataServiceTest {
     subject.save(credential);
 
     PasswordCredentialVersion savedPasswordCredential = (PasswordCredentialVersion) subject
-        .findMostRecent("/my-credential-2");
+      .findMostRecent("/my-credential-2");
     CredentialVersionData credentialVersionData = credentialVersionRepository
-        .findOneByUuid(savedPasswordCredential.getUuid());
+      .findOneByUuid(savedPasswordCredential.getUuid());
 
     assertThat(credentialVersionData.getCredential().getName(), equalTo("/my-credential-2"));
     assertThat(credentialVersionData.getEncryptedValueData().getEncryptedValue(),
-        equalTo("irynas-ninja-skills".getBytes()));
+      equalTo("irynas-ninja-skills".getBytes()));
     assertThat(credentialVersionData.getUuid(), equalTo(credential.getUuid()));
   }
 
@@ -162,17 +163,17 @@ public class CredentialVersionDataServiceTest {
   public void save_givenAnExistingCredential_throwsExceptionIfTypeMismatch() {
     PasswordCredentialVersionData passwordCredentialData = new PasswordCredentialVersionData("/my-credential-3");
     passwordCredentialData.setEncryptedValueData(new EncryptedValue()
-        .setEncryptionKeyUuid(activeCanaryUuid)
-        .setEncryptedValue(new byte[]{})
-        .setNonce(new byte[]{}));
+      .setEncryptionKeyUuid(activeCanaryUuid)
+      .setEncryptedValue(new byte[]{})
+      .setNonce(new byte[]{}));
     PasswordCredentialVersion credential = new PasswordCredentialVersion(passwordCredentialData);
 
     subject.save(credential);
 
     ValueCredentialVersionData newCredentialData = new ValueCredentialVersionData();
     newCredentialData.setEncryptedValueData(new EncryptedValue()
-        .setEncryptionKeyUuid(activeCanaryUuid)
-        .setEncryptedValue("some value".getBytes()));
+      .setEncryptionKeyUuid(activeCanaryUuid)
+      .setEncryptedValue("some value".getBytes()));
     newCredentialData.setCredential(passwordCredentialData.getCredential());
     ValueCredentialVersion newCredential = new ValueCredentialVersion(newCredentialData);
 
@@ -183,9 +184,9 @@ public class CredentialVersionDataServiceTest {
   @Test
   public void save_givenANewCredential_generatesTheUuid() {
     SshCredentialVersion credential = new SshCredentialVersion("/my-credential-2")
-        .setEncryptor(encryptor)
-        .setPrivateKey("privatekey")
-        .setPublicKey("fake-public-key");
+      .setEncryptor(encryptor)
+      .setPrivateKey("privatekey")
+      .setPublicKey("fake-public-key");
     SshCredentialVersion savedCredential = subject.save(credential);
 
     UUID generatedUuid = savedCredential.getUuid();
@@ -212,7 +213,7 @@ public class CredentialVersionDataServiceTest {
   public void save_whenTheCredentialSavedWithEncryptedValueSet_setsTheMasterEncryptionKeyUuid() {
     SshCredentialVersionData sshCredentialData = new SshCredentialVersionData("/my-credential");
     SshCredentialVersion credential = new SshCredentialVersion(sshCredentialData).setEncryptor(encryptor)
-        .setPrivateKey("private-key").setPublicKey("fake-public-key");
+      .setPrivateKey("private-key").setPublicKey("fake-public-key");
     subject.save(credential);
 
     assertThat(sshCredentialData.getEncryptionKeyUuid(), equalTo(activeCanaryUuid));
@@ -222,7 +223,7 @@ public class CredentialVersionDataServiceTest {
   public void save_whenTheCredentialSavedWithoutEncryptedValueSet_doesNotSetTheMasterEncryptionKeyUuid() {
     SshCredentialVersionData sshCredentialData = new SshCredentialVersionData("/my-credential");
     SshCredentialVersion credential = new SshCredentialVersion(sshCredentialData).setEncryptor(encryptor)
-        .setPublicKey("fake-public-key");
+      .setPublicKey("fake-public-key");
     subject.save(credential);
 
     assertThat(sshCredentialData.getEncryptionKeyUuid(), nullValue());
@@ -238,22 +239,22 @@ public class CredentialVersionDataServiceTest {
   @Test
   public void delete_onACredentialName_deletesAllCredentialsWithTheName() {
     Credential credential = credentialDataService
-        .save(new Credential("/my-credential"));
+      .save(new Credential("/my-credential"));
 
     PasswordCredentialVersionData credentialData = new PasswordCredentialVersionData();
     credentialData.setCredential(credential);
     credentialData.setEncryptedValueData(new EncryptedValue()
-        .setEncryptionKeyUuid(activeCanaryUuid)
-        .setEncryptedValue("credential-password".getBytes())
-        .setNonce("nonce".getBytes()));
+      .setEncryptionKeyUuid(activeCanaryUuid)
+      .setEncryptedValue("credential-password".getBytes())
+      .setNonce("nonce".getBytes()));
     subject.save(credentialData);
 
     credentialData = new PasswordCredentialVersionData("/my-credential");
     credentialData.setCredential(credential);
     credentialData.setEncryptedValueData(new EncryptedValue()
-        .setEncryptionKeyUuid(activeCanaryUuid)
-        .setEncryptedValue("another password".getBytes())
-        .setNonce("nonce".getBytes()));
+      .setEncryptionKeyUuid(activeCanaryUuid)
+      .setEncryptedValue("another password".getBytes())
+      .setNonce("nonce".getBytes()));
     subject.save(credentialData);
 
     assertThat(subject.findAllByName("/my-credential"), hasSize(2));
@@ -267,22 +268,22 @@ public class CredentialVersionDataServiceTest {
   @Test
   public void delete_givenACredentialNameCasedDifferentlyFromTheActual_shouldBeCaseInsensitive() {
     Credential credentialName = credentialDataService
-        .save(new Credential("/my-credential"));
+      .save(new Credential("/my-credential"));
 
     PasswordCredentialVersionData credential = new PasswordCredentialVersionData();
     credential.setCredential(credentialName);
     credential.setEncryptedValueData(new EncryptedValue()
-        .setEncryptionKeyUuid(activeCanaryUuid)
-        .setEncryptedValue("credential-password".getBytes())
-        .setNonce(new byte[]{}));
+      .setEncryptionKeyUuid(activeCanaryUuid)
+      .setEncryptedValue("credential-password".getBytes())
+      .setNonce(new byte[]{}));
     subject.save(credential);
 
     credential = new PasswordCredentialVersionData();
     credential.setCredential(credentialName);
     credential.setEncryptedValueData(new EncryptedValue()
-        .setEncryptionKeyUuid(activeCanaryUuid)
-        .setEncryptedValue("another password".getBytes())
-        .setNonce(new byte[]{}));
+      .setEncryptionKeyUuid(activeCanaryUuid)
+      .setEncryptedValue("another password".getBytes())
+      .setNonce(new byte[]{}));
 
     subject.save(credential);
 
@@ -319,18 +320,18 @@ public class CredentialVersionDataServiceTest {
   public void findByUuid_givenAUuid_findsTheCredential() {
     PasswordCredentialVersionData passwordCredentialData = new PasswordCredentialVersionData("/my-credential");
     passwordCredentialData.setEncryptedValueData(new EncryptedValue()
-        .setEncryptionKeyUuid(activeCanaryUuid)
-        .setEncryptedValue("credential-password".getBytes())
-        .setNonce("nonce".getBytes()));
+      .setEncryptionKeyUuid(activeCanaryUuid)
+      .setEncryptedValue("credential-password".getBytes())
+      .setNonce("nonce".getBytes()));
     PasswordCredentialVersion credential = new PasswordCredentialVersion(passwordCredentialData);
     PasswordCredentialVersion savedCredential = subject.save(credential);
 
     assertNotNull(savedCredential.getUuid());
     PasswordCredentialVersion oneByUuid = (PasswordCredentialVersion) subject
-        .findByUuid(savedCredential.getUuid().toString());
+      .findByUuid(savedCredential.getUuid().toString());
     assertThat(oneByUuid.getName(), equalTo("/my-credential"));
     assertThat(passwordCredentialData.getEncryptedValueData().getEncryptedValue(),
-        equalTo("credential-password".getBytes()));
+      equalTo("credential-password".getBytes()));
   }
 
   @Test
@@ -342,23 +343,23 @@ public class CredentialVersionDataServiceTest {
     setupTestFixturesForFindContainingName(valueName, passwordName, certificateName);
 
     assertThat(subject.findContainingName("CREDENTIAL"), IsIterableContainingInOrder.contains(
-        hasProperty("name", equalTo(certificateName)),
-        hasProperty("name", equalTo(valueName)),
-        hasProperty("name", equalTo(passwordName))));
+      hasProperty("name", equalTo(certificateName)),
+      hasProperty("name", equalTo(valueName)),
+      hasProperty("name", equalTo(passwordName))));
 
     ValueCredentialVersion valueCredential = (ValueCredentialVersion) subject.findMostRecent("/value.Credential");
     valueCredentialData.setEncryptedValueData(new EncryptedValue()
-        .setEncryptionKeyUuid(activeCanaryUuid)
-        .setEncryptedValue("new-encrypted-value".getBytes())
-        .setNonce("nonce".getBytes()));
+      .setEncryptionKeyUuid(activeCanaryUuid)
+      .setEncryptedValue("new-encrypted-value".getBytes())
+      .setNonce("nonce".getBytes()));
     subject.save(valueCredential);
 
     assertThat("The credentials are ordered by versionCreatedAt",
-        subject.findContainingName("CREDENTIAL"), IsIterableContainingInOrder.contains(
-            hasProperty("name", equalTo(certificateName)),
-            hasProperty("name", equalTo(valueName)),
-            hasProperty("name", equalTo(passwordName))
-        ));
+      subject.findContainingName("CREDENTIAL"), IsIterableContainingInOrder.contains(
+        hasProperty("name", equalTo(certificateName)),
+        hasProperty("name", equalTo(valueName)),
+        hasProperty("name", equalTo(passwordName))
+      ));
   }
 
   @Test
@@ -374,12 +375,12 @@ public class CredentialVersionDataServiceTest {
     FindCredentialResult credential = credentials.get(0);
     assertThat(credential.getName(), equalTo("/bar/duplicate"));
     assertThat("should return the most recently created version",
-        credential.getVersionCreatedAt(), equalTo(Instant.ofEpochMilli(4000000000123L)));
+      credential.getVersionCreatedAt(), equalTo(Instant.ofEpochMilli(4000000000123L)));
 
     credential = credentials.get(1);
     assertThat(credential.getName(), equalTo("/foo/DUPLICATE"));
     assertThat("should return the most recently created version",
-        credential.getVersionCreatedAt(), equalTo(Instant.ofEpochMilli(2000000000123L)));
+      credential.getVersionCreatedAt(), equalTo(Instant.ofEpochMilli(2000000000123L)));
   }
 
   @Test
@@ -390,25 +391,25 @@ public class CredentialVersionDataServiceTest {
 
     assertThat(credentials.size(), equalTo(3));
     assertThat(credentials, IsIterableContainingInOrder.contains(
-        hasProperty("name", equalTo("/Credential/2")),
-        hasProperty("name", equalTo("/credential/1")),
-        hasProperty("name", equalTo("/CREDENTIAL/3"))
+      hasProperty("name", equalTo("/Credential/2")),
+      hasProperty("name", equalTo("/credential/1")),
+      hasProperty("name", equalTo("/CREDENTIAL/3"))
     ));
     assertThat(
-        "should return a list of credentials in chronological order that start with a given string",
-        credentials, not(contains(hasProperty("notSoSecret"))));
+      "should return a list of credentials in chronological order that start with a given string",
+      credentials, not(contains(hasProperty("notSoSecret"))));
 
     PasswordCredentialVersion passwordCredential = (PasswordCredentialVersion) subject
-        .findMostRecent("/credential/1");
+      .findMostRecent("/credential/1");
     passwordCredential.setPasswordAndGenerationParameters("new-password", null);
     subject.save(passwordCredential);
     credentials = subject.findStartingWithPath("Credential/");
     assertThat("should return credentials in order by version_created_at, not updated_at",
-        credentials, IsIterableContainingInOrder.contains(
-            hasProperty("name", equalTo("/Credential/2")),
-            hasProperty("name", equalTo("/credential/1")),
-            hasProperty("name", equalTo("/CREDENTIAL/3"))
-        ));
+      credentials, IsIterableContainingInOrder.contains(
+        hasProperty("name", equalTo("/Credential/2")),
+        hasProperty("name", equalTo("/credential/1")),
+        hasProperty("name", equalTo("/CREDENTIAL/3"))
+      ));
 
   }
 
@@ -420,11 +421,11 @@ public class CredentialVersionDataServiceTest {
 
     List<FindCredentialResult> credentials = subject.findStartingWithPath("/dupsecret/");
     assertThat("should not return duplicate credential names",
-        credentials.size(), equalTo(1));
+      credentials.size(), equalTo(1));
 
     FindCredentialResult credential = credentials.get(0);
     assertThat("should return the most recent credential",
-        credential.getVersionCreatedAt(), equalTo(Instant.ofEpochMilli(3000000000123L)));
+      credential.getVersionCreatedAt(), equalTo(Instant.ofEpochMilli(3000000000123L)));
   }
 
   @Test
@@ -437,10 +438,10 @@ public class CredentialVersionDataServiceTest {
     assertThat(credentials, not(contains(hasProperty("name", equalTo("/not/So/Credential")))));
 
     assertThat("appends trailing slash to path", credentials,
-        not(contains(hasProperty("name", equalTo("/CREDENTIALnotrailingslash")))));
+      not(contains(hasProperty("name", equalTo("/CREDENTIALnotrailingslash")))));
 
     assertThat("appends trailing slash to path", credentials.get(0).getName().toLowerCase(),
-        containsString("/credential/"));
+      containsString("/credential/"));
   }
 
   @Test
@@ -463,9 +464,9 @@ public class CredentialVersionDataServiceTest {
     subject.save(passwordCredential);
 
     CertificateCredentialVersionData certificateCredentialData =
-        new CertificateCredentialVersionData(certificateName);
+      new CertificateCredentialVersionData(certificateName);
     CertificateCredentialVersion certificateCredential = new CertificateCredentialVersion(
-        certificateCredentialData);
+      certificateCredentialData);
     subject.save(certificateCredential);
 
   }
@@ -478,10 +479,10 @@ public class CredentialVersionDataServiceTest {
 
     List<CredentialVersion> credentialVersions = subject.findAllByName("/Secret1");
     assertThat(credentialVersions, containsInAnyOrder(hasProperty("uuid", equalTo(credential1.getUuid())),
-        hasProperty("uuid", equalTo(credential2.getUuid()))));
+      hasProperty("uuid", equalTo(credential2.getUuid()))));
 
     assertThat("returns empty list when no credential matches",
-        subject.findAllByName("does/NOT/exist"), empty());
+      subject.findAllByName("does/NOT/exist"), empty());
   }
 
   @Test
@@ -493,15 +494,15 @@ public class CredentialVersionDataServiceTest {
 
     List<CredentialVersion> credentialVersions = subject.findNByName("/Secret1", 2);
     assertThat(
-        credentialVersions,
-        containsInAnyOrder(
-            hasProperty("uuid", equalTo(credential1.getUuid())),
-            hasProperty("uuid", equalTo(credential2.getUuid()))
-        )
+      credentialVersions,
+      containsInAnyOrder(
+        hasProperty("uuid", equalTo(credential1.getUuid())),
+        hasProperty("uuid", equalTo(credential2.getUuid()))
+      )
     );
 
     assertThat("returns empty list when no credential matches",
-        subject.findNByName("does/NOT/exist", 12), empty());
+      subject.findNByName("does/NOT/exist", 12), empty());
   }
 
   @Test
@@ -533,10 +534,10 @@ public class CredentialVersionDataServiceTest {
 
     assertThat(credentialVersions.size(), equalTo(2));
     assertThat(credentialVersions,
-        containsInAnyOrder(
-            hasProperty("uuid", equalTo(version2.getUuid())),
-            hasProperty("uuid", equalTo(version3.getUuid()))
-        ));
+      containsInAnyOrder(
+        hasProperty("uuid", equalTo(version2.getUuid())),
+        hasProperty("uuid", equalTo(version3.getUuid()))
+      ));
   }
 
   @Test
@@ -549,7 +550,7 @@ public class CredentialVersionDataServiceTest {
 
     assertThat(credentialVersions.size(), equalTo(1));
     assertThat(credentialVersions, contains(
-        hasProperty("uuid", equalTo(password3.getUuid()))));
+      hasProperty("uuid", equalTo(password3.getUuid()))));
   }
 
 
@@ -564,7 +565,7 @@ public class CredentialVersionDataServiceTest {
 
     List<String> certificates = subject.findAllCertificateCredentialsByCaName("/ca-cert");
     assertThat(certificates, containsInAnyOrder(equalTo("/cert1"),
-        equalTo("/cert2")));
+      equalTo("/cert2")));
     assertThat(certificates, not(hasItem("/cert3")));
     certificates = subject.findAllCertificateCredentialsByCaName("/ca-cert2");
     assertThat(certificates, hasItem("/cert3"));
@@ -580,7 +581,7 @@ public class CredentialVersionDataServiceTest {
 
     List<String> certificates = subject.findAllCertificateCredentialsByCaName("/ca-CERT");
     assertThat(certificates, containsInAnyOrder(equalTo("/cert1"),
-        equalTo("/cert2")));
+      equalTo("/cert2")));
 
   }
 
@@ -593,9 +594,9 @@ public class CredentialVersionDataServiceTest {
     PasswordCredentialVersionData credentialObject = new PasswordCredentialVersionData();
     credentialObject.setCredential(credential);
     credentialObject.setEncryptedValueData(new EncryptedValue()
-        .setEncryptionKeyUuid(canaryUuid)
-        .setEncryptedValue(new byte[]{})
-        .setNonce(new byte[]{}));
+      .setEncryptionKeyUuid(canaryUuid)
+      .setEncryptedValue(new byte[]{})
+      .setNonce(new byte[]{}));
     return subject.save(credentialObject);
   }
 
@@ -613,9 +614,9 @@ public class CredentialVersionDataServiceTest {
     CertificateCredentialVersionData credentialObject = new CertificateCredentialVersionData();
     credentialObject.setCredential(credential);
     credentialObject.setEncryptedValueData(new EncryptedValue()
-        .setEncryptionKeyUuid(canaryUuid)
-        .setEncryptedValue(new byte[]{})
-        .setNonce(new byte[]{}));
+      .setEncryptionKeyUuid(canaryUuid)
+      .setEncryptedValue(new byte[]{})
+      .setNonce(new byte[]{}));
     if (caName != null) {
       credentialObject.setCaName(caName);
     }
@@ -638,21 +639,21 @@ public class CredentialVersionDataServiceTest {
 
   private void setupTestFixtureForFindMostRecent() {
     Credential credential = credentialDataService
-        .save(new Credential("/my-CREDENTIAL"));
+      .save(new Credential("/my-CREDENTIAL"));
 
     namedPasswordCredential1 = new PasswordCredentialVersionData();
     namedPasswordCredential1.setCredential(credential);
     namedPasswordCredential1.setEncryptedValueData(new EncryptedValue()
-        .setEncryptionKeyUuid(activeCanaryUuid)
-        .setEncryptedValue("/my-old-password".getBytes())
-        .setNonce(new byte[]{}));
+      .setEncryptionKeyUuid(activeCanaryUuid)
+      .setEncryptedValue("/my-old-password".getBytes())
+      .setNonce(new byte[]{}));
 
     passwordCredential2 = new PasswordCredentialVersionData();
     passwordCredential2.setCredential(credential);
     passwordCredential2.setEncryptedValueData(new EncryptedValue()
-        .setEncryptionKeyUuid(activeCanaryUuid)
-        .setEncryptedValue("/my-new-password".getBytes())
-        .setNonce(new byte[]{}));
+      .setEncryptionKeyUuid(activeCanaryUuid)
+      .setEncryptedValue("/my-new-password".getBytes())
+      .setNonce(new byte[]{}));
 
     subject.save(namedPasswordCredential1);
     fakeTimeSetter.accept(345346L); // 1 second later
@@ -666,9 +667,9 @@ public class CredentialVersionDataServiceTest {
     fakeTimeSetter.accept(2000000000123L);
     valueCredentialData = new ValueCredentialVersionData(valueName);
     valueCredentialData.setEncryptedValueData(new EncryptedValue()
-        .setEncryptionKeyUuid(activeCanaryUuid)
-        .setEncryptedValue("value".getBytes())
-        .setNonce(new byte[]{}));
+      .setEncryptionKeyUuid(activeCanaryUuid)
+      .setEncryptedValue("value".getBytes())
+      .setNonce(new byte[]{}));
     ValueCredentialVersion namedValueCredential = new ValueCredentialVersion(valueCredentialData);
     namedValueCredential.setEncryptor(encryptor);
     subject.save(namedValueCredential);
@@ -682,21 +683,21 @@ public class CredentialVersionDataServiceTest {
     fakeTimeSetter.accept(1000000000123L);
     passwordCredentialData = new PasswordCredentialVersionData(passwordName);
     passwordCredentialData.setEncryptedValueData(new EncryptedValue()
-        .setEncryptionKeyUuid(activeCanaryUuid)
-        .setEncryptedValue("password".getBytes())
-        .setNonce(new byte[]{}));
+      .setEncryptionKeyUuid(activeCanaryUuid)
+      .setEncryptedValue("password".getBytes())
+      .setNonce(new byte[]{}));
     namedPasswordCredential = new PasswordCredentialVersion(passwordCredentialData);
     subject.save(namedPasswordCredential);
 
     CertificateCredentialVersionData certificateCredentialData = new CertificateCredentialVersionData(
-        "/myseecret");
+      "/myseecret");
     CertificateCredentialVersion certificateCredential = new CertificateCredentialVersion(
-        certificateCredentialData);
+      certificateCredentialData);
     subject.save(certificateCredential);
 
     fakeTimeSetter.accept(3000000000123L);
     certificateCredentialData = new CertificateCredentialVersionData(
-        certificateName);
+      certificateName);
     certificateCredential = new CertificateCredentialVersion(certificateCredentialData);
     subject.save(certificateCredential);
   }
@@ -714,10 +715,10 @@ public class CredentialVersionDataServiceTest {
     Credential credential = credentialRepository.save(new Credential(credentialName));
     entity.setCredential(credential);
     entity.setEncryptedValueData(
-        new EncryptedValue()
-            .setEncryptedValue(exceedsMaxBlobStoreValue)
-            .setEncryptionKeyUuid(activeCanaryUuid)
-            .setNonce("nonce".getBytes())
+      new EncryptedValue()
+        .setEncryptedValue(exceedsMaxBlobStoreValue)
+        .setEncryptionKeyUuid(activeCanaryUuid)
+        .setNonce("nonce".getBytes())
     );
 
     assertThatThrownBy(() -> {

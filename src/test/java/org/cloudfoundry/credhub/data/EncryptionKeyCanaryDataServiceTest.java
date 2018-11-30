@@ -1,11 +1,9 @@
 package org.cloudfoundry.credhub.data;
 
-import org.cloudfoundry.credhub.entity.EncryptionKeyCanary;
-import org.cloudfoundry.credhub.repository.EncryptionKeyCanaryRepository;
-import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
@@ -13,9 +11,12 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import org.cloudfoundry.credhub.entity.EncryptionKeyCanary;
+import org.cloudfoundry.credhub.repository.EncryptionKeyCanaryRepository;
+import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -76,7 +77,7 @@ public class EncryptionKeyCanaryDataServiceTest {
 
     List<EncryptionKeyCanary> canaries = subject.findAll();
     List<UUID> uuids = canaries.stream().map(canary -> canary.getUuid())
-        .collect(Collectors.toList());
+      .collect(Collectors.toList());
 
     assertThat(canaries, hasSize(2));
     assertThat(uuids, containsInAnyOrder(firstCanary.getUuid(), secondCanary.getUuid()));
@@ -95,7 +96,7 @@ public class EncryptionKeyCanaryDataServiceTest {
     List<EncryptionKeyCanary> canaries = subject.findAll();
 
     List<UUID> uuids = canaries.stream().map(canary -> canary.getUuid())
-        .collect(Collectors.toList());
+      .collect(Collectors.toList());
 
     assertThat(canaries, hasSize(3));
     assertThat(uuids, containsInAnyOrder(firstCanary.getUuid(), secondCanary.getUuid(), thirdCanary.getUuid()));
@@ -104,7 +105,7 @@ public class EncryptionKeyCanaryDataServiceTest {
 
     canaries = subject.findAll();
     uuids = canaries.stream().map(canary -> canary.getUuid())
-        .collect(Collectors.toList());
+      .collect(Collectors.toList());
 
     assertThat(canaries, hasSize(1));
     assertThat(uuids, containsInAnyOrder(secondCanary.getUuid()));

@@ -1,5 +1,23 @@
 package org.cloudfoundry.credhub.generator;
 
+import java.io.IOException;
+import java.math.BigInteger;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.PrivateKey;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.Date;
+
+import javax.security.auth.x500.X500Principal;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
+
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.Extension;
@@ -24,22 +42,6 @@ import org.cloudfoundry.credhub.util.PrivateKeyReader;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
-
-import java.io.IOException;
-import java.math.BigInteger;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.PrivateKey;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.Date;
-import javax.security.auth.x500.X500Principal;
 
 import static org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils.parseExtensionValue;
 import static org.cloudfoundry.credhub.helper.TestHelper.getBouncyCastleProvider;
@@ -60,6 +62,12 @@ import static org.mockito.Mockito.when;
 @ContextConfiguration(classes = BouncyCastleProviderConfiguration.class)
 public class SignedCertificateGeneratorTest {
 
+  private final int expectedDurationInDays = 10;
+  private final String caName = "CN=ca DN,O=credhub";
+  private final String expectedCertificateCommonName = "my cert name";
+  private final String[] alternateNames = {"alt1", "alt2"};
+  private final String[] keyUsage = {DIGITAL_SIGNATURE, KEY_ENCIPHERMENT};
+  private final String[] extendedKeyUsage = {SERVER_AUTH, CODE_SIGNING};
   private SignedCertificateGenerator subject;
   private X500Principal issuerDn;
   private KeyPair issuerKey;
@@ -71,14 +79,7 @@ public class SignedCertificateGeneratorTest {
   private Instant now;
   private Instant later;
   private CertificateCredentialValue ca;
-  private final int expectedDurationInDays = 10;
-  private final String caName = "CN=ca DN,O=credhub";
-  private final String expectedCertificateCommonName = "my cert name";
   private byte[] expectedSubjectKeyIdentifier;
-  private final String[] alternateNames = {"alt1", "alt2"};
-  private final String[] keyUsage = {DIGITAL_SIGNATURE, KEY_ENCIPHERMENT};
-  private final String[] extendedKeyUsage = {SERVER_AUTH, CODE_SIGNING};
-
   @Autowired
   private JcaContentSignerBuilder jcaContentSignerBuilder;
 
@@ -103,7 +104,7 @@ public class SignedCertificateGeneratorTest {
     jcaX509ExtensionUtils = new JcaX509ExtensionUtils();
 
     generator = KeyPairGenerator
-        .getInstance("RSA", BouncyCastleProvider.PROVIDER_NAME);
+      .getInstance("RSA", BouncyCastleProvider.PROVIDER_NAME);
     generator.initialize(1024); // doesn't matter for testing
     issuerKey = generator.generateKeyPair();
 
@@ -112,23 +113,23 @@ public class SignedCertificateGeneratorTest {
     certificateGenerationParameters = defaultCertificateParameters();
 
     subject = new SignedCertificateGenerator(timeProvider,
-        serialNumberGenerator,
-        jcaContentSignerBuilder,
-        jcaX509CertificateConverter,
-        getBouncyCastleProvider()
+      serialNumberGenerator,
+      jcaContentSignerBuilder,
+      jcaX509CertificateConverter,
+      getBouncyCastleProvider()
     );
 
     caSubjectKeyIdentifier =
-        jcaX509ExtensionUtils.createSubjectKeyIdentifier(issuerKey.getPublic());
+      jcaX509ExtensionUtils.createSubjectKeyIdentifier(issuerKey.getPublic());
 
-    caSerialNumber = BigInteger.valueOf(42l);
+    caSerialNumber = BigInteger.valueOf(42L);
     JcaX509v3CertificateBuilder x509v3CertificateBuilder = new JcaX509v3CertificateBuilder(
-        issuerDn,
-        caSerialNumber,
-        Date.from(now),
-        Date.from(later),
-        issuerDn,
-        issuerKey.getPublic()
+      issuerDn,
+      caSerialNumber,
+      Date.from(now),
+      Date.from(later),
+      issuerDn,
+      issuerKey.getPublic()
     );
 
     certificateAuthority = createCertificateAuthority(x509v3CertificateBuilder);
@@ -165,13 +166,13 @@ public class SignedCertificateGeneratorTest {
   @Test
   public void getSignedByIssuer_generatesACertificateWithTheRightValues() throws Exception {
     X509Certificate generatedCertificate = subject
-        .getSignedByIssuer(generatedCertificateKeyPair, certificateGenerationParameters,
-            certificateAuthorityWithSubjectKeyId, issuerKey.getPrivate());
+      .getSignedByIssuer(generatedCertificateKeyPair, certificateGenerationParameters,
+        certificateAuthorityWithSubjectKeyId, issuerKey.getPrivate());
 
     assertThat(generatedCertificate.getIssuerDN().getName(), containsString("CN=ca DN"));
     assertThat(generatedCertificate.getIssuerDN().getName(), containsString("O=credhub"));
 
-    assertThat(generatedCertificate.getSerialNumber(), equalTo(BigInteger.valueOf(1337l)));
+    assertThat(generatedCertificate.getSerialNumber(), equalTo(BigInteger.valueOf(1337L)));
     assertThat(generatedCertificate.getNotBefore().toString(), equalTo(Date.from(now).toString()));
     assertThat(generatedCertificate.getNotAfter().toString(), equalTo(Date.from(later).toString()));
     assertThat(generatedCertificate.getSubjectDN().toString(), containsString("CN=my cert name"));
@@ -181,13 +182,13 @@ public class SignedCertificateGeneratorTest {
 
     byte[] isCaExtension = generatedCertificate.getExtensionValue(Extension.basicConstraints.getId());
     assertThat(Arrays.copyOfRange(isCaExtension, 2, isCaExtension.length),
-        equalTo(new BasicConstraints(true).getEncoded()));
+      equalTo(new BasicConstraints(true).getEncoded()));
   }
 
   @Test
   public void getSignedByIssuer_withoutSubjectKeyIdentifier_doesNotSetAuthorityKeyIdentifier() throws Exception {
     X509Certificate generatedCertificate =
-        subject.getSignedByIssuer(generatedCertificateKeyPair, certificateGenerationParameters, certificateAuthority, issuerKey.getPrivate());
+      subject.getSignedByIssuer(generatedCertificateKeyPair, certificateGenerationParameters, certificateAuthority, issuerKey.getPrivate());
 
     assertThat(generatedCertificate.getExtensionValue(Extension.authorityKeyIdentifier.getId()), nullValue());
   }
@@ -195,15 +196,15 @@ public class SignedCertificateGeneratorTest {
   @Test
   public void getSignedByIssuer_withSubjectKeyIdentifier_setsAuthorityKeyIdentifier() throws Exception {
     when(serialNumberGenerator.generate())
-        .thenReturn(BigInteger.valueOf(1337))
-        .thenReturn(BigInteger.valueOf(666));
+      .thenReturn(BigInteger.valueOf(1337))
+      .thenReturn(BigInteger.valueOf(666));
 
     X509Certificate generatedCertificate =
-        subject.getSignedByIssuer(generatedCertificateKeyPair, certificateGenerationParameters, certificateAuthorityWithSubjectKeyId, issuerKey.getPrivate());
+      subject.getSignedByIssuer(generatedCertificateKeyPair, certificateGenerationParameters, certificateAuthorityWithSubjectKeyId, issuerKey.getPrivate());
 
     byte[] authorityKeyIdDer = generatedCertificate.getExtensionValue(Extension.authorityKeyIdentifier.getId());
     AuthorityKeyIdentifier authorityKeyIdentifier =
-        AuthorityKeyIdentifier.getInstance(parseExtensionValue(authorityKeyIdDer));
+      AuthorityKeyIdentifier.getInstance(parseExtensionValue(authorityKeyIdDer));
 
     assertThat(authorityKeyIdentifier.getKeyIdentifier(), equalTo(caSubjectKeyIdentifier.getKeyIdentifier()));
   }
@@ -211,8 +212,8 @@ public class SignedCertificateGeneratorTest {
   @Test
   public void getSignedByIssuer_setsSubjectKeyIdentifier() throws Exception {
     X509Certificate generatedCertificate = subject
-        .getSignedByIssuer(generatedCertificateKeyPair, certificateGenerationParameters,
-            certificateAuthorityWithSubjectKeyId, issuerKey.getPrivate());
+      .getSignedByIssuer(generatedCertificateKeyPair, certificateGenerationParameters,
+        certificateAuthorityWithSubjectKeyId, issuerKey.getPrivate());
     expectedSubjectKeyIdentifier = jcaX509ExtensionUtils.createSubjectKeyIdentifier(generatedCertificateKeyPair.getPublic()).getKeyIdentifier();
     byte[] actual = generatedCertificate.getExtensionValue(Extension.subjectKeyIdentifier.getId());
     // four bit type field is added at the beginning as per RFC 5280
@@ -222,58 +223,58 @@ public class SignedCertificateGeneratorTest {
   @Test
   public void getSignedByIssuer_setsAlternativeName_ifPresent() throws Exception {
     X509Certificate generatedCertificate = subject
-        .getSignedByIssuer(generatedCertificateKeyPair, certificateGenerationParameters,
-            certificateAuthorityWithSubjectKeyId, issuerKey.getPrivate());
+      .getSignedByIssuer(generatedCertificateKeyPair, certificateGenerationParameters,
+        certificateAuthorityWithSubjectKeyId, issuerKey.getPrivate());
 
     assertThat(generatedCertificate.getExtensionValue(Extension.subjectAlternativeName.getId()), nullValue());
 
     certificateGenerationParameters = parametersContainsExtensions();
     generatedCertificate = subject
-        .getSignedByIssuer(generatedCertificateKeyPair, certificateGenerationParameters,
-            certificateAuthorityWithSubjectKeyId, issuerKey.getPrivate());
+      .getSignedByIssuer(generatedCertificateKeyPair, certificateGenerationParameters,
+        certificateAuthorityWithSubjectKeyId, issuerKey.getPrivate());
 
     byte[] actualSubjectAlternativeName = generatedCertificate.getExtensionValue(Extension.subjectAlternativeName.getId());
     byte[] expectedAlternativeName = getExpectedAlternativeNames();
     assertThat(Arrays.copyOfRange(actualSubjectAlternativeName, 2, actualSubjectAlternativeName.length),
-        equalTo(expectedAlternativeName));
+      equalTo(expectedAlternativeName));
   }
 
   @Test
   public void getSignedByIssuer_setsKeyUsage_ifPresent() throws Exception {
     X509Certificate generatedCertificate = subject
-        .getSignedByIssuer(generatedCertificateKeyPair, certificateGenerationParameters,
-            certificateAuthorityWithSubjectKeyId, issuerKey.getPrivate());
+      .getSignedByIssuer(generatedCertificateKeyPair, certificateGenerationParameters,
+        certificateAuthorityWithSubjectKeyId, issuerKey.getPrivate());
 
     assertThat(generatedCertificate.getExtensionValue(Extension.keyUsage.getId()), nullValue());
 
     certificateGenerationParameters = parametersContainsExtensions();
 
     generatedCertificate = subject
-        .getSignedByIssuer(generatedCertificateKeyPair, certificateGenerationParameters,
-            certificateAuthorityWithSubjectKeyId, issuerKey.getPrivate());
+      .getSignedByIssuer(generatedCertificateKeyPair, certificateGenerationParameters,
+        certificateAuthorityWithSubjectKeyId, issuerKey.getPrivate());
     byte[] actualKeyUsage = generatedCertificate.getExtensionValue(Extension.keyUsage.getId());
 
     assertThat(Arrays.copyOfRange(actualKeyUsage, 5, actualKeyUsage.length),
-        equalTo(certificateGenerationParameters.getKeyUsage().getBytes()));
+      equalTo(certificateGenerationParameters.getKeyUsage().getBytes()));
   }
 
   @Test
   public void getSignedByIssuer_setsExtendedKeyUsage_ifPresent() throws Exception {
     X509Certificate generatedCertificate = subject
-        .getSignedByIssuer(generatedCertificateKeyPair, certificateGenerationParameters,
-            certificateAuthorityWithSubjectKeyId, issuerKey.getPrivate());
+      .getSignedByIssuer(generatedCertificateKeyPair, certificateGenerationParameters,
+        certificateAuthorityWithSubjectKeyId, issuerKey.getPrivate());
 
     assertThat(generatedCertificate.getExtensionValue(Extension.keyUsage.getId()), nullValue());
 
     certificateGenerationParameters = parametersContainsExtensions();
 
     generatedCertificate = subject
-        .getSignedByIssuer(generatedCertificateKeyPair, certificateGenerationParameters,
-            certificateAuthorityWithSubjectKeyId, issuerKey.getPrivate());
+      .getSignedByIssuer(generatedCertificateKeyPair, certificateGenerationParameters,
+        certificateAuthorityWithSubjectKeyId, issuerKey.getPrivate());
     byte[] actualKeyUsage = generatedCertificate.getExtensionValue(Extension.extendedKeyUsage.getId());
 
     assertThat(Arrays.copyOfRange(actualKeyUsage, 2, actualKeyUsage.length),
-        equalTo(certificateGenerationParameters.getExtendedKeyUsage().getEncoded()));
+      equalTo(certificateGenerationParameters.getExtendedKeyUsage().getEncoded()));
   }
 
   @Test
@@ -282,34 +283,34 @@ public class SignedCertificateGeneratorTest {
     X509Certificate caCertificate = certificateReader.getCertificate();
     PrivateKey caPrivateKey = PrivateKeyReader.getPrivateKey(CERTSTRAP_GENERATED_CA_PRIVATE_KEY);
     X509Certificate generatedCertificate = subject
-        .getSignedByIssuer(generatedCertificateKeyPair, certificateGenerationParameters, caCertificate, caPrivateKey);
+      .getSignedByIssuer(generatedCertificateKeyPair, certificateGenerationParameters, caCertificate, caPrivateKey);
 
     assertThat(generatedCertificate.getIssuerX500Principal().getEncoded(), equalTo(caCertificate.getSubjectX500Principal().getEncoded()));
   }
 
   private byte[] getExpectedAlternativeNames() throws IOException {
     return new GeneralNamesBuilder()
-        .addName(new GeneralName(GeneralName.dNSName, alternateNames[0]))
-        .addName(new GeneralName(GeneralName.dNSName, alternateNames[1])).build().getEncoded();
+      .addName(new GeneralName(GeneralName.dNSName, alternateNames[0]))
+      .addName(new GeneralName(GeneralName.dNSName, alternateNames[1])).build().getEncoded();
   }
 
   private CertificateGenerationParameters defaultCertificateParameters() {
     return new CertificateGenerationParameters(
-        new CertificateGenerationRequestParameters()
-            .setDuration(expectedDurationInDays)
-            .setCommonName(expectedCertificateCommonName)
-            .setIsCa(true)
+      new CertificateGenerationRequestParameters()
+        .setDuration(expectedDurationInDays)
+        .setCommonName(expectedCertificateCommonName)
+        .setIsCa(true)
     );
   }
 
   private CertificateGenerationParameters parametersContainsExtensions() {
     return new CertificateGenerationParameters(
-        new CertificateGenerationRequestParameters()
-            .setDuration(expectedDurationInDays)
-            .setCommonName(expectedCertificateCommonName)
-            .setAlternativeNames(alternateNames)
-            .setKeyUsage(keyUsage)
-            .setExtendedKeyUsage(extendedKeyUsage)
+      new CertificateGenerationRequestParameters()
+        .setDuration(expectedDurationInDays)
+        .setCommonName(expectedCertificateCommonName)
+        .setAlternativeNames(alternateNames)
+        .setKeyUsage(keyUsage)
+        .setExtendedKeyUsage(extendedKeyUsage)
     );
   }
 }

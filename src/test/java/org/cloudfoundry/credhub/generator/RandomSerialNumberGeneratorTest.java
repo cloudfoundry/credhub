@@ -1,11 +1,11 @@
 package org.cloudfoundry.credhub.generator;
 
+import java.security.SecureRandom;
+
 import org.cloudfoundry.credhub.service.RandomNumberGenerator;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.security.SecureRandom;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;

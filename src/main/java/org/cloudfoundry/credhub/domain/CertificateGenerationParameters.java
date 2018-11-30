@@ -1,5 +1,12 @@
 package org.cloudfoundry.credhub.domain;
 
+import java.util.List;
+import java.util.Objects;
+
+import javax.security.auth.x500.X500Principal;
+
+import org.springframework.util.StringUtils;
+
 import com.google.common.net.InetAddresses;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
@@ -12,11 +19,6 @@ import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.request.CertificateGenerationRequestParameters;
 import org.cloudfoundry.credhub.request.GenerationParameters;
 import org.cloudfoundry.credhub.util.CertificateReader;
-import org.springframework.util.StringUtils;
-
-import java.util.List;
-import java.util.Objects;
-import javax.security.auth.x500.X500Principal;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.apache.commons.lang3.StringUtils.join;
@@ -36,7 +38,7 @@ import static org.cloudfoundry.credhub.request.CertificateGenerationRequestParam
 import static org.cloudfoundry.credhub.request.CertificateGenerationRequestParameters.SERVER_AUTH;
 import static org.cloudfoundry.credhub.request.CertificateGenerationRequestParameters.TIMESTAMPING;
 
-public class CertificateGenerationParameters extends GenerationParameters{
+public class CertificateGenerationParameters extends GenerationParameters {
 
   private int keyLength;
   private int duration;
@@ -51,27 +53,6 @@ public class CertificateGenerationParameters extends GenerationParameters{
 
   private KeyUsage keyUsage;
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    CertificateGenerationParameters that = (CertificateGenerationParameters) o;
-    return keyLength == that.keyLength &&
-        duration == that.duration &&
-        selfSigned == that.selfSigned &&
-        isCa == that.isCa &&
-        (Objects.equals(caName, that.caName) || caName == null || that.caName == null) &&
-        new X500Name(that.x500Principal.getName()).equals(new X500Name(this.x500Principal.getName())) &&
-        Objects.equals(alternativeNames, that.alternativeNames) &&
-        Objects.equals(extendedKeyUsage, that.extendedKeyUsage) &&
-        Objects.equals(keyUsage, that.keyUsage);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(keyLength, duration, selfSigned, caName, isCa, x500Principal, alternativeNames, extendedKeyUsage, keyUsage);
-  }
-
   public CertificateGenerationParameters(CertificateGenerationRequestParameters generationParameters) {
     this.keyUsage = buildKeyUsage(generationParameters);
     this.x500Principal = buildDn(generationParameters);
@@ -84,8 +65,7 @@ public class CertificateGenerationParameters extends GenerationParameters{
     this.isCa = generationParameters.isCa();
   }
 
-
-  public CertificateGenerationParameters(CertificateReader certificateReader, String caName){
+  public CertificateGenerationParameters(CertificateReader certificateReader, String caName) {
     this.keyUsage = certificateReader.getKeyUsage();
     this.x500Principal = certificateReader.getSubjectName();
     this.alternativeNames = certificateReader.getAlternativeNames();
@@ -95,6 +75,33 @@ public class CertificateGenerationParameters extends GenerationParameters{
     this.duration = certificateReader.getDurationDays();
     this.keyLength = certificateReader.getKeyLength();
     this.isCa = certificateReader.isCa();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    CertificateGenerationParameters that = (CertificateGenerationParameters) o;
+    return keyLength == that.keyLength &&
+      duration == that.duration &&
+      selfSigned == that.selfSigned &&
+      isCa == that.isCa &&
+      (Objects.equals(caName, that.caName) || caName == null || that.caName == null) &&
+      new X500Name(that.x500Principal.getName()).equals(new X500Name(this.x500Principal.getName())) &&
+      Objects.equals(alternativeNames, that.alternativeNames) &&
+      Objects.equals(extendedKeyUsage, that.extendedKeyUsage) &&
+      Objects.equals(keyUsage, that.keyUsage);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(keyLength, duration, selfSigned, caName, isCa, x500Principal, alternativeNames, extendedKeyUsage, keyUsage);
   }
 
   public int getKeyLength() {
@@ -134,7 +141,7 @@ public class CertificateGenerationParameters extends GenerationParameters{
   }
 
   private KeyUsage buildKeyUsage(CertificateGenerationRequestParameters keyUsageList) {
-    if (keyUsageList.getKeyUsage() == null){
+    if (keyUsageList.getKeyUsage() == null) {
       return null;
     }
     int bitmask = 0;
@@ -204,15 +211,15 @@ public class CertificateGenerationParameters extends GenerationParameters{
 
   private GeneralNames buildAlternativeNames(CertificateGenerationRequestParameters params) {
     String[] alternativeNamesList = params.getAlternativeNames();
-    if (alternativeNamesList == null){
+    if (alternativeNamesList == null) {
       return null;
     }
     GeneralNamesBuilder builder = new GeneralNamesBuilder();
 
-    for (String name :alternativeNamesList) {
+    for (String name : alternativeNamesList) {
       if (InetAddresses.isInetAddress(name)) {
         builder.addName(new GeneralName(GeneralName.iPAddress, name));
-      } else  {
+      } else {
         builder.addName(new GeneralName(GeneralName.dNSName, name));
       }
     }
@@ -221,7 +228,7 @@ public class CertificateGenerationParameters extends GenerationParameters{
 
   private ExtendedKeyUsage buildExtendedKeyUsage(CertificateGenerationRequestParameters params) {
     String[] extendedKeyUsageList = params.getExtendedKeyUsage();
-    if (extendedKeyUsageList == null){
+    if (extendedKeyUsageList == null) {
       return null;
     }
     KeyPurposeId[] keyPurposeIds = new KeyPurposeId[extendedKeyUsageList.length];

@@ -1,9 +1,9 @@
 package org.cloudfoundry.credhub.variables;
 
-public class ManagementVariables {
-  private ManagementVariables(){
+final public class ManagementVariables {
+  public static Boolean readOnlyMode = false;
+
+  private ManagementVariables() {
     // utility method
   }
-
-  public static Boolean readOnlyMode = false;
 }

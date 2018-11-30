@@ -1,5 +1,11 @@
 package org.cloudfoundry.credhub.handler;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import org.cloudfoundry.credhub.credential.CredentialValue;
 import org.cloudfoundry.credhub.generator.CertificateGenerator;
 import org.cloudfoundry.credhub.generator.CredentialGenerator;
@@ -8,23 +14,18 @@ import org.cloudfoundry.credhub.generator.RsaGenerator;
 import org.cloudfoundry.credhub.generator.SshGenerator;
 import org.cloudfoundry.credhub.generator.UserGenerator;
 import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Component
-class UniversalCredentialGenerator {
+public class UniversalCredentialGenerator {
   private final Map<String, CredentialGenerator> credentialGenerators;
 
   @Autowired
   public UniversalCredentialGenerator(
-      PasswordCredentialGenerator passwordCredentialGenerator,
-      UserGenerator userGenerator,
-      SshGenerator sshGenerator,
-      RsaGenerator rsaGenerator,
-      CertificateGenerator certificateGenerator
+    PasswordCredentialGenerator passwordCredentialGenerator,
+    UserGenerator userGenerator,
+    SshGenerator sshGenerator,
+    RsaGenerator rsaGenerator,
+    CertificateGenerator certificateGenerator
   ) {
     credentialGenerators = new HashMap<>();
     credentialGenerators.put("password", passwordCredentialGenerator);

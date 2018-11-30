@@ -1,5 +1,9 @@
 package org.cloudfoundry.credhub.handler;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import com.google.common.collect.Lists;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.data.CredentialDataService;
@@ -25,10 +29,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.ArgumentCaptor;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Collections.emptyList;
 import static org.cloudfoundry.credhub.handler.DefaultPermissionsHandler.INVALID_NUMBER_OF_PERMISSIONS;
@@ -50,17 +50,14 @@ public class DefaultPermissionsHandlerTest {
   private static final String ACTOR_NAME = "test-actor";
   private static final String ACTOR_NAME2 = "someone-else";
   private static final String USER = "test-user";
-
+  private final Credential credential = new Credential(CREDENTIAL_NAME);
+  private final CredentialVersion credentialVersion = new PasswordCredentialVersion(new PasswordCredentialVersionData(CREDENTIAL_NAME));
   private DefaultPermissionsHandler subject;
-
   private PermissionService permissionService;
   private PermissionCheckingService permissionCheckingService;
   private CredentialDataService credentialDataService;
   private PermissionedCredentialService permissionedCredentialService;
   private CEFAuditRecord auditRecord;
-
-  private final Credential credential = new Credential(CREDENTIAL_NAME);
-  private final CredentialVersion credentialVersion = new PasswordCredentialVersion(new PasswordCredentialVersionData(CREDENTIAL_NAME));
   private PermissionsRequest permissionsRequest;
   private PermissionsV2Request permissionsV2Request;
 
@@ -72,8 +69,8 @@ public class DefaultPermissionsHandlerTest {
     permissionedCredentialService = mock(PermissionedCredentialService.class);
     auditRecord = mock(CEFAuditRecord.class);
     subject = new DefaultPermissionsHandler(
-        permissionService,
-        permissionedCredentialService, auditRecord);
+      permissionService,
+      permissionedCredentialService, auditRecord);
 
     permissionsRequest = mock(PermissionsRequest.class);
     permissionsV2Request = new PermissionsV2Request();
@@ -108,10 +105,10 @@ public class DefaultPermissionsHandlerTest {
   public void getPermissions_whenTheNameDoesntStartWithASlash_fixesTheName() {
     List<PermissionEntry> accessControlList = newArrayList();
     when(permissionService.getPermissions(any(CredentialVersion.class)))
-        .thenReturn(accessControlList);
+      .thenReturn(accessControlList);
     when(permissionCheckingService
-        .hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(PermissionOperation.READ_ACL)))
-        .thenReturn(true);
+      .hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(PermissionOperation.READ_ACL)))
+      .thenReturn(true);
 
     PermissionsView response = subject.getPermissions(CREDENTIAL_NAME);
     assertThat(response.getCredentialName(), equalTo(CREDENTIAL_NAME));
@@ -121,23 +118,23 @@ public class DefaultPermissionsHandlerTest {
   @Test
   public void getPermissions_verifiesTheUserHasPermissionToReadTheAcl_andReturnsTheAclResponse() {
     ArrayList<PermissionOperation> operations = newArrayList(
-        PermissionOperation.READ,
-        PermissionOperation.WRITE
+      PermissionOperation.READ,
+      PermissionOperation.WRITE
     );
     when(permissionCheckingService
-        .hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(PermissionOperation.READ_ACL)))
-        .thenReturn(true);
+      .hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(PermissionOperation.READ_ACL)))
+      .thenReturn(true);
     PermissionEntry permissionEntry = new PermissionEntry(
-        ACTOR_NAME,
-        "test-path",
-        operations
+      ACTOR_NAME,
+      "test-path",
+      operations
     );
     List<PermissionEntry> accessControlList = newArrayList(permissionEntry);
     when(permissionService.getPermissions(credentialVersion))
-        .thenReturn(accessControlList);
+      .thenReturn(accessControlList);
 
     PermissionsView response = subject.getPermissions(
-        CREDENTIAL_NAME
+      CREDENTIAL_NAME
     );
 
     List<PermissionEntry> accessControlEntries = response.getPermissions();
@@ -150,23 +147,23 @@ public class DefaultPermissionsHandlerTest {
 
     List<PermissionOperation> allowedOperations = entry.getAllowedOperations();
     assertThat(allowedOperations, contains(
-        equalTo(PermissionOperation.READ),
-        equalTo(PermissionOperation.WRITE)
+      equalTo(PermissionOperation.READ),
+      equalTo(PermissionOperation.WRITE)
     ));
   }
 
   @Test
   public void setPermissions_setsAndReturnsThePermissions() {
     when(permissionCheckingService
-        .hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(PermissionOperation.WRITE_ACL)))
-        .thenReturn(true);
+      .hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(PermissionOperation.WRITE_ACL)))
+      .thenReturn(true);
     when(permissionCheckingService
-        .userAllowedToOperateOnActor(ACTOR_NAME))
-        .thenReturn(true);
+      .userAllowedToOperateOnActor(ACTOR_NAME))
+      .thenReturn(true);
 
     ArrayList<PermissionOperation> operations = newArrayList(
-        PermissionOperation.READ,
-        PermissionOperation.WRITE
+      PermissionOperation.READ,
+      PermissionOperation.WRITE
     );
     PermissionEntry permissionEntry = new PermissionEntry(ACTOR_NAME, "test-path", operations);
     List<PermissionEntry> accessControlList = newArrayList(permissionEntry);
@@ -174,10 +171,10 @@ public class DefaultPermissionsHandlerTest {
     PermissionEntry preexistingPermissionEntry = new PermissionEntry(ACTOR_NAME2, "test-path", Lists.newArrayList(PermissionOperation.READ)
     );
     List<PermissionEntry> expectedControlList = newArrayList(permissionEntry,
-        preexistingPermissionEntry);
+      preexistingPermissionEntry);
 
     when(permissionService.getPermissions(credentialVersion))
-        .thenReturn(expectedControlList);
+      .thenReturn(expectedControlList);
 
     when(permissionsRequest.getCredentialName()).thenReturn(CREDENTIAL_NAME);
     when(permissionsRequest.getPermissions()).thenReturn(accessControlList);
@@ -194,7 +191,7 @@ public class DefaultPermissionsHandlerTest {
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void setPermissionsCalledWithOnePermission_whenPermissionServiceReturnsMultiplePermissions_throwsException(){
+  public void setPermissionsCalledWithOnePermission_whenPermissionServiceReturnsMultiplePermissions_throwsException() {
     when(permissionCheckingService.hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(PermissionOperation.WRITE_ACL))).thenReturn(true);
     when(permissionCheckingService.userAllowedToOperateOnActor(ACTOR_NAME)).thenReturn(true);
 
@@ -215,7 +212,7 @@ public class DefaultPermissionsHandlerTest {
     permissionsV2Request.setOperations(operations);
     permissionsV2Request.setPath(CREDENTIAL_NAME);
 
-    try{
+    try {
       subject.setPermissions(permissionsV2Request);
     } catch (Exception e) {
       assertThat(e.getMessage(), equalTo(INVALID_NUMBER_OF_PERMISSIONS));
@@ -227,14 +224,14 @@ public class DefaultPermissionsHandlerTest {
   @Test
   public void setPermissions_whenUserUpdatesOwnPermission_throwsException() {
     when(permissionCheckingService
-        .hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(PermissionOperation.WRITE_ACL)))
-        .thenReturn(true);
+      .hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(PermissionOperation.WRITE_ACL)))
+      .thenReturn(true);
     when(permissionCheckingService
-        .userAllowedToOperateOnActor(ACTOR_NAME))
-        .thenReturn(false);
+      .userAllowedToOperateOnActor(ACTOR_NAME))
+      .thenReturn(false);
 
     List<PermissionEntry> accessControlList = Arrays.asList(new PermissionEntry(ACTOR_NAME, "test-path", Arrays.asList(
-        PermissionOperation.READ)));
+      PermissionOperation.READ)));
     when(permissionsRequest.getCredentialName()).thenReturn(CREDENTIAL_NAME);
     when(permissionsRequest.getPermissions()).thenReturn(accessControlList);
 
@@ -249,26 +246,26 @@ public class DefaultPermissionsHandlerTest {
   @Test
   public void deletePermissions_whenTheUserHasPermission_deletesTheAce() {
     when(permissionCheckingService
-        .hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(PermissionOperation.WRITE_ACL)))
-        .thenReturn(true);
+      .hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(PermissionOperation.WRITE_ACL)))
+      .thenReturn(true);
     when(permissionService.deletePermissions(CREDENTIAL_NAME, ACTOR_NAME))
-        .thenReturn(true);
+      .thenReturn(true);
     when(permissionCheckingService
-        .userAllowedToOperateOnActor(ACTOR_NAME))
-        .thenReturn(true);
+      .userAllowedToOperateOnActor(ACTOR_NAME))
+      .thenReturn(true);
 
     subject.deletePermissionEntry(CREDENTIAL_NAME, ACTOR_NAME
     );
 
     verify(permissionService, times(1)).deletePermissions(
-        CREDENTIAL_NAME, ACTOR_NAME);
+      CREDENTIAL_NAME, ACTOR_NAME);
 
   }
 
   @Test
   public void deletePermissions_whenNothingIsDeleted_throwsAnException() {
     when(permissionService.deletePermissions(CREDENTIAL_NAME, ACTOR_NAME))
-        .thenReturn(false);
+      .thenReturn(false);
 
     try {
       subject.deletePermissionEntry(CREDENTIAL_NAME, ACTOR_NAME

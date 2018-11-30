@@ -10,19 +10,19 @@ import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import static com.google.common.collect.Lists.newArrayList;
 
 @JsonTypeInfo(
-    use = JsonTypeInfo.Id.CUSTOM,
-    property = "type",
-    visible = true
+  use = JsonTypeInfo.Id.CUSTOM,
+  property = "type",
+  visible = true
 )
 @JsonTypeIdResolver(SetRequestTypeIdResolver.class)
 @JsonSubTypes({
-    @JsonSubTypes.Type(name = "password", value = PasswordSetRequest.class),
-    @JsonSubTypes.Type(name = "value", value = ValueSetRequest.class),
-    @JsonSubTypes.Type(name = "certificate", value = CertificateSetRequest.class),
-    @JsonSubTypes.Type(name = "json", value = JsonSetRequest.class),
-    @JsonSubTypes.Type(name = "ssh", value = SshSetRequest.class),
-    @JsonSubTypes.Type(name = "rsa", value = RsaSetRequest.class),
-    @JsonSubTypes.Type(name = "user", value = UserSetRequest.class)
+  @JsonSubTypes.Type(name = "password", value = PasswordSetRequest.class),
+  @JsonSubTypes.Type(name = "value", value = ValueSetRequest.class),
+  @JsonSubTypes.Type(name = "certificate", value = CertificateSetRequest.class),
+  @JsonSubTypes.Type(name = "json", value = JsonSetRequest.class),
+  @JsonSubTypes.Type(name = "ssh", value = SshSetRequest.class),
+  @JsonSubTypes.Type(name = "rsa", value = RsaSetRequest.class),
+  @JsonSubTypes.Type(name = "user", value = UserSetRequest.class)
 })
 public abstract class BaseCredentialSetRequest<T extends CredentialValue> extends BaseCredentialRequest {
 

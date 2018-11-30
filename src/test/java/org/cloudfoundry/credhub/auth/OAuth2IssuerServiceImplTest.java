@@ -1,15 +1,5 @@
 package org.cloudfoundry.credhub.auth;
 
-import org.cloudfoundry.credhub.config.OAuthProperties;
-import org.cloudfoundry.credhub.util.RestTemplateFactory;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -18,6 +8,17 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.HashMap;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
+
+import org.cloudfoundry.credhub.config.OAuthProperties;
+import org.cloudfoundry.credhub.util.RestTemplateFactory;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -46,7 +47,7 @@ public class OAuth2IssuerServiceImplTest {
     restTemplate = mock(RestTemplate.class);
 
     when(restTemplateFactory.createRestTemplate(trustStore, trustStorePassword))
-        .thenReturn(restTemplate);
+      .thenReturn(restTemplate);
 
     subject = new OAuth2IssuerServiceImpl(restTemplateFactory, oAuthProperties);
   }

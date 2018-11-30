@@ -1,8 +1,8 @@
 package org.cloudfoundry.credhub.request;
 
-import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
+
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT;
 
 @JsonInclude(NON_DEFAULT)
 public class SshGenerationParameters extends RsaSshGenerationParameters {

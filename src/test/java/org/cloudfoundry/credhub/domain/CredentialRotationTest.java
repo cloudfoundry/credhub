@@ -1,5 +1,7 @@
 package org.cloudfoundry.credhub.domain;
 
+import java.util.UUID;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData;
 import org.cloudfoundry.credhub.entity.CredentialVersionData;
@@ -14,8 +16,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -42,10 +42,10 @@ public class CredentialRotationTest {
     activeEncryptionKeyUuid = UUID.randomUUID();
 
     when(encryptionService.decrypt(new EncryptedValue(oldEncryptionKeyUuid, "old-encrypted-value".getBytes(), "old-nonce".getBytes())))
-        .thenReturn("plaintext");
+      .thenReturn("plaintext");
     when(encryptionService.encrypt("plaintext"))
-        .thenReturn(new EncryptedValue(activeEncryptionKeyUuid, "new-encrypted-value".getBytes(),
-            "new-nonce".getBytes()));
+      .thenReturn(new EncryptedValue(activeEncryptionKeyUuid, "new-encrypted-value".getBytes(),
+        "new-nonce".getBytes()));
   }
 
   @Test
@@ -89,31 +89,31 @@ public class CredentialRotationTest {
       .setNonce("old-nonce".getBytes()));
     PasswordCredentialVersion password = new PasswordCredentialVersion(passwordCredentialData);
     password.setEncryptor(encryptor);
-    EncryptedValue encryption = new EncryptedValue(oldEncryptionKeyUuid,"old-encrypted-parameters".getBytes(), "old-parameters-nonce".getBytes());
+    EncryptedValue encryption = new EncryptedValue(oldEncryptionKeyUuid, "old-encrypted-parameters".getBytes(), "old-parameters-nonce".getBytes());
     passwordCredentialData.setEncryptedGenerationParameters(encryption);
 
 
     stringifiedParameters = new ObjectMapper()
-        .writeValueAsString(new StringGenerationParameters());
+      .writeValueAsString(new StringGenerationParameters());
 
     when(encryptionService
-        .decrypt(new EncryptedValue(oldEncryptionKeyUuid, "old-encrypted-parameters".getBytes(), "old-parameters-nonce".getBytes())))
-        .thenReturn(stringifiedParameters);
+      .decrypt(new EncryptedValue(oldEncryptionKeyUuid, "old-encrypted-parameters".getBytes(), "old-parameters-nonce".getBytes())))
+      .thenReturn(stringifiedParameters);
     when(encryptionService.encrypt(stringifiedParameters))
-        .thenReturn(new EncryptedValue(activeEncryptionKeyUuid, "new-encrypted-parameters".getBytes(), "new-nonce-parameters".getBytes()));
+      .thenReturn(new EncryptedValue(activeEncryptionKeyUuid, "new-encrypted-parameters".getBytes(), "new-nonce-parameters".getBytes()));
 
     password.rotate();
 
     assertThat(passwordCredentialData.getEncryptionKeyUuid(),
-        equalTo(activeEncryptionKeyUuid));
+      equalTo(activeEncryptionKeyUuid));
     assertThat(passwordCredentialData.getEncryptedValueData().getEncryptedValue(),
-        equalTo("new-encrypted-value".getBytes()));
+      equalTo("new-encrypted-value".getBytes()));
     assertThat(passwordCredentialData.getNonce(), equalTo("new-nonce".getBytes()));
 
     assertThat(passwordCredentialData.getEncryptedGenerationParameters().getEncryptedValue(),
-        equalTo("new-encrypted-parameters".getBytes()));
+      equalTo("new-encrypted-parameters".getBytes()));
     assertThat(passwordCredentialData.getEncryptedGenerationParameters().getNonce(),
-        equalTo("new-nonce-parameters".getBytes()));
+      equalTo("new-nonce-parameters".getBytes()));
   }
 
   private void assertRotation(CredentialVersion credentialVersion, CredentialVersionData delegate) {

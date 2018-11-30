@@ -1,11 +1,11 @@
 package org.cloudfoundry.credhub.view;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import org.cloudfoundry.credhub.request.PermissionOperation;
-
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import org.cloudfoundry.credhub.request.PermissionOperation;
 
 @JsonAutoDetect
 @SuppressWarnings("unused")
@@ -60,8 +60,14 @@ public class PermissionsV2View {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o) {
+      return true;
+    }
+
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
     PermissionsV2View that = (PermissionsV2View) o;
     return Objects.equals(path, that.path) &&
       Objects.equals(operations, that.operations) &&

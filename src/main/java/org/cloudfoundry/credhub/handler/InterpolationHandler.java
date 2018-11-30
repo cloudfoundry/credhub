@@ -1,17 +1,18 @@
 package org.cloudfoundry.credhub.handler;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.domain.JsonCredentialVersion;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.service.PermissionedCredentialService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 @Service
 public class InterpolationHandler {
@@ -51,7 +52,7 @@ public class InterpolationHandler {
         String credentialName = getCredentialNameFromRef((String) credhubRef);
 
         List<CredentialVersion> credentialVersions = credentialService
-            .findNByName(credentialName, 1);
+          .findNByName(credentialName, 1);
 
         if (credentialVersions.isEmpty()) {
           throw new EntryNotFoundException("error.credential.invalid_access");
@@ -66,7 +67,7 @@ public class InterpolationHandler {
           propertiesMap.put("credentials", ((JsonCredentialVersion) credentialVersion).getValue());
         } else {
           throw new ParameterizedValidationException("error.interpolation.invalid_type",
-              credentialName);
+            credentialName);
         }
       }
     }

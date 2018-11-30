@@ -1,8 +1,9 @@
 package org.cloudfoundry.credhub.controller.v1;
 
-import com.google.common.collect.ImmutableMap;
-import org.cloudfoundry.credhub.data.CredentialVersionDataService;
-import org.cloudfoundry.credhub.service.EncryptionKeySet;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -11,14 +12,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import com.google.common.collect.ImmutableMap;
+import org.cloudfoundry.credhub.data.CredentialVersionDataService;
+import org.cloudfoundry.credhub.service.EncryptionKeySet;
 
 @RestController
 @RequestMapping(
-    path = "api/v1/key-usage",
-    produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+  path = "api/v1/key-usage",
+  produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class KeyUsageController {
 
   private final CredentialVersionDataService credentialVersionDataService;
@@ -26,8 +27,8 @@ public class KeyUsageController {
 
   @Autowired
   public KeyUsageController(
-      CredentialVersionDataService credentialVersionDataService,
-      EncryptionKeySet keySet) {
+    CredentialVersionDataService credentialVersionDataService,
+    EncryptionKeySet keySet) {
     this.credentialVersionDataService = credentialVersionDataService;
     this.keySet = keySet;
   }
@@ -36,7 +37,7 @@ public class KeyUsageController {
   public ResponseEntity<Map> getKeyUsages() {
     Long totalCredCount = 0L;
     final HashMap<UUID, Long> countByEncryptionKey = credentialVersionDataService.countByEncryptionKey();
-    for (int i=0; i<countByEncryptionKey.size(); i++) {
+    for (int i = 0; i < countByEncryptionKey.size(); i++) {
       totalCredCount += countByEncryptionKey.values().toArray(new Long[countByEncryptionKey.values().size()])[i];
     }
 
@@ -53,10 +54,10 @@ public class KeyUsageController {
     Long inactiveKeyCreds = totalCredCount - (activeKeyCreds + unknownKeyCreds);
 
     return new ResponseEntity<>(
-        ImmutableMap.of(
-            "active_key", activeKeyCreds,
-            "inactive_keys", inactiveKeyCreds,
-            "unknown_keys", unknownKeyCreds),
-        HttpStatus.OK);
+      ImmutableMap.of(
+        "active_key", activeKeyCreds,
+        "inactive_keys", inactiveKeyCreds,
+        "unknown_keys", unknownKeyCreds),
+      HttpStatus.OK);
   }
 }

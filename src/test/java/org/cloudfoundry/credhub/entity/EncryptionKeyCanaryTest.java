@@ -1,11 +1,11 @@
 package org.cloudfoundry.credhub.entity;
 
+import java.util.UUID;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
@@ -24,7 +24,7 @@ public class EncryptionKeyCanaryTest {
 
   @Test
   public void encryptedCanaryValue_doesNotStoreOrPassByReference() throws Exception {
-    byte[] toModify = new byte[] {1,2,3,4,5,6,7,8,9,0,11,22,33,44,55,66,77,88,99,100};
+    byte[] toModify = new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 11, 22, 33, 44, 55, 66, 77, 88, 99, 100};
 
     subject.setEncryptedCanaryValue(toModify);
     byte[] unModified = toModify.clone();

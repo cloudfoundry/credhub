@@ -1,15 +1,16 @@
 package org.cloudfoundry.credhub.request;
 
+import java.io.IOException;
+import java.util.Set;
+
+import javax.validation.ConstraintViolation;
+
 import org.cloudfoundry.credhub.credential.UserCredentialValue;
 import org.cloudfoundry.credhub.helper.JsonTestHelper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.io.IOException;
-import java.util.Set;
-import javax.validation.ConstraintViolation;
 
 import static org.cloudfoundry.credhub.helper.JsonTestHelper.deserialize;
 import static org.cloudfoundry.credhub.helper.JsonTestHelper.deserializeAndValidate;
@@ -28,13 +29,13 @@ public class UserSetRequestTest {
   public void beforeEach() {
     // language=JSON
     validSetRequestJson = "{\n" +
-        "  \"name\": \"some-name\",\n" +
-        "  \"type\": \"user\",\n" +
-        "  \"value\": {\n" +
-        "    \"username\": \"dan\",\n" +
-        "    \"password\": \"example-password\"\n" +
-        "  }\n" +
-        "}";
+      "  \"name\": \"some-name\",\n" +
+      "  \"type\": \"user\",\n" +
+      "  \"value\": {\n" +
+      "    \"username\": \"dan\",\n" +
+      "    \"password\": \"example-password\"\n" +
+      "  }\n" +
+      "}";
   }
 
   @Test
@@ -56,7 +57,7 @@ public class UserSetRequestTest {
   @Test
   public void whenAllFieldsAreSet_shouldBeValid() {
     Set<ConstraintViolation<UserSetRequest>> violations = deserializeAndValidate(validSetRequestJson,
-        UserSetRequest.class);
+      UserSetRequest.class);
 
     assertThat(violations.size(), equalTo(0));
   }
@@ -65,13 +66,13 @@ public class UserSetRequestTest {
   public void whenTypeHasUnusualCasing_shouldBeValid() {
     // language=JSON
     String json = "{\n" +
-        "  \"name\": \"some-name\",\n" +
-        "  \"type\": \"UseR\",\n" +
-        "  \"value\": {\n" +
-        "    \"username\": \"dan\",\n" +
-        "    \"password\": \"example-password\"\n" +
-        "  }\n" +
-        "}";
+      "  \"name\": \"some-name\",\n" +
+      "  \"type\": \"UseR\",\n" +
+      "  \"value\": {\n" +
+      "    \"username\": \"dan\",\n" +
+      "    \"password\": \"example-password\"\n" +
+      "  }\n" +
+      "}";
     Set<ConstraintViolation<UserSetRequest>> violations = deserializeAndValidate(json, UserSetRequest.class);
 
     assertThat(violations.size(), equalTo(0));
@@ -81,11 +82,11 @@ public class UserSetRequestTest {
   public void whenValueIsEmpty_shouldBeInvalid() {
     // language=JSON
     String json = "{\n" +
-        "  \"name\": \"some-name\",\n" +
-        "  \"type\": \"user\"" +
-        "}";
+      "  \"name\": \"some-name\",\n" +
+      "  \"type\": \"user\"" +
+      "}";
     UserSetRequest userSetRequest = deserialize(json,
-        UserSetRequest.class);
+      UserSetRequest.class);
     Set<ConstraintViolation<UserSetRequest>> violations = validate(userSetRequest);
 
     assertThat(violations, contains(hasViolationWithMessage("error.missing_value")));
@@ -94,12 +95,12 @@ public class UserSetRequestTest {
   @Test
   public void whenPasswordIsNotSetInRequest_shouldBeInvalid() {
     String invalidSetRequestJson = "{\n" +
-        "  \"name\": \"some-name\",\n" +
-        "  \"type\": \"user\",\n" +
-        "  \"value\": {\n" +
-        "    \"username\": \"dan\"\n" +
-        "  }\n" +
-        "}";
+      "  \"name\": \"some-name\",\n" +
+      "  \"type\": \"user\",\n" +
+      "  \"value\": {\n" +
+      "    \"username\": \"dan\"\n" +
+      "  }\n" +
+      "}";
 
     Set<ConstraintViolation<UserSetRequest>> violations = JsonTestHelper.deserializeAndValidate(invalidSetRequestJson, UserSetRequest.class);
 

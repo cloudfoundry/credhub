@@ -1,5 +1,8 @@
 package org.cloudfoundry.credhub.view;
 
+import java.time.Instant;
+import java.util.UUID;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.cloudfoundry.credhub.credential.CredentialValue;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
@@ -10,9 +13,6 @@ import org.cloudfoundry.credhub.domain.RsaCredentialVersion;
 import org.cloudfoundry.credhub.domain.SshCredentialVersion;
 import org.cloudfoundry.credhub.domain.UserCredentialVersion;
 import org.cloudfoundry.credhub.domain.ValueCredentialVersion;
-
-import java.time.Instant;
-import java.util.UUID;
 
 public class CredentialView {
 

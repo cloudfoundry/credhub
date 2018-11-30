@@ -1,15 +1,16 @@
 package org.cloudfoundry.credhub.data;
 
-import org.cloudfoundry.credhub.domain.Encryptor;
-import org.cloudfoundry.credhub.entity.EncryptedValue;
-import org.cloudfoundry.credhub.repository.EncryptedValueRepository;
+import java.util.List;
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.UUID;
+import org.cloudfoundry.credhub.domain.Encryptor;
+import org.cloudfoundry.credhub.entity.EncryptedValue;
+import org.cloudfoundry.credhub.repository.EncryptedValueRepository;
 
 import static org.cloudfoundry.credhub.repository.EncryptedValueRepository.BATCH_SIZE;
 
@@ -21,8 +22,8 @@ public class EncryptedValueDataService {
 
   @Autowired
   protected EncryptedValueDataService(
-      EncryptedValueRepository encryptedValueRepository,
-      Encryptor encryptor) {
+    EncryptedValueRepository encryptedValueRepository,
+    Encryptor encryptor) {
     this.encryptedValueRepository = encryptedValueRepository;
     this.encryptor = encryptor;
   }
@@ -33,9 +34,9 @@ public class EncryptedValueDataService {
 
   public Slice<EncryptedValue> findByCanaryUuids(List<UUID> canaryUuids) {
     return encryptedValueRepository
-        .findByEncryptionKeyUuidIn(canaryUuids,
-            PageRequest.of(0, BATCH_SIZE)
-        );
+      .findByEncryptionKeyUuidIn(canaryUuids,
+        PageRequest.of(0, BATCH_SIZE)
+      );
   }
 
   public void rotate(EncryptedValue encryptedValue) {

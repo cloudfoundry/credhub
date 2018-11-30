@@ -1,8 +1,8 @@
 package org.cloudfoundry.credhub.view;
 
-import org.codehaus.jackson.annotate.JsonAutoDetect;
-
 import java.util.Set;
+
+import org.codehaus.jackson.annotate.JsonAutoDetect;
 
 @JsonAutoDetect
 public class BulkRegenerateResults {

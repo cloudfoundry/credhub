@@ -3,7 +3,9 @@ package org.cloudfoundry.credhub.util;
 import java.nio.ByteBuffer;
 import java.util.UUID;
 
-public class UuidUtil {
+final public class UuidUtil {
+
+  private UuidUtil() { }
 
   public static Object makeUuid(String databaseName) {
     UUID uuid = UUID.randomUUID();

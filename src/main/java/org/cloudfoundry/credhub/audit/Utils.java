@@ -1,6 +1,9 @@
 package org.cloudfoundry.credhub.audit;
 
-public class Utils {
+final public class Utils {
+  private Utils() {
+  }
+
   public static String getResultCode(int statusCode) {
     if (statusCode <= 199) {
       return "info";

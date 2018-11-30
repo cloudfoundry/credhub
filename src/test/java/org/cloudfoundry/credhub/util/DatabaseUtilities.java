@@ -1,7 +1,10 @@
 package org.cloudfoundry.credhub.util;
 
 public final class DatabaseUtilities {
-  public static final byte[] getExceedsMaxBlobStoreSizeBytes() {
+  private DatabaseUtilities() {
+  }
+
+  public static byte[] getExceedsMaxBlobStoreSizeBytes() {
     int exceedsMaxBlobStoreSize = 70000;
     byte[] exceedsMaxBlobStoreValue = new byte[exceedsMaxBlobStoreSize];
     for (int i = 0; i < exceedsMaxBlobStoreSize; i++) {

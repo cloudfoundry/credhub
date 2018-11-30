@@ -1,5 +1,22 @@
 package org.cloudfoundry.credhub.integration;
 
+import java.security.Key;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.WebApplicationContext;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
@@ -32,22 +49,6 @@ import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.context.WebApplicationContext;
-
-import java.security.Key;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static org.cloudfoundry.credhub.helper.JsonTestHelper.parse;
 import static org.cloudfoundry.credhub.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
@@ -72,38 +73,29 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 public class EncryptionKeyRotatorTest {
 
+  private final String passwordName = "/test-password";
+  private final String name = "/" + this.getClass().getSimpleName();
   @Autowired
   private WebApplicationContext webApplicationContext;
-
   @Autowired
   private CredentialVersionRepository credentialVersionRepository;
-
   @SpyBean
   private CredentialVersionDataService credentialVersionDataService;
-
   @Autowired
   private CredentialDataService credentialDataService;
-
   @Autowired
   private EncryptionKeyRotator encryptionKeyRotator;
-
   @Autowired
   private EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
-
   @Autowired
   private PasswordKeyProxyFactory passwordKeyProxyFactory;
-
   private InternalEncryptionService encryptionService;
-
   @SpyBean
   private EncryptionKeySet keySet;
-
   @Autowired
   private Encryptor encryptor;
-
   @SpyBean
   private EncryptionKeysConfiguration encryptionKeysConfiguration;
-
   private CertificateCredentialVersion credentialWithCurrentKey;
   private CredentialVersion credentialVersionWithOldKey;
   private CertificateCredentialVersion credentialWithUnknownKey;
@@ -111,15 +103,13 @@ public class EncryptionKeyRotatorTest {
   private MockMvc mockMvc;
   private EncryptionKeyCanary unknownCanary;
   private EncryptionKeyCanary oldCanary;
-  private final String passwordName = "/test-password";
-  private final String name = "/" + this.getClass().getSimpleName();
 
   @Before
   public void beforeEach() throws Exception {
     mockMvc = MockMvcBuilders
-        .webAppContextSetup(webApplicationContext)
-        .apply(springSecurity())
-        .build();
+      .webAppContextSetup(webApplicationContext)
+      .apply(springSecurity())
+      .build();
 
     encryptionService = new PasswordEncryptionService(passwordKeyProxyFactory);
 
@@ -128,64 +118,64 @@ public class EncryptionKeyRotatorTest {
 
   @Test
   public void whenDataExistsThatIsEncryptedWithUnknownKey_itShouldRotateDataThatItCanDecrypt()
-      throws Exception {
+    throws Exception {
 
     setupInitialContext();
 
     List<CredentialVersionData> beforeRotation = credentialVersionRepository
-        .findByEncryptedCredentialValueEncryptionKeyUuidIn(keySet.getInactiveUuids());
+      .findByEncryptedCredentialValueEncryptionKeyUuidIn(keySet.getInactiveUuids());
     int numberToRotate = beforeRotation.size();
 
     assertThat(
-        credentialVersionRepository.findOneByUuid(credentialWithUnknownKey.getUuid())
-            .getEncryptionKeyUuid(), equalTo(unknownCanary.getUuid()));
+      credentialVersionRepository.findOneByUuid(credentialWithUnknownKey.getUuid())
+        .getEncryptionKeyUuid(), equalTo(unknownCanary.getUuid()));
 
     encryptionKeyRotator.rotate();
 
     List<CredentialVersionData> afterRotation = credentialVersionRepository
-        .findByEncryptedCredentialValueEncryptionKeyUuidIn(keySet.getInactiveUuids());
+      .findByEncryptedCredentialValueEncryptionKeyUuidIn(keySet.getInactiveUuids());
     int numberToRotateWhenDone = afterRotation.size();
 
     assertThat(numberToRotate, equalTo(2));
     assertThat(numberToRotateWhenDone, equalTo(0));
 
     List<UUID> uuids = beforeRotation.stream().map(CredentialVersionData::getUuid)
-        .collect(Collectors.toList());
+      .collect(Collectors.toList());
 
     // Gets updated to use current key:
 
     assertThat(
-        credentialVersionRepository
-            .findOneByUuid(credentialVersionWithOldKey.getUuid())
-            .getEncryptionKeyUuid(),
-        equalTo(keySet.getActive().getUuid())
+      credentialVersionRepository
+        .findOneByUuid(credentialVersionWithOldKey.getUuid())
+        .getEncryptionKeyUuid(),
+      equalTo(keySet.getActive().getUuid())
     );
 
     assertThat(uuids, hasItem(credentialVersionWithOldKey.getUuid()));
 
     assertThat(credentialVersionRepository.findOneByUuid(password.getUuid())
-        .getEncryptionKeyUuid(), equalTo(keySet.getActive().getUuid()));
+      .getEncryptionKeyUuid(), equalTo(keySet.getActive().getUuid()));
     assertThat(uuids, hasItem(password.getUuid()));
 
     // Unchanged because we don't have the key:
     assertThat(
-        credentialVersionRepository.findOneByUuid(credentialWithUnknownKey.getUuid())
-            .getEncryptionKeyUuid(), equalTo(unknownCanary.getUuid()));
+      credentialVersionRepository.findOneByUuid(credentialWithUnknownKey.getUuid())
+        .getEncryptionKeyUuid(), equalTo(unknownCanary.getUuid()));
     assertThat(uuids, not(hasItem(credentialWithUnknownKey.getUuid())));
 
     // Unchanged because it's already up to date:
     assertThat(
-        credentialVersionRepository.findOneByUuid(credentialWithCurrentKey.getUuid())
-            .getEncryptionKeyUuid(), equalTo(keySet.getActive().getUuid()));
+      credentialVersionRepository.findOneByUuid(credentialWithCurrentKey.getUuid())
+        .getEncryptionKeyUuid(), equalTo(keySet.getActive().getUuid()));
     assertThat(uuids, not(hasItem(credentialWithCurrentKey.getUuid())));
 
     PasswordCredentialVersion rotatedPassword = (PasswordCredentialVersion) credentialVersionDataService
-        .findMostRecent(passwordName);
+      .findMostRecent(passwordName);
     assertThat(rotatedPassword.getPassword(), equalTo("test-password-plaintext"));
     assertThat(rotatedPassword.getGenerationParameters(), samePropertyValuesAs(
-        new StringGenerationParameters()
-            .setExcludeNumber(true)
-            .setLength(23)));
+      new StringGenerationParameters()
+        .setExcludeNumber(true)
+        .setLength(23)));
   }
 
   @Test
@@ -193,25 +183,25 @@ public class EncryptionKeyRotatorTest {
     String passwordName = name + "-password";
 
     MockHttpServletRequestBuilder post = post("/api/v1/data")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{"
-            + "  \"name\": \"" + passwordName + "\","
-            + "  \"type\": \"password\""
-            + "}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      .content("{"
+        + "  \"name\": \"" + passwordName + "\","
+        + "  \"type\": \"password\""
+        + "}");
 
     String content = this.mockMvc.perform(post).andDo(print()).andExpect(status().isOk())
-        .andReturn()
-        .getResponse().getContentAsString();
+      .andReturn()
+      .getResponse().getContentAsString();
     String originalPassword = parse(content).get("value").textValue();
 
     Credential credential = credentialDataService.find(passwordName);
 
     final PasswordCredentialVersionData firstEncryption =
-        (PasswordCredentialVersionData) credentialVersionRepository
-            .findAllByCredentialUuidOrderByVersionCreatedAtDesc(credential.getUuid())
-            .get(0);
+      (PasswordCredentialVersionData) credentialVersionRepository
+        .findAllByCredentialUuidOrderByVersionCreatedAtDesc(credential.getUuid())
+        .get(0);
 
     final byte[] firstEncryptedValue = firstEncryption.getEncryptedValueData().getEncryptedValue();
     final byte[] firstEncryptedGenParams = firstEncryption.getEncryptedGenerationParameters().getEncryptedValue();
@@ -221,18 +211,18 @@ public class EncryptionKeyRotatorTest {
     encryptionKeyRotator.rotate();
 
     final PasswordCredentialVersionData secondEncryption =
-        (PasswordCredentialVersionData) credentialVersionRepository
-            .findAllByCredentialUuidOrderByVersionCreatedAtDesc(credential.getUuid())
-            .get(0);
+      (PasswordCredentialVersionData) credentialVersionRepository
+        .findAllByCredentialUuidOrderByVersionCreatedAtDesc(credential.getUuid())
+        .get(0);
     assertThat(firstEncryptedValue,
-        not(equalTo(secondEncryption.getEncryptedValueData().getEncryptedValue())));
+      not(equalTo(secondEncryption.getEncryptedValueData().getEncryptedValue())));
     assertThat(firstEncryptedGenParams,
-        not(equalTo(secondEncryption.getEncryptedGenerationParameters())));
+      not(equalTo(secondEncryption.getEncryptedGenerationParameters())));
 
     final MockHttpServletRequestBuilder get = get("/api/v1/data?name=" + passwordName)
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN);
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN);
     this.mockMvc.perform(get).andExpect(status().isOk())
-        .andExpect(jsonPath(".data[0].value").value(originalPassword));
+      .andExpect(jsonPath(".data[0].value").value(originalPassword));
   }
 
   @Test
@@ -240,45 +230,45 @@ public class EncryptionKeyRotatorTest {
     String certificateName = name + "-certificate";
 
     MockHttpServletRequestBuilder post = post("/api/v1/data")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{"
-            + "  \"name\": \"" + certificateName + "\","
-            + "  \"type\": \"certificate\","
-            + "  \"parameters\": { "
-            + "    \"is_ca\": true,\n"
-            + "    \"common_name\": \"Pivotal CA\""
-            + "  }"
-            + "}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      .content("{"
+        + "  \"name\": \"" + certificateName + "\","
+        + "  \"type\": \"certificate\","
+        + "  \"parameters\": { "
+        + "    \"is_ca\": true,\n"
+        + "    \"common_name\": \"Pivotal CA\""
+        + "  }"
+        + "}");
 
     String content = this.mockMvc.perform(post).andExpect(status().isOk()).andReturn()
-        .getResponse().getContentAsString();
+      .getResponse().getContentAsString();
     String originalCert = parse(content).get("value").get("private_key").textValue();
 
     Credential credential = credentialDataService.find(certificateName);
 
     final byte[] firstEncryption =
-        credentialVersionRepository
-            .findAllByCredentialUuidOrderByVersionCreatedAtDesc(credential.getUuid()).get(0)
-            .getEncryptedValueData()
-            .getEncryptedValue()
-            .clone();
+      credentialVersionRepository
+        .findAllByCredentialUuidOrderByVersionCreatedAtDesc(credential.getUuid()).get(0)
+        .getEncryptedValueData()
+        .getEncryptedValue()
+        .clone();
 
     setActiveKey(1);
 
     encryptionKeyRotator.rotate();
 
     final CertificateCredentialVersionData secondEncryption =
-        (CertificateCredentialVersionData) credentialVersionRepository
-            .findAllByCredentialUuidOrderByVersionCreatedAtDesc(credential.getUuid())
-            .get(0);
+      (CertificateCredentialVersionData) credentialVersionRepository
+        .findAllByCredentialUuidOrderByVersionCreatedAtDesc(credential.getUuid())
+        .get(0);
     assertThat(firstEncryption, not(equalTo(secondEncryption.getEncryptedValueData().getEncryptedValue())));
 
     final MockHttpServletRequestBuilder get = get("/api/v1/data?name=" + certificateName)
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN);
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN);
     this.mockMvc.perform(get).andExpect(status().isOk())
-        .andExpect(jsonPath("$.data[0].value.private_key").value(originalCert));
+      .andExpect(jsonPath("$.data[0].value.private_key").value(originalCert));
   }
 
   @Test
@@ -289,8 +279,8 @@ public class EncryptionKeyRotatorTest {
     List<UUID> oldCanaryUuids = keySet.getInactiveUuids();
     List<EncryptionKeyCanary> allCanaries = encryptionKeyCanaryDataService.findAll();
     List<UUID> remainingCanaryUuids = allCanaries.stream()
-        .map(EncryptionKeyCanary::getUuid)
-        .collect(Collectors.toList());
+      .map(EncryptionKeyCanary::getUuid)
+      .collect(Collectors.toList());
 
     assertThat(remainingCanaryUuids, hasItem(keySet.getActive().getUuid()));
 
@@ -310,15 +300,15 @@ public class EncryptionKeyRotatorTest {
 
   private void createPasswordWithOldKey(Key oldKey) throws Exception {
     final EncryptedValue credentialEncryption = encryptionService
-        .encrypt(oldCanary.getUuid(), oldKey, "test-password-plaintext");
+      .encrypt(oldCanary.getUuid(), oldKey, "test-password-plaintext");
     PasswordCredentialVersionData passwordCredentialData = new PasswordCredentialVersionData(passwordName);
     passwordCredentialData.setEncryptedValueData(credentialEncryption);
 
     StringGenerationParameters parameters = new StringGenerationParameters();
     parameters.setExcludeNumber(true);
     final EncryptedValue parameterEncryption = encryptionService
-        .encrypt(oldCanary.getUuid(), oldKey,
-            new ObjectMapper().writeValueAsString(parameters));
+      .encrypt(oldCanary.getUuid(), oldKey,
+        new ObjectMapper().writeValueAsString(parameters));
     passwordCredentialData.setEncryptedGenerationParameters(parameterEncryption);
     password = new PasswordCredentialVersion(passwordCredentialData);
 
@@ -329,11 +319,11 @@ public class EncryptionKeyRotatorTest {
     CertificateCredentialVersionData certificateCredentialData2 = new CertificateCredentialVersionData("/unknown-key");
     credentialWithUnknownKey = new CertificateCredentialVersion(certificateCredentialData2);
     credentialWithUnknownKey
-        .setEncryptor(encryptor)
-        .setPrivateKey("cert-private-key");
+      .setEncryptor(encryptor)
+      .setPrivateKey("cert-private-key");
     certificateCredentialData2
-        .getEncryptedValueData()
-        .setEncryptionKeyUuid(unknownCanary.getUuid());
+      .getEncryptedValueData()
+      .setEncryptionKeyUuid(unknownCanary.getUuid());
     credentialVersionDataService.save(credentialWithUnknownKey);
   }
 
@@ -346,9 +336,9 @@ public class EncryptionKeyRotatorTest {
 
   private void createCertificateWithOldKey(Key oldKey) throws Exception {
     final EncryptedValue encryption = encryptionService
-        .encrypt(oldCanary.getUuid(), oldKey, "old-certificate-private-key");
+      .encrypt(oldCanary.getUuid(), oldKey, "old-certificate-private-key");
     CertificateCredentialVersionData certificateCredentialData1 =
-        new CertificateCredentialVersionData("/old-key");
+      new CertificateCredentialVersionData("/old-key");
     certificateCredentialData1.setEncryptedValueData(encryption);
     credentialVersionWithOldKey = new CertificateCredentialVersion(certificateCredentialData1);
     credentialVersionDataService.save(credentialVersionWithOldKey);
@@ -356,7 +346,7 @@ public class EncryptionKeyRotatorTest {
 
   private Key createOldKey() throws Exception {
     final PasswordBasedKeyProxy keyProxy = new PasswordBasedKeyProxy("old-password", 1,
-        encryptionService);
+      encryptionService);
     Key oldKey = keyProxy.deriveKey();
 
     oldCanary = new EncryptionKeyCanary();
@@ -373,10 +363,10 @@ public class EncryptionKeyRotatorTest {
   private void createCredentialWithOriginalKey() {
     credentialWithCurrentKey = new CertificateCredentialVersion("/current-key");
     credentialWithCurrentKey
-        .setEncryptor(encryptor)
-        .setCa("my-ca")
-        .setCertificate(CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT)
-        .setPrivateKey("cert-private-key");
+      .setEncryptor(encryptor)
+      .setCa("my-ca")
+      .setCertificate(CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT)
+      .setPrivateKey("cert-private-key");
 
     credentialVersionDataService.save(credentialWithCurrentKey);
   }

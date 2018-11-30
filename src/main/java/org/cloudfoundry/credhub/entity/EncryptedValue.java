@@ -1,15 +1,9 @@
 package org.cloudfoundry.credhub.entity;
 
-import org.cloudfoundry.credhub.constants.UuidConstants;
-import org.cloudfoundry.credhub.util.InstantMillisecondsConverter;
-import org.hibernate.annotations.GenericGenerator;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.UUID;
+
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
@@ -17,6 +11,14 @@ import javax.persistence.EntityListeners;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import org.cloudfoundry.credhub.constants.UuidConstants;
+import org.cloudfoundry.credhub.util.InstantMillisecondsConverter;
+import org.hibernate.annotations.GenericGenerator;
 
 import static org.cloudfoundry.credhub.constants.EncryptionConstants.ENCRYPTED_BYTES;
 import static org.cloudfoundry.credhub.constants.EncryptionConstants.NONCE_SIZE;
@@ -100,14 +102,24 @@ public class EncryptedValue {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o) {
+      return true;
+    }
+
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
 
     EncryptedValue that = (EncryptedValue) o;
 
-    if (encryptionKeyUuid != null ? !encryptionKeyUuid.equals(that.encryptionKeyUuid) : that.encryptionKeyUuid != null)
+    if (encryptionKeyUuid != null ? !encryptionKeyUuid.equals(that.encryptionKeyUuid) : that.encryptionKeyUuid != null) {
       return false;
-    if (!Arrays.equals(encryptedValue, that.encryptedValue)) return false;
+    }
+
+    if (!Arrays.equals(encryptedValue, that.encryptedValue)) {
+      return false;
+    }
+
     return Arrays.equals(nonce, that.nonce);
   }
 

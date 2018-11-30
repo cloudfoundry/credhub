@@ -1,10 +1,11 @@
 package org.cloudfoundry.credhub.service;
 
-import org.cloudfoundry.credhub.data.CredentialVersionDataService;
-import org.springframework.stereotype.Component;
-
 import java.util.Collection;
 import java.util.UUID;
+
+import org.springframework.stereotype.Component;
+
+import org.cloudfoundry.credhub.data.CredentialVersionDataService;
 
 @Component
 public class DecryptableDataDetector {
@@ -25,9 +26,9 @@ public class DecryptableDataDetector {
     Long countCredentialsEncryptedWithKeyWeHave = credentialVersionDataService.countEncryptedWithKeyUuidIn(uuids);
     if (countTotalCredentials > 0 && countCredentialsEncryptedWithKeyWeHave == 0) {
       throw new RuntimeException(
-          "The encryption keys provided cannot decrypt any of the " + countTotalCredentials
-              + " value(s) in the database. "
-              + "Please make sure you've provided the necessary encryption keys.");
+        "The encryption keys provided cannot decrypt any of the " + countTotalCredentials
+          + " value(s) in the database. "
+          + "Please make sure you've provided the necessary encryption keys.");
     }
   }
 }

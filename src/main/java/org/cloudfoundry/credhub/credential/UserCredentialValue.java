@@ -1,12 +1,12 @@
 package org.cloudfoundry.credhub.credential;
 
+import javax.validation.constraints.NotEmpty;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.apache.commons.codec.digest.Crypt;
 import org.cloudfoundry.credhub.util.EmptyStringToNull;
-
-import javax.validation.constraints.NotEmpty;
 
 import static com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY;
 
@@ -17,7 +17,8 @@ public class UserCredentialValue implements CredentialValue {
   private String password;
   private String salt;
 
-  public UserCredentialValue() {}
+  public UserCredentialValue() {
+  }
 
   public UserCredentialValue(String username, String password, String salt) {
     this.username = username;

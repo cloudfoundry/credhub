@@ -22,7 +22,7 @@ public class PasswordCredentialRegeneratable implements Regeneratable {
 
     if (generationParameters == null) {
       throw new ParameterizedValidationException(
-          "error.cannot_regenerate_non_generated_password");
+        "error.cannot_regenerate_non_generated_password");
     }
     generateRequest.setGenerationParameters(generationParameters);
     return generateRequest;

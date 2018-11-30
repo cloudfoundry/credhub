@@ -1,25 +1,25 @@
 package org.cloudfoundry.credhub.service;
 
-import org.cloudfoundry.credhub.entity.EncryptedValue;
-import org.cloudfoundry.credhub.entity.EncryptionKeyCanary;
-import org.cloudfoundry.credhub.util.PasswordKeyProxyFactoryTestImpl;
-import org.apache.commons.lang3.ArrayUtils;
-import org.bouncycastle.util.encoders.Hex;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-
 import java.security.Key;
 import java.security.SecureRandom;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.lang3.ArrayUtils;
+import org.bouncycastle.util.encoders.Hex;
+import org.cloudfoundry.credhub.entity.EncryptedValue;
+import org.cloudfoundry.credhub.entity.EncryptionKeyCanary;
+import org.cloudfoundry.credhub.util.PasswordKeyProxyFactoryTestImpl;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
+import static java.util.Arrays.asList;
+import static org.apache.commons.lang3.ArrayUtils.toPrimitive;
 import static org.cloudfoundry.credhub.constants.EncryptionConstants.NONCE_SIZE;
 import static org.cloudfoundry.credhub.constants.EncryptionConstants.SALT_SIZE;
 import static org.cloudfoundry.credhub.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
-import static java.util.Arrays.asList;
-import static org.apache.commons.lang3.ArrayUtils.toPrimitive;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.not;

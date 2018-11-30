@@ -1,18 +1,20 @@
 package org.cloudfoundry.credhub.interceptor;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.cloudfoundry.credhub.audit.CEFAuditRecord;
-import org.cloudfoundry.credhub.auth.UserContext;
-import org.cloudfoundry.credhub.auth.UserContextFactory;
+import java.security.Principal;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
-import java.security.Principal;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.cloudfoundry.credhub.audit.CEFAuditRecord;
+import org.cloudfoundry.credhub.auth.UserContext;
+import org.cloudfoundry.credhub.auth.UserContextFactory;
 
 @Component
 public class AuditInterceptor extends HandlerInterceptorAdapter {
@@ -24,8 +26,8 @@ public class AuditInterceptor extends HandlerInterceptorAdapter {
 
   @Autowired
   AuditInterceptor(
-      UserContextFactory userContextFactory,
-      CEFAuditRecord auditRecord) {
+    UserContextFactory userContextFactory,
+    CEFAuditRecord auditRecord) {
     this.userContextFactory = userContextFactory;
     this.auditRecord = auditRecord;
   }
@@ -39,10 +41,10 @@ public class AuditInterceptor extends HandlerInterceptorAdapter {
 
   @Override
   public void afterCompletion(
-      HttpServletRequest request,
-      HttpServletResponse response,
-      Object handler,
-      Exception exception) {
+    HttpServletRequest request,
+    HttpServletResponse response,
+    Object handler,
+    Exception exception) {
     Principal userAuth = request.getUserPrincipal();
     if (userAuth == null) {
       return;

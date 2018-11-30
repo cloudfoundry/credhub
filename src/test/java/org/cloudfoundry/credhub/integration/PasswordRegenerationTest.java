@@ -1,11 +1,5 @@
 package org.cloudfoundry.credhub.integration;
 
-import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
-import org.json.JSONObject;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -15,6 +9,13 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
+
+import org.cloudfoundry.credhub.CredentialManagerApp;
+import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
+import org.json.JSONObject;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import static org.cloudfoundry.credhub.util.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -41,46 +42,46 @@ public class PasswordRegenerationTest {
   @Before
   public void beforeEach() throws Exception {
     mockMvc = MockMvcBuilders
-        .webAppContextSetup(webApplicationContext)
-        .apply(springSecurity())
-        .build();
+      .webAppContextSetup(webApplicationContext)
+      .apply(springSecurity())
+      .build();
   }
 
   @Test
   public void passwordRegeneration_withDefaultParameters_shouldRegeneratePassword() throws Exception {
     MockHttpServletRequestBuilder post = post("/api/v1/data")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        //language=JSON
-        .content("{\n"
-            + "  \"name\" : \"picard\",\n"
-            + "  \"type\" : \"password\"\n"
-            + "}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{\n"
+        + "  \"name\" : \"picard\",\n"
+        + "  \"type\" : \"password\"\n"
+        + "}");
 
     String caResult = this.mockMvc.perform(post)
-        .andDo(print())
-        .andExpect(status().isOk())
-        .andReturn().getResponse().getContentAsString();
+      .andDo(print())
+      .andExpect(status().isOk())
+      .andReturn().getResponse().getContentAsString();
 
     String originalPassword = (new JSONObject(caResult)).getString("value");
 
     assertThat(originalPassword, notNullValue());
 
     MockHttpServletRequestBuilder regeneratePost = post("/api/v1/data")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        //language=JSON
-        .content("{\n"
-            + "  \"name\" : \"picard\",\n"
-            + "  \"regenerate\" : true\n"
-            + "}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{\n"
+        + "  \"name\" : \"picard\",\n"
+        + "  \"regenerate\" : true\n"
+        + "}");
 
     String regenerateResult = this.mockMvc.perform(regeneratePost)
-        .andDo(print())
-        .andExpect(status().isOk())
-        .andReturn().getResponse().getContentAsString();
+      .andDo(print())
+      .andExpect(status().isOk())
+      .andReturn().getResponse().getContentAsString();
 
     String regeneratedPassword = (new JSONObject(regenerateResult)).getString("value");
 
@@ -91,38 +92,38 @@ public class PasswordRegenerationTest {
   @Test
   public void passwordRegeneration_withoutOverwrite_shouldNotRegeneratePassword() throws Exception {
     MockHttpServletRequestBuilder post = post("/api/v1/data")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        //language=JSON
-        .content("{\n"
-            + "  \"name\" : \"picard\",\n"
-            + "  \"type\" : \"password\"\n"
-            + "}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{\n"
+        + "  \"name\" : \"picard\",\n"
+        + "  \"type\" : \"password\"\n"
+        + "}");
 
     String caResult = this.mockMvc.perform(post)
-        .andDo(print())
-        .andExpect(status().isOk())
-        .andReturn().getResponse().getContentAsString();
+      .andDo(print())
+      .andExpect(status().isOk())
+      .andReturn().getResponse().getContentAsString();
 
     String originalPassword = (new JSONObject(caResult)).getString("value");
 
     assertThat(originalPassword, notNullValue());
 
     MockHttpServletRequestBuilder regeneratePost = post("/api/v1/data")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        //language=JSON
-        .content("{\n"
-            + "  \"name\" : \"picard\",\n"
-            + "  \"type\" : \"password\"\n"
-            + "}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{\n"
+        + "  \"name\" : \"picard\",\n"
+        + "  \"type\" : \"password\"\n"
+        + "}");
 
     String regenerateResult = this.mockMvc.perform(regeneratePost)
-        .andDo(print())
-        .andExpect(status().isOk())
-        .andReturn().getResponse().getContentAsString();
+      .andDo(print())
+      .andExpect(status().isOk())
+      .andReturn().getResponse().getContentAsString();
 
     String regeneratedPassword = (new JSONObject(regenerateResult)).getString("value");
 
@@ -133,38 +134,38 @@ public class PasswordRegenerationTest {
   @Test
   public void passwordRegeneration_withOverwrite_shouldRegeneratePassword() throws Exception {
     MockHttpServletRequestBuilder post = post("/api/v1/data")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        //language=JSON
-        .content("{\n"
-            + "  \"name\" : \"picard\",\n"
-            + "  \"type\" : \"password\"\n"
-            + "}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{\n"
+        + "  \"name\" : \"picard\",\n"
+        + "  \"type\" : \"password\"\n"
+        + "}");
 
     String caResult = this.mockMvc.perform(post)
-        .andDo(print())
-        .andExpect(status().isOk())
-        .andReturn().getResponse().getContentAsString();
+      .andDo(print())
+      .andExpect(status().isOk())
+      .andReturn().getResponse().getContentAsString();
 
     String originalPassword = (new JSONObject(caResult)).getString("value");
 
     assertThat(originalPassword, notNullValue());
 
     MockHttpServletRequestBuilder regeneratePost = post("/api/v1/data")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        //language=JSON
-        .content("{\n"
-            + "  \"name\" : \"picard\",\n"
-            + "  \"type\" : \"password\",\n"
-            + "  \"overwrite\" : true }");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{\n"
+        + "  \"name\" : \"picard\",\n"
+        + "  \"type\" : \"password\",\n"
+        + "  \"overwrite\" : true }");
 
     String regenerateResult = this.mockMvc.perform(regeneratePost)
-        .andDo(print())
-        .andExpect(status().isOk())
-        .andReturn().getResponse().getContentAsString();
+      .andDo(print())
+      .andExpect(status().isOk())
+      .andReturn().getResponse().getContentAsString();
 
     String regeneratedPassword = (new JSONObject(regenerateResult)).getString("value");
 
@@ -175,44 +176,44 @@ public class PasswordRegenerationTest {
   @Test
   public void passwordRegeneration_withoutOverwrite_butChangingParameter_shouldRegeneratePassword() throws Exception {
     MockHttpServletRequestBuilder post = post("/api/v1/data")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        //language=JSON
-        .content("{\n"
-            + "  \"name\" : \"picard\",\n"
-            + "  \"type\" : \"password\",\n"
-            + "  \"parameters\" : {\n"
-            + "  \"length\" : 20"
-            + "}"
-            + "}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{\n"
+        + "  \"name\" : \"picard\",\n"
+        + "  \"type\" : \"password\",\n"
+        + "  \"parameters\" : {\n"
+        + "  \"length\" : 20"
+        + "}"
+        + "}");
 
     String caResult = this.mockMvc.perform(post)
-        .andDo(print())
-        .andExpect(status().isOk())
-        .andReturn().getResponse().getContentAsString();
+      .andDo(print())
+      .andExpect(status().isOk())
+      .andReturn().getResponse().getContentAsString();
 
     String originalPassword = (new JSONObject(caResult)).getString("value");
 
     assertThat(originalPassword, notNullValue());
 
     MockHttpServletRequestBuilder regeneratePost = post("/api/v1/data")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        //language=JSON
-        .content("{\n"
-            + "  \"name\" : \"picard\",\n"
-            + "  \"type\" : \"password\",\n"
-            + "  \"parameters\" : {\n"
-            + "  \"length\" : 40"
-            + "}"
-            + "}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{\n"
+        + "  \"name\" : \"picard\",\n"
+        + "  \"type\" : \"password\",\n"
+        + "  \"parameters\" : {\n"
+        + "  \"length\" : 40"
+        + "}"
+        + "}");
 
     String regenerateResult = this.mockMvc.perform(regeneratePost)
-        .andDo(print())
-        .andExpect(status().isOk())
-        .andReturn().getResponse().getContentAsString();
+      .andDo(print())
+      .andExpect(status().isOk())
+      .andReturn().getResponse().getContentAsString();
 
     String regeneratedPassword = (new JSONObject(regenerateResult)).getString("value");
 

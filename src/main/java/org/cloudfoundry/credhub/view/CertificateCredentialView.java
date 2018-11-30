@@ -1,8 +1,8 @@
 package org.cloudfoundry.credhub.view;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.UUID;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class CertificateCredentialView {
 
@@ -11,7 +11,7 @@ public class CertificateCredentialView {
 
   public CertificateCredentialView() { /* Jackson */ }
 
-  public CertificateCredentialView(String name, UUID uuid){
+  public CertificateCredentialView(String name, UUID uuid) {
     this.name = name;
     this.uuid = uuid;
   }

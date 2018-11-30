@@ -10,11 +10,11 @@ public class JsonView extends CredentialView {
 
   JsonView(JsonCredentialVersion jsonCredential) {
     super(
-        jsonCredential.getVersionCreatedAt(),
-        jsonCredential.getUuid(),
-        jsonCredential.getName(),
-        jsonCredential.getCredentialType(),
-        new JsonCredentialValue(jsonCredential.getValue())
+      jsonCredential.getVersionCreatedAt(),
+      jsonCredential.getUuid(),
+      jsonCredential.getName(),
+      jsonCredential.getCredentialType(),
+      new JsonCredentialValue(jsonCredential.getValue())
     );
   }
 }

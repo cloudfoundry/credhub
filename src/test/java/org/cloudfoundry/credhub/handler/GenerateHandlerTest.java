@@ -5,7 +5,6 @@ import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.request.PasswordGenerateRequest;
-import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.request.StringGenerationParameters;
 import org.cloudfoundry.credhub.service.PermissionService;
 import org.cloudfoundry.credhub.service.PermissionedCredentialService;
@@ -16,10 +15,10 @@ import org.junit.runners.JUnit4;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.ArrayList;
-
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 
 @RunWith(JUnit4.class)
@@ -66,7 +65,7 @@ public class GenerateHandlerTest {
   }
 
   @Test
-  public void handleGenerateRequest_addsToCEFAuditRecord(){
+  public void handleGenerateRequest_addsToCEFAuditRecord() {
     PasswordGenerateRequest generateRequest = new PasswordGenerateRequest();
 
     generateRequest.setType("password");

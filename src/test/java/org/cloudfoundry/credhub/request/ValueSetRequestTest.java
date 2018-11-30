@@ -1,11 +1,12 @@
 package org.cloudfoundry.credhub.request;
 
+import java.util.Set;
+
+import javax.validation.ConstraintViolation;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.util.Set;
-import javax.validation.ConstraintViolation;
 
 import static org.cloudfoundry.credhub.helper.JsonTestHelper.deserialize;
 import static org.cloudfoundry.credhub.helper.JsonTestHelper.deserializeAndValidate;
@@ -21,10 +22,10 @@ public class ValueSetRequestTest {
   @Test
   public void deserializesToValueSetRequest() {
     String json = "{"
-        + "\"name\":\"some-name\","
-        + "\"type\":\"value\","
-        + "\"value\":\"some-value\""
-        + "}";
+      + "\"name\":\"some-name\","
+      + "\"type\":\"value\","
+      + "\"value\":\"some-value\""
+      + "}";
     BaseCredentialSetRequest request = deserialize(json, BaseCredentialSetRequest.class);
 
     assertThat(request, instanceOf(ValueSetRequest.class));
@@ -33,12 +34,12 @@ public class ValueSetRequestTest {
   @Test
   public void whenAllFieldsAreSet_shouldBeValid() {
     String json = "{"
-        + "\"name\":\"some-name\","
-        + "\"type\":\"value\","
-        + "\"value\":\"some-value\""
-        + "}";
+      + "\"name\":\"some-name\","
+      + "\"type\":\"value\","
+      + "\"value\":\"some-value\""
+      + "}";
     Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
-        BaseCredentialSetRequest.class);
+      BaseCredentialSetRequest.class);
 
     assertThat(violations.size(), equalTo(0));
   }
@@ -46,12 +47,12 @@ public class ValueSetRequestTest {
   @Test
   public void whenTypeHasUnusualCasing_shouldBeValid() {
     String json = "{"
-        + "\"name\":\"some-name\","
-        + "\"type\":\"VaLuE\","
-        + "\"value\":\"some-value\""
-        + "}";
+      + "\"name\":\"some-name\","
+      + "\"type\":\"VaLuE\","
+      + "\"value\":\"some-value\""
+      + "}";
     ValueSetRequest valueSetRequest = (ValueSetRequest) deserialize(json,
-        BaseCredentialSetRequest.class);
+      BaseCredentialSetRequest.class);
     Set<ConstraintViolation<ValueSetRequest>> violations = validate(valueSetRequest);
 
     assertThat(violations.size(), equalTo(0));
@@ -60,11 +61,11 @@ public class ValueSetRequestTest {
   @Test
   public void whenValueIsNotSet_shouldBeInvalid() {
     String json = "{"
-        + "\"name\":\"some-name\","
-        + "\"type\":\"value\""
-        + "}";
+      + "\"name\":\"some-name\","
+      + "\"type\":\"value\""
+      + "}";
     ValueSetRequest valueSetRequest = (ValueSetRequest) deserialize(json,
-        BaseCredentialSetRequest.class);
+      BaseCredentialSetRequest.class);
     Set<ConstraintViolation<ValueSetRequest>> violations = validate(valueSetRequest);
 
     assertThat(violations, contains(hasViolationWithMessage("error.missing_value")));
@@ -73,12 +74,12 @@ public class ValueSetRequestTest {
   @Test
   public void whenValueIsEmpty_shouldBeInvalid() {
     String json = "{"
-        + "\"name\":\"some-name\","
-        + "\"type\":\"value\","
-        + "\"value\":\"\""
-        + "}";
+      + "\"name\":\"some-name\","
+      + "\"type\":\"value\","
+      + "\"value\":\"\""
+      + "}";
     ValueSetRequest valueSetRequest = (ValueSetRequest) deserialize(json,
-        BaseCredentialSetRequest.class);
+      BaseCredentialSetRequest.class);
     Set<ConstraintViolation<ValueSetRequest>> violations = validate(valueSetRequest);
 
     assertThat(violations, contains(hasViolationWithMessage("error.missing_value")));

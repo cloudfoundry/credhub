@@ -1,24 +1,25 @@
 package org.cloudfoundry.credhub.service;
 
+import java.security.Key;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import javax.crypto.AEADBadTagException;
+import javax.crypto.IllegalBlockSizeException;
+
 import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
 import org.cloudfoundry.credhub.entity.EncryptionKeyCanary;
 import org.cloudfoundry.credhub.exceptions.IncorrectKeyException;
 import org.cloudfoundry.credhub.util.StringUtil;
 
-import java.security.Key;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import javax.crypto.AEADBadTagException;
-import javax.crypto.IllegalBlockSizeException;
-
 import static java.util.Collections.unmodifiableList;
 
-public class ExternalKeyProxy implements  KeyProxy {
+public class ExternalKeyProxy implements KeyProxy {
 
   private final List<Byte> salt;
   private final EncryptionProvider encryptionProvider;
-  private EncryptionKeyMetadata encryptionKeyMetadata ;
+  private EncryptionKeyMetadata encryptionKeyMetadata;
 
   ExternalKeyProxy(EncryptionKeyMetadata encryptionKeyMetadata, EncryptionProvider encryptionProvider) {
     this.encryptionKeyMetadata = encryptionKeyMetadata;
@@ -41,9 +42,9 @@ public class ExternalKeyProxy implements  KeyProxy {
     try {
       plaintext = encryptionProvider.decrypt(new EncryptionKey(encryptionProvider, null, null, encryptionKeyMetadata.getEncryptionKeyName()), canary.getEncryptedCanaryValue(), canary.getNonce());
       return Arrays.equals(
-          EncryptionKeyCanaryMapper.CANARY_VALUE.getBytes(StringUtil.UTF_8), plaintext.getBytes(StringUtil.UTF_8))
-          || Arrays.equals(EncryptionKeyCanaryMapper.DEPRECATED_CANARY_VALUE.getBytes(StringUtil.UTF_8), plaintext.getBytes(
-          StringUtil.UTF_8));
+        EncryptionKeyCanaryMapper.CANARY_VALUE.getBytes(StringUtil.UTF_8), plaintext.getBytes(StringUtil.UTF_8))
+        || Arrays.equals(EncryptionKeyCanaryMapper.DEPRECATED_CANARY_VALUE.getBytes(StringUtil.UTF_8), plaintext.getBytes(
+        StringUtil.UTF_8));
     } catch (AEADBadTagException e) {
     } catch (IllegalBlockSizeException e) {
       if (!e.getMessage().contains("returns 0x40")) {

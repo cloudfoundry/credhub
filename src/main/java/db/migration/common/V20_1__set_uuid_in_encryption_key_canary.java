@@ -1,11 +1,13 @@
 package db.migration.common;
 
-import org.cloudfoundry.credhub.util.UuidUtil;
 import java.sql.Types;
 import java.util.List;
 import java.util.UUID;
-import org.flywaydb.core.api.migration.spring.SpringJdbcMigration;
+
 import org.springframework.jdbc.core.JdbcTemplate;
+
+import org.cloudfoundry.credhub.util.UuidUtil;
+import org.flywaydb.core.api.migration.spring.SpringJdbcMigration;
 
 public class V20_1__set_uuid_in_encryption_key_canary implements SpringJdbcMigration {
 

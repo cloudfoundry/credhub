@@ -1,5 +1,15 @@
 package org.cloudfoundry.credhub.db.migration;
 
+import java.time.Instant;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
+
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.data.CredentialVersionDataService;
 import org.cloudfoundry.credhub.domain.UserCredentialVersion;
@@ -13,15 +23,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Instant;
-import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
@@ -47,10 +48,10 @@ public class UserSaltMigrationTest {
     canaries = encryptionKeyCanaryRepository.findAll();
 
     databaseName = jdbcTemplate.getDataSource()
-        .getConnection()
-        .getMetaData()
-        .getDatabaseProductName()
-        .toLowerCase();
+      .getConnection()
+      .getMetaData()
+      .getDatabaseProductName()
+      .toLowerCase();
 
     flyway.clean();
     flyway.setTarget(MigrationVersion.fromVersion("40"));
@@ -83,7 +84,7 @@ public class UserSaltMigrationTest {
 
     final UserCredentialVersion migratedUser = (UserCredentialVersion) credentialVersionDataService.findMostRecent(credentialName);
     assertThat(migratedUser.getSalt().matches("^\\$6\\$[a-zA-Z0-9/.]{8}$"),
-        equalTo(true));
+      equalTo(true));
   }
 
   @Test
@@ -114,11 +115,11 @@ public class UserSaltMigrationTest {
   @Transactional
   public void createCanary(Object encryptionKeyUuid) {
     jdbcTemplate.update(
-        "insert into encryption_key_canary (encrypted_value, nonce, uuid, salt) values (?, ?, ?, ?)",
-        null,
-        null,
-        encryptionKeyUuid,
-        null
+      "insert into encryption_key_canary (encrypted_value, nonce, uuid, salt) values (?, ?, ?, ?)",
+      null,
+      null,
+      encryptionKeyUuid,
+      null
     );
   }
 
@@ -127,34 +128,34 @@ public class UserSaltMigrationTest {
     final Instant now = Instant.now();
 
     jdbcTemplate.update(
-        "insert into credential_name (uuid, name) values (?, ?)",
-        credentialNameUuid,
-        credentialName
+      "insert into credential_name (uuid, name) values (?, ?)",
+      credentialNameUuid,
+      credentialName
     );
     jdbcTemplate.update(
       "insert into credential (" +
-          "type," +
-          "encrypted_value," +
-          "nonce," +
-          "updated_at," +
-          "uuid," +
-          "encryption_key_uuid," +
-          "version_created_at," +
-          "credential_name_uuid" +
-      ") values (?, ?, ?, ?, ?, ?, ?, ?)",
-        "user",
-        null,
-        null,
-        now.toEpochMilli(),
-        userCredentialUuid,
-        encryptionKeyUuid,
-        now.toEpochMilli(),
-        credentialNameUuid
+        "type," +
+        "encrypted_value," +
+        "nonce," +
+        "updated_at," +
+        "uuid," +
+        "encryption_key_uuid," +
+        "version_created_at," +
+        "credential_name_uuid" +
+        ") values (?, ?, ?, ?, ?, ?, ?, ?)",
+      "user",
+      null,
+      null,
+      now.toEpochMilli(),
+      userCredentialUuid,
+      encryptionKeyUuid,
+      now.toEpochMilli(),
+      credentialNameUuid
     );
     jdbcTemplate.update(
-        "insert into user_credential (uuid, username) values (?, ?)",
-        userCredentialUuid,
-        "test-username"
+      "insert into user_credential (uuid, username) values (?, ?)",
+      userCredentialUuid,
+      "test-username"
     );
   }
 }

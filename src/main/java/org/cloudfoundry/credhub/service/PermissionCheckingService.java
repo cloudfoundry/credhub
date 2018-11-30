@@ -1,17 +1,18 @@
 package org.cloudfoundry.credhub.service;
 
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
 import org.apache.commons.lang3.StringUtils;
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.data.PermissionDataService;
 import org.cloudfoundry.credhub.entity.PermissionData;
 import org.cloudfoundry.credhub.request.PermissionOperation;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.UUID;
 
 @Component
 public class PermissionCheckingService {
@@ -59,8 +60,8 @@ public class PermissionCheckingService {
     if (enforcePermissions) {
       UserContext userContext = userContextHolder.getUserContext();
       return actor != null &&
-          userContext.getActor() != null &&
-          !StringUtils.equals(userContext.getActor(), actor);
+        userContext.getActor() != null &&
+        !StringUtils.equals(userContext.getActor(), actor);
     } else {
       return true;
     }
@@ -71,8 +72,8 @@ public class PermissionCheckingService {
       UserContext userContext = userContextHolder.getUserContext();
       String actor = permissionDataService.getPermission(guid).getActor();
       return actor != null &&
-          userContext.getActor() != null &&
-          !StringUtils.equals(userContext.getActor(), actor);
+        userContext.getActor() != null &&
+        !StringUtils.equals(userContext.getActor(), actor);
     } else {
       return true;
     }

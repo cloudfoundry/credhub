@@ -1,5 +1,7 @@
 package org.cloudfoundry.credhub.audit.entity;
 
+import java.util.Objects;
+
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.cloudfoundry.credhub.audit.OperationDeviceAction;
 
@@ -12,7 +14,7 @@ public class SetCredential implements RequestDetails {
     type = credentialType;
   }
 
-  public SetCredential(){
+  public SetCredential() {
 
   }
 
@@ -29,9 +31,14 @@ public class SetCredential implements RequestDetails {
     SetCredential that = (SetCredential) o;
 
     return new EqualsBuilder()
-        .append(name, that.name)
-        .append(type, that.type)
-        .isEquals();
+      .append(name, that.name)
+      .append(type, that.type)
+      .isEquals();
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(name, type);
   }
 
   @Override
@@ -47,7 +54,11 @@ public class SetCredential implements RequestDetails {
     this.name = name;
   }
 
-  public String getType() { return type; }
+  public String getType() {
+    return type;
+  }
 
-  public void setType(String type) { this.type = type; }
+  public void setType(String type) {
+    this.type = type;
+  }
 }

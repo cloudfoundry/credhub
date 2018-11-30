@@ -18,7 +18,7 @@ import org.springframework.security.oauth2.provider.token.store.jwk.JwkTokenStor
 
 @Configuration
 @Profile({"prod", "dev"})
-@ConditionalOnProperty(value = "security.oauth2.enabled")
+@ConditionalOnProperty("security.oauth2.enabled")
 public class OAuth2Configuration {
 
   @Bean
@@ -57,7 +57,7 @@ public class OAuth2Configuration {
       }
     };
     final AuthenticationManagerBuilder authenticationManagerBuilder =
-        new AuthenticationManagerBuilder(objectPostProcessor);
+      new AuthenticationManagerBuilder(objectPostProcessor);
     authenticationManagerBuilder.parentAuthenticationManager(authenticationManager());
     return authenticationManagerBuilder;
   }

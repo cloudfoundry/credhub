@@ -1,35 +1,37 @@
 package org.cloudfoundry.credhub.service;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
-import org.cloudfoundry.credhub.constants.CipherTypes;
-import org.cloudfoundry.credhub.util.TimedRetry;
-import org.springframework.beans.factory.annotation.Value;
-
 import java.security.Key;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.AlgorithmParameterSpec;
+
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 
+import org.springframework.beans.factory.annotation.Value;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
+import org.cloudfoundry.credhub.constants.CipherTypes;
+import org.cloudfoundry.credhub.util.TimedRetry;
+
 public class LunaEncryptionService extends InternalEncryptionService {
 
-  public static final int KEY_POPULATION_WAIT_SEC = 60 *10; // ten minutes
+  public static final int KEY_POPULATION_WAIT_SEC = 60 * 10; // ten minutes
   private final LunaConnection lunaConnection;
+  private final Logger logger;
   private boolean keyCreationEnabled;
   private TimedRetry timedRetry;
-  private final Logger logger;
 
   public LunaEncryptionService(
-      LunaConnection lunaConnection,
-      @Value("${encryption.key_creation_enabled}")
-          boolean keyCreationEnabled,
-      TimedRetry timedRetry) {
+    LunaConnection lunaConnection,
+    @Value("${encryption.key_creation_enabled}")
+      boolean keyCreationEnabled,
+    TimedRetry timedRetry) {
     this.lunaConnection = lunaConnection;
     this.keyCreationEnabled = keyCreationEnabled;
     this.timedRetry = timedRetry;
@@ -45,7 +47,7 @@ public class LunaEncryptionService extends InternalEncryptionService {
   @Override
   CipherWrapper getCipher() throws NoSuchPaddingException, NoSuchAlgorithmException {
     return new CipherWrapper(
-        Cipher.getInstance(CipherTypes.GCM.toString(), lunaConnection.getProvider()));
+      Cipher.getInstance(CipherTypes.GCM.toString(), lunaConnection.getProvider()));
   }
 
   @Override
@@ -59,7 +61,7 @@ public class LunaEncryptionService extends InternalEncryptionService {
   }
 
   private Key createKey(EncryptionKeyMetadata encryptionKeyMetadata,
-      LunaConnection connection) {
+                        LunaConnection connection) {
     try {
       String encryptionKeyName = encryptionKeyMetadata.getEncryptionKeyName();
 
@@ -85,6 +87,7 @@ public class LunaEncryptionService extends InternalEncryptionService {
       throw new RuntimeException(e);
     }
   }
+
   @Override
   public synchronized void reconnect(Exception reasonForReconnect) {
     lunaConnection.reconnect();

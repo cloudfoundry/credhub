@@ -1,8 +1,8 @@
 package org.cloudfoundry.credhub.credential;
 
-import com.fasterxml.jackson.annotation.JsonValue;
-
 import javax.validation.constraints.NotEmpty;
+
+import com.fasterxml.jackson.annotation.JsonValue;
 
 public class StringCredentialValue implements CredentialValue {
 

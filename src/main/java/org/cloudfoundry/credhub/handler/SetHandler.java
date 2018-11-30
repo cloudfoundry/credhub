@@ -1,5 +1,8 @@
 package org.cloudfoundry.credhub.handler;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.data.CertificateAuthorityService;
@@ -10,8 +13,6 @@ import org.cloudfoundry.credhub.request.CertificateSetRequest;
 import org.cloudfoundry.credhub.service.PermissionedCredentialService;
 import org.cloudfoundry.credhub.util.CertificateReader;
 import org.cloudfoundry.credhub.view.CredentialView;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 @Component
 public class SetHandler {
@@ -22,9 +23,9 @@ public class SetHandler {
 
   @Autowired
   public SetHandler(
-      PermissionedCredentialService credentialService,
-      CertificateAuthorityService certificateAuthorityService,
-      CEFAuditRecord auditRecord) {
+    PermissionedCredentialService credentialService,
+    CertificateAuthorityService certificateAuthorityService,
+    CEFAuditRecord auditRecord) {
     this.credentialService = credentialService;
     this.certificateAuthorityService = certificateAuthorityService;
     this.auditRecord = auditRecord;
@@ -51,9 +52,9 @@ public class SetHandler {
     CredentialVersion existingCredentialVersion = credentialService.findMostRecent(setRequest.getName());
 
     final CredentialVersion credentialVersion = credentialService.save(
-        existingCredentialVersion,
-        setRequest.getCredentialValue(),
-        setRequest
+      existingCredentialVersion,
+      setRequest.getCredentialValue(),
+      setRequest
     );
 
     auditRecord.setVersion(credentialVersion);

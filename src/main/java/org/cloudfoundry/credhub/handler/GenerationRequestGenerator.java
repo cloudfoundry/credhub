@@ -1,5 +1,11 @@
 package org.cloudfoundry.credhub.handler;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Supplier;
+
+import org.springframework.stereotype.Component;
+
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
@@ -10,11 +16,6 @@ import org.cloudfoundry.credhub.service.regeneratables.Regeneratable;
 import org.cloudfoundry.credhub.service.regeneratables.RsaCredentialRegeneratable;
 import org.cloudfoundry.credhub.service.regeneratables.SshCredentialRegeneratable;
 import org.cloudfoundry.credhub.service.regeneratables.UserCredentialRegeneratable;
-import org.springframework.stereotype.Component;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Supplier;
 
 @Component
 public class GenerationRequestGenerator {
@@ -34,8 +35,8 @@ public class GenerationRequestGenerator {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
     Regeneratable regeneratable = regeneratableTypeProducers
-        .getOrDefault(credentialVersion.getCredentialType(), NotRegeneratable::new)
-        .get();
+      .getOrDefault(credentialVersion.getCredentialType(), NotRegeneratable::new)
+      .get();
     return regeneratable.createGenerateRequest(credentialVersion);
   }
 }

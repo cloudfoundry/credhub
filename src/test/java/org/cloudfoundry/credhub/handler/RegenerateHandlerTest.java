@@ -1,5 +1,8 @@
 package org.cloudfoundry.credhub.handler;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.entity.BulkRegenerateCredential;
 import org.cloudfoundry.credhub.credential.CredentialValue;
@@ -18,16 +21,16 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import java.util.Arrays;
-import java.util.List;
-
 import static com.google.common.collect.Lists.newArrayList;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isOneOf;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 
@@ -53,10 +56,10 @@ public class RegenerateHandlerTest {
     cefAuditRecord = mock(CEFAuditRecord.class);
     credValue = new StringCredentialValue("secret");
     subject = new RegenerateHandler(
-        credentialService,
-        credentialGenerator,
-        generationRequestGenerator,
-        cefAuditRecord
+      credentialService,
+      credentialGenerator,
+      generationRequestGenerator,
+      cefAuditRecord
     );
   }
 
@@ -66,7 +69,7 @@ public class RegenerateHandlerTest {
     when(credentialVersion.getCredential()).thenReturn(mock(Credential.class));
     when(credentialService.findMostRecent(CREDENTIAL_NAME)).thenReturn(credentialVersion);
     when(generationRequestGenerator.createGenerateRequest(credentialVersion))
-        .thenReturn(request);
+      .thenReturn(request);
     when(credentialGenerator.generate(request)).thenReturn(credValue);
     when(credentialService.save(any(), any(), any())).thenReturn(credentialVersion);
 
@@ -107,9 +110,9 @@ public class RegenerateHandlerTest {
   @Test
   public void handleBulkRegenerate_regeneratesEverythingInTheList() {
     when(credentialService.findAllCertificateCredentialsByCaName(SIGNER_NAME))
-        .thenReturn(newArrayList("firstExpectedName", "secondExpectedName"));
+      .thenReturn(newArrayList("firstExpectedName", "secondExpectedName"));
     when(credentialService.findMostRecent(anyString()))
-        .thenReturn(mock(CredentialVersion.class));
+      .thenReturn(mock(CredentialVersion.class));
     CredentialVersion credentialVersion = mock(CertificateCredentialVersion.class);
     when(credentialService.save(any(), any(), any())).thenReturn(credentialVersion);
     when(credentialVersion.getName()).thenReturn("someName");
@@ -128,8 +131,8 @@ public class RegenerateHandlerTest {
     when(generateRequest2.getGenerationParameters()).thenReturn(generationParams2);
 
     when(generationRequestGenerator.createGenerateRequest(any(CredentialVersion.class)))
-        .thenReturn(generateRequest1)
-        .thenReturn(generateRequest2);
+      .thenReturn(generateRequest1)
+      .thenReturn(generateRequest2);
 
     subject.handleBulkRegenerate(SIGNER_NAME);
 
@@ -140,11 +143,11 @@ public class RegenerateHandlerTest {
   @Test
   public void handleBulkRegenerate_regeneratesToNestedLevels() {
     when(credentialService.findAllCertificateCredentialsByCaName(SIGNER_NAME))
-        .thenReturn(newArrayList("/firstExpectedName", "/secondExpectedName"));
+      .thenReturn(newArrayList("/firstExpectedName", "/secondExpectedName"));
     when(credentialService.findAllCertificateCredentialsByCaName("/firstExpectedName"))
-        .thenReturn(newArrayList("/thirdExpectedName", "/fourthExpectedName"));
+      .thenReturn(newArrayList("/thirdExpectedName", "/fourthExpectedName"));
     when(credentialService.findMostRecent(anyString()))
-        .thenReturn(mock(CredentialVersion.class));
+      .thenReturn(mock(CredentialVersion.class));
 
     CredentialVersion credentialVersion = mock(CredentialVersion.class);
     when(credentialService.save(any(), any(), any())).thenReturn(credentialVersion);
@@ -175,10 +178,10 @@ public class RegenerateHandlerTest {
     when(generateRequest4.getGenerationParameters()).thenReturn(generationParams4);
 
     when(generationRequestGenerator.createGenerateRequest(any(CredentialVersion.class)))
-        .thenReturn(generateRequest1)
-        .thenReturn(generateRequest3)
-        .thenReturn(generateRequest4)
-        .thenReturn(generateRequest2);
+      .thenReturn(generateRequest1)
+      .thenReturn(generateRequest3)
+      .thenReturn(generateRequest4)
+      .thenReturn(generateRequest2);
 
     subject.handleBulkRegenerate(SIGNER_NAME);
 

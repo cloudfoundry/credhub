@@ -7,11 +7,11 @@ import org.cloudfoundry.credhub.audit.OperationDeviceAction;
 public class BulkRegenerateCredential implements RequestDetails {
   private String signedBy;
 
-  public BulkRegenerateCredential(){
+  public BulkRegenerateCredential() {
 
   }
 
-  public BulkRegenerateCredential(String signedBy){
+  public BulkRegenerateCredential(String signedBy) {
     this.signedBy = signedBy;
   }
 
@@ -42,14 +42,14 @@ public class BulkRegenerateCredential implements RequestDetails {
     BulkRegenerateCredential that = (BulkRegenerateCredential) o;
 
     return new EqualsBuilder()
-        .append(signedBy, that.signedBy)
-        .isEquals();
+      .append(signedBy, that.signedBy)
+      .isEquals();
   }
 
   @Override
   public int hashCode() {
     return new HashCodeBuilder(17, 37)
-        .append(signedBy)
-        .toHashCode();
+      .append(signedBy)
+      .toHashCode();
   }
 }

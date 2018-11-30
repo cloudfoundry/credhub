@@ -9,8 +9,8 @@ import javax.persistence.SecondaryTable;
 @Entity
 @DiscriminatorValue(SshCredentialVersionData.CREDENTIAL_TYPE)
 @SecondaryTable(
-    name = SshCredentialVersionData.TABLE_NAME,
-    pkJoinColumns = {@PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")}
+  name = SshCredentialVersionData.TABLE_NAME,
+  pkJoinColumns = {@PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")}
 )
 
 public class SshCredentialVersionData extends CredentialVersionData<SshCredentialVersionData> {

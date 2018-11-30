@@ -1,21 +1,22 @@
 package org.cloudfoundry.credhub.entity;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.time.Instant;
+
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.SecondaryTable;
 
+import org.apache.commons.lang3.StringUtils;
+
 import static org.cloudfoundry.credhub.entity.CertificateCredentialVersionData.CREDENTIAL_DATABASE_TYPE;
 
 @Entity
 @DiscriminatorValue(CREDENTIAL_DATABASE_TYPE)
 @SecondaryTable(
-    name = CertificateCredentialVersionData.TABLE_NAME,
-    pkJoinColumns = {@PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")}
+  name = CertificateCredentialVersionData.TABLE_NAME,
+  pkJoinColumns = {@PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")}
 )
 public class CertificateCredentialVersionData extends CredentialVersionData<CertificateCredentialVersionData> {
 
@@ -76,7 +77,9 @@ public class CertificateCredentialVersionData extends CredentialVersionData<Cert
     return this;
   }
 
-  public Instant getExpiryDate() { return expiryDate; }
+  public Instant getExpiryDate() {
+    return expiryDate;
+  }
 
   public CertificateCredentialVersionData setExpiryDate(Instant expiryDate) {
     this.expiryDate = expiryDate;
@@ -88,23 +91,23 @@ public class CertificateCredentialVersionData extends CredentialVersionData<Cert
     return CREDENTIAL_TYPE;
   }
 
+  public boolean isTransitional() {
+    return transitional;
+  }
+
   public CertificateCredentialVersionData setTransitional(boolean transitional) {
     this.transitional = transitional;
     return this;
   }
 
-  public boolean isTransitional() {
-    return transitional;
-  }
-
   @Override
   public String toString() {
     return "CertificateCredentialVersionData{" +
-        "ca='" + ca + '\'' +
-        ", certificate='" + certificate + '\'' +
-        ", caName='" + caName + '\'' +
-        ", transitional=" + transitional +
-        ", expiryDate=" + expiryDate +
-        '}';
+      "ca='" + ca + '\'' +
+      ", certificate='" + certificate + '\'' +
+      ", caName='" + caName + '\'' +
+      ", transitional=" + transitional +
+      ", expiryDate=" + expiryDate +
+      '}';
   }
 }

@@ -1,5 +1,14 @@
 package org.cloudfoundry.credhub.controller.v2;
 
+import java.util.UUID;
+
+import org.springframework.http.MediaType;
+import org.springframework.restdocs.JUnitRestDocumentation;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
 import org.cloudfoundry.credhub.handler.SpyPermissionsHandler;
 import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.cloudfoundry.credhub.view.PermissionsV2View;
@@ -8,14 +17,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
-import org.springframework.http.MediaType;
-import org.springframework.restdocs.JUnitRestDocumentation;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
-import java.util.UUID;
 
 import static java.util.Collections.emptyList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -34,11 +35,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 public class PermissionsV2ControllerTest {
 
-  private MockMvc mockMvc;
-  private SpyPermissionsHandler spyPermissionsHandler;
-
   @Rule
   public final JUnitRestDocumentation restDocumentation = new JUnitRestDocumentation();
+  private MockMvc mockMvc;
+  private SpyPermissionsHandler spyPermissionsHandler;
 
   @Before
   public void setUp() {

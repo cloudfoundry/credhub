@@ -1,5 +1,8 @@
 package org.cloudfoundry.credhub.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.google.common.collect.Lists;
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
@@ -17,9 +20,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
@@ -60,7 +60,7 @@ public class PermissionServiceTest {
     permissionDataService = mock(PermissionDataService.class);
     permissionCheckingService = mock(PermissionCheckingService.class);
     when(permissionCheckingService.hasPermission(anyString(), anyString(), any(PermissionOperation.class)))
-        .thenReturn(true);
+      .thenReturn(true);
 
     userContextHolder = mock(UserContextHolder.class);
     when(userContextHolder.getUserContext()).thenReturn(userContext);
@@ -71,10 +71,10 @@ public class PermissionServiceTest {
   public void getAllowedOperations_getsAllowedOperationsUsingPermissionsDataService() {
     ArrayList<PermissionOperation> expectedOperations = Lists.newArrayList(PermissionOperation.READ);
     when(permissionDataService.getAllowedOperations(CREDENTIAL_NAME, USER_NAME))
-        .thenReturn(expectedOperations);
+      .thenReturn(expectedOperations);
 
     List<PermissionOperation> foundOperations = subject
-        .getAllowedOperationsForLogging(CREDENTIAL_NAME, USER_NAME);
+      .getAllowedOperationsForLogging(CREDENTIAL_NAME, USER_NAME);
 
     assertThat(expectedOperations, equalTo(foundOperations));
   }
@@ -120,7 +120,7 @@ public class PermissionServiceTest {
   public void saveAccessControlEntries_whenUserCantWrite_throws() {
     when(permissionCheckingService.userAllowedToOperateOnActor(eq(USER_NAME))).thenReturn(true);
     when(permissionCheckingService.hasPermission(USER_NAME, "test-path", PermissionOperation.WRITE_ACL))
-        .thenReturn(false);
+      .thenReturn(false);
     ArrayList<PermissionEntry> expectedEntries = newArrayList(new PermissionEntry(USER_NAME, "test-path", PermissionOperation.READ));
 
     try {
@@ -146,7 +146,7 @@ public class PermissionServiceTest {
   public void getAccessControlList_whenUserCantRead_throws() {
     List<PermissionEntry> expectedPermissionEntries = newArrayList();
     when(permissionDataService.getPermissions(expectedCredential))
-        .thenReturn(expectedPermissionEntries);
+      .thenReturn(expectedPermissionEntries);
     List<PermissionEntry> foundPermissionEntries = subject.getPermissions(expectedCredentialVersion);
 
     assertThat(foundPermissionEntries, equalTo(expectedPermissionEntries));
@@ -199,10 +199,10 @@ public class PermissionServiceTest {
   @Test
   public void getAccessControlList_delegatesToDataService() {
     when(permissionCheckingService.hasPermission(USER_NAME, CREDENTIAL_NAME, PermissionOperation.READ_ACL))
-        .thenReturn(false);
+      .thenReturn(false);
     List<PermissionEntry> expectedPermissionEntries = newArrayList();
     when(permissionDataService.getPermissions(expectedCredential))
-        .thenReturn(expectedPermissionEntries);
+      .thenReturn(expectedPermissionEntries);
 
     try {
       subject.getPermissions(expectedCredentialVersion);
@@ -215,11 +215,11 @@ public class PermissionServiceTest {
   @Test
   public void deleteAccessControlEntry_whenTheUserHasPermission_delegatesToDataService() {
     when(permissionCheckingService.hasPermission(userContext.getActor(), CREDENTIAL_NAME, PermissionOperation.WRITE_ACL))
-        .thenReturn(true);
+      .thenReturn(true);
     when(permissionCheckingService.userAllowedToOperateOnActor("other-actor"))
-        .thenReturn(true);
+      .thenReturn(true);
     when(permissionDataService.deletePermissions(CREDENTIAL_NAME, "other-actor"))
-        .thenReturn(true);
+      .thenReturn(true);
     boolean result = subject.deletePermissions(CREDENTIAL_NAME, "other-actor");
 
     assertThat(result, equalTo(true));
@@ -228,9 +228,9 @@ public class PermissionServiceTest {
   @Test
   public void deleteAccessControlEntry_whenTheUserLacksPermission_throwsAnException() {
     when(permissionCheckingService.hasPermission(userContext.getActor(), CREDENTIAL_NAME, PermissionOperation.WRITE_ACL))
-        .thenReturn(false);
+      .thenReturn(false);
     when(permissionDataService.deletePermissions(CREDENTIAL_NAME, "other-actor"))
-        .thenReturn(true);
+      .thenReturn(true);
     try {
       subject.deletePermissions(CREDENTIAL_NAME, "other-actor");
       fail("should throw");
@@ -242,9 +242,9 @@ public class PermissionServiceTest {
   @Test
   public void deleteAccessControlEntry_whenTheUserIsTheSameAsActor_throwsAnException() {
     when(permissionCheckingService.hasPermission(userContext.getActor(), CREDENTIAL_NAME, PermissionOperation.WRITE_ACL))
-        .thenReturn(true);
+      .thenReturn(true);
     when(permissionDataService.deletePermissions(CREDENTIAL_NAME, userContext.getActor()))
-        .thenReturn(true);
+      .thenReturn(true);
     try {
       subject.deletePermissions(CREDENTIAL_NAME, userContext.getActor());
       fail("should throw");

@@ -1,5 +1,11 @@
 package org.cloudfoundry.credhub.service;
 
+import java.security.Key;
+
+import javax.crypto.AEADBadTagException;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+
 import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
 import org.cloudfoundry.credhub.entity.EncryptedValue;
 import org.cloudfoundry.credhub.entity.EncryptionKeyCanary;
@@ -9,11 +15,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.security.Key;
-import javax.crypto.AEADBadTagException;
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
 
 import static org.cloudfoundry.credhub.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
 import static org.cloudfoundry.credhub.service.EncryptionKeyCanaryMapper.DEPRECATED_CANARY_VALUE;
@@ -31,7 +32,7 @@ public class LunaKeyProxyTest {
   @Before
   public void beforeEach() throws Exception {
     final PasswordEncryptionService encryptionService = new PasswordEncryptionService(
-        new PasswordKeyProxyFactoryTestImpl()
+      new PasswordKeyProxyFactoryTestImpl()
     );
     EncryptionKeyMetadata keyMetadata = new EncryptionKeyMetadata();
     keyMetadata.setEncryptionPassword("p@ssword");
@@ -44,7 +45,7 @@ public class LunaKeyProxyTest {
 
     deprecatedCanary = new EncryptionKeyCanary();
     EncryptedValue deprecatedEncryptionData = encryptionService
-        .encrypt(null, encryptionKey, DEPRECATED_CANARY_VALUE);
+      .encrypt(null, encryptionKey, DEPRECATED_CANARY_VALUE);
     deprecatedCanary.setEncryptedCanaryValue(deprecatedEncryptionData.getEncryptedValue());
     deprecatedCanary.setNonce(deprecatedEncryptionData.getNonce());
   }
@@ -66,13 +67,13 @@ public class LunaKeyProxyTest {
   @Test
   public void isMatchingCanary_whenDecryptThrowsRelevantIllegalBlockSizeException_returnsFalse() throws Exception {
     subject = new LunaKeyProxy(encryptionKey,
-        new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
-          @Override
-          public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
-              throws Exception {
-            throw new IllegalBlockSizeException("returns 0x40");
-          }
-        });
+      new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
+        @Override
+        public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
+          throws Exception {
+          throw new IllegalBlockSizeException("returns 0x40");
+        }
+      });
 
     assertThat(subject.matchesCanary(mock(EncryptionKeyCanary.class)), equalTo(false));
   }
@@ -80,13 +81,13 @@ public class LunaKeyProxyTest {
   @Test
   public void isMatchingCanary_whenDecryptThrowsAEADBadTagException_returnsFalse() throws Exception {
     subject = new LunaKeyProxy(encryptionKey,
-        new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
-          @Override
-          public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
-              throws Exception {
-            throw new AEADBadTagException();
-          }
-        });
+      new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
+        @Override
+        public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
+          throws Exception {
+          throw new AEADBadTagException();
+        }
+      });
 
     assertThat(subject.matchesCanary(mock(EncryptionKeyCanary.class)), equalTo(false));
   }
@@ -94,13 +95,13 @@ public class LunaKeyProxyTest {
   @Test(expected = IncorrectKeyException.class)
   public void isMatchingCanary_whenDecryptThrowsBadPaddingException_throwsIncorrectKeyException() throws Exception {
     subject = new LunaKeyProxy(encryptionKey,
-        new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
-          @Override
-          public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
-              throws Exception {
-            throw new BadPaddingException("");
-          }
-        });
+      new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
+        @Override
+        public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
+          throws Exception {
+          throw new BadPaddingException("");
+        }
+      });
 
     subject.matchesCanary(mock(EncryptionKeyCanary.class));
   }
@@ -108,13 +109,13 @@ public class LunaKeyProxyTest {
   @Test(expected = IncorrectKeyException.class)
   public void isMatchingCanary_whenDecryptThrowsIllegalBlockSizeException_throwsIncorrectKeyException() throws Exception {
     subject = new LunaKeyProxy(encryptionKey,
-        new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
-          @Override
-          public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
-              throws Exception {
-            throw new IllegalBlockSizeException("");
-          }
-        });
+      new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
+        @Override
+        public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
+          throws Exception {
+          throw new IllegalBlockSizeException("");
+        }
+      });
 
     subject.matchesCanary(mock(EncryptionKeyCanary.class));
   }
@@ -122,13 +123,13 @@ public class LunaKeyProxyTest {
   @Test(expected = IncorrectKeyException.class)
   public void isMatchingCanary_whenDecryptThrowsOtherException_throwsIncorrectKeyException() throws Exception {
     subject = new LunaKeyProxy(encryptionKey,
-        new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
-          @Override
-          public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
-              throws Exception {
-            throw new Exception("");
-          }
-        });
+      new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
+        @Override
+        public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
+          throws Exception {
+          throw new Exception("");
+        }
+      });
 
     subject.matchesCanary(mock(EncryptionKeyCanary.class));
   }

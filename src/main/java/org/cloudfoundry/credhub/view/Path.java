@@ -2,7 +2,7 @@ package org.cloudfoundry.credhub.view;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-class Path {
+public class Path {
 
   private String path;
 

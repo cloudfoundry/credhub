@@ -1,5 +1,19 @@
 package org.cloudfoundry.credhub.integration;
 
+import java.io.ByteArrayInputStream;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.WebApplicationContext;
+
 import com.google.common.collect.ImmutableMap;
 import com.jayway.jsonpath.JsonPath;
 import net.minidev.json.JSONObject;
@@ -12,19 +26,6 @@ import org.json.JSONArray;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.context.WebApplicationContext;
-
-import java.io.ByteArrayInputStream;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
 
 import static org.cloudfoundry.credhub.helper.RequestHelper.getCertificateId;
 import static org.cloudfoundry.credhub.util.AuthConstants.ALL_PERMISSIONS_TOKEN;
@@ -62,33 +63,33 @@ public class CertificateSetAndRegenerateTest {
   @Before
   public void beforeEach() throws Exception {
     mockMvc = MockMvcBuilders
-        .webAppContextSetup(webApplicationContext)
-        .apply(springSecurity())
-        .build();
+      .webAppContextSetup(webApplicationContext)
+      .apply(springSecurity())
+      .build();
 
     MockHttpServletRequestBuilder generateCaRequest = post("/api/v1/data")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        //language=JSON
-        .content("{\n"
-            + "  \"name\" :\"" + CA_NAME + "\",\n"
-            + "  \"type\" : \"certificate\",\n"
-            + "  \"parameters\" : {\n"
-            + "    \"common_name\" : \"federation\",\n"
-            + "    \"is_ca\" : true,\n"
-            + "    \"self_sign\" : true\n"
-            + "  }\n"
-            + "}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{\n"
+        + "  \"name\" :\"" + CA_NAME + "\",\n"
+        + "  \"type\" : \"certificate\",\n"
+        + "  \"parameters\" : {\n"
+        + "    \"common_name\" : \"federation\",\n"
+        + "    \"is_ca\" : true,\n"
+        + "    \"self_sign\" : true\n"
+        + "  }\n"
+        + "}");
 
     final String generateCaResponse = this.mockMvc
-        .perform(generateCaRequest)
-        .andExpect(status().isOk())
-        .andReturn().getResponse()
-        .getContentAsString();
+      .perform(generateCaRequest)
+      .andExpect(status().isOk())
+      .andReturn().getResponse()
+      .getContentAsString();
 
     caCertificate = JsonPath.parse(generateCaResponse)
-        .read("$.value.certificate");
+      .read("$.value.certificate");
     caCredentialUuid = getCertificateId(mockMvc, CA_NAME);
     assertNotNull(caCertificate);
   }
@@ -96,97 +97,97 @@ public class CertificateSetAndRegenerateTest {
   @Test
   public void certificateSet_withCaName_canBeRegeneratedWithSameCA() throws Exception {
     final String generatedCertificate = RequestHelper
-        .generateCertificateCredential(mockMvc, "generatedCertificate", true,
-            "generated-cert", CA_NAME, ALL_PERMISSIONS_TOKEN);
+      .generateCertificateCredential(mockMvc, "generatedCertificate", true,
+        "generated-cert", CA_NAME, ALL_PERMISSIONS_TOKEN);
     String certificateValue = JsonPath.parse(generatedCertificate)
-        .read("$.value.certificate");
+      .read("$.value.certificate");
     String privateKeyValue = JsonPath.parse(generatedCertificate)
-        .read("$.value.private_key");
+      .read("$.value.private_key");
 
     final String setJson = JSONObject.toJSONString(
-        ImmutableMap.<String, String>builder()
-            .put("ca_name", CA_NAME)
-            .put("certificate", certificateValue)
-            .put("private_key", privateKeyValue)
-            .build());
+      ImmutableMap.<String, String>builder()
+        .put("ca_name", CA_NAME)
+        .put("certificate", certificateValue)
+        .put("private_key", privateKeyValue)
+        .build());
 
     MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        //language=JSON
-        .content("{\n"
-            + "  \"name\" : \"/crusher\",\n"
-            + "  \"type\" : \"certificate\",\n"
-            + "  \"value\" : " + setJson + "}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{\n"
+        + "  \"name\" : \"/crusher\",\n"
+        + "  \"type\" : \"certificate\",\n"
+        + "  \"value\" : " + setJson + "}");
 
     this.mockMvc.perform(certificateSetRequest)
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.value.ca", equalTo(caCertificate)));
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.value.ca", equalTo(caCertificate)));
 
     MockHttpServletRequestBuilder regenerateRequest = post("/api/v1/data")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{" +
-            "\"name\":\"/crusher\"," +
-            "\"regenerate\":true" +
-            "}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      .content("{" +
+        "\"name\":\"/crusher\"," +
+        "\"regenerate\":true" +
+        "}");
 
     this.mockMvc.perform(regenerateRequest)
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.value.ca", equalTo(caCertificate)));
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.value.ca", equalTo(caCertificate)));
   }
 
   @Test
   public void certificateRegenerate_withTransitionalSetToTrue_generatesANewTransitionalCertificate() throws Exception {
     MockHttpServletRequestBuilder regenerateRequest = post("/api/v1/certificates/" + caCredentialUuid + "/regenerate")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{" +
-            "\"set_as_transitional\": true" +
-            "}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      .content("{" +
+        "\"set_as_transitional\": true" +
+        "}");
 
     this.mockMvc.perform(regenerateRequest)
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.transitional", equalTo(true)));
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.transitional", equalTo(true)));
 
     MockHttpServletRequestBuilder getRequest = get("/api/v1/data?name=" + CA_NAME)
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON);
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON);
 
     this.mockMvc.perform(getRequest)
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.data[0].transitional", equalTo(true)));
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.data[0].transitional", equalTo(true)));
   }
 
   @Test
   public void certificateRegenerate_withTransitionalSetToTrue_failsIfThereIsAlreadyATransitionalCert()
-      throws Exception {
+    throws Exception {
     MockHttpServletRequestBuilder regenerateRequest = post("/api/v1/certificates/" + caCredentialUuid + "/regenerate")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{" +
-            "\"set_as_transitional\": true" +
-            "}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      .content("{" +
+        "\"set_as_transitional\": true" +
+        "}");
 
     this.mockMvc.perform(regenerateRequest)
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.transitional", equalTo(true)));
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.transitional", equalTo(true)));
 
     this.mockMvc.perform(regenerateRequest)
-        .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error").value("The maximum number of transitional versions for a given CA is 1."));
+      .andExpect(status().isBadRequest())
+      .andExpect(jsonPath("$.error").value("The maximum number of transitional versions for a given CA is 1."));
   }
 
   @Test
   public void certificateRegenerate_withoutBodyWorks() throws Exception {
     MockHttpServletRequestBuilder regenerateRequest = post("/api/v1/certificates/" + caCredentialUuid + "/regenerate")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON);
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON);
 
     this.mockMvc.perform(regenerateRequest).andExpect(status().isOk());
   }
@@ -194,296 +195,296 @@ public class CertificateSetAndRegenerateTest {
   @Test
   public void certificateSetRequest_whenProvidedANonCertificateValue_returnsAValidationError() throws Exception {
     final String setJson = JSONObject.toJSONString(
-        ImmutableMap.<String, String>builder()
-            .put("ca_name", "")
-            .put("certificate", "This is definitely not a certificate. Or is it?")
-            .put("private_key", TEST_PRIVATE_KEY)
-            .build());
+      ImmutableMap.<String, String>builder()
+        .put("ca_name", "")
+        .put("certificate", "This is definitely not a certificate. Or is it?")
+        .put("private_key", TEST_PRIVATE_KEY)
+        .build());
 
     MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        //language=JSON
-        .content("{\n"
-            + "  \"name\" : \"/crusher\",\n"
-            + "  \"type\" : \"certificate\",\n"
-            + "  \"value\" : " + setJson + "}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{\n"
+        + "  \"name\" : \"/crusher\",\n"
+        + "  \"type\" : \"certificate\",\n"
+        + "  \"value\" : " + setJson + "}");
 
     this.mockMvc.perform(certificateSetRequest)
-        .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error", equalTo("The provided certificate value is not a valid X509 certificate.")));
+      .andExpect(status().isBadRequest())
+      .andExpect(jsonPath("$.error", equalTo("The provided certificate value is not a valid X509 certificate.")));
   }
 
   @Test
   public void certificateSetRequest_whenProvidedAMalformedCertificate_returnsAValidationError() throws Exception {
     final String setJson = JSONObject.toJSONString(
-        ImmutableMap.<String, String>builder()
-            .put("certificate", "-----BEGIN CERTIFICATE-----") // missing END CERTIFICATE tag
-            .build());
+      ImmutableMap.<String, String>builder()
+        .put("certificate", "-----BEGIN CERTIFICATE-----") // missing END CERTIFICATE tag
+        .build());
 
     MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{\n"
-            + "  \"name\" : \"/crusher\",\n"
-            + "  \"type\" : \"certificate\",\n"
-            + "  \"value\" : " + setJson + "}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      .content("{\n"
+        + "  \"name\" : \"/crusher\",\n"
+        + "  \"type\" : \"certificate\",\n"
+        + "  \"value\" : " + setJson + "}");
 
     this.mockMvc.perform(certificateSetRequest)
-        .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error", equalTo("Unable to parse the certificate.")));
+      .andExpect(status().isBadRequest())
+      .andExpect(jsonPath("$.error", equalTo("Unable to parse the certificate.")));
   }
 
   @Test
   public void certificateSetRequest_whenOmittingACertificate_returnsAValidationError() throws Exception {
     final String setJson = JSONObject.toJSONString(
-        ImmutableMap.<String, String>builder()
-            .put("private_key", TEST_PRIVATE_KEY)
-            .build());
+      ImmutableMap.<String, String>builder()
+        .put("private_key", TEST_PRIVATE_KEY)
+        .build());
 
     MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{\n"
-            + "  \"name\" : \"/crusher\",\n"
-            + "  \"type\" : \"certificate\",\n"
-            + "  \"value\" : " + setJson + "}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      .content("{\n"
+        + "  \"name\" : \"/crusher\",\n"
+        + "  \"type\" : \"certificate\",\n"
+        + "  \"value\" : " + setJson + "}");
 
     this.mockMvc.perform(certificateSetRequest)
-        .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error", equalTo("You must provide a certificate.")));
+      .andExpect(status().isBadRequest())
+      .andExpect(jsonPath("$.error", equalTo("You must provide a certificate.")));
   }
 
   @Test
   public void certificateSetRequest_whenSettingAMalformedCertificateAndMalformedKey_returnsAValidationError() throws Exception {
     final String setJson = JSONObject.toJSONString(
-        ImmutableMap.<String, String>builder()
-            .put("certificate", "-----BEGIN CERTIFICATE-----") // missing END CERTIFICATE tag
-            .put("private_key", "not a key")
-            .build());
+      ImmutableMap.<String, String>builder()
+        .put("certificate", "-----BEGIN CERTIFICATE-----") // missing END CERTIFICATE tag
+        .put("private_key", "not a key")
+        .build());
 
     MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{\n"
-            + "  \"name\" : \"/crusher\",\n"
-            + "  \"type\" : \"certificate\",\n"
-            + "  \"value\" : " + setJson + "}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      .content("{\n"
+        + "  \"name\" : \"/crusher\",\n"
+        + "  \"type\" : \"certificate\",\n"
+        + "  \"value\" : " + setJson + "}");
 
     this.mockMvc.perform(certificateSetRequest)
-        .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error", equalTo("Unable to parse the certificate.")));
+      .andExpect(status().isBadRequest())
+      .andExpect(jsonPath("$.error", equalTo("Unable to parse the certificate.")));
   }
 
   @Test
   public void certificateSetRequest_whenSettingAMalformedKey_returnsAValidationError() throws Exception {
     final String setJson = JSONObject.toJSONString(
-        ImmutableMap.<String, String>builder()
-            .put("certificate", "-----BEGIN CERTIFICATE-----\\\n...\\\n-----END CERTIFICATE-----") // missing END CERTIFICATE tag
-            .put("private_key", "not a key")
-            .build());
+      ImmutableMap.<String, String>builder()
+        .put("certificate", "-----BEGIN CERTIFICATE-----\\\n...\\\n-----END CERTIFICATE-----") // missing END CERTIFICATE tag
+        .put("private_key", "not a key")
+        .build());
 
     MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{\n"
-            + "  \"name\" : \"/crusher\",\n"
-            + "  \"type\" : \"certificate\",\n"
-            + "  \"value\" : " + setJson + "}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      .content("{\n"
+        + "  \"name\" : \"/crusher\",\n"
+        + "  \"type\" : \"certificate\",\n"
+        + "  \"value\" : " + setJson + "}");
 
     this.mockMvc.perform(certificateSetRequest)
-        .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error", equalTo("The provided certificate value is not a valid X509 certificate.")));
+      .andExpect(status().isBadRequest())
+      .andExpect(jsonPath("$.error", equalTo("The provided certificate value is not a valid X509 certificate.")));
   }
 
   @Test
   public void certificateSetRequest_whenProvidedACertificateValueThatIsTooLong_returnsAValidationError()
-      throws Exception {
+    throws Exception {
     int repetitionCount = 7001 - TEST_CERTIFICATE.length();
     final String setJson = JSONObject.toJSONString(
-        ImmutableMap.<String, String>builder()
-            .put("ca_name", "")
-            .put("certificate", TEST_CERTIFICATE + StringUtils.repeat("a", repetitionCount))
-            .put("private_key", TEST_PRIVATE_KEY)
-            .build());
+      ImmutableMap.<String, String>builder()
+        .put("ca_name", "")
+        .put("certificate", TEST_CERTIFICATE + StringUtils.repeat("a", repetitionCount))
+        .put("private_key", TEST_PRIVATE_KEY)
+        .build());
 
     MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        //language=JSON
-        .content("{\n"
-            + "  \"name\" : \"/crusher\",\n"
-            + "  \"type\" : \"certificate\",\n"
-            + "  \"value\" : " + setJson + "}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{\n"
+        + "  \"name\" : \"/crusher\",\n"
+        + "  \"type\" : \"certificate\",\n"
+        + "  \"value\" : " + setJson + "}");
 
     this.mockMvc.perform(certificateSetRequest)
-        .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error", equalTo(
-            "The provided certificate value is too long. Certificate lengths must be less than 7000 characters.")));
+      .andExpect(status().isBadRequest())
+      .andExpect(jsonPath("$.error", equalTo(
+        "The provided certificate value is too long. Certificate lengths must be less than 7000 characters.")));
   }
 
   @Test
   public void certificateSetRequest_whenProvidedACAValueThatIsTooLong_returnsAValidationError() throws Exception {
     int repetitionCount = 7001 - TEST_CA.length();
     final String setJson = JSONObject.toJSONString(
-        ImmutableMap.<String, String>builder()
-            .put("ca", TEST_CA + StringUtils.repeat("a", repetitionCount))
-            .put("certificate", TEST_CERTIFICATE)
-            .put("private_key", TEST_PRIVATE_KEY)
-            .build());
+      ImmutableMap.<String, String>builder()
+        .put("ca", TEST_CA + StringUtils.repeat("a", repetitionCount))
+        .put("certificate", TEST_CERTIFICATE)
+        .put("private_key", TEST_PRIVATE_KEY)
+        .build());
 
     MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        //language=JSON
-        .content("{\n"
-            + "  \"name\" : \"/crusher\",\n"
-            + "  \"type\" : \"certificate\",\n"
-            + "  \"value\" : " + setJson + "}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{\n"
+        + "  \"name\" : \"/crusher\",\n"
+        + "  \"type\" : \"certificate\",\n"
+        + "  \"value\" : " + setJson + "}");
 
     this.mockMvc.perform(certificateSetRequest)
-        .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error", equalTo(
-            "The provided certificate value is too long. Certificate lengths must be less than 7000 characters.")));
+      .andExpect(status().isBadRequest())
+      .andExpect(jsonPath("$.error", equalTo(
+        "The provided certificate value is too long. Certificate lengths must be less than 7000 characters.")));
   }
 
   @Test
   public void certificateSetRequest_whenProvidedCertificateWasNotSignedByNamedCA_returnsAValidationError()
-      throws Exception {
+    throws Exception {
     RequestHelper.generateCa(mockMvc, "otherCa", ALL_PERMISSIONS_TOKEN);
     final String otherCaCertificate = RequestHelper.generateCertificateCredential(mockMvc, "otherCaCertificate", true,
-            "other-ca-cert", "otherCa", ALL_PERMISSIONS_TOKEN);
+      "other-ca-cert", "otherCa", ALL_PERMISSIONS_TOKEN);
 
     String otherCaCertificateValue = JsonPath.parse(otherCaCertificate)
-        .read("$.value.certificate");
+      .read("$.value.certificate");
 
     final String setJson = JSONObject.toJSONString(
-        ImmutableMap.<String, String>builder()
-            .put("ca_name", CA_NAME)
-            .put("certificate", otherCaCertificateValue)
-            .build());
+      ImmutableMap.<String, String>builder()
+        .put("ca_name", CA_NAME)
+        .put("certificate", otherCaCertificateValue)
+        .build());
 
     MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        //language=JSON
-        .content("{\n"
-            + "  \"name\" : \"/crusher\",\n"
-            + "  \"type\" : \"certificate\",\n"
-            + "  \"value\" : " + setJson + "}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{\n"
+        + "  \"name\" : \"/crusher\",\n"
+        + "  \"type\" : \"certificate\",\n"
+        + "  \"value\" : " + setJson + "}");
 
     this.mockMvc.perform(certificateSetRequest)
-        .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error",
-            equalTo("The provided certificate was not signed by the CA specified in the 'ca_name' property.")));
+      .andExpect(status().isBadRequest())
+      .andExpect(jsonPath("$.error",
+        equalTo("The provided certificate was not signed by the CA specified in the 'ca_name' property.")));
   }
 
   @Test
   public void certificateSetRequest_whenProvidedCertificateWasNotSignedByProvidedCA_returnsAValidationError()
-      throws Exception {
+    throws Exception {
     RequestHelper.generateCa(mockMvc, "otherCa", ALL_PERMISSIONS_TOKEN);
     final String otherCaCertificate = RequestHelper.generateCertificateCredential(mockMvc, "otherCaCertificate", true,
-            "other-ca-cert", "otherCa", ALL_PERMISSIONS_TOKEN);
+      "other-ca-cert", "otherCa", ALL_PERMISSIONS_TOKEN);
 
     String otherCaCertificateValue = JsonPath.parse(otherCaCertificate)
-        .read("$.value.certificate");
+      .read("$.value.certificate");
 
     final String setJson = JSONObject.toJSONString(
-        ImmutableMap.<String, String>builder()
-            .put("ca", TEST_CA)
-            .put("certificate", otherCaCertificateValue)
-            .build());
+      ImmutableMap.<String, String>builder()
+        .put("ca", TEST_CA)
+        .put("certificate", otherCaCertificateValue)
+        .build());
 
     MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        //language=JSON
-        .content("{\n"
-            + "  \"name\" : \"/crusher\",\n"
-            + "  \"type\" : \"certificate\",\n"
-            + "  \"value\" : " + setJson + "}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{\n"
+        + "  \"name\" : \"/crusher\",\n"
+        + "  \"type\" : \"certificate\",\n"
+        + "  \"value\" : " + setJson + "}");
 
     this.mockMvc.perform(certificateSetRequest)
-        .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error",
-            equalTo("The provided certificate was not signed by the CA specified in the 'ca' property.")));
+      .andExpect(status().isBadRequest())
+      .andExpect(jsonPath("$.error",
+        equalTo("The provided certificate was not signed by the CA specified in the 'ca' property.")));
   }
 
   @Test
   public void certificateSetRequest_whenProvidedCertificateWithNonMatchingPrivateKey_returnsAValidationError()
-      throws Exception {
+    throws Exception {
     final String originalCertificate = RequestHelper.generateCa(mockMvc, "otherCa", ALL_PERMISSIONS_TOKEN);
     final String otherCaCertificate = RequestHelper.generateCertificateCredential(mockMvc, "otherCaCertificate", true,
-            "other-ca-cert", "otherCa", ALL_PERMISSIONS_TOKEN);
+      "other-ca-cert", "otherCa", ALL_PERMISSIONS_TOKEN);
 
     String originalPrivateKeyValue = JsonPath.parse(originalCertificate)
-        .read("$.value.private_key");
+      .read("$.value.private_key");
     String otherCaCertificateValue = JsonPath.parse(otherCaCertificate)
-        .read("$.value.certificate");
+      .read("$.value.certificate");
 
     final String setJson = JSONObject.toJSONString(
-        ImmutableMap.<String, String>builder()
-            .put("ca_name", "otherCa")
-            .put("certificate", otherCaCertificateValue)
-            .put("private_key", originalPrivateKeyValue)
-            .build());
+      ImmutableMap.<String, String>builder()
+        .put("ca_name", "otherCa")
+        .put("certificate", otherCaCertificateValue)
+        .put("private_key", originalPrivateKeyValue)
+        .build());
 
     MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        //language=JSON
-        .content("{\n"
-            + "  \"name\" : \"/crusher\",\n"
-            + "  \"type\" : \"certificate\",\n"
-            + "  \"value\" : " + setJson + "}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{\n"
+        + "  \"name\" : \"/crusher\",\n"
+        + "  \"type\" : \"certificate\",\n"
+        + "  \"value\" : " + setJson + "}");
 
     this.mockMvc.perform(certificateSetRequest)
-        .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error", equalTo("The provided certificate does not match the private key.")));
+      .andExpect(status().isBadRequest())
+      .andExpect(jsonPath("$.error", equalTo("The provided certificate does not match the private key.")));
   }
 
   @Test
   public void certificateSetRequest_withoutTransitionalProvided_shouldGenerateAVersionWithTransitionalFalse() throws Exception {
     final String setJson = JSONObject.toJSONString(
-        ImmutableMap.<String, String>builder()
-            .put("ca", TEST_CA)
-            .put("certificate", TEST_CERTIFICATE)
-            .put("private_key", TEST_PRIVATE_KEY)
-            .build());
+      ImmutableMap.<String, String>builder()
+        .put("ca", TEST_CA)
+        .put("certificate", TEST_CERTIFICATE)
+        .put("private_key", TEST_PRIVATE_KEY)
+        .build());
 
     String content = "{\"value\" : " + setJson + "}";
     MockHttpServletRequestBuilder certificateSetRequest = post("/api/v1/certificates/" + caCredentialUuid + "/versions")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content(content);
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      .content(content);
 
     this.mockMvc.perform(certificateSetRequest)
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.value.ca", equalTo(TEST_CA)))
-        .andExpect(jsonPath("$.value.certificate", equalTo(TEST_CERTIFICATE)))
-        .andExpect(jsonPath("$.value.private_key", equalTo(TEST_PRIVATE_KEY)))
-        .andExpect(jsonPath("$.name", equalTo(CA_NAME)))
-        .andExpect(jsonPath("$.transitional", equalTo(false)));
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.value.ca", equalTo(TEST_CA)))
+      .andExpect(jsonPath("$.value.certificate", equalTo(TEST_CERTIFICATE)))
+      .andExpect(jsonPath("$.value.private_key", equalTo(TEST_PRIVATE_KEY)))
+      .andExpect(jsonPath("$.name", equalTo(CA_NAME)))
+      .andExpect(jsonPath("$.transitional", equalTo(false)));
 
     MockHttpServletRequestBuilder versionsGetRequest = get("/api/v1/certificates/" + caCredentialUuid + "/versions")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON);
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON);
 
     String versionsResponse = this.mockMvc.perform(versionsGetRequest)
-        .andExpect(status().isOk())
-        .andReturn().getResponse().getContentAsString();
+      .andExpect(status().isOk())
+      .andReturn().getResponse().getContentAsString();
 
     JSONArray versions = new JSONArray(versionsResponse);
     assertThat(versions.length(), equalTo(2));
@@ -492,107 +493,107 @@ public class CertificateSetAndRegenerateTest {
   @Test
   public void certificateSetRequest_withTransitionalTrue_shouldGenerateAVersionWithTransitionalTrue() throws Exception {
     final String setJson = JSONObject.toJSONString(
-        ImmutableMap.<String, String>builder()
-            .put("ca", TEST_CA)
-            .put("certificate", TEST_CERTIFICATE)
-            .put("private_key", TEST_PRIVATE_KEY)
-            .build());
+      ImmutableMap.<String, String>builder()
+        .put("ca", TEST_CA)
+        .put("certificate", TEST_CERTIFICATE)
+        .put("private_key", TEST_PRIVATE_KEY)
+        .build());
 
     MockHttpServletRequestBuilder certificateSetRequest = post("/api/v1/certificates/" + caCredentialUuid + "/versions")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{\"value\" : " + setJson + ", \"transitional\": true}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      .content("{\"value\" : " + setJson + ", \"transitional\": true}");
 
     this.mockMvc.perform(certificateSetRequest)
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.transitional", equalTo(true)));
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.transitional", equalTo(true)));
   }
 
   @Test
   public void certificateSetRequest_withTransitionalTrue_whenThereIsAlreadyATransitionalVersion_shouldReturnAnError() throws Exception {
     final String setJson = JSONObject.toJSONString(
-        ImmutableMap.<String, String>builder()
-            .put("ca", TEST_CA)
-            .put("certificate", TEST_CERTIFICATE)
-            .put("private_key", TEST_PRIVATE_KEY)
-            .build());
+      ImmutableMap.<String, String>builder()
+        .put("ca", TEST_CA)
+        .put("certificate", TEST_CERTIFICATE)
+        .put("private_key", TEST_PRIVATE_KEY)
+        .build());
 
     MockHttpServletRequestBuilder certificateSetRequest = post("/api/v1/certificates/" + caCredentialUuid + "/versions")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{\"value\" : " + setJson + ", \"transitional\": true}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      .content("{\"value\" : " + setJson + ", \"transitional\": true}");
 
     this.mockMvc.perform(certificateSetRequest)
-        .andExpect(status().isOk());
+      .andExpect(status().isOk());
     this.mockMvc.perform(certificateSetRequest)
-        .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.error").value("The maximum number of transitional versions for a given CA is 1."));
+      .andExpect(status().isBadRequest())
+      .andExpect(jsonPath("$.error").value("The maximum number of transitional versions for a given CA is 1."));
   }
 
   @Test
   public void certificateSetRequest_withInvalidParams_shouldReturnBadRequest() throws Exception {
     final String setJson = JSONObject.toJSONString(
-        ImmutableMap.<String, String>builder()
-            .put("certificate", "fake-certificate")
-            .put("private_key", TEST_PRIVATE_KEY)
-            .build());
+      ImmutableMap.<String, String>builder()
+        .put("certificate", "fake-certificate")
+        .put("private_key", TEST_PRIVATE_KEY)
+        .build());
 
     MockHttpServletRequestBuilder certificateSetRequest = post("/api/v1/certificates/" + caCredentialUuid + "/versions")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{\"value\" : " + setJson + "}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      .content("{\"value\" : " + setJson + "}");
 
     this.mockMvc.perform(certificateSetRequest)
-        .andExpect(status().isBadRequest());
+      .andExpect(status().isBadRequest());
   }
 
   @Test
   public void certificateSetRequest_withInvalidKey_shouldReturnBadRequest() throws Exception {
     final String setJson = JSONObject.toJSONString(
-        ImmutableMap.<String, String>builder()
-            .put("certificate", TEST_CERTIFICATE)
-            .put("private_key", TEST_PRIVATE_KEY_PKCS8)
-            .build());
+      ImmutableMap.<String, String>builder()
+        .put("certificate", TEST_CERTIFICATE)
+        .put("private_key", TEST_PRIVATE_KEY_PKCS8)
+        .build());
 
     MockHttpServletRequestBuilder certificateSetRequest = post("/api/v1/certificates/" + caCredentialUuid + "/versions")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{\"value\" : " + setJson + "}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      .content("{\"value\" : " + setJson + "}");
 
     this.mockMvc.perform(certificateSetRequest)
-        .andExpect(status().isBadRequest());
+      .andExpect(status().isBadRequest());
   }
 
   @Test
   public void certificateSetRequest_returnsWithExpiryDate() throws Exception {
     final String setJson = JSONObject.toJSONString(
-        ImmutableMap.<String, String>builder()
-            .put("ca_name", "")
-            .put("certificate", TEST_CERTIFICATE)
-            .put("private_key", TEST_PRIVATE_KEY)
-            .build());
+      ImmutableMap.<String, String>builder()
+        .put("ca_name", "")
+        .put("certificate", TEST_CERTIFICATE)
+        .put("private_key", TEST_PRIVATE_KEY)
+        .build());
 
     MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        //language=JSON
-        .content("{\n"
-            + "  \"name\" : \"/certificate\",\n"
-            + "  \"type\" : \"certificate\",\n"
-            + "  \"value\" : " + setJson + "}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{\n"
+        + "  \"name\" : \"/certificate\",\n"
+        + "  \"type\" : \"certificate\",\n"
+        + "  \"value\" : " + setJson + "}");
 
     X509Certificate certificate = (X509Certificate) CertificateFactory
-        .getInstance("X.509", BouncyCastleProvider.PROVIDER_NAME)
-        .generateCertificate(new ByteArrayInputStream(TEST_CERTIFICATE.getBytes(UTF_8)));
+      .getInstance("X.509", BouncyCastleProvider.PROVIDER_NAME)
+      .generateCertificate(new ByteArrayInputStream(TEST_CERTIFICATE.getBytes(UTF_8)));
 
     this.mockMvc.perform(certificateSetRequest)
-        .andDo(print())
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.expiry_date", equalTo(certificate.getNotAfter().toInstant().toString())));
+      .andDo(print())
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.expiry_date", equalTo(certificate.getNotAfter().toInstant().toString())));
   }
 }

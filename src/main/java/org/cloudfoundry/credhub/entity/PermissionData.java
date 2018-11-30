@@ -1,18 +1,19 @@
 package org.cloudfoundry.credhub.entity;
 
-import org.cloudfoundry.credhub.constants.UuidConstants;
-import org.cloudfoundry.credhub.request.PermissionOperation;
-import org.hibernate.annotations.GenericGenerator;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
+import org.cloudfoundry.credhub.constants.UuidConstants;
+import org.cloudfoundry.credhub.request.PermissionOperation;
+import org.hibernate.annotations.GenericGenerator;
 
 @Entity
 @Table(name = "permission")
@@ -195,8 +196,14 @@ public class PermissionData {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o) {
+      return true;
+    }
+
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
     PermissionData that = (PermissionData) o;
     return readPermission == that.readPermission &&
       writePermission == that.writePermission &&

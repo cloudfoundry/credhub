@@ -1,5 +1,21 @@
 package org.cloudfoundry.credhub.generator;
 
+import java.io.IOException;
+import java.math.BigInteger;
+import java.security.KeyPair;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Date;
+
+import javax.security.auth.x500.X500Principal;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.Extension;
@@ -13,20 +29,6 @@ import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.cloudfoundry.credhub.domain.CertificateGenerationParameters;
 import org.cloudfoundry.credhub.util.CurrentTimeProvider;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import javax.security.auth.x500.X500Principal;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.security.KeyPair;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Date;
 
 import static org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils.parseExtensionValue;
 
@@ -36,17 +38,17 @@ public class SignedCertificateGenerator {
   private final CurrentTimeProvider timeProvider;
   private final RandomSerialNumberGenerator serialNumberGenerator;
   private final JcaX509ExtensionUtils jcaX509ExtensionUtils;
+  private final BouncyCastleProvider jceProvider;
   private JcaContentSignerBuilder jcaContentSignerBuilder;
   private JcaX509CertificateConverter jcaX509CertificateConverter;
-  private final BouncyCastleProvider jceProvider;
 
   @Autowired
   SignedCertificateGenerator(
-      CurrentTimeProvider timeProvider,
-      RandomSerialNumberGenerator serialNumberGenerator,
-      JcaContentSignerBuilder jcaContentSignerBuilder,
-      JcaX509CertificateConverter jcaX509CertificateConverter,
-      BouncyCastleProvider jceProvider
+    CurrentTimeProvider timeProvider,
+    RandomSerialNumberGenerator serialNumberGenerator,
+    JcaContentSignerBuilder jcaContentSignerBuilder,
+    JcaX509CertificateConverter jcaX509CertificateConverter,
+    BouncyCastleProvider jceProvider
   ) throws Exception {
     this.timeProvider = timeProvider;
     this.serialNumberGenerator = serialNumberGenerator;
@@ -60,58 +62,58 @@ public class SignedCertificateGenerator {
     SubjectKeyIdentifier keyIdentifier = getSubjectKeyIdentifierFromKeyInfo(keyPair.getPublic());
 
     return getSignedByIssuer(
-        null,
-        keyPair.getPrivate(),
-        params.getX500Principal(),
-        keyIdentifier,
-        keyPair,
-        params
+      null,
+      keyPair.getPrivate(),
+      params.getX500Principal(),
+      keyIdentifier,
+      keyPair,
+      params
     );
   }
 
   X509Certificate getSignedByIssuer(
-      KeyPair keyPair,
-      CertificateGenerationParameters params,
-      X509Certificate caCertificate,
-      PrivateKey caPrivateKey) throws Exception {
+    KeyPair keyPair,
+    CertificateGenerationParameters params,
+    X509Certificate caCertificate,
+    PrivateKey caPrivateKey) throws Exception {
     return getSignedByIssuer(
-        caCertificate,
-        caPrivateKey,
-        getSubjectNameFrom(caCertificate),
-        getSubjectKeyIdentifierFrom(caCertificate), keyPair,
-        params
+      caCertificate,
+      caPrivateKey,
+      getSubjectNameFrom(caCertificate),
+      getSubjectKeyIdentifierFrom(caCertificate), keyPair,
+      params
     );
   }
 
   private X509Certificate getSignedByIssuer(
-      X509Certificate issuerCertificate,
-      PrivateKey issuerKey,
-      X500Principal issuerDn,
-      SubjectKeyIdentifier caSubjectKeyIdentifier,
-      KeyPair keyPair,
-      CertificateGenerationParameters params) throws Exception {
+    X509Certificate issuerCertificate,
+    PrivateKey issuerKey,
+    X500Principal issuerDn,
+    SubjectKeyIdentifier caSubjectKeyIdentifier,
+    KeyPair keyPair,
+    CertificateGenerationParameters params) throws Exception {
     Instant now = Instant.from(timeProvider.getInstant());
 
     BigInteger certificateSerialNumber = serialNumberGenerator.generate();
     BigInteger caSerialNumber =
-        issuerCertificate != null ? issuerCertificate.getSerialNumber() : certificateSerialNumber;
+      issuerCertificate != null ? issuerCertificate.getSerialNumber() : certificateSerialNumber;
 
     final JcaX509v3CertificateBuilder certificateBuilder = new JcaX509v3CertificateBuilder(
-        issuerDn,
-        certificateSerialNumber,
-        Date.from(now),
-        Date.from(now.plus(Duration.ofDays(params.getDuration()))),
-        params.getX500Principal(),
-        keyPair.getPublic()
+      issuerDn,
+      certificateSerialNumber,
+      Date.from(now),
+      Date.from(now.plus(Duration.ofDays(params.getDuration()))),
+      params.getX500Principal(),
+      keyPair.getPublic()
     );
 
     certificateBuilder.addExtension(
-        Extension.subjectKeyIdentifier,
-        false,
-        getSubjectKeyIdentifierFromKeyInfo(keyPair.getPublic()));
+      Extension.subjectKeyIdentifier,
+      false,
+      getSubjectKeyIdentifierFromKeyInfo(keyPair.getPublic()));
     if (params.getAlternativeNames() != null) {
       certificateBuilder
-          .addExtension(Extension.subjectAlternativeName, false, params.getAlternativeNames());
+        .addExtension(Extension.subjectAlternativeName, false, params.getAlternativeNames());
     }
 
     if (params.getKeyUsage() != null) {
@@ -120,20 +122,20 @@ public class SignedCertificateGenerator {
 
     if (params.getExtendedKeyUsage() != null) {
       certificateBuilder
-          .addExtension(Extension.extendedKeyUsage, false, params.getExtendedKeyUsage());
+        .addExtension(Extension.extendedKeyUsage, false, params.getExtendedKeyUsage());
     }
 
     if (caSubjectKeyIdentifier.getKeyIdentifier() != null) {
       PublicKey issuerPublicKey = issuerCertificate != null ? issuerCertificate.getPublicKey() : keyPair.getPublic();
       AuthorityKeyIdentifier authorityKeyIdentifier = jcaX509ExtensionUtils
-          .createAuthorityKeyIdentifier(issuerPublicKey);
+        .createAuthorityKeyIdentifier(issuerPublicKey);
 
       certificateBuilder
-          .addExtension(Extension.authorityKeyIdentifier, false, authorityKeyIdentifier);
+        .addExtension(Extension.authorityKeyIdentifier, false, authorityKeyIdentifier);
     }
 
     certificateBuilder
-        .addExtension(Extension.basicConstraints, true, new BasicConstraints(params.isCa()));
+      .addExtension(Extension.basicConstraints, true, new BasicConstraints(params.isCa()));
 
     ContentSigner contentSigner = jcaContentSignerBuilder.build(issuerKey);
 
@@ -153,7 +155,7 @@ public class SignedCertificateGenerator {
   private SubjectKeyIdentifier getSubjectKeyIdentifierFrom(X509Certificate certificate) throws Exception {
     byte[] extensionValue = certificate.getExtensionValue(Extension.subjectKeyIdentifier.getId());
     return extensionValue == null ?
-        new SubjectKeyIdentifier(null) :
-        SubjectKeyIdentifier.getInstance(parseExtensionValue(extensionValue));
+      new SubjectKeyIdentifier(null) :
+      SubjectKeyIdentifier.getInstance(parseExtensionValue(extensionValue));
   }
 }

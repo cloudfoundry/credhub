@@ -30,7 +30,7 @@ public class DecryptableDataDetectorTest {
     when(credentialVersionDataService.count()).thenReturn(0L);
     when(credentialVersionDataService.countEncryptedWithKeyUuidIn(any())).thenReturn(0L);
     decryptableDataDetector = new DecryptableDataDetector(keySet,
-        credentialVersionDataService);
+      credentialVersionDataService);
     decryptableDataDetector.check();
   }
 
@@ -39,13 +39,13 @@ public class DecryptableDataDetectorTest {
     when(credentialVersionDataService.count()).thenReturn(4L);
     when(credentialVersionDataService.countEncryptedWithKeyUuidIn(any())).thenReturn(0L);
     decryptableDataDetector = new DecryptableDataDetector(keySet,
-        credentialVersionDataService);
+      credentialVersionDataService);
     try {
       decryptableDataDetector.check();
     } catch (RuntimeException rte) {
       assertThat(rte.getMessage(),
-          containsString("The encryption keys provided cannot decrypt any of the 4 value(s) in the database."
-              + " Please make sure you've provided the necessary encryption keys."));
+        containsString("The encryption keys provided cannot decrypt any of the 4 value(s) in the database."
+          + " Please make sure you've provided the necessary encryption keys."));
     }
   }
 
@@ -54,7 +54,7 @@ public class DecryptableDataDetectorTest {
     when(credentialVersionDataService.count()).thenReturn(4L);
     when(credentialVersionDataService.countEncryptedWithKeyUuidIn(any())).thenReturn(1L);
     decryptableDataDetector = new DecryptableDataDetector(keySet,
-        credentialVersionDataService);
+      credentialVersionDataService);
     decryptableDataDetector.check();
   }
 }

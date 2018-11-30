@@ -46,10 +46,10 @@ public class EncryptionKeyProvider {
   @Override
   public String toString() {
     return "EncryptionKeyProvider{" +
-        "providerName='" + providerName + '\'' +
-        ", providerType=" + providerType +
-        ", keys=" + keys +
-        ", configuration=" + configuration +
-        '}';
+      "providerName='" + providerName + '\'' +
+      ", providerType=" + providerType +
+      ", keys=" + keys +
+      ", configuration=" + configuration +
+      '}';
   }
 }

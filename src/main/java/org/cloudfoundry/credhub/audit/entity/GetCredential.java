@@ -1,5 +1,7 @@
 package org.cloudfoundry.credhub.audit.entity;
 
+import java.util.Objects;
+
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.OperationDeviceAction;
@@ -16,7 +18,7 @@ public class GetCredential implements RequestDetails {
     this.current = current;
   }
 
-  public GetCredential(){
+  public GetCredential() {
 
   }
 
@@ -33,10 +35,15 @@ public class GetCredential implements RequestDetails {
     GetCredential that = (GetCredential) o;
 
     return new EqualsBuilder()
-        .append(name, that.name)
-        .append(versions, that.versions)
-        .append(current, that.current)
-        .isEquals();
+      .append(name, that.name)
+      .append(versions, that.versions)
+      .append(current, that.current)
+      .isEquals();
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(name, versions, current, auditRecord);
   }
 
   @Override

@@ -1,11 +1,11 @@
 package org.cloudfoundry.credhub.request;
 
-import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
-
 import java.util.Arrays;
 import java.util.List;
 
-public class RsaSshGenerationParameters extends GenerationParameters{
+import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
+
+public class RsaSshGenerationParameters extends GenerationParameters {
   private int keyLength = 2048;
   private List<Integer> validKeyLengths = Arrays.asList(2048, 3072, 4096);
 

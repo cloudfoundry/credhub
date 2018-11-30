@@ -7,10 +7,6 @@ public class SshGenerateRequest extends BaseCredentialGenerateRequest {
   @JsonProperty("parameters")
   private SshGenerationParameters generationParameters;
 
-  public void setGenerationParameters(SshGenerationParameters generationParameters) {
-    this.generationParameters = generationParameters;
-  }
-
   @Override
   @JsonIgnore
   public GenerationParameters getGenerationParameters() {
@@ -18,5 +14,9 @@ public class SshGenerateRequest extends BaseCredentialGenerateRequest {
       generationParameters = new SshGenerationParameters();
     }
     return generationParameters;
+  }
+
+  public void setGenerationParameters(SshGenerationParameters generationParameters) {
+    this.generationParameters = generationParameters;
   }
 }

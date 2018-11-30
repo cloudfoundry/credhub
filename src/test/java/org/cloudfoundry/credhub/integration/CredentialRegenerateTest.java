@@ -1,17 +1,8 @@
 package org.cloudfoundry.credhub.integration;
 
-import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.data.CredentialVersionDataService;
-import org.cloudfoundry.credhub.data.EncryptionKeyCanaryDataService;
-import org.cloudfoundry.credhub.domain.*;
-import org.cloudfoundry.credhub.entity.EncryptionKeyCanary;
-import org.cloudfoundry.credhub.entity.PasswordCredentialVersionData;
-import org.cloudfoundry.credhub.request.StringGenerationParameters;
-import org.cloudfoundry.credhub.util.CurrentTimeProvider;
-import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import java.time.Instant;
+import java.util.function.Consumer;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -23,20 +14,44 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.time.Instant;
-import java.util.function.Consumer;
+import org.cloudfoundry.credhub.CredentialManagerApp;
+import org.cloudfoundry.credhub.data.CredentialVersionDataService;
+import org.cloudfoundry.credhub.data.EncryptionKeyCanaryDataService;
+import org.cloudfoundry.credhub.domain.Encryptor;
+import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
+import org.cloudfoundry.credhub.domain.RsaCredentialVersion;
+import org.cloudfoundry.credhub.domain.SshCredentialVersion;
+import org.cloudfoundry.credhub.domain.UserCredentialVersion;
+import org.cloudfoundry.credhub.entity.EncryptionKeyCanary;
+import org.cloudfoundry.credhub.entity.PasswordCredentialVersionData;
+import org.cloudfoundry.credhub.request.StringGenerationParameters;
+import org.cloudfoundry.credhub.util.CurrentTimeProvider;
+import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
-import static org.cloudfoundry.credhub.helper.RequestHelper.*;
+import static org.cloudfoundry.credhub.helper.RequestHelper.expect404WhileRegeneratingCertificate;
+import static org.cloudfoundry.credhub.helper.RequestHelper.generateCa;
+import static org.cloudfoundry.credhub.helper.RequestHelper.generateCertificate;
+import static org.cloudfoundry.credhub.helper.RequestHelper.grantPermissions;
+import static org.cloudfoundry.credhub.helper.RequestHelper.revokePermissions;
 import static org.cloudfoundry.credhub.helper.TestHelper.mockOutCurrentTimeProvider;
-import static org.cloudfoundry.credhub.util.AuthConstants.*;
-import static org.hamcrest.CoreMatchers.*;
+import static org.cloudfoundry.credhub.util.AuthConstants.ALL_PERMISSIONS_TOKEN;
+import static org.cloudfoundry.credhub.util.AuthConstants.USER_A_ACTOR_ID;
+import static org.cloudfoundry.credhub.util.AuthConstants.USER_A_TOKEN;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
 @ActiveProfiles(value = {"unit-test", "unit-test-permissions"}, resolver = DatabaseProfileResolver.class)
@@ -69,9 +84,9 @@ public class CredentialRegenerateTest {
 
     fakeTimeSetter.accept(FROZEN_TIME.toEpochMilli());
     mockMvc = MockMvcBuilders
-        .webAppContextSetup(webApplicationContext)
-        .apply(springSecurity())
-        .build();
+      .webAppContextSetup(webApplicationContext)
+      .apply(springSecurity())
+      .build();
   }
 
   @Test
@@ -81,7 +96,7 @@ public class CredentialRegenerateTest {
     StringGenerationParameters generationParameters = new StringGenerationParameters();
     generationParameters.setExcludeNumber(true);
     originalCredential
-        .setPasswordAndGenerationParameters("original-password", generationParameters);
+      .setPasswordAndGenerationParameters("original-password", generationParameters);
     originalCredential.setVersionCreatedAt(FROZEN_TIME.plusSeconds(1));
 
     credentialVersionDataService.save(originalCredential);
@@ -89,16 +104,16 @@ public class CredentialRegenerateTest {
     fakeTimeSetter.accept(FROZEN_TIME.plusSeconds(10).toEpochMilli());
 
     MockHttpServletRequestBuilder request = post("/api/v1/data")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{\"regenerate\":true,\"name\":\"my-password\"}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      .content("{\"regenerate\":true,\"name\":\"my-password\"}");
 
     mockMvc.perform(request)
-        .andExpect(status().isOk())
-        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-        .andExpect(jsonPath("$.type").value("password"))
-        .andExpect(jsonPath("$.version_created_at").value(FROZEN_TIME.plusSeconds(10).toString()));
+      .andExpect(status().isOk())
+      .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+      .andExpect(jsonPath("$.type").value("password"))
+      .andExpect(jsonPath("$.version_created_at").value(FROZEN_TIME.plusSeconds(10).toString()));
 
     final PasswordCredentialVersion newPassword = (PasswordCredentialVersion) credentialVersionDataService.findMostRecent("/my-password");
 
@@ -118,17 +133,17 @@ public class CredentialRegenerateTest {
     fakeTimeSetter.accept(FROZEN_TIME.plusSeconds(10).toEpochMilli());
 
     MockHttpServletRequestBuilder request = post("/api/v1/data")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{\"regenerate\":true,\"name\":\"my-rsa\"}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      .content("{\"regenerate\":true,\"name\":\"my-rsa\"}");
 
     mockMvc.perform(request)
-        .andExpect(status().isOk())
-        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-        .andExpect(jsonPath("$.type").value("rsa"))
-        .andExpect(
-            jsonPath("$.version_created_at").value(FROZEN_TIME.plusSeconds(10).toString()));
+      .andExpect(status().isOk())
+      .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+      .andExpect(jsonPath("$.type").value("rsa"))
+      .andExpect(
+        jsonPath("$.version_created_at").value(FROZEN_TIME.plusSeconds(10).toString()));
 
     RsaCredentialVersion newRsa = (RsaCredentialVersion) credentialVersionDataService.findMostRecent("/my-rsa");
 
@@ -150,16 +165,16 @@ public class CredentialRegenerateTest {
     fakeTimeSetter.accept(FROZEN_TIME.plusSeconds(10).toEpochMilli());
 
     MockHttpServletRequestBuilder request = post("/api/v1/data")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{\"regenerate\":true,\"name\":\"my-ssh\"}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      .content("{\"regenerate\":true,\"name\":\"my-ssh\"}");
 
     mockMvc.perform(request)
-        .andExpect(status().isOk())
-        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-        .andExpect(jsonPath("$.type").value("ssh"))
-        .andExpect(jsonPath("$.version_created_at").value(FROZEN_TIME.plusSeconds(10).toString()));
+      .andExpect(status().isOk())
+      .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+      .andExpect(jsonPath("$.type").value("ssh"))
+      .andExpect(jsonPath("$.version_created_at").value(FROZEN_TIME.plusSeconds(10).toString()));
 
     final SshCredentialVersion newSsh = (SshCredentialVersion) credentialVersionDataService.findMostRecent("/my-ssh");
 
@@ -187,16 +202,16 @@ public class CredentialRegenerateTest {
     fakeTimeSetter.accept(FROZEN_TIME.plusSeconds(10).toEpochMilli());
 
     MockHttpServletRequestBuilder request = post("/api/v1/data")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{\"regenerate\":true,\"name\":\"the-user\"}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      .content("{\"regenerate\":true,\"name\":\"the-user\"}");
 
     mockMvc.perform(request)
-        .andExpect(status().isOk())
-        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-        .andExpect(jsonPath("$.type").value("user"))
-        .andExpect(jsonPath("$.version_created_at").value(FROZEN_TIME.plusSeconds(10).toString()));
+      .andExpect(status().isOk())
+      .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+      .andExpect(jsonPath("$.type").value("user"))
+      .andExpect(jsonPath("$.version_created_at").value(FROZEN_TIME.plusSeconds(10).toString()));
 
     UserCredentialVersion newUser = (UserCredentialVersion) credentialVersionDataService.findMostRecent("/the-user");
 
@@ -208,18 +223,18 @@ public class CredentialRegenerateTest {
   @Test
   public void regeneratingACredentialThatDoesNotExist_returnsAnError() throws Exception {
     MockHttpServletRequestBuilder request = post("/api/v1/data")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{\"regenerate\":true,\"name\":\"my-password\"}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      .content("{\"regenerate\":true,\"name\":\"my-password\"}");
 
     String notFoundJson = "{" +
-        "  \"error\": \"The request could not be completed because the credential does not exist or you do not have sufficient authorization.\"" +
-        "}";
+      "  \"error\": \"The request could not be completed because the credential does not exist or you do not have sufficient authorization.\"" +
+      "}";
 
     mockMvc.perform(request)
-        .andExpect(status().isNotFound())
-        .andExpect(content().json(notFoundJson));
+      .andExpect(status().isNotFound())
+      .andExpect(content().json(notFoundJson));
   }
 
   @Test
@@ -231,18 +246,18 @@ public class CredentialRegenerateTest {
     credentialVersionDataService.save(originalCredential);
 
     String cannotRegenerateJson = "{" +
-        "  \"error\": \"The password could not be regenerated because the value was " +
-        "statically set. Only generated passwords may be regenerated.\"" +
-        "}";
+      "  \"error\": \"The password could not be regenerated because the value was " +
+      "statically set. Only generated passwords may be regenerated.\"" +
+      "}";
 
     MockHttpServletRequestBuilder request = post("/api/v1/data")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{\"regenerate\":true,\"name\":\"my-password\"}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      .content("{\"regenerate\":true,\"name\":\"my-password\"}");
 
     mockMvc.perform(request)
-        .andExpect(content().json(cannotRegenerateJson));
+      .andExpect(content().json(cannotRegenerateJson));
   }
 
   @Test
@@ -256,18 +271,18 @@ public class CredentialRegenerateTest {
     credentialVersionDataService.save(originalCredential);
 
     String cannotRegenerateJson = "{" +
-        "  \"error\": \"The user could not be regenerated because the value was" +
-        " statically set. Only generated users may be regenerated.\"" +
-        "}";
+      "  \"error\": \"The user could not be regenerated because the value was" +
+      " statically set. Only generated users may be regenerated.\"" +
+      "}";
 
     MockHttpServletRequestBuilder request = post("/api/v1/data")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{\"regenerate\":true,\"name\":\"my-user\"}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      .content("{\"regenerate\":true,\"name\":\"my-user\"}");
 
     mockMvc.perform(request)
-        .andExpect(content().json(cannotRegenerateJson));
+      .andExpect(content().json(cannotRegenerateJson));
   }
 
   @Test
@@ -276,11 +291,11 @@ public class CredentialRegenerateTest {
     canaryDataService.save(encryptionKeyCanary);
 
     PasswordCredentialVersionData passwordCredentialData = new PasswordCredentialVersionData(
-        "/my-password");
+      "/my-password");
     PasswordCredentialVersion originalCredential = new PasswordCredentialVersion(passwordCredentialData);
     originalCredential.setEncryptor(encryptor);
     originalCredential
-        .setPasswordAndGenerationParameters("abcde", new StringGenerationParameters());
+      .setPasswordAndGenerationParameters("abcde", new StringGenerationParameters());
 
     passwordCredentialData.getEncryptedValueData().setEncryptionKeyUuid(encryptionKeyCanary.getUuid());
 
@@ -288,20 +303,20 @@ public class CredentialRegenerateTest {
 
     // language=JSON
     String cannotRegenerate = "{\n" +
-        "  \"error\": \"The credential could not be accessed with the provided encryption keys. You must update your deployment configuration to continue" +
-        ".\"\n" +
-        "}";
+      "  \"error\": \"The credential could not be accessed with the provided encryption keys. You must update your deployment configuration to continue" +
+      ".\"\n" +
+      "}";
 
     MockHttpServletRequestBuilder request = post("/api/v1/data")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{\"regenerate\":true,\"name\":\"my-password\"}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      .content("{\"regenerate\":true,\"name\":\"my-password\"}");
 
     mockMvc.perform(request)
-        .andDo(print())
-        .andExpect(status().isInternalServerError())
-        .andExpect(content().json(cannotRegenerate));
+      .andDo(print())
+      .andExpect(status().isInternalServerError())
+      .andExpect(content().json(cannotRegenerate));
   }
 
   @Test
@@ -315,6 +330,6 @@ public class CredentialRegenerateTest {
     revokePermissions(mockMvc, "/ca", ALL_PERMISSIONS_TOKEN, USER_A_ACTOR_ID);
 
     expect404WhileRegeneratingCertificate(mockMvc, "/user-a/cert", USER_A_TOKEN,
-        "The request could not be completed because the credential does not exist or you do not have sufficient authorization.");
+      "The request could not be completed because the credential does not exist or you do not have sufficient authorization.");
   }
 }

@@ -1,9 +1,10 @@
 package org.cloudfoundry.credhub.generator;
 
-import org.cloudfoundry.credhub.credential.StringCredentialValue;
-import org.cloudfoundry.credhub.request.StringGenerationParameters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import org.cloudfoundry.credhub.credential.StringCredentialValue;
+import org.cloudfoundry.credhub.request.StringGenerationParameters;
 
 @Component
 public class UsernameGenerator {

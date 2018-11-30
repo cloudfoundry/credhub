@@ -1,13 +1,13 @@
 package org.cloudfoundry.credhub.domain;
 
+import java.time.Instant;
+import java.util.UUID;
+
 import org.cloudfoundry.credhub.data.CredentialVersionDataService;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.entity.CredentialVersionData;
 import org.cloudfoundry.credhub.entity.EncryptedValue;
 import org.cloudfoundry.credhub.request.GenerationParameters;
-
-import java.time.Instant;
-import java.util.UUID;
 
 public abstract class CredentialVersion<Z extends CredentialVersion> {
 
@@ -67,12 +67,12 @@ public abstract class CredentialVersion<Z extends CredentialVersion> {
     return delegate.getCredential();
   }
 
-  protected void copyNameReferenceFrom(CredentialVersion credentialVersion) {
-    this.delegate.setCredential(credentialVersion.delegate.getCredential());
-  }
-
   public void setCredential(Credential credential) {
     this.delegate.setCredential(credential);
+  }
+
+  protected void copyNameReferenceFrom(CredentialVersion credentialVersion) {
+    this.delegate.setCredential(credentialVersion.delegate.getCredential());
   }
 
   public void createName(String name) {

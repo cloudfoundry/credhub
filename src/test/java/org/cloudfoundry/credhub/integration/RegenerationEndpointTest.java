@@ -1,11 +1,5 @@
 package org.cloudfoundry.credhub.integration;
 
-import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
-import org.json.JSONObject;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -16,7 +10,15 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import static org.cloudfoundry.credhub.util.AuthConstants.*;
+import org.cloudfoundry.credhub.CredentialManagerApp;
+import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
+import org.json.JSONObject;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import static org.cloudfoundry.credhub.util.AuthConstants.ALL_PERMISSIONS_TOKEN;
+import static org.cloudfoundry.credhub.util.AuthConstants.NO_PERMISSIONS_TOKEN;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -46,24 +48,24 @@ public class RegenerationEndpointTest {
   @Before
   public void beforeEach() throws Exception {
     mockMvc = MockMvcBuilders
-        .webAppContextSetup(webApplicationContext)
-        .apply(springSecurity())
-        .build();
+      .webAppContextSetup(webApplicationContext)
+      .apply(springSecurity())
+      .build();
 
     MockHttpServletRequestBuilder generatePasswordRequest = post(API_V1_DATA_ENDPOINT)
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        //language=JSON
-        .content("{\n"
-            + "  \"name\" : \"" + CREDENTIAL_NAME + "\",\n"
-            + "  \"type\" : \"password\"\n"
-            + "}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{\n"
+        + "  \"name\" : \"" + CREDENTIAL_NAME + "\",\n"
+        + "  \"type\" : \"password\"\n"
+        + "}");
 
     String generatePasswordResult = this.mockMvc.perform(generatePasswordRequest)
-        .andDo(print())
-        .andExpect(status().isOk())
-        .andReturn().getResponse().getContentAsString();
+      .andDo(print())
+      .andExpect(status().isOk())
+      .andReturn().getResponse().getContentAsString();
 
     originalPassword = (new JSONObject(generatePasswordResult)).getString("value");
     assertThat(originalPassword, notNullValue());
@@ -72,18 +74,18 @@ public class RegenerationEndpointTest {
   @Test
   public void passwordRegeneration_withDefaultParameters_shouldRegeneratePassword() throws Exception {
     MockHttpServletRequestBuilder regeneratePasswordRequest = post(API_V1_REGENERATE_ENDPOINT)
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        //language=JSON
-        .content("{\n"
-            + "  \"name\" : \"" + CREDENTIAL_NAME + "\"\n"
-            + "}");
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{\n"
+        + "  \"name\" : \"" + CREDENTIAL_NAME + "\"\n"
+        + "}");
 
     String regeneratePasswordResult = this.mockMvc.perform(regeneratePasswordRequest)
-        .andDo(print())
-        .andExpect(status().isOk())
-        .andReturn().getResponse().getContentAsString();
+      .andDo(print())
+      .andExpect(status().isOk())
+      .andReturn().getResponse().getContentAsString();
 
     String regeneratedPassword = (new JSONObject(regeneratePasswordResult)).getString("value");
 
@@ -94,16 +96,16 @@ public class RegenerationEndpointTest {
   @Test
   public void passwordRegeneration_withoutWritePermissionShouldFail() throws Exception {
     MockHttpServletRequestBuilder regeneratePasswordRequest = post(API_V1_REGENERATE_ENDPOINT)
-        .header("Authorization", "Bearer " + NO_PERMISSIONS_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        //language=JSON
-        .content("{\n"
-            + "  \"name\" : \"" + CREDENTIAL_NAME + "\"\n"
-            + "}");
+      .header("Authorization", "Bearer " + NO_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{\n"
+        + "  \"name\" : \"" + CREDENTIAL_NAME + "\"\n"
+        + "}");
 
     this.mockMvc.perform(regeneratePasswordRequest)
-        .andDo(print())
-        .andExpect(status().isForbidden());
+      .andDo(print())
+      .andExpect(status().isForbidden());
   }
 }

@@ -1,11 +1,12 @@
 package org.cloudfoundry.credhub.request;
 
+import java.util.Set;
+
+import javax.validation.ConstraintViolation;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.util.Set;
-import javax.validation.ConstraintViolation;
 
 import static org.cloudfoundry.credhub.helper.JsonTestHelper.deserialize;
 import static org.cloudfoundry.credhub.helper.JsonTestHelper.deserializeAndValidate;
@@ -20,10 +21,10 @@ public class PasswordSetRequestTest {
   @Test
   public void deserializesToPasswordSetRequest() {
     String json = "{"
-        + "\"name\":\"some-name\","
-        + "\"type\":\"password\","
-        + "\"value\":\"fake-password\""
-        + "}";
+      + "\"name\":\"some-name\","
+      + "\"type\":\"password\","
+      + "\"value\":\"fake-password\""
+      + "}";
     PasswordSetRequest deserialize = deserialize(json, PasswordSetRequest.class);
 
     assertThat(deserialize, instanceOf(PasswordSetRequest.class));
@@ -32,12 +33,12 @@ public class PasswordSetRequestTest {
   @Test
   public void whenAllFieldsAreSet_shouldBeValid() {
     String json = "{"
-        + "\"name\":\"some-name\","
-        + "\"type\":\"password\","
-        + "\"value\":\"fake-password\""
-        + "}";
+      + "\"name\":\"some-name\","
+      + "\"type\":\"password\","
+      + "\"value\":\"fake-password\""
+      + "}";
     Set<ConstraintViolation<PasswordSetRequest>> constraintViolations =
-        deserializeAndValidate(json, PasswordSetRequest.class);
+      deserializeAndValidate(json, PasswordSetRequest.class);
 
     assertThat(constraintViolations.size(), equalTo(0));
   }
@@ -45,12 +46,12 @@ public class PasswordSetRequestTest {
   @Test
   public void whenTypeHasUnusualCasing_shouldBeValid() {
     String json = "{"
-        + "\"name\":\"some-name\","
-        + "\"type\":\"PasSWorD\","
-        + "\"value\":\"fake-password\""
-        + "}";
+      + "\"name\":\"some-name\","
+      + "\"type\":\"PasSWorD\","
+      + "\"value\":\"fake-password\""
+      + "}";
     Set<ConstraintViolation<PasswordSetRequest>> constraintViolations =
-        deserializeAndValidate(json, PasswordSetRequest.class);
+      deserializeAndValidate(json, PasswordSetRequest.class);
 
     assertThat(constraintViolations.size(), equalTo(0));
   }
@@ -58,11 +59,11 @@ public class PasswordSetRequestTest {
   @Test
   public void whenPasswordIsNotSet_shouldBeInvalid() {
     String json = "{"
-        + "\"name\":\"some-name\","
-        + "\"type\":\"password\""
-        + "}";
+      + "\"name\":\"some-name\","
+      + "\"type\":\"password\""
+      + "}";
     Set<ConstraintViolation<PasswordSetRequest>> constraintViolations =
-        deserializeAndValidate(json, PasswordSetRequest.class);
+      deserializeAndValidate(json, PasswordSetRequest.class);
 
     assertThat(constraintViolations, contains(hasViolationWithMessage("error.missing_value")));
   }
@@ -70,12 +71,12 @@ public class PasswordSetRequestTest {
   @Test
   public void whenPasswordIsEmpty_shouldBeInvalid() {
     String json = "{"
-        + "\"name\":\"some-name\","
-        + "\"type\":\"password\","
-        + "\"value\":\"\""
-        + "}";
+      + "\"name\":\"some-name\","
+      + "\"type\":\"password\","
+      + "\"value\":\"\""
+      + "}";
     Set<ConstraintViolation<PasswordSetRequest>> constraintViolations =
-        deserializeAndValidate(json, PasswordSetRequest.class);
+      deserializeAndValidate(json, PasswordSetRequest.class);
 
     assertThat(constraintViolations, contains(hasViolationWithMessage("error.missing_value")));
   }

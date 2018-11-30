@@ -1,5 +1,5 @@
 package org.cloudfoundry.credhub.exceptions;
 
-public class ReadOnlyException extends RuntimeException{
+public class ReadOnlyException extends RuntimeException {
 
 }

@@ -1,5 +1,9 @@
 package org.cloudfoundry.credhub.service;
 
+import java.util.UUID;
+
+import org.springframework.test.util.ReflectionTestUtils;
+
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.data.PermissionDataService;
@@ -8,9 +12,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.springframework.test.util.ReflectionTestUtils;
-
-import java.util.UUID;
 
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
@@ -87,7 +88,7 @@ public class PermissionCheckingServiceTest {
     initializeEnforcement(false);
 
     assertTrue(
-        subject.userAllowedToOperateOnActor("test-actor"));
+      subject.userAllowedToOperateOnActor("test-actor"));
   }
 
   @Test
@@ -95,7 +96,7 @@ public class PermissionCheckingServiceTest {
     initializeEnforcement(true);
 
     assertTrue(
-        subject.userAllowedToOperateOnActor("random-actor"));
+      subject.userAllowedToOperateOnActor("random-actor"));
   }
 
   @Test
@@ -103,7 +104,7 @@ public class PermissionCheckingServiceTest {
     initializeEnforcement(true);
 
     assertFalse(
-        subject.userAllowedToOperateOnActor("test-actor"));
+      subject.userAllowedToOperateOnActor("test-actor"));
   }
 
   @Test
@@ -112,7 +113,7 @@ public class PermissionCheckingServiceTest {
     when(userContext.getActor()).thenReturn(null);
 
     assertFalse(
-        subject.userAllowedToOperateOnActor("test-actor"));
+      subject.userAllowedToOperateOnActor("test-actor"));
   }
 
   @Test
@@ -126,14 +127,14 @@ public class PermissionCheckingServiceTest {
 
   private void initializeEnforcement(boolean enabled) {
     ReflectionTestUtils
-        .setField(subject, PermissionCheckingService.class, "enforcePermissions", enabled, boolean.class);
+      .setField(subject, PermissionCheckingService.class, "enforcePermissions", enabled, boolean.class);
   }
 
   private void assertConditionallyHasPermission(String user, String credentialName,
                                                 PermissionOperation permission, boolean isGranted) {
     when(permissionDataService
-        .hasPermission(user, credentialName, permission))
-        .thenReturn(isGranted);
+      .hasPermission(user, credentialName, permission))
+      .thenReturn(isGranted);
 
     assertThat(subject.hasPermission(user, credentialName, permission), equalTo(isGranted));
   }
@@ -141,8 +142,8 @@ public class PermissionCheckingServiceTest {
   private void assertAlwaysHasPermission(String user, String credentialName,
                                          PermissionOperation permission, boolean isGranted) {
     when(permissionDataService
-        .hasPermission(user, credentialName, permission))
-        .thenReturn(isGranted);
+      .hasPermission(user, credentialName, permission))
+      .thenReturn(isGranted);
 
     assertThat(subject.hasPermission(user, credentialName, permission), equalTo(true));
   }

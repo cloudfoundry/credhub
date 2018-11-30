@@ -5,11 +5,11 @@ import org.cloudfoundry.credhub.audit.OperationDeviceAction;
 public class DeleteCredential implements RequestDetails {
   private String name;
 
-  public DeleteCredential(){
+  public DeleteCredential() {
 
   }
 
-  public DeleteCredential(String name){
+  public DeleteCredential(String name) {
     this.name = name;
   }
 

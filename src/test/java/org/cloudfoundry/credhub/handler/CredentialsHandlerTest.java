@@ -1,5 +1,9 @@
 package org.cloudfoundry.credhub.handler;
 
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.List;
+
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
@@ -16,10 +20,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Collections.emptyList;
@@ -77,7 +77,7 @@ public class CredentialsHandlerTest {
   public void deleteCredential_whenTheDeletionSucceeds_deletesTheCredential() {
     when(permissionedCredentialService.delete(eq(CREDENTIAL_NAME))).thenReturn(true);
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.DELETE))
-        .thenReturn(true);
+      .thenReturn(true);
 
     subject.deleteCredential(CREDENTIAL_NAME);
 
@@ -87,7 +87,7 @@ public class CredentialsHandlerTest {
   @Test
   public void deleteCredential_whenTheCredentialIsNotDeleted_throwsAnException() {
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.DELETE))
-        .thenReturn(true);
+      .thenReturn(true);
     when(permissionedCredentialService.delete(eq(CREDENTIAL_NAME))).thenReturn(false);
 
     try {
@@ -102,9 +102,9 @@ public class CredentialsHandlerTest {
   public void getAllCredentialVersions_whenTheCredentialExists_returnsADataResponse() {
     List<CredentialVersion> credentials = newArrayList(version1, version2);
     when(permissionedCredentialService.findAllByName(eq(CREDENTIAL_NAME)))
-        .thenReturn(credentials);
+      .thenReturn(credentials);
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.READ))
-        .thenReturn(true);
+      .thenReturn(true);
 
     DataResponse credentialVersions = subject.getAllCredentialVersions(CREDENTIAL_NAME);
 
@@ -119,9 +119,9 @@ public class CredentialsHandlerTest {
   @Test
   public void getAllCredentialVersions_whenTheCredentialDoesNotExist_throwsException() {
     when(permissionedCredentialService.findAllByName(eq(CREDENTIAL_NAME)))
-        .thenReturn(emptyList());
+      .thenReturn(emptyList());
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.READ))
-        .thenReturn(true);
+      .thenReturn(true);
 
     try {
       subject.getAllCredentialVersions(CREDENTIAL_NAME
@@ -135,12 +135,12 @@ public class CredentialsHandlerTest {
   @Test
   public void getMostRecentCredentialVersion_whenTheCredentialExists_returnsDataResponse() {
     when(permissionedCredentialService.findActiveByName(eq(CREDENTIAL_NAME)))
-        .thenReturn(Arrays.asList(version1));
+      .thenReturn(Arrays.asList(version1));
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.READ))
-        .thenReturn(true);
+      .thenReturn(true);
 
     DataResponse dataResponse = subject.getCurrentCredentialVersions(
-        CREDENTIAL_NAME
+      CREDENTIAL_NAME
     );
     CredentialView credentialView = dataResponse.getData().get(0);
     assertThat(credentialView.getName(), equalTo(CREDENTIAL_NAME));
@@ -160,7 +160,7 @@ public class CredentialsHandlerTest {
   @Test
   public void getMostRecentCredentialVersion_whenTheUserLacksPermission_throwsException() {
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.READ))
-        .thenReturn(false);
+      .thenReturn(false);
 
     try {
       subject.getCurrentCredentialVersions(CREDENTIAL_NAME);
@@ -173,7 +173,7 @@ public class CredentialsHandlerTest {
   @Test
   public void getCredentialVersion_whenTheVersionExists_returnsDataResponse() {
     when(permissionedCredentialService.findVersionByUuid(eq(UUID_STRING)))
-        .thenReturn(version1);
+      .thenReturn(version1);
 
     CredentialView credentialVersion = subject.getCredentialVersionByUUID(UUID_STRING);
     assertThat(credentialVersion.getName(), equalTo(CREDENTIAL_NAME));
@@ -184,9 +184,9 @@ public class CredentialsHandlerTest {
   public void getNCredentialVersions_whenTheCredentialExists_addsToAuditRecord() {
     List<CredentialVersion> credentials = newArrayList(version1, version2);
     when(permissionedCredentialService.findNByName(eq(CREDENTIAL_NAME), eq(2)))
-        .thenReturn(credentials);
+      .thenReturn(credentials);
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.READ))
-        .thenReturn(true);
+      .thenReturn(true);
 
     subject.getNCredentialVersions(CREDENTIAL_NAME, 2);
 

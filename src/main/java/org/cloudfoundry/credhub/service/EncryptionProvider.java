@@ -1,10 +1,10 @@
 package org.cloudfoundry.credhub.service;
 
-import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
-import org.cloudfoundry.credhub.entity.EncryptedValue;
-
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+
+import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
+import org.cloudfoundry.credhub.entity.EncryptedValue;
 
 public interface EncryptionProvider {
 
@@ -12,7 +12,7 @@ public interface EncryptionProvider {
 
   String decrypt(EncryptionKey key, byte[] encryptedValue, byte[] nonce) throws Exception;
 
-  default SecureRandom getSecureRandom(){
+  default SecureRandom getSecureRandom() {
     SecureRandom secureRandom = null;
 
     try {

@@ -1,10 +1,5 @@
 package org.cloudfoundry.credhub.integration;
 
-import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -14,6 +9,12 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
+
+import org.cloudfoundry.credhub.CredentialManagerApp;
+import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import static org.cloudfoundry.credhub.util.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.hamcrest.core.IsAnything.anything;
@@ -36,18 +37,18 @@ public class KeyUsageEndpointTest {
   @Test
   public void GET_whenTheCredentialNameParameterIsMissing_returnsAnAppropriateError() throws Exception {
     mockMvc = MockMvcBuilders
-        .webAppContextSetup(webApplicationContext)
-        .apply(springSecurity())
-        .build();
+      .webAppContextSetup(webApplicationContext)
+      .apply(springSecurity())
+      .build();
 
     MockHttpServletRequestBuilder getRequest = get(
-        "/api/v1/key-usage")
-        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN);
+      "/api/v1/key-usage")
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN);
     mockMvc.perform(getRequest)
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.active_key", anything()))
-        .andExpect(jsonPath("$.inactive_keys", anything()))
-        .andExpect(jsonPath("$.unknown_keys", anything()));
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.active_key", anything()))
+      .andExpect(jsonPath("$.inactive_keys", anything()))
+      .andExpect(jsonPath("$.unknown_keys", anything()));
   }
 
 }
