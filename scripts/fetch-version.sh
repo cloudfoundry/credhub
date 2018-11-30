@@ -41,11 +41,11 @@ function use_version_from_branch_if_available() {
     overwrite_version_file "$highest_local_version"
     display_version
   else
-    local -r yellow_color="\033[00;33m"
-    echo -e "${yellow_color}\n\n\n\n\n\n********"
+    local -r yellow_color="\\033[00;33m"
+    echo -e "${yellow_color}\\n\\n\\n\\n\\n\\n********"
     echo -e "You are on a feature branch so you must manually update the version file."
     display_version
-    echo -e "********\n\n\n\n\n\n"
+    echo -e "********\\n\\n\\n\\n\\n\\n"
   fi
 }
 
