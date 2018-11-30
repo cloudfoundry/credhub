@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 function set_bash_error_handling() {
-  set -euo pipefail
+    set -euo pipefail
 }
 
 function go_to_project_root_directory() {
@@ -11,7 +11,7 @@ function go_to_project_root_directory() {
 }
 
 function lint_scripts() {
-    shellcheck scripts/*
+    shellcheck scripts/*.sh
 }
 
 function lint_java() {
@@ -25,6 +25,7 @@ function lint_kotlin() {
 function main() {
     set_bash_error_handling
     go_to_project_root_directory
+
     lint_scripts
     lint_kotlin
     lint_java
