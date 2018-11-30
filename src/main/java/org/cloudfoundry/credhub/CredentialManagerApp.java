@@ -63,7 +63,7 @@ public class CredentialManagerApp {
   public WebServerFactoryCustomizer servletContainerCustomizer() {
     return (factory) -> ((TomcatServletWebServerFactory) factory)
         .addConnectorCustomizers((connector) -> ((AbstractHttp11Protocol<?>) connector.getProtocolHandler())
-            .setUseServerCipherSuitesOrder(Boolean.toString(true)));
+            .setUseServerCipherSuitesOrder(true));
   }
 
   @Bean
