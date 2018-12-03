@@ -10,6 +10,13 @@ function go_to_project_root_directory() {
     cd "$script_dir/.."
 }
 
+function check_ssh_key() {
+    if ! ssh-add -l >/dev/null; then
+        echo "No SSH key loaded! Please run vkl."
+        exit 1
+    fi
+}
+
 function run_linters() {
     ./scripts/lint.sh
 }
@@ -30,6 +37,7 @@ function display_ascii_success_message() {
 function main() {
     set_bash_error_handling
     go_to_project_root_directory
+    check_ssh_key
 
     run_linters
     run_tests
