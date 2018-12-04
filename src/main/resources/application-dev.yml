@@ -35,6 +35,7 @@ server:
   ssl:
     enabled: true
     key_store: src/test/resources/key_store.jks
+    key_store_password: changeit
     key_password: changeit
     key_alias: cert
     ciphers: TLS_DHE_RSA_WITH_AES_128_GCM_SHA256, TLS_DHE_RSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
