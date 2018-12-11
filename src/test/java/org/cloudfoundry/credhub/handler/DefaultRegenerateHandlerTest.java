@@ -34,12 +34,14 @@ import static org.mockito.Mockito.when;
 import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 
+
 @RunWith(JUnit4.class)
-public class RegenerateHandlerTest {
+public class DefaultRegenerateHandlerTest {
+
   private static final String SIGNER_NAME = "signer name";
   private static final String CREDENTIAL_NAME = "credName";
 
-  private RegenerateHandler subject;
+  private DefaultRegenerateHandler subject;
   private PermissionedCredentialService credentialService;
   private UniversalCredentialGenerator credentialGenerator;
   private GenerationRequestGenerator generationRequestGenerator;
@@ -55,7 +57,7 @@ public class RegenerateHandlerTest {
     credentialVersion = mock(PasswordCredentialVersion.class);
     cefAuditRecord = mock(CEFAuditRecord.class);
     credValue = new StringCredentialValue("secret");
-    subject = new RegenerateHandler(
+    subject = new DefaultRegenerateHandler(
       credentialService,
       credentialGenerator,
       generationRequestGenerator,

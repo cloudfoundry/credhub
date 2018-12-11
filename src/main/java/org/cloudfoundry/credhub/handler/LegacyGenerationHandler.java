@@ -28,9 +28,9 @@ public class LegacyGenerationHandler {
 
   @Autowired
   public LegacyGenerationHandler(ObjectMapper objectMapper,
-                                 GenerateHandler generateHandler,
-                                 RegenerateHandler regenerateHandler,
-                                 CEFAuditRecord auditRecord) {
+    GenerateHandler generateHandler,
+    RegenerateHandler regenerateHandler,
+    CEFAuditRecord auditRecord) {
     this.objectMapper = objectMapper;
     this.generateHandler = generateHandler;
     this.regenerateHandler = regenerateHandler;
@@ -57,7 +57,8 @@ public class LegacyGenerationHandler {
   }
 
   private CredentialView handleGenerateRequest(String requestString) throws IOException {
-    BaseCredentialGenerateRequest requestBody = objectMapper.readValue(requestString, BaseCredentialGenerateRequest.class);
+    BaseCredentialGenerateRequest requestBody = objectMapper
+      .readValue(requestString, BaseCredentialGenerateRequest.class);
 
     String credentialName = requestBody.getName();
 

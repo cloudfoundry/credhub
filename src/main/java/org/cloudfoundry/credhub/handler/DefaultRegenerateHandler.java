@@ -16,14 +16,14 @@ import org.cloudfoundry.credhub.view.BulkRegenerateResults;
 import org.cloudfoundry.credhub.view.CredentialView;
 
 @Service
-public class RegenerateHandler {
+public class DefaultRegenerateHandler implements RegenerateHandler {
 
   private PermissionedCredentialService credentialService;
   private UniversalCredentialGenerator credentialGenerator;
   private GenerationRequestGenerator generationRequestGenerator;
   private CEFAuditRecord auditRecord;
 
-  RegenerateHandler(
+  DefaultRegenerateHandler(
     PermissionedCredentialService credentialService,
     UniversalCredentialGenerator credentialGenerator,
     GenerationRequestGenerator generationRequestGenerator,

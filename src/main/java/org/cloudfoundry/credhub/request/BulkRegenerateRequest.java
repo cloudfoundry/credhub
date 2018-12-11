@@ -3,12 +3,14 @@ package org.cloudfoundry.credhub.request;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
 
 @JsonAutoDetect
 @SuppressWarnings("unused")
 public class BulkRegenerateRequest {
 
+  @JsonProperty("signed_by")
   @NotNull(message = "error.missing_signed_by")
   private String signedBy;
 

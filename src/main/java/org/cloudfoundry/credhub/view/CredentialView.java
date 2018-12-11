@@ -22,7 +22,7 @@ public class CredentialView {
   private String type;
   private CredentialValue value;
 
-  CredentialView() { /* Jackson */ }
+  public CredentialView() { /* Jackson */ }
 
   CredentialView(Instant versionCreatedAt, UUID uuid, String name, String type, CredentialValue value) {
     this.versionCreatedAt = versionCreatedAt;
