@@ -18,9 +18,11 @@ import org.cloudfoundry.credhub.service.EncryptionKeySet;
 
 @RestController
 @RequestMapping(
-  path = "api/v1/key-usage",
+  path = KeyUsageController.endpoint,
   produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class KeyUsageController {
+
+  static final String endpoint = "/api/v1/key-usage";
 
   private final CredentialVersionDataService credentialVersionDataService;
   private final EncryptionKeySet keySet;
