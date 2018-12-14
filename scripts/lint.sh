@@ -15,7 +15,7 @@ function lint_scripts() {
 }
 
 function lint_java() {
-    ./gradlew checkstyleMain checkstyleTest
+    ./gradlew checkstyleMain checkstyleTest spotbugsMain spotbugsTest
 }
 
 function lint_kotlin() {
