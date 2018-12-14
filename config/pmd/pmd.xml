@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<ruleset name="Custom ruleset"
+  xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 http://pmd.sourceforge.net/ruleset_2_0_0.xsd"
+>
+
+  <description>PMD Rules and Exclusions</description>
+
+  <rule ref="category/java/bestpractices.xml" />
+  <rule ref="category/java/codestyle.xml">
+    <exclude name="AtLeastOneConstructor" />
+    <exclude name="ClassNamingConventions" />
+    <exclude name="LongVariable" />
+    <exclude name="OnlyOneReturn" />
+    <exclude name="ShortVariable" />
+  </rule>
+  <rule ref="category/java/design.xml">
+    <exclude name="ExcessiveMethodLength" />
+    <exclude name="LawOfDemeter" />
+  </rule>
+  <rule ref="category/java/documentation.xml">
+    <exclude name="CommentRequired" />
+  </rule>
+  <rule ref="category/java/errorprone.xml">
+    <exclude name="AvoidDuplicateLiterals" />
+    <exclude name="DataflowAnomalyAnalysis" />
+    <exclude name="UseLocaleWithCaseConversions" />
+  </rule>
+  <rule ref="category/java/multithreading.xml" />
+  <rule ref="category/java/performance.xml" />
+  <rule ref="category/java/security.xml" />
+
+</ruleset>

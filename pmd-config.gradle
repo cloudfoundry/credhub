@@ -1,0 +1,13 @@
+apply plugin: 'pmd'
+
+pmd {
+    ruleSets = []
+    ruleSetFiles = files("$rootDir/config/pmd/pmd.xml")
+    toolVersion = '6.10.0'
+}
+
+pmdTest.source = "src/test/java"
+
+[pmdMain, pmdTest].each() {
+    it.exclude '**/grpc/**.java'
+}
