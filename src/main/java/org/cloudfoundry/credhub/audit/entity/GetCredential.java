@@ -3,14 +3,12 @@ package org.cloudfoundry.credhub.audit.entity;
 import java.util.Objects;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.OperationDeviceAction;
 
 public class GetCredential implements RequestDetails {
   private String name;
   private Integer versions;
   private Boolean current;
-  private CEFAuditRecord auditRecord;
 
   public GetCredential(String credentialName, Integer numberOfVersions, boolean current) {
     name = credentialName;
@@ -43,7 +41,7 @@ public class GetCredential implements RequestDetails {
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, versions, current, auditRecord);
+    return Objects.hash(name, versions, current);
   }
 
   @Override

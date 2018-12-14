@@ -28,6 +28,7 @@ import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.helper.JsonTestHelper;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
+import org.cloudfoundry.credhub.util.StringUtil;
 import org.cloudfoundry.credhub.util.TestConstants;
 import org.hamcrest.Matchers;
 import org.json.JSONObject;
@@ -143,10 +144,10 @@ public class CertificateGenerateTest {
 
     CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
     X509Certificate caPem = (X509Certificate) certificateFactory
-      .generateCertificate(new ByteArrayInputStream(picardCert.getBytes()));
+      .generateCertificate(new ByteArrayInputStream(picardCert.getBytes(StringUtil.UTF_8)));
 
     X509Certificate certPem = (X509Certificate) certificateFactory
-      .generateCertificate(new ByteArrayInputStream(cert.getBytes()));
+      .generateCertificate(new ByteArrayInputStream(cert.getBytes(StringUtil.UTF_8)));
 
     byte[] subjectKeyIdDer = caPem.getExtensionValue(Extension.subjectKeyIdentifier.getId());
     SubjectKeyIdentifier subjectKeyIdentifier = SubjectKeyIdentifier.getInstance(JcaX509ExtensionUtils.parseExtensionValue(subjectKeyIdDer));
@@ -354,8 +355,6 @@ public class CertificateGenerateTest {
     String generateCaResponse = generateCa(mockMvc, "/originalCA", ALL_PERMISSIONS_TOKEN);
     String originalCaCertificate = JsonPath.parse(generateCaResponse)
       .read("$.value.certificate");
-    String caId = JsonPath.parse(generateCaResponse)
-      .read("$.id");
 
     String response = getCertificateCredentialsByName(mockMvc, ALL_PERMISSIONS_TOKEN, "/originalCA");
     String uuid = JsonPath.parse(response)

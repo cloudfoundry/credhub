@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.interceptor;
 
 import java.security.Principal;
 
+import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -44,7 +45,8 @@ public class AuditInterceptor extends HandlerInterceptorAdapter {
     HttpServletRequest request,
     HttpServletResponse response,
     Object handler,
-    Exception exception) {
+    @Nullable Exception exception
+  ) {
     Principal userAuth = request.getUserPrincipal();
     if (userAuth == null) {
       return;

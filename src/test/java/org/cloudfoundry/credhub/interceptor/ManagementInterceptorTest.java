@@ -38,7 +38,7 @@ public class ManagementInterceptorTest {
     request.setRemoteAddr("10.0.0.1");
     request.setLocalAddr("127.0.0.1");
     request.setRequestURI("/management");
-    subject.preHandle(request, response, null);
+    subject.preHandle(request, response, new Object());
     assertThat(response.getStatus(), is(401));
   }
 
@@ -47,7 +47,7 @@ public class ManagementInterceptorTest {
     request.setRemoteAddr("127.0.0.1");
     request.setLocalAddr("127.0.0.1");
     request.setRequestURI("/management");
-    subject.preHandle(request, response, null);
+    subject.preHandle(request, response, new Object());
   }
 
   @Test(expected = ReadOnlyException.class)
@@ -55,7 +55,7 @@ public class ManagementInterceptorTest {
     ManagementVariables.readOnlyMode = true;
     request.setRequestURI("/api/v1/data");
     request.setMethod("POST");
-    subject.preHandle(request, response, null);
+    subject.preHandle(request, response, new Object());
     assertThat(response.getStatus(), is(503));
   }
 
@@ -64,7 +64,7 @@ public class ManagementInterceptorTest {
     ManagementVariables.readOnlyMode = true;
     request.setRequestURI("/api/v1/data");
     request.setMethod("GET");
-    subject.preHandle(request, response, null);
+    subject.preHandle(request, response, new Object());
   }
 
   @Test
@@ -72,7 +72,7 @@ public class ManagementInterceptorTest {
     ManagementVariables.readOnlyMode = true;
     request.setRequestURI("/management");
     request.setMethod("POST");
-    subject.preHandle(request, response, null);
+    subject.preHandle(request, response, new Object());
   }
 
   @Test
@@ -80,6 +80,6 @@ public class ManagementInterceptorTest {
     ManagementVariables.readOnlyMode = true;
     request.setRequestURI("/interpolate");
     request.setMethod("POST");
-    subject.preHandle(request, response, null);
+    subject.preHandle(request, response, new Object());
   }
 }

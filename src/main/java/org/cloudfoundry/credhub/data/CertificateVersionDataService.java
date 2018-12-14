@@ -50,11 +50,12 @@ public class CertificateVersionDataService {
   public List<CredentialVersion> findActiveWithTransitional(String certificateName) {
     ArrayList<CredentialVersion> result = new ArrayList<>();
     Credential credential = credentialDataService.find(certificateName);
-    UUID uuid = credential.getUuid();
 
     if (credential == null) {
       return null;
     } else {
+      UUID uuid = credential.getUuid();
+
       CredentialVersionData active = credentialVersionRepository.findLatestNonTransitionalCertificateVersion(uuid);
       if (active != null) {
         result.add(credentialFactory.makeCredentialFromEntity(active));

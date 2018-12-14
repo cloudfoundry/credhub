@@ -17,7 +17,10 @@ final public class CertificateStringConstants {
    * Key Usage: digital_signature
    * Issuer: CN=foo
    */
-  public static final String BIG_TEST_CERT = "-----BEGIN CERTIFICATE-----\n"
+  public static final String BIG_TEST_CERT;
+  static {
+    BIG_TEST_CERT =
+      "-----BEGIN CERTIFICATE-----\n"
     + "MIIEbzCCA1egAwIBAgIUYE3pB+BUaAP0YHeofpCmI/xCkmYwDQYJKoZIhvcNAQEL\n"
     + "BQAwDjEMMAoGA1UEAwwDZm9vMB4XDTE3MDIwMzAxNDMzNloXDTE3MDMwNTAxNDMz\n"
     + "NlowfDERMA8GA1UECgwIdGVzdC1vcmcxEDAOBgNVBAgMB0p1cGl0ZXIxETAPBgNV\n"
@@ -43,6 +46,7 @@ final public class CertificateStringConstants {
     + "QTHPRc0mETzHET0uL+9UpaUxglRPzuxVhyIYimXSiPQlk8K43gmXM8QKi85eo8xD\n"
     + "W5kgC9Eel5YQcs5wUS/1aW72x2D+7DeGxLjFwm0Sy9S8hfI=\n"
     + "-----END CERTIFICATE-----";
+  }
 
   /**
    * Version: 3 (0x2)
@@ -59,7 +63,10 @@ final public class CertificateStringConstants {
    * X509v3 Basic Constraints: critical
    * CA:FALSE
    */
-  public static final String SIMPLE_SELF_SIGNED_TEST_CERT = "-----BEGIN CERTIFICATE-----\n"
+  public static final String SIMPLE_SELF_SIGNED_TEST_CERT;
+  static {
+    SIMPLE_SELF_SIGNED_TEST_CERT =
+      "-----BEGIN CERTIFICATE-----\n"
     + "MIIDZjCCAk6gAwIBAgIUD8qb4pWPNR6dhYtZgf5Cn5DymHowDQYJKoZIhvcNAQEL\n"
     + "BQAwZDEZMBcGA1UEAwwQdGVzdC5leGFtcGxlLmNvbTExMC8GA1UECwwoYXBwOmI2\n"
     + "NzQ0NmU1LWIyYjAtNDY0OC1hMGQwLTc3MmQzZDM5OWRjYjEUMBIGA1UEBwwLZXhh\n"
@@ -80,6 +87,7 @@ final public class CertificateStringConstants {
     + "OgN3QbqNnD+GGJnsddnTY2o900nXOki+v4tcnRTlfhnkWIXn3kF+ZgmacUQDdq+G\n"
     + "zNIcsYa7oxP46A==\n"
     + "-----END CERTIFICATE-----";
+  }
 
   /**
    * Version: 3 (0x2)
@@ -96,7 +104,9 @@ final public class CertificateStringConstants {
    * X509v3 Basic Constraints: critical
    * CA:FALSE
    */
-  public static final String TEST_CERT_WITH_INVALID_UUID_IN_ORGANIZATION_UNIT =
+  public static final String TEST_CERT_WITH_INVALID_UUID_IN_ORGANIZATION_UNIT;
+  static {
+    TEST_CERT_WITH_INVALID_UUID_IN_ORGANIZATION_UNIT =
     "-----BEGIN CERTIFICATE-----\n"
       + "MIIDZjCCAk6gAwIBAgIULvDbv0eGhurO4sQHPGQzw1JZzBswDQYJKoZIhvcNAQEL\n"
       + "BQAwZDEZMBcGA1UEAwwQdGVzdC5leGFtcGxlLmNvbTExMC8GA1UECwwoYXBwOjdl\n"
@@ -118,6 +128,7 @@ final public class CertificateStringConstants {
       + "Pswa7CjG14hVnFYnj3ISDrXetgwX3Gw4kbwFdWERzDrYvoNzdguKYkrop+mUGqpy\n"
       + "OeRYsf1HBP8d0w==\n"
       + "-----END CERTIFICATE-----";
+  }
 
   /**
    * Version: 3 (0x2)
@@ -134,7 +145,9 @@ final public class CertificateStringConstants {
    * X509v3 Basic Constraints: critical
    * CA:FALSE
    */
-  public static final String TEST_CERT_WITH_INVALID_ORGANIZATION_UNIT_PREFIX =
+  public static final String TEST_CERT_WITH_INVALID_ORGANIZATION_UNIT_PREFIX;
+  static {
+    TEST_CERT_WITH_INVALID_ORGANIZATION_UNIT_PREFIX =
     "-----BEGIN CERTIFICATE-----\n"
       + "MIIDXjCCAkagAwIBAgIUf0A6ygebPHdmubKEJHEelx4e/SMwDQYJKoZIhvcNAQEL\n"
       + "BQAwYDEZMBcGA1UEAwwQdGVzdC5leGFtcGxlLmNvbTEtMCsGA1UECwwkYjY3NDQ2\n"
@@ -156,6 +169,7 @@ final public class CertificateStringConstants {
       + "fpgSc+FTem/FObrbCUDruX3hCVTQY3Gn1YiSvblPRay29eeR4JeIyPYnzWW06zN8\n"
       + "IMg=\n"
       + "-----END CERTIFICATE-----";
+  }
 
   /**
    * Version: 3 (0x2)
@@ -172,7 +186,10 @@ final public class CertificateStringConstants {
    * X509v3 Basic Constraints: critical
    * CA:FALSE
    */
-  public static final String TEST_CERT_WITHOUT_ORGANIZATION_UNIT = "-----BEGIN CERTIFICATE-----\n"
+  public static final String TEST_CERT_WITHOUT_ORGANIZATION_UNIT;
+  static {
+    TEST_CERT_WITHOUT_ORGANIZATION_UNIT =
+      "-----BEGIN CERTIFICATE-----\n"
     + "MIIDADCCAeigAwIBAgIUEkUiS0BpLu5eITSbvH3g8HjYplEwDQYJKoZIhvcNAQEL\n"
     + "BQAwMTEZMBcGA1UEAwwQdGVzdC5leGFtcGxlLmNvbTEUMBIGA1UEBwwLZXhhbXBs\n"
     + "ZXRvd24wHhcNMTcwMzI4MjMzNjU3WhcNMjcwMzI2MjMzNjU3WjAxMRkwFwYDVQQD\n"
@@ -191,6 +208,7 @@ final public class CertificateStringConstants {
     + "ZC7Tw5ZqvuWhXUIkFmAqkTW2CFI8zqSbpLjTHvjxP14Ck9zSuV4oojhvtfjA/wOz\n"
     + "mAeI1w==\n"
     + "-----END CERTIFICATE-----";
+  }
 
   /**
    * This cert appears to be self-signed (Issuer DN == Subject DN) but is actually
@@ -206,7 +224,10 @@ final public class CertificateStringConstants {
    * X509v3 Basic Constraints: critical
    * CA:FALSE
    */
-  public static final String MISLEADING_CERT = "-----BEGIN CERTIFICATE-----\n"
+  public static final String MISLEADING_CERT;
+  static {
+    MISLEADING_CERT =
+      "-----BEGIN CERTIFICATE-----\n"
     + "MIICxjCCAa6gAwIBAgIUdYAQkigXgqz1FFN0Qi2T6k2dYJswDQYJKoZIhvcNAQEL\n"
     + "BQAwFDESMBAGA1UEAwwJdHJpY2tzdGVyMB4XDTE3MDIwNzE5NDEzOFoXDTE4MDIw\n"
     + "NzE5NDEzOFowFDESMBAGA1UEAwwJdHJpY2tzdGVyMIIBIjANBgkqhkiG9w0BAQEF\n"
@@ -223,6 +244,7 @@ final public class CertificateStringConstants {
     + "snC8luPGbSwo31gKr9wFxv78GJcswIGt6fi4CxV7eGWn0p9EY4NsR8jdatLd/eKD\n"
     + "qA2eKfjSi415xgI1eOf89HvoYKlBGYuFxXB3YRkJfpS+khFeu7HTsyj2\n"
     + "-----END CERTIFICATE-----";
+  }
 
   /**
    * Version: 3 (0x2)
@@ -238,7 +260,10 @@ final public class CertificateStringConstants {
    * X509v3 Basic Constraints: critical
    * CA:TRUE
    */
-  public static final String SELF_SIGNED_CA_CERT = "-----BEGIN CERTIFICATE-----\n"
+  public static final String SELF_SIGNED_CA_CERT;
+  static {
+    SELF_SIGNED_CA_CERT =
+      "-----BEGIN CERTIFICATE-----\n"
     + "MIICxTCCAa2gAwIBAgIUFHtp0VaAmwcm9g4DCh967ZYSvsIwDQYJKoZIhvcNAQEL\n"
     + "BQAwEjEQMA4GA1UEAwwHZm9vLmNvbTAeFw0xNzAyMTAyMjM4NTlaFw0xODAyMTAy\n"
     + "MjM4NTlaMBIxEDAOBgNVBAMMB2Zvby5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IB\n"
@@ -255,6 +280,7 @@ final public class CertificateStringConstants {
     + "iSIanWI+olDxF/IRhnRCU1HmvAImyvDd7CEjI0Y+HSXqZfc+c1RvfbtoR9fS4n/v\n"
     + "6qAlCDS+r+SU+v19UsFW8cC31UyWQwrpaAMYPYhwqK1Z4nPN+AgAGGY=\n"
     + "-----END CERTIFICATE-----";
+  }
 
   /**
    * //.
@@ -268,7 +294,10 @@ final public class CertificateStringConstants {
    * Not After : Feb 13 20:21:34 2018 GMT
    * Subject: CN=bar
    */
-  public static final String V3_CERT_WITHOUT_BASIC_CONSTRAINTS = "-----BEGIN CERTIFICATE-----\n"
+  public static final String V3_CERT_WITHOUT_BASIC_CONSTRAINTS;
+  static {
+    V3_CERT_WITHOUT_BASIC_CONSTRAINTS =
+      "-----BEGIN CERTIFICATE-----\n"
     + "MIICqDCCAZCgAwIBAgIUEmVeTHlenKyBuDQdmGjKUtNH5e0wDQYJKoZIhvcNAQEL\n"
     + "BQAwDjEMMAoGA1UEAwwDYmFyMB4XDTE3MDIxMzIwMjEzNFoXDTE4MDIxMzIwMjEz\n"
     + "NFowDjEMMAoGA1UEAwwDYmFyMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKC\n"
@@ -285,6 +314,7 @@ final public class CertificateStringConstants {
     + "+NHBdPGyKlnRkvI4xIodUXfn7FrS3KWL8k9NzL5FGXCvzXoGZKBvcJuu0/2XXl+3\n"
     + "Jykws+qOGWF351JZ\n"
     + "-----END CERTIFICATE-----";
+  }
 
   /**
    * Version: 3 (0x2)
@@ -309,7 +339,10 @@ final public class CertificateStringConstants {
    * X509v3 Extended Key Usage:
    * TLS Web Client Authentication
    */
-  public static final String SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT = "-----BEGIN CERTIFICATE-----\n"
+  public static final String SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT;
+  static {
+    SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT =
+      "-----BEGIN CERTIFICATE-----\n"
     + "MIIDEjCCAnugAwIBAgIJAMcLU+onbp8mMA0GCSqGSIb3DQEBBQUAMIGXMQswCQYD\n"
     + "VQQGEwJVUzELMAkGA1UECAwCTlkxETAPBgNVBAoMCFRlc3QgT3JnMTEwLwYDVQQL\n"
     + "DChhcHA6YTEyMzQ1ZTUtYjJiMC00NjQ4LWEwZDAtNzcyZDNkMzk5ZGNiMRQwEgYD\n"
@@ -328,6 +361,7 @@ final public class CertificateStringConstants {
     + "wjh44yBrxcRGcYFdzBOIos+i5MMtDWorJY/0IH8mVEd3ckMcfVgMVP25ZvlYjhdY\n"
     + "dCNw/Rku+LafRQJOlSBZqy7K7qtzbA==\n"
     + "-----END CERTIFICATE-----";
+  }
 
   /**
    * Version: 3 (0x2)
@@ -347,7 +381,10 @@ final public class CertificateStringConstants {
    * X509v3 Authority Key Identifier:
    * keyid:2B:77:1B:63:E2:92:6B:29:9D:31:D4:0E:E0:79:0D:5F:61:E9:77:1A
    */
-  public static final String SELF_SIGNED_CERT_WITH_NO_CLIENT_AUTH_EXT = "-----BEGIN CERTIFICATE-----\n"
+  public static final String SELF_SIGNED_CERT_WITH_NO_CLIENT_AUTH_EXT;
+  static {
+    SELF_SIGNED_CERT_WITH_NO_CLIENT_AUTH_EXT =
+      "-----BEGIN CERTIFICATE-----\n"
     + "MIIC8DCCAlmgAwIBAgIJAPu9OZtZ1ZhNMA0GCSqGSIb3DQEBBQUAMIGXMQswCQYD\n"
     + "VQQGEwJVUzELMAkGA1UECAwCTlkxETAPBgNVBAoMCFRlc3QgT3JnMTEwLwYDVQQL\n"
     + "DChhcHA6YTEyMzQ1ZTUtYjJiMC00NjQ4LWEwZDAtNzcyZDNkMzk5ZGNiMRQwEgYD\n"
@@ -365,6 +402,7 @@ final public class CertificateStringConstants {
     + "EPa2sOCml5CIOlNko6Edr0GlWOWkhZyTyZTW6oHaDxVQXrhbVemmKOUY0LM9r2l+\n"
     + "TqtBv192PPCKbrJChCVmrDltpc5F5TeyTAWn/ElIVz6Za+y/\n"
     + "-----END CERTIFICATE-----";
+  }
 
   /**
    * Version: 3 (0x2)
@@ -385,7 +423,10 @@ final public class CertificateStringConstants {
    * X509v3 Subject Key Identifier:
    * B2:23:50:C6:8F:7F:B4:5F:62:1A:AD:00:91:35:FA:91:A3:BD:9E:5A
    */
-  public static final String CERTSTRAP_GENERATED_CA_CERTIFICATE = "-----BEGIN CERTIFICATE-----\n"
+  public static final String CERTSTRAP_GENERATED_CA_CERTIFICATE;
+  static {
+    CERTSTRAP_GENERATED_CA_CERTIFICATE =
+    "-----BEGIN CERTIFICATE-----\n"
     + "MIIE4jCCAsqgAwIBAgIBATANBgkqhkiG9w0BAQsFADARMQ8wDQYDVQQDEwZ0ZXN0\n"
     + "Q2EwHhcNMTcwOTIxMTcyNDA5WhcNMjcwOTIxMTcyNDE1WjARMQ8wDQYDVQQDEwZ0\n"
     + "ZXN0Q2EwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQDYMdo2q+GvAPn2\n"
@@ -414,8 +455,11 @@ final public class CertificateStringConstants {
     + "7vzbwOrOcyPZ5WBEBG1H1vfMTrAefklycBWxRK/ZtpfH5cZDjBxP7x26I2LY5/ws\n"
     + "fvToHltS\n"
     + "-----END CERTIFICATE-----\n";
+  }
 
-  public static final String CERTSTRAP_GENERATED_CA_PRIVATE_KEY = "-----BEGIN RSA PRIVATE KEY-----\n"
+  public static final String CERTSTRAP_GENERATED_CA_PRIVATE_KEY;
+  static {
+    CERTSTRAP_GENERATED_CA_PRIVATE_KEY = "-----BEGIN RSA PRIVATE KEY----- fake\n"
     + "MIIJKgIBAAKCAgEA2DHaNqvhrwD59pFJvNmTCzCYzlaWB79vxu3/YAbkx29WfbiX\n"
     + "Jx961EyIdCTTQM/vyLrkcQSW+a1hViuA6dbyDURu5bXA0F0JEtZj4oLf+a0h1r9/\n"
     + "lkmeLWZjMOiVMQ40PpKjvbIw5BpuGDBuEJJpqO4YwCnovq79W3jfJusDUgU3wyrb\n"
@@ -466,33 +510,37 @@ final public class CertificateStringConstants {
     + "qc70qlTH1TBw1Pe7g+00KRSCYYrKbXQMG9+7uxMYh5RAdlKfqZa3CBqYTgtDUjj0\n"
     + "Uwkv47QyKWgdbb5sewU15qnoHOELLFYuli3wTx8+7V6WBwme0lwlcjOduKv2ig==\n"
     + "-----END RSA PRIVATE KEY-----\n";
+  }
 
-  public static final String PRIVATE_KEY = "-----BEGIN RSA PRIVATE KEY----- fake\n"
-    + "MIIEowIBAAKCAQEAweZOJBR+ZPEqUauEw9uLvvjgR1xy4I4VhVfMsVZc34ggFHv5\n"
-    + "1EnjFTppzC16moRRZND2rhNELGZ9Qf5rkXL6A3OTXMSCKaLoAYmg0BP+WQDktVsA\n"
-    + "R+pmx3LSCvHhGWft75SCqi35t7Lrd0ns6s1ZSM3cQzjTivsHrm/vJE1XuRFObFPV\n"
-    + "T1NIHmA5fkwYstIUZv1Sa/9p8mcY8pWZ/fqk4ZYjjX4gMFZv17Zq20hFh02ACMI3\n"
-    + "8APiIi2PXW2d6zWi9iFjgUQ3IJwmm+ApeCjQNYDR3D5ag2lWDKw2ERlqfEYaEwb4\n"
-    + "iovojLyixvHg25xZ0pVeTUD10chRdMqsmPXQ+wIDAQABAoIBAFJbO71fZwAA3vSp\n"
-    + "YU6/JXALzVcCEVkHgGSOkkaQZAodi2Kn9ckRSP5vPRiYCIcwxFGJ3/y3+jDRp0os\n"
-    + "ggvZRg/JO0IfxRliNCDTEBbRJysukfXlnQzuppD4V/aGHhHobstfzM/zjylTOWgF\n"
-    + "Yjeo2M9vgKqcrF1PmkehC3Xj0+qqjbM4ZSqFxo7iDlPS4oi5rw5eTM8wq93V/X7V\n"
-    + "LFq1NKf0qPSDjiRZkEz9uO/ZmyEPl+SEqEGc0hmHoiJMt83zfLAiHlhGVem3OAOk\n"
-    + "egLbE6vkBq92P3CAzkHbcJtC6iqFXvC1ziHKgdRS7MK6R2+Qb2PnqLTwhpbA9E9v\n"
-    + "po4k3UECgYEA6Et/9UQl3cylNzLIKrN1JkLhhdmZ/sRZaSzFtfsKtx8FiFvhZltJ\n"
-    + "Bn5K4CQH2Mk+Nt76halnRmlYcBj58MHyr3oo44q/vU/6sxnILr5+wIs57sKmteHq\n"
-    + "ZTZV7T7Cwq8oFBKXScGBkM2Uw1F/c+sFJ+zVqFpjUi0iRxsilrqzWJkCgYEA1a/D\n"
-    + "IjJKpqTKJ261kf9AKjasanv6tWSN9/pRuBbJrR1hLfZ0Rc6neBPM+P0Mv6KztuXB\n"
-    + "i70z6lnLyAcjf5guNz/MXpyteR2UFOcbILt09FeLw+jN6fLnK2Cj4dSM1FZDWUSh\n"
-    + "3ugCU6Mna+VcjeJIHNordDR7dZe0LNpM+5X6jrMCgYEAyIEimZmQ9bnGgbabgAAW\n"
-    + "hkgEUXxZp8XjRx0WKtXdkeJ87A4iqC7zAV/RUVbITx6lTMd6hhSKyAP2CgwE8QL3\n"
-    + "bu+Ki50fk1CNnDoMyAw1bAzAnI33R9cQcvxLftRFV7XIaksBuvAD3fEVDuIxmOSr\n"
-    + "NqL+aKpcQHoktCt/14qfc0ECgYABAsHTiZVc0G68XQOy2xg8muGZ51g6P22EfMSi\n"
-    + "MEln7jmldAL8yYt1P/K6Qsgqp+Rduxx9QrnaI+6Y1Z/PXLLrQ/v9fpQ7fG5U4vr3\n"
-    + "3qsg9MEOfi1rK+D4DY745H5+CqJq664wVbydFKp9Eiqr6SQaLtYByLXEyqDpjWbL\n"
-    + "0dvLjQKBgGAc7RU4R2nn5lsQS80KsGKZMCHm/FmOTgozr6T1egsfiKXLyOLs1bbo\n"
-    + "i7IftEaabFmh6b62Rkc3EY8SVzCPRQYtzo8VQ2DqzunAzeKKDMB7R4p1qj6CFhCJ\n"
-    + "1Cm0Oc9+PT9H1HUgirR9z04ivyW0H2I1VYBHFhegN4Jqkq6SST7Q\n"
-    + "-----END RSA PRIVATE KEY-----\n"
-    + "\n";
+  public static final String PRIVATE_KEY;
+  static {
+    PRIVATE_KEY = "-----BEGIN RSA PRIVATE KEY----- fake\n"
+      + "MIIEowIBAAKCAQEAweZOJBR+ZPEqUauEw9uLvvjgR1xy4I4VhVfMsVZc34ggFHv5\n"
+      + "1EnjFTppzC16moRRZND2rhNELGZ9Qf5rkXL6A3OTXMSCKaLoAYmg0BP+WQDktVsA\n"
+      + "R+pmx3LSCvHhGWft75SCqi35t7Lrd0ns6s1ZSM3cQzjTivsHrm/vJE1XuRFObFPV\n"
+      + "T1NIHmA5fkwYstIUZv1Sa/9p8mcY8pWZ/fqk4ZYjjX4gMFZv17Zq20hFh02ACMI3\n"
+      + "8APiIi2PXW2d6zWi9iFjgUQ3IJwmm+ApeCjQNYDR3D5ag2lWDKw2ERlqfEYaEwb4\n"
+      + "iovojLyixvHg25xZ0pVeTUD10chRdMqsmPXQ+wIDAQABAoIBAFJbO71fZwAA3vSp\n"
+      + "YU6/JXALzVcCEVkHgGSOkkaQZAodi2Kn9ckRSP5vPRiYCIcwxFGJ3/y3+jDRp0os\n"
+      + "ggvZRg/JO0IfxRliNCDTEBbRJysukfXlnQzuppD4V/aGHhHobstfzM/zjylTOWgF\n"
+      + "Yjeo2M9vgKqcrF1PmkehC3Xj0+qqjbM4ZSqFxo7iDlPS4oi5rw5eTM8wq93V/X7V\n"
+      + "LFq1NKf0qPSDjiRZkEz9uO/ZmyEPl+SEqEGc0hmHoiJMt83zfLAiHlhGVem3OAOk\n"
+      + "egLbE6vkBq92P3CAzkHbcJtC6iqFXvC1ziHKgdRS7MK6R2+Qb2PnqLTwhpbA9E9v\n"
+      + "po4k3UECgYEA6Et/9UQl3cylNzLIKrN1JkLhhdmZ/sRZaSzFtfsKtx8FiFvhZltJ\n"
+      + "Bn5K4CQH2Mk+Nt76halnRmlYcBj58MHyr3oo44q/vU/6sxnILr5+wIs57sKmteHq\n"
+      + "ZTZV7T7Cwq8oFBKXScGBkM2Uw1F/c+sFJ+zVqFpjUi0iRxsilrqzWJkCgYEA1a/D\n"
+      + "IjJKpqTKJ261kf9AKjasanv6tWSN9/pRuBbJrR1hLfZ0Rc6neBPM+P0Mv6KztuXB\n"
+      + "i70z6lnLyAcjf5guNz/MXpyteR2UFOcbILt09FeLw+jN6fLnK2Cj4dSM1FZDWUSh\n"
+      + "3ugCU6Mna+VcjeJIHNordDR7dZe0LNpM+5X6jrMCgYEAyIEimZmQ9bnGgbabgAAW\n"
+      + "hkgEUXxZp8XjRx0WKtXdkeJ87A4iqC7zAV/RUVbITx6lTMd6hhSKyAP2CgwE8QL3\n"
+      + "bu+Ki50fk1CNnDoMyAw1bAzAnI33R9cQcvxLftRFV7XIaksBuvAD3fEVDuIxmOSr\n"
+      + "NqL+aKpcQHoktCt/14qfc0ECgYABAsHTiZVc0G68XQOy2xg8muGZ51g6P22EfMSi\n"
+      + "MEln7jmldAL8yYt1P/K6Qsgqp+Rduxx9QrnaI+6Y1Z/PXLLrQ/v9fpQ7fG5U4vr3\n"
+      + "3qsg9MEOfi1rK+D4DY745H5+CqJq664wVbydFKp9Eiqr6SQaLtYByLXEyqDpjWbL\n"
+      + "0dvLjQKBgGAc7RU4R2nn5lsQS80KsGKZMCHm/FmOTgozr6T1egsfiKXLyOLs1bbo\n"
+      + "i7IftEaabFmh6b62Rkc3EY8SVzCPRQYtzo8VQ2DqzunAzeKKDMB7R4p1qj6CFhCJ\n"
+      + "1Cm0Oc9+PT9H1HUgirR9z04ivyW0H2I1VYBHFhegN4Jqkq6SST7Q\n"
+      + "-----END RSA PRIVATE KEY-----\n"
+      + "\n";
+  }
 }

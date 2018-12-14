@@ -14,6 +14,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.cloudfoundry.credhub.entity.EncryptionKeyCanary;
 import org.cloudfoundry.credhub.repository.EncryptionKeyCanaryRepository;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
+import org.cloudfoundry.credhub.util.StringUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,8 +46,8 @@ public class EncryptionKeyCanaryDataServiceTest {
   @Test
   public void save_savesTheEncryptionCanary() {
     EncryptionKeyCanary encryptionKeyCanary = new EncryptionKeyCanary();
-    encryptionKeyCanary.setNonce("test-nonce".getBytes());
-    encryptionKeyCanary.setEncryptedCanaryValue("test-value".getBytes());
+    encryptionKeyCanary.setNonce("test-nonce".getBytes(StringUtil.UTF_8));
+    encryptionKeyCanary.setEncryptedCanaryValue("test-value".getBytes(StringUtil.UTF_8));
     subject.save(encryptionKeyCanary);
 
     List<EncryptionKeyCanary> canaries = subject.findAll();
@@ -57,8 +58,8 @@ public class EncryptionKeyCanaryDataServiceTest {
 
     assertNotNull(actual.getUuid());
     assertThat(actual.getUuid(), equalTo(encryptionKeyCanary.getUuid()));
-    assertThat(actual.getNonce(), equalTo("test-nonce".getBytes()));
-    assertThat(actual.getEncryptedCanaryValue(), equalTo("test-value".getBytes()));
+    assertThat(actual.getNonce(), equalTo("test-nonce".getBytes(StringUtil.UTF_8)));
+    assertThat(actual.getEncryptedCanaryValue(), equalTo("test-value".getBytes(StringUtil.UTF_8)));
   }
 
   @Test

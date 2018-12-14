@@ -18,7 +18,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import org.apache.commons.lang3.StringUtils;
-import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.domain.CredentialFactory;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
@@ -43,7 +42,6 @@ public class CredentialVersionDataService {
   private PermissionDataService permissionDataService;
   private UserContextHolder userContextHolder;
   private CertificateVersionDataService certificateVersionDataService;
-  private CEFAuditRecord auditRecord;
 
   @Value("${security.authorization.acls.enabled}")
   private boolean enforcePermissions;
@@ -56,8 +54,8 @@ public class CredentialVersionDataService {
     JdbcTemplate jdbcTemplate,
     CredentialFactory credentialFactory,
     UserContextHolder userContextHolder,
-    CertificateVersionDataService certificateVersionDataService,
-    CEFAuditRecord auditRecord) {
+    CertificateVersionDataService certificateVersionDataService
+  ) {
     this.credentialVersionRepository = credentialVersionRepository;
     this.permissionDataService = permissionDataService;
     this.credentialDataService = credentialDataService;
@@ -65,7 +63,6 @@ public class CredentialVersionDataService {
     this.credentialFactory = credentialFactory;
     this.userContextHolder = userContextHolder;
     this.certificateVersionDataService = certificateVersionDataService;
-    this.auditRecord = auditRecord;
   }
 
   public <Z extends CredentialVersion> Z save(Z credentialVersion) {

@@ -6,23 +6,34 @@ import java.util.UUID;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.cloudfoundry.credhub.credential.CryptSaltFactory;
+import org.cloudfoundry.credhub.util.StringUtil;
 import org.cloudfoundry.credhub.util.UuidUtil;
 import org.flywaydb.core.api.migration.spring.SpringJdbcMigration;
 
 @SuppressWarnings("unused")
 public class V41_1__set_salt_in_existing_user_credentials implements SpringJdbcMigration {
-  @Override
-  public void migrate(JdbcTemplate jdbcTemplate) throws Exception {
-    CryptSaltFactory saltFactory = new CryptSaltFactory();
 
-    String databaseName = jdbcTemplate.getDataSource().getConnection().getMetaData()
-        .getDatabaseProductName().toLowerCase();
+  @SuppressFBWarnings(
+    value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE",
+    justification = "The database will definitely exist"
+  )
+  public void migrate(JdbcTemplate jdbcTemplate) throws Exception {
+
+    String databaseName = jdbcTemplate
+      .getDataSource()
+      .getConnection()
+      .getMetaData()
+      .getDatabaseProductName()
+      .toLowerCase();
+
+    CryptSaltFactory saltFactory = new CryptSaltFactory();
 
     List<UUID> uuids = jdbcTemplate.query("select uuid from user_credential", (rowSet, rowNum) -> {
       byte[] uuidBytes = rowSet.getBytes("uuid");
       if (databaseName.equals("postgresql")) {
-        return UUID.fromString(new String(uuidBytes));
+        return UUID.fromString(new String(uuidBytes, StringUtil.UTF_8));
       } else {
         ByteBuffer byteBuffer = ByteBuffer.wrap(uuidBytes);
         return new UUID(byteBuffer.getLong(), byteBuffer.getLong());

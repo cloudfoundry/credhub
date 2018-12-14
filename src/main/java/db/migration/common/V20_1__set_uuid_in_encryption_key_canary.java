@@ -6,14 +6,25 @@ import java.util.UUID;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.cloudfoundry.credhub.util.UuidUtil;
 import org.flywaydb.core.api.migration.spring.SpringJdbcMigration;
 
+@SuppressWarnings("unused")
 public class V20_1__set_uuid_in_encryption_key_canary implements SpringJdbcMigration {
 
+  @SuppressFBWarnings(
+    value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE",
+    justification = "The database will definitely exist"
+  )
   public void migrate(JdbcTemplate jdbcTemplate) throws Exception {
-    String databaseName = jdbcTemplate.getDataSource().getConnection().getMetaData()
-        .getDatabaseProductName().toLowerCase();
+    String databaseName = jdbcTemplate
+      .getDataSource()
+      .getConnection()
+      .getMetaData()
+      .getDatabaseProductName()
+      .toLowerCase();
+
     int[] types = {Types.VARBINARY, Types.BIGINT};
 
     List<Long> canaryIds = jdbcTemplate.queryForList(

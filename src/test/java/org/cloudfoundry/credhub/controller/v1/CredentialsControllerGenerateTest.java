@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.credential.RsaCredentialValue;
 import org.cloudfoundry.credhub.credential.SshCredentialValue;
@@ -40,7 +39,6 @@ import org.junit.runner.RunWith;
 
 import static org.cloudfoundry.credhub.helper.TestHelper.mockOutCurrentTimeProvider;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -87,12 +85,10 @@ public class CredentialsControllerGenerateTest {
   private CurrentTimeProvider mockCurrentTimeProvider;
 
   private MockMvc mockMvc;
-  private UserContext userContext;
 
   @Before
   public void beforeEach() {
     Consumer<Long> fakeTimeSetter = mockOutCurrentTimeProvider(mockCurrentTimeProvider);
-    userContext = mock(UserContext.class);
 
     fakeTimeSetter.accept(FROZEN_TIME.toEpochMilli());
     mockMvc = MockMvcBuilders

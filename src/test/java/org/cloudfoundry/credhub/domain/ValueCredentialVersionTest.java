@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.cloudfoundry.credhub.entity.EncryptedValue;
 import org.cloudfoundry.credhub.entity.ValueCredentialVersionData;
+import org.cloudfoundry.credhub.util.StringUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,8 +28,8 @@ public class ValueCredentialVersionTest {
   public void beforeEach() {
     canaryUuid = UUID.randomUUID();
     encryptor = mock(Encryptor.class);
-    byte[] encryptedValue = "fake-encrypted-value".getBytes();
-    byte[] nonce = "fake-nonce".getBytes();
+    byte[] encryptedValue = "fake-encrypted-value".getBytes(StringUtil.UTF_8);
+    byte[] nonce = "fake-nonce".getBytes(StringUtil.UTF_8);
     final EncryptedValue encryption = new EncryptedValue(canaryUuid, encryptedValue, nonce);
     when(encryptor.encrypt("my-value"))
       .thenReturn(encryption);

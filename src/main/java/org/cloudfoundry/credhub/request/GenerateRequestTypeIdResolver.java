@@ -55,6 +55,8 @@ public class GenerateRequestTypeIdResolver implements TypeIdResolver {
       case UserCredentialVersionData.CREDENTIAL_TYPE:
         subType = UserGenerateRequest.class;
         break;
+      default:
+        break;
     }
 
     return context.constructSpecializedType(baseType, subType);

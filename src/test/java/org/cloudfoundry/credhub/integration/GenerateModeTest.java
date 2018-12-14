@@ -17,7 +17,6 @@ import org.springframework.web.context.WebApplicationContext;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.util.AuthConstants;
 import org.cloudfoundry.credhub.util.CurrentTimeProvider;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
@@ -31,7 +30,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -53,7 +51,6 @@ public class GenerateModeTest {
   private CurrentTimeProvider mockCurrentTimeProvider;
 
   private MockMvc mockMvc;
-  private UserContext userContext;
 
   @Autowired
   private WebApplicationContext webApplicationContext;
@@ -61,7 +58,6 @@ public class GenerateModeTest {
   @Before
   public void beforeEach() {
     Consumer<Long> fakeTimeSetter = mockOutCurrentTimeProvider(mockCurrentTimeProvider);
-    userContext = mock(UserContext.class);
 
     fakeTimeSetter.accept(FROZEN_TIME.toEpochMilli());
     mockMvc = MockMvcBuilders

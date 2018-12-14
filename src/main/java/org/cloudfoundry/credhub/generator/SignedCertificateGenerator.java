@@ -95,8 +95,6 @@ public class SignedCertificateGenerator {
     Instant now = Instant.from(timeProvider.getInstant());
 
     BigInteger certificateSerialNumber = serialNumberGenerator.generate();
-    BigInteger caSerialNumber =
-      issuerCertificate != null ? issuerCertificate.getSerialNumber() : certificateSerialNumber;
 
     final JcaX509v3CertificateBuilder certificateBuilder = new JcaX509v3CertificateBuilder(
       issuerDn,

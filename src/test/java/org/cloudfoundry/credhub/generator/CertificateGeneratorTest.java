@@ -22,7 +22,6 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
-import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.data.CertificateAuthorityService;
 import org.cloudfoundry.credhub.domain.CertificateGenerationParameters;
@@ -70,7 +69,6 @@ public class CertificateGeneratorTest {
   private CertificateGenerationRequestParameters generationParameters;
   private X509Certificate childX509Certificate;
   private PermissionCheckingService permissionCheckingService;
-  private UserContext userContext;
 
   @Before
   public void beforeEach() throws Exception {
@@ -79,7 +77,6 @@ public class CertificateGeneratorTest {
     signedCertificateGenerator = mock(SignedCertificateGenerator.class);
     certificateAuthorityService = mock(CertificateAuthorityService.class);
     permissionCheckingService = mock(PermissionCheckingService.class);
-    userContext = mock(UserContext.class);
 
     subject = new CertificateGenerator(
       keyGenerator,

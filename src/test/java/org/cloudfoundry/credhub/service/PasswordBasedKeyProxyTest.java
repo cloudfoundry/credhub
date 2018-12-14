@@ -10,6 +10,7 @@ import org.bouncycastle.util.encoders.Hex;
 import org.cloudfoundry.credhub.entity.EncryptedValue;
 import org.cloudfoundry.credhub.entity.EncryptionKeyCanary;
 import org.cloudfoundry.credhub.util.PasswordKeyProxyFactoryTestImpl;
+import org.cloudfoundry.credhub.util.StringUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -106,7 +107,7 @@ public class PasswordBasedKeyProxyTest {
   @Test
   public void matchesCanary_whenCanaryHasEmptySalt_returnsFalse() {
     EncryptionKeyCanary canary = new EncryptionKeyCanary();
-    canary.setSalt("".getBytes());
+    canary.setSalt("".getBytes(StringUtil.UTF_8));
     assertFalse(subject.matchesCanary(canary));
   }
 

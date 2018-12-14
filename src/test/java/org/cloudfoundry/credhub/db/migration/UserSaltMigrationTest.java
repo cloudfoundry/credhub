@@ -10,6 +10,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.data.CredentialVersionDataService;
 import org.cloudfoundry.credhub.domain.UserCredentialVersion;
@@ -43,6 +44,10 @@ public class UserSaltMigrationTest {
   private String databaseName;
   private List<EncryptionKeyCanary> canaries;
 
+  @SuppressFBWarnings(
+    value = {"NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", "ODR_OPEN_DATABASE_RESOURCE"},
+    justification = "Ignore that jdbcTemplate methods might return null or that the DB connection may be left open."
+  )
   @Before
   public void beforeEach() throws Exception {
     canaries = encryptionKeyCanaryRepository.findAll();

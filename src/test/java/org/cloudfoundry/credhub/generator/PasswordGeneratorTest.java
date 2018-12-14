@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.generator;
 
-import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.credential.StringCredentialValue;
 import org.cloudfoundry.credhub.request.StringGenerationParameters;
 import org.junit.Before;
@@ -18,12 +17,10 @@ public class PasswordGeneratorTest {
   private PasswordCredentialGenerator subject;
 
   private PassayStringCredentialGenerator passayStringCredentialGenerator;
-  private UserContext userContext;
 
   @Before
   public void beforeEach() {
     passayStringCredentialGenerator = mock(PassayStringCredentialGenerator.class);
-    userContext = mock(UserContext.class);
     subject = new PasswordCredentialGenerator(passayStringCredentialGenerator);
   }
 

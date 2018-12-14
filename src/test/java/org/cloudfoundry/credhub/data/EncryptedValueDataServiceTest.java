@@ -16,6 +16,7 @@ import org.cloudfoundry.credhub.domain.Encryptor;
 import org.cloudfoundry.credhub.entity.EncryptedValue;
 import org.cloudfoundry.credhub.repository.EncryptedValueRepository;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
+import org.cloudfoundry.credhub.util.StringUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -65,12 +66,12 @@ public class EncryptedValueDataServiceTest {
 
   @Test
   public void rotate() throws Exception {
-    EncryptedValue newEncryption = new EncryptedValue(UUID.randomUUID(), "expected value".getBytes(),
-      "nonce".getBytes());
+    EncryptedValue newEncryption = new EncryptedValue(UUID.randomUUID(), "expected value".getBytes(StringUtil.UTF_8),
+      "nonce".getBytes(StringUtil.UTF_8));
     EncryptedValue value = new EncryptedValue();
-    value.setEncryptedValue("bytes".getBytes());
+    value.setEncryptedValue("bytes".getBytes(StringUtil.UTF_8));
     value.setEncryptionKeyUuid(UUID.randomUUID());
-    value.setNonce("nonce".getBytes());
+    value.setNonce("nonce".getBytes(StringUtil.UTF_8));
     when(encryptor.decrypt(any(EncryptedValue.class))).thenReturn("expected value");
     when(encryptor.encrypt("expected value")).thenReturn(newEncryption);
     subject.rotate(value);

@@ -6,10 +6,9 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.flywaydb.core.api.migration.spring.SpringJdbcMigration;
 
-
+@SuppressWarnings("unused")
 public class V47_2__insert_checksum_values_for_existing_credentials implements SpringJdbcMigration {
 
-  @Override
   public void migrate(JdbcTemplate jdbcTemplate) throws Exception {
 
     SqlRowSet credentials = jdbcTemplate.queryForRowSet("select * from credential");

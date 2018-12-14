@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.audit;
 
 import org.springframework.mock.web.MockHttpServletRequest;
 
+import org.cloudfoundry.credhub.util.StringUtil;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -47,7 +48,7 @@ public class CEFAuditRecordTest {
   @Test
   public void setHttpRequest() {
     String data = "{\"name\":\"example-value\",\"value\":\"secret\"}";
-    httpRequest.setContent(data.getBytes());
+    httpRequest.setContent(data.getBytes(StringUtil.UTF_8));
     httpRequest.setMethod("PUT");
 
     auditRecord.setHttpRequest(httpRequest);

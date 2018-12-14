@@ -7,6 +7,7 @@ import org.cloudfoundry.credhub.domain.Encryptor;
 import org.cloudfoundry.credhub.domain.SshCredentialVersion;
 import org.cloudfoundry.credhub.entity.EncryptedValue;
 import org.cloudfoundry.credhub.helper.JsonTestHelper;
+import org.cloudfoundry.credhub.util.StringUtil;
 import org.cloudfoundry.credhub.util.TestConstants;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,7 +29,7 @@ public class SshViewTest {
   @Before
   public void beforeEach() {
     Encryptor encryptor = mock(Encryptor.class);
-    final EncryptedValue encryption = new EncryptedValue(UUID.randomUUID(), "encrypted".getBytes(), "nonce".getBytes());
+    final EncryptedValue encryption = new EncryptedValue(UUID.randomUUID(), "encrypted".getBytes(StringUtil.UTF_8), "nonce".getBytes(StringUtil.UTF_8));
     when(encryptor.encrypt(TestConstants.PRIVATE_KEY_4096)).thenReturn(
       encryption);
     when(encryptor.decrypt(encryption))

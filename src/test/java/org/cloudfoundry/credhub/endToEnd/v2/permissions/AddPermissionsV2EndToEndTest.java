@@ -1,7 +1,5 @@
 package org.cloudfoundry.credhub.endToEnd.v2.permissions;
 
-import java.util.UUID;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -122,7 +120,7 @@ public class AddPermissionsV2EndToEndTest {
   public void POST_whenUserTriesToAddAnAdditionalOperationToAPermissionThatAlreadyExists_theyReceiveAConflict() throws Exception {
     String credentialName = "/test";
 
-    UUID credentialUuid = PermissionsV2EndToEndTestHelper.setPermissions(mockMvc, credentialName, PermissionOperation.WRITE);
+    PermissionsV2EndToEndTestHelper.setPermissions(mockMvc, credentialName, PermissionOperation.WRITE);
 
     MockHttpServletRequestBuilder addPermissionRequestWithRead = post("/api/v2/permissions")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)

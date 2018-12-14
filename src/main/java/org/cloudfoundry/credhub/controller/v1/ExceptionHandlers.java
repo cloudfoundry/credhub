@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -106,7 +107,15 @@ public class ExceptionHandlers {
   @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ResponseError handleHttpMediaTypeNotSupportedException(HttpMediaTypeNotSupportedException e) {
-    return constructError("error.invalid_content_type", e.getContentType().toString());
+
+    String errorMessage = "";
+
+    MediaType contentType = e.getContentType();
+    if (contentType != null) {
+      errorMessage = contentType.toString();
+    }
+
+    return constructError("error.invalid_content_type", errorMessage);
   }
 
   @ExceptionHandler(JsonParseException.class)
@@ -132,7 +141,14 @@ public class ExceptionHandlers {
   @ExceptionHandler(MethodArgumentNotValidException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ResponseError handleMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
-    return constructError(exception.getBindingResult().getAllErrors().get(0).getDefaultMessage());
+
+    final String message = exception.getBindingResult().getAllErrors().get(0).getDefaultMessage();
+
+    if (message != null) {
+      return constructError(message);
+    }
+
+    return constructError(exception.getMessage());
   }
 
   @ExceptionHandler(InvalidRemoteAddressException.class)

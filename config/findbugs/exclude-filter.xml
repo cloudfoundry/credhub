@@ -20,4 +20,8 @@
     <Match>
         <Package name="~.*jna\.libcrypto.*" />
     </Match>
+
+    <Match>
+        <Package name="~.*org\.cloudfoundry\.credhub\.service\.grpc.*" />
+    </Match>
 </FindBugsFilter>

@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
 import org.cloudfoundry.credhub.config.EncryptionKeyProvider;
@@ -46,6 +47,7 @@ import org.cloudfoundry.credhub.service.PasswordEncryptionService;
 import org.cloudfoundry.credhub.service.PasswordKeyProxyFactory;
 import org.cloudfoundry.credhub.util.CertificateStringConstants;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
+import org.cloudfoundry.credhub.util.StringUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -71,6 +73,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = CredentialManagerApp.class)
 @RunWith(SpringRunner.class)
 @Transactional
+@SuppressFBWarnings(
+  value = "SS_SHOULD_BE_STATIC",
+  justification = "Test files generally don't need static fields."
+)
 public class EncryptionKeyRotatorTest {
 
   private final String passwordName = "/test-password";
@@ -329,8 +335,8 @@ public class EncryptionKeyRotatorTest {
 
   private void createUnknownKey() {
     unknownCanary = new EncryptionKeyCanary();
-    unknownCanary.setEncryptedCanaryValue("bad-encrypted-value".getBytes());
-    unknownCanary.setNonce("bad-nonce".getBytes());
+    unknownCanary.setEncryptedCanaryValue("bad-encrypted-value".getBytes(StringUtil.UTF_8));
+    unknownCanary.setNonce("bad-nonce".getBytes(StringUtil.UTF_8));
     unknownCanary = encryptionKeyCanaryDataService.save(unknownCanary);
   }
 
@@ -371,6 +377,10 @@ public class EncryptionKeyRotatorTest {
     credentialVersionDataService.save(credentialWithCurrentKey);
   }
 
+  @SuppressFBWarnings(
+    value = "RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT",
+    justification = "False positive - leave mockito settings alone"
+  )
   private void setActiveKey(int index) throws Exception {
     List<EncryptionKeyMetadata> keys = new ArrayList<>();
 

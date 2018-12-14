@@ -56,7 +56,7 @@ public class AuditInterceptorTest {
   public void afterCompletion_returnsIfNoUserIsPresent() {
     request.setUserPrincipal(null);
 
-    subject.afterCompletion(request, response, null, null);
+    subject.afterCompletion(request, response, new Object(), null);
 
     verify(userContextFactory, never()).createUserContext(null);
   }
@@ -69,7 +69,7 @@ public class AuditInterceptorTest {
     request.setAuthType(CLIENT_CERT_AUTH);
     response.setStatus(200);
 
-    subject.afterCompletion(request, response, null, null);
+    subject.afterCompletion(request, response, new Object(), null);
     assertThat(auditRecord.getUsername(), is(equalTo("foo")));
     assertThat(auditRecord.getHttpStatusCode(), is(equalTo(200)));
     assertThat(auditRecord.getResult(), is(equalTo("success")));
@@ -82,7 +82,7 @@ public class AuditInterceptorTest {
     request.setRequestURI("/foo/bar");
     request.setQueryString("baz=qux&hi=bye");
     request.setMethod("GET");
-    subject.preHandle(request, response, null);
+    subject.preHandle(request, response, new Object());
     assertThat(auditRecord.getRequestPath(), is(equalTo("/foo/bar?baz=qux&hi=bye")));
     assertThat(auditRecord.getRequestMethod(), is(equalTo("GET")));
   }

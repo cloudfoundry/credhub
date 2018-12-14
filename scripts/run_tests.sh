@@ -16,5 +16,5 @@ if [ "$run_all" = "--run-all" ]; then
     psql -U pivotal -c "DROP DATABASE IF EXISTS credhub_test" -c "CREATE DATABASE credhub_test"
     ./gradlew --no-daemon clean test --info -Dspring.profiles.active=unit-test-postgres
 else
-    ./gradlew --no-daemon clean test
+    ./gradlew clean test
 fi

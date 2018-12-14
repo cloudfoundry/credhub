@@ -19,6 +19,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.data.CredentialVersionDataService;
 import org.cloudfoundry.credhub.domain.JsonCredentialVersion;
@@ -103,6 +104,10 @@ public class InterpolationControllerTest {
         .value(equalTo("secret2-value")));
   }
 
+  @SuppressFBWarnings(
+    value = "RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT",
+    justification = "False positive - leave mockito settings alone"
+  )
   @Test
   public void POST_whenAReferencedCredentialIsNotJsonType_throwsAnError() throws Exception {
     ValueCredentialVersion valueCredential = mock(ValueCredentialVersion.class);

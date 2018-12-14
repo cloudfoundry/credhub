@@ -5,16 +5,25 @@ import java.util.List;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.flywaydb.core.api.migration.spring.SpringJdbcMigration;
 
 import static org.cloudfoundry.credhub.util.UuidUtil.makeUuid;
 
 @SuppressWarnings("unused")
 public class V35_1__migrate_operation_audit_record_table implements SpringJdbcMigration {
-  @Override
+
+  @SuppressFBWarnings(
+    value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE",
+    justification = "The database will definitely exist"
+  )
   public void migrate(JdbcTemplate jdbcTemplate) throws Exception {
-    String databaseName = jdbcTemplate.getDataSource().getConnection().getMetaData()
-        .getDatabaseProductName().toLowerCase();
+    String databaseName = jdbcTemplate
+      .getDataSource()
+      .getConnection()
+      .getMetaData()
+      .getDatabaseProductName()
+      .toLowerCase();
 
     List<Long> operationAuditRecordIds = jdbcTemplate.queryForList("select id from operation_audit_record", Long.class);
 

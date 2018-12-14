@@ -6,6 +6,7 @@ buildscript {
         kotlinVersion = '1.2.71'
         grpcVersion = '1.14.0'
         jsonPathVersion = '2.4.0'
+        spotBugsToolVersion = '3.1.9'
 
         // https://github.com/grpc/grpc-java/blob/master/SECURITY.md#netty
         nettyVersion = '4.1.29.Final'
@@ -48,7 +49,7 @@ apply from: "ktlint.gradle"
 apply from: "checkstyle-config.gradle"
 
 spotbugs {
-    toolVersion = '3.1.9'
+    toolVersion = "$spotBugsToolVersion"
     excludeFilter = file("$rootProject.projectDir/config/findbugs/exclude-filter.xml")
 }
 
@@ -115,6 +116,10 @@ dependencies {
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
     implementation("net.java.dev.jna:jna:4.5.1")
     implementation("org.apache.httpcomponents:httpclient:4.5.5")
+
+    // Spotbugs
+    compileOnly("com.github.spotbugs:spotbugs-annotations:$spotBugsToolVersion")
+    testCompileOnly("com.github.spotbugs:spotbugs-annotations:$spotBugsToolVersion")
 
     // Java 11 (backfill modules that were used in Java 8)
     implementation("javax.xml.bind:jaxb-api:2.3.1")

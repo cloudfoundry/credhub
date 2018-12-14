@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.entity;
 
+import org.cloudfoundry.credhub.util.StringUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,7 +22,7 @@ public class CredentialVersionDataTest {
 
   @Test
   public void encryptedValue_doesNotStoreOrPassByReference() throws Exception {
-    byte[] toModify = "foobar".getBytes();
+    byte[] toModify = "foobar".getBytes(StringUtil.UTF_8);
     passwordCredentialData.setEncryptedValueData(new EncryptedValue().setEncryptedValue(toModify));
     byte[] unModified = toModify.clone();
 
@@ -33,7 +34,7 @@ public class CredentialVersionDataTest {
 
   @Test
   public void nonce_doesNotStoreOrPassByReference() throws Exception {
-    byte[] toModify = "foobar".getBytes();
+    byte[] toModify = "foobar".getBytes(StringUtil.UTF_8);
     passwordCredentialData.setEncryptedValueData(new EncryptedValue().setEncryptedValue(toModify)
       .setNonce(toModify));
     byte[] unModified = toModify.clone();

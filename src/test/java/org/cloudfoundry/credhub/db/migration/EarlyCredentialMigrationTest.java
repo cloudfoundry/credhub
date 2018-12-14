@@ -12,10 +12,12 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.entity.EncryptionKeyCanary;
 import org.cloudfoundry.credhub.repository.EncryptionKeyCanaryRepository;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
+import org.cloudfoundry.credhub.util.StringUtil;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationVersion;
 import org.junit.After;
@@ -65,7 +67,7 @@ public class EarlyCredentialMigrationTest {
   public void successfullyAppliesLatestMigration() {
     jdbcTemplate.update(
       "insert into named_canary (id, name, encrypted_value, nonce) values (?, ?, ?, ?)",
-      10, "canary", "encrypted-value".getBytes(), "nonce".getBytes()
+      10, "canary", "encrypted-value".getBytes(StringUtil.UTF_8), "nonce".getBytes(StringUtil.UTF_8)
     );
 
     // we use raw sql because the entities assume the latest version
@@ -74,6 +76,10 @@ public class EarlyCredentialMigrationTest {
     storeValueSecret("/deploy123/test");
   }
 
+  @SuppressFBWarnings(
+    value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE",
+    justification = "Ignore that JDBCTemplate might return a null"
+  )
   private void storeValueSecret(String credentialName) {
     MapSqlParameterSource paramSource = new MapSqlParameterSource();
     String uuid = UUID.randomUUID().toString().replace("-", "");

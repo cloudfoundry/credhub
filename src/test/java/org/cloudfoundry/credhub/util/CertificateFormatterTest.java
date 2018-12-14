@@ -36,8 +36,6 @@ public class CertificateFormatterTest {
 
   @Test
   public void derOf_convertsObjectToDerEncodedString() throws IOException {
-    keyPair.getPublic().toString();
-
     String pemString = CertificateFormatter.derOf((RSAPublicKey) keyPair.getPublic());
     assertThat(pemString, startsWith("ssh-rsa "));
   }

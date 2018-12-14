@@ -3,7 +3,6 @@ package org.cloudfoundry.credhub.generator;
 import java.security.KeyPair;
 import java.security.interfaces.RSAPublicKey;
 
-import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.credential.SshCredentialValue;
 import org.cloudfoundry.credhub.request.SshGenerationParameters;
 import org.cloudfoundry.credhub.util.CertificateFormatter;
@@ -27,12 +26,9 @@ public class SshGeneratorTest {
 
   private KeyPair keyPair;
 
-  private UserContext userContext;
-
   @Before
   public void beforeEach() throws Exception {
     keyPairGeneratorMock = mock(LibcryptoRsaKeyPairGenerator.class);
-    userContext = null;
     subject = new SshGenerator(keyPairGeneratorMock);
 
     keyPair = new FakeKeyPairGenerator().generate();

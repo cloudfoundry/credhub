@@ -16,6 +16,7 @@ import org.cloudfoundry.credhub.entity.EncryptedValue;
 import org.cloudfoundry.credhub.entity.EncryptionKeyCanary;
 import org.cloudfoundry.credhub.entity.ValueCredentialVersionData;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
+import org.cloudfoundry.credhub.util.StringUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -66,7 +67,7 @@ public class CredentialVersionDataRepositoryTest {
     entity.setEncryptedValueData(new EncryptedValue()
       .setEncryptionKeyUuid(canaryUuid)
       .setEncryptedValue(encryptedValue)
-      .setNonce("nonce".getBytes()));
+      .setNonce("nonce".getBytes(StringUtil.UTF_8)));
 
     subject.save(entity);
     CertificateCredentialVersionData credentialData = (CertificateCredentialVersionData) subject
@@ -90,7 +91,7 @@ public class CredentialVersionDataRepositoryTest {
     entity.setEncryptedValueData(new EncryptedValue()
       .setEncryptedValue(encryptedValue)
       .setEncryptionKeyUuid(canaryUuid)
-      .setNonce("nonce".getBytes()));
+      .setNonce("nonce".getBytes(StringUtil.UTF_8)));
 
     subject.save(entity);
     assertThat(subject.findFirstByCredentialUuidOrderByVersionCreatedAtDesc(credential.getUuid())

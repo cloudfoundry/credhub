@@ -6,8 +6,10 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.crypto.IllegalBlockSizeException;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.cloudfoundry.credhub.entity.EncryptedValue;
 import org.cloudfoundry.credhub.exceptions.KeyNotFoundException;
+import org.cloudfoundry.credhub.util.StringUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -233,12 +235,12 @@ public class RetryingEncryptionServiceTest {
 
     when(keySet.get(activeKeyUuid))
       .thenReturn(firstActiveKey);
-    when(firstActiveKey.decrypt("fake-encrypted-value".getBytes(), "fake-nonce".getBytes()))
+    when(firstActiveKey.decrypt("fake-encrypted-value".getBytes(StringUtil.UTF_8), "fake-nonce".getBytes(StringUtil.UTF_8)))
       .thenReturn("fake-plaintext");
 
 
     assertThat(
-      subject.decrypt(new EncryptedValue(activeKeyUuid, "fake-encrypted-value".getBytes(), "fake-nonce".getBytes())),
+      subject.decrypt(new EncryptedValue(activeKeyUuid, "fake-encrypted-value".getBytes(StringUtil.UTF_8), "fake-nonce".getBytes(StringUtil.UTF_8))),
       equalTo("fake-plaintext"));
 
     verify(encryptionService, times(0)).reconnect(any(IllegalBlockSizeException.class));
@@ -260,7 +262,7 @@ public class RetryingEncryptionServiceTest {
     when(firstActiveKey.getProvider()).thenReturn(encryptionService);
 
     try {
-      subject.decrypt(new EncryptedValue(activeKeyUuid, "an encrypted value".getBytes(), "a nonce".getBytes()));
+      subject.decrypt(new EncryptedValue(activeKeyUuid, "an encrypted value".getBytes(StringUtil.UTF_8), "a nonce".getBytes(StringUtil.UTF_8)));
       fail("Expected exception");
     } catch (ProviderException e) {
       // expected
@@ -288,7 +290,7 @@ public class RetryingEncryptionServiceTest {
     reset(writeLock);
 
     try {
-      subject.decrypt(new EncryptedValue(activeKeyUuid, "an encrypted value".getBytes(), "a nonce".getBytes()));
+      subject.decrypt(new EncryptedValue(activeKeyUuid, "an encrypted value".getBytes(StringUtil.UTF_8), "a nonce".getBytes(StringUtil.UTF_8)));
     } catch (ProviderException e) {
       // expected
     }
@@ -312,7 +314,7 @@ public class RetryingEncryptionServiceTest {
       .reconnect(any(Exception.class));
 
     try {
-      subject.decrypt(new EncryptedValue(activeKeyUuid, "an encrypted value".getBytes(), "a nonce".getBytes()));
+      subject.decrypt(new EncryptedValue(activeKeyUuid, "an encrypted value".getBytes(StringUtil.UTF_8), "a nonce".getBytes(StringUtil.UTF_8)));
     } catch (IllegalBlockSizeException | RuntimeException e) {
       // expected
     }
@@ -335,17 +337,17 @@ public class RetryingEncryptionServiceTest {
       .thenReturn(firstActiveKey);
 
     when(firstActiveKey
-      .decrypt("fake-encrypted-value".getBytes(), "fake-nonce".getBytes()))
+      .decrypt("fake-encrypted-value".getBytes(StringUtil.UTF_8), "fake-nonce".getBytes(StringUtil.UTF_8)))
       .thenThrow(new IllegalBlockSizeException("test exception"));
     when(firstActiveKey.getProvider()).thenReturn(encryptionService);
 
     when(secondActiveKey
-      .decrypt("fake-encrypted-value".getBytes(), "fake-nonce".getBytes()))
+      .decrypt("fake-encrypted-value".getBytes(StringUtil.UTF_8), "fake-nonce".getBytes(StringUtil.UTF_8)))
       .thenReturn("fake-plaintext");
     when(secondActiveKey.getProvider()).thenReturn(encryptionService);
 
     assertThat(subject
-        .decrypt(new EncryptedValue(activeKeyUuid, "fake-encrypted-value".getBytes(), "fake-nonce".getBytes())),
+        .decrypt(new EncryptedValue(activeKeyUuid, "fake-encrypted-value".getBytes(StringUtil.UTF_8), "fake-nonce".getBytes(StringUtil.UTF_8))),
       equalTo("fake-plaintext"));
 
     verify(encryptionService, times(1))
@@ -358,7 +360,7 @@ public class RetryingEncryptionServiceTest {
     UUID fakeUuid = UUID.randomUUID();
     reset(encryptionService);
     when(keySet.get(fakeUuid)).thenReturn(null);
-    subject.decrypt(new EncryptedValue(fakeUuid, "something we cant read".getBytes(), "nonce".getBytes()));
+    subject.decrypt(new EncryptedValue(fakeUuid, "something we cant read".getBytes(StringUtil.UTF_8), "nonce".getBytes(StringUtil.UTF_8)));
   }
 
   @Test
@@ -367,7 +369,7 @@ public class RetryingEncryptionServiceTest {
     when(keySet.get(activeKeyUuid))
       .thenReturn(firstActiveKey);
 
-    subject.decrypt(new EncryptedValue(activeKeyUuid, "an encrypted value".getBytes(), "a nonce".getBytes()));
+    subject.decrypt(new EncryptedValue(activeKeyUuid, "an encrypted value".getBytes(StringUtil.UTF_8), "a nonce".getBytes(StringUtil.UTF_8)));
     verify(readLock, times(1)).lock();
     verify(readLock, times(1)).unlock();
 
@@ -379,20 +381,28 @@ public class RetryingEncryptionServiceTest {
   public void usingTwoThread_wontRetryTwice() throws Exception {
     final Object lock = new Object();
     final Thread firstThread = new Thread("first") {
+      @SuppressFBWarnings(
+        value = "DE_MIGHT_IGNORE",
+        justification = "Exception is a no-op in this test"
+      )
       @Override
       public void run() {
         try {
-          subject.decrypt(new EncryptedValue(activeKeyUuid, "a value 1".getBytes(), "nonce".getBytes()));
+          subject.decrypt(new EncryptedValue(activeKeyUuid, "a value 1".getBytes(StringUtil.UTF_8), "nonce".getBytes(StringUtil.UTF_8)));
         } catch (Exception e) {
           //do nothing
         }
       }
     };
     final Thread secondThread = new Thread("second") {
+      @SuppressFBWarnings(
+        value = "DE_MIGHT_IGNORE",
+        justification = "Exception is a no-op in this test"
+      )
       @Override
       public void run() {
         try {
-          subject.decrypt(new EncryptedValue(activeKeyUuid, "a value 2".getBytes(), "nonce".getBytes()));
+          subject.decrypt(new EncryptedValue(activeKeyUuid, "a value 2".getBytes(StringUtil.UTF_8), "nonce".getBytes(StringUtil.UTF_8)));
         } catch (Exception e) {
           //do nothing
         }
@@ -434,6 +444,10 @@ public class RetryingEncryptionServiceTest {
       this.lock = lock;
     }
 
+    @SuppressFBWarnings(
+      value = {"UW_UNCOND_WAIT", "WA_NOT_IN_LOOP", "REC_CATCH_EXCEPTION"},
+      justification = "We want to force the first thread to wait, and we don't care about exceptions."
+    )
     @Override
     void setNeedsReconnectFlag() {
       try {

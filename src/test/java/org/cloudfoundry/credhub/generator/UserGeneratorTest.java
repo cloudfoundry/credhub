@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.generator;
 
-import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.credential.CryptSaltFactory;
 import org.cloudfoundry.credhub.credential.StringCredentialValue;
 import org.cloudfoundry.credhub.credential.UserCredentialValue;
@@ -22,7 +21,6 @@ public class UserGeneratorTest {
   private UserGenerator subject;
 
   private StringGenerationParameters passwordParameters;
-  private UserContext userContext;
 
   @Before
   public void beforeEach() {
@@ -31,7 +29,6 @@ public class UserGeneratorTest {
     CryptSaltFactory cryptSaltFactory = mock(CryptSaltFactory.class);
 
     passwordParameters = new StringGenerationParameters();
-    userContext = null;
 
     subject = new UserGenerator(usernameGenerator, passwordGenerator, cryptSaltFactory);
 

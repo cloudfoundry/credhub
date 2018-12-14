@@ -11,11 +11,8 @@ import org.cloudfoundry.credhub.util.CertificateReader;
 
 public class CertificateSignedByCAValidator implements ConstraintValidator<RequireCertificateSignedByCA, Object> {
 
-  private String[] fields;
-
   @Override
   public void initialize(RequireCertificateSignedByCA constraintAnnotation) {
-    fields = constraintAnnotation.fields();
   }
 
   @Override

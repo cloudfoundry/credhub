@@ -182,7 +182,7 @@ class CredentialSetIntegrationTest {
     fun `malformed private key should result in 400`() {
 
         val certificate = """
-            -----BEGIN CERTIFICATE-----fake
+            -----BEGIN CERTIFICATE----- fake
             MIIDPjCCAiagAwIBAgIUIgg7xZVYF3qFsUVAhAFldTvCDJ4wDQYJKoZIhvcNAQEL
             BQAwFjEUMBIGA1UEAxMLZXhhbXBsZS5jb20wHhcNMTgwNjE1MTUwMDU3WhcNMTkw
             NjE1MTUwMDU3WjAWMRQwEgYDVQQDEwtleGFtcGxlLmNvbTCCASIwDQYJKoZIhvcN
@@ -205,7 +205,7 @@ class CredentialSetIntegrationTest {
         """.trimIndent().replace("\n", "\\n")
 
         val invalidPrivateKey = """
-            -----BEGIN RSA PRIVATE KEY-----fake
+            -----BEGIN RSA PRIVATE KEY----- fake
             MIIEpQIBAAKCAQEAwqIrV8HpCuPyuJ6VvyG7gVhYJGAOX4zhclxkTAKT5rkE4Lfj
             048GZsDghK+pHs+tVotfyrJzYGJoEBTn9Wy7kP5pQmLRF54imDztep15OlyoJmLZ
             fRgct/8Kyxkjgg3PKVw68IiNhnTlYaw4CAyZ/13mvw2cWIYlag9LV5R2ifcyubaY

@@ -18,6 +18,7 @@ import org.cloudfoundry.credhub.entity.EncryptedValue;
 import org.cloudfoundry.credhub.request.StringGenerationParameters;
 import org.cloudfoundry.credhub.util.CertificateStringConstants;
 import org.cloudfoundry.credhub.util.JsonObjectMapper;
+import org.cloudfoundry.credhub.util.StringUtil;
 import org.hamcrest.MatcherAssert;
 import org.junit.Before;
 import org.junit.Test;
@@ -65,16 +66,16 @@ public class CredentialFactoryTest {
     generationParameters = new StringGenerationParameters().setExcludeNumber(true).setLength(PLAINTEXT_VALUE.length());
 
     UUID encryptionKeyUuid = UUID.randomUUID();
-    EncryptedValue encryption = new EncryptedValue(encryptionKeyUuid, PLAINTEXT_VALUE.getBytes(), "test-nonce".getBytes());
+    EncryptedValue encryption = new EncryptedValue(encryptionKeyUuid, PLAINTEXT_VALUE.getBytes(StringUtil.UTF_8), "test-nonce".getBytes(StringUtil.UTF_8));
     when(encryptor.encrypt(PLAINTEXT_VALUE)).thenReturn(encryption);
     when(encryptor.decrypt(encryption)).thenReturn(PLAINTEXT_VALUE);
 
     String generationParametersJsonString = objectMapper.writeValueAsString(generationParameters);
-    EncryptedValue parametersEncryption = new EncryptedValue(encryptionKeyUuid, "test-parameters".getBytes(), "test-parameters-nonce".getBytes());
+    EncryptedValue parametersEncryption = new EncryptedValue(encryptionKeyUuid, "test-parameters".getBytes(StringUtil.UTF_8), "test-parameters-nonce".getBytes(StringUtil.UTF_8));
     when(encryptor.encrypt(generationParametersJsonString)).thenReturn(parametersEncryption);
     when(encryptor.decrypt(parametersEncryption)).thenReturn(generationParametersJsonString);
 
-    EncryptedValue jsonEncryption = new EncryptedValue(encryptionKeyUuid, jsonValueJsonString.getBytes(), "test-nonce".getBytes());
+    EncryptedValue jsonEncryption = new EncryptedValue(encryptionKeyUuid, jsonValueJsonString.getBytes(StringUtil.UTF_8), "test-nonce".getBytes(StringUtil.UTF_8));
     when(encryptor.encrypt(jsonValueJsonString)).thenReturn(jsonEncryption);
     when(encryptor.decrypt(jsonEncryption)).thenReturn(jsonValueJsonString);
   }

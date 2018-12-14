@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.helper.JsonTestHelper;
 import org.cloudfoundry.credhub.request.PermissionOperation;
@@ -46,6 +47,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles(value = {"unit-test", "unit-test-permissions"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 @Transactional
+@SuppressFBWarnings(
+  value = "SS_SHOULD_BE_STATIC",
+  justification = "Test files generally don't need static fields."
+)
 public class CredentialFindTest {
 
   private final String credentialName = "/my-namespace/subTree/credential-name";

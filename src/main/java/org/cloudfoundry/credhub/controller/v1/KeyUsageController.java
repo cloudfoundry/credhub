@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.controller.v1;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,9 +47,10 @@ public class KeyUsageController {
     Long activeKeyCreds = countByEncryptionKey.getOrDefault(keySet.getActive().getUuid(), 0L);
 
     Long credsEncryptedByKnownKeys = 0L;
-    for (UUID encryptionKeyUuid : countByEncryptionKey.keySet()) {
-      if (keySet.getUuids().contains(encryptionKeyUuid)) {
-        credsEncryptedByKnownKeys += countByEncryptionKey.get(encryptionKeyUuid);
+
+    for (Entry<UUID, Long> entrySet : countByEncryptionKey.entrySet()) {
+      if (keySet.getUuids().contains(entrySet.getKey())) {
+        credsEncryptedByKnownKeys += countByEncryptionKey.get(entrySet.getKey());
       }
     }
 

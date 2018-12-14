@@ -10,6 +10,7 @@ import org.cloudfoundry.credhub.entity.PermissionData;
 import org.cloudfoundry.credhub.repository.PermissionRepository;
 import org.cloudfoundry.credhub.repository.StubPermissionRepository;
 import org.cloudfoundry.credhub.request.PermissionOperation;
+import org.cloudfoundry.credhub.util.StringUtil;
 
 import static com.google.common.collect.Lists.newArrayList;
 
@@ -31,7 +32,7 @@ public class StubRepositoryConfiguration {
       )
     );
 
-    permissionData.setUuid(UUID.nameUUIDFromBytes("some-permission-uuid".getBytes()));
+    permissionData.setUuid(UUID.nameUUIDFromBytes("some-permission-uuid".getBytes(StringUtil.UTF_8)));
 
     stubPermissionRepository.setReturn_findByPathAndAnchor(permissionData);
 

@@ -20,11 +20,8 @@ import org.cloudfoundry.credhub.util.PrivateKeyReader.UnsupportedFormatException
 
 public class CertificateMatchesPrivateKeyValidator implements ConstraintValidator<RequireCertificateMatchesPrivateKey, Object> {
 
-  private String[] fields;
-
   @Override
   public void initialize(RequireCertificateMatchesPrivateKey constraintAnnotation) {
-    fields = constraintAnnotation.fields();
   }
 
   @Override

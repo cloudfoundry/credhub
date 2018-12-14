@@ -9,8 +9,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.cloudfoundry.credhub.entity.PermissionData;
 
+@SuppressFBWarnings(
+  value = "NP_NONNULL_RETURN_VIOLATION",
+  justification = "We don't need most of these methods to actually return anything."
+)
 public class StubPermissionRepository implements PermissionRepository {
 
   private PermissionData return_findByPathAndAnchor;

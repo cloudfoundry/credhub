@@ -8,7 +8,6 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import org.cloudfoundry.credhub.config.Permissions;
-import org.cloudfoundry.credhub.data.CredentialVersionDataService;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 
 
@@ -16,17 +15,14 @@ import org.cloudfoundry.credhub.request.PermissionEntry;
 public class PermissionInitializer {
   private PermissionService permissionService;
   private Permissions permissions;
-  private CredentialVersionDataService credentialVersionDataService;
 
   @Autowired
   public PermissionInitializer(
     PermissionService permissionService,
-    Permissions authorizationConfig,
-    CredentialVersionDataService credentialVersionDataService
+    Permissions authorizationConfig
   ) {
     this.permissionService = permissionService;
     this.permissions = authorizationConfig;
-    this.credentialVersionDataService = credentialVersionDataService;
   }
 
   @EventListener(ContextRefreshedEvent.class)

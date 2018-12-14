@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.entity;
 
 import java.util.UUID;
 
+import org.cloudfoundry.credhub.util.StringUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,7 +45,7 @@ public class EncryptionKeyCanaryTest {
 
   @Test
   public void nonce_doesNotStoreOrPassByReference() throws Exception {
-    byte[] toModify = "foobar".getBytes();
+    byte[] toModify = "foobar".getBytes(StringUtil.UTF_8);
     subject.setEncryptedCanaryValue(toModify);
 
 
@@ -66,7 +67,7 @@ public class EncryptionKeyCanaryTest {
 
   @Test
   public void salt_doesNotStoreOrPassByReference() throws Exception {
-    byte[] toModify = "foobar".getBytes();
+    byte[] toModify = "foobar".getBytes(StringUtil.UTF_8);
 
     subject.setSalt(toModify);
     byte[] unModified = toModify.clone();

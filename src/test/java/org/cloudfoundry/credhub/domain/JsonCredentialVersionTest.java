@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cloudfoundry.credhub.entity.EncryptedValue;
 import org.cloudfoundry.credhub.entity.JsonCredentialVersionData;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
+import org.cloudfoundry.credhub.util.StringUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,7 +34,7 @@ public class JsonCredentialVersionTest {
   public void beforeEach() throws JsonProcessingException {
     String jsonString = "{\"simple\":\"just-a-string\",\"complex\":{\"key\":\"value\"}}";
     ObjectMapper objectMapper = new ObjectMapper();
-    String serializedValue = new String();
+    String serializedValue;
 
     try {
       value = objectMapper.readTree(jsonString);
@@ -43,8 +44,8 @@ public class JsonCredentialVersionTest {
     }
 
     Encryptor encryptor = mock(Encryptor.class);
-    byte[] encryptedValue = "fake-encrypted-value".getBytes();
-    byte[] nonce = "fake-nonce".getBytes();
+    byte[] encryptedValue = "fake-encrypted-value".getBytes(StringUtil.UTF_8);
+    byte[] nonce = "fake-nonce".getBytes(StringUtil.UTF_8);
     UUID canaryUuid = UUID.randomUUID();
     final EncryptedValue encryption = new EncryptedValue(canaryUuid, encryptedValue, nonce);
     when(encryptor.encrypt(serializedValue))

@@ -2,10 +2,12 @@ package org.cloudfoundry.credhub.domain;
 
 import java.util.UUID;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.cloudfoundry.credhub.entity.EncryptedValue;
 import org.cloudfoundry.credhub.entity.UserCredentialVersionData;
 import org.cloudfoundry.credhub.request.StringGenerationParameters;
 import org.cloudfoundry.credhub.util.JsonObjectMapper;
+import org.cloudfoundry.credhub.util.StringUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,14 +24,18 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
+@SuppressFBWarnings(
+  value = "SS_SHOULD_BE_STATIC",
+  justification = "Test files generally don't need static fields."
+)
 public class UserCredentialVersionTest {
   private final String CREDENTIAL_NAME = "/test/user";
   private final String USER_PASSWORD = "test-user-password";
   private final UUID ENCRYPTION_KEY_UUID = UUID.randomUUID();
-  private final byte[] ENCRYPTED_PASSWORD = "encrypted-user-password".getBytes();
-  private final byte[] ENCRYPTED_GENERATION_PARAMS = "encrypted-user-generation-params".getBytes();
-  private final byte[] NONCE = "user-NONCE".getBytes();
-  private final byte[] PARAMETERS_NONCE = "user-NONCE".getBytes();
+  private final byte[] ENCRYPTED_PASSWORD = "encrypted-user-password".getBytes(StringUtil.UTF_8);
+  private final byte[] ENCRYPTED_GENERATION_PARAMS = "encrypted-user-generation-params".getBytes(StringUtil.UTF_8);
+  private final byte[] NONCE = "user-NONCE".getBytes(StringUtil.UTF_8);
+  private final byte[] PARAMETERS_NONCE = "user-NONCE".getBytes(StringUtil.UTF_8);
   private final StringGenerationParameters STRING_GENERATION_PARAMS = new StringGenerationParameters().setUsername("not fnu").setExcludeLower(false).setLength(USER_PASSWORD.length());
   private final String USER_GENERATION_PARAMS_STRING = new JsonObjectMapper().writeValueAsString(STRING_GENERATION_PARAMS);
   private UserCredentialVersion subject;
@@ -103,11 +109,11 @@ public class UserCredentialVersionTest {
   @Test
   public void rotate_reEncryptsPasswordWithNewEncryptionKey() {
     UUID oldEncryptionKeyUuid = UUID.randomUUID();
-    byte[] oldEncryptedPassword = "old-encrypted-password".getBytes();
-    byte[] oldEncryptedGenerationParams = "old-encrypted-generation-params".getBytes();
+    byte[] oldEncryptedPassword = "old-encrypted-password".getBytes(StringUtil.UTF_8);
+    byte[] oldEncryptedGenerationParams = "old-encrypted-generation-params".getBytes(StringUtil.UTF_8);
 
-    byte[] oldNonce = "old-nonce".getBytes();
-    byte[] oldParametersNonce = "old-parameters-nonce".getBytes();
+    byte[] oldNonce = "old-nonce".getBytes(StringUtil.UTF_8);
+    byte[] oldParametersNonce = "old-parameters-nonce".getBytes(StringUtil.UTF_8);
 
     EncryptedValue parametersEncryption = new EncryptedValue(oldEncryptionKeyUuid, oldEncryptedGenerationParams, oldParametersNonce);
 

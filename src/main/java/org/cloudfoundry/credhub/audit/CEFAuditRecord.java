@@ -3,7 +3,6 @@ package org.cloudfoundry.credhub.audit;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -37,8 +36,6 @@ public class CEFAuditRecord {
   private static final String CS5_LABEL = "resourceUuid";
   private static final String CS6_LABEL = "requestDetails";
 
-  private UUID uuid;
-
   // CEF Spec
   private String signatureId;
   private String extension;
@@ -68,7 +65,6 @@ public class CEFAuditRecord {
   @Autowired
   public CEFAuditRecord(RequestUuid requestUuid, VersionProvider versionProvider) {
     this.timestamp = String.valueOf(Instant.now().toEpochMilli());
-    this.uuid = requestUuid.getUuid();
     this.setCredhubServerVersion(versionProvider.currentVersion());
   }
 

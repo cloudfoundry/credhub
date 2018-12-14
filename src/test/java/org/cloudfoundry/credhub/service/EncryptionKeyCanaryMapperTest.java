@@ -20,6 +20,7 @@ import org.cloudfoundry.credhub.config.ProviderType;
 import org.cloudfoundry.credhub.data.EncryptionKeyCanaryDataService;
 import org.cloudfoundry.credhub.entity.EncryptedValue;
 import org.cloudfoundry.credhub.entity.EncryptionKeyCanary;
+import org.cloudfoundry.credhub.util.StringUtil;
 import org.cloudfoundry.credhub.util.TimedRetry;
 import org.junit.Before;
 import org.junit.Rule;
@@ -269,8 +270,8 @@ public class EncryptionKeyCanaryMapperTest {
     EncryptionKeyCanary nonMatchingCanary = new EncryptionKeyCanary();
 
     nonMatchingCanary.setUuid(UUID.randomUUID());
-    nonMatchingCanary.setEncryptedCanaryValue("fake-non-matching-encrypted-value".getBytes());
-    nonMatchingCanary.setNonce("fake-non-matching-nonce".getBytes());
+    nonMatchingCanary.setEncryptedCanaryValue("fake-non-matching-encrypted-value".getBytes(StringUtil.UTF_8));
+    nonMatchingCanary.setNonce("fake-non-matching-nonce".getBytes(StringUtil.UTF_8));
 
     when(encryptionKeyCanaryDataService.findAll())
       .thenReturn(asArrayList(nonMatchingCanary));
@@ -303,8 +304,8 @@ public class EncryptionKeyCanaryMapperTest {
     EncryptionKeyCanary nonMatchingCanary = new EncryptionKeyCanary();
 
     nonMatchingCanary.setUuid(UUID.randomUUID());
-    nonMatchingCanary.setEncryptedCanaryValue("fake-non-matching-encrypted-value".getBytes());
-    nonMatchingCanary.setNonce("fake-non-matching-nonce".getBytes());
+    nonMatchingCanary.setEncryptedCanaryValue("fake-non-matching-encrypted-value".getBytes(StringUtil.UTF_8));
+    nonMatchingCanary.setNonce("fake-non-matching-nonce".getBytes(StringUtil.UTF_8));
 
     when(encryptionKeyCanaryDataService.findAll())
       .thenReturn(asArrayList(nonMatchingCanary));
@@ -352,8 +353,8 @@ public class EncryptionKeyCanaryMapperTest {
     EncryptionKeyCanary nonMatchingCanary = new EncryptionKeyCanary();
 
     nonMatchingCanary.setUuid(UUID.randomUUID());
-    nonMatchingCanary.setEncryptedCanaryValue("fake-non-matching-encrypted-value".getBytes());
-    nonMatchingCanary.setNonce("fake-non-matching-nonce".getBytes());
+    nonMatchingCanary.setEncryptedCanaryValue("fake-non-matching-encrypted-value".getBytes(StringUtil.UTF_8));
+    nonMatchingCanary.setNonce("fake-non-matching-nonce".getBytes(StringUtil.UTF_8));
 
     when(encryptionKeyCanaryDataService.findAll())
       .thenReturn(asArrayList(nonMatchingCanary));
@@ -380,8 +381,8 @@ public class EncryptionKeyCanaryMapperTest {
     EncryptionKeyCanary nonMatchingCanary = new EncryptionKeyCanary();
 
     nonMatchingCanary.setUuid(UUID.randomUUID());
-    nonMatchingCanary.setEncryptedCanaryValue("fake-non-matching-encrypted-value".getBytes());
-    nonMatchingCanary.setNonce("fake-non-matching-nonce".getBytes());
+    nonMatchingCanary.setEncryptedCanaryValue("fake-non-matching-encrypted-value".getBytes(StringUtil.UTF_8));
+    nonMatchingCanary.setNonce("fake-non-matching-nonce".getBytes(StringUtil.UTF_8));
 
     when(encryptionKeyCanaryDataService.findAll())
       .thenReturn(asArrayList(nonMatchingCanary));
@@ -482,8 +483,8 @@ public class EncryptionKeyCanaryMapperTest {
 
     EncryptionKeyCanary encryptionKeyCanary = argumentCaptor.getValue();
     assertThat(encryptionKeyCanary.getEncryptedCanaryValue(),
-      equalTo("fake-encrypted-value".getBytes()));
-    assertThat(encryptionKeyCanary.getNonce(), equalTo("fake-nonce".getBytes()));
+      equalTo("fake-encrypted-value".getBytes(StringUtil.UTF_8)));
+    assertThat(encryptionKeyCanary.getNonce(), equalTo("fake-nonce".getBytes(StringUtil.UTF_8)));
     verify(encryptionService, times(1)).encrypt(any(EncryptionKey.class), eq(CANARY_VALUE));
   }
 
@@ -492,9 +493,9 @@ public class EncryptionKeyCanaryMapperTest {
     throws Exception {
     EncryptionKeyCanary encryptionKeyCanary = new EncryptionKeyCanary();
     encryptionKeyCanary.setUuid(canaryUuid);
-    encryptionKeyCanary.setEncryptedCanaryValue(encryptedValue.getBytes());
-    encryptionKeyCanary.setNonce(nonce.getBytes());
-    when(encryptionService.decrypt(encryptionKey, encryptedValue.getBytes(), nonce.getBytes()))
+    encryptionKeyCanary.setEncryptedCanaryValue(encryptedValue.getBytes(StringUtil.UTF_8));
+    encryptionKeyCanary.setNonce(nonce.getBytes(StringUtil.UTF_8));
+    when(encryptionService.decrypt(encryptionKey, encryptedValue.getBytes(StringUtil.UTF_8), nonce.getBytes(StringUtil.UTF_8)))
       .thenReturn(CANARY_VALUE);
     return encryptionKeyCanary;
   }

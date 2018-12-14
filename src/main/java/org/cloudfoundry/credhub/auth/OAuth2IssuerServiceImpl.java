@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.cloudfoundry.credhub.config.OAuthProperties;
 import org.cloudfoundry.credhub.util.RestTemplateFactory;
 
@@ -38,8 +39,13 @@ public class OAuth2IssuerServiceImpl implements OAuth2IssuerService {
     this.restTemplate = restTemplateFactory.createRestTemplate(oAuthProperties.getTrustStore(), oAuthProperties.getTrustStorePassword());
   }
 
+  @SuppressFBWarnings(
+    value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE",
+    justification = "Let this return null if necessary"
+  )
   String fetchIssuer() {
     ResponseEntity<HashMap> authResponse = restTemplate.getForEntity(authServerUri, HashMap.class);
+
     issuer = (String) authResponse.getBody().get("issuer");
     return issuer;
   }

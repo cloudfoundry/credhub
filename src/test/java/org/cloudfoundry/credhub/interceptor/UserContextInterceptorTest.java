@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.interceptor;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.Authentication;
 
 import org.cloudfoundry.credhub.auth.UserContext;
@@ -26,6 +27,7 @@ public class UserContextInterceptorTest {
   private UserContextFactory userContextFactory;
   private UserContextHolder userContextHolder;
   private HttpServletRequest request;
+  private MockHttpServletResponse response;
 
   @Before
   public void setup() {
@@ -37,12 +39,13 @@ public class UserContextInterceptorTest {
 
     when(userContextFactory.createUserContext(any())).thenReturn(userContext);
     request = mock(HttpServletRequest.class);
+    response = new MockHttpServletResponse();
   }
 
   @Test
   public void preHandle_setsUserContextFromPrincipal() throws Exception {
     when(request.getUserPrincipal()).thenReturn(mock(Authentication.class));
-    subject.preHandle(request, null, null);
+    subject.preHandle(request, response, new Object());
 
     assertThat(userContextHolder.getUserContext(), equalTo(userContext));
   }
@@ -50,7 +53,7 @@ public class UserContextInterceptorTest {
   @Test
   public void preHandle_ReturnsFalseWhenNoPrincipal() throws Exception {
     when(request.getUserPrincipal()).thenReturn(null);
-    boolean result = subject.preHandle(request, null, null);
+    boolean result = subject.preHandle(request, response, new Object());
     assertFalse(result);
   }
 }

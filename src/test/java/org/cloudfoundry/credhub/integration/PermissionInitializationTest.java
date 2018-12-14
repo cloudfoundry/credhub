@@ -3,7 +3,6 @@ package org.cloudfoundry.credhub.integration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +18,6 @@ import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.config.Permissions;
 import org.cloudfoundry.credhub.constants.CredentialType;
 import org.cloudfoundry.credhub.credential.StringCredentialValue;
-import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.entity.PermissionData;
 import org.cloudfoundry.credhub.repository.PermissionRepository;
 import org.cloudfoundry.credhub.request.PasswordSetRequest;
@@ -46,8 +44,7 @@ public class PermissionInitializationTest {
 
   List<String> actors = Arrays.asList("uaa-user:test1", "uaa-user:test2");
   String credentialPath = "/my/credential";
-  UUID credentialUUID;
-  CredentialVersion credentialVersion;
+
   @Autowired
   private PermissionRepository permissionRepository;
   @Autowired
@@ -76,8 +73,7 @@ public class PermissionInitializationTest {
     PasswordSetRequest passwordSetRequest = new PasswordSetRequest();
     passwordSetRequest.setName(credentialPath);
     passwordSetRequest.setType(CredentialType.password.toString());
-    credentialVersion = permissionedCredentialService.save(null, password, passwordSetRequest);
-    credentialUUID = credentialVersion.getCredential().getUuid();
+    permissionedCredentialService.save(null, password, passwordSetRequest);
   }
 
   @Test
@@ -113,13 +109,13 @@ public class PermissionInitializationTest {
 
   @Test
   public void itThrowsAnExceptionIfAuthorizationIsEmpty() {
-    PermissionInitializer initializer = new PermissionInitializer(null, new Permissions(), null);
+    PermissionInitializer initializer = new PermissionInitializer(null, new Permissions());
     initializer.seed();
   }
 
   @Test
   public void itDoesntThrowAnExceptionIfAuthorizationConfigIsEmpty() {
-    PermissionInitializer initializer = new PermissionInitializer(null, null, null);
+    PermissionInitializer initializer = new PermissionInitializer(null, null);
     initializer.seed();
   }
 }

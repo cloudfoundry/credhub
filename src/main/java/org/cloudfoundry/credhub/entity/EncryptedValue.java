@@ -18,6 +18,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import org.cloudfoundry.credhub.constants.UuidConstants;
 import org.cloudfoundry.credhub.util.InstantMillisecondsConverter;
+import org.cloudfoundry.credhub.util.StringUtil;
 import org.hibernate.annotations.GenericGenerator;
 
 import static org.cloudfoundry.credhub.constants.EncryptionConstants.ENCRYPTED_BYTES;
@@ -56,7 +57,7 @@ public class EncryptedValue {
   }
 
   public EncryptedValue(UUID encryptionKeyUuid, String encryptedValueString, String nonceString) {
-    this(encryptionKeyUuid, encryptedValueString.getBytes(), nonceString.getBytes());
+    this(encryptionKeyUuid, encryptedValueString.getBytes(StringUtil.UTF_8), nonceString.getBytes(StringUtil.UTF_8));
   }
 
   public EncryptedValue(UUID encryptionKeyUuid, byte[] encryptedValue, byte[] nonce) {

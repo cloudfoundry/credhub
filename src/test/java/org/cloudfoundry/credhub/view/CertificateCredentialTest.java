@@ -8,6 +8,7 @@ import org.cloudfoundry.credhub.domain.Encryptor;
 import org.cloudfoundry.credhub.entity.EncryptedValue;
 import org.cloudfoundry.credhub.helper.JsonTestHelper;
 import org.cloudfoundry.credhub.util.CertificateStringConstants;
+import org.cloudfoundry.credhub.util.StringUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,8 +35,8 @@ public class CertificateCredentialTest {
   public void beforeEach() {
     getBouncyCastleProvider();
     UUID canaryUuid = UUID.randomUUID();
-    byte[] encryptedValue = "fake-encrypted-value".getBytes();
-    byte[] nonce = "fake-nonce".getBytes();
+    byte[] encryptedValue = "fake-encrypted-value".getBytes(StringUtil.UTF_8);
+    byte[] nonce = "fake-nonce".getBytes(StringUtil.UTF_8);
     expiryDate = Instant.now();
 
     encryptor = mock(Encryptor.class);

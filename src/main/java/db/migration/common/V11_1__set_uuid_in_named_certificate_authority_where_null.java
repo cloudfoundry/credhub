@@ -7,8 +7,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import org.flywaydb.core.api.migration.spring.SpringJdbcMigration;
 
-public class V11_1__set_uuid_in_named_certificate_authority_where_null implements
-    SpringJdbcMigration {
+@SuppressWarnings("unused")
+public class V11_1__set_uuid_in_named_certificate_authority_where_null implements SpringJdbcMigration {
 
   public void migrate(JdbcTemplate jdbcTemplate) throws Exception {
     List<Long> nullUuidRecords = jdbcTemplate.queryForList(

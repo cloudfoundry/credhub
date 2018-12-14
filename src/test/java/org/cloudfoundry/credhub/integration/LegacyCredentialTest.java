@@ -11,6 +11,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.data.CredentialVersionDataService;
 import org.cloudfoundry.credhub.domain.Encryptor;
@@ -32,6 +33,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles(value = {"unit-test", "unit-test-permissions"}, resolver = DatabaseProfileResolver.class)
 @Transactional
 @TestPropertySource(properties = "security.authorization.acls.enabled=true")
+@SuppressFBWarnings(
+  value = "SS_SHOULD_BE_STATIC",
+  justification = "Test files generally don't need static fields."
+)
 public class LegacyCredentialTest {
   private final String CREDENTIAL_NAME = "/some-cred";
   @Autowired

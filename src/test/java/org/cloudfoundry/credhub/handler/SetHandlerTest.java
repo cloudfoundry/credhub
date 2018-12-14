@@ -3,8 +3,6 @@ package org.cloudfoundry.credhub.handler;
 import java.util.UUID;
 
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
-import org.cloudfoundry.credhub.auth.UserContext;
-import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.credential.CredentialValue;
 import org.cloudfoundry.credhub.credential.StringCredentialValue;
@@ -55,10 +53,6 @@ public class SetHandlerTest {
     certificateAuthorityService = mock(CertificateAuthorityService.class);
 
     auditRecord = new CEFAuditRecord();
-
-    UserContext userContext = new UserContext();
-    UserContextHolder userContextHolder = new UserContextHolder();
-    userContextHolder.setUserContext(userContext);
     subject = new SetHandler(credentialService, certificateAuthorityService, auditRecord);
 
     generationParameters = new StringGenerationParameters();

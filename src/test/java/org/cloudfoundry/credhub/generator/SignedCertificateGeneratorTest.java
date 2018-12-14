@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.Extension;
@@ -33,7 +34,6 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.cloudfoundry.credhub.config.BouncyCastleProviderConfiguration;
-import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.domain.CertificateGenerationParameters;
 import org.cloudfoundry.credhub.request.CertificateGenerationRequestParameters;
 import org.cloudfoundry.credhub.util.CertificateReader;
@@ -60,6 +60,10 @@ import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = BouncyCastleProviderConfiguration.class)
+@SuppressFBWarnings(
+  value = "SS_SHOULD_BE_STATIC",
+  justification = "Test files generally don't need static fields."
+)
 public class SignedCertificateGeneratorTest {
 
   private final int expectedDurationInDays = 10;
@@ -78,7 +82,6 @@ public class SignedCertificateGeneratorTest {
   private CurrentTimeProvider timeProvider;
   private Instant now;
   private Instant later;
-  private CertificateCredentialValue ca;
   private byte[] expectedSubjectKeyIdentifier;
   @Autowired
   private JcaContentSignerBuilder jcaContentSignerBuilder;

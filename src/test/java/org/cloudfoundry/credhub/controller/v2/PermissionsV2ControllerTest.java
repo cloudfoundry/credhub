@@ -11,6 +11,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import org.cloudfoundry.credhub.handler.SpyPermissionsHandler;
 import org.cloudfoundry.credhub.request.PermissionOperation;
+import org.cloudfoundry.credhub.util.StringUtil;
 import org.cloudfoundry.credhub.view.PermissionsV2View;
 import org.junit.Before;
 import org.junit.Rule;
@@ -58,7 +59,7 @@ public class PermissionsV2ControllerTest {
       "some-path",
       emptyList(),
       "some-actor",
-      UUID.nameUUIDFromBytes("some-uuid".getBytes())
+      UUID.nameUUIDFromBytes("some-uuid".getBytes(StringUtil.UTF_8))
     );
     spyPermissionsHandler.setReturn_findByPathAndActor(permissionsV2View);
 
