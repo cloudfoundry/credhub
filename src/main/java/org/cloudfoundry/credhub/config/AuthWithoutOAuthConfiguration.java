@@ -35,21 +35,22 @@ public class AuthWithoutOAuthConfiguration extends ResourceServerConfigurerAdapt
 
   @Autowired
   AuthWithoutOAuthConfiguration(
-    ResourceServerProperties resourceServerProperties,
-    PreAuthenticationFailureFilter preAuthenticationFailureFilter
+    final ResourceServerProperties resourceServerProperties,
+    final PreAuthenticationFailureFilter preAuthenticationFailureFilter
   ) {
+    super();
     this.resourceServerProperties = resourceServerProperties;
     this.preAuthenticationFailureFilter = preAuthenticationFailureFilter;
   }
 
   @Override
-  public void configure(ResourceServerSecurityConfigurer resources) throws Exception {
+  public void configure(final ResourceServerSecurityConfigurer resources) throws Exception {
     resources.resourceId(resourceServerProperties.getResourceId());
     resources.stateless(false);
   }
 
   @Override
-  public void configure(HttpSecurity http) throws Exception {
+  public void configure(final HttpSecurity http) throws Exception {
     /*
       Even though the configuration is non order specific, it's ordered here so one can understand
       the flow of operations. Before the Authenticate Override can be called in the http filter
@@ -64,7 +65,7 @@ public class AuthWithoutOAuthConfiguration extends ResourceServerConfigurerAdapt
       .userDetailsService(mtlsSUserDetailsService())
       .withObjectPostProcessor(new ObjectPostProcessor<X509AuthenticationFilter>() {
         @Override
-        public <O extends X509AuthenticationFilter> O postProcess(O filter) {
+        public <O extends X509AuthenticationFilter> O postProcess(final O filter) {
           filter.setContinueFilterChainOnUnsuccessfulAuthentication(false);
           return filter;
         }

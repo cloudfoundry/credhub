@@ -11,10 +11,11 @@ import org.cloudfoundry.credhub.util.ResourceReader;
 public class VersionProvider {
   private String version;
 
-  VersionProvider(ResourceReader resources) {
+  VersionProvider(final ResourceReader resources) {
+    super();
     try {
       version = resources.readFileToString("version").trim();
-    } catch (IOException | IllegalArgumentException e) {
+    } catch (final IOException | IllegalArgumentException e) {
       version = "0.0.0";
     }
   }

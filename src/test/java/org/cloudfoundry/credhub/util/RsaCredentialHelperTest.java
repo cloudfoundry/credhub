@@ -12,8 +12,8 @@ import static org.hamcrest.core.IsEqual.equalTo;
 public class RsaCredentialHelperTest {
   @Test
   public void getKeyLength_returnsLengthOfPublicKey() {
-    RsaCredentialVersionData rsaCredentialData = new RsaCredentialVersionData("testRsa");
-    String publicKey = "-----BEGIN PUBLIC KEY-----\n"
+    final RsaCredentialVersionData rsaCredentialData = new RsaCredentialVersionData("testRsa");
+    final String publicKey = "-----BEGIN PUBLIC KEY-----\n"
       + "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAoRIqdibiYHKZhyH91xYR\n"
       + "Tpz728+A8d/t2U2e8OIhNqI7pjh5uKnbmeoAXdZAbGN3TW7xArdMAUOSRhELH0Gc\n"
       + "8XGz6ZnY+KGuTnmBO+ZamE3kltwqJBfxwV2UGV5bJIVVToLpLa1GDF4p7g8I8W/a\n"
@@ -28,25 +28,25 @@ public class RsaCredentialHelperTest {
       + "o2oUFe5cAKZHziOqNuoc7SUCAwEAAQ==\n"
       + "-----END PUBLIC KEY-----";
     rsaCredentialData.setPublicKey(publicKey);
-    RsaCredentialHelper rsaHelper = new RsaCredentialHelper(rsaCredentialData);
+    final RsaCredentialHelper rsaHelper = new RsaCredentialHelper(rsaCredentialData);
 
     assertThat(rsaHelper.getKeyLength(), equalTo(4096));
   }
 
   @Test
   public void getKeyLength_whenPublicKeyIsNotSet_returnsZero() {
-    RsaCredentialVersionData rsaCredentialData = new RsaCredentialVersionData("testRsa");
-    RsaCredentialHelper rsaHelper = new RsaCredentialHelper(rsaCredentialData);
+    final RsaCredentialVersionData rsaCredentialData = new RsaCredentialVersionData("testRsa");
+    final RsaCredentialHelper rsaHelper = new RsaCredentialHelper(rsaCredentialData);
 
     assertThat(rsaHelper.getKeyLength(), equalTo(0));
   }
 
   @Test(expected = RuntimeException.class)
   public void getKeyLength_whenPublicKeyIsInvalid_throwsException() {
-    RsaCredentialVersionData rsaCredentialData = new RsaCredentialVersionData("testRsa");
-    String publicKey = "This is a key that is obviously incorrect. Is it not?";
+    final RsaCredentialVersionData rsaCredentialData = new RsaCredentialVersionData("testRsa");
+    final String publicKey = "This is a key that is obviously incorrect. Is it not?";
     rsaCredentialData.setPublicKey(publicKey);
-    RsaCredentialHelper rsaHelper = new RsaCredentialHelper(rsaCredentialData);
+    final RsaCredentialHelper rsaHelper = new RsaCredentialHelper(rsaCredentialData);
 
     rsaHelper.getKeyLength();
   }

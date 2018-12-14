@@ -10,9 +10,12 @@ import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-@Target({TYPE, ANNOTATION_TYPE})
+@Target({
+  TYPE,
+  ANNOTATION_TYPE,
+})
 @Retention(RUNTIME)
-@Constraint(validatedBy = {CertificateLengthValidator.class})
+@Constraint(validatedBy = CertificateLengthValidator.class)
 public @interface ValidCertificateLength {
 
   String message();

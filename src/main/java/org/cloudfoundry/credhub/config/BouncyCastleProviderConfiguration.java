@@ -13,18 +13,18 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 public class BouncyCastleProviderConfiguration {
   @Bean
   public BouncyCastleProvider bouncyCastleProvider() {
-    BouncyCastleProvider bouncyCastleProvider = new BouncyCastleProvider();
+    final BouncyCastleProvider bouncyCastleProvider = new BouncyCastleProvider();
     Security.addProvider(bouncyCastleProvider);
     return bouncyCastleProvider;
   }
 
   @Bean
-  public JcaContentSignerBuilder jcaContentSignerBuilder(BouncyCastleProvider jceProvider) {
+  public JcaContentSignerBuilder jcaContentSignerBuilder(final BouncyCastleProvider jceProvider) {
     return new JcaContentSignerBuilder("SHA256withRSA").setProvider(jceProvider);
   }
 
   @Bean
-  public JcaX509CertificateConverter jcaX509CertificateConverter(BouncyCastleProvider jceProvider) {
+  public JcaX509CertificateConverter jcaX509CertificateConverter(final BouncyCastleProvider jceProvider) {
     return new JcaX509CertificateConverter().setProvider(jceProvider);
   }
 }

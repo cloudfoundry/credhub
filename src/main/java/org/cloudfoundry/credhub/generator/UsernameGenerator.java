@@ -11,7 +11,8 @@ public class UsernameGenerator {
   private final PassayStringCredentialGenerator passayStringCredentialGenerator;
 
   @Autowired
-  UsernameGenerator(PassayStringCredentialGenerator passayStringCredentialGenerator) {
+  UsernameGenerator(final PassayStringCredentialGenerator passayStringCredentialGenerator) {
+    super();
     this.passayStringCredentialGenerator = passayStringCredentialGenerator;
   }
 

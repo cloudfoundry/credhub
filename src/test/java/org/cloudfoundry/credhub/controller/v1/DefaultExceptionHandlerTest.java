@@ -58,7 +58,7 @@ public class DefaultExceptionHandlerTest {
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON);
 
-    String expectedError = "An application error occurred. Please contact your CredHub administrator.";
+    final String expectedError = "An application error occurred. Please contact your CredHub administrator.";
     mockMvc.perform(request)
       .andExpect(status().isInternalServerError())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))

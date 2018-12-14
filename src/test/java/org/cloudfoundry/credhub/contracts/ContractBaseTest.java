@@ -15,9 +15,13 @@ import org.junit.runner.RunWith;
 
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 
-@ActiveProfiles(profiles = {"dev-h2", "unit-test", "stub-repositories"})
+@ActiveProfiles(profiles = {
+  "dev-h2",
+  "unit-test",
+  "stub-repositories",
+})
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {CredentialManagerApp.class})
+@SpringBootTest(classes = CredentialManagerApp.class)
 @AutoConfigureMockMvc
 public abstract class ContractBaseTest {
 

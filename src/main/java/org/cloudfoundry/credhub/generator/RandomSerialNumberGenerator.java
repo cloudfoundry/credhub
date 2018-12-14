@@ -18,7 +18,8 @@ public class RandomSerialNumberGenerator {
   private final RandomNumberGenerator randomNumberGenerator;
 
   @Autowired
-  public RandomSerialNumberGenerator(RandomNumberGenerator randomNumberGenerator) {
+  public RandomSerialNumberGenerator(final RandomNumberGenerator randomNumberGenerator) {
+    super();
     this.randomNumberGenerator = randomNumberGenerator;
   }
 

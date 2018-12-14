@@ -67,7 +67,7 @@ public class DefaultRegenerateHandlerTest {
 
   @Test
   public void handleRegenerate_addsToAuditRecord() {
-    BaseCredentialGenerateRequest request = new PasswordGenerateRequest();
+    final BaseCredentialGenerateRequest request = new PasswordGenerateRequest();
     when(credentialVersion.getCredential()).thenReturn(mock(Credential.class));
     when(credentialService.findMostRecent(CREDENTIAL_NAME)).thenReturn(credentialVersion);
     when(generationRequestGenerator.createGenerateRequest(credentialVersion))
@@ -83,22 +83,22 @@ public class DefaultRegenerateHandlerTest {
 
   @Test
   public void handleBulkRegenerate_addsToAuditRecord() {
-    String signedBy = "fooCA";
-    List<String> certificateCredentials = Arrays.asList("foo", "bar", "baz");
-    CredentialVersion credVersion = new CertificateCredentialVersion();
+    final String signedBy = "fooCA";
+    final List<String> certificateCredentials = Arrays.asList("foo", "bar", "baz");
+    final CredentialVersion credVersion = new CertificateCredentialVersion();
     credVersion.setCredential(new Credential("foo"));
-    BulkRegenerateCredential bulkRegenerateCredential = new BulkRegenerateCredential(signedBy);
+    final BulkRegenerateCredential bulkRegenerateCredential = new BulkRegenerateCredential(signedBy);
 
     when(credentialService.findAllCertificateCredentialsByCaName(signedBy)).thenReturn(certificateCredentials);
 
-    CertificateGenerateRequest request = spy(CertificateGenerateRequest.class);
+    final CertificateGenerateRequest request = spy(CertificateGenerateRequest.class);
     when(credentialService.findMostRecent(argThat(isOneOf("foo", "bar", "baz")))).thenReturn(credVersion);
     when(generationRequestGenerator.createGenerateRequest(argThat(is(credVersion)))).thenReturn(request);
     when(credentialGenerator.generate(request)).thenReturn(credValue);
 
     when(credentialService.save(credVersion, credValue, request)).thenReturn(credVersion);
 
-    CertificateGenerationParameters generationParams = mock(CertificateGenerationParameters.class);
+    final CertificateGenerationParameters generationParams = mock(CertificateGenerationParameters.class);
     when(generationParams.isCa()).thenReturn(true);
     request.setCertificateGenerationParameters(generationParams);
     when(request.getGenerationParameters()).thenReturn(generationParams);
@@ -115,20 +115,20 @@ public class DefaultRegenerateHandlerTest {
       .thenReturn(newArrayList("firstExpectedName", "secondExpectedName"));
     when(credentialService.findMostRecent(anyString()))
       .thenReturn(mock(CredentialVersion.class));
-    CredentialVersion credentialVersion = mock(CertificateCredentialVersion.class);
+    final CredentialVersion credentialVersion = mock(CertificateCredentialVersion.class);
     when(credentialService.save(any(), any(), any())).thenReturn(credentialVersion);
     when(credentialVersion.getName()).thenReturn("someName");
 
-    CertificateGenerateRequest generateRequest1 = mock(CertificateGenerateRequest.class);
+    final CertificateGenerateRequest generateRequest1 = mock(CertificateGenerateRequest.class);
     generateRequest1.setName("/firstExpectedName");
     when(generateRequest1.getName()).thenReturn("/firstExpectedName");
-    CertificateGenerationParameters generationParams1 = mock(CertificateGenerationParameters.class);
+    final CertificateGenerationParameters generationParams1 = mock(CertificateGenerationParameters.class);
     when(generationParams1.isCa()).thenReturn(true);
     when(generateRequest1.getGenerationParameters()).thenReturn(generationParams1);
 
-    CertificateGenerateRequest generateRequest2 = mock(CertificateGenerateRequest.class);
+    final CertificateGenerateRequest generateRequest2 = mock(CertificateGenerateRequest.class);
     when(generateRequest2.getName()).thenReturn("/secondExpectedName");
-    CertificateGenerationParameters generationParams2 = mock(CertificateGenerationParameters.class);
+    final CertificateGenerationParameters generationParams2 = mock(CertificateGenerationParameters.class);
     when(generationParams2.isCa()).thenReturn(false);
     when(generateRequest2.getGenerationParameters()).thenReturn(generationParams2);
 
@@ -151,31 +151,31 @@ public class DefaultRegenerateHandlerTest {
     when(credentialService.findMostRecent(anyString()))
       .thenReturn(mock(CredentialVersion.class));
 
-    CredentialVersion credentialVersion = mock(CredentialVersion.class);
+    final CredentialVersion credentialVersion = mock(CredentialVersion.class);
     when(credentialService.save(any(), any(), any())).thenReturn(credentialVersion);
     when(credentialVersion.getName()).thenReturn("placeholder");
 
-    CertificateGenerateRequest generateRequest1 = mock(CertificateGenerateRequest.class);
+    final CertificateGenerateRequest generateRequest1 = mock(CertificateGenerateRequest.class);
     when(generateRequest1.getName()).thenReturn("/firstExpectedName");
-    CertificateGenerationParameters generationParams1 = mock(CertificateGenerationParameters.class);
+    final CertificateGenerationParameters generationParams1 = mock(CertificateGenerationParameters.class);
     when(generationParams1.isCa()).thenReturn(true);
     when(generateRequest1.getGenerationParameters()).thenReturn(generationParams1);
 
-    CertificateGenerateRequest generateRequest2 = mock(CertificateGenerateRequest.class);
+    final CertificateGenerateRequest generateRequest2 = mock(CertificateGenerateRequest.class);
     when(generateRequest2.getName()).thenReturn("/secondExpectedName");
-    CertificateGenerationParameters generationParams2 = mock(CertificateGenerationParameters.class);
+    final CertificateGenerationParameters generationParams2 = mock(CertificateGenerationParameters.class);
     when(generationParams2.isCa()).thenReturn(false);
     when(generateRequest2.getGenerationParameters()).thenReturn(generationParams2);
 
-    CertificateGenerateRequest generateRequest3 = mock(CertificateGenerateRequest.class);
+    final CertificateGenerateRequest generateRequest3 = mock(CertificateGenerateRequest.class);
     when(generateRequest3.getName()).thenReturn("/thirdExpectedName");
-    CertificateGenerationParameters generationParams3 = mock(CertificateGenerationParameters.class);
+    final CertificateGenerationParameters generationParams3 = mock(CertificateGenerationParameters.class);
     when(generationParams3.isCa()).thenReturn(false);
     when(generateRequest3.getGenerationParameters()).thenReturn(generationParams3);
 
-    CertificateGenerateRequest generateRequest4 = mock(CertificateGenerateRequest.class);
+    final CertificateGenerateRequest generateRequest4 = mock(CertificateGenerateRequest.class);
     when(generateRequest4.getName()).thenReturn("/fourthExpectedName");
-    CertificateGenerationParameters generationParams4 = mock(CertificateGenerationParameters.class);
+    final CertificateGenerationParameters generationParams4 = mock(CertificateGenerationParameters.class);
     when(generationParams4.isCa()).thenReturn(false);
     when(generateRequest4.getGenerationParameters()).thenReturn(generationParams4);
 

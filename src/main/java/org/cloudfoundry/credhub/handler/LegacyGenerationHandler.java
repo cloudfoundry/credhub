@@ -24,45 +24,46 @@ public class LegacyGenerationHandler {
   private final ObjectMapper objectMapper;
   private final GenerateHandler generateHandler;
   private final RegenerateHandler regenerateHandler;
-  private CEFAuditRecord auditRecord;
+  private final CEFAuditRecord auditRecord;
 
   @Autowired
-  public LegacyGenerationHandler(ObjectMapper objectMapper,
-    GenerateHandler generateHandler,
-    RegenerateHandler regenerateHandler,
-    CEFAuditRecord auditRecord) {
+  public LegacyGenerationHandler(final ObjectMapper objectMapper,
+    final GenerateHandler generateHandler,
+    final RegenerateHandler regenerateHandler,
+    final CEFAuditRecord auditRecord) {
+    super();
     this.objectMapper = objectMapper;
     this.generateHandler = generateHandler;
     this.regenerateHandler = regenerateHandler;
     this.auditRecord = auditRecord;
   }
 
-  public CredentialView auditedHandlePostRequest(InputStream inputStream) {
+  public CredentialView auditedHandlePostRequest(final InputStream inputStream) {
     return deserializeAndHandlePostRequest(inputStream);
   }
 
   //when versions prior to 1.6 are no longer LTS, this branching logic to support generate and regenerate on the same endpoint will be removed
-  private CredentialView deserializeAndHandlePostRequest(InputStream inputStream) {
+  private CredentialView deserializeAndHandlePostRequest(final InputStream inputStream) {
     try {
-      String requestString = StringUtil.fromInputStream(inputStream);
+      final String requestString = StringUtil.fromInputStream(inputStream);
 
       if (readRegenerateFlagFrom(requestString)) {
         return handleRegenerateRequest(requestString);
       } else {
         return handleGenerateRequest(requestString);
       }
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  private CredentialView handleGenerateRequest(String requestString) throws IOException {
-    BaseCredentialGenerateRequest requestBody = objectMapper
+  private CredentialView handleGenerateRequest(final String requestString) throws IOException {
+    final BaseCredentialGenerateRequest requestBody = objectMapper
       .readValue(requestString, BaseCredentialGenerateRequest.class);
 
-    String credentialName = requestBody.getName();
+    final String credentialName = requestBody.getName();
 
-    GenerateCredential generateCredential = new GenerateCredential();
+    final GenerateCredential generateCredential = new GenerateCredential();
     generateCredential.setName(credentialName);
     generateCredential.setType(requestBody.getType());
     auditRecord.setRequestDetails(generateCredential);
@@ -71,11 +72,11 @@ public class LegacyGenerationHandler {
     return generateHandler.handle(requestBody);
   }
 
-  private CredentialView handleRegenerateRequest(String requestString) throws IOException {
-    CredentialRegenerateRequest requestBody = objectMapper.readValue(requestString, CredentialRegenerateRequest.class);
+  private CredentialView handleRegenerateRequest(final String requestString) throws IOException {
+    final CredentialRegenerateRequest requestBody = objectMapper.readValue(requestString, CredentialRegenerateRequest.class);
     requestBody.validate();
 
-    RegenerateCredential regenerateCredential = new RegenerateCredential();
+    final RegenerateCredential regenerateCredential = new RegenerateCredential();
     regenerateCredential.setName(requestBody.getName());
     auditRecord.setRequestDetails(regenerateCredential);
 
@@ -83,14 +84,14 @@ public class LegacyGenerationHandler {
   }
 
 
-  private boolean readRegenerateFlagFrom(String requestString) {
+  private boolean readRegenerateFlagFrom(final String requestString) {
     boolean isRegenerateRequest;
     try {
       isRegenerateRequest = JsonPath.read(requestString, "$.regenerate");
-    } catch (PathNotFoundException e) {
+    } catch (final PathNotFoundException e) {
       // could have just returned null, that would have been pretty useful
       isRegenerateRequest = false;
-    } catch (IllegalArgumentException e) {
+    } catch (final IllegalArgumentException e) {
       return false;
     }
     return isRegenerateRequest;

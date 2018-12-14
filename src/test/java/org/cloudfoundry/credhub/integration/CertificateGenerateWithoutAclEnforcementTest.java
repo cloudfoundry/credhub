@@ -49,7 +49,7 @@ public class CertificateGenerateWithoutAclEnforcementTest {
     throws Exception {
     RequestHelper.generateCa(mockMvc, CA_NAME, AuthConstants.NO_PERMISSIONS_TOKEN);
     //This request uses the PASSWORD GRANT TOKEN under the hood and hence should fail if permissions are enforced.
-    String firstResponse = RequestHelper
+    final String firstResponse = RequestHelper
       .generateCertificateCredential(mockMvc, CREDENTIAL_NAME, false, "some-common-name", CA_NAME, ALL_PERMISSIONS_TOKEN);
     assertThat(firstResponse, containsString(CREDENTIAL_NAME));
   }

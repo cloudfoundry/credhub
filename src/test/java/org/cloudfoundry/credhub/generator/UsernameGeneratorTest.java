@@ -40,7 +40,7 @@ public class UsernameGeneratorTest {
 
   @Test
   public void generateCredential_usesAppropriateGenerationParameters() {
-    ArgumentCaptor<StringGenerationParameters> captor = ArgumentCaptor.forClass(StringGenerationParameters.class);
+    final ArgumentCaptor<StringGenerationParameters> captor = ArgumentCaptor.forClass(StringGenerationParameters.class);
 
     subject.generateCredential();
 

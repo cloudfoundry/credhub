@@ -24,7 +24,6 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.cloudfoundry.credhub.domain.CertificateGenerationParameters;
@@ -38,28 +37,26 @@ public class SignedCertificateGenerator {
   private final CurrentTimeProvider timeProvider;
   private final RandomSerialNumberGenerator serialNumberGenerator;
   private final JcaX509ExtensionUtils jcaX509ExtensionUtils;
-  private final BouncyCastleProvider jceProvider;
-  private JcaContentSignerBuilder jcaContentSignerBuilder;
-  private JcaX509CertificateConverter jcaX509CertificateConverter;
+  private final JcaContentSignerBuilder jcaContentSignerBuilder;
+  private final JcaX509CertificateConverter jcaX509CertificateConverter;
 
   @Autowired
   SignedCertificateGenerator(
-    CurrentTimeProvider timeProvider,
-    RandomSerialNumberGenerator serialNumberGenerator,
-    JcaContentSignerBuilder jcaContentSignerBuilder,
-    JcaX509CertificateConverter jcaX509CertificateConverter,
-    BouncyCastleProvider jceProvider
+    final CurrentTimeProvider timeProvider,
+    final RandomSerialNumberGenerator serialNumberGenerator,
+    final JcaContentSignerBuilder jcaContentSignerBuilder,
+    final JcaX509CertificateConverter jcaX509CertificateConverter
   ) throws Exception {
+    super();
     this.timeProvider = timeProvider;
     this.serialNumberGenerator = serialNumberGenerator;
     this.jcaX509ExtensionUtils = new JcaX509ExtensionUtils();
     this.jcaContentSignerBuilder = jcaContentSignerBuilder;
     this.jcaX509CertificateConverter = jcaX509CertificateConverter;
-    this.jceProvider = jceProvider;
   }
 
-  X509Certificate getSelfSigned(KeyPair keyPair, CertificateGenerationParameters params) throws Exception {
-    SubjectKeyIdentifier keyIdentifier = getSubjectKeyIdentifierFromKeyInfo(keyPair.getPublic());
+  public X509Certificate getSelfSigned(final KeyPair keyPair, final CertificateGenerationParameters params) throws Exception {
+    final SubjectKeyIdentifier keyIdentifier = getSubjectKeyIdentifierFromKeyInfo(keyPair.getPublic());
 
     return getSignedByIssuer(
       null,
@@ -71,11 +68,11 @@ public class SignedCertificateGenerator {
     );
   }
 
-  X509Certificate getSignedByIssuer(
-    KeyPair keyPair,
-    CertificateGenerationParameters params,
-    X509Certificate caCertificate,
-    PrivateKey caPrivateKey) throws Exception {
+  public X509Certificate getSignedByIssuer(
+    final KeyPair keyPair,
+    final CertificateGenerationParameters params,
+    final X509Certificate caCertificate,
+    final PrivateKey caPrivateKey) throws Exception {
     return getSignedByIssuer(
       caCertificate,
       caPrivateKey,
@@ -86,15 +83,15 @@ public class SignedCertificateGenerator {
   }
 
   private X509Certificate getSignedByIssuer(
-    X509Certificate issuerCertificate,
-    PrivateKey issuerKey,
-    X500Principal issuerDn,
-    SubjectKeyIdentifier caSubjectKeyIdentifier,
-    KeyPair keyPair,
-    CertificateGenerationParameters params) throws Exception {
-    Instant now = Instant.from(timeProvider.getInstant());
+    final X509Certificate issuerCertificate,
+    final PrivateKey issuerKey,
+    final X500Principal issuerDn,
+    final SubjectKeyIdentifier caSubjectKeyIdentifier,
+    final KeyPair keyPair,
+    final CertificateGenerationParameters params) throws Exception {
+    final Instant now = Instant.from(timeProvider.getInstant());
 
-    BigInteger certificateSerialNumber = serialNumberGenerator.generate();
+    final BigInteger certificateSerialNumber = serialNumberGenerator.generate();
 
     final JcaX509v3CertificateBuilder certificateBuilder = new JcaX509v3CertificateBuilder(
       issuerDn,
@@ -124,8 +121,8 @@ public class SignedCertificateGenerator {
     }
 
     if (caSubjectKeyIdentifier.getKeyIdentifier() != null) {
-      PublicKey issuerPublicKey = issuerCertificate != null ? issuerCertificate.getPublicKey() : keyPair.getPublic();
-      AuthorityKeyIdentifier authorityKeyIdentifier = jcaX509ExtensionUtils
+      final PublicKey issuerPublicKey = issuerCertificate != null ? issuerCertificate.getPublicKey() : keyPair.getPublic();
+      final AuthorityKeyIdentifier authorityKeyIdentifier = jcaX509ExtensionUtils
         .createAuthorityKeyIdentifier(issuerPublicKey);
 
       certificateBuilder
@@ -135,23 +132,23 @@ public class SignedCertificateGenerator {
     certificateBuilder
       .addExtension(Extension.basicConstraints, true, new BasicConstraints(params.isCa()));
 
-    ContentSigner contentSigner = jcaContentSignerBuilder.build(issuerKey);
+    final ContentSigner contentSigner = jcaContentSignerBuilder.build(issuerKey);
 
-    X509CertificateHolder holder = certificateBuilder.build(contentSigner);
+    final X509CertificateHolder holder = certificateBuilder.build(contentSigner);
 
     return jcaX509CertificateConverter.getCertificate(holder);
   }
 
-  private SubjectKeyIdentifier getSubjectKeyIdentifierFromKeyInfo(PublicKey publicKey) {
+  private SubjectKeyIdentifier getSubjectKeyIdentifierFromKeyInfo(final PublicKey publicKey) {
     return jcaX509ExtensionUtils.createSubjectKeyIdentifier(publicKey);
   }
 
-  private X500Principal getSubjectNameFrom(X509Certificate certificate) throws IOException, CertificateException {
+  private X500Principal getSubjectNameFrom(final X509Certificate certificate) throws IOException, CertificateException {
     return new X500Principal(certificate.getSubjectX500Principal().getEncoded());
   }
 
-  private SubjectKeyIdentifier getSubjectKeyIdentifierFrom(X509Certificate certificate) throws Exception {
-    byte[] extensionValue = certificate.getExtensionValue(Extension.subjectKeyIdentifier.getId());
+  private SubjectKeyIdentifier getSubjectKeyIdentifierFrom(final X509Certificate certificate) throws Exception {
+    final byte[] extensionValue = certificate.getExtensionValue(Extension.subjectKeyIdentifier.getId());
     return extensionValue == null ?
       new SubjectKeyIdentifier(null) :
       SubjectKeyIdentifier.getInstance(parseExtensionValue(extensionValue));

@@ -43,7 +43,7 @@ public class RsaGenerationParametersTest {
       subject.setKeyLength(1024);
       subject.validate();
       fail("should throw");
-    } catch (ParameterizedValidationException e) {
+    } catch (final ParameterizedValidationException e) {
       assertThat(e.getMessage(), equalTo("error.invalid_key_length"));
     }
   }

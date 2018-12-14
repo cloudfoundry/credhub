@@ -6,10 +6,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class CertificateCredentialsView {
 
-  private List<CertificateCredentialView> certificates;
+  private final List<CertificateCredentialView> certificates;
 
   @SuppressWarnings("rawtypes")
-  public CertificateCredentialsView(List<CertificateCredentialView> certificates) {
+  public CertificateCredentialsView(final List<CertificateCredentialView> certificates) {
+    super();
     this.certificates = certificates;
   }
 

@@ -13,7 +13,7 @@ public class FindCredential implements RequestDetails {
     return expiresWithinDays;
   }
 
-  public void setExpiresWithinDays(String expiresWithinDays) {
+  public void setExpiresWithinDays(final String expiresWithinDays) {
     this.expiresWithinDays = expiresWithinDays;
   }
 
@@ -21,7 +21,7 @@ public class FindCredential implements RequestDetails {
     return nameLike;
   }
 
-  public void setNameLike(String nameLike) {
+  public void setNameLike(final String nameLike) {
     this.nameLike = nameLike;
   }
 
@@ -29,7 +29,7 @@ public class FindCredential implements RequestDetails {
     return path;
   }
 
-  public void setPath(String path) {
+  public void setPath(final String path) {
     this.path = path;
   }
 
@@ -37,7 +37,7 @@ public class FindCredential implements RequestDetails {
     return paths;
   }
 
-  public void setPaths(Boolean paths) {
+  public void setPaths(final Boolean paths) {
     this.paths = paths;
   }
 

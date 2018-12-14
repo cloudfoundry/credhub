@@ -23,7 +23,7 @@ public class RsaSetRequestTest {
 
   @Test
   public void whenTheValueIsValid_itShouldNotHaveViolations() {
-    String json = "{"
+    final String json = "{"
       + "\"name\": \"/example/rsa\","
       + "\"type\": \"rsa\","
       + "\"value\": {"
@@ -31,7 +31,7 @@ public class RsaSetRequestTest {
       + "\"private_key\":\"fake-private-key\""
       + "}"
       + "}";
-    Set<ConstraintViolation<RsaSetRequest>> violations = deserializeAndValidate(json,
+    final Set<ConstraintViolation<RsaSetRequest>> violations = deserializeAndValidate(json,
       RsaSetRequest.class);
 
     assertThat(violations.size(), equalTo(0));
@@ -39,7 +39,7 @@ public class RsaSetRequestTest {
 
   @Test
   public void whenTypeHasUnusualCasing_itShouldBeValid() {
-    String json = "{"
+    final String json = "{"
       + "\"name\": \"/example/rsa\","
       + "\"type\": \"RsA\","
       + "\"value\": {"
@@ -47,7 +47,7 @@ public class RsaSetRequestTest {
       + "\"private_key\":\"fake-private-key\""
       + "}"
       + "}";
-    Set<ConstraintViolation<RsaSetRequest>> violations = deserializeAndValidate(json,
+    final Set<ConstraintViolation<RsaSetRequest>> violations = deserializeAndValidate(json,
       RsaSetRequest.class);
 
     assertThat(violations.size(), equalTo(0));
@@ -55,7 +55,7 @@ public class RsaSetRequestTest {
 
   @Test
   public void shouldDeserializeToRSASetRequest() {
-    String json = "{"
+    final String json = "{"
       + "\"name\": \"/example/rsa\","
       + "\"type\": \"rsa\","
       + "\"value\": {"
@@ -63,21 +63,21 @@ public class RsaSetRequestTest {
       + "\"private_key\":\"fake-private-key\""
       + "}"
       + "}";
-    RsaSetRequest deserialize = deserialize(json, RsaSetRequest.class);
+    final RsaSetRequest deserialize = deserialize(json, RsaSetRequest.class);
 
     assertThat(deserialize, instanceOf(RsaSetRequest.class));
   }
 
   @Test
   public void shouldNotRequirePublicKey() {
-    String json = "{"
+    final String json = "{"
       + "\"name\": \"/example/rsa\","
       + "\"type\": \"rsa\","
       + "\"value\": {"
       + "\"private_key\":\"fake-private-key\""
       + "}"
       + "}";
-    Set<ConstraintViolation<RsaSetRequest>> violations = deserializeAndValidate(json,
+    final Set<ConstraintViolation<RsaSetRequest>> violations = deserializeAndValidate(json,
       RsaSetRequest.class);
 
     assertThat(violations.size(), equalTo(0));
@@ -85,14 +85,14 @@ public class RsaSetRequestTest {
 
   @Test
   public void shouldNotRequirePrivateKey() {
-    String json = "{"
+    final String json = "{"
       + "\"name\": \"/example/rsa\","
       + "\"type\": \"rsa\","
       + "\"value\": {"
       + "\"public_key\":\"fake-public-key\""
       + "}"
       + "}";
-    Set<ConstraintViolation<RsaSetRequest>> violations = deserializeAndValidate(json,
+    final Set<ConstraintViolation<RsaSetRequest>> violations = deserializeAndValidate(json,
       RsaSetRequest.class);
 
     assertThat(violations.size(), equalTo(0));
@@ -100,7 +100,7 @@ public class RsaSetRequestTest {
 
   @Test
   public void shouldCoerceEmptyPublicKeyToNull() {
-    String json = "{"
+    final String json = "{"
       + "\"name\": \"/example/rsa\","
       + "\"type\": \"rsa\","
       + "\"value\": {"
@@ -108,7 +108,7 @@ public class RsaSetRequestTest {
       + "\"private_key\":\"fake-private-key\""
       + "}"
       + "}";
-    RsaSetRequest deserialize = deserialize(json, RsaSetRequest.class);
+    final RsaSetRequest deserialize = deserialize(json, RsaSetRequest.class);
 
     assertNull(deserialize.getRsaKeyValue().getPublicKey());
 
@@ -116,7 +116,7 @@ public class RsaSetRequestTest {
 
   @Test
   public void shouldCoerceEmptyPrivateKeyToNull() {
-    String json = "{"
+    final String json = "{"
       + "\"name\": \"/example/rsa\","
       + "\"type\": \"rsa\","
       + "\"value\": {"
@@ -124,18 +124,18 @@ public class RsaSetRequestTest {
       + "\"private_key\":\"\""
       + "}"
       + "}";
-    RsaSetRequest deserialize = deserialize(json, RsaSetRequest.class);
+    final RsaSetRequest deserialize = deserialize(json, RsaSetRequest.class);
 
     assertNull(deserialize.getRsaKeyValue().getPrivateKey());
   }
 
   @Test
   public void shouldBeInvalid_whenValueIsNotSet() {
-    String json = "{\n"
+    final String json = "{\n"
       + "  \"name\": \"/example/rsa\",\n"
       + "  \"type\": \"rsa\"\n"
       + "}";
-    Set<ConstraintViolation<RsaSetRequest>> violations = deserializeAndValidate(json,
+    final Set<ConstraintViolation<RsaSetRequest>> violations = deserializeAndValidate(json,
       RsaSetRequest.class);
 
     assertThat(violations, contains(hasViolationWithMessage("error.missing_value")));
@@ -143,12 +143,12 @@ public class RsaSetRequestTest {
 
   @Test
   public void shouldBeInvalid_whenValueIsAnEmptyObject() {
-    String json = "{\n"
+    final String json = "{\n"
       + "  \"name\": \"/example/rsa\",\n"
       + "  \"type\": \"rsa\",\n"
       + "  \"value\": {}\n"
       + "}";
-    Set<ConstraintViolation<RsaSetRequest>> violations = deserializeAndValidate(json,
+    final Set<ConstraintViolation<RsaSetRequest>> violations = deserializeAndValidate(json,
       RsaSetRequest.class);
 
     assertThat(violations,
@@ -157,7 +157,7 @@ public class RsaSetRequestTest {
 
   @Test
   public void shouldBeInvalid_whenAllSubFieldsAreEmpty() {
-    String json = "{\n"
+    final String json = "{\n"
       + "  \"name\": \"/example/rsa\",\n"
       + "  \"type\": \"rsa\",\n"
       + "  \"value\": {"
@@ -165,7 +165,7 @@ public class RsaSetRequestTest {
       + "    \"private_key\":\"\""
       + "  }"
       + "}";
-    Set<ConstraintViolation<RsaSetRequest>> violations = deserializeAndValidate(json,
+    final Set<ConstraintViolation<RsaSetRequest>> violations = deserializeAndValidate(json,
       RsaSetRequest.class);
 
     assertThat(violations,
@@ -174,7 +174,7 @@ public class RsaSetRequestTest {
 
   @Test
   public void shouldBeInvalid_whenRSAHasAllSubFieldsSetToNull() {
-    String json = "{\n"
+    final String json = "{\n"
       + "  \"name\": \"/example/rsa\",\n"
       + "  \"type\": \"rsa\",\n"
       + "  \"value\": {"
@@ -182,7 +182,7 @@ public class RsaSetRequestTest {
       + "    \"private_key\":null"
       + "  }"
       + "}";
-    Set<ConstraintViolation<RsaSetRequest>> violations = deserializeAndValidate(json,
+    final Set<ConstraintViolation<RsaSetRequest>> violations = deserializeAndValidate(json,
       RsaSetRequest.class);
 
     assertThat(violations,

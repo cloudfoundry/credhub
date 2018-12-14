@@ -16,7 +16,7 @@ public class InstantMillisecondsConverterTest {
 
   @Test
   public void canConvertAnInstantToTheDBRepresentation() {
-    Instant now = Instant.ofEpochMilli(234234123);
+    final Instant now = Instant.ofEpochMilli(234234123);
     assertThat(subject.convertToDatabaseColumn(now), equalTo(234234123L));
   }
 

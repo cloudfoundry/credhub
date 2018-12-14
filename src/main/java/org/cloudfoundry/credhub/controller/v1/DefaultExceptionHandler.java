@@ -15,19 +15,19 @@ import org.cloudfoundry.credhub.view.ResponseError;
 public class DefaultExceptionHandler {
 
   private final MessageSourceAccessor messageSourceAccessor;
-  private final Logger logger;
+  private static final Logger LOGGER = LogManager.getLogger(DefaultExceptionHandler.class);
 
   @Autowired
-  DefaultExceptionHandler(MessageSourceAccessor messageSourceAccessor) {
+  DefaultExceptionHandler(final MessageSourceAccessor messageSourceAccessor) {
+    super();
     this.messageSourceAccessor = messageSourceAccessor;
-    this.logger = LogManager.getLogger(this.getClass());
   }
 
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   @ExceptionHandler(Exception.class)
-  public ResponseError handleGeneralException(Exception e) {
-    String message = messageSourceAccessor.getMessage("error.internal_server_error");
-    logger.error(message, e);
+  public ResponseError handleGeneralException(final Exception e) {
+    final String message = messageSourceAccessor.getMessage("error.internal_server_error");
+    LOGGER.error(message, e);
     return new ResponseError(message);
   }
 }

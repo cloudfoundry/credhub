@@ -10,7 +10,7 @@ public class DefaultCredentialGenerateRequest extends BaseCredentialGenerateRequ
     return parameters;
   }
 
-  public void setParameters(Object parameters) {
+  public void setParameters(final Object parameters) {
     this.parameters = parameters;
   }
 

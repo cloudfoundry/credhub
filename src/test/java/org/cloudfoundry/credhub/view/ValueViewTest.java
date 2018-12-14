@@ -33,14 +33,14 @@ public class ValueViewTest {
     encryptor = mock(Encryptor.class);
     when(encryptor.decrypt(any()))
       .thenReturn("fake-plaintext-value");
-    entity = new ValueCredentialVersion("/foo")
-      .setEncryptor(encryptor)
-      .setUuid(uuid);
+    entity = new ValueCredentialVersion("/foo");
+    entity.setEncryptor(encryptor);
+    entity.setUuid(uuid);
   }
 
   @Test
   public void itCanCreateViewFromEntity() throws IOException {
-    ValueView actual = (ValueView) ValueView.fromEntity(entity);
+    final ValueView actual = (ValueView) ValueView.fromEntity(entity);
     assertThat(JsonTestHelper.serializeToString(actual), equalTo("{"
       + "\"type\":\"value\","
       + "\"version_created_at\":null,"
@@ -52,24 +52,24 @@ public class ValueViewTest {
 
   @Test
   public void hasVersionCreateAtInTheView() {
-    Instant now = Instant.now();
+    final Instant now = Instant.now();
     entity.setVersionCreatedAt(now);
 
-    ValueView actual = (ValueView) ValueView.fromEntity(entity);
+    final ValueView actual = (ValueView) ValueView.fromEntity(entity);
 
     assertThat(actual.getVersionCreatedAt(), equalTo(now));
   }
 
   @Test
   public void hasTypeInTheView() {
-    ValueView actual = (ValueView) ValueView.fromEntity(entity);
+    final ValueView actual = (ValueView) ValueView.fromEntity(entity);
 
     assertThat(actual.getType(), equalTo("value"));
   }
 
   @Test
   public void hasAUUIDInTheView() {
-    ValueView actual = (ValueView) ValueView.fromEntity(entity);
+    final ValueView actual = (ValueView) ValueView.fromEntity(entity);
 
     assertThat(actual.getUuid(), equalTo(uuid.toString()));
   }

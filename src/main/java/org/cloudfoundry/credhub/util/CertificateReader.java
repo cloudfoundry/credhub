@@ -35,20 +35,21 @@ public class CertificateReader {
   private final X509Certificate certificate;
   private final X509CertificateHolder certificateHolder;
 
-  public CertificateReader(String pemString) {
+  public CertificateReader(final String pemString) {
+    super();
     if (pemString == null) {
       throw new MissingCertificateException();
     }
 
     try {
       certificate = parseStringIntoCertificate(pemString);
-      certificateHolder = (X509CertificateHolder) (new PEMParser((new StringReader(pemString)))
+      certificateHolder = (X509CertificateHolder) (new PEMParser(new StringReader(pemString))
         .readObject());
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new UnreadableCertificateException();
-    } catch (CertificateException e) {
+    } catch (final CertificateException e) {
       throw new MalformedCertificateException();
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
 
@@ -62,7 +63,7 @@ public class CertificateReader {
   }
 
   public GeneralNames getAlternativeNames() {
-    Extension encodedAlternativeNames = certificateHolder
+    final Extension encodedAlternativeNames = certificateHolder
       .getExtension(Extension.subjectAlternativeName);
     return encodedAlternativeNames != null ? GeneralNames
       .getInstance(encodedAlternativeNames.getParsedValue()) : null;
@@ -83,18 +84,18 @@ public class CertificateReader {
     return new X500Principal(certificate.getSubjectDN().getName());
   }
 
-  public boolean isSignedByCa(String caValue) {
+  public boolean isSignedByCa(final String caValue) {
     try {
-      X509Certificate ca = parseStringIntoCertificate(caValue);
+      final X509Certificate ca = parseStringIntoCertificate(caValue);
       if (ca != null) {
 
         certificate.verify(ca.getPublicKey());
         return true;
       }
       return false;
-    } catch (SignatureException | InvalidKeyException e) {
+    } catch (final SignatureException | InvalidKeyException e) {
       return false;
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
@@ -116,16 +117,16 @@ public class CertificateReader {
       try {
         certificate.verify(certificate.getPublicKey());
         return true;
-      } catch (SignatureException | InvalidKeyException e) {
+      } catch (final SignatureException | InvalidKeyException e) {
         return false;
-      } catch (Exception e) {
+      } catch (final Exception e) {
         throw new RuntimeException(e);
       }
     }
   }
 
   public boolean isCa() {
-    Extensions extensions = certificateHolder.getExtensions();
+    final Extensions extensions = certificateHolder.getExtensions();
     BasicConstraints basicConstraints = null;
 
     if (extensions != null) {
@@ -144,7 +145,7 @@ public class CertificateReader {
     return certificate.getNotAfter().toInstant();
   }
 
-  private X509Certificate parseStringIntoCertificate(String pemString) throws CertificateException, NoSuchProviderException {
+  private X509Certificate parseStringIntoCertificate(final String pemString) throws CertificateException, NoSuchProviderException {
     return (X509Certificate) CertificateFactory
       .getInstance("X.509", BouncyCastleProvider.PROVIDER_NAME)
       .generateCertificate(new ByteArrayInputStream(pemString.getBytes(UTF_8)));

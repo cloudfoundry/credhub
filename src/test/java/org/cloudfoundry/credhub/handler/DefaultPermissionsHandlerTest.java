@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.google.common.collect.Lists;
-import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.data.CredentialDataService;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
@@ -57,7 +56,6 @@ public class DefaultPermissionsHandlerTest {
   private PermissionCheckingService permissionCheckingService;
   private CredentialDataService credentialDataService;
   private PermissionedCredentialService permissionedCredentialService;
-  private CEFAuditRecord auditRecord;
   private PermissionsRequest permissionsRequest;
   private PermissionsV2Request permissionsV2Request;
 
@@ -67,10 +65,10 @@ public class DefaultPermissionsHandlerTest {
     permissionCheckingService = mock(PermissionCheckingService.class);
     credentialDataService = mock(CredentialDataService.class);
     permissionedCredentialService = mock(PermissionedCredentialService.class);
-    auditRecord = mock(CEFAuditRecord.class);
     subject = new DefaultPermissionsHandler(
       permissionService,
-      permissionedCredentialService, auditRecord);
+      permissionedCredentialService
+    );
 
     permissionsRequest = mock(PermissionsRequest.class);
     permissionsV2Request = new PermissionsV2Request();
@@ -81,10 +79,10 @@ public class DefaultPermissionsHandlerTest {
 
   @Test
   public void findByPathAndActor_whenGivenAPathAndActor_returnsPermissionsV2View() {
-    String path = "some-path";
-    String actor = "some-actor";
+    final String path = "some-path";
+    final String actor = "some-actor";
 
-    PermissionsV2View expectedPermissionsV2View = new PermissionsV2View(
+    final PermissionsV2View expectedPermissionsV2View = new PermissionsV2View(
       path,
       emptyList(),
       actor,
@@ -94,7 +92,7 @@ public class DefaultPermissionsHandlerTest {
     when(permissionService.findByPathAndActor(path, actor))
       .thenReturn(new PermissionData(path, actor));
 
-    PermissionsV2View actualPermissionsV2View = subject.findByPathAndActor(path, actor);
+    final PermissionsV2View actualPermissionsV2View = subject.findByPathAndActor(path, actor);
     assertThat(
       actualPermissionsV2View,
       equalTo(expectedPermissionsV2View)
@@ -103,49 +101,49 @@ public class DefaultPermissionsHandlerTest {
 
   @Test
   public void getPermissions_whenTheNameDoesntStartWithASlash_fixesTheName() {
-    List<PermissionEntry> accessControlList = newArrayList();
+    final List<PermissionEntry> accessControlList = newArrayList();
     when(permissionService.getPermissions(any(CredentialVersion.class)))
       .thenReturn(accessControlList);
     when(permissionCheckingService
       .hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(PermissionOperation.READ_ACL)))
       .thenReturn(true);
 
-    PermissionsView response = subject.getPermissions(CREDENTIAL_NAME);
+    final PermissionsView response = subject.getPermissions(CREDENTIAL_NAME);
     assertThat(response.getCredentialName(), equalTo(CREDENTIAL_NAME));
 
   }
 
   @Test
   public void getPermissions_verifiesTheUserHasPermissionToReadTheAcl_andReturnsTheAclResponse() {
-    ArrayList<PermissionOperation> operations = newArrayList(
+    final List<PermissionOperation> operations = newArrayList(
       PermissionOperation.READ,
       PermissionOperation.WRITE
     );
     when(permissionCheckingService
       .hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(PermissionOperation.READ_ACL)))
       .thenReturn(true);
-    PermissionEntry permissionEntry = new PermissionEntry(
+    final PermissionEntry permissionEntry = new PermissionEntry(
       ACTOR_NAME,
       "test-path",
       operations
     );
-    List<PermissionEntry> accessControlList = newArrayList(permissionEntry);
+    final List<PermissionEntry> accessControlList = newArrayList(permissionEntry);
     when(permissionService.getPermissions(credentialVersion))
       .thenReturn(accessControlList);
 
-    PermissionsView response = subject.getPermissions(
+    final PermissionsView response = subject.getPermissions(
       CREDENTIAL_NAME
     );
 
-    List<PermissionEntry> accessControlEntries = response.getPermissions();
+    final List<PermissionEntry> accessControlEntries = response.getPermissions();
 
     assertThat(response.getCredentialName(), equalTo(CREDENTIAL_NAME));
     assertThat(accessControlEntries, hasSize(1));
 
-    PermissionEntry entry = accessControlEntries.get(0);
+    final PermissionEntry entry = accessControlEntries.get(0);
     assertThat(entry.getActor(), equalTo(ACTOR_NAME));
 
-    List<PermissionOperation> allowedOperations = entry.getAllowedOperations();
+    final List<PermissionOperation> allowedOperations = entry.getAllowedOperations();
     assertThat(allowedOperations, contains(
       equalTo(PermissionOperation.READ),
       equalTo(PermissionOperation.WRITE)
@@ -161,16 +159,16 @@ public class DefaultPermissionsHandlerTest {
       .userAllowedToOperateOnActor(ACTOR_NAME))
       .thenReturn(true);
 
-    ArrayList<PermissionOperation> operations = newArrayList(
+    final List<PermissionOperation> operations = newArrayList(
       PermissionOperation.READ,
       PermissionOperation.WRITE
     );
-    PermissionEntry permissionEntry = new PermissionEntry(ACTOR_NAME, "test-path", operations);
-    List<PermissionEntry> accessControlList = newArrayList(permissionEntry);
+    final PermissionEntry permissionEntry = new PermissionEntry(ACTOR_NAME, "test-path", operations);
+    final List<PermissionEntry> accessControlList = newArrayList(permissionEntry);
 
-    PermissionEntry preexistingPermissionEntry = new PermissionEntry(ACTOR_NAME2, "test-path", Lists.newArrayList(PermissionOperation.READ)
+    final PermissionEntry preexistingPermissionEntry = new PermissionEntry(ACTOR_NAME2, "test-path", Lists.newArrayList(PermissionOperation.READ)
     );
-    List<PermissionEntry> expectedControlList = newArrayList(permissionEntry,
+    final List<PermissionEntry> expectedControlList = newArrayList(permissionEntry,
       preexistingPermissionEntry);
 
     when(permissionService.getPermissions(credentialVersion))
@@ -179,12 +177,12 @@ public class DefaultPermissionsHandlerTest {
     when(permissionsRequest.getCredentialName()).thenReturn(CREDENTIAL_NAME);
     when(permissionsRequest.getPermissions()).thenReturn(accessControlList);
 
-    subject.setPermissions(permissionsRequest);
+    subject.writePermissions(permissionsRequest);
 
-    ArgumentCaptor<List> permissionsListCaptor = ArgumentCaptor.forClass(List.class);
+    final ArgumentCaptor<List> permissionsListCaptor = ArgumentCaptor.forClass(List.class);
     verify(permissionService).savePermissionsForUser(permissionsListCaptor.capture());
 
-    PermissionEntry entry = accessControlList.get(0);
+    final PermissionEntry entry = accessControlList.get(0);
     assertThat(entry.getActor(), equalTo(ACTOR_NAME));
     assertThat(entry.getPath(), equalTo(CREDENTIAL_NAME));
     assertThat(entry.getAllowedOperations(), contains(equalTo(PermissionOperation.READ), equalTo(PermissionOperation.WRITE)));
@@ -195,17 +193,17 @@ public class DefaultPermissionsHandlerTest {
     when(permissionCheckingService.hasPermission(any(String.class), eq(CREDENTIAL_NAME), eq(PermissionOperation.WRITE_ACL))).thenReturn(true);
     when(permissionCheckingService.userAllowedToOperateOnActor(ACTOR_NAME)).thenReturn(true);
 
-    ArrayList<PermissionData> permissionList = new ArrayList<>();
+    final List<PermissionData> permissionList = new ArrayList<>();
     permissionList.add(new PermissionData());
     permissionList.add(new PermissionData());
 
     when(permissionService.savePermissionsForUser(any())).thenReturn(permissionList);
 
-    ArrayList<PermissionOperation> operations = newArrayList(PermissionOperation.READ, PermissionOperation.WRITE);
-    PermissionEntry permissionEntry = new PermissionEntry(ACTOR_NAME, "test-path", operations);
+    final List<PermissionOperation> operations = newArrayList(PermissionOperation.READ, PermissionOperation.WRITE);
+    final PermissionEntry permissionEntry = new PermissionEntry(ACTOR_NAME, "test-path", operations);
 
-    PermissionEntry preexistingPermissionEntry = new PermissionEntry(ACTOR_NAME2, "test-path", Lists.newArrayList(PermissionOperation.READ));
-    List<PermissionEntry> expectedControlList = newArrayList(permissionEntry, preexistingPermissionEntry);
+    final PermissionEntry preexistingPermissionEntry = new PermissionEntry(ACTOR_NAME2, "test-path", Lists.newArrayList(PermissionOperation.READ));
+    final List<PermissionEntry> expectedControlList = newArrayList(permissionEntry, preexistingPermissionEntry);
 
     when(permissionService.getPermissions(credentialVersion)).thenReturn(expectedControlList);
 
@@ -213,8 +211,8 @@ public class DefaultPermissionsHandlerTest {
     permissionsV2Request.setPath(CREDENTIAL_NAME);
 
     try {
-      subject.setPermissions(permissionsV2Request);
-    } catch (Exception e) {
+      subject.writePermissions(permissionsV2Request);
+    } catch (final Exception e) {
       assertThat(e.getMessage(), equalTo(INVALID_NUMBER_OF_PERMISSIONS));
       throw e;
     }
@@ -230,14 +228,14 @@ public class DefaultPermissionsHandlerTest {
       .userAllowedToOperateOnActor(ACTOR_NAME))
       .thenReturn(false);
 
-    List<PermissionEntry> accessControlList = Arrays.asList(new PermissionEntry(ACTOR_NAME, "test-path", Arrays.asList(
+    final List<PermissionEntry> accessControlList = Arrays.asList(new PermissionEntry(ACTOR_NAME, "test-path", Arrays.asList(
       PermissionOperation.READ)));
     when(permissionsRequest.getCredentialName()).thenReturn(CREDENTIAL_NAME);
     when(permissionsRequest.getPermissions()).thenReturn(accessControlList);
 
     try {
-      subject.setPermissions(permissionsRequest);
-    } catch (InvalidPermissionOperationException e) {
+      subject.writePermissions(permissionsRequest);
+    } catch (final InvalidPermissionOperationException e) {
       assertThat(e.getMessage(), equalTo("error.permission.invalid_update_operation"));
       verify(permissionService, times(0)).savePermissionsForUser(any());
     }
@@ -271,7 +269,7 @@ public class DefaultPermissionsHandlerTest {
       subject.deletePermissionEntry(CREDENTIAL_NAME, ACTOR_NAME
       );
       fail("should throw");
-    } catch (EntryNotFoundException e) {
+    } catch (final EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
     }
   }

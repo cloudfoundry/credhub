@@ -53,7 +53,7 @@ public class UserContextInterceptorTest {
   @Test
   public void preHandle_ReturnsFalseWhenNoPrincipal() throws Exception {
     when(request.getUserPrincipal()).thenReturn(null);
-    boolean result = subject.preHandle(request, response, new Object());
+    final boolean result = subject.preHandle(request, response, new Object());
     assertFalse(result);
   }
 }

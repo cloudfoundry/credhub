@@ -15,7 +15,7 @@ import org.junit.runners.JUnit4;
 public class RegenerateRequestTest {
   @Test
   public void whenNameIsMissing__isInvalid() {
-    Set<ConstraintViolation<RegenerateRequest>> violations = JsonTestHelper.deserializeAndValidate("{}",
+    final Set<ConstraintViolation<RegenerateRequest>> violations = JsonTestHelper.deserializeAndValidate("{}",
       RegenerateRequest.class);
 
     MatcherAssert.assertThat(violations, Matchers.contains(JsonTestHelper.hasViolationWithMessage("error.missing_name")));

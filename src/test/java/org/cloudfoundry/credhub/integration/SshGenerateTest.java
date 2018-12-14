@@ -44,44 +44,44 @@ public class SshGenerateTest {
 
   @Test
   public void credentialNotOverwrittenWhenModeIsSetToConvergeAndParametersAreTheSame() throws Exception {
-    String firstResponse = generateSsh(mockMvc, CREDENTIAL_NAME, false, 2048, null);
-    String originalValue = (new JSONObject(firstResponse)).getString("value");
+    final String firstResponse = generateSsh(mockMvc, CREDENTIAL_NAME, false, 2048, null);
+    final String originalValue = (new JSONObject(firstResponse)).getString("value");
 
-    String secondResponse = generateSsh(mockMvc, CREDENTIAL_NAME, false, 2048, null);
-    String sameValue = (new JSONObject(secondResponse)).getString("value");
+    final String secondResponse = generateSsh(mockMvc, CREDENTIAL_NAME, false, 2048, null);
+    final String sameValue = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalValue, equalTo(sameValue));
   }
 
   @Test
   public void credentialNotOverwrittenWhenModeIsSetToConvergeAndParametersAreTheSameAndAreTheDefault() throws Exception {
-    String firstResponse = generateSsh(mockMvc, CREDENTIAL_NAME, true, null, null);
-    String originalValue = (new JSONObject(firstResponse)).getString("value");
+    final String firstResponse = generateSsh(mockMvc, CREDENTIAL_NAME, true, null, null);
+    final String originalValue = (new JSONObject(firstResponse)).getString("value");
 
-    String secondResponse = generateSsh(mockMvc, CREDENTIAL_NAME, false, null, null);
-    String sameValue = (new JSONObject(secondResponse)).getString("value");
+    final String secondResponse = generateSsh(mockMvc, CREDENTIAL_NAME, false, null, null);
+    final String sameValue = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalValue, equalTo(sameValue));
   }
 
   @Test
   public void credentialNotOverwrittenWhenModeIsSetToConvergeAndSshCommentDoesNotChange() throws Exception {
-    String firstResponse = generateSsh(mockMvc, CREDENTIAL_NAME, true, null, "some-comment");
-    String originalValue = (new JSONObject(firstResponse)).getString("value");
+    final String firstResponse = generateSsh(mockMvc, CREDENTIAL_NAME, true, null, "some-comment");
+    final String originalValue = (new JSONObject(firstResponse)).getString("value");
 
-    String secondResponse = generateSsh(mockMvc, CREDENTIAL_NAME, false, null, "some-comment");
-    String sameValue = (new JSONObject(secondResponse)).getString("value");
+    final String secondResponse = generateSsh(mockMvc, CREDENTIAL_NAME, false, null, "some-comment");
+    final String sameValue = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalValue, equalTo(sameValue));
   }
 
   @Test
   public void credentialOverwrittenWhenModeIsSetToConvergeAndParametersNotTheSame() throws Exception {
-    String firstResponse = generateSsh(mockMvc, CREDENTIAL_NAME, true, 4096, null);
-    String originalValue = (new JSONObject(firstResponse)).getString("value");
+    final String firstResponse = generateSsh(mockMvc, CREDENTIAL_NAME, true, 4096, null);
+    final String originalValue = (new JSONObject(firstResponse)).getString("value");
 
-    String secondResponse = generateSsh(mockMvc, CREDENTIAL_NAME, false, 2048, null);
-    String updatedValue = (new JSONObject(secondResponse)).getString("value");
+    final String secondResponse = generateSsh(mockMvc, CREDENTIAL_NAME, false, 2048, null);
+    final String updatedValue = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalValue, not(equalTo(updatedValue)));
   }

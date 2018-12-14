@@ -18,7 +18,7 @@ public class HealthController {
   public ResponseEntity<Map> getHealth() {
     try {
       return new ResponseEntity<>(of("status", "UP"), HttpStatus.OK);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }

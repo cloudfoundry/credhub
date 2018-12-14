@@ -12,11 +12,11 @@ public class UuidUtilTest {
 
   @Test
   public void roundtripUuid() throws Exception {
-    UUID originalUuid = UUID.randomUUID();
+    final UUID originalUuid = UUID.randomUUID();
 
-    byte[] translatedUuid = UuidUtil.uuidToByteArray(originalUuid);
+    final byte[] translatedUuid = UuidUtil.uuidToByteArray(originalUuid);
 
-    ByteBuffer buffer = ByteBuffer.wrap(translatedUuid);
+    final ByteBuffer buffer = ByteBuffer.wrap(translatedUuid);
     assertThat(new UUID(buffer.getLong(), buffer.getLong()), equalTo(originalUuid));
   }
 }

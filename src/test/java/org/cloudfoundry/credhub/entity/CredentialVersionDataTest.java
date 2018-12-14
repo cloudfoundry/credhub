@@ -22,9 +22,13 @@ public class CredentialVersionDataTest {
 
   @Test
   public void encryptedValue_doesNotStoreOrPassByReference() throws Exception {
-    byte[] toModify = "foobar".getBytes(StringUtil.UTF_8);
-    passwordCredentialData.setEncryptedValueData(new EncryptedValue().setEncryptedValue(toModify));
-    byte[] unModified = toModify.clone();
+    final byte[] toModify = "foobar".getBytes(StringUtil.UTF_8);
+
+    final EncryptedValue encryptedValue = new EncryptedValue();
+    encryptedValue.setEncryptedValue(toModify);
+
+    passwordCredentialData.setEncryptedValueData(encryptedValue);
+    final byte[] unModified = toModify.clone();
 
     toModify[0] = (byte) 'a';
 
@@ -34,10 +38,13 @@ public class CredentialVersionDataTest {
 
   @Test
   public void nonce_doesNotStoreOrPassByReference() throws Exception {
-    byte[] toModify = "foobar".getBytes(StringUtil.UTF_8);
-    passwordCredentialData.setEncryptedValueData(new EncryptedValue().setEncryptedValue(toModify)
-      .setNonce(toModify));
-    byte[] unModified = toModify.clone();
+    final byte[] toModify = "foobar".getBytes(StringUtil.UTF_8);
+    final EncryptedValue encryptedValue = new  EncryptedValue();
+    encryptedValue.setEncryptedValue(toModify);
+    encryptedValue.setNonce(toModify);
+
+    passwordCredentialData.setEncryptedValueData(encryptedValue);
+    final byte[] unModified = toModify.clone();
 
     toModify[0] = (byte) 'a';
 

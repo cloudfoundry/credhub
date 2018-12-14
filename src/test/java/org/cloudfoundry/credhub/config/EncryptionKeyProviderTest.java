@@ -14,7 +14,7 @@ public class EncryptionKeyProviderTest {
 
   @Test
   public void initializesWithAnEmptyButAppendableKeyList() {
-    EncryptionKeyProvider provider = new EncryptionKeyProvider();
+    final EncryptionKeyProvider provider = new EncryptionKeyProvider();
     assertThat(provider.getKeys(), is(empty()));
     provider.getKeys().add(new EncryptionKeyMetadata());
     assertThat(provider.getKeys(), hasSize(1));

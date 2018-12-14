@@ -10,13 +10,14 @@ import org.passay.EnglishCharacterData;
 final public class CharacterRuleProvider {
 
   private CharacterRuleProvider() {
+    super();
   }
 
-  public static List<CharacterRule> getCharacterRules(StringGenerationParameters parameters) {
-    List<CharacterRule> characterRules = new ArrayList<>();
+  public static List<CharacterRule> getCharacterRules(final StringGenerationParameters parameters) {
+    final List<CharacterRule> characterRules = new ArrayList<>();
 
     if (parameters.isIncludeSpecial()) {
-      characterRules.add(new CharacterRule(CredHubCharacterData.Special));
+      characterRules.add(new CharacterRule(CredHubCharacterData.SPECIAL));
     }
 
     if (!parameters.isExcludeNumber()) {

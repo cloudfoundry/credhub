@@ -34,17 +34,17 @@ public class LunaKeyProxyTest {
     final PasswordEncryptionService encryptionService = new PasswordEncryptionService(
       new PasswordKeyProxyFactoryTestImpl()
     );
-    EncryptionKeyMetadata keyMetadata = new EncryptionKeyMetadata();
+    final EncryptionKeyMetadata keyMetadata = new EncryptionKeyMetadata();
     keyMetadata.setEncryptionPassword("p@ssword");
 
     encryptionKey = encryptionService.createKeyProxy(keyMetadata).getKey();
     canary = new EncryptionKeyCanary();
-    EncryptedValue encryptionData = encryptionService.encrypt(null, encryptionKey, CANARY_VALUE);
+    final EncryptedValue encryptionData = encryptionService.encrypt(null, encryptionKey, CANARY_VALUE);
     canary.setEncryptedCanaryValue(encryptionData.getEncryptedValue());
     canary.setNonce(encryptionData.getNonce());
 
     deprecatedCanary = new EncryptionKeyCanary();
-    EncryptedValue deprecatedEncryptionData = encryptionService
+    final EncryptedValue deprecatedEncryptionData = encryptionService
       .encrypt(null, encryptionKey, DEPRECATED_CANARY_VALUE);
     deprecatedCanary.setEncryptedCanaryValue(deprecatedEncryptionData.getEncryptedValue());
     deprecatedCanary.setNonce(deprecatedEncryptionData.getNonce());
@@ -69,7 +69,7 @@ public class LunaKeyProxyTest {
     subject = new LunaKeyProxy(encryptionKey,
       new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
         @Override
-        public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
+        public String decrypt(final Key key, final byte[] encryptedValue, final byte[] nonce)
           throws Exception {
           throw new IllegalBlockSizeException("returns 0x40");
         }
@@ -83,7 +83,7 @@ public class LunaKeyProxyTest {
     subject = new LunaKeyProxy(encryptionKey,
       new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
         @Override
-        public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
+        public String decrypt(final Key key, final byte[] encryptedValue, final byte[] nonce)
           throws Exception {
           throw new AEADBadTagException();
         }
@@ -97,7 +97,7 @@ public class LunaKeyProxyTest {
     subject = new LunaKeyProxy(encryptionKey,
       new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
         @Override
-        public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
+        public String decrypt(final Key key, final byte[] encryptedValue, final byte[] nonce)
           throws Exception {
           throw new BadPaddingException("");
         }
@@ -111,7 +111,7 @@ public class LunaKeyProxyTest {
     subject = new LunaKeyProxy(encryptionKey,
       new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
         @Override
-        public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
+        public String decrypt(final Key key, final byte[] encryptedValue, final byte[] nonce)
           throws Exception {
           throw new IllegalBlockSizeException("");
         }
@@ -125,7 +125,7 @@ public class LunaKeyProxyTest {
     subject = new LunaKeyProxy(encryptionKey,
       new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
         @Override
-        public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
+        public String decrypt(final Key key, final byte[] encryptedValue, final byte[] nonce)
           throws Exception {
           throw new Exception("");
         }

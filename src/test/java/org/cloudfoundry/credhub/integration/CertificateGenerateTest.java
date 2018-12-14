@@ -55,7 +55,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@ActiveProfiles(value = {"unit-test", "unit-test-permissions"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(
+  value = {
+    "unit-test",
+    "unit-test-permissions",
+  },
+  resolver = DatabaseProfileResolver.class
+)
 @SpringBootTest(classes = CredentialManagerApp.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @Transactional
@@ -77,7 +83,7 @@ public class CertificateGenerateTest {
 
   @Test
   public void certificateGeneration_shouldGenerateCorrectCertificate() throws Exception {
-    MockHttpServletRequestBuilder caPost = post("/api/v1/data")
+    final MockHttpServletRequestBuilder caPost = post("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -93,23 +99,23 @@ public class CertificateGenerateTest {
         + "  }\n"
         + "}");
 
-    String caResult = this.mockMvc.perform(caPost)
+    final String caResult = this.mockMvc.perform(caPost)
       .andDo(print())
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
 
 
-    String picardCert = (new JSONObject(caResult)).getJSONObject("value").getString("certificate");
-    String picardCA = (new JSONObject(caResult)).getJSONObject("value").getString("ca");
+    final String picardCert = (new JSONObject(caResult)).getJSONObject("value").getString("certificate");
+    final String picardCA = (new JSONObject(caResult)).getJSONObject("value").getString("ca");
     assertThat(picardCert, equalTo(picardCA));
 
-    String expiryDate = (new JSONObject(caResult)).getString("expiry_date");
-    String truncatedExpiryDate = expiryDate.substring(0, expiryDate.indexOf('T'));
+    final String expiryDate = (new JSONObject(caResult)).getString("expiry_date");
+    final String truncatedExpiryDate = expiryDate.substring(0, expiryDate.indexOf('T'));
 
-    Calendar calendar = Calendar.getInstance();
+    final Calendar calendar = Calendar.getInstance();
     calendar.add(Calendar.DATE, 1);
-    String expectedTime = calendar.getTime().toInstant().truncatedTo(ChronoUnit.SECONDS).toString();
-    String truncatedExpected = expectedTime.substring(0, expectedTime.indexOf('T'));
+    final String expectedTime = calendar.getTime().toInstant().truncatedTo(ChronoUnit.SECONDS).toString();
+    final String truncatedExpected = expectedTime.substring(0, expectedTime.indexOf('T'));
 
 
     assertThat(truncatedExpiryDate, equalTo(truncatedExpected));
@@ -117,7 +123,7 @@ public class CertificateGenerateTest {
 
     assertThat(picardCert, notNullValue());
 
-    MockHttpServletRequestBuilder certPost = post("/api/v1/data")
+    final MockHttpServletRequestBuilder certPost = post("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -131,31 +137,31 @@ public class CertificateGenerateTest {
         + "  }\n"
         + "}");
 
-    String certResult = this.mockMvc.perform(certPost)
+    final String certResult = this.mockMvc.perform(certPost)
       .andDo(print())
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
 
-    String certCa = (new JSONObject(certResult)).getJSONObject("value").getString("ca");
-    String cert = (new JSONObject(certResult)).getJSONObject("value").getString("certificate");
+    final String certCa = (new JSONObject(certResult)).getJSONObject("value").getString("ca");
+    final String cert = (new JSONObject(certResult)).getJSONObject("value").getString("certificate");
 
     assertThat(certCa, equalTo(picardCert));
 
 
-    CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
-    X509Certificate caPem = (X509Certificate) certificateFactory
+    final CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
+    final X509Certificate caPem = (X509Certificate) certificateFactory
       .generateCertificate(new ByteArrayInputStream(picardCert.getBytes(StringUtil.UTF_8)));
 
-    X509Certificate certPem = (X509Certificate) certificateFactory
+    final X509Certificate certPem = (X509Certificate) certificateFactory
       .generateCertificate(new ByteArrayInputStream(cert.getBytes(StringUtil.UTF_8)));
 
-    byte[] subjectKeyIdDer = caPem.getExtensionValue(Extension.subjectKeyIdentifier.getId());
-    SubjectKeyIdentifier subjectKeyIdentifier = SubjectKeyIdentifier.getInstance(JcaX509ExtensionUtils.parseExtensionValue(subjectKeyIdDer));
-    byte[] subjectKeyId = subjectKeyIdentifier.getKeyIdentifier();
+    final byte[] subjectKeyIdDer = caPem.getExtensionValue(Extension.subjectKeyIdentifier.getId());
+    final SubjectKeyIdentifier subjectKeyIdentifier = SubjectKeyIdentifier.getInstance(JcaX509ExtensionUtils.parseExtensionValue(subjectKeyIdDer));
+    final byte[] subjectKeyId = subjectKeyIdentifier.getKeyIdentifier();
 
-    byte[] authorityKeyIdDer = certPem.getExtensionValue(Extension.authorityKeyIdentifier.getId());
-    AuthorityKeyIdentifier authorityKeyIdentifier = AuthorityKeyIdentifier.getInstance(JcaX509ExtensionUtils.parseExtensionValue(authorityKeyIdDer));
-    byte[] authKeyId = authorityKeyIdentifier.getKeyIdentifier();
+    final byte[] authorityKeyIdDer = certPem.getExtensionValue(Extension.authorityKeyIdentifier.getId());
+    final AuthorityKeyIdentifier authorityKeyIdentifier = AuthorityKeyIdentifier.getInstance(JcaX509ExtensionUtils.parseExtensionValue(authorityKeyIdDer));
+    final byte[] authKeyId = authorityKeyIdentifier.getKeyIdentifier();
 
     assertThat(subjectKeyId, equalTo(authKeyId));
   }
@@ -170,7 +176,7 @@ public class CertificateGenerateTest {
 
   @Test
   public void invalidCertificateGenerationParameters_shouldResultInCorrectErrorMessage() throws Exception {
-    MockHttpServletRequestBuilder request = post("/api/v1/data")
+    final MockHttpServletRequestBuilder request = post("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -183,7 +189,7 @@ public class CertificateGenerateTest {
         + "    \"self_sign\" : true\n"
         + "  }\n"
         + "}");
-    String error = "The request could not be completed because the common name is too long. The max length for common name is 64 characters.";
+    final String error = "The request could not be completed because the common name is too long. The max length for common name is 64 characters.";
 
     this.mockMvc
       .perform(request)
@@ -195,22 +201,22 @@ public class CertificateGenerateTest {
   public void credentialNotOverwrittenWhenModeIsSetToConvergeAndParametersAreTheSame() throws Exception {
     generateCertificateCredential(mockMvc, CA_NAME, true, "test-CA", null, ALL_PERMISSIONS_TOKEN);
 
-    String firstResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, false, "some-common-name", CA_NAME, ALL_PERMISSIONS_TOKEN);
-    String originalValue = (new JSONObject(firstResponse)).getString("value");
+    final String firstResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, false, "some-common-name", CA_NAME, ALL_PERMISSIONS_TOKEN);
+    final String originalValue = (new JSONObject(firstResponse)).getString("value");
 
-    String secondResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, false, "some-common-name", CA_NAME, ALL_PERMISSIONS_TOKEN);
-    String sameValue = (new JSONObject(secondResponse)).getString("value");
+    final String secondResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, false, "some-common-name", CA_NAME, ALL_PERMISSIONS_TOKEN);
+    final String sameValue = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalValue, Matchers.equalTo(sameValue));
   }
 
   @Test
   public void credentialNotOverwrittenWhenModeIsSetToConvergeAndParametersAreTheSameAndAreCAs() throws Exception {
-    String firstResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, false, "some-common-name", null, ALL_PERMISSIONS_TOKEN);
-    String originalValue = (new JSONObject(firstResponse)).getString("value");
+    final String firstResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, false, "some-common-name", null, ALL_PERMISSIONS_TOKEN);
+    final String originalValue = (new JSONObject(firstResponse)).getString("value");
 
-    String secondResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, false, "some-common-name", null, ALL_PERMISSIONS_TOKEN);
-    String sameValue = (new JSONObject(secondResponse)).getString("value");
+    final String secondResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, false, "some-common-name", null, ALL_PERMISSIONS_TOKEN);
+    final String sameValue = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalValue, Matchers.equalTo(sameValue));
   }
@@ -219,11 +225,11 @@ public class CertificateGenerateTest {
   public void credentialOverwrittenWhenModeIsSetToConvergeAndCommonNameNotTheSame() throws Exception {
     generateCertificateCredential(mockMvc, CA_NAME, true, "test-CA", null, ALL_PERMISSIONS_TOKEN);
 
-    String firstResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, false, "some-common-name", CA_NAME, ALL_PERMISSIONS_TOKEN);
-    String originalValue = (new JSONObject(firstResponse)).getString("value");
+    final String firstResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, false, "some-common-name", CA_NAME, ALL_PERMISSIONS_TOKEN);
+    final String originalValue = (new JSONObject(firstResponse)).getString("value");
 
-    String secondResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, false, "other-common-name", CA_NAME, ALL_PERMISSIONS_TOKEN);
-    String updatedValue = (new JSONObject(secondResponse)).getString("value");
+    final String secondResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, false, "other-common-name", CA_NAME, ALL_PERMISSIONS_TOKEN);
+    final String updatedValue = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalValue, not(Matchers.equalTo(updatedValue)));
   }
@@ -232,14 +238,14 @@ public class CertificateGenerateTest {
   public void credentialNotOverwrittenWhenModeIsSetAndAllDNsSet() throws Exception {
     generateCertificateCredential(mockMvc, CA_NAME, true, "test-CA", null, ALL_PERMISSIONS_TOKEN);
 
-    Map<String, Object> certRequestBody = new HashMap() {
+    final Map<String, Object> certRequestBody = new HashMap() {
       {
         put("name", CREDENTIAL_NAME);
         put("type", "certificate");
       }
     };
 
-    Map parameters = new HashMap<String, Object>();
+    final Map parameters = new HashMap<String, Object>();
     parameters.put("ca", CA_NAME);
     parameters.put("common_name", "common_name");
     parameters.put("country", "US");
@@ -248,25 +254,25 @@ public class CertificateGenerateTest {
 
 
     certRequestBody.put("parameters", parameters);
-    String content = JsonTestHelper.serializeToString(certRequestBody);
-    MockHttpServletRequestBuilder post = post("/api/v1/data")
+    final String content = JsonTestHelper.serializeToString(certRequestBody);
+    final MockHttpServletRequestBuilder post = post("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
       .content(content);
 
-    String firstResponse = mockMvc.perform(post)
+    final String firstResponse = mockMvc.perform(post)
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
 
-    String secondResponse = mockMvc.perform(post)
+    final String secondResponse = mockMvc.perform(post)
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
 
 
-    String originalValue = (new JSONObject(firstResponse)).getString("value");
+    final String originalValue = (new JSONObject(firstResponse)).getString("value");
 
-    String updatedValue = (new JSONObject(secondResponse)).getString("value");
+    final String updatedValue = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalValue, equalTo(updatedValue));
   }
@@ -277,11 +283,11 @@ public class CertificateGenerateTest {
     generateCertificateCredential(mockMvc, CA_NAME2, true, "test-CA2", null, ALL_PERMISSIONS_TOKEN);
 
 
-    String firstResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, false, "some-common-name", CA_NAME, ALL_PERMISSIONS_TOKEN);
-    String originalValue = (new JSONObject(firstResponse)).getString("value");
+    final String firstResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, false, "some-common-name", CA_NAME, ALL_PERMISSIONS_TOKEN);
+    final String originalValue = (new JSONObject(firstResponse)).getString("value");
 
-    String secondResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, false, "some-common-name", CA_NAME2, ALL_PERMISSIONS_TOKEN);
-    String updatedValue = (new JSONObject(secondResponse)).getString("value");
+    final String secondResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, false, "some-common-name", CA_NAME2, ALL_PERMISSIONS_TOKEN);
+    final String updatedValue = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalValue, not(Matchers.equalTo(updatedValue)));
   }
@@ -290,13 +296,13 @@ public class CertificateGenerateTest {
   public void credentialOverwrittenWhenModeIsSetToConvergeAndCAUpdated() throws Exception {
     generateCertificateCredential(mockMvc, CA_NAME, true, "test-CA", null, ALL_PERMISSIONS_TOKEN);
 
-    String firstResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, false, "some-common-name", CA_NAME, ALL_PERMISSIONS_TOKEN);
-    String originalValue = (new JSONObject(firstResponse)).getString("value");
+    final String firstResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, false, "some-common-name", CA_NAME, ALL_PERMISSIONS_TOKEN);
+    final String originalValue = (new JSONObject(firstResponse)).getString("value");
 
     generateCertificateCredential(mockMvc, CA_NAME, true, "test-CA", null, ALL_PERMISSIONS_TOKEN);
 
-    String secondResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, false, "some-common-name", CA_NAME, ALL_PERMISSIONS_TOKEN);
-    String updatedValue = (new JSONObject(secondResponse)).getString("value");
+    final String secondResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, false, "some-common-name", CA_NAME, ALL_PERMISSIONS_TOKEN);
+    final String updatedValue = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalValue, not(Matchers.equalTo(updatedValue)));
   }
@@ -308,8 +314,8 @@ public class CertificateGenerateTest {
         .put("certificate", TestConstants.TEST_CA)
         .build());
 
-    String caName = "crusher";
-    MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
+    final String caName = "crusher";
+    final MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -322,7 +328,7 @@ public class CertificateGenerateTest {
     this.mockMvc.perform(certificateSetRequest)
       .andExpect(status().is2xxSuccessful());
 
-    Map<String, Object> certRequestBody = new HashMap() {
+    final Map<String, Object> certRequestBody = new HashMap() {
       {
         put("name", CREDENTIAL_NAME);
         put("type", "certificate");
@@ -330,14 +336,14 @@ public class CertificateGenerateTest {
       }
     };
 
-    Map parameters = new HashMap<String, Object>();
+    final Map parameters = new HashMap<String, Object>();
     parameters.put("ca", caName);
     parameters.put("common_name", "some-common-name");
 
 
     certRequestBody.put("parameters", parameters);
-    String content = JsonTestHelper.serializeToString(certRequestBody);
-    MockHttpServletRequestBuilder post = post("/api/v1/data")
+    final String content = JsonTestHelper.serializeToString(certRequestBody);
+    final MockHttpServletRequestBuilder post = post("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -352,29 +358,29 @@ public class CertificateGenerateTest {
 
   @Test
   public void usesTheLatestNonTransitionalCaAsTheSigningCertificate() throws Exception {
-    String generateCaResponse = generateCa(mockMvc, "/originalCA", ALL_PERMISSIONS_TOKEN);
-    String originalCaCertificate = JsonPath.parse(generateCaResponse)
+    final String generateCaResponse = generateCa(mockMvc, "/originalCA", ALL_PERMISSIONS_TOKEN);
+    final String originalCaCertificate = JsonPath.parse(generateCaResponse)
       .read("$.value.certificate");
 
-    String response = getCertificateCredentialsByName(mockMvc, ALL_PERMISSIONS_TOKEN, "/originalCA");
-    String uuid = JsonPath.parse(response)
+    final String response = getCertificateCredentialsByName(mockMvc, ALL_PERMISSIONS_TOKEN, "/originalCA");
+    final String uuid = JsonPath.parse(response)
       .read("$.certificates[0].id");
 
-    MockHttpServletRequestBuilder caRegenerateRequest = post("/api/v1/certificates/" + uuid + "/regenerate")
+    final MockHttpServletRequestBuilder caRegenerateRequest = post("/api/v1/certificates/" + uuid + "/regenerate")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
       //language=JSON
       .content("{\"set_as_transitional\" : true}");
 
-    String transitionalCaResponse = this.mockMvc.perform(caRegenerateRequest)
+    final String transitionalCaResponse = this.mockMvc.perform(caRegenerateRequest)
       .andExpect(status().is2xxSuccessful())
       .andReturn().getResponse().getContentAsString();
 
-    String transitionalCaCertificate = JsonPath.parse(transitionalCaResponse)
+    final String transitionalCaCertificate = JsonPath.parse(transitionalCaResponse)
       .read("$.value.certificate");
 
-    String generateCertificateResponse = generateCertificateCredential(
+    final String generateCertificateResponse = generateCertificateCredential(
       mockMvc,
       "/some-cert",
       true,
@@ -383,7 +389,7 @@ public class CertificateGenerateTest {
       ALL_PERMISSIONS_TOKEN
     );
 
-    String actualCaCertificate = JsonPath.parse(generateCertificateResponse)
+    final String actualCaCertificate = JsonPath.parse(generateCertificateResponse)
       .read("$.value.ca");
 
     assertThat(actualCaCertificate, not(equalTo(transitionalCaCertificate)));

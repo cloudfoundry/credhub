@@ -13,28 +13,27 @@ public class CertificateLengthValidator implements ConstraintValidator<ValidCert
   private String[] fields;
 
   @Override
-  public void initialize(ValidCertificateLength constraintAnnotation) {
+  public void initialize(final ValidCertificateLength constraintAnnotation) {
     fields = constraintAnnotation.fields();
   }
 
   @Override
-  public boolean isValid(Object value, ConstraintValidatorContext context) {
-    for (String fieldName : fields) {
+  public boolean isValid(final Object value, final ConstraintValidatorContext context) {
+    for (final String fieldName : fields) {
       try {
-        Field field = value.getClass().getDeclaredField(fieldName);
+        final Field field = value.getClass().getDeclaredField(fieldName);
         field.setAccessible(true);
-
-        String certificate = (String) field.get(value);
 
         if (StringUtils.isEmpty((String) field.get(value))) {
           return true;
         }
 
+        final String certificate = (String) field.get(value);
         if (certificate.getBytes(StringUtil.UTF_8).length > 7000) {
           return false;
         }
 
-      } catch (NoSuchFieldException | IllegalAccessException e) {
+      } catch (final NoSuchFieldException | IllegalAccessException e) {
         throw new RuntimeException(e);
       }
     }

@@ -42,39 +42,39 @@ public class CertificateVersionDataServiceTest {
 
   @Test
   public void findActive_FindsMostRecentNonTransitionalCredentialVersion() throws Exception {
-    Credential certificate = mock(Credential.class);
+    final Credential certificate = mock(Credential.class);
 
     when(dataService.find("/some-ca-name")).thenReturn(certificate);
-    CredentialVersionData certificateEntity = mock(CredentialVersionData.class);
+    final CredentialVersionData certificateEntity = mock(CredentialVersionData.class);
     when(versionRepository.findLatestNonTransitionalCertificateVersion(any())).thenReturn(certificateEntity);
 
-    CredentialVersion expectedVersion = mock(CredentialVersion.class);
+    final CredentialVersion expectedVersion = mock(CredentialVersion.class);
     when(factory.makeCredentialFromEntity(certificateEntity)).thenReturn(expectedVersion);
 
-    CredentialVersion activeVersion = subject.findActive("/some-ca-name");
+    final CredentialVersion activeVersion = subject.findActive("/some-ca-name");
     assertThat(activeVersion, equalTo(expectedVersion));
   }
 
 
   @Test
   public void findActiveWithTransitional_findsMostRecentNonTransitionalAndTransitionalCredentialVersions() throws Exception {
-    Credential certificate = mock(Credential.class);
+    final Credential certificate = mock(Credential.class);
 
     when(dataService.find("/some-cert-name")).thenReturn(certificate);
 
-    CredentialVersionData activeCert = mock(CredentialVersionData.class);
+    final CredentialVersionData activeCert = mock(CredentialVersionData.class);
     when(versionRepository.findLatestNonTransitionalCertificateVersion(any())).thenReturn(activeCert);
 
-    CredentialVersionData transitionalCert = mock(CredentialVersionData.class);
+    final CredentialVersionData transitionalCert = mock(CredentialVersionData.class);
     when(versionRepository.findTransitionalCertificateVersion(any())).thenReturn(transitionalCert);
 
-    CredentialVersion expectedActive = mock(CredentialVersion.class);
+    final CredentialVersion expectedActive = mock(CredentialVersion.class);
     when(factory.makeCredentialFromEntity(activeCert)).thenReturn(expectedActive);
 
-    CredentialVersion expectedTransitional = mock(CredentialVersion.class);
+    final CredentialVersion expectedTransitional = mock(CredentialVersion.class);
     when(factory.makeCredentialFromEntity(transitionalCert)).thenReturn(expectedTransitional);
 
-    List<CredentialVersion> credentialVersions = subject.findActiveWithTransitional("/some-cert-name");
+    final List<CredentialVersion> credentialVersions = subject.findActiveWithTransitional("/some-cert-name");
     assertThat(credentialVersions, hasSize(2));
     assertThat(credentialVersions, containsInAnyOrder(expectedActive, expectedTransitional));
   }

@@ -40,7 +40,7 @@ public class PermissionCheckingServiceTest {
     when(userContext.getActor()).thenReturn("test-actor");
 
     permissionDataService = mock(PermissionDataService.class);
-    UserContextHolder userContextHolder = new UserContextHolder();
+    final UserContextHolder userContextHolder = new UserContextHolder();
     userContextHolder.setUserContext(userContext);
     subject = new PermissionCheckingService(permissionDataService, userContextHolder);
   }
@@ -118,20 +118,20 @@ public class PermissionCheckingServiceTest {
 
   @Test
   public void validDeleteOperation_withEnforcement_whenAclUserAndActorAreNull_returnsFalse() {
-    String input = null;
+    final String input = null;
     initializeEnforcement(true);
     when(userContext.getActor()).thenReturn(null);
 
     assertFalse(subject.userAllowedToOperateOnActor(input));
   }
 
-  private void initializeEnforcement(boolean enabled) {
+  private void initializeEnforcement(final boolean enabled) {
     ReflectionTestUtils
       .setField(subject, PermissionCheckingService.class, "enforcePermissions", enabled, boolean.class);
   }
 
-  private void assertConditionallyHasPermission(String user, String credentialName,
-                                                PermissionOperation permission, boolean isGranted) {
+  private void assertConditionallyHasPermission(final String user, final String credentialName,
+                                                final PermissionOperation permission, final boolean isGranted) {
     when(permissionDataService
       .hasPermission(user, credentialName, permission))
       .thenReturn(isGranted);
@@ -139,8 +139,8 @@ public class PermissionCheckingServiceTest {
     assertThat(subject.hasPermission(user, credentialName, permission), equalTo(isGranted));
   }
 
-  private void assertAlwaysHasPermission(String user, String credentialName,
-                                         PermissionOperation permission, boolean isGranted) {
+  private void assertAlwaysHasPermission(final String user, final String credentialName,
+                                         final PermissionOperation permission, final boolean isGranted) {
     when(permissionDataService
       .hasPermission(user, credentialName, permission))
       .thenReturn(isGranted);

@@ -41,7 +41,7 @@ public class KeyUsageEndpointTest {
       .apply(springSecurity())
       .build();
 
-    MockHttpServletRequestBuilder getRequest = get(
+    final MockHttpServletRequestBuilder getRequest = get(
       "/api/v1/key-usage")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN);
     mockMvc.perform(getRequest)

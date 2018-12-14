@@ -22,19 +22,20 @@ public class ManagementController {
   private static final Logger LOGGER = LogManager.getLogger(ManagementController.class);
   private final ManagementRegistry managementRegistry;
 
-  public ManagementController(ManagementRegistry managementRegistry) {
+  public ManagementController(final ManagementRegistry managementRegistry) {
+    super();
     this.managementRegistry = managementRegistry;
   }
 
   @RequestMapping(path = "", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
-  public Management getManagement() {
+  public Management getManagementFromManagementRegistry() {
     return new Management(managementRegistry.getReadOnlyMode());
   }
 
   @RequestMapping(path = "", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ResponseStatus(HttpStatus.OK)
-  public Management setManagement(@RequestBody Management management) {
+  public Management updateManagementRegistry(@RequestBody final Management management) {
     managementRegistry.setReadOnlyMode(management.isReadOnlyMode());
 
     LOGGER.info("Setting read only mode to " + management.isReadOnlyMode());

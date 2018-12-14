@@ -16,7 +16,7 @@ import static org.cloudfoundry.credhub.helper.JsonTestHelper.deserializeChecked;
 public class BaseCredentialSetRequestTest {
   @Test(expected = JsonMappingException.class)
   public void whenTypeIsNotSet_throwsException() throws IOException {
-    String json = "{" +
+    final String json = "{" +
       "\"name\":\"some-name\"," +
       "\"value\":\"some-value\"," +
       "\"overwrite\":true" +
@@ -28,7 +28,7 @@ public class BaseCredentialSetRequestTest {
 
   @Test(expected = InvalidTypeIdException.class)
   public void whenTypeIsEmptyString_throwsException() throws IOException {
-    String json = "{" +
+    final String json = "{" +
       "\"name\":\"some-name\"," +
       "\"type\":\"\"," +
       "\"value\":\"some-value\"," +
@@ -40,7 +40,7 @@ public class BaseCredentialSetRequestTest {
 
   @Test(expected = InvalidTypeIdException.class)
   public void whenTypeIsUnknown_throwsException() throws IOException {
-    String json = "{" +
+    final String json = "{" +
       "\"name\":\"some-name\"," +
       "\"type\":\"moose\"," +
       "\"value\":\"some-value\"," +
@@ -52,7 +52,7 @@ public class BaseCredentialSetRequestTest {
 
   @Test(expected = UnrecognizedPropertyException.class)
   public void whenValueHasUnknownField_throwsException() throws IOException {
-    String json = "{\n"
+    final String json = "{\n"
       + "  \"name\": \"/example/certificate\",\n"
       + "  \"type\": \"certificate\",\n"
       + "  \"value\": {"

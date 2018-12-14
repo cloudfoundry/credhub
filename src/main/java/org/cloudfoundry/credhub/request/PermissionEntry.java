@@ -26,13 +26,15 @@ public class PermissionEntry {
   private List<PermissionOperation> allowedOperations;
 
   public PermissionEntry() {
+    super();
   }
 
-  public PermissionEntry(String actor, String path, PermissionOperation... operations) {
+  public PermissionEntry(final String actor, final String path, final PermissionOperation... operations) {
     this(actor, path, newArrayList(operations));
   }
 
-  public PermissionEntry(String actor, String path, List<PermissionOperation> operations) {
+  public PermissionEntry(final String actor, final String path, final List<PermissionOperation> operations) {
+    super();
     this.actor = actor;
     this.path = path;
     this.allowedOperations = operations;
@@ -42,7 +44,7 @@ public class PermissionEntry {
     return actor;
   }
 
-  public void setActor(String actor) {
+  public void setActor(final String actor) {
     this.actor = actor;
   }
 
@@ -50,7 +52,7 @@ public class PermissionEntry {
     return allowedOperations;
   }
 
-  public void setAllowedOperations(List<PermissionOperation> allowedOperations) {
+  public void setAllowedOperations(final List<PermissionOperation> allowedOperations) {
     this.allowedOperations = allowedOperations;
   }
 
@@ -58,7 +60,7 @@ public class PermissionEntry {
     return path;
   }
 
-  public void setPath(String path) {
+  public void setPath(final String path) {
     this.path = path;
   }
 }

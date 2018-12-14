@@ -15,21 +15,22 @@ public class GenerateHandler {
 
   private final PermissionedCredentialService credentialService;
   private final UniversalCredentialGenerator credentialGenerator;
-  private CEFAuditRecord auditRecord;
+  private final CEFAuditRecord auditRecord;
 
   @Autowired
   public GenerateHandler(
-    PermissionedCredentialService credentialService,
-    UniversalCredentialGenerator credentialGenerator,
-    CEFAuditRecord auditRecord) {
+    final PermissionedCredentialService credentialService,
+    final UniversalCredentialGenerator credentialGenerator,
+    final CEFAuditRecord auditRecord) {
+    super();
     this.credentialService = credentialService;
     this.credentialGenerator = credentialGenerator;
     this.auditRecord = auditRecord;
   }
 
-  public CredentialView handle(BaseCredentialGenerateRequest generateRequest) {
-    CredentialVersion existingCredentialVersion = credentialService.findMostRecent(generateRequest.getName());
-    CredentialValue value = credentialGenerator.generate(generateRequest);
+  public CredentialView handle(final BaseCredentialGenerateRequest generateRequest) {
+    final CredentialVersion existingCredentialVersion = credentialService.findMostRecent(generateRequest.getName());
+    final CredentialValue value = credentialGenerator.generate(generateRequest);
 
     final CredentialVersion credentialVersion = credentialService.save(existingCredentialVersion, value, generateRequest);
 

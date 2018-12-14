@@ -8,12 +8,12 @@ import org.codehaus.jackson.map.SerializationConfig;
 
 public interface RequestDetails {
   default String toJSON() {
-    String result;
+    final String result;
     try {
-      ObjectMapper mapper = new ObjectMapper();
+      final ObjectMapper mapper = new ObjectMapper();
       mapper.configure(SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS, false);
       result = mapper.writeValueAsString(this);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
 

@@ -15,26 +15,27 @@ public class CertificateService {
 
   private final CertificateVersionDataService certificateVersionDataService;
   private final UserContextHolder userContextHolder;
-  private PermissionCheckingService permissionCheckingService;
+  private final PermissionCheckingService permissionCheckingService;
 
   @Autowired
   public CertificateService(
-    CertificateVersionDataService certificateVersionDataService,
-    PermissionCheckingService permissionCheckingService,
-    UserContextHolder userContextHolder) {
+    final CertificateVersionDataService certificateVersionDataService,
+    final PermissionCheckingService permissionCheckingService,
+    final UserContextHolder userContextHolder) {
+    super();
     this.certificateVersionDataService = certificateVersionDataService;
     this.permissionCheckingService = permissionCheckingService;
     this.userContextHolder = userContextHolder;
   }
 
-  public CertificateCredentialVersion findByCredentialUuid(String uuid) {
-    CredentialVersion credentialVersion = this.certificateVersionDataService
+  public CertificateCredentialVersion findByCredentialUuid(final String uuid) {
+    final CredentialVersion credentialVersion = this.certificateVersionDataService
       .findByCredentialUUID(uuid);
 
-    if (credentialVersion == null || !(credentialVersion instanceof CertificateCredentialVersion)) {
+    if (!(credentialVersion instanceof CertificateCredentialVersion)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
-    CertificateCredentialVersion certificate = (CertificateCredentialVersion) credentialVersion;
+    final CertificateCredentialVersion certificate = (CertificateCredentialVersion) credentialVersion;
     if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), certificate.getName(), PermissionOperation.READ)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }

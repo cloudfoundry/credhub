@@ -19,7 +19,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 @RunWith(SpringRunner.class)
-@ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class UuidGeneratorTest {
@@ -29,20 +29,20 @@ public class UuidGeneratorTest {
 
   @Test
   public void generate_ifNoUUIDSet_itGeneratesAUUID() {
-    EncryptionKeyCanary encryptionKeyCanary = new EncryptionKeyCanary();
+    final EncryptionKeyCanary encryptionKeyCanary = new EncryptionKeyCanary();
     assertNull(encryptionKeyCanary.getUuid());
 
-    EncryptionKeyCanary savedCanary = repository.saveAndFlush(encryptionKeyCanary);
+    final EncryptionKeyCanary savedCanary = repository.saveAndFlush(encryptionKeyCanary);
     assertNotNull(savedCanary.getUuid());
   }
 
   @Test
   public void generate_ifUUIDSet_itKeepsUUID() {
-    EncryptionKeyCanary encryptionKeyCanary = new EncryptionKeyCanary();
-    UUID uuid = UUID.randomUUID();
+    final EncryptionKeyCanary encryptionKeyCanary = new EncryptionKeyCanary();
+    final UUID uuid = UUID.randomUUID();
     encryptionKeyCanary.setUuid(uuid);
 
-    EncryptionKeyCanary savedCanary = repository.saveAndFlush(encryptionKeyCanary);
+    final EncryptionKeyCanary savedCanary = repository.saveAndFlush(encryptionKeyCanary);
     assertThat(savedCanary.getUuid(), equalTo(uuid));
   }
 }

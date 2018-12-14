@@ -19,7 +19,7 @@ public class UserGenerateRequest extends BaseCredentialGenerateRequest {
     return passwordGenerationParameters;
   }
 
-  public void setGenerationParameters(StringGenerationParameters generationParameters) {
+  public void setGenerationParameters(final StringGenerationParameters generationParameters) {
     passwordGenerationParameters = generationParameters;
   }
 
@@ -30,7 +30,7 @@ public class UserGenerateRequest extends BaseCredentialGenerateRequest {
     return value.getUsername();
   }
 
-  public void setValue(UsernameValue value) {
+  public void setValue(final UsernameValue value) {
     this.value = value;
   }
 }

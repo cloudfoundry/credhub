@@ -55,7 +55,7 @@ public class PermissionsV2ControllerTest {
 
   @Test
   public void GET__api_v2_permissions__returns_a_permission() throws Exception {
-    PermissionsV2View permissionsV2View = new PermissionsV2View(
+    final PermissionsV2View permissionsV2View = new PermissionsV2View(
       "some-path",
       emptyList(),
       "some-actor",
@@ -63,9 +63,9 @@ public class PermissionsV2ControllerTest {
     );
     spyPermissionsHandler.setReturn_findByPathAndActor(permissionsV2View);
 
-    MvcResult mvcResult = mockMvc
+    final MvcResult mvcResult = mockMvc
       .perform(
-        get(PermissionsV2Controller.endpoint)
+        get(PermissionsV2Controller.ENDPOINT)
           .contentType(MediaType.APPLICATION_JSON)
           .param("path", "/some-path")
           .param("actor", "some-actor")
@@ -74,7 +74,7 @@ public class PermissionsV2ControllerTest {
       .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
       .andDo(
         document(
-          PermissionsV2Controller.endpoint.replaceFirst("/", ""),
+          PermissionsV2Controller.ENDPOINT.replaceFirst("/", ""),
           requestParameters(
             parameterWithName("path").description("The credential path"),
             parameterWithName("actor").description("The credential actor")
@@ -91,8 +91,8 @@ public class PermissionsV2ControllerTest {
 
     assertThat(spyPermissionsHandler.getFindByPathAndActorCalledWithActor(), equalTo("some-actor"));
     assertThat(spyPermissionsHandler.getFindByPathAndActorCalledWithPath(), equalTo("/some-path"));
-    String actualResponseBody = mvcResult.getResponse().getContentAsString();
-    String expectedResponseBody = "{\"path\":\"some-path\",\"operations\":[],\"actor\":\"some-actor\",\"uuid\":\"48faba92-5492-3e23-b262-75e30a7ddb6a\"}";
+    final String actualResponseBody = mvcResult.getResponse().getContentAsString();
+    final String expectedResponseBody = "{\"path\":\"some-path\",\"operations\":[],\"actor\":\"some-actor\",\"uuid\":\"48faba92-5492-3e23-b262-75e30a7ddb6a\"}";
     JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true);
   }
 }

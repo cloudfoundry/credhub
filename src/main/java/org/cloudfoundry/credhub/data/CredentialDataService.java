@@ -13,30 +13,29 @@ import org.cloudfoundry.credhub.repository.CredentialRepository;
 public class CredentialDataService {
 
   private final CredentialRepository credentialRepository;
-  private CEFAuditRecord auditRecord;
+  private final CEFAuditRecord auditRecord;
 
   @Autowired
-  public CredentialDataService(CredentialRepository credentialRepository, CEFAuditRecord auditRecord) {
+  public CredentialDataService(final CredentialRepository credentialRepository, final CEFAuditRecord auditRecord) {
+    super();
     this.credentialRepository = credentialRepository;
     this.auditRecord = auditRecord;
   }
 
-  public Credential find(String name) {
-    Credential credential = credentialRepository.findOneByNameIgnoreCase(name);
-    return credential;
+  public Credential find(final String name) {
+    return credentialRepository.findOneByNameIgnoreCase(name);
   }
 
-  public Credential findByUUID(UUID uuid) {
-    Credential credential = credentialRepository.findOneByUuid(uuid);
-    return credential;
+  public Credential findByUUID(final UUID uuid) {
+    return credentialRepository.findOneByUuid(uuid);
   }
 
-  public Credential save(Credential credential) {
+  public Credential save(final Credential credential) {
     return credentialRepository.saveAndFlush(credential);
   }
 
-  public boolean delete(String credentialName) {
-    Credential cred = this.find(credentialName);
+  public boolean delete(final String credentialName) {
+    final Credential cred = this.find(credentialName);
     auditRecord.setResource(cred);
     return credentialRepository.deleteByNameIgnoreCase(credentialName) > 0;
   }

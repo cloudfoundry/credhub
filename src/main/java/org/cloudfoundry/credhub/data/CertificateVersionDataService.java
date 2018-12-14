@@ -19,20 +19,21 @@ import org.cloudfoundry.credhub.repository.CredentialVersionRepository;
 public class CertificateVersionDataService {
 
   private final CredentialVersionRepository credentialVersionRepository;
-  private CredentialFactory credentialFactory;
-  private CredentialDataService credentialDataService;
+  private final CredentialFactory credentialFactory;
+  private final CredentialDataService credentialDataService;
 
   @Autowired
   public CertificateVersionDataService(
-    CredentialVersionRepository credentialVersionRepository,
-    CredentialFactory credentialFactory, CredentialDataService credentialDataService) {
+    final CredentialVersionRepository credentialVersionRepository,
+    final CredentialFactory credentialFactory, final CredentialDataService credentialDataService) {
+    super();
     this.credentialVersionRepository = credentialVersionRepository;
     this.credentialFactory = credentialFactory;
     this.credentialDataService = credentialDataService;
   }
 
-  public CredentialVersion findActive(String caName) {
-    Credential credential = credentialDataService.find(caName);
+  public CredentialVersion findActive(final String caName) {
+    final Credential credential = credentialDataService.find(caName);
 
     if (credential == null) {
       return null;
@@ -42,26 +43,26 @@ public class CertificateVersionDataService {
     }
   }
 
-  public CredentialVersion findByCredentialUUID(String uuid) {
+  public CredentialVersion findByCredentialUUID(final String uuid) {
     return credentialFactory.makeCredentialFromEntity(credentialVersionRepository
       .findLatestNonTransitionalCertificateVersion(UUID.fromString(uuid)));
   }
 
-  public List<CredentialVersion> findActiveWithTransitional(String certificateName) {
-    ArrayList<CredentialVersion> result = new ArrayList<>();
-    Credential credential = credentialDataService.find(certificateName);
+  public List<CredentialVersion> findActiveWithTransitional(final String certificateName) {
+    final List<CredentialVersion> result = new ArrayList<>();
+    final Credential credential = credentialDataService.find(certificateName);
 
     if (credential == null) {
       return null;
     } else {
-      UUID uuid = credential.getUuid();
+      final UUID uuid = credential.getUuid();
 
-      CredentialVersionData active = credentialVersionRepository.findLatestNonTransitionalCertificateVersion(uuid);
+      final CredentialVersionData active = credentialVersionRepository.findLatestNonTransitionalCertificateVersion(uuid);
       if (active != null) {
         result.add(credentialFactory.makeCredentialFromEntity(active));
       }
 
-      CredentialVersionData transitional = credentialVersionRepository.findTransitionalCertificateVersion(uuid);
+      final CredentialVersionData transitional = credentialVersionRepository.findTransitionalCertificateVersion(uuid);
       if (transitional != null) {
         result.add(credentialFactory.makeCredentialFromEntity(transitional));
       }
@@ -69,31 +70,31 @@ public class CertificateVersionDataService {
     }
   }
 
-  public List<CredentialVersion> findAllVersions(UUID uuid) {
-    List<CredentialVersionData> credentialVersionDataList =
+  public List<CredentialVersion> findAllVersions(final UUID uuid) {
+    final List<CredentialVersionData> credentialVersionDataList =
       credentialVersionRepository.
         findAllByCredentialUuidAndTypeOrderByVersionCreatedAtDesc(
           uuid, CertificateCredentialVersionData.CREDENTIAL_DATABASE_TYPE);
     return credentialFactory.makeCredentialsFromEntities(credentialVersionDataList);
   }
 
-  public void deleteVersion(UUID versionUuid) {
+  public void deleteVersion(final UUID versionUuid) {
     credentialVersionRepository.deleteById(versionUuid);
   }
 
-  public CertificateCredentialVersion findVersion(UUID versionUuid) {
-    CredentialVersionData credentialVersion = credentialVersionRepository.findOneByUuid(versionUuid);
+  public CertificateCredentialVersion findVersion(final UUID versionUuid) {
+    final CredentialVersionData credentialVersion = credentialVersionRepository.findOneByUuid(versionUuid);
     return (CertificateCredentialVersion) credentialFactory.makeCredentialFromEntity(credentialVersion);
   }
 
-  public void setTransitionalVersion(UUID newTransitionalVersionUuid) {
-    CertificateCredentialVersionData newTransitionalCertificate = (CertificateCredentialVersionData) credentialVersionRepository.findOneByUuid(newTransitionalVersionUuid);
+  public void setTransitionalVersion(final UUID newTransitionalVersionUuid) {
+    final CertificateCredentialVersionData newTransitionalCertificate = (CertificateCredentialVersionData) credentialVersionRepository.findOneByUuid(newTransitionalVersionUuid);
     newTransitionalCertificate.setTransitional(true);
     credentialVersionRepository.save(newTransitionalCertificate);
   }
 
-  public void unsetTransitionalVersion(UUID certificateUuid) {
-    CertificateCredentialVersionData transitionalCertificate = (CertificateCredentialVersionData) credentialVersionRepository.findTransitionalCertificateVersion(certificateUuid);
+  public void unsetTransitionalVersion(final UUID certificateUuid) {
+    final CertificateCredentialVersionData transitionalCertificate = (CertificateCredentialVersionData) credentialVersionRepository.findTransitionalCertificateVersion(certificateUuid);
     if (transitionalCertificate != null) {
       transitionalCertificate.setTransitional(false);
       credentialVersionRepository.save(transitionalCertificate);

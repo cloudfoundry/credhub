@@ -18,12 +18,13 @@ public class ManagementInterceptor extends HandlerInterceptorAdapter {
   public static final String INTERPOLATE_API = "/interpolate";
   private final ManagementRegistry managementRegistry;
 
-  public ManagementInterceptor(ManagementRegistry managementRegistry) {
+  public ManagementInterceptor(final ManagementRegistry managementRegistry) {
+    super();
     this.managementRegistry = managementRegistry;
   }
 
   @Override
-  public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+  public boolean preHandle(final HttpServletRequest request, final HttpServletResponse response, final Object handler) {
     if (request.getRequestURI().equals(MANAGEMENT_API)
       && !request.getRemoteAddr().equals(request.getLocalAddr())) {
       throw new InvalidRemoteAddressException();

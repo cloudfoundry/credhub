@@ -49,7 +49,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@ActiveProfiles(value = {"unit-test", "unit-test-permissions"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(
+  value = {
+    "unit-test",
+    "unit-test-permissions",
+  },
+  resolver = DatabaseProfileResolver.class
+)
 @SpringBootTest(classes = CredentialManagerApp.class)
 @Transactional
 public class CredentialsControllerGetTest {
@@ -77,7 +83,7 @@ public class CredentialsControllerGetTest {
 
   @Before
   public void beforeEach() {
-    Consumer<Long> fakeTimeSetter = mockOutCurrentTimeProvider(mockCurrentTimeProvider);
+    final Consumer<Long> fakeTimeSetter = mockOutCurrentTimeProvider(mockCurrentTimeProvider);
 
     fakeTimeSetter.accept(FROZEN_TIME.toEpochMilli());
 
@@ -93,12 +99,12 @@ public class CredentialsControllerGetTest {
       .when(permissionCheckingService).hasPermission(any(String.class),
       any(String.class), eq(PermissionOperation.READ));
 
-    UUID uuid = UUID.randomUUID();
+    final UUID uuid = UUID.randomUUID();
 
-    ValueCredentialVersion credential = new ValueCredentialVersion(CREDENTIAL_NAME)
-      .setEncryptor(encryptor)
-      .setUuid(uuid)
-      .setVersionCreatedAt(FROZEN_TIME);
+    final ValueCredentialVersion credential = new ValueCredentialVersion(CREDENTIAL_NAME);
+    credential.setEncryptor(encryptor);
+    credential.setUuid(uuid);
+    credential.setVersionCreatedAt(FROZEN_TIME);
     credential.getCredential().setUuid(UUID.randomUUID());
 
     doReturn(CREDENTIAL_VALUE).when(encryptor).decrypt(any());
@@ -124,12 +130,12 @@ public class CredentialsControllerGetTest {
       .when(permissionCheckingService).hasPermission(any(String.class),
       any(String.class), eq(PermissionOperation.READ));
 
-    UUID uuid = UUID.randomUUID();
+    final UUID uuid = UUID.randomUUID();
 
-    ValueCredentialVersion credential = new ValueCredentialVersion(CREDENTIAL_NAME)
-      .setEncryptor(encryptor)
-      .setUuid(uuid)
-      .setVersionCreatedAt(FROZEN_TIME);
+    final ValueCredentialVersion credential = new ValueCredentialVersion(CREDENTIAL_NAME);
+    credential.setEncryptor(encryptor);
+    credential.setUuid(uuid);
+    credential.setVersionCreatedAt(FROZEN_TIME);
     credential.getCredential().setUuid(UUID.randomUUID());
 
     doReturn(CREDENTIAL_VALUE).when(encryptor).decrypt(any());
@@ -156,7 +162,7 @@ public class CredentialsControllerGetTest {
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON);
 
-    String expectedError1 = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
+    final String expectedError1 = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
     mockMvc.perform(get1)
       .andExpect(status().isNotFound())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -176,7 +182,7 @@ public class CredentialsControllerGetTest {
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON);
 
-    String expectedError1 = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
+    final String expectedError1 = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
     mockMvc.perform(get1)
       .andExpect(status().isNotFound())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -195,9 +201,9 @@ public class CredentialsControllerGetTest {
       .header("Authorization", "Bearer " + AuthConstants.NO_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON);
 
-    ResultActions response = mockMvc.perform(get1);
+    final ResultActions response = mockMvc.perform(get1);
 
-    String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
+    final String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
 
     response
       .andExpect(status().isNotFound())
@@ -221,16 +227,18 @@ public class CredentialsControllerGetTest {
 
   @Test
   public void gettingACredential_byName_withCurrentSetToFalse_returnsAllTheCredentialVersions() throws Exception {
-    UUID uuid = UUID.randomUUID();
-    ValueCredentialVersion valueCredential1 = new ValueCredentialVersion(CREDENTIAL_NAME)
-      .setEncryptor(encryptor)
-      .setUuid(uuid)
-      .setVersionCreatedAt(FROZEN_TIME);
+    final UUID uuid = UUID.randomUUID();
+
+    final ValueCredentialVersion valueCredential1 = new ValueCredentialVersion(CREDENTIAL_NAME);
+    valueCredential1.setEncryptor(encryptor);
+    valueCredential1.setUuid(uuid);
+    valueCredential1.setVersionCreatedAt(FROZEN_TIME);
     valueCredential1.getCredential().setUuid(UUID.randomUUID());
-    ValueCredentialVersion valueCredential2 = new ValueCredentialVersion(CREDENTIAL_NAME)
-      .setEncryptor(encryptor)
-      .setUuid(uuid)
-      .setVersionCreatedAt(FROZEN_TIME);
+
+    final ValueCredentialVersion valueCredential2 = new ValueCredentialVersion(CREDENTIAL_NAME);
+    valueCredential2.setEncryptor(encryptor);
+    valueCredential2.setUuid(uuid);
+    valueCredential2.setVersionCreatedAt(FROZEN_TIME);
     valueCredential2.getCredential().setUuid(UUID.randomUUID());
 
     doReturn(CREDENTIAL_VALUE).when(encryptor).decrypt(any());
@@ -250,26 +258,28 @@ public class CredentialsControllerGetTest {
   @Test
   public void gettingACredential_byName_withCurrentSetToFalse_andNumberOfVersions_returnsTheSpecifiedNumberOfVersions()
     throws Exception {
-    UUID uuid = UUID.randomUUID();
+    final UUID uuid = UUID.randomUUID();
 
-    Instant credential1Instant = Instant.ofEpochSecond(1400000001L);
-    Instant credential2Instant = Instant.ofEpochSecond(1400000002L);
-    Instant credential3Instant = Instant.ofEpochSecond(1400000003L);
+    final Instant credential1Instant = Instant.ofEpochSecond(1400000001L);
+    final Instant credential2Instant = Instant.ofEpochSecond(1400000002L);
+    final Instant credential3Instant = Instant.ofEpochSecond(1400000003L);
 
-    ValueCredentialVersion valueCredential1 = new ValueCredentialVersion(CREDENTIAL_NAME)
-      .setEncryptor(encryptor)
-      .setUuid(uuid)
-      .setVersionCreatedAt(credential1Instant);
+    final ValueCredentialVersion valueCredential1 = new ValueCredentialVersion(CREDENTIAL_NAME);
+    valueCredential1.setEncryptor(encryptor);
+    valueCredential1.setUuid(uuid);
+    valueCredential1.setVersionCreatedAt(credential1Instant);
     valueCredential1.getCredential().setUuid(UUID.randomUUID());
-    ValueCredentialVersion valueCredential2 = new ValueCredentialVersion(CREDENTIAL_NAME)
-      .setEncryptor(encryptor)
-      .setUuid(uuid)
-      .setVersionCreatedAt(credential2Instant);
+
+    final ValueCredentialVersion valueCredential2 = new ValueCredentialVersion(CREDENTIAL_NAME);
+    valueCredential2.setEncryptor(encryptor);
+    valueCredential2.setUuid(uuid);
+    valueCredential2.setVersionCreatedAt(credential2Instant);
     valueCredential2.getCredential().setUuid(UUID.randomUUID());
-    ValueCredentialVersion valueCredential3 = new ValueCredentialVersion(CREDENTIAL_NAME)
-      .setEncryptor(encryptor)
-      .setUuid(uuid)
-      .setVersionCreatedAt(credential3Instant);
+
+    final ValueCredentialVersion valueCredential3 = new ValueCredentialVersion(CREDENTIAL_NAME);
+    valueCredential3.setEncryptor(encryptor);
+    valueCredential3.setUuid(uuid);
+    valueCredential3.setVersionCreatedAt(credential3Instant);
     valueCredential3.getCredential().setUuid(UUID.randomUUID());
 
     doReturn(CREDENTIAL_VALUE).when(encryptor).decrypt(any());
@@ -305,11 +315,11 @@ public class CredentialsControllerGetTest {
 
   @Test
   public void gettingACredential_byId_returnsTheCredential() throws Exception {
-    UUID uuid = UUID.randomUUID();
-    ValueCredentialVersion credential = new ValueCredentialVersion(CREDENTIAL_NAME)
-      .setEncryptor(encryptor)
-      .setUuid(uuid)
-      .setVersionCreatedAt(FROZEN_TIME);
+    final UUID uuid = UUID.randomUUID();
+    final ValueCredentialVersion credential = new ValueCredentialVersion(CREDENTIAL_NAME);
+    credential.setEncryptor(encryptor);
+    credential.setUuid(uuid);
+    credential.setVersionCreatedAt(FROZEN_TIME);
 
     doReturn(CREDENTIAL_VALUE).when(encryptor).decrypt(any());
     doReturn(credential).when(credentialVersionDataService).findByUuid(uuid.toString());
@@ -329,12 +339,11 @@ public class CredentialsControllerGetTest {
 
   @Test
   public void gettingACredential_thatIsEncryptedWithAnUnknownKey_throwsAnException() throws Exception {
-    UUID uuid = UUID.randomUUID();
-    ValueCredentialVersion valueCredential =
-      new ValueCredentialVersion(CREDENTIAL_NAME)
-        .setEncryptor(encryptor)
-        .setUuid(uuid)
-        .setVersionCreatedAt(FROZEN_TIME);
+    final UUID uuid = UUID.randomUUID();
+    final ValueCredentialVersion valueCredential = new ValueCredentialVersion(CREDENTIAL_NAME);
+    valueCredential.setEncryptor(encryptor);
+    valueCredential.setUuid(uuid);
+    valueCredential.setVersionCreatedAt(FROZEN_TIME);
     valueCredential.getCredential().setUuid(UUID.randomUUID());
 
     doThrow(new KeyNotFoundException("error.missing_encryption_key"))
@@ -347,7 +356,7 @@ public class CredentialsControllerGetTest {
         .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON);
 
-    String expectedError = "The credential could not be accessed with the provided encryption keys. You must update your deployment configuration to continue.";
+    final String expectedError = "The credential could not be accessed with the provided encryption keys. You must update your deployment configuration to continue.";
 
     mockMvc.perform(get)
       .andExpect(status().isInternalServerError())
@@ -370,17 +379,15 @@ public class CredentialsControllerGetTest {
   }
 
   private void setUpCredential() {
-    UUID uuid = UUID.randomUUID();
-    ValueCredentialVersion credential = new ValueCredentialVersion(CREDENTIAL_NAME)
-      .setEncryptor(encryptor)
-      .setUuid(uuid)
-      .setVersionCreatedAt(FROZEN_TIME);
+    final UUID uuid = UUID.randomUUID();
+    final ValueCredentialVersion credential = new ValueCredentialVersion(CREDENTIAL_NAME);
+    credential.setEncryptor(encryptor);
+    credential.setUuid(uuid);
+    credential.setVersionCreatedAt(FROZEN_TIME);
     credential.getCredential().setUuid(UUID.randomUUID());
 
     doReturn(CREDENTIAL_VALUE).when(encryptor).decrypt(any());
 
     doReturn(Collections.singletonList(credential)).when(credentialVersionDataService).findActiveByName(CREDENTIAL_NAME);
   }
-
-
 }

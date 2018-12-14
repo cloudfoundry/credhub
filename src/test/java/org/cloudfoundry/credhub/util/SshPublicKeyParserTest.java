@@ -19,7 +19,7 @@ public class SshPublicKeyParserTest {
 
   @Test
   public void returnNullIfPublicKeyIsNull() {
-    SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser();
+    final SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser();
     sshPublicKeyParser.setPublicKey(null);
     assertThat(sshPublicKeyParser.getFingerprint(), equalTo(null));
     assertThat(sshPublicKeyParser.getComment(), equalTo(null));
@@ -28,7 +28,7 @@ public class SshPublicKeyParserTest {
 
   @Test
   public void returnNullIfPublicKeyIsInvalid() {
-    SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser();
+    final SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser();
     sshPublicKeyParser.setPublicKey("foobar");
     assertThat(sshPublicKeyParser.getFingerprint(), equalTo(null));
     assertThat(sshPublicKeyParser.getComment(), equalTo(null));
@@ -37,7 +37,7 @@ public class SshPublicKeyParserTest {
 
   @Test
   public void shouldReturnNullWhenGivenAnInvalidFormat() {
-    SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser();
+    final SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser();
     sshPublicKeyParser.setPublicKey(
       "AAAAB3NzaC1yc2EAAAADAQABAAABAQDKGE4+UYSH1Op/vBLg+7pveOtiZqZQK4RVnQlRsttVelIZM"
         + "n8iafQQxv2xRqb2/np+9ErsTqby+9ninr8E4mxgWCs3Ew/K7Rnuzg9EEyfypB76cSzHZHHt"
@@ -52,7 +52,7 @@ public class SshPublicKeyParserTest {
 
   @Test
   public void shouldReturnNullWhenGivenAnotherInvalidFormat() {
-    SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser();
+    final SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser();
     sshPublicKeyParser.setPublicKey("          ");
     assertThat(sshPublicKeyParser.getFingerprint(), equalTo(null));
     assertThat(sshPublicKeyParser.getComment(), equalTo(null));
@@ -61,7 +61,7 @@ public class SshPublicKeyParserTest {
 
   @Test
   public void whenTheKeyIsMissingAValidPrefix_shouldReturnNull() {
-    SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser();
+    final SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser();
     sshPublicKeyParser.setPublicKey("invalid");
 
     assertThat(sshPublicKeyParser.getFingerprint(), equalTo(null));
@@ -71,7 +71,7 @@ public class SshPublicKeyParserTest {
 
   @Test
   public void whenTheKeyIsNotValidBase64_shouldReturnNull() {
-    SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser();
+    final SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser();
     sshPublicKeyParser.setPublicKey("ssh-rsa so=invalid");
 
     assertThat(sshPublicKeyParser.getFingerprint(), equalTo(null));
@@ -81,7 +81,7 @@ public class SshPublicKeyParserTest {
 
   @Test
   public void whenTheKeyIsBase64EncodedButInvalid_shouldReturnNull() {
-    SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser();
+    final SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser();
     sshPublicKeyParser.setPublicKey(
       "as qwe0qwe qwe qwe qweqwe das"
     );
@@ -129,7 +129,7 @@ public class SshPublicKeyParserTest {
 
   @Test
   public void getComment_shouldReturnAllPartsOfACommentWithSpacesInIt() {
-    String publicKeyWithSpacesInComment = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC5aExa"
+    final String publicKeyWithSpacesInComment = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC5aExa"
       + "dHpLn57Ms7bDkcjq/Zc8QGH1geBvx52SZCl7r+No5LaTQ8dYNlhYx60Edw3JbB/46dwPq/YkYjJS"
       + "HzMpP3vizyoqGi2MZBgx98t3CrgwGH0SZEa4lPnivhedyxnWNbnoQbQW4Hq+9sp3WVOnsJBBCV6m"
       + "G+guEonJnXEhSkl9Xey459787zs1yfSvXoE8pIZBQhFU10iz0sYcmpV3NuE2A5kepkCzeWzS0kUn"
@@ -170,7 +170,7 @@ public class SshPublicKeyParserTest {
 
   @Test
   public void getPublicKeyFingerprint_shouldComputeSHA256FingerprintFromThePublicKeyIfACommentIsPresent() {
-    String sshPublicKeyWithComment = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDKGE4+UYSH1O"
+    final String sshPublicKeyWithComment = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDKGE4+UYSH1O"
       + "p/vBLg+7pveOtiZqZQK4RVnQlRsttVelIZMn8iafQQxv2xRqb2/n+9ErsTqby+9ninr8E4mxgWCs3"
       + "Ew/K7Rnuzg9EEyfypB76cSzHZHHtk9j2qejwkZwTrBvRV4NA7irAqX5s6v+tKa/xX0PwB1UhLPJ3Z"
       + "1yb4oEaAmAv/TAGbrKX7QlHc0TLjjkIIA/fAiD7NFOBaQVaSWvL+SBfgBRbxQ4QXluPF9uOX6Xkcg"

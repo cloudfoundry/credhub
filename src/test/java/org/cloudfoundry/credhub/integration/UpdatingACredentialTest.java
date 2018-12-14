@@ -30,8 +30,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@ActiveProfiles(profiles = {"unit-test"}, resolver = DatabaseProfileResolver.class)
-@SpringBootTest(classes = {CredentialManagerApp.class})
+@ActiveProfiles(profiles = "unit-test", resolver = DatabaseProfileResolver.class)
+@SpringBootTest(classes = CredentialManagerApp.class)
 @Transactional
 public class UpdatingACredentialTest {
 
@@ -68,7 +68,7 @@ public class UpdatingACredentialTest {
       .andReturn();
 
     JSONObject jsonObject = new JSONObject(result.getResponse().getContentAsString());
-    String firstPassword = jsonObject.getString("value");
+    final String firstPassword = jsonObject.getString("value");
 
     requestBody = "{"
       + "\"type\":\"password\","
@@ -87,7 +87,7 @@ public class UpdatingACredentialTest {
       .andReturn();
 
     jsonObject = new JSONObject(result.getResponse().getContentAsString());
-    String lastPassword = jsonObject.getString("value");
+    final String lastPassword = jsonObject.getString("value");
 
     assertThat(firstPassword, is(not(equalTo(lastPassword))));
   }

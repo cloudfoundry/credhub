@@ -40,20 +40,22 @@ import static org.cloudfoundry.credhub.request.CertificateGenerationRequestParam
 
 public class CertificateGenerationParameters extends GenerationParameters {
 
-  private int keyLength;
-  private int duration;
-  private boolean selfSigned = false;
-  private String caName;
-  private boolean isCa = false;
+  private final int keyLength;
+  private final int duration;
+  private final boolean selfSigned;
+  private final String caName;
+  private final boolean isCa;
 
-  private X500Principal x500Principal;
-  private GeneralNames alternativeNames;
+  private final X500Principal x500Principal;
+  private final GeneralNames alternativeNames;
 
-  private ExtendedKeyUsage extendedKeyUsage;
+  private final ExtendedKeyUsage extendedKeyUsage;
 
-  private KeyUsage keyUsage;
+  private final KeyUsage keyUsage;
 
-  public CertificateGenerationParameters(CertificateGenerationRequestParameters generationParameters) {
+  public CertificateGenerationParameters(final CertificateGenerationRequestParameters generationParameters) {
+    super();
+
     this.keyUsage = buildKeyUsage(generationParameters);
     this.x500Principal = buildDn(generationParameters);
     this.alternativeNames = buildAlternativeNames(generationParameters);
@@ -65,7 +67,9 @@ public class CertificateGenerationParameters extends GenerationParameters {
     this.isCa = generationParameters.isCa();
   }
 
-  public CertificateGenerationParameters(CertificateReader certificateReader, String caName) {
+  public CertificateGenerationParameters(final CertificateReader certificateReader, final String caName) {
+    super();
+
     this.keyUsage = certificateReader.getKeyUsage();
     this.x500Principal = certificateReader.getSubjectName();
     this.alternativeNames = certificateReader.getAlternativeNames();
@@ -78,7 +82,10 @@ public class CertificateGenerationParameters extends GenerationParameters {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public void validate() { }
+
+  @Override
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
@@ -87,7 +94,7 @@ public class CertificateGenerationParameters extends GenerationParameters {
       return false;
     }
 
-    CertificateGenerationParameters that = (CertificateGenerationParameters) o;
+    final CertificateGenerationParameters that = (CertificateGenerationParameters) o;
     return keyLength == that.keyLength &&
       duration == that.duration &&
       selfSigned == that.selfSigned &&
@@ -140,12 +147,12 @@ public class CertificateGenerationParameters extends GenerationParameters {
     return keyUsage;
   }
 
-  private KeyUsage buildKeyUsage(CertificateGenerationRequestParameters keyUsageList) {
+  private KeyUsage buildKeyUsage(final CertificateGenerationRequestParameters keyUsageList) {
     if (keyUsageList.getKeyUsage() == null) {
       return null;
     }
     int bitmask = 0;
-    for (String keyUsage : keyUsageList.getKeyUsage()) {
+    for (final String keyUsage : keyUsageList.getKeyUsage()) {
       switch (keyUsage) {
         case DIGITAL_SIGNATURE:
           bitmask |= KeyUsage.digitalSignature;
@@ -181,12 +188,12 @@ public class CertificateGenerationParameters extends GenerationParameters {
     return new KeyUsage(bitmask);
   }
 
-  private X500Principal buildDn(CertificateGenerationRequestParameters params) {
+  private X500Principal buildDn(final CertificateGenerationRequestParameters params) {
     if (this.x500Principal != null) {
       return this.x500Principal;
     }
 
-    List<String> rdns = newArrayList();
+    final List<String> rdns = newArrayList();
 
     if (!StringUtils.isEmpty(params.getLocality())) {
       rdns.add("L=" + params.getLocality());
@@ -209,14 +216,14 @@ public class CertificateGenerationParameters extends GenerationParameters {
     return new X500Principal(join(rdns, ","));
   }
 
-  private GeneralNames buildAlternativeNames(CertificateGenerationRequestParameters params) {
-    String[] alternativeNamesList = params.getAlternativeNames();
+  private GeneralNames buildAlternativeNames(final CertificateGenerationRequestParameters params) {
+    final String[] alternativeNamesList = params.getAlternativeNames();
     if (alternativeNamesList == null) {
       return null;
     }
-    GeneralNamesBuilder builder = new GeneralNamesBuilder();
+    final GeneralNamesBuilder builder = new GeneralNamesBuilder();
 
-    for (String name : alternativeNamesList) {
+    for (final String name : alternativeNamesList) {
       if (InetAddresses.isInetAddress(name)) {
         builder.addName(new GeneralName(GeneralName.iPAddress, name));
       } else {
@@ -226,12 +233,12 @@ public class CertificateGenerationParameters extends GenerationParameters {
     return builder.build();
   }
 
-  private ExtendedKeyUsage buildExtendedKeyUsage(CertificateGenerationRequestParameters params) {
-    String[] extendedKeyUsageList = params.getExtendedKeyUsage();
+  private ExtendedKeyUsage buildExtendedKeyUsage(final CertificateGenerationRequestParameters params) {
+    final String[] extendedKeyUsageList = params.getExtendedKeyUsage();
     if (extendedKeyUsageList == null) {
       return null;
     }
-    KeyPurposeId[] keyPurposeIds = new KeyPurposeId[extendedKeyUsageList.length];
+    final KeyPurposeId[] keyPurposeIds = new KeyPurposeId[extendedKeyUsageList.length];
     for (int i = 0; i < extendedKeyUsageList.length; i++) {
       switch (extendedKeyUsageList[i]) {
         case SERVER_AUTH:

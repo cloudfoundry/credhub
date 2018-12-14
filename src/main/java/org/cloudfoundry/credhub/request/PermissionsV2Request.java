@@ -17,10 +17,12 @@ public class PermissionsV2Request {
   private List<PermissionOperation> operations;
 
   public PermissionsV2Request() {
+    super();
     /* this needs to be there for jackson to be happy */
   }
 
-  public PermissionsV2Request(String path, String actor, List<PermissionOperation> operations) {
+  public PermissionsV2Request(final String path, final String actor, final List<PermissionOperation> operations) {
+    super();
     this.path = path;
     this.actor = actor;
     this.operations = operations;
@@ -30,7 +32,7 @@ public class PermissionsV2Request {
     return path;
   }
 
-  public void setPath(String path) {
+  public void setPath(final String path) {
     this.path = StringUtils.prependIfMissing(path, "/");
   }
 
@@ -38,7 +40,7 @@ public class PermissionsV2Request {
     return actor;
   }
 
-  public void setActor(String actor) {
+  public void setActor(final String actor) {
     this.actor = actor;
   }
 
@@ -46,7 +48,7 @@ public class PermissionsV2Request {
     return operations;
   }
 
-  public void setOperations(List<PermissionOperation> operations) {
+  public void setOperations(final List<PermissionOperation> operations) {
     this.operations = operations;
   }
 }

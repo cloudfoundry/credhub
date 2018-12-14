@@ -19,19 +19,20 @@ import org.cloudfoundry.credhub.handler.InterpolationHandler;
 @RequestMapping(path = InterpolationController.API_V1, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class InterpolationController {
 
-  static final String API_V1 = "/api/v1";
+  public static final String API_V1 = "/api/v1";
   private final InterpolationHandler jsonInterpolationHandler;
-  private CEFAuditRecord auditRecord;
+  private final CEFAuditRecord auditRecord;
 
   @Autowired
-  InterpolationController(InterpolationHandler jsonInterpolationHandler, CEFAuditRecord auditRecord) {
+  public InterpolationController(final InterpolationHandler jsonInterpolationHandler, final CEFAuditRecord auditRecord) {
+    super();
     this.jsonInterpolationHandler = jsonInterpolationHandler;
     this.auditRecord = auditRecord;
   }
 
   @RequestMapping(method = RequestMethod.POST, path = "/interpolate")
   @ResponseStatus(HttpStatus.OK)
-  public Map<String, Object> interpolate(@RequestBody Map<String, Object> requestBody) {
+  public Map<String, Object> interpolate(@RequestBody final Map<String, Object> requestBody) {
     auditRecord.setRequestDetails(new InterpolateCredentials());
     return jsonInterpolationHandler.interpolateCredHubReferences(requestBody);
   }

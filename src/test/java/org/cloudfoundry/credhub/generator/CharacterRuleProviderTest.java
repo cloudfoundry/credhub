@@ -24,8 +24,8 @@ public class CharacterRuleProviderTest {
 
   @Test
   public void getCharacterRules_createdCharacterRulesFromDefaultParameters() {
-    StringGenerationParameters generationParameters = new StringGenerationParameters();
-    List<CharacterRule> characterRules = CharacterRuleProvider
+    final StringGenerationParameters generationParameters = new StringGenerationParameters();
+    final List<CharacterRule> characterRules = CharacterRuleProvider
       .getCharacterRules(generationParameters);
 
     assertThat(characterRules, containsInAnyOrder(
@@ -33,15 +33,15 @@ public class CharacterRuleProviderTest {
       usesCharacters(EnglishCharacterData.LowerCase),
       usesCharacters(EnglishCharacterData.UpperCase)
     ));
-    assertThat(characterRules, not(hasItem(usesCharacters(CredHubCharacterData.Hex))));
+    assertThat(characterRules, not(hasItem(usesCharacters(CredHubCharacterData.HEX))));
   }
 
   @Test
   public void getCharacterRules_canCreateCharacterRulesWithoutUppercase() {
-    StringGenerationParameters generationParameters = new StringGenerationParameters();
+    final StringGenerationParameters generationParameters = new StringGenerationParameters();
     generationParameters.setExcludeUpper(true);
 
-    List<CharacterRule> characterRules = CharacterRuleProvider
+    final List<CharacterRule> characterRules = CharacterRuleProvider
       .getCharacterRules(generationParameters);
     assertThat(characterRules, iterableWithSize(2));
     assertThat(characterRules, containsInAnyOrder(
@@ -50,17 +50,17 @@ public class CharacterRuleProviderTest {
     ));
     assertThat(characterRules, not(containsInAnyOrder(
       usesCharacters(EnglishCharacterData.UpperCase),
-      usesCharacters(CredHubCharacterData.Special),
-      usesCharacters(CredHubCharacterData.Hex)
+      usesCharacters(CredHubCharacterData.SPECIAL),
+      usesCharacters(CredHubCharacterData.HEX)
     )));
   }
 
   @Test
   public void getCharacterRules_canCreateCharacterRulesWithoutLowercase() {
-    StringGenerationParameters generationParameters = new StringGenerationParameters();
+    final StringGenerationParameters generationParameters = new StringGenerationParameters();
     generationParameters.setExcludeLower(true);
 
-    List<CharacterRule> characterRules = CharacterRuleProvider
+    final List<CharacterRule> characterRules = CharacterRuleProvider
       .getCharacterRules(generationParameters);
     assertThat(characterRules, iterableWithSize(2));
     assertThat(characterRules, containsInAnyOrder(
@@ -69,18 +69,18 @@ public class CharacterRuleProviderTest {
     ));
     assertThat(characterRules, not(containsInAnyOrder(
       usesCharacters(EnglishCharacterData.LowerCase),
-      usesCharacters(CredHubCharacterData.Special),
-      usesCharacters(CredHubCharacterData.Hex)
+      usesCharacters(CredHubCharacterData.SPECIAL),
+      usesCharacters(CredHubCharacterData.HEX)
     )));
   }
 
 
   @Test
   public void getCharacterRules_canCreateCharacterRulesWithoutSpecialCharacters() {
-    StringGenerationParameters generationParameters = new StringGenerationParameters();
+    final StringGenerationParameters generationParameters = new StringGenerationParameters();
     generationParameters.setIncludeSpecial(false);
 
-    List<CharacterRule> characterRules = CharacterRuleProvider
+    final List<CharacterRule> characterRules = CharacterRuleProvider
       .getCharacterRules(generationParameters);
     assertThat(characterRules, iterableWithSize(3));
     assertThat(characterRules, containsInAnyOrder(
@@ -88,32 +88,32 @@ public class CharacterRuleProviderTest {
       usesCharacters(EnglishCharacterData.LowerCase),
       usesCharacters(EnglishCharacterData.Digit)
     ));
-    assertThat(characterRules, not(hasItem(usesCharacters(CredHubCharacterData.Special))));
-    assertThat(characterRules, not(hasItem(usesCharacters(CredHubCharacterData.Hex))));
+    assertThat(characterRules, not(hasItem(usesCharacters(CredHubCharacterData.SPECIAL))));
+    assertThat(characterRules, not(hasItem(usesCharacters(CredHubCharacterData.HEX))));
   }
 
   @Test
   public void getCharacterRules_canCreateCharacterRulesWithAllIncluded() {
-    StringGenerationParameters generationParameters = new StringGenerationParameters();
+    final StringGenerationParameters generationParameters = new StringGenerationParameters();
     generationParameters.setIncludeSpecial(true);
 
-    List<CharacterRule> characterRules = CharacterRuleProvider
+    final List<CharacterRule> characterRules = CharacterRuleProvider
       .getCharacterRules(generationParameters);
     assertThat(characterRules, iterableWithSize(4));
     assertThat(characterRules, containsInAnyOrder(
       usesCharacters(EnglishCharacterData.UpperCase),
       usesCharacters(EnglishCharacterData.LowerCase),
       usesCharacters(EnglishCharacterData.Digit),
-      usesCharacters(CredHubCharacterData.Special)
+      usesCharacters(CredHubCharacterData.SPECIAL)
     ));
   }
 
   @Test
   public void getCharacterRules_canCreateCharacterRulesWithoutNumbers() {
-    StringGenerationParameters generationParameters = new StringGenerationParameters();
+    final StringGenerationParameters generationParameters = new StringGenerationParameters();
     generationParameters.setExcludeNumber(true);
 
-    List<CharacterRule> characterRules = CharacterRuleProvider
+    final List<CharacterRule> characterRules = CharacterRuleProvider
       .getCharacterRules(generationParameters);
     assertThat(characterRules, iterableWithSize(2));
     assertThat(characterRules, containsInAnyOrder(
@@ -122,24 +122,24 @@ public class CharacterRuleProviderTest {
     ));
     assertThat(characterRules, not(containsInAnyOrder(
       usesCharacters(EnglishCharacterData.Digit),
-      usesCharacters(CredHubCharacterData.Special)
+      usesCharacters(CredHubCharacterData.SPECIAL)
     )));
   }
 
   @Test
   public void getCharacterRules_returnsAnEmptyListWhenAllAreExcluded() {
-    StringGenerationParameters generationParameters = new StringGenerationParameters();
+    final StringGenerationParameters generationParameters = new StringGenerationParameters();
     generationParameters.setIncludeSpecial(false);
     generationParameters.setExcludeNumber(true);
     generationParameters.setExcludeUpper(true);
     generationParameters.setExcludeLower(true);
 
-    List<CharacterRule> characterRules = CharacterRuleProvider
+    final List<CharacterRule> characterRules = CharacterRuleProvider
       .getCharacterRules(generationParameters);
     assertThat(characterRules, iterableWithSize(0));
   }
 
-  private Matcher<CharacterRule> usesCharacters(CharacterData characterData) {
+  private Matcher<CharacterRule> usesCharacters(final CharacterData characterData) {
     return new BaseMatcher<CharacterRule>() {
 
       @Override

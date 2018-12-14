@@ -17,10 +17,12 @@ public class PermissionsRequest {
   private List<PermissionEntry> permissions;
 
   public PermissionsRequest() {
+    super();
     /* this needs to be there for jackson to be happy */
   }
 
-  public PermissionsRequest(String credentialName, List<PermissionEntry> permissions) {
+  public PermissionsRequest(final String credentialName, final List<PermissionEntry> permissions) {
+    super();
     this.credentialName = credentialName;
     this.permissions = permissions;
   }
@@ -29,7 +31,7 @@ public class PermissionsRequest {
     return credentialName;
   }
 
-  public void setCredentialName(String credentialName) {
+  public void setCredentialName(final String credentialName) {
     this.credentialName = StringUtils.prependIfMissing(credentialName, "/");
   }
 
@@ -37,7 +39,7 @@ public class PermissionsRequest {
     return permissions;
   }
 
-  public void setPermissions(List<PermissionEntry> permissions) {
+  public void setPermissions(final List<PermissionEntry> permissions) {
     this.permissions = permissions;
   }
 }

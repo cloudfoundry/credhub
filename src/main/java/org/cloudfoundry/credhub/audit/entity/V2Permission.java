@@ -11,10 +11,12 @@ public class V2Permission implements RequestDetails {
   private List<PermissionOperation> operations;
   private OperationDeviceAction action;
   public V2Permission() {
+    super();
 
   }
-  public V2Permission(String path, String actor, List<PermissionOperation> operations,
-                      OperationDeviceAction action) {
+  public V2Permission(final String path, final String actor, final List<PermissionOperation> operations,
+                      final OperationDeviceAction action) {
+    super();
     this.path = path;
     this.actor = actor;
     this.operations = operations;
@@ -25,7 +27,7 @@ public class V2Permission implements RequestDetails {
     return path;
   }
 
-  public void setPath(String path) {
+  public void setPath(final String path) {
     this.path = path;
   }
 
@@ -33,7 +35,7 @@ public class V2Permission implements RequestDetails {
     return operations;
   }
 
-  public void setOperations(List<PermissionOperation> operations) {
+  public void setOperations(final List<PermissionOperation> operations) {
     this.operations = operations;
   }
 
@@ -41,7 +43,7 @@ public class V2Permission implements RequestDetails {
     return actor;
   }
 
-  public void setActor(String actor) {
+  public void setActor(final String actor) {
     this.actor = actor;
   }
 

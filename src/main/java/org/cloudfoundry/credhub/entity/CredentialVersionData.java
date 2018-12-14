@@ -62,9 +62,11 @@ public abstract class CredentialVersionData<Z extends CredentialVersionData> {
   //this is mapped with updatable and insertable false since it's managed by the DiscriminatorColumn annotation
   //surfacing property here lets us use it in JPA queries
   @Column(name = "type", insertable = false, updatable = false)
+  @SuppressWarnings("unused")
   private String type;
 
-  public CredentialVersionData(Credential name) {
+  public CredentialVersionData(final Credential name) {
+    super();
     if (this.credential != null) {
       this.credential.setName(name.getName());
     } else {
@@ -72,7 +74,7 @@ public abstract class CredentialVersionData<Z extends CredentialVersionData> {
     }
   }
 
-  public CredentialVersionData(String name) {
+  public CredentialVersionData(final String name) {
     this(new Credential(name));
   }
 
@@ -84,16 +86,15 @@ public abstract class CredentialVersionData<Z extends CredentialVersionData> {
     return uuid;
   }
 
-  public Z setUuid(UUID uuid) {
+  public void setUuid(final UUID uuid) {
     this.uuid = uuid;
-    return (Z) this;
   }
 
   public Credential getCredential() {
     return credential;
   }
 
-  public void setCredential(Credential credential) {
+  public void setCredential(final Credential credential) {
     this.credential = credential;
   }
 
@@ -101,9 +102,8 @@ public abstract class CredentialVersionData<Z extends CredentialVersionData> {
     return encryptedCredentialValue;
   }
 
-  public Z setEncryptedValueData(EncryptedValue encryptedValue) {
+  public void setEncryptedValueData(final EncryptedValue encryptedValue) {
     encryptedCredentialValue = encryptedValue;
-    return (Z) this;
   }
 
   public byte[] getNonce() {
@@ -120,8 +120,7 @@ public abstract class CredentialVersionData<Z extends CredentialVersionData> {
     return versionCreatedAt;
   }
 
-  public Z setVersionCreatedAt(Instant versionCreatedAt) {
+  public void setVersionCreatedAt(final Instant versionCreatedAt) {
     this.versionCreatedAt = versionCreatedAt;
-    return (Z) this;
   }
 }

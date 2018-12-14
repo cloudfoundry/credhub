@@ -7,7 +7,8 @@ public class ResponseError {
 
   private final String error;
 
-  public ResponseError(String error) {
+  public ResponseError(final String error) {
+    super();
     this.error = error;
   }
 

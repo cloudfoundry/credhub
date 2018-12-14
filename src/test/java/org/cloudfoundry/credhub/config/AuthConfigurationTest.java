@@ -40,7 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 @Transactional
 @SuppressFBWarnings(
@@ -143,7 +143,7 @@ public class AuthConfigurationTest {
     throws Exception {
     setupDataEndpointMocks();
 
-    CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT);
+    final CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT);
 
     final MockHttpServletRequestBuilder post = post(dataApiPath)
       .with(SecurityMockMvcRequestPostProcessors
@@ -165,7 +165,7 @@ public class AuthConfigurationTest {
     throws Exception {
     setupDataEndpointMocks();
 
-    CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.TEST_CERT_WITH_INVALID_UUID_IN_ORGANIZATION_UNIT);
+    final CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.TEST_CERT_WITH_INVALID_UUID_IN_ORGANIZATION_UNIT);
 
     final MockHttpServletRequestBuilder post = post(dataApiPath)
       .with(SecurityMockMvcRequestPostProcessors.x509(
@@ -187,7 +187,7 @@ public class AuthConfigurationTest {
     throws Exception {
     setupDataEndpointMocks();
 
-    CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.TEST_CERT_WITH_INVALID_ORGANIZATION_UNIT_PREFIX);
+    final CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.TEST_CERT_WITH_INVALID_ORGANIZATION_UNIT_PREFIX);
 
     final MockHttpServletRequestBuilder post = post(dataApiPath)
       .with(SecurityMockMvcRequestPostProcessors.x509(
@@ -208,7 +208,7 @@ public class AuthConfigurationTest {
   public void dataEndpoint_withMutualTLS_deniesClientCertsWithoutOrgUnit() throws Exception {
     setupDataEndpointMocks();
 
-    CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.TEST_CERT_WITHOUT_ORGANIZATION_UNIT);
+    final CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.TEST_CERT_WITHOUT_ORGANIZATION_UNIT);
 
     final MockHttpServletRequestBuilder post = post(dataApiPath)
       .with(SecurityMockMvcRequestPostProcessors
@@ -231,7 +231,7 @@ public class AuthConfigurationTest {
     throws Exception {
     setupDataEndpointMocks();
 
-    CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.SELF_SIGNED_CERT_WITH_NO_CLIENT_AUTH_EXT);
+    final CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.SELF_SIGNED_CERT_WITH_NO_CLIENT_AUTH_EXT);
 
     final MockHttpServletRequestBuilder post = post(dataApiPath)
       .with(SecurityMockMvcRequestPostProcessors
@@ -274,7 +274,7 @@ public class AuthConfigurationTest {
 
   private void setupDataEndpointMocks() {
     when(credentialVersionDataService.save(any(CredentialVersion.class))).thenAnswer(invocation -> {
-      PasswordCredentialVersion passwordCredential = invocation.getArgument(0);
+      final PasswordCredentialVersion passwordCredential = invocation.getArgument(0);
       passwordCredential.setUuid(UUID.randomUUID());
       passwordCredential.setVersionCreatedAt(Instant.now());
       return passwordCredential;

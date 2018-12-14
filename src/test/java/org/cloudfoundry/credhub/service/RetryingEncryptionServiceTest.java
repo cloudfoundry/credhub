@@ -45,7 +45,6 @@ public class RetryingEncryptionServiceTest {
   private EncryptionKey firstActiveKey;
   private EncryptionKey secondActiveKey;
 
-
   @Before
   public void beforeEach() {
     keySet = mock(EncryptionKeySet.class);
@@ -64,7 +63,6 @@ public class RetryingEncryptionServiceTest {
     when(readWriteLock.readLock()).thenReturn(readLock);
     when(readWriteLock.writeLock()).thenReturn(writeLock);
     subject.readWriteLock = readWriteLock;
-
   }
 
   @Test
@@ -73,11 +71,11 @@ public class RetryingEncryptionServiceTest {
     when(keySet.getActive())
       .thenReturn(firstActiveKey);
 
-    EncryptedValue expectedEncryption = mock(EncryptedValue.class);
+    final EncryptedValue expectedEncryption = mock(EncryptedValue.class);
     when(firstActiveKey.encrypt("fake-plaintext"))
       .thenReturn(expectedEncryption);
 
-    EncryptedValue encryptedValue = subject.encrypt("fake-plaintext");
+    final EncryptedValue encryptedValue = subject.encrypt("fake-plaintext");
 
     assertThat(encryptedValue, equalTo(expectedEncryption));
 
@@ -100,7 +98,7 @@ public class RetryingEncryptionServiceTest {
     try {
       subject.encrypt("a value");
       fail("Expected exception");
-    } catch (ProviderException e) {
+    } catch (final ProviderException e) {
       // expected
     }
 
@@ -122,7 +120,7 @@ public class RetryingEncryptionServiceTest {
 
     try {
       subject.encrypt("a value");
-    } catch (ProviderException e) {
+    } catch (final ProviderException e) {
       // expected
     }
 
@@ -146,7 +144,7 @@ public class RetryingEncryptionServiceTest {
     try {
       subject.encrypt("a value");
       fail("Expected exception");
-    } catch (ProviderException e) {
+    } catch (final ProviderException e) {
       // expected
     }
     verify(keySet).reload();
@@ -155,7 +153,7 @@ public class RetryingEncryptionServiceTest {
   @Test
   public void encryption_whenTheOperationSucceedsOnlyAfterReconnection_shouldReturnTheEncryptedString()
     throws Exception {
-    EncryptedValue expectedEncryption = mock(EncryptedValue.class);
+    final EncryptedValue expectedEncryption = mock(EncryptedValue.class);
 
     when(keySet.getActive())
       .thenReturn(firstActiveKey)
@@ -199,7 +197,7 @@ public class RetryingEncryptionServiceTest {
       public void run() {
         try {
           subject.encrypt("a value 1");
-        } catch (Exception e) {
+        } catch (final Exception e) {
           //do nothing
         }
       }
@@ -209,7 +207,7 @@ public class RetryingEncryptionServiceTest {
       public void run() {
         try {
           subject.encrypt("a value 2");
-        } catch (Exception e) {
+        } catch (final Exception e) {
           //do nothing
         }
       }
@@ -264,7 +262,7 @@ public class RetryingEncryptionServiceTest {
     try {
       subject.decrypt(new EncryptedValue(activeKeyUuid, "an encrypted value".getBytes(StringUtil.UTF_8), "a nonce".getBytes(StringUtil.UTF_8)));
       fail("Expected exception");
-    } catch (ProviderException e) {
+    } catch (final ProviderException e) {
       // expected
     }
 
@@ -291,7 +289,7 @@ public class RetryingEncryptionServiceTest {
 
     try {
       subject.decrypt(new EncryptedValue(activeKeyUuid, "an encrypted value".getBytes(StringUtil.UTF_8), "a nonce".getBytes(StringUtil.UTF_8)));
-    } catch (ProviderException e) {
+    } catch (final ProviderException e) {
       // expected
     }
 
@@ -315,7 +313,7 @@ public class RetryingEncryptionServiceTest {
 
     try {
       subject.decrypt(new EncryptedValue(activeKeyUuid, "an encrypted value".getBytes(StringUtil.UTF_8), "a nonce".getBytes(StringUtil.UTF_8)));
-    } catch (IllegalBlockSizeException | RuntimeException e) {
+    } catch (final IllegalBlockSizeException | RuntimeException e) {
       // expected
     }
 
@@ -357,7 +355,7 @@ public class RetryingEncryptionServiceTest {
 
   @Test(expected = KeyNotFoundException.class)
   public void decrypt_whenTheEncryptionKeyCannotBeFound_throwsAnException() throws Exception {
-    UUID fakeUuid = UUID.randomUUID();
+    final UUID fakeUuid = UUID.randomUUID();
     reset(encryptionService);
     when(keySet.get(fakeUuid)).thenReturn(null);
     subject.decrypt(new EncryptedValue(fakeUuid, "something we cant read".getBytes(StringUtil.UTF_8), "nonce".getBytes(StringUtil.UTF_8)));
@@ -389,7 +387,7 @@ public class RetryingEncryptionServiceTest {
       public void run() {
         try {
           subject.decrypt(new EncryptedValue(activeKeyUuid, "a value 1".getBytes(StringUtil.UTF_8), "nonce".getBytes(StringUtil.UTF_8)));
-        } catch (Exception e) {
+        } catch (final Exception e) {
           //do nothing
         }
       }
@@ -403,7 +401,7 @@ public class RetryingEncryptionServiceTest {
       public void run() {
         try {
           subject.decrypt(new EncryptedValue(activeKeyUuid, "a value 2".getBytes(StringUtil.UTF_8), "nonce".getBytes(StringUtil.UTF_8)));
-        } catch (Exception e) {
+        } catch (final Exception e) {
           //do nothing
         }
       }
@@ -437,7 +435,7 @@ public class RetryingEncryptionServiceTest {
     private final Thread secondThread;
     private final Object lock;
 
-    RacingRetryingEncryptionServiceForTest(Thread firstThread, Thread secondThread, Object lock) {
+    RacingRetryingEncryptionServiceForTest(final Thread firstThread, final Thread secondThread, final Object lock) {
       super(RetryingEncryptionServiceTest.this.keySet);
       this.firstThread = firstThread;
       this.secondThread = secondThread;
@@ -445,11 +443,15 @@ public class RetryingEncryptionServiceTest {
     }
 
     @SuppressFBWarnings(
-      value = {"UW_UNCOND_WAIT", "WA_NOT_IN_LOOP", "REC_CATCH_EXCEPTION"},
+      value = {
+        "UW_UNCOND_WAIT",
+        "WA_NOT_IN_LOOP",
+        "REC_CATCH_EXCEPTION",
+      },
       justification = "We want to force the first thread to wait, and we don't care about exceptions."
     )
     @Override
-    void setNeedsReconnectFlag() {
+    public void setNeedsReconnectFlag() {
       try {
         if (Thread.currentThread().equals(firstThread)) {
           secondThread.start();
@@ -462,7 +464,7 @@ public class RetryingEncryptionServiceTest {
             lock.notify(); // unpause the first thread
           }
         }
-      } catch (Exception e) {
+      } catch (final Exception e) {
         //do nothing
       }
       /* give thread one a chance to set the needsRetry flag

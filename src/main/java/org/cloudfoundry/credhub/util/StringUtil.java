@@ -9,12 +9,14 @@ import com.google.common.io.ByteSource;
 
 final public class StringUtil {
 
-  private StringUtil() { }
-
   public static final Charset UTF_8 = Charset.forName("UTF-8");
 
-  public static String fromInputStream(InputStream requestBody) throws IOException {
-    ByteSource requestByteSource = new ByteSource() {
+  private StringUtil() {
+    super();
+  }
+
+  public static String fromInputStream(final InputStream requestBody) throws IOException {
+    final ByteSource requestByteSource = new ByteSource() {
       @Override
       public InputStream openStream() throws IOException {
         return requestBody;

@@ -17,27 +17,28 @@ import org.cloudfoundry.credhub.service.PermissionedCredentialService;
 @Service
 public class InterpolationHandler {
 
-  private PermissionedCredentialService credentialService;
-  private CEFAuditRecord auditRecord;
+  private final PermissionedCredentialService credentialService;
+  private final CEFAuditRecord auditRecord;
 
   @Autowired
-  public InterpolationHandler(PermissionedCredentialService credentialService, CEFAuditRecord auditRecord) {
+  public InterpolationHandler(final PermissionedCredentialService credentialService, final CEFAuditRecord auditRecord) {
+    super();
     this.credentialService = credentialService;
     this.auditRecord = auditRecord;
   }
 
-  public Map<String, Object> interpolateCredHubReferences(Map<String, Object> servicesMap) {
-    for (Object serviceProperties : servicesMap.values()) {
-      if (serviceProperties == null || !(serviceProperties instanceof ArrayList)) {
+  public Map<String, Object> interpolateCredHubReferences(final Map<String, Object> servicesMap) {
+    for (final Object serviceProperties : servicesMap.values()) {
+      if (!(serviceProperties instanceof ArrayList)) {
         continue;
       }
-      for (Object properties : (ArrayList) serviceProperties) {
+      for (final Object properties : (ArrayList) serviceProperties) {
         if (!(properties instanceof Map)) {
           continue;
         }
-        Map<String, Object> propertiesMap = (Map) properties;
-        Object credentials = propertiesMap.get("credentials");
-        if (credentials == null || !(credentials instanceof Map)) {
+        final Map<String, Object> propertiesMap = (Map) properties;
+        final Object credentials = propertiesMap.get("credentials");
+        if (!(credentials instanceof Map)) {
           continue;
         }
         // Allow either snake_case or kebab-case
@@ -46,19 +47,19 @@ public class InterpolationHandler {
           credhubRef = ((Map) credentials).get("credhub-ref");
         }
 
-        if (credhubRef == null || !(credhubRef instanceof String)) {
+        if (!(credhubRef instanceof String)) {
           continue;
         }
-        String credentialName = getCredentialNameFromRef((String) credhubRef);
+        final String credentialName = getCredentialNameFromRef((String) credhubRef);
 
-        List<CredentialVersion> credentialVersions = credentialService
+        final List<CredentialVersion> credentialVersions = credentialService
           .findNByName(credentialName, 1);
 
         if (credentialVersions.isEmpty()) {
           throw new EntryNotFoundException("error.credential.invalid_access");
         }
 
-        CredentialVersion credentialVersion = credentialVersions.get(0);
+        final CredentialVersion credentialVersion = credentialVersions.get(0);
 
         auditRecord.addResource(credentialVersion.getCredential());
         auditRecord.addVersion(credentialVersion);
@@ -74,7 +75,7 @@ public class InterpolationHandler {
     return servicesMap;
   }
 
-  private String getCredentialNameFromRef(String credhubRef) {
+  private String getCredentialNameFromRef(final String credhubRef) {
     return credhubRef.replaceFirst("^\\(\\(", "").replaceFirst("\\)\\)$", "");
   }
 }

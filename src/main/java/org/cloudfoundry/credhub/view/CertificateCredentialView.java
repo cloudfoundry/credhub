@@ -9,9 +9,12 @@ public class CertificateCredentialView {
   private String name;
   private UUID uuid;
 
-  public CertificateCredentialView() { /* Jackson */ }
+  public CertificateCredentialView() {
+    super(); /* Jackson */
+  }
 
-  public CertificateCredentialView(String name, UUID uuid) {
+  public CertificateCredentialView(final String name, final UUID uuid) {
+    super();
     this.name = name;
     this.uuid = uuid;
   }

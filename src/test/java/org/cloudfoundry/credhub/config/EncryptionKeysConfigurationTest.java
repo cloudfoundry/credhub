@@ -17,7 +17,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 @RunWith(SpringRunner.class)
-@ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 @Transactional
 public class EncryptionKeysConfigurationTest {
@@ -27,11 +27,11 @@ public class EncryptionKeysConfigurationTest {
 
   @Test
   public void fillsTheListOfKeysFromApplicationYml() {
-    List<EncryptionKeyMetadata> keys = subject.getProviders().get(0).getKeys();
+    final List<EncryptionKeyMetadata> keys = subject.getProviders().get(0).getKeys();
     assertThat(keys.size(), equalTo(2));
 
-    EncryptionKeyMetadata firstKey = keys.get(0);
-    EncryptionKeyMetadata secondKey = keys.get(1);
+    final EncryptionKeyMetadata firstKey = keys.get(0);
+    final EncryptionKeyMetadata secondKey = keys.get(1);
 
     assertThat(firstKey.getEncryptionPassword(), equalTo("opensesame"));
     assertThat(firstKey.isActive(), equalTo(true));
@@ -42,7 +42,7 @@ public class EncryptionKeysConfigurationTest {
 
   @Test
   public void fillsTheConfigurationObject() {
-    EncryptionConfiguration config = subject.getProviders().get(0).getConfiguration();
+    final EncryptionConfiguration config = subject.getProviders().get(0).getConfiguration();
     assertThat(config.getHost(), equalTo("localhost"));
     assertThat(config.getPort(), equalTo(50051));
   }

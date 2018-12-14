@@ -17,6 +17,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 @Entity
 @Table(name = "permission")
+@SuppressWarnings("PMD.TooManyMethods")
 public class PermissionData {
 
   private static final boolean DEFAULT_DENY = false;
@@ -53,13 +54,14 @@ public class PermissionData {
     this(null, null, new ArrayList<>());
   }
 
-  public PermissionData(String path, String actor,
-                        List<PermissionOperation> operations) {
+  public PermissionData(final String path, final String actor,
+                        final List<PermissionOperation> operations) {
     this(path, actor);
     enableOperations(operations);
   }
 
-  public PermissionData(String path, String actor) {
+  public PermissionData(final String path, final String actor) {
+    super();
     this.path = path;
     this.actor = actor;
   }
@@ -68,7 +70,7 @@ public class PermissionData {
     return uuid;
   }
 
-  public void setUuid(UUID uuid) {
+  public void setUuid(final UUID uuid) {
     this.uuid = uuid;
   }
 
@@ -76,7 +78,7 @@ public class PermissionData {
     return actor;
   }
 
-  public void setActor(String actor) {
+  public void setActor(final String actor) {
     this.actor = actor;
   }
 
@@ -100,7 +102,7 @@ public class PermissionData {
     return readAclPermission;
   }
 
-  public boolean hasPermission(PermissionOperation requiredPermission) {
+  public boolean hasPermission(final PermissionOperation requiredPermission) {
     switch (requiredPermission) {
       case READ:
         return hasReadPermission();
@@ -117,14 +119,14 @@ public class PermissionData {
     }
   }
 
-  public void enableOperations(Iterable<PermissionOperation> operations) {
-    for (PermissionOperation operation : operations) {
+  public void enableOperations(final Iterable<PermissionOperation> operations) {
+    for (final PermissionOperation operation : operations) {
       enableOperation(operation);
     }
   }
 
   public List<PermissionOperation> generateAccessControlOperations() {
-    List<PermissionOperation> operations = new ArrayList<>();
+    final List<PermissionOperation> operations = new ArrayList<>();
 
     if (hasReadPermission()) {
       operations.add(PermissionOperation.READ);
@@ -144,27 +146,27 @@ public class PermissionData {
     return operations;
   }
 
-  private void setReadPermission(boolean readPermission) {
+  private void setReadPermission(final boolean readPermission) {
     this.readPermission = readPermission;
   }
 
-  private void setWritePermission(boolean writePermission) {
+  private void setWritePermission(final boolean writePermission) {
     this.writePermission = writePermission;
   }
 
-  private void setDeletePermission(boolean deletePermission) {
+  private void setDeletePermission(final boolean deletePermission) {
     this.deletePermission = deletePermission;
   }
 
-  private void setReadAclPermission(boolean readAclPermission) {
+  private void setReadAclPermission(final boolean readAclPermission) {
     this.readAclPermission = readAclPermission;
   }
 
-  private void setWriteAclPermission(boolean writeAclPermission) {
+  private void setWriteAclPermission(final boolean writeAclPermission) {
     this.writeAclPermission = writeAclPermission;
   }
 
-  private void enableOperation(PermissionOperation operation) {
+  private void enableOperation(final PermissionOperation operation) {
     switch (operation) {
       case READ:
         setReadPermission(true);
@@ -190,12 +192,12 @@ public class PermissionData {
     return path;
   }
 
-  public void setPath(String path) {
+  public void setPath(final String path) {
     this.path = path;
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
@@ -204,7 +206,7 @@ public class PermissionData {
       return false;
     }
 
-    PermissionData that = (PermissionData) o;
+    final PermissionData that = (PermissionData) o;
     return readPermission == that.readPermission &&
       writePermission == that.writePermission &&
       deletePermission == that.deletePermission &&

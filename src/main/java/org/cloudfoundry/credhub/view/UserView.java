@@ -4,7 +4,7 @@ import org.cloudfoundry.credhub.credential.UserCredentialValue;
 import org.cloudfoundry.credhub.domain.UserCredentialVersion;
 
 public class UserView extends CredentialView {
-  public UserView(UserCredentialVersion userCredential) {
+  public UserView(final UserCredentialVersion userCredential) {
     super(
       userCredential.getVersionCreatedAt(),
       userCredential.getUuid(),

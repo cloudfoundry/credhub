@@ -28,8 +28,8 @@ public class ValueCredentialVersionTest {
   public void beforeEach() {
     canaryUuid = UUID.randomUUID();
     encryptor = mock(Encryptor.class);
-    byte[] encryptedValue = "fake-encrypted-value".getBytes(StringUtil.UTF_8);
-    byte[] nonce = "fake-nonce".getBytes(StringUtil.UTF_8);
+    final byte[] encryptedValue = "fake-encrypted-value".getBytes(StringUtil.UTF_8);
+    final byte[] nonce = "fake-nonce".getBytes(StringUtil.UTF_8);
     final EncryptedValue encryption = new EncryptedValue(canaryUuid, encryptedValue, nonce);
     when(encryptor.encrypt("my-value"))
       .thenReturn(encryption);
@@ -47,8 +47,9 @@ public class ValueCredentialVersionTest {
   @Test
   public void setValue_encryptsValue() {
     valueCredentialData = new ValueCredentialVersionData("foo");
-    subject = new ValueCredentialVersion(valueCredentialData).setEncryptor(encryptor);
+    subject = new ValueCredentialVersion(valueCredentialData);
 
+    subject.setEncryptor(encryptor);
     subject.setValue("my-value");
 
     assertThat(valueCredentialData.getEncryptedValueData().getEncryptedValue(), notNullValue());
@@ -58,8 +59,9 @@ public class ValueCredentialVersionTest {
   @Test
   public void getValue_decryptsValue() {
     valueCredentialData = new ValueCredentialVersionData("foo");
-    subject = new ValueCredentialVersion(valueCredentialData).setEncryptor(encryptor);
+    subject = new ValueCredentialVersion(valueCredentialData);
 
+    subject.setEncryptor(encryptor);
     subject.setValue("my-value");
 
     assertThat(subject.getValue(), equalTo("my-value"));
@@ -68,8 +70,9 @@ public class ValueCredentialVersionTest {
   @Test(expected = IllegalArgumentException.class)
   public void setValue_whenValueIsNull_throwsException() {
     valueCredentialData = new ValueCredentialVersionData("foo");
-    subject = new ValueCredentialVersion(valueCredentialData).setEncryptor(encryptor);
+    subject = new ValueCredentialVersion(valueCredentialData);
 
+    subject.setEncryptor(encryptor);
     subject.setValue(null);
   }
 }

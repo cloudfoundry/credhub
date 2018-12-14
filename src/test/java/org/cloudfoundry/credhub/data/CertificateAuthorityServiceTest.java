@@ -49,7 +49,7 @@ public class CertificateAuthorityServiceTest {
       .thenReturn(true);
 
     certificateVersionDataService = mock(CertificateVersionDataService.class);
-    UserContextHolder userContextHolder = new UserContextHolder();
+    final UserContextHolder userContextHolder = new UserContextHolder();
     userContextHolder.setUserContext(userContext);
     certificateAuthorityService = new CertificateAuthorityService(certificateVersionDataService,
       permissionCheckingService, userContextHolder);
@@ -61,7 +61,7 @@ public class CertificateAuthorityServiceTest {
 
     try {
       certificateAuthorityService.findActiveVersion("any ca name");
-    } catch (EntryNotFoundException pe) {
+    } catch (final EntryNotFoundException pe) {
       assertThat(pe.getMessage(), equalTo("error.credential.invalid_access"));
     }
   }
@@ -72,7 +72,7 @@ public class CertificateAuthorityServiceTest {
     when(permissionCheckingService.hasPermission(anyString(), anyString(), any())).thenReturn(true);
     try {
       certificateAuthorityService.findActiveVersion("any ca name");
-    } catch (EntryNotFoundException pe) {
+    } catch (final EntryNotFoundException pe) {
       assertThat(pe.getMessage(), equalTo("error.credential.invalid_access"));
     }
   }
@@ -85,14 +85,14 @@ public class CertificateAuthorityServiceTest {
 
     try {
       certificateAuthorityService.findActiveVersion("any non-ca name");
-    } catch (ParameterizedValidationException pe) {
+    } catch (final ParameterizedValidationException pe) {
       assertThat(pe.getMessage(), equalTo("error.not_a_ca_name"));
     }
   }
 
   @Test
   public void findActiveVersion_givenExistingCa_returnsTheCa() {
-    CertificateReader certificateReader = mock(CertificateReader.class);
+    final CertificateReader certificateReader = mock(CertificateReader.class);
     when(certificateVersionDataService.findActive(CREDENTIAL_NAME)).thenReturn(certificateCredential);
     when(certificateCredential.getPrivateKey()).thenReturn("my-key");
     when(certificateCredential.getParsedCertificate()).thenReturn(certificateReader);
@@ -110,14 +110,14 @@ public class CertificateAuthorityServiceTest {
 
     try {
       certificateAuthorityService.findActiveVersion("actually-a-password");
-    } catch (EntryNotFoundException pe) {
+    } catch (final EntryNotFoundException pe) {
       assertThat(pe.getMessage(), equalTo("error.credential.invalid_access"));
     }
   }
 
   @Test
   public void findActiveVersion_whenCertificateIsNotACa_throwsException() {
-    CertificateCredentialVersion notACertificateAuthority = mock(CertificateCredentialVersion.class);
+    final CertificateCredentialVersion notACertificateAuthority = mock(CertificateCredentialVersion.class);
     when(notACertificateAuthority.getParsedCertificate()).thenReturn(mock(CertificateReader.class));
     when(notACertificateAuthority.getCertificate()).thenReturn(CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT);
     when(certificateVersionDataService.findActive(CREDENTIAL_NAME))
@@ -125,7 +125,7 @@ public class CertificateAuthorityServiceTest {
 
     try {
       certificateAuthorityService.findActiveVersion(CREDENTIAL_NAME);
-    } catch (ParameterizedValidationException pe) {
+    } catch (final ParameterizedValidationException pe) {
       assertThat(pe.getMessage(), equalTo("error.cert_not_ca"));
     }
   }

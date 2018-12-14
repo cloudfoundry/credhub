@@ -6,9 +6,11 @@ import org.cloudfoundry.credhub.domain.RsaCredentialVersion;
 @SuppressWarnings("unused")
 public class RsaView extends CredentialView {
 
-  RsaView() {  /* Jackson */ }
+  RsaView() {
+    super();  /* Jackson */
+  }
 
-  RsaView(RsaCredentialVersion rsaCredential) {
+  RsaView(final RsaCredentialVersion rsaCredential) {
     super(
       rsaCredential.getVersionCreatedAt(),
       rsaCredential.getUuid(),

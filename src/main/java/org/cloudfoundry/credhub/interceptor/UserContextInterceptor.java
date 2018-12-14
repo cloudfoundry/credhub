@@ -18,15 +18,16 @@ public class UserContextInterceptor extends HandlerInterceptorAdapter {
 
   @Autowired
   UserContextInterceptor(
-    UserContextFactory userContextFactory,
-    UserContextHolder userContextHolder) {
+    final UserContextFactory userContextFactory,
+    final UserContextHolder userContextHolder) {
+    super();
     this.userContextFactory = userContextFactory;
     this.userContextHolder = userContextHolder;
   }
 
   @Override
-  public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-    Authentication principal = (Authentication) request.getUserPrincipal();
+  public boolean preHandle(final HttpServletRequest request, final HttpServletResponse response, final Object handler) {
+    final Authentication principal = (Authentication) request.getUserPrincipal();
     if (principal == null) {
       return false;
     }

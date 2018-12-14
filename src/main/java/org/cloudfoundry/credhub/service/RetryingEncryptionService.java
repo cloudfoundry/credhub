@@ -16,29 +16,30 @@ import org.cloudfoundry.credhub.exceptions.KeyNotFoundException;
 @Component
 public class RetryingEncryptionService {
 
-  private final Logger logger;
+  private static final Logger LOGGER = LogManager.getLogger();
+  private final EncryptionKeySet keySet;
+  private boolean needsReconnect;
+
   // for testing
-  ReentrantReadWriteLock readWriteLock;
-  private EncryptionKeySet keySet;
-  private volatile boolean needsReconnect; // volatile so all threads see changes
+  protected ReentrantReadWriteLock readWriteLock;
 
   @Autowired
-  public RetryingEncryptionService(EncryptionKeySet keySet) {
+  public RetryingEncryptionService(final EncryptionKeySet keySet) {
+    super();
     this.keySet = keySet;
 
-    logger = LogManager.getLogger();
     readWriteLock = new ReentrantReadWriteLock();
   }
 
   public EncryptedValue encrypt(final String value) throws Exception {
 
-    logger.info("Attempting encrypt");
+    LOGGER.info("Attempting encrypt");
     return retryOnErrorWithRemappedKey(() -> keySet.getActive().encrypt(value));
   }
 
-  public String decrypt(EncryptedValue encryptedValue)
+  public String decrypt(final EncryptedValue encryptedValue)
     throws Exception {
-    logger.info("Attempting decrypt");
+    LOGGER.info("Attempting decrypt");
     return retryOnErrorWithRemappedKey(() -> {
       final EncryptionKey key = keySet.get(encryptedValue.getEncryptionKeyUuid());
 
@@ -49,24 +50,29 @@ public class RetryingEncryptionService {
     });
   }
 
-  private <T> T retryOnErrorWithRemappedKey(ThrowingFunction<T> operation)
+  // for testing. so sorry
+  protected void setNeedsReconnectFlag() {
+    needsReconnect = true;
+  }
+
+  private <T> T retryOnErrorWithRemappedKey(final ThrowingFunction<T> operation)
     throws Exception {
     return withPreventReconnectLock(() -> {
       try {
         return operation.apply();
-      } catch (IllegalBlockSizeException | ProviderException e) {
-        logger.info("Operation failed: " + e.getMessage());
+      } catch (final IllegalBlockSizeException | ProviderException e) {
+        LOGGER.info("Operation failed: " + e.getMessage());
 
         setNeedsReconnectFlag();
         withPreventCryptoLock(() -> {
-          EncryptionProvider provider = keySet.getActive().getProvider();
-          if (needsReconnect() && provider instanceof LunaEncryptionService) {
-            logger.info("Trying reconnect");
-            LunaEncryptionService lunaEncryptionService = (LunaEncryptionService) provider;
+          final EncryptionProvider provider = keySet.getActive().getProvider();
+          if (needsReconnect && provider instanceof LunaEncryptionService) {
+            LOGGER.info("Trying reconnect");
+            final LunaEncryptionService lunaEncryptionService = (LunaEncryptionService) provider;
             lunaEncryptionService.reconnect(e);
             keySet.reload();
             clearNeedsReconnectFlag();
-          } else if (needsReconnect()) {
+          } else if (needsReconnect) {
             throw e;
           }
         });
@@ -76,7 +82,7 @@ public class RetryingEncryptionService {
     });
   }
 
-  private <T> T withPreventReconnectLock(ThrowingSupplier<T> operation) throws Exception {
+  private <T> T withPreventReconnectLock(final ThrowingSupplier<T> operation) throws Exception {
     readWriteLock.readLock().lock();
     try {
       return operation.get();
@@ -85,7 +91,7 @@ public class RetryingEncryptionService {
     }
   }
 
-  private void withPreventCryptoLock(ThrowingRunnable runnable) throws Exception {
+  private void withPreventCryptoLock(final ThrowingRunnable runnable) throws Exception {
     readWriteLock.readLock().unlock();
     readWriteLock.writeLock().lock();
 
@@ -97,17 +103,8 @@ public class RetryingEncryptionService {
     }
   }
 
-  // for testing. so sorry
-  void setNeedsReconnectFlag() {
-    needsReconnect = true;
-  }
-
   private void clearNeedsReconnectFlag() {
     needsReconnect = false;
-  }
-
-  private boolean needsReconnect() {
-    return needsReconnect;
   }
 
   @FunctionalInterface

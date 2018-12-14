@@ -10,7 +10,7 @@ public class FakeCurrentTimeProvider extends CurrentTimeProvider {
 
   private long timeMillis;
 
-  public void setCurrentTimeMillis(long timeMillis) {
+  public void setCurrentTimeMillis(final long timeMillis) {
     this.timeMillis = timeMillis;
   }
 
@@ -30,7 +30,7 @@ public class FakeCurrentTimeProvider extends CurrentTimeProvider {
   }
 
   @Override
-  public void sleep(long sleepTimeInMillis) throws InterruptedException {
+  public void sleep(final long sleepTimeInMillis) throws InterruptedException {
     timeMillis += sleepTimeInMillis;
   }
 }

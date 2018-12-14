@@ -46,7 +46,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
-@ActiveProfiles(value = {"unit-test", "unit-test-permissions"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(
+  value = {
+    "unit-test",
+    "unit-test-permissions",
+  },
+  resolver = DatabaseProfileResolver.class
+)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @Transactional
 public class PermissionsEndpointTest {
@@ -54,8 +60,8 @@ public class PermissionsEndpointTest {
   private WebApplicationContext webApplicationContext;
 
   private MockMvc mockMvc;
-  private String credentialNameWithoutLeadingSlash = this.getClass().getSimpleName();
-  private String credentialName = "/" + credentialNameWithoutLeadingSlash;
+  private final String credentialNameWithoutLeadingSlash = this.getClass().getSimpleName();
+  private final String credentialName = "/" + credentialNameWithoutLeadingSlash;
 
   @Before
   public void beforeEach() throws Exception {
@@ -70,7 +76,7 @@ public class PermissionsEndpointTest {
   @Test
   public void GET_whenTheCredentialNameParameterIsMissing_returnsAnAppropriateError()
     throws Exception {
-    String expectedErrorMessage = "The query parameter credential_name is required for this request.";
+    final String expectedErrorMessage = "The query parameter credential_name is required for this request.";
 
     RequestHelper.expectErrorWhenGettingPermissions(
       mockMvc,
@@ -84,7 +90,7 @@ public class PermissionsEndpointTest {
   public void GET_whenTheUserHasPermissionToAccessPermissions_returnPermissions() throws Exception {
     RequestHelper.grantPermissions(mockMvc, credentialName, ALL_PERMISSIONS_TOKEN, USER_A_ACTOR_ID, "read");
 
-    PermissionsView permissions = RequestHelper.getPermissions(mockMvc, credentialName,
+    final PermissionsView permissions = RequestHelper.getPermissions(mockMvc, credentialName,
       ALL_PERMISSIONS_TOKEN);
     assertThat(permissions.getCredentialName(), equalTo(credentialName));
     assertThat(permissions.getPermissions(), contains(
@@ -98,7 +104,7 @@ public class PermissionsEndpointTest {
     throws Exception {
     RequestHelper.grantPermissions(mockMvc, credentialName, ALL_PERMISSIONS_TOKEN, USER_A_ACTOR_ID, "read");
 
-    PermissionsView permissions = RequestHelper.getPermissions(mockMvc, credentialNameWithoutLeadingSlash, ALL_PERMISSIONS_TOKEN);
+    final PermissionsView permissions = RequestHelper.getPermissions(mockMvc, credentialNameWithoutLeadingSlash, ALL_PERMISSIONS_TOKEN);
     assertThat(permissions.getCredentialName(), equalTo(credentialName));
     assertThat(permissions.getPermissions(), contains(
       samePropertyValuesAs(new PermissionEntry(USER_A_ACTOR_ID, credentialName, asList(PermissionOperation.READ)))
@@ -107,7 +113,7 @@ public class PermissionsEndpointTest {
 
   @Test
   public void GET_whenTheUserLacksPermissionToReadPermissions_returnsNotFound() throws Exception {
-    String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
+    final String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
     RequestHelper.expectErrorWhenGettingPermissions(
       mockMvc,
       404, expectedError,
@@ -118,7 +124,7 @@ public class PermissionsEndpointTest {
 
   @Test
   public void GET_whenTheCredentialDoesntExist_returnsNotFound() throws Exception {
-    String expectedErrorMessage = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
+    final String expectedErrorMessage = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
 
     RequestHelper.expectErrorWhenGettingPermissions(
       mockMvc,
@@ -143,7 +149,7 @@ public class PermissionsEndpointTest {
 
   @Test
   public void DELETE_whenTheCredentialParameterNameIsMissing_returnsBadRequest() throws Exception {
-    String expectedErrorMessage = "The query parameter credential_name is required for this request.";
+    final String expectedErrorMessage = "The query parameter credential_name is required for this request.";
 
     RequestHelper.expectErrorWhenDeletingPermissions(
       mockMvc,
@@ -155,7 +161,7 @@ public class PermissionsEndpointTest {
 
   @Test
   public void DELETE_whenTheActorParameterIsMissing_returnsBadRequest() throws Exception {
-    String expectedErrorMessage = "The query parameter actor is required for this request.";
+    final String expectedErrorMessage = "The query parameter actor is required for this request.";
 
     RequestHelper.expectErrorWhenDeletingPermissions(
       mockMvc,
@@ -194,13 +200,13 @@ public class PermissionsEndpointTest {
       USER_A_TOKEN
     );
 
-    PermissionsView permissions = RequestHelper.getPermissions(mockMvc, credentialName, ALL_PERMISSIONS_TOKEN);
+    final PermissionsView permissions = RequestHelper.getPermissions(mockMvc, credentialName, ALL_PERMISSIONS_TOKEN);
     assertThat(permissions.getPermissions(), hasSize(1));
   }
 
   @Test
   public void DELETE_whenTheCredentialDoesNotExist_shouldReturnNotFound() throws Exception {
-    String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
+    final String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
 
     RequestHelper.expectErrorWhenDeletingPermissions(mockMvc, 404, expectedError, "/not-valid",
       ALL_PERMISSIONS_TOKEN, "something"
@@ -214,7 +220,7 @@ public class PermissionsEndpointTest {
     RequestHelper
       .grantPermissions(mockMvc, credentialName, ALL_PERMISSIONS_TOKEN, USER_B_ACTOR_ID, "delete");
 
-    PermissionsView permissions = RequestHelper
+    final PermissionsView permissions = RequestHelper
       .getPermissions(mockMvc, credentialName, ALL_PERMISSIONS_TOKEN);
     assertThat(permissions.getPermissions(), hasSize(2));
     assertThat(permissions.getCredentialName(), equalTo(credentialName));
@@ -232,7 +238,7 @@ public class PermissionsEndpointTest {
 
     RequestHelper.grantPermissions(mockMvc, credentialName, ALL_PERMISSIONS_TOKEN, USER_A_ACTOR_ID, "write", "read");
 
-    PermissionsView acl = RequestHelper
+    final PermissionsView acl = RequestHelper
       .getPermissions(mockMvc, credentialName, ALL_PERMISSIONS_TOKEN);
     assertThat(acl.getPermissions(), hasSize(1));
     assertThat(acl.getCredentialName(), equalTo(credentialName));
@@ -273,7 +279,7 @@ public class PermissionsEndpointTest {
     RequestHelper.grantPermissions(mockMvc, credentialName, ALL_PERMISSIONS_TOKEN, USER_A_ACTOR_ID,
       "read");
 
-    PermissionsView acl = RequestHelper
+    final PermissionsView acl = RequestHelper
       .getPermissions(mockMvc, credentialName, ALL_PERMISSIONS_TOKEN);
     assertThat(acl.getCredentialName(), equalTo(credentialName));
     assertThat(acl.getPermissions(), hasSize(1));
@@ -316,7 +322,7 @@ public class PermissionsEndpointTest {
 
   @Test
   public void POST_withAnInvalidOperation_returnsBadRequest() throws Exception {
-    String expectedErrorMessage = "The provided operation is not supported."
+    final String expectedErrorMessage = "The provided operation is not supported."
       + " Valid values include read, write, delete, read_acl, and write_acl.";
 
     RequestHelper.expectErrorWhenAddingPermissions(

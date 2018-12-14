@@ -21,7 +21,7 @@ public class CertificateGenerateRequest extends BaseCredentialGenerateRequest {
   }
 
   @SuppressWarnings("unused")
-  public void setRequestGenerationParameters(CertificateGenerationRequestParameters requestGenerationParameters) {
+  public void setRequestGenerationParameters(final CertificateGenerationRequestParameters requestGenerationParameters) {
     this.requestGenerationParameters = requestGenerationParameters;
   }
 
@@ -44,7 +44,7 @@ public class CertificateGenerateRequest extends BaseCredentialGenerateRequest {
     getGenerationRequestParameters().validate();
   }
 
-  public void setCertificateGenerationParameters(CertificateGenerationParameters certificateGenerationParameters) {
+  public void setCertificateGenerationParameters(final CertificateGenerationParameters certificateGenerationParameters) {
     this.certificateGenerationParameters = certificateGenerationParameters;
   }
 }

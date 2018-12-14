@@ -59,9 +59,9 @@ public class SetHandlerTest {
     credentialVersion = mock(PasswordCredentialVersion.class);
 
     uuid = UUID.randomUUID();
-    String name = "federation";
+    final String name = "federation";
 
-    Credential cred = new Credential(name);
+    final Credential cred = new Credential(name);
     cred.setUuid(uuid);
 
     when(credentialVersion.getCredential()).thenReturn(cred);
@@ -72,8 +72,8 @@ public class SetHandlerTest {
 
   @Test
   public void handleSetRequest_AddsTheCredentialNameToTheAuditRecord() {
-    StringCredentialValue password = new StringCredentialValue("federation");
-    PasswordSetRequest setRequest = new PasswordSetRequest();
+    final StringCredentialValue password = new StringCredentialValue("federation");
+    final PasswordSetRequest setRequest = new PasswordSetRequest();
 
     setRequest.setType("password");
     setRequest.setGenerationParameters(generationParameters);
@@ -90,8 +90,8 @@ public class SetHandlerTest {
 
   @Test
   public void handleSetRequest_whenPasswordSetRequest_passesCorrectParametersIncludingGeneration() {
-    StringCredentialValue password = new StringCredentialValue("federation");
-    PasswordSetRequest setRequest = new PasswordSetRequest();
+    final StringCredentialValue password = new StringCredentialValue("federation");
+    final PasswordSetRequest setRequest = new PasswordSetRequest();
 
     setRequest.setType("password");
     setRequest.setGenerationParameters(generationParameters);
@@ -105,7 +105,7 @@ public class SetHandlerTest {
 
   @Test
   public void handleSetRequest_whenNonPasswordSetRequest_passesCorrectParametersWithNullGeneration() {
-    UserSetRequest setRequest = new UserSetRequest();
+    final UserSetRequest setRequest = new UserSetRequest();
     final UserCredentialValue userCredentialValue = new UserCredentialValue(
       "Picard",
       "Enterprise",
@@ -122,7 +122,7 @@ public class SetHandlerTest {
 
   @Test
   public void handleSetRequest_withACertificateSetRequest_andNoCaName_usesCorrectParameters() {
-    CertificateSetRequest setRequest = new CertificateSetRequest();
+    final CertificateSetRequest setRequest = new CertificateSetRequest();
     final CertificateCredentialValue certificateValue = new CertificateCredentialValue(
       null,
       "Picard",
@@ -140,7 +140,7 @@ public class SetHandlerTest {
 
   @Test
   public void handleSetRequest_withACertificateSetRequest_andACaName_providesCaCertificate() {
-    CertificateCredentialValue cerificateAuthority = new CertificateCredentialValue(
+    final CertificateCredentialValue cerificateAuthority = new CertificateCredentialValue(
       null,
       TestConstants.TEST_CA,
       null,
@@ -149,7 +149,7 @@ public class SetHandlerTest {
     when(certificateAuthorityService.findActiveVersion("/test-ca-name"))
       .thenReturn(cerificateAuthority);
 
-    CertificateSetRequest setRequest = new CertificateSetRequest();
+    final CertificateSetRequest setRequest = new CertificateSetRequest();
     final CertificateCredentialValue credentialValue = new CertificateCredentialValue(
       null,
       TestConstants.TEST_CERTIFICATE,
@@ -160,13 +160,13 @@ public class SetHandlerTest {
     setRequest.setName("/captain");
     setRequest.setCertificateValue(credentialValue);
 
-    CertificateCredentialValue expectedCredentialValue = new CertificateCredentialValue(
+    final CertificateCredentialValue expectedCredentialValue = new CertificateCredentialValue(
       TestConstants.TEST_CA,
       TestConstants.TEST_CERTIFICATE,
       "Enterprise",
       "/test-ca-name"
     );
-    ArgumentCaptor<CredentialValue> credentialValueArgumentCaptor = ArgumentCaptor.forClass(CredentialValue.class);
+    final ArgumentCaptor<CredentialValue> credentialValueArgumentCaptor = ArgumentCaptor.forClass(CredentialValue.class);
 
     subject.handle(setRequest);
 

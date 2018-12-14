@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
+@SuppressWarnings("PMD.NullAssignment")
 @Component
 public class EncryptionKeySet {
 
@@ -20,20 +21,22 @@ public class EncryptionKeySet {
 
   // For testing
   public EncryptionKeySet() {
+    super();
     keys = new HashMap<>();
   }
 
   @Autowired
-  public EncryptionKeySet(EncryptionKeyCanaryMapper canaryMapper) throws Exception {
+  public EncryptionKeySet(final EncryptionKeyCanaryMapper canaryMapper) throws Exception {
+    super();
     this.canaryMapper = canaryMapper;
     reload();
   }
 
-  public void add(EncryptionKey key) {
+  public void add(final EncryptionKey key) {
     keys.put(key.getUuid(), key);
   }
 
-  public EncryptionKey get(UUID uuid) {
+  public EncryptionKey get(final UUID uuid) {
     return keys.get(uuid);
   }
 
@@ -46,7 +49,7 @@ public class EncryptionKeySet {
     return keys.get(activeUUID);
   }
 
-  public void setActive(UUID uuid) {
+  public void setActive(final UUID uuid) {
     activeUUID = uuid;
   }
 

@@ -29,54 +29,48 @@ public class StringGenerationParameters extends GenerationParameters {
     return length;
   }
 
-  public StringGenerationParameters setLength(int length) {
+  public void setLength(final int length) {
     this.length = length;
-    return this;
   }
 
   public String getUsername() {
     return username;
   }
 
-  public StringGenerationParameters setUsername(String username) {
+  public void setUsername(final String username) {
     this.username = username;
-    return this;
   }
 
   public boolean isIncludeSpecial() {
     return includeSpecial;
   }
 
-  public StringGenerationParameters setIncludeSpecial(boolean includeSpecial) {
+  public void setIncludeSpecial(final boolean includeSpecial) {
     this.includeSpecial = includeSpecial;
-    return this;
   }
 
   public boolean isExcludeNumber() {
     return excludeNumber;
   }
 
-  public StringGenerationParameters setExcludeNumber(boolean excludeNumber) {
+  public void setExcludeNumber(final boolean excludeNumber) {
     this.excludeNumber = excludeNumber;
-    return this;
   }
 
   public boolean isExcludeUpper() {
     return excludeUpper;
   }
 
-  public StringGenerationParameters setExcludeUpper(boolean excludeUpper) {
+  public void setExcludeUpper(final boolean excludeUpper) {
     this.excludeUpper = excludeUpper;
-    return this;
   }
 
   public boolean isExcludeLower() {
     return excludeLower;
   }
 
-  public StringGenerationParameters setExcludeLower(boolean excludeLower) {
+  public void setExcludeLower(final boolean excludeLower) {
     this.excludeLower = excludeLower;
-    return this;
   }
 
   @JsonIgnore
@@ -88,6 +82,7 @@ public class StringGenerationParameters extends GenerationParameters {
     );
   }
 
+  @Override
   public void validate() {
     if (!isValid()) {
       throw new ParameterizedValidationException("error.excludes_all_charsets");
@@ -95,7 +90,7 @@ public class StringGenerationParameters extends GenerationParameters {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
@@ -104,24 +99,17 @@ public class StringGenerationParameters extends GenerationParameters {
       return false;
     }
 
-    StringGenerationParameters that = (StringGenerationParameters) o;
+    final StringGenerationParameters that = (StringGenerationParameters) o;
     return excludeLower == that.excludeLower &&
       excludeNumber == that.excludeNumber &&
       excludeUpper == that.excludeUpper &&
       includeSpecial == that.includeSpecial &&
-      (Objects.equals(length, that.length)) &&
+      Objects.equals(length, that.length) &&
       Objects.equals(username, that.username);
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(length, username, excludeLower, excludeNumber, excludeUpper, includeSpecial);
-  }
-
-  public boolean passwordOptionsEqual(StringGenerationParameters that) {
-    return excludeLower == that.excludeLower &&
-      excludeNumber == that.excludeNumber &&
-      excludeUpper == that.excludeUpper &&
-      includeSpecial == that.includeSpecial;
   }
 }

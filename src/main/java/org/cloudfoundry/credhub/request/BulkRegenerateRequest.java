@@ -15,10 +15,12 @@ public class BulkRegenerateRequest {
   private String signedBy;
 
   public BulkRegenerateRequest() {
+    super();
     /* this needs to be there for jackson to be happy */
   }
 
-  public BulkRegenerateRequest(String signedBy) {
+  public BulkRegenerateRequest(final String signedBy) {
+    super();
     this.signedBy = signedBy;
   }
 
@@ -26,7 +28,7 @@ public class BulkRegenerateRequest {
     return signedBy;
   }
 
-  public void setSignedBy(String signedBy) {
+  public void setSignedBy(final String signedBy) {
     this.signedBy = StringUtils.prependIfMissing(signedBy, "/");
   }
 }

@@ -9,7 +9,7 @@ public enum CredentialWriteMode {
 
   public final String mode;
 
-  CredentialWriteMode(String mode) {
+  CredentialWriteMode(final String mode) {
     this.mode = mode;
   }
 

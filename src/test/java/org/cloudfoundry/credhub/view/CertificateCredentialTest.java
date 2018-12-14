@@ -34,9 +34,9 @@ public class CertificateCredentialTest {
   @Before
   public void beforeEach() {
     getBouncyCastleProvider();
-    UUID canaryUuid = UUID.randomUUID();
-    byte[] encryptedValue = "fake-encrypted-value".getBytes(StringUtil.UTF_8);
-    byte[] nonce = "fake-nonce".getBytes(StringUtil.UTF_8);
+    final UUID canaryUuid = UUID.randomUUID();
+    final byte[] encryptedValue = "fake-encrypted-value".getBytes(StringUtil.UTF_8);
+    final byte[] nonce = "fake-nonce".getBytes(StringUtil.UTF_8);
     expiryDate = Instant.now();
 
     encryptor = mock(Encryptor.class);
@@ -46,23 +46,23 @@ public class CertificateCredentialTest {
 
     credentialName = "/foo";
     uuid = UUID.randomUUID();
-    entity = new CertificateCredentialVersion(credentialName)
-      .setEncryptor(encryptor)
-      .setCa(CertificateStringConstants.SELF_SIGNED_CA_CERT)
-      .setCertificate(CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT)
-      .setPrivateKey(CertificateStringConstants.PRIVATE_KEY)
-      .setExpiryDate(expiryDate)
-      .setUuid(uuid);
+    entity = new CertificateCredentialVersion(credentialName);
+    entity.setEncryptor(encryptor);
+    entity.setCa(CertificateStringConstants.SELF_SIGNED_CA_CERT);
+    entity.setCertificate(CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT);
+    entity.setPrivateKey(CertificateStringConstants.PRIVATE_KEY);
+    entity.setExpiryDate(expiryDate);
+    entity.setUuid(uuid);
   }
 
   @Test
   public void createsAViewFromEntity() throws Exception {
     final CredentialView subject = CertificateView.fromEntity(entity);
-    String actualJson = JsonTestHelper.serializeToString(subject);
+    final String actualJson = JsonTestHelper.serializeToString(subject);
 
-    Instant expiryDateWithoutMillis = Instant.ofEpochSecond(expiryDate.getEpochSecond());
+    final Instant expiryDateWithoutMillis = Instant.ofEpochSecond(expiryDate.getEpochSecond());
 
-    String expectedJson = "{"
+    final String expectedJson = "{"
       + "\"type\":\"certificate\","
       + "\"expiry_date\":\"" + expiryDateWithoutMillis + "\","
       + "\"transitional\":false,"
@@ -81,7 +81,7 @@ public class CertificateCredentialTest {
 
   @Test
   public void setsUpdatedAtTimeOnGeneratedView() {
-    Instant now = Instant.now();
+    final Instant now = Instant.now();
     entity.setVersionCreatedAt(now);
     final CertificateView subject = (CertificateView) CertificateView.fromEntity(entity);
     assertThat(subject.getVersionCreatedAt(), equalTo(now));
@@ -89,17 +89,20 @@ public class CertificateCredentialTest {
 
   @Test
   public void setsUUIDOnGeneratedView() {
-    CertificateView subject = (CertificateView) CertificateView.fromEntity(entity);
+    final CertificateView subject = (CertificateView) CertificateView.fromEntity(entity);
     assertThat(subject.getUuid(), equalTo(uuid.toString()));
   }
 
   @Test
   public void includesKeysWithNullValues() throws Exception {
-    final CredentialView subject = CertificateView
-      .fromEntity(new CertificateCredentialVersion(credentialName).setEncryptor(encryptor).setUuid(uuid));
+    final CertificateCredentialVersion certificateCredentialVersion = new CertificateCredentialVersion(credentialName);
+    certificateCredentialVersion.setEncryptor(encryptor);
+    certificateCredentialVersion.setUuid(uuid);
+
+    final CredentialView subject = CertificateView.fromEntity(certificateCredentialVersion);
     final String actualJson = JsonTestHelper.serializeToString(subject);
 
-    String expectedJson = "{"
+    final String expectedJson = "{"
       + "\"type\":\"certificate\","
       + "\"expiry_date\":null,"
       + "\"transitional\":false,"

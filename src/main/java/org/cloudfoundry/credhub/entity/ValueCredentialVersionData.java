@@ -10,9 +10,10 @@ public class ValueCredentialVersionData extends CredentialVersionData<ValueCrede
   public static final String CREDENTIAL_TYPE = "value";
 
   public ValueCredentialVersionData() {
+    super();
   }
 
-  public ValueCredentialVersionData(String name) {
+  public ValueCredentialVersionData(final String name) {
     super(name);
   }
 

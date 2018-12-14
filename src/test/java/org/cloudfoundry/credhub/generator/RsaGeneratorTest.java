@@ -48,7 +48,7 @@ public class RsaGeneratorTest {
 
   @Test
   public void generateCredential_shouldUseTheProvidedKeyLength() throws Exception {
-    RsaGenerationParameters rsaGenerationParameters = new RsaGenerationParameters();
+    final RsaGenerationParameters rsaGenerationParameters = new RsaGenerationParameters();
     rsaGenerationParameters.setKeyLength(4096);
 
     subject.generateCredential(rsaGenerationParameters);

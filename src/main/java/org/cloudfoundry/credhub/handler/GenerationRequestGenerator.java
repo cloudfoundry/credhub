@@ -19,9 +19,10 @@ import org.cloudfoundry.credhub.service.regeneratables.UserCredentialRegeneratab
 
 @Component
 public class GenerationRequestGenerator {
-  private Map<String, Supplier<Regeneratable>> regeneratableTypeProducers;
+  private final Map<String, Supplier<Regeneratable>> regeneratableTypeProducers;
 
   public GenerationRequestGenerator() {
+    super();
     this.regeneratableTypeProducers = new HashMap<>();
     this.regeneratableTypeProducers.put("password", PasswordCredentialRegeneratable::new);
     this.regeneratableTypeProducers.put("user", UserCredentialRegeneratable::new);
@@ -30,11 +31,11 @@ public class GenerationRequestGenerator {
     this.regeneratableTypeProducers.put("certificate", CertificateCredentialRegeneratable::new);
   }
 
-  public BaseCredentialGenerateRequest createGenerateRequest(CredentialVersion credentialVersion) {
+  public BaseCredentialGenerateRequest createGenerateRequest(final CredentialVersion credentialVersion) {
     if (credentialVersion == null) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
-    Regeneratable regeneratable = regeneratableTypeProducers
+    final Regeneratable regeneratable = regeneratableTypeProducers
       .getOrDefault(credentialVersion.getCredentialType(), NotRegeneratable::new)
       .get();
     return regeneratable.createGenerateRequest(credentialVersion);

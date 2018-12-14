@@ -1,14 +1,16 @@
 package org.cloudfoundry.credhub.config;
 
+@SuppressWarnings("PMD.SingularField")
 public enum ProviderType {
 
   INTERNAL("internal"),
   HSM("hsm"),
   KMS_PLUGIN("kms-plugin");
 
-  private String label;
+  @SuppressWarnings("unused")
+  private final String label;
 
-  ProviderType(String label) {
+  ProviderType(final String label) {
     this.label = label;
   }
 }

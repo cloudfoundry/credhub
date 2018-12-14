@@ -17,12 +17,17 @@ public class RsaSetRequest extends BaseCredentialSetRequest<RsaCredentialValue> 
     return rsaKeyValue;
   }
 
-  public void setRsaKeyValue(RsaCredentialValue rsaKeyValue) {
+  public void setRsaKeyValue(final RsaCredentialValue rsaKeyValue) {
     this.rsaKeyValue = rsaKeyValue;
   }
 
   @Override
   public RsaCredentialValue getCredentialValue() {
     return rsaKeyValue;
+  }
+
+  @Override
+  public GenerationParameters getGenerationParameters() {
+    return null;
   }
 }

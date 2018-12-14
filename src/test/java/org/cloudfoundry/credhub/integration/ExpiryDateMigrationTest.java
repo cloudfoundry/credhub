@@ -24,7 +24,13 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 @RunWith(SpringRunner.class)
-@ActiveProfiles(value = {"unit-test", "unit-test-permissions"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(
+  value = {
+    "unit-test",
+    "unit-test-permissions",
+  },
+  resolver = DatabaseProfileResolver.class
+)
 @SpringBootTest(classes = CredentialManagerApp.class)
 @Transactional
 public class ExpiryDateMigrationTest {
@@ -39,7 +45,7 @@ public class ExpiryDateMigrationTest {
 
   @Test
   public void getCertificate_withNullExpiryDateInTheDatabase_andExpectExpiryDateAfterMigration() throws Exception {
-    String certificate = "-----BEGIN CERTIFICATE-----\n"
+    final String certificate = "-----BEGIN CERTIFICATE-----\n"
       + "MIIDODCCAiCgAwIBAgIJAJHJbZB6doRCMA0GCSqGSIb3DQEBCwUAMBwxGjAYBgNV\n"
       + "BAMUEWNyZWRodWJfY2xpZW50X2NhMB4XDTE4MDgxNjE5MDMxMloXDTE5MDgxNjE5\n"
       + "MDMxMlowHDEaMBgGA1UEAxQRY3JlZGh1Yl9jbGllbnRfY2EwggEiMA0GCSqGSIb3\n"
@@ -60,24 +66,24 @@ public class ExpiryDateMigrationTest {
       + "6wiBnysQUOQO80Zw\n"
       + "-----END CERTIFICATE-----";
 
-    Credential credential = new Credential("test_credential");
+    final Credential credential = new Credential("test_credential");
     credentialRepository.save(credential);
 
-    CertificateCredentialVersionData versionData = new CertificateCredentialVersionData();
+    final CertificateCredentialVersionData versionData = new CertificateCredentialVersionData();
     versionData.setTransitional(true);
     versionData.setCa("ca");
     versionData.setCaName("ca_name");
     versionData.setCertificate(certificate);
     versionData.setCredential(credential);
 
-    Instant expiryDate = new CertificateReader(certificate).getNotAfter();
-    CertificateCredentialVersionData originalVersion = credentialVersionRepository.save(versionData);
+    final Instant expiryDate = new CertificateReader(certificate).getNotAfter();
+    final CertificateCredentialVersionData originalVersion = credentialVersionRepository.save(versionData);
 
     assertThat(originalVersion.getExpiryDate(), is(equalTo(null)));
 
     subject.migrate();
 
-    CertificateCredentialVersionData migratedVersion =
+    final CertificateCredentialVersionData migratedVersion =
       (CertificateCredentialVersionData) credentialVersionRepository.findOneByUuid(originalVersion.getUuid());
 
     assertThat(migratedVersion.getExpiryDate(), is(equalTo(expiryDate)));

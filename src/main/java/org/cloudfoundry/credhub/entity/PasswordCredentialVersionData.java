@@ -15,12 +15,12 @@ import org.hibernate.annotations.NotFoundAction;
 @DiscriminatorValue(PasswordCredentialVersionData.CREDENTIAL_TYPE)
 @SecondaryTable(
   name = PasswordCredentialVersionData.TABLE_NAME,
-  pkJoinColumns = {@PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")}
+  pkJoinColumns = @PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")
 )
 public class PasswordCredentialVersionData extends CredentialVersionData<PasswordCredentialVersionData> {
 
   public static final String CREDENTIAL_TYPE = "password";
-  static final String TABLE_NAME = "password_credential";
+  public static final String TABLE_NAME = "password_credential";
 
   @OneToOne(cascade = CascadeType.ALL)
   @NotFound(action = NotFoundAction.IGNORE)
@@ -29,9 +29,10 @@ public class PasswordCredentialVersionData extends CredentialVersionData<Passwor
 
   @SuppressWarnings("unused")
   public PasswordCredentialVersionData() {
+    super();
   }
 
-  public PasswordCredentialVersionData(String name) {
+  public PasswordCredentialVersionData(final String name) {
     super(name);
   }
 
@@ -39,10 +40,8 @@ public class PasswordCredentialVersionData extends CredentialVersionData<Passwor
     return encryptedGenerationParameters;
   }
 
-  public PasswordCredentialVersionData setEncryptedGenerationParameters(
-    EncryptedValue encryptedGenerationParameters) {
+  public void setEncryptedGenerationParameters(final EncryptedValue encryptedGenerationParameters) {
     this.encryptedGenerationParameters = encryptedGenerationParameters;
-    return this;
   }
 
   @Override

@@ -15,9 +15,9 @@ import static org.mockito.Mockito.when;
 public class RandomSerialNumberGeneratorTest {
   @Test
   public void generate_usesEncryptionServiceRandomNumber() throws Exception {
-    RandomNumberGenerator randomNumberGenerator = mock(RandomNumberGenerator.class);
+    final RandomNumberGenerator randomNumberGenerator = mock(RandomNumberGenerator.class);
     when(randomNumberGenerator.getSecureRandom()).thenReturn(new SecureRandom());
-    RandomSerialNumberGenerator subject = new RandomSerialNumberGenerator(randomNumberGenerator);
+    final RandomSerialNumberGenerator subject = new RandomSerialNumberGenerator(randomNumberGenerator);
 
     subject.generate();
 

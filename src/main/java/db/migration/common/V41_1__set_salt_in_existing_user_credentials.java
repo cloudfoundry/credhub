@@ -19,29 +19,30 @@ public class V41_1__set_salt_in_existing_user_credentials implements SpringJdbcM
     value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE",
     justification = "The database will definitely exist"
   )
-  public void migrate(JdbcTemplate jdbcTemplate) throws Exception {
+  @Override
+  public void migrate(final JdbcTemplate jdbcTemplate) throws Exception {
 
-    String databaseName = jdbcTemplate
+    final String databaseName = jdbcTemplate
       .getDataSource()
       .getConnection()
       .getMetaData()
       .getDatabaseProductName()
       .toLowerCase();
 
-    CryptSaltFactory saltFactory = new CryptSaltFactory();
+    final CryptSaltFactory saltFactory = new CryptSaltFactory();
 
-    List<UUID> uuids = jdbcTemplate.query("select uuid from user_credential", (rowSet, rowNum) -> {
-      byte[] uuidBytes = rowSet.getBytes("uuid");
-      if (databaseName.equals("postgresql")) {
+    final List<UUID> uuids = jdbcTemplate.query("select uuid from user_credential", (rowSet, rowNum) -> {
+      final byte[] uuidBytes = rowSet.getBytes("uuid");
+      if ("postgresql".equals(databaseName)) {
         return UUID.fromString(new String(uuidBytes, StringUtil.UTF_8));
       } else {
-        ByteBuffer byteBuffer = ByteBuffer.wrap(uuidBytes);
+        final ByteBuffer byteBuffer = ByteBuffer.wrap(uuidBytes);
         return new UUID(byteBuffer.getLong(), byteBuffer.getLong());
       }
     });
 
-    for (UUID uuid: uuids) {
-      String salt = saltFactory.generateSalt();
+    for (final UUID uuid: uuids) {
+      final String salt = saltFactory.generateSalt();
 
       jdbcTemplate.update(
           "update user_credential set salt = ? where uuid = ?",
@@ -50,8 +51,8 @@ public class V41_1__set_salt_in_existing_user_credentials implements SpringJdbcM
     }
   }
 
-  private Object getUuidParam(String databaseName, UUID uuid) {
-    if (databaseName.equals("postgresql")) {
+  private Object getUuidParam(final String databaseName, final UUID uuid) {
+    if ("postgresql".equals(databaseName)) {
       return uuid;
     } else {
       return UuidUtil.uuidToByteArray(uuid);

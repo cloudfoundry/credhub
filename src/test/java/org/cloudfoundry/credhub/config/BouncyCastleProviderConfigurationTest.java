@@ -36,9 +36,9 @@ public class BouncyCastleProviderConfigurationTest {
 
   @Test
   public void jcaContentSignerBuilder() throws Exception {
-    PrivateKey key = generator.generateKeyPair().getPrivate();
+    final PrivateKey key = generator.generateKeyPair().getPrivate();
 
-    ContentSigner signer = jcaContentSignerBuilder.build(key);
+    final ContentSigner signer = jcaContentSignerBuilder.build(key);
 
     assertThat(signer.getAlgorithmIdentifier().getAlgorithm(), equalTo(sha256WithRSAEncryption));
   }

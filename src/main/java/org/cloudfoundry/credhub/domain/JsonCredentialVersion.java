@@ -19,7 +19,7 @@ public class JsonCredentialVersion extends CredentialVersion<JsonCredentialVersi
     this(new JsonCredentialVersionData());
   }
 
-  public JsonCredentialVersion(JsonCredentialVersionData delegate) {
+  public JsonCredentialVersion(final JsonCredentialVersionData delegate) {
     super(delegate);
     this.delegate = delegate;
     /*
@@ -30,11 +30,11 @@ public class JsonCredentialVersion extends CredentialVersion<JsonCredentialVersi
     this.objectMapper = new JsonObjectMapper();
   }
 
-  public JsonCredentialVersion(String name) {
+  public JsonCredentialVersion(final String name) {
     this(new JsonCredentialVersionData(name));
   }
 
-  public JsonCredentialVersion(JsonCredentialValue jsonValue, Encryptor encryptor) {
+  public JsonCredentialVersion(final JsonCredentialValue jsonValue, final Encryptor encryptor) {
     this();
     this.setEncryptor(encryptor);
     this.setValue(jsonValue.getValue());
@@ -47,38 +47,41 @@ public class JsonCredentialVersion extends CredentialVersion<JsonCredentialVersi
 
   @Override
   public void rotate() {
-    JsonNode value = this.getValue();
+    final JsonNode value = this.getValue();
     this.setValue(value);
   }
 
+  @Override
   public JsonNode getValue() {
-    String serializedValue = (String) super.getValue();
+    final String serializedValue = (String) super.getValue();
     try {
       return objectMapper.readTree(serializedValue);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  public JsonCredentialVersion setValue(JsonNode value) {
+  public void setValue(final JsonNode value) {
     if (value == null) {
       throw new ParameterizedValidationException("error.missing_value");
     }
 
     try {
-      String serializedString = objectMapper.writeValueAsString(value);
+      final String serializedString = objectMapper.writeValueAsString(value);
 
-      return super.setValue(serializedString);
-    } catch (JsonProcessingException e) {
+      super.setValue(serializedString);
+    } catch (final JsonProcessingException e) {
       throw new RuntimeException(e);
     }
   }
 
   @Override
-  public boolean matchesGenerationParameters(GenerationParameters generationParameters) {
-    if (generationParameters == null) {
-      return true;
-    }
-    return false;
+  public boolean matchesGenerationParameters(final GenerationParameters generationParameters) {
+    return generationParameters == null;
+  }
+
+  @Override
+  public GenerationParameters getGenerationParameters() {
+    return null;
   }
 }

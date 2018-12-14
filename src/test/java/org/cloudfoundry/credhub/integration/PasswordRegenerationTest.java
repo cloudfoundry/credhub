@@ -49,7 +49,7 @@ public class PasswordRegenerationTest {
 
   @Test
   public void passwordRegeneration_withDefaultParameters_shouldRegeneratePassword() throws Exception {
-    MockHttpServletRequestBuilder post = post("/api/v1/data")
+    final MockHttpServletRequestBuilder post = post("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -59,16 +59,16 @@ public class PasswordRegenerationTest {
         + "  \"type\" : \"password\"\n"
         + "}");
 
-    String caResult = this.mockMvc.perform(post)
+    final String caResult = this.mockMvc.perform(post)
       .andDo(print())
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
 
-    String originalPassword = (new JSONObject(caResult)).getString("value");
+    final String originalPassword = (new JSONObject(caResult)).getString("value");
 
     assertThat(originalPassword, notNullValue());
 
-    MockHttpServletRequestBuilder regeneratePost = post("/api/v1/data")
+    final MockHttpServletRequestBuilder regeneratePost = post("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -78,12 +78,12 @@ public class PasswordRegenerationTest {
         + "  \"regenerate\" : true\n"
         + "}");
 
-    String regenerateResult = this.mockMvc.perform(regeneratePost)
+    final String regenerateResult = this.mockMvc.perform(regeneratePost)
       .andDo(print())
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
 
-    String regeneratedPassword = (new JSONObject(regenerateResult)).getString("value");
+    final String regeneratedPassword = (new JSONObject(regenerateResult)).getString("value");
 
     assertThat(regeneratedPassword, notNullValue());
     assertThat(regeneratedPassword, not(equalTo(originalPassword)));
@@ -91,7 +91,7 @@ public class PasswordRegenerationTest {
 
   @Test
   public void passwordRegeneration_withoutOverwrite_shouldNotRegeneratePassword() throws Exception {
-    MockHttpServletRequestBuilder post = post("/api/v1/data")
+    final MockHttpServletRequestBuilder post = post("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -101,16 +101,16 @@ public class PasswordRegenerationTest {
         + "  \"type\" : \"password\"\n"
         + "}");
 
-    String caResult = this.mockMvc.perform(post)
+    final String caResult = this.mockMvc.perform(post)
       .andDo(print())
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
 
-    String originalPassword = (new JSONObject(caResult)).getString("value");
+    final String originalPassword = (new JSONObject(caResult)).getString("value");
 
     assertThat(originalPassword, notNullValue());
 
-    MockHttpServletRequestBuilder regeneratePost = post("/api/v1/data")
+    final MockHttpServletRequestBuilder regeneratePost = post("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -120,12 +120,12 @@ public class PasswordRegenerationTest {
         + "  \"type\" : \"password\"\n"
         + "}");
 
-    String regenerateResult = this.mockMvc.perform(regeneratePost)
+    final String regenerateResult = this.mockMvc.perform(regeneratePost)
       .andDo(print())
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
 
-    String regeneratedPassword = (new JSONObject(regenerateResult)).getString("value");
+    final String regeneratedPassword = (new JSONObject(regenerateResult)).getString("value");
 
     assertThat(regeneratedPassword, notNullValue());
     assertThat(regeneratedPassword, equalTo(originalPassword));
@@ -133,7 +133,7 @@ public class PasswordRegenerationTest {
 
   @Test
   public void passwordRegeneration_withOverwrite_shouldRegeneratePassword() throws Exception {
-    MockHttpServletRequestBuilder post = post("/api/v1/data")
+    final MockHttpServletRequestBuilder post = post("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -143,16 +143,16 @@ public class PasswordRegenerationTest {
         + "  \"type\" : \"password\"\n"
         + "}");
 
-    String caResult = this.mockMvc.perform(post)
+    final String caResult = this.mockMvc.perform(post)
       .andDo(print())
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
 
-    String originalPassword = (new JSONObject(caResult)).getString("value");
+    final String originalPassword = (new JSONObject(caResult)).getString("value");
 
     assertThat(originalPassword, notNullValue());
 
-    MockHttpServletRequestBuilder regeneratePost = post("/api/v1/data")
+    final MockHttpServletRequestBuilder regeneratePost = post("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -162,12 +162,12 @@ public class PasswordRegenerationTest {
         + "  \"type\" : \"password\",\n"
         + "  \"overwrite\" : true }");
 
-    String regenerateResult = this.mockMvc.perform(regeneratePost)
+    final String regenerateResult = this.mockMvc.perform(regeneratePost)
       .andDo(print())
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
 
-    String regeneratedPassword = (new JSONObject(regenerateResult)).getString("value");
+    final String regeneratedPassword = (new JSONObject(regenerateResult)).getString("value");
 
     assertThat(regeneratedPassword, notNullValue());
     assertThat(regeneratedPassword, not(equalTo(originalPassword)));
@@ -175,7 +175,7 @@ public class PasswordRegenerationTest {
 
   @Test
   public void passwordRegeneration_withoutOverwrite_butChangingParameter_shouldRegeneratePassword() throws Exception {
-    MockHttpServletRequestBuilder post = post("/api/v1/data")
+    final MockHttpServletRequestBuilder post = post("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -188,16 +188,16 @@ public class PasswordRegenerationTest {
         + "}"
         + "}");
 
-    String caResult = this.mockMvc.perform(post)
+    final String caResult = this.mockMvc.perform(post)
       .andDo(print())
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
 
-    String originalPassword = (new JSONObject(caResult)).getString("value");
+    final String originalPassword = (new JSONObject(caResult)).getString("value");
 
     assertThat(originalPassword, notNullValue());
 
-    MockHttpServletRequestBuilder regeneratePost = post("/api/v1/data")
+    final MockHttpServletRequestBuilder regeneratePost = post("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -210,12 +210,12 @@ public class PasswordRegenerationTest {
         + "}"
         + "}");
 
-    String regenerateResult = this.mockMvc.perform(regeneratePost)
+    final String regenerateResult = this.mockMvc.perform(regeneratePost)
       .andDo(print())
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
 
-    String regeneratedPassword = (new JSONObject(regenerateResult)).getString("value");
+    final String regeneratedPassword = (new JSONObject(regenerateResult)).getString("value");
 
     assertThat(regeneratedPassword, notNullValue());
     assertThat(regeneratedPassword, not(equalTo(originalPassword)));

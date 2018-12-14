@@ -11,9 +11,11 @@ public class CertificateView extends CredentialView {
 
   private Instant expiryDate;
 
-  CertificateView() { /* Jackson */ }
+  CertificateView() {
+    super(); /* Jackson */
+  }
 
-  public CertificateView(CertificateCredentialVersion version) {
+  public CertificateView(final CertificateCredentialVersion version) {
     super(
       version.getVersionCreatedAt(),
       version.getUuid(),
@@ -30,7 +32,7 @@ public class CertificateView extends CredentialView {
     return new CertificateValueView(version);
   }
 
-  public boolean getTransitional() {
+  public boolean isTransitional() {
     return version.isVersionTransitional();
   }
 

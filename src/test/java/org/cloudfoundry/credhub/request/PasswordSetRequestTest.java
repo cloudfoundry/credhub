@@ -20,24 +20,24 @@ import static org.hamcrest.Matchers.instanceOf;
 public class PasswordSetRequestTest {
   @Test
   public void deserializesToPasswordSetRequest() {
-    String json = "{"
+    final String json = "{"
       + "\"name\":\"some-name\","
       + "\"type\":\"password\","
       + "\"value\":\"fake-password\""
       + "}";
-    PasswordSetRequest deserialize = deserialize(json, PasswordSetRequest.class);
+    final PasswordSetRequest deserialize = deserialize(json, PasswordSetRequest.class);
 
     assertThat(deserialize, instanceOf(PasswordSetRequest.class));
   }
 
   @Test
   public void whenAllFieldsAreSet_shouldBeValid() {
-    String json = "{"
+    final String json = "{"
       + "\"name\":\"some-name\","
       + "\"type\":\"password\","
       + "\"value\":\"fake-password\""
       + "}";
-    Set<ConstraintViolation<PasswordSetRequest>> constraintViolations =
+    final Set<ConstraintViolation<PasswordSetRequest>> constraintViolations =
       deserializeAndValidate(json, PasswordSetRequest.class);
 
     assertThat(constraintViolations.size(), equalTo(0));
@@ -45,12 +45,12 @@ public class PasswordSetRequestTest {
 
   @Test
   public void whenTypeHasUnusualCasing_shouldBeValid() {
-    String json = "{"
+    final String json = "{"
       + "\"name\":\"some-name\","
       + "\"type\":\"PasSWorD\","
       + "\"value\":\"fake-password\""
       + "}";
-    Set<ConstraintViolation<PasswordSetRequest>> constraintViolations =
+    final Set<ConstraintViolation<PasswordSetRequest>> constraintViolations =
       deserializeAndValidate(json, PasswordSetRequest.class);
 
     assertThat(constraintViolations.size(), equalTo(0));
@@ -58,11 +58,11 @@ public class PasswordSetRequestTest {
 
   @Test
   public void whenPasswordIsNotSet_shouldBeInvalid() {
-    String json = "{"
+    final String json = "{"
       + "\"name\":\"some-name\","
       + "\"type\":\"password\""
       + "}";
-    Set<ConstraintViolation<PasswordSetRequest>> constraintViolations =
+    final Set<ConstraintViolation<PasswordSetRequest>> constraintViolations =
       deserializeAndValidate(json, PasswordSetRequest.class);
 
     assertThat(constraintViolations, contains(hasViolationWithMessage("error.missing_value")));
@@ -70,12 +70,12 @@ public class PasswordSetRequestTest {
 
   @Test
   public void whenPasswordIsEmpty_shouldBeInvalid() {
-    String json = "{"
+    final String json = "{"
       + "\"name\":\"some-name\","
       + "\"type\":\"password\","
       + "\"value\":\"\""
       + "}";
-    Set<ConstraintViolation<PasswordSetRequest>> constraintViolations =
+    final Set<ConstraintViolation<PasswordSetRequest>> constraintViolations =
       deserializeAndValidate(json, PasswordSetRequest.class);
 
     assertThat(constraintViolations, contains(hasViolationWithMessage("error.missing_value")));

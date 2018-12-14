@@ -14,14 +14,14 @@ public class ParameterizedValidationExceptionTest {
 
   @Test
   public void exception_extendValidationException() {
-    ParameterizedValidationException subject = new ParameterizedValidationException(
+    final ParameterizedValidationException subject = new ParameterizedValidationException(
       "message.code", "foo");
     assertThat(subject, instanceOf(ParameterizedValidationException.class));
   }
 
   @Test
   public void exception_canTakeAMessageCodeWithoutAParamater() {
-    ParameterizedValidationException subject = new ParameterizedValidationException(
+    final ParameterizedValidationException subject = new ParameterizedValidationException(
       "message.code");
     assertThat(subject.getMessage(), equalTo("message.code"));
     assertThat(subject.getParameters(), equalTo(new Object[]{}));
@@ -29,7 +29,7 @@ public class ParameterizedValidationExceptionTest {
 
   @Test
   public void exception_canTakeAMessageCodeAndParameterInTheConstructor() {
-    ParameterizedValidationException subject = new ParameterizedValidationException(
+    final ParameterizedValidationException subject = new ParameterizedValidationException(
       "message.code", "foo");
     assertThat(subject.getMessage(), equalTo("message.code"));
     assertThat(subject.getParameters(), equalTo(new Object[]{"foo"}));
@@ -37,7 +37,7 @@ public class ParameterizedValidationExceptionTest {
 
   @Test
   public void exception_formatsTheOutputOfJsonPathKeysAndRemovesSpecialCharacters() {
-    ParameterizedValidationException subject = new ParameterizedValidationException(
+    final ParameterizedValidationException subject = new ParameterizedValidationException(
       "message.code", "$['iasjdoiasd']");
     assertThat(subject.getParameters(), equalTo(new Object[]{"iasjdoiasd"}));
   }

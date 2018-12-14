@@ -25,53 +25,53 @@ import static org.hamcrest.Matchers.instanceOf;
 public class JsonSetRequestTest {
   @Test
   public void deserializesToJsonSetRequest() {
-    String requestJson = "{\"name\":\"/my-namespace/subTree/credential-name\","
+    final String requestJson = "{\"name\":\"/my-namespace/subTree/credential-name\","
       + "\"type\":\"json\","
       + "\"value\":{\"key\":\"value\",\"fancy\":{\"num\":10},\"array\":[\"foo\",\"bar\"]}}";
 
-    JsonSetRequest deserialize = deserialize(requestJson, JsonSetRequest.class);
+    final JsonSetRequest deserialize = deserialize(requestJson, JsonSetRequest.class);
 
     assertThat(deserialize, instanceOf(JsonSetRequest.class));
   }
 
   @Test
   public void whenAllFieldsAreSet_shouldBeValid() {
-    String jsonString = "{\"foo\":\"bar\",\"nested\":{\"key\":3}}";
-    JsonNode value;
+    final String jsonString = "{\"foo\":\"bar\",\"nested\":{\"key\":3}}";
+    final JsonNode value;
     try {
       value = new ObjectMapper().readTree(jsonString);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
 
-    JsonSetRequest request = new JsonSetRequest();
+    final JsonSetRequest request = new JsonSetRequest();
     request.setName("some-name");
     request.setType("json");
     request.setValue(new JsonCredentialValue(value));
 
-    Set<ConstraintViolation<JsonSetRequest>> constraintViolations = validate(request);
+    final Set<ConstraintViolation<JsonSetRequest>> constraintViolations = validate(request);
 
     assertThat(constraintViolations.size(), equalTo(0));
   }
 
   @Test
   public void whenTypeHasUnusualCasing_shouldBeValid() {
-    String requestJson = "{\"name\":\"/my-namespace/subTree/credential-name\","
+    final String requestJson = "{\"name\":\"/my-namespace/subTree/credential-name\","
       + "\"type\":\"JsOn\","
       + "\"value\":{\"key\":\"value\",\"fancy\":{\"num\":10},\"array\":[\"foo\",\"bar\"]}}";
 
-    Set<ConstraintViolation<JsonSetRequest>> constraintViolations = deserializeAndValidate(requestJson, JsonSetRequest.class);
+    final Set<ConstraintViolation<JsonSetRequest>> constraintViolations = deserializeAndValidate(requestJson, JsonSetRequest.class);
 
     assertThat(constraintViolations.size(), equalTo(0));
   }
 
   @Test
   public void whenValueIsNotSet_shouldBeInvalid() {
-    JsonSetRequest request = new JsonSetRequest();
+    final JsonSetRequest request = new JsonSetRequest();
     request.setName("some-name");
     request.setType("json");
 
-    Set<ConstraintViolation<JsonSetRequest>> constraintViolations = validate(request);
+    final Set<ConstraintViolation<JsonSetRequest>> constraintViolations = validate(request);
 
     assertThat(constraintViolations, contains(hasViolationWithMessage("error.missing_value")));
   }

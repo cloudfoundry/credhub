@@ -45,12 +45,11 @@ public class CertificateCredentialVersionTest {
     when(encryptor.decrypt(encryption)).thenReturn("my-priv");
 
     certificateCredentialData = new CertificateCredentialVersionData("/Foo");
-    subject = new CertificateCredentialVersion(certificateCredentialData)
-      .setEncryptor(encryptor)
-      .setCa(CertificateStringConstants.SELF_SIGNED_CA_CERT)
-      .setCertificate(CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT)
-      .setPrivateKey(CertificateStringConstants.PRIVATE_KEY);
-
+    subject = new CertificateCredentialVersion(certificateCredentialData);
+    subject.setEncryptor(encryptor);
+    subject.setCa(CertificateStringConstants.SELF_SIGNED_CA_CERT);
+    subject.setCertificate(CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT);
+    subject.setPrivateKey(CertificateStringConstants.PRIVATE_KEY);
   }
 
   @Test

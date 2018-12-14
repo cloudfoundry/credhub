@@ -14,7 +14,7 @@ public class EncryptionConfiguration {
     return serverCa;
   }
 
-  public void setServerCa(String serverCa) {
+  public void setServerCa(final String serverCa) {
     this.serverCa = serverCa;
   }
 
@@ -22,7 +22,7 @@ public class EncryptionConfiguration {
     return clientCertificate;
   }
 
-  public void setClientCertificate(String clientCertificate) {
+  public void setClientCertificate(final String clientCertificate) {
     this.clientCertificate = clientCertificate;
   }
 
@@ -30,7 +30,7 @@ public class EncryptionConfiguration {
     return clientKey;
   }
 
-  public void setClientKey(String clientKey) {
+  public void setClientKey(final String clientKey) {
     this.clientKey = clientKey;
   }
 
@@ -38,7 +38,7 @@ public class EncryptionConfiguration {
     return port;
   }
 
-  public void setPort(Integer port) {
+  public void setPort(final Integer port) {
     this.port = port;
   }
 
@@ -46,7 +46,7 @@ public class EncryptionConfiguration {
     return host;
   }
 
-  public void setHost(String host) {
+  public void setHost(final String host) {
     this.host = host;
   }
 
@@ -54,7 +54,7 @@ public class EncryptionConfiguration {
     return partition;
   }
 
-  public void setPartition(String partition) {
+  public void setPartition(final String partition) {
     this.partition = partition;
   }
 
@@ -62,7 +62,7 @@ public class EncryptionConfiguration {
     return partitionPassword;
   }
 
-  public void setPartitionPassword(String partitionPassword) {
+  public void setPartitionPassword(final String partitionPassword) {
     this.partitionPassword = partitionPassword;
   }
 
@@ -70,7 +70,7 @@ public class EncryptionConfiguration {
     return endpoint;
   }
 
-  public void setEndpoint(String endpoint) {
+  public void setEndpoint(final String endpoint) {
     this.endpoint = endpoint;
   }
 

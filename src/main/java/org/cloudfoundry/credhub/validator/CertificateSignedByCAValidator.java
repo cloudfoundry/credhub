@@ -6,20 +6,19 @@ import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
 import org.apache.commons.lang3.StringUtils;
-import org.cloudfoundry.credhub.exceptions.MalformedCertificateException;
 import org.cloudfoundry.credhub.util.CertificateReader;
 
 public class CertificateSignedByCAValidator implements ConstraintValidator<RequireCertificateSignedByCA, Object> {
 
   @Override
-  public void initialize(RequireCertificateSignedByCA constraintAnnotation) {
+  public void initialize(final RequireCertificateSignedByCA constraintAnnotation) {
   }
 
   @Override
-  public boolean isValid(Object value, ConstraintValidatorContext context) {
+  public boolean isValid(final Object value, final ConstraintValidatorContext context) {
     try {
-      Field certificateField = value.getClass().getDeclaredField("certificate");
-      Field caField = value.getClass().getDeclaredField("ca");
+      final Field certificateField = value.getClass().getDeclaredField("certificate");
+      final Field caField = value.getClass().getDeclaredField("ca");
       certificateField.setAccessible(true);
       caField.setAccessible(true);
 
@@ -33,9 +32,7 @@ public class CertificateSignedByCAValidator implements ConstraintValidator<Requi
       final CertificateReader certificateReader = new CertificateReader(certificateValue);
       return certificateReader.isSignedByCa(caValue);
 
-    } catch (MalformedCertificateException e) {
-      throw e;
-    } catch (Exception e) {
+    } catch (NoSuchFieldException | IllegalAccessException e) {
       throw new RuntimeException(e);
     }
   }

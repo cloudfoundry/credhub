@@ -35,20 +35,21 @@ import org.cloudfoundry.credhub.auth.OAuth2IssuerService;
 public class OAuth2ExtraValidationFilter extends OncePerRequestFilter {
 
   private final MessageSourceAccessor messageSourceAccessor;
-  private TokenStore tokenStore;
-  private OAuth2AuthenticationExceptionHandler oAuth2AuthenticationExceptionHandler;
-  private AuthenticationEventPublisher eventPublisher;
-  private TokenExtractor tokenExtractor;
-  private OAuth2IssuerService oAuth2IssuerService;
+  private final TokenStore tokenStore;
+  private final OAuth2AuthenticationExceptionHandler oAuth2AuthenticationExceptionHandler;
+  private final AuthenticationEventPublisher eventPublisher;
+  private final TokenExtractor tokenExtractor;
+  private final OAuth2IssuerService oAuth2IssuerService;
 
   @Autowired
   OAuth2ExtraValidationFilter(
-    OAuth2IssuerService oAuth2IssuerService,
-    TokenStore tokenStore,
-    OAuth2AuthenticationExceptionHandler oAuth2AuthenticationExceptionHandler,
-    MessageSourceAccessor messageSourceAccessor,
-    AuthenticationEventPublisher eventPublisher
+    final OAuth2IssuerService oAuth2IssuerService,
+    final TokenStore tokenStore,
+    final OAuth2AuthenticationExceptionHandler oAuth2AuthenticationExceptionHandler,
+    final MessageSourceAccessor messageSourceAccessor,
+    final AuthenticationEventPublisher eventPublisher
   ) {
+    super();
     this.oAuth2IssuerService = oAuth2IssuerService;
     this.tokenStore = tokenStore;
     this.oAuth2AuthenticationExceptionHandler = oAuth2AuthenticationExceptionHandler;
@@ -58,21 +59,22 @@ public class OAuth2ExtraValidationFilter extends OncePerRequestFilter {
   }
 
   @Override
-  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+  protected void doFilterInternal(
+    final HttpServletRequest request, final HttpServletResponse response, final FilterChain filterChain)
     throws ServletException, IOException {
-    Authentication authentication = tokenExtractor.extract(request);
+    final Authentication authentication = tokenExtractor.extract(request);
 
     try {
       if (authentication != null) {
-        String token = (String) authentication.getPrincipal();
-        OAuth2AccessToken accessToken = tokenStore.readAccessToken(token);
-        Map<String, Object> additionalInformation = accessToken.getAdditionalInformation();
-        String issuer = (String) additionalInformation.getOrDefault("iss", "");
+        final String token = (String) authentication.getPrincipal();
+        final OAuth2AccessToken accessToken = tokenStore.readAccessToken(token);
+        final Map<String, Object> additionalInformation = accessToken.getAdditionalInformation();
+        final String issuer = (String) additionalInformation.getOrDefault("iss", "");
 
         if (!issuer.equals(oAuth2IssuerService.getIssuer())) {
           tokenStore.removeAccessToken(accessToken);
 
-          String errorMessage = messageSourceAccessor.getMessage("error.oauth.invalid_issuer");
+          final String errorMessage = messageSourceAccessor.getMessage("error.oauth.invalid_issuer");
           throw new OAuth2Exception(errorMessage);
           //        AuthenticationServiceException authException = new AuthenticationServiceException(errorMessage);
           //        oAuth2AuthenticationExceptionHandler.commence(request, response, authException);
@@ -81,14 +83,14 @@ public class OAuth2ExtraValidationFilter extends OncePerRequestFilter {
       }
 
       filterChain.doFilter(request, response);
-    } catch (OAuth2Exception exception) {
+    } catch (final OAuth2Exception exception) {
       SecurityContextHolder.clearContext();
-      InsufficientAuthenticationException authException = new InsufficientAuthenticationException(
+      final InsufficientAuthenticationException authException = new InsufficientAuthenticationException(
         exception.getMessage(), exception);
       eventPublisher.publishAuthenticationFailure(new BadCredentialsException(exception.getMessage(), exception),
         new PreAuthenticatedAuthenticationToken("access-token", "N/A"));
       oAuth2AuthenticationExceptionHandler.handleException(request, response, authException);
-    } catch (RuntimeException exception) {
+    } catch (final RuntimeException exception) {
       if (exception.getCause() instanceof SignatureException || exception
         .getCause() instanceof InvalidSignatureException) {
         oAuth2AuthenticationExceptionHandler.handleException(request, response, exception);

@@ -47,7 +47,7 @@ public class ExternalKeyProxyTest {
     subject = new ExternalKeyProxy(encryptionKeyMetadata, encryptionProvider);
     assertTrue(subject.matchesCanary(encryptionKeyCanary));
 
-    ArgumentCaptor<EncryptionKey> argument = ArgumentCaptor.forClass(EncryptionKey.class);
+    final ArgumentCaptor<EncryptionKey> argument = ArgumentCaptor.forClass(EncryptionKey.class);
     verify(encryptionProvider).decrypt(argument.capture(), eq("value".getBytes(StringUtil.UTF_8)), eq("nonce".getBytes(StringUtil.UTF_8)));
     assertEquals(encryptionProvider, argument.getValue().getProvider());
     assertEquals("name", argument.getValue().getEncryptionKeyName());
@@ -93,8 +93,8 @@ public class ExternalKeyProxyTest {
     try {
       subject.matchesCanary(encryptionKeyCanary);
       fail("Expected IncorrectKeyException, got none");
-    } catch (IncorrectKeyException e) {
-    } catch (RuntimeException e) {
+    } catch (final IncorrectKeyException e) {
+    } catch (final RuntimeException e) {
       fail("Wrong exception. Expected IncorrectKeyException but got " + e.getClass().toString());
     }
   }
@@ -107,8 +107,8 @@ public class ExternalKeyProxyTest {
     try {
       subject.matchesCanary(encryptionKeyCanary);
       fail("Expected IncorrectKeyException, got none");
-    } catch (IncorrectKeyException e) {
-    } catch (RuntimeException e) {
+    } catch (final IncorrectKeyException e) {
+    } catch (final RuntimeException e) {
       fail("Wrong exception. Expected IncorrectKeyException but got " + e.getClass().toString());
     }
   }

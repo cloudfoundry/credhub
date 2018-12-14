@@ -28,31 +28,32 @@ import static org.cloudfoundry.credhub.request.PermissionOperation.WRITE_ACL;
 @Service
 public class PermissionService {
 
-  private PermissionDataService permissionDataService;
-  private PermissionCheckingService permissionCheckingService;
-  private UserContextHolder userContextHolder;
+  private final PermissionDataService permissionDataService;
+  private final PermissionCheckingService permissionCheckingService;
+  private final UserContextHolder userContextHolder;
 
   @Autowired
-  public PermissionService(PermissionDataService permissionDataService,
-                           PermissionCheckingService permissionCheckingService,
-                           UserContextHolder userContextHolder) {
+  public PermissionService(final PermissionDataService permissionDataService,
+                           final PermissionCheckingService permissionCheckingService,
+                           final UserContextHolder userContextHolder) {
+    super();
     this.permissionDataService = permissionDataService;
     this.permissionCheckingService = permissionCheckingService;
     this.userContextHolder = userContextHolder;
   }
 
-  public List<PermissionOperation> getAllowedOperationsForLogging(String credentialName, String actor) {
+  public List<PermissionOperation> getAllowedOperationsForLogging(final String credentialName, final String actor) {
     return permissionDataService.getAllowedOperations(credentialName, actor);
   }
 
-  public List<PermissionData> savePermissionsForUser(List<PermissionEntry> permissionEntryList) {
+  public List<PermissionData> savePermissionsForUser(final List<PermissionEntry> permissionEntryList) {
 
-    if (permissionEntryList.size() == 0) {
+    if (permissionEntryList.isEmpty()) {
       return new ArrayList<>();
     }
 
-    UserContext userContext = userContextHolder.getUserContext();
-    for (PermissionEntry permissionEntry : permissionEntryList) {
+    final UserContext userContext = userContextHolder.getUserContext();
+    for (final PermissionEntry permissionEntry : permissionEntryList) {
       if (!permissionCheckingService.hasPermission(userContext.getActor(), permissionEntry.getPath(), WRITE_ACL)) {
         throw new EntryNotFoundException("error.credential.invalid_access");
       }
@@ -66,14 +67,14 @@ public class PermissionService {
     return permissionDataService.savePermissionsWithLogging(permissionEntryList);
   }
 
-  public void savePermissions(List<PermissionEntry> permissionEntryList) {
-    if (permissionEntryList.size() == 0) {
+  public void savePermissions(final List<PermissionEntry> permissionEntryList) {
+    if (permissionEntryList.isEmpty()) {
       return;
     }
     permissionDataService.savePermissions(permissionEntryList);
   }
 
-  public List<PermissionEntry> getPermissions(CredentialVersion credentialVersion) {
+  public List<PermissionEntry> getPermissions(final CredentialVersion credentialVersion) {
     if (credentialVersion == null) {
       throw new EntryNotFoundException("error.resource_not_found");
     }
@@ -85,7 +86,7 @@ public class PermissionService {
     return getPermissions(credentialVersion.getCredential());
   }
 
-  public PermissionData getPermissions(UUID guid) {
+  public PermissionData getPermissions(final UUID guid) {
     if (guid == null) {
       throw new EntryNotFoundException("error.resource_not_found");
     }
@@ -97,7 +98,7 @@ public class PermissionService {
     return permissionDataService.getPermission(guid);
   }
 
-  public boolean deletePermissions(String credentialName, String actor) {
+  public boolean deletePermissions(final String credentialName, final String actor) {
     if (!permissionCheckingService
       .hasPermission(userContextHolder.getUserContext().getActor(), credentialName, WRITE_ACL)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
@@ -110,28 +111,28 @@ public class PermissionService {
     return permissionDataService.deletePermissions(credentialName, actor);
   }
 
-  private List<PermissionEntry> getPermissions(Credential credential) {
+  private List<PermissionEntry> getPermissions(final Credential credential) {
     return permissionDataService.getPermissions(credential);
   }
 
-  public PermissionData putPermissions(String guid, PermissionsV2Request permissionsRequest) {
-    UserContext userContext = userContextHolder.getUserContext();
-    UUID permissionUUID = parseUUID(guid);
+  public PermissionData putPermissions(final String guid, final PermissionsV2Request permissionsRequest) {
+    final UserContext userContext = userContextHolder.getUserContext();
+    final UUID permissionUUID = parseUUID(guid);
     checkActorPermissions(permissionUUID, userContext.getActor());
 
     return permissionDataService.putPermissions(guid, permissionsRequest);
   }
 
-  public PermissionData patchPermissions(String guid, List<PermissionOperation> operations) {
-    UserContext userContext = userContextHolder.getUserContext();
-    UUID permissionUUID = parseUUID(guid);
+  public PermissionData patchPermissions(final String guid, final List<PermissionOperation> operations) {
+    final UserContext userContext = userContextHolder.getUserContext();
+    final UUID permissionUUID = parseUUID(guid);
     checkActorPermissions(permissionUUID, userContext.getActor());
 
     return permissionDataService.patchPermissions(guid, operations);
   }
 
-  public PermissionData saveV2Permissions(PermissionsV2Request permissionsRequest) {
-    UserContext userContext = userContextHolder.getUserContext();
+  public PermissionData saveV2Permissions(final PermissionsV2Request permissionsRequest) {
+    final UserContext userContext = userContextHolder.getUserContext();
     if (!permissionCheckingService.hasPermission(userContext.getActor(), permissionsRequest.getPath(), WRITE_ACL)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
@@ -141,22 +142,22 @@ public class PermissionService {
     return permissionDataService.saveV2Permissions(permissionsRequest);
   }
 
-  public PermissionData deletePermissions(String guid) {
-    UserContext userContext = userContextHolder.getUserContext();
-    UUID permissionUUID = parseUUID(guid);
+  public PermissionData deletePermissions(final String guid) {
+    final UserContext userContext = userContextHolder.getUserContext();
+    final UUID permissionUUID = parseUUID(guid);
     checkActorPermissions(permissionUUID, userContext.getActor());
     return permissionDataService.deletePermissions(permissionUUID);
   }
 
-  public PermissionData findByPathAndActor(String path, String actor) {
-    UserContext userContext = userContextHolder.getUserContext();
+  public PermissionData findByPathAndActor(final String path, final String actor) {
+    final UserContext userContext = userContextHolder.getUserContext();
     if (!permissionCheckingService.hasPermission(userContext.getActor(), path, READ_ACL)) {
       throw new EntryNotFoundException("error.permission.invalid_access");
     }
     return permissionDataService.findByPathAndActor(path, actor);
   }
 
-  private void checkActorPermissions(UUID permissionUUID, String actor) {
+  private void checkActorPermissions(final UUID permissionUUID, final String actor) {
     if (!permissionCheckingService.hasPermission(actor, permissionUUID, WRITE_ACL)) {
       throw new EntryNotFoundException("error.permission.does_not_exist");
     }
@@ -165,11 +166,11 @@ public class PermissionService {
     }
   }
 
-  private UUID parseUUID(String guid) {
-    UUID permissionUUID;
+  private UUID parseUUID(final String guid) {
+    final UUID permissionUUID;
     try {
       permissionUUID = UUID.fromString(guid);
-    } catch (IllegalArgumentException e) {
+    } catch (final IllegalArgumentException e) {
       throw new PermissionDoesNotExistException("error.permission.does_not_exist");
     }
     return permissionUUID;

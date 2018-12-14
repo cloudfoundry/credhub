@@ -30,12 +30,12 @@ public class PassayStringCredentialValueGeneratorTest {
 
   @Test
   public void canGenerateCredential() {
-    StringGenerationParameters generationParameters = new StringGenerationParameters();
+    final StringGenerationParameters generationParameters = new StringGenerationParameters();
 
     when(passwordGenerator.generatePassword(eq(subject.DEFAULT_LENGTH), anyList()))
       .thenReturn("very-credential");
 
-    StringCredentialValue stringCredentialValue = subject.generateCredential(generationParameters);
+    final StringCredentialValue stringCredentialValue = subject.generateCredential(generationParameters);
     assertThat(stringCredentialValue.getStringCredential(), equalTo("very-credential"));
   }
 
@@ -43,10 +43,10 @@ public class PassayStringCredentialValueGeneratorTest {
   public void canGenerateCredentialWithSpecificLength() {
     when(passwordGenerator.generatePassword(eq(42), anyList())).thenReturn("very-credential");
 
-    StringGenerationParameters generationParameters = new StringGenerationParameters();
+    final StringGenerationParameters generationParameters = new StringGenerationParameters();
     generationParameters.setLength(42);
 
-    StringCredentialValue stringCredentialValue = subject.generateCredential(generationParameters);
+    final StringCredentialValue stringCredentialValue = subject.generateCredential(generationParameters);
     assertThat(stringCredentialValue.getStringCredential(), equalTo("very-credential"));
   }
 
@@ -55,10 +55,10 @@ public class PassayStringCredentialValueGeneratorTest {
     when(passwordGenerator.generatePassword(eq(subject.DEFAULT_LENGTH), anyList()))
       .thenReturn("very-credential");
 
-    StringGenerationParameters generationParameters = new StringGenerationParameters();
+    final StringGenerationParameters generationParameters = new StringGenerationParameters();
     generationParameters.setLength(3);
 
-    StringCredentialValue stringCredentialValue = subject.generateCredential(generationParameters);
+    final StringCredentialValue stringCredentialValue = subject.generateCredential(generationParameters);
     assertThat(stringCredentialValue.getStringCredential(), equalTo("very-credential"));
   }
 
@@ -67,10 +67,10 @@ public class PassayStringCredentialValueGeneratorTest {
     when(passwordGenerator.generatePassword(eq(subject.DEFAULT_LENGTH), anyList()))
       .thenReturn("very-credential");
 
-    StringGenerationParameters generationParameters = new StringGenerationParameters();
+    final StringGenerationParameters generationParameters = new StringGenerationParameters();
     generationParameters.setLength(201);
 
-    StringCredentialValue stringCredentialValue = subject.generateCredential(generationParameters);
+    final StringCredentialValue stringCredentialValue = subject.generateCredential(generationParameters);
     assertThat(stringCredentialValue.getStringCredential(), equalTo("very-credential"));
   }
 }

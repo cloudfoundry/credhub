@@ -14,18 +14,17 @@ import javax.crypto.SecretKey;
 
 import org.cloudfoundry.credhub.config.EncryptionConfiguration;
 
-
 public class LunaConnection {
 
   private final EncryptionConfiguration lunaProviderConfiguration;
-  private Provider provider;
-  private Object lunaSlotManager;
+  private final Provider provider;
+  private final Object lunaSlotManager;
   private KeyStore keyStore;
-  private SecureRandom secureRandom;
-  private KeyGenerator aesKeyGenerator;
+  private final SecureRandom secureRandom;
+  private final KeyGenerator aesKeyGenerator;
 
-
-  public LunaConnection(EncryptionConfiguration lunaProviderConfiguration) throws Exception {
+  public LunaConnection(final EncryptionConfiguration lunaProviderConfiguration) throws Exception {
+    super();
     this.lunaProviderConfiguration = lunaProviderConfiguration;
     provider = (Provider) Class.forName("com.safenetinc.luna.provider.LunaProvider").newInstance();
     Security.addProvider(provider);
@@ -37,9 +36,9 @@ public class LunaConnection {
     // https://www.pivotaltracker.com/story/show/148107855
     // SecureRandom seed is 440 bits in accordance with NIST Special Publication 800-90A Revision 1, section 10.1
     // http://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-90Ar1.pdf
-    SecureRandom lunaRandom = SecureRandom.getInstance("LunaRNG");
+    final SecureRandom lunaRandom = SecureRandom.getInstance("LunaRNG");
     secureRandom = SecureRandom.getInstance("SHA1PRNG");
-    byte[] seed = lunaRandom.generateSeed(55);
+    final byte[] seed = lunaRandom.generateSeed(55);
     secureRandom.setSeed(seed); // 55b * 8 = 440B
 
     aesKeyGenerator = KeyGenerator.getInstance("AES", provider);
@@ -53,7 +52,7 @@ public class LunaConnection {
         login(lunaProviderConfiguration.getPartition(),
           lunaProviderConfiguration.getPartitionPassword());
         makeKeyStore();
-      } catch (Exception e) {
+      } catch (final Exception e) {
         throw new RuntimeException(e);
       }
     }
@@ -63,7 +62,7 @@ public class LunaConnection {
     return provider;
   }
 
-  SecureRandom getSecureRandom() {
+  public SecureRandom getSecureRandom() {
     return secureRandom;
   }
 
@@ -71,16 +70,29 @@ public class LunaConnection {
     return aesKeyGenerator.generateKey();
   }
 
+  public boolean containsAlias(final String encryptionKeyAlias) throws KeyStoreException {
+    return keyStore.containsAlias(encryptionKeyAlias);
+  }
+
+  public void setKeyEntry(final String encryptionKeyAlias, final SecretKey aesKey) throws KeyStoreException {
+    keyStore.setKeyEntry(encryptionKeyAlias, aesKey, null, null);
+  }
+
+  public Key getKey(final String encryptionKeyAlias)
+    throws UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException {
+    return keyStore.getKey(encryptionKeyAlias, null);
+  }
+
   private void makeKeyStore() throws Exception {
     keyStore = KeyStore.getInstance("Luna", provider);
     keyStore.load(null, null);
   }
 
-  private void login(String partitionName, String partitionPassword) {
+  private void login(final String partitionName, final String partitionPassword) {
     try {
       lunaSlotManager.getClass().getMethod("login", String.class, String.class)
         .invoke(lunaSlotManager, partitionName, partitionPassword);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
@@ -88,7 +100,7 @@ public class LunaConnection {
   private void reinitialize() {
     try {
       lunaSlotManager.getClass().getMethod("reinitialize").invoke(lunaSlotManager);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
@@ -96,23 +108,10 @@ public class LunaConnection {
   private boolean isLoggedIn() {
     try {
       return (boolean) lunaSlotManager.getClass().getMethod("isLoggedIn").invoke(lunaSlotManager);
-    } catch (IllegalAccessException | NoSuchMethodException e) {
+    } catch (final IllegalAccessException | NoSuchMethodException e) {
       throw new RuntimeException(e);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       return false;
     }
-  }
-
-  public boolean containsAlias(String encryptionKeyAlias) throws KeyStoreException {
-    return keyStore.containsAlias(encryptionKeyAlias);
-  }
-
-  public void setKeyEntry(String encryptionKeyAlias, SecretKey aesKey) throws KeyStoreException {
-    keyStore.setKeyEntry(encryptionKeyAlias, aesKey, null, null);
-  }
-
-  public Key getKey(String encryptionKeyAlias)
-    throws UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException {
-    return keyStore.getKey(encryptionKeyAlias, null);
   }
 }

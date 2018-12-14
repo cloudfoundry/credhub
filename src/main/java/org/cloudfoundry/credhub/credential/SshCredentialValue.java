@@ -8,7 +8,13 @@ import org.cloudfoundry.credhub.validator.RequireAnyOf;
 
 import static com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY;
 
-@RequireAnyOf(message = "error.missing_rsa_ssh_parameters", fields = {"publicKey", "privateKey"})
+@RequireAnyOf(
+  message = "error.missing_rsa_ssh_parameters",
+  fields = {
+    "publicKey",
+    "privateKey",
+  }
+)
 @JsonAutoDetect
 public class SshCredentialValue implements CredentialValue {
 
@@ -20,9 +26,11 @@ public class SshCredentialValue implements CredentialValue {
 
   @SuppressWarnings("unused")
   public SshCredentialValue() {
+    super();
   }
 
-  public SshCredentialValue(String publicKey, String privateKey, String publicKeyFingerprint) {
+  public SshCredentialValue(final String publicKey, final String privateKey, final String publicKeyFingerprint) {
+    super();
     this.publicKey = publicKey;
     this.privateKey = privateKey;
     this.publicKeyFingerprint = publicKeyFingerprint;

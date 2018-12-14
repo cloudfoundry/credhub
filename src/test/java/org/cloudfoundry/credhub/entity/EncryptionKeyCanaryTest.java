@@ -25,10 +25,10 @@ public class EncryptionKeyCanaryTest {
 
   @Test
   public void encryptedCanaryValue_doesNotStoreOrPassByReference() throws Exception {
-    byte[] toModify = new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 11, 22, 33, 44, 55, 66, 77, 88, 99, 100};
+    final byte[] toModify = new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 11, 22, 33, 44, 55, 66, 77, 88, 99, 100};
 
     subject.setEncryptedCanaryValue(toModify);
-    byte[] unModified = toModify.clone();
+    final byte[] unModified = toModify.clone();
 
     toModify[0] = (byte) 'a';
 
@@ -45,12 +45,12 @@ public class EncryptionKeyCanaryTest {
 
   @Test
   public void nonce_doesNotStoreOrPassByReference() throws Exception {
-    byte[] toModify = "foobar".getBytes(StringUtil.UTF_8);
+    final byte[] toModify = "foobar".getBytes(StringUtil.UTF_8);
     subject.setEncryptedCanaryValue(toModify);
 
 
     subject.setNonce(toModify);
-    byte[] unModified = toModify.clone();
+    final byte[] unModified = toModify.clone();
 
     toModify[0] = (byte) 'a';
 
@@ -67,10 +67,10 @@ public class EncryptionKeyCanaryTest {
 
   @Test
   public void salt_doesNotStoreOrPassByReference() throws Exception {
-    byte[] toModify = "foobar".getBytes(StringUtil.UTF_8);
+    final byte[] toModify = "foobar".getBytes(StringUtil.UTF_8);
 
     subject.setSalt(toModify);
-    byte[] unModified = toModify.clone();
+    final byte[] unModified = toModify.clone();
 
     toModify[0] = (byte) 'a';
 
@@ -87,7 +87,7 @@ public class EncryptionKeyCanaryTest {
 
   @Test
   public void setEncryptionKeyUuid_shouldSetTheUUID() {
-    UUID uuid = UUID.randomUUID();
+    final UUID uuid = UUID.randomUUID();
 
     subject.setEncryptionKeyUuid(uuid);
 

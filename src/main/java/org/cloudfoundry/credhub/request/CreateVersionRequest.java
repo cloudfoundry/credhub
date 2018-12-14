@@ -16,10 +16,12 @@ public class CreateVersionRequest {
   private boolean transitional;
 
   public CreateVersionRequest() {
+    super();
     /* this needs to be there for jackson to be happy */
   }
 
-  public CreateVersionRequest(CertificateCredentialValue value, boolean transitional) {
+  public CreateVersionRequest(final CertificateCredentialValue value, final boolean transitional) {
+    super();
     this.value = value;
     this.transitional = transitional;
   }
@@ -28,7 +30,7 @@ public class CreateVersionRequest {
     return transitional;
   }
 
-  public void setTransitional(boolean transitional) {
+  public void setTransitional(final boolean transitional) {
     this.transitional = transitional;
   }
 
@@ -36,7 +38,7 @@ public class CreateVersionRequest {
     return value;
   }
 
-  public void setValue(CertificateCredentialValue value) {
+  public void setValue(final CertificateCredentialValue value) {
     this.value = value;
   }
 }

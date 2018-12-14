@@ -43,7 +43,7 @@ public class TimedRetryTest {
     expectedTime = startTime;
     // this should get called twice, once right away and once again after one second has passed
     // it asserts that and allows the TimedRetry to stop after the second assertion
-    Supplier<Boolean> checkTime = () -> {
+    final Supplier<Boolean> checkTime = () -> {
       assertThat(expectedTime, equalTo(currentTimeProvider.currentTimeMillis()));
       if (expectedTime < endTime) {
         expectedTime += 1000;

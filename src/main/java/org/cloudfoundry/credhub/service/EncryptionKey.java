@@ -8,11 +8,12 @@ import org.cloudfoundry.credhub.entity.EncryptedValue;
 
 public class EncryptionKey implements RandomNumberGenerator {
   private final Key key;
-  private EncryptionProvider provider;
+  private final EncryptionProvider provider;
   private UUID uuid;
   private String encryptionKeyName;
 
-  public EncryptionKey(EncryptionProvider provider, UUID uuid, Key key, String encryptionKeyName) {
+  public EncryptionKey(final EncryptionProvider provider, final UUID uuid, final Key key, final String encryptionKeyName) {
+    super();
     this.provider = provider;
     this.uuid = uuid;
     this.key = key;
@@ -27,15 +28,15 @@ public class EncryptionKey implements RandomNumberGenerator {
     return uuid;
   }
 
-  public void setUuid(UUID uuid) {
+  public void setUuid(final UUID uuid) {
     this.uuid = uuid;
   }
 
-  public String decrypt(byte[] encryptedValue, byte[] nonce) throws Exception {
+  public String decrypt(final byte[] encryptedValue, final byte[] nonce) throws Exception {
     return provider.decrypt(this, encryptedValue, nonce);
   }
 
-  public EncryptedValue encrypt(String value) throws Exception {
+  public EncryptedValue encrypt(final String value) throws Exception {
     return provider.encrypt(this, value);
   }
 
@@ -52,7 +53,7 @@ public class EncryptionKey implements RandomNumberGenerator {
     return encryptionKeyName;
   }
 
-  public void setEncryptionKeyName(String encryptionKeyName) {
+  public void setEncryptionKeyName(final String encryptionKeyName) {
     this.encryptionKeyName = encryptionKeyName;
   }
 }

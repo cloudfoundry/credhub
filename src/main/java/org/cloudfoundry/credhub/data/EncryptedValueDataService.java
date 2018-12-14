@@ -22,26 +22,27 @@ public class EncryptedValueDataService {
 
   @Autowired
   protected EncryptedValueDataService(
-    EncryptedValueRepository encryptedValueRepository,
-    Encryptor encryptor) {
+    final EncryptedValueRepository encryptedValueRepository,
+    final Encryptor encryptor) {
+    super();
     this.encryptedValueRepository = encryptedValueRepository;
     this.encryptor = encryptor;
   }
 
-  public Long countAllByCanaryUuid(UUID uuid) {
+  public Long countAllByCanaryUuid(final UUID uuid) {
     return encryptedValueRepository.countByEncryptionKeyUuidNot(uuid);
   }
 
-  public Slice<EncryptedValue> findByCanaryUuids(List<UUID> canaryUuids) {
+  public Slice<EncryptedValue> findByCanaryUuids(final List<UUID> canaryUuids) {
     return encryptedValueRepository
       .findByEncryptionKeyUuidIn(canaryUuids,
         PageRequest.of(0, BATCH_SIZE)
       );
   }
 
-  public void rotate(EncryptedValue encryptedValue) {
-    String decryptedValue = encryptor.decrypt(encryptedValue);
-    EncryptedValue newEncryptedValue = encryptor.encrypt(decryptedValue);
+  public void rotate(final EncryptedValue encryptedValue) {
+    final String decryptedValue = encryptor.decrypt(encryptedValue);
+    final EncryptedValue newEncryptedValue = encryptor.encrypt(decryptedValue);
     newEncryptedValue.setUuid(encryptedValue.getUuid());
     encryptedValueRepository.saveAndFlush(newEncryptedValue);
   }

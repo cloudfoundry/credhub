@@ -45,16 +45,16 @@ public class EncryptionKeyCanaryDataServiceTest {
 
   @Test
   public void save_savesTheEncryptionCanary() {
-    EncryptionKeyCanary encryptionKeyCanary = new EncryptionKeyCanary();
+    final EncryptionKeyCanary encryptionKeyCanary = new EncryptionKeyCanary();
     encryptionKeyCanary.setNonce("test-nonce".getBytes(StringUtil.UTF_8));
     encryptionKeyCanary.setEncryptedCanaryValue("test-value".getBytes(StringUtil.UTF_8));
     subject.save(encryptionKeyCanary);
 
-    List<EncryptionKeyCanary> canaries = subject.findAll();
+    final List<EncryptionKeyCanary> canaries = subject.findAll();
 
     assertThat(canaries, hasSize(1));
 
-    EncryptionKeyCanary actual = canaries.get(0);
+    final EncryptionKeyCanary actual = canaries.get(0);
 
     assertNotNull(actual.getUuid());
     assertThat(actual.getUuid(), equalTo(encryptionKeyCanary.getUuid()));
@@ -70,14 +70,14 @@ public class EncryptionKeyCanaryDataServiceTest {
   @Test
   public void findAll_whenThereAreCanaries_returnsCanariesAsAList() {
 
-    EncryptionKeyCanary firstCanary = new EncryptionKeyCanary();
-    EncryptionKeyCanary secondCanary = new EncryptionKeyCanary();
+    final EncryptionKeyCanary firstCanary = new EncryptionKeyCanary();
+    final EncryptionKeyCanary secondCanary = new EncryptionKeyCanary();
 
     subject.save(firstCanary);
     subject.save(secondCanary);
 
-    List<EncryptionKeyCanary> canaries = subject.findAll();
-    List<UUID> uuids = canaries.stream().map(canary -> canary.getUuid())
+    final List<EncryptionKeyCanary> canaries = subject.findAll();
+    final List<UUID> uuids = canaries.stream().map(canary -> canary.getUuid())
       .collect(Collectors.toList());
 
     assertThat(canaries, hasSize(2));

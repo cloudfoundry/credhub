@@ -22,7 +22,7 @@ public class CurrentTimeProvider implements DateTimeProvider {
     return System.currentTimeMillis();
   }
 
-  public void sleep(long sleepTimeInMillis) throws InterruptedException {
+  public void sleep(final long sleepTimeInMillis) throws InterruptedException {
     Thread.sleep(sleepTimeInMillis);
   }
 }

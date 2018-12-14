@@ -34,28 +34,28 @@ import static org.cloudfoundry.credhub.controller.v1.CertificatesController.API_
 @RequestMapping(API_V1_CERTIFICATES)
 public class CertificatesController {
 
-  static final String API_V1_CERTIFICATES = "api/v1/certificates";
+  public static final String API_V1_CERTIFICATES = "api/v1/certificates";
 
-  private CEFAuditRecord auditRecord;
-  private CertificatesHandler certificatesHandler;
+  private final CEFAuditRecord auditRecord;
+  private final CertificatesHandler certificatesHandler;
 
   @Autowired
-  public CertificatesController(CertificatesHandler certificateHandler, CEFAuditRecord auditRecord) {
+  public CertificatesController(final CertificatesHandler certificateHandler, final CEFAuditRecord auditRecord) {
+    super();
     this.certificatesHandler = certificateHandler;
     this.auditRecord = auditRecord;
   }
 
   @PostMapping(value = "/{certificateId}/regenerate", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ResponseStatus(HttpStatus.OK)
-  public CredentialView regenerate(@RequestBody(required = false) CertificateRegenerateRequest requestBody,
-                                   @PathVariable String certificateId) {
-    if (requestBody == null) {
-      requestBody = new CertificateRegenerateRequest();
-    }
-    CertificateRegenerateRequest finalRequestBody = requestBody;
+  public CredentialView regenerate(
+    @RequestBody(required = false) final CertificateRegenerateRequest requestBody,
+    @PathVariable final String certificateId
+  ) {
+    final CertificateRegenerateRequest finalRequestBody = requestBody == null ? new CertificateRegenerateRequest() : requestBody;
 
-    RegenerateCertificate certificate = new RegenerateCertificate();
-    certificate.setTransitional(requestBody.isTransitional());
+    final RegenerateCertificate certificate = new RegenerateCertificate();
+    certificate.setTransitional(finalRequestBody.isTransitional());
     auditRecord.setRequestDetails(certificate);
 
     return certificatesHandler.handleRegenerate(certificateId, finalRequestBody);
@@ -71,9 +71,9 @@ public class CertificatesController {
 
   @PutMapping(value = "/{certificateId}/update_transitional_version", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ResponseStatus(HttpStatus.OK)
-  public List<CertificateView> updateTransitionalVersion(@RequestBody UpdateTransitionalVersionRequest requestBody,
-                                                         @PathVariable String certificateId) {
-    UpdateTransitionalVersion details = new UpdateTransitionalVersion();
+  public List<CertificateView> updateTransitionalVersion(@RequestBody final UpdateTransitionalVersionRequest requestBody,
+                                                         @PathVariable final String certificateId) {
+    final UpdateTransitionalVersion details = new UpdateTransitionalVersion();
     details.setVersion(requestBody.getVersionUuid());
     auditRecord.setRequestDetails(details);
     return certificatesHandler.handleUpdateTransitionalVersion(certificateId, requestBody);
@@ -81,9 +81,9 @@ public class CertificatesController {
 
   @GetMapping(value = "", params = "name", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ResponseStatus(HttpStatus.OK)
-  public CertificateCredentialsView getCertificateByName(@RequestParam("name") String name) {
-    String credentialNameWithPrependedSlash = StringUtils.prependIfMissing(name, "/");
-    GetCertificateByName details = new GetCertificateByName();
+  public CertificateCredentialsView getCertificateByName(@RequestParam("name") final String name) {
+    final String credentialNameWithPrependedSlash = StringUtils.prependIfMissing(name, "/");
+    final GetCertificateByName details = new GetCertificateByName();
     details.setName(name);
     auditRecord.setRequestDetails(details);
     return certificatesHandler.handleGetByNameRequest(credentialNameWithPrependedSlash);

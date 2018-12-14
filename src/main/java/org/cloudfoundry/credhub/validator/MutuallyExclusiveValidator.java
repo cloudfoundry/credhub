@@ -12,17 +12,17 @@ public class MutuallyExclusiveValidator implements ConstraintValidator<MutuallyE
   private String[] fields;
 
   @Override
-  public void initialize(MutuallyExclusive constraintAnnotation) {
+  public void initialize(final MutuallyExclusive constraintAnnotation) {
     fields = constraintAnnotation.fields();
   }
 
   @Override
-  public boolean isValid(Object value, ConstraintValidatorContext context) {
+  public boolean isValid(final Object value, final ConstraintValidatorContext context) {
     String specifiedField = null;
 
-    for (String fieldName : fields) {
+    for (final String fieldName : fields) {
       try {
-        Field field = value.getClass().getDeclaredField(fieldName);
+        final Field field = value.getClass().getDeclaredField(fieldName);
         field.setAccessible(true);
 
         if (!StringUtils.isEmpty((String) field.get(value))) {
@@ -32,7 +32,7 @@ public class MutuallyExclusiveValidator implements ConstraintValidator<MutuallyE
             specifiedField = (String) field.get(value);
           }
         }
-      } catch (NoSuchFieldException | IllegalAccessException e) {
+      } catch (final NoSuchFieldException | IllegalAccessException e) {
         throw new RuntimeException(e);
       }
     }

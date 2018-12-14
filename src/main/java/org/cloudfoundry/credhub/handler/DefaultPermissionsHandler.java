@@ -6,7 +6,6 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
-import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.entity.PermissionData;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
@@ -25,83 +24,92 @@ public class DefaultPermissionsHandler implements PermissionsHandler {
   public static final String INVALID_NUMBER_OF_PERMISSIONS = "Can set one permission per call";
   private final PermissionService permissionService;
   private final PermissionedCredentialService permissionedCredentialService;
-  private final CEFAuditRecord auditRecord;
 
   DefaultPermissionsHandler(
-    PermissionService permissionService,
-    PermissionedCredentialService permissionedCredentialService,
-    CEFAuditRecord auditRecord) {
+    final PermissionService permissionService,
+    final PermissionedCredentialService permissionedCredentialService
+  ) {
+    super();
     this.permissionService = permissionService;
     this.permissionedCredentialService = permissionedCredentialService;
-    this.auditRecord = auditRecord;
   }
 
-  public PermissionsView getPermissions(String name) {
-    CredentialVersion credentialVersion = permissionedCredentialService.findMostRecent(name);
+  @Override
+  public PermissionsView getPermissions(final String name) {
+    final CredentialVersion credentialVersion = permissionedCredentialService.findMostRecent(name);
     final List<PermissionEntry> permissions = permissionService.getPermissions(credentialVersion);
     return new PermissionsView(credentialVersion.getName(), permissions);
   }
 
-  public void setPermissions(PermissionsRequest request) {
-    for (PermissionEntry entry : request.getPermissions()) {
+  @Override
+  public void writePermissions(final PermissionsRequest request) {
+    for (final PermissionEntry entry : request.getPermissions()) {
       entry.setPath(request.getCredentialName());
     }
     permissionService.savePermissionsForUser(request.getPermissions());
   }
 
-  public void deletePermissionEntry(String credentialName, String actor) {
-    boolean successfullyDeleted = permissionService.deletePermissions(credentialName, actor);
+  @Override
+  public void deletePermissionEntry(final String credentialName, final String actor) {
+    final boolean successfullyDeleted = permissionService.deletePermissions(credentialName, actor);
     if (!successfullyDeleted) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
   }
 
-  public PermissionsV2View setPermissions(PermissionsV2Request request) {
+  @Override
+  public PermissionsV2View writePermissions(final PermissionsV2Request request) {
 
-    PermissionEntry permission = new PermissionEntry(request.getActor(), request.getPath(), request.getOperations());
-    List<PermissionData> permissionDatas = permissionService.savePermissionsForUser(Collections.singletonList(permission));
+    final PermissionEntry permission = new PermissionEntry(request.getActor(), request.getPath(), request.getOperations());
+    final List<PermissionData> permissionDatas = permissionService.savePermissionsForUser(Collections.singletonList(permission));
 
     if (permissionDatas.size() == 1) {
-      PermissionData perm = permissionDatas.get(0);
+      final PermissionData perm = permissionDatas.get(0);
       return new PermissionsV2View(perm.getPath(), perm.generateAccessControlOperations(), perm.getActor(), perm.getUuid());
     } else {
       throw new IllegalArgumentException(INVALID_NUMBER_OF_PERMISSIONS);
     }
   }
 
-  public PermissionsV2View getPermissions(UUID guid) {
+  @Override
+  public PermissionsV2View getPermissions(final UUID guid) {
 
     final PermissionData permission = permissionService.getPermissions(guid);
     return new PermissionsV2View(permission.getPath(), permission.generateAccessControlOperations(),
       permission.getActor(), guid);
   }
 
-  public PermissionsV2View putPermissions(String guid, PermissionsV2Request permissionsRequest) {
+  @Override
+  public PermissionsV2View putPermissions(final String guid, final PermissionsV2Request permissionsRequest) {
     final PermissionData permission = permissionService.putPermissions(guid, permissionsRequest);
     return new PermissionsV2View(permission.getPath(), permission.generateAccessControlOperations(),
       permission.getActor(), permission.getUuid());
   }
 
-  public PermissionsV2View patchPermissions(String guid, List<PermissionOperation> operations) {
-    PermissionData permission = permissionService.patchPermissions(guid, operations);
+  @Override
+  public PermissionsV2View patchPermissions(final String guid, final List<PermissionOperation> operations) {
+    final PermissionData permission = permissionService.patchPermissions(guid, operations);
     return new PermissionsV2View(permission.getPath(), permission.generateAccessControlOperations(),
       permission.getActor(), permission.getUuid());
   }
 
-  public PermissionsV2View setV2Permissions(PermissionsV2Request permissionsRequest) {
+  @Override
+  public PermissionsV2View writeV2Permissions(final PermissionsV2Request permissionsRequest) {
     final PermissionData permission = permissionService.saveV2Permissions(permissionsRequest);
     return new PermissionsV2View(permission.getPath(), permission.generateAccessControlOperations(),
       permission.getActor(), permission.getUuid());
   }
 
-  public PermissionsV2View deletePermissions(String guid) {
-    PermissionData permission = permissionService.deletePermissions(guid);
+  @Override
+  public PermissionsV2View deletePermissions(final String guid) {
+    final PermissionData permission = permissionService.deletePermissions(guid);
     return new PermissionsV2View(permission.getPath(), permission.generateAccessControlOperations(),
       permission.getActor(), permission.getUuid());
   }
 
-  public PermissionsV2View findByPathAndActor(String path, String actor) {
-    PermissionData permissionData = permissionService.findByPathAndActor(path, actor);
+  @Override
+  public PermissionsV2View findByPathAndActor(final String path, final String actor) {
+    final PermissionData permissionData = permissionService.findByPathAndActor(path, actor);
     if (permissionData == null) {
       throw new EntryNotFoundException("error.permission.invalid_access");
     }

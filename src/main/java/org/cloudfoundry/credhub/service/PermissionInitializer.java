@@ -1,40 +1,42 @@
 package org.cloudfoundry.credhub.service;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import org.cloudfoundry.credhub.config.Permissions;
+import org.cloudfoundry.credhub.config.AuthorizationConfig;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 
 
 @Component
 public class PermissionInitializer {
-  private PermissionService permissionService;
-  private Permissions permissions;
+  private final PermissionService permissionService;
+  private final AuthorizationConfig authorizationConfig;
 
   @Autowired
   public PermissionInitializer(
-    PermissionService permissionService,
-    Permissions authorizationConfig
+    final PermissionService permissionService,
+    final AuthorizationConfig authorizationConfig
   ) {
+    super();
     this.permissionService = permissionService;
-    this.permissions = authorizationConfig;
+    this.authorizationConfig = authorizationConfig;
   }
 
   @EventListener(ContextRefreshedEvent.class)
   public void seed() {
 
-    if (permissions == null || permissions.getPermissions() == null) {
+    if (authorizationConfig == null || authorizationConfig.getPermissions() == null) {
       return;
     }
 
-    for (Permissions.Permission permission : permissions.getPermissions()) {
-      ArrayList<PermissionEntry> permissionEntries = new ArrayList<>();
-      for (String actor : permission.getActors()) {
+    for (final AuthorizationConfig.Permission permission : authorizationConfig.getPermissions()) {
+      final List<PermissionEntry> permissionEntries = new ArrayList<>();
+      for (final String actor : permission.getActors()) {
         permissionEntries.add(new PermissionEntry(actor, permission.getPath(), permission.getOperations()));
       }
 

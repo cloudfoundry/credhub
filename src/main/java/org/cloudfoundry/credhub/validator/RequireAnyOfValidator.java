@@ -12,21 +12,21 @@ public class RequireAnyOfValidator implements ConstraintValidator<RequireAnyOf, 
   private String[] fields;
 
   @Override
-  public void initialize(RequireAnyOf constraintAnnotation) {
+  public void initialize(final RequireAnyOf constraintAnnotation) {
     fields = constraintAnnotation.fields();
   }
 
   @Override
-  public boolean isValid(Object value, ConstraintValidatorContext context) {
-    for (String fieldName : fields) {
+  public boolean isValid(final Object value, final ConstraintValidatorContext context) {
+    for (final String fieldName : fields) {
       try {
-        Field field = value.getClass().getDeclaredField(fieldName);
+        final Field field = value.getClass().getDeclaredField(fieldName);
         field.setAccessible(true);
 
         if (!StringUtils.isEmpty((String) field.get(value))) {
           return true;
         }
-      } catch (NoSuchFieldException | IllegalAccessException e) {
+      } catch (final NoSuchFieldException | IllegalAccessException e) {
         throw new RuntimeException(e);
       }
     }

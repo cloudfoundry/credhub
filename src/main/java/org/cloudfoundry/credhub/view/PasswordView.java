@@ -7,9 +7,10 @@ import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
 public class PasswordView extends CredentialView {
 
   public PasswordView() {
+    super();
   }
 
-  public PasswordView(PasswordCredentialVersion passwordCredential) {
+  public PasswordView(final PasswordCredentialVersion passwordCredential) {
     super(
       passwordCredential.getVersionCreatedAt(),
       passwordCredential.getUuid(),

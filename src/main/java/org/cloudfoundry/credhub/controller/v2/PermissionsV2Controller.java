@@ -20,52 +20,53 @@ import org.cloudfoundry.credhub.request.PermissionsV2Request;
 import org.cloudfoundry.credhub.view.PermissionsV2View;
 
 @RestController
-@RequestMapping(path = PermissionsV2Controller.endpoint, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(path = PermissionsV2Controller.ENDPOINT, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class PermissionsV2Controller {
 
-  static final String endpoint = "/api/v2/permissions";
+  public static final String ENDPOINT = "/api/v2/permissions";
 
   private final PermissionsHandler permissionsHandler;
 
-  public PermissionsV2Controller(PermissionsHandler permissionsHandler) {
+  public PermissionsV2Controller(final PermissionsHandler permissionsHandler) {
+    super();
     this.permissionsHandler = permissionsHandler;
   }
 
   @PostMapping(consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ResponseStatus(HttpStatus.CREATED)
-  public PermissionsV2View setPermissions(@Validated @RequestBody PermissionsV2Request permissionsRequest) {
-    return permissionsHandler.setV2Permissions(permissionsRequest);
+  public PermissionsV2View postPermissions(@Validated @RequestBody final PermissionsV2Request permissionsRequest) {
+    return permissionsHandler.writeV2Permissions(permissionsRequest);
   }
 
   @RequestMapping(path = "/{guid}", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
-  public PermissionsV2View getPermissions(@PathVariable String guid) {
+  public PermissionsV2View getPermissions(@PathVariable final String guid) {
     return permissionsHandler.getPermissions(UUID.fromString(guid));
   }
 
   @RequestMapping(method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
-  public PermissionsV2View findByPathAndActor(@RequestParam String path, @RequestParam String actor) {
+  public PermissionsV2View findByPathAndActor(@RequestParam final String path, @RequestParam final String actor) {
     return permissionsHandler.findByPathAndActor(path, actor);
   }
 
   @RequestMapping(path = "/{guid}", method = RequestMethod.PUT)
   @ResponseStatus(HttpStatus.OK)
-  public PermissionsV2View putPermissions(@Validated @RequestBody PermissionsV2Request permissionsRequest,
-                                          @PathVariable String guid) {
+  public PermissionsV2View putPermissions(@Validated @RequestBody final PermissionsV2Request permissionsRequest,
+                                          @PathVariable final String guid) {
     return permissionsHandler.putPermissions(guid, permissionsRequest);
   }
 
   @RequestMapping(path = "/{guid}", method = RequestMethod.PATCH)
   @ResponseStatus(HttpStatus.OK)
-  public PermissionsV2View patchPermissions(@Validated @RequestBody PermissionsV2PatchRequest request,
-                                            @PathVariable String guid) {
+  public PermissionsV2View patchPermissions(@Validated @RequestBody final PermissionsV2PatchRequest request,
+                                            @PathVariable final String guid) {
     return permissionsHandler.patchPermissions(guid, request.getOperations());
   }
 
   @RequestMapping(path = "/{guid}", method = RequestMethod.DELETE)
   @ResponseStatus(HttpStatus.OK)
-  public PermissionsV2View deletePermissions(@PathVariable String guid) {
+  public PermissionsV2View deletePermissions(@PathVariable final String guid) {
     return permissionsHandler.deletePermissions(guid);
   }
 }

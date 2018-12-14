@@ -10,14 +10,14 @@ import org.cloudfoundry.credhub.request.StringGenerationParameters;
 public class PasswordCredentialRegeneratable implements Regeneratable {
 
   @Override
-  public BaseCredentialGenerateRequest createGenerateRequest(CredentialVersion credentialVersion) {
-    PasswordCredentialVersion passwordCredential = (PasswordCredentialVersion) credentialVersion;
-    PasswordGenerateRequest generateRequest = new PasswordGenerateRequest();
+  public BaseCredentialGenerateRequest createGenerateRequest(final CredentialVersion credentialVersion) {
+    final PasswordCredentialVersion passwordCredential = (PasswordCredentialVersion) credentialVersion;
+    final PasswordGenerateRequest generateRequest = new PasswordGenerateRequest();
 
     generateRequest.setName(passwordCredential.getName());
     generateRequest.setType(passwordCredential.getCredentialType());
     generateRequest.setOverwrite(true);
-    StringGenerationParameters generationParameters;
+    final StringGenerationParameters generationParameters;
     generationParameters = passwordCredential.getGenerationParameters();
 
     if (generationParameters == null) {

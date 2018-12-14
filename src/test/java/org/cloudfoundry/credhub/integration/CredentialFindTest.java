@@ -44,7 +44,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@ActiveProfiles(value = {"unit-test", "unit-test-permissions"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(
+  value = {
+    "unit-test",
+    "unit-test-permissions",
+  },
+  resolver = DatabaseProfileResolver.class
+)
 @SpringBootTest(classes = CredentialManagerApp.class)
 @Transactional
 @SuppressFBWarnings(
@@ -69,7 +75,7 @@ public class CredentialFindTest {
   @Test
   public void findCredentials_byNameLike_whenSearchTermContainsNoSlash_returnsCredentialMetadata() throws Exception {
     generatePassword(mockMvc, credentialName, true, 20, ALL_PERMISSIONS_TOKEN);
-    ResultActions response = findCredentialsByNameLike(credentialName.substring(4).toUpperCase(),
+    final ResultActions response = findCredentialsByNameLike(credentialName.substring(4).toUpperCase(),
       ALL_PERMISSIONS_TOKEN);
 
     response.andExpect(status().isOk())
@@ -80,7 +86,7 @@ public class CredentialFindTest {
   @Test
   public void findCredentials_byNameLike_returnsNoCredentialsIfUserDoesNotHaveReadAccess() throws Exception {
     generateCredentials();
-    ResultActions response = findCredentialsByNameLike("/", USER_A_TOKEN);
+    final ResultActions response = findCredentialsByNameLike("/", USER_A_TOKEN);
 
     response.andExpect(status().isOk())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -93,7 +99,7 @@ public class CredentialFindTest {
 
     setPermissions("/*", PermissionOperation.READ, USER_A_ACTOR_ID);
 
-    ResultActions response = findCredentialsByNameLike("/", USER_A_TOKEN);
+    final ResultActions response = findCredentialsByNameLike("/", USER_A_TOKEN);
 
     response.andExpect(status().isOk())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -102,12 +108,12 @@ public class CredentialFindTest {
 
   @Test
   public void findCredentials_byNameLike_returnsSubsetWithFullPermissionPath() throws Exception {
-    String credentialName = "/other_path/credentialC";
+    final String credentialName = "/other_path/credentialC";
     generateCredentials();
 
     setPermissions(credentialName, PermissionOperation.READ, USER_A_ACTOR_ID);
 
-    ResultActions response = findCredentialsByNameLike("/", USER_A_TOKEN);
+    final ResultActions response = findCredentialsByNameLike("/", USER_A_TOKEN);
 
     response.andExpect(status().isOk())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -117,10 +123,10 @@ public class CredentialFindTest {
 
   @Test
   public void findCredentials_byPath_returnsCredentialMetaData() throws Exception {
-    String substring = credentialName.substring(0, credentialName.lastIndexOf("/"));
+    final String substring = credentialName.substring(0, credentialName.lastIndexOf("/"));
     generatePassword(mockMvc, credentialName, true, 20, ALL_PERMISSIONS_TOKEN);
 
-    ResultActions response = findCredentialsByPath(substring, ALL_PERMISSIONS_TOKEN);
+    final ResultActions response = findCredentialsByPath(substring, ALL_PERMISSIONS_TOKEN);
 
     response.andExpect(status().isOk())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -134,7 +140,7 @@ public class CredentialFindTest {
 
     assertTrue(credentialName.contains(path));
 
-    ResultActions response = findCredentialsByPath(path.toUpperCase(), ALL_PERMISSIONS_TOKEN);
+    final ResultActions response = findCredentialsByPath(path.toUpperCase(), ALL_PERMISSIONS_TOKEN);
 
     response.andExpect(status().isOk())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -148,7 +154,7 @@ public class CredentialFindTest {
 
     assertTrue(credentialName.startsWith(path));
 
-    ResultActions response = findCredentialsByPath(path.toUpperCase(), ALL_PERMISSIONS_TOKEN);
+    final ResultActions response = findCredentialsByPath(path.toUpperCase(), ALL_PERMISSIONS_TOKEN);
 
     response.andExpect(status().isOk())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -161,7 +167,7 @@ public class CredentialFindTest {
 
     assertTrue(credentialName.startsWith(path));
 
-    ResultActions response = findCredentialsByPath(path, ALL_PERMISSIONS_TOKEN);
+    final ResultActions response = findCredentialsByPath(path, ALL_PERMISSIONS_TOKEN);
 
     response.andExpect(status().isOk())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -172,7 +178,7 @@ public class CredentialFindTest {
   public void findCredentials_byPath_returnsNoCredentialsIfUserDoesNotHaveReadAccess() throws Exception {
     generateCredentials();
 
-    ResultActions response = findCredentialsByPath("/", USER_A_TOKEN);
+    final ResultActions response = findCredentialsByPath("/", USER_A_TOKEN);
 
     response.andExpect(status().isOk())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -185,7 +191,7 @@ public class CredentialFindTest {
 
     setPermissions("/*", PermissionOperation.READ, USER_A_ACTOR_ID);
 
-    ResultActions response = findCredentialsByPath("/", USER_A_TOKEN);
+    final ResultActions response = findCredentialsByPath("/", USER_A_TOKEN);
 
     response.andExpect(status().isOk())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -194,12 +200,12 @@ public class CredentialFindTest {
 
   @Test
   public void findCredentials_byPath_returnsSubsetWithFullPermissionPath() throws Exception {
-    String credentialName = "/other_path/credentialC";
+    final String credentialName = "/other_path/credentialC";
     generateCredentials();
 
     setPermissions(credentialName, PermissionOperation.READ, USER_A_ACTOR_ID);
 
-    ResultActions response = findCredentialsByPath("/", USER_A_TOKEN);
+    final ResultActions response = findCredentialsByPath("/", USER_A_TOKEN);
 
     response.andExpect(status().isOk())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -213,7 +219,7 @@ public class CredentialFindTest {
 
     setPermissions("/path/to/*", PermissionOperation.READ, USER_A_ACTOR_ID);
 
-    ResultActions response = findCredentialsByPath("/", USER_A_TOKEN);
+    final ResultActions response = findCredentialsByPath("/", USER_A_TOKEN);
 
     response.andExpect(status().isOk())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -261,7 +267,7 @@ public class CredentialFindTest {
       .andDo(print())
       .andExpect(status().isOk());
 
-    String expiresWithinDays = "30";
+    final String expiresWithinDays = "30";
     final MockHttpServletRequestBuilder request = get("/api/v1/data?path=/&expires-within-days=" + expiresWithinDays)
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .content("expires-within-days:30")
@@ -313,7 +319,7 @@ public class CredentialFindTest {
       .andDo(print())
       .andExpect(status().isOk());
 
-    String expiresWithinDays = "30";
+    final String expiresWithinDays = "30";
     final MockHttpServletRequestBuilder request = get(
       "/api/v1/data?name-like=ex&expires-within-days=" + expiresWithinDays)
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
@@ -328,16 +334,16 @@ public class CredentialFindTest {
   }
 
   private void generateCredentials() throws Exception {
-    List<String> names = Arrays.asList(new String[]{"/path/to/credentialA", "/path/something",
+    final List<String> names = Arrays.asList(new String[]{"/path/to/credentialA", "/path/something",
       "/path/to/credentialB", "/other_path/credentialC", "/another/credentialC"});
 
-    for (String name : names) {
+    for (final String name : names) {
       generatePassword(mockMvc, name, true, 20, ALL_PERMISSIONS_TOKEN);
     }
   }
 
-  private void setPermissions(String path, PermissionOperation operation, String actorID) throws Exception {
-    MockHttpServletRequestBuilder addPermissionRequest = post("/api/v2/permissions")
+  private void setPermissions(final String path, final PermissionOperation operation, final String actorID) throws Exception {
+    final MockHttpServletRequestBuilder addPermissionRequest = post("/api/v2/permissions")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -347,9 +353,9 @@ public class CredentialFindTest {
         + "  \"operations\": [\"" + operation.getOperation() + "\"]\n"
         + "}");
 
-    String content = mockMvc.perform(addPermissionRequest).andExpect(status().isCreated()).andReturn().getResponse()
+    final String content = mockMvc.perform(addPermissionRequest).andExpect(status().isCreated()).andReturn().getResponse()
       .getContentAsString();
-    PermissionsV2View returnValue = JsonTestHelper.deserialize(content, PermissionsV2View.class);
+    final PermissionsV2View returnValue = JsonTestHelper.deserialize(content, PermissionsV2View.class);
     assertThat(returnValue.getActor(), equalTo(USER_A_ACTOR_ID));
     assertThat(returnValue.getPath(), equalTo(path));
     assertThat(returnValue.getOperations(), equalTo(Collections.singletonList(operation)));
@@ -357,7 +363,7 @@ public class CredentialFindTest {
     assertThat(returnValue.getUuid(), notNullValue());
   }
 
-  private ResultActions findCredentialsByNameLike(String pattern, String permissionsToken) throws Exception {
+  private ResultActions findCredentialsByNameLike(final String pattern, final String permissionsToken) throws Exception {
     final MockHttpServletRequestBuilder get = get("/api/v1/data?name-like=" + pattern)
       .header("Authorization", "Bearer " + permissionsToken)
       .accept(APPLICATION_JSON);
@@ -365,7 +371,7 @@ public class CredentialFindTest {
     return mockMvc.perform(get);
   }
 
-  private ResultActions findCredentialsByPath(String path, String permissionsToken) throws Exception {
+  private ResultActions findCredentialsByPath(final String path, final String permissionsToken) throws Exception {
     final MockHttpServletRequestBuilder get = get("/api/v1/data?path=" + path)
       .header("Authorization", "Bearer " + permissionsToken)
       .accept(APPLICATION_JSON);

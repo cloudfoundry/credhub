@@ -21,14 +21,14 @@ public class CertificateFormatterTest {
 
   @Before
   public void beforeEach() throws NoSuchAlgorithmException {
-    KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+    final KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
 
     keyPair = keyPairGenerator.generateKeyPair();
   }
 
   @Test
   public void pemOf_convertsAnObjectToPemString() throws IOException {
-    String pemString = CertificateFormatter.pemOf(keyPair);
+    final String pemString = CertificateFormatter.pemOf(keyPair);
 
     assertThat(pemString, startsWith("-----BEGIN RSA PRIVATE KEY-----"));
     assertThat(pemString, endsWith("-----END RSA PRIVATE KEY-----\n"));
@@ -36,7 +36,7 @@ public class CertificateFormatterTest {
 
   @Test
   public void derOf_convertsObjectToDerEncodedString() throws IOException {
-    String pemString = CertificateFormatter.derOf((RSAPublicKey) keyPair.getPublic());
+    final String pemString = CertificateFormatter.derOf((RSAPublicKey) keyPair.getPublic());
     assertThat(pemString, startsWith("ssh-rsa "));
   }
 }

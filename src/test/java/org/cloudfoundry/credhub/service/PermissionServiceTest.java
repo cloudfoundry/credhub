@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.collect.Lists;
@@ -69,11 +68,11 @@ public class PermissionServiceTest {
 
   @Test
   public void getAllowedOperations_getsAllowedOperationsUsingPermissionsDataService() {
-    ArrayList<PermissionOperation> expectedOperations = Lists.newArrayList(PermissionOperation.READ);
+    final List<PermissionOperation> expectedOperations = Lists.newArrayList(PermissionOperation.READ);
     when(permissionDataService.getAllowedOperations(CREDENTIAL_NAME, USER_NAME))
       .thenReturn(expectedOperations);
 
-    List<PermissionOperation> foundOperations = subject
+    final List<PermissionOperation> foundOperations = subject
       .getAllowedOperationsForLogging(CREDENTIAL_NAME, USER_NAME);
 
     assertThat(expectedOperations, equalTo(foundOperations));
@@ -81,7 +80,7 @@ public class PermissionServiceTest {
 
   @Test
   public void saveAccessControlEntries_whenThereAreNoChanges_doesNothing() {
-    ArrayList<PermissionEntry> expectedEntries = newArrayList();
+    final List<PermissionEntry> expectedEntries = newArrayList();
     subject.savePermissionsForUser(expectedEntries);
 
     verify(permissionDataService, never()).savePermissionsWithLogging(any());
@@ -90,7 +89,7 @@ public class PermissionServiceTest {
   @Test
   public void saveAccessControlEntries_withEntries_delegatesToDataService() {
     when(permissionCheckingService.userAllowedToOperateOnActor(eq(USER_NAME))).thenReturn(true);
-    ArrayList<PermissionEntry> expectedEntries = newArrayList(new PermissionEntry(USER_NAME, "test-path", PermissionOperation.READ));
+    final List<PermissionEntry> expectedEntries = newArrayList(new PermissionEntry(USER_NAME, "test-path", PermissionOperation.READ));
     subject.savePermissionsForUser(expectedEntries);
 
     verify(permissionDataService).savePermissionsWithLogging(expectedEntries);
@@ -99,7 +98,7 @@ public class PermissionServiceTest {
   @Test
   public void saveAccessControlEntries_whenCredentialHasACEs_shouldCallVerifyAclWritePermission() {
     when(permissionCheckingService.userAllowedToOperateOnActor(eq(USER_NAME))).thenReturn(true);
-    ArrayList<PermissionEntry> entries = newArrayList();
+    final List<PermissionEntry> entries = newArrayList();
     entries.add(new PermissionEntry(USER_NAME, "test-path", asList(PermissionOperation.WRITE_ACL)));
 
     subject.savePermissionsForUser(entries);
@@ -109,7 +108,7 @@ public class PermissionServiceTest {
 
   @Test
   public void saveAccessControlEntries_whenCredentialHasNoACEs_shouldDoNothing() {
-    ArrayList<PermissionEntry> entries = newArrayList();
+    final List<PermissionEntry> entries = newArrayList();
 
     subject.savePermissionsForUser(entries);
 
@@ -121,12 +120,12 @@ public class PermissionServiceTest {
     when(permissionCheckingService.userAllowedToOperateOnActor(eq(USER_NAME))).thenReturn(true);
     when(permissionCheckingService.hasPermission(USER_NAME, "test-path", PermissionOperation.WRITE_ACL))
       .thenReturn(false);
-    ArrayList<PermissionEntry> expectedEntries = newArrayList(new PermissionEntry(USER_NAME, "test-path", PermissionOperation.READ));
+    final List<PermissionEntry> expectedEntries = newArrayList(new PermissionEntry(USER_NAME, "test-path", PermissionOperation.READ));
 
     try {
       subject.savePermissionsForUser(expectedEntries);
       fail("expected exception");
-    } catch (EntryNotFoundException e) {
+    } catch (final EntryNotFoundException e) {
       assertThat(e.getMessage(), IsEqual.equalTo("error.credential.invalid_access"));
     }
   }
@@ -136,7 +135,7 @@ public class PermissionServiceTest {
     when(userContextHolder.getUserContext()).thenReturn(null);
     when(permissionCheckingService.userAllowedToOperateOnActor(eq(USER_NAME))).thenReturn(true);
 
-    ArrayList<PermissionEntry> expectedEntries = newArrayList(new PermissionEntry(USER_NAME, CREDENTIAL_NAME, PermissionOperation.READ));
+    final List<PermissionEntry> expectedEntries = newArrayList(new PermissionEntry(USER_NAME, CREDENTIAL_NAME, PermissionOperation.READ));
     subject.savePermissions(expectedEntries);
 
     verify(permissionDataService).savePermissions(expectedEntries);
@@ -144,10 +143,10 @@ public class PermissionServiceTest {
 
   @Test
   public void getAccessControlList_whenUserCantRead_throws() {
-    List<PermissionEntry> expectedPermissionEntries = newArrayList();
+    final List<PermissionEntry> expectedPermissionEntries = newArrayList();
     when(permissionDataService.getPermissions(expectedCredential))
       .thenReturn(expectedPermissionEntries);
-    List<PermissionEntry> foundPermissionEntries = subject.getPermissions(expectedCredentialVersion);
+    final List<PermissionEntry> foundPermissionEntries = subject.getPermissions(expectedCredentialVersion);
 
     assertThat(foundPermissionEntries, equalTo(expectedPermissionEntries));
   }
@@ -157,9 +156,9 @@ public class PermissionServiceTest {
     when(permissionCheckingService.hasPermission(USER_NAME, CREDENTIAL_NAME, PermissionOperation.READ_ACL))
       .thenReturn(true);
 
-    String actor = "some-actor";
+    final String actor = "some-actor";
 
-    PermissionData expectedPermissionData = new PermissionData(CREDENTIAL_NAME, actor);
+    final PermissionData expectedPermissionData = new PermissionData(CREDENTIAL_NAME, actor);
 
     when(permissionDataService.findByPathAndActor(CREDENTIAL_NAME, actor))
       .thenReturn(expectedPermissionData);
@@ -172,10 +171,10 @@ public class PermissionServiceTest {
     when(permissionCheckingService.hasPermission(USER_NAME, CREDENTIAL_NAME, PermissionOperation.READ_ACL))
       .thenReturn(true);
 
-    String actor = "some-actor";
-    String path = CREDENTIAL_NAME + "/foo";
+    final String actor = "some-actor";
+    final String path = CREDENTIAL_NAME + "/foo";
 
-    PermissionData expectedPermissionData = new PermissionData(path, actor);
+    final PermissionData expectedPermissionData = new PermissionData(path, actor);
 
     when(permissionDataService.findByPathAndActor(path, actor))
       .thenReturn(expectedPermissionData);
@@ -189,7 +188,7 @@ public class PermissionServiceTest {
     when(permissionCheckingService.hasPermission(USER_NAME, CREDENTIAL_NAME, PermissionOperation.READ_ACL))
       .thenReturn(false);
 
-    String actor = "some-actor";
+    final String actor = "some-actor";
 
     assertThatThrownBy(() -> {
       subject.findByPathAndActor(CREDENTIAL_NAME, actor);
@@ -200,14 +199,14 @@ public class PermissionServiceTest {
   public void getAccessControlList_delegatesToDataService() {
     when(permissionCheckingService.hasPermission(USER_NAME, CREDENTIAL_NAME, PermissionOperation.READ_ACL))
       .thenReturn(false);
-    List<PermissionEntry> expectedPermissionEntries = newArrayList();
+    final List<PermissionEntry> expectedPermissionEntries = newArrayList();
     when(permissionDataService.getPermissions(expectedCredential))
       .thenReturn(expectedPermissionEntries);
 
     try {
       subject.getPermissions(expectedCredentialVersion);
       fail();
-    } catch (EntryNotFoundException e) {
+    } catch (final EntryNotFoundException e) {
       assertThat(e.getMessage(), IsEqual.equalTo("error.credential.invalid_access"));
     }
   }
@@ -220,7 +219,7 @@ public class PermissionServiceTest {
       .thenReturn(true);
     when(permissionDataService.deletePermissions(CREDENTIAL_NAME, "other-actor"))
       .thenReturn(true);
-    boolean result = subject.deletePermissions(CREDENTIAL_NAME, "other-actor");
+    final boolean result = subject.deletePermissions(CREDENTIAL_NAME, "other-actor");
 
     assertThat(result, equalTo(true));
   }
@@ -234,7 +233,7 @@ public class PermissionServiceTest {
     try {
       subject.deletePermissions(CREDENTIAL_NAME, "other-actor");
       fail("should throw");
-    } catch (EntryNotFoundException e) {
+    } catch (final EntryNotFoundException e) {
       assertThat(e.getMessage(), IsEqual.equalTo("error.credential.invalid_access"));
     }
   }
@@ -248,7 +247,7 @@ public class PermissionServiceTest {
     try {
       subject.deletePermissions(CREDENTIAL_NAME, userContext.getActor());
       fail("should throw");
-    } catch (InvalidPermissionOperationException iaoe) {
+    } catch (final InvalidPermissionOperationException iaoe) {
       assertThat(iaoe.getMessage(), IsEqual.equalTo("error.permission.invalid_update_operation"));
     }
   }

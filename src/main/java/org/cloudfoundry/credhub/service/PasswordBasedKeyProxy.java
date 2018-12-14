@@ -4,7 +4,6 @@ import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Collections;
 import java.util.List;
 
 import javax.crypto.SecretKey;
@@ -24,24 +23,24 @@ import static org.cloudfoundry.credhub.constants.EncryptionConstants.SALT_SIZE;
 public class PasswordBasedKeyProxy extends LunaKeyProxy implements KeyProxy {
 
   private final SecureRandom secureRandom;
-  private String password = null;
-  private int numIterations;
+  private String password;
+  private final int numIterations;
   private List<Byte> salt;
 
-  public PasswordBasedKeyProxy(String password, int numIterations, InternalEncryptionService encryptionService) {
+  public PasswordBasedKeyProxy(final String password, final int numIterations, final InternalEncryptionService encryptionService) {
     super(null, encryptionService);
     this.password = password;
     this.numIterations = numIterations;
     this.secureRandom = encryptionService.getSecureRandom();
   }
 
-  List<Byte> generateSalt() {
-    byte[] salt = new byte[SALT_SIZE];
+  public List<Byte> generateSalt() {
+    final byte[] salt = new byte[SALT_SIZE];
 
     secureRandom.nextBytes(salt);
     secureRandom.nextBytes(salt);
 
-    return Collections.unmodifiableList(asList(ArrayUtils.toObject(salt)));
+    return unmodifiableList(asList(ArrayUtils.toObject(salt)));
   }
 
   public Key deriveKey() {
@@ -51,16 +50,16 @@ public class PasswordBasedKeyProxy extends LunaKeyProxy implements KeyProxy {
     return deriveKey(salt);
   }
 
-  public Key deriveKey(List<Byte> salt) {
-    final Byte[] saltArray = salt.toArray(new Byte[salt.size()]);
-    PBEKeySpec pbeSpec = new PBEKeySpec(password.toCharArray(), toPrimitive(saltArray), numIterations,
+  public Key deriveKey(final List<Byte> salt) {
+    final Byte[] saltArray = salt.toArray(new Byte[0]);
+    final PBEKeySpec pbeSpec = new PBEKeySpec(password.toCharArray(), toPrimitive(saltArray), numIterations,
       KEY_BIT_LENGTH);
 
     try {
-      SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA384");
+      final SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA384");
       final SecretKey pbeKey = keyFactory.generateSecret(pbeSpec);
       return new SecretKeySpec(pbeKey.getEncoded(), "AES");
-    } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+    } catch (final NoSuchAlgorithmException | InvalidKeySpecException e) {
       throw new RuntimeException(e);
     }
   }
@@ -69,7 +68,7 @@ public class PasswordBasedKeyProxy extends LunaKeyProxy implements KeyProxy {
     return password;
   }
 
-  public void setPassword(String password) {
+  public void setPassword(final String password) {
     this.password = password;
   }
 
@@ -79,14 +78,14 @@ public class PasswordBasedKeyProxy extends LunaKeyProxy implements KeyProxy {
   }
 
   @Override
-  public boolean matchesCanary(EncryptionKeyCanary canary) {
+  public boolean matchesCanary(final EncryptionKeyCanary canary) {
     if (canary.getSalt() == null || canary.getSalt().length == 0) {
       return false;
     }
 
-    Key key = deriveKey(unmodifiableList(asList(ArrayUtils.toObject(canary.getSalt()))));
+    final Key key = deriveKey(unmodifiableList(asList(ArrayUtils.toObject(canary.getSalt()))));
 
-    boolean result = super.matchesCanary(key, canary);
+    final boolean result = super.matchesCanary(key, canary);
     if (result) {
       setKey(key);
     }

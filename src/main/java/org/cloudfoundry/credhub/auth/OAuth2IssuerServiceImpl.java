@@ -12,7 +12,6 @@ import java.util.HashMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Profile;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -22,32 +21,26 @@ import org.cloudfoundry.credhub.util.RestTemplateFactory;
 
 @Component
 @ConditionalOnProperty("security.oauth2.enabled")
-@Profile({"prod", "dev"})
+@Profile({
+  "prod",
+  "dev",
+})
 public class OAuth2IssuerServiceImpl implements OAuth2IssuerService {
 
   private final URI authServerUri;
   private final RestTemplate restTemplate;
 
-  private String issuer = null;
+  private String issuer;
 
   @Autowired
   OAuth2IssuerServiceImpl(
-    RestTemplateFactory restTemplateFactory,
-    OAuthProperties oAuthProperties
+    final RestTemplateFactory restTemplateFactory,
+    final OAuthProperties oAuthProperties
   ) throws URISyntaxException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException {
+    super();
     this.authServerUri = oAuthProperties.getIssuerPath();
-    this.restTemplate = restTemplateFactory.createRestTemplate(oAuthProperties.getTrustStore(), oAuthProperties.getTrustStorePassword());
-  }
-
-  @SuppressFBWarnings(
-    value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE",
-    justification = "Let this return null if necessary"
-  )
-  String fetchIssuer() {
-    ResponseEntity<HashMap> authResponse = restTemplate.getForEntity(authServerUri, HashMap.class);
-
-    issuer = (String) authResponse.getBody().get("issuer");
-    return issuer;
+    this.restTemplate = restTemplateFactory
+      .createRestTemplate(oAuthProperties.getTrustStore(), oAuthProperties.getTrustStorePassword());
   }
 
   @Override
@@ -55,5 +48,17 @@ public class OAuth2IssuerServiceImpl implements OAuth2IssuerService {
     return issuer != null ? issuer : fetchIssuer();
   }
 
+  @SuppressFBWarnings(
+    value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE",
+    justification = "Let this return null if necessary"
+  )
+  @SuppressWarnings("PMD.LooseCoupling")
+  protected String fetchIssuer() {
+    issuer = (String) restTemplate
+      .getForEntity(authServerUri, HashMap.class)
+      .getBody()
+      .get("issuer");
 
+    return issuer;
+  }
 }

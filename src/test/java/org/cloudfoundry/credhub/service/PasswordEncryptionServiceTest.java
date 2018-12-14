@@ -13,9 +13,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class PasswordEncryptionServiceTest {
   @Test
   public void createsPasswordBasedKeyProxy() throws Exception {
-    PasswordEncryptionService subject = new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl());
+    final PasswordEncryptionService subject = new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl());
 
-    EncryptionKeyMetadata keyMetadata = new EncryptionKeyMetadata();
+    final EncryptionKeyMetadata keyMetadata = new EncryptionKeyMetadata();
     keyMetadata.setEncryptionPassword("foobar");
 
     final KeyProxy keyProxy = subject.createKeyProxy(keyMetadata);

@@ -16,7 +16,7 @@ public class SshGenerateRequest extends BaseCredentialGenerateRequest {
     return generationParameters;
   }
 
-  public void setGenerationParameters(SshGenerationParameters generationParameters) {
+  public void setGenerationParameters(final SshGenerationParameters generationParameters) {
     this.generationParameters = generationParameters;
   }
 }

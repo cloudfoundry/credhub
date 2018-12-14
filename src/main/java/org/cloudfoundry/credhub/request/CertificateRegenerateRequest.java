@@ -11,10 +11,12 @@ public class CertificateRegenerateRequest {
   private boolean transitional;
 
   public CertificateRegenerateRequest() {
+    super();
     /* this needs to be there for jackson to be happy */
   }
 
-  public CertificateRegenerateRequest(boolean transitional) {
+  public CertificateRegenerateRequest(final boolean transitional) {
+    super();
     this.transitional = transitional;
   }
 
@@ -23,7 +25,7 @@ public class CertificateRegenerateRequest {
   }
 
   @JsonProperty("set_as_transitional")
-  public void setTransitional(boolean transitional) {
+  public void setTransitional(final boolean transitional) {
     this.transitional = transitional;
   }
 

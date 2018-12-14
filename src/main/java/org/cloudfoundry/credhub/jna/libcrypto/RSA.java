@@ -21,7 +21,7 @@ public class RSA extends Structure {
   public Pointer dmq1;
   public Pointer iqmp;
 
-  public RSA(Pointer pp) {
+  public RSA(final Pointer pp) {
     super(pp);
   }
 
@@ -34,7 +34,7 @@ public class RSA extends Structure {
 
   public static class ByReference extends RSA implements Structure.ByReference {
 
-    public ByReference(Pointer p) {
+    public ByReference(final Pointer p) {
       super(p);
     }
   }

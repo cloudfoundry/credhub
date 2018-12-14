@@ -13,7 +13,7 @@ public class BIGNUM extends Structure {
   public int dmax;
   public int neg;
 
-  public BIGNUM(Pointer p) {
+  public BIGNUM(final Pointer p) {
     super(p);
   }
 
@@ -24,7 +24,7 @@ public class BIGNUM extends Structure {
 
   public static class ByReference extends BIGNUM implements Structure.ByReference {
 
-    public ByReference(Pointer p) {
+    public ByReference(final Pointer p) {
       super(p);
     }
   }

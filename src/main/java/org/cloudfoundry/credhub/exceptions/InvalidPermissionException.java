@@ -1,7 +1,7 @@
 package org.cloudfoundry.credhub.exceptions;
 
 public class InvalidPermissionException extends RuntimeException {
-  public InvalidPermissionException(String messageCode) {
+  public InvalidPermissionException(final String messageCode) {
     super(messageCode);
   }
 }

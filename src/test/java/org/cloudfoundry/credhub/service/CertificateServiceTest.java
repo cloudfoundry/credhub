@@ -23,21 +23,21 @@ import static org.mockito.MockitoAnnotations.initMocks;
 @RunWith(JUnit4.class)
 public class CertificateServiceTest {
 
-  CertificateService subject;
+  private CertificateService subject;
 
   @Mock
-  CertificateVersionDataService certificateVersionDataService;
+  private CertificateVersionDataService certificateVersionDataService;
 
   @Mock
-  PermissionCheckingService permissionCheckingService;
+  private PermissionCheckingService permissionCheckingService;
 
-  UserContextHolder userContextHolder;
-  UserContext userContext;
-  private String credentialUuid = "knownCredentialUuid";
-  private CredentialVersion credentialVersion = new CertificateCredentialVersion();
-  private String credentialName = "certificateCredential";
-  private String actor = "Actor";
+  private UserContextHolder userContextHolder;
+  private UserContext userContext;
+  private final static String credentialUuid = "knownCredentialUuid";
+  private final static String credentialName = "certificateCredential";
+  private final static String actor = "Actor";
 
+  private final CredentialVersion credentialVersion = new CertificateCredentialVersion();
 
   @Before
   public void setup() {
@@ -58,7 +58,7 @@ public class CertificateServiceTest {
     when(permissionCheckingService.hasPermission(actor, credentialName, PermissionOperation.READ))
       .thenReturn(true);
 
-    CertificateCredentialVersion certificate = subject.findByCredentialUuid(credentialUuid);
+    final CertificateCredentialVersion certificate = subject.findByCredentialUuid(credentialUuid);
 
     assertThat(certificate, not(nullValue()));
   }

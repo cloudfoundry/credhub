@@ -16,18 +16,19 @@ public class RsaGenerator implements CredentialGenerator<RsaCredentialValue> {
   private final LibcryptoRsaKeyPairGenerator keyGenerator;
 
   @Autowired
-  RsaGenerator(LibcryptoRsaKeyPairGenerator keyGenerator) {
+  RsaGenerator(final LibcryptoRsaKeyPairGenerator keyGenerator) {
+    super();
     this.keyGenerator = keyGenerator;
   }
 
   @Override
-  public RsaCredentialValue generateCredential(GenerationParameters p) {
-    RsaGenerationParameters params = (RsaGenerationParameters) p;
+  public RsaCredentialValue generateCredential(final GenerationParameters p) {
+    final RsaGenerationParameters params = (RsaGenerationParameters) p;
     try {
       final KeyPair keyPair = keyGenerator.generateKeyPair(params.getKeyLength());
       return new RsaCredentialValue(CertificateFormatter.pemOf(keyPair.getPublic()),
         CertificateFormatter.pemOf(keyPair.getPrivate()));
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }

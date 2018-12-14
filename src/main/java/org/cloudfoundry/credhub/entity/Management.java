@@ -4,10 +4,12 @@ public class Management {
   private boolean readOnlyMode;
 
   public Management() {
+    super();
     // no arg constructor required by Jackson
   }
 
-  public Management(Boolean readOnlyMode) {
+  public Management(final Boolean readOnlyMode) {
+    super();
     this.readOnlyMode = readOnlyMode;
   }
 
@@ -15,7 +17,7 @@ public class Management {
     return readOnlyMode;
   }
 
-  public void setReadOnlyMode(boolean readOnlyMode) {
+  public void setReadOnlyMode(final boolean readOnlyMode) {
     this.readOnlyMode = readOnlyMode;
   }
 

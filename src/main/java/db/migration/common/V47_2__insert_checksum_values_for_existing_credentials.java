@@ -9,13 +9,14 @@ import org.flywaydb.core.api.migration.spring.SpringJdbcMigration;
 @SuppressWarnings("unused")
 public class V47_2__insert_checksum_values_for_existing_credentials implements SpringJdbcMigration {
 
-  public void migrate(JdbcTemplate jdbcTemplate) throws Exception {
+  @Override
+  public void migrate(final JdbcTemplate jdbcTemplate) {
 
-    SqlRowSet credentials = jdbcTemplate.queryForRowSet("select * from credential");
+    final SqlRowSet credentials = jdbcTemplate.queryForRowSet("select * from credential");
 
     while (credentials.next()) {
-      String credentialName = credentials.getString("name");
-      String credentialValue = DigestUtils.sha256Hex(credentialName);
+      final String credentialName = credentials.getString("name");
+      final String credentialValue = DigestUtils.sha256Hex(credentialName);
 
       jdbcTemplate.update("UPDATE credential SET checksum = ? WHERE name = ?", credentialValue, credentialName);
 

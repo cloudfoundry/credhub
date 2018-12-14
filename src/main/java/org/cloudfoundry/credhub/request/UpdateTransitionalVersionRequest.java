@@ -7,9 +7,11 @@ public class UpdateTransitionalVersionRequest {
   private String versionUuid;
 
   public UpdateTransitionalVersionRequest() {
+    super();
   }
 
-  public UpdateTransitionalVersionRequest(String versionUuid) {
+  public UpdateTransitionalVersionRequest(final String versionUuid) {
+    super();
     this.versionUuid = versionUuid;
   }
 
@@ -17,7 +19,7 @@ public class UpdateTransitionalVersionRequest {
     return versionUuid;
   }
 
-  public void setVersionUuid(String versionUuid) {
+  public void setVersionUuid(final String versionUuid) {
     this.versionUuid = versionUuid;
   }
 }

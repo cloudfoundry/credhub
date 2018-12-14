@@ -1,9 +1,10 @@
 package org.cloudfoundry.credhub.audit.entity;
 
 public class Version {
-  private String versionId;
+  private final String versionId;
 
-  public Version(String id) {
+  public Version(final String id) {
+    super();
     versionId = id;
   }
 

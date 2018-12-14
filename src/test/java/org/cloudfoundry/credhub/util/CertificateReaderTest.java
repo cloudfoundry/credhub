@@ -30,20 +30,20 @@ public class CertificateReaderTest {
 
   @Test
   public void isCa_whenTheCaBasicConstraintIsTrue_returnsTrue() {
-    CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.SELF_SIGNED_CA_CERT);
+    final CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.SELF_SIGNED_CA_CERT);
 
     assertThat(certificateReader.isCa(), equalTo(true));
   }
 
   @Test
   public void isCa_whenTheCaBasicConstraintIsFalse_returnsFalse() {
-    CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT);
+    final CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT);
     assertThat(certificateReader.isCa(), equalTo(false));
   }
 
   @Test
   public void isCa_whenTheCertificateIsX509V3_andDoesNotHaveBasicConstraints_returnsFalse() {
-    CertificateReader certificateReader = new CertificateReader(
+    final CertificateReader certificateReader = new CertificateReader(
       CertificateStringConstants.V3_CERT_WITHOUT_BASIC_CONSTRAINTS);
 
     assertThat(certificateReader.isCa(), equalTo(false));
@@ -75,7 +75,7 @@ public class CertificateReaderTest {
     final GeneralNames generalNames = new GeneralNames(
       new GeneralName(GeneralName.dNSName, "SolarSystem"));
 
-    CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.BIG_TEST_CERT);
+    final CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.BIG_TEST_CERT);
 
     assertThat(certificateReader.getSubjectName().toString(), equalTo(distinguishedName));
     assertThat(certificateReader.getKeyLength(), equalTo(4096));
@@ -91,7 +91,7 @@ public class CertificateReaderTest {
 
   @Test
   public void givenASimpleSelfSignedCertificate_setsCertificateFieldsCorrectly() {
-    CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT);
+    final CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT);
 
     assertThat(certificateReader.getSubjectName().toString(), equalTo(
       "CN=test.example.com, OU=app:b67446e5-b2b0-4648-a0d0-772d3d399dcb, L=exampletown")
@@ -107,7 +107,7 @@ public class CertificateReaderTest {
 
   @Test
   public void givenADeceptiveAndNotSelfSignedCertificate_setsCertificateFieldsCorrectly() {
-    CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.MISLEADING_CERT);
+    final CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.MISLEADING_CERT);
 
     assertThat(certificateReader.getSubjectName().toString(), equalTo("CN=trickster"));
     assertThat(certificateReader.getKeyLength(), equalTo(2048));
@@ -121,7 +121,7 @@ public class CertificateReaderTest {
 
   @Test
   public void givenACertificateAuthority_setsCertificateFieldsCorrectly() {
-    CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.SELF_SIGNED_CA_CERT);
+    final CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.SELF_SIGNED_CA_CERT);
 
     assertThat(certificateReader.getSubjectName().toString(), equalTo("CN=foo.com"));
     assertThat(certificateReader.getKeyLength(), equalTo(2048));
@@ -140,7 +140,7 @@ public class CertificateReaderTest {
     final GeneralNames generalNames = new GeneralNames(
       new GeneralName(GeneralName.dNSName, "SolarSystem"));
 
-    CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.BIG_TEST_CERT);
+    final CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.BIG_TEST_CERT);
 
     assertThat(certificateReader.getAlternativeNames(), equalTo(generalNames));
     assertThat(asList(certificateReader.getExtendedKeyUsage().getUsages()),

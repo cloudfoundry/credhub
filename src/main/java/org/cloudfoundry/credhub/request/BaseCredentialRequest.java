@@ -21,17 +21,16 @@ public abstract class BaseCredentialRequest {
   @Pattern.List({
     @Pattern(regexp = HAS_NO_DOUBLE_SLASHES_AND_DOES_NOT_END_WITH_A_SLASH, message = "error.credential.invalid_slash_in_name"),
     @Pattern(regexp = ONLY_VALID_CHARACTERS_IN_NAME, message = "error.credential.invalid_character_in_name"),
-    @Pattern(regexp = IS_NOT_EMPTY, message = "error.missing_name")
+    @Pattern(regexp = IS_NOT_EMPTY, message = "error.missing_name"),
   })
   private String name;
   private String type;
-  private GenerationParameters generationParameters = null;
 
   public String getType() {
     return type;
   }
 
-  public void setType(String type) {
+  public void setType(final String type) {
     this.type = type.toLowerCase();
   }
 
@@ -39,7 +38,7 @@ public abstract class BaseCredentialRequest {
     return name;
   }
 
-  public void setName(String name) {
+  public void setName(final String name) {
     this.name = StringUtils.prependIfMissing(name, "/");
   }
 
@@ -50,12 +49,10 @@ public abstract class BaseCredentialRequest {
   private void enforceJsr303AnnotationValidations() {
     final Set<ConstraintViolation<BaseCredentialRequest>> constraintViolations = Validation
       .buildDefaultValidatorFactory().getValidator().validate(this);
-    for (ConstraintViolation<BaseCredentialRequest> constraintViolation : constraintViolations) {
+    for (final ConstraintViolation<BaseCredentialRequest> constraintViolation : constraintViolations) {
       throw new ParameterizedValidationException(constraintViolation.getMessage());
     }
   }
 
-  public GenerationParameters getGenerationParameters() {
-    return generationParameters;
-  }
+  abstract public GenerationParameters getGenerationParameters();
 }

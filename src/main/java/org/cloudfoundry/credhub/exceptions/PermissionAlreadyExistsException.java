@@ -1,7 +1,7 @@
 package org.cloudfoundry.credhub.exceptions;
 
 public class PermissionAlreadyExistsException extends RuntimeException {
-  public PermissionAlreadyExistsException(String messageCode) {
+  public PermissionAlreadyExistsException(final String messageCode) {
     super(messageCode);
   }
 }

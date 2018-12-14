@@ -11,9 +11,11 @@ public class AddPermission implements RequestDetails {
   private List<PermissionEntry> permissions;
 
   public AddPermission() {
+    super();
 
   }
-  public AddPermission(String credentialName, List<PermissionEntry> permissions) {
+  public AddPermission(final String credentialName, final List<PermissionEntry> permissions) {
+    super();
     this.credentialName = credentialName;
     this.permissions = permissions;
   }
@@ -22,7 +24,7 @@ public class AddPermission implements RequestDetails {
     return credentialName;
   }
 
-  public void setCredentialName(String credentialName) {
+  public void setCredentialName(final String credentialName) {
     this.credentialName = credentialName;
   }
 
@@ -30,7 +32,7 @@ public class AddPermission implements RequestDetails {
     return permissions;
   }
 
-  public void setPermissions(List<PermissionEntry> permissions) {
+  public void setPermissions(final List<PermissionEntry> permissions) {
     this.permissions = permissions;
   }
 

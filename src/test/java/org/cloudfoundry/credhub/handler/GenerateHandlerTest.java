@@ -41,7 +41,7 @@ public class GenerateHandlerTest {
     subject = new GenerateHandler(credentialService, universalCredentialGenerator, cefAuditRecord);
 
     generationParameters = new StringGenerationParameters();
-    CredentialVersion credentialVersion = mock(PasswordCredentialVersion.class);
+    final CredentialVersion credentialVersion = mock(PasswordCredentialVersion.class);
     when(credentialVersion.getCredential()).thenReturn(mock(Credential.class));
     when(credentialService.save(any(), any(), any())).thenReturn(credentialVersion);
   }
@@ -49,7 +49,7 @@ public class GenerateHandlerTest {
 
   @Test
   public void handleGenerateRequest_whenPasswordGenerateRequest_passesCorrectParametersIncludingGeneration() {
-    PasswordGenerateRequest generateRequest = new PasswordGenerateRequest();
+    final PasswordGenerateRequest generateRequest = new PasswordGenerateRequest();
 
     generateRequest.setType("password");
     generateRequest.setGenerationParameters(generationParameters);
@@ -63,7 +63,7 @@ public class GenerateHandlerTest {
 
   @Test
   public void handleGenerateRequest_addsToCEFAuditRecord() {
-    PasswordGenerateRequest generateRequest = new PasswordGenerateRequest();
+    final PasswordGenerateRequest generateRequest = new PasswordGenerateRequest();
 
     generateRequest.setType("password");
     generateRequest.setGenerationParameters(generationParameters);

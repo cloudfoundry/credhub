@@ -6,14 +6,14 @@ import org.cloudfoundry.credhub.request.GenerationParameters;
 
 public class ValueCredentialVersion extends CredentialVersion<ValueCredentialVersion> {
 
-  private ValueCredentialVersionData delegate;
+  private final ValueCredentialVersionData delegate;
 
-  public ValueCredentialVersion(ValueCredentialVersionData delegate) {
+  public ValueCredentialVersion(final ValueCredentialVersionData delegate) {
     super(delegate);
     this.delegate = delegate;
   }
 
-  public ValueCredentialVersion(String name) {
+  public ValueCredentialVersion(final String name) {
     this(new ValueCredentialVersionData(name));
   }
 
@@ -21,27 +21,24 @@ public class ValueCredentialVersion extends CredentialVersion<ValueCredentialVer
     this(new ValueCredentialVersionData());
   }
 
-  public ValueCredentialVersion(StringCredentialValue value, Encryptor encryptor) {
+  public ValueCredentialVersion(final StringCredentialValue value, final Encryptor encryptor) {
     this();
     this.setEncryptor(encryptor);
     this.setValue(value.getStringCredential());
   }
 
-  public ValueCredentialVersion setValue(String value) {
+  @Override
+  public void setValue(final String value) {
     if (value == null) {
       throw new IllegalArgumentException("value cannot be null");
     }
 
-    return super.setValue(value);
+    super.setValue(value);
   }
 
   @Override
-  public boolean matchesGenerationParameters(GenerationParameters generationParameters) {
-    if (generationParameters == null) {
-      return true;
-    }
-
-    return false;
+  public boolean matchesGenerationParameters(final GenerationParameters generationParameters) {
+    return generationParameters == null;
   }
 
   @Override
@@ -50,9 +47,14 @@ public class ValueCredentialVersion extends CredentialVersion<ValueCredentialVer
   }
 
 
+  @Override
   public void rotate() {
-    String decryptedValue = (String) this.getValue();
+    final String decryptedValue = (String) this.getValue();
     this.setValue(decryptedValue);
   }
 
+  @Override
+  public GenerationParameters getGenerationParameters() {
+    return null;
+  }
 }

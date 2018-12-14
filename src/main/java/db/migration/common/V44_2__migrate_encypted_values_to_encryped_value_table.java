@@ -1,5 +1,6 @@
 package db.migration.common;
 
+import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
 
@@ -17,20 +18,21 @@ public class V44_2__migrate_encypted_values_to_encryped_value_table implements S
     value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE",
     justification = "The database will definitely exist"
   )
-  public void migrate(JdbcTemplate jdbcTemplate) throws Exception {
-    String databaseName = jdbcTemplate
+  @Override
+  public void migrate(final JdbcTemplate jdbcTemplate) throws SQLException {
+    final String databaseName = jdbcTemplate
       .getDataSource()
       .getConnection()
       .getMetaData()
       .getDatabaseProductName()
       .toLowerCase();
 
-    List<Object> credentialsWithEncryptedValues = jdbcTemplate
+    final List<Object> credentialsWithEncryptedValues = jdbcTemplate
         .queryForList("select uuid from credential_version where encrypted_value is not null",
             Object.class);
 
-    for (Object credentialUuid : credentialsWithEncryptedValues) {
-      Object encryptedValueUuid = makeUuid(databaseName);
+    for (final Object credentialUuid : credentialsWithEncryptedValues) {
+      final Object encryptedValueUuid = makeUuid(databaseName);
       jdbcTemplate.update(
           "insert into encrypted_value (" +
               "uuid, " +
@@ -59,12 +61,12 @@ public class V44_2__migrate_encypted_values_to_encryped_value_table implements S
       );
     }
 
-    List<Object> passwordsWithEncryptedValues = jdbcTemplate.queryForList(
+    final List<Object> passwordsWithEncryptedValues = jdbcTemplate.queryForList(
         "select uuid from password_credential where encrypted_generation_parameters is not null",
         Object.class);
 
-    for (Object passwordCredentialUuid : passwordsWithEncryptedValues) {
-      Object encryptedValueUuid = makeUuid(databaseName);
+    for (final Object passwordCredentialUuid : passwordsWithEncryptedValues) {
+      final Object encryptedValueUuid = makeUuid(databaseName);
       jdbcTemplate.update(
           "insert into encrypted_value (" +
               "uuid, " +
@@ -94,12 +96,12 @@ public class V44_2__migrate_encypted_values_to_encryped_value_table implements S
       );
     }
 
-    List<Object> usersWithEncryptedValues = jdbcTemplate.queryForList(
+    final List<Object> usersWithEncryptedValues = jdbcTemplate.queryForList(
         "select uuid from user_credential where encrypted_generation_parameters is not null",
         Object.class);
 
-    for (Object userCredentialUuid : usersWithEncryptedValues) {
-      Object encryptedValueUuid = makeUuid(databaseName);
+    for (final Object userCredentialUuid : usersWithEncryptedValues) {
+      final Object encryptedValueUuid = makeUuid(databaseName);
       jdbcTemplate.update(
           "insert into encrypted_value (" +
               "uuid, " +

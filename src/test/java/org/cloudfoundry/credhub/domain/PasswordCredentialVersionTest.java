@@ -50,11 +50,11 @@ public class PasswordCredentialVersionTest {
     encryptedParametersValue = "fake-encrypted-parameters".getBytes(StringUtil.UTF_8);
     parametersNonce = "fake-parameters-nonce".getBytes(StringUtil.UTF_8);
 
-    generationParameters = new StringGenerationParameters()
-      .setExcludeLower(true)
-      .setLength(10);
+    generationParameters = new StringGenerationParameters();
+    generationParameters.setExcludeLower(true);
+    generationParameters.setLength(10);
 
-    String generationParametersJson = new JsonObjectMapper().writeValueAsString(generationParameters);
+    final String generationParametersJson = new JsonObjectMapper().writeValueAsString(generationParameters);
 
     when(encryptor.encrypt(null))
       .thenReturn(new EncryptedValue(canaryUuid, "", ""));
@@ -82,7 +82,9 @@ public class PasswordCredentialVersionTest {
 
   @Test
   public void getGenerationParameters_shouldCallDecryptTwice() {
-    subject.setPasswordAndGenerationParameters(PASSWORD, new StringGenerationParameters().setExcludeLower(true));
+    final StringGenerationParameters stringGenerationParameters = new StringGenerationParameters();
+    stringGenerationParameters.setExcludeLower(true);
+    subject.setPasswordAndGenerationParameters(PASSWORD, stringGenerationParameters);
 
     subject.getGenerationParameters();
 
@@ -142,7 +144,7 @@ public class PasswordCredentialVersionTest {
   @Test
   public void setPasswordAndGenerationParameters_shouldSaveGenerationParams_AsSnakeCaseJson() {
     subject.setPasswordAndGenerationParameters(PASSWORD, generationParameters);
-    String expectedJsonString = "{\"exclude_lower\":true}";
+    final String expectedJsonString = "{\"exclude_lower\":true}";
     verify(encryptor, times(1)).encrypt(expectedJsonString);
   }
 }

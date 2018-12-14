@@ -6,9 +6,11 @@ import org.cloudfoundry.credhub.domain.SshCredentialVersion;
 @SuppressWarnings("unused")
 public class SshView extends CredentialView {
 
-  SshView() { /* Jackson */ }
+  SshView() {
+    super(); /* Jackson */
+  }
 
-  SshView(SshCredentialVersion sshCredential) {
+  SshView(final SshCredentialVersion sshCredential) {
     super(
       sshCredential.getVersionCreatedAt(),
       sshCredential.getUuid(),

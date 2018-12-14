@@ -26,15 +26,14 @@ import org.cloudfoundry.credhub.exceptions.PermissionException;
 import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
 import org.cloudfoundry.credhub.request.BaseCredentialRequest;
 import org.cloudfoundry.credhub.request.BaseCredentialSetRequest;
-import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.cloudfoundry.credhub.view.FindCredentialResult;
 
 import static org.cloudfoundry.credhub.request.PermissionOperation.DELETE;
 import static org.cloudfoundry.credhub.request.PermissionOperation.READ;
 import static org.cloudfoundry.credhub.request.PermissionOperation.WRITE;
-import static org.cloudfoundry.credhub.request.PermissionOperation.WRITE_ACL;
 
 @Service
+@SuppressWarnings("PMD.TooManyMethods")
 public class PermissionedCredentialService {
 
   private final CredentialVersionDataService credentialVersionDataService;
@@ -44,17 +43,19 @@ public class PermissionedCredentialService {
   private final UserContextHolder userContextHolder;
   private final CredentialDataService credentialDataService;
   private final CEFAuditRecord auditRecord;
-  private PermissionCheckingService permissionCheckingService;
+  private final PermissionCheckingService permissionCheckingService;
 
   @Autowired
   public PermissionedCredentialService(
-    CredentialVersionDataService credentialVersionDataService,
-    CredentialFactory credentialFactory,
-    PermissionCheckingService permissionCheckingService,
-    CertificateAuthorityService certificateAuthorityService,
-    UserContextHolder userContextHolder,
-    CredentialDataService credentialDataService,
-    CEFAuditRecord auditRecord) {
+    final CredentialVersionDataService credentialVersionDataService,
+    final CredentialFactory credentialFactory,
+    final PermissionCheckingService permissionCheckingService,
+    final CertificateAuthorityService certificateAuthorityService,
+    final UserContextHolder userContextHolder,
+    final CredentialDataService credentialDataService,
+    final CEFAuditRecord auditRecord
+  ) {
+    super();
     this.credentialVersionDataService = credentialVersionDataService;
     this.credentialFactory = credentialFactory;
     this.permissionCheckingService = permissionCheckingService;
@@ -65,10 +66,11 @@ public class PermissionedCredentialService {
   }
 
   public CredentialVersion save(
-    CredentialVersion existingCredentialVersion,
-    CredentialValue credentialValue,
-    BaseCredentialRequest generateRequest) {
-    boolean shouldWriteNewCredential = shouldWriteNewCredential(existingCredentialVersion, generateRequest);
+    final CredentialVersion existingCredentialVersion,
+    final CredentialValue credentialValue,
+    final BaseCredentialRequest generateRequest
+  ) {
+    final boolean shouldWriteNewCredential = shouldWriteNewCredential(existingCredentialVersion, generateRequest);
 
     validateCredentialSave(generateRequest.getName(), generateRequest.getType(), existingCredentialVersion);
 
@@ -79,21 +81,21 @@ public class PermissionedCredentialService {
     return makeAndSaveNewCredential(existingCredentialVersion, credentialValue, generateRequest);
   }
 
-  public boolean delete(String credentialName) {
+  public boolean delete(final String credentialName) {
     if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), credentialName, DELETE)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
     return credentialVersionDataService.delete(credentialName);
   }
 
-  public List<CredentialVersion> findAllByName(String credentialName) {
+  public List<CredentialVersion> findAllByName(final String credentialName) {
     if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), credentialName, READ)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
-    List<CredentialVersion> credentialList = credentialVersionDataService.findAllByName(credentialName);
+    final List<CredentialVersion> credentialList = credentialVersionDataService.findAllByName(credentialName);
 
-    for (CredentialVersion credentialVersion : credentialList) {
+    for (final CredentialVersion credentialVersion : credentialList) {
       auditRecord.addVersion(credentialVersion);
       auditRecord.addResource(credentialVersion.getCredential());
     }
@@ -101,7 +103,7 @@ public class PermissionedCredentialService {
     return credentialList;
   }
 
-  public List<CredentialVersion> findNByName(String credentialName, Integer numberOfVersions) {
+  public List<CredentialVersion> findNByName(final String credentialName, final Integer numberOfVersions) {
     if (numberOfVersions < 0) {
       throw new InvalidQueryParameterException("error.invalid_query_parameter", "versions");
     }
@@ -113,13 +115,13 @@ public class PermissionedCredentialService {
     return credentialVersionDataService.findNByName(credentialName, numberOfVersions);
   }
 
-  public List<CredentialVersion> findActiveByName(String credentialName) {
+  public List<CredentialVersion> findActiveByName(final String credentialName) {
     if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), credentialName, READ)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
-    List<CredentialVersion> credentialList = credentialVersionDataService.findActiveByName(credentialName);
+    final List<CredentialVersion> credentialList = credentialVersionDataService.findActiveByName(credentialName);
 
-    for (CredentialVersion credentialVersion : credentialList) {
+    for (final CredentialVersion credentialVersion : credentialList) {
       auditRecord.addVersion(credentialVersion);
       auditRecord.addResource(credentialVersion.getCredential());
     }
@@ -127,8 +129,8 @@ public class PermissionedCredentialService {
     return credentialList;
   }
 
-  public Credential findByUuid(UUID credentialUUID) {
-    Credential credential = credentialDataService.findByUUID(credentialUUID);
+  public Credential findByUuid(final UUID credentialUUID) {
+    final Credential credential = credentialDataService.findByUUID(credentialUUID);
     if (credential == null) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
@@ -139,8 +141,8 @@ public class PermissionedCredentialService {
     return credential;
   }
 
-  public CredentialVersion findVersionByUuid(String credentialUUID) {
-    CredentialVersion credentialVersion = credentialVersionDataService.findByUuid(credentialUUID);
+  public CredentialVersion findVersionByUuid(final String credentialUUID) {
+    final CredentialVersion credentialVersion = credentialVersionDataService.findByUuid(credentialUUID);
 
     auditRecord.setRequestDetails(new GetCredentialById(credentialUUID));
 
@@ -151,7 +153,7 @@ public class PermissionedCredentialService {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
-    String credentialName = credentialVersion.getName();
+    final String credentialName = credentialVersion.getName();
 
     if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), credentialName, READ)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
@@ -159,43 +161,49 @@ public class PermissionedCredentialService {
     return credentialVersionDataService.findByUuid(credentialUUID);
   }
 
-  public List<String> findAllCertificateCredentialsByCaName(String caName) {
-    if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), caName, PermissionOperation.READ)) {
+  public List<String> findAllCertificateCredentialsByCaName(final String caName) {
+    if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), caName, READ)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
     return credentialVersionDataService.findAllCertificateCredentialsByCaName(caName);
   }
 
-  public List<FindCredentialResult> findStartingWithPath(String path) {
+  public List<FindCredentialResult> findStartingWithPath(final String path) {
     return findStartingWithPath(path, "");
   }
 
-  public List<FindCredentialResult> findStartingWithPath(String path, String expiresWithinDays) {
+  public List<FindCredentialResult> findStartingWithPath(final String path, final String expiresWithinDays) {
     return credentialVersionDataService.findStartingWithPath(path, expiresWithinDays);
   }
 
 
-  public List<FindCredentialResult> findContainingName(String name, String expiresWithinDays) {
+  public List<FindCredentialResult> findContainingName(final String name, final String expiresWithinDays) {
     return credentialVersionDataService.findContainingName(name, expiresWithinDays);
   }
 
-  public CredentialVersion findMostRecent(String credentialName) {
+  public CredentialVersion findMostRecent(final String credentialName) {
     return credentialVersionDataService.findMostRecent(credentialName);
   }
 
-  private CredentialVersion makeAndSaveNewCredential(CredentialVersion existingCredentialVersion,
-                                                     CredentialValue credentialValue, BaseCredentialRequest request) {
-    CredentialVersion newVersion = credentialFactory.makeNewCredentialVersion(
-      CredentialType.valueOf(request.getType()),
+  private CredentialVersion makeAndSaveNewCredential(
+    final CredentialVersion existingCredentialVersion,
+    final CredentialValue credentialValue,
+    final BaseCredentialRequest request
+  ) {
+    final CredentialVersion newVersion = credentialFactory.makeNewCredentialVersion(
+      CredentialType.valueOf(request.getType().toUpperCase()),
       request.getName(),
       credentialValue,
       existingCredentialVersion,
-      request.getGenerationParameters());
+      request.getGenerationParameters()
+    );
     return credentialVersionDataService.save(newVersion);
   }
 
-  private boolean shouldWriteNewCredential(CredentialVersion existingCredentialVersion, BaseCredentialRequest request) {
+  @SuppressWarnings("PMD.NPathComplexity")
+  private boolean shouldWriteNewCredential(
+    final CredentialVersion existingCredentialVersion, final BaseCredentialRequest request) {
     if (request instanceof BaseCredentialSetRequest) {
       return true;
     }
@@ -205,7 +213,7 @@ public class PermissionedCredentialService {
     }
 
     if (request instanceof BaseCredentialGenerateRequest) {
-      BaseCredentialGenerateRequest generateRequest = (BaseCredentialGenerateRequest) request;
+      final BaseCredentialGenerateRequest generateRequest = (BaseCredentialGenerateRequest) request;
 
       if (generateRequest.getMode() != null && generateRequest.getMode().equals(CredentialWriteMode.NO_OVERWRITE)) {
         return false;
@@ -219,7 +227,7 @@ public class PermissionedCredentialService {
     if (existingCredentialVersion instanceof CertificateCredentialVersion) {
       final CertificateCredentialVersion certificateCredentialVersion = (CertificateCredentialVersion) existingCredentialVersion;
       if (certificateCredentialVersion.getCaName() != null) {
-        boolean updatedCA = !certificateCredentialVersion.getCa().equals(
+        final boolean updatedCA = !certificateCredentialVersion.getCa().equals(
           certificateAuthorityService.findActiveVersion(certificateCredentialVersion.getCaName()).getCertificate());
         if (updatedCA) {
           return true;
@@ -232,12 +240,12 @@ public class PermissionedCredentialService {
     }
 
 
-    BaseCredentialGenerateRequest generateRequest = (BaseCredentialGenerateRequest) request;
+    final BaseCredentialGenerateRequest generateRequest = (BaseCredentialGenerateRequest) request;
     return generateRequest.isOverwrite();
 
   }
 
-  private void validateCredentialSave(String credentialName, String type, CredentialVersion existingCredentialVersion) {
+  private void validateCredentialSave(final String credentialName, final String type, final CredentialVersion existingCredentialVersion) {
     verifyWritePermission(credentialName);
 
     if (existingCredentialVersion != null && !existingCredentialVersion.getCredentialType().equals(type)) {
@@ -245,18 +253,12 @@ public class PermissionedCredentialService {
     }
   }
 
-  private void verifyWritePermission(String credentialName) {
+  private void verifyWritePermission(final String credentialName) {
     if (userContextHolder.getUserContext() == null) {
       return;
     }
 
     if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), credentialName, WRITE)) {
-      throw new PermissionException("error.credential.invalid_access");
-    }
-  }
-
-  private void verifyWriteAclPermission(String credentialName) {
-    if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), credentialName, WRITE_ACL)) {
       throw new PermissionException("error.credential.invalid_access");
     }
   }

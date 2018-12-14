@@ -3,7 +3,7 @@ package org.cloudfoundry.credhub.auth;
 import org.springframework.security.oauth2.common.exceptions.ClientAuthenticationException;
 
 public class OAuthSignatureException extends ClientAuthenticationException {
-  public OAuthSignatureException(String msg) {
+  public OAuthSignatureException(final String msg) {
     super(msg);
   }
 

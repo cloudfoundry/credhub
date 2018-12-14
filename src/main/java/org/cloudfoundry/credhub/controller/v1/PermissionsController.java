@@ -27,18 +27,19 @@ import org.cloudfoundry.credhub.view.PermissionsView;
 public class PermissionsController {
 
   private final PermissionsHandler permissionsHandler;
-  private CEFAuditRecord auditRecord;
+  private final CEFAuditRecord auditRecord;
 
   @Autowired
-  public PermissionsController(PermissionsHandler permissionsHandler, CEFAuditRecord auditRecord) {
+  public PermissionsController(final PermissionsHandler permissionsHandler, final CEFAuditRecord auditRecord) {
+    super();
     this.permissionsHandler = permissionsHandler;
     this.auditRecord = auditRecord;
   }
 
   @GetMapping
   @ResponseStatus(HttpStatus.OK)
-  public PermissionsView getAccessControlList(@RequestParam("credential_name") String credentialName) {
-    String credentialNameWithLeadingSlash = StringUtils.prependIfMissing(credentialName, "/");
+  public PermissionsView getAccessControlList(@RequestParam("credential_name") final String credentialName) {
+    final String credentialNameWithLeadingSlash = StringUtils.prependIfMissing(credentialName, "/");
     auditRecord.setRequestDetails(new GetPermissions(credentialName));
 
     return permissionsHandler.getPermissions(credentialNameWithLeadingSlash);
@@ -46,22 +47,22 @@ public class PermissionsController {
 
   @PostMapping(consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ResponseStatus(HttpStatus.CREATED)
-  public void setAccessControlEntries(@Validated @RequestBody PermissionsRequest accessEntriesRequest) {
-    AddPermission addPermission = new AddPermission(accessEntriesRequest.getCredentialName(),
+  public void setAccessControlEntries(@Validated @RequestBody final PermissionsRequest accessEntriesRequest) {
+    final AddPermission addPermission = new AddPermission(accessEntriesRequest.getCredentialName(),
       accessEntriesRequest.getPermissions());
     auditRecord.setRequestDetails(addPermission);
-    permissionsHandler.setPermissions(accessEntriesRequest);
+    permissionsHandler.writePermissions(accessEntriesRequest);
   }
 
   @DeleteMapping
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void deleteAccessControlEntry(
-    @RequestParam("credential_name") String credentialName,
-    @RequestParam("actor") String actor
+    @RequestParam("credential_name") final String credentialName,
+    @RequestParam("actor") final String actor
   ) {
-    String credentialNameWithPrependedSlash = StringUtils.prependIfMissing(credentialName, "/");
+    final String credentialNameWithPrependedSlash = StringUtils.prependIfMissing(credentialName, "/");
 
-    DeletePermissions deletePermissions = new DeletePermissions(credentialName, actor);
+    final DeletePermissions deletePermissions = new DeletePermissions(credentialName, actor);
     auditRecord.setRequestDetails(deletePermissions);
 
     permissionsHandler.deletePermissionEntry(credentialNameWithPrependedSlash, actor);

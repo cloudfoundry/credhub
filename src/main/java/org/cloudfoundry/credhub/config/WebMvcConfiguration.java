@@ -15,30 +15,31 @@ import org.cloudfoundry.credhub.interceptor.UserContextInterceptor;
 public class WebMvcConfiguration implements WebMvcConfigurer {
   private final AuditInterceptor auditInterceptor;
   private final UserContextInterceptor userContextInterceptor;
-  private ManagementInterceptor managementInterceptor;
+  private final ManagementInterceptor managementInterceptor;
 
   @Autowired
   public WebMvcConfiguration(
-    AuditInterceptor auditInterceptor,
-    UserContextInterceptor userContextInterceptor,
-    ManagementInterceptor managementInterceptor) {
+    final AuditInterceptor auditInterceptor,
+    final UserContextInterceptor userContextInterceptor,
+    final ManagementInterceptor managementInterceptor) {
+    super();
     this.userContextInterceptor = userContextInterceptor;
     this.auditInterceptor = auditInterceptor;
     this.managementInterceptor = managementInterceptor;
   }
 
   @Override
-  public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
+  public void configureContentNegotiation(final ContentNegotiationConfigurer configurer) {
     configurer.favorPathExtension(false);
   }
 
   @Override
-  public void configurePathMatch(PathMatchConfigurer configurer) {
+  public void configurePathMatch(final PathMatchConfigurer configurer) {
     configurer.setUseSuffixPatternMatch(false);
   }
 
   @Override
-  public void addInterceptors(InterceptorRegistry registry) {
+  public void addInterceptors(final InterceptorRegistry registry) {
     registry.addInterceptor(auditInterceptor).excludePathPatterns("/info", "/health", "/**/key-usage", "/version");
     registry.addInterceptor(managementInterceptor);
     registry.addInterceptor(userContextInterceptor).excludePathPatterns("/info", "/health", "/**/key-usage", "/management");

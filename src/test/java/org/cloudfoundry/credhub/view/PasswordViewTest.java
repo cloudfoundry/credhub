@@ -29,9 +29,9 @@ public class PasswordViewTest {
   public void beforeEach() {
     encryptor = mock(Encryptor.class);
     uuid = UUID.randomUUID();
-    entity = new PasswordCredentialVersion("/foo")
-      .setEncryptor(encryptor)
-      .setUuid(uuid);
+    entity = new PasswordCredentialVersion("/foo");
+    entity.setEncryptor(encryptor);
+    entity.setUuid(uuid);
 
     when(encryptor.decrypt(any()))
       .thenReturn("fake-plaintext-value");
@@ -40,7 +40,7 @@ public class PasswordViewTest {
 
   @Test
   public void itCanCreateViewFromEntity() throws IOException {
-    PasswordView actual = (PasswordView) PasswordView.fromEntity(entity);
+    final PasswordView actual = (PasswordView) PasswordView.fromEntity(entity);
     assertThat(JsonTestHelper.serializeToString(actual), equalTo("{"
       + "\"type\":\"password\","
       + "\"version_created_at\":null,"
@@ -52,24 +52,24 @@ public class PasswordViewTest {
 
   @Test
   public void itHasVersionCreatedAtInTheView() {
-    Instant now = Instant.now();
+    final Instant now = Instant.now();
     entity.setVersionCreatedAt(now);
 
-    PasswordView actual = (PasswordView) PasswordView.fromEntity(entity);
+    final PasswordView actual = (PasswordView) PasswordView.fromEntity(entity);
 
     assertThat(actual.getVersionCreatedAt(), equalTo(now));
   }
 
   @Test
   public void itHasTypeInTheView() {
-    PasswordView actual = (PasswordView) PasswordView.fromEntity(entity);
+    final PasswordView actual = (PasswordView) PasswordView.fromEntity(entity);
 
     assertThat(actual.getType(), equalTo("password"));
   }
 
   @Test
   public void itHadUUIDInTheView() {
-    PasswordView actual = (PasswordView) PasswordView.fromEntity(entity);
+    final PasswordView actual = (PasswordView) PasswordView.fromEntity(entity);
 
     assertThat(actual.getUuid(), equalTo(uuid.toString()));
   }

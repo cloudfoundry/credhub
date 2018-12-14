@@ -40,7 +40,7 @@ public class VersionEndpointTest {
       .apply(springSecurity())
       .build();
 
-    MockHttpServletRequestBuilder getRequest = get(
+    final MockHttpServletRequestBuilder getRequest = get(
       "/version")
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN);
     mockMvc.perform(getRequest)
@@ -55,7 +55,7 @@ public class VersionEndpointTest {
       .apply(springSecurity())
       .build();
 
-    MockHttpServletRequestBuilder getRequest = get(
+    final MockHttpServletRequestBuilder getRequest = get(
       "/version");
     mockMvc.perform(getRequest)
       .andExpect(status().isUnauthorized());

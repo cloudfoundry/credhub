@@ -10,20 +10,21 @@ import org.cloudfoundry.credhub.data.CredentialVersionDataService;
 @Component
 public class DecryptableDataDetector {
 
-  private EncryptionKeySet keySet;
-  private CredentialVersionDataService credentialVersionDataService;
+  private final EncryptionKeySet keySet;
+  private final CredentialVersionDataService credentialVersionDataService;
 
-  DecryptableDataDetector(EncryptionKeySet keySet,
-                          CredentialVersionDataService credentialVersionDataService) {
+  DecryptableDataDetector(final EncryptionKeySet keySet,
+                          final CredentialVersionDataService credentialVersionDataService) {
+    super();
     this.keySet = keySet;
     this.credentialVersionDataService = credentialVersionDataService;
   }
 
   public void check() {
-    Collection<UUID> uuids = keySet.getUuids();
+    final Collection<UUID> uuids = keySet.getUuids();
 
-    Long countTotalCredentials = credentialVersionDataService.count();
-    Long countCredentialsEncryptedWithKeyWeHave = credentialVersionDataService.countEncryptedWithKeyUuidIn(uuids);
+    final Long countTotalCredentials = credentialVersionDataService.count();
+    final Long countCredentialsEncryptedWithKeyWeHave = credentialVersionDataService.countEncryptedWithKeyUuidIn(uuids);
     if (countTotalCredentials > 0 && countCredentialsEncryptedWithKeyWeHave == 0) {
       throw new RuntimeException(
         "The encryption keys provided cannot decrypt any of the " + countTotalCredentials

@@ -17,12 +17,17 @@ public class ValueSetRequest extends BaseCredentialSetRequest<StringCredentialVa
     return value;
   }
 
-  public void setValue(StringCredentialValue value) {
+  public void setValue(final StringCredentialValue value) {
     this.value = value;
   }
 
   @Override
   public StringCredentialValue getCredentialValue() {
     return value;
+  }
+
+  @Override
+  public GenerationParameters getGenerationParameters() {
+    return null;
   }
 }

@@ -13,7 +13,7 @@ public class SshGenerationParameters extends RsaSshGenerationParameters {
     return sshComment;
   }
 
-  public void setSshComment(String sshComment) {
+  public void setSshComment(final String sshComment) {
     this.sshComment = sshComment;
   }
 }

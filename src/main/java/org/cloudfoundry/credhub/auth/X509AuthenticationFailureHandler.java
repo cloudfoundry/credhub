@@ -30,18 +30,19 @@ public class X509AuthenticationFailureHandler implements AuthenticationFailureHa
 
   @Autowired
   X509AuthenticationFailureHandler(
-    MessageSourceAccessor messageSourceAccessor,
-    ObjectMapper objectMapper
+    final MessageSourceAccessor messageSourceAccessor,
+    final ObjectMapper objectMapper
   ) {
+    super();
     this.objectMapper = objectMapper;
     this.messageSourceAccessor = messageSourceAccessor;
   }
 
   @Override
   public void onAuthenticationFailure(
-    HttpServletRequest request,
-    HttpServletResponse response,
-    AuthenticationException exception
+    final HttpServletRequest request,
+    final HttpServletResponse response,
+    final AuthenticationException exception
   ) throws IOException, ServletException {
     if (exception.getMessage().contains(INVALID_DN_MESSAGE)) {
       writeUnauthorizedResponse(response, INVALID_MTLS_ID_RESPONSE);
@@ -52,8 +53,8 @@ public class X509AuthenticationFailureHandler implements AuthenticationFailureHa
     }
   }
 
-  private void writeUnauthorizedResponse(HttpServletResponse response, String message) throws IOException {
-    ResponseError responseError = new ResponseError(
+  private void writeUnauthorizedResponse(final HttpServletResponse response, final String message) throws IOException {
+    final ResponseError responseError = new ResponseError(
       messageSourceAccessor.getMessage(message, new String[]{"foo"})
     );
 

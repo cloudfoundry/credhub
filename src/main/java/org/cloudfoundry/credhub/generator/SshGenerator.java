@@ -15,27 +15,28 @@ import org.cloudfoundry.credhub.util.CertificateFormatter;
 @Component
 public class SshGenerator implements CredentialGenerator<SshCredentialValue> {
 
-  private LibcryptoRsaKeyPairGenerator keyGenerator;
+  private final LibcryptoRsaKeyPairGenerator keyGenerator;
 
   @Autowired
-  public SshGenerator(LibcryptoRsaKeyPairGenerator keyGenerator) {
+  public SshGenerator(final LibcryptoRsaKeyPairGenerator keyGenerator) {
+    super();
     this.keyGenerator = keyGenerator;
   }
 
   @Override
-  public SshCredentialValue generateCredential(GenerationParameters p) {
-    SshGenerationParameters params = (SshGenerationParameters) p;
+  public SshCredentialValue generateCredential(final GenerationParameters p) {
+    final SshGenerationParameters params = (SshGenerationParameters) p;
     try {
       final KeyPair keyPair = keyGenerator.generateKeyPair(params.getKeyLength());
-      String sshComment = params.getSshComment();
-      String sshCommentMessage = StringUtils.isEmpty(sshComment) ? "" : " " + sshComment;
+      final String sshComment = params.getSshComment();
+      final String sshCommentMessage = StringUtils.isEmpty(sshComment) ? "" : " " + sshComment;
 
-      String publicKey =
+      final String publicKey =
         CertificateFormatter.derOf((RSAPublicKey) keyPair.getPublic()) + sshCommentMessage;
-      String privateKey = CertificateFormatter.pemOf(keyPair.getPrivate());
+      final String privateKey = CertificateFormatter.pemOf(keyPair.getPrivate());
 
       return new SshCredentialValue(publicKey, privateKey, null);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }

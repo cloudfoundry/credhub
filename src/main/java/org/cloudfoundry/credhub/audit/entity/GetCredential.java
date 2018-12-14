@@ -10,18 +10,20 @@ public class GetCredential implements RequestDetails {
   private Integer versions;
   private Boolean current;
 
-  public GetCredential(String credentialName, Integer numberOfVersions, boolean current) {
+  public GetCredential(final String credentialName, final Integer numberOfVersions, final boolean current) {
+    super();
     name = credentialName;
     versions = numberOfVersions;
     this.current = current;
   }
 
   public GetCredential() {
+    super();
 
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
@@ -30,7 +32,7 @@ public class GetCredential implements RequestDetails {
       return false;
     }
 
-    GetCredential that = (GetCredential) o;
+    final GetCredential that = (GetCredential) o;
 
     return new EqualsBuilder()
       .append(name, that.name)
@@ -53,7 +55,7 @@ public class GetCredential implements RequestDetails {
     return name;
   }
 
-  public void setName(String name) {
+  public void setName(final String name) {
     this.name = name;
   }
 
@@ -61,7 +63,7 @@ public class GetCredential implements RequestDetails {
     return versions;
   }
 
-  public void setVersions(Integer versions) {
+  public void setVersions(final Integer versions) {
     this.versions = versions;
   }
 
@@ -69,7 +71,7 @@ public class GetCredential implements RequestDetails {
     return current;
   }
 
-  public void setCurrent(Boolean current) {
+  public void setCurrent(final Boolean current) {
     this.current = current;
   }
 }

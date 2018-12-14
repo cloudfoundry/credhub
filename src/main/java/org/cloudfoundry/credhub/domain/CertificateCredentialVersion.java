@@ -10,16 +10,16 @@ import org.cloudfoundry.credhub.util.CertificateReader;
 
 public class CertificateCredentialVersion extends CredentialVersion<CertificateCredentialVersion> {
 
-  private CertificateCredentialVersionData delegate;
+  private final CertificateCredentialVersionData delegate;
   private CertificateReader parsedCertificate;
 
-  public CertificateCredentialVersion(CertificateCredentialVersionData delegate) {
+  public CertificateCredentialVersion(final CertificateCredentialVersionData delegate) {
     super(delegate);
     this.delegate = delegate;
     this.setCertificate(delegate.getCertificate());
   }
 
-  public CertificateCredentialVersion(String name) {
+  public CertificateCredentialVersion(final String name) {
     this(new CertificateCredentialVersionData(name));
   }
 
@@ -27,7 +27,7 @@ public class CertificateCredentialVersion extends CredentialVersion<CertificateC
     this(new CertificateCredentialVersionData());
   }
 
-  public CertificateCredentialVersion(CertificateCredentialValue certificate, Encryptor encryptor) {
+  public CertificateCredentialVersion(final CertificateCredentialValue certificate, final Encryptor encryptor) {
     this();
     this.setEncryptor(encryptor);
     this.setCa(certificate.getCa());
@@ -46,41 +46,37 @@ public class CertificateCredentialVersion extends CredentialVersion<CertificateC
     return delegate.getCa();
   }
 
-  public CertificateCredentialVersion setCa(String ca) {
+  public void setCa(final String ca) {
     delegate.setCa(ca);
-    return this;
   }
 
   public String getCertificate() {
     return delegate.getCertificate();
   }
 
-  public CertificateCredentialVersion setCertificate(String certificate) {
+  public void setCertificate(final String certificate) {
     delegate.setCertificate(certificate);
     if (StringUtils.isNotEmpty(delegate.getCertificate())) {
       parsedCertificate = new CertificateReader(certificate);
     }
-    return this;
   }
 
   public String getPrivateKey() {
     return (String) super.getValue();
   }
 
-  public CertificateCredentialVersion setPrivateKey(String privateKey) {
+  public void setPrivateKey(final String privateKey) {
     if (privateKey != null) {
       super.setValue(privateKey);
     }
-    return this;
   }
 
   public String getCaName() {
     return delegate.getCaName();
   }
 
-  public CertificateCredentialVersion setCaName(String caName) {
+  public void setCaName(final String caName) {
     delegate.setCaName(caName);
-    return this;
   }
 
   @Override
@@ -88,12 +84,14 @@ public class CertificateCredentialVersion extends CredentialVersion<CertificateC
     return delegate.getCredentialType();
   }
 
+  @Override
   public void rotate() {
-    String decryptedPrivateKey = this.getPrivateKey();
+    final String decryptedPrivateKey = this.getPrivateKey();
     this.setPrivateKey(decryptedPrivateKey);
   }
 
-  public boolean matchesGenerationParameters(GenerationParameters generationParameters) {
+  @Override
+  public boolean matchesGenerationParameters(final GenerationParameters generationParameters) {
     if (generationParameters == null) {
       return true;
     }
@@ -103,21 +101,24 @@ public class CertificateCredentialVersion extends CredentialVersion<CertificateC
     return existingGenerationParameters.equals(parameters);
   }
 
-  private CertificateCredentialVersion setTransitional(boolean transitional) {
+  private void setTransitional(final boolean transitional) {
     delegate.setTransitional(transitional);
-    return this;
   }
 
   public Instant getExpiryDate() {
     return delegate.getExpiryDate();
   }
 
-  public CertificateCredentialVersion setExpiryDate(Instant expiryDate) {
+  public void setExpiryDate(final Instant expiryDate) {
     delegate.setExpiryDate(expiryDate);
-    return this;
   }
 
   public boolean isVersionTransitional() {
     return delegate.isTransitional();
+  }
+
+  @Override
+  public GenerationParameters getGenerationParameters() {
+    return null;
   }
 }

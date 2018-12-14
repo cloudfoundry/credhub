@@ -21,9 +21,9 @@ public class StubRepositoryConfiguration {
   @Bean
   public PermissionRepository getStubPermissionRepository() {
 
-    StubPermissionRepository stubPermissionRepository = new StubPermissionRepository();
+    final StubPermissionRepository stubPermissionRepository = new StubPermissionRepository();
 
-    PermissionData permissionData = new PermissionData(
+    final PermissionData permissionData = new PermissionData(
       "/some-path",
       "uaa-client:user-a",
       newArrayList(

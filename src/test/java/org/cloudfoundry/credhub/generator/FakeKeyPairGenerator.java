@@ -13,7 +13,7 @@ public class FakeKeyPairGenerator {
   private static final int KEY_LENGTH_FOR_TESTING = 1024;
 
   public KeyPair generate() throws NoSuchProviderException, NoSuchAlgorithmException {
-    KeyPairGenerator generator = KeyPairGenerator
+    final KeyPairGenerator generator = KeyPairGenerator
       .getInstance("RSA");
     generator.initialize(KEY_LENGTH_FOR_TESTING);
     return generator.generateKeyPair();

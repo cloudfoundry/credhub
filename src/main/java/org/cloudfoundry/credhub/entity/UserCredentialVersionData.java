@@ -16,7 +16,7 @@ import org.hibernate.annotations.NotFoundAction;
 @DiscriminatorValue("user")
 @SecondaryTable(
   name = UserCredentialVersionData.TABLE_NAME,
-  pkJoinColumns = {@PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")}
+  pkJoinColumns = @PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")
 )
 public class UserCredentialVersionData extends CredentialVersionData<UserCredentialVersionData> {
   public static final String TABLE_NAME = "user_credential";
@@ -37,7 +37,7 @@ public class UserCredentialVersionData extends CredentialVersionData<UserCredent
     this(null);
   }
 
-  public UserCredentialVersionData(String name) {
+  public UserCredentialVersionData(final String name) {
     super(name);
   }
 
@@ -50,26 +50,23 @@ public class UserCredentialVersionData extends CredentialVersionData<UserCredent
     return username;
   }
 
-  public UserCredentialVersionData setUsername(String username) {
+  public void setUsername(final String username) {
     this.username = username;
-    return this;
   }
 
   public String getSalt() {
     return salt;
   }
 
-  public UserCredentialVersionData setSalt(String salt) {
+  public void setSalt(final String salt) {
     this.salt = salt;
-    return this;
   }
 
   public EncryptedValue getEncryptedGenerationParameters() {
     return encryptedGenerationParameters;
   }
 
-  public UserCredentialVersionData setEncryptedGenerationParameters(EncryptedValue encryptedGenerationParameters) {
+  public void setEncryptedGenerationParameters(final EncryptedValue encryptedGenerationParameters) {
     this.encryptedGenerationParameters = encryptedGenerationParameters;
-    return this;
   }
 }

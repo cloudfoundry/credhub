@@ -10,7 +10,9 @@ import static org.cloudfoundry.credhub.constants.EncryptionConstants.ITERATIONS;
 @Component
 @Profile("!unit-test")
 public class PasswordKeyProxyFactoryImpl implements PasswordKeyProxyFactory {
-  public KeyProxy createPasswordKeyProxy(EncryptionKeyMetadata encryptionKeyMetadata, InternalEncryptionService encryptionService) {
+  @Override
+  public KeyProxy createPasswordKeyProxy(
+    final EncryptionKeyMetadata encryptionKeyMetadata, final InternalEncryptionService encryptionService) {
     return new PasswordBasedKeyProxy(encryptionKeyMetadata.getEncryptionPassword(), ITERATIONS, encryptionService);
   }
 }

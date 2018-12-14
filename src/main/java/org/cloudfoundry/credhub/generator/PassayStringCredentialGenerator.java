@@ -19,20 +19,21 @@ public class PassayStringCredentialGenerator {
   private final PasswordGenerator passwordGenerator;
 
   @Autowired
-  PassayStringCredentialGenerator(PasswordGenerator passwordGenerator) {
+  PassayStringCredentialGenerator(final PasswordGenerator passwordGenerator) {
+    super();
     this.passwordGenerator = passwordGenerator;
   }
 
-  public StringCredentialValue generateCredential(StringGenerationParameters parameters) {
-    int passwordLength = normalizedLength(parameters.getLength());
+  public StringCredentialValue generateCredential(final StringGenerationParameters parameters) {
+    final int passwordLength = normalizedLength(parameters.getLength());
 
-    List<CharacterRule> characterRules = CharacterRuleProvider.getCharacterRules(parameters);
+    final List<CharacterRule> characterRules = CharacterRuleProvider.getCharacterRules(parameters);
 
     return new StringCredentialValue(
       passwordGenerator.generatePassword(passwordLength, characterRules));
   }
 
-  private int normalizedLength(int length) {
+  private int normalizedLength(final int length) {
     int stringLength = DEFAULT_LENGTH;
 
     if (length >= MIN_LENGTH && length <= MAX_LENGTH) {

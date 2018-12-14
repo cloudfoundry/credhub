@@ -10,9 +10,10 @@ public class JsonCredentialVersionData extends CredentialVersionData<JsonCredent
   public static final String CREDENTIAL_TYPE = "json";
 
   public JsonCredentialVersionData() {
+    super();
   }
 
-  public JsonCredentialVersionData(String name) {
+  public JsonCredentialVersionData(final String name) {
     super(name);
   }
 

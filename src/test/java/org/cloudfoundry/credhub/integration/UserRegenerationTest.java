@@ -49,7 +49,7 @@ public class UserRegenerationTest {
 
   @Test
   public void userRegeneration_withDefaultParametersAndStaticUsernameInValue_shouldRegenerateUserPassword() throws Exception {
-    MockHttpServletRequestBuilder post = post("/api/v1/data")
+    final MockHttpServletRequestBuilder post = post("/api/v1/data")
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -62,17 +62,17 @@ public class UserRegenerationTest {
         + "}"
         + "}");
 
-    String userResult = this.mockMvc.perform(post)
+    final String userResult = this.mockMvc.perform(post)
       .andDo(print())
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
 
-    String originalPassword = (new JSONObject(userResult)).getJSONObject("value").getString("password");
-    String originalUsername = (new JSONObject(userResult)).getJSONObject("value").getString("username");
+    final String originalPassword = (new JSONObject(userResult)).getJSONObject("value").getString("password");
+    final String originalUsername = (new JSONObject(userResult)).getJSONObject("value").getString("username");
 
     assertThat(originalPassword, notNullValue());
 
-    MockHttpServletRequestBuilder regeneratePost = post("/api/v1/data")
+    final MockHttpServletRequestBuilder regeneratePost = post("/api/v1/data")
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -82,13 +82,13 @@ public class UserRegenerationTest {
         + "  \"regenerate\" : true\n"
         + "}");
 
-    String regenerateResult = this.mockMvc.perform(regeneratePost)
+    final String regenerateResult = this.mockMvc.perform(regeneratePost)
       .andDo(print())
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
 
-    String regeneratedPassword = (new JSONObject(regenerateResult)).getJSONObject("value").getString("password");
-    String regeneratedUsername = (new JSONObject(regenerateResult)).getJSONObject("value").getString("username");
+    final String regeneratedPassword = (new JSONObject(regenerateResult)).getJSONObject("value").getString("password");
+    final String regeneratedUsername = (new JSONObject(regenerateResult)).getJSONObject("value").getString("username");
 
     assertThat(regeneratedPassword, notNullValue());
     assertThat(regeneratedPassword, not(equalTo(originalPassword)));
@@ -99,7 +99,7 @@ public class UserRegenerationTest {
 
   @Test
   public void userRegeneration_withDefaultParametersAndStaticUsernameInParameters_shouldRegenerateUserPassword() throws Exception {
-    MockHttpServletRequestBuilder post = post("/api/v1/data")
+    final MockHttpServletRequestBuilder post = post("/api/v1/data")
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -113,17 +113,17 @@ public class UserRegenerationTest {
         + "}"
         + "}");
 
-    String userResult = this.mockMvc.perform(post)
+    final String userResult = this.mockMvc.perform(post)
       .andDo(print())
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
 
-    String originalPassword = (new JSONObject(userResult)).getJSONObject("value").getString("password");
-    String originalUsername = (new JSONObject(userResult)).getJSONObject("value").getString("username");
+    final String originalPassword = (new JSONObject(userResult)).getJSONObject("value").getString("password");
+    final String originalUsername = (new JSONObject(userResult)).getJSONObject("value").getString("username");
 
     assertThat(originalPassword, notNullValue());
 
-    MockHttpServletRequestBuilder regeneratePost = post("/api/v1/data")
+    final MockHttpServletRequestBuilder regeneratePost = post("/api/v1/data")
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -133,13 +133,13 @@ public class UserRegenerationTest {
         + "  \"regenerate\" : true\n"
         + "}");
 
-    String regenerateResult = this.mockMvc.perform(regeneratePost)
+    final String regenerateResult = this.mockMvc.perform(regeneratePost)
       .andDo(print())
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
 
-    String regeneratedPassword = (new JSONObject(regenerateResult)).getJSONObject("value").getString("password");
-    String regeneratedUsername = (new JSONObject(regenerateResult)).getJSONObject("value").getString("username");
+    final String regeneratedPassword = (new JSONObject(regenerateResult)).getJSONObject("value").getString("password");
+    final String regeneratedUsername = (new JSONObject(regenerateResult)).getJSONObject("value").getString("username");
 
     assertThat(regeneratedPassword, notNullValue());
     assertThat(regeneratedPassword, not(equalTo(originalPassword)));
@@ -150,7 +150,7 @@ public class UserRegenerationTest {
 
   @Test
   public void userRegeneration_withDefaultParametersAndGeneratedUsername_shouldRegenerateUserPasswordButNotUsername() throws Exception {
-    MockHttpServletRequestBuilder post = post("/api/v1/data")
+    final MockHttpServletRequestBuilder post = post("/api/v1/data")
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -163,17 +163,17 @@ public class UserRegenerationTest {
         + "}"
         + "}");
 
-    String userResult = this.mockMvc.perform(post)
+    final String userResult = this.mockMvc.perform(post)
       .andDo(print())
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
 
-    String originalPassword = (new JSONObject(userResult)).getJSONObject("value").getString("password");
-    String originalUsername = (new JSONObject(userResult)).getJSONObject("value").getString("username");
+    final String originalPassword = (new JSONObject(userResult)).getJSONObject("value").getString("password");
+    final String originalUsername = (new JSONObject(userResult)).getJSONObject("value").getString("username");
 
     assertThat(originalPassword, notNullValue());
 
-    MockHttpServletRequestBuilder regeneratePost = post("/api/v1/data")
+    final MockHttpServletRequestBuilder regeneratePost = post("/api/v1/data")
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -183,13 +183,13 @@ public class UserRegenerationTest {
         + "  \"regenerate\" : true\n"
         + "}");
 
-    String regenerateResult = this.mockMvc.perform(regeneratePost)
+    final String regenerateResult = this.mockMvc.perform(regeneratePost)
       .andDo(print())
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
 
-    String regeneratedPassword = (new JSONObject(regenerateResult)).getJSONObject("value").getString("password");
-    String regeneratedUsername = (new JSONObject(regenerateResult)).getJSONObject("value").getString("username");
+    final String regeneratedPassword = (new JSONObject(regenerateResult)).getJSONObject("value").getString("password");
+    final String regeneratedUsername = (new JSONObject(regenerateResult)).getJSONObject("value").getString("username");
 
     assertThat(regeneratedPassword, notNullValue());
     assertThat(regeneratedPassword, not(equalTo(originalPassword)));

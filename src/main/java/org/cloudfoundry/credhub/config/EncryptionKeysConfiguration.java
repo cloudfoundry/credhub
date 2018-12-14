@@ -16,7 +16,7 @@ public class EncryptionKeysConfiguration {
     return providers;
   }
 
-  public void setProviders(List<EncryptionKeyProvider> providers) {
+  public void setProviders(final List<EncryptionKeyProvider> providers) {
     this.providers = providers;
   }
 
@@ -24,7 +24,7 @@ public class EncryptionKeysConfiguration {
     return keyCreationEnabled;
   }
 
-  public void setKeyCreationEnabled(boolean keyCreationEnabled) {
+  public void setKeyCreationEnabled(final boolean keyCreationEnabled) {
     this.keyCreationEnabled = keyCreationEnabled;
   }
 

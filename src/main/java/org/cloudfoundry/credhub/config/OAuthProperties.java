@@ -30,7 +30,7 @@ public class OAuthProperties {
     return getResolvedUri(JWK_KEYS_PATH).toString();
   }
 
-  public void setInternalUrl(String internalUrl) {
+  public void setInternalUrl(final String internalUrl) {
     this.internalUrl = internalUrl;
   }
 
@@ -38,7 +38,7 @@ public class OAuthProperties {
     return url;
   }
 
-  public void setUrl(String url) {
+  public void setUrl(final String url) {
     this.url = url;
   }
 
@@ -46,7 +46,7 @@ public class OAuthProperties {
     return trustStore;
   }
 
-  public void setTrustStore(String trustStore) {
+  public void setTrustStore(final String trustStore) {
     this.trustStore = trustStore;
   }
 
@@ -54,15 +54,15 @@ public class OAuthProperties {
     return trustStorePassword;
   }
 
-  public void setTrustStorePassword(String trustStorePassword) {
+  public void setTrustStorePassword(final String trustStorePassword) {
     this.trustStorePassword = trustStorePassword;
   }
 
 
-  private URI getResolvedUri(String extension) throws URISyntaxException {
-    String authServer = internalUrl != null ? internalUrl : url;
-    URI base = new URI(authServer);
-    String path = Paths.get(base.getPath(), extension).toString();
+  private URI getResolvedUri(final String extension) throws URISyntaxException {
+    final String authServer = internalUrl != null ? internalUrl : url;
+    final URI base = new URI(authServer);
+    final String path = Paths.get(base.getPath(), extension).toString();
     return base.resolve(path);
   }
 }

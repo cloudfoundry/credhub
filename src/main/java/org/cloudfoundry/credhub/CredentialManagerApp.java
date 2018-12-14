@@ -26,7 +26,7 @@ import org.cloudfoundry.credhub.util.TimeModuleFactory;
 @EnableJpaAuditing(dateTimeProviderRef = "currentTimeProvider")
 public class CredentialManagerApp {
 
-  public static void main(String[] args) {
+  public static void main(final String[] args) {
     SpringApplication.run(CredentialManagerApp.class, args);
   }
 
@@ -46,8 +46,8 @@ public class CredentialManagerApp {
   }
 
   @Bean
-  public Jackson2ObjectMapperBuilder jacksonBuilder(Module javaTimeModule) {
-    Jackson2ObjectMapperBuilder builder = new Jackson2ObjectMapperBuilder();
+  public Jackson2ObjectMapperBuilder jacksonBuilder(final Module javaTimeModule) {
+    final Jackson2ObjectMapperBuilder builder = new Jackson2ObjectMapperBuilder();
     builder.modules(javaTimeModule);
     builder.failOnUnknownProperties(true);
     builder.propertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
@@ -68,7 +68,7 @@ public class CredentialManagerApp {
   }
 
   @Bean
-  public MessageSourceAccessor messageSourceAccessor(MessageSource messageSource) {
+  public MessageSourceAccessor messageSourceAccessor(final MessageSource messageSource) {
     return new MessageSourceAccessor(messageSource);
   }
 }

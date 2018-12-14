@@ -21,24 +21,24 @@ import static org.hamcrest.core.IsEqual.equalTo;
 public class ValueSetRequestTest {
   @Test
   public void deserializesToValueSetRequest() {
-    String json = "{"
+    final String json = "{"
       + "\"name\":\"some-name\","
       + "\"type\":\"value\","
       + "\"value\":\"some-value\""
       + "}";
-    BaseCredentialSetRequest request = deserialize(json, BaseCredentialSetRequest.class);
+    final BaseCredentialSetRequest request = deserialize(json, BaseCredentialSetRequest.class);
 
     assertThat(request, instanceOf(ValueSetRequest.class));
   }
 
   @Test
   public void whenAllFieldsAreSet_shouldBeValid() {
-    String json = "{"
+    final String json = "{"
       + "\"name\":\"some-name\","
       + "\"type\":\"value\","
       + "\"value\":\"some-value\""
       + "}";
-    Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
+    final Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
       BaseCredentialSetRequest.class);
 
     assertThat(violations.size(), equalTo(0));
@@ -46,41 +46,41 @@ public class ValueSetRequestTest {
 
   @Test
   public void whenTypeHasUnusualCasing_shouldBeValid() {
-    String json = "{"
+    final String json = "{"
       + "\"name\":\"some-name\","
       + "\"type\":\"VaLuE\","
       + "\"value\":\"some-value\""
       + "}";
-    ValueSetRequest valueSetRequest = (ValueSetRequest) deserialize(json,
+    final ValueSetRequest valueSetRequest = (ValueSetRequest) deserialize(json,
       BaseCredentialSetRequest.class);
-    Set<ConstraintViolation<ValueSetRequest>> violations = validate(valueSetRequest);
+    final Set<ConstraintViolation<ValueSetRequest>> violations = validate(valueSetRequest);
 
     assertThat(violations.size(), equalTo(0));
   }
 
   @Test
   public void whenValueIsNotSet_shouldBeInvalid() {
-    String json = "{"
+    final String json = "{"
       + "\"name\":\"some-name\","
       + "\"type\":\"value\""
       + "}";
-    ValueSetRequest valueSetRequest = (ValueSetRequest) deserialize(json,
+    final ValueSetRequest valueSetRequest = (ValueSetRequest) deserialize(json,
       BaseCredentialSetRequest.class);
-    Set<ConstraintViolation<ValueSetRequest>> violations = validate(valueSetRequest);
+    final Set<ConstraintViolation<ValueSetRequest>> violations = validate(valueSetRequest);
 
     assertThat(violations, contains(hasViolationWithMessage("error.missing_value")));
   }
 
   @Test
   public void whenValueIsEmpty_shouldBeInvalid() {
-    String json = "{"
+    final String json = "{"
       + "\"name\":\"some-name\","
       + "\"type\":\"value\","
       + "\"value\":\"\""
       + "}";
-    ValueSetRequest valueSetRequest = (ValueSetRequest) deserialize(json,
+    final ValueSetRequest valueSetRequest = (ValueSetRequest) deserialize(json,
       BaseCredentialSetRequest.class);
-    Set<ConstraintViolation<ValueSetRequest>> violations = validate(valueSetRequest);
+    final Set<ConstraintViolation<ValueSetRequest>> violations = validate(valueSetRequest);
 
     assertThat(violations, contains(hasViolationWithMessage("error.missing_value")));
   }

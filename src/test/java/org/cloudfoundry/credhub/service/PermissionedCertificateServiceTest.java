@@ -61,9 +61,9 @@ public class PermissionedCertificateServiceTest {
 
   @Test
   public void save_whenTransitionalIsFalse_delegatesToPermissionedCredentialService() {
-    CertificateCredentialValue value = mock(CertificateCredentialValue.class);
+    final CertificateCredentialValue value = mock(CertificateCredentialValue.class);
     when(value.isTransitional()).thenReturn(false);
-    BaseCredentialGenerateRequest generateRequest = mock(BaseCredentialGenerateRequest.class);
+    final BaseCredentialGenerateRequest generateRequest = mock(BaseCredentialGenerateRequest.class);
     subject.save(
       mock(CredentialVersion.class),
       value,
@@ -79,13 +79,13 @@ public class PermissionedCertificateServiceTest {
 
   @Test
   public void save_whenTransitionalIsTrue_andThereAreNoOtherTransitionalVersions_delegatesToPermissionedCredentialService() {
-    CertificateCredentialValue value = mock(CertificateCredentialValue.class);
+    final CertificateCredentialValue value = mock(CertificateCredentialValue.class);
     when(value.isTransitional()).thenReturn(true);
 
-    BaseCredentialGenerateRequest generateRequest = mock(BaseCredentialGenerateRequest.class);
+    final BaseCredentialGenerateRequest generateRequest = mock(BaseCredentialGenerateRequest.class);
     when(generateRequest.getName()).thenReturn("/some-name");
 
-    CertificateCredentialVersion previousVersion = mock(CertificateCredentialVersion.class);
+    final CertificateCredentialVersion previousVersion = mock(CertificateCredentialVersion.class);
     when(previousVersion.isVersionTransitional()).thenReturn(false);
 
     when(permissionedCredentialService.findAllByName(eq("/some-name")))
@@ -106,13 +106,13 @@ public class PermissionedCertificateServiceTest {
 
   @Test
   public void save_whenTransitionalIsTrue_AndThereIsAnotherTransitionalVersion_throwsAnException() {
-    CertificateCredentialValue value = mock(CertificateCredentialValue.class);
+    final CertificateCredentialValue value = mock(CertificateCredentialValue.class);
     when(value.isTransitional()).thenReturn(true);
 
-    BaseCredentialGenerateRequest generateRequest = mock(BaseCredentialGenerateRequest.class);
+    final BaseCredentialGenerateRequest generateRequest = mock(BaseCredentialGenerateRequest.class);
     when(generateRequest.getName()).thenReturn("/some-name");
 
-    CertificateCredentialVersion previousVersion = mock(CertificateCredentialVersion.class);
+    final CertificateCredentialVersion previousVersion = mock(CertificateCredentialVersion.class);
     when(previousVersion.isVersionTransitional()).thenReturn(true);
 
     when(permissionedCredentialService.findAllByName(eq("/some-name")))
@@ -125,22 +125,22 @@ public class PermissionedCertificateServiceTest {
         generateRequest
       );
       fail("should throw exception");
-    } catch (ParameterizedValidationException e) {
+    } catch (final ParameterizedValidationException e) {
       assertThat(e.getMessage(), equalTo("error.too_many_transitional_versions"));
     }
   }
 
   @Test
   public void getAll_returnsAllCertificatesTheCurrentUserCanAccess() {
-    Credential myCredential = mock(Credential.class);
+    final Credential myCredential = mock(Credential.class);
     when(myCredential.getName()).thenReturn("my-credential");
-    Credential yourCredential = mock(Credential.class);
+    final Credential yourCredential = mock(Credential.class);
     when(yourCredential.getName()).thenReturn("your-credential");
 
-    UserContext userContext = mock(UserContext.class);
+    final UserContext userContext = mock(UserContext.class);
     when(userContextHolder.getUserContext()).thenReturn(userContext);
 
-    String user = "my-user";
+    final String user = "my-user";
     when(userContext.getActor()).thenReturn(user);
 
     when(permissionCheckingService.hasPermission(user, "my-credential", PermissionOperation.READ)).thenReturn(true);
@@ -155,15 +155,15 @@ public class PermissionedCertificateServiceTest {
 
   @Test
   public void getAllByName_returnsCertificateWithMatchingNameIfCurrentUserHasAccess() {
-    Credential myCredential = mock(Credential.class);
+    final Credential myCredential = mock(Credential.class);
     when(myCredential.getName()).thenReturn("my-credential");
-    Credential otherCredential = mock(Credential.class);
+    final Credential otherCredential = mock(Credential.class);
     when(otherCredential.getName()).thenReturn("other-credential");
 
-    UserContext userContext = mock(UserContext.class);
+    final UserContext userContext = mock(UserContext.class);
     when(userContextHolder.getUserContext()).thenReturn(userContext);
 
-    String user = "my-user";
+    final String user = "my-user";
     when(userContext.getActor()).thenReturn(user);
 
     when(permissionCheckingService.hasPermission(user, "my-credential", PermissionOperation.READ)).thenReturn(true);
@@ -178,17 +178,17 @@ public class PermissionedCertificateServiceTest {
 
   @Test
   public void getVersions_returnsListWithVersions() {
-    CredentialVersion myCredential = mock(CredentialVersion.class);
+    final CredentialVersion myCredential = mock(CredentialVersion.class);
     when(myCredential.getName()).thenReturn("my-credential");
-    CredentialVersion secondVersion = mock(CredentialVersion.class);
+    final CredentialVersion secondVersion = mock(CredentialVersion.class);
     when(secondVersion.getName()).thenReturn("my-credential");
 
-    List<CredentialVersion> versions = newArrayList(myCredential, secondVersion);
+    final List<CredentialVersion> versions = newArrayList(myCredential, secondVersion);
 
-    UserContext userContext = mock(UserContext.class);
+    final UserContext userContext = mock(UserContext.class);
     when(userContextHolder.getUserContext()).thenReturn(userContext);
 
-    String user = "my-user";
+    final String user = "my-user";
     when(userContext.getActor()).thenReturn(user);
 
     when(permissionCheckingService.hasPermission(user, "my-credential", PermissionOperation.READ)).thenReturn(true);
@@ -203,19 +203,19 @@ public class PermissionedCertificateServiceTest {
 
   @Test
   public void getVersions_withCurrentTrue_returnsCurrentVersions() {
-    Credential aCredential = new Credential("my-credential");
+    final Credential aCredential = new Credential("my-credential");
 
-    CredentialVersion credentialVersion1 = mock(CredentialVersion.class);
+    final CredentialVersion credentialVersion1 = mock(CredentialVersion.class);
     when(credentialVersion1.getName()).thenReturn("my-credential");
-    CredentialVersion credentialVersion2 = mock(CredentialVersion.class);
+    final CredentialVersion credentialVersion2 = mock(CredentialVersion.class);
     when(credentialVersion2.getName()).thenReturn("my-credential");
 
-    List<CredentialVersion> versions = newArrayList(credentialVersion1, credentialVersion2);
+    final List<CredentialVersion> versions = newArrayList(credentialVersion1, credentialVersion2);
 
-    UserContext userContext = mock(UserContext.class);
+    final UserContext userContext = mock(UserContext.class);
     when(userContextHolder.getUserContext()).thenReturn(userContext);
 
-    String user = "my-user";
+    final String user = "my-user";
     when(userContext.getActor()).thenReturn(user);
 
     when(permissionCheckingService.hasPermission(user, "my-credential", PermissionOperation.READ)).thenReturn(true);
@@ -249,17 +249,17 @@ public class PermissionedCertificateServiceTest {
 
   @Test(expected = EntryNotFoundException.class)
   public void getVersions_returnsAnError_whenUserDoesntHavePermission() {
-    CredentialVersion myCredential = mock(CredentialVersion.class);
+    final CredentialVersion myCredential = mock(CredentialVersion.class);
     when(myCredential.getName()).thenReturn("my-credential");
-    CredentialVersion secondVersion = mock(CredentialVersion.class);
+    final CredentialVersion secondVersion = mock(CredentialVersion.class);
     when(secondVersion.getName()).thenReturn("my-credential");
 
-    List<CredentialVersion> versions = newArrayList(myCredential, secondVersion);
+    final List<CredentialVersion> versions = newArrayList(myCredential, secondVersion);
 
-    UserContext userContext = mock(UserContext.class);
+    final UserContext userContext = mock(UserContext.class);
     when(userContextHolder.getUserContext()).thenReturn(userContext);
 
-    String user = "my-user";
+    final String user = "my-user";
     when(userContext.getActor()).thenReturn(user);
 
     when(permissionCheckingService.hasPermission(user, "my-credential", PermissionOperation.READ)).thenReturn(false);
@@ -272,20 +272,20 @@ public class PermissionedCertificateServiceTest {
 
   @Test
   public void deleteVersion_deletesTheProvidedVersion() {
-    UUID versionUuid = UUID.randomUUID();
-    UUID certificateUuid = UUID.randomUUID();
+    final UUID versionUuid = UUID.randomUUID();
+    final UUID certificateUuid = UUID.randomUUID();
 
-    CertificateCredentialVersion versionToDelete = mock(CertificateCredentialVersion.class);
+    final CertificateCredentialVersion versionToDelete = mock(CertificateCredentialVersion.class);
     when(certificateVersionDataService.findVersion(versionUuid)).thenReturn(versionToDelete);
 
-    UserContext userContext = mock(UserContext.class);
+    final UserContext userContext = mock(UserContext.class);
     when(userContextHolder.getUserContext()).thenReturn(userContext);
-    String user = "my-user";
-    String credentialName = "my-credential";
+    final String user = "my-user";
+    final String credentialName = "my-credential";
     when(userContext.getActor()).thenReturn(user);
     when(permissionCheckingService.hasPermission(user, credentialName, PermissionOperation.DELETE)).thenReturn(true);
 
-    Credential certificate = mock(Credential.class);
+    final Credential certificate = mock(Credential.class);
     when(certificate.getName()).thenReturn(credentialName);
     when(certificateDataService.findByUuid(certificateUuid)).thenReturn(certificate);
 
@@ -293,7 +293,7 @@ public class PermissionedCertificateServiceTest {
     when(certificateVersionDataService.findVersion(versionUuid)).thenReturn(versionToDelete);
     when(versionToDelete.getCredential()).thenReturn(certificate);
 
-    CertificateCredentialVersion certificateCredentialVersion = subject
+    final CertificateCredentialVersion certificateCredentialVersion = subject
       .deleteVersion(certificateUuid, versionUuid);
 
     assertThat(certificateCredentialVersion, equalTo(versionToDelete));
@@ -301,21 +301,21 @@ public class PermissionedCertificateServiceTest {
 
   @Test(expected = EntryNotFoundException.class)
   public void deleteVersion_whenTheUserDoesNotHavePermission_returnsAnError() {
-    UUID versionUuid = UUID.randomUUID();
-    UUID certificateUuid = UUID.randomUUID();
+    final UUID versionUuid = UUID.randomUUID();
+    final UUID certificateUuid = UUID.randomUUID();
 
-    UserContext userContext = mock(UserContext.class);
+    final UserContext userContext = mock(UserContext.class);
     when(userContextHolder.getUserContext()).thenReturn(userContext);
-    String user = "my-user";
+    final String user = "my-user";
     when(userContext.getActor()).thenReturn(user);
-    String credentialName = "my-credential";
+    final String credentialName = "my-credential";
     when(permissionCheckingService.hasPermission(user, credentialName, PermissionOperation.DELETE)).thenReturn(false);
 
-    Credential certificate = mock(Credential.class);
+    final Credential certificate = mock(Credential.class);
     when(certificate.getName()).thenReturn(credentialName);
     when(certificateDataService.findByUuid(certificateUuid)).thenReturn(certificate);
 
-    CertificateCredentialVersion versionToDelete = mock(CertificateCredentialVersion.class);
+    final CertificateCredentialVersion versionToDelete = mock(CertificateCredentialVersion.class);
     when(certificate.getUuid()).thenReturn(UUID.randomUUID());
     when(certificateVersionDataService.findVersion(versionUuid)).thenReturn(versionToDelete);
     when(versionToDelete.getCredential()).thenReturn(certificate);
@@ -325,23 +325,23 @@ public class PermissionedCertificateServiceTest {
 
   @Test(expected = EntryNotFoundException.class)
   public void deleteVersion_whenTheProvidedVersionDoesNotExistForTheSpecifiedCredential_returnsAnError() {
-    UUID versionUuid = UUID.randomUUID();
-    UUID certificateUuid = UUID.randomUUID();
+    final UUID versionUuid = UUID.randomUUID();
+    final UUID certificateUuid = UUID.randomUUID();
 
-    UserContext userContext = mock(UserContext.class);
+    final UserContext userContext = mock(UserContext.class);
     when(userContextHolder.getUserContext()).thenReturn(userContext);
-    String user = "my-user";
-    String credentialName = "my-credential";
+    final String user = "my-user";
+    final String credentialName = "my-credential";
     when(userContext.getActor()).thenReturn(user);
     when(permissionCheckingService.hasPermission(user, credentialName, PermissionOperation.DELETE)).thenReturn(true);
 
-    Credential certificate = mock(Credential.class);
+    final Credential certificate = mock(Credential.class);
     when(certificate.getName()).thenReturn(credentialName);
     when(certificate.getUuid()).thenReturn(certificateUuid);
     when(certificateDataService.findByUuid(certificateUuid)).thenReturn(certificate);
 
-    CertificateCredentialVersion versionToDelete = mock(CertificateCredentialVersion.class);
-    Credential someOtherCredential = mock(Credential.class);
+    final CertificateCredentialVersion versionToDelete = mock(CertificateCredentialVersion.class);
+    final Credential someOtherCredential = mock(Credential.class);
     when(certificate.getUuid()).thenReturn(UUID.randomUUID());
     when(certificateVersionDataService.findVersion(versionUuid)).thenReturn(versionToDelete);
     when(versionToDelete.getCredential()).thenReturn(someOtherCredential);
@@ -351,17 +351,17 @@ public class PermissionedCertificateServiceTest {
 
   @Test(expected = EntryNotFoundException.class)
   public void deleteVersion_whenTheProvidedVersionDoesNotExist_returnsAnError() {
-    UUID versionUuid = UUID.randomUUID();
-    UUID certificateUuid = UUID.randomUUID();
+    final UUID versionUuid = UUID.randomUUID();
+    final UUID certificateUuid = UUID.randomUUID();
 
-    UserContext userContext = mock(UserContext.class);
+    final UserContext userContext = mock(UserContext.class);
     when(userContextHolder.getUserContext()).thenReturn(userContext);
-    String user = "my-user";
-    String credentialName = "my-credential";
+    final String user = "my-user";
+    final String credentialName = "my-credential";
     when(userContext.getActor()).thenReturn(user);
     when(permissionCheckingService.hasPermission(user, credentialName, PermissionOperation.DELETE)).thenReturn(true);
 
-    Credential certificate = mock(Credential.class);
+    final Credential certificate = mock(Credential.class);
     when(certificate.getName()).thenReturn(credentialName);
     when(certificate.getUuid()).thenReturn(certificateUuid);
     when(certificateDataService.findByUuid(certificateUuid)).thenReturn(certificate);
@@ -374,19 +374,19 @@ public class PermissionedCertificateServiceTest {
 
   @Test(expected = EntryNotFoundException.class)
   public void deleteVersion_whenTheProvidedCredentialDoesNotExist_returnsAnError() {
-    UUID versionUuid = UUID.randomUUID();
-    UUID certificateUuid = UUID.randomUUID();
+    final UUID versionUuid = UUID.randomUUID();
+    final UUID certificateUuid = UUID.randomUUID();
 
-    UserContext userContext = mock(UserContext.class);
+    final UserContext userContext = mock(UserContext.class);
     when(userContextHolder.getUserContext()).thenReturn(userContext);
-    String user = "my-user";
-    String credentialName = "my-credential";
+    final String user = "my-user";
+    final String credentialName = "my-credential";
     when(userContext.getActor()).thenReturn(user);
     when(permissionCheckingService.hasPermission(user, credentialName, PermissionOperation.DELETE)).thenReturn(true);
 
     when(certificateDataService.findByUuid(certificateUuid)).thenReturn(null);
 
-    CertificateCredentialVersion versionToDelete = mock(CertificateCredentialVersion.class);
+    final CertificateCredentialVersion versionToDelete = mock(CertificateCredentialVersion.class);
     when(certificateVersionDataService.findVersion(versionUuid)).thenReturn(versionToDelete);
 
     subject.deleteVersion(certificateUuid, versionUuid);
@@ -394,16 +394,16 @@ public class PermissionedCertificateServiceTest {
 
   @Test(expected = EntryNotFoundException.class)
   public void updateTransitionalVersion_whenTheUserDoesNotHavePermissions_returnsAnError() {
-    UUID certificateUuid = UUID.randomUUID();
-    UUID transitionalVersionUuid = UUID.randomUUID();
-    String credentialName = "my-credential";
+    final UUID certificateUuid = UUID.randomUUID();
+    final UUID transitionalVersionUuid = UUID.randomUUID();
+    final String credentialName = "my-credential";
 
-    Credential certificate = mock(Credential.class);
+    final Credential certificate = mock(Credential.class);
     when(certificate.getName()).thenReturn(credentialName);
 
-    UserContext userContext = mock(UserContext.class);
+    final UserContext userContext = mock(UserContext.class);
     when(userContextHolder.getUserContext()).thenReturn(userContext);
-    String user = "my-user";
+    final String user = "my-user";
 
     when(certificateDataService.findByUuid(certificateUuid)).thenReturn(certificate);
     when(permissionCheckingService.hasPermission(user, credentialName, PermissionOperation.WRITE)).thenReturn(false);
@@ -413,10 +413,10 @@ public class PermissionedCertificateServiceTest {
 
   @Test(expected = EntryNotFoundException.class)
   public void updateTransitionalVersion_whenTheCertificateIsNotFound_returnsAnError() {
-    UUID certificateUuid = UUID.randomUUID();
-    UUID transitionalVersionUuid = UUID.randomUUID();
+    final UUID certificateUuid = UUID.randomUUID();
+    final UUID transitionalVersionUuid = UUID.randomUUID();
 
-    UserContext userContext = mock(UserContext.class);
+    final UserContext userContext = mock(UserContext.class);
     when(userContextHolder.getUserContext()).thenReturn(userContext);
 
     when(certificateDataService.findByUuid(certificateUuid)).thenReturn(null);
@@ -426,16 +426,16 @@ public class PermissionedCertificateServiceTest {
 
   @Test(expected = ParameterizedValidationException.class)
   public void updateTransitionalVersion_whenVersionDoesNotExist_returnsAnError() {
-    UUID certificateUuid = UUID.randomUUID();
-    UUID transitionalVersionUuid = UUID.randomUUID();
-    String credentialName = "my-credential";
+    final UUID certificateUuid = UUID.randomUUID();
+    final UUID transitionalVersionUuid = UUID.randomUUID();
+    final String credentialName = "my-credential";
 
-    Credential certificate = mock(Credential.class);
+    final Credential certificate = mock(Credential.class);
     when(certificate.getName()).thenReturn(credentialName);
     when(certificate.getUuid()).thenReturn(certificateUuid);
 
-    String user = "my-user";
-    UserContext userContext = mock(UserContext.class);
+    final String user = "my-user";
+    final UserContext userContext = mock(UserContext.class);
     when(userContextHolder.getUserContext()).thenReturn(userContext);
     when(userContext.getActor()).thenReturn(user);
 
@@ -449,21 +449,21 @@ public class PermissionedCertificateServiceTest {
 
   @Test(expected = ParameterizedValidationException.class)
   public void updateTransitionalVersion_whenVersionDoesNotBelongToCertificate_returnsAnError() {
-    UUID certificateUuid = UUID.randomUUID();
-    UUID transitionalVersionUuid = UUID.randomUUID();
-    String credentialName = "my-credential";
+    final UUID certificateUuid = UUID.randomUUID();
+    final UUID transitionalVersionUuid = UUID.randomUUID();
+    final String credentialName = "my-credential";
 
-    Credential certificate = mock(Credential.class);
+    final Credential certificate = mock(Credential.class);
     when(certificate.getName()).thenReturn(credentialName);
     when(certificate.getUuid()).thenReturn(certificateUuid);
 
-    Credential otherCertificate = mock(Credential.class);
+    final Credential otherCertificate = mock(Credential.class);
     when(otherCertificate.getUuid()).thenReturn(UUID.randomUUID());
 
-    CertificateCredentialVersion version = mock(CertificateCredentialVersion.class);
+    final CertificateCredentialVersion version = mock(CertificateCredentialVersion.class);
 
-    String user = "my-user";
-    UserContext userContext = mock(UserContext.class);
+    final String user = "my-user";
+    final UserContext userContext = mock(UserContext.class);
     when(userContextHolder.getUserContext()).thenReturn(userContext);
     when(userContext.getActor()).thenReturn(user);
 
@@ -478,14 +478,14 @@ public class PermissionedCertificateServiceTest {
 
   @Test(expected = EntryNotFoundException.class)
   public void set_whenTheUserDoesNotHavePermission_throwsAnException() {
-    UUID certificateUuid = UUID.randomUUID();
-    String credentialName = "my-credential";
+    final UUID certificateUuid = UUID.randomUUID();
+    final String credentialName = "my-credential";
 
-    Credential certificate = mock(Credential.class);
+    final Credential certificate = mock(Credential.class);
     when(certificate.getName()).thenReturn(credentialName);
 
-    String user = "my-user";
-    UserContext userContext = mock(UserContext.class);
+    final String user = "my-user";
+    final UserContext userContext = mock(UserContext.class);
     when(userContextHolder.getUserContext()).thenReturn(userContext);
     when(userContext.getActor()).thenReturn(user);
 
@@ -497,7 +497,7 @@ public class PermissionedCertificateServiceTest {
 
   @Test(expected = EntryNotFoundException.class)
   public void set_whenTheCredentialDoesNotExist_throwsAnException() {
-    UUID certificateUuid = UUID.randomUUID();
+    final UUID certificateUuid = UUID.randomUUID();
 
     when(certificateDataService.findByUuid(certificateUuid)).thenReturn(null);
     subject.set(certificateUuid, mock(CertificateCredentialValue.class));

@@ -22,7 +22,7 @@ import static com.google.common.collect.Lists.newArrayList;
   @JsonSubTypes.Type(name = "json", value = JsonSetRequest.class),
   @JsonSubTypes.Type(name = "ssh", value = SshSetRequest.class),
   @JsonSubTypes.Type(name = "rsa", value = RsaSetRequest.class),
-  @JsonSubTypes.Type(name = "user", value = UserSetRequest.class)
+  @JsonSubTypes.Type(name = "user", value = UserSetRequest.class),
 })
 public abstract class BaseCredentialSetRequest<T extends CredentialValue> extends BaseCredentialRequest {
 
@@ -46,7 +46,7 @@ public abstract class BaseCredentialSetRequest<T extends CredentialValue> extend
     }
   }
 
-  private boolean isInvalidTypeForSet(String type) {
+  private boolean isInvalidTypeForSet(final String type) {
     return !newArrayList("password", "certificate", "rsa", "ssh", "value", "json", "user").contains(type);
   }
 }

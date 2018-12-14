@@ -10,7 +10,7 @@ import com.jayway.jsonpath.ParseContext;
 @Component
 public class JsonContextFactory {
   public ParseContext getParseContext() {
-    Configuration configuration = Configuration.defaultConfiguration()
+    final Configuration configuration = Configuration.defaultConfiguration()
       .addOptions(Option.SUPPRESS_EXCEPTIONS);
     return JsonPath.using(configuration);
   }

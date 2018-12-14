@@ -20,42 +20,42 @@ public class StubPermissionRepository implements PermissionRepository {
 
   private PermissionData return_findByPathAndAnchor;
 
-  public void setReturn_findByPathAndAnchor(PermissionData permissionData) {
+  public void setReturn_findByPathAndAnchor(final PermissionData permissionData) {
     this.return_findByPathAndAnchor = permissionData;
   }
 
   @Override
-  public PermissionData findByPathAndActor(String path, String actor) {
+  public PermissionData findByPathAndActor(final String path, final String actor) {
     return return_findByPathAndAnchor;
   }
 
   @Override
-  public List<PermissionData> findAllByPath(String path) {
+  public List<PermissionData> findAllByPath(final String path) {
     return null;
   }
 
   @Override
-  public List<PermissionData> findAllByActor(String actor) {
+  public List<PermissionData> findAllByActor(final String actor) {
     return null;
   }
 
   @Override
-  public PermissionData findByUuid(UUID uuid) {
+  public PermissionData findByUuid(final UUID uuid) {
     return null;
   }
 
   @Override
-  public List<PermissionData> findByPathsAndActor(List<String> paths, String actor) {
+  public List<PermissionData> findByPathsAndActor(final List<String> paths, final String actor) {
     return null;
   }
 
   @Override
-  public List<String> findAllPathsForActorWithReadPermission(String actor) {
+  public List<String> findAllPathsForActorWithReadPermission(final String actor) {
     return null;
   }
 
   @Override
-  public long deleteByPathAndActor(String path, String actor) {
+  public long deleteByPathAndActor(final String path, final String actor) {
     return 0;
   }
 
@@ -65,17 +65,17 @@ public class StubPermissionRepository implements PermissionRepository {
   }
 
   @Override
-  public List<PermissionData> findAll(Sort sort) {
+  public List<PermissionData> findAll(final Sort sort) {
     return null;
   }
 
   @Override
-  public Page<PermissionData> findAll(Pageable pageable) {
+  public Page<PermissionData> findAll(final Pageable pageable) {
     return null;
   }
 
   @Override
-  public List<PermissionData> findAllById(Iterable<UUID> uuids) {
+  public List<PermissionData> findAllById(final Iterable<UUID> uuids) {
     return null;
   }
 
@@ -85,17 +85,17 @@ public class StubPermissionRepository implements PermissionRepository {
   }
 
   @Override
-  public void deleteById(UUID uuid) {
+  public void deleteById(final UUID uuid) {
 
   }
 
   @Override
-  public void delete(PermissionData entity) {
+  public void delete(final PermissionData entity) {
 
   }
 
   @Override
-  public void deleteAll(Iterable<? extends PermissionData> entities) {
+  public void deleteAll(final Iterable<? extends PermissionData> entities) {
 
   }
 
@@ -105,22 +105,22 @@ public class StubPermissionRepository implements PermissionRepository {
   }
 
   @Override
-  public <S extends PermissionData> S save(S entity) {
+  public <S extends PermissionData> S save(final S entity) {
     return null;
   }
 
   @Override
-  public <S extends PermissionData> List<S> saveAll(Iterable<S> entities) {
+  public <S extends PermissionData> List<S> saveAll(final Iterable<S> entities) {
     return null;
   }
 
   @Override
-  public Optional<PermissionData> findById(UUID uuid) {
+  public Optional<PermissionData> findById(final UUID uuid) {
     return Optional.empty();
   }
 
   @Override
-  public boolean existsById(UUID uuid) {
+  public boolean existsById(final UUID uuid) {
     return false;
   }
 
@@ -130,12 +130,12 @@ public class StubPermissionRepository implements PermissionRepository {
   }
 
   @Override
-  public <S extends PermissionData> S saveAndFlush(S entity) {
+  public <S extends PermissionData> S saveAndFlush(final S entity) {
     return null;
   }
 
   @Override
-  public void deleteInBatch(Iterable<PermissionData> entities) {
+  public void deleteInBatch(final Iterable<PermissionData> entities) {
 
   }
 
@@ -145,37 +145,37 @@ public class StubPermissionRepository implements PermissionRepository {
   }
 
   @Override
-  public PermissionData getOne(UUID uuid) {
+  public PermissionData getOne(final UUID uuid) {
     return null;
   }
 
   @Override
-  public <S extends PermissionData> Optional<S> findOne(Example<S> example) {
+  public <S extends PermissionData> Optional<S> findOne(final Example<S> example) {
     return Optional.empty();
   }
 
   @Override
-  public <S extends PermissionData> List<S> findAll(Example<S> example) {
+  public <S extends PermissionData> List<S> findAll(final Example<S> example) {
     return null;
   }
 
   @Override
-  public <S extends PermissionData> List<S> findAll(Example<S> example, Sort sort) {
+  public <S extends PermissionData> List<S> findAll(final Example<S> example, final Sort sort) {
     return null;
   }
 
   @Override
-  public <S extends PermissionData> Page<S> findAll(Example<S> example, Pageable pageable) {
+  public <S extends PermissionData> Page<S> findAll(final Example<S> example, final Pageable pageable) {
     return null;
   }
 
   @Override
-  public <S extends PermissionData> long count(Example<S> example) {
+  public <S extends PermissionData> long count(final Example<S> example) {
     return 0;
   }
 
   @Override
-  public <S extends PermissionData> boolean exists(Example<S> example) {
+  public <S extends PermissionData> boolean exists(final Example<S> example) {
     return false;
   }
 }

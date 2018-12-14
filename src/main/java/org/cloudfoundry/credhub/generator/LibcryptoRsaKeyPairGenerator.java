@@ -16,11 +16,12 @@ public class LibcryptoRsaKeyPairGenerator {
   private final CryptoWrapper cryptoWrapper;
 
   @Autowired
-  public LibcryptoRsaKeyPairGenerator(CryptoWrapper cryptoWrapper) throws NoSuchAlgorithmException {
+  public LibcryptoRsaKeyPairGenerator(final CryptoWrapper cryptoWrapper) throws NoSuchAlgorithmException {
+    super();
     this.cryptoWrapper = cryptoWrapper;
   }
 
-  public synchronized KeyPair generateKeyPair(int keyLength)
+  public synchronized KeyPair generateKeyPair(final int keyLength)
     throws InvalidKeyException, InvalidKeySpecException {
     final KeyPair[] keyPair = {null};
     cryptoWrapper.generateKeyPair(keyLength,

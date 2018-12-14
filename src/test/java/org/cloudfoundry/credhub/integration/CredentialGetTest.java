@@ -35,7 +35,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@ActiveProfiles(value = {"unit-test", "unit-test-permissions"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(
+  value = {
+    "unit-test",
+    "unit-test-permissions",
+  },
+  resolver = DatabaseProfileResolver.class
+)
 @SpringBootTest(classes = CredentialManagerApp.class)
 @Transactional
 public class CredentialGetTest {
@@ -55,12 +61,12 @@ public class CredentialGetTest {
 
   @Test
   public void getCertificateCredentials_whenCurrentFalseReturnsAllCertificateCredentials() throws Exception {
-    String credentialName = "/first-certificate";
+    final String credentialName = "/first-certificate";
 
     generateCertificateCredential(mockMvc, credentialName, true, "test", null, ALL_PERMISSIONS_TOKEN);
 
     String response = getCertificateCredentialsByName(mockMvc, ALL_PERMISSIONS_TOKEN, credentialName);
-    String uuid = JsonPath.parse(response)
+    final String uuid = JsonPath.parse(response)
       .read("$.certificates[0].id");
 
     RequestHelper.regenerateCertificate(mockMvc, uuid, true, ALL_PERMISSIONS_TOKEN);
@@ -74,7 +80,7 @@ public class CredentialGetTest {
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
 
-    JSONObject responseObject = new JSONObject(response);
+    final JSONObject responseObject = new JSONObject(response);
 
     assertThat(responseObject.getJSONArray("data").length(), equalTo(3));
   }
@@ -82,18 +88,18 @@ public class CredentialGetTest {
 
   @Test
   public void getCertificateCredentials_whenCurrentTrueReturnsOnlyTransitionalAndLatest() throws Exception {
-    String credentialName = "/second-certificate";
+    final String credentialName = "/second-certificate";
 
     generateCertificateCredential(mockMvc, credentialName, true, "test", null, ALL_PERMISSIONS_TOKEN);
 
     String response = getCertificateCredentialsByName(mockMvc, ALL_PERMISSIONS_TOKEN, credentialName);
-    String uuid = JsonPath.parse(response)
+    final String uuid = JsonPath.parse(response)
       .read("$.certificates[0].id");
 
-    String transitionalCertificate = JsonPath.parse(RequestHelper.regenerateCertificate(mockMvc, uuid, true, ALL_PERMISSIONS_TOKEN))
+    final String transitionalCertificate = JsonPath.parse(RequestHelper.regenerateCertificate(mockMvc, uuid, true, ALL_PERMISSIONS_TOKEN))
       .read("$.value.certificate");
 
-    String nonTransitionalCertificate = JsonPath.parse(RequestHelper.regenerateCertificate(mockMvc, uuid, false, ALL_PERMISSIONS_TOKEN))
+    final String nonTransitionalCertificate = JsonPath.parse(RequestHelper.regenerateCertificate(mockMvc, uuid, false, ALL_PERMISSIONS_TOKEN))
       .read("$.value.certificate");
 
     final MockHttpServletRequestBuilder request = get("/api/v1/data?name=" + credentialName + "&current=true")
@@ -104,10 +110,10 @@ public class CredentialGetTest {
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
 
-    JSONObject responseObject = new JSONObject(response);
+    final JSONObject responseObject = new JSONObject(response);
 
     assertThat(responseObject.getJSONArray("data").length(), equalTo(2));
-    List<String> certificates = JsonPath.parse(response)
+    final List<String> certificates = JsonPath.parse(response)
       .read("$.data[*].value.certificate");
     assertThat(certificates, containsInAnyOrder(transitionalCertificate, nonTransitionalCertificate));
   }
@@ -115,7 +121,7 @@ public class CredentialGetTest {
   @Test
   public void getCertificate_withNonNullExpiryDate_andExpectExpiryDate() throws Exception {
 
-    String credentialName = "/test-certificate";
+    final String credentialName = "/test-certificate";
 
     generateCertificateCredential(mockMvc, credentialName, true, "test", null, ALL_PERMISSIONS_TOKEN);
 
@@ -124,17 +130,17 @@ public class CredentialGetTest {
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON);
 
-    String response = mockMvc.perform(request)
+    final String response = mockMvc.perform(request)
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
 
-    String expiryDate = JsonPath.parse(response).read("$.data[0].expiry_date");
-    String truncatedExpiryDate = expiryDate.substring(0, expiryDate.indexOf('T'));
+    final String expiryDate = JsonPath.parse(response).read("$.data[0].expiry_date");
+    final String truncatedExpiryDate = expiryDate.substring(0, expiryDate.indexOf('T'));
 
-    Calendar calendar = Calendar.getInstance();
+    final Calendar calendar = Calendar.getInstance();
     calendar.add(Calendar.DATE, 365);
-    String expectedTime = calendar.getTime().toInstant().truncatedTo(ChronoUnit.SECONDS).toString();
-    String truncatedExpected = expectedTime.substring(0, expectedTime.indexOf('T'));
+    final String expectedTime = calendar.getTime().toInstant().truncatedTo(ChronoUnit.SECONDS).toString();
+    final String truncatedExpected = expectedTime.substring(0, expectedTime.indexOf('T'));
     assertThat(truncatedExpiryDate, equalTo(truncatedExpected));
 
   }

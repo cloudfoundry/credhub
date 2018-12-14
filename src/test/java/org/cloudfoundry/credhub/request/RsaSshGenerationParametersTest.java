@@ -14,11 +14,11 @@ public class RsaSshGenerationParametersTest {
   @Test
   public void validate_withInvalidKeyLength_throwsAnException() {
     try {
-      RsaSshGenerationParameters subject = new RsaSshGenerationParameters();
+      final RsaSshGenerationParameters subject = new RsaSshGenerationParameters();
       subject.setKeyLength(1337);
       subject.validate();
       fail("should throw");
-    } catch (ParameterizedValidationException e) {
+    } catch (final ParameterizedValidationException e) {
       assertThat(e.getMessage(), equalTo("error.invalid_key_length"));
     }
   }

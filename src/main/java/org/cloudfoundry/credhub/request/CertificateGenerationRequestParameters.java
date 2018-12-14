@@ -4,8 +4,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.springframework.util.StringUtils;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.net.InetAddresses;
@@ -15,6 +13,7 @@ import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+@SuppressWarnings("PMD.TooManyFields")
 @JsonInclude(NON_DEFAULT)
 public class CertificateGenerationRequestParameters {
   public static final String SERVER_AUTH = "server_auth";
@@ -43,35 +42,32 @@ public class CertificateGenerationRequestParameters {
   // Optional Certificate Parameters (not used in RDN)
   private int keyLength = 2048;
   private int duration = 365;
-  private boolean selfSigned = false;
+  private boolean selfSigned;
   private String caName;
-  private boolean isCa = false;
+  private boolean isCa;
   private String[] alternativeNames;
   private String[] extendedKeyUsage;
   private String[] keyUsage;
-  private List<Integer> validKeyLengths = Arrays.asList(2048, 3072, 4096);
-  private List<String> validExtendedKeyUsages = Arrays
+  private final List<Integer> validKeyLengths = Arrays.asList(2048, 3072, 4096);
+  private final List<String> validExtendedKeyUsages = Arrays
     .asList(SERVER_AUTH, CLIENT_AUTH, CODE_SIGNING, EMAIL_PROTECTION, TIMESTAMPING);
 
-  private List<String> validKeyUsages = Arrays
+  private final List<String> validKeyUsages = Arrays
     .asList(DIGITAL_SIGNATURE, NON_REPUDIATION, KEY_ENCIPHERMENT, DATA_ENCIPHERMENT,
       KEY_AGREEMENT, KEY_CERT_SIGN, CRL_SIGN, ENCIPHER_ONLY, DECIPHER_ONLY);
 
-  private int TEN_YEARS = 3650;
-  private int ONE_DAY = 1;
+  private static final int TEN_YEARS = 3650;
+  private static final int ONE_DAY = 1;
 
-  public CertificateGenerationRequestParameters() {
-  }
-
-  private static void validateParameterLength(String[] parameterArray, String parameterName, int parameterLength) {
+  private static void validateParameterLength(final String[] parameterArray, final String parameterName, final int parameterLength) {
     if (parameterArray != null) {
-      for (String parameter : parameterArray) {
+      for (final String parameter : parameterArray) {
         validateParameterLength(parameter, parameterName, parameterLength);
       }
     }
   }
 
-  private static void validateParameterLength(String parameter, String parameterName, int parameterLength) {
+  private static void validateParameterLength(final String parameter, final String parameterName, final int parameterLength) {
     if (!isEmpty(parameter) && parameter.length() > parameterLength) {
       throw new ParameterizedValidationException("error.credential.invalid_certificate_parameter", new Object[]{parameterName, parameterLength});
     }
@@ -81,18 +77,16 @@ public class CertificateGenerationRequestParameters {
     return keyLength;
   }
 
-  public CertificateGenerationRequestParameters setKeyLength(int keyLength) {
+  public void setKeyLength(final int keyLength) {
     this.keyLength = keyLength;
-    return this;
   }
 
   public int getDuration() {
     return duration;
   }
 
-  public CertificateGenerationRequestParameters setDuration(int duration) {
+  public void setDuration(final int duration) {
     this.duration = duration;
-    return this;
   }
 
   public String getCaName() {
@@ -100,9 +94,8 @@ public class CertificateGenerationRequestParameters {
   }
 
   @JsonProperty("ca")
-  public CertificateGenerationRequestParameters setCaName(String caName) {
+  public void setCaName(final String caName) {
     this.caName = caName;
-    return this;
   }
 
   public boolean isSelfSigned() {
@@ -114,112 +107,103 @@ public class CertificateGenerationRequestParameters {
   }
 
   @JsonProperty("self_sign")
-  public CertificateGenerationRequestParameters setSelfSigned(boolean selfSigned) {
+  public void setSelfSigned(final boolean selfSigned) {
     this.selfSigned = selfSigned;
-    return this;
   }
 
   public boolean isCa() {
     return isCa;
   }
 
-  public CertificateGenerationRequestParameters setIsCa(boolean isCa) {
+  public void setIsCa(final boolean isCa) {
     this.isCa = isCa;
-    return this;
   }
 
   public String[] getAlternativeNames() {
     return alternativeNames == null ? null : alternativeNames.clone();
   }
 
-  public CertificateGenerationRequestParameters setAlternativeNames(String[] alternativeNames) {
+  public void setAlternativeNames(final String[] alternativeNames) {
     this.alternativeNames = alternativeNames == null ? null : alternativeNames.clone();
-    return this;
   }
 
   public String[] getExtendedKeyUsage() {
     return extendedKeyUsage == null ? null : extendedKeyUsage.clone();
   }
 
-  public CertificateGenerationRequestParameters setExtendedKeyUsage(String[] extendedKeyUsage) {
+  public void setExtendedKeyUsage(final String[] extendedKeyUsage) {
     this.extendedKeyUsage = extendedKeyUsage == null ? null : extendedKeyUsage.clone();
-    return this;
   }
 
   public String[] getKeyUsage() {
     return keyUsage == null ? null : keyUsage.clone();
   }
 
-  public CertificateGenerationRequestParameters setKeyUsage(String[] keyUsage) {
+  public void setKeyUsage(final String[] keyUsage) {
     this.keyUsage = keyUsage == null ? null : keyUsage.clone();
-    return this;
   }
 
   public String getOrganization() {
     return organization;
   }
 
-  public CertificateGenerationRequestParameters setOrganization(String organization) {
+  public void setOrganization(final String organization) {
     this.organization = organization;
-    return this;
   }
 
   public String getState() {
     return state;
   }
 
-  public CertificateGenerationRequestParameters setState(String state) {
+  public void setState(final String state) {
     this.state = state;
-    return this;
   }
 
   public String getCountry() {
     return country;
   }
 
-  public CertificateGenerationRequestParameters setCountry(String country) {
+  public void setCountry(final String country) {
     this.country = country;
-    return this;
   }
 
   public String getCommonName() {
     return commonName;
   }
 
-  public CertificateGenerationRequestParameters setCommonName(String commonName) {
+  public void setCommonName(final String commonName) {
     this.commonName = commonName;
-    return this;
   }
 
   public String getOrganizationUnit() {
     return organizationUnit;
   }
 
-  public CertificateGenerationRequestParameters setOrganizationUnit(String organizationUnit) {
+  public void setOrganizationUnit(final String organizationUnit) {
     this.organizationUnit = organizationUnit;
-    return this;
   }
 
   public String getLocality() {
     return locality;
   }
 
-  public CertificateGenerationRequestParameters setLocality(String locality) {
+  public void setLocality(final String locality) {
     this.locality = locality;
-    return this;
   }
 
+  @SuppressWarnings("PMD.NPathComplexity")
   public void validate() {
-    if (StringUtils.isEmpty(organization)
-      && StringUtils.isEmpty(state)
-      && StringUtils.isEmpty(locality)
-      && StringUtils.isEmpty(organizationUnit)
-      && StringUtils.isEmpty(commonName)
-      && StringUtils.isEmpty(country)) {
+    if (isEmpty(organization)
+      && isEmpty(state)
+      && isEmpty(locality)
+      && isEmpty(organizationUnit)
+      && isEmpty(commonName)
+      && isEmpty(country)
+    ) {
       throw new ParameterizedValidationException("error.missing_certificate_parameters");
-    } else if (StringUtils.isEmpty(caName) && !selfSigned && !isCa) {
+    } else if (isEmpty(caName) && !selfSigned && !isCa) {
       throw new ParameterizedValidationException("error.missing_signing_ca");
-    } else if (!StringUtils.isEmpty(caName) && selfSigned) {
+    } else if (!isEmpty(caName) && selfSigned) {
       throw new ParameterizedValidationException("error.ca_and_self_sign");
     }
 
@@ -228,16 +212,21 @@ public class CertificateGenerationRequestParameters {
     }
 
     if (alternativeNames != null) {
-      for (String name : alternativeNames) {
-        if (!InetAddresses.isInetAddress(name) && !(InternetDomainName.isValid(name)
-          || DNS_WILDCARD_PATTERN.matcher(name).matches())) {
+      for (final String name : alternativeNames) {
+        if (
+          !InetAddresses.isInetAddress(name)
+            && !(
+              InternetDomainName.isValid(name)
+              || DNS_WILDCARD_PATTERN.matcher(name).matches()
+            )
+        ) {
           throw new ParameterizedValidationException("error.invalid_alternate_name");
         }
       }
     }
 
     if (extendedKeyUsage != null) {
-      for (String extendedKey : extendedKeyUsage) {
+      for (final String extendedKey : extendedKeyUsage) {
         if (!validExtendedKeyUsages.contains(extendedKey)) {
           throw new ParameterizedValidationException("error.invalid_extended_key_usage",
             extendedKey);
@@ -246,7 +235,7 @@ public class CertificateGenerationRequestParameters {
     }
 
     if (keyUsage != null) {
-      for (String keyUse : keyUsage) {
+      for (final String keyUse : keyUsage) {
         if (!validKeyUsages.contains(keyUse)) {
           throw new ParameterizedValidationException("error.invalid_key_usage",
             keyUse);

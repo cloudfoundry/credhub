@@ -20,12 +20,17 @@ public class CertificateSetRequest extends BaseCredentialSetRequest<CertificateC
   }
 
   public void setCertificateValue(
-    CertificateCredentialValue certificateValue) {
+    final CertificateCredentialValue certificateValue) {
     this.certificateValue = certificateValue;
   }
 
   @Override
   public CertificateCredentialValue getCredentialValue() {
     return certificateValue;
+  }
+
+  @Override
+  public GenerationParameters getGenerationParameters() {
+    return null;
   }
 }

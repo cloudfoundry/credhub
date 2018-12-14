@@ -47,7 +47,7 @@ public class CEFAuditRecordTest {
 
   @Test
   public void setHttpRequest() {
-    String data = "{\"name\":\"example-value\",\"value\":\"secret\"}";
+    final String data = "{\"name\":\"example-value\",\"value\":\"secret\"}";
     httpRequest.setContent(data.getBytes(StringUtil.UTF_8));
     httpRequest.setMethod("PUT");
 

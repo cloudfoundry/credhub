@@ -8,7 +8,8 @@ public class FindCredentialResult {
   private final Instant versionCreatedAt;
   private final String name;
 
-  public FindCredentialResult(Instant versionCreatedAt, String name) {
+  public FindCredentialResult(final Instant versionCreatedAt, final String name) {
+    super();
     this.versionCreatedAt = versionCreatedAt;
     this.name = name;
   }
@@ -18,7 +19,7 @@ public class FindCredentialResult {
     return versionCreatedAt;
   }
 
-  @com.fasterxml.jackson.annotation.JsonProperty("name")
+  @JsonProperty("name")
   public String getName() {
     return name;
   }

@@ -40,23 +40,23 @@ public class UserSetRequestTest {
 
   @Test
   public void deserializesToUserSetRequest() throws IOException {
-    UserSetRequest userSetRequest = JsonTestHelper.deserializeChecked(validSetRequestJson, UserSetRequest.class);
+    final UserSetRequest userSetRequest = JsonTestHelper.deserializeChecked(validSetRequestJson, UserSetRequest.class);
 
     assertThat(userSetRequest, instanceOf(UserSetRequest.class));
   }
 
   @Test
   public void whenAllFieldsAreSet_shouldHaveValidValueField() {
-    UserSetRequest userSetRequest = JsonTestHelper.deserialize(validSetRequestJson, UserSetRequest.class);
+    final UserSetRequest userSetRequest = JsonTestHelper.deserialize(validSetRequestJson, UserSetRequest.class);
 
-    UserCredentialValue userValue = userSetRequest.getUserValue();
+    final UserCredentialValue userValue = userSetRequest.getUserValue();
     assertThat(userValue.getUsername(), equalTo("dan"));
     assertThat(userValue.getPassword(), equalTo("example-password"));
   }
 
   @Test
   public void whenAllFieldsAreSet_shouldBeValid() {
-    Set<ConstraintViolation<UserSetRequest>> violations = deserializeAndValidate(validSetRequestJson,
+    final Set<ConstraintViolation<UserSetRequest>> violations = deserializeAndValidate(validSetRequestJson,
       UserSetRequest.class);
 
     assertThat(violations.size(), equalTo(0));
@@ -65,7 +65,7 @@ public class UserSetRequestTest {
   @Test
   public void whenTypeHasUnusualCasing_shouldBeValid() {
     // language=JSON
-    String json = "{\n" +
+    final String json = "{\n" +
       "  \"name\": \"some-name\",\n" +
       "  \"type\": \"UseR\",\n" +
       "  \"value\": {\n" +
@@ -73,7 +73,7 @@ public class UserSetRequestTest {
       "    \"password\": \"example-password\"\n" +
       "  }\n" +
       "}";
-    Set<ConstraintViolation<UserSetRequest>> violations = deserializeAndValidate(json, UserSetRequest.class);
+    final Set<ConstraintViolation<UserSetRequest>> violations = deserializeAndValidate(json, UserSetRequest.class);
 
     assertThat(violations.size(), equalTo(0));
   }
@@ -81,20 +81,20 @@ public class UserSetRequestTest {
   @Test
   public void whenValueIsEmpty_shouldBeInvalid() {
     // language=JSON
-    String json = "{\n" +
+    final String json = "{\n" +
       "  \"name\": \"some-name\",\n" +
       "  \"type\": \"user\"" +
       "}";
-    UserSetRequest userSetRequest = deserialize(json,
+    final UserSetRequest userSetRequest = deserialize(json,
       UserSetRequest.class);
-    Set<ConstraintViolation<UserSetRequest>> violations = validate(userSetRequest);
+    final Set<ConstraintViolation<UserSetRequest>> violations = validate(userSetRequest);
 
     assertThat(violations, contains(hasViolationWithMessage("error.missing_value")));
   }
 
   @Test
   public void whenPasswordIsNotSetInRequest_shouldBeInvalid() {
-    String invalidSetRequestJson = "{\n" +
+    final String invalidSetRequestJson = "{\n" +
       "  \"name\": \"some-name\",\n" +
       "  \"type\": \"user\",\n" +
       "  \"value\": {\n" +
@@ -102,7 +102,7 @@ public class UserSetRequestTest {
       "  }\n" +
       "}";
 
-    Set<ConstraintViolation<UserSetRequest>> violations = JsonTestHelper.deserializeAndValidate(invalidSetRequestJson, UserSetRequest.class);
+    final Set<ConstraintViolation<UserSetRequest>> violations = JsonTestHelper.deserializeAndValidate(invalidSetRequestJson, UserSetRequest.class);
 
     assertThat(violations, contains(hasViolationWithMessage("error.missing_password")));
   }

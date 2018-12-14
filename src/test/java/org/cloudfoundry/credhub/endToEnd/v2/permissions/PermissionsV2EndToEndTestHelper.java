@@ -26,10 +26,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 final class PermissionsV2EndToEndTestHelper {
 
   private PermissionsV2EndToEndTestHelper() {
+    super();
   }
 
-  static UUID setPermissions(MockMvc mockMvc, String credentialName, PermissionOperation operation) throws Exception {
-    MockHttpServletRequestBuilder addPermissionRequest = post("/api/v2/permissions")
+  static UUID setPermissions(final MockMvc mockMvc, final String credentialName, final PermissionOperation operation) throws Exception {
+    final MockHttpServletRequestBuilder addPermissionRequest = post("/api/v2/permissions")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -39,8 +40,8 @@ final class PermissionsV2EndToEndTestHelper {
         + "  \"operations\": [\"" + operation.getOperation() + "\"]\n"
         + "}");
 
-    String content = mockMvc.perform(addPermissionRequest).andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
-    PermissionsV2View returnValue = JsonTestHelper.deserialize(content, PermissionsV2View.class);
+    final String content = mockMvc.perform(addPermissionRequest).andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+    final PermissionsV2View returnValue = JsonTestHelper.deserialize(content, PermissionsV2View.class);
     assertThat(returnValue.getActor(), equalTo(USER_A_ACTOR_ID));
     assertThat(returnValue.getPath(), equalTo(credentialName));
     assertThat(returnValue.getOperations(), equalTo(Collections.singletonList(operation)));
@@ -50,16 +51,17 @@ final class PermissionsV2EndToEndTestHelper {
     return returnValue.getUuid();
   }
 
-  static ResultActions setPassword(MockMvc mockMvc, String credentialName, String passwordValue, String token) throws Exception {
-    Map<String, String> passwordRequestBody = new HashMap<>();
+  static ResultActions setPassword(
+    final MockMvc mockMvc, final String credentialName, final String passwordValue, final String token) throws Exception {
+    final Map<String, String> passwordRequestBody = new HashMap<>();
 
     passwordRequestBody.put("name", credentialName);
     passwordRequestBody.put("type", "password");
     passwordRequestBody.put("value", passwordValue);
 
-    String content = JsonTestHelper.serializeToString(passwordRequestBody);
+    final String content = JsonTestHelper.serializeToString(passwordRequestBody);
 
-    MockHttpServletRequestBuilder put = put("/api/v1/data")
+    final MockHttpServletRequestBuilder put = put("/api/v1/data")
       .header("Authorization", "Bearer " + token)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)

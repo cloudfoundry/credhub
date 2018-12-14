@@ -17,23 +17,25 @@ public class UserGenerator implements CredentialGenerator<UserCredentialValue> {
 
   @Autowired
   public UserGenerator(
-    UsernameGenerator usernameGenerator,
-    PasswordCredentialGenerator passwordGenerator,
-    CryptSaltFactory cryptSaltFactory
+    final UsernameGenerator usernameGenerator,
+    final PasswordCredentialGenerator passwordGenerator,
+    final CryptSaltFactory cryptSaltFactory
   ) {
+    super();
     this.usernameGenerator = usernameGenerator;
     this.passwordGenerator = passwordGenerator;
     this.cryptSaltFactory = cryptSaltFactory;
   }
 
-  public UserCredentialValue generateCredential(GenerationParameters p) {
-    StringGenerationParameters params = (StringGenerationParameters) p;
+  @Override
+  public UserCredentialValue generateCredential(final GenerationParameters p) {
+    final StringGenerationParameters params = (StringGenerationParameters) p;
     String username = params.getUsername();
     if (username == null) {
       username = usernameGenerator.generateCredential().getStringCredential();
     }
 
-    String password = passwordGenerator.generateCredential(params).getStringCredential();
+    final String password = passwordGenerator.generateCredential(params).getStringCredential();
 
     return new UserCredentialValue(username, password,
       cryptSaltFactory.generateSalt(password));

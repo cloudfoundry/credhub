@@ -9,17 +9,18 @@ import org.springframework.stereotype.Component;
 public class TimedRetry {
 
   public static final int ONE_SECOND = 1000;
-  private CurrentTimeProvider currentTimeProvider;
+  private final CurrentTimeProvider currentTimeProvider;
 
   @Autowired
-  public TimedRetry(CurrentTimeProvider currentTimeProvider) {
+  public TimedRetry(final CurrentTimeProvider currentTimeProvider) {
+    super();
     this.currentTimeProvider = currentTimeProvider;
   }
 
-  public boolean retryEverySecondUntil(long durationInSeconds, Supplier<Boolean> untilTrue) {
-    long startTime = currentTimeProvider.currentTimeMillis();
+  public boolean retryEverySecondUntil(final long durationInSeconds, final Supplier<Boolean> untilTrue) {
+    final long startTime = currentTimeProvider.currentTimeMillis();
     long currentTime;
-    long endTime = startTime + ONE_SECOND * durationInSeconds;
+    final long endTime = startTime + ONE_SECOND * durationInSeconds;
 
     do {
       if (untilTrue.get()) {
@@ -27,7 +28,7 @@ public class TimedRetry {
       }
       try {
         currentTimeProvider.sleep(ONE_SECOND);
-      } catch (InterruptedException e) {
+      } catch (final InterruptedException e) {
         // do nothing until we want to use InterruptedExceptions to
         // cause graceful shutdowns
       }

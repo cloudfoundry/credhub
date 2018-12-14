@@ -24,7 +24,7 @@ import static com.google.common.collect.Lists.newArrayList;
   @JsonSubTypes.Type(name = "ssh", value = SshGenerateRequest.class),
   @JsonSubTypes.Type(name = "rsa", value = RsaGenerateRequest.class),
   @JsonSubTypes.Type(name = "certificate", value = CertificateGenerateRequest.class),
-  @JsonSubTypes.Type(name = "user", value = UserGenerateRequest.class)
+  @JsonSubTypes.Type(name = "user", value = UserGenerateRequest.class),
 })
 public abstract class BaseCredentialGenerateRequest extends BaseCredentialRequest {
   private Boolean overwrite;
@@ -32,16 +32,17 @@ public abstract class BaseCredentialGenerateRequest extends BaseCredentialReques
   private CredentialWriteMode mode;
 
   public boolean isOverwrite() {
-    return overwrite == null ? false : overwrite;
+    if (overwrite == null) {
+      return false;
+    }
+
+    return overwrite;
   }
 
-  public void setOverwrite(Boolean overwrite) {
+  public void setOverwrite(final Boolean overwrite) {
     this.overwrite = overwrite;
     rawOverwrite = String.valueOf(overwrite);
   }
-
-  @Override
-  public abstract GenerationParameters getGenerationParameters();
 
   @Override
   public void validate() {
@@ -75,14 +76,14 @@ public abstract class BaseCredentialGenerateRequest extends BaseCredentialReques
     return rawOverwrite;
   }
 
-  private boolean isValidMode(CredentialWriteMode mode) {
+  private boolean isValidMode(final CredentialWriteMode mode) {
     if (mode == null) {
       return true;
     }
 
-    List<CredentialWriteMode> modes = Arrays.asList(CredentialWriteMode.values());
+    final List<CredentialWriteMode> modes = Arrays.asList(CredentialWriteMode.values());
 
-    for (CredentialWriteMode writeMode : modes) {
+    for (final CredentialWriteMode writeMode : modes) {
       if (writeMode.equals(mode)) {
         return true;
       }
@@ -91,11 +92,11 @@ public abstract class BaseCredentialGenerateRequest extends BaseCredentialReques
     return false;
   }
 
-  private boolean isInvalidCredentialType(String type) {
+  private boolean isInvalidCredentialType(final String type) {
     return !newArrayList("password", "certificate", "rsa", "ssh", "value", "json", "user").contains(type);
   }
 
-  private boolean isInvalidTypeForGeneration(String type) {
+  private boolean isInvalidTypeForGeneration(final String type) {
     return !newArrayList("password", "certificate", "rsa", "ssh", "user").contains(type);
   }
 
@@ -103,7 +104,7 @@ public abstract class BaseCredentialGenerateRequest extends BaseCredentialReques
     return mode;
   }
 
-  public void setMode(CredentialWriteMode mode) {
+  public void setMode(final CredentialWriteMode mode) {
     this.mode = mode;
   }
 }

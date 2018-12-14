@@ -22,65 +22,66 @@ import static org.cloudfoundry.credhub.service.EncryptionKeyCanaryMapper.CHARSET
 
 public abstract class InternalEncryptionService implements EncryptionProvider {
 
-  abstract CipherWrapper getCipher() throws NoSuchPaddingException, NoSuchAlgorithmException;
+  public abstract CipherWrapper getCipher() throws NoSuchPaddingException, NoSuchAlgorithmException;
 
-  abstract AlgorithmParameterSpec generateParameterSpec(byte[] nonce);
+  public abstract AlgorithmParameterSpec generateParameterSpec(byte[] nonce);
 
   @Override
-  public EncryptedValue encrypt(EncryptionKey key, String value) throws Exception {
+  public EncryptedValue encrypt(final EncryptionKey key, final String value) throws Exception {
     return encrypt(key.getUuid(), key.getKey(), value);
   }
 
-  public EncryptedValue encrypt(UUID canaryUuid, Key key, String value) throws Exception {
-    byte[] nonce = generateNonce();
-    AlgorithmParameterSpec parameterSpec = generateParameterSpec(nonce);
-    CipherWrapper encryptionCipher = getCipher();
+  public EncryptedValue encrypt(final UUID canaryUuid, final Key key, final String value) throws Exception {
+    final byte[] nonce = generateNonce();
+    final AlgorithmParameterSpec parameterSpec = generateParameterSpec(nonce);
+    final CipherWrapper encryptionCipher = getCipher();
 
     encryptionCipher.init(Cipher.ENCRYPT_MODE, key, parameterSpec);
 
-    byte[] encrypted = encryptionCipher.doFinal(value.getBytes(CHARSET));
+    final byte[] encrypted = encryptionCipher.doFinal(value.getBytes(CHARSET));
 
     return new EncryptedValue(canaryUuid, encrypted, nonce);
   }
 
   @Override
-  public String decrypt(EncryptionKey key, byte[] encryptedValue, byte[] nonce) throws Exception {
+  public String decrypt(final EncryptionKey key, final byte[] encryptedValue, final byte[] nonce) throws Exception {
     return decrypt(key.getKey(), encryptedValue, nonce);
   }
 
-  public String decrypt(Key key, byte[] encryptedValue, byte[] nonce) throws Exception {
-    CipherWrapper decryptionCipher = getCipher();
-    AlgorithmParameterSpec parameterSpec = generateParameterSpec(nonce);
+  public String decrypt(final Key key, final byte[] encryptedValue, final byte[] nonce) throws Exception {
+    final CipherWrapper decryptionCipher = getCipher();
+    final AlgorithmParameterSpec parameterSpec = generateParameterSpec(nonce);
     decryptionCipher.init(Cipher.DECRYPT_MODE, key, parameterSpec);
 
     return new String(decryptionCipher.doFinal(encryptedValue), CHARSET);
   }
 
   private byte[] generateNonce() {
-    SecureRandom secureRandom = getSecureRandom();
-    byte[] nonce = new byte[NONCE_SIZE];
+    final SecureRandom secureRandom = getSecureRandom();
+    final byte[] nonce = new byte[NONCE_SIZE];
     secureRandom.nextBytes(nonce);
     return nonce;
   }
 
-  public void reconnect(Exception reasonForReconnect) throws Exception {
+  public void reconnect(final Exception reasonForReconnect) throws Exception {
     throw reasonForReconnect;
   }
 
-  static class CipherWrapper {
+  public static class CipherWrapper {
 
-    private Cipher wrappedCipher;
+    private final Cipher wrappedCipher;
 
-    CipherWrapper(Cipher wrappedCipher) {
+    public CipherWrapper(final Cipher wrappedCipher) {
+      super();
       this.wrappedCipher = wrappedCipher;
     }
 
-    public void init(int encryptMode, Key key, AlgorithmParameterSpec parameterSpec)
+    public void init(final int encryptMode, final Key key, final AlgorithmParameterSpec parameterSpec)
       throws InvalidAlgorithmParameterException, InvalidKeyException {
       wrappedCipher.init(encryptMode, key, parameterSpec);
     }
 
-    byte[] doFinal(byte[] encryptedValue) throws BadPaddingException, IllegalBlockSizeException {
+    public byte[] doFinal(final byte[] encryptedValue) throws BadPaddingException, IllegalBlockSizeException {
       return wrappedCipher.doFinal(encryptedValue);
     }
   }

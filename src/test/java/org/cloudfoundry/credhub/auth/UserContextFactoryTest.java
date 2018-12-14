@@ -36,7 +36,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
-@ActiveProfiles(profiles = {"unit-test"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(profiles = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class UserContextFactoryTest {
   @MockBean
@@ -47,8 +47,8 @@ public class UserContextFactoryTest {
 
   @Test
   public void fromAuthentication_readsFromOAuthDetails() throws Exception {
-    OAuth2Authentication oauth2Authentication = setupOAuthMock("TEST_GRANT_TYPE");
-    UserContext context = subject.createUserContext(oauth2Authentication);
+    final OAuth2Authentication oauth2Authentication = setupOAuthMock("TEST_GRANT_TYPE");
+    final UserContext context = subject.createUserContext(oauth2Authentication);
 
     assertThat(context.getUserId(), equalTo("TEST_USER_ID"));
     assertThat(context.getUserName(), equalTo("TEST_USER_NAME"));
@@ -64,9 +64,9 @@ public class UserContextFactoryTest {
   @Test
   public void fromAuthentication_handlesSuppliedToken() throws Exception {
 
-    OAuth2Authentication oauth2Authentication = setupOAuthMock("TEST_GRANT_TYPE");
+    final OAuth2Authentication oauth2Authentication = setupOAuthMock("TEST_GRANT_TYPE");
 
-    UserContext context = subject.createUserContext(oauth2Authentication, "tokenValue");
+    final UserContext context = subject.createUserContext(oauth2Authentication, "tokenValue");
 
     assertThat(context.getUserName(), equalTo("TEST_USER_NAME"));
     assertThat(context.getIssuer(), containsString("TEST_UAA_URL"));
@@ -78,8 +78,8 @@ public class UserContextFactoryTest {
   @Test
   public void fromAuthentication_handlesMtlsAuth() throws Exception {
 
-    PreAuthenticatedAuthenticationToken mtlsAuth = setupMtlsMock();
-    UserContext context = subject.createUserContext(mtlsAuth);
+    final PreAuthenticatedAuthenticationToken mtlsAuth = setupMtlsMock();
+    final UserContext context = subject.createUserContext(mtlsAuth);
 
     assertThat(context.getUserName(), equalTo(null));
     assertThat(context.getUserId(), equalTo(null));
@@ -93,8 +93,8 @@ public class UserContextFactoryTest {
 
   @Test
   public void getAclUser_fromOAuthPasswordGrant_returnsTheUserGuid() throws Exception {
-    OAuth2Authentication oauth2Authentication = setupOAuthMock("password");
-    UserContext context = subject.createUserContext(oauth2Authentication);
+    final OAuth2Authentication oauth2Authentication = setupOAuthMock("password");
+    final UserContext context = subject.createUserContext(oauth2Authentication);
 
     assertThat(context.getActor(),
       equalTo("uaa-user:TEST_USER_ID"));
@@ -102,8 +102,8 @@ public class UserContextFactoryTest {
 
   @Test
   public void getAclUser_fromOAuthClientGrant_returnsTheClientId() throws Exception {
-    OAuth2Authentication oauth2Authentication = setupOAuthMock("client_credentials");
-    UserContext context = subject.createUserContext(oauth2Authentication);
+    final OAuth2Authentication oauth2Authentication = setupOAuthMock("client_credentials");
+    final UserContext context = subject.createUserContext(oauth2Authentication);
 
     assertThat(context.getActor(),
       equalTo("uaa-client:TEST_CLIENT_ID"));
@@ -112,16 +112,16 @@ public class UserContextFactoryTest {
   @Test
   public void getAclUser_fromMtlsCertificate_returnsAppGuid() throws Exception {
     final PreAuthenticatedAuthenticationToken authenticationToken = setupMtlsMock();
-    UserContext context = subject.createUserContext(authenticationToken);
+    final UserContext context = subject.createUserContext(authenticationToken);
 
     assertThat(context.getActor(),
       equalTo("mtls-app:e054393e-c9c3-478b-9047-e6d05c307bf2"));
   }
 
 
-  private OAuth2Authentication setupOAuthMock(String grantType) {
-    OAuth2Authentication authentication = mock(OAuth2Authentication.class);
-    OAuth2Request oauth2Request = spy(new OAuth2Request(
+  private OAuth2Authentication setupOAuthMock(final String grantType) {
+    final OAuth2Authentication authentication = mock(OAuth2Authentication.class);
+    final OAuth2Request oauth2Request = spy(new OAuth2Request(
       null,
       "TEST_CLIENT_ID",
       null,
@@ -131,16 +131,16 @@ public class UserContextFactoryTest {
       null,
       null,
       null));
-    OAuth2AccessToken token = mock(OAuth2AccessToken.class);
-    OAuth2AuthenticationDetails authDetails = mock(OAuth2AuthenticationDetails.class);
+    final OAuth2AccessToken token = mock(OAuth2AccessToken.class);
+    final OAuth2AuthenticationDetails authDetails = mock(OAuth2AuthenticationDetails.class);
 
-    Map<String, Object> additionalInformation = new HashMap<>();
+    final Map<String, Object> additionalInformation = new HashMap<>();
     additionalInformation.put("user_id", "TEST_USER_ID");
     additionalInformation.put("user_name", "TEST_USER_NAME");
     additionalInformation.put("iss", "TEST_UAA_URL");
     additionalInformation.put("iat", 1413495264);
 
-    Set<String> scopes = new HashSet<>();
+    final Set<String> scopes = new HashSet<>();
     scopes.add("scope1");
     scopes.add("scope2");
 
@@ -159,9 +159,9 @@ public class UserContextFactoryTest {
   }
 
   private PreAuthenticatedAuthenticationToken setupMtlsMock() {
-    X509Certificate certificate = mock(X509Certificate.class);
-    Principal principal = mock(Principal.class);
-    PreAuthenticatedAuthenticationToken token = mock(PreAuthenticatedAuthenticationToken.class);
+    final X509Certificate certificate = mock(X509Certificate.class);
+    final Principal principal = mock(Principal.class);
+    final PreAuthenticatedAuthenticationToken token = mock(PreAuthenticatedAuthenticationToken.class);
 
     when(certificate.getSubjectDN()).thenReturn(principal);
     when(principal.getName()).thenReturn("CN=test_cn,OU=app:e054393e-c9c3-478b-9047-e6d05c307bf2");

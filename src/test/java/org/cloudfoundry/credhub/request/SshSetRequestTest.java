@@ -20,7 +20,7 @@ import static org.junit.Assert.assertNull;
 public class SshSetRequestTest {
   @Test
   public void deserializesToSshSetRequest() {
-    String json = "{"
+    final String json = "{"
       + "\"name\": \"/example/ssh\","
       + "\"type\": \"ssh\","
       + "\"value\": {"
@@ -28,14 +28,14 @@ public class SshSetRequestTest {
       + "\"private_key\":\"fake-private-key\""
       + "}"
       + "}";
-    SshSetRequest deserialize = JsonTestHelper.deserialize(json, SshSetRequest.class);
+    final SshSetRequest deserialize = JsonTestHelper.deserialize(json, SshSetRequest.class);
 
     assertThat(deserialize, instanceOf(SshSetRequest.class));
   }
 
   @Test
   public void whenAllFieldsAreSet_shouldBeValid() {
-    String json = "{"
+    final String json = "{"
       + "\"name\": \"/example/ssh\","
       + "\"type\": \"ssh\","
       + "\"value\": {"
@@ -43,7 +43,7 @@ public class SshSetRequestTest {
       + "\"private_key\":\"fake-private-key\""
       + "}"
       + "}";
-    Set<ConstraintViolation<SshSetRequest>> violations = JsonTestHelper.deserializeAndValidate(json,
+    final Set<ConstraintViolation<SshSetRequest>> violations = JsonTestHelper.deserializeAndValidate(json,
       SshSetRequest.class);
 
     assertThat(violations.size(), equalTo(0));
@@ -51,14 +51,14 @@ public class SshSetRequestTest {
 
   @Test
   public void doesNotRequireThePublicKey() {
-    String json = "{"
+    final String json = "{"
       + "\"name\": \"/example/ssh\","
       + "\"type\": \"ssh\","
       + "\"value\": {"
       + "\"private_key\":\"fake-private-key\""
       + "}"
       + "}";
-    Set<ConstraintViolation<SshSetRequest>> violations = JsonTestHelper.deserializeAndValidate(json,
+    final Set<ConstraintViolation<SshSetRequest>> violations = JsonTestHelper.deserializeAndValidate(json,
       SshSetRequest.class);
 
     assertThat(violations.size(), equalTo(0));
@@ -66,14 +66,14 @@ public class SshSetRequestTest {
 
   @Test
   public void doesNotRequireThePrivateKey() {
-    String json = "{"
+    final String json = "{"
       + "\"name\": \"/example/ssh\","
       + "\"type\": \"ssh\","
       + "\"value\": {"
       + "\"public_key\":\"fake-public-key\""
       + "}"
       + "}";
-    Set<ConstraintViolation<SshSetRequest>> violations = JsonTestHelper.deserializeAndValidate(json,
+    final Set<ConstraintViolation<SshSetRequest>> violations = JsonTestHelper.deserializeAndValidate(json,
       SshSetRequest.class);
 
     assertThat(violations.size(), equalTo(0));
@@ -81,7 +81,7 @@ public class SshSetRequestTest {
 
   @Test
   public void whenTypeHasUnusualCasing_shouldBeValid() {
-    String json = "{"
+    final String json = "{"
       + "\"name\": \"/example/ssh\","
       + "\"type\": \"sSh\","
       + "\"value\": {"
@@ -89,7 +89,7 @@ public class SshSetRequestTest {
       + "\"private_key\":\"fake-private-key\""
       + "}"
       + "}";
-    Set<ConstraintViolation<SshSetRequest>> violations = JsonTestHelper.deserializeAndValidate(json,
+    final Set<ConstraintViolation<SshSetRequest>> violations = JsonTestHelper.deserializeAndValidate(json,
       SshSetRequest.class);
 
     assertThat(violations.size(), equalTo(0));
@@ -97,11 +97,11 @@ public class SshSetRequestTest {
 
   @Test
   public void whenNoValueIsSet_shouldBeInvalid() {
-    String json = "{\n"
+    final String json = "{\n"
       + "  \"name\": \"/example/ssh\",\n"
       + "  \"type\": \"ssh\"\n"
       + "}";
-    Set<ConstraintViolation<SshSetRequest>> violations = JsonTestHelper.deserializeAndValidate(json,
+    final Set<ConstraintViolation<SshSetRequest>> violations = JsonTestHelper.deserializeAndValidate(json,
       SshSetRequest.class);
 
     MatcherAssert.assertThat(violations, Matchers.contains(JsonTestHelper.hasViolationWithMessage("error.missing_value")));
@@ -109,12 +109,12 @@ public class SshSetRequestTest {
 
   @Test
   public void whenValueIsEmpty_shouldBeInvalid() {
-    String json = "{\n"
+    final String json = "{\n"
       + "  \"name\": \"/example/ssh\",\n"
       + "  \"type\": \"ssh\",\n"
       + "  \"value\": {}\n"
       + "}";
-    Set<ConstraintViolation<SshSetRequest>> violations = JsonTestHelper.deserializeAndValidate(json,
+    final Set<ConstraintViolation<SshSetRequest>> violations = JsonTestHelper.deserializeAndValidate(json,
       SshSetRequest.class);
 
     MatcherAssert.assertThat(violations,
@@ -123,7 +123,7 @@ public class SshSetRequestTest {
 
   @Test
   public void whenAllValueSubFieldsAreEmpty_shouldBeInvalid() {
-    String json = "{\n"
+    final String json = "{\n"
       + "  \"name\": \"/example/ssh\",\n"
       + "  \"type\": \"ssh\",\n"
       + "  \"value\": {"
@@ -131,7 +131,7 @@ public class SshSetRequestTest {
       + "    \"private_key\":\"\""
       + "  }"
       + "}";
-    Set<ConstraintViolation<SshSetRequest>> violations = JsonTestHelper.deserializeAndValidate(json,
+    final Set<ConstraintViolation<SshSetRequest>> violations = JsonTestHelper.deserializeAndValidate(json,
       SshSetRequest.class);
 
     MatcherAssert.assertThat(violations,
@@ -140,7 +140,7 @@ public class SshSetRequestTest {
 
   @Test
   public void whenAllValuesAreNull_shouldBeInvalid() {
-    String json = "{\n"
+    final String json = "{\n"
       + "  \"name\": \"/example/ssh\",\n"
       + "  \"type\": \"ssh\",\n"
       + "  \"value\": {"
@@ -148,7 +148,7 @@ public class SshSetRequestTest {
       + "    \"private_key\":null"
       + "  }"
       + "}";
-    Set<ConstraintViolation<SshSetRequest>> violations = JsonTestHelper.deserializeAndValidate(json,
+    final Set<ConstraintViolation<SshSetRequest>> violations = JsonTestHelper.deserializeAndValidate(json,
       SshSetRequest.class);
 
     MatcherAssert.assertThat(violations,
@@ -157,7 +157,7 @@ public class SshSetRequestTest {
 
   @Test
   public void coercesEmptyPublicKeyIntoNull() {
-    String json = "{"
+    final String json = "{"
       + "\"name\": \"/example/ssh\","
       + "\"type\": \"ssh\","
       + "\"value\": {"
@@ -165,14 +165,14 @@ public class SshSetRequestTest {
       + "\"private_key\":\"fake-private-key\""
       + "}"
       + "}";
-    SshSetRequest deserialize = JsonTestHelper.deserialize(json, SshSetRequest.class);
+    final SshSetRequest deserialize = JsonTestHelper.deserialize(json, SshSetRequest.class);
 
     assertNull(deserialize.getSshKeyValue().getPublicKey());
   }
 
   @Test
   public void coercesEmptyPrivateKeyIntoNull() {
-    String json = "{"
+    final String json = "{"
       + "\"name\": \"/example/ssh\","
       + "\"type\": \"ssh\","
       + "\"value\": {"
@@ -180,7 +180,7 @@ public class SshSetRequestTest {
       + "\"private_key\":\"\""
       + "}"
       + "}";
-    SshSetRequest deserialize = JsonTestHelper.deserialize(json, SshSetRequest.class);
+    final SshSetRequest deserialize = JsonTestHelper.deserialize(json, SshSetRequest.class);
 
     assertNull(deserialize.getSshKeyValue().getPrivateKey());
   }

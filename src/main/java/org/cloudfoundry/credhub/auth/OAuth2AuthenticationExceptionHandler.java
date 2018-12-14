@@ -37,32 +37,34 @@ public class OAuth2AuthenticationExceptionHandler extends OAuth2AuthenticationEn
 
   @Autowired
   OAuth2AuthenticationExceptionHandler(
-    CurrentTimeProvider currentTimeProvider,
-    MessageSourceAccessor messageSourceAccessor
+    final CurrentTimeProvider currentTimeProvider,
+    final MessageSourceAccessor messageSourceAccessor
   ) {
+    super();
     this.currentTimeProvider = currentTimeProvider;
     this.objectMapper = JsonParserFactory.create();
     this.messageSourceAccessor = messageSourceAccessor;
   }
 
   @Override
-  public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
+  public void commence(
+    final HttpServletRequest request, final HttpServletResponse response, final AuthenticationException authException)
     throws IOException, ServletException {
     handleException(request, response, authException);
   }
 
 
-  public void handleException(HttpServletRequest request, HttpServletResponse response,
-                              RuntimeException runtimeException)
+  public void handleException(final HttpServletRequest request, final HttpServletResponse response,
+                              final RuntimeException runtimeException)
     throws IOException, ServletException {
 
-    String token = (String) request.getAttribute(OAuth2AuthenticationDetails.ACCESS_TOKEN_VALUE);
+    final String token = (String) request.getAttribute(OAuth2AuthenticationDetails.ACCESS_TOKEN_VALUE);
 
     final Map<String, Object> tokenInformation = extractTokenInformation(token);
 
-    Throwable cause = extractCause(runtimeException);
+    final Throwable cause = extractCause(runtimeException);
 
-    Exception exception;
+    final Exception exception;
     if (tokenIsExpired(tokenInformation)) {
       exception = new AccessTokenExpiredException("Access token expired", cause);
     } else if (cause instanceof InvalidSignatureException) {
@@ -81,38 +83,38 @@ public class OAuth2AuthenticationExceptionHandler extends OAuth2AuthenticationEn
     doHandle(request, response, exception);
   }
 
-  private Throwable extractCause(RuntimeException e) {
+  private Throwable extractCause(final RuntimeException e) {
     Throwable cause = e.getCause();
     Throwable nextCause = cause == null ? null : cause.getCause();
-    while (nextCause != null && nextCause != cause) {
+    while (nextCause != null && !(nextCause.equals(cause))) {
       cause = nextCause;
       nextCause = cause.getCause();
     }
     return cause;
   }
 
-  private boolean tokenIsExpired(Map<String, Object> tokenInformation) {
-    Long exp = tokenInformation != null ? (Long) tokenInformation.get(EXP) : null;
+  private boolean tokenIsExpired(final Map<String, Object> tokenInformation) {
+    final Long exp = tokenInformation != null ? (Long) tokenInformation.get(EXP) : null;
     return exp != null && exp <= currentTimeProvider.getInstant().getEpochSecond();
   }
 
-  private Map<String, Object> extractTokenInformation(String token) {
+  private Map<String, Object> extractTokenInformation(final String token) {
     try {
       final Jwt jwt = JwtHelper.decode(token);
 
       final Map<String, Object> map = objectMapper.parseMap(jwt.getClaims());
       if (map.containsKey(EXP) && map.get(EXP) instanceof Integer) {
-        Integer intValue = (Integer) map.get(EXP);
+        final Integer intValue = (Integer) map.get(EXP);
         map.put(EXP, Long.valueOf(intValue));
       }
 
       return map;
-    } catch (RuntimeException mie) {
+    } catch (final RuntimeException mie) {
       return null;
     }
   }
 
-  private String removeTokenFromMessage(String message, String token) {
+  private String removeTokenFromMessage(final String message, final String token) {
     return message.replace(": " + token, "");
   }
 }

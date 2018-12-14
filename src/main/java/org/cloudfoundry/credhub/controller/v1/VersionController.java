@@ -19,8 +19,9 @@ public class VersionController {
 
   @Autowired
   VersionController(
-    VersionProvider versionProvider
+    final VersionProvider versionProvider
   ) {
+    super();
     this.credhubVersion = versionProvider.currentVersion();
   }
 

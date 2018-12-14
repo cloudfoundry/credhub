@@ -39,7 +39,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
-@ActiveProfiles(value = {"unit-test", "unit-test-permissions"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(
+  value = {
+    "unit-test",
+    "unit-test-permissions",
+  },
+  resolver = DatabaseProfileResolver.class
+)
 @Transactional
 public class CredentialAclEnforcementTest {
   private static final String CREDENTIAL_NAME = "/TEST/CREDENTIAL";
@@ -78,11 +84,11 @@ public class CredentialAclEnforcementTest {
 
   @Test
   public void GET_byCredentialName_whenTheUserDoesntHavePermissionToReadCredential_returns404() throws Exception {
-    CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT);
+    final CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT);
     final MockHttpServletRequestBuilder get = get("/api/v1/data?name=" + CREDENTIAL_NAME)
       .with(SecurityMockMvcRequestPostProcessors
         .x509(certificateReader.getCertificate()));
-    String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
+    final String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
     mockMvc.perform(get)
       .andDo(print())
       .andExpect(status().isNotFound())
@@ -102,11 +108,11 @@ public class CredentialAclEnforcementTest {
 
   @Test
   public void GET_byId_whenTheUserDoesntHavePermissionToReadCredential_returns404() throws Exception {
-    CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT);
+    final CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT);
     final MockHttpServletRequestBuilder get = get("/api/v1/data/" + uuid)
       .with(SecurityMockMvcRequestPostProcessors
         .x509(certificateReader.getCertificate()));
-    String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
+    final String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
     mockMvc.perform(get)
       .andDo(print())
       .andExpect(status().isNotFound())
@@ -128,11 +134,11 @@ public class CredentialAclEnforcementTest {
 
   @Test
   public void GET_byVersions_whenTheUserDoesntHavePermissionToReadCredential_returns404() throws Exception {
-    CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT);
+    final CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT);
     final MockHttpServletRequestBuilder get = get("/api/v1/data?name=" + CREDENTIAL_NAME + "&versions=2")
       .with(SecurityMockMvcRequestPostProcessors
         .x509(certificateReader.getCertificate()));
-    String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
+    final String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
     mockMvc.perform(get)
       .andDo(print())
       .andExpect(status().isNotFound())
@@ -153,7 +159,7 @@ public class CredentialAclEnforcementTest {
         + "}")
       .accept(APPLICATION_JSON);
 
-    String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
+    final String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
 
     this.mockMvc.perform(edit)
       .andDo(print())
@@ -174,7 +180,7 @@ public class CredentialAclEnforcementTest {
         + "}")
       .accept(APPLICATION_JSON);
 
-    String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
+    final String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
 
     this.mockMvc.perform(edit)
       .andDo(print())
@@ -233,7 +239,7 @@ public class CredentialAclEnforcementTest {
     makeJsonCredential(ALL_PERMISSIONS_TOKEN, "secret1");
     makeJsonCredential(ALL_PERMISSIONS_TOKEN, "secret2");
 
-    MockHttpServletRequestBuilder request = post("/api/v1/interpolate")
+    final MockHttpServletRequestBuilder request = post("/api/v1/interpolate")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .contentType(MediaType.APPLICATION_JSON)
       .content(
@@ -270,7 +276,7 @@ public class CredentialAclEnforcementTest {
     makeJsonCredential(ALL_PERMISSIONS_TOKEN, "secret1");
     makeJsonCredential(USER_A_TOKEN, USER_A_PATH + "secret2");
 
-    MockHttpServletRequestBuilder request = post("/api/v1/interpolate")
+    final MockHttpServletRequestBuilder request = post("/api/v1/interpolate")
       .header("Authorization", "Bearer " + USER_A_TOKEN)
       .contentType(MediaType.APPLICATION_JSON)
       .content(
@@ -294,14 +300,14 @@ public class CredentialAclEnforcementTest {
           "  }"
       );
 
-    String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
+    final String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
 
     this.mockMvc.perform(request)
       .andExpect(status().isNotFound())
       .andExpect(jsonPath("$.error", equalTo(expectedError)));
   }
 
-  private String generatePassword(String credentialName) throws Exception {
+  private String generatePassword(final String credentialName) throws Exception {
     final MockHttpServletRequestBuilder post = post("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
@@ -313,17 +319,17 @@ public class CredentialAclEnforcementTest {
         + "  \"overwrite\": true\n"
         + "}");
 
-    String response = mockMvc.perform(post)
+    final String response = mockMvc.perform(post)
       .andExpect(status().isOk())
       .andReturn()
       .getResponse().getContentAsString();
     return JsonPath.parse(response).read("$.id");
   }
 
-  private void grantPermissions(String credentialName, String actorId, String... permissions) throws Exception {
-    String operations = "[\"" + String.join("\", \"", permissions) + "\"]";
+  private void grantPermissions(final String credentialName, final String actorId, final String... permissions) throws Exception {
+    final String operations = "[\"" + String.join("\", \"", permissions) + "\"]";
 
-    MockHttpServletRequestBuilder request = post("/api/v1/permissions")
+    final MockHttpServletRequestBuilder request = post("/api/v1/permissions")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON_UTF8)
@@ -343,8 +349,8 @@ public class CredentialAclEnforcementTest {
       .andExpect(status().isCreated());
   }
 
-  private void makeJsonCredential(String userToken, String credentialName) throws Exception {
-    MockHttpServletRequestBuilder createRequest1 = put("/api/v1/data")
+  private void makeJsonCredential(final String userToken, final String credentialName) throws Exception {
+    final MockHttpServletRequestBuilder createRequest1 = put("/api/v1/data")
       .header("Authorization", "Bearer " + userToken)
       .contentType(MediaType.APPLICATION_JSON)
       .content(

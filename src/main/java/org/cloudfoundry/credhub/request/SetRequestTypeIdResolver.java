@@ -19,17 +19,17 @@ public class SetRequestTypeIdResolver implements TypeIdResolver {
   private JavaType baseType;
 
   @Override
-  public void init(JavaType baseType) {
+  public void init(final JavaType baseType) {
     this.baseType = baseType;
   }
 
   @Override
-  public String idFromValue(Object value) {
+  public String idFromValue(final Object value) {
     return null;
   }
 
   @Override
-  public String idFromValueAndType(Object value, Class<?> suggestedType) {
+  public String idFromValueAndType(final Object value, final Class<?> suggestedType) {
     return null;
   }
 
@@ -39,11 +39,11 @@ public class SetRequestTypeIdResolver implements TypeIdResolver {
   }
 
   @Override
-  public JavaType typeFromId(DatabindContext context, String id) throws IOException {
-    Class<?> subType;
-    id = id.toLowerCase();
+  public JavaType typeFromId(final DatabindContext context, final String id) throws IOException {
+    final Class<?> subType;
+    final String lowerCaseId = id.toLowerCase();
 
-    switch (id) {
+    switch (lowerCaseId) {
       case CertificateCredentialVersionData.CREDENTIAL_TYPE:
         subType = CertificateSetRequest.class;
         break;
@@ -66,8 +66,8 @@ public class SetRequestTypeIdResolver implements TypeIdResolver {
         subType = UserSetRequest.class;
         break;
       default:
-        String message = String.format("Could not resolve type id '%s' into a subtype of %s", id, baseType);
-        throw new InvalidTypeIdException(null, message, baseType, id);
+        final String message = String.format("Could not resolve type id '%s' into a subtype of %s", lowerCaseId, baseType);
+        throw new InvalidTypeIdException(null, message, baseType, lowerCaseId);
     }
 
     return context.constructSpecializedType(baseType, subType);

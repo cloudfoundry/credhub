@@ -7,12 +7,12 @@ import javax.persistence.AttributeConverter;
 public class InstantMillisecondsConverter implements AttributeConverter<Instant, Long> {
 
   @Override
-  public Long convertToDatabaseColumn(Instant attribute) {
+  public Long convertToDatabaseColumn(final Instant attribute) {
     return attribute.toEpochMilli();
   }
 
   @Override
-  public Instant convertToEntityAttribute(Long dbData) {
+  public Instant convertToEntityAttribute(final Long dbData) {
     return Instant.ofEpochMilli(dbData);
   }
 }

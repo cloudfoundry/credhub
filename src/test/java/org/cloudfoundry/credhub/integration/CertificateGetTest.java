@@ -74,9 +74,9 @@ public class CertificateGetTest {
     generateCertificateCredential(mockMvc, "/user-a/second-certificate", true, "second-version",
       null, USER_A_TOKEN);
     generatePassword(mockMvc, "/user-a/invalid-cert", true, null, USER_A_TOKEN);
-    String response = getCertificateCredentials(mockMvc, USER_A_TOKEN);
+    final String response = getCertificateCredentials(mockMvc, USER_A_TOKEN);
 
-    List<String> names = JsonPath.parse(response).read("$.certificates[*].name");
+    final List<String> names = JsonPath.parse(response).read("$.certificates[*].name");
 
     assertThat(names.size(), greaterThanOrEqualTo(2));
     assertThat(names, hasItems("/user-a/first-certificate", "/user-a/second-certificate"));
@@ -111,8 +111,8 @@ public class CertificateGetTest {
     generateCa(mockMvc, "my-certificate", ALL_PERMISSIONS_TOKEN);
     generateCa(mockMvc, "also-my-certificate", ALL_PERMISSIONS_TOKEN);
 
-    String response = getCertificateCredentialsByName(mockMvc, ALL_PERMISSIONS_TOKEN, "my-certificate");
-    List<String> names = JsonPath.parse(response)
+    final String response = getCertificateCredentialsByName(mockMvc, ALL_PERMISSIONS_TOKEN, "my-certificate");
+    final List<String> names = JsonPath.parse(response)
       .read("$.certificates[*].name");
 
     assertThat(names, hasSize(1));
@@ -121,12 +121,12 @@ public class CertificateGetTest {
 
   @Test
   public void getCertificateCredentials_whenNameDoesNotMatchACredential_returns404WithMessage() throws Exception {
-    MockHttpServletRequestBuilder get = get("/api/v1/certificates?name=" + "some-other-certificate")
+    final MockHttpServletRequestBuilder get = get("/api/v1/certificates?name=" + "some-other-certificate")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON);
 
-    String response = mockMvc.perform(get)
+    final String response = mockMvc.perform(get)
       .andDo(print())
       .andExpect(status().isNotFound())
       .andReturn().getResponse().getContentAsString();
@@ -139,12 +139,12 @@ public class CertificateGetTest {
   public void getCertificateCredentialsByName_doesNotReturnOtherCredentialTypes() throws Exception {
     generatePassword(mockMvc, "my-credential", true, 10, ALL_PERMISSIONS_TOKEN);
 
-    MockHttpServletRequestBuilder get = get("/api/v1/certificates?name=" + "my-credential")
+    final MockHttpServletRequestBuilder get = get("/api/v1/certificates?name=" + "my-credential")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON);
 
-    String response = mockMvc.perform(get)
+    final String response = mockMvc.perform(get)
       .andDo(print())
       .andExpect(status().isNotFound())
       .andReturn().getResponse().getContentAsString();
@@ -158,12 +158,12 @@ public class CertificateGetTest {
     throws Exception {
     generateCa(mockMvc, "my-certificate", ALL_PERMISSIONS_TOKEN);
 
-    MockHttpServletRequestBuilder get = get("/api/v1/certificates?name=" + "my-certificate")
+    final MockHttpServletRequestBuilder get = get("/api/v1/certificates?name=" + "my-certificate")
       .header("Authorization", "Bearer " + NO_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON);
 
-    String response = mockMvc.perform(get)
+    final String response = mockMvc.perform(get)
       .andDo(print())
       .andExpect(status().isNotFound())
       .andReturn().getResponse().getContentAsString();
@@ -174,29 +174,29 @@ public class CertificateGetTest {
 
   @Test
   public void getCertificateVersionsByCredentialId_returnsAllVersionsOfTheCertificateCredential() throws Exception {
-    String firstResponse = generateCertificateCredential(mockMvc, "/first-certificate",
+    final String firstResponse = generateCertificateCredential(mockMvc, "/first-certificate",
       true, "test", null, ALL_PERMISSIONS_TOKEN);
-    String secondResponse = generateCertificateCredential(mockMvc, "/first-certificate",
+    final String secondResponse = generateCertificateCredential(mockMvc, "/first-certificate",
       true, "test", null, ALL_PERMISSIONS_TOKEN);
 
-    String firstVersion = JsonPath.parse(firstResponse).read("$.id");
-    String secondVersion = JsonPath.parse(secondResponse).read("$.id");
+    final String firstVersion = JsonPath.parse(firstResponse).read("$.id");
+    final String secondVersion = JsonPath.parse(secondResponse).read("$.id");
 
-    String response = getCertificateCredentialsByName(mockMvc, ALL_PERMISSIONS_TOKEN, "/first-certificate");
+    final String response = getCertificateCredentialsByName(mockMvc, ALL_PERMISSIONS_TOKEN, "/first-certificate");
 
-    String certificateId = JsonPath.parse(response).read("$.certificates[0].id");
+    final String certificateId = JsonPath.parse(response).read("$.certificates[0].id");
 
-    MockHttpServletRequestBuilder getVersions = get("/api/v1/certificates/" + certificateId + "/versions")
+    final MockHttpServletRequestBuilder getVersions = get("/api/v1/certificates/" + certificateId + "/versions")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON);
 
-    String responseVersion = mockMvc.perform(getVersions)
+    final String responseVersion = mockMvc.perform(getVersions)
       .andDo(print())
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
 
-    List<Map<String, String>> certificates = JsonPath.parse(responseVersion).read("$");
+    final List<Map<String, String>> certificates = JsonPath.parse(responseVersion).read("$");
 
     assertThat(certificates, hasSize(2));
     assertThat(certificates.get(0).get("id"), containsString(secondVersion));
@@ -206,17 +206,17 @@ public class CertificateGetTest {
   @Test
   public void getCertificateVersionsByCredentialId_withCurrentTrue_returnsCurrentVersionsOfTheCertificateCredential()
     throws Exception {
-    String credentialName = "/test-certificate";
+    final String credentialName = "/test-certificate";
     generateCertificateCredential(mockMvc, credentialName, true, "test", null, ALL_PERMISSIONS_TOKEN);
 
     String response = getCertificateCredentialsByName(mockMvc, ALL_PERMISSIONS_TOKEN, credentialName);
-    String uuid = JsonPath.parse(response)
+    final String uuid = JsonPath.parse(response)
       .read("$.certificates[0].id");
 
-    String transitionalCertificate = JsonPath.parse(RequestHelper.regenerateCertificate(mockMvc, uuid, true, ALL_PERMISSIONS_TOKEN))
+    final String transitionalCertificate = JsonPath.parse(RequestHelper.regenerateCertificate(mockMvc, uuid, true, ALL_PERMISSIONS_TOKEN))
       .read("$.value.certificate");
 
-    String nonTransitionalCertificate = JsonPath.parse(RequestHelper.regenerateCertificate(mockMvc, uuid, false, ALL_PERMISSIONS_TOKEN))
+    final String nonTransitionalCertificate = JsonPath.parse(RequestHelper.regenerateCertificate(mockMvc, uuid, false, ALL_PERMISSIONS_TOKEN))
       .read("$.value.certificate");
 
     final MockHttpServletRequestBuilder request = get("/api/v1/certificates/" + uuid + "/versions?current=true")
@@ -227,10 +227,10 @@ public class CertificateGetTest {
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
 
-    JSONArray jsonArray = new JSONArray(response);
+    final JSONArray jsonArray = new JSONArray(response);
 
     assertThat(jsonArray.length(), equalTo(2));
-    List<String> certificates = JsonPath.parse(response)
+    final List<String> certificates = JsonPath.parse(response)
       .read("$[*].value.certificate");
     assertThat(certificates, containsInAnyOrder(transitionalCertificate, nonTransitionalCertificate));
   }
@@ -238,12 +238,12 @@ public class CertificateGetTest {
   @Test
   public void getCertificateVersionsByCredentialId_returnsError_whenUUIDIsInvalid() throws Exception {
 
-    MockHttpServletRequestBuilder get = get("/api/v1/certificates/" + "fake-uuid" + "/versions")
+    final MockHttpServletRequestBuilder get = get("/api/v1/certificates/" + "fake-uuid" + "/versions")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON);
 
-    String response = mockMvc.perform(get)
+    final String response = mockMvc.perform(get)
       .andDo(print())
       .andExpect(status().is4xxClientError())
       .andReturn().getResponse().getContentAsString();

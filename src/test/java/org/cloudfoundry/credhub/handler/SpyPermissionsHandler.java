@@ -15,7 +15,7 @@ public class SpyPermissionsHandler implements PermissionsHandler {
   private String findByPathAndActorCalledWithActor;
   private PermissionsV2View return_findByPathAndActor;
 
-  public void setReturn_findByPathAndActor(PermissionsV2View return_findByPathAndActor) {
+  public void setReturn_findByPathAndActor(final PermissionsV2View return_findByPathAndActor) {
     this.return_findByPathAndActor = return_findByPathAndActor;
   }
 
@@ -23,7 +23,7 @@ public class SpyPermissionsHandler implements PermissionsHandler {
     return findByPathAndActorCalledWithPath;
   }
 
-  public void setFindByPathAndActorCalledWithPath(String findByPathAndActorCalledWithPath) {
+  public void setFindByPathAndActorCalledWithPath(final String findByPathAndActorCalledWithPath) {
     this.findByPathAndActorCalledWithPath = findByPathAndActorCalledWithPath;
   }
 
@@ -31,57 +31,57 @@ public class SpyPermissionsHandler implements PermissionsHandler {
     return findByPathAndActorCalledWithActor;
   }
 
-  public void setFindByPathAndActorCalledWithActor(String findByPathAndActorCalledWithActor) {
+  public void setFindByPathAndActorCalledWithActor(final String findByPathAndActorCalledWithActor) {
     this.findByPathAndActorCalledWithActor = findByPathAndActorCalledWithActor;
   }
 
   @Override
-  public PermissionsV2View findByPathAndActor(String path, String actor) {
+  public PermissionsV2View findByPathAndActor(final String path, final String actor) {
     setFindByPathAndActorCalledWithPath(path);
     setFindByPathAndActorCalledWithActor(actor);
     return return_findByPathAndActor;
   }
 
   @Override
-  public PermissionsView getPermissions(String name) {
+  public PermissionsView getPermissions(final String name) {
     return null;
   }
 
   @Override
-  public void setPermissions(PermissionsRequest request) {
+  public void writePermissions(final PermissionsRequest request) {
   }
 
   @Override
-  public void deletePermissionEntry(String credentialName, String actor) {
+  public void deletePermissionEntry(final String credentialName, final String actor) {
   }
 
   @Override
-  public PermissionsV2View setPermissions(PermissionsV2Request request) {
+  public PermissionsV2View writePermissions(final PermissionsV2Request request) {
     return null;
   }
 
   @Override
-  public PermissionsV2View getPermissions(UUID guid) {
+  public PermissionsV2View getPermissions(final UUID guid) {
     return null;
   }
 
   @Override
-  public PermissionsV2View putPermissions(String guid, PermissionsV2Request permissionsRequest) {
+  public PermissionsV2View putPermissions(final String guid, final PermissionsV2Request permissionsRequest) {
     return null;
   }
 
   @Override
-  public PermissionsV2View patchPermissions(String guid, List<PermissionOperation> operations) {
+  public PermissionsV2View patchPermissions(final String guid, final List<PermissionOperation> operations) {
     return null;
   }
 
   @Override
-  public PermissionsV2View setV2Permissions(PermissionsV2Request permissionsRequest) {
+  public PermissionsV2View writeV2Permissions(final PermissionsV2Request permissionsRequest) {
     return null;
   }
 
   @Override
-  public PermissionsV2View deletePermissions(String guid) {
+  public PermissionsV2View deletePermissions(final String guid) {
     return null;
   }
 }

@@ -14,7 +14,7 @@ public class EncryptionKeyProvider {
     return configuration;
   }
 
-  public void setConfiguration(EncryptionConfiguration configuration) {
+  public void setConfiguration(final EncryptionConfiguration configuration) {
     this.configuration = configuration;
   }
 
@@ -22,7 +22,7 @@ public class EncryptionKeyProvider {
     return providerName;
   }
 
-  public void setProviderName(String providerName) {
+  public void setProviderName(final String providerName) {
     this.providerName = providerName;
   }
 
@@ -30,7 +30,7 @@ public class EncryptionKeyProvider {
     return providerType;
   }
 
-  public void setProviderType(ProviderType providerType) {
+  public void setProviderType(final ProviderType providerType) {
     this.providerType = providerType;
   }
 
@@ -39,7 +39,7 @@ public class EncryptionKeyProvider {
     return keys;
   }
 
-  public void setKeys(List<EncryptionKeyMetadata> keys) {
+  public void setKeys(final List<EncryptionKeyMetadata> keys) {
     this.keys = keys;
   }
 

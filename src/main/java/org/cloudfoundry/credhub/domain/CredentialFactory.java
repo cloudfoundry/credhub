@@ -31,16 +31,17 @@ public class CredentialFactory {
   private final Encryptor encryptor;
 
   @Autowired
-  CredentialFactory(Encryptor encryptor) {
+  CredentialFactory(final Encryptor encryptor) {
+    super();
     this.encryptor = encryptor;
   }
 
-  public CredentialVersion makeCredentialFromEntity(CredentialVersionData credentialVersionData) {
+  public CredentialVersion makeCredentialFromEntity(final CredentialVersionData credentialVersionData) {
     if (credentialVersionData == null) {
       return null;
     }
 
-    CredentialVersion returnValue;
+    final CredentialVersion returnValue;
     if (credentialVersionData instanceof CertificateCredentialVersionData) {
       returnValue = new CertificateCredentialVersion((CertificateCredentialVersionData) credentialVersionData);
     } else if (credentialVersionData instanceof PasswordCredentialVersionData) {
@@ -63,41 +64,41 @@ public class CredentialFactory {
     return returnValue;
   }
 
-  public List<CredentialVersion> makeCredentialsFromEntities(List<CredentialVersionData> daos) {
+  public List<CredentialVersion> makeCredentialsFromEntities(final List<CredentialVersionData> daos) {
     return daos.stream().map(this::makeCredentialFromEntity).collect(Collectors.toList());
   }
 
   public CredentialVersion makeNewCredentialVersion(
-    CredentialType type,
-    String name,
-    CredentialValue credentialValue,
-    CredentialVersion existingCredentialVersion,
-    GenerationParameters passwordGenerationParameters
+    final CredentialType type,
+    final String name,
+    final CredentialValue credentialValue,
+    final CredentialVersion existingCredentialVersion,
+    final GenerationParameters passwordGenerationParameters
   ) {
-    CredentialVersion credentialVersion;
+    final CredentialVersion credentialVersion;
     switch (type) {
-      case password:
+      case PASSWORD:
         credentialVersion = new PasswordCredentialVersion(
           (StringCredentialValue) credentialValue,
           (StringGenerationParameters) passwordGenerationParameters,
           encryptor);
         break;
-      case certificate:
+      case CERTIFICATE:
         credentialVersion = new CertificateCredentialVersion((CertificateCredentialValue) credentialValue, encryptor);
         break;
-      case value:
+      case VALUE:
         credentialVersion = new ValueCredentialVersion((StringCredentialValue) credentialValue, encryptor);
         break;
-      case rsa:
+      case RSA:
         credentialVersion = new RsaCredentialVersion((RsaCredentialValue) credentialValue, encryptor);
         break;
-      case ssh:
+      case SSH:
         credentialVersion = new SshCredentialVersion((SshCredentialValue) credentialValue, encryptor);
         break;
-      case json:
+      case JSON:
         credentialVersion = new JsonCredentialVersion((JsonCredentialValue) credentialValue, encryptor);
         break;
-      case user:
+      case USER:
         credentialVersion = new UserCredentialVersion(
           (UserCredentialValue) credentialValue,
           (StringGenerationParameters) passwordGenerationParameters,

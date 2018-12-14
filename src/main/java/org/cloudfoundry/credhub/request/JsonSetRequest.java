@@ -17,12 +17,17 @@ public class JsonSetRequest extends BaseCredentialSetRequest<JsonCredentialValue
     return value;
   }
 
-  public void setValue(JsonCredentialValue value) {
+  public void setValue(final JsonCredentialValue value) {
     this.value = value;
   }
 
   @Override
   public JsonCredentialValue getCredentialValue() {
     return value;
+  }
+
+  @Override
+  public GenerationParameters getGenerationParameters() {
+    return null;
   }
 }

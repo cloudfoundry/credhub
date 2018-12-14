@@ -1,5 +1,6 @@
 package db.migration.common;
 
+import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
 import java.util.UUID;
@@ -17,22 +18,23 @@ public class V20_1__set_uuid_in_encryption_key_canary implements SpringJdbcMigra
     value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE",
     justification = "The database will definitely exist"
   )
-  public void migrate(JdbcTemplate jdbcTemplate) throws Exception {
-    String databaseName = jdbcTemplate
+  @Override
+  public void migrate(final JdbcTemplate jdbcTemplate) throws SQLException {
+    final String databaseName = jdbcTemplate
       .getDataSource()
       .getConnection()
       .getMetaData()
       .getDatabaseProductName()
       .toLowerCase();
 
-    int[] types = {Types.VARBINARY, Types.BIGINT};
+    final int[] types = {Types.VARBINARY, Types.BIGINT};
 
-    List<Long> canaryIds = jdbcTemplate.queryForList(
+    final List<Long> canaryIds = jdbcTemplate.queryForList(
         "select id from encryption_key_canary",
         Long.class
     );
 
-    for (Long id : canaryIds) {
+    for (final Long id : canaryIds) {
       jdbcTemplate.update(
           "update encryption_key_canary set uuid = ? where id = ?",
           getParams(databaseName, id),
@@ -41,10 +43,10 @@ public class V20_1__set_uuid_in_encryption_key_canary implements SpringJdbcMigra
     }
   }
 
-  private Object[] getParams(String databaseName, Long id) {
-    UUID uuid = UUID.randomUUID();
+  private Object[] getParams(final String databaseName, final Long id) {
+    final UUID uuid = UUID.randomUUID();
 
-    if (databaseName.equals("postgresql")) {
+    if ("postgresql".equals(databaseName)) {
       return new Object[]{uuid, id};
     } else {
       return new Object[]{UuidUtil.uuidToByteArray(uuid), id};

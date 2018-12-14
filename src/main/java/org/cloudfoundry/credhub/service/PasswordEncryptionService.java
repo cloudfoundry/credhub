@@ -15,22 +15,23 @@ public class PasswordEncryptionService extends InternalEncryptionService {
   public static final int GCM_TAG_LENGTH = 128;
   private final PasswordKeyProxyFactory passwordKeyProxyFactory;
 
-  public PasswordEncryptionService(PasswordKeyProxyFactory passwordKeyProxyFactory) throws Exception {
+  public PasswordEncryptionService(final PasswordKeyProxyFactory passwordKeyProxyFactory) throws Exception {
+    super();
     this.passwordKeyProxyFactory = passwordKeyProxyFactory;
   }
 
   @Override
-  CipherWrapper getCipher() throws NoSuchPaddingException, NoSuchAlgorithmException {
+  public CipherWrapper getCipher() throws NoSuchPaddingException, NoSuchAlgorithmException {
     return new CipherWrapper(Cipher.getInstance(CipherTypes.GCM.toString()));
   }
 
   @Override
-  AlgorithmParameterSpec generateParameterSpec(byte[] nonce) {
+  public AlgorithmParameterSpec generateParameterSpec(final byte[] nonce) {
     return new GCMParameterSpec(GCM_TAG_LENGTH, nonce);
   }
 
   @Override
-  public KeyProxy createKeyProxy(EncryptionKeyMetadata encryptionKeyMetadata) {
+  public KeyProxy createKeyProxy(final EncryptionKeyMetadata encryptionKeyMetadata) {
     return passwordKeyProxyFactory.createPasswordKeyProxy(encryptionKeyMetadata, this);
   }
 }

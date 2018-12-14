@@ -12,15 +12,16 @@ public class CertificateCredentialFactory {
   private final Encryptor encryptor;
 
   @Autowired
-  CertificateCredentialFactory(Encryptor encryptor) {
+  CertificateCredentialFactory(final Encryptor encryptor) {
+    super();
     this.encryptor = encryptor;
   }
 
   public CertificateCredentialVersion makeNewCredentialVersion(
-    Credential certificateCredential,
-    CertificateCredentialValue credentialValue
+    final Credential certificateCredential,
+    final CertificateCredentialValue credentialValue
   ) {
-    CertificateCredentialVersion version = new CertificateCredentialVersion(credentialValue, encryptor);
+    final CertificateCredentialVersion version = new CertificateCredentialVersion(credentialValue, encryptor);
     version.setCredential(certificateCredential);
 
     return version;

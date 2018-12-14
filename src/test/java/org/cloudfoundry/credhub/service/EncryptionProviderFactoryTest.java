@@ -29,7 +29,7 @@ public class EncryptionProviderFactoryTest {
 
   @Test
   public void getEncryptionService_whenEncryptionServiceIsAlreadyInitialized() throws Exception {
-    EncryptionProviderFactory subject = new EncryptionProviderFactory(
+    final EncryptionProviderFactory subject = new EncryptionProviderFactory(
       mock(EncryptionKeysConfiguration.class),
       mock(TimedRetry.class),
       mock(PasswordKeyProxyFactory.class)
@@ -37,8 +37,8 @@ public class EncryptionProviderFactoryTest {
 
     when(provider.getProviderType()).thenReturn(ProviderType.INTERNAL);
 
-    InternalEncryptionService internal = (InternalEncryptionService) subject.getEncryptionService(provider);
-    InternalEncryptionService internalAgain = (InternalEncryptionService) subject.getEncryptionService(provider);
+    final InternalEncryptionService internal = (InternalEncryptionService) subject.getEncryptionService(provider);
+    final InternalEncryptionService internalAgain = (InternalEncryptionService) subject.getEncryptionService(provider);
     assertThat(internal, sameInstance(internalAgain));
     assertThat(internal, instanceOf(PasswordEncryptionService.class));
   }

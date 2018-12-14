@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.controller.v1;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
@@ -19,19 +18,20 @@ import org.cloudfoundry.credhub.service.EncryptionKeySet;
 
 @RestController
 @RequestMapping(
-  path = KeyUsageController.endpoint,
+  path = KeyUsageController.ENDPOINT,
   produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class KeyUsageController {
 
-  static final String endpoint = "/api/v1/key-usage";
+  public static final String ENDPOINT = "/api/v1/key-usage";
 
   private final CredentialVersionDataService credentialVersionDataService;
   private final EncryptionKeySet keySet;
 
   @Autowired
   public KeyUsageController(
-    CredentialVersionDataService credentialVersionDataService,
-    EncryptionKeySet keySet) {
+    final CredentialVersionDataService credentialVersionDataService,
+    final EncryptionKeySet keySet) {
+    super();
     this.credentialVersionDataService = credentialVersionDataService;
     this.keySet = keySet;
   }
@@ -39,23 +39,23 @@ public class KeyUsageController {
   @RequestMapping(method = RequestMethod.GET, path = "")
   public ResponseEntity<Map> getKeyUsages() {
     Long totalCredCount = 0L;
-    final HashMap<UUID, Long> countByEncryptionKey = credentialVersionDataService.countByEncryptionKey();
+    final Map<UUID, Long> countByEncryptionKey = credentialVersionDataService.countByEncryptionKey();
     for (int i = 0; i < countByEncryptionKey.size(); i++) {
       totalCredCount += countByEncryptionKey.values().toArray(new Long[countByEncryptionKey.values().size()])[i];
     }
 
-    Long activeKeyCreds = countByEncryptionKey.getOrDefault(keySet.getActive().getUuid(), 0L);
+    final Long activeKeyCreds = countByEncryptionKey.getOrDefault(keySet.getActive().getUuid(), 0L);
 
     Long credsEncryptedByKnownKeys = 0L;
 
-    for (Entry<UUID, Long> entrySet : countByEncryptionKey.entrySet()) {
+    for (final Entry<UUID, Long> entrySet : countByEncryptionKey.entrySet()) {
       if (keySet.getUuids().contains(entrySet.getKey())) {
         credsEncryptedByKnownKeys += countByEncryptionKey.get(entrySet.getKey());
       }
     }
 
-    Long unknownKeyCreds = totalCredCount - credsEncryptedByKnownKeys;
-    Long inactiveKeyCreds = totalCredCount - (activeKeyCreds + unknownKeyCreds);
+    final Long unknownKeyCreds = totalCredCount - credsEncryptedByKnownKeys;
+    final Long inactiveKeyCreds = totalCredCount - (activeKeyCreds + unknownKeyCreds);
 
     return new ResponseEntity<>(
       ImmutableMap.of(

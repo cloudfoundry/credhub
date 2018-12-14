@@ -32,21 +32,21 @@ public class JsonCredentialVersionTest {
 
   @Before
   public void beforeEach() throws JsonProcessingException {
-    String jsonString = "{\"simple\":\"just-a-string\",\"complex\":{\"key\":\"value\"}}";
-    ObjectMapper objectMapper = new ObjectMapper();
-    String serializedValue;
+    final String jsonString = "{\"simple\":\"just-a-string\",\"complex\":{\"key\":\"value\"}}";
+    final ObjectMapper objectMapper = new ObjectMapper();
+    final String serializedValue;
 
     try {
       value = objectMapper.readTree(jsonString);
       serializedValue = objectMapper.writeValueAsString(value);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
 
-    Encryptor encryptor = mock(Encryptor.class);
-    byte[] encryptedValue = "fake-encrypted-value".getBytes(StringUtil.UTF_8);
-    byte[] nonce = "fake-nonce".getBytes(StringUtil.UTF_8);
-    UUID canaryUuid = UUID.randomUUID();
+    final Encryptor encryptor = mock(Encryptor.class);
+    final byte[] encryptedValue = "fake-encrypted-value".getBytes(StringUtil.UTF_8);
+    final byte[] nonce = "fake-nonce".getBytes(StringUtil.UTF_8);
+    final UUID canaryUuid = UUID.randomUUID();
     final EncryptedValue encryption = new EncryptedValue(canaryUuid, encryptedValue, nonce);
     when(encryptor.encrypt(serializedValue))
       .thenReturn(encryption);
@@ -54,7 +54,8 @@ public class JsonCredentialVersionTest {
       .thenReturn(serializedValue);
 
     jsonCredentialData = new JsonCredentialVersionData("Foo");
-    subject = new JsonCredentialVersion(jsonCredentialData).setEncryptor(encryptor);
+    subject = new JsonCredentialVersion(jsonCredentialData);
+    subject.setEncryptor(encryptor);
   }
 
   @Test
@@ -82,7 +83,7 @@ public class JsonCredentialVersionTest {
     try {
       subject.setValue((JsonNode) null);
       fail("should throw");
-    } catch (ParameterizedValidationException e) {
+    } catch (final ParameterizedValidationException e) {
       assertThat(e.getMessage(), equalTo("error.missing_value"));
     }
   }

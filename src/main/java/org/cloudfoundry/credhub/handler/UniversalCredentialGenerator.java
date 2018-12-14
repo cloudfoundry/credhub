@@ -21,12 +21,13 @@ public class UniversalCredentialGenerator {
 
   @Autowired
   public UniversalCredentialGenerator(
-    PasswordCredentialGenerator passwordCredentialGenerator,
-    UserGenerator userGenerator,
-    SshGenerator sshGenerator,
-    RsaGenerator rsaGenerator,
-    CertificateGenerator certificateGenerator
+    final PasswordCredentialGenerator passwordCredentialGenerator,
+    final UserGenerator userGenerator,
+    final SshGenerator sshGenerator,
+    final RsaGenerator rsaGenerator,
+    final CertificateGenerator certificateGenerator
   ) {
+    super();
     credentialGenerators = new HashMap<>();
     credentialGenerators.put("password", passwordCredentialGenerator);
     credentialGenerators.put("user", userGenerator);
@@ -35,8 +36,8 @@ public class UniversalCredentialGenerator {
     credentialGenerators.put("certificate", certificateGenerator);
   }
 
-  public CredentialValue generate(BaseCredentialGenerateRequest generateRequest) {
-    CredentialGenerator generator = credentialGenerators.get(generateRequest.getType());
+  public CredentialValue generate(final BaseCredentialGenerateRequest generateRequest) {
+    final CredentialGenerator generator = credentialGenerators.get(generateRequest.getType());
     return generator.generateCredential(generateRequest.getGenerationParameters());
   }
 }

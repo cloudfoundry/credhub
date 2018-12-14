@@ -20,15 +20,16 @@ public class PasswordSetRequest extends BaseCredentialSetRequest<StringCredentia
     return password;
   }
 
-  public void setPassword(StringCredentialValue password) {
+  public void setPassword(final StringCredentialValue password) {
     this.password = password;
   }
 
+  @Override
   public StringGenerationParameters getGenerationParameters() {
     return generationParameters;
   }
 
-  public void setGenerationParameters(StringGenerationParameters generationParameters) {
+  public void setGenerationParameters(final StringGenerationParameters generationParameters) {
     this.generationParameters = generationParameters;
   }
 

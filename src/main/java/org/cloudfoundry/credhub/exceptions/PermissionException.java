@@ -1,7 +1,7 @@
 package org.cloudfoundry.credhub.exceptions;
 
 public class PermissionException extends RuntimeException {
-  public PermissionException(String message) {
+  public PermissionException(final String message) {
     super(message);
   }
 }

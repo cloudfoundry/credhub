@@ -20,21 +20,22 @@ import org.cloudfoundry.credhub.auth.UserContextFactory;
 @Component
 public class AuditInterceptor extends HandlerInterceptorAdapter {
 
-  private final Logger logger = LogManager.getLogger("CEFAudit");
+  private static final Logger LOGGER = LogManager.getLogger("CEFAudit");
   private final UserContextFactory userContextFactory;
   private final CEFAuditRecord auditRecord;
 
 
   @Autowired
   AuditInterceptor(
-    UserContextFactory userContextFactory,
-    CEFAuditRecord auditRecord) {
+    final UserContextFactory userContextFactory,
+    final CEFAuditRecord auditRecord) {
+    super();
     this.userContextFactory = userContextFactory;
     this.auditRecord = auditRecord;
   }
 
   @Override
-  public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+  public boolean preHandle(final HttpServletRequest request, final HttpServletResponse response, final Object handler) {
     auditRecord.initCredentials();
     auditRecord.setHttpRequest(request);
     return true;
@@ -42,22 +43,22 @@ public class AuditInterceptor extends HandlerInterceptorAdapter {
 
   @Override
   public void afterCompletion(
-    HttpServletRequest request,
-    HttpServletResponse response,
-    Object handler,
-    @Nullable Exception exception
+    final HttpServletRequest request,
+    final HttpServletResponse response,
+    final Object handler,
+    @Nullable final Exception exception
   ) {
-    Principal userAuth = request.getUserPrincipal();
+    final Principal userAuth = request.getUserPrincipal();
     if (userAuth == null) {
       return;
     }
-    UserContext userContext = userContextFactory.createUserContext((Authentication) userAuth);
+    final UserContext userContext = userContextFactory.createUserContext((Authentication) userAuth);
 
     auditRecord.setUsername(userAuth.getName());
     auditRecord.setHttpStatusCode(response.getStatus());
     auditRecord.setUserGuid(userContext.getActor());
     auditRecord.setAuthMechanism(userContext.getAuthMethod());
 
-    logger.info(auditRecord.toString());
+    LOGGER.info(auditRecord.toString());
   }
 }

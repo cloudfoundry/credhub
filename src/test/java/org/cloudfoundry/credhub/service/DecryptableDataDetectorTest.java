@@ -42,7 +42,7 @@ public class DecryptableDataDetectorTest {
       credentialVersionDataService);
     try {
       decryptableDataDetector.check();
-    } catch (RuntimeException rte) {
+    } catch (final RuntimeException rte) {
       assertThat(rte.getMessage(),
         containsString("The encryption keys provided cannot decrypt any of the 4 value(s) in the database."
           + " Please make sure you've provided the necessary encryption keys."));

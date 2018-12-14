@@ -7,7 +7,7 @@ import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
 public class NotRegeneratable implements Regeneratable {
 
   @Override
-  public BaseCredentialGenerateRequest createGenerateRequest(CredentialVersion credentialVersion) {
+  public BaseCredentialGenerateRequest createGenerateRequest(final CredentialVersion credentialVersion) {
     throw new ParameterizedValidationException("error.invalid_type_with_regenerate_prompt");
   }
 }

@@ -29,7 +29,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
-@ActiveProfiles(value = {"unit-test", "unit-test-permissions"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(
+  value = {
+    "unit-test",
+    "unit-test-permissions",
+  },
+  resolver = DatabaseProfileResolver.class
+)
 @Transactional
 public class AddPermissionsV2EndToEndTest {
 
@@ -48,11 +54,11 @@ public class AddPermissionsV2EndToEndTest {
 
   @Test
   public void POST_whenUserHasPermissionOnPath_theyCanAddAPermission() throws Exception {
-    String credentialName = "/test";
+    final String credentialName = "/test";
 
     PermissionsV2EndToEndTestHelper.setPermissions(mockMvc, credentialName, PermissionOperation.WRITE);
 
-    MockHttpServletRequestBuilder writeCredentialRequest = put("/api/v1/data")
+    final MockHttpServletRequestBuilder writeCredentialRequest = put("/api/v1/data")
       .header("Authorization", "Bearer " + USER_A_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -67,9 +73,9 @@ public class AddPermissionsV2EndToEndTest {
 
   @Test
   public void POST_whenUserDoesNotHavePermissionOnPath_theyCannotAddAPermission() throws Exception {
-    String credentialName = "/test";
+    final String credentialName = "/test";
 
-    MockHttpServletRequestBuilder addPermissionRequest = post("/api/v2/permissions")
+    final MockHttpServletRequestBuilder addPermissionRequest = post("/api/v2/permissions")
       .header("Authorization", "Bearer " + NO_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -84,9 +90,9 @@ public class AddPermissionsV2EndToEndTest {
 
   @Test
   public void POST_whenUserTriesToAddOperationThatDoesntExist_theyReceiveAnUnprocessibleEntry() throws Exception {
-    String credentialName = "/test";
+    final String credentialName = "/test";
 
-    MockHttpServletRequestBuilder addPermissionRequest = post("/api/v2/permissions")
+    final MockHttpServletRequestBuilder addPermissionRequest = post("/api/v2/permissions")
       .header("Authorization", "Bearer " + NO_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -101,9 +107,9 @@ public class AddPermissionsV2EndToEndTest {
 
   @Test
   public void POST_whenUserTriesToAddAPermissionThatAlreadyExists_theyReceiveAConflict() throws Exception {
-    String credentialName = "/user-a/*";
+    final String credentialName = "/user-a/*";
 
-    MockHttpServletRequestBuilder addPermissionRequest = post("/api/v2/permissions")
+    final MockHttpServletRequestBuilder addPermissionRequest = post("/api/v2/permissions")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -118,11 +124,11 @@ public class AddPermissionsV2EndToEndTest {
 
   @Test
   public void POST_whenUserTriesToAddAnAdditionalOperationToAPermissionThatAlreadyExists_theyReceiveAConflict() throws Exception {
-    String credentialName = "/test";
+    final String credentialName = "/test";
 
     PermissionsV2EndToEndTestHelper.setPermissions(mockMvc, credentialName, PermissionOperation.WRITE);
 
-    MockHttpServletRequestBuilder addPermissionRequestWithRead = post("/api/v2/permissions")
+    final MockHttpServletRequestBuilder addPermissionRequestWithRead = post("/api/v2/permissions")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)

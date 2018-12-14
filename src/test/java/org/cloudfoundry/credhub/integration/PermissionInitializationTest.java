@@ -15,7 +15,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import org.cloudfoundry.credhub.CredentialManagerApp;
-import org.cloudfoundry.credhub.config.Permissions;
+import org.cloudfoundry.credhub.config.AuthorizationConfig;
 import org.cloudfoundry.credhub.constants.CredentialType;
 import org.cloudfoundry.credhub.credential.StringCredentialValue;
 import org.cloudfoundry.credhub.entity.PermissionData;
@@ -52,7 +52,7 @@ public class PermissionInitializationTest {
   @Autowired
   private PermissionedCredentialService permissionedCredentialService;
   @Autowired
-  private Permissions permissions;
+  private AuthorizationConfig permissions;
   @Autowired
   private ApplicationContext applicationContext;
   @Autowired
@@ -60,8 +60,8 @@ public class PermissionInitializationTest {
 
   @Before
   public void beforeEach() throws Exception {
-    List<Permissions.Permission> permissions = new ArrayList<>();
-    Permissions.Permission permission = new Permissions.Permission();
+    final List<AuthorizationConfig.Permission> permissions = new ArrayList<>();
+    final AuthorizationConfig.Permission permission = new AuthorizationConfig.Permission();
     permission.setPath(credentialPath);
 
     permission.setActors(actors);
@@ -69,10 +69,10 @@ public class PermissionInitializationTest {
     permissions.add(permission);
     this.permissions.setPermissions(permissions);
 
-    StringCredentialValue password = new StringCredentialValue("password");
-    PasswordSetRequest passwordSetRequest = new PasswordSetRequest();
+    final StringCredentialValue password = new StringCredentialValue("password");
+    final PasswordSetRequest passwordSetRequest = new PasswordSetRequest();
     passwordSetRequest.setName(credentialPath);
-    passwordSetRequest.setType(CredentialType.password.toString());
+    passwordSetRequest.setType(CredentialType.PASSWORD.toString());
     permissionedCredentialService.save(null, password, passwordSetRequest);
   }
 
@@ -80,7 +80,7 @@ public class PermissionInitializationTest {
   public void itAddsNewPermissions() {
     applicationEventPublisher.publishEvent(new ContextRefreshedEvent(applicationContext));
 
-    List<PermissionData> savedPermissions = permissionRepository.findAllByPath(credentialPath);
+    final List<PermissionData> savedPermissions = permissionRepository.findAllByPath(credentialPath);
     assertThat(savedPermissions, hasSize(2));
     assertThat(savedPermissions.stream().map(p -> p.getActor()).collect(Collectors.toList()), containsInAnyOrder(actors.get(0), actors.get(1)));
     assertThat(savedPermissions.stream().allMatch(p -> p.hasReadPermission() && p.hasWritePermission()), is(true));
@@ -89,7 +89,7 @@ public class PermissionInitializationTest {
 
   @Test
   public void itDoesNotOverwriteExistingPermissions() {
-    PermissionEntry permissionEntry = new PermissionEntry();
+    final PermissionEntry permissionEntry = new PermissionEntry();
     permissionEntry.setActor(actors.get(0));
     permissionEntry.setAllowedOperations(Arrays.asList(PermissionOperation.READ, PermissionOperation.WRITE, PermissionOperation.READ_ACL, PermissionOperation.WRITE_ACL));
     permissionEntry.setPath("/test/path");
@@ -97,7 +97,7 @@ public class PermissionInitializationTest {
 
     applicationEventPublisher.publishEvent(new ContextRefreshedEvent(applicationContext));
 
-    List<PermissionData> savedPermissions = permissionRepository.findAllByPath(credentialPath);
+    final List<PermissionData> savedPermissions = permissionRepository.findAllByPath(credentialPath);
     assertThat(savedPermissions, hasSize(2));
     assertThat(savedPermissions.stream().map(p -> p.getActor()).collect(Collectors.toList()), containsInAnyOrder(actors.get(0), actors.get(1)));
     assertThat(savedPermissions.stream().allMatch(p -> p.hasReadPermission() && p.hasWritePermission()), is(true));
@@ -109,13 +109,13 @@ public class PermissionInitializationTest {
 
   @Test
   public void itThrowsAnExceptionIfAuthorizationIsEmpty() {
-    PermissionInitializer initializer = new PermissionInitializer(null, new Permissions());
+    final PermissionInitializer initializer = new PermissionInitializer(null, new AuthorizationConfig());
     initializer.seed();
   }
 
   @Test
   public void itDoesntThrowAnExceptionIfAuthorizationConfigIsEmpty() {
-    PermissionInitializer initializer = new PermissionInitializer(null, null);
+    final PermissionInitializer initializer = new PermissionInitializer(null, null);
     initializer.seed();
   }
 }

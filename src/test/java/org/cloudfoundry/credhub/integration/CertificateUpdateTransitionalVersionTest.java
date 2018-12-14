@@ -35,17 +35,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@ActiveProfiles(value = {"unit-test", "unit-test"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 @Transactional
 public class CertificateUpdateTransitionalVersionTest {
+
+  private static final String caName = "/some-ca";
 
   @Autowired
   private WebApplicationContext webApplicationContext;
 
   private MockMvc mockMvc;
   private Object caCertificate;
-  private String caName = "/some-ca";
   private String caCredentialUuid;
 
   @Before
@@ -58,7 +59,7 @@ public class CertificateUpdateTransitionalVersionTest {
     final String generateCaResponse = generateCa(mockMvc, caName, ALL_PERMISSIONS_TOKEN);
     caCertificate = JsonPath.parse(generateCaResponse)
       .read("$.value.certificate");
-    String response = getCertificateCredentialsByName(mockMvc, ALL_PERMISSIONS_TOKEN, caName);
+    final String response = getCertificateCredentialsByName(mockMvc, ALL_PERMISSIONS_TOKEN, caName);
     caCredentialUuid = JsonPath.parse(response)
       .read("$.certificates[0].id");
     assertNotNull(caCertificate);
@@ -66,7 +67,7 @@ public class CertificateUpdateTransitionalVersionTest {
 
   @Test
   public void certificateUpdateTransitionalVersion_changesValueOfTransitionalFlag() throws Exception {
-    MockHttpServletRequestBuilder regenerateRequest = post("/api/v1/certificates/" + caCredentialUuid + "/regenerate")
+    final MockHttpServletRequestBuilder regenerateRequest = post("/api/v1/certificates/" + caCredentialUuid + "/regenerate")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -78,21 +79,21 @@ public class CertificateUpdateTransitionalVersionTest {
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.transitional", equalTo(true)));
 
-    MockHttpServletRequestBuilder versionsRequest = get("/api/v1/certificates/" + caCredentialUuid + "/versions")
+    final MockHttpServletRequestBuilder versionsRequest = get("/api/v1/certificates/" + caCredentialUuid + "/versions")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON);
 
-    String versionsResponse = this.mockMvc.perform(versionsRequest)
+    final String versionsResponse = this.mockMvc.perform(versionsRequest)
       .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
-    String originalVersion = new JSONArray(versionsResponse).get(1).toString();
-    String regeneratedVersion = new JSONArray(versionsResponse).get(0).toString();
+    final String originalVersion = new JSONArray(versionsResponse).get(1).toString();
+    final String regeneratedVersion = new JSONArray(versionsResponse).get(0).toString();
 
     assertThat(JsonPath.parse(regeneratedVersion).read("transitional"), equalTo(true));
-    String originalVersionId = JsonPath.parse(originalVersion).read("id");
+    final String originalVersionId = JsonPath.parse(originalVersion).read("id");
 
-    MockHttpServletRequestBuilder updateTransitionalRequest = put(
+    final MockHttpServletRequestBuilder updateTransitionalRequest = put(
       "/api/v1/certificates/" + caCredentialUuid + "/update_transitional_version")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
@@ -112,7 +113,7 @@ public class CertificateUpdateTransitionalVersionTest {
   @Test
   public void certificateUpdateTransitionalVersion_whenThereIsNoExistingTransitionalVersion_changesValueOfTransitionalFlag()
     throws Exception {
-    MockHttpServletRequestBuilder regenerateRequest = post("/api/v1/certificates/" + caCredentialUuid + "/regenerate")
+    final MockHttpServletRequestBuilder regenerateRequest = post("/api/v1/certificates/" + caCredentialUuid + "/regenerate")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON);
@@ -121,18 +122,18 @@ public class CertificateUpdateTransitionalVersionTest {
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.transitional", equalTo(false)));
 
-    MockHttpServletRequestBuilder versionsRequest = get("/api/v1/certificates/" + caCredentialUuid + "/versions")
+    final MockHttpServletRequestBuilder versionsRequest = get("/api/v1/certificates/" + caCredentialUuid + "/versions")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON);
 
-    String versionsResponse = this.mockMvc.perform(versionsRequest)
+    final String versionsResponse = this.mockMvc.perform(versionsRequest)
       .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
-    String originalVersion = new JSONArray(versionsResponse).get(1).toString();
-    String originalVersionId = JsonPath.parse(originalVersion).read("id");
+    final String originalVersion = new JSONArray(versionsResponse).get(1).toString();
+    final String originalVersionId = JsonPath.parse(originalVersion).read("id");
 
-    MockHttpServletRequestBuilder updateTransitionalRequest = put(
+    final MockHttpServletRequestBuilder updateTransitionalRequest = put(
       "/api/v1/certificates/" + caCredentialUuid + "/update_transitional_version")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
@@ -151,7 +152,7 @@ public class CertificateUpdateTransitionalVersionTest {
 
   @Test
   public void certificateUpdateTransitionalVersion_whenNoVersionIdIsProvided_unSetsTransitionalFlag() throws Exception {
-    MockHttpServletRequestBuilder regenerateRequest = post("/api/v1/certificates/" + caCredentialUuid + "/regenerate")
+    final MockHttpServletRequestBuilder regenerateRequest = post("/api/v1/certificates/" + caCredentialUuid + "/regenerate")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON);
@@ -160,18 +161,18 @@ public class CertificateUpdateTransitionalVersionTest {
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.transitional", equalTo(false)));
 
-    MockHttpServletRequestBuilder versionsRequest = get("/api/v1/certificates/" + caCredentialUuid + "/versions")
+    final MockHttpServletRequestBuilder versionsRequest = get("/api/v1/certificates/" + caCredentialUuid + "/versions")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON);
 
-    String versionsResponse = this.mockMvc.perform(versionsRequest)
+    final String versionsResponse = this.mockMvc.perform(versionsRequest)
       .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
 
-    String regeneratedVersion = new JSONArray(versionsResponse).get(0).toString();
-    String regeneratedVersionId = JsonPath.parse(regeneratedVersion).read("id");
+    final String regeneratedVersion = new JSONArray(versionsResponse).get(0).toString();
+    final String regeneratedVersionId = JsonPath.parse(regeneratedVersion).read("id");
 
-    MockHttpServletRequestBuilder updateTransitionalRequest = put(
+    final MockHttpServletRequestBuilder updateTransitionalRequest = put(
       "/api/v1/certificates/" + caCredentialUuid + "/update_transitional_version")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)

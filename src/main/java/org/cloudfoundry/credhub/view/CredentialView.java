@@ -22,9 +22,13 @@ public class CredentialView {
   private String type;
   private CredentialValue value;
 
-  public CredentialView() { /* Jackson */ }
+  public CredentialView() {
+    super(); /* Jackson */
+  }
 
-  CredentialView(Instant versionCreatedAt, UUID uuid, String name, String type, CredentialValue value) {
+  CredentialView(
+    final Instant versionCreatedAt, final UUID uuid, final String name, final String type, final CredentialValue value) {
+    super();
     this.versionCreatedAt = versionCreatedAt;
     this.uuid = uuid;
     this.name = name;
@@ -32,8 +36,8 @@ public class CredentialView {
     this.value = value;
   }
 
-  public static CredentialView fromEntity(CredentialVersion credentialVersion) {
-    CredentialView result;
+  public static CredentialView fromEntity(final CredentialVersion credentialVersion) {
+    final CredentialView result;
     if (ValueCredentialVersion.class.isInstance(credentialVersion)) {
       result = new ValueView((ValueCredentialVersion) credentialVersion);
     } else if (PasswordCredentialVersion.class.isInstance(credentialVersion)) {

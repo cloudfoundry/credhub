@@ -3,6 +3,7 @@ package org.cloudfoundry.credhub.util;
 final public class TestConstants {
 
   private TestConstants() {
+    super();
   }
 
   public static final String INVALID_PRIVATE_KEY;

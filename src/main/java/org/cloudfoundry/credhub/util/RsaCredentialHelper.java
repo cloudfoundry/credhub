@@ -18,27 +18,28 @@ public class RsaCredentialHelper {
 
   private final RsaCredentialVersionData rsaCredentialData;
 
-  public RsaCredentialHelper(RsaCredentialVersionData rsaCredentialData) {
+  public RsaCredentialHelper(final RsaCredentialVersionData rsaCredentialData) {
+    super();
     this.rsaCredentialData = rsaCredentialData;
   }
 
   public int getKeyLength() {
-    String publicKey = rsaCredentialData.getPublicKey();
+    final String publicKey = rsaCredentialData.getPublicKey();
 
     if (StringUtils.isEmpty(publicKey)) {
       return 0;
     }
 
     try {
-      String key = publicKey
+      final String key = publicKey
         .replaceFirst(RSA_START, "")
         .replaceFirst(RSA_END, "")
         .replaceAll(NEW_LINE, "");
-      byte[] byteKey = Base64.decodeBase64(key.getBytes(StringUtil.UTF_8));
-      X509EncodedKeySpec x509publicKey = new X509EncodedKeySpec(byteKey);
-      KeyFactory kf = KeyFactory.getInstance("RSA");
+      final byte[] byteKey = Base64.decodeBase64(key.getBytes(StringUtil.UTF_8));
+      final X509EncodedKeySpec x509publicKey = new X509EncodedKeySpec(byteKey);
+      final KeyFactory kf = KeyFactory.getInstance("RSA");
       return ((RSAPublicKey) kf.generatePublic(x509publicKey)).getModulus().bitLength();
-    } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+    } catch (final NoSuchAlgorithmException | InvalidKeySpecException e) {
       throw new RuntimeException(e);
     }
   }

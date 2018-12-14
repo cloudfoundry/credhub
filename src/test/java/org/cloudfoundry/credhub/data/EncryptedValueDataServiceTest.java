@@ -48,7 +48,7 @@ public class EncryptedValueDataServiceTest {
 
   @Test
   public void countAllByCanaryUuid() throws Exception {
-    UUID uuid = UUID.randomUUID();
+    final UUID uuid = UUID.randomUUID();
 
     subject.countAllByCanaryUuid(uuid);
 
@@ -57,8 +57,8 @@ public class EncryptedValueDataServiceTest {
 
   @Test
   public void findByCanaryUuids() throws Exception {
-    List<UUID> canaryUuids = Collections.singletonList(UUID.randomUUID());
-    Slice<EncryptedValue> encryptedValues = new SliceImpl(Collections.singletonList(new EncryptedValue()));
+    final List<UUID> canaryUuids = Collections.singletonList(UUID.randomUUID());
+    final Slice<EncryptedValue> encryptedValues = new SliceImpl(Collections.singletonList(new EncryptedValue()));
     when(encryptedValueRepository.findByEncryptionKeyUuidIn(eq(canaryUuids), any())).thenReturn(encryptedValues);
 
     assertThat(subject.findByCanaryUuids(canaryUuids), equalTo(encryptedValues));
@@ -66,9 +66,9 @@ public class EncryptedValueDataServiceTest {
 
   @Test
   public void rotate() throws Exception {
-    EncryptedValue newEncryption = new EncryptedValue(UUID.randomUUID(), "expected value".getBytes(StringUtil.UTF_8),
+    final EncryptedValue newEncryption = new EncryptedValue(UUID.randomUUID(), "expected value".getBytes(StringUtil.UTF_8),
       "nonce".getBytes(StringUtil.UTF_8));
-    EncryptedValue value = new EncryptedValue();
+    final EncryptedValue value = new EncryptedValue();
     value.setEncryptedValue("bytes".getBytes(StringUtil.UTF_8));
     value.setEncryptionKeyUuid(UUID.randomUUID());
     value.setNonce("nonce".getBytes(StringUtil.UTF_8));

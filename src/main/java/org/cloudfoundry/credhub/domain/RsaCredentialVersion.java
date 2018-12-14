@@ -7,14 +7,14 @@ import org.cloudfoundry.credhub.request.RsaGenerationParameters;
 
 public class RsaCredentialVersion extends CredentialVersion<RsaCredentialVersion> {
 
-  private RsaCredentialVersionData delegate;
+  private final RsaCredentialVersionData delegate;
 
-  public RsaCredentialVersion(RsaCredentialVersionData delegate) {
+  public RsaCredentialVersion(final RsaCredentialVersionData delegate) {
     super(delegate);
     this.delegate = delegate;
   }
 
-  public RsaCredentialVersion(String name) {
+  public RsaCredentialVersion(final String name) {
     this(new RsaCredentialVersionData(name));
   }
 
@@ -22,7 +22,7 @@ public class RsaCredentialVersion extends CredentialVersion<RsaCredentialVersion
     this(new RsaCredentialVersionData());
   }
 
-  public RsaCredentialVersion(RsaCredentialValue rsaValue, Encryptor encryptor) {
+  public RsaCredentialVersion(final RsaCredentialValue rsaValue, final Encryptor encryptor) {
     this();
     this.setEncryptor(encryptor);
     this.setPublicKey(rsaValue.getPublicKey());
@@ -37,29 +37,28 @@ public class RsaCredentialVersion extends CredentialVersion<RsaCredentialVersion
     return delegate.getPublicKey();
   }
 
-  public RsaCredentialVersion setPublicKey(String publicKey) {
+  public void setPublicKey(final String publicKey) {
     this.delegate.setPublicKey(publicKey);
-    return this;
   }
 
   public String getPrivateKey() {
     return (String) super.getValue();
   }
 
-  public RsaCredentialVersion setPrivateKey(String privateKey) {
+  public void setPrivateKey(final String privateKey) {
     if (privateKey != null) {
       super.setValue(privateKey);
     }
-    return this;
   }
 
+  @Override
   public void rotate() {
-    String decryptedValue = this.getPrivateKey();
+    final String decryptedValue = this.getPrivateKey();
     this.setPrivateKey(decryptedValue);
   }
 
   @Override
-  public boolean matchesGenerationParameters(GenerationParameters generationParameters) {
+  public boolean matchesGenerationParameters(final GenerationParameters generationParameters) {
     if (generationParameters == null) {
       return true;
     }
@@ -70,5 +69,10 @@ public class RsaCredentialVersion extends CredentialVersion<RsaCredentialVersion
   @Override
   public String getCredentialType() {
     return delegate.getCredentialType();
+  }
+
+  @Override
+  public GenerationParameters getGenerationParameters() {
+    return null;
   }
 }

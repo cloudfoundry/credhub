@@ -27,6 +27,11 @@ import org.cloudfoundry.credhub.request.PermissionOperation;
 
 @Service
 @Transactional
+@SuppressWarnings({
+  "PMD.NullAssignment",
+  "PMD.TooManyMethods",
+  "PMD.NPathComplexity",
+})
 public class PermissionedCertificateService {
 
   private final PermissionedCredentialService permissionedCredentialService;
@@ -36,16 +41,17 @@ public class PermissionedCertificateService {
   private final CertificateVersionDataService certificateVersionDataService;
   private final CertificateCredentialFactory certificateCredentialFactory;
   private final CredentialVersionDataService credentialVersionDataService;
-  private CEFAuditRecord auditRecord;
+  private final CEFAuditRecord auditRecord;
 
   @Autowired
   public PermissionedCertificateService(
-    PermissionedCredentialService permissionedCredentialService, CertificateDataService certificateDataService,
-    PermissionCheckingService permissionCheckingService, UserContextHolder userContextHolder,
-    CertificateVersionDataService certificateVersionDataService,
-    CertificateCredentialFactory certificateCredentialFactory,
-    CredentialVersionDataService credentialVersionDataService,
-    CEFAuditRecord auditRecord) {
+    final PermissionedCredentialService permissionedCredentialService, final CertificateDataService certificateDataService,
+    final PermissionCheckingService permissionCheckingService, final UserContextHolder userContextHolder,
+    final CertificateVersionDataService certificateVersionDataService,
+    final CertificateCredentialFactory certificateCredentialFactory,
+    final CredentialVersionDataService credentialVersionDataService,
+    final CEFAuditRecord auditRecord) {
+    super();
     this.permissionedCredentialService = permissionedCredentialService;
     this.certificateDataService = certificateDataService;
     this.permissionCheckingService = permissionCheckingService;
@@ -57,9 +63,9 @@ public class PermissionedCertificateService {
   }
 
   public CredentialVersion save(
-    CredentialVersion existingCredentialVersion,
-    CertificateCredentialValue credentialValue,
-    BaseCredentialGenerateRequest generateRequest
+    final CredentialVersion existingCredentialVersion,
+    final CertificateCredentialValue credentialValue,
+    final BaseCredentialGenerateRequest generateRequest
   ) {
     generateRequest.setType("certificate");
     if (credentialValue.isTransitional()) {
@@ -69,11 +75,11 @@ public class PermissionedCertificateService {
       .save(existingCredentialVersion, credentialValue, generateRequest);
   }
 
-  private void validateNoTransitionalVersionsAlreadyExist(String name) {
-    List<CredentialVersion> credentialVersions = permissionedCredentialService
+  private void validateNoTransitionalVersionsAlreadyExist(final String name) {
+    final List<CredentialVersion> credentialVersions = permissionedCredentialService
       .findAllByName(name);
 
-    boolean transitionalVersionsAlreadyExist = credentialVersions.stream()
+    final boolean transitionalVersionsAlreadyExist = credentialVersions.stream()
       .map(version -> (CertificateCredentialVersion) version)
       .anyMatch(version -> version.isVersionTransitional());
 
@@ -91,7 +97,7 @@ public class PermissionedCertificateService {
     ).collect(Collectors.toList());
   }
 
-  public List<Credential> getByName(String name) {
+  public List<Credential> getByName(final String name) {
     final Credential certificate = certificateDataService.findByName(name);
 
     if (certificate == null || !permissionCheckingService
@@ -103,20 +109,20 @@ public class PermissionedCertificateService {
     return Collections.singletonList(certificate);
   }
 
-  public List<CredentialVersion> getVersions(UUID uuid, boolean current) {
-    List<CredentialVersion> list;
-    String name;
+  public List<CredentialVersion> getVersions(final UUID uuid, final boolean current) {
+    final List<CredentialVersion> list;
+    final String name;
 
     try {
       if (current) {
-        Credential credential = findCertificateCredential(uuid);
+        final Credential credential = findCertificateCredential(uuid);
         name = credential.getName();
         list = certificateVersionDataService.findActiveWithTransitional(name);
       } else {
         list = certificateVersionDataService.findAllVersions(uuid);
         name = !list.isEmpty() ? list.get(0).getName() : null;
       }
-    } catch (IllegalArgumentException e) {
+    } catch (final IllegalArgumentException e) {
       throw new InvalidQueryParameterException("error.bad_request", "uuid");
     }
 
@@ -128,10 +134,10 @@ public class PermissionedCertificateService {
     return list;
   }
 
-  public List<CredentialVersion> updateTransitionalVersion(UUID certificateUuid, UUID newTransitionalVersionUuid) {
-    Credential credential = findCertificateCredential(certificateUuid);
+  public List<CredentialVersion> updateTransitionalVersion(final UUID certificateUuid, final UUID newTransitionalVersionUuid) {
+    final Credential credential = findCertificateCredential(certificateUuid);
 
-    String name = credential.getName();
+    final String name = credential.getName();
 
     if (!permissionCheckingService
       .hasPermission(userContextHolder.getUserContext().getActor(), name, PermissionOperation.WRITE)) {
@@ -141,7 +147,7 @@ public class PermissionedCertificateService {
     certificateVersionDataService.unsetTransitionalVersion(certificateUuid);
 
     if (newTransitionalVersionUuid != null) {
-      CertificateCredentialVersion version = certificateVersionDataService.findVersion(newTransitionalVersionUuid);
+      final CertificateCredentialVersion version = certificateVersionDataService.findVersion(newTransitionalVersionUuid);
 
       if (versionDoesNotBelongToCertificate(credential, version)) {
         throw new ParameterizedValidationException("error.credential.mismatched_credential_and_version");
@@ -149,20 +155,20 @@ public class PermissionedCertificateService {
       certificateVersionDataService.setTransitionalVersion(newTransitionalVersionUuid);
     }
 
-    List<CredentialVersion> credentialVersions = certificateVersionDataService.findActiveWithTransitional(name);
+    final List<CredentialVersion> credentialVersions = certificateVersionDataService.findActiveWithTransitional(name);
     auditRecord.addAllVersions(credentialVersions);
 
     return credentialVersions;
   }
 
-  public CertificateCredentialVersion deleteVersion(UUID certificateUuid, UUID versionUuid) {
-    Credential certificate = certificateDataService.findByUuid(certificateUuid);
+  public CertificateCredentialVersion deleteVersion(final UUID certificateUuid, final UUID versionUuid) {
+    final Credential certificate = certificateDataService.findByUuid(certificateUuid);
     if (certificate == null || !permissionCheckingService
       .hasPermission(userContextHolder.getUserContext().getActor(), certificate.getName(),
         PermissionOperation.DELETE)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
-    CertificateCredentialVersion versionToDelete = certificateVersionDataService.findVersion(versionUuid);
+    final CertificateCredentialVersion versionToDelete = certificateVersionDataService.findVersion(versionUuid);
     if (versionDoesNotBelongToCertificate(certificate, versionToDelete)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
@@ -175,16 +181,16 @@ public class PermissionedCertificateService {
     return versionToDelete;
   }
 
-  private boolean versionDoesNotBelongToCertificate(Credential certificate, CertificateCredentialVersion version) {
+  private boolean versionDoesNotBelongToCertificate(final Credential certificate, final CertificateCredentialVersion version) {
     return version == null || !certificate.getUuid().equals(version.getCredential().getUuid());
   }
 
-  private boolean certificateHasOnlyOneVersion(UUID certificateUuid) {
+  private boolean certificateHasOnlyOneVersion(final UUID certificateUuid) {
     return certificateVersionDataService.findAllVersions(certificateUuid).size() == 1;
   }
 
-  private Credential findCertificateCredential(UUID certificateUuid) {
-    Credential credential = certificateDataService.findByUuid(certificateUuid);
+  private Credential findCertificateCredential(final UUID certificateUuid) {
+    final Credential credential = certificateDataService.findByUuid(certificateUuid);
 
     if (credential == null) {
       throw new EntryNotFoundException("error.credential.invalid_access");
@@ -192,8 +198,8 @@ public class PermissionedCertificateService {
     return credential;
   }
 
-  public CertificateCredentialVersion set(UUID certificateUuid, CertificateCredentialValue value) {
-    Credential credential = findCertificateCredential(certificateUuid);
+  public CertificateCredentialVersion set(final UUID certificateUuid, final CertificateCredentialValue value) {
+    final Credential credential = findCertificateCredential(certificateUuid);
 
     if (!permissionCheckingService
       .hasPermission(userContextHolder.getUserContext().getActor(), credential.getName(),
@@ -205,7 +211,7 @@ public class PermissionedCertificateService {
       validateNoTransitionalVersionsAlreadyExist(credential.getName());
     }
 
-    CertificateCredentialVersion certificateCredentialVersion = certificateCredentialFactory
+    final CertificateCredentialVersion certificateCredentialVersion = certificateCredentialFactory
       .makeNewCredentialVersion(credential, value);
 
     return credentialVersionDataService.save(certificateCredentialVersion);

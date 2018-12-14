@@ -14,7 +14,7 @@ public enum PermissionOperation {
 
   private final String operation;
 
-  PermissionOperation(String operation) {
+  PermissionOperation(final String operation) {
     this.operation = operation;
   }
 

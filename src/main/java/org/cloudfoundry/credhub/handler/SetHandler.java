@@ -17,39 +17,34 @@ import org.cloudfoundry.credhub.view.CredentialView;
 @Component
 public class SetHandler {
 
-  private PermissionedCredentialService credentialService;
-  private CertificateAuthorityService certificateAuthorityService;
-  private CEFAuditRecord auditRecord;
+  private final PermissionedCredentialService credentialService;
+  private final CertificateAuthorityService certificateAuthorityService;
+  private final CEFAuditRecord auditRecord;
 
   @Autowired
   public SetHandler(
-    PermissionedCredentialService credentialService,
-    CertificateAuthorityService certificateAuthorityService,
-    CEFAuditRecord auditRecord) {
+    final PermissionedCredentialService credentialService,
+    final CertificateAuthorityService certificateAuthorityService,
+    final CEFAuditRecord auditRecord) {
+    super();
     this.credentialService = credentialService;
     this.certificateAuthorityService = certificateAuthorityService;
     this.auditRecord = auditRecord;
   }
 
-  public CredentialView handle(BaseCredentialSetRequest setRequest) {
+  public CredentialView handle(final BaseCredentialSetRequest setRequest) {
     if (setRequest instanceof CertificateSetRequest) {
       // fill in the ca value if it's one of ours
-      CertificateCredentialValue certificateValue = ((CertificateSetRequest) setRequest).getCertificateValue();
+      final CertificateCredentialValue certificateValue = ((CertificateSetRequest) setRequest).getCertificateValue();
 
-      String caName = certificateValue.getCaName();
+      final String caName = certificateValue.getCaName();
+
       if (caName != null) {
-        final String caValue = certificateAuthorityService.findActiveVersion(caName).getCertificate();
-        certificateValue.setCa(caValue);
-
-        CertificateReader certificateReader = new CertificateReader(certificateValue.getCertificate());
-
-        if (!certificateReader.isSignedByCa(caValue)) {
-          throw new ParameterizedValidationException("error.certificate_was_not_signed_by_ca_name");
-        }
+        validateCertificateValueIsSignedByCa(certificateValue, caName);
       }
     }
 
-    CredentialVersion existingCredentialVersion = credentialService.findMostRecent(setRequest.getName());
+    final CredentialVersion existingCredentialVersion = credentialService.findMostRecent(setRequest.getName());
 
     final CredentialVersion credentialVersion = credentialService.save(
       existingCredentialVersion,
@@ -60,5 +55,16 @@ public class SetHandler {
     auditRecord.setVersion(credentialVersion);
     auditRecord.setResource(credentialVersion.getCredential());
     return CredentialView.fromEntity(credentialVersion);
+  }
+
+  private void validateCertificateValueIsSignedByCa(final CertificateCredentialValue certificateValue, final String caName) {
+    final String caValue = certificateAuthorityService.findActiveVersion(caName).getCertificate();
+    certificateValue.setCa(caValue);
+
+    final CertificateReader certificateReader = new CertificateReader(certificateValue.getCertificate());
+
+    if (!certificateReader.isSignedByCa(caValue)) {
+      throw new ParameterizedValidationException("error.certificate_was_not_signed_by_ca_name");
+    }
   }
 }

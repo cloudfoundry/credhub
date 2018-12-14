@@ -45,68 +45,68 @@ public class CredentialModeSpecificGenerateTest {
 
   @Test
   public void credentialCanBeOverwrittenWhenModeIsSetToOverwriteInRequest() throws Exception {
-    String firstResponse = generatePassword(mockMvc, CREDENTIAL_NAME, true, null, ALL_PERMISSIONS_TOKEN);
-    String originalPassword = (new JSONObject(firstResponse)).getString("value");
+    final String firstResponse = generatePassword(mockMvc, CREDENTIAL_NAME, true, null, ALL_PERMISSIONS_TOKEN);
+    final String originalPassword = (new JSONObject(firstResponse)).getString("value");
 
-    String secondResponse = generatePassword(mockMvc, CREDENTIAL_NAME, true, null, ALL_PERMISSIONS_TOKEN);
+    final String secondResponse = generatePassword(mockMvc, CREDENTIAL_NAME, true, null, ALL_PERMISSIONS_TOKEN);
 
-    String updatedPassword = (new JSONObject(secondResponse)).getString("value");
+    final String updatedPassword = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalPassword, not(equalTo(updatedPassword)));
   }
 
   @Test
   public void credentialNotOverwrittenWhenModeIsSetToNotOverwriteInRequest() throws Exception {
-    String firstResponse = generatePassword(mockMvc, CREDENTIAL_NAME, true, null, ALL_PERMISSIONS_TOKEN);
-    String originalPassword = (new JSONObject(firstResponse)).getString("value");
+    final String firstResponse = generatePassword(mockMvc, CREDENTIAL_NAME, true, null, ALL_PERMISSIONS_TOKEN);
+    final String originalPassword = (new JSONObject(firstResponse)).getString("value");
 
-    String secondResponse = generatePassword(mockMvc, CREDENTIAL_NAME, false, null, ALL_PERMISSIONS_TOKEN);
-    String samePassword = (new JSONObject(secondResponse)).getString("value");
+    final String secondResponse = generatePassword(mockMvc, CREDENTIAL_NAME, false, null, ALL_PERMISSIONS_TOKEN);
+    final String samePassword = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalPassword, equalTo(samePassword));
   }
 
   @Test
   public void credentialNotOverwrittenWhenModeIsSetToConvergeAndParametersAreTheSame() throws Exception {
-    String firstResponse = generatePassword(mockMvc, CREDENTIAL_NAME, false, 20, ALL_PERMISSIONS_TOKEN);
-    String originalPassword = (new JSONObject(firstResponse)).getString("value");
+    final String firstResponse = generatePassword(mockMvc, CREDENTIAL_NAME, false, 20, ALL_PERMISSIONS_TOKEN);
+    final String originalPassword = (new JSONObject(firstResponse)).getString("value");
 
-    String secondResponse = generatePassword(mockMvc, CREDENTIAL_NAME, false, 20, ALL_PERMISSIONS_TOKEN);
+    final String secondResponse = generatePassword(mockMvc, CREDENTIAL_NAME, false, 20, ALL_PERMISSIONS_TOKEN);
 
-    String samePassword = (new JSONObject(secondResponse)).getString("value");
+    final String samePassword = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalPassword, equalTo(samePassword));
   }
 
   @Test
   public void credentialNotOverwrittenWhenModeIsSetToConvergeAndParametersAreTheSameAndAreTheDefault() throws Exception {
-    String firstResponse = generatePassword(mockMvc, CREDENTIAL_NAME, true, null, ALL_PERMISSIONS_TOKEN);
-    String originalPassword = (new JSONObject(firstResponse)).getString("value");
+    final String firstResponse = generatePassword(mockMvc, CREDENTIAL_NAME, true, null, ALL_PERMISSIONS_TOKEN);
+    final String originalPassword = (new JSONObject(firstResponse)).getString("value");
 
-    String secondResponse = generatePassword(mockMvc, CREDENTIAL_NAME, false, null, ALL_PERMISSIONS_TOKEN);
-    String samePassword = (new JSONObject(secondResponse)).getString("value");
+    final String secondResponse = generatePassword(mockMvc, CREDENTIAL_NAME, false, null, ALL_PERMISSIONS_TOKEN);
+    final String samePassword = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalPassword, equalTo(samePassword));
   }
 
   @Test
   public void credentialOverwrittenWhenModeIsSetToConvergeAndParametersNotTheSame() throws Exception {
-    String firstResponse = generatePassword(mockMvc, CREDENTIAL_NAME, true, 30, ALL_PERMISSIONS_TOKEN);
-    String originalPassword = (new JSONObject(firstResponse)).getString("value");
+    final String firstResponse = generatePassword(mockMvc, CREDENTIAL_NAME, true, 30, ALL_PERMISSIONS_TOKEN);
+    final String originalPassword = (new JSONObject(firstResponse)).getString("value");
 
-    String secondResponse = generatePassword(mockMvc, CREDENTIAL_NAME, false, 20, ALL_PERMISSIONS_TOKEN);
-    String updatedPassword = (new JSONObject(secondResponse)).getString("value");
+    final String secondResponse = generatePassword(mockMvc, CREDENTIAL_NAME, false, 20, ALL_PERMISSIONS_TOKEN);
+    final String updatedPassword = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalPassword, not(equalTo(updatedPassword)));
   }
 
   @Test
   public void credentialNotOverwrittenWhenNameIsProvidedWithoutASlashAndThenWithOne() throws Exception {
-    String firstResponse = generatePassword(mockMvc, "a-name", true, 30, ALL_PERMISSIONS_TOKEN);
-    String originalPassword = (new JSONObject(firstResponse)).getString("value");
+    final String firstResponse = generatePassword(mockMvc, "a-name", true, 30, ALL_PERMISSIONS_TOKEN);
+    final String originalPassword = (new JSONObject(firstResponse)).getString("value");
 
-    String secondResponse = generatePassword(mockMvc, "/a-name", false, 30, ALL_PERMISSIONS_TOKEN);
-    String updatedPassword = (new JSONObject(secondResponse)).getString("value");
+    final String secondResponse = generatePassword(mockMvc, "/a-name", false, 30, ALL_PERMISSIONS_TOKEN);
+    final String updatedPassword = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalPassword, equalTo(updatedPassword));
   }

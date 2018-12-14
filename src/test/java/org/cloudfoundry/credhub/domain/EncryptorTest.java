@@ -40,7 +40,7 @@ public class EncryptorTest {
 
   @Test
   public void encrypt_returnsNullForNullInput() {
-    EncryptedValue encryption = subject.encrypt(null);
+    final EncryptedValue encryption = subject.encrypt(null);
 
     assertThat(encryption.getEncryptedValue(), nullValue());
     assertThat(encryption.getNonce(), nullValue());
@@ -48,11 +48,11 @@ public class EncryptorTest {
 
   @Test
   public void encrypt_encryptsPlainTest() throws Exception {
-    String value = "some value";
-    EncryptedValue encrypted = mock(EncryptedValue.class);
+    final String value = "some value";
+    final EncryptedValue encrypted = mock(EncryptedValue.class);
     when(encryptionService.encrypt(value)).thenReturn(encrypted);
 
-    EncryptedValue result = subject.encrypt("some value");
+    final EncryptedValue result = subject.encrypt("some value");
     assertThat(result, equalTo(encrypted));
   }
 
@@ -65,16 +65,16 @@ public class EncryptorTest {
 
   @Test
   public void decrypt_decryptsEncryptedValues() throws Exception {
-    String expected = "the expected clear text";
-    EncryptedValue encryptedValue = new EncryptedValue(newUuid, "", "");
+    final String expected = "the expected clear text";
+    final EncryptedValue encryptedValue = new EncryptedValue(newUuid, "", "");
     when(encryptionService.decrypt(encryptedValue)).thenReturn(expected);
-    String result = subject.decrypt(encryptedValue);
+    final String result = subject.decrypt(encryptedValue);
     assertThat(result, equalTo(expected));
   }
 
   @Test(expected = RuntimeException.class)
   public void decrypt_failsToEncryptWhenGivenWrongKeyUuid() {
-    EncryptedValue encryption = subject.encrypt("the expected clear text");
+    final EncryptedValue encryption = subject.encrypt("the expected clear text");
     encryptedValue = encryption.getEncryptedValue();
     nonce = encryption.getNonce();
 

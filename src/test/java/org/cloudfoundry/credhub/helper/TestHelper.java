@@ -13,10 +13,11 @@ import static org.mockito.Mockito.when;
 final public class TestHelper {
 
   private TestHelper() {
+    super();
   }
 
   public static Consumer<Long> mockOutCurrentTimeProvider(
-    CurrentTimeProvider mockCurrentTimeProvider) {
+    final CurrentTimeProvider mockCurrentTimeProvider) {
     return (epochMillis) -> {
       when(mockCurrentTimeProvider.getNow()).thenReturn(Optional.of(Instant.ofEpochMilli(epochMillis)));
       when(mockCurrentTimeProvider.getInstant()).thenReturn(Instant.ofEpochMilli(epochMillis));

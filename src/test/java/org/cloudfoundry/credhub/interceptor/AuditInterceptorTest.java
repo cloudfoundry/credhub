@@ -63,7 +63,7 @@ public class AuditInterceptorTest {
 
   @Test
   public void afterCompletion_populatesTheCEFLogObject() {
-    Authentication authentication = mock(Authentication.class);
+    final Authentication authentication = mock(Authentication.class);
     when(authentication.getName()).thenReturn("foo");
     request.setUserPrincipal(authentication);
     request.setAuthType(CLIENT_CERT_AUTH);

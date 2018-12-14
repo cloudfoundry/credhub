@@ -14,7 +14,7 @@ public class UserGenerateRequestTest {
 
   @Test
   public void getUsername_whenUsernameIsInParams_shouldReturnUsername() {
-    String json = "{"
+    final String json = "{"
       + "\"name\": \"/example/user\","
       + "\"type\": \"user\","
       + "\"parameters\": {"
@@ -23,7 +23,7 @@ public class UserGenerateRequestTest {
       + "}"
       + "}";
 
-    UserGenerateRequest deserialize = (UserGenerateRequest) JsonTestHelper
+    final UserGenerateRequest deserialize = (UserGenerateRequest) JsonTestHelper
       .deserialize(json, BaseCredentialGenerateRequest.class);
 
     assertThat(deserialize, instanceOf(UserGenerateRequest.class));
@@ -32,7 +32,7 @@ public class UserGenerateRequestTest {
 
   @Test
   public void getUsername_whenUsernameIsInValue_shouldReturnUsername() {
-    String json = "{"
+    final String json = "{"
       + "\"name\": \"/example/user\","
       + "\"type\": \"user\","
       + "\"value\": {"
@@ -40,7 +40,7 @@ public class UserGenerateRequestTest {
       + "}"
       + "}";
 
-    UserGenerateRequest deserialize = (UserGenerateRequest) JsonTestHelper
+    final UserGenerateRequest deserialize = (UserGenerateRequest) JsonTestHelper
       .deserialize(json, BaseCredentialGenerateRequest.class);
 
     assertThat(deserialize, instanceOf(UserGenerateRequest.class));
@@ -49,7 +49,7 @@ public class UserGenerateRequestTest {
 
   @Test
   public void getUsername_whenUsernameIsInBothValueAndParameters_prefersParameters() {
-    String json = "{"
+    final String json = "{"
       + "\"name\": \"/example/user\","
       + "\"type\": \"user\","
       + "\"parameters\": {"
@@ -60,7 +60,7 @@ public class UserGenerateRequestTest {
       + "}"
       + "}";
 
-    UserGenerateRequest deserialize = (UserGenerateRequest) JsonTestHelper
+    final UserGenerateRequest deserialize = (UserGenerateRequest) JsonTestHelper
       .deserialize(json, BaseCredentialGenerateRequest.class);
 
     assertThat(deserialize, instanceOf(UserGenerateRequest.class));

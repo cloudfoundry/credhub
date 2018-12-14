@@ -14,12 +14,13 @@ public class PasswordCredentialGenerator implements CredentialGenerator<StringCr
   private final PassayStringCredentialGenerator passayStringCredentialGenerator;
 
   @Autowired
-  PasswordCredentialGenerator(PassayStringCredentialGenerator passayStringCredentialGenerator) {
+  PasswordCredentialGenerator(final PassayStringCredentialGenerator passayStringCredentialGenerator) {
+    super();
     this.passayStringCredentialGenerator = passayStringCredentialGenerator;
   }
 
   @Override
-  public StringCredentialValue generateCredential(GenerationParameters stringGenerationParameters) {
+  public StringCredentialValue generateCredential(final GenerationParameters stringGenerationParameters) {
     return passayStringCredentialGenerator.generateCredential((StringGenerationParameters) stringGenerationParameters);
   }
 }

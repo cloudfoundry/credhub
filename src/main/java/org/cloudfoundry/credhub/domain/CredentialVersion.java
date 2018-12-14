@@ -14,7 +14,8 @@ public abstract class CredentialVersion<Z extends CredentialVersion> {
   protected CredentialVersionData delegate;
   protected Encryptor encryptor;
 
-  public CredentialVersion(CredentialVersionData delegate) {
+  public CredentialVersion(final CredentialVersionData delegate) {
+    super();
     this.delegate = delegate;
   }
 
@@ -26,19 +27,17 @@ public abstract class CredentialVersion<Z extends CredentialVersion> {
     return encryptor.decrypt(delegate.getEncryptedValueData());
   }
 
-  public Z setValue(String value) {
+  public void setValue(final String value) {
     final EncryptedValue encryption = encryptor.encrypt(value);
     delegate.setEncryptedValueData(encryption);
-    return (Z) this;
   }
 
   public UUID getUuid() {
     return delegate.getUuid();
   }
 
-  public Z setUuid(UUID uuid) {
+  public void setUuid(final UUID uuid) {
     delegate.setUuid(uuid);
-    return (Z) this;
   }
 
   public String getName() {
@@ -49,17 +48,15 @@ public abstract class CredentialVersion<Z extends CredentialVersion> {
     return delegate.getVersionCreatedAt();
   }
 
-  public Z setVersionCreatedAt(Instant versionCreatedAt) {
+  public void setVersionCreatedAt(final Instant versionCreatedAt) {
     delegate.setVersionCreatedAt(versionCreatedAt);
-    return (Z) this;
   }
 
-  public Z setEncryptor(Encryptor encryptor) {
+  public void setEncryptor(final Encryptor encryptor) {
     this.encryptor = encryptor;
-    return (Z) this;
   }
 
-  public <Z extends CredentialVersion> Z save(CredentialVersionDataService credentialVersionDataService) {
+  public <Z extends CredentialVersion> Z save(final CredentialVersionDataService credentialVersionDataService) {
     return (Z) credentialVersionDataService.save(delegate);
   }
 
@@ -67,21 +64,19 @@ public abstract class CredentialVersion<Z extends CredentialVersion> {
     return delegate.getCredential();
   }
 
-  public void setCredential(Credential credential) {
+  public void setCredential(final Credential credential) {
     this.delegate.setCredential(credential);
   }
 
-  protected void copyNameReferenceFrom(CredentialVersion credentialVersion) {
+  protected void copyNameReferenceFrom(final CredentialVersion credentialVersion) {
     this.delegate.setCredential(credentialVersion.delegate.getCredential());
   }
 
-  public void createName(String name) {
+  public void createName(final String name) {
     delegate.setCredential(new Credential(name));
   }
 
-  public GenerationParameters getGenerationParameters() {
-    return null;
-  }
+  public abstract GenerationParameters getGenerationParameters();
 
   public abstract boolean matchesGenerationParameters(GenerationParameters generationParameters);
 }

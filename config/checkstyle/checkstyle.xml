@@ -11,6 +11,7 @@
         <!-- Annotations -->
         <module name="com.puppycrawl.tools.checkstyle.checks.annotation.AnnotationUseStyleCheck">
             <property name="elementStyle" value="compact" />
+            <property name="trailingArrayComma" value="ALWAYS" />
         </module>
         <module name="com.puppycrawl.tools.checkstyle.checks.annotation.MissingOverrideCheck" />
         <module name="com.puppycrawl.tools.checkstyle.checks.annotation.PackageAnnotationCheck" />

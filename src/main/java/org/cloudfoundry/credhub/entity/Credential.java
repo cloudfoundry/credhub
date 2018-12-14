@@ -35,7 +35,8 @@ public class Credential {
     this(null);
   }
 
-  public Credential(String name) {
+  public Credential(final String name) {
+    super();
     setName(name);
   }
 
@@ -43,7 +44,7 @@ public class Credential {
     return uuid;
   }
 
-  public void setUuid(UUID uuid) {
+  public void setUuid(final UUID uuid) {
     this.uuid = uuid;
   }
 
@@ -51,7 +52,7 @@ public class Credential {
     return name;
   }
 
-  public void setName(String name) {
+  public void setName(final String name) {
     this.name = name;
     if (name != null) {
       setChecksum(DigestUtils.sha256Hex(name));
@@ -62,7 +63,7 @@ public class Credential {
     return checksum;
   }
 
-  public void setChecksum(String checksum) {
+  public void setChecksum(final String checksum) {
     this.checksum = checksum;
   }
 }

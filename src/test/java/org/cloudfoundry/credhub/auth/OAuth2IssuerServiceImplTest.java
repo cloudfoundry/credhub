@@ -8,6 +8,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,15 +36,15 @@ public class OAuth2IssuerServiceImplTest {
 
   @Before
   public void setUp() throws URISyntaxException, CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException, KeyManagementException {
-    String trustStore = "test-trust-store";
-    String trustStorePassword = "test-trust-store-password";
+    final String trustStore = "test-trust-store";
+    final String trustStorePassword = "test-trust-store-password";
 
-    OAuthProperties oAuthProperties = new OAuthProperties();
+    final OAuthProperties oAuthProperties = new OAuthProperties();
     oAuthProperties.setTrustStore(trustStore);
     oAuthProperties.setTrustStorePassword(trustStorePassword);
     oAuthProperties.setUrl(AUTH_SERVER);
 
-    RestTemplateFactory restTemplateFactory = mock(RestTemplateFactory.class);
+    final RestTemplateFactory restTemplateFactory = mock(RestTemplateFactory.class);
     restTemplate = mock(RestTemplate.class);
 
     when(restTemplateFactory.createRestTemplate(trustStore, trustStorePassword))
@@ -54,12 +55,12 @@ public class OAuth2IssuerServiceImplTest {
 
   @Test
   public void fetchIssuer_setsAndUpdatesTheIssuer() throws URISyntaxException {
-    String issuer1 = "first-issuer";
-    String issuer2 = "second-issuer";
+    final String issuer1 = "first-issuer";
+    final String issuer2 = "second-issuer";
 
-    HashMap<String, String> uaaResponseBody = new HashMap<>();
-    ResponseEntity<HashMap> uaaResponse = new ResponseEntity<>(uaaResponseBody, HttpStatus.OK);
-    URI authServerUri = new URI(AUTH_SERVER.concat("/.well-known/openid-configuration"));
+    final Map<String, String> uaaResponseBody = new HashMap<>();
+    final ResponseEntity<HashMap> uaaResponse = new ResponseEntity(uaaResponseBody, HttpStatus.OK);
+    final URI authServerUri = new URI(AUTH_SERVER.concat("/.well-known/openid-configuration"));
 
     uaaResponseBody.put("issuer", issuer1);
 

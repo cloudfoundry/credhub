@@ -26,53 +26,54 @@ public class CertificateGenerator implements CredentialGenerator<CertificateCred
 
   @Autowired
   public CertificateGenerator(
-    LibcryptoRsaKeyPairGenerator keyGenerator,
-    SignedCertificateGenerator signedCertificateGenerator,
-    CertificateAuthorityService certificateAuthorityService) {
+    final LibcryptoRsaKeyPairGenerator keyGenerator,
+    final SignedCertificateGenerator signedCertificateGenerator,
+    final CertificateAuthorityService certificateAuthorityService) {
+    super();
     this.keyGenerator = keyGenerator;
     this.signedCertificateGenerator = signedCertificateGenerator;
     this.certificateAuthorityService = certificateAuthorityService;
   }
 
   @Override
-  public CertificateCredentialValue generateCredential(GenerationParameters p) {
-    CertificateGenerationParameters params = (CertificateGenerationParameters) p;
-    KeyPair keyPair;
-    String privatePem;
+  public CertificateCredentialValue generateCredential(final GenerationParameters p) {
+    final CertificateGenerationParameters params = (CertificateGenerationParameters) p;
+    final KeyPair keyPair;
+    final String privatePem;
     try {
       keyPair = keyGenerator.generateKeyPair(params.getKeyLength());
       privatePem = pemOf(keyPair.getPrivate());
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
 
     if (params.isSelfSigned()) {
       try {
-        String cert = pemOf(signedCertificateGenerator.getSelfSigned(keyPair, params));
+        final String cert = pemOf(signedCertificateGenerator.getSelfSigned(keyPair, params));
         return new CertificateCredentialValue(cert, cert, privatePem, null);
-      } catch (Exception e) {
+      } catch (final Exception e) {
         throw new RuntimeException(e);
       }
     } else {
-      String caName = params.getCaName();
-      CertificateCredentialValue ca = certificateAuthorityService.findActiveVersion(caName);
+      final String caName = params.getCaName();
+      final CertificateCredentialValue ca = certificateAuthorityService.findActiveVersion(caName);
       if (ca.getPrivateKey() == null) {
         throw new ParameterizedValidationException("error.ca_missing_private_key");
       }
-      String caCertificate = ca.getCertificate();
+      final String caCertificate = ca.getCertificate();
 
       try {
 
-        CertificateReader certificateReader = new CertificateReader(caCertificate);
+        final CertificateReader certificateReader = new CertificateReader(caCertificate);
 
-        X509Certificate cert = signedCertificateGenerator.getSignedByIssuer(
+        final X509Certificate cert = signedCertificateGenerator.getSignedByIssuer(
           keyPair,
           params,
           certificateReader.getCertificate(),
           PrivateKeyReader.getPrivateKey(ca.getPrivateKey())
         );
         return new CertificateCredentialValue(caCertificate, pemOf(cert), privatePem, caName);
-      } catch (Exception e) {
+      } catch (final Exception e) {
         throw new RuntimeException(e);
       }
     }

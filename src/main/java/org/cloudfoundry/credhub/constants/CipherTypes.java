@@ -6,10 +6,11 @@ public enum CipherTypes {
 
   private final String cipher;
 
-  CipherTypes(String cipher) {
+  CipherTypes(final String cipher) {
     this.cipher = cipher;
   }
 
+  @Override
   public String toString() {
     return cipher;
   }

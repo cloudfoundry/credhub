@@ -48,7 +48,7 @@ public class SshGeneratorTest {
 
   @Test
   public void generateCredential_shouldUseTheProvidedKeyLength() throws Exception {
-    SshGenerationParameters sshGenerationParameters = new SshGenerationParameters();
+    final SshGenerationParameters sshGenerationParameters = new SshGenerationParameters();
     sshGenerationParameters.setKeyLength(4096);
 
     subject.generateCredential(sshGenerationParameters);
@@ -58,12 +58,12 @@ public class SshGeneratorTest {
 
   @Test
   public void generateCredential_shouldUseTheProvidedSSHComment() throws Exception {
-    SshGenerationParameters sshGenerationParameters = new SshGenerationParameters();
+    final SshGenerationParameters sshGenerationParameters = new SshGenerationParameters();
     sshGenerationParameters.setSshComment("this is an ssh comment");
 
     final SshCredentialValue ssh = subject.generateCredential(sshGenerationParameters);
 
-    String expectedPublicKey = CertificateFormatter.derOf((RSAPublicKey) keyPair.getPublic())
+    final String expectedPublicKey = CertificateFormatter.derOf((RSAPublicKey) keyPair.getPublic())
       + " this is an ssh comment";
 
     assertThat(ssh.getPublicKey(), equalTo(expectedPublicKey));

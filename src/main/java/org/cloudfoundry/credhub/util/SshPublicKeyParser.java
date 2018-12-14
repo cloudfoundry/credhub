@@ -9,19 +9,17 @@ import java.util.Base64;
 
 import org.apache.commons.codec.digest.DigestUtils;
 
+@SuppressWarnings("PMD.NullAssignment")
 public class SshPublicKeyParser {
 
   private String publicKey;
   private String fingerprint;
   private String comment;
   private int keyLength;
-  private Base64.Encoder encoder = Base64.getEncoder().withoutPadding();
-  private Base64.Decoder decoder = Base64.getDecoder();
+  private final Base64.Encoder encoder = Base64.getEncoder().withoutPadding();
+  private final Base64.Decoder decoder = Base64.getDecoder();
 
-  public SshPublicKeyParser() {
-  }
-
-  public void setPublicKey(String publicKey) {
+  public void setPublicKey(final String publicKey) {
     if (this.publicKey != null) {
       return;
     }
@@ -50,14 +48,14 @@ public class SshPublicKeyParser {
       return;
     }
 
-    int endOfPrefix = publicKey.indexOf(' ') + 1;
+    final int endOfPrefix = publicKey.indexOf(' ') + 1;
     if (endOfPrefix == 0) {
       return;
     } // invalid format, does not have ssh- prefix.
 
-    int startOfComment = publicKey.indexOf(' ', endOfPrefix);
+    final int startOfComment = publicKey.indexOf(' ', endOfPrefix);
 
-    String isolatedPublicKey;
+    final String isolatedPublicKey;
 
     if (startOfComment != -1) {
       isolatedPublicKey = publicKey.substring(endOfPrefix, startOfComment);
@@ -67,51 +65,51 @@ public class SshPublicKeyParser {
       comment = "";
     }
 
-    if (isolatedPublicKey.equals("")) {
+    if ("".equals(isolatedPublicKey)) {
       comment = null;
       return;
     }
 
     try {
-      byte[] decodedIsolatedPublicKey = decoder.decode(isolatedPublicKey);
+      final byte[] decodedIsolatedPublicKey = decoder.decode(isolatedPublicKey);
       fingerprint = fingerprintOf(decodedIsolatedPublicKey);
 
-      DataInputStream dataStream = new DataInputStream(
+      final DataInputStream dataStream = new DataInputStream(
         new ByteArrayInputStream(decodedIsolatedPublicKey)
       );
 
       readAndRemoveType(dataStream);
       readAndRemoveExponent(dataStream);
       keyLength = readAndRemoveKeyLength(dataStream);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       comment = null;
       fingerprint = null;
       keyLength = 0;
     }
   }
 
-  private String fingerprintOf(byte[] decodedIsolatedPublicKey) {
+  private String fingerprintOf(final byte[] decodedIsolatedPublicKey) {
     return encoder.encodeToString(DigestUtils.getSha256Digest().digest(decodedIsolatedPublicKey));
   }
 
-  private byte[] readAndRemoveType(DataInputStream dataStream) throws IOException {
+  private byte[] readAndRemoveType(final DataInputStream dataStream) throws IOException {
     return readIntAsBytesFrom(dataStream);
   }
 
-  private byte[] readAndRemoveExponent(DataInputStream dataStream) throws IOException {
+  private byte[] readAndRemoveExponent(final DataInputStream dataStream) throws IOException {
     return readIntAsBytesFrom(dataStream);
   }
 
-  private int readAndRemoveKeyLength(DataInputStream dataStream) throws IOException {
-    byte[] buf = readIntAsBytesFrom(dataStream);
-    BigInteger modulus = new BigInteger(Arrays.copyOf(buf, buf.length));
+  private int readAndRemoveKeyLength(final DataInputStream dataStream) throws IOException {
+    final byte[] buf = readIntAsBytesFrom(dataStream);
+    final BigInteger modulus = new BigInteger(Arrays.copyOf(buf, buf.length));
     // calculate key length
     return modulus.bitLength();
   }
 
-  private byte[] readIntAsBytesFrom(DataInputStream dataStream) throws IOException {
-    byte[] buf;
-    int length = dataStream.readInt();
+  private byte[] readIntAsBytesFrom(final DataInputStream dataStream) throws IOException {
+    final byte[] buf;
+    final int length = dataStream.readInt();
     buf = new byte[length];
 
     // FindBugs exposed possible bug of not checking for correct output from InputStream

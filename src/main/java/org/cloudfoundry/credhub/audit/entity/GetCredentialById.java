@@ -3,9 +3,10 @@ package org.cloudfoundry.credhub.audit.entity;
 import org.cloudfoundry.credhub.audit.OperationDeviceAction;
 
 public class GetCredentialById implements RequestDetails {
-  private String uuid;
+  private final String uuid;
 
-  public GetCredentialById(String uuid) {
+  public GetCredentialById(final String uuid) {
+    super();
     this.uuid = uuid;
   }
 

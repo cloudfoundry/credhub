@@ -17,34 +17,33 @@ public class CertificateValidator implements ConstraintValidator<RequireValidCer
   private String[] fields;
 
   @Override
-  public void initialize(RequireValidCertificate constraintAnnotation) {
+  public void initialize(final RequireValidCertificate constraintAnnotation) {
     fields = constraintAnnotation.fields();
   }
 
   @Override
-  public boolean isValid(Object value, ConstraintValidatorContext context) {
-    for (String fieldName : fields) {
+  @SuppressWarnings("PMD.AvoidRethrowingException")
+  public boolean isValid(final Object value, final ConstraintValidatorContext context) {
+    for (final String fieldName : fields) {
       try {
-        Field field = value.getClass().getDeclaredField(fieldName);
+        final Field field = value.getClass().getDeclaredField(fieldName);
         field.setAccessible(true);
 
         if (StringUtils.isEmpty((String) field.get(value))) {
           return true;
         }
 
-        String certificate = (String) field.get(value);
+        final String certificate = (String) field.get(value);
         new CertificateReader(certificate);
 
         return true;
-      } catch (MalformedCertificateException e) {
+      } catch (final MalformedCertificateException e) {
         throw e;
-      } catch (NoSuchFieldException | IllegalAccessException e) {
+      } catch (final NoSuchFieldException | IllegalAccessException e) {
         throw new RuntimeException(e);
-      } catch (Exception e) {
-        if (e.getClass().equals(RuntimeException.class) && e.getMessage().contains("java.io.IOException")) {
-          LOGGER.error("Exception reading certificate", e);
-          throw new UnreadableCertificateException();
-        }
+      } catch (final Exception e) {
+        LOGGER.error("Exception reading certificate", e);
+        throw new UnreadableCertificateException();
       }
     }
 

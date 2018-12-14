@@ -33,7 +33,7 @@ public class UserViewTest {
     when(userCredential.getUsername()).thenReturn("test-username");
     when(userCredential.getSalt()).thenReturn(salt);
 
-    UserView actual = (UserView) UserView.fromEntity(userCredential);
+    final UserView actual = (UserView) UserView.fromEntity(userCredential);
 
     assertThat(JsonTestHelper.serializeToString(actual), equalTo("{"
       + "\"type\":\"user\","

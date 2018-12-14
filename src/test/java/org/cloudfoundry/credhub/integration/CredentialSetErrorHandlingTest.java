@@ -73,7 +73,7 @@ public class CredentialSetErrorHandlingTest {
         "  \"value\":\"some password\"" +
         "}");
 
-    String expectedError = "The credential type cannot be modified. Please delete the credential if you wish to create it with a different type.";
+    final String expectedError = "The credential type cannot be modified. Please delete the credential if you wish to create it with a different type.";
     mockMvc.perform(request)
       .andExpect(status().isBadRequest())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -92,7 +92,7 @@ public class CredentialSetErrorHandlingTest {
         "  \"value\":\"some password\"" +
         "}");
 
-    String expectedError = "A credential name must be provided. Please validate your input and retry your request.";
+    final String expectedError = "A credential name must be provided. Please validate your input and retry your request.";
     mockMvc.perform(request)
       .andExpect(status().isBadRequest())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -110,7 +110,7 @@ public class CredentialSetErrorHandlingTest {
         "  \"value\":\"some password\"" +
         "}");
 
-    String expectedError = "A credential name must be provided. Please validate your input and retry your request.";
+    final String expectedError = "A credential name must be provided. Please validate your input and retry your request.";
     mockMvc.perform(request)
       .andExpect(status().isBadRequest())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -129,7 +129,7 @@ public class CredentialSetErrorHandlingTest {
         "  \"value\":\"some password\"" +
         "}");
 
-    String expectedError = "A credential name cannot end with a '/' character or contain '//'. Credential names should be in the form of /[path]/[name] or [path]/[name]. Please update and retry your request.";
+    final String expectedError = "A credential name cannot end with a '/' character or contain '//'. Credential names should be in the form of /[path]/[name] or [path]/[name]. Please update and retry your request.";
     mockMvc.perform(request)
       .andExpect(status().isBadRequest())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -148,7 +148,7 @@ public class CredentialSetErrorHandlingTest {
         "  \"value\":\"some password\"" +
         "}");
 
-    String expectedError = "A credential name cannot end with a '/' character or contain '//'. Credential names should be in the form of /[path]/[name] or [path]/[name]. Please update and retry your request.";
+    final String expectedError = "A credential name cannot end with a '/' character or contain '//'. Credential names should be in the form of /[path]/[name] or [path]/[name]. Please update and retry your request.";
     mockMvc.perform(request)
       .andExpect(status().isBadRequest())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -166,7 +166,7 @@ public class CredentialSetErrorHandlingTest {
         "  \"value\":\"some password\"" +
         "}");
 
-    String expectedError = "The request does not include a valid type. Valid values include 'value', 'json', 'password', 'user', 'certificate', 'ssh' and 'rsa'.";
+    final String expectedError = "The request does not include a valid type. Valid values include 'value', 'json', 'password', 'user', 'certificate', 'ssh' and 'rsa'.";
     mockMvc.perform(request)
       .andExpect(status().isUnprocessableEntity())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -185,7 +185,7 @@ public class CredentialSetErrorHandlingTest {
         "  \"value\":\"some password\"" +
         "}");
 
-    String expectedError = "The request does not include a valid type. Valid values include 'value', 'json', 'password', 'user', 'certificate', 'ssh' and 'rsa'.";
+    final String expectedError = "The request does not include a valid type. Valid values include 'value', 'json', 'password', 'user', 'certificate', 'ssh' and 'rsa'.";
     mockMvc.perform(request)
       .andExpect(status().isUnprocessableEntity())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -204,7 +204,7 @@ public class CredentialSetErrorHandlingTest {
         "  \"value\":\"some password\"" +
         "}");
 
-    String expectedError = "The request does not include a valid type. Valid values include 'value', 'json', 'password', 'user', 'certificate', 'ssh' and 'rsa'.";
+    final String expectedError = "The request does not include a valid type. Valid values include 'value', 'json', 'password', 'user', 'certificate', 'ssh' and 'rsa'.";
     mockMvc.perform(request)
       .andExpect(status().isUnprocessableEntity())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -222,7 +222,7 @@ public class CredentialSetErrorHandlingTest {
         "  \"type\":\"password\"" +
         "}");
 
-    String expectedError = "A non-empty value must be specified for the credential. Please validate and retry your request.";
+    final String expectedError = "A non-empty value must be specified for the credential. Please validate and retry your request.";
     mockMvc.perform(request)
       .andExpect(status().isBadRequest())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -242,7 +242,7 @@ public class CredentialSetErrorHandlingTest {
         "  \"value\":\"THIS REQUEST some value\"" +
         "}");
 
-    String expectedError = "The request includes an unrecognized parameter 'invalid_key'. Please update or remove this parameter and retry your request.";
+    final String expectedError = "The request includes an unrecognized parameter 'invalid_key'. Please update or remove this parameter and retry your request.";
     mockMvc.perform(request)
       .andExpect(status().isUnprocessableEntity())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -263,7 +263,7 @@ public class CredentialSetErrorHandlingTest {
       .contentType(APPLICATION_JSON)
       .content(malformedJson);
 
-    String expectedError = "The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.";
+    final String expectedError = "The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.";
     mockMvc.perform(request)
       .andExpect(status().isBadRequest())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -283,7 +283,7 @@ public class CredentialSetErrorHandlingTest {
       .contentType(APPLICATION_JSON)
       .content(malformedJson);
 
-    String expectedError = "The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.";
+    final String expectedError = "The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.";
     this.mockMvc.perform(request).andExpect(status().isBadRequest())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
       .andExpect(jsonPath("$.error", equalTo(expectedError)));
@@ -369,8 +369,8 @@ public class CredentialSetErrorHandlingTest {
       return;
     }
 
-    byte[] exceedsMaxBlobStoreSizeBytes = DatabaseUtilities.getExceedsMaxBlobStoreSizeBytes();
-    String exceedsMaxBlobStoreSizeValue = Base64.getEncoder().encodeToString(exceedsMaxBlobStoreSizeBytes);
+    final byte[] exceedsMaxBlobStoreSizeBytes = DatabaseUtilities.getExceedsMaxBlobStoreSizeBytes();
+    final String exceedsMaxBlobStoreSizeValue = Base64.getEncoder().encodeToString(exceedsMaxBlobStoreSizeBytes);
 
     System.out.println("string is: " + exceedsMaxBlobStoreSizeValue);
 
@@ -384,7 +384,7 @@ public class CredentialSetErrorHandlingTest {
         "  \"value\":\"" + exceedsMaxBlobStoreSizeValue + "\"" +
         "}");
 
-    String expectedError = "Value exceeds the maximum size.";
+    final String expectedError = "Value exceeds the maximum size.";
     mockMvc.perform(request)
       .andExpect(status().isPayloadTooLarge())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))

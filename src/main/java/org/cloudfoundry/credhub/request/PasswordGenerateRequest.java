@@ -16,7 +16,7 @@ public class PasswordGenerateRequest extends BaseCredentialGenerateRequest {
     return generationParameters;
   }
 
-  public void setGenerationParameters(StringGenerationParameters generationParameters) {
+  public void setGenerationParameters(final StringGenerationParameters generationParameters) {
     this.generationParameters = generationParameters;
   }
 }

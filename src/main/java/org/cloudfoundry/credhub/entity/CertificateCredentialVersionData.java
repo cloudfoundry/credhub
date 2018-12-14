@@ -16,13 +16,13 @@ import static org.cloudfoundry.credhub.entity.CertificateCredentialVersionData.C
 @DiscriminatorValue(CREDENTIAL_DATABASE_TYPE)
 @SecondaryTable(
   name = CertificateCredentialVersionData.TABLE_NAME,
-  pkJoinColumns = {@PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")}
+  pkJoinColumns = @PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")
 )
 public class CertificateCredentialVersionData extends CredentialVersionData<CertificateCredentialVersionData> {
 
   public static final String CREDENTIAL_DATABASE_TYPE = "cert";
   public static final String CREDENTIAL_TYPE = "certificate";
-  static final String TABLE_NAME = "certificate_credential";
+  public static final String TABLE_NAME = "certificate_credential";
 
   @Column(table = CertificateCredentialVersionData.TABLE_NAME, length = 7000)
   private String ca;
@@ -40,9 +40,10 @@ public class CertificateCredentialVersionData extends CredentialVersionData<Cert
   private Instant expiryDate;
 
   public CertificateCredentialVersionData() {
+    super();
   }
 
-  public CertificateCredentialVersionData(String name) {
+  public CertificateCredentialVersionData(final String name) {
     super(name);
   }
 
@@ -54,36 +55,32 @@ public class CertificateCredentialVersionData extends CredentialVersionData<Cert
     return ca;
   }
 
-  public CertificateCredentialVersionData setCa(String ca) {
+  public void setCa(final String ca) {
     this.ca = ca;
-    return this;
   }
 
   public String getCertificate() {
     return certificate;
   }
 
-  public CertificateCredentialVersionData setCertificate(String certificate) {
+  public void setCertificate(final String certificate) {
     this.certificate = certificate;
-    return this;
   }
 
   public String getCaName() {
     return caName;
   }
 
-  public CertificateCredentialVersionData setCaName(String caName) {
+  public void setCaName(final String caName) {
     this.caName = !StringUtils.isEmpty(caName) ? StringUtils.prependIfMissing(caName, "/") : caName;
-    return this;
   }
 
   public Instant getExpiryDate() {
     return expiryDate;
   }
 
-  public CertificateCredentialVersionData setExpiryDate(Instant expiryDate) {
+  public void setExpiryDate(final Instant expiryDate) {
     this.expiryDate = expiryDate;
-    return this;
   }
 
   @Override
@@ -95,9 +92,8 @@ public class CertificateCredentialVersionData extends CredentialVersionData<Cert
     return transitional;
   }
 
-  public CertificateCredentialVersionData setTransitional(boolean transitional) {
+  public void setTransitional(final boolean transitional) {
     this.transitional = transitional;
-    return this;
   }
 
   @Override

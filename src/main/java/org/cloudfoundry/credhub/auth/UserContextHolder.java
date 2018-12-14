@@ -12,7 +12,7 @@ public class UserContextHolder {
     return userContext;
   }
 
-  public void setUserContext(UserContext userContext) {
+  public void setUserContext(final UserContext userContext) {
     this.userContext = userContext;
   }
 }

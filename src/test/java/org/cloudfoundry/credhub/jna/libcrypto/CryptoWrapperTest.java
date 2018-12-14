@@ -29,7 +29,7 @@ public class CryptoWrapperTest {
 
   @Before
   public void beforeEach() throws Exception {
-    RandomNumberGenerator randomNumberGenerator = new PseudoRandomNumberGenerator();
+    final RandomNumberGenerator randomNumberGenerator = new PseudoRandomNumberGenerator();
 
     subject = new CryptoWrapper(randomNumberGenerator);
   }
@@ -45,11 +45,11 @@ public class CryptoWrapperTest {
     // https://www.openssl.org/docs/man1.0.1/crypto/RAND_add.html
 
     subject.generateKeyPair(1024, first -> {
-      KeyPair firstKeyPair = subject.toKeyPair(first);
+      final KeyPair firstKeyPair = subject.toKeyPair(first);
       assertThat(firstKeyPair.getPublic(), notNullValue());
 
       subject.generateKeyPair(1024, second -> {
-        KeyPair secondKeyPair = subject.toKeyPair(second);
+        final KeyPair secondKeyPair = subject.toKeyPair(second);
         assertThat(secondKeyPair.getPublic(), notNullValue());
 
         assertThat(secondKeyPair.getPublic().getEncoded(),
@@ -61,24 +61,24 @@ public class CryptoWrapperTest {
   @Test
   public void canTransformRsaStructsIntoKeyPairs() throws GeneralSecurityException {
     subject.generateKeyPair(1024, rsa -> {
-      byte[] plaintext = new byte[117];
-      byte[] message = "OpenSSL for speed".getBytes();
+      final byte[] plaintext = new byte[117];
+      final byte[] message = "OpenSSL for speed".getBytes();
       System.arraycopy(message, 0, plaintext, 0, message.length);
 
-      byte[] ciphertext = new byte[Crypto.RSA_size(rsa)];
-      int result = Crypto
+      final byte[] ciphertext = new byte[Crypto.RSA_size(rsa)];
+      final int result = Crypto
         .RSA_private_encrypt(plaintext.length, plaintext, ciphertext, rsa, RSA_PKCS1_PADDING);
       if (result == -1) {
         System.out.println(subject.getError());
       }
       assert result >= 0;
 
-      KeyPair keyPair = subject.toKeyPair(rsa);
-      PrivateKey privateKey = keyPair.getPrivate();
+      final KeyPair keyPair = subject.toKeyPair(rsa);
+      final PrivateKey privateKey = keyPair.getPrivate();
 
-      Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+      final Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
       cipher.init(Cipher.ENCRYPT_MODE, privateKey);
-      byte[] javaCipherText = cipher.doFinal(plaintext);
+      final byte[] javaCipherText = cipher.doFinal(plaintext);
 
       assertThat("Encryption should work the same inside and outside openssl", javaCipherText,
         equalTo(ciphertext));
@@ -103,11 +103,11 @@ public class CryptoWrapperTest {
 
   @Test
   public void convertingBignumToBigInteger_worksForSmallPositiveNumbers() {
-    Pointer bn = Crypto.BN_new();
+    final Pointer bn = Crypto.BN_new();
     try {
       Crypto.BN_set_word(bn, 18);
-      BigInteger converted = subject.convert(bn);
-      Pointer hex = Crypto.BN_bn2hex(bn);
+      final BigInteger converted = subject.convert(bn);
+      final Pointer hex = Crypto.BN_bn2hex(bn);
       try {
         assertThat(hex.getString(0), equalTo("12"));
         assertThat(converted.toString(16).toUpperCase(), equalTo(hex.getString(0)));
@@ -121,12 +121,12 @@ public class CryptoWrapperTest {
 
   @Test
   public void convertingBignumToBigInteger_worksForSmallNegativeNumbers() {
-    Pointer bn = Crypto.BN_new();
+    final Pointer bn = Crypto.BN_new();
     try {
       Crypto.BN_set_word(bn, 16);
       Crypto.BN_set_negative(bn, 1);
-      BigInteger converted = subject.convert(bn);
-      Pointer hex = Crypto.BN_bn2hex(bn);
+      final BigInteger converted = subject.convert(bn);
+      final Pointer hex = Crypto.BN_bn2hex(bn);
       try {
         assertThat(hex.getString(0), equalTo("-10"));
         assertThat(converted.toString(16).toUpperCase(), equalTo(hex.getString(0)));
@@ -140,12 +140,12 @@ public class CryptoWrapperTest {
 
   @Test
   public void convertingBignumToBigInteger_worksWithMoreThan64Bits() {
-    Pointer bn = Crypto.BN_new();
+    final Pointer bn = Crypto.BN_new();
     try {
       Crypto.BN_set_word(bn, 0x1234567800000000L);
       Crypto.BN_mul_word(bn, 0xFFFFFFFFFFFFFFFFL);
-      BigInteger converted = subject.convert(bn);
-      Pointer hex = Crypto.BN_bn2hex(bn);
+      final BigInteger converted = subject.convert(bn);
+      final Pointer hex = Crypto.BN_bn2hex(bn);
       try {
         assertThat(hex.getString(0), equalTo("12345677FFFFFFFFEDCBA98800000000"));
         assertThat(converted.toString(16).toUpperCase(), equalTo(hex.getString(0)));

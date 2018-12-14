@@ -102,8 +102,8 @@ public class PermissionDataServiceTest {
 
   @Test
   public void findByPathAndActor_givenAnActorAndPath_returnsPermissionData() {
-    PermissionData actualPermission = subject.findByPathAndActor(CREDENTIAL_NAME, LUKE);
-    PermissionData expectedPermission = new PermissionData(CREDENTIAL_NAME, LUKE, newArrayList(WRITE, DELETE));
+    final PermissionData actualPermission = subject.findByPathAndActor(CREDENTIAL_NAME, LUKE);
+    final PermissionData expectedPermission = new PermissionData(CREDENTIAL_NAME, LUKE, newArrayList(WRITE, DELETE));
     expectedPermission.setUuid(actualPermission.getUuid());
 
     assertThat(
@@ -134,7 +134,7 @@ public class PermissionDataServiceTest {
   public void getAccessControlList_whenGivenNonExistentCredentialName_throwsException() {
     try {
       subject.getPermissions(new Credential(CREDENTIAL_NAME_DOES_NOT_EXIST));
-    } catch (EntryNotFoundException enfe) {
+    } catch (final EntryNotFoundException enfe) {
       assertThat(enfe.getMessage(), Matchers.equalTo("error.resource_not_found"));
     }
   }
@@ -147,7 +147,7 @@ public class PermissionDataServiceTest {
 
     subject.savePermissionsWithLogging(aces);
 
-    List<PermissionEntry> response = subject.getPermissions(credential);
+    final List<PermissionEntry> response = subject.getPermissions(credential);
 
     assertThat(response, containsInAnyOrder(
       allOf(hasProperty("actor", equalTo(LUKE)),
@@ -171,7 +171,7 @@ public class PermissionDataServiceTest {
 
     subject.savePermissionsWithLogging(aces);
 
-    List<PermissionEntry> response = subject.getPermissions(credential2);
+    final List<PermissionEntry> response = subject.getPermissions(credential2);
 
 
     final PermissionEntry permissionEntry = response.get(0);
@@ -197,13 +197,13 @@ public class PermissionDataServiceTest {
 
   @Test
   public void deleteAccessControlEntry_whenNonExistentResource_returnsFalse() {
-    boolean deleted = subject.deletePermissions("/some-thing-that-is-not-here", LUKE);
+    final boolean deleted = subject.deletePermissions("/some-thing-that-is-not-here", LUKE);
     assertFalse(deleted);
   }
 
   @Test
   public void deleteAccessControlEntry_whenNonExistentAce_returnsFalse() {
-    boolean deleted = subject.deletePermissions(CREDENTIAL_NAME, DARTH);
+    final boolean deleted = subject.deletePermissions(CREDENTIAL_NAME, DARTH);
     assertFalse(deleted);
   }
 
@@ -215,47 +215,47 @@ public class PermissionDataServiceTest {
 
   @Test
   public void patchPermissions_addsToAuditRecord() {
-    List<PermissionOperation> operations = new ArrayList<>();
-    String pathName = randomCredentialPath();
+    final List<PermissionOperation> operations = new ArrayList<>();
+    final String pathName = randomCredentialPath();
     operations.add(PermissionOperation.READ);
 
-    PermissionsV2Request permission = new PermissionsV2Request();
+    final PermissionsV2Request permission = new PermissionsV2Request();
     permission.setPath(pathName);
     permission.setActor(LUKE);
     permission.setOperations(operations);
 
-    PermissionData permissionData = subject.saveV2Permissions(permission);
+    final PermissionData permissionData = subject.saveV2Permissions(permission);
     assertThat(permissionData.getUuid(), notNullValue());
 
-    List<PermissionOperation> newOperations = new ArrayList<>();
+    final List<PermissionOperation> newOperations = new ArrayList<>();
     newOperations.add(PermissionOperation.WRITE);
 
     subject.patchPermissions(permissionData.getUuid().toString(), newOperations);
 
     assertThat(auditRecord.getResourceUUID(), is(permissionData.getUuid().toString()));
-    V2Permission requestDetails = (V2Permission) auditRecord.getRequestDetails();
+    final V2Permission requestDetails = (V2Permission) auditRecord.getRequestDetails();
     assertThat(requestDetails.getOperations(), containsInAnyOrder(PermissionOperation.WRITE));
     assertThat(requestDetails.operation(), is(OperationDeviceAction.PATCH_PERMISSIONS));
   }
 
   @Test
   public void putPermissions_addsToAuditRecord() {
-    PermissionsV2Request request = new PermissionsV2Request();
+    final PermissionsV2Request request = new PermissionsV2Request();
 
-    List<PermissionEntry> permissions = new ArrayList<>();
-    List<PermissionOperation> operations = new ArrayList<>();
+    final List<PermissionEntry> permissions = new ArrayList<>();
+    final List<PermissionOperation> operations = new ArrayList<>();
     operations.add(PermissionOperation.READ);
 
-    PermissionEntry permissionEntry = new PermissionEntry();
+    final PermissionEntry permissionEntry = new PermissionEntry();
     permissionEntry.setPath(CREDENTIAL_NAME);
     permissionEntry.setActor(LUKE);
     permissionEntry.setAllowedOperations(operations);
 
     permissions.add(permissionEntry);
 
-    PermissionData permissionData = subject.savePermissionsWithLogging(permissions).get(0);
+    final PermissionData permissionData = subject.savePermissionsWithLogging(permissions).get(0);
 
-    List<PermissionOperation> newOperations = new ArrayList<>();
+    final List<PermissionOperation> newOperations = new ArrayList<>();
     newOperations.add(PermissionOperation.WRITE);
 
     request.setPath(CREDENTIAL_NAME);
@@ -265,7 +265,7 @@ public class PermissionDataServiceTest {
     subject.putPermissions(permissionData.getUuid().toString(), request);
 
     assertThat(auditRecord.getResourceName(), is(CREDENTIAL_NAME));
-    V2Permission requestDetails = (V2Permission) auditRecord.getRequestDetails();
+    final V2Permission requestDetails = (V2Permission) auditRecord.getRequestDetails();
     assertThat(requestDetails.getPath(), is(CREDENTIAL_NAME));
     assertThat(requestDetails.getActor(), is(LUKE));
     assertThat(requestDetails.getOperations(), contains(PermissionOperation.WRITE));
@@ -275,11 +275,11 @@ public class PermissionDataServiceTest {
 
   @Test
   public void savePermissions_addsToAuditRecord() {
-    List<PermissionEntry> permissions = new ArrayList<>();
-    List<PermissionOperation> operations = new ArrayList<>();
+    final List<PermissionEntry> permissions = new ArrayList<>();
+    final List<PermissionOperation> operations = new ArrayList<>();
     operations.add(PermissionOperation.READ);
 
-    PermissionEntry permissionEntry = new PermissionEntry();
+    final PermissionEntry permissionEntry = new PermissionEntry();
     permissionEntry.setPath(CREDENTIAL_NAME);
     permissionEntry.setActor(LUKE);
     permissionEntry.setAllowedOperations(operations);
@@ -288,19 +288,19 @@ public class PermissionDataServiceTest {
 
     subject.savePermissionsWithLogging(permissions);
 
-    List<Resource> resources = auditRecord.getResourceList();
+    final List<Resource> resources = auditRecord.getResourceList();
 
     assertThat(resources.get(resources.size() - 1).getResourceName(), is(CREDENTIAL_NAME));
-    V2Permission requestDetails = (V2Permission) auditRecord.getRequestDetails();
+    final V2Permission requestDetails = (V2Permission) auditRecord.getRequestDetails();
     assertThat(requestDetails.getPath(), is(CREDENTIAL_NAME));
     assertThat(requestDetails.getActor(), is(LUKE));
   }
 
   @Test
   public void saveV2Permissions_addsToAuditRecord() {
-    String path = randomCredentialPath();
-    PermissionsV2Request permission = new PermissionsV2Request();
-    List<PermissionOperation> operations = new ArrayList<>();
+    final String path = randomCredentialPath();
+    final PermissionsV2Request permission = new PermissionsV2Request();
+    final List<PermissionOperation> operations = new ArrayList<>();
     operations.add(PermissionOperation.READ);
 
     permission.setPath(path);
@@ -310,7 +310,7 @@ public class PermissionDataServiceTest {
     subject.saveV2Permissions(permission);
 
     assertThat(auditRecord.getResourceName(), is(path));
-    V2Permission requestDetails = (V2Permission) auditRecord.getRequestDetails();
+    final V2Permission requestDetails = (V2Permission) auditRecord.getRequestDetails();
     assertThat(requestDetails.getPath(), is(path));
     assertThat(requestDetails.getActor(), is(LUKE));
     assertThat(requestDetails.operation(), is(OperationDeviceAction.ADD_PERMISSIONS));
@@ -319,21 +319,21 @@ public class PermissionDataServiceTest {
 
   @Test
   public void deleteV2Permissions_addsToAuditRecord() {
-    PermissionsV2Request request = new PermissionsV2Request();
+    final PermissionsV2Request request = new PermissionsV2Request();
 
-    List<PermissionOperation> operations = Collections.singletonList(PermissionOperation.READ);
+    final List<PermissionOperation> operations = Collections.singletonList(PermissionOperation.READ);
 
-    String credentialName = randomCredentialPath();
+    final String credentialName = randomCredentialPath();
     request.setPath(credentialName);
     request.setActor(LUKE);
     request.setOperations(operations);
 
-    PermissionData permissionData = subject.saveV2Permissions(request);
+    final PermissionData permissionData = subject.saveV2Permissions(request);
 
     subject.deletePermissions(permissionData.getUuid());
 
     assertThat(auditRecord.getResourceName(), is(credentialName));
-    V2Permission requestDetails = (V2Permission) auditRecord.getRequestDetails();
+    final V2Permission requestDetails = (V2Permission) auditRecord.getRequestDetails();
     assertThat(requestDetails.getPath(), is(credentialName));
     assertThat(requestDetails.getActor(), is(LUKE));
     assertThat(requestDetails.getOperations(), contains(PermissionOperation.READ));
@@ -342,7 +342,7 @@ public class PermissionDataServiceTest {
 
   @Test
   public void getPermissionsByUUID_addsToAuditRecord() {
-    UUID guid = subject.savePermissions(singletonList(new PermissionEntry(LUKE, CREDENTIAL_NAME, newArrayList(WRITE, DELETE)))).get(0).getUuid();
+    final UUID guid = subject.savePermissions(singletonList(new PermissionEntry(LUKE, CREDENTIAL_NAME, newArrayList(WRITE, DELETE)))).get(0).getUuid();
     subject.getPermission(guid);
     assertThat(auditRecord.getResourceName(), is(CREDENTIAL_NAME));
   }
@@ -471,12 +471,12 @@ public class PermissionDataServiceTest {
   }
 
   private void seedDatabase() {
-    ValueCredentialVersionData valueCredentialData = new ValueCredentialVersionData(CREDENTIAL_NAME);
+    final ValueCredentialVersionData valueCredentialData = new ValueCredentialVersionData(CREDENTIAL_NAME);
     credential = valueCredentialData.getCredential();
     this.credential = credentialDataService.save(this.credential);
 
-    ValueCredentialVersionData noAccessValueCredentialData = new ValueCredentialVersionData(NO_ACCESS_CREDENTIAL_NAME);
-    Credential noAccessValueCredential = noAccessValueCredentialData.getCredential();
+    final ValueCredentialVersionData noAccessValueCredentialData = new ValueCredentialVersionData(NO_ACCESS_CREDENTIAL_NAME);
+    final Credential noAccessValueCredential = noAccessValueCredentialData.getCredential();
     credentialDataService.save(noAccessValueCredential);
 
     subject.savePermissionsWithLogging(singletonList(new PermissionEntry(LUKE, CREDENTIAL_NAME, newArrayList(WRITE, DELETE))));

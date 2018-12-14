@@ -17,7 +17,7 @@ import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenCo
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 
 @Configuration
-@Profile({"unit-test"})
+@Profile("unit-test")
 public class Oauth2TestConfiguration {
 
   @Bean
@@ -27,9 +27,9 @@ public class Oauth2TestConfiguration {
 
   @Bean
   public JwtAccessTokenConverter jwtAccessTokenConverter() throws Exception {
-    DefaultAccessTokenConverter defaultAccessTokenConverter = new DefaultAccessTokenConverter();
+    final DefaultAccessTokenConverter defaultAccessTokenConverter = new DefaultAccessTokenConverter();
     defaultAccessTokenConverter.setIncludeGrantType(true);
-    JwtAccessTokenConverter jwtAccessTokenConverter = new JwtAccessTokenConverter();
+    final JwtAccessTokenConverter jwtAccessTokenConverter = new JwtAccessTokenConverter();
     jwtAccessTokenConverter.setAccessTokenConverter(defaultAccessTokenConverter);
     jwtAccessTokenConverter.setVerifierKey(resourceServerProperties().getJwt().getKeyValue());
     jwtAccessTokenConverter.afterPropertiesSet();
@@ -37,13 +37,13 @@ public class Oauth2TestConfiguration {
   }
 
   @Bean
-  public TokenStore tokenStore(JwtAccessTokenConverter jwtAccessTokenConverter) {
+  public TokenStore tokenStore(final JwtAccessTokenConverter jwtAccessTokenConverter) {
     return new JwtTokenStore(jwtAccessTokenConverter);
   }
 
   @Bean
-  public ResourceServerTokenServices resourceServerTokenServices(TokenStore tokenStore) {
-    DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
+  public ResourceServerTokenServices resourceServerTokenServices(final TokenStore tokenStore) {
+    final DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
     defaultTokenServices.setTokenStore(tokenStore);
     return defaultTokenServices;
   }
@@ -52,7 +52,7 @@ public class Oauth2TestConfiguration {
   public AuthenticationManagerBuilder authenticationManagerBuilder() {
     final ObjectPostProcessor<Object> objectPostProcessor = new ObjectPostProcessor<Object>() {
       @Override
-      public <O extends Object> O postProcess(O object) {
+      public <O extends Object> O postProcess(final O object) {
         return object;
       }
     };

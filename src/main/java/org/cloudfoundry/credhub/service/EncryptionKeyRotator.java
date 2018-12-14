@@ -17,40 +17,40 @@ import org.cloudfoundry.credhub.exceptions.KeyNotFoundException;
 public class EncryptionKeyRotator {
 
   private final EncryptedValueDataService encryptedValueDataService;
-  private final Logger logger;
+  private static final Logger LOGGER = LogManager.getLogger(EncryptionKeyRotator.class);
   private final EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
-  private EncryptionKeySet keySet;
+  private final EncryptionKeySet keySet;
 
   @Autowired
   EncryptionKeyRotator(
-    EncryptedValueDataService encryptedValueDataService,
-    EncryptionKeyCanaryMapper encryptionKeyCanaryMapper,
-    EncryptionKeySet keySet
+    final EncryptedValueDataService encryptedValueDataService,
+    final EncryptionKeyCanaryMapper encryptionKeyCanaryMapper,
+    final EncryptionKeySet keySet
   ) {
+    super();
     this.encryptedValueDataService = encryptedValueDataService;
     this.keySet = keySet;
-    this.logger = LogManager.getLogger(this.getClass());
     this.encryptionKeyCanaryMapper = encryptionKeyCanaryMapper;
   }
 
   public void rotate() {
     final long start = System.currentTimeMillis();
-    logger.info("Starting encryption key rotation.");
+    LOGGER.info("Starting encryption key rotation.");
     int rotatedRecordCount = 0;
 
     final long startingNotRotatedRecordCount = encryptedValueDataService
       .countAllByCanaryUuid(keySet.getActive().getUuid());
 
-    List<UUID> inactiveCanaries = keySet.getInactiveUuids();
+    final List<UUID> inactiveCanaries = keySet.getInactiveUuids();
     Slice<EncryptedValue> valuesEncryptedByOldKey = encryptedValueDataService
       .findByCanaryUuids(inactiveCanaries);
     while (valuesEncryptedByOldKey.hasContent()) {
-      for (EncryptedValue value : valuesEncryptedByOldKey.getContent()) {
+      for (final EncryptedValue value : valuesEncryptedByOldKey.getContent()) {
         try {
           encryptedValueDataService.rotate(value);
           rotatedRecordCount++;
-        } catch (KeyNotFoundException e) {
-          logger.error("key not found for value, unable to rotate");
+        } catch (final KeyNotFoundException e) {
+          LOGGER.error("key not found for value, unable to rotate");
         }
       }
       valuesEncryptedByOldKey = encryptedValueDataService.findByCanaryUuids(inactiveCanaries);
@@ -61,11 +61,11 @@ public class EncryptionKeyRotator {
     final long endingNotRotatedRecordCount = startingNotRotatedRecordCount - rotatedRecordCount;
 
     if (rotatedRecordCount == 0 && endingNotRotatedRecordCount == 0) {
-      logger.info("Found no records in need of encryption key rotation.");
+      LOGGER.info("Found no records in need of encryption key rotation.");
     } else {
-      logger.info("Finished encryption key rotation in " + duration + " milliseconds. Details:");
-      logger.info("  Successfully rotated " + rotatedRecordCount + " item(s)");
-      logger.info("  Skipped " + endingNotRotatedRecordCount
+      LOGGER.info("Finished encryption key rotation in " + duration + " milliseconds. Details:");
+      LOGGER.info("  Successfully rotated " + rotatedRecordCount + " item(s)");
+      LOGGER.info("  Skipped " + endingNotRotatedRecordCount
         + " item(s) due to missing master encryption key(s).");
     }
 

@@ -10,7 +10,7 @@ import org.passay.PasswordGenerator;
 public class PassayConfiguration {
 
   @Bean
-  public PasswordGenerator passwordGenerator(RandomNumberGenerator randomNumberGenerator) {
+  public PasswordGenerator passwordGenerator(final RandomNumberGenerator randomNumberGenerator) {
     return new PasswordGenerator(randomNumberGenerator.getSecureRandom());
   }
 

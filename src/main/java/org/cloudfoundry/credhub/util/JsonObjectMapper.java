@@ -15,32 +15,33 @@ public class JsonObjectMapper {
   private final ObjectMapper snakeCaseMapper;
 
   public JsonObjectMapper() {
+    super();
     snakeCaseMapper = new ObjectMapper()
       .registerModule(createTimeModule())
       .setPropertyNamingStrategy(SNAKE_CASE);
 
   }
 
-  public String writeValueAsString(Object object) throws JsonProcessingException {
+  public String writeValueAsString(final Object object) throws JsonProcessingException {
     return snakeCaseMapper.writeValueAsString(object);
   }
 
-  public <T> T deserializeBackwardsCompatibleValue(String stringValue, Class<T> type) throws IOException {
+  public <T> T deserializeBackwardsCompatibleValue(final String stringValue, final Class<T> type) throws IOException {
     try {
       return snakeCaseMapper.readValue(stringValue, type);
-    } catch (Exception e) {
-      ObjectMapper camelCaseMapper = new ObjectMapper()
+    } catch (final Exception e) {
+      final ObjectMapper camelCaseMapper = new ObjectMapper()
         .registerModule(createTimeModule())
         .setPropertyNamingStrategy(LOWER_CAMEL_CASE);
       return camelCaseMapper.readValue(stringValue, type);
     }
   }
 
-  public <T> T readValue(String stringValue, Class<T> type) throws IOException {
+  public <T> T readValue(final String stringValue, final Class<T> type) throws IOException {
     return snakeCaseMapper.readValue(stringValue, type);
   }
 
-  public JsonNode readTree(String stringValue) throws IOException {
+  public JsonNode readTree(final String stringValue) throws IOException {
     return snakeCaseMapper.readTree(stringValue);
   }
 }

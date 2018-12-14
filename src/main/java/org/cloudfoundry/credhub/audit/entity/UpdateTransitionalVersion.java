@@ -15,7 +15,7 @@ public class UpdateTransitionalVersion implements RequestDetails {
     return version;
   }
 
-  public void setVersion(String version) {
+  public void setVersion(final String version) {
     this.version = version;
   }
 }

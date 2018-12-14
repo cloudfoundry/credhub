@@ -18,8 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.io.ByteStreams;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.entity.DeleteCredential;
 import org.cloudfoundry.credhub.audit.entity.FindCredential;
@@ -38,27 +36,27 @@ import org.cloudfoundry.credhub.view.FindCredentialResults;
 
 @RestController
 @RequestMapping(
-  path = CredentialsController.endpoint,
+  path = CredentialsController.ENDPOINT,
   produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class CredentialsController {
 
-  public static final String endpoint = "/api/v1/data";
+  public static final String ENDPOINT = "/api/v1/data";
 
-  private static final Logger LOGGER = LogManager.getLogger(CredentialsController.class);
   private final PermissionedCredentialService credentialService;
   private final SetHandler setHandler;
   private final CredentialsHandler credentialsHandler;
   private final LegacyGenerationHandler legacyGenerationHandler;
-  private CEFAuditRecord auditRecord;
+  private final CEFAuditRecord auditRecord;
 
   @Autowired
   public CredentialsController(
-    PermissionedCredentialService credentialService,
-    CredentialsHandler credentialsHandler,
-    SetHandler setHandler,
-    LegacyGenerationHandler legacyGenerationHandler,
-    CEFAuditRecord auditRecord
+    final PermissionedCredentialService credentialService,
+    final CredentialsHandler credentialsHandler,
+    final SetHandler setHandler,
+    final LegacyGenerationHandler legacyGenerationHandler,
+    final CEFAuditRecord auditRecord
   ) {
+    super();
     this.credentialService = credentialService;
     this.credentialsHandler = credentialsHandler;
     this.setHandler = setHandler;
@@ -68,28 +66,28 @@ public class CredentialsController {
 
   @RequestMapping(path = "", method = RequestMethod.POST)
   @ResponseStatus(HttpStatus.OK)
-  public synchronized CredentialView generate(InputStream inputStream) throws IOException {
-    InputStream requestInputStream = new ByteArrayInputStream(ByteStreams.toByteArray(inputStream));
+  public synchronized CredentialView generate(final InputStream inputStream) throws IOException {
+    final InputStream requestInputStream = new ByteArrayInputStream(ByteStreams.toByteArray(inputStream));
     return legacyGenerationHandler.auditedHandlePostRequest(requestInputStream);
   }
 
   @RequestMapping(path = "", method = RequestMethod.PUT)
   @ResponseStatus(HttpStatus.OK)
-  public synchronized CredentialView set(@RequestBody BaseCredentialSetRequest requestBody) {
+  public synchronized CredentialView set(@RequestBody final BaseCredentialSetRequest requestBody) {
     requestBody.validate();
     return auditedHandlePutRequest(requestBody);
   }
 
   @RequestMapping(path = "", method = RequestMethod.DELETE)
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  public void delete(@RequestParam("name") String credentialName) {
+  public void delete(@RequestParam("name") final String credentialName) {
     if (StringUtils.isEmpty(credentialName)) {
       throw new InvalidQueryParameterException("error.missing_query_parameter", "name");
     }
 
-    String credentialNameWithPrependedSlash = StringUtils.prependIfMissing(credentialName, "/");
+    final String credentialNameWithPrependedSlash = StringUtils.prependIfMissing(credentialName, "/");
 
-    RequestDetails requestDetails = new DeleteCredential(credentialNameWithPrependedSlash);
+    final RequestDetails requestDetails = new DeleteCredential(credentialNameWithPrependedSlash);
     auditRecord.setRequestDetails(requestDetails);
 
     credentialsHandler.deleteCredential(credentialNameWithPrependedSlash);
@@ -97,16 +95,16 @@ public class CredentialsController {
 
   @RequestMapping(path = "/{id}", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
-  public CredentialView getCredentialById(@PathVariable String id) {
+  public CredentialView getCredentialById(@PathVariable final String id) {
     return credentialsHandler.getCredentialVersionByUUID(id);
   }
 
   @GetMapping(path = "")
   @ResponseStatus(HttpStatus.OK)
   public DataResponse getCredential(
-    @RequestParam("name") String credentialName,
-    @RequestParam(value = "versions", required = false) Integer numberOfVersions,
-    @RequestParam(value = "current", required = false, defaultValue = "false") boolean current) {
+    @RequestParam("name") final String credentialName,
+    @RequestParam(value = "versions", required = false) final Integer numberOfVersions,
+    @RequestParam(value = "current", required = false, defaultValue = "false") final boolean current) {
     if (StringUtils.isEmpty(credentialName)) {
       throw new InvalidQueryParameterException("error.missing_query_parameter", "name");
     }
@@ -115,7 +113,7 @@ public class CredentialsController {
       throw new InvalidQueryParameterException("error.cant_use_versions_and_current", "name");
     }
 
-    String credentialNameWithPrependedSlash = StringUtils.prependIfMissing(credentialName, "/");
+    final String credentialNameWithPrependedSlash = StringUtils.prependIfMissing(credentialName, "/");
 
     auditRecord.setRequestDetails(new GetCredential(credentialName, numberOfVersions, current));
 
@@ -129,9 +127,9 @@ public class CredentialsController {
   @RequestMapping(path = "", params = "path", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   public FindCredentialResults findByPath(
-    @RequestParam("path") String path,
-    @RequestParam(value = "expires-within-days", required = false, defaultValue = "") String expiresWithinDays) {
-    FindCredential findCredential = new FindCredential();
+    @RequestParam("path") final String path,
+    @RequestParam(value = "expires-within-days", required = false, defaultValue = "") final String expiresWithinDays) {
+    final FindCredential findCredential = new FindCredential();
     findCredential.setPath(path);
     findCredential.setExpiresWithinDays(expiresWithinDays);
     auditRecord.setRequestDetails(findCredential);
@@ -142,9 +140,9 @@ public class CredentialsController {
   @RequestMapping(path = "", params = "name-like", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   public FindCredentialResults findByNameLike(
-    @RequestParam("name-like") String nameLike,
-    @RequestParam(value = "expires-within-days", required = false, defaultValue = "") String expiresWithinDays) {
-    FindCredential findCredential = new FindCredential();
+    @RequestParam("name-like") final String nameLike,
+    @RequestParam(value = "expires-within-days", required = false, defaultValue = "") final String expiresWithinDays) {
+    final FindCredential findCredential = new FindCredential();
     findCredential.setNameLike(nameLike);
     findCredential.setExpiresWithinDays(expiresWithinDays);
     auditRecord.setRequestDetails(findCredential);
@@ -152,7 +150,7 @@ public class CredentialsController {
     return new FindCredentialResults(credentialService.findContainingName(nameLike, expiresWithinDays));
   }
 
-  private CredentialView auditedHandlePutRequest(@RequestBody BaseCredentialSetRequest requestBody) {
+  private CredentialView auditedHandlePutRequest(@RequestBody final BaseCredentialSetRequest requestBody) {
     auditRecord.setRequestDetails(new SetCredential(requestBody.getName(), requestBody.getType()));
     return setHandler.handle(requestBody);
   }

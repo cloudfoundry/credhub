@@ -34,7 +34,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@ActiveProfiles(value = {"unit-test", "unit-test-permissions"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(
+  value = {
+    "unit-test",
+    "unit-test-permissions",
+  },
+  resolver = DatabaseProfileResolver.class
+)
 @SpringBootTest(classes = CredentialManagerApp.class)
 @TestPropertySource(properties = "security.authorization.acls.enabled=true")
 @Transactional
@@ -54,18 +60,18 @@ public class CertificateVersionDeleteTest {
 
   @Test
   public void deleteCertificateVersion_whenThereAreOtherVersionsOfTheCertificate_deletesTheSpecifiedVersion() throws Exception {
-    String credentialName = "/test-certificate";
+    final String credentialName = "/test-certificate";
 
     String response = generateCertificateCredential(mockMvc, credentialName, true, "test", null, ALL_PERMISSIONS_TOKEN);
-    String nonDeletedVersion = JsonPath.parse(response).read("$.value.certificate");
+    final String nonDeletedVersion = JsonPath.parse(response).read("$.value.certificate");
 
     response = getCertificateCredentialsByName(mockMvc, ALL_PERMISSIONS_TOKEN, credentialName);
-    String uuid = JsonPath.parse(response)
+    final String uuid = JsonPath.parse(response)
       .read("$.certificates[0].id");
 
-    String version = RequestHelper.regenerateCertificate(mockMvc, uuid, false, ALL_PERMISSIONS_TOKEN);
-    String versionUuid = JsonPath.parse(version).read("$.id");
-    String versionValue = JsonPath.parse(version).read("$.value.certificate");
+    final String version = RequestHelper.regenerateCertificate(mockMvc, uuid, false, ALL_PERMISSIONS_TOKEN);
+    final String versionUuid = JsonPath.parse(version).read("$.id");
+    final String versionValue = JsonPath.parse(version).read("$.value.certificate");
 
     final MockHttpServletRequestBuilder request = delete("/api/v1/certificates/" + uuid + "/versions/" + versionUuid)
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
@@ -75,7 +81,7 @@ public class CertificateVersionDeleteTest {
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
 
-    String certificate = JsonPath.parse(response)
+    final String certificate = JsonPath.parse(response)
       .read("$.value.certificate");
     assertThat(certificate, equalTo(versionValue));
 
@@ -83,20 +89,20 @@ public class CertificateVersionDeleteTest {
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)).andReturn().getResponse().getContentAsString();
 
-    JSONArray jsonArray = new JSONArray(response);
+    final JSONArray jsonArray = new JSONArray(response);
     assertThat(jsonArray.length(), equalTo(1));
     assertThat(JsonPath.parse(jsonArray.get(0).toString()).read("$.value.certificate"), equalTo(nonDeletedVersion));
   }
 
   @Test
   public void deleteCertificateVersion_whenThereAreNoOtherVersionsOfTheCertificate_returnsAnError() throws Exception {
-    String credentialName = "/test-certificate";
+    final String credentialName = "/test-certificate";
 
     String response = generateCertificateCredential(mockMvc, credentialName, true, "test", null, ALL_PERMISSIONS_TOKEN);
-    String versionUuid = JsonPath.parse(response).read("$.id");
+    final String versionUuid = JsonPath.parse(response).read("$.id");
 
     response = getCertificateCredentialsByName(mockMvc, ALL_PERMISSIONS_TOKEN, credentialName);
-    String uuid = JsonPath.parse(response)
+    final String uuid = JsonPath.parse(response)
       .read("$.certificates[0].id");
 
     final MockHttpServletRequestBuilder request = delete("/api/v1/certificates/" + uuid + "/versions/" + versionUuid)

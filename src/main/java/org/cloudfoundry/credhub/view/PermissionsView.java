@@ -13,10 +13,12 @@ public class PermissionsView {
   private List<PermissionEntry> permissions;
 
   public PermissionsView() {
+    super();
   }
 
-  public PermissionsView(String credentialName,
-                         List<PermissionEntry> permissions) {
+  public PermissionsView(final String credentialName,
+                         final List<PermissionEntry> permissions) {
+    super();
     this.credentialName = credentialName;
     this.permissions = permissions;
   }
@@ -25,7 +27,7 @@ public class PermissionsView {
     return credentialName;
   }
 
-  public void setCredentialName(String credentialName) {
+  public void setCredentialName(final String credentialName) {
     this.credentialName = credentialName;
   }
 
@@ -33,7 +35,7 @@ public class PermissionsView {
     return permissions;
   }
 
-  public void setPermissions(List<PermissionEntry> permissions) {
+  public void setPermissions(final List<PermissionEntry> permissions) {
     this.permissions = permissions;
   }
 }

@@ -7,9 +7,10 @@ import org.cloudfoundry.credhub.domain.ValueCredentialVersion;
 public class ValueView extends CredentialView {
 
   public ValueView() {
+    super();
   }
 
-  ValueView(ValueCredentialVersion valueCredential) {
+  ValueView(final ValueCredentialVersion valueCredential) {
     super(
       valueCredential.getVersionCreatedAt(),
       valueCredential.getUuid(),

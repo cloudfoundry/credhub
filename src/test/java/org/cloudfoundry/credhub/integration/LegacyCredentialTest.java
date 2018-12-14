@@ -30,7 +30,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
-@ActiveProfiles(value = {"unit-test", "unit-test-permissions"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(
+  value = {
+    "unit-test",
+    "unit-test-permissions",
+  },
+  resolver = DatabaseProfileResolver.class
+)
 @Transactional
 @TestPropertySource(properties = "security.authorization.acls.enabled=true")
 @SuppressFBWarnings(
@@ -49,8 +55,8 @@ public class LegacyCredentialTest {
 
   @Before
   public void setup() {
-    ValueCredentialVersionData valueCredentialData = new ValueCredentialVersionData(CREDENTIAL_NAME);
-    ValueCredentialVersion noAclsSecret = new ValueCredentialVersion(valueCredentialData);
+    final ValueCredentialVersionData valueCredentialData = new ValueCredentialVersionData(CREDENTIAL_NAME);
+    final ValueCredentialVersion noAclsSecret = new ValueCredentialVersion(valueCredentialData);
     noAclsSecret.setEncryptor(encryptor);
     noAclsSecret.setValue("some value");
 

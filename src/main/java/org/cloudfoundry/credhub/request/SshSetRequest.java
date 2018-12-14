@@ -17,12 +17,17 @@ public class SshSetRequest extends BaseCredentialSetRequest<SshCredentialValue> 
     return sshKeyValue;
   }
 
-  public void setSshKeyValue(SshCredentialValue sshKeyValue) {
+  public void setSshKeyValue(final SshCredentialValue sshKeyValue) {
     this.sshKeyValue = sshKeyValue;
   }
 
   @Override
   public SshCredentialValue getCredentialValue() {
     return sshKeyValue;
+  }
+
+  @Override
+  public GenerationParameters getGenerationParameters() {
+    return null;
   }
 }

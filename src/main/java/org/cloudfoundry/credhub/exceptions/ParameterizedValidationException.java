@@ -11,15 +11,15 @@ public class ParameterizedValidationException extends ValidationException {
 
   private final List<Object> parameters;
 
-  public ParameterizedValidationException(String messageCode) {
+  public ParameterizedValidationException(final String messageCode) {
     this(messageCode, new Object[]{});
   }
 
-  public ParameterizedValidationException(String messageCode, String parameter) {
+  public ParameterizedValidationException(final String messageCode, final String parameter) {
     this(messageCode, new String[]{parameter});
   }
 
-  public ParameterizedValidationException(String messageCode, Object[] parameters) {
+  public ParameterizedValidationException(final String messageCode, final Object[] parameters) {
     super(messageCode);
 
     this.parameters = newArrayList(parameters)
@@ -28,7 +28,7 @@ public class ParameterizedValidationException extends ValidationException {
       .collect(Collectors.toList());
   }
 
-  private static Object scrubSpecialCharacter(Object raw) {
+  private static Object scrubSpecialCharacter(final Object raw) {
     if (raw instanceof String) {
       return ((String) raw).replace("$[", "").replace("][", ".").replace("]", "").replace("'", "");
     } else {

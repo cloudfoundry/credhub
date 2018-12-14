@@ -7,13 +7,10 @@ import org.cloudfoundry.credhub.request.RsaGenerateRequest;
 
 public class RsaCredentialRegeneratable implements Regeneratable {
 
-  public RsaCredentialRegeneratable() {
-  }
-
   @Override
-  public BaseCredentialGenerateRequest createGenerateRequest(CredentialVersion credentialVersion) {
-    RsaCredentialVersion rsaCredential = (RsaCredentialVersion) credentialVersion;
-    RsaGenerateRequest generateRequest = new RsaGenerateRequest();
+  public BaseCredentialGenerateRequest createGenerateRequest(final CredentialVersion credentialVersion) {
+    final RsaCredentialVersion rsaCredential = (RsaCredentialVersion) credentialVersion;
+    final RsaGenerateRequest generateRequest = new RsaGenerateRequest();
     generateRequest.setName(rsaCredential.getName());
     generateRequest.setType(rsaCredential.getCredentialType());
     generateRequest.setOverwrite(true);

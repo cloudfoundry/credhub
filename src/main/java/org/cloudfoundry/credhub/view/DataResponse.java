@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.view;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -10,17 +9,18 @@ import static com.google.common.collect.Lists.newArrayList;
 
 public class DataResponse {
 
-  private List<CredentialView> data;
+  private final List<CredentialView> data;
 
-  public DataResponse(List<CredentialView> data) {
+  public DataResponse(final List<CredentialView> data) {
+    super();
     this.data = data;
   }
 
-  public static DataResponse fromEntity(List<CredentialVersion> models) {
-    ArrayList<CredentialView> views = newArrayList();
-    for (CredentialVersion model : models) {
+  public static DataResponse fromEntity(final List<CredentialVersion> models) {
+    final List<CredentialView> views = newArrayList();
+    for (final CredentialVersion model : models) {
       if (model != null) {
-        views.add(CredentialView.fromEntity((model)));
+        views.add(CredentialView.fromEntity(model));
       }
     }
     return new DataResponse(views);

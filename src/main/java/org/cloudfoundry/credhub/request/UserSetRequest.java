@@ -16,12 +16,17 @@ public class UserSetRequest extends BaseCredentialSetRequest<UserCredentialValue
     return userValue;
   }
 
-  public void setUserValue(UserCredentialValue userValue) {
+  public void setUserValue(final UserCredentialValue userValue) {
     this.userValue = userValue;
   }
 
   @Override
   public UserCredentialValue getCredentialValue() {
     return userValue;
+  }
+
+  @Override
+  public GenerationParameters getGenerationParameters() {
+    return null;
   }
 }

@@ -37,11 +37,12 @@ public class AuthConfiguration extends ResourceServerConfigurerAdapter {
 
   @Autowired
   AuthConfiguration(
-    ResourceServerProperties resourceServerProperties,
-    OAuth2AuthenticationExceptionHandler oAuth2AuthenticationExceptionHandler,
-    PreAuthenticationFailureFilter preAuthenticationFailureFilter,
-    OAuth2ExtraValidationFilter oAuth2ExtraValidationFilter
+    final ResourceServerProperties resourceServerProperties,
+    final OAuth2AuthenticationExceptionHandler oAuth2AuthenticationExceptionHandler,
+    final PreAuthenticationFailureFilter preAuthenticationFailureFilter,
+    final OAuth2ExtraValidationFilter oAuth2ExtraValidationFilter
   ) {
+    super();
     this.resourceServerProperties = resourceServerProperties;
     this.oAuth2AuthenticationExceptionHandler = oAuth2AuthenticationExceptionHandler;
     this.preAuthenticationFailureFilter = preAuthenticationFailureFilter;
@@ -49,14 +50,14 @@ public class AuthConfiguration extends ResourceServerConfigurerAdapter {
   }
 
   @Override
-  public void configure(ResourceServerSecurityConfigurer resources) {
+  public void configure(final ResourceServerSecurityConfigurer resources) {
     resources.resourceId(resourceServerProperties.getResourceId());
     resources.authenticationEntryPoint(oAuth2AuthenticationExceptionHandler);
     resources.stateless(false);
   }
 
   @Override
-  public void configure(HttpSecurity http) throws Exception {
+  public void configure(final HttpSecurity http) throws Exception {
     /*
       Even though the configuration is non order specific, it's ordered here so one can understand
       the flow of operations. Before the Authenticate Override can be called in the http filter
@@ -71,7 +72,7 @@ public class AuthConfiguration extends ResourceServerConfigurerAdapter {
       .userDetailsService(mtlsSUserDetailsService())
       .withObjectPostProcessor(new ObjectPostProcessor<X509AuthenticationFilter>() {
         @Override
-        public <O extends X509AuthenticationFilter> O postProcess(O filter) {
+        public <O extends X509AuthenticationFilter> O postProcess(final O filter) {
           filter.setContinueFilterChainOnUnsuccessfulAuthentication(false);
           return filter;
         }

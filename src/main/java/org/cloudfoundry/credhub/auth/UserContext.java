@@ -29,19 +29,21 @@ public class UserContext {
 
   // Needed for UserContextArgumentResolver
   public UserContext() {
+    super();
   }
 
   public UserContext(
-    String userId,
-    String userName,
-    String issuer,
-    long validFrom,
-    long validUntil,
-    String clientId,
-    String scope,
-    String grantType,
-    String authMethod
+    final String userId,
+    final String userName,
+    final String issuer,
+    final long validFrom,
+    final long validUntil,
+    final String clientId,
+    final String scope,
+    final String grantType,
+    final String authMethod
   ) {
+    super();
     this.userId = userId;
     this.userName = userName;
     this.issuer = issuer;
@@ -54,11 +56,12 @@ public class UserContext {
   }
 
   public UserContext(
-    long validFrom,
-    long validUntil,
-    String clientId,
-    String authMethod
+    final long validFrom,
+    final long validUntil,
+    final String clientId,
+    final String authMethod
   ) {
+    super();
     this.validFrom = validFrom;
     this.validUntil = validUntil;
     this.clientId = clientId;
@@ -117,7 +120,7 @@ public class UserContext {
     return null;
   }
 
-  private String parseAppIdentifier(String subjectDn) {
+  private String parseAppIdentifier(final String subjectDn) {
     final X500Name dnName = new X500Name(subjectDn);
     final RDN[] rdNs = dnName.getRDNs(BCStyle.OU);
     return rdNs[0].getFirst().getValue().toString();

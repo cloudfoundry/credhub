@@ -18,9 +18,11 @@ public class UserCredentialValue implements CredentialValue {
   private String salt;
 
   public UserCredentialValue() {
+    super();
   }
 
-  public UserCredentialValue(String username, String password, String salt) {
+  public UserCredentialValue(final String username, final String password, final String salt) {
+    super();
     this.username = username;
     this.password = password;
     this.salt = salt;
@@ -30,7 +32,7 @@ public class UserCredentialValue implements CredentialValue {
     return username;
   }
 
-  public void setUsername(String username) {
+  public void setUsername(final String username) {
     this.username = username;
   }
 
@@ -38,7 +40,7 @@ public class UserCredentialValue implements CredentialValue {
     return password;
   }
 
-  public void setPassword(String password) {
+  public void setPassword(final String password) {
     this.password = password;
   }
 

@@ -65,10 +65,10 @@ public class CredentialFindTestNoAcls {
   }
 
   private void generateCredentials() throws Exception {
-    List<String> names = Arrays.asList(new String[]{"/path/to/credentialA", "/path/something",
+    final List<String> names = Arrays.asList(new String[]{"/path/to/credentialA", "/path/something",
       "/path/to/credentialB", "/other_path/credentialC", "/another/credentialC"});
 
-    for (String name : names) {
+    for (final String name : names) {
       generatePassword(mockMvc, name, true, 20, ALL_PERMISSIONS_TOKEN);
     }
   }

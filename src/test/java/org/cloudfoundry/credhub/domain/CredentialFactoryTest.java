@@ -43,7 +43,7 @@ public class CredentialFactoryTest {
     JsonNode tmp = null;
     try {
       tmp = new JsonObjectMapper().readTree(jsonValueJsonString);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
     jsonNode = tmp;
@@ -60,34 +60,37 @@ public class CredentialFactoryTest {
       Security.addProvider(new BouncyCastleProvider());
     }
 
-    Encryptor encryptor = mock(Encryptor.class);
+    final Encryptor encryptor = mock(Encryptor.class);
     subject = new CredentialFactory(encryptor);
     objectMapper = new JsonObjectMapper();
-    generationParameters = new StringGenerationParameters().setExcludeNumber(true).setLength(PLAINTEXT_VALUE.length());
 
-    UUID encryptionKeyUuid = UUID.randomUUID();
-    EncryptedValue encryption = new EncryptedValue(encryptionKeyUuid, PLAINTEXT_VALUE.getBytes(StringUtil.UTF_8), "test-nonce".getBytes(StringUtil.UTF_8));
+    generationParameters = new StringGenerationParameters();
+    generationParameters.setExcludeNumber(true);
+    generationParameters.setLength(PLAINTEXT_VALUE.length());
+
+    final UUID encryptionKeyUuid = UUID.randomUUID();
+    final EncryptedValue encryption = new EncryptedValue(encryptionKeyUuid, PLAINTEXT_VALUE.getBytes(StringUtil.UTF_8), "test-nonce".getBytes(StringUtil.UTF_8));
     when(encryptor.encrypt(PLAINTEXT_VALUE)).thenReturn(encryption);
     when(encryptor.decrypt(encryption)).thenReturn(PLAINTEXT_VALUE);
 
-    String generationParametersJsonString = objectMapper.writeValueAsString(generationParameters);
-    EncryptedValue parametersEncryption = new EncryptedValue(encryptionKeyUuid, "test-parameters".getBytes(StringUtil.UTF_8), "test-parameters-nonce".getBytes(StringUtil.UTF_8));
+    final String generationParametersJsonString = objectMapper.writeValueAsString(generationParameters);
+    final EncryptedValue parametersEncryption = new EncryptedValue(encryptionKeyUuid, "test-parameters".getBytes(StringUtil.UTF_8), "test-parameters-nonce".getBytes(StringUtil.UTF_8));
     when(encryptor.encrypt(generationParametersJsonString)).thenReturn(parametersEncryption);
     when(encryptor.decrypt(parametersEncryption)).thenReturn(generationParametersJsonString);
 
-    EncryptedValue jsonEncryption = new EncryptedValue(encryptionKeyUuid, jsonValueJsonString.getBytes(StringUtil.UTF_8), "test-nonce".getBytes(StringUtil.UTF_8));
+    final EncryptedValue jsonEncryption = new EncryptedValue(encryptionKeyUuid, jsonValueJsonString.getBytes(StringUtil.UTF_8), "test-nonce".getBytes(StringUtil.UTF_8));
     when(encryptor.encrypt(jsonValueJsonString)).thenReturn(jsonEncryption);
     when(encryptor.decrypt(jsonEncryption)).thenReturn(jsonValueJsonString);
   }
 
   @Test
   public void makeCredentialFromRequest_givenAnExistingPassword_copiesCredentialNameReference() throws Exception {
-    StringCredentialValue passwordValue = new StringCredentialValue(PLAINTEXT_VALUE);
+    final StringCredentialValue passwordValue = new StringCredentialValue(PLAINTEXT_VALUE);
 
-    CredentialVersion existingCredentialVersion = new PasswordCredentialVersion(CREDENTIAL_NAME);
-    CredentialVersion credentialVersion =
+    final CredentialVersion existingCredentialVersion = new PasswordCredentialVersion(CREDENTIAL_NAME);
+    final CredentialVersion credentialVersion =
       subject.makeNewCredentialVersion(
-        CredentialType.valueOf("password"),
+        CredentialType.valueOf("PASSWORD"),
         CREDENTIAL_NAME,
         passwordValue,
         existingCredentialVersion,
@@ -97,11 +100,11 @@ public class CredentialFactoryTest {
 
   @Test
   public void makeCredentialFromRequest_givenPasswordType_andNoExisting_returnsPasswordCredential() throws Exception {
-    StringCredentialValue passwordValue = new StringCredentialValue(PLAINTEXT_VALUE);
+    final StringCredentialValue passwordValue = new StringCredentialValue(PLAINTEXT_VALUE);
 
-    PasswordCredentialVersion credential =
+    final PasswordCredentialVersion credential =
       (PasswordCredentialVersion) subject.makeNewCredentialVersion(
-        CredentialType.valueOf("password"),
+        CredentialType.valueOf("PASSWORD"),
         CREDENTIAL_NAME,
         passwordValue,
         null,
@@ -113,11 +116,11 @@ public class CredentialFactoryTest {
 
   @Test
   public void makeCredentialFromRequest_givenValueType_andNoExisting_returnsValueCredential() throws Exception {
-    StringCredentialValue passwordValue = new StringCredentialValue(PLAINTEXT_VALUE);
+    final StringCredentialValue passwordValue = new StringCredentialValue(PLAINTEXT_VALUE);
 
-    ValueCredentialVersion credential =
+    final ValueCredentialVersion credential =
       (ValueCredentialVersion) subject.makeNewCredentialVersion(
-        CredentialType.valueOf("value"),
+        CredentialType.valueOf("VALUE"),
         CREDENTIAL_NAME,
         passwordValue,
         null,
@@ -128,16 +131,16 @@ public class CredentialFactoryTest {
 
   @Test
   public void makeCredentialFromRequest_givenCertificateType_andNoExisting_returnsCertificateCredential() throws Exception {
-    CertificateCredentialValue certificateValue = new CertificateCredentialValue(
+    final CertificateCredentialValue certificateValue = new CertificateCredentialValue(
       CertificateStringConstants.SELF_SIGNED_CA_CERT,
       CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT,
       PLAINTEXT_VALUE,
       "my-ca"
     );
 
-    CertificateCredentialVersion credential =
+    final CertificateCredentialVersion credential =
       (CertificateCredentialVersion) subject.makeNewCredentialVersion(
-        CredentialType.valueOf("certificate"),
+        CredentialType.valueOf("CERTIFICATE"),
         CREDENTIAL_NAME,
         certificateValue,
         null,
@@ -151,13 +154,13 @@ public class CredentialFactoryTest {
 
   @Test
   public void makeCredentialFromRequest_givenRsaType_andNoExisting_returnsRsaCredential() throws Exception {
-    RsaCredentialValue rsaValue = new RsaCredentialValue(
+    final RsaCredentialValue rsaValue = new RsaCredentialValue(
       "public-key",
       PLAINTEXT_VALUE);
 
-    RsaCredentialVersion credential =
+    final RsaCredentialVersion credential =
       (RsaCredentialVersion) subject.makeNewCredentialVersion(
-        CredentialType.valueOf("rsa"),
+        CredentialType.valueOf("RSA"),
         CREDENTIAL_NAME,
         rsaValue,
         null,
@@ -169,14 +172,14 @@ public class CredentialFactoryTest {
 
   @Test
   public void makeCredentialFromRequest_givenSshType_andNoExisting_returnsSshCredential() throws Exception {
-    SshCredentialValue sshValue = new SshCredentialValue(
+    final SshCredentialValue sshValue = new SshCredentialValue(
       "public-key",
       PLAINTEXT_VALUE,
       null);
 
-    SshCredentialVersion credential =
+    final SshCredentialVersion credential =
       (SshCredentialVersion) subject.makeNewCredentialVersion(
-        CredentialType.valueOf("ssh"),
+        CredentialType.valueOf("SSH"),
         CREDENTIAL_NAME,
         sshValue,
         null,
@@ -188,11 +191,11 @@ public class CredentialFactoryTest {
 
   @Test
   public void makeCredentialFromRequest_givenJsonType_andNoExisting_returnsJsonCredential() throws Exception {
-    JsonCredentialValue jsonValue = new JsonCredentialValue(jsonNode);
+    final JsonCredentialValue jsonValue = new JsonCredentialValue(jsonNode);
 
-    JsonCredentialVersion credential =
+    final JsonCredentialVersion credential =
       (JsonCredentialVersion) subject.makeNewCredentialVersion(
-        CredentialType.valueOf("json"),
+        CredentialType.valueOf("JSON"),
         CREDENTIAL_NAME,
         jsonValue,
         null,
@@ -203,11 +206,11 @@ public class CredentialFactoryTest {
 
   @Test
   public void makeCredentialFromRequest_givenUserType_andNoExisting_returnsUserCredential() throws Exception {
-    UserCredentialValue userValue = new UserCredentialValue("username", PLAINTEXT_VALUE, "salt");
+    final UserCredentialValue userValue = new UserCredentialValue("username", PLAINTEXT_VALUE, "salt");
 
-    UserCredentialVersion credential =
+    final UserCredentialVersion credential =
       (UserCredentialVersion) subject.makeNewCredentialVersion(
-        CredentialType.valueOf("user"),
+        CredentialType.valueOf("USER"),
         CREDENTIAL_NAME,
         userValue,
         null,

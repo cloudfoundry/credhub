@@ -42,7 +42,7 @@ public class EncryptionKeyCanary {
     return uuid;
   }
 
-  public void setUuid(UUID uuid) {
+  public void setUuid(final UUID uuid) {
     this.uuid = uuid;
   }
 
@@ -50,30 +50,27 @@ public class EncryptionKeyCanary {
     return encryptedCanaryValue == null ? null : encryptedCanaryValue.clone();
   }
 
-  public EncryptionKeyCanary setEncryptedCanaryValue(byte[] encryptedCanaryValue) {
+  public void setEncryptedCanaryValue(final byte[] encryptedCanaryValue) {
     this.encryptedCanaryValue = encryptedCanaryValue == null ? null : encryptedCanaryValue.clone();
-    return this;
   }
 
   public byte[] getNonce() {
     return nonce == null ? null : nonce.clone();
   }
 
-  public EncryptionKeyCanary setNonce(byte[] nonce) {
+  public void setNonce(final byte[] nonce) {
     this.nonce = nonce == null ? null : nonce.clone();
-    return this;
   }
 
-  public EncryptionKeyCanary setEncryptionKeyUuid(UUID encryptionKeyUuid) {
+  public void setEncryptionKeyUuid(final UUID encryptionKeyUuid) {
     setUuid(encryptionKeyUuid);
-    return this;
   }
 
   public byte[] getSalt() {
     return salt == null ? null : salt.clone();
   }
 
-  public void setSalt(byte[] salt) {
+  public void setSalt(final byte[] salt) {
     this.salt = salt == null ? null : salt.clone();
   }
 }

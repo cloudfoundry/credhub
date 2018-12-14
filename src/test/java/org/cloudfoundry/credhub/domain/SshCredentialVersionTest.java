@@ -22,14 +22,14 @@ public class SshCredentialVersionTest {
   @Before
   public void setUp() {
     sshPublicKeyParser = mock(SshPublicKeyParser.class);
-    SshCredentialVersionData credentialVersionData = mock(SshCredentialVersionData.class);
+    final SshCredentialVersionData credentialVersionData = mock(SshCredentialVersionData.class);
 
     subject = new SshCredentialVersion(credentialVersionData, sshPublicKeyParser);
   }
 
   @Test
   public void matchesGenerationParameters_returnsFalseWhenParametersDontMatch() {
-    SshGenerationParameters generationParameters = new SshGenerationParameters();
+    final SshGenerationParameters generationParameters = new SshGenerationParameters();
     generationParameters.setKeyLength(4096);
 
     assertThat(subject.matchesGenerationParameters(generationParameters), equalTo(false));
@@ -40,7 +40,7 @@ public class SshCredentialVersionTest {
     when(sshPublicKeyParser.getKeyLength()).thenReturn(4096);
     when(sshPublicKeyParser.getComment()).thenReturn("some comment");
 
-    SshGenerationParameters generationParameters = new SshGenerationParameters();
+    final SshGenerationParameters generationParameters = new SshGenerationParameters();
     generationParameters.setKeyLength(4096);
     generationParameters.setSshComment("some comment");
 

@@ -13,21 +13,21 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 public class CertificateCredentialRegeneratable implements Regeneratable {
 
   @Override
-  public BaseCredentialGenerateRequest createGenerateRequest(CredentialVersion credentialVersion) {
-    CertificateCredentialVersion certificateCredential = (CertificateCredentialVersion) credentialVersion;
-    CertificateReader reader = certificateCredential.getParsedCertificate();
+  public BaseCredentialGenerateRequest createGenerateRequest(final CredentialVersion credentialVersion) {
+    final CertificateCredentialVersion certificateCredential = (CertificateCredentialVersion) credentialVersion;
+    final CertificateReader reader = certificateCredential.getParsedCertificate();
 
-    if ((isEmpty(certificateCredential.getCaName()) && !reader.isSelfSigned())) {
+    if (isEmpty(certificateCredential.getCaName()) && !reader.isSelfSigned()) {
       throw new ParameterizedValidationException(
         "error.cannot_regenerate_non_generated_certificate");
     }
 
-    CertificateGenerationParameters certificateGenerationParameters = new CertificateGenerationParameters(
+    final CertificateGenerationParameters certificateGenerationParameters = new CertificateGenerationParameters(
       reader,
       certificateCredential.getCaName()
     );
 
-    CertificateGenerateRequest generateRequest = new CertificateGenerateRequest();
+    final CertificateGenerateRequest generateRequest = new CertificateGenerateRequest();
     generateRequest.setName(certificateCredential.getName());
     generateRequest.setType(certificateCredential.getCredentialType());
     generateRequest.setCertificateGenerationParameters(certificateGenerationParameters);

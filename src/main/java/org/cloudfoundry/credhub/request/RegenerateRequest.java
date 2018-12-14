@@ -13,10 +13,12 @@ public class RegenerateRequest {
   private String name;
 
   public RegenerateRequest() {
+    super();
     /* this needs to be there for jackson to be happy */
   }
 
-  public RegenerateRequest(String name) {
+  public RegenerateRequest(final String name) {
+    super();
     this.name = name;
   }
 
@@ -24,7 +26,7 @@ public class RegenerateRequest {
     return name;
   }
 
-  public void setName(String name) {
+  public void setName(final String name) {
     this.name = StringUtils.prependIfMissing(name, "/");
   }
 }

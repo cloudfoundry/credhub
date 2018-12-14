@@ -28,16 +28,17 @@ public class SshViewTest {
 
   @Before
   public void beforeEach() {
-    Encryptor encryptor = mock(Encryptor.class);
+    final Encryptor encryptor = mock(Encryptor.class);
     final EncryptedValue encryption = new EncryptedValue(UUID.randomUUID(), "encrypted".getBytes(StringUtil.UTF_8), "nonce".getBytes(StringUtil.UTF_8));
     when(encryptor.encrypt(TestConstants.PRIVATE_KEY_4096)).thenReturn(
       encryption);
     when(encryptor.decrypt(encryption))
       .thenReturn(TestConstants.PRIVATE_KEY_4096);
-    entity = new SshCredentialVersion(CREDENTIAL_NAME)
-      .setEncryptor(encryptor)
-      .setPublicKey(TestConstants.SSH_PUBLIC_KEY_4096_WITH_COMMENT)
-      .setPrivateKey(TestConstants.PRIVATE_KEY_4096);
+
+    entity = new SshCredentialVersion(CREDENTIAL_NAME);
+    entity.setEncryptor(encryptor);
+    entity.setPublicKey(TestConstants.SSH_PUBLIC_KEY_4096_WITH_COMMENT);
+    entity.setPrivateKey(TestConstants.PRIVATE_KEY_4096);
     entity.setUuid(CREDENTIAL_UUID);
   }
 
@@ -45,9 +46,9 @@ public class SshViewTest {
   public void createsAViewFromEntity() throws Exception {
     final CredentialView subject = SshView.fromEntity(entity);
 
-    String escapedPrivateKey = TestConstants.PRIVATE_KEY_4096.replaceAll("\\\\n", "\\n");
+    final String escapedPrivateKey = TestConstants.PRIVATE_KEY_4096.replaceAll("\\\\n", "\\n");
     System.out.println(escapedPrivateKey);
-    String expected = "{"
+    final String expected = "{"
       + "\"type\":\"ssh\","
       + "\"version_created_at\":null,"
       + "\"id\":\"" + CREDENTIAL_UUID.toString() + "\","
@@ -59,13 +60,13 @@ public class SshViewTest {
       + "}"
       + "}";
 
-    String json = JsonTestHelper.serializeToString(subject);
+    final String json = JsonTestHelper.serializeToString(subject);
     assertThat(json.replaceAll("\\\\n", "\n"), equalTo(expected));
   }
 
   @Test
   public void setsUpdatedAtTimeOnGeneratedView() {
-    Instant now = Instant.now();
+    final Instant now = Instant.now();
     entity.setVersionCreatedAt(now);
     final SshView subject = (SshView) SshView.fromEntity(entity);
     assertThat(subject.getVersionCreatedAt(), equalTo(now));
@@ -73,7 +74,7 @@ public class SshViewTest {
 
   @Test
   public void setsUuidOnGeneratedView() {
-    SshView subject = (SshView) SshView.fromEntity(entity);
+    final SshView subject = (SshView) SshView.fromEntity(entity);
     assertThat(subject.getUuid(), equalTo(CREDENTIAL_UUID.toString()));
   }
 }

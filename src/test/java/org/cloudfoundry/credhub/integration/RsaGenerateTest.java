@@ -44,33 +44,33 @@ public class RsaGenerateTest {
 
   @Test
   public void credentialNotOverwrittenWhenModeIsSetToConvergeAndParametersAreTheSame() throws Exception {
-    String firstResponse = generateRsa(mockMvc, CREDENTIAL_NAME, false, 2048);
-    String originalPassword = (new JSONObject(firstResponse)).getString("value");
+    final String firstResponse = generateRsa(mockMvc, CREDENTIAL_NAME, false, 2048);
+    final String originalPassword = (new JSONObject(firstResponse)).getString("value");
 
-    String secondResponse = generateRsa(mockMvc, CREDENTIAL_NAME, false, 2048);
-    String samePassword = (new JSONObject(secondResponse)).getString("value");
+    final String secondResponse = generateRsa(mockMvc, CREDENTIAL_NAME, false, 2048);
+    final String samePassword = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalPassword, equalTo(samePassword));
   }
 
   @Test
   public void credentialNotOverwrittenWhenModeIsSetToConvergeAndParametersAreTheSameAndAreTheDefault() throws Exception {
-    String firstResponse = generateRsa(mockMvc, CREDENTIAL_NAME, true, null);
-    String originalPassword = (new JSONObject(firstResponse)).getString("value");
+    final String firstResponse = generateRsa(mockMvc, CREDENTIAL_NAME, true, null);
+    final String originalPassword = (new JSONObject(firstResponse)).getString("value");
 
-    String secondResponse = generateRsa(mockMvc, CREDENTIAL_NAME, false, null);
-    String samePassword = (new JSONObject(secondResponse)).getString("value");
+    final String secondResponse = generateRsa(mockMvc, CREDENTIAL_NAME, false, null);
+    final String samePassword = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalPassword, equalTo(samePassword));
   }
 
   @Test
   public void credentialOverwrittenWhenModeIsSetToConvergeAndParametersNotTheSame() throws Exception {
-    String firstResponse = generateRsa(mockMvc, CREDENTIAL_NAME, true, 4096);
-    String originalPassword = (new JSONObject(firstResponse)).getString("value");
+    final String firstResponse = generateRsa(mockMvc, CREDENTIAL_NAME, true, 4096);
+    final String originalPassword = (new JSONObject(firstResponse)).getString("value");
 
-    String secondResponse = generateRsa(mockMvc, CREDENTIAL_NAME, false, 2048);
-    String updatedPassword = (new JSONObject(secondResponse)).getString("value");
+    final String secondResponse = generateRsa(mockMvc, CREDENTIAL_NAME, false, 2048);
+    final String updatedPassword = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalPassword, not(equalTo(updatedPassword)));
   }

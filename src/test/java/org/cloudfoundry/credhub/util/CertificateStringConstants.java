@@ -3,6 +3,7 @@ package org.cloudfoundry.credhub.util;
 final public class CertificateStringConstants {
 
   private CertificateStringConstants() {
+    super();
   }
 
   /**

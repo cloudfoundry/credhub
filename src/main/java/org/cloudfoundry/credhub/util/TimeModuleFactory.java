@@ -15,16 +15,18 @@ import static java.time.format.DateTimeFormatter.ofPattern;
 
 final public class TimeModuleFactory {
 
-  private TimeModuleFactory() { }
-
   private static final DateTimeFormatter TIMESTAMP_FORMAT = ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
 
+  private TimeModuleFactory() {
+    super();
+  }
+
   public static JavaTimeModule createTimeModule() {
-    JavaTimeModule javaTimeModule = new JavaTimeModule();
+    final JavaTimeModule javaTimeModule = new JavaTimeModule();
 
     javaTimeModule.addSerializer(Instant.class, new JsonSerializer<Instant>() {
       @Override
-      public void serialize(Instant value, JsonGenerator gen, SerializerProvider serializers)
+      public void serialize(final Instant value, final JsonGenerator gen, final SerializerProvider serializers)
         throws IOException {
         gen.writeString(ZonedDateTime.ofInstant(value, ZoneId.of("UTC")).format(TIMESTAMP_FORMAT));
       }

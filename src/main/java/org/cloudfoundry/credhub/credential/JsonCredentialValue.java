@@ -13,7 +13,8 @@ public class JsonCredentialValue implements CredentialValue {
   private final JsonNode value;
 
   @JsonCreator
-  public JsonCredentialValue(JsonNode json) {
+  public JsonCredentialValue(final JsonNode json) {
+    super();
     this.value = json;
   }
 

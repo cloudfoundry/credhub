@@ -21,16 +21,16 @@ import org.apache.http.ssl.SSLContextBuilder;
 @Component
 public class RestTemplateFactory {
   public RestTemplate createRestTemplate(
-    String trustStorePath,
-    String trustStorePassword
+    final String trustStorePath,
+    final String trustStorePassword
   ) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException, KeyManagementException {
-    File trustStore = new File(trustStorePath);
-    SSLContext sslContext = new SSLContextBuilder()
+    final File trustStore = new File(trustStorePath);
+    final SSLContext sslContext = new SSLContextBuilder()
       .loadTrustMaterial(trustStore, trustStorePassword.toCharArray())
       .build();
-    SSLConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(sslContext);
-    HttpClient httpClient = HttpClients.custom().setSSLSocketFactory(socketFactory).build();
-    HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
+    final SSLConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(sslContext);
+    final HttpClient httpClient = HttpClients.custom().setSSLSocketFactory(socketFactory).build();
+    final HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
 
     return new RestTemplate(requestFactory);
   }

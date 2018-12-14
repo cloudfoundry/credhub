@@ -12,20 +12,21 @@ import org.cloudfoundry.credhub.util.CertificateReader;
 
 @Component
 public class ExpiryDateMigration {
-  private CredentialVersionRepository credentialVersionRepository;
+  private final CredentialVersionRepository credentialVersionRepository;
 
   @Autowired
-  public ExpiryDateMigration(CredentialVersionRepository credentialVersionRepository) {
+  public ExpiryDateMigration(final CredentialVersionRepository credentialVersionRepository) {
+    super();
     this.credentialVersionRepository = credentialVersionRepository;
   }
 
   public void migrate() {
-    List<CredentialVersionData> data = credentialVersionRepository.findAllVersionsWithNullExpirationDate();
+    final List<CredentialVersionData> data = credentialVersionRepository.findAllVersionsWithNullExpirationDate();
 
-    for (CredentialVersionData version : data) {
+    for (final CredentialVersionData version : data) {
       if (version instanceof CertificateCredentialVersionData) {
-        String certificate = ((CertificateCredentialVersionData) version).getCertificate();
-        CertificateReader reader = new CertificateReader(certificate);
+        final String certificate = ((CertificateCredentialVersionData) version).getCertificate();
+        final CertificateReader reader = new CertificateReader(certificate);
         ((CertificateCredentialVersionData) version).setExpiryDate(reader.getNotAfter());
       }
     }

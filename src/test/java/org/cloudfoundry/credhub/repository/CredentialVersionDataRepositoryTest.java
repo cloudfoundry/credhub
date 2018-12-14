@@ -26,7 +26,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 
 @RunWith(SpringRunner.class)
-@ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = Replace.NONE)
 public class CredentialVersionDataRepositoryTest {
@@ -46,31 +46,33 @@ public class CredentialVersionDataRepositoryTest {
   @Before
   public void beforeEach() {
     name = "my-credential";
-    EncryptionKeyCanary canary = canaryRepository.save(new EncryptionKeyCanary());
+    final EncryptionKeyCanary canary = canaryRepository.save(new EncryptionKeyCanary());
     canaryUuid = canary.getUuid();
   }
 
   @Test
   public void canSaveCertificatesOfLength7000WhichMeans7016ForGCM() {
-    byte[] encryptedValue = new byte[7016];
+    final byte[] encryptedValue = new byte[7016];
     Arrays.fill(encryptedValue, (byte) 'A');
     final StringBuilder stringBuilder = new StringBuilder(7000);
     Stream.generate(() -> "a").limit(stringBuilder.capacity()).forEach(stringBuilder::append);
 
-    Credential credential = credentialRepository.save(new Credential(name));
+    final Credential credential = credentialRepository.save(new Credential(name));
     final String longString = stringBuilder.toString();
 
-    CertificateCredentialVersionData entity = new CertificateCredentialVersionData();
+    final EncryptedValue entityEncryptedValue = new EncryptedValue();
+    entityEncryptedValue.setEncryptionKeyUuid(canaryUuid);
+    entityEncryptedValue.setEncryptedValue(encryptedValue);
+    entityEncryptedValue.setNonce("nonce".getBytes(StringUtil.UTF_8));
+
+    final CertificateCredentialVersionData entity = new CertificateCredentialVersionData();
     entity.setCredential(credential);
     entity.setCa(longString);
     entity.setCertificate(longString);
-    entity.setEncryptedValueData(new EncryptedValue()
-      .setEncryptionKeyUuid(canaryUuid)
-      .setEncryptedValue(encryptedValue)
-      .setNonce("nonce".getBytes(StringUtil.UTF_8)));
+    entity.setEncryptedValueData(entityEncryptedValue);
 
     subject.save(entity);
-    CertificateCredentialVersionData credentialData = (CertificateCredentialVersionData) subject
+    final CertificateCredentialVersionData credentialData = (CertificateCredentialVersionData) subject
       .findFirstByCredentialUuidOrderByVersionCreatedAtDesc(credential.getUuid());
     assertThat(credentialData.getCa().length(), equalTo(7000));
     assertThat(credentialData.getCertificate().length(), equalTo(7000));
@@ -80,18 +82,21 @@ public class CredentialVersionDataRepositoryTest {
 
   @Test
   public void canSaveStringsOfLength7000WhichMeans7016ForGCM() {
-    byte[] encryptedValue = new byte[7016];
+    final byte[] encryptedValue = new byte[7016];
     Arrays.fill(encryptedValue, (byte) 'A');
 
     final StringBuilder stringBuilder = new StringBuilder(7000);
     Stream.generate(() -> "a").limit(stringBuilder.capacity()).forEach(stringBuilder::append);
-    ValueCredentialVersionData entity = new ValueCredentialVersionData();
-    Credential credential = credentialRepository.save(new Credential(name));
+    final ValueCredentialVersionData entity = new ValueCredentialVersionData();
+
+    final EncryptedValue entityEncryptedValue = new EncryptedValue();
+    entityEncryptedValue.setEncryptedValue(encryptedValue);
+    entityEncryptedValue.setEncryptionKeyUuid(canaryUuid);
+    entityEncryptedValue.setNonce("nonce".getBytes(StringUtil.UTF_8));
+
+    final Credential credential = credentialRepository.save(new Credential(name));
     entity.setCredential(credential);
-    entity.setEncryptedValueData(new EncryptedValue()
-      .setEncryptedValue(encryptedValue)
-      .setEncryptionKeyUuid(canaryUuid)
-      .setNonce("nonce".getBytes(StringUtil.UTF_8)));
+    entity.setEncryptedValueData(entityEncryptedValue);
 
     subject.save(entity);
     assertThat(subject.findFirstByCredentialUuidOrderByVersionCreatedAtDesc(credential.getUuid())

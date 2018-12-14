@@ -14,11 +14,12 @@ public class EncryptionKeyCanaryDataService {
   private final EncryptionKeyCanaryRepository encryptionKeyCanaryRepository;
 
   @Autowired
-  EncryptionKeyCanaryDataService(EncryptionKeyCanaryRepository encryptionKeyCanaryRepository) {
+  EncryptionKeyCanaryDataService(final EncryptionKeyCanaryRepository encryptionKeyCanaryRepository) {
+    super();
     this.encryptionKeyCanaryRepository = encryptionKeyCanaryRepository;
   }
 
-  public EncryptionKeyCanary save(EncryptionKeyCanary canary) {
+  public EncryptionKeyCanary save(final EncryptionKeyCanary canary) {
     return encryptionKeyCanaryRepository.save(canary);
   }
 
@@ -26,7 +27,7 @@ public class EncryptionKeyCanaryDataService {
     return encryptionKeyCanaryRepository.findAll();
   }
 
-  public void delete(List<UUID> uuids) {
+  public void delete(final List<UUID> uuids) {
     encryptionKeyCanaryRepository.deleteByUuidIn(uuids);
   }
 }

@@ -44,7 +44,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@ActiveProfiles(value = {"unit-test", "unit-test-permissions"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(
+  value = {
+    "unit-test",
+    "unit-test-permissions",
+  },
+  resolver = DatabaseProfileResolver.class
+)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class BulkRegenerateTest {
   private static final String API_V1_DATA_ENDPOINT = "/api/v1/data";
@@ -75,8 +81,8 @@ public class BulkRegenerateTest {
     caName = randomCredentialName("ca-to-rotate");
     cert1Name = randomCredentialName("cert-1");
     cert2Name = randomCredentialName("cert-2");
-    String otherCAName = randomCredentialName("other-ca");
-    String otherCertName = randomCredentialName("other-cert");
+    final String otherCAName = randomCredentialName("other-ca");
+    final String otherCertName = randomCredentialName("other-cert");
 
     generateRootCA(caName);
     generateRootCA(otherCAName);
@@ -98,14 +104,14 @@ public class BulkRegenerateTest {
 
   @Test
   public void regeneratingCertificatesSignedByCA_shouldRegenerateCertificates() throws Exception {
-    MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
+    final MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
       .header("Authorization", "Bearer " + USER_A_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON_UTF8)
       //language=JSON
       .content("{\"signed_by\" : \"" + caName + "\"}");
 
-    String regenerateCertificatesResult = this.mockMvc.perform(regenerateCertificatesRequest)
+    final String regenerateCertificatesResult = this.mockMvc.perform(regenerateCertificatesRequest)
       .andDo(print())
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
@@ -119,22 +125,22 @@ public class BulkRegenerateTest {
 
   @Test
   public void regeneratingCertificatesSignedByCA_shouldRegenerateCertificatesInAlphabeticalOrder() throws Exception {
-    String firstAlphabeticalCertName = randomCredentialName("aa-cert");
+    final String firstAlphabeticalCertName = randomCredentialName("aa-cert");
     generateSignedCertificate(firstAlphabeticalCertName, caName);
     grantPermissions(firstAlphabeticalCertName, USER_A_ACTOR_ID, "read", "write");
 
-    String lastAlphabeticalCertName = randomCredentialName("zz-cert");
+    final String lastAlphabeticalCertName = randomCredentialName("zz-cert");
     generateSignedCertificate(lastAlphabeticalCertName, caName);
     grantPermissions(lastAlphabeticalCertName, USER_A_ACTOR_ID, "read", "write");
 
-    MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
+    final MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
       .header("Authorization", "Bearer " + USER_A_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON_UTF8)
       //language=JSON
       .content("{\"signed_by\" : \"" + caName + "\"}");
 
-    String regenerateCertificatesResult = this.mockMvc.perform(regenerateCertificatesRequest)
+    final String regenerateCertificatesResult = this.mockMvc.perform(regenerateCertificatesRequest)
       .andDo(print())
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
@@ -153,7 +159,7 @@ public class BulkRegenerateTest {
   public void regeneratingCertificatesSignedByCA_whenUserCannotWriteToOneOfTheCertificates_shouldFailAndNotRotateAnyCertificates() throws Exception {
     revokePermissions(cert1Name, USER_A_ACTOR_ID);
 
-    MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
+    final MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
       .header("Authorization", "Bearer " + USER_A_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON_UTF8)
@@ -172,7 +178,7 @@ public class BulkRegenerateTest {
   public void regeneratingCertificatesSignedByCA_whenUserCannotReadCa_shouldFailAndNotRotateAnyCertificates() throws Exception {
     revokePermissions(caName, USER_A_ACTOR_ID);
 
-    MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
+    final MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
       .header("Authorization", "Bearer " + USER_A_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON_UTF8)
@@ -189,7 +195,7 @@ public class BulkRegenerateTest {
 
   @Test
   public void regeneratingCertificatesSignedByCA_whenSignedByIsMissing_returns400() throws Exception {
-    MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
+    final MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON_UTF8)
@@ -203,27 +209,27 @@ public class BulkRegenerateTest {
 
   @Test
   public void regeneratingCertificatesSignedByCa_recursivelyRegeneratesLeafCertificatesInChain() throws Exception {
-    String intermediateCert = randomCredentialName("intermediate-cert");
+    final String intermediateCert = randomCredentialName("intermediate-cert");
     generateSignedCertificate(intermediateCert, caName, true);
     grantPermissions(intermediateCert, USER_A_ACTOR_ID, "read", "write");
 
-    String leafCert = randomCredentialName("leaf-cert");
+    final String leafCert = randomCredentialName("leaf-cert");
     generateSignedCertificate(leafCert, intermediateCert);
     grantPermissions(leafCert, USER_A_ACTOR_ID, "read", "write");
 
-    MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
+    final MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON_UTF8)
       //language=JSON
       .content("{\"signed_by\" : \"" + caName + "\"}");
 
-    String regenerateCertificatesResult = this.mockMvc.perform(regenerateCertificatesRequest)
+    final String regenerateCertificatesResult = this.mockMvc.perform(regenerateCertificatesRequest)
       .andDo(print())
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
 
-    List<String> regeneratedCredentials = JsonPath.parse(regenerateCertificatesResult).read("$.regenerated_credentials");
+    final List<String> regeneratedCredentials = JsonPath.parse(regenerateCertificatesResult).read("$.regenerated_credentials");
     assertThat(regeneratedCredentials.size(), equalTo(4));
     assertThat(regeneratedCredentials, containsInAnyOrder(cert1Name, cert2Name, intermediateCert, leafCert));
 
@@ -233,15 +239,15 @@ public class BulkRegenerateTest {
 
   @Test
   public void regeneratingCertificatesSignedByCa_willFailIfAnyChildCertificateIsNotWritable() throws Exception {
-    String intermediateCert = randomCredentialName("intermediate-cert");
+    final String intermediateCert = randomCredentialName("intermediate-cert");
     generateSignedCertificate(intermediateCert, caName, true);
     grantPermissions(intermediateCert, USER_A_ACTOR_ID, "read", "write");
 
-    String leafCert = randomCredentialName("leaf-cert");
+    final String leafCert = randomCredentialName("leaf-cert");
     generateSignedCertificate(leafCert, intermediateCert);
     grantPermissions(leafCert, USER_A_ACTOR_ID, "read");
 
-    MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
+    final MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
       .header("Authorization", "Bearer " + USER_A_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON_UTF8)
@@ -256,26 +262,26 @@ public class BulkRegenerateTest {
     verifyVersionCountForCertificate(leafCert, 1);
   }
 
-  private void verifyVersionCountForCertificate(String certificateName, int expectedVersionCount) throws Exception {
-    String certificateId = getCertificateId(mockMvc, certificateName);
-    MockHttpServletRequestBuilder getVersionsRequest = get("/api/v1/certificates/" + certificateId + "/versions")
+  private void verifyVersionCountForCertificate(final String certificateName, final int expectedVersionCount) throws Exception {
+    final String certificateId = getCertificateId(mockMvc, certificateName);
+    final MockHttpServletRequestBuilder getVersionsRequest = get("/api/v1/certificates/" + certificateId + "/versions")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON_UTF8);
 
-    String versions = this.mockMvc.perform(getVersionsRequest)
+    final String versions = this.mockMvc.perform(getVersionsRequest)
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
 
     assertThat(new JSONArray(versions).length(), equalTo(expectedVersionCount));
   }
 
-  private String randomCredentialName(String name) {
+  private String randomCredentialName(final String name) {
     return "/" + name + "-" + UUID.randomUUID().toString();
   }
 
-  private void generateRootCA(String caName) throws Exception {
-    MockHttpServletRequestBuilder request = post(API_V1_DATA_ENDPOINT)
+  private void generateRootCA(final String caName) throws Exception {
+    final MockHttpServletRequestBuilder request = post(API_V1_DATA_ENDPOINT)
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON_UTF8)
@@ -294,8 +300,8 @@ public class BulkRegenerateTest {
       .andExpect(status().isOk());
   }
 
-  private void generateSignedCertificate(String certificateName, String caName, boolean isCA) throws Exception {
-    MockHttpServletRequestBuilder request = post(API_V1_DATA_ENDPOINT)
+  private void generateSignedCertificate(final String certificateName, final String caName, final boolean isCA) throws Exception {
+    final MockHttpServletRequestBuilder request = post(API_V1_DATA_ENDPOINT)
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON_UTF8)
@@ -311,21 +317,21 @@ public class BulkRegenerateTest {
         + "  \"overwrite\": true\n"
         + "}");
 
-    String certGenerationResult = this.mockMvc.perform(request)
+    final String certGenerationResult = this.mockMvc.perform(request)
       .andDo(print())
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
     assertThat((new JSONObject(certGenerationResult)).getString("value"), notNullValue());
   }
 
-  private void generateSignedCertificate(String certificateName, String caName) throws Exception {
+  private void generateSignedCertificate(final String certificateName, final String caName) throws Exception {
     this.generateSignedCertificate(certificateName, caName, false);
   }
 
-  private void grantPermissions(String credentialName, String actorId, String... permissions) throws Exception {
-    String operations = "[\"" + String.join("\", \"", permissions) + "\"]";
+  private void grantPermissions(final String credentialName, final String actorId, final String... permissions) throws Exception {
+    final String operations = "[\"" + String.join("\", \"", permissions) + "\"]";
 
-    MockHttpServletRequestBuilder request = post(API_V1_PERMISSION_ENDPOINT)
+    final MockHttpServletRequestBuilder request = post(API_V1_PERMISSION_ENDPOINT)
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON_UTF8)
@@ -345,8 +351,8 @@ public class BulkRegenerateTest {
       .andExpect(status().isCreated());
   }
 
-  private void revokePermissions(String credentialName, String actorId) throws Exception {
-    MockHttpServletRequestBuilder request = delete(API_V1_PERMISSION_ENDPOINT + "?credential_name=" + credentialName + "&actor=" + actorId)
+  private void revokePermissions(final String credentialName, final String actorId) throws Exception {
+    final MockHttpServletRequestBuilder request = delete(API_V1_PERMISSION_ENDPOINT + "?credential_name=" + credentialName + "&actor=" + actorId)
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON);
 

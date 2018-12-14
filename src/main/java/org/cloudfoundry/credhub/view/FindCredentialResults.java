@@ -6,10 +6,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class FindCredentialResults {
 
-  private List<FindCredentialResult> credentials;
+  private final List<FindCredentialResult> credentials;
 
   @SuppressWarnings("rawtypes")
-  public FindCredentialResults(List<FindCredentialResult> credentials) {
+  public FindCredentialResults(final List<FindCredentialResult> credentials) {
+    super();
     this.credentials = credentials;
   }
 

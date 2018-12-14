@@ -16,17 +16,17 @@ public class GenerateRequestTypeIdResolver implements TypeIdResolver {
   private JavaType baseType;
 
   @Override
-  public void init(JavaType baseType) {
+  public void init(final JavaType baseType) {
     this.baseType = baseType;
   }
 
   @Override
-  public String idFromValue(Object value) {
+  public String idFromValue(final Object value) {
     return null;
   }
 
   @Override
-  public String idFromValueAndType(Object value, Class<?> suggestedType) {
+  public String idFromValueAndType(final Object value, final Class<?> suggestedType) {
     return null;
   }
 
@@ -36,7 +36,7 @@ public class GenerateRequestTypeIdResolver implements TypeIdResolver {
   }
 
   @Override
-  public JavaType typeFromId(DatabindContext context, String id) throws IOException {
+  public JavaType typeFromId(final DatabindContext context, final String id) throws IOException {
     Class<?> subType = DefaultCredentialGenerateRequest.class;
 
     switch (id.toLowerCase()) {

@@ -27,11 +27,12 @@ import org.cloudfoundry.credhub.service.grpc.KeyManagementServiceGrpc;
 import static io.grpc.internal.GrpcUtil.DEFAULT_KEEPALIVE_TIME_NANOS;
 
 public class ExternalEncryptionProvider implements EncryptionProvider {
-  private static final Logger logger = LogManager.getLogger(ExternalEncryptionProvider.class.getName());
+  private static final Logger LOGGER = LogManager.getLogger(ExternalEncryptionProvider.class.getName());
   private static final String CHARSET = "UTF-8";
   private final KeyManagementServiceGrpc.KeyManagementServiceBlockingStub blockingStub;
 
-  public ExternalEncryptionProvider(EncryptionConfiguration configuration) {
+  public ExternalEncryptionProvider(final EncryptionConfiguration configuration) {
+    super();
     blockingStub = KeyManagementServiceGrpc.newBlockingStub(
       NettyChannelBuilder.forAddress(new DomainSocketAddress(configuration.getEndpoint()))
         .eventLoopGroup(new EpollEventLoopGroup())
@@ -42,38 +43,38 @@ public class ExternalEncryptionProvider implements EncryptionProvider {
   }
 
   @Override
-  public EncryptedValue encrypt(EncryptionKey key, String value) {
-    EncryptRequest request = EncryptRequest.newBuilder().setPlain(ByteString.copyFrom(value, Charset.forName(CHARSET))).build();
-    EncryptResponse response;
+  public EncryptedValue encrypt(final EncryptionKey key, final String value) {
+    final EncryptRequest request = EncryptRequest.newBuilder().setPlain(ByteString.copyFrom(value, Charset.forName(CHARSET))).build();
+    final EncryptResponse response;
     try {
       response = blockingStub.encrypt(request);
-    } catch (StatusRuntimeException e) {
-      logger.error("Error for request: " + request.getPlain(), e);
-      throw (e);
+    } catch (final StatusRuntimeException e) {
+      LOGGER.error("Error for request: " + request.getPlain(), e);
+      throw e;
     }
     return new EncryptedValue(key.getUuid(), response.getCipher().toByteArray(), new byte[]{});
   }
 
 
   @Override
-  public String decrypt(EncryptionKey key, byte[] encryptedValue, byte[] nonce) throws Exception {
-    DecryptRequest request = DecryptRequest.newBuilder().setCipher(ByteString.copyFrom(encryptedValue)).build();
-    DecryptResponse response;
+  public String decrypt(final EncryptionKey key, final byte[] encryptedValue, final byte[] nonce) throws Exception {
+    final DecryptRequest request = DecryptRequest.newBuilder().setCipher(ByteString.copyFrom(encryptedValue)).build();
+    final DecryptResponse response;
     try {
       response = blockingStub.decrypt(request);
-    } catch (StatusRuntimeException e) {
+    } catch (final StatusRuntimeException e) {
       if (e.getStatus().getCode() == Status.Code.INVALID_ARGUMENT) {
         throw new AEADBadTagException(e.getMessage());
       }
-      logger.error("Error for request: " + request.getCipher(), e);
-      throw (e);
+      LOGGER.error("Error for request: " + request.getCipher(), e);
+      throw e;
     }
 
     return response.getPlain().toString(CHARSET);
   }
 
   @Override
-  public KeyProxy createKeyProxy(EncryptionKeyMetadata encryptionKeyMetadata) {
+  public KeyProxy createKeyProxy(final EncryptionKeyMetadata encryptionKeyMetadata) {
     return new ExternalKeyProxy(encryptionKeyMetadata, this);
   }
 }

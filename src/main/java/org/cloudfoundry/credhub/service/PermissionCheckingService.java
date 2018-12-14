@@ -16,29 +16,30 @@ import org.cloudfoundry.credhub.request.PermissionOperation;
 
 @Component
 public class PermissionCheckingService {
-  private PermissionDataService permissionDataService;
-  private UserContextHolder userContextHolder;
+  private final PermissionDataService permissionDataService;
+  private final UserContextHolder userContextHolder;
 
   @Value("${security.authorization.acls.enabled}")
   private boolean enforcePermissions;
 
   @Autowired
-  public PermissionCheckingService(PermissionDataService permissionDataService,
-                                   UserContextHolder userContextHolder) {
+  public PermissionCheckingService(final PermissionDataService permissionDataService,
+                                   final UserContextHolder userContextHolder) {
+    super();
     this.permissionDataService = permissionDataService;
     this.userContextHolder = userContextHolder;
   }
 
-  public boolean hasPermission(String user, String credentialName, PermissionOperation permission) {
+  public boolean hasPermission(final String user, final String credentialName, final PermissionOperation permission) {
     if (enforcePermissions) {
       return permissionDataService.hasPermission(user, credentialName, permission);
     }
     return true;
   }
 
-  public boolean hasPermission(String user, UUID guid, PermissionOperation permission) {
+  public boolean hasPermission(final String user, final UUID guid, final PermissionOperation permission) {
     if (enforcePermissions) {
-      PermissionData permissionData = permissionDataService.getPermission(guid);
+      final PermissionData permissionData = permissionDataService.getPermission(guid);
       if (permissionData == null) {
         return false;
       }
@@ -47,8 +48,8 @@ public class PermissionCheckingService {
     return true;
   }
 
-  public boolean hasPermissions(String user, String path, List<PermissionOperation> permissions) {
-    for (PermissionOperation permission : permissions) {
+  public boolean hasPermissions(final String user, final String path, final List<PermissionOperation> permissions) {
+    for (final PermissionOperation permission : permissions) {
       if (!permissionDataService.hasPermission(user, path, permission)) {
         return false;
       }
@@ -56,9 +57,9 @@ public class PermissionCheckingService {
     return true;
   }
 
-  public boolean userAllowedToOperateOnActor(String actor) {
+  public boolean userAllowedToOperateOnActor(final String actor) {
     if (enforcePermissions) {
-      UserContext userContext = userContextHolder.getUserContext();
+      final UserContext userContext = userContextHolder.getUserContext();
       return actor != null &&
         userContext.getActor() != null &&
         !StringUtils.equals(userContext.getActor(), actor);
@@ -67,10 +68,10 @@ public class PermissionCheckingService {
     }
   }
 
-  public boolean userAllowedToOperateOnActor(UUID guid) {
+  public boolean userAllowedToOperateOnActor(final UUID guid) {
     if (enforcePermissions) {
-      UserContext userContext = userContextHolder.getUserContext();
-      String actor = permissionDataService.getPermission(guid).getActor();
+      final UserContext userContext = userContextHolder.getUserContext();
+      final String actor = permissionDataService.getPermission(guid).getActor();
       return actor != null &&
         userContext.getActor() != null &&
         !StringUtils.equals(userContext.getActor(), actor);

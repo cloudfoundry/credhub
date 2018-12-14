@@ -1,10 +1,11 @@
 package org.cloudfoundry.credhub.audit.entity;
 
 public class Resource {
-  private String resourceName;
-  private String resourceId;
+  private final String resourceName;
+  private final String resourceId;
 
-  public Resource(String name, String id) {
+  public Resource(final String name, final String id) {
+    super();
     resourceId = id;
     resourceName = name;
   }

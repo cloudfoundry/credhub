@@ -10,9 +10,10 @@ import org.springframework.web.context.annotation.RequestScope;
 public class RequestUuid {
   private UUID uuid;
 
-  @SuppressWarnings("unused")
-  public RequestUuid() {
-  }
+//  @SuppressWarnings("unused")
+//  public RequestUuid() {
+//    super();
+//  }
 
   public UUID getUuid() {
     if (uuid == null) {

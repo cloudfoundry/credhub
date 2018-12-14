@@ -65,26 +65,26 @@ public class InterpolationControllerTest {
 
   @Test
   public void POST_replacesTheCredHubRefWithTheCredentialValue() throws Exception {
-    String credJson1 = "{\"secret1\":\"secret1-value\"}";
-    JsonNode jsonNode1;
+    final String credJson1 = "{\"secret1\":\"secret1-value\"}";
+    final JsonNode jsonNode1;
     try {
       jsonNode1 = new ObjectMapper().readTree(credJson1);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
-    JsonCredentialVersion jsonCredential1 = mock(JsonCredentialVersion.class);
+    final JsonCredentialVersion jsonCredential1 = mock(JsonCredentialVersion.class);
     doReturn(jsonNode1).when(jsonCredential1).getValue();
     when(jsonCredential1.getName()).thenReturn("/cred1");
     when(jsonCredential1.getUuid()).thenReturn(UUID.randomUUID());
 
-    String credJson2 = "{\"secret2\":\"secret2-value\"}";
-    JsonNode jsonNode2;
+    final String credJson2 = "{\"secret2\":\"secret2-value\"}";
+    final JsonNode jsonNode2;
     try {
       jsonNode2 = new ObjectMapper().readTree(credJson2);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
-    JsonCredentialVersion jsonCredential2 = mock(JsonCredentialVersion.class);
+    final JsonCredentialVersion jsonCredential2 = mock(JsonCredentialVersion.class);
     doReturn(jsonNode2).when(jsonCredential2).getValue();
     when(jsonCredential2.getName()).thenReturn("/cred2");
     when(jsonCredential2.getUuid()).thenReturn(UUID.randomUUID());
@@ -110,7 +110,7 @@ public class InterpolationControllerTest {
   )
   @Test
   public void POST_whenAReferencedCredentialIsNotJsonType_throwsAnError() throws Exception {
-    ValueCredentialVersion valueCredential = mock(ValueCredentialVersion.class);
+    final ValueCredentialVersion valueCredential = mock(ValueCredentialVersion.class);
     doReturn("something").when(valueCredential).getValue();
     doReturn(UUID.randomUUID()).when(valueCredential).getUuid();
 
@@ -118,7 +118,7 @@ public class InterpolationControllerTest {
       Arrays.asList(valueCredential)
     ).when(mockCredentialVersionDataService).findNByName("/cred1", 1);
 
-    String expectedMessage = "The credential '/cred1' is not the expected type. A credhub-ref credential must be of type 'JSON'.";
+    final String expectedMessage = "The credential '/cred1' is not the expected type. A credhub-ref credential must be of type 'JSON'.";
 
     mockMvc.perform(post("/api/v1/interpolate")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
@@ -145,7 +145,7 @@ public class InterpolationControllerTest {
       null
     ).when(mockCredentialVersionDataService).findMostRecent("/cred1");
 
-    String expectedMessage = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
+    final String expectedMessage = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
     mockMvc.perform(post("/api/v1/interpolate")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .contentType(MediaType.APPLICATION_JSON)
@@ -167,7 +167,7 @@ public class InterpolationControllerTest {
 
   @Test
   public void POST_whenTheServicesPropertiesDoNotHaveCredentials_doesNotInterpolateThem() throws Exception {
-    String inputJsonString = "{"
+    final String inputJsonString = "{"
       + "    \"pp-config-server\": [{"
       + "      \"blah\": {"
       + "        \"credhub-ref\": \"/cred1\""
@@ -175,7 +175,7 @@ public class InterpolationControllerTest {
       + "      \"label\": \"pp-config-server\""
       + "    }]"
       + "}";
-    MockHttpServletResponse response = mockMvc.perform(post("/api/v1/interpolate")
+    final MockHttpServletResponse response = mockMvc.perform(post("/api/v1/interpolate")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .contentType(MediaType.APPLICATION_JSON)
       .content(inputJsonString)
@@ -186,8 +186,8 @@ public class InterpolationControllerTest {
 
   @Test
   public void POST_whenTheRequestBodyIsNotJSON_throwsAnError() throws Exception {
-    String inputJsonString = "</xml?>";
-    String expectedMessage = "The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.";
+    final String inputJsonString = "</xml?>";
+    final String expectedMessage = "The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.";
 
     mockMvc.perform(post("/api/v1/interpolate")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)

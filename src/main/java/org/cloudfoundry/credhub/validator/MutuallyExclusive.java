@@ -10,9 +10,12 @@ import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-@Target({TYPE, ANNOTATION_TYPE})
+@Target({
+  TYPE,
+  ANNOTATION_TYPE,
+})
 @Retention(RUNTIME)
-@Constraint(validatedBy = {MutuallyExclusiveValidator.class})
+@Constraint(validatedBy = MutuallyExclusiveValidator.class)
 public @interface MutuallyExclusive {
 
   String message();

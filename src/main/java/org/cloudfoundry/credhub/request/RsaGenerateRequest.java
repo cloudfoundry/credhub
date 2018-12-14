@@ -16,7 +16,7 @@ public class RsaGenerateRequest extends BaseCredentialGenerateRequest {
     return generationParameters;
   }
 
-  public void setGenerationParameters(RsaGenerationParameters generationParameters) {
+  public void setGenerationParameters(final RsaGenerationParameters generationParameters) {
     this.generationParameters = generationParameters;
   }
 }

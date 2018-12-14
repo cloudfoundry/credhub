@@ -26,32 +26,33 @@ import static org.cloudfoundry.credhub.controller.v1.CertificateVersionsControll
 @RequestMapping(API_V1_CERTIFICATE_VERSIONS)
 public class CertificateVersionsController {
 
-  static final String API_V1_CERTIFICATE_VERSIONS = "api/v1/certificates/{certificateId}/versions";
+  public static final String API_V1_CERTIFICATE_VERSIONS = "api/v1/certificates/{certificateId}/versions";
 
-  private CertificatesHandler certificatesHandler;
+  private final CertificatesHandler certificatesHandler;
 
   @Autowired
-  public CertificateVersionsController(CertificatesHandler certificateHandler) {
+  public CertificateVersionsController(final CertificatesHandler certificateHandler) {
+    super();
     this.certificatesHandler = certificateHandler;
   }
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ResponseStatus(HttpStatus.OK)
-  public List<CertificateView> getAllVersions(@PathVariable String certificateId,
-                                              @RequestParam(value = "current", required = false, defaultValue = "false") boolean current) {
+  public List<CertificateView> getAllVersions(@PathVariable final String certificateId,
+                                              @RequestParam(value = "current", required = false, defaultValue = "false") final boolean current) {
     return certificatesHandler.handleGetAllVersionsRequest(certificateId, current);
   }
 
   @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ResponseStatus(HttpStatus.OK)
-  public CertificateView createVersion(@RequestBody @Validated CreateVersionRequest requestBody,
-                                       @PathVariable String certificateId) {
+  public CertificateView createVersion(@RequestBody @Validated final CreateVersionRequest requestBody,
+                                       @PathVariable final String certificateId) {
     return certificatesHandler.handleCreateVersionsRequest(certificateId, requestBody);
   }
 
   @DeleteMapping(value = "/{versionId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ResponseStatus(HttpStatus.OK)
-  public CertificateView deleteVersion(@PathVariable String certificateId, @PathVariable String versionId) {
+  public CertificateView deleteVersion(@PathVariable final String certificateId, @PathVariable final String versionId) {
     return certificatesHandler.handleDeleteVersionRequest(certificateId, versionId);
   }
 }

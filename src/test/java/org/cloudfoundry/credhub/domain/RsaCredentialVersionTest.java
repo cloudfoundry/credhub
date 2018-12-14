@@ -28,7 +28,7 @@ public class RsaCredentialVersionTest {
   public void matchesGenerationParameters_returnsFalseWhenParametersDontMatch() {
     when(credentialVersionData.getKeyLength()).thenReturn(2048);
 
-    RsaGenerationParameters generationParameters = new RsaGenerationParameters();
+    final RsaGenerationParameters generationParameters = new RsaGenerationParameters();
     generationParameters.setKeyLength(4096);
 
     assertThat(subject.matchesGenerationParameters(generationParameters), equalTo(false));
@@ -38,7 +38,7 @@ public class RsaCredentialVersionTest {
   public void matchesGenerationParameters_returnsTrueWhenParametersMatch() {
     when(credentialVersionData.getKeyLength()).thenReturn(4096);
 
-    RsaGenerationParameters generationParameters = new RsaGenerationParameters();
+    final RsaGenerationParameters generationParameters = new RsaGenerationParameters();
     generationParameters.setKeyLength(4096);
 
     assertThat(subject.matchesGenerationParameters(generationParameters), equalTo(true));

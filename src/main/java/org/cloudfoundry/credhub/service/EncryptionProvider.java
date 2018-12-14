@@ -3,6 +3,8 @@ package org.cloudfoundry.credhub.service;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
 import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
 import org.cloudfoundry.credhub.entity.EncryptedValue;
 
@@ -17,8 +19,8 @@ public interface EncryptionProvider {
 
     try {
       secureRandom = SecureRandom.getInstance("SHA1PRNG");
-    } catch (NoSuchAlgorithmException e) {
-      e.printStackTrace();
+    } catch (final NoSuchAlgorithmException e) {
+      LogManager.getLogger().log(Level.ALL, e.getMessage());
     }
 
     return secureRandom;

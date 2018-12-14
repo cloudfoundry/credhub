@@ -50,9 +50,9 @@ public class CertificatesHandlerTest {
 
   @Test
   public void handleRegenerate_passesOnTransitionalFlagWhenRegeneratingCertificate() {
-    BaseCredentialGenerateRequest generateRequest = mock(BaseCredentialGenerateRequest.class);
-    CertificateCredentialVersion certificate = mock(CertificateCredentialVersion.class);
-    CertificateCredentialValue newValue = mock(CertificateCredentialValue.class);
+    final BaseCredentialGenerateRequest generateRequest = mock(BaseCredentialGenerateRequest.class);
+    final CertificateCredentialVersion certificate = mock(CertificateCredentialVersion.class);
+    final CertificateCredentialValue newValue = mock(CertificateCredentialValue.class);
 
     when(certificate.getName()).thenReturn("test");
 
@@ -63,7 +63,7 @@ public class CertificatesHandlerTest {
     when(permissionedCertificateService.save(eq(certificate), any(), any()))
       .thenReturn(mock(CertificateCredentialVersion.class));
 
-    CertificateRegenerateRequest regenerateRequest = new CertificateRegenerateRequest(true);
+    final CertificateRegenerateRequest regenerateRequest = new CertificateRegenerateRequest(true);
 
     subject.handleRegenerate(UUID_STRING, regenerateRequest);
 
@@ -73,13 +73,13 @@ public class CertificatesHandlerTest {
 
   @Test
   public void handleGetAllVersionsRequest_returnsListOfCertificateViews() {
-    UUID uuid = UUID.randomUUID();
-    String certificateName = "some certificate";
+    final UUID uuid = UUID.randomUUID();
+    final String certificateName = "some certificate";
 
-    CredentialVersion credentialVersion = new CertificateCredentialVersion(certificateName);
+    final CredentialVersion credentialVersion = new CertificateCredentialVersion(certificateName);
     when(permissionedCertificateService.getVersions(uuid, false))
       .thenReturn(Collections.singletonList(credentialVersion));
-    List<CertificateView> certificateViews = subject
+    final List<CertificateView> certificateViews = subject
       .handleGetAllVersionsRequest(uuid.toString(), false);
 
     assertThat(certificateViews.size(), equalTo(1));

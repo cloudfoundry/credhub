@@ -10,9 +10,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 public class EmptyStringToNull extends JsonDeserializer<String> {
 
   @Override
-  public String deserialize(JsonParser jsonParser, DeserializationContext context)
+  public String deserialize(final JsonParser jsonParser, final DeserializationContext context)
     throws IOException {
-    JsonNode node = jsonParser.readValueAsTree();
+    final JsonNode node = jsonParser.readValueAsTree();
     if (node.asText().isEmpty()) {
       return null;
     }

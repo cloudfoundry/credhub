@@ -60,7 +60,7 @@ class KeyUsageControllerTest {
         keySet.setActive(activeKey)
         `when`(credentialVersionDataService.countByEncryptionKey()).thenReturn(countByEncryptionKey)
 
-        mockMvc.perform(get(KeyUsageController.endpoint))
+        mockMvc.perform(get(KeyUsageController.ENDPOINT))
             .andExpect(status().isOk)
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath("$.active_key").value(200))

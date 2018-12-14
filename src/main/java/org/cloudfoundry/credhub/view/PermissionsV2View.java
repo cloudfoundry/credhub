@@ -16,7 +16,8 @@ public class PermissionsV2View {
   private String actor;
   private UUID uuid;
 
-  public PermissionsV2View(String path, List<PermissionOperation> operations, String actor, UUID uuid) {
+  public PermissionsV2View(final String path, final List<PermissionOperation> operations, final String actor, final UUID uuid) {
+    super();
     this.path = path;
     this.operations = operations;
     this.actor = actor;
@@ -24,13 +25,14 @@ public class PermissionsV2View {
   }
 
   public PermissionsV2View() {
+    super();
   }
 
   public UUID getUuid() {
     return uuid;
   }
 
-  public void setUuid(UUID uuid) {
+  public void setUuid(final UUID uuid) {
     this.uuid = uuid;
   }
 
@@ -38,7 +40,7 @@ public class PermissionsV2View {
     return path;
   }
 
-  public void setPath(String path) {
+  public void setPath(final String path) {
     this.path = path;
   }
 
@@ -46,7 +48,7 @@ public class PermissionsV2View {
     return operations;
   }
 
-  public void setOperations(List<PermissionOperation> operations) {
+  public void setOperations(final List<PermissionOperation> operations) {
     this.operations = operations;
   }
 
@@ -54,12 +56,12 @@ public class PermissionsV2View {
     return actor;
   }
 
-  public void setActor(String actor) {
+  public void setActor(final String actor) {
     this.actor = actor;
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
@@ -68,7 +70,7 @@ public class PermissionsV2View {
       return false;
     }
 
-    PermissionsV2View that = (PermissionsV2View) o;
+    final PermissionsV2View that = (PermissionsV2View) o;
     return Objects.equals(path, that.path) &&
       Objects.equals(operations, that.operations) &&
       Objects.equals(actor, that.actor) &&

@@ -88,7 +88,7 @@ public class CredentialsControllerGenerateTest {
 
   @Before
   public void beforeEach() {
-    Consumer<Long> fakeTimeSetter = mockOutCurrentTimeProvider(mockCurrentTimeProvider);
+    final Consumer<Long> fakeTimeSetter = mockOutCurrentTimeProvider(mockCurrentTimeProvider);
 
     fakeTimeSetter.accept(FROZEN_TIME.toEpochMilli());
     mockMvc = MockMvcBuilders
@@ -116,7 +116,7 @@ public class CredentialsControllerGenerateTest {
       .contentType(APPLICATION_JSON)
       .content("{\"type\":\"foo\",\"name\":\"" + CREDENTIAL_NAME + "\"}");
 
-    String expectedError = "The request does not include a valid type. Valid values for generate include 'password', 'user', 'certificate', 'ssh' and 'rsa'.";
+    final String expectedError = "The request does not include a valid type. Valid values for generate include 'password', 'user', 'certificate', 'ssh' and 'rsa'.";
 
     mockMvc.perform(postRequest)
       .andExpect(status().isBadRequest())
@@ -132,7 +132,7 @@ public class CredentialsControllerGenerateTest {
       .contentType(APPLICATION_JSON)
       .content("{\"type\":\"value\",\"name\":\"" + CREDENTIAL_NAME + "\"}");
 
-    String expectedError = "Credentials of this type cannot be generated. Please adjust the credential type and retry your request.";
+    final String expectedError = "Credentials of this type cannot be generated. Please adjust the credential type and retry your request.";
 
     mockMvc.perform(postRequest)
       .andExpect(status().isBadRequest())
@@ -148,7 +148,7 @@ public class CredentialsControllerGenerateTest {
       .contentType(APPLICATION_JSON)
       .content("{\"type\":\"json\",\"name\":\"" + CREDENTIAL_NAME + "\"}");
 
-    String expectedError = "Credentials of this type cannot be generated. Please adjust the credential type and retry your request.";
+    final String expectedError = "Credentials of this type cannot be generated. Please adjust the credential type and retry your request.";
 
     mockMvc.perform(postRequest)
       .andExpect(status().isBadRequest())
@@ -158,7 +158,7 @@ public class CredentialsControllerGenerateTest {
 
   @Test
   public void generatingACredential_whenTypeIsNotPresent_returns400() throws Exception {
-    String expectedError = "The request does not include a valid type. Valid values for generate include 'password', 'user', 'certificate', 'ssh' and 'rsa'.";
+    final String expectedError = "The request does not include a valid type. Valid values for generate include 'password', 'user', 'certificate', 'ssh' and 'rsa'.";
 
     mockMvc.perform(post("/api/v1/data")
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
@@ -171,7 +171,7 @@ public class CredentialsControllerGenerateTest {
 
   @Test
   public void generatingACredential_whenNameIsEmpty_throws400() throws Exception {
-    String expectedError = "A credential name must be provided. Please validate your input and retry your request.";
+    final String expectedError = "A credential name must be provided. Please validate your input and retry your request.";
     mockMvc.perform(post("/api/v1/data")
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
@@ -183,7 +183,7 @@ public class CredentialsControllerGenerateTest {
 
   @Test
   public void generatingACredential_whenNameIsMissing_throws400() throws Exception {
-    String expectedError = "A credential name must be provided. Please validate your input and retry your request.";
+    final String expectedError = "A credential name must be provided. Please validate your input and retry your request.";
 
     mockMvc.perform(post("/api/v1/data")
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
@@ -196,7 +196,7 @@ public class CredentialsControllerGenerateTest {
 
   @Test
   public void generatingACredential_whenIncorrectParamsAreSent_returns400() throws Exception {
-    String expectedError = "The request includes an unrecognized parameter 'some_unknown_param'. Please update or remove this parameter and retry your request.";
+    final String expectedError = "The request includes an unrecognized parameter 'some_unknown_param'. Please update or remove this parameter and retry your request.";
 
     mockMvc.perform(post("/api/v1/data")
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
@@ -226,7 +226,7 @@ public class CredentialsControllerGenerateTest {
         "\"name\":\"" + CREDENTIAL_NAME + "\"" +
         "}");
 
-    String expectedError = "This request must include a value for 'parameters'.";
+    final String expectedError = "This request must include a value for 'parameters'.";
 
     mockMvc.perform(postRequest)
       .andExpect(status().isBadRequest())
@@ -236,7 +236,7 @@ public class CredentialsControllerGenerateTest {
 
   @Test
   public void regeneratingACredential_withEmptyName_returns400() throws Exception {
-    String expectedError = "A credential name must be provided. Please validate your input and retry your request.";
+    final String expectedError = "A credential name must be provided. Please validate your input and retry your request.";
     mockMvc.perform(post("/api/v1/data")
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)

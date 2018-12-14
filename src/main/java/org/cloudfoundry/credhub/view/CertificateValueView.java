@@ -8,7 +8,8 @@ public class CertificateValueView implements CredentialValue {
   private final String certificate;
   private final String privateKey;
 
-  public CertificateValueView(CertificateCredentialVersion value) {
+  public CertificateValueView(final CertificateCredentialVersion value) {
+    super();
     this.ca = value.getCa();
     this.certificate = value.getCertificate();
     this.privateKey = value.getPrivateKey();

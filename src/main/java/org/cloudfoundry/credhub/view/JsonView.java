@@ -6,9 +6,11 @@ import org.cloudfoundry.credhub.domain.JsonCredentialVersion;
 @SuppressWarnings("unused")
 public class JsonView extends CredentialView {
 
-  JsonView() {  /* Jackson */ }
+  JsonView() {
+    super();  /* Jackson */
+  }
 
-  JsonView(JsonCredentialVersion jsonCredential) {
+  JsonView(final JsonCredentialVersion jsonCredential) {
     super(
       jsonCredential.getVersionCreatedAt(),
       jsonCredential.getUuid(),

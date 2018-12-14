@@ -6,10 +6,12 @@ public class DeleteCredential implements RequestDetails {
   private String name;
 
   public DeleteCredential() {
+    super();
 
   }
 
-  public DeleteCredential(String name) {
+  public DeleteCredential(final String name) {
+    super();
     this.name = name;
   }
 
@@ -17,7 +19,7 @@ public class DeleteCredential implements RequestDetails {
     return name;
   }
 
-  public void setName(String name) {
+  public void setName(final String name) {
     this.name = name;
   }
 

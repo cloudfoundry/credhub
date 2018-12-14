@@ -39,7 +39,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
-@ActiveProfiles(value = {"unit-test", "unit-test-permissions"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(
+  value = {
+    "unit-test",
+    "unit-test-permissions",
+  },
+  resolver = DatabaseProfileResolver.class
+)
 @Transactional
 public class GetPermissionsV2EndToEndTest {
 
@@ -61,15 +67,15 @@ public class GetPermissionsV2EndToEndTest {
 
   @Test
   public void GET_whenUserGivesAPermissionGuid_theyReceiveThePermissions() throws Exception {
-    String credentialName = "/test";
-    UUID credentialUuid = PermissionsV2EndToEndTestHelper.setPermissions(mockMvc, credentialName, PermissionOperation.WRITE);
+    final String credentialName = "/test";
+    final UUID credentialUuid = PermissionsV2EndToEndTestHelper.setPermissions(mockMvc, credentialName, PermissionOperation.WRITE);
 
-    MockHttpServletRequestBuilder getUuidRequest = get("/api/v2/permissions/" + credentialUuid)
+    final MockHttpServletRequestBuilder getUuidRequest = get("/api/v2/permissions/" + credentialUuid)
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON);
 
-    String content = mockMvc.perform(getUuidRequest).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-    PermissionsV2View returnValue = JsonTestHelper.deserialize(content, PermissionsV2View.class);
+    final String content = mockMvc.perform(getUuidRequest).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+    final PermissionsV2View returnValue = JsonTestHelper.deserialize(content, PermissionsV2View.class);
     assertThat(returnValue.getActor(), equalTo(USER_A_ACTOR_ID));
     assertThat(returnValue.getPath(), equalTo(credentialName));
     assertThat(returnValue.getOperations(), contains(PermissionOperation.WRITE));
@@ -78,17 +84,17 @@ public class GetPermissionsV2EndToEndTest {
 
   @Test
   public void GET_whenUserGivesAPathAndActor_whenTheyHaveREADACLPermission_theyReceiveThePermission() throws Exception {
-    String credentialName = "/test";
-    UUID credentialUuid = PermissionsV2EndToEndTestHelper.setPermissions(mockMvc, credentialName, PermissionOperation.WRITE);
+    final String credentialName = "/test";
+    final UUID credentialUuid = PermissionsV2EndToEndTestHelper.setPermissions(mockMvc, credentialName, PermissionOperation.WRITE);
 
-    MockHttpServletRequestBuilder getUuidRequest = get("/api/v2/permissions")
+    final MockHttpServletRequestBuilder getUuidRequest = get("/api/v2/permissions")
       .param("path", credentialName)
       .param("actor", USER_A_ACTOR_ID)
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON);
 
-    String content = mockMvc.perform(getUuidRequest).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-    PermissionsV2View returnValue = JsonTestHelper.deserialize(content, PermissionsV2View.class);
+    final String content = mockMvc.perform(getUuidRequest).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+    final PermissionsV2View returnValue = JsonTestHelper.deserialize(content, PermissionsV2View.class);
     assertThat(returnValue.getActor(), equalTo(USER_A_ACTOR_ID));
     assertThat(returnValue.getPath(), equalTo(credentialName));
     assertThat(returnValue.getOperations(), contains(PermissionOperation.WRITE));
@@ -97,10 +103,10 @@ public class GetPermissionsV2EndToEndTest {
 
   @Test
   public void GET_whenUserGivesAPermissionGuid_whenTheyDontHaveREADACLPermission_theyReceiveA404() throws Exception {
-    String credentialName = "/test";
-    UUID credentialUuid = PermissionsV2EndToEndTestHelper.setPermissions(mockMvc, credentialName, PermissionOperation.WRITE);
+    final String credentialName = "/test";
+    final UUID credentialUuid = PermissionsV2EndToEndTestHelper.setPermissions(mockMvc, credentialName, PermissionOperation.WRITE);
 
-    MockHttpServletRequestBuilder getUuidRequest = get("/api/v2/permissions/" + credentialUuid)
+    final MockHttpServletRequestBuilder getUuidRequest = get("/api/v2/permissions/" + credentialUuid)
       .header("Authorization", "Bearer " + USER_A_TOKEN)
       .accept(APPLICATION_JSON);
 
@@ -109,49 +115,49 @@ public class GetPermissionsV2EndToEndTest {
 
   @Test
   public void GET_whenUserGivesAPathAndActor_whenTheyDontHaveREADACLPermission_theyReceiveA404() throws Exception {
-    String credentialName = "/test";
-    String actor = "/actor";
+    final String credentialName = "/test";
+    final String actor = "/actor";
 
-    MockHttpServletRequestBuilder getUuidRequest = get("/api/v2/permissions")
+    final MockHttpServletRequestBuilder getUuidRequest = get("/api/v2/permissions")
       .param("path", credentialName)
       .param("actor", actor)
       .header("Authorization", "Bearer " + NO_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON);
 
-    String content = mockMvc.perform(getUuidRequest).andExpect(status().isNotFound()).andReturn().getResponse().getContentAsString();
-    String errorMessage = new JSONObject(content).getString("error");
+    final String content = mockMvc.perform(getUuidRequest).andExpect(status().isNotFound()).andReturn().getResponse().getContentAsString();
+    final String errorMessage = new JSONObject(content).getString("error");
     assertThat(errorMessage, is(equalTo(messageSource.getMessage("error.permission.invalid_access", null, null, Locale.ENGLISH))));
   }
 
   @Test
   public void GET_whenUserGivesAPathAndActor_whenNoPermissionExists_theyReceiveA404() throws Exception {
-    String credentialName = "/some-nonexistent-credential";
-    String actor = "/actor";
+    final String credentialName = "/some-nonexistent-credential";
+    final String actor = "/actor";
 
-    MockHttpServletRequestBuilder getUuidRequest = get("/api/v2/permissions")
+    final MockHttpServletRequestBuilder getUuidRequest = get("/api/v2/permissions")
       .param("path", credentialName)
       .param("actor", actor)
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON);
 
-    String content = mockMvc.perform(getUuidRequest).andExpect(status().isNotFound()).andReturn().getResponse().getContentAsString();
-    String errorMessage = new JSONObject(content).getString("error");
+    final String content = mockMvc.perform(getUuidRequest).andExpect(status().isNotFound()).andReturn().getResponse().getContentAsString();
+    final String errorMessage = new JSONObject(content).getString("error");
     assertThat(errorMessage, is(equalTo(messageSource.getMessage("error.permission.invalid_access", null, null, Locale.ENGLISH))));
   }
 
   @Test
   public void GET_whenUserGivesAPathAndActor_whenActorDoesNotExist_theyReceiveA404() throws Exception {
-    String credentialName = "/test";
-    String actor = "/some-nonexistent-actor";
+    final String credentialName = "/test";
+    final String actor = "/some-nonexistent-actor";
 
-    MockHttpServletRequestBuilder getUuidRequest = get("/api/v2/permissions")
+    final MockHttpServletRequestBuilder getUuidRequest = get("/api/v2/permissions")
       .param("path", credentialName)
       .param("actor", actor)
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON);
 
-    String content = mockMvc.perform(getUuidRequest).andExpect(status().isNotFound()).andReturn().getResponse().getContentAsString();
-    String errorMessage = new JSONObject(content).getString("error");
+    final String content = mockMvc.perform(getUuidRequest).andExpect(status().isNotFound()).andReturn().getResponse().getContentAsString();
+    final String errorMessage = new JSONObject(content).getString("error");
     assertThat(errorMessage, is(equalTo(messageSource.getMessage("error.permission.invalid_access", null, null, Locale.ENGLISH))));
   }
 }

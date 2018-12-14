@@ -13,7 +13,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 @RunWith(JUnit4.class)
 public class StringGenerationParametersTest {
 
-  private ObjectMapper objectMapper = JsonTestHelper.createObjectMapper();
+  private final ObjectMapper objectMapper = JsonTestHelper.createObjectMapper();
 
   @Test
   public void whenAllCharsetsAreExcluded_isInvalid() {
@@ -48,13 +48,19 @@ public class StringGenerationParametersTest {
       + "}"));
   }
 
-  private StringGenerationParameters makeParameters(boolean excludeLower, boolean excludeUpper,
-                                                    boolean includeSpecial, boolean excludeNumber) {
-    return new StringGenerationParameters()
-      .setLength(30)
-      .setExcludeLower(excludeLower)
-      .setExcludeUpper(excludeUpper)
-      .setExcludeNumber(excludeNumber)
-      .setIncludeSpecial(includeSpecial);
+  private StringGenerationParameters makeParameters(
+    final boolean excludeLower,
+    final boolean excludeUpper,
+    final boolean includeSpecial,
+    final boolean excludeNumber
+  ) {
+    StringGenerationParameters stringGenerationParameters = new StringGenerationParameters();
+    stringGenerationParameters.setLength(30);
+    stringGenerationParameters.setExcludeLower(excludeLower);
+    stringGenerationParameters.setExcludeUpper(excludeUpper);
+    stringGenerationParameters.setExcludeNumber(excludeNumber);
+    stringGenerationParameters.setIncludeSpecial(includeSpecial);
+
+    return stringGenerationParameters;
   }
 }

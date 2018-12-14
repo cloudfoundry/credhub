@@ -1,5 +1,6 @@
 package db.migration.common;
 
+import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
 
@@ -17,19 +18,20 @@ public class V35_1__migrate_operation_audit_record_table implements SpringJdbcMi
     value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE",
     justification = "The database will definitely exist"
   )
-  public void migrate(JdbcTemplate jdbcTemplate) throws Exception {
-    String databaseName = jdbcTemplate
+  @Override
+  public void migrate(final JdbcTemplate jdbcTemplate) throws SQLException {
+    final String databaseName = jdbcTemplate
       .getDataSource()
       .getConnection()
       .getMetaData()
       .getDatabaseProductName()
       .toLowerCase();
 
-    List<Long> operationAuditRecordIds = jdbcTemplate.queryForList("select id from operation_audit_record", Long.class);
+    final List<Long> operationAuditRecordIds = jdbcTemplate.queryForList("select id from operation_audit_record", Long.class);
 
-    for (Long id: operationAuditRecordIds) {
-      Object requestUuid = makeUuid(databaseName);
-      Object eventUuid = makeUuid(databaseName);
+    for (final Long id: operationAuditRecordIds) {
+      final Object requestUuid = makeUuid(databaseName);
+      final Object eventUuid = makeUuid(databaseName);
 
       jdbcTemplate.update(
           "insert into request_audit_record (" +

@@ -21,14 +21,14 @@ public class LibcryptoRsaKeyPairGeneratorTest {
 
   @Before
   public void beforeEach() throws Exception {
-    RandomNumberGenerator randomNumberGenerator = new PseudoRandomNumberGenerator();
+    final RandomNumberGenerator randomNumberGenerator = new PseudoRandomNumberGenerator();
 
     subject = new LibcryptoRsaKeyPairGenerator(new CryptoWrapper(randomNumberGenerator));
   }
 
   @Test
   public void generateKeyPair_generatesKeyPair() throws InvalidKeySpecException, InvalidKeyException {
-    KeyPair keyPair = subject.generateKeyPair(2048);
+    final KeyPair keyPair = subject.generateKeyPair(2048);
 
     assertThat(keyPair.getPublic(), notNullValue());
     assertThat(keyPair.getPrivate(), notNullValue());

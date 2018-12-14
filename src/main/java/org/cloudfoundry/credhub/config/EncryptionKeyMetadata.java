@@ -11,7 +11,7 @@ public class EncryptionKeyMetadata {
     return encryptionPassword;
   }
 
-  public void setEncryptionPassword(String encryptionPassword) {
+  public void setEncryptionPassword(final String encryptionPassword) {
     this.encryptionPassword = encryptionPassword;
   }
 
@@ -19,7 +19,7 @@ public class EncryptionKeyMetadata {
     return active;
   }
 
-  public void setActive(Boolean active) {
+  public void setActive(final Boolean active) {
     this.active = active;
   }
 
@@ -27,7 +27,7 @@ public class EncryptionKeyMetadata {
     return encryptionKeyName;
   }
 
-  public void setEncryptionKeyName(String encryptionKeyName) {
+  public void setEncryptionKeyName(final String encryptionKeyName) {
     this.encryptionKeyName = encryptionKeyName;
   }
 

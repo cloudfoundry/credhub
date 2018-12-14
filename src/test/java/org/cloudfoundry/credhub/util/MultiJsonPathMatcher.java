@@ -10,13 +10,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 final public class MultiJsonPathMatcher {
 
   private MultiJsonPathMatcher() {
+    super();
   }
 
-  public static ResultMatcher multiJsonPath(Object... keysAndValues) {
+  public static ResultMatcher multiJsonPath(final Object... keysAndValues) {
     return result -> {
       for (int i = 0; i < keysAndValues.length; ) {
-        String jsonPath = (String) keysAndValues[i++];
-        Object expectedValue = keysAndValues[i++];
+        final String jsonPath = (String) keysAndValues[i++];
+        final Object expectedValue = keysAndValues[i++];
 
         assertThat("field " + jsonPath, JsonPath.compile(jsonPath).read(result.getResponse().getContentAsString()),
           equalTo(expectedValue));

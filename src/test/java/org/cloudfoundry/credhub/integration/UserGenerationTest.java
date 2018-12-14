@@ -67,7 +67,7 @@ public class UserGenerationTest {
     getPost(credentialName1);
     getPost(credentialName2);
 
-    MvcResult cred1 = this.mockMvc.perform(get("/api/v1/data?name=" + credentialName1)
+    final MvcResult cred1 = this.mockMvc.perform(get("/api/v1/data?name=" + credentialName1)
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON))
@@ -77,7 +77,7 @@ public class UserGenerationTest {
       .andReturn();
 
 
-    MvcResult cred2 = this.mockMvc.perform(get("/api/v1/data?name=" + credentialName2)
+    final MvcResult cred2 = this.mockMvc.perform(get("/api/v1/data?name=" + credentialName2)
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON))
@@ -87,8 +87,8 @@ public class UserGenerationTest {
       .andExpect(jsonPath("$.data[0].value.password", isPassword()))
       .andReturn();
 
-    JSONObject jsonCred1 = getJsonObject(cred1);
-    JSONObject jsonCred2 = getJsonObject(cred2);
+    final JSONObject jsonCred1 = getJsonObject(cred1);
+    final JSONObject jsonCred2 = getJsonObject(cred2);
 
     assertThat(jsonCred1.getString("username"), not(equalTo(jsonCred2.getString("username"))));
     assertThat(jsonCred1.getString("password"), not(equalTo(jsonCred2.getString("password"))));
@@ -96,10 +96,10 @@ public class UserGenerationTest {
 
   @Test
   public void generateAUserCredential_afterSettingTheCredential_whenTheParametersAreNull_overwritesTheCredential() throws Exception {
-    String user = "userA";
-    String password = "passwordA";
+    final String user = "userA";
+    final String password = "passwordA";
 
-    MockHttpServletRequestBuilder setRequest = put("/api/v1/data")
+    final MockHttpServletRequestBuilder setRequest = put("/api/v1/data")
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON_UTF8)
@@ -113,13 +113,13 @@ public class UserGenerationTest {
       .andDo(print())
       .andExpect(status().isOk());
 
-    MockHttpServletRequestBuilder generateRequest = post("/api/v1/data")
+    final MockHttpServletRequestBuilder generateRequest = post("/api/v1/data")
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON_UTF8)
       .content("{\"type\":\"user\",\"name\":\"" + credentialName1 + "\"}");
 
-    DocumentContext response = JsonPath.parse(mockMvc.perform(generateRequest).andExpect(status().isOk())
+    final DocumentContext response = JsonPath.parse(mockMvc.perform(generateRequest).andExpect(status().isOk())
       .andDo(print())
       .andReturn()
       .getResponse()
@@ -130,10 +130,10 @@ public class UserGenerationTest {
 
   @Test
   public void generateAUserCredential_afterSettingTheCredential_whenTheParametersAreNotNull_doesNotOverwriteTheCredential() throws Exception {
-    String user = "userA";
-    String password = "passwordA";
+    final String user = "userA";
+    final String password = "passwordA";
 
-    MockHttpServletRequestBuilder setRequest = put("/api/v1/data")
+    final MockHttpServletRequestBuilder setRequest = put("/api/v1/data")
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON_UTF8)
@@ -147,7 +147,7 @@ public class UserGenerationTest {
       .andDo(print())
       .andExpect(status().isOk());
 
-    MockHttpServletRequestBuilder generateRequest = post("/api/v1/data")
+    final MockHttpServletRequestBuilder generateRequest = post("/api/v1/data")
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON_UTF8)
@@ -159,7 +159,7 @@ public class UserGenerationTest {
         "  }" +
         "}");
 
-    DocumentContext response = JsonPath.parse(mockMvc.perform(generateRequest).andExpect(status().isOk())
+    final DocumentContext response = JsonPath.parse(mockMvc.perform(generateRequest).andExpect(status().isOk())
       .andDo(print())
       .andReturn()
       .getResponse()
@@ -170,7 +170,7 @@ public class UserGenerationTest {
 
   @Test
   public void generatesOnlyPasswordWhenGivenStaticUsernameProvidedInValues() throws Exception {
-    MockHttpServletRequestBuilder post = post("/api/v1/data")
+    final MockHttpServletRequestBuilder post = post("/api/v1/data")
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -199,7 +199,7 @@ public class UserGenerationTest {
 
   @Test
   public void generatesOnlyPasswordWhenGivenStaticUsernameProvidedInParams() throws Exception {
-    MockHttpServletRequestBuilder post = post("/api/v1/data")
+    final MockHttpServletRequestBuilder post = post("/api/v1/data")
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -228,7 +228,7 @@ public class UserGenerationTest {
 
   @Test
   public void whenGivenPasswordParameters_shouldGeneratePasswordFromParameters() throws Exception {
-    MockHttpServletRequestBuilder post = post("/api/v1/data")
+    final MockHttpServletRequestBuilder post = post("/api/v1/data")
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -261,7 +261,7 @@ public class UserGenerationTest {
 
   @Test
   public void whenGivenAUsernameAndPasswordParameters_usesUsernameAndGeneratesPassword() throws Exception {
-    MockHttpServletRequestBuilder post = post("/api/v1/data")
+    final MockHttpServletRequestBuilder post = post("/api/v1/data")
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -296,7 +296,7 @@ public class UserGenerationTest {
 
   @Test
   public void returnsAConsistentPasswordHash() throws Exception {
-    MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
+    final MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -337,13 +337,13 @@ public class UserGenerationTest {
 
   @Test
   public void credentialNotOverwrittenWhenModeIsSetToConvergeAndParametersAreTheSame() throws Exception {
-    String firstResponse = generateUser(mockMvc, credentialName1, true, 20, null, false);
-    String originalUsername = (new JSONObject(firstResponse)).getJSONObject("value").getString("username");
-    String originalPassword = (new JSONObject(firstResponse)).getJSONObject("value").getString("password");
+    final String firstResponse = generateUser(mockMvc, credentialName1, true, 20, null, false);
+    final String originalUsername = (new JSONObject(firstResponse)).getJSONObject("value").getString("username");
+    final String originalPassword = (new JSONObject(firstResponse)).getJSONObject("value").getString("password");
 
-    String secondResponse = generateUser(mockMvc, credentialName1, false, 20, null, false);
-    String secondUsername = (new JSONObject(secondResponse)).getJSONObject("value").getString("username");
-    String secondPassword = (new JSONObject(secondResponse)).getJSONObject("value").getString("password");
+    final String secondResponse = generateUser(mockMvc, credentialName1, false, 20, null, false);
+    final String secondUsername = (new JSONObject(secondResponse)).getJSONObject("value").getString("username");
+    final String secondPassword = (new JSONObject(secondResponse)).getJSONObject("value").getString("password");
 
     assertThat(originalPassword, Matchers.equalTo(secondPassword));
     assertThat(originalUsername, Matchers.equalTo(secondUsername));
@@ -351,13 +351,13 @@ public class UserGenerationTest {
 
   @Test
   public void credentialNotOverwrittenWhenModeIsSetToConvergeAndParametersAreTheSameAndAreTheDefaults() throws Exception {
-    String firstResponse = generateUser(mockMvc, credentialName1, true, null, null, false);
-    String originalUsername = (new JSONObject(firstResponse)).getJSONObject("value").getString("username");
-    String originalPassword = (new JSONObject(firstResponse)).getJSONObject("value").getString("password");
+    final String firstResponse = generateUser(mockMvc, credentialName1, true, null, null, false);
+    final String originalUsername = (new JSONObject(firstResponse)).getJSONObject("value").getString("username");
+    final String originalPassword = (new JSONObject(firstResponse)).getJSONObject("value").getString("password");
 
-    String secondResponse = generateUser(mockMvc, credentialName1, false, null, null, false);
-    String secondUsername = (new JSONObject(secondResponse)).getJSONObject("value").getString("username");
-    String secondPassword = (new JSONObject(secondResponse)).getJSONObject("value").getString("password");
+    final String secondResponse = generateUser(mockMvc, credentialName1, false, null, null, false);
+    final String secondUsername = (new JSONObject(secondResponse)).getJSONObject("value").getString("username");
+    final String secondPassword = (new JSONObject(secondResponse)).getJSONObject("value").getString("password");
 
     assertThat(originalPassword, Matchers.equalTo(secondPassword));
     assertThat(originalUsername, Matchers.equalTo(secondUsername));
@@ -365,13 +365,13 @@ public class UserGenerationTest {
 
   @Test
   public void credentialOverwrittenWhenModeIsSetToConvergeAndParametersNotTheSame() throws Exception {
-    String firstResponse = generateUser(mockMvc, credentialName1, true, 30, null, false);
-    String originalUsername = (new JSONObject(firstResponse)).getJSONObject("value").getString("username");
-    String originalPassword = (new JSONObject(firstResponse)).getJSONObject("value").getString("password");
+    final String firstResponse = generateUser(mockMvc, credentialName1, true, 30, null, false);
+    final String originalUsername = (new JSONObject(firstResponse)).getJSONObject("value").getString("username");
+    final String originalPassword = (new JSONObject(firstResponse)).getJSONObject("value").getString("password");
 
-    String secondResponse = generateUser(mockMvc, credentialName1, false, 20, null, false);
-    String secondUsername = (new JSONObject(secondResponse)).getJSONObject("value").getString("username");
-    String secondPassword = (new JSONObject(secondResponse)).getJSONObject("value").getString("password");
+    final String secondResponse = generateUser(mockMvc, credentialName1, false, 20, null, false);
+    final String secondUsername = (new JSONObject(secondResponse)).getJSONObject("value").getString("username");
+    final String secondPassword = (new JSONObject(secondResponse)).getJSONObject("value").getString("password");
 
     assertThat(originalPassword, not(Matchers.equalTo(secondPassword)));
     assertThat(secondPassword.length(), equalTo(20));
@@ -382,8 +382,8 @@ public class UserGenerationTest {
   public void credentialOverwrittenWhenModeIsSetToConvergeAndUsernameNotTheSame() throws Exception {
     generateUser(mockMvc, credentialName1, true, null, "original-username", false);
 
-    String secondResponse = generateUser(mockMvc, credentialName1, false, null, "updated-username", false);
-    String secondUsername = (new JSONObject(secondResponse)).getJSONObject("value").getString("username");
+    final String secondResponse = generateUser(mockMvc, credentialName1, false, null, "updated-username", false);
+    final String secondUsername = (new JSONObject(secondResponse)).getJSONObject("value").getString("username");
 
     assertThat(secondUsername, Matchers.equalTo("updated-username"));
   }
@@ -392,37 +392,37 @@ public class UserGenerationTest {
   public void credentialOverwrittenWhenModeIsSetToConvergeAndUsernameIsNotProvidedInTheSecondRequest() throws Exception {
     generateUser(mockMvc, credentialName1, true, null, "original-username", false);
 
-    String secondResponse = generateUser(mockMvc, credentialName1, false, null, null, false);
-    String secondUsername = (new JSONObject(secondResponse)).getJSONObject("value").getString("username");
+    final String secondResponse = generateUser(mockMvc, credentialName1, false, null, null, false);
+    final String secondUsername = (new JSONObject(secondResponse)).getJSONObject("value").getString("username");
 
     assertThat(secondUsername, not(equalTo("original-username")));
   }
 
   @Test
   public void credentialOverwrittenWhenModeIsSetToConvergeAndPasswordParametersNotTheSame() throws Exception {
-    String firstResponse = generateUser(mockMvc, credentialName1, true, 20, null, true);
-    String originalUsername = (new JSONObject(firstResponse)).getJSONObject("value").getString("username");
-    String originalPassword = (new JSONObject(firstResponse)).getJSONObject("value").getString("password");
+    final String firstResponse = generateUser(mockMvc, credentialName1, true, 20, null, true);
+    final String originalUsername = (new JSONObject(firstResponse)).getJSONObject("value").getString("username");
+    final String originalPassword = (new JSONObject(firstResponse)).getJSONObject("value").getString("password");
 
-    String secondResponse = generateUser(mockMvc, credentialName1, false, 20, null, false);
-    String secondUsername = (new JSONObject(secondResponse)).getJSONObject("value").getString("username");
-    String secondPassword = (new JSONObject(secondResponse)).getJSONObject("value").getString("password");
+    final String secondResponse = generateUser(mockMvc, credentialName1, false, 20, null, false);
+    final String secondUsername = (new JSONObject(secondResponse)).getJSONObject("value").getString("username");
+    final String secondPassword = (new JSONObject(secondResponse)).getJSONObject("value").getString("password");
 
     assertThat(originalPassword, not(Matchers.equalTo(secondPassword)));
     assertThat(secondPassword.length(), equalTo(20));
     assertThat(originalUsername, not(Matchers.equalTo(secondUsername)));
   }
 
-  private JSONObject getJsonObject(MvcResult cred1) throws Exception {
-    JSONObject jsonCred1 = new JSONObject(cred1.getResponse().getContentAsString());
+  private JSONObject getJsonObject(final MvcResult cred1) throws Exception {
+    final JSONObject jsonCred1 = new JSONObject(cred1.getResponse().getContentAsString());
     return jsonCred1
       .getJSONArray("data")
       .getJSONObject(0)
       .getJSONObject("value");
   }
 
-  private void getPost(String name) throws Exception {
-    MockHttpServletRequestBuilder post = post("/api/v1/data")
+  private void getPost(final String name) throws Exception {
+    final MockHttpServletRequestBuilder post = post("/api/v1/data")
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)

@@ -22,13 +22,14 @@ import org.cloudfoundry.credhub.view.CredentialView;
 @RestController
 public class RegenerateController {
 
-  static final String API_V1_REGENERATE = "api/v1/regenerate";
-  static final String API_V1_BULK_REGENERATE = "api/v1/bulk-regenerate";
+  public static final String API_V1_REGENERATE = "api/v1/regenerate";
+  public static final String API_V1_BULK_REGENERATE = "api/v1/bulk-regenerate";
 
-  private RegenerateHandler regenerateHandler;
+  private final RegenerateHandler regenerateHandler;
 
   @Autowired
-  public RegenerateController(RegenerateHandler regenerateHandler) {
+  public RegenerateController(final RegenerateHandler regenerateHandler) {
+    super();
     this.regenerateHandler = regenerateHandler;
   }
 
@@ -36,7 +37,7 @@ public class RegenerateController {
     path = RegenerateController.API_V1_REGENERATE,
     produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ResponseStatus(HttpStatus.OK)
-  public CredentialView regenerate(@RequestBody @Validated RegenerateRequest requestBody) {
+  public CredentialView regenerate(@RequestBody @Validated final RegenerateRequest requestBody) {
     return regenerateHandler.handleRegenerate(requestBody.getName());
   }
 
@@ -45,7 +46,7 @@ public class RegenerateController {
     produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ResponseStatus(HttpStatus.OK)
   @Transactional(rollbackFor = PermissionException.class)
-  public BulkRegenerateResults bulkRegenerate(@RequestBody @Valid BulkRegenerateRequest requestBody) {
+  public BulkRegenerateResults bulkRegenerate(@RequestBody @Valid final BulkRegenerateRequest requestBody) {
     return regenerateHandler.handleBulkRegenerate(requestBody.getSignedBy());
   }
 }

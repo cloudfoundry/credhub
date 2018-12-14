@@ -86,7 +86,7 @@ public class PermissionedCredentialServiceTest {
   private StringGenerationParameters generationParameters;
   private CredentialValue credentialValue;
   private List<PermissionEntry> accessControlEntries;
-  private BaseCredentialRequest request = mock(BaseCredentialRequest.class);
+  private final BaseCredentialRequest request = mock(BaseCredentialRequest.class);
   private Credential credential;
 
   @Before
@@ -94,7 +94,7 @@ public class PermissionedCredentialServiceTest {
     initMocks(this);
 
     userContext = mock(UserContext.class);
-    UserContextHolder userContextHolder = new UserContextHolder();
+    final UserContextHolder userContextHolder = new UserContextHolder();
     userContextHolder.setUserContext(userContext);
 
     subject = new PermissionedCredentialService(
@@ -137,10 +137,13 @@ public class PermissionedCredentialServiceTest {
 
   @Test
   public void save_whenThereIsANewCredentialAndSelfUpdatingAcls_throwsException() {
+    final PasswordCredentialVersion stubPasswordCredentialVersion = new PasswordCredentialVersion();
+    stubPasswordCredentialVersion.setEncryptor(encryptor);
+
     when(request.getType()).thenReturn("password");
     when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(null);
     when(credentialVersionDataService.save(any(CredentialVersion.class)))
-      .thenReturn(new PasswordCredentialVersion().setEncryptor(encryptor));
+      .thenReturn(stubPasswordCredentialVersion);
     when(permissionCheckingService
       .userAllowedToOperateOnActor("test-user"))
       .thenReturn(true);
@@ -151,7 +154,7 @@ public class PermissionedCredentialServiceTest {
     accessControlEntries.add(new PermissionEntry("test-user", "test-path", Arrays.asList(WRITE, WRITE_ACL)));
     try {
       subject.save(existingCredentialVersion, credentialValue, request);
-    } catch (InvalidPermissionOperationException e) {
+    } catch (final InvalidPermissionOperationException e) {
       assertThat(e.getMessage(), equalTo("error.permission.invalid_update_operation"));
     }
   }
@@ -168,9 +171,12 @@ public class PermissionedCredentialServiceTest {
 
   @Test
   public void save_whenThereIsNoExistingCredential_shouldNotCallVerifyCredentialWritePermission() {
+    final PasswordCredentialVersion stubPasswordCredentialVersion = new PasswordCredentialVersion();
+    stubPasswordCredentialVersion.setEncryptor(encryptor);
+
     when(request.getType()).thenReturn("password");
     when(credentialVersionDataService.save(any(CredentialVersion.class)))
-      .thenReturn(new PasswordCredentialVersion().setEncryptor(encryptor));
+      .thenReturn(stubPasswordCredentialVersion);
     subject.save(existingCredentialVersion, credentialValue, request);
   }
 
@@ -187,16 +193,19 @@ public class PermissionedCredentialServiceTest {
 
     try {
       subject.save(existingCredentialVersion, credentialValue, request);
-    } catch (PermissionException pe) {
+    } catch (final PermissionException pe) {
       assertThat(pe.getMessage(), equalTo("error.credential.invalid_access"));
     }
   }
 
   @Test
   public void save_whenThereIsAnExistingCredentialAndOverWriteIsTrue_shouldNotAddACEForTheCurrentUser() {
+    final PasswordCredentialVersion stubPasswordCredentialVersion = new PasswordCredentialVersion();
+    stubPasswordCredentialVersion.setEncryptor(encryptor);
+
     when(request.getType()).thenReturn("password");
     when(credentialVersionDataService.save(any(CredentialVersion.class)))
-      .thenReturn(new PasswordCredentialVersion().setEncryptor(encryptor));
+      .thenReturn(stubPasswordCredentialVersion);
     when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredentialVersion);
 
     subject.save(existingCredentialVersion, credentialValue, request);
@@ -206,13 +215,16 @@ public class PermissionedCredentialServiceTest {
 
   @Test
   public void save_whenWritingCredential_savesANewVersion() {
+    final PasswordCredentialVersion stubPasswordCredentialVersion = new PasswordCredentialVersion();
+    stubPasswordCredentialVersion.setEncryptor(encryptor);
+
     when(request.getType()).thenReturn("password");
     when(credentialVersionDataService.save(any(CredentialVersion.class)))
-      .thenReturn(new PasswordCredentialVersion().setEncryptor(encryptor));
+      .thenReturn(stubPasswordCredentialVersion);
     final PasswordCredentialVersion newVersion = new PasswordCredentialVersion();
 
     when(credentialFactory.makeNewCredentialVersion(
-      CredentialType.valueOf("password"),
+      CredentialType.valueOf("PASSWORD"),
       CREDENTIAL_NAME,
       credentialValue,
       null,
@@ -232,7 +244,7 @@ public class PermissionedCredentialServiceTest {
     try {
       subject.delete(CREDENTIAL_NAME);
       fail("Should throw exception");
-    } catch (EntryNotFoundException e) {
+    } catch (final EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
     }
   }
@@ -245,7 +257,7 @@ public class PermissionedCredentialServiceTest {
     try {
       subject.findAllByName(CREDENTIAL_NAME);
       fail("Should throw exception");
-    } catch (EntryNotFoundException e) {
+    } catch (final EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
     }
   }
@@ -255,7 +267,7 @@ public class PermissionedCredentialServiceTest {
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
       .thenReturn(true);
 
-    ArrayList<CredentialVersion> expectedCredentials = newArrayList(existingCredentialVersion);
+    final List<CredentialVersion> expectedCredentials = newArrayList(existingCredentialVersion);
     when(credentialVersionDataService.findAllByName(CREDENTIAL_NAME))
       .thenReturn(expectedCredentials);
 
@@ -271,7 +283,7 @@ public class PermissionedCredentialServiceTest {
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
       .thenReturn(true);
 
-    ArrayList<CredentialVersion> expectedCredentials = newArrayList(existingCredentialVersion);
+    final List<CredentialVersion> expectedCredentials = newArrayList(existingCredentialVersion);
     when(credentialVersionDataService.findActiveByName(CREDENTIAL_NAME))
       .thenReturn(expectedCredentials);
 
@@ -302,7 +314,7 @@ public class PermissionedCredentialServiceTest {
     try {
       subject.findNByName(CREDENTIAL_NAME, 1);
       fail("Should throw exception");
-    } catch (EntryNotFoundException e) {
+    } catch (final EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
     }
   }
@@ -315,7 +327,7 @@ public class PermissionedCredentialServiceTest {
     try {
       subject.findNByName(CREDENTIAL_NAME, -1);
       fail("should throw exception");
-    } catch (InvalidQueryParameterException e) {
+    } catch (final InvalidQueryParameterException e) {
       assertThat(e.getInvalidQueryParameter(), equalTo("versions"));
       assertThat(e.getMessage(), equalTo("error.invalid_query_parameter"));
     }
@@ -337,7 +349,7 @@ public class PermissionedCredentialServiceTest {
     try {
       subject.findVersionByUuid(VERSION_UUID_STRING);
       fail("should throw exception");
-    } catch (EntryNotFoundException e) {
+    } catch (final EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
     }
   }
@@ -350,7 +362,7 @@ public class PermissionedCredentialServiceTest {
     try {
       subject.findVersionByUuid(VERSION_UUID_STRING);
       fail("should throw exception");
-    } catch (EntryNotFoundException e) {
+    } catch (final EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
     }
   }
@@ -360,11 +372,11 @@ public class PermissionedCredentialServiceTest {
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
       .thenReturn(true);
 
-    ArrayList<String> expectedCertificates = newArrayList("expectedCertificate");
+    final List<String> expectedCertificates = newArrayList("expectedCertificate");
     when(credentialVersionDataService.findAllCertificateCredentialsByCaName(CREDENTIAL_NAME))
       .thenReturn(expectedCertificates);
 
-    List<String> foundCertificates = subject
+    final List<String> foundCertificates = subject
       .findAllCertificateCredentialsByCaName(CREDENTIAL_NAME);
 
     assertThat(foundCertificates, equalTo(expectedCertificates));
@@ -378,31 +390,33 @@ public class PermissionedCredentialServiceTest {
     try {
       subject.findAllCertificateCredentialsByCaName(CREDENTIAL_NAME);
       fail("should throw exception");
-    } catch (EntryNotFoundException e) {
+    } catch (final EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
     }
   }
 
   @Test
   public void save_whenThereIsAnExistingCredentialAndParametersAreSame_DoesNotOverwriteCredential() {
+    final PasswordCredentialVersion stubPasswordCredentialVersion = new PasswordCredentialVersion();
+    stubPasswordCredentialVersion.setEncryptor(encryptor);
 
-    BaseCredentialGenerateRequest generateRequest = mock(BaseCredentialGenerateRequest.class);
+    final BaseCredentialGenerateRequest generateRequest = mock(BaseCredentialGenerateRequest.class);
     when(generateRequest.getName()).thenReturn(CREDENTIAL_NAME);
     when(generateRequest.getGenerationParameters()).thenReturn(generationParameters);
 
     when(generateRequest.getType()).thenReturn("password");
     when(credentialVersionDataService.save(any(CredentialVersion.class)))
-      .thenReturn(new PasswordCredentialVersion().setEncryptor(encryptor));
+      .thenReturn(stubPasswordCredentialVersion);
     final PasswordCredentialVersion newVersion = new PasswordCredentialVersion();
 
-    CredentialVersion originalCredentialVersion = mock(CredentialVersion.class);
+    final CredentialVersion originalCredentialVersion = mock(CredentialVersion.class);
     when(originalCredentialVersion.matchesGenerationParameters(generationParameters)).thenReturn(true);
 
     when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(originalCredentialVersion);
     when(originalCredentialVersion.getCredentialType()).thenReturn("password");
 
     when(credentialFactory.makeNewCredentialVersion(
-      CredentialType.valueOf("password"),
+      CredentialType.valueOf("PASSWORD"),
       CREDENTIAL_NAME,
       credentialValue,
       originalCredentialVersion,
@@ -415,19 +429,22 @@ public class PermissionedCredentialServiceTest {
 
   @Test
   public void save_whenThereIsAnExistingCredentialAndParametersAreDifferent_OverwritesCredential() {
+    final PasswordCredentialVersion stubPasswordCredentialVersion = new PasswordCredentialVersion();
+    stubPasswordCredentialVersion.setEncryptor(encryptor);
+
     when(request.getType()).thenReturn("password");
     when(credentialVersionDataService.save(any(CredentialVersion.class)))
-      .thenReturn(new PasswordCredentialVersion().setEncryptor(encryptor));
+      .thenReturn(stubPasswordCredentialVersion);
     final PasswordCredentialVersion newVersion = new PasswordCredentialVersion();
 
-    CredentialVersion originalCredentialVersion = mock(CredentialVersion.class);
+    final CredentialVersion originalCredentialVersion = mock(CredentialVersion.class);
     when(originalCredentialVersion.matchesGenerationParameters(generationParameters)).thenReturn(false);
 
     when(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(originalCredentialVersion);
     when(originalCredentialVersion.getCredentialType()).thenReturn("password");
 
     when(credentialFactory.makeNewCredentialVersion(
-      CredentialType.valueOf("password"),
+      CredentialType.valueOf("PASSWORD"),
       CREDENTIAL_NAME,
       credentialValue,
       originalCredentialVersion,
@@ -454,7 +471,7 @@ public class PermissionedCredentialServiceTest {
     try {
       subject.findByUuid(CREDENTIAL_UUID);
       fail("Should throw exception");
-    } catch (EntryNotFoundException e) {
+    } catch (final EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
     }
   }
@@ -464,7 +481,7 @@ public class PermissionedCredentialServiceTest {
     try {
       subject.findByUuid(UUID.randomUUID());
       fail("Should throw exception");
-    } catch (EntryNotFoundException e) {
+    } catch (final EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
     }
   }

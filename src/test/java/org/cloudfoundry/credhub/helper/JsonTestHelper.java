@@ -20,6 +20,7 @@ import static com.fasterxml.jackson.databind.PropertyNamingStrategy.SNAKE_CASE;
 final public class JsonTestHelper {
 
   private JsonTestHelper() {
+    super();
   }
 
   private static final ObjectMapper OBJECT_MAPPER = createObjectMapper();
@@ -33,67 +34,67 @@ final public class JsonTestHelper {
       .setPropertyNamingStrategy(SNAKE_CASE);
   }
 
-  public static byte[] serialize(Object object) {
+  public static byte[] serialize(final Object object) {
     try {
       return OBJECT_MAPPER.writeValueAsBytes(object);
-    } catch (JsonProcessingException e) {
+    } catch (final JsonProcessingException e) {
       throw new RuntimeException(e);
     }
   }
 
-  public static String serializeToString(Object object) {
+  public static String serializeToString(final Object object) {
     try {
       return OBJECT_MAPPER.writeValueAsString(object);
-    } catch (JsonProcessingException e) {
+    } catch (final JsonProcessingException e) {
       throw new RuntimeException(e);
     }
   }
 
-  public static <T> T deserialize(byte[] json, Class<T> klass) {
+  public static <T> T deserialize(final byte[] json, final Class<T> klass) {
     try {
       return OBJECT_MAPPER.readValue(json, klass);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  public static <T> T deserialize(String json, Class<T> klass) {
+  public static <T> T deserialize(final String json, final Class<T> klass) {
     try {
       return deserializeChecked(json, klass);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  public static <T> T deserializeChecked(String json, Class<T> klass) throws IOException {
+  public static <T> T deserializeChecked(final String json, final Class<T> klass) throws IOException {
     return OBJECT_MAPPER.readValue(json, klass);
   }
 
-  public static <T> Set<ConstraintViolation<T>> validate(T original) {
+  public static <T> Set<ConstraintViolation<T>> validate(final T original) {
     return VALIDATOR.validate(original);
   }
 
-  public static <T> Set<ConstraintViolation<T>> deserializeAndValidate(String json,
-                                                                       Class<T> klass) {
+  public static <T> Set<ConstraintViolation<T>> deserializeAndValidate(final String json,
+                                                                       final Class<T> klass) {
     try {
-      T object = OBJECT_MAPPER.readValue(json, klass);
+      final T object = OBJECT_MAPPER.readValue(json, klass);
       return VALIDATOR.validate(object);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  public static <T> Set<ConstraintViolation<T>> deserializeAndValidate(byte[] json,
-                                                                       Class<T> klass) {
+  public static <T> Set<ConstraintViolation<T>> deserializeAndValidate(final byte[] json,
+                                                                       final Class<T> klass) {
     try {
-      T object = OBJECT_MAPPER.readValue(json, klass);
+      final T object = OBJECT_MAPPER.readValue(json, klass);
       return VALIDATOR.validate(object);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  public static Matcher<ConstraintViolation<?>> hasViolationWithMessage(String expectedMessage) {
+  public static Matcher<ConstraintViolation<?>> hasViolationWithMessage(final String expectedMessage) {
     return new BaseMatcher<ConstraintViolation<?>>() {
       @Override
       public boolean matches(final Object item) {
@@ -108,7 +109,7 @@ final public class JsonTestHelper {
     };
   }
 
-  public static JsonNode parse(String jsonString) throws Exception {
+  public static JsonNode parse(final String jsonString) throws Exception {
     return OBJECT_MAPPER.readTree(jsonString);
   }
 }

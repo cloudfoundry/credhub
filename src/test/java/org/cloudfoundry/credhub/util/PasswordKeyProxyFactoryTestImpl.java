@@ -12,7 +12,9 @@ import org.cloudfoundry.credhub.service.PasswordKeyProxyFactory;
 @Component
 @Profile("unit-test")
 public class PasswordKeyProxyFactoryTestImpl implements PasswordKeyProxyFactory {
-  public KeyProxy createPasswordKeyProxy(EncryptionKeyMetadata encryptionKeyMetadata, InternalEncryptionService encryptionService) {
+  @Override
+  public KeyProxy createPasswordKeyProxy(
+    final EncryptionKeyMetadata encryptionKeyMetadata, final InternalEncryptionService encryptionService) {
     return new PasswordBasedKeyProxy(encryptionKeyMetadata.getEncryptionPassword(), 1, encryptionService);
   }
 }

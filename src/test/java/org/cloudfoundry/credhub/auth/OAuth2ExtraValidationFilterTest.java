@@ -69,7 +69,7 @@ public class OAuth2ExtraValidationFilterTest {
 
   @Test
   public void whenGivenInvalidIssuer_returns401() throws Exception {
-    MockHttpServletRequestBuilder request = post("/api/v1/data?name=/picard")
+    final MockHttpServletRequestBuilder request = post("/api/v1/data?name=/picard")
       .header("Authorization", "Bearer " + AuthConstants.INVALID_ISSUER_JWT)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -87,7 +87,7 @@ public class OAuth2ExtraValidationFilterTest {
 
   @Test
   public void whenGivenInvalidIssuer_onlyReturnsIntendedResponse() throws Exception {
-    MockHttpServletRequestBuilder request = post("/api/v1/data?name=/picard")
+    final MockHttpServletRequestBuilder request = post("/api/v1/data?name=/picard")
       .header("Authorization", "Bearer " + AuthConstants.INVALID_ISSUER_JWT)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -98,7 +98,7 @@ public class OAuth2ExtraValidationFilterTest {
           "}"
       );
 
-    String response = this.mockMvc.perform(request)
+    final String response = this.mockMvc.perform(request)
       .andExpect(status().isUnauthorized())
       .andExpect(jsonPath("$.error_description").value(ERROR_MESSAGE))
       .andReturn()
@@ -106,7 +106,7 @@ public class OAuth2ExtraValidationFilterTest {
       .getContentAsString();
 
     // The response originally concatenated the error and the credential.
-    String expectedResponse = "{\"error\":\"invalid_token\",\"error_description\":\"The request token identity zone does not match the UAA server authorized by CredHub. Please validate that your request token was issued by the UAA server authorized by CredHub and retry your request.\"}";
+    final String expectedResponse = "{\"error\":\"invalid_token\",\"error_description\":\"The request token identity zone does not match the UAA server authorized by CredHub. Please validate that your request token was issued by the UAA server authorized by CredHub and retry your request.\"}";
 
     assertThat(response, equalTo(expectedResponse));
     assertThat(credentialVersionRepository.count(), equalTo(0L));
@@ -114,7 +114,7 @@ public class OAuth2ExtraValidationFilterTest {
 
   @Test
   public void whenGivenMalformedToken_onlyReturnsIntendedResponse() throws Exception {
-    MockHttpServletRequestBuilder request = post("/api/v1/data?name=/picard")
+    final MockHttpServletRequestBuilder request = post("/api/v1/data?name=/picard")
       .header("Authorization", "Bearer " + AuthConstants.MALFORMED_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -125,7 +125,7 @@ public class OAuth2ExtraValidationFilterTest {
           "}"
       );
 
-    String response = this.mockMvc.perform(request)
+    final String response = this.mockMvc.perform(request)
       .andExpect(status().isUnauthorized())
       .andExpect(jsonPath("$.error_description").value("The request token is malformed. Please validate that your request token was issued by the UAA server authorized by CredHub."))
       .andReturn()
@@ -133,7 +133,7 @@ public class OAuth2ExtraValidationFilterTest {
       .getContentAsString();
 
     // The response originally concatenated the error and the credential.
-    String expectedResponse = "{\"error\":\"invalid_token\",\"error_description\":\"The request token is malformed. Please validate that your request token was issued by the UAA server authorized by CredHub.\"}";
+    final String expectedResponse = "{\"error\":\"invalid_token\",\"error_description\":\"The request token is malformed. Please validate that your request token was issued by the UAA server authorized by CredHub.\"}";
 
     assertThat(response, equalTo(expectedResponse));
     assertThat(credentialVersionRepository.count(), equalTo(0L));
@@ -141,7 +141,7 @@ public class OAuth2ExtraValidationFilterTest {
 
   @Test
   public void whenGivenValidTokenDoesNotMatchJWTSignature_onlyReturnsIntendedResponse() throws Exception {
-    MockHttpServletRequestBuilder request = post("/api/v1/data?name=/picard")
+    final MockHttpServletRequestBuilder request = post("/api/v1/data?name=/picard")
       .header("Authorization", "Bearer " + AuthConstants.INVALID_SIGNATURE_JWT)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -152,7 +152,7 @@ public class OAuth2ExtraValidationFilterTest {
           "}"
       );
 
-    String response = this.mockMvc.perform(request)
+    final String response = this.mockMvc.perform(request)
       .andExpect(status().isUnauthorized())
       .andExpect(jsonPath("$.error_description").value("The request token signature could not be verified. Please validate that your request token was issued by the UAA server authorized by CredHub."))
       .andReturn()
@@ -160,7 +160,7 @@ public class OAuth2ExtraValidationFilterTest {
       .getContentAsString();
 
     // The response originally concatenated the error and the credential.
-    String expectedResponse = "{\"error\":\"invalid_token\",\"error_description\":\"The request token signature could not be verified. Please validate that your request token was issued by the UAA server authorized by CredHub.\"}";
+    final String expectedResponse = "{\"error\":\"invalid_token\",\"error_description\":\"The request token signature could not be verified. Please validate that your request token was issued by the UAA server authorized by CredHub.\"}";
 
     assertThat(response, equalTo(expectedResponse));
     assertThat(credentialVersionRepository.count(), equalTo(0L));

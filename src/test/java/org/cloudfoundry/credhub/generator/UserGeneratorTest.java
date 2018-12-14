@@ -24,16 +24,16 @@ public class UserGeneratorTest {
 
   @Before
   public void beforeEach() {
-    UsernameGenerator usernameGenerator = mock(UsernameGenerator.class);
-    PasswordCredentialGenerator passwordGenerator = mock(PasswordCredentialGenerator.class);
-    CryptSaltFactory cryptSaltFactory = mock(CryptSaltFactory.class);
+    final UsernameGenerator usernameGenerator = mock(UsernameGenerator.class);
+    final PasswordCredentialGenerator passwordGenerator = mock(PasswordCredentialGenerator.class);
+    final CryptSaltFactory cryptSaltFactory = mock(CryptSaltFactory.class);
 
     passwordParameters = new StringGenerationParameters();
 
     subject = new UserGenerator(usernameGenerator, passwordGenerator, cryptSaltFactory);
 
-    StringCredentialValue generatedUsername = new StringCredentialValue("fake-generated-username");
-    StringCredentialValue generatedPassword = new StringCredentialValue("fake-generated-password");
+    final StringCredentialValue generatedUsername = new StringCredentialValue("fake-generated-username");
+    final StringCredentialValue generatedPassword = new StringCredentialValue("fake-generated-password");
 
     when(usernameGenerator.generateCredential())
       .thenReturn(generatedUsername);

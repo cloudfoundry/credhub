@@ -12,7 +12,7 @@ public class PermissionsV2PatchRequest {
     return operations;
   }
 
-  public void setOperations(List<PermissionOperation> operations) {
+  public void setOperations(final List<PermissionOperation> operations) {
     this.operations = operations;
   }
 }

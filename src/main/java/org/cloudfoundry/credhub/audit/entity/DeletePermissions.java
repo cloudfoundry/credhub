@@ -8,9 +8,11 @@ public class DeletePermissions implements RequestDetails {
   private String actor;
 
   public DeletePermissions() {
+    super();
 
   }
-  public DeletePermissions(String credentialName, String actor) {
+  public DeletePermissions(final String credentialName, final String actor) {
+    super();
     this.credentialName = credentialName;
     this.actor = actor;
   }
@@ -19,7 +21,7 @@ public class DeletePermissions implements RequestDetails {
     return credentialName;
   }
 
-  public void setCredentialName(String credentialName) {
+  public void setCredentialName(final String credentialName) {
     this.credentialName = credentialName;
   }
 
@@ -27,7 +29,7 @@ public class DeletePermissions implements RequestDetails {
     return actor;
   }
 
-  public void setActor(String actor) {
+  public void setActor(final String actor) {
     this.actor = actor;
   }
 

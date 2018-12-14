@@ -20,16 +20,17 @@ public class UserContextFactory {
   private ResourceServerTokenServices resourceServerTokenServices;
 
   /*
-   * The "iat" and "exp" claims are parsed by Jackson as integers, because JWT defines these
-   * as seconds since Epoch (https://tools.ietf.org/html/rfc7519#section-2). That means it has a
-   * Year-2038 bug. To adapt to our local model, hoping JWT will some day be improved, this
-   * function returns a numeric value as long.
+   * The "iat" and "exp" claims are parsed by Jackson as integers,
+   * because JWT defines these as seconds since Epoch
+   * (https://tools.ietf.org/html/rfc7519#section-2). That means it has a
+   * Year-2038 bug. To adapt to our local model, hoping JWT will some day be improved,
+   * this function returns a numeric value as long.
    */
-  private static long claimValueAsLong(Map<String, Object> additionalInformation) {
+  private static long claimValueAsLong(final Map<String, Object> additionalInformation) {
     return ((Number) additionalInformation.get("iat")).longValue();
   }
 
-  public UserContext createUserContext(Authentication authentication) {
+  public UserContext createUserContext(final Authentication authentication) {
     if (authentication instanceof PreAuthenticatedAuthenticationToken) {
       return createUserContext((PreAuthenticatedAuthenticationToken) authentication);
     } else {
@@ -37,10 +38,10 @@ public class UserContextFactory {
     }
   }
 
-  public UserContext createUserContext(OAuth2Authentication authentication, String token) {
-    OAuth2Request oauth2Request = authentication.getOAuth2Request();
-    String clientId = oauth2Request.getClientId();
-    String grantType = oauth2Request.getGrantType();
+  public UserContext createUserContext(final OAuth2Authentication authentication, final String maybeToken) {
+    final OAuth2Request oauth2Request = authentication.getOAuth2Request();
+    final String clientId = oauth2Request.getClientId();
+    final String grantType = oauth2Request.getGrantType();
     String userId = null;
     String userName = null;
     String issuer = null;
@@ -48,21 +49,23 @@ public class UserContextFactory {
     long validUntil = 0;
     String scope = null;
 
-    if (token == null) {
-      OAuth2AuthenticationDetails authDetails = (OAuth2AuthenticationDetails) authentication
+    String token = maybeToken;
+
+    if (maybeToken == null) {
+      final OAuth2AuthenticationDetails authDetails = (OAuth2AuthenticationDetails) authentication
         .getDetails();
       token = authDetails.getTokenValue();
     }
 
-    OAuth2AccessToken accessToken;
+    final OAuth2AccessToken accessToken;
     accessToken = resourceServerTokenServices.readAccessToken(token);
 
 
     if (accessToken != null) {
-      Set<String> scopes = accessToken.getScope();
+      final Set<String> scopes = accessToken.getScope();
       scope = scopes == null ? null : String.join(",", scopes);
 
-      Map<String, Object> additionalInformation = accessToken.getAdditionalInformation();
+      final Map<String, Object> additionalInformation = accessToken.getAdditionalInformation();
       userName = (String) additionalInformation.get("user_name");
       userId = (String) additionalInformation.get("user_id");
       issuer = (String) additionalInformation.get("iss");
@@ -83,8 +86,8 @@ public class UserContextFactory {
     );
   }
 
-  private UserContext createUserContext(PreAuthenticatedAuthenticationToken authentication) {
-    X509Certificate certificate = (X509Certificate) authentication.getCredentials();
+  private UserContext createUserContext(final PreAuthenticatedAuthenticationToken authentication) {
+    final X509Certificate certificate = (X509Certificate) authentication.getCredentials();
 
     return new UserContext(
       certificate.getNotBefore().toInstant().getEpochSecond(),

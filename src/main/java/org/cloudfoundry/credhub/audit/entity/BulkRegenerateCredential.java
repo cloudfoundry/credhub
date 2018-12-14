@@ -8,10 +8,12 @@ public class BulkRegenerateCredential implements RequestDetails {
   private String signedBy;
 
   public BulkRegenerateCredential() {
+    super();
 
   }
 
-  public BulkRegenerateCredential(String signedBy) {
+  public BulkRegenerateCredential(final String signedBy) {
+    super();
     this.signedBy = signedBy;
   }
 
@@ -20,7 +22,7 @@ public class BulkRegenerateCredential implements RequestDetails {
     return signedBy;
   }
 
-  public void setSignedBy(String signedBy) {
+  public void setSignedBy(final String signedBy) {
     this.signedBy = signedBy;
   }
 
@@ -30,7 +32,7 @@ public class BulkRegenerateCredential implements RequestDetails {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
@@ -39,7 +41,7 @@ public class BulkRegenerateCredential implements RequestDetails {
       return false;
     }
 
-    BulkRegenerateCredential that = (BulkRegenerateCredential) o;
+    final BulkRegenerateCredential that = (BulkRegenerateCredential) o;
 
     return new EqualsBuilder()
       .append(signedBy, that.signedBy)

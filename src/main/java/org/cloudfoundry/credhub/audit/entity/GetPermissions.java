@@ -7,10 +7,12 @@ public class GetPermissions implements RequestDetails {
   private String credentialName;
 
   public GetPermissions() {
+    super();
 
   }
 
-  public GetPermissions(String credentialName) {
+  public GetPermissions(final String credentialName) {
+    super();
     this.credentialName = credentialName;
   }
 
@@ -18,7 +20,7 @@ public class GetPermissions implements RequestDetails {
     return credentialName;
   }
 
-  public void setCredentialName(String credentialName) {
+  public void setCredentialName(final String credentialName) {
     this.credentialName = credentialName;
   }
 

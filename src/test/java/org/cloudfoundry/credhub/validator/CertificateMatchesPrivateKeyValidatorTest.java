@@ -22,9 +22,9 @@ public class CertificateMatchesPrivateKeyValidatorTest {
 
   @Test
   public void isValid_shouldThrowAMalformedPrivateKeyException_whenPrivateKeyIsMalformed() {
-    CertificateMatchesPrivateKeyValidator certificateMatchesPrivateKeyValidator = new CertificateMatchesPrivateKeyValidator();
+    final CertificateMatchesPrivateKeyValidator certificateMatchesPrivateKeyValidator = new CertificateMatchesPrivateKeyValidator();
 
-    CertificateCredentialValue certificateCredentialValue = new CertificateCredentialValue(
+    final CertificateCredentialValue certificateCredentialValue = new CertificateCredentialValue(
       TestConstants.TEST_CA,
       TestConstants.TEST_CERTIFICATE,
       TestConstants.INVALID_PRIVATE_KEY,

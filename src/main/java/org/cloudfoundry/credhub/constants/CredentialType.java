@@ -1,17 +1,17 @@
 package org.cloudfoundry.credhub.constants;
 
 public enum CredentialType {
-  password("password"),
-  certificate("certificate"),
-  value("value"),
-  rsa("rsa"),
-  ssh("ssh"),
-  json("json"),
-  user("user");
+  PASSWORD("password"),
+  CERTIFICATE("certificate"),
+  VALUE("value"),
+  RSA("rsa"),
+  SSH("ssh"),
+  JSON("json"),
+  USER("user");
 
   public final String type;
 
-  CredentialType(String type) {
-    this.type = type;
+  CredentialType(final String type) {
+    this.type = type.toUpperCase();
   }
 }

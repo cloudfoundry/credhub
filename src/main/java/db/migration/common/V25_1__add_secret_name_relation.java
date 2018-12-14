@@ -1,5 +1,6 @@
 package db.migration.common;
 
+import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
 
@@ -17,18 +18,19 @@ public class V25_1__add_secret_name_relation implements SpringJdbcMigration {
     value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE",
     justification = "The database will definitely exist"
   )
-  public void migrate(JdbcTemplate jdbcTemplate) throws Exception {
-    String databaseName = jdbcTemplate
+  @Override
+  public void migrate(final JdbcTemplate jdbcTemplate) throws SQLException {
+    final String databaseName = jdbcTemplate
       .getDataSource()
       .getConnection()
       .getMetaData()
       .getDatabaseProductName()
       .toLowerCase();
 
-    List<String> names = jdbcTemplate
+    final List<String> names = jdbcTemplate
         .queryForList("select distinct(name) from named_secret", String.class);
 
-    for (String name : names) {
+    for (final String name : names) {
       jdbcTemplate.update(
           "insert into secret_name (uuid, name) values (?, ?)",
           new Object[]{makeUuid(databaseName), name},

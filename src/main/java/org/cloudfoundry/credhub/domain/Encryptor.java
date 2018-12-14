@@ -12,22 +12,23 @@ public class Encryptor {
   private final RetryingEncryptionService encryptionService;
 
   @Autowired
-  public Encryptor(RetryingEncryptionService encryptionService) {
+  public Encryptor(final RetryingEncryptionService encryptionService) {
+    super();
     this.encryptionService = encryptionService;
   }
 
-  public EncryptedValue encrypt(String clearTextValue) {
+  public EncryptedValue encrypt(final String clearTextValue) {
     if (clearTextValue == null) {
       return new EncryptedValue();
     }
     try {
       return encryptionService.encrypt(clearTextValue);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  public String decrypt(EncryptedValue encryption) {
+  public String decrypt(final EncryptedValue encryption) {
     if (encryption == null ||
       encryption.getEncryptionKeyUuid() == null ||
       encryption.getEncryptedValue() == null ||
@@ -36,7 +37,7 @@ public class Encryptor {
     }
     try {
       return encryptionService.decrypt(encryption);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }

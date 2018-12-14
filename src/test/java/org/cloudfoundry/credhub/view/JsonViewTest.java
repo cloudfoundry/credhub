@@ -40,9 +40,9 @@ public class JsonViewTest {
 
     encryptor = mock(Encryptor.class);
     uuid = UUID.randomUUID();
-    entity = new JsonCredentialVersion("/foo")
-      .setEncryptor(encryptor)
-      .setUuid(uuid);
+    entity = new JsonCredentialVersion("/foo");
+    entity.setEncryptor(encryptor);
+    entity.setUuid(uuid);
 
     when(encryptor.decrypt(any()))
       .thenReturn(serializedValue);
@@ -50,7 +50,7 @@ public class JsonViewTest {
 
   @Test
   public void itCanCreateViewFromEntity() throws IOException {
-    JsonView actual = (JsonView) JsonView.fromEntity(entity);
+    final JsonView actual = (JsonView) JsonView.fromEntity(entity);
     assertThat(serializeToString(actual), equalTo("{"
       + "\"type\":\"json\","
       + "\"version_created_at\":null,"
@@ -62,24 +62,24 @@ public class JsonViewTest {
 
   @Test
   public void hasVersionCreatedAtInTheView() {
-    Instant now = Instant.now();
+    final Instant now = Instant.now();
     entity.setVersionCreatedAt(now);
 
-    JsonView actual = (JsonView) JsonView.fromEntity(entity);
+    final JsonView actual = (JsonView) JsonView.fromEntity(entity);
 
     assertThat(actual.getVersionCreatedAt(), equalTo(now));
   }
 
   @Test
   public void hasTypeInTheView() {
-    JsonView actual = (JsonView) JsonView.fromEntity(entity);
+    final JsonView actual = (JsonView) JsonView.fromEntity(entity);
 
     assertThat(actual.getType(), equalTo("json"));
   }
 
   @Test
   public void hasAUUIDInTheView() {
-    JsonView actual = (JsonView) JsonView.fromEntity(entity);
+    final JsonView actual = (JsonView) JsonView.fromEntity(entity);
 
     assertThat(actual.getUuid(), equalTo(uuid.toString()));
   }

@@ -13,11 +13,12 @@ import org.cloudfoundry.credhub.repository.CredentialRepository;
 @Service
 public class CertificateDataService {
   private final CredentialRepository credentialRepository;
-  private CEFAuditRecord auditRecord;
+  private final CEFAuditRecord auditRecord;
 
   @Autowired
-  public CertificateDataService(CredentialRepository credentialRepository,
-                                CEFAuditRecord auditRecord) {
+  public CertificateDataService(final CredentialRepository credentialRepository,
+                                final CEFAuditRecord auditRecord) {
+    super();
     this.credentialRepository = credentialRepository;
     this.auditRecord = auditRecord;
   }
@@ -26,13 +27,13 @@ public class CertificateDataService {
     return credentialRepository.findAllCertificates();
   }
 
-  public Credential findByName(String name) {
-    Credential credential = credentialRepository.findCertificateByName(name);
+  public Credential findByName(final String name) {
+    final Credential credential = credentialRepository.findCertificateByName(name);
     auditRecord.setResource(credential);
     return credential;
   }
 
-  public Credential findByUuid(UUID uuid) {
+  public Credential findByUuid(final UUID uuid) {
     return credentialRepository.findCertificateByUuid(uuid);
   }
 }

@@ -3,14 +3,11 @@ package org.cloudfoundry.credhub.jna.libcrypto;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 
+@SuppressWarnings("PMD.TooManyMethods")
 final public class Crypto {
 
-  private Crypto() { }
-
-  static final long RSA_F4 = 0x10001L;
-  static final int RSA_PKCS1_PADDING = 1;
-  static final int RSA_SSLV23_PADDING = 2;
-  static final int RSA_NO_PADDING = 3;
+  public static final long RSA_F4 = 0x10001L;
+  public static final int RSA_PKCS1_PADDING = 1;
 
   static {
     Native.register("crypto");
@@ -46,4 +43,8 @@ final public class Crypto {
   public static native void ERR_error_string_n(long e, byte[] buf, int len);
 
   public static native void RAND_seed(Pointer buf, int num);
+
+  private Crypto() {
+    super();
+  }
 }

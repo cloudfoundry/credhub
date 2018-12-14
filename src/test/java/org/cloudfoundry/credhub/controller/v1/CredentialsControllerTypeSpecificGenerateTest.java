@@ -235,53 +235,72 @@ public class CredentialsControllerTypeSpecificGenerateTest {
   @Parameterized.Parameters(name = "{0}")
   public static Collection<Object> parameters() {
     credentialUuid = UUID.randomUUID();
-    Collection<Object> params = new ArrayList<>();
+    final Collection<Object> params = new ArrayList<>();
 
-    TestParameterizer passwordParameters = new TestParameterizer("password", "{\"exclude_number\": true}") {
+    final TestParameterizer passwordParameters = new TestParameterizer("password", "{\"exclude_number\": true}") {
+      @Override
       ResultMatcher jsonAssertions() {
         return multiJsonPath("$.value", FAKE_PASSWORD);
       }
 
-      void credentialAssertions(CredentialVersion credential) {
-        PasswordCredentialVersion passwordCredential = (PasswordCredentialVersion) credential;
+      @Override
+      void credentialAssertions(final CredentialVersion credential) {
+        final PasswordCredentialVersion passwordCredential = (PasswordCredentialVersion) credential;
         assertThat(passwordCredential.getGenerationParameters().isExcludeNumber(), equalTo(true));
         assertThat(passwordCredential.getPassword(), equalTo(FAKE_PASSWORD));
       }
 
-      CredentialVersion createCredential(Encryptor encryptor) {
-        return new PasswordCredentialVersion(CREDENTIAL_NAME)
-          .setEncryptor(encryptor)
-          .setPasswordAndGenerationParameters(FAKE_PASSWORD, new StringGenerationParameters().setExcludeNumber(true))
-          .setUuid(credentialUuid)
-          .setVersionCreatedAt(FROZEN_TIME.minusSeconds(1));
+      @Override
+      CredentialVersion createCredential(final Encryptor encryptor) {
+
+        final StringGenerationParameters stringGenerationParameters = new StringGenerationParameters();
+        stringGenerationParameters.setExcludeNumber(true);
+
+        PasswordCredentialVersion passwordCredentialVersion = new PasswordCredentialVersion(CREDENTIAL_NAME);
+        passwordCredentialVersion.setEncryptor(encryptor);
+        passwordCredentialVersion.setPasswordAndGenerationParameters(FAKE_PASSWORD, stringGenerationParameters);
+        passwordCredentialVersion.setUuid(credentialUuid);
+        passwordCredentialVersion.setVersionCreatedAt(FROZEN_TIME.minusSeconds(1));
+
+        return passwordCredentialVersion;
       }
     };
 
-    TestParameterizer userParameterizer = new TestParameterizer("user", "{\"exclude_number\": true}") {
+    final TestParameterizer userParameterizer = new TestParameterizer("user", "{\"exclude_number\": true}") {
+      @Override
       ResultMatcher jsonAssertions() {
         return multiJsonPath("$.value.username", USERNAME, "$.value.password", FAKE_PASSWORD);
       }
 
-      void credentialAssertions(CredentialVersion credential) {
-        UserCredentialVersion userCredential = (UserCredentialVersion) credential;
+      @Override
+      void credentialAssertions(final CredentialVersion credential) {
+        final UserCredentialVersion userCredential = (UserCredentialVersion) credential;
         assertThat(userCredential.getGenerationParameters().isExcludeNumber(), equalTo(true));
         assertThat(userCredential.getUsername(), equalTo(USERNAME));
         assertThat(userCredential.getPassword(), equalTo(FAKE_PASSWORD));
       }
 
-      CredentialVersion createCredential(Encryptor encryptor) {
-        return new UserCredentialVersion(CREDENTIAL_NAME)
-          .setEncryptor(encryptor)
-          .setPassword(FAKE_PASSWORD)
-          .setGenerationParameters(new StringGenerationParameters().setExcludeNumber(true))
-          .setUsername(USERNAME)
-          .setUuid(credentialUuid)
-          .setVersionCreatedAt(FROZEN_TIME.minusSeconds(1));
+      @Override
+      CredentialVersion createCredential(final Encryptor encryptor) {
+
+        final StringGenerationParameters stringGenerationParameters = new StringGenerationParameters();
+        stringGenerationParameters.setExcludeNumber(true);
+
+        UserCredentialVersion userCredentialVersion = new UserCredentialVersion(CREDENTIAL_NAME);
+        userCredentialVersion.setEncryptor(encryptor);
+        userCredentialVersion.setPassword(FAKE_PASSWORD);
+        userCredentialVersion.setGenerationParameters(stringGenerationParameters);
+        userCredentialVersion.setUsername(USERNAME);
+        userCredentialVersion.setUuid(credentialUuid);
+        userCredentialVersion.setVersionCreatedAt(FROZEN_TIME.minusSeconds(1));
+
+        return userCredentialVersion;
       }
     };
 
-    TestParameterizer certificateParameterizer = new TestParameterizer("certificate",
+    final TestParameterizer certificateParameterizer = new TestParameterizer("certificate",
       "{\"common_name\":\"example.com\",\"self_sign\":true}") {
+      @Override
       ResultMatcher jsonAssertions() {
         return multiJsonPath(
           "$.value.certificate", CERTIFICATE,
@@ -289,25 +308,30 @@ public class CredentialsControllerTypeSpecificGenerateTest {
           "$.value.ca", CA);
       }
 
-      void credentialAssertions(CredentialVersion credential) {
-        CertificateCredentialVersion certificateCredential = (CertificateCredentialVersion) credential;
+      @Override
+      void credentialAssertions(final CredentialVersion credential) {
+        final CertificateCredentialVersion certificateCredential = (CertificateCredentialVersion) credential;
         assertThat(certificateCredential.getCa(), equalTo(CA));
         assertThat(certificateCredential.getCertificate(), equalTo(CERTIFICATE));
         assertThat(certificateCredential.getPrivateKey(), equalTo(CERTIFICATE_PRIVATE_KEY));
       }
 
-      CredentialVersion createCredential(Encryptor encryptor) {
-        return new CertificateCredentialVersion(CREDENTIAL_NAME)
-          .setEncryptor(encryptor)
-          .setCa(CA)
-          .setCertificate(CERTIFICATE)
-          .setPrivateKey(CERTIFICATE_PRIVATE_KEY)
-          .setUuid(credentialUuid)
-          .setVersionCreatedAt(FROZEN_TIME.minusSeconds(1));
+      @Override
+      CredentialVersion createCredential(final Encryptor encryptor) {
+        CertificateCredentialVersion certificateCredentialVersion = new CertificateCredentialVersion(CREDENTIAL_NAME);
+        certificateCredentialVersion.setEncryptor(encryptor);
+        certificateCredentialVersion.setCa(CA);
+        certificateCredentialVersion.setCertificate(CERTIFICATE);
+        certificateCredentialVersion.setPrivateKey(CERTIFICATE_PRIVATE_KEY);
+        certificateCredentialVersion.setUuid(credentialUuid);
+        certificateCredentialVersion.setVersionCreatedAt(FROZEN_TIME.minusSeconds(1));
+
+        return certificateCredentialVersion;
       }
     };
 
-    TestParameterizer sshParameterizer = new TestParameterizer("ssh", "null") {
+    final TestParameterizer sshParameterizer = new TestParameterizer("ssh", "null") {
+      @Override
       ResultMatcher jsonAssertions() {
         return multiJsonPath(
           "$.value.public_key", PUBLIC_KEY,
@@ -315,41 +339,50 @@ public class CredentialsControllerTypeSpecificGenerateTest {
           "$.value.public_key_fingerprint", FINGER_PRINT);
       }
 
-      void credentialAssertions(CredentialVersion credential) {
-        SshCredentialVersion sshCredential = (SshCredentialVersion) credential;
+      @Override
+      void credentialAssertions(final CredentialVersion credential) {
+        final SshCredentialVersion sshCredential = (SshCredentialVersion) credential;
         assertThat(sshCredential.getPublicKey(), equalTo(PUBLIC_KEY));
         assertThat(sshCredential.getPrivateKey(), equalTo(PRIVATE_KEY));
       }
 
-      CredentialVersion createCredential(Encryptor encryptor) {
-        return new SshCredentialVersion(CREDENTIAL_NAME)
-          .setEncryptor(encryptor)
-          .setPrivateKey(PRIVATE_KEY)
-          .setPublicKey(PUBLIC_KEY)
-          .setUuid(credentialUuid)
-          .setVersionCreatedAt(FROZEN_TIME.minusSeconds(1));
+      @Override
+      CredentialVersion createCredential(final Encryptor encryptor) {
+        SshCredentialVersion sshCredentialVersion = new SshCredentialVersion(CREDENTIAL_NAME);
+        sshCredentialVersion.setEncryptor(encryptor);
+        sshCredentialVersion.setPrivateKey(PRIVATE_KEY);
+        sshCredentialVersion.setPublicKey(PUBLIC_KEY);
+        sshCredentialVersion.setUuid(credentialUuid);
+        sshCredentialVersion.setVersionCreatedAt(FROZEN_TIME.minusSeconds(1));
+
+        return sshCredentialVersion;
       }
     };
 
-    TestParameterizer rsaParameterizer = new TestParameterizer("rsa", "null") {
+    final TestParameterizer rsaParameterizer = new TestParameterizer("rsa", "null") {
+      @Override
       ResultMatcher jsonAssertions() {
         return multiJsonPath("$.value.public_key", RSA_PUBLIC_KEY,
           "$.value.private_key", RSA_PRIVATE_KEY);
       }
 
-      void credentialAssertions(CredentialVersion credential) {
-        RsaCredentialVersion rsaCredential = (RsaCredentialVersion) credential;
+      @Override
+      void credentialAssertions(final CredentialVersion credential) {
+        final RsaCredentialVersion rsaCredential = (RsaCredentialVersion) credential;
         assertThat(rsaCredential.getPublicKey(), equalTo(RSA_PUBLIC_KEY));
         assertThat(rsaCredential.getPrivateKey(), equalTo(RSA_PRIVATE_KEY));
       }
 
-      CredentialVersion createCredential(Encryptor encryptor) {
-        return new RsaCredentialVersion(CREDENTIAL_NAME)
-          .setEncryptor(encryptor)
-          .setPrivateKey(RSA_PRIVATE_KEY)
-          .setPublicKey(RSA_PUBLIC_KEY)
-          .setUuid(credentialUuid)
-          .setVersionCreatedAt(FROZEN_TIME.minusSeconds(1));
+      @Override
+      CredentialVersion createCredential(final Encryptor encryptor) {
+        RsaCredentialVersion rsaCredentialVersion = new RsaCredentialVersion(CREDENTIAL_NAME);
+        rsaCredentialVersion.setEncryptor(encryptor);
+        rsaCredentialVersion.setPrivateKey(RSA_PRIVATE_KEY);
+        rsaCredentialVersion.setPublicKey(RSA_PUBLIC_KEY);
+        rsaCredentialVersion.setUuid(credentialUuid);
+        rsaCredentialVersion.setVersionCreatedAt(FROZEN_TIME.minusSeconds(1));
+
+        return rsaCredentialVersion;
       }
     };
 
@@ -364,8 +397,8 @@ public class CredentialsControllerTypeSpecificGenerateTest {
 
   @Before
   public void setup() {
-    String fakeSalt = cryptSaltFactory.generateSalt(FAKE_PASSWORD);
-    Consumer<Long> fakeTimeSetter = mockOutCurrentTimeProvider(mockCurrentTimeProvider);
+    final String fakeSalt = cryptSaltFactory.generateSalt(FAKE_PASSWORD);
+    final Consumer<Long> fakeTimeSetter = mockOutCurrentTimeProvider(mockCurrentTimeProvider);
 
     fakeTimeSetter.accept(FROZEN_TIME.toEpochMilli());
     mockMvc = MockMvcBuilders
@@ -392,9 +425,9 @@ public class CredentialsControllerTypeSpecificGenerateTest {
 
   @Test
   public void generatingACredential_validatesTheRequestBody() throws Exception {
-    MockHttpServletRequestBuilder request = createGenerateNewCredentialRequest();
+    final MockHttpServletRequestBuilder request = createGenerateNewCredentialRequest();
 
-    DefaultCredentialGenerateRequest requestBody = mock(DefaultCredentialGenerateRequest.class);
+    final DefaultCredentialGenerateRequest requestBody = mock(DefaultCredentialGenerateRequest.class);
 
     Mockito.doThrow(new ParameterizedValidationException("error.bad_request")).when(requestBody).validate();
     doReturn(requestBody).when(objectMapper).readValue(anyString(), any(Class.class));
@@ -407,7 +440,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
 
   @Test
   public void shouldAcceptAnyCasingForType() throws Exception {
-    MockHttpServletRequestBuilder request = post("/api/v1/data")
+    final MockHttpServletRequestBuilder request = post("/api/v1/data")
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -431,11 +464,11 @@ public class CredentialsControllerTypeSpecificGenerateTest {
   @Test
   public void generatingANewCredential_shouldReturnGeneratedCredentialAndAskDataServiceToPersistTheCredential()
     throws Exception {
-    MockHttpServletRequestBuilder request = createGenerateNewCredentialRequest();
+    final MockHttpServletRequestBuilder request = createGenerateNewCredentialRequest();
 
-    ResultActions response = mockMvc.perform(request);
+    final ResultActions response = mockMvc.perform(request);
 
-    ArgumentCaptor<CredentialVersion> argumentCaptor = ArgumentCaptor.forClass(CredentialVersion.class);
+    final ArgumentCaptor<CredentialVersion> argumentCaptor = ArgumentCaptor.forClass(CredentialVersion.class);
     verify(credentialVersionDataService, times(1)).save(argumentCaptor.capture());
 
     response
@@ -451,11 +484,11 @@ public class CredentialsControllerTypeSpecificGenerateTest {
   @Test
   public void generatingANewCredentialVersion_withOverwrite_shouldGenerateANewCredential() throws Exception {
     beforeEachExistingCredential();
-    MockHttpServletRequestBuilder request = beforeEachOverwriteSetToTrue();
+    final MockHttpServletRequestBuilder request = beforeEachOverwriteSetToTrue();
 
-    ResultActions response = mockMvc.perform(request);
+    final ResultActions response = mockMvc.perform(request);
 
-    ArgumentCaptor<CredentialVersion> argumentCaptor = ArgumentCaptor.forClass(CredentialVersion.class);
+    final ArgumentCaptor<CredentialVersion> argumentCaptor = ArgumentCaptor.forClass(CredentialVersion.class);
     verify(credentialVersionDataService, times(1)).save(argumentCaptor.capture());
 
     response
@@ -471,18 +504,18 @@ public class CredentialsControllerTypeSpecificGenerateTest {
   @Test
   public void generatingANewCredentialVersion_withOverwrite_shouldPersistTheNewCredential() throws Exception {
     beforeEachExistingCredential();
-    MockHttpServletRequestBuilder request = beforeEachOverwriteSetToTrue();
+    final MockHttpServletRequestBuilder request = beforeEachOverwriteSetToTrue();
 
     mockMvc.perform(request);
 
-    CredentialVersion credentialVersion = credentialVersionDataService.findMostRecent(CREDENTIAL_NAME);
+    final CredentialVersion credentialVersion = credentialVersionDataService.findMostRecent(CREDENTIAL_NAME);
     parametizer.credentialAssertions(credentialVersion);
   }
 
   @Test
   public void generatingANewCredentialVersion_withOverwriteFalse_returnsThePreviousVersion_whenParametersAreTheSame() throws Exception {
     beforeEachExistingCredential();
-    MockHttpServletRequestBuilder request = beforeEachOverwriteSetToFalse();
+    final MockHttpServletRequestBuilder request = beforeEachOverwriteSetToFalse();
 
     mockMvc.perform(request)
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -497,7 +530,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
   public void generatingANewCredentialVersion_withOverwriteFalse_doesNotPersistANewVersion_whenParametersAreTheSame() throws Exception {
     beforeEachExistingCredential();
 
-    MockHttpServletRequestBuilder request = beforeEachOverwriteSetToFalse();
+    final MockHttpServletRequestBuilder request = beforeEachOverwriteSetToFalse();
     mockMvc.perform(request);
 
     verify(credentialVersionDataService, times(0)).save(any(CredentialVersion.class));
@@ -553,7 +586,8 @@ public class CredentialsControllerTypeSpecificGenerateTest {
     final String credentialType;
     final String generationParameters;
 
-    TestParameterizer(String credentialType, String generationParameters) {
+    TestParameterizer(final String credentialType, final String generationParameters) {
+      super();
       this.credentialType = credentialType;
       this.generationParameters = generationParameters;
     }

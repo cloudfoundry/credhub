@@ -16,15 +16,15 @@ public class FindCredentialResultsTest {
 
   @Test
   public void fromCredentials_wrapsTheCredentialsAsCredentialViews() {
-    Instant versionCreatedAt1 = Instant.ofEpochSecond(10000L, 0);
-    Instant versionCreatedAt2 = Instant.ofEpochSecond(20000L, 0);
-    Instant versionCreatedAt3 = Instant.ofEpochSecond(30000L, 0);
+    final Instant versionCreatedAt1 = Instant.ofEpochSecond(10000L, 0);
+    final Instant versionCreatedAt2 = Instant.ofEpochSecond(20000L, 0);
+    final Instant versionCreatedAt3 = Instant.ofEpochSecond(30000L, 0);
 
-    String valueName = "valueSecret";
-    String passwordName = "passwordSecret";
-    String certificateName = "certificateSecret";
+    final String valueName = "valueSecret";
+    final String passwordName = "passwordSecret";
+    final String certificateName = "certificateSecret";
 
-    List<FindCredentialResult> credentialViews = newArrayList(
+    final List<FindCredentialResult> credentialViews = newArrayList(
       new FindCredentialResult(versionCreatedAt3, certificateName),
       new FindCredentialResult(versionCreatedAt2, valueName),
       new FindCredentialResult(versionCreatedAt1, passwordName)

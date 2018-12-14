@@ -1,17 +1,20 @@
 package org.cloudfoundry.credhub.audit;
 
+import org.springframework.http.HttpStatus;
+
 final public class Utils {
   private Utils() {
+    super();
   }
 
-  public static String getResultCode(int statusCode) {
-    if (statusCode <= 199) {
+  public static String getResultCode(final int statusCode) {
+    if (statusCode < HttpStatus.OK.value()) {
       return "info";
-    } else if (statusCode <= 299) {
+    } else if (statusCode < HttpStatus.MULTIPLE_CHOICES.value()) {
       return "success";
-    } else if (statusCode <= 399) {
+    } else if (statusCode < HttpStatus.BAD_REQUEST.value()) {
       return "redirect";
-    } else if (statusCode <= 499) {
+    } else if (statusCode < HttpStatus.INTERNAL_SERVER_ERROR.value()) {
       return "clientError";
     } else {
       return "serverError";

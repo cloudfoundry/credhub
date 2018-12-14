@@ -4,7 +4,7 @@ import org.springframework.security.oauth2.common.exceptions.ClientAuthenticatio
 
 public class AccessTokenExpiredException extends ClientAuthenticationException {
 
-  public AccessTokenExpiredException(String msg, Throwable t) {
+  public AccessTokenExpiredException(final String msg, final Throwable t) {
     super(msg, t);
   }
 

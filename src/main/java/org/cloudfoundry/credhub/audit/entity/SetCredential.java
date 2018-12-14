@@ -9,17 +9,19 @@ public class SetCredential implements RequestDetails {
   private String name;
   private String type;
 
-  public SetCredential(String credentialName, String credentialType) {
+  public SetCredential(final String credentialName, final String credentialType) {
+    super();
     name = credentialName;
     type = credentialType;
   }
 
   public SetCredential() {
+    super();
 
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
@@ -28,7 +30,7 @@ public class SetCredential implements RequestDetails {
       return false;
     }
 
-    SetCredential that = (SetCredential) o;
+    final SetCredential that = (SetCredential) o;
 
     return new EqualsBuilder()
       .append(name, that.name)
@@ -50,7 +52,7 @@ public class SetCredential implements RequestDetails {
     return name;
   }
 
-  public void setName(String name) {
+  public void setName(final String name) {
     this.name = name;
   }
 
@@ -58,7 +60,7 @@ public class SetCredential implements RequestDetails {
     return type;
   }
 
-  public void setType(String type) {
+  public void setType(final String type) {
     this.type = type;
   }
 }

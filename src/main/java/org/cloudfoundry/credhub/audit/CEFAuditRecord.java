@@ -23,18 +23,11 @@ import org.cloudfoundry.credhub.entity.PermissionData;
 
 @Component
 @Scope(scopeName = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
+@SuppressWarnings({
+  "PMD.TooManyFields",
+  "PMD.GodClass",
+})
 public class CEFAuditRecord {
-
-  private static final String CEF_VERSION = "0";
-  private static final String DEVICE_VENDOR = "cloud_foundry";
-  private static final String DEVICE_PRODUCT = "credhub";
-  private static final String SEVERITY = "0";
-  private static final String CS1_LABEL = "userAuthenticationMechanism";
-  private static final String CS2_LABEL = "resourceName";
-  private static final String CS3_LABEL = "versionUuid";
-  private static final String CS4_LABEL = "httpStatusCode";
-  private static final String CS5_LABEL = "resourceUuid";
-  private static final String CS6_LABEL = "requestDetails";
 
   // CEF Spec
   private String signatureId;
@@ -63,12 +56,14 @@ public class CEFAuditRecord {
   private List<Version> versionList;
 
   @Autowired
-  public CEFAuditRecord(RequestUuid requestUuid, VersionProvider versionProvider) {
+  public CEFAuditRecord(final VersionProvider versionProvider) {
+    super();
     this.timestamp = String.valueOf(Instant.now().toEpochMilli());
     this.setCredhubServerVersion(versionProvider.currentVersion());
   }
 
   public CEFAuditRecord() {
+    super();
   }
 
   @Override
@@ -77,7 +72,7 @@ public class CEFAuditRecord {
       return logRecord().toString();
     }
 
-    StringBuilder builder = new StringBuilder();
+    final StringBuilder builder = new StringBuilder();
     for (int i = 0; i < resourceList.size(); i++) {
       if (i > 0) {
         builder.append(System.getProperty("line.separator"));
@@ -94,44 +89,54 @@ public class CEFAuditRecord {
   }
 
   private StringBuilder logRecord() {
-    StringBuilder builder = new StringBuilder();
-    builder.append("CEF:").append(CEF_VERSION).append("|");
-    builder.append(DEVICE_VENDOR).append("|");
-    builder.append(DEVICE_PRODUCT).append("|");
-    builder.append(credhubServerVersion).append("|");
-    builder.append(signatureId).append("|");
-    builder.append(signatureId).append("|");
-    builder.append(SEVERITY).append("|");
-    builder.append("rt=").append(timestamp).append(" ");
-    builder.append("suser=").append(username).append(" ");
-    builder.append("suid=").append(userGuid).append(" ");
-    builder.append("cs1Label=").append(CS1_LABEL).append(" ");
-    builder.append("cs1=").append(authMechanism).append(" ");
-    builder.append("request=").append(requestPath).append(" ");
-    builder.append("requestMethod=").append(requestMethod).append(" ");
-    builder.append("cs3Label=").append(CS3_LABEL).append(" ");
-    builder.append("cs3=").append(versionUUID).append(" ");
-    builder.append("cs4Label=").append(CS4_LABEL).append(" ");
-    builder.append("cs4=").append(httpStatusCode).append(" ");
-    builder.append("src=").append(sourceAddress).append(" ");
-    builder.append("dst=").append(destinationAddress).append(" ");
-    builder.append("cs2Label=").append(CS2_LABEL).append(" ");
-    builder.append("cs2=").append(resourceName).append(" ");
-    builder.append("cs5Label=").append(CS5_LABEL).append(" ");
-    builder.append("cs5=").append(resourceUUID).append(" ");
-    builder.append("deviceAction=").append(operation).append(" ");
+    final int capacityEstimate = 200;
+    final StringBuilder builder = new StringBuilder(capacityEstimate);
+
+    final String severity = "0";
+    final String cefVersion = "0";
+    final String deviceVendor = "cloud_foundry";
+    final String deviceProduct = "credhub";
+
+    builder
+      .append("CEF:").append(cefVersion).append('|')
+      .append(deviceVendor).append('|')
+      .append(deviceProduct).append('|')
+      .append(credhubServerVersion).append('|')
+      .append(signatureId).append('|')
+      .append(signatureId).append('|')
+      .append(severity).append('|')
+      .append("rt=").append(timestamp).append(' ')
+      .append("suser=").append(username).append(' ')
+      .append("suid=").append(userGuid).append(' ')
+      .append("cs1Label=").append("userAuthenticationMechanism").append(' ')
+      .append("cs1=").append(authMechanism).append(' ')
+      .append("request=").append(requestPath).append(' ')
+      .append("requestMethod=").append(requestMethod).append(' ')
+      .append("cs3Label=").append("versionUuid").append(' ')
+      .append("cs3=").append(versionUUID).append(' ')
+      .append("cs4Label=").append("httpStatusCode").append(' ')
+      .append("cs4=").append(httpStatusCode).append(' ')
+
+      .append("src=").append(sourceAddress).append(' ')
+      .append("dst=").append(destinationAddress).append(' ')
+      .append("cs2Label=").append("resourceName").append(' ')
+      .append("cs2=").append(resourceName).append(' ')
+      .append("cs5Label=").append("resourceUuid").append(' ')
+      .append("cs5=").append(resourceUUID).append(' ')
+      .append("deviceAction=").append(operation).append(' ');
     if (requestDetails != null) {
-      builder.append("cs6Label=").append(CS6_LABEL).append(" ");
-      builder.append("cs6=").append(requestDetails.toJSON()).append(" ");
+      builder
+        .append("cs6Label=").append("requestDetails").append(' ')
+        .append("cs6=").append(requestDetails.toJSON()).append(' ');
     }
     return builder;
   }
 
-  public void setHttpRequest(HttpServletRequest request) {
-    StringBuilder pathQuery = new StringBuilder(request.getRequestURI());
+  public void setHttpRequest(final HttpServletRequest request) {
+    final StringBuilder pathQuery = new StringBuilder(request.getRequestURI());
 
     if (!StringUtils.isEmpty(request.getQueryString())) {
-      pathQuery.append("?").append(request.getQueryString());
+      pathQuery.append('?').append(request.getQueryString());
     }
 
     sourceAddress = request.getHeader("X-FORWARDED-FOR");
@@ -145,20 +150,12 @@ public class CEFAuditRecord {
     destinationAddress = request.getServerName();
   }
 
-  public String getCredhubServerVersion() {
-    return credhubServerVersion;
-  }
-
-  public void setCredhubServerVersion(String credhubServerVersion) {
+  public void setCredhubServerVersion(final String credhubServerVersion) {
     this.credhubServerVersion = credhubServerVersion;
   }
 
   public String getTimestamp() {
     return timestamp;
-  }
-
-  public void setTimestamp(String timestamp) {
-    this.timestamp = timestamp;
   }
 
   public String getSignatureId() {
@@ -169,15 +166,11 @@ public class CEFAuditRecord {
     return username;
   }
 
-  public void setUsername(String username) {
+  public void setUsername(final String username) {
     this.username = username;
   }
 
-  public String getUserGuid() {
-    return userGuid;
-  }
-
-  public void setUserGuid(String userGuid) {
+  public void setUserGuid(final String userGuid) {
     this.userGuid = userGuid;
   }
 
@@ -185,7 +178,7 @@ public class CEFAuditRecord {
     return authMechanism;
   }
 
-  public void setAuthMechanism(String authMechanism) {
+  public void setAuthMechanism(final String authMechanism) {
     this.authMechanism = authMechanism;
   }
 
@@ -201,10 +194,6 @@ public class CEFAuditRecord {
     return result;
   }
 
-  public void setResult(String result) {
-    this.result = result;
-  }
-
   public String getSourceAddress() {
     return sourceAddress;
   }
@@ -217,7 +206,7 @@ public class CEFAuditRecord {
     return httpStatusCode;
   }
 
-  public void setHttpStatusCode(Integer httpStatusCode) {
+  public void setHttpStatusCode(final Integer httpStatusCode) {
     this.httpStatusCode = httpStatusCode;
     this.result = Utils.getResultCode(httpStatusCode);
   }
@@ -226,31 +215,19 @@ public class CEFAuditRecord {
     return resourceName;
   }
 
-  public void setResourceName(String resourceName) {
-    this.resourceName = resourceName;
-  }
-
   public String getResourceUUID() {
     return resourceUUID;
-  }
-
-  public void setResourceUUID(String resourceUUID) {
-    this.resourceUUID = resourceUUID;
   }
 
   public String getVersionUUID() {
     return versionUUID;
   }
 
-  public void setVersionUUID(String versionUUID) {
-    this.versionUUID = versionUUID;
-  }
-
   public RequestDetails getRequestDetails() {
     return requestDetails;
   }
 
-  public void setRequestDetails(RequestDetails requestDetails) {
+  public void setRequestDetails(final RequestDetails requestDetails) {
     this.requestDetails = requestDetails;
     this.operation = requestDetails.operation();
   }
@@ -259,7 +236,7 @@ public class CEFAuditRecord {
     return operation;
   }
 
-  public void setOperation(OperationDeviceAction operation) {
+  public void setOperation(final OperationDeviceAction operation) {
     this.operation = operation;
   }
 
@@ -267,7 +244,7 @@ public class CEFAuditRecord {
     return extension;
   }
 
-  public void setExtension(String extension) {
+  public void setExtension(final String extension) {
     this.extension = extension;
   }
 
@@ -275,7 +252,7 @@ public class CEFAuditRecord {
     return resourceList;
   }
 
-  public void setResource(Credential credential) {
+  public void setResource(final Credential credential) {
     if (credential == null || credential.getUuid() == null) {
       return;
     }
@@ -284,7 +261,7 @@ public class CEFAuditRecord {
     this.resourceUUID = credential.getUuid().toString();
   }
 
-  public void setResource(PermissionData data) {
+  public void setResource(final PermissionData data) {
     if (data == null || data.getUuid() == null) {
       return;
     }
@@ -293,7 +270,7 @@ public class CEFAuditRecord {
     this.resourceUUID = data.getUuid().toString();
   }
 
-  public void setVersion(CredentialVersion credentialVersion) {
+  public void setVersion(final CredentialVersion credentialVersion) {
     if (credentialVersion == null || credentialVersion.getUuid() == null) {
       return;
     }
@@ -301,7 +278,7 @@ public class CEFAuditRecord {
     this.versionUUID = credentialVersion.getUuid().toString();
   }
 
-  public void addResource(Credential credential) {
+  public void addResource(final Credential credential) {
     initResourceList();
 
     if (credential != null) {
@@ -309,7 +286,7 @@ public class CEFAuditRecord {
     }
   }
 
-  public void addResource(PermissionData permissionData) {
+  public void addResource(final PermissionData permissionData) {
     initResourceList();
 
     if (permissionData != null) {
@@ -318,7 +295,7 @@ public class CEFAuditRecord {
   }
 
 
-  public void addVersion(CredentialVersion credentialVersion) {
+  public void addVersion(final CredentialVersion credentialVersion) {
     if (versionList == null) {
       versionList = new ArrayList<>();
     }
@@ -333,15 +310,15 @@ public class CEFAuditRecord {
     this.versionList = new ArrayList<>();
   }
 
-  public void addAllVersions(List<CredentialVersion> credentialVersions) {
+  public void addAllVersions(final List<CredentialVersion> credentialVersions) {
     credentialVersions.forEach(i -> addVersion(i));
   }
 
-  public void addAllResources(List<PermissionData> permissionData) {
+  public void addAllResources(final List<PermissionData> permissionData) {
     permissionData.forEach(i -> addResource(i));
   }
 
-  public void addAllCredentials(List<Credential> list) {
+  public void addAllCredentials(final List<Credential> list) {
     list.forEach(i -> this.addResource(i));
   }
 
@@ -351,5 +328,3 @@ public class CEFAuditRecord {
     }
   }
 }
-
-

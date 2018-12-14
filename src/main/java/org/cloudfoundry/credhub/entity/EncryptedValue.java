@@ -16,6 +16,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.cloudfoundry.credhub.constants.UuidConstants;
 import org.cloudfoundry.credhub.util.InstantMillisecondsConverter;
 import org.cloudfoundry.credhub.util.StringUtil;
@@ -27,8 +28,9 @@ import static org.cloudfoundry.credhub.constants.EncryptionConstants.NONCE_SIZE;
 @Entity
 @Table(name = EncryptedValue.TABLE_NAME)
 @EntityListeners(AuditingEntityListener.class)
+@SuppressWarnings("PMD.AvoidFieldNameMatchingTypeName")
 public class EncryptedValue {
-  static final String TABLE_NAME = "encrypted_value";
+  public static final String TABLE_NAME = "encrypted_value";
 
   @Id
   @Column(length = UuidConstants.UUID_BYTES, columnDefinition = "VARBINARY")
@@ -54,13 +56,15 @@ public class EncryptedValue {
   private byte[] nonce;
 
   public EncryptedValue() {
+    super();
   }
 
-  public EncryptedValue(UUID encryptionKeyUuid, String encryptedValueString, String nonceString) {
+  public EncryptedValue(final UUID encryptionKeyUuid, final String encryptedValueString, final String nonceString) {
     this(encryptionKeyUuid, encryptedValueString.getBytes(StringUtil.UTF_8), nonceString.getBytes(StringUtil.UTF_8));
   }
 
-  public EncryptedValue(UUID encryptionKeyUuid, byte[] encryptedValue, byte[] nonce) {
+  public EncryptedValue(final UUID encryptionKeyUuid, final byte[] encryptedValue, final byte[] nonce) {
+    super();
     this.encryptionKeyUuid = encryptionKeyUuid;
     this.nonce = nonce == null ? null : nonce.clone();
     this.encryptedValue = encryptedValue == null ? null : encryptedValue.clone();
@@ -70,7 +74,7 @@ public class EncryptedValue {
     return uuid;
   }
 
-  public void setUuid(UUID uuid) {
+  public void setUuid(final UUID uuid) {
     this.uuid = uuid;
   }
 
@@ -78,31 +82,28 @@ public class EncryptedValue {
     return encryptionKeyUuid;
   }
 
-  public EncryptedValue setEncryptionKeyUuid(UUID encryptionKeyUuid) {
+  public void setEncryptionKeyUuid(final UUID encryptionKeyUuid) {
     this.encryptionKeyUuid = encryptionKeyUuid;
-    return this;
   }
 
   public byte[] getEncryptedValue() {
     return encryptedValue == null ? null : encryptedValue.clone();
   }
 
-  public EncryptedValue setEncryptedValue(byte[] encryptedValue) {
+  public void setEncryptedValue(final byte[] encryptedValue) {
     this.encryptedValue = encryptedValue == null ? null : encryptedValue.clone();
-    return this;
   }
 
   public byte[] getNonce() {
     return nonce == null ? null : nonce.clone();
   }
 
-  public EncryptedValue setNonce(byte[] nonce) {
+  public void setNonce(final byte[] nonce) {
     this.nonce = nonce == null ? null : nonce.clone();
-    return this;
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
@@ -111,17 +112,15 @@ public class EncryptedValue {
       return false;
     }
 
-    EncryptedValue that = (EncryptedValue) o;
+    final EncryptedValue that = (EncryptedValue) o;
 
-    if (encryptionKeyUuid != null ? !encryptionKeyUuid.equals(that.encryptionKeyUuid) : that.encryptionKeyUuid != null) {
-      return false;
-    }
-
-    if (!Arrays.equals(encryptedValue, that.encryptedValue)) {
-      return false;
-    }
-
-    return Arrays.equals(nonce, that.nonce);
+    return new EqualsBuilder()
+      .append(uuid, that.uuid)
+      .append(updatedAt, that.updatedAt)
+      .append(encryptionKeyUuid, that.encryptionKeyUuid)
+      .append(encryptedValue, that.encryptedValue)
+      .append(nonce, that.nonce)
+      .isEquals();
   }
 
   @Override

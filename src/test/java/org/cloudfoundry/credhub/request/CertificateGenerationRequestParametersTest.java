@@ -25,7 +25,7 @@ public class CertificateGenerationRequestParametersTest {
 
   @Test
   public void validate_allowsAllValidExtendedKeyUsages() {
-    String[] validExtendedKeyUsages = new String[]{"server_auth", "client_auth", "code_signing", "email_protection", "timestamping"};
+    final String[] validExtendedKeyUsages = new String[]{"server_auth", "client_auth", "code_signing", "email_protection", "timestamping"};
     subject.setExtendedKeyUsage(validExtendedKeyUsages);
 
     subject.validate();
@@ -39,7 +39,7 @@ public class CertificateGenerationRequestParametersTest {
     try {
       subject.validate();
       fail("should throw");
-    } catch (ParameterizedValidationException e) {
+    } catch (final ParameterizedValidationException e) {
       assertThat(e.getMessage(), equalTo("error.invalid_extended_key_usage"));
       assertThat(e.getParameters(), equalTo(new Object[]{"this_is_invalid"}));
     }
@@ -54,7 +54,7 @@ public class CertificateGenerationRequestParametersTest {
     try {
       subject.validate();
       fail("should throw");
-    } catch (ParameterizedValidationException e) {
+    } catch (final ParameterizedValidationException e) {
       assertThat(e.getMessage(), equalTo("error.missing_signing_ca"));
     }
   }
@@ -76,7 +76,7 @@ public class CertificateGenerationRequestParametersTest {
     try {
       subject.validate();
       fail("should throw");
-    } catch (ParameterizedValidationException e) {
+    } catch (final ParameterizedValidationException e) {
       assertThat(e.getMessage(), equalTo("error.invalid_duration"));
     }
   }
@@ -93,7 +93,7 @@ public class CertificateGenerationRequestParametersTest {
     try {
       subject.validate();
       fail("should throw");
-    } catch (ParameterizedValidationException e) {
+    } catch (final ParameterizedValidationException e) {
       assertThat(e.getMessage(), equalTo("error.missing_certificate_parameters"));
     }
   }
@@ -119,7 +119,7 @@ public class CertificateGenerationRequestParametersTest {
     try {
       subject.validate();
       fail("should throw");
-    } catch (ParameterizedValidationException e) {
+    } catch (final ParameterizedValidationException e) {
       assertThat(e.getMessage(), equalTo("error.invalid_key_length"));
     }
   }
@@ -131,7 +131,7 @@ public class CertificateGenerationRequestParametersTest {
     try {
       subject.validate();
       fail("should throw");
-    } catch (ParameterizedValidationException e) {
+    } catch (final ParameterizedValidationException e) {
       assertThat(e.getMessage(), equalTo("error.invalid_key_length"));
     }
   }
@@ -143,7 +143,7 @@ public class CertificateGenerationRequestParametersTest {
     try {
       subject.validate();
       fail("should throw");
-    } catch (ParameterizedValidationException e) {
+    } catch (final ParameterizedValidationException e) {
       assertThat(e.getMessage(), equalTo("error.invalid_key_length"));
     }
   }
@@ -156,7 +156,7 @@ public class CertificateGenerationRequestParametersTest {
     try {
       subject.validate();
       fail("should throw");
-    } catch (ParameterizedValidationException e) {
+    } catch (final ParameterizedValidationException e) {
       assertThat(e.getMessage(), equalTo("error.invalid_key_length"));
     }
   }
@@ -176,7 +176,7 @@ public class CertificateGenerationRequestParametersTest {
       subject.setAlternativeNames(new String[]{"foo!@#$%^&*()_-+=.com"});
       subject.validate();
       fail("should throw");
-    } catch (ParameterizedValidationException e) {
+    } catch (final ParameterizedValidationException e) {
       assertThat(e.getMessage(), equalTo("error.invalid_alternate_name"));
     }
   }
@@ -187,7 +187,7 @@ public class CertificateGenerationRequestParametersTest {
       subject.setAlternativeNames(new String[]{"foo pivotal.io"});
       subject.validate();
       fail("should throw");
-    } catch (ParameterizedValidationException e) {
+    } catch (final ParameterizedValidationException e) {
       assertThat(e.getMessage(), equalTo("error.invalid_alternate_name"));
     }
   }
@@ -198,7 +198,7 @@ public class CertificateGenerationRequestParametersTest {
       subject.setAlternativeNames(new String[]{"1.2.3.999"});
       subject.validate();
       fail("should throw");
-    } catch (ParameterizedValidationException e) {
+    } catch (final ParameterizedValidationException e) {
       assertThat(e.getMessage(), equalTo("error.invalid_alternate_name"));
     }
   }
@@ -211,7 +211,7 @@ public class CertificateGenerationRequestParametersTest {
       subject.setAlternativeNames(new String[]{"x@y.com"});
       subject.validate();
       fail("should throw");
-    } catch (ParameterizedValidationException e) {
+    } catch (final ParameterizedValidationException e) {
       assertThat(e.getMessage(), equalTo("error.invalid_alternate_name"));
     }
   }
@@ -222,24 +222,24 @@ public class CertificateGenerationRequestParametersTest {
       subject.setAlternativeNames(new String[]{"https://foo.com"});
       subject.validate();
       fail("should throw");
-    } catch (ParameterizedValidationException e) {
+    } catch (final ParameterizedValidationException e) {
       assertThat(e.getMessage(), equalTo("error.invalid_alternate_name"));
     }
   }
 
   @Test
   public void validate_rejectsCommonNamesThatAreTooLong() {
-    String maxLengthCommonName = "64abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789";
+    final String maxLengthCommonName = "64abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789";
     subject.setCommonName(maxLengthCommonName);
     subject.validate();
 
-    String overlyLongCommonName = "65_abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789";
+    final String overlyLongCommonName = "65_abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789";
     subject.setCommonName(overlyLongCommonName);
 
     try {
       subject.validate();
       fail("should throw");
-    } catch (ParameterizedValidationException e) {
+    } catch (final ParameterizedValidationException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_certificate_parameter"));
       assertThat(e.getParameters(), equalTo(new Object[]{"common name", 64}));
     }
@@ -247,17 +247,17 @@ public class CertificateGenerationRequestParametersTest {
 
   @Test
   public void validate_rejectsOrganizationsThatAreTooLong() {
-    String maxLengthOrganization = "64abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789";
+    final String maxLengthOrganization = "64abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789";
     subject.setOrganization(maxLengthOrganization);
     subject.validate();
 
-    String overlyLongOrganization = "65_abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789";
+    final String overlyLongOrganization = "65_abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789";
     subject.setOrganization(overlyLongOrganization);
 
     try {
       subject.validate();
       fail("should throw");
-    } catch (ParameterizedValidationException e) {
+    } catch (final ParameterizedValidationException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_certificate_parameter"));
       assertThat(e.getParameters(), equalTo(new Object[]{"organization", 64}));
     }
@@ -265,17 +265,17 @@ public class CertificateGenerationRequestParametersTest {
 
   @Test
   public void validate_rejectsOrganizationUnitsThatAreTooLong() {
-    String maxLengthOrganizationUnit = "64abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789";
+    final String maxLengthOrganizationUnit = "64abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789";
     subject.setOrganizationUnit(maxLengthOrganizationUnit);
     subject.validate();
 
-    String overlyLongOrganizationUnit = "65_abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789";
+    final String overlyLongOrganizationUnit = "65_abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789";
     subject.setOrganizationUnit(overlyLongOrganizationUnit);
 
     try {
       subject.validate();
       fail("should throw");
-    } catch (ParameterizedValidationException e) {
+    } catch (final ParameterizedValidationException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_certificate_parameter"));
       assertThat(e.getParameters(), equalTo(new Object[]{"organization unit", 64}));
     }
@@ -283,17 +283,17 @@ public class CertificateGenerationRequestParametersTest {
 
   @Test
   public void validate_rejectsLocalitiesThatAreTooLong() {
-    String maxLengthLocality = "128_abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789";
+    final String maxLengthLocality = "128_abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789";
     subject.setLocality(maxLengthLocality);
     subject.validate();
 
-    String overlyLongLocality = "129__abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789";
+    final String overlyLongLocality = "129__abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789";
     subject.setLocality(overlyLongLocality);
 
     try {
       subject.validate();
       fail("should throw");
-    } catch (ParameterizedValidationException e) {
+    } catch (final ParameterizedValidationException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_certificate_parameter"));
       assertThat(e.getParameters(), equalTo(new Object[]{"locality", 128}));
     }
@@ -301,17 +301,17 @@ public class CertificateGenerationRequestParametersTest {
 
   @Test
   public void validate_rejectsStatesThatAreTooLong() {
-    String maxLengthState = "128_abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789";
+    final String maxLengthState = "128_abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789";
     subject.setState(maxLengthState);
     subject.validate();
 
-    String overlyLongState = "129__abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789";
+    final String overlyLongState = "129__abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789";
     subject.setState(overlyLongState);
 
     try {
       subject.validate();
       fail("should throw");
-    } catch (ParameterizedValidationException e) {
+    } catch (final ParameterizedValidationException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_certificate_parameter"));
       assertThat(e.getParameters(), equalTo(new Object[]{"state", 128}));
     }
@@ -319,17 +319,17 @@ public class CertificateGenerationRequestParametersTest {
 
   @Test
   public void validate_rejectsCountriesThatAreTooLong() {
-    String maxLengthCountry = "ca";
+    final String maxLengthCountry = "ca";
     subject.setCountry(maxLengthCountry);
     subject.validate();
 
-    String overlyLongCountry = "usa";
+    final String overlyLongCountry = "usa";
     subject.setCountry(overlyLongCountry);
 
     try {
       subject.validate();
       fail("should throw");
-    } catch (ParameterizedValidationException e) {
+    } catch (final ParameterizedValidationException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_certificate_parameter"));
       assertThat(e.getParameters(), equalTo(new Object[]{"country", 2}));
     }
@@ -337,20 +337,20 @@ public class CertificateGenerationRequestParametersTest {
 
   @Test
   public void validate_rejectsAlternativeNamesThatAreTooLong() {
-    String maxLengthAlternativeName = RandomStringUtils.randomAlphabetic(57) + "." + RandomStringUtils.randomNumeric(63) +
+    final String maxLengthAlternativeName = RandomStringUtils.randomAlphabetic(57) + "." + RandomStringUtils.randomNumeric(63) +
       "." + RandomStringUtils.randomAlphabetic(63) + "." + RandomStringUtils.randomAlphabetic(63) + ".com";
     subject.setAlternativeNames(new String[]{"abc.com", maxLengthAlternativeName});
     subject.validate();
 
 
-    String overlyLongAlternativeName = "." + RandomStringUtils.randomAlphabetic(58) + "." + RandomStringUtils.randomNumeric(63) +
+    final String overlyLongAlternativeName = "." + RandomStringUtils.randomAlphabetic(58) + "." + RandomStringUtils.randomNumeric(63) +
       "." + RandomStringUtils.randomAlphabetic(63) + "." + RandomStringUtils.randomAlphabetic(63) + ".co";
     subject.setAlternativeNames(new String[]{"abc.com", overlyLongAlternativeName});
 
     try {
       subject.validate();
       fail("should throw");
-    } catch (ParameterizedValidationException e) {
+    } catch (final ParameterizedValidationException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_certificate_parameter"));
       assertThat(e.getParameters(), equalTo(new Object[]{"alternative name", 253}));
     }

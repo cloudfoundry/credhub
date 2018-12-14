@@ -94,7 +94,7 @@ public class ManagementControllerTest {
 
   @Test
   public void providingAnInvalidRequestBody_returns400() throws Exception {
-    MockHttpServletRequestBuilder request = post("/management")
+    final MockHttpServletRequestBuilder request = post("/management")
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
       .header("content-type", APPLICATION_JSON)
       .content("{\"read_only_mode\":\"pizza\"}");

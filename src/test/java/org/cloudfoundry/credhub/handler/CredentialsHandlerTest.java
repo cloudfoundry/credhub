@@ -53,7 +53,7 @@ public class CredentialsHandlerTest {
 
   @Before
   public void beforeEach() {
-    Encryptor encryptor = mock(Encryptor.class);
+    final Encryptor encryptor = mock(Encryptor.class);
 
     permissionedCredentialService = mock(PermissionedCredentialService.class);
     auditRecord = mock(CEFAuditRecord.class);
@@ -93,22 +93,22 @@ public class CredentialsHandlerTest {
     try {
       subject.deleteCredential(CREDENTIAL_NAME);
       fail("Should throw exception");
-    } catch (EntryNotFoundException e) {
+    } catch (final EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
     }
   }
 
   @Test
   public void getAllCredentialVersions_whenTheCredentialExists_returnsADataResponse() {
-    List<CredentialVersion> credentials = newArrayList(version1, version2);
+    final List<CredentialVersion> credentials = newArrayList(version1, version2);
     when(permissionedCredentialService.findAllByName(eq(CREDENTIAL_NAME)))
       .thenReturn(credentials);
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.READ))
       .thenReturn(true);
 
-    DataResponse credentialVersions = subject.getAllCredentialVersions(CREDENTIAL_NAME);
+    final DataResponse credentialVersions = subject.getAllCredentialVersions(CREDENTIAL_NAME);
 
-    List<CredentialView> credentialViews = credentialVersions.getData();
+    final List<CredentialView> credentialViews = credentialVersions.getData();
     assertThat(credentialViews, hasSize(2));
     assertThat(credentialViews.get(0).getName(), equalTo(CREDENTIAL_NAME));
     assertThat(credentialViews.get(0).getVersionCreatedAt(), equalTo(VERSION1_CREATED_AT));
@@ -127,7 +127,7 @@ public class CredentialsHandlerTest {
       subject.getAllCredentialVersions(CREDENTIAL_NAME
       );
       fail("should throw exception");
-    } catch (EntryNotFoundException e) {
+    } catch (final EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
     }
   }
@@ -139,10 +139,10 @@ public class CredentialsHandlerTest {
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.READ))
       .thenReturn(true);
 
-    DataResponse dataResponse = subject.getCurrentCredentialVersions(
+    final DataResponse dataResponse = subject.getCurrentCredentialVersions(
       CREDENTIAL_NAME
     );
-    CredentialView credentialView = dataResponse.getData().get(0);
+    final CredentialView credentialView = dataResponse.getData().get(0);
     assertThat(credentialView.getName(), equalTo(CREDENTIAL_NAME));
     assertThat(credentialView.getVersionCreatedAt(), equalTo(VERSION1_CREATED_AT));
   }
@@ -152,7 +152,7 @@ public class CredentialsHandlerTest {
     try {
       subject.getCurrentCredentialVersions(CREDENTIAL_NAME);
       fail("should throw exception");
-    } catch (EntryNotFoundException e) {
+    } catch (final EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
     }
   }
@@ -165,7 +165,7 @@ public class CredentialsHandlerTest {
     try {
       subject.getCurrentCredentialVersions(CREDENTIAL_NAME);
       fail("should throw exception");
-    } catch (EntryNotFoundException e) {
+    } catch (final EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
     }
   }
@@ -175,14 +175,14 @@ public class CredentialsHandlerTest {
     when(permissionedCredentialService.findVersionByUuid(eq(UUID_STRING)))
       .thenReturn(version1);
 
-    CredentialView credentialVersion = subject.getCredentialVersionByUUID(UUID_STRING);
+    final CredentialView credentialVersion = subject.getCredentialVersionByUUID(UUID_STRING);
     assertThat(credentialVersion.getName(), equalTo(CREDENTIAL_NAME));
     assertThat(credentialVersion.getVersionCreatedAt(), equalTo(VERSION1_CREATED_AT));
   }
 
   @Test
   public void getNCredentialVersions_whenTheCredentialExists_addsToAuditRecord() {
-    List<CredentialVersion> credentials = newArrayList(version1, version2);
+    final List<CredentialVersion> credentials = newArrayList(version1, version2);
     when(permissionedCredentialService.findNByName(eq(CREDENTIAL_NAME), eq(2)))
       .thenReturn(credentials);
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.READ))

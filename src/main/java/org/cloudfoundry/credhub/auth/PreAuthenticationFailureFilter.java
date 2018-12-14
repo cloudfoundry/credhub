@@ -15,19 +15,20 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class PreAuthenticationFailureFilter extends OncePerRequestFilter {
   private final X509AuthenticationFailureHandler authenticationFailureHandler;
 
-  PreAuthenticationFailureFilter(X509AuthenticationFailureHandler authenticationFailureHandler) {
+  PreAuthenticationFailureFilter(final X509AuthenticationFailureHandler authenticationFailureHandler) {
+    super();
     this.authenticationFailureHandler = authenticationFailureHandler;
   }
 
   @Override
   protected void doFilterInternal(
-    HttpServletRequest request,
-    HttpServletResponse response,
-    FilterChain filterChain
+    final HttpServletRequest request,
+    final HttpServletResponse response,
+    final FilterChain filterChain
   ) throws ServletException, IOException {
     try {
       filterChain.doFilter(request, response);
-    } catch (AuthenticationException exception) {
+    } catch (final AuthenticationException exception) {
       authenticationFailureHandler.onAuthenticationFailure(request, response, exception);
     }
   }

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -32,6 +33,7 @@ import org.cloudfoundry.credhub.view.FindCredentialResult;
 
 import static com.google.common.collect.Lists.newArrayList;
 
+@SuppressWarnings("PMD.TooManyMethods")
 @Service
 public class CredentialVersionDataService {
 
@@ -39,23 +41,24 @@ public class CredentialVersionDataService {
   private final CredentialDataService credentialDataService;
   private final JdbcTemplate jdbcTemplate;
   private final CredentialFactory credentialFactory;
-  private PermissionDataService permissionDataService;
-  private UserContextHolder userContextHolder;
-  private CertificateVersionDataService certificateVersionDataService;
+  private final PermissionDataService permissionDataService;
+  private final UserContextHolder userContextHolder;
+  private final CertificateVersionDataService certificateVersionDataService;
 
   @Value("${security.authorization.acls.enabled}")
   private boolean enforcePermissions;
 
   @Autowired
   protected CredentialVersionDataService(
-    CredentialVersionRepository credentialVersionRepository,
-    PermissionDataService permissionDataService,
-    CredentialDataService credentialDataService,
-    JdbcTemplate jdbcTemplate,
-    CredentialFactory credentialFactory,
-    UserContextHolder userContextHolder,
-    CertificateVersionDataService certificateVersionDataService
+    final CredentialVersionRepository credentialVersionRepository,
+    final PermissionDataService permissionDataService,
+    final CredentialDataService credentialDataService,
+    final JdbcTemplate jdbcTemplate,
+    final CredentialFactory credentialFactory,
+    final UserContextHolder userContextHolder,
+    final CertificateVersionDataService certificateVersionDataService
   ) {
+    super();
     this.credentialVersionRepository = credentialVersionRepository;
     this.permissionDataService = permissionDataService;
     this.credentialDataService = credentialDataService;
@@ -65,17 +68,17 @@ public class CredentialVersionDataService {
     this.certificateVersionDataService = certificateVersionDataService;
   }
 
-  public <Z extends CredentialVersion> Z save(Z credentialVersion) {
+  public <Z extends CredentialVersion> Z save(final Z credentialVersion) {
     return (Z) credentialVersion.save(this);
   }
 
-  public <Z extends CredentialVersion> Z save(CredentialVersionData credentialVersionData) {
-    Credential credential = credentialVersionData.getCredential();
+  public <Z extends CredentialVersion> Z save(final CredentialVersionData credentialVersionData) {
+    final Credential credential = credentialVersionData.getCredential();
 
     if (credential.getUuid() == null) {
       credentialVersionData.setCredential(credentialDataService.save(credential));
     } else {
-      CredentialVersion existingCredentialVersion = findMostRecent(credential.getName());
+      final CredentialVersion existingCredentialVersion = findMostRecent(credential.getName());
       if (existingCredentialVersion != null && !existingCredentialVersion.getCredentialType()
         .equals(credentialVersionData.getCredentialType())) {
         throw new ParameterizedValidationException("error.type_mismatch");
@@ -85,13 +88,13 @@ public class CredentialVersionDataService {
     try {
       return (Z) credentialFactory
         .makeCredentialFromEntity(credentialVersionRepository.saveAndFlush(credentialVersionData));
-    } catch (DataIntegrityViolationException e) {
+    } catch (final DataIntegrityViolationException e) {
       throw new MaximumSizeException(e.getMessage());
     }
   }
 
-  public CredentialVersion findMostRecent(String name) {
-    Credential credential = credentialDataService.find(name);
+  public CredentialVersion findMostRecent(final String name) {
+    final Credential credential = credentialDataService.find(name);
 
     if (credential == null) {
       return null;
@@ -101,67 +104,65 @@ public class CredentialVersionDataService {
     }
   }
 
-  public CredentialVersion findByUuid(String uuid) {
+  public CredentialVersion findByUuid(final String uuid) {
     return credentialFactory
       .makeCredentialFromEntity(credentialVersionRepository.findOneByUuid(UUID.fromString(uuid)));
   }
 
-  public List<String> findAllCertificateCredentialsByCaName(String caName) {
-    return this.findCertificateNamesByCaName(caName);
+  public List<String> findAllCertificateCredentialsByCaName(final String caName) {
+    final String query = "select distinct credential.name from "
+      + "credential, credential_version, certificate_credential "
+      + "where credential.uuid=credential_version.credential_uuid "
+      + "and credential_version.uuid=certificate_credential.uuid "
+      + "and lower(certificate_credential.ca_name) "
+      + "like lower(?)";
+    return jdbcTemplate.queryForList(query, String.class, caName);
   }
 
-  public List<FindCredentialResult> findContainingName(String name) {
+  public List<FindCredentialResult> findContainingName(final String name) {
     return findContainingName(name, "");
   }
 
-  public List<FindCredentialResult> findContainingName(String name, String expiresWithinDays) {
-    if (!expiresWithinDays.equals("")) {
+  public List<FindCredentialResult> findContainingName(final String name, final String expiresWithinDays) {
+    if (!"".equals(expiresWithinDays)) {
       return filterPermissions(filterCertificates("%" + name + "%", expiresWithinDays));
     }
     return filterPermissions(findMatchingName("%" + name + "%"));
   }
 
-  public List<FindCredentialResult> findStartingWithPath(String path) {
+  public List<FindCredentialResult> findStartingWithPath(final String path) {
     return findStartingWithPath(path, "");
   }
 
-  public List<FindCredentialResult> findStartingWithPath(String path, String expiresWithinDays) {
-    path = StringUtils.prependIfMissing(path, "/");
-    path = StringUtils.appendIfMissing(path, "/");
+  public List<FindCredentialResult> findStartingWithPath(final String path, final String expiresWithinDays) {
 
-    if (!expiresWithinDays.equals("")) {
-      return filterPermissions(filterCertificates(path + "%", expiresWithinDays));
+    String adjustedPath = StringUtils.prependIfMissing(path, "/");
+    adjustedPath = StringUtils.appendIfMissing(adjustedPath, "/");
+
+    if (!"".equals(expiresWithinDays)) {
+      return filterPermissions(filterCertificates(adjustedPath + "%", expiresWithinDays));
     }
 
-    return filterPermissions(findMatchingName(path + "%"));
+    return filterPermissions(findMatchingName(adjustedPath + "%"));
   }
 
-  private List<FindCredentialResult> filterPermissions(List<FindCredentialResult> unfilteredResult) {
-    if (!enforcePermissions) {
-      return unfilteredResult;
-    }
-    String actor = userContextHolder.getUserContext().getActor();
-    return filterCredentials(unfilteredResult, permissionDataService.findAllPathsByActor(actor));
-  }
-
-
-  public boolean delete(String name) {
+  public boolean delete(final String name) {
     return credentialDataService.delete(name);
   }
 
-  public List<CredentialVersion> findAllByName(String name) {
-    Credential credential = credentialDataService.find(name);
+  public List<CredentialVersion> findAllByName(final String name) {
+    final Credential credential = credentialDataService.find(name);
 
     return credential != null ? credentialFactory.makeCredentialsFromEntities(
       credentialVersionRepository.findAllByCredentialUuidOrderByVersionCreatedAtDesc(credential.getUuid()))
       : newArrayList();
   }
 
-  public List<CredentialVersion> findNByName(String name, int numberOfVersions) {
-    Credential credential = credentialDataService.find(name);
+  public List<CredentialVersion> findNByName(final String name, final int numberOfVersions) {
+    final Credential credential = credentialDataService.find(name);
 
     if (credential != null) {
-      List<CredentialVersionData> credentialVersionData = credentialVersionRepository
+      final List<CredentialVersionData> credentialVersionData = credentialVersionRepository
         .findAllByCredentialUuidOrderByVersionCreatedAtDesc(credential.getUuid())
         .stream()
         .limit(numberOfVersions)
@@ -172,8 +173,8 @@ public class CredentialVersionDataService {
     }
   }
 
-  public HashMap<UUID, Long> countByEncryptionKey() {
-    HashMap<UUID, Long> map = new HashMap<>();
+  public Map<UUID, Long> countByEncryptionKey() {
+    final Map<UUID, Long> map = new HashMap<>();
     jdbcTemplate.query(
       " SELECT count(*), encryption_key_uuid FROM credential_version " +
         "LEFT JOIN encrypted_value ON credential_version.encrypted_value_uuid = encrypted_value.uuid " +
@@ -183,10 +184,10 @@ public class CredentialVersionDataService {
     return map;
   }
 
-  public List<CredentialVersion> findActiveByName(String name) {
-    Credential credential = credentialDataService.find(name);
-    CredentialVersionData credentialVersionData;
-    ArrayList<CredentialVersion> result = newArrayList();
+  public List<CredentialVersion> findActiveByName(final String name) {
+    final Credential credential = credentialDataService.find(name);
+    final CredentialVersionData credentialVersionData;
+    final List<CredentialVersion> result = newArrayList();
     if (credential != null) {
       credentialVersionData = credentialVersionRepository
         .findFirstByCredentialUuidOrderByVersionCreatedAtDesc(credential.getUuid());
@@ -206,11 +207,19 @@ public class CredentialVersionDataService {
     return credentialVersionRepository.count();
   }
 
-  public Long countEncryptedWithKeyUuidIn(Collection<UUID> uuids) {
+  public Long countEncryptedWithKeyUuidIn(final Collection<UUID> uuids) {
     return credentialVersionRepository.countByEncryptedCredentialValueEncryptionKeyUuidIn(uuids);
   }
 
-  private List<FindCredentialResult> filterCredentials(List<FindCredentialResult> unfilteredResult, Set<String> permissions) {
+  private List<FindCredentialResult> filterPermissions(final List<FindCredentialResult> unfilteredResult) {
+    if (!enforcePermissions) {
+      return unfilteredResult;
+    }
+    final String actor = userContextHolder.getUserContext().getActor();
+    return filterCredentials(unfilteredResult, permissionDataService.findAllPathsByActor(actor));
+  }
+
+  private List<FindCredentialResult> filterCredentials(final List<FindCredentialResult> unfilteredResult, final Set<String> permissions) {
     if (permissions.contains("/*")) {
       return unfilteredResult;
     }
@@ -218,15 +227,15 @@ public class CredentialVersionDataService {
       return new ArrayList<>();
     }
 
-    List<FindCredentialResult> filteredResult = new ArrayList<>();
+    final List<FindCredentialResult> filteredResult = new ArrayList<>();
 
-    for (FindCredentialResult credentialResult : unfilteredResult) {
-      String credentialName = credentialResult.getName();
+    for (final FindCredentialResult credentialResult : unfilteredResult) {
+      final String credentialName = credentialResult.getName();
       if (permissions.contains(credentialName)) {
         filteredResult.add(credentialResult);
       }
 
-      for (String credentialPath : tokenizePath(credentialName)) {
+      for (final String credentialPath : tokenizePath(credentialName)) {
         if (permissions.contains(credentialPath)) {
           filteredResult.add(credentialResult);
           break;
@@ -236,11 +245,10 @@ public class CredentialVersionDataService {
     return filteredResult;
   }
 
+  private List<FindCredentialResult> filterCertificates(final String path, final String expiresWithinDays) {
+    final Timestamp expiresTimestamp = Timestamp.from(Instant.now().plus(Duration.ofDays(Long.parseLong(expiresWithinDays))));
 
-  private List<FindCredentialResult> filterCertificates(String path, String expiresWithinDays) {
-    Timestamp expiresTimestamp = Timestamp.from(Instant.now().plus(Duration.ofDays(Long.parseLong(expiresWithinDays))));
-
-    String query = "select name.name, credential_version.version_created_at, "
+    final String query = "select name.name, credential_version.version_created_at, "
       + "certificate_credential.expiry_date from ("
       + "   select "
       + "   max(version_created_at) as version_created_at,"
@@ -270,8 +278,8 @@ public class CredentialVersionDataService {
     return certificateResults;
   }
 
-  private List<String> tokenizePath(String credentialName) {
-    List<String> result = new ArrayList<>();
+  private List<String> tokenizePath(final String credentialName) {
+    final List<String> result = new ArrayList<>();
     String subPath;
 
     for (int i = 1; i < credentialName.length(); i++) {
@@ -284,7 +292,7 @@ public class CredentialVersionDataService {
     return result;
   }
 
-  private List<FindCredentialResult> findMatchingName(String nameLike) {
+  private List<FindCredentialResult> findMatchingName(final String nameLike) {
     final List<FindCredentialResult> credentialResults = jdbcTemplate.query(
       " select name.name, credential_version.version_created_at from ("
         + "   select"
@@ -306,15 +314,5 @@ public class CredentialVersionDataService {
       }
     );
     return credentialResults;
-  }
-
-  private List<String> findCertificateNamesByCaName(String caName) {
-    String query = "select distinct credential.name from "
-      + "credential, credential_version, certificate_credential "
-      + "where credential.uuid=credential_version.credential_uuid "
-      + "and credential_version.uuid=certificate_credential.uuid "
-      + "and lower(certificate_credential.ca_name) "
-      + "like lower(?)";
-    return jdbcTemplate.queryForList(query, String.class, caName);
   }
 }

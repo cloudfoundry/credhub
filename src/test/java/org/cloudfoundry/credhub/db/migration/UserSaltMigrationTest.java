@@ -30,7 +30,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 @RunWith(SpringRunner.class)
-@ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class UserSaltMigrationTest {
   @Autowired
@@ -45,7 +45,10 @@ public class UserSaltMigrationTest {
   private List<EncryptionKeyCanary> canaries;
 
   @SuppressFBWarnings(
-    value = {"NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", "ODR_OPEN_DATABASE_RESOURCE"},
+    value = {
+      "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE",
+      "ODR_OPEN_DATABASE_RESOURCE",
+    },
     justification = "Ignore that jdbcTemplate methods might return null or that the DB connection may be left open."
   )
   @Before
@@ -118,7 +121,7 @@ public class UserSaltMigrationTest {
   }
 
   @Transactional
-  public void createCanary(Object encryptionKeyUuid) {
+  public void createCanary(final Object encryptionKeyUuid) {
     jdbcTemplate.update(
       "insert into encryption_key_canary (encrypted_value, nonce, uuid, salt) values (?, ?, ?, ?)",
       null,
@@ -129,7 +132,7 @@ public class UserSaltMigrationTest {
   }
 
   @Transactional
-  public void createCredential(Object encryptionKeyUuid, String credentialName, Object credentialNameUuid, Object userCredentialUuid) {
+  public void createCredential(final Object encryptionKeyUuid, final String credentialName, final Object credentialNameUuid, final Object userCredentialUuid) {
     final Instant now = Instant.now();
 
     jdbcTemplate.update(

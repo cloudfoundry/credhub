@@ -15,7 +15,7 @@ import org.junit.runners.JUnit4;
 public class BulkRegenerateRequestTest {
   @Test
   public void whenSignedByValueIsMissing__isInvalid() {
-    Set<ConstraintViolation<BulkRegenerateRequest>> violations = JsonTestHelper.deserializeAndValidate("{}",
+    final Set<ConstraintViolation<BulkRegenerateRequest>> violations = JsonTestHelper.deserializeAndValidate("{}",
       BulkRegenerateRequest.class);
 
     MatcherAssert.assertThat(violations, Matchers.contains(JsonTestHelper.hasViolationWithMessage("error.missing_signed_by")));

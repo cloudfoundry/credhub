@@ -36,7 +36,7 @@ public class EncryptionKeyRotatorTest {
   @Before
   public void beforeEach() {
     oldUuid = UUID.randomUUID();
-    UUID activeUuid = UUID.randomUUID();
+    final UUID activeUuid = UUID.randomUUID();
 
     encryptedValueDataService = mock(EncryptedValueDataService.class);
     keySet = new EncryptionKeySet();

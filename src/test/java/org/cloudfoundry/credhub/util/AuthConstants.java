@@ -3,6 +3,7 @@ package org.cloudfoundry.credhub.util;
 final public class AuthConstants {
 
   private AuthConstants() {
+    super();
   }
 
   // Actor ID: uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d

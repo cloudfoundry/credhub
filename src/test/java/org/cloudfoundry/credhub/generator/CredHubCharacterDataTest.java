@@ -12,7 +12,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 public class CredHubCharacterDataTest {
   @Test
   public void special_includesOnlySpecialCharacters() {
-    String specialCharacters = CredHubCharacterData.Special.getCharacters();
+    final String specialCharacters = CredHubCharacterData.SPECIAL.getCharacters();
 
     assertThat(specialCharacters.contains("$"), equalTo(true));
     assertThat(specialCharacters.contains("!"), equalTo(true));
@@ -23,7 +23,7 @@ public class CredHubCharacterDataTest {
 
   @Test
   public void hex_includesOnlyHexCharacters() {
-    String hexCharacters = CredHubCharacterData.Hex.getCharacters();
+    final String hexCharacters = CredHubCharacterData.HEX.getCharacters();
 
     assertThat(hexCharacters.matches("[A-F0-9]+"), equalTo(true));
   }

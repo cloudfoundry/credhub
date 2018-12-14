@@ -50,11 +50,11 @@ public class PasswordBasedKeyProxyTest {
     final String knownRandomNumber = "7034522dc85138530e44b38d0569ca67";
     final String knownGeneratedKey = "09cafa70264eaa47dcf0678dfd03aa73d24044df47b0381c17ebe0ed4e2f3d91";
 
-    byte[] salt = Hex.decode(knownRandomNumber); // gen'dp originally from SecureRandom..
+    final byte[] salt = Hex.decode(knownRandomNumber); // gen'dp originally from SecureRandom..
 
-    Key derivedKey = subject.deriveKey(Collections.unmodifiableList(asList(ArrayUtils.toObject(salt))));
+    final Key derivedKey = subject.deriveKey(Collections.unmodifiableList(asList(ArrayUtils.toObject(salt))));
 
-    String hexOutput = Hex.toHexString(derivedKey.getEncoded());
+    final String hexOutput = Hex.toHexString(derivedKey.getEncoded());
 
     assertThat(hexOutput, equalTo(knownGeneratedKey));
     assertThat(derivedKey.getEncoded().length, equalTo(32));
@@ -63,13 +63,13 @@ public class PasswordBasedKeyProxyTest {
   @Test
   public void matchesCanary_whenCanaryMatches_setsTheKey() throws Exception {
     // Generate a key from the password and a new salt
-    PasswordBasedKeyProxy oldProxy = new PasswordBasedKeyProxy(password, 1, encryptionService);
-    Key derivedKey = oldProxy.deriveKey();
+    final PasswordBasedKeyProxy oldProxy = new PasswordBasedKeyProxy(password, 1, encryptionService);
+    final Key derivedKey = oldProxy.deriveKey();
     final List<Byte> salt = oldProxy.getSalt();
 
     // Create a canary whose value is encrypted with this key
     final EncryptedValue encryptedCanaryValue = encryptionService.encrypt(null, derivedKey, CANARY_VALUE);
-    EncryptionKeyCanary canary = new EncryptionKeyCanary();
+    final EncryptionKeyCanary canary = new EncryptionKeyCanary();
     canary.setEncryptedCanaryValue(encryptedCanaryValue.getEncryptedValue());
     canary.setNonce(encryptedCanaryValue.getNonce());
     final Byte[] saltArray = new Byte[salt.size()];
@@ -83,13 +83,13 @@ public class PasswordBasedKeyProxyTest {
   @Test
   public void matchesCanary_whenCanaryDoesNotMatch_doesNotAffectTheKey() throws Exception {
     // Create a canary whose value cannot be decrypted by any key
-    EncryptionKeyCanary canary = new EncryptionKeyCanary();
+    final EncryptionKeyCanary canary = new EncryptionKeyCanary();
     canary.setSalt(new byte[SALT_SIZE]);
     canary.setNonce(new byte[NONCE_SIZE]);
     canary.setEncryptedCanaryValue(new byte[32]);
 
     // Set some well-known but bogus key into the subject
-    Key bogusKey = mock(Key.class);
+    final Key bogusKey = mock(Key.class);
     subject.setKey(bogusKey);
     final boolean match = subject.matchesCanary(canary);
 
@@ -99,14 +99,14 @@ public class PasswordBasedKeyProxyTest {
 
   @Test
   public void matchesCanary_whenCanaryDoesNotContainSalt_returnsFalse() {
-    EncryptionKeyCanary canary = new EncryptionKeyCanary();
+    final EncryptionKeyCanary canary = new EncryptionKeyCanary();
     canary.setSalt(null);
     assertFalse(subject.matchesCanary(canary));
   }
 
   @Test
   public void matchesCanary_whenCanaryHasEmptySalt_returnsFalse() {
-    EncryptionKeyCanary canary = new EncryptionKeyCanary();
+    final EncryptionKeyCanary canary = new EncryptionKeyCanary();
     canary.setSalt("".getBytes(StringUtil.UTF_8));
     assertFalse(subject.matchesCanary(canary));
   }
@@ -128,7 +128,7 @@ public class PasswordBasedKeyProxyTest {
 
   @Test
   public void generateSalt_usesCorrectSecureRandom() {
-    InternalEncryptionService mockEncryptionService = mock(InternalEncryptionService.class);
+    final InternalEncryptionService mockEncryptionService = mock(InternalEncryptionService.class);
     when(mockEncryptionService.getSecureRandom()).thenReturn(new SecureRandom());
 
     subject = new PasswordBasedKeyProxy("some password", 1, mockEncryptionService);

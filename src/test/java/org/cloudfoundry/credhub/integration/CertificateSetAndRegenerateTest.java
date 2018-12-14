@@ -67,7 +67,7 @@ public class CertificateSetAndRegenerateTest {
       .apply(springSecurity())
       .build();
 
-    MockHttpServletRequestBuilder generateCaRequest = post("/api/v1/data")
+    final MockHttpServletRequestBuilder generateCaRequest = post("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -99,9 +99,9 @@ public class CertificateSetAndRegenerateTest {
     final String generatedCertificate = RequestHelper
       .generateCertificateCredential(mockMvc, "generatedCertificate", true,
         "generated-cert", CA_NAME, ALL_PERMISSIONS_TOKEN);
-    String certificateValue = JsonPath.parse(generatedCertificate)
+    final String certificateValue = JsonPath.parse(generatedCertificate)
       .read("$.value.certificate");
-    String privateKeyValue = JsonPath.parse(generatedCertificate)
+    final String privateKeyValue = JsonPath.parse(generatedCertificate)
       .read("$.value.private_key");
 
     final String setJson = JSONObject.toJSONString(
@@ -111,7 +111,7 @@ public class CertificateSetAndRegenerateTest {
         .put("private_key", privateKeyValue)
         .build());
 
-    MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
+    final MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -125,7 +125,7 @@ public class CertificateSetAndRegenerateTest {
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.value.ca", equalTo(caCertificate)));
 
-    MockHttpServletRequestBuilder regenerateRequest = post("/api/v1/data")
+    final MockHttpServletRequestBuilder regenerateRequest = post("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -141,7 +141,7 @@ public class CertificateSetAndRegenerateTest {
 
   @Test
   public void certificateRegenerate_withTransitionalSetToTrue_generatesANewTransitionalCertificate() throws Exception {
-    MockHttpServletRequestBuilder regenerateRequest = post("/api/v1/certificates/" + caCredentialUuid + "/regenerate")
+    final MockHttpServletRequestBuilder regenerateRequest = post("/api/v1/certificates/" + caCredentialUuid + "/regenerate")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -153,7 +153,7 @@ public class CertificateSetAndRegenerateTest {
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.transitional", equalTo(true)));
 
-    MockHttpServletRequestBuilder getRequest = get("/api/v1/data?name=" + CA_NAME)
+    final MockHttpServletRequestBuilder getRequest = get("/api/v1/data?name=" + CA_NAME)
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON);
 
@@ -165,7 +165,7 @@ public class CertificateSetAndRegenerateTest {
   @Test
   public void certificateRegenerate_withTransitionalSetToTrue_failsIfThereIsAlreadyATransitionalCert()
     throws Exception {
-    MockHttpServletRequestBuilder regenerateRequest = post("/api/v1/certificates/" + caCredentialUuid + "/regenerate")
+    final MockHttpServletRequestBuilder regenerateRequest = post("/api/v1/certificates/" + caCredentialUuid + "/regenerate")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -184,7 +184,7 @@ public class CertificateSetAndRegenerateTest {
 
   @Test
   public void certificateRegenerate_withoutBodyWorks() throws Exception {
-    MockHttpServletRequestBuilder regenerateRequest = post("/api/v1/certificates/" + caCredentialUuid + "/regenerate")
+    final MockHttpServletRequestBuilder regenerateRequest = post("/api/v1/certificates/" + caCredentialUuid + "/regenerate")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON);
@@ -201,7 +201,7 @@ public class CertificateSetAndRegenerateTest {
         .put("private_key", TEST_PRIVATE_KEY)
         .build());
 
-    MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
+    final MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -223,7 +223,7 @@ public class CertificateSetAndRegenerateTest {
         .put("certificate", "-----BEGIN CERTIFICATE-----") // missing END CERTIFICATE tag
         .build());
 
-    MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
+    final MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -244,7 +244,7 @@ public class CertificateSetAndRegenerateTest {
         .put("private_key", TEST_PRIVATE_KEY)
         .build());
 
-    MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
+    final MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -266,7 +266,7 @@ public class CertificateSetAndRegenerateTest {
         .put("private_key", "not a key")
         .build());
 
-    MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
+    final MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -288,7 +288,7 @@ public class CertificateSetAndRegenerateTest {
         .put("private_key", "not a key")
         .build());
 
-    MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
+    final MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -305,7 +305,7 @@ public class CertificateSetAndRegenerateTest {
   @Test
   public void certificateSetRequest_whenProvidedACertificateValueThatIsTooLong_returnsAValidationError()
     throws Exception {
-    int repetitionCount = 7001 - TEST_CERTIFICATE.length();
+    final int repetitionCount = 7001 - TEST_CERTIFICATE.length();
     final String setJson = JSONObject.toJSONString(
       ImmutableMap.<String, String>builder()
         .put("ca_name", "")
@@ -313,7 +313,7 @@ public class CertificateSetAndRegenerateTest {
         .put("private_key", TEST_PRIVATE_KEY)
         .build());
 
-    MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
+    final MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -331,7 +331,7 @@ public class CertificateSetAndRegenerateTest {
 
   @Test
   public void certificateSetRequest_whenProvidedACAValueThatIsTooLong_returnsAValidationError() throws Exception {
-    int repetitionCount = 7001 - TEST_CA.length();
+    final int repetitionCount = 7001 - TEST_CA.length();
     final String setJson = JSONObject.toJSONString(
       ImmutableMap.<String, String>builder()
         .put("ca", TEST_CA + StringUtils.repeat("a", repetitionCount))
@@ -339,7 +339,7 @@ public class CertificateSetAndRegenerateTest {
         .put("private_key", TEST_PRIVATE_KEY)
         .build());
 
-    MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
+    final MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -362,7 +362,7 @@ public class CertificateSetAndRegenerateTest {
     final String otherCaCertificate = RequestHelper.generateCertificateCredential(mockMvc, "otherCaCertificate", true,
       "other-ca-cert", "otherCa", ALL_PERMISSIONS_TOKEN);
 
-    String otherCaCertificateValue = JsonPath.parse(otherCaCertificate)
+    final String otherCaCertificateValue = JsonPath.parse(otherCaCertificate)
       .read("$.value.certificate");
 
     final String setJson = JSONObject.toJSONString(
@@ -371,7 +371,7 @@ public class CertificateSetAndRegenerateTest {
         .put("certificate", otherCaCertificateValue)
         .build());
 
-    MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
+    final MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -394,7 +394,7 @@ public class CertificateSetAndRegenerateTest {
     final String otherCaCertificate = RequestHelper.generateCertificateCredential(mockMvc, "otherCaCertificate", true,
       "other-ca-cert", "otherCa", ALL_PERMISSIONS_TOKEN);
 
-    String otherCaCertificateValue = JsonPath.parse(otherCaCertificate)
+    final String otherCaCertificateValue = JsonPath.parse(otherCaCertificate)
       .read("$.value.certificate");
 
     final String setJson = JSONObject.toJSONString(
@@ -403,7 +403,7 @@ public class CertificateSetAndRegenerateTest {
         .put("certificate", otherCaCertificateValue)
         .build());
 
-    MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
+    final MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -426,9 +426,9 @@ public class CertificateSetAndRegenerateTest {
     final String otherCaCertificate = RequestHelper.generateCertificateCredential(mockMvc, "otherCaCertificate", true,
       "other-ca-cert", "otherCa", ALL_PERMISSIONS_TOKEN);
 
-    String originalPrivateKeyValue = JsonPath.parse(originalCertificate)
+    final String originalPrivateKeyValue = JsonPath.parse(originalCertificate)
       .read("$.value.private_key");
-    String otherCaCertificateValue = JsonPath.parse(otherCaCertificate)
+    final String otherCaCertificateValue = JsonPath.parse(otherCaCertificate)
       .read("$.value.certificate");
 
     final String setJson = JSONObject.toJSONString(
@@ -438,7 +438,7 @@ public class CertificateSetAndRegenerateTest {
         .put("private_key", originalPrivateKeyValue)
         .build());
 
-    MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
+    final MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -462,8 +462,8 @@ public class CertificateSetAndRegenerateTest {
         .put("private_key", TEST_PRIVATE_KEY)
         .build());
 
-    String content = "{\"value\" : " + setJson + "}";
-    MockHttpServletRequestBuilder certificateSetRequest = post("/api/v1/certificates/" + caCredentialUuid + "/versions")
+    final String content = "{\"value\" : " + setJson + "}";
+    final MockHttpServletRequestBuilder certificateSetRequest = post("/api/v1/certificates/" + caCredentialUuid + "/versions")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -477,16 +477,16 @@ public class CertificateSetAndRegenerateTest {
       .andExpect(jsonPath("$.name", equalTo(CA_NAME)))
       .andExpect(jsonPath("$.transitional", equalTo(false)));
 
-    MockHttpServletRequestBuilder versionsGetRequest = get("/api/v1/certificates/" + caCredentialUuid + "/versions")
+    final MockHttpServletRequestBuilder versionsGetRequest = get("/api/v1/certificates/" + caCredentialUuid + "/versions")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON);
 
-    String versionsResponse = this.mockMvc.perform(versionsGetRequest)
+    final String versionsResponse = this.mockMvc.perform(versionsGetRequest)
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
 
-    JSONArray versions = new JSONArray(versionsResponse);
+    final JSONArray versions = new JSONArray(versionsResponse);
     assertThat(versions.length(), equalTo(2));
   }
 
@@ -499,7 +499,7 @@ public class CertificateSetAndRegenerateTest {
         .put("private_key", TEST_PRIVATE_KEY)
         .build());
 
-    MockHttpServletRequestBuilder certificateSetRequest = post("/api/v1/certificates/" + caCredentialUuid + "/versions")
+    final MockHttpServletRequestBuilder certificateSetRequest = post("/api/v1/certificates/" + caCredentialUuid + "/versions")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -519,7 +519,7 @@ public class CertificateSetAndRegenerateTest {
         .put("private_key", TEST_PRIVATE_KEY)
         .build());
 
-    MockHttpServletRequestBuilder certificateSetRequest = post("/api/v1/certificates/" + caCredentialUuid + "/versions")
+    final MockHttpServletRequestBuilder certificateSetRequest = post("/api/v1/certificates/" + caCredentialUuid + "/versions")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -540,7 +540,7 @@ public class CertificateSetAndRegenerateTest {
         .put("private_key", TEST_PRIVATE_KEY)
         .build());
 
-    MockHttpServletRequestBuilder certificateSetRequest = post("/api/v1/certificates/" + caCredentialUuid + "/versions")
+    final MockHttpServletRequestBuilder certificateSetRequest = post("/api/v1/certificates/" + caCredentialUuid + "/versions")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -558,7 +558,7 @@ public class CertificateSetAndRegenerateTest {
         .put("private_key", TEST_PRIVATE_KEY_PKCS8)
         .build());
 
-    MockHttpServletRequestBuilder certificateSetRequest = post("/api/v1/certificates/" + caCredentialUuid + "/versions")
+    final MockHttpServletRequestBuilder certificateSetRequest = post("/api/v1/certificates/" + caCredentialUuid + "/versions")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -577,7 +577,7 @@ public class CertificateSetAndRegenerateTest {
         .put("private_key", TEST_PRIVATE_KEY)
         .build());
 
-    MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
+    final MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -587,7 +587,7 @@ public class CertificateSetAndRegenerateTest {
         + "  \"type\" : \"certificate\",\n"
         + "  \"value\" : " + setJson + "}");
 
-    X509Certificate certificate = (X509Certificate) CertificateFactory
+    final X509Certificate certificate = (X509Certificate) CertificateFactory
       .getInstance("X.509", BouncyCastleProvider.PROVIDER_NAME)
       .generateCertificate(new ByteArrayInputStream(TEST_CERTIFICATE.getBytes(UTF_8)));
 

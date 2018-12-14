@@ -9,19 +9,19 @@ import org.cloudfoundry.credhub.util.SshPublicKeyParser;
 public class SshCredentialVersion extends CredentialVersion<SshCredentialVersion> {
 
   private final SshPublicKeyParser parser;
-  private SshCredentialVersionData delegate;
+  private final SshCredentialVersionData delegate;
 
-  public SshCredentialVersion(SshCredentialVersionData delegate) {
+  public SshCredentialVersion(final SshCredentialVersionData delegate) {
     this(delegate, new SshPublicKeyParser());
   }
 
-  public SshCredentialVersion(SshCredentialVersionData delegate, SshPublicKeyParser keyParser) {
+  public SshCredentialVersion(final SshCredentialVersionData delegate, final SshPublicKeyParser keyParser) {
     super(delegate);
     this.delegate = delegate;
     this.parser = keyParser;
   }
 
-  public SshCredentialVersion(String name) {
+  public SshCredentialVersion(final String name) {
     this(new SshCredentialVersionData(name));
   }
 
@@ -29,7 +29,7 @@ public class SshCredentialVersion extends CredentialVersion<SshCredentialVersion
     this(new SshCredentialVersionData());
   }
 
-  public SshCredentialVersion(SshCredentialValue sshValue, Encryptor encryptor) {
+  public SshCredentialVersion(final SshCredentialValue sshValue, final Encryptor encryptor) {
     this();
     this.setEncryptor(encryptor);
     this.setPublicKey(sshValue.getPublicKey());
@@ -40,29 +40,28 @@ public class SshCredentialVersion extends CredentialVersion<SshCredentialVersion
     return delegate.getPublicKey();
   }
 
-  public SshCredentialVersion setPublicKey(String publicKey) {
+  public void setPublicKey(final String publicKey) {
     this.delegate.setPublicKey(publicKey);
-    return this;
   }
 
   public String getPrivateKey() {
     return (String) super.getValue();
   }
 
-  public SshCredentialVersion setPrivateKey(String privateKey) {
+  public void setPrivateKey(final String privateKey) {
     if (privateKey != null) {
       super.setValue(privateKey);
     }
-    return this;
   }
 
+  @Override
   public void rotate() {
-    String decryptedValue = this.getPrivateKey();
+    final String decryptedValue = this.getPrivateKey();
     this.setPrivateKey(decryptedValue);
   }
 
   @Override
-  public boolean matchesGenerationParameters(GenerationParameters generationParameters) {
+  public boolean matchesGenerationParameters(final GenerationParameters generationParameters) {
     if (generationParameters == null) {
       return true;
     }
@@ -89,5 +88,10 @@ public class SshCredentialVersion extends CredentialVersion<SshCredentialVersion
   public String getFingerprint() {
     parser.setPublicKey(getPublicKey());
     return parser.getFingerprint();
+  }
+
+  @Override
+  public GenerationParameters getGenerationParameters() {
+    return null;
   }
 }

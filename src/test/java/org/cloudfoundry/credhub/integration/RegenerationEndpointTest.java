@@ -30,7 +30,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@ActiveProfiles(value = {"unit-test", "unit-test-permissions"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(
+  value = {
+    "unit-test",
+    "unit-test-permissions",
+  },
+  resolver = DatabaseProfileResolver.class
+)
 @SpringBootTest(classes = CredentialManagerApp.class)
 @Transactional
 public class RegenerationEndpointTest {
@@ -52,7 +58,7 @@ public class RegenerationEndpointTest {
       .apply(springSecurity())
       .build();
 
-    MockHttpServletRequestBuilder generatePasswordRequest = post(API_V1_DATA_ENDPOINT)
+    final MockHttpServletRequestBuilder generatePasswordRequest = post(API_V1_DATA_ENDPOINT)
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -62,7 +68,7 @@ public class RegenerationEndpointTest {
         + "  \"type\" : \"password\"\n"
         + "}");
 
-    String generatePasswordResult = this.mockMvc.perform(generatePasswordRequest)
+    final String generatePasswordResult = this.mockMvc.perform(generatePasswordRequest)
       .andDo(print())
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
@@ -73,7 +79,7 @@ public class RegenerationEndpointTest {
 
   @Test
   public void passwordRegeneration_withDefaultParameters_shouldRegeneratePassword() throws Exception {
-    MockHttpServletRequestBuilder regeneratePasswordRequest = post(API_V1_REGENERATE_ENDPOINT)
+    final MockHttpServletRequestBuilder regeneratePasswordRequest = post(API_V1_REGENERATE_ENDPOINT)
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -82,12 +88,12 @@ public class RegenerationEndpointTest {
         + "  \"name\" : \"" + CREDENTIAL_NAME + "\"\n"
         + "}");
 
-    String regeneratePasswordResult = this.mockMvc.perform(regeneratePasswordRequest)
+    final String regeneratePasswordResult = this.mockMvc.perform(regeneratePasswordRequest)
       .andDo(print())
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
 
-    String regeneratedPassword = (new JSONObject(regeneratePasswordResult)).getString("value");
+    final String regeneratedPassword = (new JSONObject(regeneratePasswordResult)).getString("value");
 
     assertThat(regeneratedPassword, notNullValue());
     assertThat(regeneratedPassword, not(equalTo(originalPassword)));
@@ -95,7 +101,7 @@ public class RegenerationEndpointTest {
 
   @Test
   public void passwordRegeneration_withoutWritePermissionShouldFail() throws Exception {
-    MockHttpServletRequestBuilder regeneratePasswordRequest = post(API_V1_REGENERATE_ENDPOINT)
+    final MockHttpServletRequestBuilder regeneratePasswordRequest = post(API_V1_REGENERATE_ENDPOINT)
       .header("Authorization", "Bearer " + NO_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)

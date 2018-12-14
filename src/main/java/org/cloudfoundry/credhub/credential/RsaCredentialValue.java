@@ -5,7 +5,13 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.cloudfoundry.credhub.util.EmptyStringToNull;
 import org.cloudfoundry.credhub.validator.RequireAnyOf;
 
-@RequireAnyOf(message = "error.missing_rsa_ssh_parameters", fields = {"publicKey", "privateKey"})
+@RequireAnyOf(
+  message = "error.missing_rsa_ssh_parameters",
+  fields = {
+    "publicKey",
+    "privateKey",
+  }
+)
 @JsonAutoDetect
 public class RsaCredentialValue implements CredentialValue {
 
@@ -16,9 +22,11 @@ public class RsaCredentialValue implements CredentialValue {
 
   @SuppressWarnings("unused")
   public RsaCredentialValue() {
+    super();
   }
 
-  public RsaCredentialValue(String publicKey, String privateKey) {
+  public RsaCredentialValue(final String publicKey, final String privateKey) {
+    super();
     this.publicKey = publicKey;
     this.privateKey = privateKey;
   }

@@ -9,7 +9,7 @@ public class RegenerateCertificate implements RequestDetails {
     return transitional;
   }
 
-  public void setTransitional(Boolean transitional) {
+  public void setTransitional(final Boolean transitional) {
     this.transitional = transitional;
   }
 

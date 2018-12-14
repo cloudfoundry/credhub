@@ -38,7 +38,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
-@ActiveProfiles(value = {"unit-test", "unit-test-permissions"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(
+  value = {
+    "unit-test",
+    "unit-test-permissions",
+  },
+  resolver = DatabaseProfileResolver.class
+)
 @Transactional
 public class DeletePermissionsV2EndToEndTest {
 
@@ -57,19 +63,19 @@ public class DeletePermissionsV2EndToEndTest {
 
   @Test
   public void DELETE_whenPermissionIsDeletedForUserA_UserACannotAccessCredentialInAnyWay() throws Exception {
-    String credentialName = "/test";
-    String passwordValue = "passwordValue";
+    final String credentialName = "/test";
+    final String passwordValue = "passwordValue";
 
-    UUID credUUID = PermissionsV2EndToEndTestHelper.setPermissions(mockMvc, credentialName, PermissionOperation.WRITE);
+    final UUID credUUID = PermissionsV2EndToEndTestHelper.setPermissions(mockMvc, credentialName, PermissionOperation.WRITE);
 
     PermissionsV2EndToEndTestHelper.setPassword(mockMvc, credentialName, passwordValue, USER_A_TOKEN).andExpect(status().isOk());
 
-    MockHttpServletRequestBuilder deletePermissionRequest = delete("/api/v2/permissions/" + credUUID)
+    final MockHttpServletRequestBuilder deletePermissionRequest = delete("/api/v2/permissions/" + credUUID)
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON);
 
-    String content = mockMvc.perform(deletePermissionRequest).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-    PermissionsV2View returnValue = JsonTestHelper.deserialize(content, PermissionsV2View.class);
+    final String content = mockMvc.perform(deletePermissionRequest).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+    final PermissionsV2View returnValue = JsonTestHelper.deserialize(content, PermissionsV2View.class);
     assertThat(returnValue.getUuid(), equalTo(credUUID));
     assertThat(returnValue.getActor(), equalTo(USER_A_ACTOR_ID));
     assertThat(returnValue.getPath(), equalTo(credentialName));
@@ -80,14 +86,14 @@ public class DeletePermissionsV2EndToEndTest {
 
   @Test
   public void DELETE_whenUserDoesNotHavePermission_CannotDeleteThePermission() throws Exception {
-    String credentialName = "/test";
-    String passwordValue = "passwordValue";
+    final String credentialName = "/test";
+    final String passwordValue = "passwordValue";
 
-    UUID credUUID = PermissionsV2EndToEndTestHelper.setPermissions(mockMvc, credentialName, PermissionOperation.WRITE);
+    final UUID credUUID = PermissionsV2EndToEndTestHelper.setPermissions(mockMvc, credentialName, PermissionOperation.WRITE);
 
     PermissionsV2EndToEndTestHelper.setPassword(mockMvc, credentialName, passwordValue, USER_A_TOKEN).andExpect(status().isOk());
 
-    MockHttpServletRequestBuilder deletePermissionRequest = delete("/api/v2/permissions/" + credUUID)
+    final MockHttpServletRequestBuilder deletePermissionRequest = delete("/api/v2/permissions/" + credUUID)
       .header("Authorization", "Bearer " + NO_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON);
 
@@ -97,28 +103,28 @@ public class DeletePermissionsV2EndToEndTest {
 
   @Test
   public void DELETE_whenUserDeletesAPermission_withAnInvalidGuid_theyReceiveA404() throws Exception {
-    String invalidGuid = "invalid";
+    final String invalidGuid = "invalid";
 
-    MockHttpServletRequestBuilder patchPermissionRequest = delete("/api/v2/permissions/" + invalidGuid)
+    final MockHttpServletRequestBuilder patchPermissionRequest = delete("/api/v2/permissions/" + invalidGuid)
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON);
 
-    String responseJson = mockMvc.perform(patchPermissionRequest).andExpect(status().isNotFound()).andReturn().getResponse().getContentAsString();
-    String errorMessage = new JSONObject(responseJson).getString("error");
+    final String responseJson = mockMvc.perform(patchPermissionRequest).andExpect(status().isNotFound()).andReturn().getResponse().getContentAsString();
+    final String errorMessage = new JSONObject(responseJson).getString("error");
 
     assertThat(errorMessage, is(IsEqual.equalTo("The request includes a permission that does not exist.")));
   }
 
   @Test
   public void DELETE_whenUserDeletesAPermission_withAGuidThatDoeNotExist_theyReceiveA404() throws Exception {
-    String nonExistingGuid = UUID.randomUUID().toString();
+    final String nonExistingGuid = UUID.randomUUID().toString();
 
-    MockHttpServletRequestBuilder patchPermissionRequest = delete("/api/v2/permissions/" + nonExistingGuid)
+    final MockHttpServletRequestBuilder patchPermissionRequest = delete("/api/v2/permissions/" + nonExistingGuid)
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON);
 
-    String responseJson = mockMvc.perform(patchPermissionRequest).andExpect(status().isNotFound()).andReturn().getResponse().getContentAsString();
-    String errorMessage = new JSONObject(responseJson).getString("error");
+    final String responseJson = mockMvc.perform(patchPermissionRequest).andExpect(status().isNotFound()).andReturn().getResponse().getContentAsString();
+    final String errorMessage = new JSONObject(responseJson).getString("error");
 
     assertThat(errorMessage, is(IsEqual.equalTo("The request includes a permission that does not exist.")));
   }

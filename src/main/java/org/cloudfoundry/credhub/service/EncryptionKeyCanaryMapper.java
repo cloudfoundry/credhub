@@ -26,46 +26,44 @@ public class EncryptionKeyCanaryMapper {
   public static final String CANARY_VALUE = new String(new byte[128], CHARSET);
   public static final String DEPRECATED_CANARY_VALUE = new String(new byte[64], CHARSET);
   public static final int CANARY_POPULATION_WAIT_SEC = 60 * 10; // ten minutes
+  private static final Logger LOGGER = LogManager.getLogger();
 
   private final EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
   private final EncryptionKeysConfiguration encryptionKeysConfiguration;
 
   private final TimedRetry timedRetry;
-  private final Logger logger;
-  private EncryptionProviderFactory providerFactory;
+  private final EncryptionProviderFactory providerFactory;
 
   @Autowired
-  EncryptionKeyCanaryMapper(
-    EncryptionKeyCanaryDataService encryptionKeyCanaryDataService,
-    EncryptionKeysConfiguration encryptionKeysConfiguration,
-    TimedRetry timedRetry,
-    EncryptionProviderFactory providerFactory
+  public EncryptionKeyCanaryMapper(
+    final EncryptionKeyCanaryDataService encryptionKeyCanaryDataService,
+    final EncryptionKeysConfiguration encryptionKeysConfiguration,
+    final TimedRetry timedRetry,
+    final EncryptionProviderFactory providerFactory
   ) {
+    super();
     this.encryptionKeyCanaryDataService = encryptionKeyCanaryDataService;
     this.encryptionKeysConfiguration = encryptionKeysConfiguration;
     this.timedRetry = timedRetry;
     this.providerFactory = providerFactory;
-
-    logger = LogManager.getLogger();
   }
 
-
-  void mapUuidsToKeys(EncryptionKeySet keySet) throws Exception {
-    List<EncryptionKeyCanary> encryptionKeyCanaries = encryptionKeyCanaryDataService.findAll();
-    for (EncryptionKeyProvider provider : encryptionKeysConfiguration.getProviders()) {
-      EncryptionProvider encryptionService = providerFactory.getEncryptionService(provider);
-      for (EncryptionKeyMetadata keyMetadata : provider.getKeys()) {
-        KeyProxy keyProxy = encryptionService.createKeyProxy(keyMetadata);
+  public void mapUuidsToKeys(final EncryptionKeySet keySet) throws Exception {
+    final List<EncryptionKeyCanary> encryptionKeyCanaries = encryptionKeyCanaryDataService.findAll();
+    for (final EncryptionKeyProvider provider : encryptionKeysConfiguration.getProviders()) {
+      final EncryptionProvider encryptionService = providerFactory.getEncryptionService(provider);
+      for (final EncryptionKeyMetadata keyMetadata : provider.getKeys()) {
+        final KeyProxy keyProxy = encryptionService.createKeyProxy(keyMetadata);
         EncryptionKeyCanary matchingCanary = null;
 
-        for (EncryptionKeyCanary canary : encryptionKeyCanaries) {
+        for (final EncryptionKeyCanary canary : encryptionKeyCanaries) {
           if (keyProxy.matchesCanary(canary)) {
             matchingCanary = canary;
             break;
           }
         }
 
-        EncryptionKey encryptionKey = new EncryptionKey(encryptionService, null, keyProxy.getKey(), keyMetadata.getEncryptionKeyName());
+        final EncryptionKey encryptionKey = new EncryptionKey(encryptionService, null, keyProxy.getKey(), keyMetadata.getEncryptionKeyName());
 
         if (matchingCanary == null) {
           if (keyMetadata.isActive()) {
@@ -81,7 +79,7 @@ public class EncryptionKeyCanaryMapper {
         try {
           encryptionKey.setUuid(matchingCanary.getUuid());
           keySet.add(encryptionKey);
-        } catch (Exception e) {
+        } catch (final Exception e) {
           throw new RuntimeException("Failed to connect to encryption provider", e);
         }
       }
@@ -91,14 +89,18 @@ public class EncryptionKeyCanaryMapper {
     }
   }
 
+  public void delete(final List<UUID> uuids) {
+    encryptionKeyCanaryDataService.delete(uuids);
+  }
 
-  private EncryptionKeyCanary createCanary(KeyProxy keyProxy, EncryptionProvider encryptionProvider, EncryptionKey encryptionKey) {
+  private EncryptionKeyCanary createCanary(
+    final KeyProxy keyProxy, final EncryptionProvider encryptionProvider, final EncryptionKey encryptionKey) {
     if (encryptionKeysConfiguration.isKeyCreationEnabled()) {
-      logger.info("Creating a new active key canary");
-      EncryptionKeyCanary canary = new EncryptionKeyCanary();
+      LOGGER.info("Creating a new active key canary");
+      final EncryptionKeyCanary canary = new EncryptionKeyCanary();
 
       try {
-        EncryptedValue encryptionData = encryptionProvider
+        final EncryptedValue encryptionData = encryptionProvider
           .encrypt(encryptionKey, CANARY_VALUE);
         canary.setEncryptedCanaryValue(encryptionData.getEncryptedValue());
         canary.setNonce(encryptionData.getNonce());
@@ -106,7 +108,7 @@ public class EncryptionKeyCanaryMapper {
         final Byte[] saltArray = new Byte[salt.size()];
         canary.setSalt(toPrimitive(salt.toArray(saltArray)));
 
-      } catch (Exception e) {
+      } catch (final Exception e) {
         throw new RuntimeException(e);
       }
 
@@ -114,13 +116,13 @@ public class EncryptionKeyCanaryMapper {
     } else {
       final EncryptionKeyCanary[] matchingCanary = new EncryptionKeyCanary[1];
       timedRetry.retryEverySecondUntil(CANARY_POPULATION_WAIT_SEC, () -> {
-        for (EncryptionKeyCanary encryptionKeyCanary : encryptionKeyCanaryDataService.findAll()) {
+        for (final EncryptionKeyCanary encryptionKeyCanary : encryptionKeyCanaryDataService.findAll()) {
           if (keyProxy.matchesCanary(encryptionKeyCanary)) {
             matchingCanary[0] = encryptionKeyCanary;
             return true;
           }
         }
-        logger.info("Waiting for the active key's canary");
+        LOGGER.info("Waiting for the active key's canary");
         return false;
       });
       if (matchingCanary[0] == null) {
@@ -129,9 +131,4 @@ public class EncryptionKeyCanaryMapper {
       return matchingCanary[0];
     }
   }
-
-  public void delete(List<UUID> uuids) {
-    encryptionKeyCanaryDataService.delete(uuids);
-  }
-
 }

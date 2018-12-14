@@ -47,43 +47,45 @@ import org.cloudfoundry.credhub.exceptions.UnreadableCertificateException;
 import org.cloudfoundry.credhub.view.ResponseError;
 
 import static org.springframework.core.Ordered.HIGHEST_PRECEDENCE;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.PAYLOAD_TOO_LARGE;
 
 @RestControllerAdvice
 @Order(HIGHEST_PRECEDENCE)
+@SuppressWarnings({
+  "PMD.TooManyMethods",
+  "PMD.CouplingBetweenObjects",
+})
 public class ExceptionHandlers {
 
   private final MessageSourceAccessor messageSourceAccessor;
-  private final Logger logger;
+  private static final Logger LOGGER = LogManager.getLogger(ExceptionHandlers.class);
 
   @Autowired
-  ExceptionHandlers(MessageSourceAccessor messageSourceAccessor) {
+  ExceptionHandlers(final MessageSourceAccessor messageSourceAccessor) {
+    super();
     this.messageSourceAccessor = messageSourceAccessor;
-    this.logger = LogManager.getLogger(this.getClass());
   }
 
   @ExceptionHandler(EntryNotFoundException.class)
   @ResponseStatus(HttpStatus.NOT_FOUND)
-  public ResponseError handleNotFoundException(EntryNotFoundException e) {
+  public ResponseError handleNotFoundException(final EntryNotFoundException e) {
     return constructError(e.getMessage());
   }
 
   @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
   @ResponseStatus(HttpStatus.NOT_FOUND)
-  public void handleRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e) {
+  public void handleRequestMethodNotSupportedException(final HttpRequestMethodNotSupportedException e) {
   }
 
   @ExceptionHandler(PermissionException.class)
   @ResponseStatus(HttpStatus.FORBIDDEN)
-  public ResponseError handlePermissionException(PermissionException error) {
+  public ResponseError handlePermissionException(final PermissionException error) {
     return constructError(error.getMessage());
   }
 
   @ExceptionHandler(JsonMappingException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ResponseError handleJsonMappingException(JsonMappingException e) {
-    for (com.fasterxml.jackson.databind.JsonMappingException.Reference reference : e.getPath()) {
+  public ResponseError handleJsonMappingException(final JsonMappingException e) {
+    for (final JsonMappingException.Reference reference : e.getPath()) {
       if ("operations".equals(reference.getFieldName())) {
         return constructError("error.permission.invalid_operation");
       }
@@ -94,23 +96,23 @@ public class ExceptionHandlers {
 
   @ExceptionHandler(InvalidQueryParameterException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ResponseError handleInvalidParameterException(InvalidQueryParameterException e) {
+  public ResponseError handleInvalidParameterException(final InvalidQueryParameterException e) {
     return constructError(e.getMessage(), e.getInvalidQueryParameter());
   }
 
   @ExceptionHandler(MissingServletRequestParameterException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ResponseError handleMissingParameterException(MissingServletRequestParameterException e) {
+  public ResponseError handleMissingParameterException(final MissingServletRequestParameterException e) {
     return constructError("error.missing_query_parameter", e.getParameterName());
   }
 
   @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ResponseError handleHttpMediaTypeNotSupportedException(HttpMediaTypeNotSupportedException e) {
+  public ResponseError handleHttpMediaTypeNotSupportedException(final HttpMediaTypeNotSupportedException e) {
 
     String errorMessage = "";
 
-    MediaType contentType = e.getContentType();
+    final MediaType contentType = e.getContentType();
     if (contentType != null) {
       errorMessage = contentType.toString();
     }
@@ -120,27 +122,27 @@ public class ExceptionHandlers {
 
   @ExceptionHandler(JsonParseException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ResponseError handleJsonMappingException(JsonParseException e) {
+  public ResponseError handleJsonMappingException(final JsonParseException e) {
     return badRequestResponse();
   }
 
   @ExceptionHandler(ParameterizedValidationException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ResponseError handleParameterizedValidationException(
-    ParameterizedValidationException exception
+    final ParameterizedValidationException exception
   ) {
     return constructError(exception.getMessage(), exception.getParameters());
   }
 
   @ExceptionHandler(UnrecognizedPropertyException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ResponseError handleUnrecognizedPropertyException(UnrecognizedPropertyException exception) {
+  public ResponseError handleUnrecognizedPropertyException(final UnrecognizedPropertyException exception) {
     return constructError("error.invalid_json_key", exception.getPropertyName());
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ResponseError handleMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
+  public ResponseError handleMethodArgumentNotValidException(final MethodArgumentNotValidException exception) {
 
     final String message = exception.getBindingResult().getAllErrors().get(0).getDefaultMessage();
 
@@ -181,17 +183,17 @@ public class ExceptionHandlers {
     return constructError("error.invalid_certificate_value");
   }
 
-  @ExceptionHandler({InvalidJsonException.class})
+  @ExceptionHandler(InvalidJsonException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ResponseError handleInputNotReadableException(Exception exception) {
+  public ResponseError handleInputNotReadableException(final Exception exception) {
 
     final Throwable cause = exception.getCause() == null ? exception : exception.getCause();
 
     if (cause instanceof UnrecognizedPropertyException) {
       return constructError("error.invalid_json_key", ((UnrecognizedPropertyException) cause).getPropertyName());
     } else if (cause instanceof InvalidTypeIdException
-      || (cause instanceof JsonMappingException && cause.getMessage()
-      .contains("missing property 'type'"))) {
+      || cause instanceof JsonMappingException && cause.getMessage().contains("missing property 'type'")
+    ) {
       return constructError("error.invalid_type_with_set_prompt");
     }
     return badRequestResponse();
@@ -199,84 +201,91 @@ public class ExceptionHandlers {
 
   @ExceptionHandler(InvalidPermissionOperationException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ResponseError handleIncorrectAclOperation(InvalidPermissionOperationException e) {
+  public ResponseError handleIncorrectAclOperation(final InvalidPermissionOperationException e) {
     return constructError(e.getMessage());
   }
 
   @ExceptionHandler(InvalidPermissionException.class)
   @ResponseStatus(HttpStatus.NOT_FOUND)
-  public ResponseError handleInvalidPermission(InvalidPermissionException e) {
+  public ResponseError handleInvalidPermission(final InvalidPermissionException e) {
     return constructError(e.getMessage());
   }
 
-  @ExceptionHandler({InvalidModeException.class})
+  @ExceptionHandler(InvalidModeException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ResponseError handleInvalidMode(InvalidModeException e) {
+  public ResponseError handleInvalidMode(final InvalidModeException e) {
     return constructError(e.getMessage());
   }
 
   @ExceptionHandler(PermissionAlreadyExistsException.class)
   @ResponseStatus(HttpStatus.CONFLICT)
-  public ResponseError handleIncorrectAclOperation(PermissionAlreadyExistsException e) {
+  public ResponseError handleIncorrectAclOperation(final PermissionAlreadyExistsException e) {
     return constructError(e.getMessage());
   }
 
   @ExceptionHandler(PermissionDoesNotExistException.class)
   @ResponseStatus(HttpStatus.NOT_FOUND)
-  public ResponseError handlePermissionDoesNotExist(PermissionDoesNotExistException e) {
+  public ResponseError handlePermissionDoesNotExist(final PermissionDoesNotExistException e) {
     return constructError(e.getMessage());
   }
 
   @ExceptionHandler(PermissionInvalidPathAndActorException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ResponseError handlePermissionHasInvalidPathAndActor(PermissionInvalidPathAndActorException e) {
+  public ResponseError handlePermissionHasInvalidPathAndActor(final PermissionInvalidPathAndActorException e) {
     return constructError(e.getMessage());
   }
 
   @ExceptionHandler(KeyNotFoundException.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-  public ResponseError handleKeyNotFoundException(KeyNotFoundException e) {
+  public ResponseError handleKeyNotFoundException(final KeyNotFoundException e) {
     return constructError(e.getMessage());
   }
 
   @ExceptionHandler(InvalidObjectException.class)
-  @ResponseStatus(BAD_REQUEST)
-  public ResponseError handleInvalidTypeAccess(InvalidObjectException exception) {
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ResponseError handleInvalidTypeAccess(final InvalidObjectException exception) {
     return constructError(exception.getMessage());
   }
 
   @ExceptionHandler(MaximumSizeException.class)
-  @ResponseStatus(PAYLOAD_TOO_LARGE)
-  public ResponseError handleMaximumSizeException(MaximumSizeException exception) {
+  @ResponseStatus(HttpStatus.PAYLOAD_TOO_LARGE)
+  public ResponseError handleMaximumSizeException(final MaximumSizeException exception) {
     return constructError("error.exceeds_maximum_size");
   }
 
   @ExceptionHandler(MalformedPrivateKeyException.class)
-  @ResponseStatus(BAD_REQUEST)
-  public ResponseError handleMalformedPrivateKey(MalformedPrivateKeyException exception) {
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ResponseError handleMalformedPrivateKey(final MalformedPrivateKeyException exception) {
     return constructError("error.malformed_private_key");
   }
 
-  @ExceptionHandler({HttpMessageNotReadableException.class, InvalidFormatException.class})
-  public ResponseError handleIncorrectOperation(Exception e, HttpServletResponse response) {
+  @SuppressWarnings("PMD.UselessParentheses")
+  @ExceptionHandler({
+    HttpMessageNotReadableException.class,
+    InvalidFormatException.class,
+  })
+  public ResponseError handleIncorrectOperation(final Exception e, final HttpServletResponse response) {
     final Throwable cause = e.getCause() == null ? e : e.getCause();
     response.setStatus(HttpStatus.UNPROCESSABLE_ENTITY.value());
 
     if (cause instanceof UnrecognizedPropertyException) {
       return constructError("error.invalid_json_key", ((UnrecognizedPropertyException) cause).getPropertyName());
 
-    } else if (cause instanceof InvalidTypeIdException || (cause instanceof JsonMappingException && cause.getMessage().contains("missing property 'type'"))) {
+    } else if (
+      cause instanceof InvalidTypeIdException ||
+        (cause instanceof JsonMappingException && cause.getMessage().contains("missing property 'type'"))
+    ) {
       return constructError("error.invalid_type_with_set_prompt");
 
     } else if (cause instanceof JsonMappingException) {
-      for (com.fasterxml.jackson.databind.JsonMappingException.Reference reference : ((JsonMappingException) cause).getPath()) {
+      for (final JsonMappingException.Reference reference : ((JsonMappingException) cause).getPath()) {
         if ("operations".equals(reference.getFieldName())) {
           return constructError("error.permission.invalid_operation");
         }
       }
 
     } else if (cause instanceof InvalidFormatException) {
-      for (InvalidFormatException.Reference reference : ((InvalidFormatException) cause)
+      for (final InvalidFormatException.Reference reference : ((InvalidFormatException) cause)
         .getPath()) {
         if ("operations".equals(reference.getFieldName())) {
           return constructError("error.permission.invalid_operation");
@@ -292,22 +301,21 @@ public class ExceptionHandlers {
     return constructError("error.bad_request");
   }
 
-
-  private ResponseError constructError(String error) {
-    String message = messageSourceAccessor.getMessage(error);
-    logger.error(message);
+  private ResponseError constructError(final String error) {
+    final String message = messageSourceAccessor.getMessage(error);
+    LOGGER.error(message);
     return new ResponseError(message);
   }
 
-  private ResponseError constructError(String error, String... args) {
-    String message = messageSourceAccessor.getMessage(error, args);
-    logger.error(message);
+  private ResponseError constructError(final String error, final String... args) {
+    final String message = messageSourceAccessor.getMessage(error, args);
+    LOGGER.error(message);
     return new ResponseError(message);
   }
 
-  private ResponseError constructError(String error, Object[] args) {
-    String message = messageSourceAccessor.getMessage(error, args);
-    logger.error(message);
+  private ResponseError constructError(final String error, final Object[] args) {
+    final String message = messageSourceAccessor.getMessage(error, args);
+    LOGGER.error(message);
     return new ResponseError(message);
   }
 }

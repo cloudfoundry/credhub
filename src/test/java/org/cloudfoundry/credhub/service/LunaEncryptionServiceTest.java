@@ -38,7 +38,7 @@ public class LunaEncryptionServiceTest {
 
     timedRetry = mock(TimedRetry.class);
     when(timedRetry.retryEverySecondUntil(anyLong(), any(Supplier.class))).thenAnswer(answer -> {
-      Supplier<Boolean> retryingOperation = answer.getArgument(1);
+      final Supplier<Boolean> retryingOperation = answer.getArgument(1);
       for (int i = 0; i < 10; i++) {
         if (retryingOperation.get()) {
           return true;
@@ -52,7 +52,7 @@ public class LunaEncryptionServiceTest {
   public void createKeyProxy_createsKeyIfNoKeyExists() throws Exception {
     setupNoKeyExists();
 
-    EncryptionKeyMetadata keyMetadata = new EncryptionKeyMetadata();
+    final EncryptionKeyMetadata keyMetadata = new EncryptionKeyMetadata();
     keyMetadata.setEncryptionKeyName("fake_key_name");
 
     subject = new LunaEncryptionService(connection, true, timedRetry);
@@ -65,7 +65,7 @@ public class LunaEncryptionServiceTest {
   public void createKeyProxy_getsKeyIfKeyExists() throws Exception {
     setupKeyExists();
 
-    EncryptionKeyMetadata keyMetadata = new EncryptionKeyMetadata();
+    final EncryptionKeyMetadata keyMetadata = new EncryptionKeyMetadata();
     keyMetadata.setEncryptionKeyName("fake_key_name");
 
     subject = new LunaEncryptionService(connection, true, timedRetry);
@@ -78,7 +78,7 @@ public class LunaEncryptionServiceTest {
   public void createKeyProxy_waitsForKeyIfCreationIsDisabled() throws Exception {
     setupAnotherProcessCreatesKey();
 
-    EncryptionKeyMetadata keyMetadata = new EncryptionKeyMetadata();
+    final EncryptionKeyMetadata keyMetadata = new EncryptionKeyMetadata();
     keyMetadata.setEncryptionKeyName("fake_key_name");
 
     subject = new LunaEncryptionService(connection, false, timedRetry);

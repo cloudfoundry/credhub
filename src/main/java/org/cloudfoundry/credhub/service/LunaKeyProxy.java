@@ -20,7 +20,8 @@ class LunaKeyProxy implements KeyProxy {
   private final InternalEncryptionService encryptionService;
   private Key key;
 
-  LunaKeyProxy(Key key, InternalEncryptionService encryptionService) {
+  LunaKeyProxy(final Key key, final InternalEncryptionService encryptionService) {
+    super();
     this.key = key;
     this.encryptionService = encryptionService;
     this.salt = unmodifiableList(new ArrayList<Byte>());
@@ -31,16 +32,17 @@ class LunaKeyProxy implements KeyProxy {
     return key;
   }
 
-  public void setKey(Key key) {
+  public void setKey(final Key key) {
     this.key = key;
   }
 
-  public boolean matchesCanary(EncryptionKeyCanary canary) {
+  @Override
+  public boolean matchesCanary(final EncryptionKeyCanary canary) {
     return matchesCanary(key, canary);
   }
 
-  protected boolean matchesCanary(Key key, EncryptionKeyCanary canary) {
-    String plaintext;
+  protected boolean matchesCanary(final Key key, final EncryptionKeyCanary canary) {
+    final String plaintext;
 
     try {
       plaintext = encryptionService.decrypt(key, canary.getEncryptedCanaryValue(), canary.getNonce());
@@ -48,15 +50,14 @@ class LunaKeyProxy implements KeyProxy {
         EncryptionKeyCanaryMapper.CANARY_VALUE.getBytes(StringUtil.UTF_8), plaintext.getBytes(StringUtil.UTF_8))
         || Arrays.equals(EncryptionKeyCanaryMapper.DEPRECATED_CANARY_VALUE.getBytes(StringUtil.UTF_8), plaintext.getBytes(
         StringUtil.UTF_8));
-    } catch (AEADBadTagException e) {
-      // internal key was wrong
-    } catch (IllegalBlockSizeException e) {
+    } catch (final AEADBadTagException e) {
+    } catch (final IllegalBlockSizeException e) {
       // Our guess(es) at "HSM key was wrong":
       if (!e.getMessage().contains("returns 0x40")) {
         throw new IncorrectKeyException(e);
       }
       // Could not process input data: function 'C_Decrypt' returns 0x40
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new IncorrectKeyException(e);
     }
 

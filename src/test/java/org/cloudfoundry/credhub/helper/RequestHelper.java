@@ -29,10 +29,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 final public class RequestHelper {
 
   private RequestHelper() {
+    super();
   }
 
-  public static String setPassword(MockMvc mockMvc, String credentialName, String passwordValue, String token) throws Exception {
-    Map<String, Object> passwordRequestBody = new HashMap() {
+  public static String setPassword(
+    final MockMvc mockMvc, final String credentialName, final String passwordValue, final String token) throws Exception {
+    final Map<String, Object> passwordRequestBody = new HashMap() {
       {
         put("name", credentialName);
         put("type", "password");
@@ -40,15 +42,15 @@ final public class RequestHelper {
       }
     };
 
-    String content = JsonTestHelper.serializeToString(passwordRequestBody);
+    final String content = JsonTestHelper.serializeToString(passwordRequestBody);
 
-    MockHttpServletRequestBuilder put = put("/api/v1/data")
+    final MockHttpServletRequestBuilder put = put("/api/v1/data")
       .header("Authorization", "Bearer " + token)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
       .content(content);
 
-    String response;
+    final String response;
     if (credentialName.length() <= 1024) {
       response = mockMvc.perform(put)
         .andExpect(status().isOk())
@@ -64,8 +66,8 @@ final public class RequestHelper {
     return response;
   }
 
-  public static String generatePassword(MockMvc mockMvc, String credentialName, boolean overwrite, Integer length, String token) throws Exception {
-    Map<String, Object> passwordRequestBody = new HashMap() {
+  public static String generatePassword(final MockMvc mockMvc, final String credentialName, final boolean overwrite, final Integer length, final String token) throws Exception {
+    final Map<String, Object> passwordRequestBody = new HashMap() {
       {
         put("name", credentialName);
         put("type", "password");
@@ -80,14 +82,14 @@ final public class RequestHelper {
       passwordRequestBody.put("parameters", ImmutableMap.of("length", length));
     }
 
-    String content = JsonTestHelper.serializeToString(passwordRequestBody);
-    MockHttpServletRequestBuilder post = post("/api/v1/data")
+    final String content = JsonTestHelper.serializeToString(passwordRequestBody);
+    final MockHttpServletRequestBuilder post = post("/api/v1/data")
       .header("Authorization", "Bearer " + token)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
       .content(content);
 
-    String response;
+    final String response;
     if (credentialName.length() <= 1024) {
       response = mockMvc.perform(post)
         .andExpect(status().isOk())
@@ -100,9 +102,10 @@ final public class RequestHelper {
     return response;
   }
 
-  public static String generateUser(MockMvc mockMvc, String credentialName, boolean overwrite, Integer length, String username, boolean excludeUpper)
+  public static String generateUser(
+    final MockMvc mockMvc, final String credentialName, final boolean overwrite, final Integer length, final String username, final boolean excludeUpper)
     throws Exception {
-    Map<String, Object> userRequestBody = new HashMap() {
+    final Map<String, Object> userRequestBody = new HashMap() {
       {
         put("name", credentialName);
         put("type", "user");
@@ -113,7 +116,7 @@ final public class RequestHelper {
       userRequestBody.put("overwrite", true);
     }
 
-    Map parameters = new HashMap<String, Object>();
+    final Map parameters = new HashMap<String, Object>();
 
     if (length != null) {
       parameters.put("length", length);
@@ -129,22 +132,23 @@ final public class RequestHelper {
 
     userRequestBody.put("parameters", parameters);
 
-    String content = JsonTestHelper.serializeToString(userRequestBody);
-    MockHttpServletRequestBuilder post = post("/api/v1/data")
+    final String content = JsonTestHelper.serializeToString(userRequestBody);
+    final MockHttpServletRequestBuilder post = post("/api/v1/data")
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
       .content(content);
 
-    String response = mockMvc.perform(post)
+    final String response = mockMvc.perform(post)
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
     return response;
   }
 
-  public static String generateSsh(MockMvc mockMvc, String credentialName, boolean overwrite, Integer length, String sshComment)
+  public static String generateSsh(
+    final MockMvc mockMvc, final String credentialName, final boolean overwrite, final Integer length, final String sshComment)
     throws Exception {
-    Map<String, Object> sshRequestBody = new HashMap() {
+    final Map<String, Object> sshRequestBody = new HashMap() {
       {
         put("name", credentialName);
         put("type", "ssh");
@@ -155,7 +159,7 @@ final public class RequestHelper {
       sshRequestBody.put("overwrite", true);
     }
 
-    Map parameters = new HashMap<String, Object>();
+    final Map parameters = new HashMap<String, Object>();
 
     if (length != null) {
       parameters.put("key_length", length);
@@ -166,57 +170,57 @@ final public class RequestHelper {
     }
 
     sshRequestBody.put("parameters", parameters);
-    String content = JsonTestHelper.serializeToString(sshRequestBody);
-    MockHttpServletRequestBuilder post = post("/api/v1/data")
+    final String content = JsonTestHelper.serializeToString(sshRequestBody);
+    final MockHttpServletRequestBuilder post = post("/api/v1/data")
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
       .content(content);
 
-    String response = mockMvc.perform(post)
+    final String response = mockMvc.perform(post)
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
     return response;
   }
 
-  public static String getCertificateCredentials(MockMvc mockMvc, String token)
+  public static String getCertificateCredentials(final MockMvc mockMvc, final String token)
     throws Exception {
 
-    MockHttpServletRequestBuilder get = get("/api/v1/certificates")
+    final MockHttpServletRequestBuilder get = get("/api/v1/certificates")
       .header("Authorization", "Bearer " + token)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON);
 
-    String response = mockMvc.perform(get)
+    final String response = mockMvc.perform(get)
       .andDo(print())
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
     return response;
   }
 
-  public static String getCertificateCredentialsByName(MockMvc mockMvc, String token, String name)
+  public static String getCertificateCredentialsByName(final MockMvc mockMvc, final String token, final String name)
     throws Exception {
 
-    MockHttpServletRequestBuilder get = get("/api/v1/certificates?name=" + name)
+    final MockHttpServletRequestBuilder get = get("/api/v1/certificates?name=" + name)
       .header("Authorization", "Bearer " + token)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON);
 
-    String response = mockMvc.perform(get)
+    final String response = mockMvc.perform(get)
       .andDo(print())
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
     return response;
   }
 
-  public static String getCertificateId(MockMvc mockMvc, String certificateName) throws Exception {
-    String response = getCertificateCredentialsByName(mockMvc, ALL_PERMISSIONS_TOKEN, certificateName);
+  public static String getCertificateId(final MockMvc mockMvc, final String certificateName) throws Exception {
+    final String response = getCertificateCredentialsByName(mockMvc, ALL_PERMISSIONS_TOKEN, certificateName);
     return JsonPath.parse(response)
       .read("$.certificates[0].id");
   }
 
-  public static String generateCertificateCredential(MockMvc mockMvc, String credentialName, boolean overwrite, String commonName, String caName, String token) throws Exception {
-    Map<String, Object> certRequestBody = new HashMap() {
+  public static String generateCertificateCredential(final MockMvc mockMvc, final String credentialName, final boolean overwrite, final String commonName, final String caName, final String token) throws Exception {
+    final Map<String, Object> certRequestBody = new HashMap() {
       {
         put("name", credentialName);
         put("type", "certificate");
@@ -227,7 +231,7 @@ final public class RequestHelper {
       certRequestBody.put("overwrite", true);
     }
 
-    Map parameters = new HashMap<String, Object>();
+    final Map parameters = new HashMap<String, Object>();
     if (caName == null) {
       parameters.put("self_sign", true);
       parameters.put("is_ca", true);
@@ -238,22 +242,23 @@ final public class RequestHelper {
 
 
     certRequestBody.put("parameters", parameters);
-    String content = JsonTestHelper.serializeToString(certRequestBody);
-    MockHttpServletRequestBuilder post = post("/api/v1/data")
+    final String content = JsonTestHelper.serializeToString(certRequestBody);
+    final MockHttpServletRequestBuilder post = post("/api/v1/data")
       .header("Authorization", "Bearer " + token)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
       .content(content);
 
-    String response = mockMvc.perform(post)
+    final String response = mockMvc.perform(post)
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
     return response;
   }
 
-  public static String generateRsa(MockMvc mockMvc, String credentialName, boolean overwrite, Integer length)
+  public static String generateRsa(
+    final MockMvc mockMvc, final String credentialName, final boolean overwrite, final Integer length)
     throws Exception {
-    Map<String, Object> rsaRequestBody = new HashMap() {
+    final Map<String, Object> rsaRequestBody = new HashMap() {
       {
         put("name", credentialName);
         put("type", "rsa");
@@ -267,21 +272,21 @@ final public class RequestHelper {
     if (length != null) {
       rsaRequestBody.put("parameters", ImmutableMap.of("key_length", length));
     }
-    String content = JsonTestHelper.serializeToString(rsaRequestBody);
-    MockHttpServletRequestBuilder post = post("/api/v1/data")
+    final String content = JsonTestHelper.serializeToString(rsaRequestBody);
+    final MockHttpServletRequestBuilder post = post("/api/v1/data")
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
       .content(content);
 
-    String response = mockMvc.perform(post)
+    final String response = mockMvc.perform(post)
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
     return response;
   }
 
-  public static String generateCa(MockMvc mockMvc, String caName, String token) throws Exception {
-    MockHttpServletRequestBuilder caPost = post("/api/v1/data")
+  public static String generateCa(final MockMvc mockMvc, final String caName, final String token) throws Exception {
+    final MockHttpServletRequestBuilder caPost = post("/api/v1/data")
       .header("Authorization", "Bearer " + token)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -297,14 +302,14 @@ final public class RequestHelper {
         + "  }\n"
         + "}");
 
-    String caResult = mockMvc.perform(caPost)
+    final String caResult = mockMvc.perform(caPost)
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
     return caResult;
   }
 
-  private static MockHttpServletRequestBuilder createRequestForGenerateCertificate(String certName,
-                                                                                   String caName, String token) {
+  private static MockHttpServletRequestBuilder createRequestForGenerateCertificate(final String certName,
+                                                                                   final String caName, final String token) {
     return post("/api/v1/data")
       .header("Authorization", "Bearer " + token)
       .accept(APPLICATION_JSON)
@@ -320,9 +325,9 @@ final public class RequestHelper {
         + "}");
   }
 
-  public static void generateCertificate(MockMvc mockMvc, String certName, String caName,
-                                         String token) throws Exception {
-    MockHttpServletRequestBuilder certPost = createRequestForGenerateCertificate(certName, caName,
+  public static void generateCertificate(final MockMvc mockMvc, final String certName, final String caName,
+                                         final String token) throws Exception {
+    final MockHttpServletRequestBuilder certPost = createRequestForGenerateCertificate(certName, caName,
       token);
 
     mockMvc.perform(certPost)
@@ -330,9 +335,9 @@ final public class RequestHelper {
       .andExpect(status().isOk());
   }
 
-  public static void expect404WhileGeneratingCertificate(MockMvc mockMvc, String certName,
-                                                         String token, String expectedMessage) throws Exception {
-    MockHttpServletRequestBuilder certPost = post("/api/v1/data")
+  public static void expect404WhileGeneratingCertificate(final MockMvc mockMvc, final String certName,
+                                                         final String token, final String expectedMessage) throws Exception {
+    final MockHttpServletRequestBuilder certPost = post("/api/v1/data")
       .header("Authorization", "Bearer " + token)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -353,9 +358,9 @@ final public class RequestHelper {
 
   }
 
-  public static void expect404WhileRegeneratingCertificate(MockMvc mockMvc, String certName,
-                                                           String token, String message) throws Exception {
-    MockHttpServletRequestBuilder certPost = post("/api/v1/data")
+  public static void expect404WhileRegeneratingCertificate(final MockMvc mockMvc, final String certName,
+                                                           final String token, final String message) throws Exception {
+    final MockHttpServletRequestBuilder certPost = post("/api/v1/data")
       .header("Authorization", "Bearer " + token)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
@@ -369,11 +374,11 @@ final public class RequestHelper {
   }
 
   public static void grantPermissions(
-    MockMvc mockMvc,
-    String credentialName,
-    String grantorToken,
-    String granteeName,
-    String... permissions
+    final MockMvc mockMvc,
+    final String credentialName,
+    final String grantorToken,
+    final String granteeName,
+    final String... permissions
   ) throws Exception {
     final MockHttpServletRequestBuilder post = createAddPermissionsRequest(
       grantorToken, credentialName, granteeName,
@@ -384,13 +389,13 @@ final public class RequestHelper {
   }
 
   public static void expectErrorWhenAddingPermissions(
-    MockMvc mockMvc,
-    int status,
-    String message,
-    String credentialName,
-    String grantorToken,
-    String grantee,
-    String... permissions
+    final MockMvc mockMvc,
+    final int status,
+    final String message,
+    final String credentialName,
+    final String grantorToken,
+    final String grantee,
+    final String... permissions
   ) throws Exception {
     final MockHttpServletRequestBuilder post = createAddPermissionsRequest(
       grantorToken, credentialName, grantee,
@@ -403,11 +408,11 @@ final public class RequestHelper {
   }
 
   public static PermissionsView getPermissions(
-    MockMvc mockMvc,
-    String credentialName,
-    String requesterToken
+    final MockMvc mockMvc,
+    final String credentialName,
+    final String requesterToken
   ) throws Exception {
-    String content = mockMvc.perform(get("/api/v1/permissions?credential_name=" + credentialName)
+    final String content = mockMvc.perform(get("/api/v1/permissions?credential_name=" + credentialName)
       .header("Authorization", "Bearer " + requesterToken))
       .andExpect(status().isOk())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -418,11 +423,11 @@ final public class RequestHelper {
   }
 
   public static void expectErrorWhenGettingPermissions(
-    MockMvc mockMvc,
-    int status,
-    String expectedErrorMessage,
-    String credentialName,
-    String requesterToken
+    final MockMvc mockMvc,
+    final int status,
+    final String expectedErrorMessage,
+    final String credentialName,
+    final String requesterToken
   ) throws Exception {
     mockMvc.perform(get("/api/v1/permissions" +
       (credentialName == null ? "" : "?credential_name=" + credentialName))
@@ -432,10 +437,10 @@ final public class RequestHelper {
   }
 
   public static void revokePermissions(
-    MockMvc mockMvc,
-    String credentialName,
-    String grantorToken,
-    String grantee
+    final MockMvc mockMvc,
+    final String credentialName,
+    final String grantorToken,
+    final String grantee
   ) throws Exception {
     expectStatusWhenDeletingPermissions(mockMvc, 204, credentialName, grantee,
       grantorToken
@@ -443,23 +448,23 @@ final public class RequestHelper {
   }
 
   public static void expectStatusWhenDeletingPermissions(
-    MockMvc mockMvc,
-    int status, String credentialName,
-    String grantee,
-    String grantorToken) throws Exception {
+    final MockMvc mockMvc,
+    final int status, final String credentialName,
+    final String grantee,
+    final String grantorToken) throws Exception {
     expectErrorWhenDeletingPermissions(mockMvc, status, null, credentialName, grantorToken, grantee
     );
   }
 
   public static void expectErrorWhenDeletingPermissions(
-    MockMvc mockMvc,
-    int status,
-    String expectedErrorMessage,
-    String credentialName,
-    String grantorToken,
-    String grantee
+    final MockMvc mockMvc,
+    final int status,
+    final String expectedErrorMessage,
+    final String credentialName,
+    final String grantorToken,
+    final String grantee
   ) throws Exception {
-    ResultActions result = mockMvc.perform(
+    final ResultActions result = mockMvc.perform(
       delete("/api/v1/permissions?" +
         (credentialName == null ? "" : "credential_name=" + credentialName) +
         (grantee == null ? "" : "&actor=" + grantee)
@@ -472,9 +477,9 @@ final public class RequestHelper {
     }
   }
 
-  private static MockHttpServletRequestBuilder createAddPermissionsRequest(String grantorToken,
-                                                                           String credentialName,
-                                                                           String grantee, String... permissions) {
+  private static MockHttpServletRequestBuilder createAddPermissionsRequest(final String grantorToken,
+                                                                           final String credentialName,
+                                                                           final String grantee, final String... permissions) {
     return post("/api/v1/permissions")
       .header("Authorization", "Bearer " + grantorToken)
       .accept(APPLICATION_JSON)
@@ -490,8 +495,9 @@ final public class RequestHelper {
         + "}");
   }
 
-  public static String regenerateCertificate(MockMvc mockMvc, String uuid, boolean transitional, String token) throws Exception {
-    MockHttpServletRequestBuilder regenerateRequest = post("/api/v1/certificates/" + uuid + "/regenerate")
+  public static String regenerateCertificate(
+    final MockMvc mockMvc, final String uuid, final boolean transitional, final String token) throws Exception {
+    final MockHttpServletRequestBuilder regenerateRequest = post("/api/v1/certificates/" + uuid + "/regenerate")
       .header("Authorization", "Bearer " + token)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)

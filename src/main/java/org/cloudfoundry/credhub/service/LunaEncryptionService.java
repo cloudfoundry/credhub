@@ -22,21 +22,21 @@ import org.cloudfoundry.credhub.util.TimedRetry;
 public class LunaEncryptionService extends InternalEncryptionService {
 
   public static final int KEY_POPULATION_WAIT_SEC = 60 * 10; // ten minutes
+  private static final Logger LOGGER = LogManager.getLogger();
   private final LunaConnection lunaConnection;
-  private final Logger logger;
-  private boolean keyCreationEnabled;
-  private TimedRetry timedRetry;
+  private final boolean keyCreationEnabled;
+  private final TimedRetry timedRetry;
 
   public LunaEncryptionService(
-    LunaConnection lunaConnection,
-    @Value("${encryption.key_creation_enabled}")
-      boolean keyCreationEnabled,
-    TimedRetry timedRetry) {
+    final LunaConnection lunaConnection,
+    @Value("${encryption.key_creation_enabled}") final
+    boolean keyCreationEnabled,
+    final TimedRetry timedRetry
+  ) {
+    super();
     this.lunaConnection = lunaConnection;
     this.keyCreationEnabled = keyCreationEnabled;
     this.timedRetry = timedRetry;
-
-    logger = LogManager.getLogger();
   }
 
   @Override
@@ -45,37 +45,37 @@ public class LunaEncryptionService extends InternalEncryptionService {
   }
 
   @Override
-  CipherWrapper getCipher() throws NoSuchPaddingException, NoSuchAlgorithmException {
+  public CipherWrapper getCipher() throws NoSuchPaddingException, NoSuchAlgorithmException {
     return new CipherWrapper(
       Cipher.getInstance(CipherTypes.GCM.toString(), lunaConnection.getProvider()));
   }
 
   @Override
-  AlgorithmParameterSpec generateParameterSpec(byte[] nonce) {
+  public AlgorithmParameterSpec generateParameterSpec(final byte[] nonce) {
     return new IvParameterSpec(nonce);
   }
 
   @Override
-  public KeyProxy createKeyProxy(EncryptionKeyMetadata encryptionKeyMetadata) {
+  public KeyProxy createKeyProxy(final EncryptionKeyMetadata encryptionKeyMetadata) {
     return new LunaKeyProxy(createKey(encryptionKeyMetadata, lunaConnection), this);
   }
 
-  private Key createKey(EncryptionKeyMetadata encryptionKeyMetadata,
-                        LunaConnection connection) {
+  private Key createKey(final EncryptionKeyMetadata encryptionKeyMetadata,
+                        final LunaConnection connection) {
     try {
-      String encryptionKeyName = encryptionKeyMetadata.getEncryptionKeyName();
+      final String encryptionKeyName = encryptionKeyMetadata.getEncryptionKeyName();
 
       if (!connection.containsAlias(encryptionKeyName)) {
         if (keyCreationEnabled) {
-          SecretKey aesKey = connection.generateKey();
-          logger.info("Not waiting, creating key.");
+          final SecretKey aesKey = connection.generateKey();
+          LOGGER.info("Not waiting, creating key.");
           connection.setKeyEntry(encryptionKeyName, aesKey);
         } else {
           timedRetry.retryEverySecondUntil(KEY_POPULATION_WAIT_SEC, () -> {
             try {
-              logger.info("waiting for another process to create the key");
+              LOGGER.info("waiting for another process to create the key");
               return lunaConnection.containsAlias(encryptionKeyName);
-            } catch (KeyStoreException e) {
+            } catch (final KeyStoreException e) {
               return false;
             }
           });
@@ -83,13 +83,13 @@ public class LunaEncryptionService extends InternalEncryptionService {
       }
 
       return connection.getKey(encryptionKeyName);
-    } catch (Exception e) {
+    } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
 
   @Override
-  public synchronized void reconnect(Exception reasonForReconnect) {
+  public synchronized void reconnect(final Exception reasonForReconnect) {
     lunaConnection.reconnect();
   }
 }

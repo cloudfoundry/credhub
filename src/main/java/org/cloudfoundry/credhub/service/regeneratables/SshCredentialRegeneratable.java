@@ -9,13 +9,13 @@ import org.cloudfoundry.credhub.request.SshGenerationParameters;
 public class SshCredentialRegeneratable implements Regeneratable {
 
   @Override
-  public BaseCredentialGenerateRequest createGenerateRequest(CredentialVersion credentialVersion) {
-    SshCredentialVersion sshCredential = (SshCredentialVersion) credentialVersion;
-    SshGenerateRequest generateRequest = new SshGenerateRequest();
+  public BaseCredentialGenerateRequest createGenerateRequest(final CredentialVersion credentialVersion) {
+    final SshCredentialVersion sshCredential = (SshCredentialVersion) credentialVersion;
+    final SshGenerateRequest generateRequest = new SshGenerateRequest();
 
     generateRequest.setName(sshCredential.getName());
     generateRequest.setType(sshCredential.getCredentialType());
-    SshGenerationParameters generationParameters = new SshGenerationParameters();
+    final SshGenerationParameters generationParameters = new SshGenerationParameters();
     generationParameters.setSshComment(sshCredential.getComment());
     generateRequest.setGenerationParameters(generationParameters);
     generateRequest.setOverwrite(true);

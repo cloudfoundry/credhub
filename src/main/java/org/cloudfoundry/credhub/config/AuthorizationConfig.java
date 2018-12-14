@@ -9,14 +9,14 @@ import org.cloudfoundry.credhub.request.PermissionOperation;
 
 @Configuration
 @ConfigurationProperties("security.authorization")
-public class Permissions {
+public class AuthorizationConfig {
   private List<Permission> permissions;
 
   public List<Permission> getPermissions() {
     return permissions;
   }
 
-  public void setPermissions(List<Permission> permissions) {
+  public void setPermissions(final List<Permission> permissions) {
     this.permissions = permissions;
   }
 
@@ -29,7 +29,7 @@ public class Permissions {
       return path;
     }
 
-    public void setPath(String path) {
+    public void setPath(final String path) {
       this.path = path;
     }
 
@@ -37,7 +37,7 @@ public class Permissions {
       return actors;
     }
 
-    public void setActors(List<String> actors) {
+    public void setActors(final List<String> actors) {
       this.actors = actors;
     }
 
@@ -45,7 +45,7 @@ public class Permissions {
       return operations;
     }
 
-    public void setOperations(List<PermissionOperation> operations) {
+    public void setOperations(final List<PermissionOperation> operations) {
       this.operations = operations;
     }
 

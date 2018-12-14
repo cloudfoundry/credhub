@@ -13,11 +13,11 @@ public interface PermissionsHandler {
 
   PermissionsView getPermissions(String name);
 
-  void setPermissions(PermissionsRequest request);
+  void writePermissions(PermissionsRequest request);
 
   void deletePermissionEntry(String credentialName, String actor);
 
-  PermissionsV2View setPermissions(PermissionsV2Request request);
+  PermissionsV2View writePermissions(PermissionsV2Request request);
 
   PermissionsV2View getPermissions(UUID guid);
 
@@ -25,7 +25,7 @@ public interface PermissionsHandler {
 
   PermissionsV2View patchPermissions(String guid, List<PermissionOperation> operations);
 
-  PermissionsV2View setV2Permissions(PermissionsV2Request permissionsRequest);
+  PermissionsV2View writeV2Permissions(PermissionsV2Request permissionsRequest);
 
   PermissionsV2View deletePermissions(String guid);
 
