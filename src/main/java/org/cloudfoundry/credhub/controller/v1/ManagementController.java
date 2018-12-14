@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.cloudfoundry.credhub.entity.Management;
-import org.cloudfoundry.credhub.variables.ManagementVariables;
+import org.cloudfoundry.credhub.registry.ManagementRegistry;
 
 @RestController
 @RequestMapping(
@@ -20,17 +20,23 @@ import org.cloudfoundry.credhub.variables.ManagementVariables;
 public class ManagementController {
   public static final String MANAGEMENT = "management";
   private static final Logger LOGGER = LogManager.getLogger(ManagementController.class);
+  private final ManagementRegistry managementRegistry;
+
+  public ManagementController(ManagementRegistry managementRegistry) {
+    this.managementRegistry = managementRegistry;
+  }
 
   @RequestMapping(path = "", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   public Management getManagement() {
-    return new Management(ManagementVariables.readOnlyMode);
+    return new Management(managementRegistry.getReadOnlyMode());
   }
 
   @RequestMapping(path = "", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ResponseStatus(HttpStatus.OK)
   public Management setManagement(@RequestBody Management management) {
-    ManagementVariables.readOnlyMode = management.isReadOnlyMode();
+    managementRegistry.setReadOnlyMode(management.isReadOnlyMode());
+
     LOGGER.info("Setting read only mode to " + management.isReadOnlyMode());
     return management;
   }

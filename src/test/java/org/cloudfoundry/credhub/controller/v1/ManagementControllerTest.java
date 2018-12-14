@@ -11,9 +11,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import org.cloudfoundry.credhub.CredentialManagerApp;
+import org.cloudfoundry.credhub.registry.ManagementRegistry;
 import org.cloudfoundry.credhub.util.AuthConstants;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
-import org.cloudfoundry.credhub.variables.ManagementVariables;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,6 +37,9 @@ public class ManagementControllerTest {
   @Autowired
   private WebApplicationContext webApplicationContext;
 
+  @Autowired
+  private ManagementRegistry managementRegistry;
+
   private MockMvc mockMvc;
 
   @Before
@@ -55,7 +58,7 @@ public class ManagementControllerTest {
       .content("{\"read_only_mode\":\"true\"}");
     mockMvc.perform(request).andExpect(status().isOk());
 
-    assertThat(ManagementVariables.readOnlyMode, is(true));
+    assertThat(managementRegistry.getReadOnlyMode(), is(true));
 
     request = post("/management")
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
@@ -63,12 +66,12 @@ public class ManagementControllerTest {
       .content("{\"read_only_mode\":\"false\"}");
     mockMvc.perform(request).andExpect(status().isOk());
 
-    assertThat(ManagementVariables.readOnlyMode, is(false));
+    assertThat(managementRegistry.getReadOnlyMode(), is(false));
   }
 
   @Test
   public void gettingTheReadOnlyMode_returnsTheGlobalManagementVariable() throws Exception {
-    ManagementVariables.readOnlyMode = true;
+    managementRegistry.setReadOnlyMode(true);
 
     MockHttpServletRequestBuilder request = get("/management")
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
@@ -78,7 +81,7 @@ public class ManagementControllerTest {
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
       .andExpect(jsonPath("$.read_only_mode").value(true));
 
-    ManagementVariables.readOnlyMode = false;
+    managementRegistry.setReadOnlyMode(false);
 
     request = get("/management")
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
