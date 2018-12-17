@@ -10,6 +10,9 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 
+@Deprecated(
+    message = "No longer needed after CredHub 2.2 because we have Spring Actuator"
+)
 @RunWith(SpringRunner::class)
 class HealthControllerTest {
 

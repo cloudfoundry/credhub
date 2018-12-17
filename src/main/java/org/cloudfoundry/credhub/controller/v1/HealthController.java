@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import static com.google.common.collect.ImmutableMap.of;
 
+@Deprecated
 @Controller
 public class HealthController {
 

@@ -19,6 +19,7 @@ security:
   oauth2:
     enabled: true
     resource:
+      id: credhub
       jwt:
         # /unit/tests/rsa/key in super-bosh
         key_value: |
@@ -31,6 +32,10 @@ security:
           ssqZxhwgiULSxGvO8w8/CrFBxde+g2CXcGsqcPeGYhURLc3MquGH/c9mlp5I/4f7
           XQIDAQAB
           -----END PUBLIC KEY-----
+  authorization:
+    acls:
+      enabled: false
+
 server:
   port: 9000
 

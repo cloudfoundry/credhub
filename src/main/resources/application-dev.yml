@@ -17,6 +17,9 @@ encryption:
       provider_type: internal
 
 security:
+  oauth2:
+    resource:
+      id: credhub
   authorization:
     acls:
       enabled: true
@@ -48,3 +51,6 @@ server:
 spring:
   profiles:
     include: dev-remote-uaa
+  jpa:
+    hibernate:
+      ddl-auto: validate

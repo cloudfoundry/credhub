@@ -1,14 +1,16 @@
-security:
-  oauth2:
-    resource:
-      id: credhub
-  authorization:
-    acls:
-      enabled: false
-
 spring:
-  jpa:
-    hibernate:
-      ddl-auto: validate
   main:
     allow-bean-definition-overriding: true
+
+management:
+  endpoints:
+    web:
+      base-path: /
+    enabled-by-default: false
+  endpoint:
+    health:
+      enabled: true
+  server:
+    ssl:
+      enabled: false
+    port: 9001
