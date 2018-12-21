@@ -47,6 +47,7 @@ apply from: "spring-cloud-contract-config.gradle"
 apply from: "spring-rest-docs-config.gradle"
 apply from: "ktlint.gradle"
 apply from: "checkstyle-config.gradle"
+apply from: "test-parallel.gradle"
 
 spotbugs {
     toolVersion = "$spotBugsToolVersion"
@@ -178,6 +179,11 @@ test {
     systemProperties["spring.profiles.active"] = System.getProperty("spring.profiles.active", "unit-test-h2")
     systemProperties["java.security.egd"] = System.getProperty("java.security.egd", "file:/dev/urandom")
     outputs.upToDateWhen { false }
+}
+
+// performance optimization
+tasks.withType(JavaCompile) {
+    options.fork = true
 }
 
 dependencyUpdates.resolutionStrategy = {

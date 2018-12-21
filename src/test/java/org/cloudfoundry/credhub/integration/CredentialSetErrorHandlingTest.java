@@ -365,7 +365,7 @@ public class CredentialSetErrorHandlingTest {
 
   @Test
   public void givenAPayloadThatExceedsTheMaximumSize_returnsA413() throws Exception {
-    if (System.getProperty(SpringUtilities.activeProfilesString).equals(SpringUtilities.unitTestPostgresProfile)) {
+    if (System.getProperty(SpringUtilities.activeProfilesString).contains(SpringUtilities.unitTestPostgresProfile)) {
       return;
     }
 

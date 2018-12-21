@@ -1,0 +1,10 @@
+task testParallel(type: Test) {
+    maxParallelForks = Runtime.runtime.availableProcessors()
+    reports.html.enabled = false
+    reports.junitXml.enabled = false
+
+    systemProperties["spring.profiles.active"] = [
+        System.getProperty("spring.profiles.active"),
+        "unit-test-parallel"
+    ].join(",")
+}

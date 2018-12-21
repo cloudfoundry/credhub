@@ -22,7 +22,7 @@ function run_linters() {
 }
 
 function run_tests() {
-    ./scripts/run_tests.sh
+    ./scripts/run_tests.sh parallel
 }
 
 function push_code() {

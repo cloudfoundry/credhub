@@ -1,20 +1,30 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-run_all=$1
+function set_bash_error_handling() {
+    set -euo pipefail
+}
 
-set -ex
+function go_to_project_root_directory() {
+    local -r script_dir=$( dirname "${BASH_SOURCE[0]}")
 
-if [ "$run_all" = "--run-all" ]; then
-    printf "******* RUNNING ALL TESTS WITH H2 *******\\n"
-    ./gradlew --no-daemon clean test
+    cd "$script_dir/.."
+}
 
-    printf "******* RUNNING ALL TESTS WITH MYSQL *******\\n"
-    mysql --user=root --protocol=tcp --execute='DROP DATABASE IF EXISTS credhub_test; CREATE DATABASE credhub_test'
-    ./gradlew --no-daemon clean test --info -Dspring.profiles.active=unit-test-mysql
+function run_tests() {
+    local -r test_mode=${1:-}
 
-    printf "******* RUNNING ALL TESTS WITH POSTGRES *******\\n"
-    psql -U pivotal -c "DROP DATABASE IF EXISTS credhub_test" -c "CREATE DATABASE credhub_test"
-    ./gradlew --no-daemon clean test --info -Dspring.profiles.active=unit-test-postgres
-else
-    ./gradlew clean test
-fi
+    ./scripts/run_tests_postgres.sh "$test_mode"
+    ./scripts/run_tests_mysql.sh "$test_mode"
+    ./scripts/run_tests_h2.sh "$test_mode"
+}
+
+function main() {
+    set_bash_error_handling
+    go_to_project_root_directory
+
+    local -r test_mode=${1:-}
+
+    run_tests "$test_mode"
+}
+
+main "$@"

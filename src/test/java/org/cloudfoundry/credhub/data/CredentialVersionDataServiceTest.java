@@ -704,7 +704,7 @@ public class CredentialVersionDataServiceTest {
 
   @Test
   public void shouldThrowAnMaximumSizeException_whenDataExceedsMaximumSize() {
-    if (System.getProperty(SpringUtilities.activeProfilesString).equals(SpringUtilities.unitTestPostgresProfile)) {
+    if (System.getProperty(SpringUtilities.activeProfilesString).contains(SpringUtilities.unitTestPostgresProfile)) {
       return;
     }
 
