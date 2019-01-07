@@ -158,6 +158,8 @@ task updateVersionFile(type: Exec) {
     commandLine './scripts/fetch-version.sh'
 }
 
+processResources.dependsOn updateVersionFile
+
 bootRun {
     dependsOn updateVersionFile
     sourceResources sourceSets.main
