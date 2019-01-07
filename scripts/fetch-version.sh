@@ -37,7 +37,7 @@ function use_version_from_branch_if_available() {
     overwrite_version_file "$current_branch"
     display_version
   elif [[ "$current_branch" =~ master ]]; then
-    local -r highest_local_version=$(git branch | grep -o "[0-9]*\\.[0-9]*\\.x" | sort -n | tail -1)
+    local -r highest_local_version=$(git branch -r | grep -o "[0-9]*\\.[0-9]*\\.x" | sort -n | tail -1)
     overwrite_version_file "$highest_local_version"
     display_version
   else
