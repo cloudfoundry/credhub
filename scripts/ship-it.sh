@@ -46,4 +46,4 @@ function main() {
     display_ascii_success_message
 }
 
-main "$@"
+main
