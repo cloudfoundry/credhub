@@ -21,7 +21,7 @@ import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.cert.X509CertificateHolder;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
 import org.bouncycastle.openssl.PEMParser;
 import org.cloudfoundry.credhub.exceptions.MalformedCertificateException;
 import org.cloudfoundry.credhub.exceptions.MissingCertificateException;
@@ -93,7 +93,7 @@ public class CertificateReader {
         return true;
       }
       return false;
-    } catch (final SignatureException | InvalidKeyException e) {
+    } catch (final SignatureException | InvalidKeyException | CertificateException e) {
       return false;
     } catch (final Exception e) {
       throw new RuntimeException(e);
@@ -111,7 +111,7 @@ public class CertificateReader {
   public boolean isSelfSigned() {
     final String issuerName = certificate.getIssuerDN().getName();
 
-    if (!issuerName.equals(certificate.getSubjectDN().toString())) {
+    if (!issuerName.equals(certificate.getSubjectDN().getName())) {
       return false;
     } else {
       try {
@@ -147,7 +147,7 @@ public class CertificateReader {
 
   private X509Certificate parseStringIntoCertificate(final String pemString) throws CertificateException, NoSuchProviderException {
     return (X509Certificate) CertificateFactory
-      .getInstance("X.509", BouncyCastleProvider.PROVIDER_NAME)
+      .getInstance("X.509", BouncyCastleFipsProvider.PROVIDER_NAME)
       .generateCertificate(new ByteArrayInputStream(pemString.getBytes(UTF_8)));
   }
 }

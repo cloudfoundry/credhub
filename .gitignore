@@ -177,3 +177,4 @@ gradle-app.setting
 version
 src/main/resources/version
 src/main/resources/application-dev-external-provider.yml
+libs/

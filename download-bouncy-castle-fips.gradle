@@ -1,0 +1,44 @@
+def getBouncyCastleFipsJarSHA256Checksums() {
+    return [
+        "bcpkix-fips-1.0.2.jar": "8bac9a0700fc551b3d3cf4b9b3f5466726fd4ff9a26e94ea422fd6a3933b7382",
+        "bc-fips-1.0.1.jar": "a1d690a5f6044829cf7b1964f5285014e03075e87a37aeb6d0bd14afdd522ff1",
+    ]
+}
+
+def downloadJarCommand(bouncyCastleFipsJarFilenames) {
+    def curlOperations = bouncyCastleFipsJarFilenames.collect { filename ->
+        return "curl https://downloads.bouncycastle.org/fips-java/${filename} -o libs/${filename}"
+    }
+
+    def bouncyCastleFipsJarSHA256Checksums = getBouncyCastleFipsJarSHA256Checksums()
+
+    def verifyChecksumOperations = bouncyCastleFipsJarFilenames.collect { filename ->
+        return "[[ \"\$(sha256sum libs/${filename} | awk '{print \$1}')\" == '${bouncyCastleFipsJarSHA256Checksums[filename]}' ]]"
+    }
+
+    return [
+            "bash",
+            "-c",
+            "set -e && "
+                + "mkdir -p libs && "
+                + curlOperations.join(" && ") + " && "
+                + verifyChecksumOperations.join(" && ")
+    ]
+}
+
+task downloadBouncyCastleFips(type: Exec) {
+
+    def bouncyCastleFipsJarFilenames = getBouncyCastleFipsJarSHA256Checksums().keySet()
+
+    def jarsExist = bouncyCastleFipsJarFilenames.inject { prev, current ->
+        return file("libs/${current}").exists() && prev != false
+    }
+
+    if (!jarsExist) {
+        commandLine downloadJarCommand(bouncyCastleFipsJarFilenames)
+    } else {
+        commandLine "echo", "bouncy castle fips jars already exist, skipping download 🚦"
+    }
+}
+
+tasks.matching {it != downloadBouncyCastleFips}.all {it.dependsOn downloadBouncyCastleFips}

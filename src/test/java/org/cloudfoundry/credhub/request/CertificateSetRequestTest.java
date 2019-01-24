@@ -40,7 +40,7 @@ public class CertificateSetRequestTest {
 
   @Before
   public void beforeEach() {
-    TestHelper.getBouncyCastleProvider();
+    TestHelper.getBouncyCastleFipsProvider();
   }
 
   @Test

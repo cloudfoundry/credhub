@@ -13,10 +13,10 @@ import org.cloudfoundry.credhub.util.CertificateFormatter;
 @Component
 public class RsaGenerator implements CredentialGenerator<RsaCredentialValue> {
 
-  private final LibcryptoRsaKeyPairGenerator keyGenerator;
+  private final RsaKeyPairGenerator keyGenerator;
 
   @Autowired
-  RsaGenerator(final LibcryptoRsaKeyPairGenerator keyGenerator) {
+  RsaGenerator(final RsaKeyPairGenerator keyGenerator) {
     super();
     this.keyGenerator = keyGenerator;
   }

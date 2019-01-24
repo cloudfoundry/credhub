@@ -15,7 +15,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.skyscreamer.jsonassert.JSONAssert;
 
-import static org.cloudfoundry.credhub.helper.TestHelper.getBouncyCastleProvider;
+import static org.cloudfoundry.credhub.helper.TestHelper.getBouncyCastleFipsProvider;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
@@ -33,7 +33,7 @@ public class CertificateCredentialTest {
 
   @Before
   public void beforeEach() {
-    getBouncyCastleProvider();
+    getBouncyCastleFipsProvider();
     final UUID canaryUuid = UUID.randomUUID();
     final byte[] encryptedValue = "fake-encrypted-value".getBytes(StringUtil.UTF_8);
     final byte[] nonce = "fake-nonce".getBytes(StringUtil.UTF_8);

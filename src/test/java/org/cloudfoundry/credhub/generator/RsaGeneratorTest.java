@@ -20,7 +20,7 @@ import static org.mockito.Mockito.when;
 @RunWith(JUnit4.class)
 public class RsaGeneratorTest {
 
-  private LibcryptoRsaKeyPairGenerator keyPairGenerator;
+  private RsaKeyPairGenerator keyPairGenerator;
   private RsaGenerator subject;
   private FakeKeyPairGenerator fakeKeyPairGenerator;
 
@@ -28,7 +28,7 @@ public class RsaGeneratorTest {
 
   @Before
   public void beforeEach() throws Exception {
-    keyPairGenerator = mock(LibcryptoRsaKeyPairGenerator.class);
+    keyPairGenerator = mock(RsaKeyPairGenerator.class);
     fakeKeyPairGenerator = new FakeKeyPairGenerator();
     keyPair = fakeKeyPairGenerator.generate();
     when(keyPairGenerator.generateKeyPair(anyInt())).thenReturn(keyPair);
