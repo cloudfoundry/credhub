@@ -72,7 +72,7 @@ public class PermissionsV2ControllerTest {
       .perform(
         get(PermissionsV2Controller.ENDPOINT)
           .contentType(MediaType.APPLICATION_JSON)
-          .param("path", "/some-path")
+          .param("path", "some-path")
           .param("actor", "some-actor")
       )
       .andExpect(status().isOk())
@@ -95,7 +95,7 @@ public class PermissionsV2ControllerTest {
       .andReturn();
 
     assertThat(spyPermissionsHandler.getFindByPathAndActorCalledWithActor(), equalTo("some-actor"));
-    assertThat(spyPermissionsHandler.getFindByPathAndActorCalledWithPath(), equalTo("/some-path"));
+    assertThat(spyPermissionsHandler.getFindByPathAndActorCalledWithPath(), equalTo("some-path"));
     final String actualResponseBody = mvcResult.getResponse().getContentAsString();
     final String expectedResponseBody = "{\"path\":\"some-path\",\"operations\":[],\"actor\":\"some-actor\",\"uuid\":\"48faba92-5492-3e23-b262-75e30a7ddb6a\"}";
     JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true);
