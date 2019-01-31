@@ -1,14 +1,7 @@
 package org.cloudfoundry.credhub.controller.v2;
 
-import org.cloudfoundry.credhub.handler.SpyPermissionsHandler;
-import org.cloudfoundry.credhub.request.PermissionOperation;
-import org.cloudfoundry.credhub.util.StringUtil;
-import org.cloudfoundry.credhub.view.PermissionsV2View;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.skyscreamer.jsonassert.JSONAssert;
+import java.util.UUID;
+
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.JUnitRestDocumentation;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -16,7 +9,14 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.util.UUID;
+import org.cloudfoundry.credhub.handler.SpyPermissionsHandler;
+import org.cloudfoundry.credhub.util.StringUtil;
+import org.cloudfoundry.credhub.view.PermissionsV2View;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.skyscreamer.jsonassert.JSONAssert;
 
 import static java.util.Collections.emptyList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -24,10 +24,9 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
-import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
-import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.requestParameters;
+import static org.springframework.restdocs.snippet.Attributes.key;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -81,16 +80,13 @@ public class PermissionsV2ControllerTest {
         document(
           PermissionsV2Controller.ENDPOINT.replaceFirst("/", ""),
           requestParameters(
-            parameterWithName("path").description("The credential path"),
-            parameterWithName("actor").description("The credential actor")
-          ),
-          responseFields(
-            fieldWithPath("path").description("The path that represents the credential"),
-            fieldWithPath("operations").description("The operations that are permitted to be done with the credential. Available operations are: " + PermissionOperation.getCommaSeparatedPermissionOperations()),
-            fieldWithPath("actor").description("The username that can interact with the credential"),
-            fieldWithPath("uuid").description("The unique identifier that represents the credential")
+            parameterWithName("path").description("The credential path").attributes(key("default").value("none"))
+                .attributes(key("required").value("yes")).attributes(key("type").value("string")),
+            parameterWithName("actor").description("The credential actor").attributes(key("default").value("none"))
+              .attributes(key("required").value("yes")).attributes(key("type").value("string"))
           )
         )
+
       )
       .andReturn();
 
