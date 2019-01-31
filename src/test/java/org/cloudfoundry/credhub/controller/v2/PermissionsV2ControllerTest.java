@@ -80,10 +80,10 @@ public class PermissionsV2ControllerTest {
         document(
           PermissionsV2Controller.ENDPOINT.replaceFirst("/", ""),
           requestParameters(
-            parameterWithName("path").description("The credential path").attributes(key("default").value("none"))
-                .attributes(key("required").value("yes")).attributes(key("type").value("string")),
-            parameterWithName("actor").description("The credential actor").attributes(key("default").value("none"))
-              .attributes(key("required").value("yes")).attributes(key("type").value("string"))
+            parameterWithName("path").description("The credential path").attributes(key("default").value("none"),
+              key("required").value("yes"), key("type").value("string")),
+            parameterWithName("actor").description("The credential actor").attributes(key("default").value("none"),
+              key("required").value("yes"), key("type").value("string"))
           )
         )
 
