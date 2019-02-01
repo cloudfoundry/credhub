@@ -14,9 +14,15 @@ public class SpyPermissionsHandler implements PermissionsHandler {
   private String findByPathAndActorCalledWithPath;
   private String findByPathAndActorCalledWithActor;
   private PermissionsV2View return_findByPathAndActor;
+  private PermissionsV2View return_getPermissions;
+  private UUID getPermissionsCalledWithGuid;
 
   public void setReturn_findByPathAndActor(final PermissionsV2View return_findByPathAndActor) {
     this.return_findByPathAndActor = return_findByPathAndActor;
+  }
+
+  public void setReturn_getPermissions(final PermissionsV2View return_getPermissions) {
+    this.return_getPermissions = return_getPermissions;
   }
 
   public String getFindByPathAndActorCalledWithPath() {
@@ -33,6 +39,14 @@ public class SpyPermissionsHandler implements PermissionsHandler {
 
   public void setFindByPathAndActorCalledWithActor(final String findByPathAndActorCalledWithActor) {
     this.findByPathAndActorCalledWithActor = findByPathAndActorCalledWithActor;
+  }
+
+  public void setGetPermissionsCalledWithGuid(final UUID guid) {
+    this.getPermissionsCalledWithGuid = guid;
+  }
+
+  public UUID getGetPermissionsCalledWithGuid() {
+    return getPermissionsCalledWithGuid;
   }
 
   @Override
@@ -62,7 +76,8 @@ public class SpyPermissionsHandler implements PermissionsHandler {
 
   @Override
   public PermissionsV2View getPermissions(final UUID guid) {
-    return null;
+    setGetPermissionsCalledWithGuid(guid);
+    return return_getPermissions;
   }
 
   @Override

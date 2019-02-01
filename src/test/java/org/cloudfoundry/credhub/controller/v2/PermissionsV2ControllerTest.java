@@ -26,10 +26,13 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.docu
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.requestParameters;
+import static org.springframework.restdocs.request.RequestDocumentation.requestParts;
 import static org.springframework.restdocs.snippet.Attributes.key;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.request;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
@@ -58,7 +61,7 @@ public class PermissionsV2ControllerTest {
   }
 
   @Test
-  public void GET__api_v2_permissions__returns_a_permission() throws Exception {
+  public void GET__permissions_by_actor_and_path__returns_a_permission() throws Exception {
     final PermissionsV2View permissionsV2View = new PermissionsV2View(
       "some-path",
       emptyList(),
@@ -78,7 +81,7 @@ public class PermissionsV2ControllerTest {
       .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
       .andDo(
         document(
-          PermissionsV2Controller.ENDPOINT.replaceFirst("/", ""),
+          "{methodName}",
           requestParameters(
             parameterWithName("path").description("The credential path").attributes(key("default").value("none"),
               key("required").value("yes"), key("type").value("string")),
@@ -92,6 +95,40 @@ public class PermissionsV2ControllerTest {
 
     assertThat(spyPermissionsHandler.getFindByPathAndActorCalledWithActor(), equalTo("some-actor"));
     assertThat(spyPermissionsHandler.getFindByPathAndActorCalledWithPath(), equalTo("some-path"));
+    final String actualResponseBody = mvcResult.getResponse().getContentAsString();
+    final String expectedResponseBody = "{\"path\":\"some-path\",\"operations\":[],\"actor\":\"some-actor\",\"uuid\":\"48faba92-5492-3e23-b262-75e30a7ddb6a\"}";
+    JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true);
+  }
+
+  @Test
+  public void GET__permissions_by_uuid__returns_a_permission() throws Exception {
+    UUID guid = UUID.nameUUIDFromBytes("some-uuid".getBytes(StringUtil.UTF_8));
+    final PermissionsV2View permissionsV2View = new PermissionsV2View(
+      "some-path",
+      emptyList(),
+      "some-actor",
+      guid
+    );
+    spyPermissionsHandler.setReturn_getPermissions(permissionsV2View);
+
+    final MvcResult mvcResult = mockMvc
+      .perform(
+        get(PermissionsV2Controller.ENDPOINT + "/" + guid)
+          .contentType(MediaType.APPLICATION_JSON)
+      )
+      .andExpect(status().isOk())
+      .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+      .andDo(
+        document(
+          "{methodName}",
+          requestParameters(
+            parameterWithName("none")
+          )
+        )
+      )
+      .andReturn();
+
+    assertThat(spyPermissionsHandler.getGetPermissionsCalledWithGuid(), equalTo(guid));
     final String actualResponseBody = mvcResult.getResponse().getContentAsString();
     final String expectedResponseBody = "{\"path\":\"some-path\",\"operations\":[],\"actor\":\"some-actor\",\"uuid\":\"48faba92-5492-3e23-b262-75e30a7ddb6a\"}";
     JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true);
