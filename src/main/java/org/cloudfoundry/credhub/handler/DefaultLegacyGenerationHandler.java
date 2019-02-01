@@ -18,8 +18,7 @@ import org.cloudfoundry.credhub.util.StringUtil;
 import org.cloudfoundry.credhub.view.CredentialView;
 
 @Component
-public class LegacyGenerationHandler {
-
+public class DefaultLegacyGenerationHandler implements LegacyGenerationHandler {
 
   private final ObjectMapper objectMapper;
   private final GenerateHandler generateHandler;
@@ -27,10 +26,12 @@ public class LegacyGenerationHandler {
   private final CEFAuditRecord auditRecord;
 
   @Autowired
-  public LegacyGenerationHandler(final ObjectMapper objectMapper,
+  public DefaultLegacyGenerationHandler(
+    final ObjectMapper objectMapper,
     final GenerateHandler generateHandler,
     final RegenerateHandler regenerateHandler,
-    final CEFAuditRecord auditRecord) {
+    final CEFAuditRecord auditRecord
+  ) {
     super();
     this.objectMapper = objectMapper;
     this.generateHandler = generateHandler;

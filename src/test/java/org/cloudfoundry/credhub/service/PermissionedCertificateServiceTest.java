@@ -35,7 +35,7 @@ import static org.mockito.Mockito.when;
 
 public class PermissionedCertificateServiceTest {
   private PermissionedCertificateService subject;
-  private PermissionedCredentialService permissionedCredentialService;
+  private DefaultPermissionedCredentialService permissionedCredentialService;
   private CertificateDataService certificateDataService;
   private PermissionCheckingService permissionCheckingService;
   private UserContextHolder userContextHolder;
@@ -46,7 +46,7 @@ public class PermissionedCertificateServiceTest {
 
   @Before
   public void beforeEach() {
-    permissionedCredentialService = mock(PermissionedCredentialService.class);
+    permissionedCredentialService = mock(DefaultPermissionedCredentialService.class);
     certificateDataService = mock(CertificateDataService.class);
     permissionCheckingService = mock(PermissionCheckingService.class);
     certificateDataService = mock(CertificateDataService.class);

@@ -41,7 +41,7 @@ import org.cloudfoundry.credhub.domain.SshCredentialVersion;
 import org.cloudfoundry.credhub.domain.UserCredentialVersion;
 import org.cloudfoundry.credhub.domain.ValueCredentialVersion;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
-import org.cloudfoundry.credhub.handler.SetHandler;
+import org.cloudfoundry.credhub.handler.DefaultSetHandler;
 import org.cloudfoundry.credhub.request.BaseCredentialSetRequest;
 import org.cloudfoundry.credhub.util.CurrentTimeProvider;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
@@ -135,7 +135,7 @@ public class CredentialsControllerTypeSpecificSetTest {
   @SpyBean
   private CredentialVersionDataService credentialVersionDataService;
   @SpyBean
-  private SetHandler setHandler;
+  private DefaultSetHandler setHandler;
   @MockBean
   private CurrentTimeProvider mockCurrentTimeProvider;
   @SpyBean

@@ -5,7 +5,7 @@ import org.cloudfoundry.credhub.entity.RsaCredentialVersionData;
 import org.cloudfoundry.credhub.request.GenerationParameters;
 import org.cloudfoundry.credhub.request.RsaGenerationParameters;
 
-public class RsaCredentialVersion extends CredentialVersion<RsaCredentialVersion> {
+public class RsaCredentialVersion extends CredentialVersion {
 
   private final RsaCredentialVersionData delegate;
 

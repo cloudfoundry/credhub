@@ -1,25 +1,24 @@
 package org.cloudfoundry.credhub.handler;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.service.PermissionedCredentialService;
 import org.cloudfoundry.credhub.view.CredentialView;
 import org.cloudfoundry.credhub.view.DataResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
-public class CredentialsHandler {
+public class DefaultCredentialsHandler implements CredentialsHandler {
 
   private final PermissionedCredentialService credentialService;
   private final CEFAuditRecord auditRecord;
 
   @Autowired
-  public CredentialsHandler(final PermissionedCredentialService credentialService, final CEFAuditRecord auditRecord) {
+  public DefaultCredentialsHandler(final PermissionedCredentialService credentialService, final CEFAuditRecord auditRecord) {
     super();
     this.credentialService = credentialService;
     this.auditRecord = auditRecord;

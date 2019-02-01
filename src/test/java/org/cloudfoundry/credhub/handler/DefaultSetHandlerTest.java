@@ -16,7 +16,7 @@ import org.cloudfoundry.credhub.request.CertificateSetRequest;
 import org.cloudfoundry.credhub.request.PasswordSetRequest;
 import org.cloudfoundry.credhub.request.StringGenerationParameters;
 import org.cloudfoundry.credhub.request.UserSetRequest;
-import org.cloudfoundry.credhub.service.PermissionedCredentialService;
+import org.cloudfoundry.credhub.service.DefaultPermissionedCredentialService;
 import org.cloudfoundry.credhub.util.TestConstants;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,11 +34,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
-public class SetHandlerTest {
-  private PermissionedCredentialService credentialService;
+public class DefaultSetHandlerTest {
+  private DefaultPermissionedCredentialService credentialService;
   private CertificateAuthorityService certificateAuthorityService;
 
-  private SetHandler subject;
+  private DefaultSetHandler subject;
 
   private StringGenerationParameters generationParameters;
   private CredentialVersion credentialVersion;
@@ -49,11 +49,11 @@ public class SetHandlerTest {
   @Before
   public void setUp() {
     TestHelper.getBouncyCastleProvider();
-    credentialService = mock(PermissionedCredentialService.class);
+    credentialService = mock(DefaultPermissionedCredentialService.class);
     certificateAuthorityService = mock(CertificateAuthorityService.class);
 
     auditRecord = new CEFAuditRecord();
-    subject = new SetHandler(credentialService, certificateAuthorityService, auditRecord);
+    subject = new DefaultSetHandler(credentialService, certificateAuthorityService, auditRecord);
 
     generationParameters = new StringGenerationParameters();
     credentialVersion = mock(PasswordCredentialVersion.class);

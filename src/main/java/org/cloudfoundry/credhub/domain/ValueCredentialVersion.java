@@ -4,7 +4,7 @@ import org.cloudfoundry.credhub.credential.StringCredentialValue;
 import org.cloudfoundry.credhub.entity.ValueCredentialVersionData;
 import org.cloudfoundry.credhub.request.GenerationParameters;
 
-public class ValueCredentialVersion extends CredentialVersion<ValueCredentialVersion> {
+public class ValueCredentialVersion extends CredentialVersion {
 
   private final ValueCredentialVersionData delegate;
 

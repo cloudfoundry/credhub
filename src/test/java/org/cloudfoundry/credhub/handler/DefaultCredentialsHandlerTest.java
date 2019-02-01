@@ -13,7 +13,7 @@ import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.cloudfoundry.credhub.service.PermissionCheckingService;
-import org.cloudfoundry.credhub.service.PermissionedCredentialService;
+import org.cloudfoundry.credhub.service.DefaultPermissionedCredentialService;
 import org.cloudfoundry.credhub.view.CredentialView;
 import org.cloudfoundry.credhub.view.DataResponse;
 import org.junit.Before;
@@ -35,15 +35,15 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
-public class CredentialsHandlerTest {
+public class DefaultCredentialsHandlerTest {
   private static final String CREDENTIAL_NAME = "/test/credential";
   private static final Instant VERSION1_CREATED_AT = Instant.ofEpochMilli(555555555);
   private static final Instant VERSION2_CREATED_AT = Instant.ofEpochMilli(777777777);
   private static final String UUID_STRING = "fake-uuid";
   private static final String USER = "darth-sirius";
 
-  private CredentialsHandler subject;
-  private PermissionedCredentialService permissionedCredentialService;
+  private DefaultCredentialsHandler subject;
+  private DefaultPermissionedCredentialService permissionedCredentialService;
   private CEFAuditRecord auditRecord;
   private PermissionCheckingService permissionCheckingService;
 
@@ -55,10 +55,10 @@ public class CredentialsHandlerTest {
   public void beforeEach() {
     final Encryptor encryptor = mock(Encryptor.class);
 
-    permissionedCredentialService = mock(PermissionedCredentialService.class);
+    permissionedCredentialService = mock(DefaultPermissionedCredentialService.class);
     auditRecord = mock(CEFAuditRecord.class);
     permissionCheckingService = mock(PermissionCheckingService.class);
-    subject = new CredentialsHandler(permissionedCredentialService, auditRecord);
+    subject = new DefaultCredentialsHandler(permissionedCredentialService, auditRecord);
 
     userContext = mock(UserContext.class);
     when(userContext.getActor()).thenReturn(USER);

@@ -1,8 +1,5 @@
 package org.cloudfoundry.credhub.handler;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.data.CertificateAuthorityService;
@@ -13,16 +10,18 @@ import org.cloudfoundry.credhub.request.CertificateSetRequest;
 import org.cloudfoundry.credhub.service.PermissionedCredentialService;
 import org.cloudfoundry.credhub.util.CertificateReader;
 import org.cloudfoundry.credhub.view.CredentialView;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 @Component
-public class SetHandler {
+public class DefaultSetHandler implements SetHandler {
 
   private final PermissionedCredentialService credentialService;
   private final CertificateAuthorityService certificateAuthorityService;
   private final CEFAuditRecord auditRecord;
 
   @Autowired
-  public SetHandler(
+  public DefaultSetHandler(
     final PermissionedCredentialService credentialService,
     final CertificateAuthorityService certificateAuthorityService,
     final CEFAuditRecord auditRecord) {

@@ -1,29 +1,9 @@
 package org.cloudfoundry.credhub.controller.v1;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.google.common.io.ByteStreams;
 import org.apache.commons.lang3.StringUtils;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
-import org.cloudfoundry.credhub.audit.entity.DeleteCredential;
-import org.cloudfoundry.credhub.audit.entity.FindCredential;
-import org.cloudfoundry.credhub.audit.entity.GetCredential;
-import org.cloudfoundry.credhub.audit.entity.RequestDetails;
-import org.cloudfoundry.credhub.audit.entity.SetCredential;
+import org.cloudfoundry.credhub.audit.entity.*;
 import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException;
 import org.cloudfoundry.credhub.handler.CredentialsHandler;
 import org.cloudfoundry.credhub.handler.LegacyGenerationHandler;
@@ -33,16 +13,25 @@ import org.cloudfoundry.credhub.service.PermissionedCredentialService;
 import org.cloudfoundry.credhub.view.CredentialView;
 import org.cloudfoundry.credhub.view.DataResponse;
 import org.cloudfoundry.credhub.view.FindCredentialResults;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 @RestController
 @RequestMapping(
   path = CredentialsController.ENDPOINT,
-  produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+  produces = MediaType.APPLICATION_JSON_UTF8_VALUE
+)
 public class CredentialsController {
 
   public static final String ENDPOINT = "/api/v1/data";
 
-  private final PermissionedCredentialService credentialService;
+  private final PermissionedCredentialService permissionedCredentialService;
   private final SetHandler setHandler;
   private final CredentialsHandler credentialsHandler;
   private final LegacyGenerationHandler legacyGenerationHandler;
@@ -50,14 +39,14 @@ public class CredentialsController {
 
   @Autowired
   public CredentialsController(
-    final PermissionedCredentialService credentialService,
+    final PermissionedCredentialService permissionedCredentialService,
     final CredentialsHandler credentialsHandler,
     final SetHandler setHandler,
     final LegacyGenerationHandler legacyGenerationHandler,
     final CEFAuditRecord auditRecord
   ) {
     super();
-    this.credentialService = credentialService;
+    this.permissionedCredentialService = permissionedCredentialService;
     this.credentialsHandler = credentialsHandler;
     this.setHandler = setHandler;
     this.legacyGenerationHandler = legacyGenerationHandler;
@@ -104,7 +93,8 @@ public class CredentialsController {
   public DataResponse getCredential(
     @RequestParam("name") final String credentialName,
     @RequestParam(value = "versions", required = false) final Integer numberOfVersions,
-    @RequestParam(value = "current", required = false, defaultValue = "false") final boolean current) {
+    @RequestParam(value = "current", required = false, defaultValue = "false") final boolean current
+  ) {
     if (StringUtils.isEmpty(credentialName)) {
       throw new InvalidQueryParameterException("error.missing_query_parameter", "name");
     }
@@ -128,26 +118,28 @@ public class CredentialsController {
   @ResponseStatus(HttpStatus.OK)
   public FindCredentialResults findByPath(
     @RequestParam("path") final String path,
-    @RequestParam(value = "expires-within-days", required = false, defaultValue = "") final String expiresWithinDays) {
+    @RequestParam(value = "expires-within-days", required = false, defaultValue = "") final String expiresWithinDays
+  ) {
     final FindCredential findCredential = new FindCredential();
     findCredential.setPath(path);
     findCredential.setExpiresWithinDays(expiresWithinDays);
     auditRecord.setRequestDetails(findCredential);
 
-    return new FindCredentialResults(credentialService.findStartingWithPath(path, expiresWithinDays));
+    return new FindCredentialResults(permissionedCredentialService.findStartingWithPath(path, expiresWithinDays));
   }
 
   @RequestMapping(path = "", params = "name-like", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   public FindCredentialResults findByNameLike(
     @RequestParam("name-like") final String nameLike,
-    @RequestParam(value = "expires-within-days", required = false, defaultValue = "") final String expiresWithinDays) {
+    @RequestParam(value = "expires-within-days", required = false, defaultValue = "") final String expiresWithinDays
+  ) {
     final FindCredential findCredential = new FindCredential();
     findCredential.setNameLike(nameLike);
     findCredential.setExpiresWithinDays(expiresWithinDays);
     auditRecord.setRequestDetails(findCredential);
 
-    return new FindCredentialResults(credentialService.findContainingName(nameLike, expiresWithinDays));
+    return new FindCredentialResults(permissionedCredentialService.findContainingName(nameLike, expiresWithinDays));
   }
 
   private CredentialView auditedHandlePutRequest(@RequestBody final BaseCredentialSetRequest requestBody) {

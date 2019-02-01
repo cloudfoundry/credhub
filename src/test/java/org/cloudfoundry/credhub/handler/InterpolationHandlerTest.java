@@ -12,7 +12,7 @@ import org.cloudfoundry.credhub.domain.JsonCredentialVersion;
 import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
-import org.cloudfoundry.credhub.service.PermissionedCredentialService;
+import org.cloudfoundry.credhub.service.DefaultPermissionedCredentialService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,12 +35,12 @@ public class InterpolationHandlerTest {
 
   private InterpolationHandler subject;
   private Map<String, Object> response;
-  private PermissionedCredentialService credentialService;
+  private DefaultPermissionedCredentialService credentialService;
   private CEFAuditRecord auditRecord;
 
   @Before
   public void beforeEach() {
-    credentialService = mock(PermissionedCredentialService.class);
+    credentialService = mock(DefaultPermissionedCredentialService.class);
     auditRecord = mock(CEFAuditRecord.class);
 
     subject = new InterpolationHandler(credentialService, auditRecord);

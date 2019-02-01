@@ -8,7 +8,7 @@ import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData;
 import org.cloudfoundry.credhub.request.GenerationParameters;
 import org.cloudfoundry.credhub.util.CertificateReader;
 
-public class CertificateCredentialVersion extends CredentialVersion<CertificateCredentialVersion> {
+public class CertificateCredentialVersion extends CredentialVersion {
 
   private final CertificateCredentialVersionData delegate;
   private CertificateReader parsedCertificate;

@@ -9,7 +9,7 @@ import org.cloudfoundry.credhub.request.GenerationParameters;
 import org.cloudfoundry.credhub.request.StringGenerationParameters;
 import org.cloudfoundry.credhub.util.JsonObjectMapper;
 
-public class UserCredentialVersion extends CredentialVersion<UserCredentialVersion> {
+public class UserCredentialVersion extends CredentialVersion {
   private final UserCredentialVersionData delegate;
   private final JsonObjectMapper jsonObjectMapper;
   private String password;

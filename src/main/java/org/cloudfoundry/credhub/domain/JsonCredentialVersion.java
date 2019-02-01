@@ -10,7 +10,7 @@ import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.request.GenerationParameters;
 import org.cloudfoundry.credhub.util.JsonObjectMapper;
 
-public class JsonCredentialVersion extends CredentialVersion<JsonCredentialVersion> {
+public class JsonCredentialVersion extends CredentialVersion {
 
   private final JsonObjectMapper objectMapper;
   private final JsonCredentialVersionData delegate;

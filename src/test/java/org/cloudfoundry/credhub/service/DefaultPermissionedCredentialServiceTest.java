@@ -52,7 +52,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 @RunWith(JUnit4.class)
-public class PermissionedCredentialServiceTest {
+public class DefaultPermissionedCredentialServiceTest {
 
   private static final String VERSION_UUID_STRING = "expected UUID";
   private static final UUID CREDENTIAL_UUID = UUID.randomUUID();
@@ -80,7 +80,7 @@ public class PermissionedCredentialServiceTest {
   @Mock
   private CEFAuditRecord auditRecord;
 
-  private PermissionedCredentialService subject;
+  private DefaultPermissionedCredentialService subject;
   private CredentialVersion existingCredentialVersion;
   private UserContext userContext;
   private StringGenerationParameters generationParameters;
@@ -97,7 +97,7 @@ public class PermissionedCredentialServiceTest {
     final UserContextHolder userContextHolder = new UserContextHolder();
     userContextHolder.setUserContext(userContext);
 
-    subject = new PermissionedCredentialService(
+    subject = new DefaultPermissionedCredentialService(
       credentialVersionDataService,
       credentialFactory,
       permissionCheckingService,

@@ -15,7 +15,7 @@ import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
 import org.cloudfoundry.credhub.request.CertificateGenerateRequest;
 import org.cloudfoundry.credhub.request.PasswordGenerateRequest;
-import org.cloudfoundry.credhub.service.PermissionedCredentialService;
+import org.cloudfoundry.credhub.service.DefaultPermissionedCredentialService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,7 +42,7 @@ public class DefaultRegenerateHandlerTest {
   private static final String CREDENTIAL_NAME = "credName";
 
   private DefaultRegenerateHandler subject;
-  private PermissionedCredentialService credentialService;
+  private DefaultPermissionedCredentialService credentialService;
   private UniversalCredentialGenerator credentialGenerator;
   private GenerationRequestGenerator generationRequestGenerator;
   private CredentialVersion credentialVersion;
@@ -51,7 +51,7 @@ public class DefaultRegenerateHandlerTest {
 
   @Before
   public void beforeEach() {
-    credentialService = mock(PermissionedCredentialService.class);
+    credentialService = mock(DefaultPermissionedCredentialService.class);
     credentialGenerator = mock(UniversalCredentialGenerator.class);
     generationRequestGenerator = mock(GenerationRequestGenerator.class);
     credentialVersion = mock(PasswordCredentialVersion.class);

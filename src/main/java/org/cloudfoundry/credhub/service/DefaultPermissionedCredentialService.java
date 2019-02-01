@@ -1,11 +1,5 @@
 package org.cloudfoundry.credhub.service;
 
-import java.util.List;
-import java.util.UUID;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.entity.GetCredentialById;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
@@ -27,14 +21,17 @@ import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
 import org.cloudfoundry.credhub.request.BaseCredentialRequest;
 import org.cloudfoundry.credhub.request.BaseCredentialSetRequest;
 import org.cloudfoundry.credhub.view.FindCredentialResult;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-import static org.cloudfoundry.credhub.request.PermissionOperation.DELETE;
-import static org.cloudfoundry.credhub.request.PermissionOperation.READ;
-import static org.cloudfoundry.credhub.request.PermissionOperation.WRITE;
+import java.util.List;
+import java.util.UUID;
+
+import static org.cloudfoundry.credhub.request.PermissionOperation.*;
 
 @Service
 @SuppressWarnings("PMD.TooManyMethods")
-public class PermissionedCredentialService {
+public class DefaultPermissionedCredentialService implements PermissionedCredentialService {
 
   private final CredentialVersionDataService credentialVersionDataService;
 
@@ -46,7 +43,7 @@ public class PermissionedCredentialService {
   private final PermissionCheckingService permissionCheckingService;
 
   @Autowired
-  public PermissionedCredentialService(
+  public DefaultPermissionedCredentialService(
     final CredentialVersionDataService credentialVersionDataService,
     final CredentialFactory credentialFactory,
     final PermissionCheckingService permissionCheckingService,

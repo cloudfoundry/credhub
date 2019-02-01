@@ -6,7 +6,7 @@ import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.request.PasswordGenerateRequest;
 import org.cloudfoundry.credhub.request.StringGenerationParameters;
-import org.cloudfoundry.credhub.service.PermissionedCredentialService;
+import org.cloudfoundry.credhub.service.DefaultPermissionedCredentialService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,7 +22,7 @@ import static org.mockito.internal.verification.VerificationModeFactory.times;
 
 @RunWith(JUnit4.class)
 public class GenerateHandlerTest {
-  private PermissionedCredentialService credentialService;
+  private DefaultPermissionedCredentialService credentialService;
   private UniversalCredentialGenerator universalCredentialGenerator;
 
   private GenerateHandler subject;
@@ -35,7 +35,7 @@ public class GenerateHandlerTest {
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
-    credentialService = mock(PermissionedCredentialService.class);
+    credentialService = mock(DefaultPermissionedCredentialService.class);
     universalCredentialGenerator = mock(UniversalCredentialGenerator.class);
 
     subject = new GenerateHandler(credentialService, universalCredentialGenerator, cefAuditRecord);

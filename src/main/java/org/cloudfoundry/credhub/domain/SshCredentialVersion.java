@@ -6,7 +6,7 @@ import org.cloudfoundry.credhub.request.GenerationParameters;
 import org.cloudfoundry.credhub.request.SshGenerationParameters;
 import org.cloudfoundry.credhub.util.SshPublicKeyParser;
 
-public class SshCredentialVersion extends CredentialVersion<SshCredentialVersion> {
+public class SshCredentialVersion extends CredentialVersion {
 
   private final SshPublicKeyParser parser;
   private final SshCredentialVersionData delegate;

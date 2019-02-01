@@ -9,7 +9,7 @@ import org.cloudfoundry.credhub.entity.CredentialVersionData;
 import org.cloudfoundry.credhub.entity.EncryptedValue;
 import org.cloudfoundry.credhub.request.GenerationParameters;
 
-public abstract class CredentialVersion<Z extends CredentialVersion> {
+public abstract class CredentialVersion {
 
   protected CredentialVersionData delegate;
   protected Encryptor encryptor;

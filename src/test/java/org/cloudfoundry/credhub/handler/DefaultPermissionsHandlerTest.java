@@ -19,7 +19,7 @@ import org.cloudfoundry.credhub.request.PermissionsRequest;
 import org.cloudfoundry.credhub.request.PermissionsV2Request;
 import org.cloudfoundry.credhub.service.PermissionCheckingService;
 import org.cloudfoundry.credhub.service.PermissionService;
-import org.cloudfoundry.credhub.service.PermissionedCredentialService;
+import org.cloudfoundry.credhub.service.DefaultPermissionedCredentialService;
 import org.cloudfoundry.credhub.view.PermissionsV2View;
 import org.cloudfoundry.credhub.view.PermissionsView;
 import org.junit.Before;
@@ -55,7 +55,7 @@ public class DefaultPermissionsHandlerTest {
   private PermissionService permissionService;
   private PermissionCheckingService permissionCheckingService;
   private CredentialDataService credentialDataService;
-  private PermissionedCredentialService permissionedCredentialService;
+  private DefaultPermissionedCredentialService permissionedCredentialService;
   private PermissionsRequest permissionsRequest;
   private PermissionsV2Request permissionsV2Request;
 
@@ -64,7 +64,7 @@ public class DefaultPermissionsHandlerTest {
     permissionService = mock(PermissionService.class);
     permissionCheckingService = mock(PermissionCheckingService.class);
     credentialDataService = mock(CredentialDataService.class);
-    permissionedCredentialService = mock(PermissionedCredentialService.class);
+    permissionedCredentialService = mock(DefaultPermissionedCredentialService.class);
     subject = new DefaultPermissionsHandler(
       permissionService,
       permissionedCredentialService
