@@ -10,7 +10,6 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import org.cloudfoundry.credhub.handler.SpyPermissionsHandler;
-import org.cloudfoundry.credhub.util.StringUtil;
 import org.cloudfoundry.credhub.view.PermissionsV2View;
 import org.junit.Before;
 import org.junit.Rule;
@@ -26,13 +25,10 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.docu
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.requestParameters;
-import static org.springframework.restdocs.request.RequestDocumentation.requestParts;
 import static org.springframework.restdocs.snippet.Attributes.key;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.request;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
@@ -66,7 +62,7 @@ public class PermissionsV2ControllerTest {
       "some-path",
       emptyList(),
       "some-actor",
-      UUID.nameUUIDFromBytes("some-uuid".getBytes(StringUtil.UTF_8))
+      UUID.fromString("abcd1234-ab12-ab12-ab12-abcdef123456")
     );
     spyPermissionsHandler.setReturn_findByPathAndActor(permissionsV2View);
 
@@ -96,13 +92,13 @@ public class PermissionsV2ControllerTest {
     assertThat(spyPermissionsHandler.getFindByPathAndActorCalledWithActor(), equalTo("some-actor"));
     assertThat(spyPermissionsHandler.getFindByPathAndActorCalledWithPath(), equalTo("some-path"));
     final String actualResponseBody = mvcResult.getResponse().getContentAsString();
-    final String expectedResponseBody = "{\"path\":\"some-path\",\"operations\":[],\"actor\":\"some-actor\",\"uuid\":\"48faba92-5492-3e23-b262-75e30a7ddb6a\"}";
+    final String expectedResponseBody = "{\"path\":\"some-path\",\"operations\":[],\"actor\":\"some-actor\",\"uuid\":\"abcd1234-ab12-ab12-ab12-abcdef123456\"}";
     JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true);
   }
 
   @Test
   public void GET__permissions_by_uuid__returns_a_permission() throws Exception {
-    UUID guid = UUID.nameUUIDFromBytes("some-uuid".getBytes(StringUtil.UTF_8));
+    UUID guid = UUID.fromString("abcd1234-ab12-ab12-ab12-abcdef123456");
     final PermissionsV2View permissionsV2View = new PermissionsV2View(
       "some-path",
       emptyList(),
@@ -121,16 +117,14 @@ public class PermissionsV2ControllerTest {
       .andDo(
         document(
           "{methodName}",
-          requestParameters(
-            parameterWithName("none")
-          )
+          requestParameters()
         )
       )
       .andReturn();
 
     assertThat(spyPermissionsHandler.getGetPermissionsCalledWithGuid(), equalTo(guid));
     final String actualResponseBody = mvcResult.getResponse().getContentAsString();
-    final String expectedResponseBody = "{\"path\":\"some-path\",\"operations\":[],\"actor\":\"some-actor\",\"uuid\":\"48faba92-5492-3e23-b262-75e30a7ddb6a\"}";
+    final String expectedResponseBody = "{\"path\":\"some-path\",\"operations\":[],\"actor\":\"some-actor\",\"uuid\":\"abcd1234-ab12-ab12-ab12-abcdef123456\"}";
     JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true);
   }
 }
