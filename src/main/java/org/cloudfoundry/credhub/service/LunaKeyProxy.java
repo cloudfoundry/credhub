@@ -60,7 +60,7 @@ class LunaKeyProxy implements KeyProxy {
     return false;
   }
 
-  private boolean errorIsSomethingOtherThanTheKeyBeingIncorrect(Exception e) {
+  private boolean errorIsSomethingOtherThanTheKeyBeingIncorrect(final Exception e) {
     return e.getCause() == null || !e.getCause().getMessage().contains("returns 0x40 (CKR_ENCRYPTED_DATA_INVALID)");
   }
 
