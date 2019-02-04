@@ -1,5 +1,9 @@
 package org.cloudfoundry.credhub.handler;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.data.CertificateAuthorityService;
@@ -10,9 +14,11 @@ import org.cloudfoundry.credhub.request.CertificateSetRequest;
 import org.cloudfoundry.credhub.service.PermissionedCredentialService;
 import org.cloudfoundry.credhub.util.CertificateReader;
 import org.cloudfoundry.credhub.view.CredentialView;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
+@SuppressFBWarnings(
+  value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE",
+  justification = "This will be refactored into safer non-nullable types"
+)
 @Component
 public class DefaultSetHandler implements SetHandler {
 
@@ -31,6 +37,7 @@ public class DefaultSetHandler implements SetHandler {
     this.auditRecord = auditRecord;
   }
 
+  @Override
   public CredentialView handle(final BaseCredentialSetRequest setRequest) {
     if (setRequest instanceof CertificateSetRequest) {
       // fill in the ca value if it's one of ours

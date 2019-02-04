@@ -1,15 +1,16 @@
 package org.cloudfoundry.credhub.handler;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.service.PermissionedCredentialService;
 import org.cloudfoundry.credhub.view.CredentialView;
 import org.cloudfoundry.credhub.view.DataResponse;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 public class DefaultCredentialsHandler implements CredentialsHandler {
@@ -24,6 +25,7 @@ public class DefaultCredentialsHandler implements CredentialsHandler {
     this.auditRecord = auditRecord;
   }
 
+  @Override
   public void deleteCredential(final String credentialName) {
     final boolean deleteSucceeded = credentialService.delete(credentialName);
     if (!deleteSucceeded) {
@@ -31,6 +33,7 @@ public class DefaultCredentialsHandler implements CredentialsHandler {
     }
   }
 
+  @Override
   public DataResponse getNCredentialVersions(final String credentialName, final Integer numberOfVersions) {
     final List<CredentialVersion> credentialVersions;
     if (numberOfVersions == null) {
@@ -50,10 +53,12 @@ public class DefaultCredentialsHandler implements CredentialsHandler {
     return DataResponse.fromEntity(credentialVersions);
   }
 
+  @Override
   public DataResponse getAllCredentialVersions(final String credentialName) {
     return getNCredentialVersions(credentialName, null);
   }
 
+  @Override
   public DataResponse getCurrentCredentialVersions(final String credentialName) {
     final List<CredentialVersion> credentialVersions = credentialService.findActiveByName(credentialName);
 
@@ -64,6 +69,7 @@ public class DefaultCredentialsHandler implements CredentialsHandler {
 
   }
 
+  @Override
   public CredentialView getCredentialVersionByUUID(final String credentialUUID) {
     return CredentialView.fromEntity(credentialService.findVersionByUuid(credentialUUID));
   }

@@ -1,5 +1,11 @@
 package org.cloudfoundry.credhub.service;
 
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.entity.GetCredentialById;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
@@ -21,13 +27,10 @@ import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
 import org.cloudfoundry.credhub.request.BaseCredentialRequest;
 import org.cloudfoundry.credhub.request.BaseCredentialSetRequest;
 import org.cloudfoundry.credhub.view.FindCredentialResult;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.UUID;
-
-import static org.cloudfoundry.credhub.request.PermissionOperation.*;
+import static org.cloudfoundry.credhub.request.PermissionOperation.DELETE;
+import static org.cloudfoundry.credhub.request.PermissionOperation.READ;
+import static org.cloudfoundry.credhub.request.PermissionOperation.WRITE;
 
 @Service
 @SuppressWarnings("PMD.TooManyMethods")
@@ -62,6 +65,7 @@ public class DefaultPermissionedCredentialService implements PermissionedCredent
     this.auditRecord = auditRecord;
   }
 
+  @Override
   public CredentialVersion save(
     final CredentialVersion existingCredentialVersion,
     final CredentialValue credentialValue,
@@ -78,6 +82,7 @@ public class DefaultPermissionedCredentialService implements PermissionedCredent
     return makeAndSaveNewCredential(existingCredentialVersion, credentialValue, generateRequest);
   }
 
+  @Override
   public boolean delete(final String credentialName) {
     if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), credentialName, DELETE)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
@@ -85,6 +90,7 @@ public class DefaultPermissionedCredentialService implements PermissionedCredent
     return credentialVersionDataService.delete(credentialName);
   }
 
+  @Override
   public List<CredentialVersion> findAllByName(final String credentialName) {
     if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), credentialName, READ)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
@@ -100,7 +106,8 @@ public class DefaultPermissionedCredentialService implements PermissionedCredent
     return credentialList;
   }
 
-  public List<CredentialVersion> findNByName(final String credentialName, final Integer numberOfVersions) {
+  @Override
+  public List<CredentialVersion> findNByName(final String credentialName, final int numberOfVersions) {
     if (numberOfVersions < 0) {
       throw new InvalidQueryParameterException("error.invalid_query_parameter", "versions");
     }
@@ -112,6 +119,7 @@ public class DefaultPermissionedCredentialService implements PermissionedCredent
     return credentialVersionDataService.findNByName(credentialName, numberOfVersions);
   }
 
+  @Override
   public List<CredentialVersion> findActiveByName(final String credentialName) {
     if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), credentialName, READ)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
@@ -126,6 +134,7 @@ public class DefaultPermissionedCredentialService implements PermissionedCredent
     return credentialList;
   }
 
+  @Override
   public Credential findByUuid(final UUID credentialUUID) {
     final Credential credential = credentialDataService.findByUUID(credentialUUID);
     if (credential == null) {
@@ -138,6 +147,7 @@ public class DefaultPermissionedCredentialService implements PermissionedCredent
     return credential;
   }
 
+  @Override
   public CredentialVersion findVersionByUuid(final String credentialUUID) {
     final CredentialVersion credentialVersion = credentialVersionDataService.findByUuid(credentialUUID);
 
@@ -158,6 +168,7 @@ public class DefaultPermissionedCredentialService implements PermissionedCredent
     return credentialVersionDataService.findByUuid(credentialUUID);
   }
 
+  @Override
   public List<String> findAllCertificateCredentialsByCaName(final String caName) {
     if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), caName, READ)) {
       throw new EntryNotFoundException("error.credential.invalid_access");
@@ -170,15 +181,17 @@ public class DefaultPermissionedCredentialService implements PermissionedCredent
     return findStartingWithPath(path, "");
   }
 
+  @Override
   public List<FindCredentialResult> findStartingWithPath(final String path, final String expiresWithinDays) {
     return credentialVersionDataService.findStartingWithPath(path, expiresWithinDays);
   }
 
-
+  @Override
   public List<FindCredentialResult> findContainingName(final String name, final String expiresWithinDays) {
     return credentialVersionDataService.findContainingName(name, expiresWithinDays);
   }
 
+  @Override
   public CredentialVersion findMostRecent(final String credentialName) {
     return credentialVersionDataService.findMostRecent(credentialName);
   }

@@ -5,21 +5,21 @@ import org.cloudfoundry.credhub.domain.CredentialVersion
 import org.cloudfoundry.credhub.entity.Credential
 import org.cloudfoundry.credhub.request.BaseCredentialRequest
 import org.cloudfoundry.credhub.view.FindCredentialResult
-import java.util.*
+import java.util.UUID
 
 interface PermissionedCredentialService {
 
     fun save(
-            existingCredentialVersion: CredentialVersion,
-            credentialValue: CredentialValue,
-            generateRequest: BaseCredentialRequest
+        existingCredentialVersion: CredentialVersion?,
+        credentialValue: CredentialValue?,
+        generateRequest: BaseCredentialRequest
     ): CredentialVersion
 
     fun delete(credentialName: String): Boolean
 
     fun findAllByName(credentialName: String): List<CredentialVersion>
 
-    fun findNByName(credentialName: String, numberOfVersions: Int?): List<CredentialVersion>
+    fun findNByName(credentialName: String, numberOfVersions: Int): List<CredentialVersion>
 
     fun findActiveByName(credentialName: String): List<CredentialVersion>
 

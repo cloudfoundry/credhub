@@ -4,9 +4,9 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.cloudfoundry.credhub.service.PermissionedCredentialService;
 import org.springframework.stereotype.Service;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.entity.BulkRegenerateCredential;
 import org.cloudfoundry.credhub.credential.CredentialValue;
@@ -14,10 +14,14 @@ import org.cloudfoundry.credhub.domain.CertificateGenerationParameters;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
 import org.cloudfoundry.credhub.request.CertificateGenerateRequest;
-import org.cloudfoundry.credhub.service.DefaultPermissionedCredentialService;
+import org.cloudfoundry.credhub.service.PermissionedCredentialService;
 import org.cloudfoundry.credhub.view.BulkRegenerateResults;
 import org.cloudfoundry.credhub.view.CredentialView;
 
+@SuppressFBWarnings(
+  value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE",
+  justification = "This will be refactored into safer non-nullable types"
+)
 @Service
 public class DefaultRegenerateHandler implements RegenerateHandler {
 

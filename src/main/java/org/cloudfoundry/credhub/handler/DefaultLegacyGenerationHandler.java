@@ -39,6 +39,7 @@ public class DefaultLegacyGenerationHandler implements LegacyGenerationHandler {
     this.auditRecord = auditRecord;
   }
 
+  @Override
   public CredentialView auditedHandlePostRequest(final InputStream inputStream) {
     return deserializeAndHandlePostRequest(inputStream);
   }
