@@ -32,7 +32,7 @@ import org.springframework.test.web.servlet.setup.StandaloneMockMvcBuilder
 import java.time.Instant
 
 @RunWith(SpringRunner::class)
-class CredentialControllerTest {
+class CredentialsControllerTest {
 
     @Rule
     @JvmField
