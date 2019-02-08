@@ -22,6 +22,6 @@
     </Match>
 
     <Match>
-        <Package name="~.*org\.cloudfoundry\.credhub\.service\.grpc.*" />
+        <Package name="~.*org\.cloudfoundry\.credhub\.services\.grpc.*" />
     </Match>
 </FindBugsFilter>

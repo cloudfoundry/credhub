@@ -1,0 +1,125 @@
+buildscript {
+    ext {
+        springCloudContractVersion = '2.0.2.RELEASE'
+        springRestDocsVersion = '2.0.3.RELEASE'
+    }
+    repositories {
+        mavenCentral()
+        maven { url("http://repo.spring.io/plugins-release") }
+        maven { url("https://plugins.gradle.org/m2/") }
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:$springBootVersion")
+        classpath("org.springframework.cloud:spring-cloud-contract-gradle-plugin:$springCloudContractVersion")
+        classpath("org.asciidoctor:asciidoctor-gradle-plugin:${asciiDoctorPluginVersion}")
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'kotlin'
+apply plugin: 'kotlin-spring'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'org.asciidoctor.convert'
+apply plugin: 'spring-cloud-contract'
+
+apply from: "server-version.gradle"
+apply from: "${rootDir.toPath()}/spring-cloud-contract-config.gradle"
+apply from: "${rootDir.toPath()}/kotlin.gradle"
+apply from: "${rootDir.toPath()}/ktlint.gradle"
+apply from: "${rootDir.toPath()}/spring-rest-docs-config.gradle"
+apply from: "${rootDir.toPath()}/spotbugs.gradle"
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+dependencies {
+    implementation project(":backends:credhub")
+    implementation project(":backends:shared-backend-configuration")
+    implementation project(":components:audit")
+    implementation project(":components:auth")
+    implementation project(":components:constants")
+    implementation project(":components:credentials")
+    implementation project(":components:encryption")
+    implementation project(":components:errors")
+    implementation project(":components:generate")
+    implementation project(":components:management")
+    implementation project(":components:permissions")
+    implementation project(":components:string-utilities")
+    implementation project(":components:time-support")
+
+    testImplementation project(path: ":components:test-support", configuration: "testOutput")
+
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-log4j2")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springframework.security:spring-security-web")
+    implementation('org.springframework.boot:spring-boot-starter-security')
+    implementation("org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:${springSecurityOauth2AutoconfigureVersion}")
+    implementation("org.springframework.security.oauth:spring-security-oauth2:${springSecurityOauth2Version}")
+
+    testImplementation project(path: ":components:test-support", configuration: "testOutput")
+
+    // DB
+    implementation("org.postgresql:postgresql:${postgresqlJdbcVersion}")
+    implementation("org.mariadb.jdbc:mariadb-java-client")
+    implementation("org.flywaydb:flyway-core")
+    implementation("com.h2database:h2")
+
+    implementation("org.bouncycastle:bcpkix-jdk15on:${bouncyCastleVersion}")
+
+    implementation("com.google.guava:guava:${guavaVersion}")
+    implementation("org.apache.commons:commons-lang3:${apacheCommonsLang3Version}")
+
+    implementation('com.fasterxml.jackson.module:jackson-module-kotlin')
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
+
+    testImplementation("org.springframework.security:spring-security-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation('org.springframework.cloud:spring-cloud-starter-contract-verifier')
+    testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc:$springRestDocsVersion")
+    asciidoctor("org.springframework.restdocs:spring-restdocs-asciidoctor:$springRestDocsVersion")
+}
+
+configurations.all {
+    exclude module: "spring-boot-starter-logging"
+    exclude module: "logback-classic"
+}
+
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.boot:spring-boot-dependencies:${springBootVersion}")
+        mavenBom "org.springframework.cloud:spring-cloud-contract-dependencies:${springCloudContractVersion}"
+    }
+}
+
+bootRun {
+    dependsOn updateVersionFile
+    sourceResources sourceSets.main
+    systemProperties = System.properties
+    systemProperties["spring.profiles.active"] = System.getProperty("spring.profiles.active", "dev, dev-h2")
+}
+
+jar {
+    baseName = "credhub"
+    def versionFile = new File("$projectDir/src/main/resources/version")
+    if (System.getenv("VERSION")) {
+        versionFile.write(System.getenv("VERSION"))
+    }
+}
+
+test {
+    testLogging {
+        events "passed", "failed", "skipped"
+        exceptionFormat "full"
+    }
+
+    systemProperties = System.properties
+    systemProperties["spring.profiles.active"] = System.getProperty("spring.profiles.active", "unit-test-h2")
+    systemProperties["java.security.egd"] = System.getProperty("java.security.egd", "file:/dev/urandom")
+    outputs.upToDateWhen { false }
+}

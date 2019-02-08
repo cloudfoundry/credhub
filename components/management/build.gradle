@@ -1,0 +1,61 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven { url("http://repo.spring.io/plugins-release") }
+        maven { url("https://plugins.gradle.org/m2/") }
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:$springBootVersion")
+    }
+}
+
+apply plugin: "java"
+apply plugin: "idea"
+apply plugin: 'kotlin'
+apply plugin: 'kotlin-spring'
+apply plugin: 'io.spring.dependency-management'
+
+apply from: "${rootDir.toPath()}/kotlin.gradle"
+apply from: "${rootDir.toPath()}/ktlint.gradle"
+apply from: "${rootDir.toPath()}/checkstyle-config.gradle"
+apply from: "${rootDir.toPath()}/pmd-config.gradle"
+apply from: "${rootDir.toPath()}/spotbugs.gradle"
+apply from: "${rootDir.toPath()}/test-parallel.gradle"
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+dependencies {
+    implementation project(":components:errors")
+
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:${springSecurityOauth2AutoconfigureVersion}")
+    implementation("org.springframework.security.oauth:spring-security-oauth2:${springSecurityOauth2Version}")
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation project(path: ":components:test-support", configuration: "testOutput")
+
+    implementation('com.fasterxml.jackson.module:jackson-module-kotlin')
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
+
+    implementation("org.apache.commons:commons-lang3:${apacheCommonsLang3Version}")
+}
+
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.boot:spring-boot-dependencies:${springBootVersion}")
+    }
+}
+
+sourceSets {
+    test {
+        resources {
+            srcDirs += [
+                    project(":applications:credhub-api").sourceSets.main.resources,
+                    project(":applications:credhub-api").sourceSets.test.resources
+            ]
+        }
+    }
+}

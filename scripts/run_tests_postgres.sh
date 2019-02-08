@@ -28,15 +28,8 @@ function clean_test_databases_postgres() {
 }
 
 function run_tests_postgres() {
-    local -r test_mode=${1:-}
-
     local gradle_test_command="test"
-    if [ "$test_mode" = "parallel" ]; then
-      echo "✨ Parallel test mode enabled"
-      echo ""
-      gradle_test_command="testParallel"
-    fi
-
+    echo "✨ Parallel test mode enabled"
     echo "🚀 Running postgres tests"
     echo ""
 
@@ -47,10 +40,8 @@ function main() {
     set_bash_error_handling
     go_to_project_root_directory
 
-    local -r test_mode=${1:-}
-
     clean_test_databases_postgres
-    run_tests_postgres "$test_mode"
+    run_tests_postgres
 }
 
-main "$@"
+main

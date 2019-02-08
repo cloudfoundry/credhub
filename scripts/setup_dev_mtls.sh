@@ -85,7 +85,7 @@ setup_auth_server_trust_store() {
 }
 
 main() {
-    pushd "${DIRNAME}/src/test/resources" >/dev/null
+    pushd "${DIRNAME}/applications/credhub-api/src/test/resources" >/dev/null
         clean
         generate_server_ca
         generate_client_ca

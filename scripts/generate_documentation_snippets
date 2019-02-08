@@ -11,7 +11,7 @@ function go_to_project_root_directory() {
 }
 
 function generate_documentation_snippets_from_controller_tests() {
-    ./gradlew test --tests *ControllerTest*
+    ./gradlew :backends:credhub:test --tests *ControllerTest*
 }
 
 function main() {

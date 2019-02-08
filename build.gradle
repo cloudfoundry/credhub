@@ -1,15 +1,24 @@
+import org.cloudfoundry.credhub.gradlebuild.DependenciesGraphPlugin
+
 buildscript {
     ext {
-        springBootVersion = '2.1.1.RELEASE'
-        springCloudContractVersion = '2.0.2.RELEASE'
-        springRestDocsVersion = '2.0.3.RELEASE'
-        kotlinVersion = '1.3.11'
-        grpcVersion = '1.14.0'
+        apacheCommonsLang3Version = '3.7'
+        apacheCommonsIoVersion = '1.3.2'
+        apacheHttpClientVersion = '4.5.5'
+        asciiDoctorPluginVersion = '1.5.3'
+        bouncyCastleVersion = '1.60'
+        guavaVersion = '23.6-jre'
+        jnaVersion = '4.5.1'
         jsonPathVersion = '2.4.0'
+        kotlinVersion = '1.2.71'
+        passayVersion = '1.3.0'
+        postgresqlJdbcVersion = '42.2.5'
         spotBugsToolVersion = '3.1.9'
-
-        // https://github.com/grpc/grpc-java/blob/master/SECURITY.md#netty
-        nettyVersion = '4.1.29.Final'
+        spotBugsGradlePluginVersion = '1.6.9'
+        springBootVersion = '2.1.1.RELEASE'
+        springRestDocsVersion = '2.0.3.RELEASE'
+        springSecurityOauth2Version = '2.3.3.RELEASE'
+        springSecurityOauth2AutoconfigureVersion = '2.0.5.RELEASE'
     }
     repositories {
         mavenCentral()
@@ -17,177 +26,18 @@ buildscript {
         maven { url("https://plugins.gradle.org/m2/") }
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:$springBootVersion")
-        classpath("org.springframework.build.gradle:propdeps-plugin:0.0.7")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}")
         classpath("org.jetbrains.kotlin:kotlin-allopen:${kotlinVersion}")
         classpath("org.owasp:dependency-check-gradle:3.1.1")
-        classpath("com.google.protobuf:protobuf-gradle-plugin:0.8.6")
-        classpath("org.springframework.cloud:spring-cloud-contract-gradle-plugin:$springCloudContractVersion")
     }
 }
 
 plugins {
     id 'com.github.ben-manes.versions' version '0.20.0'
-    id "org.asciidoctor.convert" version "1.5.3"
-    id "com.github.spotbugs" version "1.6.9"
 }
 
-apply plugin: "java"
-apply plugin: "idea"
-apply plugin: 'kotlin'
-apply plugin: 'kotlin-spring'
-apply plugin: "org.springframework.boot"
-apply plugin: 'io.spring.dependency-management'
-apply plugin: 'spring-cloud-contract'
+apply plugin: DependenciesGraphPlugin
 apply plugin: "org.owasp.dependencycheck"
-apply plugin: "com.google.protobuf"
-apply from: "kotlin.gradle"
-apply from: "spring-cloud-contract-config.gradle"
-apply from: "spring-rest-docs-config.gradle"
-apply from: "ktlint.gradle"
-apply from: "checkstyle-config.gradle"
-apply from: "pmd-config.gradle"
-apply from: "test-parallel.gradle"
-
-spotbugs {
-    toolVersion = "$spotBugsToolVersion"
-    excludeFilter = file("$rootProject.projectDir/config/findbugs/exclude-filter.xml")
-}
-
-tasks.withType(com.github.spotbugs.SpotBugsTask) {
-    reports {
-        xml.enabled = false
-        html.enabled = true
-    }
-}
-
-jar {
-    baseName = "credhub"
-    def versionFile = new File("$projectDir/src/main/resources/version")
-    if (System.getenv("VERSION")) {
-        versionFile.write(System.getenv("VERSION"))
-    }
-}
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-
-repositories {
-    mavenCentral()
-    jcenter()
-}
-
-configurations.all {
-    exclude module: "spring-boot-starter-logging"
-    exclude module: "logback-classic"
-}
-
-dependencies {
-    // Spring stuff
-    implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("org.springframework.boot:spring-boot-starter-log4j2")
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("org.springframework.security:spring-security-web")
-    implementation('org.springframework.boot:spring-boot-starter-security')
-    implementation('org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:2.0.5.RELEASE')
-    implementation('org.springframework.security.oauth:spring-security-oauth2:2.3.3.RELEASE')
-    testImplementation("org.springframework.security:spring-security-test")
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation('org.springframework.cloud:spring-cloud-starter-contract-verifier')
-    testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc:$springRestDocsVersion")
-    asciidoctor("org.springframework.restdocs:spring-restdocs-asciidoctor:$springRestDocsVersion")
-
-    // Kotlin
-    implementation('com.fasterxml.jackson.module:jackson-module-kotlin')
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
-
-    // DB
-    implementation("org.postgresql:postgresql:42.2.5")
-    implementation("org.mariadb.jdbc:mariadb-java-client")
-    implementation("org.flywaydb:flyway-core")
-    implementation("com.h2database:h2")
-
-    // Other
-    implementation("org.passay:passay:1.3.0")
-    implementation("com.jayway.jsonpath:json-path:${jsonPathVersion}")
-    implementation("org.bouncycastle:bcpkix-jdk15on:1.60")
-    implementation("com.google.guava:guava:23.6-jre")
-    implementation("org.apache.commons:commons-lang3:3.7")
-    implementation("org.apache.commons:commons-io:1.3.2")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
-    implementation("net.java.dev.jna:jna:4.5.1")
-    implementation("org.apache.httpcomponents:httpclient:4.5.5")
-
-    // Spotbugs
-    compileOnly("com.github.spotbugs:spotbugs-annotations:$spotBugsToolVersion")
-    testCompileOnly("com.github.spotbugs:spotbugs-annotations:$spotBugsToolVersion")
-
-    // Java 11 (backfill modules that were used in Java 8)
-    implementation("javax.xml.bind:jaxb-api:2.3.1")
-    implementation("org.glassfish.jaxb:jaxb-runtime:2.3.1")
-    implementation("javax.activation:javax.activation-api:1.2.0")
-
-    //gRPC
-    implementation "com.google.api.grpc:proto-google-common-protos:1.12.0"
-    implementation "io.grpc:grpc-services:${grpcVersion}"
-
-    //gRPC - Netty
-    implementation "io.grpc:grpc-netty:${grpcVersion}"
-
-    //Netty
-    implementation "io.netty:netty-transport-native-unix-common:${nettyVersion}"
-    implementation "io.netty:netty-all:${nettyVersion}"
-
-    testImplementation("org.skyscreamer:jsonassert:1.5.0")
-    testImplementation("com.jayway.jsonpath:json-path-assert:${jsonPathVersion}")
-}
-
-dependencyManagement {
-    imports {
-        mavenBom("org.springframework.boot:spring-boot-dependencies:${springBootVersion}")
-        mavenBom "org.springframework.cloud:spring-cloud-contract-dependencies:${springCloudContractVersion}"
-    }
-}
-
-processResources {
-    outputs.upToDateWhen { false }
-}
-
-task updateVersionFile(type: Exec) {
-    commandLine './scripts/fetch-version.sh'
-}
-
-processResources.dependsOn updateVersionFile
-
-bootRun {
-    dependsOn updateVersionFile
-    sourceResources sourceSets.main
-    systemProperties = System.properties
-    systemProperties["spring.profiles.active"] = System.getProperty("spring.profiles.active", "dev, dev-h2")
-}
-
-task cleanAndAssemble(dependsOn: ['clean', 'assemble'])
-
-assemble.mustRunAfter("clean")
-
-test {
-    testLogging {
-        events "passed", "failed", "skipped"
-        exceptionFormat "full"
-    }
-
-    systemProperties = System.properties
-    systemProperties["spring.profiles.active"] = System.getProperty("spring.profiles.active", "unit-test-h2")
-    systemProperties["java.security.egd"] = System.getProperty("java.security.egd", "file:/dev/urandom")
-    outputs.upToDateWhen { false }
-}
-
-// performance optimization
-tasks.withType(JavaCompile) {
-    options.fork = true
-}
 
 dependencyUpdates.resolutionStrategy = {
     componentSelection { rules ->
@@ -198,34 +48,6 @@ dependencyUpdates.resolutionStrategy = {
             if (rejected) {
                 selection.reject('Release candidate')
             }
-        }
-    }
-}
-
-sourceSets {
-    main {
-        proto {
-            srcDir 'src/main/proto'
-        }
-        java {
-            srcDirs 'build/generated/source/proto/main/grpc'
-            srcDirs 'build/generated/source/proto/main/java'
-        }
-    }
-}
-
-protobuf {
-    protoc {
-        artifact = "com.google.protobuf:protoc:3.6.1"
-    }
-    plugins {
-        grpc {
-            artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}"
-        }
-    }
-    generateProtoTasks {
-        all()*.plugins {
-            grpc {}
         }
     }
 }

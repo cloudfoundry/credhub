@@ -7,8 +7,8 @@ function set_bash_error_handling() {
 }
 
 function get_version_file() {
-  local -r script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}")"/.. && pwd )"
-  VERSION_FILE="$script_dir/src/main/resources/version"
+  local -r root_dir="$( cd "$( dirname "${BASH_SOURCE[0]}")"/.. && pwd )"
+  VERSION_FILE="$root_dir/applications/credhub-api/src/main/resources/version"
 }
 
 function use_credhub_version_if_available() {

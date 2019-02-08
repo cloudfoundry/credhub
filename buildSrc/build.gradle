@@ -1,0 +1,7 @@
+repositories {
+    gradlePluginPortal()
+}
+
+dependencies {
+    compile "gradle.plugin.com.github.spotbugs:spotbugs-gradle-plugin:1.6.9"
+}

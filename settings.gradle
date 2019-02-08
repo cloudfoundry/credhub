@@ -1,1 +1,17 @@
-rootProject.buildFileName = 'build.gradle'
+rootProject.name = 'credhub'
+include "applications:credhub-api"
+include "backends:credhub"
+include "backends:shared-backend-configuration"
+include "components:audit"
+include "components:auth"
+include "components:constants"
+include "components:credentials"
+include "components:encryption"
+include "components:errors"
+include "components:generate"
+include "components:http-support"
+include "components:management"
+include "components:permissions"
+include "components:string-utilities"
+include "components:test-support"
+include "components:time-support"

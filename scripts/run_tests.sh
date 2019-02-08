@@ -11,20 +11,16 @@ function go_to_project_root_directory() {
 }
 
 function run_tests() {
-    local -r test_mode=${1:-}
-
-    ./scripts/run_tests_postgres.sh "$test_mode"
-    ./scripts/run_tests_mysql.sh "$test_mode"
-    ./scripts/run_tests_h2.sh "$test_mode"
+    ./scripts/run_tests_postgres.sh
+    ./scripts/run_tests_mysql.sh
+    ./scripts/run_tests_h2.sh
 }
 
 function main() {
     set_bash_error_handling
     go_to_project_root_directory
 
-    local -r test_mode=${1:-}
-
-    run_tests "$test_mode"
+    run_tests
 }
 
-main "$@"
+main
