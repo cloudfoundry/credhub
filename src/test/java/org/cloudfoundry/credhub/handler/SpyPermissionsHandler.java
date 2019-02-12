@@ -13,8 +13,10 @@ public class SpyPermissionsHandler implements PermissionsHandler {
 
   private String findByPathAndActorCalledWithPath;
   private String findByPathAndActorCalledWithActor;
+  private PermissionsV2Request putPermissionsCalledWithRequest;
   private PermissionsV2View return_findByPathAndActor;
   private PermissionsV2View return_getPermissions;
+  private PermissionsV2View return_writeV2Permissions;
   private UUID getPermissionsCalledWithGuid;
 
   public void setReturn_findByPathAndActor(final PermissionsV2View return_findByPathAndActor) {
@@ -45,6 +47,14 @@ public class SpyPermissionsHandler implements PermissionsHandler {
     this.getPermissionsCalledWithGuid = guid;
   }
 
+  public void setreturn_writeV2PermissionCalledWithRequest(final PermissionsV2Request request) {
+    this.putPermissionsCalledWithRequest = request;
+  }
+
+  public void setreturn_writeV2Permissions(final PermissionsV2View return_writeV2Permissions) {
+    this.return_writeV2Permissions = return_writeV2Permissions;
+  }
+
   public UUID getGetPermissionsCalledWithGuid() {
     return getPermissionsCalledWithGuid;
   }
@@ -70,9 +80,7 @@ public class SpyPermissionsHandler implements PermissionsHandler {
   }
 
   @Override
-  public PermissionsV2View writePermissions(final PermissionsV2Request request) {
-    return null;
-  }
+  public PermissionsV2View writePermissions(final PermissionsV2Request request) { return null; }
 
   @Override
   public PermissionsV2View getPermissions(final UUID guid) {
@@ -92,11 +100,16 @@ public class SpyPermissionsHandler implements PermissionsHandler {
 
   @Override
   public PermissionsV2View writeV2Permissions(final PermissionsV2Request permissionsRequest) {
-    return null;
+    setreturn_writeV2PermissionCalledWithRequest(permissionsRequest);
+    return return_writeV2Permissions;
   }
 
   @Override
   public PermissionsV2View deletePermissions(final String guid) {
     return null;
+  }
+
+  public PermissionsV2Request getWriteV2PermissionCalledWithRequest() {
+    return putPermissionsCalledWithRequest;
   }
 }
