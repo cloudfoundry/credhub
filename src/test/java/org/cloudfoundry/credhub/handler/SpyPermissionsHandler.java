@@ -80,7 +80,9 @@ public class SpyPermissionsHandler implements PermissionsHandler {
   }
 
   @Override
-  public PermissionsV2View writePermissions(final PermissionsV2Request request) { return null; }
+  public PermissionsV2View writePermissions(final PermissionsV2Request request) {
+    return null;
+  }
 
   @Override
   public PermissionsV2View getPermissions(final UUID guid) {
