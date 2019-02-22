@@ -33,7 +33,7 @@ import org.cloudfoundry.credhub.view.FindCredentialResult;
 
 import static com.google.common.collect.Lists.newArrayList;
 
-@SuppressWarnings("PMD.TooManyMethods")
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.GodClass", })
 @Service
 public class CredentialVersionDataService {
 
@@ -176,13 +176,37 @@ public class CredentialVersionDataService {
   public Map<UUID, Long> countByEncryptionKey() {
     final Map<UUID, Long> map = new HashMap<>();
     jdbcTemplate.query(
-      " SELECT count(*), encryption_key_uuid FROM credential_version " +
+      " SELECT count(*) as count, encryption_key_uuid FROM credential_version " +
         "LEFT JOIN encrypted_value ON credential_version.encrypted_value_uuid = encrypted_value.uuid " +
         "GROUP BY encrypted_value.encryption_key_uuid",
-      (rowSet, rowNum) -> map.put(UUID.fromString(rowSet.getString("encryption_key_uuid")), rowSet.getLong("count"))
+      (rowSet, rowNum) -> map.put(toUUID(rowSet.getObject("encryption_key_uuid")), rowSet.getLong("count"))
     );
     return map;
   }
+
+  private UUID toUUID(final Object object) {
+    if (object.getClass() == byte[].class) {
+      final byte[] bytes = (byte[]) object;
+      if (bytes.length != 16) {
+        throw new IllegalArgumentException("Expected byte[] of length 16. Received length " + bytes.length);
+      }
+      int i = 0;
+      long msl = 0;
+      for (; i < 8; i++) {
+        msl = (msl << 8) | (bytes[i] & 0xFF);
+      }
+      long lsl = 0;
+      for (; i < 16; i++) {
+        lsl = (lsl << 8) | (bytes[i] & 0xFF);
+      }
+      return new UUID(msl, lsl);
+    } else if (object.getClass() == UUID.class) {
+      return (UUID) object;
+    } else {
+      throw new IllegalArgumentException("Expected byte[] or UUID type. Received " + object.getClass().toString());
+    }
+  }
+
 
   public List<CredentialVersion> findActiveByName(final String name) {
     final Credential credential = credentialDataService.find(name);
@@ -219,7 +243,8 @@ public class CredentialVersionDataService {
     return filterCredentials(unfilteredResult, permissionDataService.findAllPathsByActor(actor));
   }
 
-  private List<FindCredentialResult> filterCredentials(final List<FindCredentialResult> unfilteredResult, final Set<String> permissions) {
+  private List<FindCredentialResult> filterCredentials(final List<FindCredentialResult> unfilteredResult,
+    final Set<String> permissions) {
     if (permissions.contains("/*")) {
       return unfilteredResult;
     }
@@ -246,7 +271,8 @@ public class CredentialVersionDataService {
   }
 
   private List<FindCredentialResult> filterCertificates(final String path, final String expiresWithinDays) {
-    final Timestamp expiresTimestamp = Timestamp.from(Instant.now().plus(Duration.ofDays(Long.parseLong(expiresWithinDays))));
+    final Timestamp expiresTimestamp = Timestamp
+      .from(Instant.now().plus(Duration.ofDays(Long.parseLong(expiresWithinDays))));
 
     final String query = "select name.name, credential_version.version_created_at, "
       + "certificate_credential.expiry_date from ("
