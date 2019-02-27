@@ -104,7 +104,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 
     // DB
-    implementation("org.postgresql:postgresql:42.2.4")
+    implementation("org.postgresql:postgresql:42.2.5")
     implementation("org.mariadb.jdbc:mariadb-java-client")
     implementation("org.flywaydb:flyway-core")
     implementation("com.h2database:h2")
