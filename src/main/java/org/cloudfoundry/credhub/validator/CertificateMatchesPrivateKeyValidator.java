@@ -47,6 +47,8 @@ public class CertificateMatchesPrivateKeyValidator implements ConstraintValidato
       return publicKey.equals(certificatePublicKey);
     } catch (final UnsupportedFormatException | PEMException e) {
       throw new ParameterizedValidationException("error.invalid_key_format", e.getMessage());
+//    } catch (final MalformedCertificateException | UnreadableCertificateException e) {
+//      throw e;
     } catch (final DecoderException e) {
       throw new MalformedPrivateKeyException();
     } catch (IllegalAccessException | IOException | NoSuchFieldException e) {

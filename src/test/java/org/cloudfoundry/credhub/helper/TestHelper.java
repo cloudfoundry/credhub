@@ -5,7 +5,7 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cloudfoundry.credhub.util.CurrentTimeProvider;
 
 import static org.mockito.Mockito.when;
@@ -24,12 +24,12 @@ final public class TestHelper {
     };
   }
 
-  public static BouncyCastleFipsProvider getBouncyCastleFipsProvider() {
-    BouncyCastleFipsProvider bouncyCastleProvider = (BouncyCastleFipsProvider) Security
-      .getProvider(BouncyCastleFipsProvider.PROVIDER_NAME);
+  public static BouncyCastleProvider getBouncyCastleProvider() {
+    BouncyCastleProvider bouncyCastleProvider = (BouncyCastleProvider) Security
+      .getProvider(BouncyCastleProvider.PROVIDER_NAME);
 
     if (bouncyCastleProvider == null) {
-      bouncyCastleProvider = new BouncyCastleFipsProvider();
+      bouncyCastleProvider = new BouncyCastleProvider();
       Security.addProvider(bouncyCastleProvider);
     }
 

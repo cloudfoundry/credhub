@@ -15,10 +15,10 @@ import org.cloudfoundry.credhub.util.CertificateFormatter;
 @Component
 public class SshGenerator implements CredentialGenerator<SshCredentialValue> {
 
-  private final RsaKeyPairGenerator keyGenerator;
+  private final LibcryptoRsaKeyPairGenerator keyGenerator;
 
   @Autowired
-  public SshGenerator(final RsaKeyPairGenerator keyGenerator) {
+  public SshGenerator(final LibcryptoRsaKeyPairGenerator keyGenerator) {
     super();
     this.keyGenerator = keyGenerator;
   }

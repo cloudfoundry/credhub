@@ -32,7 +32,7 @@ public class CertificateCredentialVersionTest {
 
   @Before
   public void setup() {
-    TestHelper.getBouncyCastleFipsProvider();
+    TestHelper.getBouncyCastleProvider();
     encryptor = mock(Encryptor.class);
 
     encryptedValue = "fake-encrypted-value".getBytes(StringUtil.UTF_8);

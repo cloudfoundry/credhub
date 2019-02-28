@@ -19,14 +19,14 @@ import static org.cloudfoundry.credhub.util.CertificateFormatter.pemOf;
 @Component
 public class CertificateGenerator implements CredentialGenerator<CertificateCredentialValue> {
 
-  private final RsaKeyPairGenerator keyGenerator;
+  private final LibcryptoRsaKeyPairGenerator keyGenerator;
   private final SignedCertificateGenerator signedCertificateGenerator;
   private final CertificateAuthorityService certificateAuthorityService;
 
 
   @Autowired
   public CertificateGenerator(
-    final RsaKeyPairGenerator keyGenerator,
+    final LibcryptoRsaKeyPairGenerator keyGenerator,
     final SignedCertificateGenerator signedCertificateGenerator,
     final CertificateAuthorityService certificateAuthorityService) {
     super();
