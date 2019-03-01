@@ -104,8 +104,8 @@ bootRun {
     systemProperties["spring.profiles.active"] = System.getProperty("spring.profiles.active", "dev, dev-h2")
 }
 
-jar {
-    baseName = "credhub"
+bootJar {
+    archiveName = "credhub.jar"
     def versionFile = new File("$projectDir/src/main/resources/version")
     if (System.getenv("VERSION")) {
         versionFile.write(System.getenv("VERSION"))
