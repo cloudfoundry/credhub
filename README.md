@@ -56,6 +56,14 @@ We favor pull requests with very small, single commits with a single purpose. Yo
 
 Launching in production directly using the `bootRun` target is **unsafe**, as you will launch with a `dev` profile, which has checked-in secret keys in `application-dev.yml`.
 
+#### Dependency Graph
+
+A dependency graph of project components (gradle subprojects) can be generated to better understand project organization. You will need graphviz installed on your system in order to generate the graph.
+
+```
+./gradlew dependenciesGraph
+```
+
 #### Generally
 
 Configuration for the server is spread across the `application*.yml` files.
