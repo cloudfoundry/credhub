@@ -41,7 +41,7 @@ public class EncryptionProviderFactory {
             timedRetry);
           break;
         case KMS_PLUGIN:
-          encryptionService = new ExternalEncryptionProvider(provider.getConfiguration());
+          encryptionService = new KMSEncryptionProvider(provider.getConfiguration());
           break;
         default:
           encryptionService = new PasswordEncryptionService(passwordKeyProxyFactory);

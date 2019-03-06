@@ -25,12 +25,12 @@ import org.cloudfoundry.credhub.services.grpc.EncryptRequest;
 import org.cloudfoundry.credhub.services.grpc.EncryptResponse;
 import org.cloudfoundry.credhub.services.grpc.KeyManagementServiceGrpc;
 
-public class ExternalEncryptionProvider implements EncryptionProvider {
-  private static final Logger LOGGER = LogManager.getLogger(ExternalEncryptionProvider.class.getName());
+public class KMSEncryptionProvider implements EncryptionProvider {
+  private static final Logger LOGGER = LogManager.getLogger(KMSEncryptionProvider.class.getName());
   private static final String CHARSET = "UTF-8";
   private final KeyManagementServiceGrpc.KeyManagementServiceBlockingStub blockingStub;
 
-  public ExternalEncryptionProvider(final EncryptionConfiguration configuration) {
+  public KMSEncryptionProvider(final EncryptionConfiguration configuration) {
     super();
     blockingStub = KeyManagementServiceGrpc.newBlockingStub(
       NettyChannelBuilder.forAddress(new DomainSocketAddress(configuration.getEndpoint()))
