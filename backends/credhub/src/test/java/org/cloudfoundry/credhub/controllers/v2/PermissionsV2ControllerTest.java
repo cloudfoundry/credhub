@@ -63,7 +63,7 @@ public class PermissionsV2ControllerTest {
   @Test
   public void GET__permissions_by_actor_and_path__returns_a_permission() throws Exception {
     final PermissionsV2View permissionsV2View = new PermissionsV2View(
-      "some-path",
+      "/some-path",
       emptyList(),
       "some-actor",
       UUID.fromString("abcd1234-ab12-ab12-ab12-abcdef123456")
@@ -94,9 +94,37 @@ public class PermissionsV2ControllerTest {
       .andReturn();
 
     MatcherAssert.assertThat(spyPermissionsHandler.getFindByPathAndActorCalledWithActor(), equalTo("some-actor"));
-    MatcherAssert.assertThat(spyPermissionsHandler.getFindByPathAndActorCalledWithPath(), equalTo("some-path"));
+    MatcherAssert.assertThat(spyPermissionsHandler.getFindByPathAndActorCalledWithPath(), equalTo("/some-path"));
     final String actualResponseBody = mvcResult.getResponse().getContentAsString();
-    final String expectedResponseBody = "{\"path\":\"some-path\",\"operations\":[],\"actor\":\"some-actor\",\"uuid\":\"abcd1234-ab12-ab12-ab12-abcdef123456\"}";
+    final String expectedResponseBody = "{\"path\":\"/some-path\",\"operations\":[],\"actor\":\"some-actor\",\"uuid\":\"abcd1234-ab12-ab12-ab12-abcdef123456\"}";
+    JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true);
+  }
+
+  @Test
+  public void GET__permissions_by_actor_and_path__adds_a_slash() throws Exception {
+    final PermissionsV2View permissionsV2View = new PermissionsV2View(
+      "/some-path",
+      emptyList(),
+      "some-actor",
+      UUID.fromString("abcd1234-ab12-ab12-ab12-abcdef123456")
+    );
+    spyPermissionsHandler.setReturn_findByPathAndActor(permissionsV2View);
+
+    final MvcResult mvcResult = mockMvc
+      .perform(
+        get(PermissionsV2Controller.ENDPOINT)
+          .contentType(MediaType.APPLICATION_JSON)
+          .param("path", "some-path")
+          .param("actor", "some-actor")
+      )
+      .andExpect(status().isOk())
+      .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+      .andReturn();
+
+    MatcherAssert.assertThat(spyPermissionsHandler.getFindByPathAndActorCalledWithActor(), equalTo("some-actor"));
+    MatcherAssert.assertThat(spyPermissionsHandler.getFindByPathAndActorCalledWithPath(), equalTo("/some-path"));
+    final String actualResponseBody = mvcResult.getResponse().getContentAsString();
+    final String expectedResponseBody = "{\"path\":\"/some-path\",\"operations\":[],\"actor\":\"some-actor\",\"uuid\":\"abcd1234-ab12-ab12-ab12-abcdef123456\"}";
     JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true);
   }
 
@@ -104,7 +132,7 @@ public class PermissionsV2ControllerTest {
   public void GET__permissions_by_uuid__returns_a_permission() throws Exception {
     UUID guid = UUID.fromString("abcd1234-ab12-ab12-ab12-abcdef123456");
     final PermissionsV2View permissionsV2View = new PermissionsV2View(
-      "some-path",
+      "/some-path",
       emptyList(),
       "some-actor",
       guid
@@ -128,7 +156,7 @@ public class PermissionsV2ControllerTest {
 
     MatcherAssert.assertThat(spyPermissionsHandler.getGetPermissionsCalledWithGuid(), equalTo(guid));
     final String actualResponseBody = mvcResult.getResponse().getContentAsString();
-    final String expectedResponseBody = "{\"path\":\"some-path\",\"operations\":[],\"actor\":\"some-actor\",\"uuid\":\"abcd1234-ab12-ab12-ab12-abcdef123456\"}";
+    final String expectedResponseBody = "{\"path\":\"/some-path\",\"operations\":[],\"actor\":\"some-actor\",\"uuid\":\"abcd1234-ab12-ab12-ab12-abcdef123456\"}";
     JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true);
   }
 
@@ -136,7 +164,7 @@ public class PermissionsV2ControllerTest {
   public void POST__permissions__adds_a_leading_slash() throws Exception {
     UUID guid = UUID.fromString("abcd1234-ab12-ab12-ab12-abcdef123456");
     final PermissionsV2View permissionsV2View = new PermissionsV2View(
-            "some-path",
+            "/some-path",
             emptyList(),
             "some-actor",
             guid
@@ -170,7 +198,7 @@ public class PermissionsV2ControllerTest {
 
 
     final String actualResponseBody = mvcResult.getResponse().getContentAsString();
-    final String expectedResponseBody = "{\"path\":\"some-path\",\"operations\":[],\"actor\":\"some-actor\",\"uuid\":\"abcd1234-ab12-ab12-ab12-abcdef123456\"}";
+    final String expectedResponseBody = "{\"path\":\"/some-path\",\"operations\":[],\"actor\":\"some-actor\",\"uuid\":\"abcd1234-ab12-ab12-ab12-abcdef123456\"}";
     JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true);
   }
 

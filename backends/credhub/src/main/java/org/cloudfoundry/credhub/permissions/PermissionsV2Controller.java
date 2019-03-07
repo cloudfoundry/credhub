@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import org.apache.commons.lang3.StringUtils;
 import org.cloudfoundry.credhub.handlers.PermissionsHandler;
 import org.cloudfoundry.credhub.requests.PermissionsV2PatchRequest;
 import org.cloudfoundry.credhub.requests.PermissionsV2Request;
@@ -47,7 +48,9 @@ public class PermissionsV2Controller {
   @RequestMapping(method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   public PermissionsV2View findByPathAndActor(@RequestParam final String path, @RequestParam final String actor) {
-    return permissionsHandler.findByPathAndActor(path, actor);
+    final String pathWithPrependedSlash = StringUtils.prependIfMissing(path, "/");
+
+    return permissionsHandler.findByPathAndActor(pathWithPrependedSlash, actor);
   }
 
   @RequestMapping(path = "/{guid}", method = RequestMethod.PUT)
