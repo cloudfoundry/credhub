@@ -88,4 +88,23 @@ public class ExpiryDateMigrationTest {
 
     assertThat(migratedVersion.getExpiryDate(), is(equalTo(expiryDate)));
   }
+
+  @Test
+  public void getCertificate_WithInvalidCertFieldAndPrintsWarning() throws Exception {
+    final String certificate = "-----BEGIN";
+
+    final Credential credential = new Credential("test_malformed_credential");
+    credentialRepository.save(credential);
+
+    final CertificateCredentialVersionData versionData = new CertificateCredentialVersionData();
+    versionData.setTransitional(true);
+    versionData.setCa("ca");
+    versionData.setCaName("ca_name");
+    versionData.setCertificate(certificate);
+    versionData.setCredential(credential);
+
+    credentialVersionRepository.save(versionData);
+
+    subject.migrate();
+  }
 }
