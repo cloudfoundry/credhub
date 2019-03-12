@@ -6,7 +6,7 @@ import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.KeyUsage;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
 import org.cloudfoundry.credhub.exceptions.MalformedCertificateException;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,8 +23,8 @@ import static org.hamcrest.core.IsEqual.equalTo;
 public class CertificateReaderTest {
   @Before
   public void beforeEach() {
-    if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
-      Security.addProvider(new BouncyCastleProvider());
+    if (Security.getProvider(BouncyCastleFipsProvider.PROVIDER_NAME) == null) {
+      Security.addProvider(new BouncyCastleFipsProvider());
     }
   }
 
@@ -71,7 +71,7 @@ public class CertificateReaderTest {
   @Test
   public void givenASelfSignedCertificate_setsCertificateFieldsCorrectly() {
     final String distinguishedName =
-      "O=test-org, ST=Jupiter, C=MilkyWay, CN=test-common-name, OU=test-org-unit, L=Europa";
+      "L=Europa, OU=test-org-unit, CN=test-common-name, C=MilkyWay, ST=Jupiter, O=test-org";
     final GeneralNames generalNames = new GeneralNames(
       new GeneralName(GeneralName.dNSName, "SolarSystem"));
 
@@ -94,7 +94,7 @@ public class CertificateReaderTest {
     final CertificateReader certificateReader = new CertificateReader(CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT);
 
     assertThat(certificateReader.getSubjectName().toString(), equalTo(
-      "CN=test.example.com, OU=app:b67446e5-b2b0-4648-a0d0-772d3d399dcb, L=exampletown")
+      "L=exampletown, OU=app:b67446e5-b2b0-4648-a0d0-772d3d399dcb, CN=test.example.com")
     );
     assertThat(certificateReader.getKeyLength(), equalTo(2048));
     assertThat(certificateReader.getAlternativeNames(), equalTo(null));
@@ -136,7 +136,7 @@ public class CertificateReaderTest {
   @Test
   public void returnsParametersCorrectly() {
     final String distinguishedName =
-      "O=test-org, ST=Jupiter, C=MilkyWay, CN=test-common-name, OU=test-org-unit, L=Europa";
+      "L=Europa, OU=test-org-unit, CN=test-common-name, C=MilkyWay, ST=Jupiter, O=test-org";
     final GeneralNames generalNames = new GeneralNames(
       new GeneralName(GeneralName.dNSName, "SolarSystem"));
 

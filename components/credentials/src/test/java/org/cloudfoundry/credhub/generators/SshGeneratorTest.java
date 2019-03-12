@@ -22,13 +22,13 @@ import static org.mockito.Mockito.when;
 public class SshGeneratorTest {
 
   private SshGenerator subject;
-  private LibcryptoRsaKeyPairGenerator keyPairGeneratorMock;
+  private RsaKeyPairGenerator keyPairGeneratorMock;
 
   private KeyPair keyPair;
 
   @Before
   public void beforeEach() throws Exception {
-    keyPairGeneratorMock = mock(LibcryptoRsaKeyPairGenerator.class);
+    keyPairGeneratorMock = mock(RsaKeyPairGenerator.class);
     subject = new SshGenerator(keyPairGeneratorMock);
 
     keyPair = new FakeKeyPairGenerator().generate();

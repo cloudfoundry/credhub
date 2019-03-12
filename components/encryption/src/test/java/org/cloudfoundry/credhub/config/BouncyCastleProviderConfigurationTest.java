@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.junit.Before;
@@ -30,7 +30,7 @@ public class BouncyCastleProviderConfigurationTest {
   @Before
   public void beforeEach() throws Exception {
     generator = KeyPairGenerator
-      .getInstance("RSA", BouncyCastleProvider.PROVIDER_NAME);
+      .getInstance("RSA", BouncyCastleFipsProvider.PROVIDER_NAME);
     generator.initialize(1024);
   }
 

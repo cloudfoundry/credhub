@@ -30,7 +30,7 @@ import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.cloudfoundry.credhub.config.BouncyCastleProviderConfiguration;
@@ -106,7 +106,7 @@ public class SignedCertificateGeneratorTest {
     jcaX509ExtensionUtils = new JcaX509ExtensionUtils();
 
     generator = KeyPairGenerator
-      .getInstance("RSA", BouncyCastleProvider.PROVIDER_NAME);
+      .getInstance("RSA", BouncyCastleFipsProvider.PROVIDER_NAME);
     generator.initialize(1024); // doesn't matter for testing
     issuerKey = generator.generateKeyPair();
 

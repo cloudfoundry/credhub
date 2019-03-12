@@ -18,7 +18,7 @@ import com.google.common.collect.ImmutableMap;
 import com.jayway.jsonpath.JsonPath;
 import net.minidev.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.helpers.RequestHelper;
@@ -240,7 +240,7 @@ public class CertificateSetAndRegenerateTest {
 
     this.mockMvc.perform(certificateSetRequest)
       .andExpect(status().isBadRequest())
-      .andExpect(jsonPath("$.error", equalTo("Unable to parse the certificate.")));
+      .andExpect(jsonPath("$.error", equalTo("The provided certificate value is not a valid X509 certificate.")));
   }
 
   @Test
@@ -283,7 +283,7 @@ public class CertificateSetAndRegenerateTest {
 
     this.mockMvc.perform(certificateSetRequest)
       .andExpect(status().isBadRequest())
-      .andExpect(jsonPath("$.error", equalTo("Unable to parse the certificate.")));
+      .andExpect(jsonPath("$.error", equalTo("The provided certificate value is not a valid X509 certificate.")));
   }
 
   @Test
@@ -594,7 +594,7 @@ public class CertificateSetAndRegenerateTest {
         + "  \"value\" : " + setJson + "}");
 
     final X509Certificate certificate = (X509Certificate) CertificateFactory
-      .getInstance("X.509", BouncyCastleProvider.PROVIDER_NAME)
+      .getInstance("X.509", BouncyCastleFipsProvider.PROVIDER_NAME)
       .generateCertificate(new ByteArrayInputStream(TEST_CERTIFICATE.getBytes(UTF_8)));
 
     this.mockMvc.perform(certificateSetRequest)

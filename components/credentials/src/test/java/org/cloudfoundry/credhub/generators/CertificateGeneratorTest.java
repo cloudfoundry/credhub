@@ -18,7 +18,7 @@ import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
@@ -53,7 +53,7 @@ public class CertificateGeneratorTest {
 
   private CertificateGenerator subject;
 
-  private LibcryptoRsaKeyPairGenerator keyGenerator;
+  private RsaKeyPairGenerator keyGenerator;
   private SignedCertificateGenerator signedCertificateGenerator;
   private CertificateAuthorityService certificateAuthorityService;
 
@@ -72,8 +72,8 @@ public class CertificateGeneratorTest {
 
   @Before
   public void beforeEach() throws Exception {
-    TestHelper.getBouncyCastleProvider();
-    keyGenerator = mock(LibcryptoRsaKeyPairGenerator.class);
+    TestHelper.getBouncyCastleFipsProvider();
+    keyGenerator = mock(RsaKeyPairGenerator.class);
     signedCertificateGenerator = mock(SignedCertificateGenerator.class);
     certificateAuthorityService = mock(CertificateAuthorityService.class);
     permissionCheckingService = mock(PermissionCheckingService.class);
@@ -94,7 +94,7 @@ public class CertificateGeneratorTest {
     final X509CertificateHolder caX509CertHolder = makeCert(rootCaKeyPair, rootCaKeyPair.getPrivate(),
       rootCaDn, rootCaDn, true);
     rootCaX509Certificate = new JcaX509CertificateConverter()
-      .setProvider(BouncyCastleProvider.PROVIDER_NAME).getCertificate(caX509CertHolder);
+      .setProvider(BouncyCastleFipsProvider.PROVIDER_NAME).getCertificate(caX509CertHolder);
     rootCa = new CertificateCredentialValue(
       null,
       CertificateFormatter.pemOf(rootCaX509Certificate),
@@ -163,7 +163,7 @@ public class CertificateGeneratorTest {
     final X509CertificateHolder intermediateCaCertificateHolder = makeCert(intermediateCaKeyPair,
       rootCaKeyPair.getPrivate(), rootCaDn, intermediateCaDn, true);
     final X509Certificate intermediateX509Certificate = new JcaX509CertificateConverter()
-      .setProvider(BouncyCastleProvider.PROVIDER_NAME)
+      .setProvider(BouncyCastleFipsProvider.PROVIDER_NAME)
       .getCertificate(intermediateCaCertificateHolder);
     final CertificateCredentialValue intermediateCa = new CertificateCredentialValue(
       null,
@@ -181,7 +181,7 @@ public class CertificateGeneratorTest {
     );
 
     childX509Certificate = new JcaX509CertificateConverter()
-      .setProvider(BouncyCastleProvider.PROVIDER_NAME)
+      .setProvider(BouncyCastleFipsProvider.PROVIDER_NAME)
       .getCertificate(childCertificateHolder);
 
     when(
@@ -206,7 +206,7 @@ public class CertificateGeneratorTest {
 
   @Test
   public void whenSelfSignIsTrue_itGeneratesAValidSelfSignedCertificate() throws Exception {
-    final X509Certificate certificate = new JcaX509CertificateConverter().setProvider(BouncyCastleProvider.PROVIDER_NAME)
+    final X509Certificate certificate = new JcaX509CertificateConverter().setProvider(BouncyCastleFipsProvider.PROVIDER_NAME)
       .getCertificate(generateX509SelfSignedCert());
 
     generationParameters.setCaName(null);
@@ -266,7 +266,7 @@ public class CertificateGeneratorTest {
     final SubjectPublicKeyInfo publicKeyInfo = SubjectPublicKeyInfo.getInstance(certKeyPair.getPublic()
       .getEncoded());
     final ContentSigner contentSigner = new JcaContentSignerBuilder("SHA256withRSA")
-      .setProvider(BouncyCastleProvider.PROVIDER_NAME)
+      .setProvider(BouncyCastleFipsProvider.PROVIDER_NAME)
       .build(caPrivateKey);
 
     final CurrentTimeProvider currentTimeProvider = new CurrentTimeProvider();
@@ -296,7 +296,7 @@ public class CertificateGeneratorTest {
     );
 
     childX509Certificate = new JcaX509CertificateConverter()
-      .setProvider(BouncyCastleProvider.PROVIDER_NAME)
+      .setProvider(BouncyCastleFipsProvider.PROVIDER_NAME)
       .getCertificate(childCertificateHolder);
 
     when(

@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
 import org.cloudfoundry.credhub.constants.CredentialType;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.credential.JsonCredentialValue;
@@ -56,8 +56,8 @@ public class CredentialFactoryTest {
   @Before
   public void setup() throws JsonProcessingException {
 
-    if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
-      Security.addProvider(new BouncyCastleProvider());
+    if (Security.getProvider(BouncyCastleFipsProvider.PROVIDER_NAME) == null) {
+      Security.addProvider(new BouncyCastleFipsProvider());
     }
 
     final Encryptor encryptor = mock(Encryptor.class);

@@ -2,9 +2,9 @@ package org.cloudfoundry.credhub.validators;
 
 import java.security.Security;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
-import org.cloudfoundry.credhub.exceptions.MalformedPrivateKeyException;
+import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.utils.TestConstants;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,8 +15,8 @@ public class CertificateMatchesPrivateKeyValidatorTest {
 
   @Before
   public void beforeEach() {
-    if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
-      Security.addProvider(new BouncyCastleProvider());
+    if (Security.getProvider(BouncyCastleFipsProvider.PROVIDER_NAME) == null) {
+      Security.addProvider(new BouncyCastleFipsProvider());
     }
   }
 
@@ -33,6 +33,6 @@ public class CertificateMatchesPrivateKeyValidatorTest {
 
     assertThatThrownBy(() -> {
       certificateMatchesPrivateKeyValidator.isValid(certificateCredentialValue, null);
-    }).isInstanceOf(MalformedPrivateKeyException.class);
+    }).isInstanceOf(ParameterizedValidationException.class);
   }
 }

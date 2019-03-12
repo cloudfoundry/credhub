@@ -18,14 +18,14 @@ import org.cloudfoundry.credhub.utils.PrivateKeyReader;
 @Component
 public class CertificateGenerator implements CredentialGenerator<CertificateCredentialValue> {
 
-  private final LibcryptoRsaKeyPairGenerator keyGenerator;
+  private final RsaKeyPairGenerator keyGenerator;
   private final SignedCertificateGenerator signedCertificateGenerator;
   private final CertificateAuthorityService certificateAuthorityService;
 
 
   @Autowired
   public CertificateGenerator(
-    final LibcryptoRsaKeyPairGenerator keyGenerator,
+    final RsaKeyPairGenerator keyGenerator,
     final SignedCertificateGenerator signedCertificateGenerator,
     final CertificateAuthorityService certificateAuthorityService) {
     super();
