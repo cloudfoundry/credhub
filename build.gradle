@@ -52,3 +52,7 @@ dependencyUpdates.resolutionStrategy = {
         }
     }
 }
+
+configurations.all {
+    exclude group: "org.bouncycastle"
+}

@@ -22,10 +22,15 @@ function lint_kotlin() {
     ./gradlew ktlint
 }
 
+function download_bouncy_castle_fips() {
+    ./gradlew --no-daemon downloadBouncyCastleFips
+}
+
 function main() {
     set_bash_error_handling
     go_to_project_root_directory
 
+    download_bouncy_castle_fips
     lint_scripts
     lint_kotlin
     lint_java
