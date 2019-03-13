@@ -45,10 +45,6 @@ function run_tests() {
   popd
 }
 
-function kill_xterm(){
-  pkill xterm
-}
-
 function push_code() {
     git push
 }
@@ -69,8 +65,6 @@ function main() {
 
     push_code
     display_ascii_success_message
-
-    kill_xterm
 }
 
 main
