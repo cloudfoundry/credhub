@@ -80,6 +80,8 @@ object ErrorMessages {
         const val MISSING_OPERATIONS = "At least one operation must be provided. Please validate your input and retry your request."
         const val MISSING_PATH = "You must specify a path. Please validate your input and retry your request."
         const val WRONG_PATH_AND_ACTOR = "The permission guid does not match the provided actor and path."
+        const val INVALID_CHARACTER_IN_PATH = "Credential paths may only include alpha, numeric, hyphen, underscore, and forward-slash characters. Please update and retry your request."
+        const val INVALID_SLASH_IN_PATH = "A credential path cannot end with a '/' character or contain '//'. Credential paths should be in the form of /[path]/[name] or [path]/[name]. Please update and retry your request."
     }
 
     object Auth {

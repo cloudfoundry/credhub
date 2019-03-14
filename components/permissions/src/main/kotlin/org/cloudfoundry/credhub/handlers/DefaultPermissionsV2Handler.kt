@@ -20,7 +20,7 @@ class DefaultPermissionsV2Handler(
     }
 
     override fun writePermissions(request: PermissionsV2Request): PermissionsV2View {
-        val permission = PermissionEntry(request.actor, request.path, request.operations)
+        val permission = PermissionEntry(request.actor, request.getPath(), request.operations)
         val permissionDatas = permissionService.savePermissionsForUser(mutableListOf(permission))
 
         if (permissionDatas.size == 1) {
