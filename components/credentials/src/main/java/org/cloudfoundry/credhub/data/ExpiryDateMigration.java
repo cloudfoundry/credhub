@@ -10,6 +10,7 @@ import org.apache.logging.log4j.Logger;
 import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData;
 import org.cloudfoundry.credhub.entity.CredentialVersionData;
 import org.cloudfoundry.credhub.exceptions.MalformedCertificateException;
+import org.cloudfoundry.credhub.exceptions.MissingCertificateException;
 import org.cloudfoundry.credhub.repositories.CredentialVersionRepository;
 import org.cloudfoundry.credhub.utils.CertificateReader;
 
@@ -37,6 +38,12 @@ public class ExpiryDateMigration {
           ((CertificateCredentialVersionData) version).setExpiryDate(reader.getNotAfter());
         } catch (MalformedCertificateException e) {
           final String message = String.format("can't read certificate with name %s", certificateVersion.getName());
+          LOGGER.warn(message);
+        } catch (MissingCertificateException e) {
+          final String message = String.format("missing certificate with name %s", certificateVersion.getName());
+          LOGGER.warn(message);
+        } catch (RuntimeException e) {
+          final String message = String.format("Unexpected exception reading certificate with name %s: %s", certificateVersion.getName(), e.toString());
           LOGGER.warn(message);
         }
       }

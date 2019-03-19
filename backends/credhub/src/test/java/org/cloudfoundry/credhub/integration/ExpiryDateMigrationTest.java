@@ -107,4 +107,21 @@ public class ExpiryDateMigrationTest {
 
     subject.migrate();
   }
+
+  @Test
+  public void getCertificate_WithEmptyCertField_printsWarning() {
+    final Credential credential = new Credential("test_empty_credential");
+    credentialRepository.save(credential);
+
+    final CertificateCredentialVersionData versionData = new CertificateCredentialVersionData();
+    versionData.setTransitional(true);
+    versionData.setCa("ca");
+    versionData.setCaName("ca_name");
+    versionData.setCertificate(null);
+    versionData.setCredential(credential);
+
+    credentialVersionRepository.save(versionData);
+
+    subject.migrate();
+  }
 }
