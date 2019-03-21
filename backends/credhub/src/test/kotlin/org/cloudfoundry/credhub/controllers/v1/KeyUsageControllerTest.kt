@@ -19,8 +19,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.test.web.servlet.setup.StandaloneMockMvcBuilder
 import java.security.Key
-import java.util.HashMap
-import java.util.UUID
+import java.util.*
 
 @RunWith(SpringRunner::class)
 class KeyUsageControllerTest {

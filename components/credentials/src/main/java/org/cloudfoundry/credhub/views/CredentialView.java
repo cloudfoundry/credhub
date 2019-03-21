@@ -26,8 +26,13 @@ public class CredentialView {
     super(); /* Jackson */
   }
 
-  CredentialView(
-    final Instant versionCreatedAt, final UUID uuid, final String name, final String type, final CredentialValue value) {
+  public CredentialView(
+    final Instant versionCreatedAt,
+    final UUID uuid,
+    final String name,
+    final String type,
+    final CredentialValue value
+  ) {
     super();
     this.versionCreatedAt = versionCreatedAt;
     this.uuid = uuid;

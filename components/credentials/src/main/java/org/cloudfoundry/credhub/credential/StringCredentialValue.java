@@ -1,5 +1,7 @@
 package org.cloudfoundry.credhub.credential;
 
+import java.util.Objects;
+
 import javax.validation.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -20,5 +22,20 @@ public class StringCredentialValue implements CredentialValue {
     return string;
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    StringCredentialValue that = (StringCredentialValue) o;
+    return Objects.equals(string, that.string);
+  }
 
+  @Override
+  public int hashCode() {
+    return Objects.hash(string);
+  }
 }

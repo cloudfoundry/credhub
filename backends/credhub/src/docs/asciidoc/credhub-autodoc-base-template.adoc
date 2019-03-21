@@ -1,0 +1,53 @@
+:sectnums:
+:sectnumlevels: 2
+:toc: left
+:toclevels: 2
+:toc-title: CredHub API
+:page-layout: docs
+
+= CredHub API
+
+== Permissions
+
+=== Get a Permission by Actor and Path
+operation::GET__permissions_by_actor_and_path__returns_a_permission[]
+
+---
+
+=== Get a Permission by UUID
+operation::GET__permissions_by_uuid__returns_a_permission[]
+
+---
+
+=== Create a Permission
+operation::POST__permissions__returns_a_permission[]
+
+---
+
+=== Update a Permission
+operation::PUT__permissions__returns_a_permission[]
+
+---
+
+=== Update a Permission Operation
+operation::PATCH__permissions__returns_a_permission[]
+
+---
+
+=== Delete a Permission
+operation::DELETE__permissions_by_uuid__returns_a_permission[]
+
+== Credentials
+
+=== Get a Credential by Path
+operation::Get__find_by_path_returns__results[]
+
+---
+
+=== Create a Credential
+operation::POST__generate_returns__credential[]
+
+---
+
+=== Update a Credential
+operation::PUT__set_credential_returns__credential[]

@@ -1,7 +1,6 @@
 buildscript {
     ext {
         springCloudContractVersion = '2.0.2.RELEASE'
-        springRestDocsVersion = '2.0.3.RELEASE'
     }
     repositories {
         mavenCentral()
@@ -11,7 +10,6 @@ buildscript {
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:$springBootVersion")
         classpath("org.springframework.cloud:spring-cloud-contract-gradle-plugin:$springCloudContractVersion")
-        classpath("org.asciidoctor:asciidoctor-gradle-plugin:${asciiDoctorPluginVersion}")
     }
 }
 
@@ -20,14 +18,12 @@ apply plugin: 'kotlin'
 apply plugin: 'kotlin-spring'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
-apply plugin: 'org.asciidoctor.convert'
 apply plugin: 'spring-cloud-contract'
 
 apply from: "server-version.gradle"
 apply from: "${rootDir.toPath()}/spring-cloud-contract-config.gradle"
 apply from: "${rootDir.toPath()}/kotlin.gradle"
 apply from: "${rootDir.toPath()}/ktlint.gradle"
-apply from: "${rootDir.toPath()}/spring-rest-docs-config.gradle"
 apply from: "${rootDir.toPath()}/spotbugs.gradle"
 
 repositories {
@@ -82,8 +78,6 @@ dependencies {
     testImplementation("org.springframework.security:spring-security-test")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation('org.springframework.cloud:spring-cloud-starter-contract-verifier')
-    testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc:$springRestDocsVersion")
-    asciidoctor("org.springframework.restdocs:spring-restdocs-asciidoctor:$springRestDocsVersion")
 }
 
 configurations.all {
