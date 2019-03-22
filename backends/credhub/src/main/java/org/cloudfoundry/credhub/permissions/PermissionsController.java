@@ -18,7 +18,7 @@ import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.entities.AddPermission;
 import org.cloudfoundry.credhub.audit.entities.DeletePermissions;
 import org.cloudfoundry.credhub.audit.entities.GetPermissions;
-import org.cloudfoundry.credhub.handlers.PermissionsHandler;
+import org.cloudfoundry.credhub.testdoubles.PermissionsHandler;
 import org.cloudfoundry.credhub.requests.PermissionsRequest;
 import org.cloudfoundry.credhub.views.PermissionsView;
 

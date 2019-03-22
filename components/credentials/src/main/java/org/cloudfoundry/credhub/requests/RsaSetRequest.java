@@ -1,5 +1,7 @@
 package org.cloudfoundry.credhub.requests;
 
+import java.util.Objects;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -30,5 +32,22 @@ public class RsaSetRequest extends BaseCredentialSetRequest<RsaCredentialValue> 
   @Override
   public GenerationParameters getGenerationParameters() {
     return null;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    RsaSetRequest that = (RsaSetRequest) o;
+    return Objects.equals(rsaKeyValue, that.rsaKeyValue);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(rsaKeyValue);
   }
 }

@@ -1,5 +1,7 @@
 package org.cloudfoundry.credhub.credential;
 
+import java.util.Objects;
+
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -22,5 +24,22 @@ public class JsonCredentialValue implements CredentialValue {
   @JsonValue
   public JsonNode getValue() {
     return value;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    JsonCredentialValue that = (JsonCredentialValue) o;
+    return Objects.equals(value, that.value);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(value);
   }
 }

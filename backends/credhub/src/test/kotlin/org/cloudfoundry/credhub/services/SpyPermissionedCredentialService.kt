@@ -51,8 +51,14 @@ class SpyPermissionedCredentialService : PermissionedCredentialService {
         return return_findStartingWithPath
     }
 
+    lateinit var findContainingName_calledWithName: String
+    lateinit var findContainingName_calledWithExpiresWithinDays: String
+    lateinit var findContainingName_returns: List<FindCredentialResult>
     override fun findContainingName(name: String, expiresWithinDays: String): List<FindCredentialResult> {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        findContainingName_calledWithName = name
+        findContainingName_calledWithExpiresWithinDays = expiresWithinDays
+
+        return findContainingName_returns
     }
 
     override fun findMostRecent(credentialName: String): CredentialVersion? {

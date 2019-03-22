@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import org.apache.commons.lang3.StringUtils;
-import org.cloudfoundry.credhub.handlers.PermissionsHandler;
+import org.cloudfoundry.credhub.testdoubles.PermissionsHandler;
 import org.cloudfoundry.credhub.requests.PermissionsV2PatchRequest;
 import org.cloudfoundry.credhub.requests.PermissionsV2Request;
 import org.cloudfoundry.credhub.views.PermissionsV2View;

@@ -1,5 +1,7 @@
 package org.cloudfoundry.credhub.credential;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.cloudfoundry.credhub.ErrorMessages;
@@ -38,5 +40,23 @@ public class RsaCredentialValue implements CredentialValue {
 
   public String getPrivateKey() {
     return privateKey;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    RsaCredentialValue that = (RsaCredentialValue) o;
+    return Objects.equals(publicKey, that.publicKey) &&
+      Objects.equals(privateKey, that.privateKey);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(publicKey, privateKey);
   }
 }

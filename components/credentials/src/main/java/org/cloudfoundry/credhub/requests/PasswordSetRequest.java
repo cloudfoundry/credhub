@@ -1,5 +1,7 @@
 package org.cloudfoundry.credhub.requests;
 
+import java.util.Objects;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -37,5 +39,23 @@ public class PasswordSetRequest extends BaseCredentialSetRequest<StringCredentia
   @Override
   public StringCredentialValue getCredentialValue() {
     return password;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    PasswordSetRequest that = (PasswordSetRequest) o;
+    return Objects.equals(password, that.password) &&
+      Objects.equals(generationParameters, that.generationParameters);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(password, generationParameters);
   }
 }

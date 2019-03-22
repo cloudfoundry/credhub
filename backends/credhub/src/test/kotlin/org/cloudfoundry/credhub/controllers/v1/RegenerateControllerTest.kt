@@ -2,7 +2,7 @@ package org.cloudfoundry.credhub.controllers.v1
 
 import org.cloudfoundry.credhub.AuthConstants
 import org.cloudfoundry.credhub.generate.RegenerateController
-import org.cloudfoundry.credhub.handlers.SpyRegenerateHandler
+import org.cloudfoundry.credhub.testdoubles.SpyRegenerateHandler
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.equalTo
 import org.junit.Before

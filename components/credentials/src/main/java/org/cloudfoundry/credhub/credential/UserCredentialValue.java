@@ -1,5 +1,7 @@
 package org.cloudfoundry.credhub.credential;
 
+import java.util.Objects;
+
 import javax.validation.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -59,5 +61,24 @@ public class UserCredentialValue implements CredentialValue {
   @SuppressWarnings("unused")
   public String getPasswordHash() {
     return Crypt.crypt(getPassword(), getSalt());
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    UserCredentialValue that = (UserCredentialValue) o;
+    return Objects.equals(username, that.username) &&
+      Objects.equals(password, that.password) &&
+      Objects.equals(salt, that.salt);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(username, password, salt);
   }
 }

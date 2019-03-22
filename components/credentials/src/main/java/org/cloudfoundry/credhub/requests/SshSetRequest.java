@@ -1,5 +1,7 @@
 package org.cloudfoundry.credhub.requests;
 
+import java.util.Objects;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -30,5 +32,22 @@ public class SshSetRequest extends BaseCredentialSetRequest<SshCredentialValue> 
   @Override
   public GenerationParameters getGenerationParameters() {
     return null;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    SshSetRequest that = (SshSetRequest) o;
+    return Objects.equals(sshKeyValue, that.sshKeyValue);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(sshKeyValue);
   }
 }

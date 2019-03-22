@@ -26,9 +26,9 @@ import org.cloudfoundry.credhub.audit.entities.FindCredential;
 import org.cloudfoundry.credhub.audit.entities.GetCredential;
 import org.cloudfoundry.credhub.audit.entities.SetCredential;
 import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException;
-import org.cloudfoundry.credhub.handlers.CredentialsHandler;
-import org.cloudfoundry.credhub.handlers.LegacyGenerationHandler;
-import org.cloudfoundry.credhub.handlers.SetHandler;
+import org.cloudfoundry.credhub.testdoubles.CredentialsHandler;
+import org.cloudfoundry.credhub.testdoubles.LegacyGenerationHandler;
+import org.cloudfoundry.credhub.testdoubles.SetHandler;
 import org.cloudfoundry.credhub.requests.BaseCredentialSetRequest;
 import org.cloudfoundry.credhub.services.PermissionedCredentialService;
 import org.cloudfoundry.credhub.views.CredentialView;
@@ -97,13 +97,13 @@ public class CredentialsController {
 
   @RequestMapping(path = "/{id}", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
-  public CredentialView getCredentialById(@PathVariable final String id) {
+  public CredentialView findById(@PathVariable final String id) {
     return credentialsHandler.getCredentialVersionByUUID(id);
   }
 
   @GetMapping(path = "")
   @ResponseStatus(HttpStatus.OK)
-  public DataResponse getCredential(
+  public DataResponse getByName(
     @RequestParam("name") final String credentialName,
     @RequestParam(value = "versions", required = false) final Integer numberOfVersions,
     @RequestParam(value = "current", required = false, defaultValue = "false") final boolean current
@@ -127,9 +127,10 @@ public class CredentialsController {
     }
   }
 
+  // CredHubDeprecatedStartingAfter(2.1.2) - Path parameter should be name
   @RequestMapping(path = "", params = "path", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
-  public FindCredentialResults findByPath(
+  public FindCredentialResults findByName(
     @RequestParam("path") final String path,
     @RequestParam(value = "expires-within-days", required = false, defaultValue = "") final String expiresWithinDays
   ) {

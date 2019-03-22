@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.controllers.v1
 
 import org.cloudfoundry.credhub.keyusage.KeyUsageController
 import org.cloudfoundry.credhub.services.CredentialVersionDataService
+import org.cloudfoundry.credhub.services.EncryptionKeySet
 import org.cloudfoundry.credhub.services.InternalEncryptionService
 import org.junit.Before
 import org.junit.Test
@@ -31,10 +32,12 @@ class KeyUsageControllerTest {
     @Before
     fun beforeEach() {
         credentialVersionDataService = mock(CredentialVersionDataService::class.java)
-        keySet = org.cloudfoundry.credhub.services.EncryptionKeySet()
+        keySet = EncryptionKeySet()
 
-        val keyUsageController = KeyUsageController(credentialVersionDataService,
-            keySet)
+        val keyUsageController = KeyUsageController(
+            credentialVersionDataService,
+            keySet
+        )
 
         mockMvc = MockMvcBuilders
             .standaloneSetup(keyUsageController)

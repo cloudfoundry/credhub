@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import org.cloudfoundry.credhub.exceptions.PermissionException;
-import org.cloudfoundry.credhub.handlers.RegenerateHandler;
+import org.cloudfoundry.credhub.testdoubles.RegenerateHandler;
 import org.cloudfoundry.credhub.requests.BulkRegenerateRequest;
 import org.cloudfoundry.credhub.requests.RegenerateRequest;
 import org.cloudfoundry.credhub.views.BulkRegenerateResults;

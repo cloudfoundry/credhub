@@ -1,5 +1,7 @@
 package org.cloudfoundry.credhub.credential;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -49,5 +51,24 @@ public class SshCredentialValue implements CredentialValue {
   @SuppressWarnings("unused")
   public String getPublicKeyFingerprint() {
     return publicKeyFingerprint;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    SshCredentialValue that = (SshCredentialValue) o;
+    return Objects.equals(publicKey, that.publicKey) &&
+      Objects.equals(privateKey, that.privateKey) &&
+      Objects.equals(publicKeyFingerprint, that.publicKeyFingerprint);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(publicKey, privateKey, publicKeyFingerprint);
   }
 }

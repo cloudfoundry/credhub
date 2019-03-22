@@ -1,6 +1,8 @@
 package org.cloudfoundry.credhub.requests;
 
 
+import java.util.Objects;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -33,5 +35,22 @@ public class CertificateSetRequest extends BaseCredentialSetRequest<CertificateC
   @Override
   public GenerationParameters getGenerationParameters() {
     return null;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    CertificateSetRequest that = (CertificateSetRequest) o;
+    return Objects.equals(certificateValue, that.certificateValue);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(certificateValue);
   }
 }

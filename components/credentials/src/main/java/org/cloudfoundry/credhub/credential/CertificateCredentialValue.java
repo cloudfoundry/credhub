@@ -1,6 +1,7 @@
 package org.cloudfoundry.credhub.credential;
 
 import java.time.Instant;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -98,5 +99,26 @@ public class CertificateCredentialValue implements CredentialValue {
 
   public Instant getExpiryDate() {
     return new CertificateReader(certificate).getNotAfter();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    CertificateCredentialValue that = (CertificateCredentialValue) o;
+    return transitional == that.transitional &&
+      Objects.equals(ca, that.ca) &&
+      Objects.equals(certificate, that.certificate) &&
+      Objects.equals(privateKey, that.privateKey) &&
+      Objects.equals(caName, that.caName);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(ca, certificate, privateKey, caName, transitional);
   }
 }
