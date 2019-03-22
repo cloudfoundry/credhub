@@ -27,6 +27,7 @@ public class DefaultExceptionHandler {
   @ExceptionHandler(Exception.class)
   public ResponseError handleGeneralException(final Exception e) {
     final String message = messageSourceAccessor.getMessage("error.internal_server_error");
+    LOGGER.error(message, e.getClass());
     LOGGER.error(message, e);
     return new ResponseError(message);
   }

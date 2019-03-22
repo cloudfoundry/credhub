@@ -256,7 +256,14 @@ public class ExceptionHandlers {
   @ExceptionHandler(MalformedPrivateKeyException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ResponseError handleMalformedPrivateKey(final MalformedPrivateKeyException exception) {
-    return constructError("error.malformed_private_key");
+    final ResponseError responseError = constructError("error.malformed_private_key");
+    final String exceptionMessage = exception.getMessage();
+    if (exceptionMessage != null) {
+      final String error = responseError.getError();
+      return new ResponseError(String.join(" ", error, exceptionMessage));
+    } else {
+      return responseError;
+    }
   }
 
   @SuppressWarnings("PMD.UselessParentheses")

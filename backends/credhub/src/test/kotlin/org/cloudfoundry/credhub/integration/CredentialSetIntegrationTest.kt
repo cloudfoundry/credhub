@@ -264,7 +264,7 @@ class CredentialSetIntegrationTest {
             responseBody,
             """
                 {
-                  "error": "The provided key format is not supported. Keys must be PEM-encoded PKCS#1 keys."
+                  "error": "Private key is malformed. Keys must be PEM-encoded PKCS#1 or unencrypted PKCS#8 keys."
                 }
             """.trimIndent(),
             true

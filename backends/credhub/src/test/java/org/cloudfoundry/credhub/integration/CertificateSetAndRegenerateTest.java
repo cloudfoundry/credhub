@@ -30,10 +30,12 @@ import org.junit.runner.RunWith;
 import static org.cloudfoundry.credhub.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.cloudfoundry.credhub.helpers.RequestHelper.getCertificateId;
 import static org.cloudfoundry.credhub.utils.StringUtil.UTF_8;
+import static org.cloudfoundry.credhub.utils.TestConstants.INVALID_PRIVATE_KEY_NO_HEADERS;
+import static org.cloudfoundry.credhub.utils.TestConstants.OTHER_TEST_CERTIFICATE;
+import static org.cloudfoundry.credhub.utils.TestConstants.OTHER_TEST_PRIVATE_KEY;
 import static org.cloudfoundry.credhub.utils.TestConstants.TEST_CA;
 import static org.cloudfoundry.credhub.utils.TestConstants.TEST_CERTIFICATE;
 import static org.cloudfoundry.credhub.utils.TestConstants.TEST_PRIVATE_KEY;
-import static org.cloudfoundry.credhub.utils.TestConstants.TEST_PRIVATE_KEY_PKCS8;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
@@ -365,16 +367,12 @@ public class CertificateSetAndRegenerateTest {
   public void certificateSetRequest_whenProvidedCertificateWasNotSignedByNamedCA_returnsAValidationError()
     throws Exception {
     RequestHelper.generateCa(mockMvc, "otherCa", ALL_PERMISSIONS_TOKEN);
-    final String otherCaCertificate = RequestHelper.generateCertificateCredential(mockMvc, "otherCaCertificate", true,
-      "other-ca-cert", "otherCa", ALL_PERMISSIONS_TOKEN);
-
-    final String otherCaCertificateValue = JsonPath.parse(otherCaCertificate)
-      .read("$.value.certificate");
 
     final String setJson = JSONObject.toJSONString(
       ImmutableMap.<String, String>builder()
         .put("ca_name", CA_NAME)
-        .put("certificate", otherCaCertificateValue)
+        .put("certificate", TEST_CERTIFICATE)
+        .put("private_key", TEST_PRIVATE_KEY)
         .build());
 
     final MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
@@ -397,16 +395,12 @@ public class CertificateSetAndRegenerateTest {
   public void certificateSetRequest_whenProvidedCertificateWasNotSignedByProvidedCA_returnsAValidationError()
     throws Exception {
     RequestHelper.generateCa(mockMvc, "otherCa", ALL_PERMISSIONS_TOKEN);
-    final String otherCaCertificate = RequestHelper.generateCertificateCredential(mockMvc, "otherCaCertificate", true,
-      "other-ca-cert", "otherCa", ALL_PERMISSIONS_TOKEN);
-
-    final String otherCaCertificateValue = JsonPath.parse(otherCaCertificate)
-      .read("$.value.certificate");
 
     final String setJson = JSONObject.toJSONString(
       ImmutableMap.<String, String>builder()
         .put("ca", TEST_CA)
-        .put("certificate", otherCaCertificateValue)
+        .put("certificate", OTHER_TEST_CERTIFICATE)
+        .put("private_key", OTHER_TEST_PRIVATE_KEY)
         .build());
 
     final MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
@@ -561,7 +555,7 @@ public class CertificateSetAndRegenerateTest {
     final String setJson = JSONObject.toJSONString(
       ImmutableMap.<String, String>builder()
         .put("certificate", TEST_CERTIFICATE)
-        .put("private_key", TEST_PRIVATE_KEY_PKCS8)
+        .put("private_key", INVALID_PRIVATE_KEY_NO_HEADERS)
         .build());
 
     final MockHttpServletRequestBuilder certificateSetRequest = post("/api/v1/certificates/" + caCredentialUuid + "/versions")
