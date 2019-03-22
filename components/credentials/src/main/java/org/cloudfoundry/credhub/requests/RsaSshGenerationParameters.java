@@ -8,7 +8,7 @@ import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 
 public class RsaSshGenerationParameters extends GenerationParameters {
   private int keyLength = 2048;
-  private final List<Integer> validKeyLengths = Arrays.asList(2048, 3072, 4096);
+  public final List<Integer> validKeyLengths = Arrays.asList(2048, 3072, 4096);
 
   @Override
   public void validate() {

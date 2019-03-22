@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.testhelpers
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.PropertyNamingStrategy.SNAKE_CASE
+import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.handlers.FakeOauthTokenFilter
 import org.cloudfoundry.credhub.util.TimeModuleFactory
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
@@ -18,6 +19,7 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.test.web.servlet.setup.StandaloneMockMvcBuilder
+import java.security.Security
 
 
 class MockMvcFactory {

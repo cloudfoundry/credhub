@@ -1,14 +1,15 @@
 package org.cloudfoundry.credhub.requests;
 
+import java.util.Arrays;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
+import org.cloudfoundry.credhub.constants.CredentialType;
 import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.credential.CredentialValue;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
-
-import static com.google.common.collect.Lists.newArrayList;
 
 @JsonTypeInfo(
   use = JsonTypeInfo.Id.CUSTOM,
@@ -48,6 +49,6 @@ public abstract class BaseCredentialSetRequest<T extends CredentialValue> extend
   }
 
   private boolean isInvalidTypeForSet(final String type) {
-    return !newArrayList("password", "certificate", "rsa", "ssh", "value", "json", "user").contains(type);
+    return !Arrays.asList(CredentialType.values()).contains(CredentialType.valueOf(type.toUpperCase()));
   }
 }

@@ -33,23 +33,25 @@ public class CertificateGenerationRequestParameters {
   public static final String DECIPHER_ONLY = "decipher_only";
   private static final Pattern DNS_WILDCARD_PATTERN = Pattern
     .compile("^\\*?(?>(?:\\.[a-zA-Z0-9\\-]+))*$");
+
   // Parameters used in RDN; at least one must be set
+  public final List<Integer> validKeyLengths = Arrays.asList(2048, 3072, 4096);
   private String organization;
   private String state;
   private String country;
   private String commonName;
   private String organizationUnit;
   private String locality;
+
   // Optional Certificate Parameters (not used in RDN)
-  private int keyLength = 2048;
-  private int duration = 365;
+  public int keyLength = 2048;
+  public int duration = 365;
   private boolean selfSigned;
   private String caName;
   private boolean isCa;
   private String[] alternativeNames;
   private String[] extendedKeyUsage;
   private String[] keyUsage;
-  private final List<Integer> validKeyLengths = Arrays.asList(2048, 3072, 4096);
   private final List<String> validExtendedKeyUsages = Arrays
     .asList(SERVER_AUTH, CLIENT_AUTH, CODE_SIGNING, EMAIL_PROTECTION, TIMESTAMPING);
 

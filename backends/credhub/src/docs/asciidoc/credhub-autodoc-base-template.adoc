@@ -39,15 +39,35 @@ operation::DELETE__permissions_by_uuid__returns_a_permission[]
 
 == Credentials
 
-=== Get a Credential by Path
-operation::Get__find_by_path_returns__results[]
+=== Find a Credential by Path
+operation::GET__find_by_path_returns__results[]
 
 ---
 
-=== Create a Credential
-operation::POST__generate_returns__credential[]
+=== Generate a Certificate Credential
+operation::POST__generate_certificate_returns__certificate_credential[]
 
 ---
 
-=== Update a Credential
-operation::PUT__set_credential_returns__credential[]
+=== Generate a Password Credential
+operation::POST__generate_password_returns__password_credential[]
+
+---
+
+=== Generate a User Credential
+operation::POST__generate_user_returns__user_credential[]
+
+---
+
+=== Generate a RSA Credential
+operation::POST__generate_rsa_returns__rsa_credential[]
+
+---
+
+=== Generate a SSH Credential
+operation::POST__generate_ssh_returns__ssh_credential[]
+
+---
+
+=== Set a Value Credential
+operation::PUT__set_value_credential_returns__value_credential[]
