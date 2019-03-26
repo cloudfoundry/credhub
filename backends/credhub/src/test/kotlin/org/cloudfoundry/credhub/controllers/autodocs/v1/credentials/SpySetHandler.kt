@@ -1,6 +1,7 @@
-package org.cloudfoundry.credhub.testdoubles
+package org.cloudfoundry.credhub.controllers.autodocs.v1.credentials
 
 import org.cloudfoundry.credhub.requests.BaseCredentialSetRequest
+import org.cloudfoundry.credhub.testdoubles.SetHandler
 import org.cloudfoundry.credhub.views.CredentialView
 
 class SpySetHandler : SetHandler {

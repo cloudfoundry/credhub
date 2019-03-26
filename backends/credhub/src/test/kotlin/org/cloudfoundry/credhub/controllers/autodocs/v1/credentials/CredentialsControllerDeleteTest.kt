@@ -5,9 +5,6 @@ import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.credentials.CredentialsController
 import org.cloudfoundry.credhub.services.SpyPermissionedCredentialService
-import org.cloudfoundry.credhub.testdoubles.SpyCredentialsHandler
-import org.cloudfoundry.credhub.testdoubles.SpyLegacyGenerationHandler
-import org.cloudfoundry.credhub.testdoubles.SpySetHandler
 import org.cloudfoundry.credhub.testhelpers.CredHubRestDocs
 import org.cloudfoundry.credhub.testhelpers.MockMvcFactory
 import org.junit.Before
@@ -23,7 +20,6 @@ import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import java.security.Security
-import java.util.*
 
 @RunWith(SpringRunner::class)
 class CredentialsControllerDeleteTest {

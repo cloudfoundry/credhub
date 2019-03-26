@@ -1,4 +1,4 @@
-package org.cloudfoundry.credhub.controllers.v1;
+package org.cloudfoundry.credhub.integration.v1.credentials;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -77,7 +77,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredhubTestApp.class)
 @Transactional
-public class CredentialsControllerTypeSpecificSetTest {
+public class CredentialsTypeSpecificSetIntegrationTest {
   @ClassRule
   public static final SpringClassRule SPRING_CLASS_RULE = new SpringClassRule();
   private static final Instant FROZEN_TIME = Instant.ofEpochSecond(1400011001L);

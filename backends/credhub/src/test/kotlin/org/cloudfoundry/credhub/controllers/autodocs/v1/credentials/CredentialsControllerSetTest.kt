@@ -13,9 +13,6 @@ import org.cloudfoundry.credhub.credential.SshCredentialValue
 import org.cloudfoundry.credhub.credential.StringCredentialValue
 import org.cloudfoundry.credhub.credential.UserCredentialValue
 import org.cloudfoundry.credhub.credentials.CredentialsController
-import org.cloudfoundry.credhub.testdoubles.SpyCredentialsHandler
-import org.cloudfoundry.credhub.testdoubles.SpyLegacyGenerationHandler
-import org.cloudfoundry.credhub.testdoubles.SpySetHandler
 import org.cloudfoundry.credhub.requests.CertificateSetRequest
 import org.cloudfoundry.credhub.requests.JsonSetRequest
 import org.cloudfoundry.credhub.requests.PasswordSetRequest

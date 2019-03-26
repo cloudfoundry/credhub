@@ -1,5 +1,6 @@
-package org.cloudfoundry.credhub.testdoubles
+package org.cloudfoundry.credhub.controllers.autodocs.v1.credentials
 
+import org.cloudfoundry.credhub.testdoubles.CredentialsHandler
 import org.cloudfoundry.credhub.views.CredentialView
 import org.cloudfoundry.credhub.views.DataResponse
 

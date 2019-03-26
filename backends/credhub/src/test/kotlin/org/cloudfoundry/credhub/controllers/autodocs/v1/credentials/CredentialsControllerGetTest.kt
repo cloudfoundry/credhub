@@ -14,9 +14,6 @@ import org.cloudfoundry.credhub.credential.StringCredentialValue
 import org.cloudfoundry.credhub.credential.UserCredentialValue
 import org.cloudfoundry.credhub.credentials.CredentialsController
 import org.cloudfoundry.credhub.services.SpyPermissionedCredentialService
-import org.cloudfoundry.credhub.testdoubles.SpyCredentialsHandler
-import org.cloudfoundry.credhub.testdoubles.SpyLegacyGenerationHandler
-import org.cloudfoundry.credhub.testdoubles.SpySetHandler
 import org.cloudfoundry.credhub.testhelpers.CredHubRestDocs
 import org.cloudfoundry.credhub.testhelpers.MockMvcFactory
 import org.cloudfoundry.credhub.utils.TestConstants
@@ -32,13 +29,9 @@ import org.springframework.http.MediaType
 import org.springframework.restdocs.JUnitRestDocumentation
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get
-import org.springframework.restdocs.payload.JsonFieldType
-import org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath
-import org.springframework.restdocs.payload.PayloadDocumentation.responseFields
 import org.springframework.restdocs.request.RequestDocumentation.parameterWithName
 import org.springframework.restdocs.request.RequestDocumentation.pathParameters
 import org.springframework.restdocs.request.RequestDocumentation.requestParameters
-import org.springframework.restdocs.snippet.Attributes.key
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content

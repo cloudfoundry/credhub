@@ -1,4 +1,4 @@
-package org.cloudfoundry.credhub.controllers.v1;
+package org.cloudfoundry.credhub.integration.v1.interpolation;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -46,7 +46,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredhubTestApp.class)
 @Transactional
-public class InterpolationControllerTest {
+public class InterpolationIntegrationTest {
   @Autowired
   private WebApplicationContext webApplicationContext;
 

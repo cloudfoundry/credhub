@@ -1,4 +1,4 @@
-package org.cloudfoundry.credhub.controllers.v1;
+package org.cloudfoundry.credhub.integration.v1.credentials;
 
 import java.time.Instant;
 import java.util.function.Consumer;
@@ -51,7 +51,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredhubTestApp.class)
 @Transactional
-public class CredentialsControllerGenerateTest {
+public class CredentialsGenerateIntegrationTest {
 
   private static final Instant FROZEN_TIME = Instant.ofEpochSecond(1400011001L);
   private static final String CREDENTIAL_NAME = "/my-namespace/subTree/credential-name";

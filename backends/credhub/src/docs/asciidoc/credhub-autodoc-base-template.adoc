@@ -151,3 +151,30 @@ operation::PUT__set_value_credential_returns__value_credential[]
 
 === Delete a Credential
 operation::DELETE__credential_returns__void[]
+
+---
+
+== Interpolation
+
+=== Interpolate a JSON Object
+operation::POST__interpolate__returns_map[]
+
+---
+
+== Management
+
+=== Get Read Only Mode Status
+operation::GET__management_mode__returns_result[]
+
+---
+
+=== Set Read Only Mode Status
+operation::POST__management_mode__returns_result[]
+
+---
+
+== Encryption Key Usage
+
+=== Get Encryption Key Usage
+
+---

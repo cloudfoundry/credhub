@@ -1,4 +1,4 @@
-package org.cloudfoundry.credhub.testdoubles;
+package org.cloudfoundry.credhub.handlers;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ import org.cloudfoundry.credhub.domain.JsonCredentialVersion;
 import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
-import org.cloudfoundry.credhub.interpolation.InterpolationHandler;
+import org.cloudfoundry.credhub.interpolation.DefaultInterpolationHandler;
 import org.cloudfoundry.credhub.services.DefaultPermissionedCredentialService;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,9 +33,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
-public class InterpolationHandlerTest {
+public class DefaultInterpolationHandlerTest {
 
-  private InterpolationHandler subject;
+  private DefaultInterpolationHandler subject;
   private Map<String, Object> response;
   private DefaultPermissionedCredentialService credentialService;
   private CEFAuditRecord auditRecord;
@@ -45,7 +45,7 @@ public class InterpolationHandlerTest {
     credentialService = mock(DefaultPermissionedCredentialService.class);
     auditRecord = mock(CEFAuditRecord.class);
 
-    subject = new InterpolationHandler(credentialService, auditRecord);
+    subject = new DefaultInterpolationHandler(credentialService, auditRecord);
   }
 
   @Test

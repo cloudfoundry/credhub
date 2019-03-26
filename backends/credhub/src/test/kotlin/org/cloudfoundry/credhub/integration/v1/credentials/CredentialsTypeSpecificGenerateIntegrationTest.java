@@ -1,4 +1,4 @@
-package org.cloudfoundry.credhub.controllers.v1;
+package org.cloudfoundry.credhub.integration.v1.credentials;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -80,7 +80,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredhubTestApp.class)
 @Transactional
-public class CredentialsControllerTypeSpecificGenerateTest {
+public class CredentialsTypeSpecificGenerateIntegrationTest {
 
   @ClassRule
   public static final SpringClassRule SPRING_CLASS_RULE = new SpringClassRule();

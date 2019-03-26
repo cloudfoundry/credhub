@@ -14,9 +14,6 @@ import org.cloudfoundry.credhub.credentials.CredentialsController
 import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters
 import org.cloudfoundry.credhub.requests.RsaSshGenerationParameters
 import org.cloudfoundry.credhub.services.SpyPermissionedCredentialService
-import org.cloudfoundry.credhub.testdoubles.SpyCredentialsHandler
-import org.cloudfoundry.credhub.testdoubles.SpyLegacyGenerationHandler
-import org.cloudfoundry.credhub.testdoubles.SpySetHandler
 import org.cloudfoundry.credhub.testhelpers.CredHubRestDocs
 import org.cloudfoundry.credhub.testhelpers.MockMvcFactory
 import org.cloudfoundry.credhub.utils.TestConstants
