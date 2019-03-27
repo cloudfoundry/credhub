@@ -15,7 +15,7 @@ class InfoController(@Value("\${auth-server.url:}") val uaaUrl: String) {
     }
 
     @RequestMapping(method = [RequestMethod.GET], path = [""])
-    fun info() : Map<String, Any?> {
+    fun info(): Map<String, Any?> {
         val urlMap = mapOf("url" to uaaUrl)
         val nameMap = mapOf("name" to CREHUB_NAME)
         return mapOf("auth-server" to urlMap, "app" to nameMap)

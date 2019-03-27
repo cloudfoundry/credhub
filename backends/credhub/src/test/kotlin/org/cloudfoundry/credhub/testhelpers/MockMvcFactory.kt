@@ -2,7 +2,7 @@ package org.cloudfoundry.credhub.testhelpers
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.PropertyNamingStrategy.SNAKE_CASE
-import org.cloudfoundry.credhub.generate.FakeOauthTokenFilter
+import org.cloudfoundry.credhub.helpers.FakeOauthTokenFilter
 import org.cloudfoundry.credhub.util.TimeModuleFactory
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
 import org.springframework.restdocs.JUnitRestDocumentation

@@ -5,7 +5,7 @@ import org.cloudfoundry.credhub.PermissionOperation.READ
 import org.cloudfoundry.credhub.PermissionOperation.WRITE
 import org.cloudfoundry.credhub.permissions.PermissionsV2Controller
 import org.cloudfoundry.credhub.requests.PermissionsV2Request
-import org.cloudfoundry.credhub.generate.SpyPermissionsHandler
+import org.cloudfoundry.credhub.controllers.v2.permissions.SpyPermissionsV2Handler
 import org.cloudfoundry.credhub.testhelpers.CredHubRestDocs
 import org.cloudfoundry.credhub.testhelpers.MockMvcFactory
 import org.cloudfoundry.credhub.views.PermissionsV2View
@@ -42,12 +42,12 @@ class PermissionsV2ControllerTest {
     val uuid = UUID.randomUUID()
 
     lateinit var mockMvc: MockMvc
-    lateinit var spyPermissionsHandler: SpyPermissionsHandler
+    lateinit var spyPermissionsV2Handler: SpyPermissionsV2Handler
 
     @Before
     fun setUp() {
-        spyPermissionsHandler = SpyPermissionsHandler()
-        val permissionsV2Controller = PermissionsV2Controller(spyPermissionsHandler)
+        spyPermissionsV2Handler = SpyPermissionsV2Handler()
+        val permissionsV2Controller = PermissionsV2Controller(spyPermissionsV2Handler)
 
         mockMvc = MockMvcFactory.newSpringRestDocMockMvc(permissionsV2Controller, restDocumentation)
     }
@@ -60,7 +60,7 @@ class PermissionsV2ControllerTest {
             "some-actor",
             uuid
         )
-        spyPermissionsHandler.setReturn_findByPathAndActor(permissionsV2View)
+        spyPermissionsV2Handler.setReturn_findByPathAndActor(permissionsV2View)
 
         val mvcResult = mockMvc
             .perform(
@@ -86,8 +86,8 @@ class PermissionsV2ControllerTest {
             )
             .andReturn()
 
-        assertThat(spyPermissionsHandler.findByPathAndActorCalledWithActor).isEqualTo("some-actor")
-        assertThat(spyPermissionsHandler.findByPathAndActorCalledWithPath).isEqualTo("/some-path")
+        assertThat(spyPermissionsV2Handler.findByPathAndActorCalledWithActor).isEqualTo("some-actor")
+        assertThat(spyPermissionsV2Handler.findByPathAndActorCalledWithPath).isEqualTo("/some-path")
         val actualResponseBody = mvcResult.response.contentAsString
 
         // language=json
@@ -114,7 +114,7 @@ class PermissionsV2ControllerTest {
             "some-actor",
             uuid
         )
-        spyPermissionsHandler.setReturn_getPermissions(permissionsV2View)
+        spyPermissionsV2Handler.setReturn_getPermissions(permissionsV2View)
 
         val mvcResult = mockMvc
             .perform(
@@ -132,7 +132,7 @@ class PermissionsV2ControllerTest {
             )
             .andReturn()
 
-        assertThat(spyPermissionsHandler.getPermissionsCalledWithGuid).isEqualTo(uuid)
+        assertThat(spyPermissionsV2Handler.getPermissionsCalledWithGuid).isEqualTo(uuid)
         val actualResponseBody = mvcResult.response.contentAsString
 
         // language=json
@@ -165,7 +165,7 @@ class PermissionsV2ControllerTest {
             listOf(READ, WRITE)
         )
 
-        spyPermissionsHandler.setReturn_writeV2Permissions(permissionsV2View)
+        spyPermissionsV2Handler.setReturn_writeV2Permissions(permissionsV2View)
 
         val mvcResult = mockMvc
             .perform(
@@ -189,7 +189,7 @@ class PermissionsV2ControllerTest {
             .andExpect(status().isCreated())
             .andReturn()
 
-        val actualPermissionsV2Request = spyPermissionsHandler.writeV2PermissionCalledWithRequest
+        val actualPermissionsV2Request = spyPermissionsV2Handler.writeV2PermissionCalledWithRequest
         assertThat(actualPermissionsV2Request.actor).isEqualTo(expectedPermissionsV2Request.actor)
         assertThat(actualPermissionsV2Request.path).isEqualTo(expectedPermissionsV2Request.path)
 
@@ -219,7 +219,7 @@ class PermissionsV2ControllerTest {
             "some-actor",
             uuid
         )
-        spyPermissionsHandler.setReturn_deletePermissions(permissionsV2View)
+        spyPermissionsV2Handler.setReturn_deletePermissions(permissionsV2View)
 
         val mvcResult = mockMvc
             .perform(
@@ -237,7 +237,7 @@ class PermissionsV2ControllerTest {
             )
             .andReturn()
 
-        assertThat(spyPermissionsHandler.deletePermissionsGuid).isEqualTo(uuid.toString())
+        assertThat(spyPermissionsV2Handler.deletePermissionsGuid).isEqualTo(uuid.toString())
         val actualResponseBody = mvcResult.response.contentAsString
 
         // language=json
@@ -263,7 +263,7 @@ class PermissionsV2ControllerTest {
             "some-actor",
             uuid
         )
-        spyPermissionsHandler.setReturn_putPermissions(permissionsV2View)
+        spyPermissionsV2Handler.setReturn_putPermissions(permissionsV2View)
 
         val mvcResult = mockMvc
             .perform(
@@ -297,7 +297,7 @@ class PermissionsV2ControllerTest {
             )
             .andReturn()
 
-        assertThat(spyPermissionsHandler.putPermissionGuid).isEqualTo(uuid.toString())
+        assertThat(spyPermissionsV2Handler.putPermissionGuid).isEqualTo(uuid.toString())
         val actualResponseBody = mvcResult.response.contentAsString
 
         // language=json
@@ -325,7 +325,7 @@ class PermissionsV2ControllerTest {
             uuid
         )
 
-        spyPermissionsHandler.setReturn_patchPermissions(permissionsV2View)
+        spyPermissionsV2Handler.setReturn_patchPermissions(permissionsV2View)
 
         val mvcResult = mockMvc
             .perform(
@@ -355,7 +355,7 @@ class PermissionsV2ControllerTest {
             )
             .andReturn()
 
-        assertThat(spyPermissionsHandler.patchPermissionGuid).isEqualTo(uuid.toString())
+        assertThat(spyPermissionsV2Handler.patchPermissionGuid).isEqualTo(uuid.toString())
         val actualResponseBody = mvcResult.response.contentAsString
 
         // language=json
@@ -382,7 +382,7 @@ class PermissionsV2ControllerTest {
             uuid
         )
 
-        spyPermissionsHandler.setReturn_writeV2Permissions(permissionsV2View)
+        spyPermissionsV2Handler.setReturn_writeV2Permissions(permissionsV2View)
 
         val mvcResult = mockMvc
             .perform(

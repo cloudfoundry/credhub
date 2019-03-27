@@ -1,4 +1,4 @@
-package org.cloudfoundry.credhub.generate;
+package org.cloudfoundry.credhub.handlers;
 
 import java.util.UUID;
 

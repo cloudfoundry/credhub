@@ -27,19 +27,19 @@ import org.cloudfoundry.credhub.views.CertificateCredentialsView;
 import org.cloudfoundry.credhub.views.CertificateView;
 import org.cloudfoundry.credhub.views.CredentialView;
 
-import static org.cloudfoundry.credhub.certificates.CertificatesController.API_V1_CERTIFICATES;
+import static org.cloudfoundry.credhub.certificates.CertificatesController.ENDPOINT;
 
 @RestController
-@RequestMapping(API_V1_CERTIFICATES)
-public class CertificatesController {
+@RequestMapping(ENDPOINT)
+public class CertificatesControllerOld {
 
-  public static final String API_V1_CERTIFICATES = "api/v1/certificates";
+  public static final String ENDPOINT = "api/v1/certificates";
 
   private final CEFAuditRecord auditRecord;
   private final CertificatesHandler certificatesHandler;
 
   @Autowired
-  public CertificatesController(final CertificatesHandler certificateHandler, final CEFAuditRecord auditRecord) {
+  public CertificatesControllerOld(final CertificatesHandler certificateHandler, final CEFAuditRecord auditRecord) {
     super();
     this.certificatesHandler = certificateHandler;
     this.auditRecord = auditRecord;

@@ -1,4 +1,4 @@
-package org.cloudfoundry.credhub.generate;
+package org.cloudfoundry.credhub.handlers;
 
 import java.time.Instant;
 import java.util.Arrays;

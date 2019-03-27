@@ -1,10 +1,12 @@
-package org.cloudfoundry.credhub.data;
+package org.cloudfoundry.credhub.services;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+import org.cloudfoundry.credhub.data.CredentialDataService;
+import org.cloudfoundry.credhub.data.EncryptionKeyCanaryDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;

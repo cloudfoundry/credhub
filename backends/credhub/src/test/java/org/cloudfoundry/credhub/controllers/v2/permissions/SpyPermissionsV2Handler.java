@@ -1,15 +1,16 @@
-package org.cloudfoundry.credhub.generate;
+package org.cloudfoundry.credhub.controllers.v2.permissions;
 
 import java.util.List;
 import java.util.UUID;
 
 import org.cloudfoundry.credhub.PermissionOperation;
+import org.cloudfoundry.credhub.generate.PermissionsHandler;
 import org.cloudfoundry.credhub.requests.PermissionsRequest;
 import org.cloudfoundry.credhub.requests.PermissionsV2Request;
 import org.cloudfoundry.credhub.views.PermissionsV2View;
 import org.cloudfoundry.credhub.views.PermissionsView;
 
-public class SpyPermissionsHandler implements PermissionsHandler {
+public class SpyPermissionsV2Handler implements PermissionsHandler {
 
   private String findByPathAndActorCalledWithPath;
   private String findByPathAndActorCalledWithActor;

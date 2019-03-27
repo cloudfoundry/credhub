@@ -1,10 +1,13 @@
-package org.cloudfoundry.credhub.data;
+package org.cloudfoundry.credhub.services;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import org.cloudfoundry.credhub.data.CredentialDataService;
+import org.cloudfoundry.credhub.data.PermissionData;
+import org.cloudfoundry.credhub.data.PermissionDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;

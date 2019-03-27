@@ -70,6 +70,5 @@ class InfoControllerTest {
             }
         """.trimIndent()
         JSONAssert.assertEquals(mvcResult.response.contentAsString, expectedResponseBody, true)
-
     }
 }

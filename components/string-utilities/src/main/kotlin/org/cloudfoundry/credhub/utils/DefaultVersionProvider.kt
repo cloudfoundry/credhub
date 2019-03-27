@@ -17,5 +17,4 @@ class DefaultVersionProvider(resources: ResourceReader) : VersionProvider {
     override fun currentVersion(): String {
         return version
     }
-
 }

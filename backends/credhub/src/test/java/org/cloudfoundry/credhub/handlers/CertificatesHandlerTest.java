@@ -1,4 +1,4 @@
-package org.cloudfoundry.credhub.generate;
+package org.cloudfoundry.credhub.handlers;
 
 import java.util.Collections;
 import java.util.List;
@@ -6,10 +6,12 @@ import java.util.UUID;
 
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.certificates.CertificateService;
-import org.cloudfoundry.credhub.certificates.CertificatesHandler;
+import org.cloudfoundry.credhub.certificates.DefaultCertificatesHandler;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
+import org.cloudfoundry.credhub.generate.GenerationRequestGenerator;
+import org.cloudfoundry.credhub.generate.UniversalCredentialGenerator;
 import org.cloudfoundry.credhub.permissions.PermissionedCertificateService;
 import org.cloudfoundry.credhub.requests.BaseCredentialGenerateRequest;
 import org.cloudfoundry.credhub.requests.CertificateRegenerateRequest;
@@ -33,7 +35,7 @@ CertificatesHandlerTest {
 
   private static final String UUID_STRING = "fake-uuid";
 
-  private CertificatesHandler subject;
+  private DefaultCertificatesHandler subject;
   private CertificateService certificateService;
   private UniversalCredentialGenerator universalCredentialGenerator;
   private GenerationRequestGenerator generationRequestGenerator;
@@ -46,7 +48,7 @@ CertificatesHandlerTest {
     certificateService = mock(CertificateService.class);
     universalCredentialGenerator = mock(UniversalCredentialGenerator.class);
     generationRequestGenerator = mock(GenerationRequestGenerator.class);
-    subject = new CertificatesHandler(
+    subject = new DefaultCertificatesHandler(
       permissionedCertificateService,
       certificateService,
       universalCredentialGenerator,

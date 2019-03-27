@@ -11,7 +11,6 @@ import org.junit.Test
 import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.http.MediaType
 import org.springframework.restdocs.JUnitRestDocumentation
-import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get
 import org.springframework.test.web.servlet.MockMvc
@@ -52,7 +51,7 @@ class KeyUsageControllerTest {
             }
         """.trimIndent()
         val objectMapper = ObjectMapper()
-        val map = objectMapper.readValue(responseBody, Map::class.java) as Map<String,Integer>
+        val map = objectMapper.readValue(responseBody, Map::class.java) as Map<String, Integer>
         val longMap = map.mapValues { it.value.toLong() }
         keyUsageHandler.getKeyUsage__returns_results = longMap
 

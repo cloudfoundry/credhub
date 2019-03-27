@@ -40,7 +40,6 @@ class RegenerateControllerTest {
         if (Security.getProvider(BouncyCastleFipsProvider.PROVIDER_NAME) == null) {
             Security.addProvider(BouncyCastleFipsProvider())
         }
-
     }
 
     @Test

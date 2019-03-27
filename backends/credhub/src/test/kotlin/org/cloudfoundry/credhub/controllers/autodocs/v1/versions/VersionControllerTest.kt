@@ -58,6 +58,4 @@ class VersionControllerTest {
         """.trimIndent()
         JSONAssert.assertEquals(mvcResult.response.contentAsString, expectedResponse, true)
     }
-
-
 }

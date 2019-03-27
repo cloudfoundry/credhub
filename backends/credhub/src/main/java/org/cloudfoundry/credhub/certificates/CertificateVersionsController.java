@@ -27,10 +27,10 @@ public class CertificateVersionsController {
 
   public static final String API_V1_CERTIFICATE_VERSIONS = "api/v1/certificates/{certificateId}/versions";
 
-  private final CertificatesHandler certificatesHandler;
+  private final DefaultCertificatesHandler certificatesHandler;
 
   @Autowired
-  public CertificateVersionsController(final CertificatesHandler certificateHandler) {
+  public CertificateVersionsController(final DefaultCertificatesHandler certificateHandler) {
     super();
     this.certificatesHandler = certificateHandler;
   }

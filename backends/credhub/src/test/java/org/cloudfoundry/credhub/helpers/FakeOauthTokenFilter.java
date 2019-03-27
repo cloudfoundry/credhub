@@ -1,4 +1,4 @@
-package org.cloudfoundry.credhub.generate;
+package org.cloudfoundry.credhub.helpers;
 
 import java.io.IOException;
 import java.util.regex.Pattern;
