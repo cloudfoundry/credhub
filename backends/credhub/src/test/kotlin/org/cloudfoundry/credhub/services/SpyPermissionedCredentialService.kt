@@ -5,7 +5,7 @@ import org.cloudfoundry.credhub.domain.CredentialVersion
 import org.cloudfoundry.credhub.entity.Credential
 import org.cloudfoundry.credhub.requests.BaseCredentialRequest
 import org.cloudfoundry.credhub.views.FindCredentialResult
-import java.util.*
+import java.util.UUID
 
 class SpyPermissionedCredentialService : PermissionedCredentialService {
 

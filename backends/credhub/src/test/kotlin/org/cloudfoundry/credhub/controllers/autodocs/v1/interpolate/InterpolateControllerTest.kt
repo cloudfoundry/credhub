@@ -98,6 +98,6 @@ class InterpolateControllerTest {
             ).andReturn()
 
         assertThat(spyInterpolationHandler.interpolateCredhubReferences__calledWithServicesMap).isEqualTo(expectedRequest)
-        JSONAssert.assertEquals(mvcResult.response.contentAsString , responseBody, true)
+        JSONAssert.assertEquals(mvcResult.response.contentAsString, responseBody, true)
     }
 }

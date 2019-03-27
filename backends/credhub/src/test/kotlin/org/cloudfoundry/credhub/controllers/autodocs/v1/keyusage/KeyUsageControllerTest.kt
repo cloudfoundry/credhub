@@ -1,11 +1,8 @@
 package org.cloudfoundry.credhub.controllers.autodocs.v1.keyusage
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.assertj.core.api.Assertions.assertThat
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.keyusage.KeyUsageController
-import org.cloudfoundry.credhub.services.EncryptionKeySet
-import org.cloudfoundry.credhub.services.SpyCredentialVersionDataService
 import org.cloudfoundry.credhub.testhelpers.CredHubRestDocs
 import org.cloudfoundry.credhub.testhelpers.MockMvcFactory
 import org.junit.Before
@@ -33,7 +30,7 @@ class KeyUsageControllerTest {
     @Before
     fun setUp() {
 
-
+            keyUsageHandler = SpyKeyUsageHandler()
             val keyUsageController = KeyUsageController(keyUsageHandler)
 
         mockMvc = MockMvcFactory.newSpringRestDocMockMvc(keyUsageController, restDocumentation)
@@ -44,7 +41,7 @@ class KeyUsageControllerTest {
     }
 
     @Test
-    fun GET__keyusage__returns_map(){
+    fun GET__keyusage__returns_map() {
         // language=json
         val responseBody = """
             {

@@ -30,7 +30,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import java.util.*
+import java.util.UUID
 
 @RunWith(SpringRunner::class)
 class PermissionsV2ControllerTest {
@@ -43,7 +43,6 @@ class PermissionsV2ControllerTest {
 
     lateinit var mockMvc: MockMvc
     lateinit var spyPermissionsHandler: SpyPermissionsHandler
-
 
     @Before
     fun setUp() {
@@ -100,7 +99,7 @@ class PermissionsV2ControllerTest {
                 "write"
               ],
               "actor": "some-actor",
-              "uuid": ${uuid}
+              "uuid": $uuid
             }
         """.trimIndent()
 
@@ -119,7 +118,7 @@ class PermissionsV2ControllerTest {
 
         val mvcResult = mockMvc
             .perform(
-                get("${PermissionsV2Controller.ENDPOINT}/${uuid}")
+                get("${PermissionsV2Controller.ENDPOINT}/$uuid")
                     .header("Authorization", "Bearer [some-token]")
                     .contentType(MediaType.APPLICATION_JSON)
             )
@@ -145,7 +144,7 @@ class PermissionsV2ControllerTest {
                 "write"
               ],
               "actor": "some-actor",
-              "uuid": "${uuid}"
+              "uuid": "$uuid"
             }
         """.trimIndent()
         JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true)
@@ -205,7 +204,7 @@ class PermissionsV2ControllerTest {
                 "write"
               ],
               "actor": "some-actor",
-              "uuid": "${uuid}"
+              "uuid": "$uuid"
             }
         """.trimIndent()
 
@@ -224,7 +223,7 @@ class PermissionsV2ControllerTest {
 
         val mvcResult = mockMvc
             .perform(
-                delete("${PermissionsV2Controller.ENDPOINT}/${uuid}")
+                delete("${PermissionsV2Controller.ENDPOINT}/$uuid")
                     .header("Authorization", "Bearer [some-token]")
                     .contentType(MediaType.APPLICATION_JSON)
             )
@@ -250,7 +249,7 @@ class PermissionsV2ControllerTest {
                 "write"
               ],
               "actor": "some-actor",
-              "uuid": "${uuid}"
+              "uuid": "$uuid"
             }
         """.trimIndent()
         JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true)
@@ -268,7 +267,7 @@ class PermissionsV2ControllerTest {
 
         val mvcResult = mockMvc
             .perform(
-                put("${PermissionsV2Controller.ENDPOINT}/${uuid}")
+                put("${PermissionsV2Controller.ENDPOINT}/$uuid")
                     .header("Authorization", "Bearer [some-token]")
                     .contentType(MediaType.APPLICATION_JSON)
                     // language=json
@@ -310,7 +309,7 @@ class PermissionsV2ControllerTest {
                 "write"
               ],
               "actor": "some-actor",
-              "uuid": "${uuid}"
+              "uuid": "$uuid"
             }
         """.trimIndent()
         JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true)
@@ -330,7 +329,7 @@ class PermissionsV2ControllerTest {
 
         val mvcResult = mockMvc
             .perform(
-                patch("${PermissionsV2Controller.ENDPOINT}/${uuid}")
+                patch("${PermissionsV2Controller.ENDPOINT}/$uuid")
                     .header("Authorization", "Bearer [some-token]")
                     .contentType(MediaType.APPLICATION_JSON)
                     // language=json
@@ -368,7 +367,7 @@ class PermissionsV2ControllerTest {
                 "write"
               ],
               "actor": "some-actor",
-              "uuid": "${uuid}"
+              "uuid": "$uuid"
             }
         """.trimIndent()
         JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true)
@@ -427,7 +426,7 @@ class PermissionsV2ControllerTest {
                 "write"
               ],
               "actor": "some-actor",
-              "uuid": "${uuid}"
+              "uuid": "$uuid"
             }
         """.trimIndent()
 

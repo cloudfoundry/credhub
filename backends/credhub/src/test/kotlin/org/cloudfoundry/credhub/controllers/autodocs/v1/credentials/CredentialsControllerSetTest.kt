@@ -44,8 +44,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.security.Security
 import java.time.Instant
-import java.util.*
-
+import java.util.UUID
 
 @RunWith(SpringRunner::class)
 class CredentialsControllerSetTest {
@@ -128,7 +127,7 @@ class CredentialsControllerSetTest {
             {
               "type": "${CredentialType.VALUE.type.toLowerCase()}",
               "version_created_at": "2019-02-01T20:37:52Z",
-              "id": "${uuid.toString()}",
+              "id": "$uuid",
               "name": "/some-value-path",
               "value": "some-value"
             }
@@ -205,7 +204,7 @@ class CredentialsControllerSetTest {
             {
               "type": "${CredentialType.JSON.type.toLowerCase()}",
               "version_created_at": "2019-02-01T20:37:52Z",
-              "id": "${uuid.toString()}",
+              "id": "$uuid",
               "name": "/some-value-path",
               "value": {
                 "some-json-key": "some-json-value"
@@ -267,7 +266,7 @@ class CredentialsControllerSetTest {
             {
               "type": "${CredentialType.PASSWORD.type.toLowerCase()}",
               "version_created_at": "2019-02-01T20:37:52Z",
-              "id": "${uuid.toString()}",
+              "id": "$uuid",
               "name": "/some-password-path",
               "value": "some-password"
             }
@@ -339,7 +338,7 @@ class CredentialsControllerSetTest {
             {
               "type": "${CredentialType.USER.type.toLowerCase()}",
               "version_created_at": "2019-02-01T20:37:52Z",
-              "id": "${uuid.toString()}",
+              "id": "$uuid",
               "name": "/some-user-path",
               "value": {
                 "username": "some-username",
@@ -427,7 +426,7 @@ class CredentialsControllerSetTest {
             {
               "type": "${CredentialType.CERTIFICATE.type.toLowerCase()}",
               "version_created_at": "2019-02-01T20:37:52Z",
-              "id": "${uuid.toString()}",
+              "id": "$uuid",
               "name": "/some-certificate-path",
               "value": {
                 "ca": "${TestConstants.TEST_CA}",
@@ -505,7 +504,7 @@ class CredentialsControllerSetTest {
             {
               "type": "${CredentialType.RSA.type.toLowerCase()}",
               "version_created_at": "2019-02-01T20:37:52Z",
-              "id": "${uuid.toString()}",
+              "id": "$uuid",
               "name": "/some-rsa-path",
               "value": {
                 "public_key": "${TestConstants.RSA_PUBLIC_KEY_4096}",
@@ -582,7 +581,7 @@ class CredentialsControllerSetTest {
             {
               "type": "${CredentialType.SSH.type.toLowerCase()}",
               "version_created_at": "2019-02-01T20:37:52Z",
-              "id": "${uuid.toString()}",
+              "id": "$uuid",
               "name": "/some-ssh-path",
               "value": {
                 "public_key": "${TestConstants.SSH_PUBLIC_KEY_4096}",

@@ -3,11 +3,12 @@ package org.cloudfoundry.credhub.keyusage
 import org.cloudfoundry.credhub.services.CredentialVersionDataService
 import org.cloudfoundry.credhub.services.EncryptionKeySet
 import org.springframework.stereotype.Service
-import java.util.*
 
 @Service
-class DefaultKeyUsageHandler(val credentialVersionDataService: CredentialVersionDataService,
-                             val keySet: EncryptionKeySet) : KeyUsageHandler {
+class DefaultKeyUsageHandler(
+    val credentialVersionDataService: CredentialVersionDataService,
+    val keySet: EncryptionKeySet
+) : KeyUsageHandler {
 
     override fun getKeyUsage(): Map<String, Long> {
         val countByEncryptionKey = credentialVersionDataService.countByEncryptionKey()
@@ -24,5 +25,4 @@ class DefaultKeyUsageHandler(val credentialVersionDataService: CredentialVersion
 
         return mapOf("active_key" to activeKeyCreds, "inactive_keys" to inactiveKeyCreds, "unknown_keys" to unknownKeyCreds)
     }
-
 }

@@ -12,8 +12,10 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping(path = [InterpolationController.ENDPOINT], produces = [MediaType.APPLICATION_JSON_UTF8_VALUE])
-class InterpolationController(private val jsonInterpolationHandler: InterpolationHandler,
-                              private val auditRecord: CEFAuditRecord){
+class InterpolationController(
+    private val jsonInterpolationHandler: InterpolationHandler,
+    private val auditRecord: CEFAuditRecord
+) {
 
     companion object {
         const val ENDPOINT = "/api/v1/interpolate"
@@ -26,5 +28,3 @@ class InterpolationController(private val jsonInterpolationHandler: Interpolatio
         return jsonInterpolationHandler.interpolateCredHubReferences(requestBody)
     }
 }
-
-

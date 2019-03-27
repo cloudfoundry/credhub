@@ -38,8 +38,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.security.Security
 import java.time.Instant
-import java.util.*
-
+import java.util.UUID
 
 @RunWith(SpringRunner::class)
 class CredentialsControllerGetTest {

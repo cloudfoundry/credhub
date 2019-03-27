@@ -19,10 +19,9 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.test.web.servlet.setup.StandaloneMockMvcBuilder
 
-
 class MockMvcFactory {
     companion object {
-        private fun getPreconfiguredJacksonConverter() : MappingJackson2HttpMessageConverter {
+        private fun getPreconfiguredJacksonConverter(): MappingJackson2HttpMessageConverter {
             val converter = MappingJackson2HttpMessageConverter()
             val objectMapper = ObjectMapper()
                 .registerModule(TimeModuleFactory.createTimeModule())
