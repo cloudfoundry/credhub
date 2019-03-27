@@ -176,5 +176,31 @@ operation::POST__management_mode__returns_result[]
 == Encryption Key Usage
 
 === Get Encryption Key Usage
+operation::GET__keyusage__returns_map[]
 
 ---
+
+== Info
+
+=== Get Info
+operation::GET__info__returns_info[]
+
+---
+
+== Version
+
+=== Get Version
+operation::GET__version__returns_version[]
+
+---
+
+== Regenerate Credentials
+
+=== Regenerate a Credential
+operation::POST__regenerate__returns_void[]
+
+---
+
+=== Bulk Regenerate Credentials
+operation::POST__bulkregenerate__returns_void[]
+

@@ -5,7 +5,7 @@ import org.cloudfoundry.credhub.PermissionOperation.READ
 import org.cloudfoundry.credhub.PermissionOperation.WRITE
 import org.cloudfoundry.credhub.permissions.PermissionsV2Controller
 import org.cloudfoundry.credhub.requests.PermissionsV2Request
-import org.cloudfoundry.credhub.testdoubles.SpyPermissionsHandler
+import org.cloudfoundry.credhub.generate.SpyPermissionsHandler
 import org.cloudfoundry.credhub.testhelpers.CredHubRestDocs
 import org.cloudfoundry.credhub.testhelpers.MockMvcFactory
 import org.cloudfoundry.credhub.views.PermissionsV2View

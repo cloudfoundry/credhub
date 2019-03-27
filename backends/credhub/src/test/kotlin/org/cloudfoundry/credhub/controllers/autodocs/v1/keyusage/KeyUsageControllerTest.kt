@@ -12,6 +12,7 @@ import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.http.MediaType
 import org.springframework.restdocs.JUnitRestDocumentation
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation
+import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
@@ -51,8 +52,9 @@ class KeyUsageControllerTest {
             }
         """.trimIndent()
         val objectMapper = ObjectMapper()
-        val map = objectMapper.readValue(responseBody, Map::class.java) as Map<String, Long>
-        keyUsageHandler.getKeyUsage__returns_results = map
+        val map = objectMapper.readValue(responseBody, Map::class.java) as Map<String,Integer>
+        val longMap = map.mapValues { it.value.toLong() }
+        keyUsageHandler.getKeyUsage__returns_results = longMap
 
         val mvcResult = mockMvc.perform(
                 get(KeyUsageController.ENDPOINT)
@@ -61,7 +63,7 @@ class KeyUsageControllerTest {
                 ).andExpect(status().isOk)
                 .andExpect(MockMvcResultMatchers.content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andDo(
-                        MockMvcRestDocumentation.document(
+                        document(
                                 CredHubRestDocs.DOCUMENT_IDENTIFIER
                         )
                 ).andReturn()

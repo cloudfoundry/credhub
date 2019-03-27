@@ -10,7 +10,7 @@ import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.data.CertificateAuthorityService;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
-import org.cloudfoundry.credhub.testdoubles.SetHandler;
+import org.cloudfoundry.credhub.generate.SetHandler;
 import org.cloudfoundry.credhub.requests.BaseCredentialSetRequest;
 import org.cloudfoundry.credhub.requests.CertificateSetRequest;
 import org.cloudfoundry.credhub.services.PermissionedCredentialService;

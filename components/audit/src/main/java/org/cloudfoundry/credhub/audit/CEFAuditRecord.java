@@ -14,7 +14,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.lang3.StringUtils;
-import org.cloudfoundry.credhub.utils.VersionProvider;
+import org.cloudfoundry.credhub.utils.DefaultVersionProvider;
 
 @Component
 @Scope(scopeName = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
@@ -55,7 +55,7 @@ public class CEFAuditRecord {
   private List<Version> versionList;
 
   @Autowired
-  public CEFAuditRecord(final VersionProvider versionProvider) {
+  public CEFAuditRecord(final DefaultVersionProvider versionProvider) {
     super();
     this.timestamp = String.valueOf(Instant.now().toEpochMilli());
     this.setCredhubServerVersion(versionProvider.currentVersion());

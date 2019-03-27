@@ -1,6 +1,6 @@
 package org.cloudfoundry.credhub.controllers.autodocs.v1.regenerate
 
-import org.cloudfoundry.credhub.testdoubles.RegenerateHandler
+import org.cloudfoundry.credhub.generate.RegenerateHandler
 import org.cloudfoundry.credhub.views.BulkRegenerateResults
 import org.cloudfoundry.credhub.views.CredentialView
 

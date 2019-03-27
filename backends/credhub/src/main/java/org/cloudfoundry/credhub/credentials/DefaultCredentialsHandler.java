@@ -9,7 +9,7 @@ import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
-import org.cloudfoundry.credhub.testdoubles.CredentialsHandler;
+import org.cloudfoundry.credhub.generate.CredentialsHandler;
 import org.cloudfoundry.credhub.services.PermissionedCredentialService;
 import org.cloudfoundry.credhub.views.CredentialView;
 import org.cloudfoundry.credhub.views.DataResponse;

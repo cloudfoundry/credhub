@@ -1,6 +1,6 @@
 package org.cloudfoundry.credhub.controllers.autodocs.v1.credentials
 
-import org.cloudfoundry.credhub.testdoubles.LegacyGenerationHandler
+import org.cloudfoundry.credhub.generate.LegacyGenerationHandler
 import org.cloudfoundry.credhub.views.CredentialView
 import java.io.InputStream
 
