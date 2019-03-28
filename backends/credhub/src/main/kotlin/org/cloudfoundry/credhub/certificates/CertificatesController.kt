@@ -25,13 +25,14 @@ class CertificatesController(
     companion object {
         const val ENDPOINT = "/api/v1/certificates"
         private val LOGGER = LogManager.getLogger(ManagementController::class.java)
-
     }
 
     @RequestMapping(method = [RequestMethod.POST], path = ["/{certificateId}/regenerate"])
     @ResponseStatus(HttpStatus.OK)
-    fun regenerateCertificate(@PathVariable("certificateId") certificateId: String,
-                   @RequestBody(required = false) requestBody: CertificateRegenerateRequest?): CredentialView {
+    fun regenerateCertificate(
+        @PathVariable("certificateId") certificateId: String,
+        @RequestBody(required = false) requestBody: CertificateRegenerateRequest?
+    ): CredentialView {
 
         LOGGER.info(certificateId)
 
