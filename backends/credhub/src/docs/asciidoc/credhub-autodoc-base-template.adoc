@@ -154,6 +154,28 @@ operation::DELETE__credential_returns__void[]
 
 ---
 
+== Certificates
+
+=== Get All Certificates
+operation::GET__certificates__returns_certificates[]
+
+---
+
+=== Get a Certificate By Name
+operation::GET__certificates_byName__returns_certificate[]
+
+---
+
+=== Regenerate a Certificate
+operation::POST__certificates_uuid_regenerate__returns_certificate[]
+
+---
+
+=== Update Transitional Version
+operation::PUT__updateTransitionalVersion__returns_certificate[]
+
+---
+
 == Interpolation
 
 === Interpolate a JSON Object
@@ -197,10 +219,10 @@ operation::GET__version__returns_version[]
 == Regenerate Credentials
 
 === Regenerate a Credential
-operation::POST__regenerate__returns_void[]
+operation::POST__regenerate__returns_results[]
 
 ---
 
 === Bulk Regenerate Credentials
-operation::POST__bulkregenerate__returns_void[]
+operation::POST__bulkregenerate__returns_results[]
 

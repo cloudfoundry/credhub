@@ -7,6 +7,7 @@ import java.util.UUID;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
+import org.cloudfoundry.credhub.constants.CredentialType;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.credential.JsonCredentialValue;
 import org.cloudfoundry.credhub.credential.RsaCredentialValue;

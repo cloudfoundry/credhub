@@ -20,12 +20,16 @@ class SpyCertificatesHandler : CertificatesHandler {
         return handleRegenerate__returns_credentialView
     }
 
+    lateinit var handleGetAllRequest__returns_certificateCredentialsView: CertificateCredentialsView
     override fun handleGetAllRequest(): CertificateCredentialsView {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        return handleGetAllRequest__returns_certificateCredentialsView
     }
 
+    lateinit var handleGetByNameRequest__calledWith_name: String
+    lateinit var handleGetByNameRequest__returns_certificateCredentialsView: CertificateCredentialsView
     override fun handleGetByNameRequest(name: String): CertificateCredentialsView {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        handleGetByNameRequest__calledWith_name = name
+        return handleGetByNameRequest__returns_certificateCredentialsView
     }
 
     override fun handleGetAllVersionsRequest(uuidString: String, current: Boolean): List<CertificateView> {
@@ -36,8 +40,13 @@ class SpyCertificatesHandler : CertificatesHandler {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
+    lateinit var handleUpdateTransitionalVersion__calledWith_certificateId: String
+    lateinit var handleUpdateTransitionalVersion__calledWith_requestBody: UpdateTransitionalVersionRequest
+    lateinit var handleUpdateTransitionalVersion__returns_certificateViewList: List<CertificateView>
     override fun handleUpdateTransitionalVersion(certificateId: String, requestBody: UpdateTransitionalVersionRequest): List<CertificateView> {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        handleUpdateTransitionalVersion__calledWith_certificateId = certificateId
+        handleUpdateTransitionalVersion__calledWith_requestBody = requestBody
+        return handleUpdateTransitionalVersion__returns_certificateViewList
     }
 
     override fun handleCreateVersionsRequest(certificateId: String, requestBody: CreateVersionRequest): CertificateView {
