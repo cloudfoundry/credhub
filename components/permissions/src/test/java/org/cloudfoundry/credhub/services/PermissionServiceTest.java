@@ -3,6 +3,7 @@ package org.cloudfoundry.credhub.services;
 import java.util.List;
 
 import com.google.common.collect.Lists;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.PermissionOperation;
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
@@ -126,7 +127,7 @@ public class PermissionServiceTest {
       subject.savePermissionsForUser(expectedEntries);
       fail("expected exception");
     } catch (final EntryNotFoundException e) {
-      assertThat(e.getMessage(), IsEqual.equalTo("error.credential.invalid_access"));
+      assertThat(e.getMessage(), IsEqual.equalTo(ErrorMessages.Credential.INVALID_ACCESS));
     }
   }
 
@@ -207,7 +208,7 @@ public class PermissionServiceTest {
       subject.getPermissions(expectedCredentialVersion);
       fail();
     } catch (final EntryNotFoundException e) {
-      assertThat(e.getMessage(), IsEqual.equalTo("error.credential.invalid_access"));
+      assertThat(e.getMessage(), IsEqual.equalTo(ErrorMessages.Credential.INVALID_ACCESS));
     }
   }
 
@@ -234,7 +235,7 @@ public class PermissionServiceTest {
       subject.deletePermissions(CREDENTIAL_NAME, "other-actor");
       fail("should throw");
     } catch (final EntryNotFoundException e) {
-      assertThat(e.getMessage(), IsEqual.equalTo("error.credential.invalid_access"));
+      assertThat(e.getMessage(), IsEqual.equalTo(ErrorMessages.Credential.INVALID_ACCESS));
     }
   }
 
@@ -248,7 +249,7 @@ public class PermissionServiceTest {
       subject.deletePermissions(CREDENTIAL_NAME, userContext.getActor());
       fail("should throw");
     } catch (final InvalidPermissionOperationException iaoe) {
-      assertThat(iaoe.getMessage(), IsEqual.equalTo("error.permission.invalid_update_operation"));
+      assertThat(iaoe.getMessage(), IsEqual.equalTo(ErrorMessages.Permissions.INVALID_UPDATE_OPERATION));
     }
   }
 }

@@ -6,6 +6,7 @@ import java.util.UUID;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.entity.JsonCredentialVersionData;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
@@ -84,7 +85,7 @@ public class JsonCredentialVersionTest {
       subject.setValue((JsonNode) null);
       fail("should throw");
     } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo("error.missing_value"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.MISSING_VALUE));
     }
   }
 }

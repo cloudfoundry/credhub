@@ -6,6 +6,7 @@ import java.security.cert.X509Certificate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.data.CertificateAuthorityService;
 import org.cloudfoundry.credhub.domain.CertificateGenerationParameters;
@@ -57,7 +58,7 @@ public class CertificateGenerator implements CredentialGenerator<CertificateCred
       final String caName = params.getCaName();
       final CertificateCredentialValue ca = certificateAuthorityService.findActiveVersion(caName);
       if (ca.getPrivateKey() == null) {
-        throw new ParameterizedValidationException("error.ca_missing_private_key");
+        throw new ParameterizedValidationException(ErrorMessages.CA_MISSING_PRIVATE_KEY);
       }
       final String caCertificate = ca.getCertificate();
 

@@ -6,6 +6,7 @@ import java.util.function.Supplier;
 
 import org.springframework.stereotype.Component;
 
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.requests.BaseCredentialGenerateRequest;
@@ -33,7 +34,7 @@ public class GenerationRequestGenerator {
 
   public BaseCredentialGenerateRequest createGenerateRequest(final CredentialVersion credentialVersion) {
     if (credentialVersion == null) {
-      throw new EntryNotFoundException("error.credential.invalid_access");
+      throw new EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS);
     }
     final Regeneratable regeneratable = regeneratableTypeProducers
       .getOrDefault(credentialVersion.getCredentialType(), NotRegeneratable::new)

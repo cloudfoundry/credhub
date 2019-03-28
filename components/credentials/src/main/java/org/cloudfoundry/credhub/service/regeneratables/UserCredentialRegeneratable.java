@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.service.regeneratables;
 
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.domain.UserCredentialVersion;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
@@ -23,7 +24,7 @@ public class UserCredentialRegeneratable implements Regeneratable {
 
     if (generationParameters == null) {
       throw new ParameterizedValidationException(
-        "error.cannot_regenerate_non_generated_user");
+        ErrorMessages.CANNOT_REGENERATE_NON_GENERATED_USER);
     }
 
     generationParameters.setUsername(userCredential.getUsername());

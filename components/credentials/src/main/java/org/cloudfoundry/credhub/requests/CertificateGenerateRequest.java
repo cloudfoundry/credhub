@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.requests;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.domain.CertificateGenerationParameters;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 
@@ -29,7 +30,7 @@ public class CertificateGenerateRequest extends BaseCredentialGenerateRequest {
   @JsonIgnore
   public GenerationParameters getGenerationParameters() {
     if (certificateGenerationParameters == null && requestGenerationParameters == null) {
-      throw new ParameterizedValidationException("error.no_certificate_parameters");
+      throw new ParameterizedValidationException(ErrorMessages.NO_CERTIFICATE_PARAMETERS);
     }
 
     if (certificateGenerationParameters == null) {

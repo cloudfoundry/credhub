@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.google.common.io.ByteStreams;
 import org.apache.commons.lang3.StringUtils;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.RequestDetails;
 import org.cloudfoundry.credhub.audit.entities.DeleteCredential;
@@ -83,7 +84,7 @@ public class CredentialsController {
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void delete(@RequestParam("name") final String credentialName) {
     if (StringUtils.isEmpty(credentialName)) {
-      throw new InvalidQueryParameterException("error.missing_query_parameter", "name");
+      throw new InvalidQueryParameterException(ErrorMessages.MISSING_QUERY_PARAMETER, "name");
     }
 
     final String credentialNameWithPrependedSlash = StringUtils.prependIfMissing(credentialName, "/");
@@ -108,11 +109,11 @@ public class CredentialsController {
     @RequestParam(value = "current", required = false, defaultValue = "false") final boolean current
   ) {
     if (StringUtils.isEmpty(credentialName)) {
-      throw new InvalidQueryParameterException("error.missing_query_parameter", "name");
+      throw new InvalidQueryParameterException(ErrorMessages.MISSING_QUERY_PARAMETER, "name");
     }
 
     if (current && numberOfVersions != null) {
-      throw new InvalidQueryParameterException("error.cant_use_versions_and_current", "name");
+      throw new InvalidQueryParameterException(ErrorMessages.CANT_USE_VERSIONS_AND_CURRENT, "name");
     }
 
     final String credentialNameWithPrependedSlash = StringUtils.prependIfMissing(credentialName, "/");

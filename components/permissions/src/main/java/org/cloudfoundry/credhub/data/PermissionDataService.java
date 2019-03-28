@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Lists;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.PermissionOperation;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.OperationDeviceAction;
@@ -205,16 +206,16 @@ public class PermissionDataService {
       existingPermissionData = permissionRepository.findByUuid(UUID.fromString(guid));
     } catch (final IllegalArgumentException e) {
       if (e.getMessage().startsWith("Invalid UUID string:")) {
-        throw new PermissionDoesNotExistException("error.permission.does_not_exist");
+        throw new PermissionDoesNotExistException(ErrorMessages.Permissions.DOES_NOT_EXIST);
       }
     }
     if (existingPermissionData == null) {
-      throw new PermissionDoesNotExistException("error.permission.does_not_exist");
+      throw new PermissionDoesNotExistException(ErrorMessages.Permissions.DOES_NOT_EXIST);
     }
 
     if (!(existingPermissionData.getPath().equals(permissionsRequest.getPath()) &&
       existingPermissionData.getActor().equals(permissionsRequest.getActor()))) {
-      throw new PermissionInvalidPathAndActorException("error.permission.wrong_path_and_actor");
+      throw new PermissionInvalidPathAndActorException(ErrorMessages.Permissions.WRONG_PATH_AND_ACTOR);
     }
 
 
@@ -239,7 +240,7 @@ public class PermissionDataService {
     existingPermissionData = permissionRepository.findByUuid(UUID.fromString(guid));
 
     if (existingPermissionData == null) {
-      throw new PermissionDoesNotExistException("error.permission.does_not_exist");
+      throw new PermissionDoesNotExistException(ErrorMessages.Permissions.DOES_NOT_EXIST);
     }
 
     final PermissionData patchedRecord = new PermissionData(existingPermissionData.getPath(),
@@ -262,7 +263,7 @@ public class PermissionDataService {
       permissionsRequest.getActor());
 
     if (existingPermissionData != null) {
-      throw new PermissionAlreadyExistsException("error.permission.already_exists");
+      throw new PermissionAlreadyExistsException(ErrorMessages.Permissions.ALREADY_EXISTS);
     }
 
     final PermissionData record = new PermissionData();

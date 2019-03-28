@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.service.regeneratables;
 
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
@@ -22,7 +23,7 @@ public class PasswordCredentialRegeneratable implements Regeneratable {
 
     if (generationParameters == null) {
       throw new ParameterizedValidationException(
-        "error.cannot_regenerate_non_generated_password");
+        ErrorMessages.CANNOT_REGENERATE_NON_GENERATED_PASSWORD);
     }
     generateRequest.setGenerationParameters(generationParameters);
     return generateRequest;

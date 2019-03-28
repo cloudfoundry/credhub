@@ -10,7 +10,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.jwt.Jwt;
 import org.springframework.security.jwt.JwtHelper;
@@ -23,6 +22,7 @@ import org.springframework.security.oauth2.provider.error.OAuth2AuthenticationEn
 import org.springframework.security.oauth2.provider.token.AccessTokenConverter;
 import org.springframework.stereotype.Service;
 
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.exceptions.AccessTokenExpiredException;
 import org.cloudfoundry.credhub.util.CurrentTimeProvider;
 
@@ -32,17 +32,14 @@ public class OAuth2AuthenticationExceptionHandler extends OAuth2AuthenticationEn
 
   private final CurrentTimeProvider currentTimeProvider;
   private final JsonParser objectMapper;
-  private final MessageSourceAccessor messageSourceAccessor;
 
   @Autowired
   OAuth2AuthenticationExceptionHandler(
-    final CurrentTimeProvider currentTimeProvider,
-    final MessageSourceAccessor messageSourceAccessor
+    final CurrentTimeProvider currentTimeProvider
   ) {
     super();
     this.currentTimeProvider = currentTimeProvider;
     this.objectMapper = JsonParserFactory.create();
-    this.messageSourceAccessor = messageSourceAccessor;
   }
 
   @Override
@@ -68,10 +65,10 @@ public class OAuth2AuthenticationExceptionHandler extends OAuth2AuthenticationEn
       exception = new AccessTokenExpiredException("Access token expired", cause);
     } else if (cause instanceof InvalidSignatureException) {
       exception = new OAuthSignatureException(
-        removeTokenFromMessage(messageSourceAccessor.getMessage("error.invalid_token_signature"), token));
+        removeTokenFromMessage(ErrorMessages.INVALID_TOKEN_SIGNATURE, token));
     } else if (cause instanceof SignatureException) {
       exception = new OAuthSignatureException(
-        removeTokenFromMessage(messageSourceAccessor.getMessage("error.malformed_token"), token));
+        removeTokenFromMessage(ErrorMessages.MALFORMED_TOKEN, token));
     } else {
       exception = new InvalidTokenException(
         removeTokenFromMessage(runtimeException.getMessage(), token), cause);
@@ -117,5 +114,3 @@ public class OAuth2AuthenticationExceptionHandler extends OAuth2AuthenticationEn
     return message.replace(": " + token, "");
   }
 }
-
-

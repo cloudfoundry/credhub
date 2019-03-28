@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.Lists;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.PermissionOperation;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
@@ -93,7 +94,7 @@ public class PermissionedCertificateService {
       .anyMatch(version -> version.isVersionTransitional());
 
     if (transitionalVersionsAlreadyExist) {
-      throw new ParameterizedValidationException("error.too_many_transitional_versions");
+      throw new ParameterizedValidationException(ErrorMessages.TOO_MANY_TRANSITIONAL_VERSIONS);
     }
   }
 
@@ -112,7 +113,7 @@ public class PermissionedCertificateService {
     if (certificate == null || !permissionCheckingService
       .hasPermission(userContextHolder.getUserContext().getActor(), certificate.getName(),
         PermissionOperation.READ)) {
-      throw new EntryNotFoundException("error.credential.invalid_access");
+      throw new EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS);
     }
 
     return Collections.singletonList(certificate);
@@ -132,12 +133,12 @@ public class PermissionedCertificateService {
         name = !list.isEmpty() ? list.get(0).getName() : null;
       }
     } catch (final IllegalArgumentException e) {
-      throw new InvalidQueryParameterException("error.bad_request", "uuid");
+      throw new InvalidQueryParameterException(ErrorMessages.BAD_REQUEST, "uuid");
     }
 
     if (list.isEmpty() || !permissionCheckingService
       .hasPermission(userContextHolder.getUserContext().getActor(), name, PermissionOperation.READ)) {
-      throw new EntryNotFoundException("error.credential.invalid_access");
+      throw new EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS);
     }
 
     return list;
@@ -150,7 +151,7 @@ public class PermissionedCertificateService {
 
     if (!permissionCheckingService
       .hasPermission(userContextHolder.getUserContext().getActor(), name, PermissionOperation.WRITE)) {
-      throw new EntryNotFoundException("error.credential.invalid_access");
+      throw new EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS);
     }
 
     certificateVersionDataService.unsetTransitionalVersion(certificateUuid);
@@ -159,7 +160,7 @@ public class PermissionedCertificateService {
       final CertificateCredentialVersion version = certificateVersionDataService.findVersion(newTransitionalVersionUuid);
 
       if (versionDoesNotBelongToCertificate(credential, version)) {
-        throw new ParameterizedValidationException("error.credential.mismatched_credential_and_version");
+        throw new ParameterizedValidationException(ErrorMessages.Credential.MISMATCHED_CREDENTIAL_AND_VERSION);
       }
       certificateVersionDataService.setTransitionalVersion(newTransitionalVersionUuid);
     }
@@ -175,15 +176,15 @@ public class PermissionedCertificateService {
     if (certificate == null || !permissionCheckingService
       .hasPermission(userContextHolder.getUserContext().getActor(), certificate.getName(),
         PermissionOperation.DELETE)) {
-      throw new EntryNotFoundException("error.credential.invalid_access");
+      throw new EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS);
     }
     final CertificateCredentialVersion versionToDelete = certificateVersionDataService.findVersion(versionUuid);
     if (versionDoesNotBelongToCertificate(certificate, versionToDelete)) {
-      throw new EntryNotFoundException("error.credential.invalid_access");
+      throw new EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS);
     }
 
     if (certificateHasOnlyOneVersion(certificateUuid)) {
-      throw new ParameterizedValidationException("error.credential.cannot_delete_last_version");
+      throw new ParameterizedValidationException(ErrorMessages.Credential.CANNOT_DELETE_LAST_VERSION);
     }
 
     certificateVersionDataService.deleteVersion(versionUuid);
@@ -202,7 +203,7 @@ public class PermissionedCertificateService {
     final Credential credential = certificateDataService.findByUuid(certificateUuid);
 
     if (credential == null) {
-      throw new EntryNotFoundException("error.credential.invalid_access");
+      throw new EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS);
     }
     return credential;
   }
@@ -213,7 +214,7 @@ public class PermissionedCertificateService {
     if (!permissionCheckingService
       .hasPermission(userContextHolder.getUserContext().getActor(), credential.getName(),
         PermissionOperation.WRITE)) {
-      throw new EntryNotFoundException("error.credential.invalid_access");
+      throw new EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS);
     }
 
     if (value.isTransitional()) {

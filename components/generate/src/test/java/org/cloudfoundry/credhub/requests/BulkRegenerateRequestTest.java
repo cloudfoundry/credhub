@@ -4,6 +4,7 @@ import java.util.Set;
 
 import javax.validation.ConstraintViolation;
 
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.helpers.JsonTestHelper;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
@@ -18,7 +19,7 @@ public class BulkRegenerateRequestTest {
     final Set<ConstraintViolation<BulkRegenerateRequest>> violations = JsonTestHelper.deserializeAndValidate("{}",
       BulkRegenerateRequest.class);
 
-    MatcherAssert.assertThat(violations, Matchers.contains(JsonTestHelper.hasViolationWithMessage("error.missing_signed_by")));
+    MatcherAssert.assertThat(violations, Matchers.contains(JsonTestHelper.hasViolationWithMessage(ErrorMessages.MISSING_SIGNED_BY)));
   }
 
 }

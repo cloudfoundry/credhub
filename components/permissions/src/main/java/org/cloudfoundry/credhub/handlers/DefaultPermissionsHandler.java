@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.PermissionOperation;
 import org.cloudfoundry.credhub.data.PermissionData;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
@@ -58,7 +59,7 @@ public class DefaultPermissionsHandler implements PermissionsHandler {
   public void deletePermissionEntry(final String credentialName, final String actor) {
     final boolean successfullyDeleted = permissionService.deletePermissions(credentialName, actor);
     if (!successfullyDeleted) {
-      throw new EntryNotFoundException("error.credential.invalid_access");
+      throw new EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS);
     }
   }
 
@@ -116,7 +117,7 @@ public class DefaultPermissionsHandler implements PermissionsHandler {
   public PermissionsV2View findByPathAndActor(final String path, final String actor) {
     final PermissionData permissionData = permissionService.findByPathAndActor(path, actor);
     if (permissionData == null) {
-      throw new EntryNotFoundException("error.permission.invalid_access");
+      throw new EntryNotFoundException(ErrorMessages.Permissions.INVALID_ACCESS);
     }
 
     return new PermissionsV2View(permissionData.getPath(), permissionData.generateAccessControlOperations(),

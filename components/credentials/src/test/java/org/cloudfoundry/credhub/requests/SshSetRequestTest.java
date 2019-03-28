@@ -4,6 +4,7 @@ import java.util.Set;
 
 import javax.validation.ConstraintViolation;
 
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.helpers.JsonTestHelper;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
@@ -104,7 +105,7 @@ public class SshSetRequestTest {
     final Set<ConstraintViolation<SshSetRequest>> violations = JsonTestHelper.deserializeAndValidate(json,
       SshSetRequest.class);
 
-    MatcherAssert.assertThat(violations, Matchers.contains(JsonTestHelper.hasViolationWithMessage("error.missing_value")));
+    MatcherAssert.assertThat(violations, Matchers.contains(JsonTestHelper.hasViolationWithMessage(ErrorMessages.MISSING_VALUE)));
   }
 
   @Test
@@ -118,7 +119,7 @@ public class SshSetRequestTest {
       SshSetRequest.class);
 
     MatcherAssert.assertThat(violations,
-      Matchers.contains(JsonTestHelper.hasViolationWithMessage("error.missing_rsa_ssh_parameters")));
+      Matchers.contains(JsonTestHelper.hasViolationWithMessage(ErrorMessages.MISSING_RSA_SSH_PARAMETERS)));
   }
 
   @Test
@@ -135,7 +136,7 @@ public class SshSetRequestTest {
       SshSetRequest.class);
 
     MatcherAssert.assertThat(violations,
-      Matchers.contains(JsonTestHelper.hasViolationWithMessage("error.missing_rsa_ssh_parameters")));
+      Matchers.contains(JsonTestHelper.hasViolationWithMessage(ErrorMessages.MISSING_RSA_SSH_PARAMETERS)));
   }
 
   @Test
@@ -152,7 +153,7 @@ public class SshSetRequestTest {
       SshSetRequest.class);
 
     MatcherAssert.assertThat(violations,
-      Matchers.contains(JsonTestHelper.hasViolationWithMessage("error.missing_rsa_ssh_parameters")));
+      Matchers.contains(JsonTestHelper.hasViolationWithMessage(ErrorMessages.MISSING_RSA_SSH_PARAMETERS)));
   }
 
   @Test

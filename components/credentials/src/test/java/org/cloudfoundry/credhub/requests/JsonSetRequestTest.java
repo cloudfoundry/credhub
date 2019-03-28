@@ -7,6 +7,7 @@ import javax.validation.ConstraintViolation;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.credential.JsonCredentialValue;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -73,6 +74,6 @@ public class JsonSetRequestTest {
 
     final Set<ConstraintViolation<JsonSetRequest>> constraintViolations = validate(request);
 
-    assertThat(constraintViolations, contains(hasViolationWithMessage("error.missing_value")));
+    assertThat(constraintViolations, contains(hasViolationWithMessage(ErrorMessages.MISSING_VALUE)));
   }
 }

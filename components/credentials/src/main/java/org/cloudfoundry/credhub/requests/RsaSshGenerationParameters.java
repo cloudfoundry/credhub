@@ -3,6 +3,7 @@ package org.cloudfoundry.credhub.requests;
 import java.util.Arrays;
 import java.util.List;
 
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 
 public class RsaSshGenerationParameters extends GenerationParameters {
@@ -12,7 +13,7 @@ public class RsaSshGenerationParameters extends GenerationParameters {
   @Override
   public void validate() {
     if (!validKeyLengths.contains(keyLength)) {
-      throw new ParameterizedValidationException("error.invalid_key_length");
+      throw new ParameterizedValidationException(ErrorMessages.INVALID_KEY_LENGTH);
     }
   }
 

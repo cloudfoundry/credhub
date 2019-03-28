@@ -10,18 +10,19 @@ import org.springframework.validation.annotation.Validated;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.PermissionOperation;
 
 @JsonAutoDetect
 @Validated
 public class PermissionEntry {
-  @NotEmpty(message = "error.permission.missing_actor")
+  @NotEmpty(message = ErrorMessages.Permissions.MISSING_ACTOR)
   private String actor;
 
-  @NotEmpty(message = "error.permission.missing_path")
+  @NotEmpty(message = ErrorMessages.Permissions.MISSING_PATH)
   private String path;
 
-  @NotEmpty(message = "error.permission.missing_operations")
+  @NotEmpty(message = ErrorMessages.Permissions.MISSING_OPERATIONS)
   @JsonProperty("operations")
   private List<PermissionOperation> allowedOperations;
 

@@ -6,6 +6,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.constants.CredentialWriteMode;
 import org.cloudfoundry.credhub.exceptions.InvalidModeException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
@@ -48,19 +49,19 @@ public abstract class BaseCredentialGenerateRequest extends BaseCredentialReques
   public void validate() {
     super.validate();
     if (!isValidMode(this.getMode())) {
-      throw new InvalidModeException("error.invalid_mode");
+      throw new InvalidModeException(ErrorMessages.INVALID_MODE);
     }
 
     if (isInvalidCredentialType(getType())) {
-      throw new ParameterizedValidationException("error.invalid_type_with_generate_prompt");
+      throw new ParameterizedValidationException(ErrorMessages.INVALID_TYPE_WITH_GENERATE_PROMPT);
     }
 
     if (isInvalidTypeForGeneration(getType())) {
-      throw new ParameterizedValidationException("error.cannot_generate_type");
+      throw new ParameterizedValidationException(ErrorMessages.CANNOT_GENERATE_TYPE);
     }
 
     if (this.getMode() != null && getRawOverwriteValue() != null) {
-      throw new ParameterizedValidationException("error.overwrite_and_mode_both_provided");
+      throw new ParameterizedValidationException(ErrorMessages.OVERWRITE_AND_MODE_BOTH_PROVIDED);
     }
 
     if (getGenerationParameters() != null) {
@@ -68,7 +69,7 @@ public abstract class BaseCredentialGenerateRequest extends BaseCredentialReques
     }
 
     if (getName() != null && getName().length() > 1024) {
-      throw new ParameterizedValidationException("error.name_has_too_many_characters");
+      throw new ParameterizedValidationException(ErrorMessages.NAME_HAS_TOO_MANY_CHARACTERS);
     }
   }
 

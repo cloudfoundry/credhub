@@ -4,6 +4,7 @@ import java.util.Set;
 
 import javax.validation.ConstraintViolation;
 
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.helpers.JsonTestHelper;
 import org.hamcrest.MatcherAssert;
@@ -84,7 +85,8 @@ public class BaseCredentialRequestTest {
     final Set<ConstraintViolation<BaseCredentialSetRequest>> violations = JsonTestHelper
       .deserializeAndValidate(json, BaseCredentialSetRequest.class);
 
-    MatcherAssert.assertThat(violations, IsIterableContainingInOrder.contains(JsonTestHelper.hasViolationWithMessage("error.credential.invalid_slash_in_name")));
+    MatcherAssert.assertThat(violations, IsIterableContainingInOrder.contains(JsonTestHelper.hasViolationWithMessage(
+      ErrorMessages.Credential.INVALID_SLASH_IN_NAME)));
   }
 
   @Test
@@ -98,7 +100,7 @@ public class BaseCredentialRequestTest {
     final Set<ConstraintViolation<BaseCredentialSetRequest>> violations = JsonTestHelper
       .deserializeAndValidate(json, BaseCredentialSetRequest.class);
 
-    MatcherAssert.assertThat(violations, IsIterableContainingInOrder.contains(JsonTestHelper.hasViolationWithMessage("error.credential.invalid_slash_in_name")));
+    MatcherAssert.assertThat(violations, IsIterableContainingInOrder.contains(JsonTestHelper.hasViolationWithMessage(ErrorMessages.Credential.INVALID_SLASH_IN_NAME)));
   }
 
   @Test
@@ -116,7 +118,7 @@ public class BaseCredentialRequestTest {
     final Set<ConstraintViolation<BaseCredentialSetRequest>> violations = JsonTestHelper
       .deserializeAndValidate(json, BaseCredentialSetRequest.class);
 
-    MatcherAssert.assertThat(violations, IsIterableContainingInOrder.contains(JsonTestHelper.hasViolationWithMessage("error.credential.invalid_slash_in_name")));
+    MatcherAssert.assertThat(violations, IsIterableContainingInOrder.contains(JsonTestHelper.hasViolationWithMessage(ErrorMessages.Credential.INVALID_SLASH_IN_NAME)));
   }
 
   @Test
@@ -129,7 +131,7 @@ public class BaseCredentialRequestTest {
     final Set<ConstraintViolation<BaseCredentialSetRequest>> violations = JsonTestHelper
       .deserializeAndValidate(json, BaseCredentialSetRequest.class);
 
-    MatcherAssert.assertThat(violations, IsIterableContainingInOrder.contains(JsonTestHelper.hasViolationWithMessage("error.missing_name")));
+    MatcherAssert.assertThat(violations, IsIterableContainingInOrder.contains(JsonTestHelper.hasViolationWithMessage(ErrorMessages.MISSING_NAME)));
   }
 
   @Test
@@ -143,7 +145,7 @@ public class BaseCredentialRequestTest {
     final Set<ConstraintViolation<BaseCredentialSetRequest>> violations = JsonTestHelper
       .deserializeAndValidate(json, BaseCredentialSetRequest.class);
 
-    MatcherAssert.assertThat(violations, IsIterableContainingInOrder.contains(JsonTestHelper.hasViolationWithMessage("error.missing_name")));
+    MatcherAssert.assertThat(violations, IsIterableContainingInOrder.contains(JsonTestHelper.hasViolationWithMessage(ErrorMessages.MISSING_NAME)));
   }
 
   @Test
@@ -157,7 +159,7 @@ public class BaseCredentialRequestTest {
     final Set<ConstraintViolation<BaseCredentialSetRequest>> violations = JsonTestHelper
       .deserializeAndValidate(json, BaseCredentialSetRequest.class);
 
-    MatcherAssert.assertThat(violations, IsIterableContainingInOrder.contains(JsonTestHelper.hasViolationWithMessage("error.missing_name")));
+    MatcherAssert.assertThat(violations, IsIterableContainingInOrder.contains(JsonTestHelper.hasViolationWithMessage(ErrorMessages.MISSING_NAME)));
   }
 
   @Test
@@ -172,7 +174,7 @@ public class BaseCredentialRequestTest {
       final Set<ConstraintViolation<BaseCredentialSetRequest>> violations = JsonTestHelper
         .deserializeAndValidate(json, BaseCredentialSetRequest.class);
 
-      MatcherAssert.assertThat(violations, IsIterableContainingInOrder.contains(JsonTestHelper.hasViolationWithMessage("error.credential.invalid_character_in_name")));
+      MatcherAssert.assertThat(violations, IsIterableContainingInOrder.contains(JsonTestHelper.hasViolationWithMessage(ErrorMessages.Credential.INVALID_CHARACTER_IN_NAME)));
     }
   }
 
@@ -208,7 +210,7 @@ public class BaseCredentialRequestTest {
       request.validate();
       fail("should throw");
     } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo("error.credential.invalid_slash_in_name"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.Credential.INVALID_SLASH_IN_NAME));
     }
   }
 }

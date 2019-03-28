@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.PermissionOperation;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.auth.UserContext;
@@ -155,7 +156,7 @@ public class DefaultPermissionedCredentialServiceTest {
     try {
       subject.save(existingCredentialVersion, credentialValue, request);
     } catch (final InvalidPermissionOperationException e) {
-      assertThat(e.getMessage(), equalTo("error.permission.invalid_update_operation"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.Permissions.INVALID_UPDATE_OPERATION));
     }
   }
 
@@ -194,7 +195,7 @@ public class DefaultPermissionedCredentialServiceTest {
     try {
       subject.save(existingCredentialVersion, credentialValue, request);
     } catch (final PermissionException pe) {
-      assertThat(pe.getMessage(), equalTo("error.credential.invalid_access"));
+      assertThat(pe.getMessage(), equalTo(ErrorMessages.Credential.INVALID_ACCESS));
     }
   }
 
@@ -245,7 +246,7 @@ public class DefaultPermissionedCredentialServiceTest {
       subject.delete(CREDENTIAL_NAME);
       fail("Should throw exception");
     } catch (final EntryNotFoundException e) {
-      assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.Credential.INVALID_ACCESS));
     }
   }
 
@@ -258,7 +259,7 @@ public class DefaultPermissionedCredentialServiceTest {
       subject.findAllByName(CREDENTIAL_NAME);
       fail("Should throw exception");
     } catch (final EntryNotFoundException e) {
-      assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.Credential.INVALID_ACCESS));
     }
   }
 
@@ -315,7 +316,7 @@ public class DefaultPermissionedCredentialServiceTest {
       subject.findNByName(CREDENTIAL_NAME, 1);
       fail("Should throw exception");
     } catch (final EntryNotFoundException e) {
-      assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.Credential.INVALID_ACCESS));
     }
   }
 
@@ -329,7 +330,7 @@ public class DefaultPermissionedCredentialServiceTest {
       fail("should throw exception");
     } catch (final InvalidQueryParameterException e) {
       assertThat(e.getInvalidQueryParameter(), equalTo("versions"));
-      assertThat(e.getMessage(), equalTo("error.invalid_query_parameter"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.INVALID_QUERY_PARAMETER));
     }
   }
 
@@ -350,7 +351,7 @@ public class DefaultPermissionedCredentialServiceTest {
       subject.findVersionByUuid(VERSION_UUID_STRING);
       fail("should throw exception");
     } catch (final EntryNotFoundException e) {
-      assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.Credential.INVALID_ACCESS));
     }
   }
 
@@ -363,7 +364,7 @@ public class DefaultPermissionedCredentialServiceTest {
       subject.findVersionByUuid(VERSION_UUID_STRING);
       fail("should throw exception");
     } catch (final EntryNotFoundException e) {
-      assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.Credential.INVALID_ACCESS));
     }
   }
 
@@ -391,7 +392,7 @@ public class DefaultPermissionedCredentialServiceTest {
       subject.findAllCertificateCredentialsByCaName(CREDENTIAL_NAME);
       fail("should throw exception");
     } catch (final EntryNotFoundException e) {
-      assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.Credential.INVALID_ACCESS));
     }
   }
 
@@ -472,7 +473,7 @@ public class DefaultPermissionedCredentialServiceTest {
       subject.findByUuid(CREDENTIAL_UUID);
       fail("Should throw exception");
     } catch (final EntryNotFoundException e) {
-      assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.Credential.INVALID_ACCESS));
     }
   }
 
@@ -482,7 +483,7 @@ public class DefaultPermissionedCredentialServiceTest {
       subject.findByUuid(UUID.randomUUID());
       fail("Should throw exception");
     } catch (final EntryNotFoundException e) {
-      assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.Credential.INVALID_ACCESS));
     }
   }
 

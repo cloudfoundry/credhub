@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.exceptions.KeyNotFoundException;
 
@@ -44,7 +45,7 @@ public class RetryingEncryptionService {
       final EncryptionKey key = keySet.get(encryptedValue.getEncryptionKeyUuid());
 
       if (key == null) {
-        throw new KeyNotFoundException("error.missing_encryption_key");
+        throw new KeyNotFoundException(ErrorMessages.MISSING_ENCRYPTION_KEY);
       }
       return key.decrypt(encryptedValue.getEncryptedValue(), encryptedValue.getNonce());
     });

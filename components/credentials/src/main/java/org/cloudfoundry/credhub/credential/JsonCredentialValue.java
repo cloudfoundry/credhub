@@ -6,10 +6,11 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.JsonNode;
+import org.cloudfoundry.credhub.ErrorMessages;
 
 @JsonAutoDetect
 public class JsonCredentialValue implements CredentialValue {
-  @NotNull(message = "error.missing_value")
+  @NotNull(message = ErrorMessages.MISSING_VALUE)
   private final JsonNode value;
 
   @JsonCreator

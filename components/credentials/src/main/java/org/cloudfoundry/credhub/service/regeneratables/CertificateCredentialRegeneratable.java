@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.service.regeneratables;
 
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.CertificateGenerationParameters;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
@@ -19,7 +20,7 @@ public class CertificateCredentialRegeneratable implements Regeneratable {
 
     if (isEmpty(certificateCredential.getCaName()) && !reader.isSelfSigned()) {
       throw new ParameterizedValidationException(
-        "error.cannot_regenerate_non_generated_certificate");
+        ErrorMessages.CANNOT_REGENERATE_NON_GENERATED_CERTIFICATE);
     }
 
     final CertificateGenerationParameters certificateGenerationParameters = new CertificateGenerationParameters(

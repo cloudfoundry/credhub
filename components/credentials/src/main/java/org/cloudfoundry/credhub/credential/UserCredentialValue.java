@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.apache.commons.codec.digest.Crypt;
 import org.cloudfoundry.credhub.CryptSaltFactory;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.utils.EmptyStringToNull;
 
 import static com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY;
@@ -14,7 +15,7 @@ import static com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY;
 public class UserCredentialValue implements CredentialValue {
   @JsonDeserialize(using = EmptyStringToNull.class)
   private String username;
-  @NotEmpty(message = "error.missing_password")
+  @NotEmpty(message = ErrorMessages.MISSING_PASSWORD)
   private String password;
   private String salt;
 

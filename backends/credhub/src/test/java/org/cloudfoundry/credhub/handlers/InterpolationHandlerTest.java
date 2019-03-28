@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.domain.JsonCredentialVersion;
@@ -107,7 +108,7 @@ public class InterpolationHandlerTest {
     try {
       subject.interpolateCredHubReferences(deserialize(inputJson, Map.class));
     } catch (final ParameterizedValidationException exception) {
-      assertThat(exception.getMessage(), equalTo("error.interpolation.invalid_type"));
+      assertThat(exception.getMessage(), equalTo(ErrorMessages.Interpolation.INVALID_TYPE));
     }
   }
 

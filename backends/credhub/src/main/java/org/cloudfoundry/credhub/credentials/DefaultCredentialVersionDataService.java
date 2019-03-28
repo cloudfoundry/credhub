@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.Lists;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.lang3.StringUtils;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.data.CertificateVersionDataService;
 import org.cloudfoundry.credhub.data.CredentialDataService;
@@ -91,7 +92,7 @@ public class DefaultCredentialVersionDataService implements CredentialVersionDat
       final CredentialVersion existingCredentialVersion = findMostRecent(credential.getName());
       if (existingCredentialVersion != null && !existingCredentialVersion.getCredentialType()
         .equals(credentialVersionData.getCredentialType())) {
-        throw new ParameterizedValidationException("error.type_mismatch");
+        throw new ParameterizedValidationException(ErrorMessages.TYPE_MISMATCH);
       }
     }
 

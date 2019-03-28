@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.data.CertificateAuthorityService;
@@ -71,7 +72,7 @@ public class DefaultSetHandler implements SetHandler {
     final CertificateReader certificateReader = new CertificateReader(certificateValue.getCertificate());
 
     if (!certificateReader.isSignedByCa(caValue)) {
-      throw new ParameterizedValidationException("error.certificate_was_not_signed_by_ca_name");
+      throw new ParameterizedValidationException(ErrorMessages.CERTIFICATE_WAS_NOT_SIGNED_BY_CA_NAME);
     }
   }
 }

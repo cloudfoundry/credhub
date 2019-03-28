@@ -5,13 +5,14 @@ import javax.validation.constraints.NotNull;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
+import org.cloudfoundry.credhub.ErrorMessages;
 
 @JsonAutoDetect
 @SuppressWarnings("unused")
 public class BulkRegenerateRequest {
 
   @JsonProperty("signed_by")
-  @NotNull(message = "error.missing_signed_by")
+  @NotNull(message = ErrorMessages.MISSING_SIGNED_BY)
   private String signedBy;
 
   public BulkRegenerateRequest() {

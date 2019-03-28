@@ -15,6 +15,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.DatabaseProfileResolver;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.PermissionOperation;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.OperationDeviceAction;
@@ -139,7 +140,7 @@ public class PermissionDataServiceTest {
     try {
       subject.getPermissions(new Credential(CREDENTIAL_NAME_DOES_NOT_EXIST));
     } catch (final EntryNotFoundException enfe) {
-      assertThat(enfe.getMessage(), Matchers.equalTo("error.resource_not_found"));
+      assertThat(enfe.getMessage(), Matchers.equalTo(ErrorMessages.RESOURCE_NOT_FOUND));
     }
   }
 

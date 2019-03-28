@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.data;
 
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.PermissionOperation;
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
@@ -62,7 +63,7 @@ public class CertificateAuthorityServiceTest {
     try {
       certificateAuthorityService.findActiveVersion("any ca name");
     } catch (final EntryNotFoundException pe) {
-      assertThat(pe.getMessage(), equalTo("error.credential.invalid_access"));
+      assertThat(pe.getMessage(), equalTo(ErrorMessages.Credential.INVALID_ACCESS));
     }
   }
 
@@ -73,7 +74,7 @@ public class CertificateAuthorityServiceTest {
     try {
       certificateAuthorityService.findActiveVersion("any ca name");
     } catch (final EntryNotFoundException pe) {
-      assertThat(pe.getMessage(), equalTo("error.credential.invalid_access"));
+      assertThat(pe.getMessage(), equalTo(ErrorMessages.Credential.INVALID_ACCESS));
     }
   }
 
@@ -86,7 +87,7 @@ public class CertificateAuthorityServiceTest {
     try {
       certificateAuthorityService.findActiveVersion("any non-ca name");
     } catch (final ParameterizedValidationException pe) {
-      assertThat(pe.getMessage(), equalTo("error.not_a_ca_name"));
+      assertThat(pe.getMessage(), equalTo(ErrorMessages.NOT_A_CA_NAME));
     }
   }
 
@@ -111,7 +112,7 @@ public class CertificateAuthorityServiceTest {
     try {
       certificateAuthorityService.findActiveVersion("actually-a-password");
     } catch (final EntryNotFoundException pe) {
-      assertThat(pe.getMessage(), equalTo("error.credential.invalid_access"));
+      assertThat(pe.getMessage(), equalTo(ErrorMessages.Credential.INVALID_ACCESS));
     }
   }
 
@@ -126,7 +127,7 @@ public class CertificateAuthorityServiceTest {
     try {
       certificateAuthorityService.findActiveVersion(CREDENTIAL_NAME);
     } catch (final ParameterizedValidationException pe) {
-      assertThat(pe.getMessage(), equalTo("error.cert_not_ca"));
+      assertThat(pe.getMessage(), equalTo(ErrorMessages.CERT_NOT_CA));
     }
   }
 }

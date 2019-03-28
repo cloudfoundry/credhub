@@ -4,12 +4,13 @@ import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import org.apache.commons.lang3.StringUtils;
+import org.cloudfoundry.credhub.ErrorMessages;
 
 @JsonAutoDetect
 @SuppressWarnings("unused")
 public class RegenerateRequest {
 
-  @NotNull(message = "error.missing_name")
+  @NotNull(message = ErrorMessages.MISSING_NAME)
   private String name;
 
   public RegenerateRequest() {

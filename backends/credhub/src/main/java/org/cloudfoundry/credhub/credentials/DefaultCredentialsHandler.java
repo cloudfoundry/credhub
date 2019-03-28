@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
@@ -30,7 +31,7 @@ public class DefaultCredentialsHandler implements CredentialsHandler {
   public void deleteCredential(final String credentialName) {
     final boolean deleteSucceeded = credentialService.delete(credentialName);
     if (!deleteSucceeded) {
-      throw new EntryNotFoundException("error.credential.invalid_access");
+      throw new EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS);
     }
   }
 
@@ -49,7 +50,7 @@ public class DefaultCredentialsHandler implements CredentialsHandler {
     }
 
     if (credentialVersions.isEmpty()) {
-      throw new EntryNotFoundException("error.credential.invalid_access");
+      throw new EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS);
     }
     return DataResponse.fromEntity(credentialVersions);
   }
@@ -64,7 +65,7 @@ public class DefaultCredentialsHandler implements CredentialsHandler {
     final List<CredentialVersion> credentialVersions = credentialService.findActiveByName(credentialName);
 
     if (credentialVersions.isEmpty()) {
-      throw new EntryNotFoundException("error.credential.invalid_access");
+      throw new EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS);
     }
     return DataResponse.fromEntity(credentialVersions);
 

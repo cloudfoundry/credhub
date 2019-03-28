@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.net.InetAddresses;
 import com.google.common.net.InternetDomainName;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT;
@@ -69,7 +70,8 @@ public class CertificateGenerationRequestParameters {
 
   private static void validateParameterLength(final String parameter, final String parameterName, final int parameterLength) {
     if (!isEmpty(parameter) && parameter.length() > parameterLength) {
-      throw new ParameterizedValidationException("error.credential.invalid_certificate_parameter", new Object[]{parameterName, parameterLength});
+      throw new ParameterizedValidationException(
+        ErrorMessages.Credential.INVALID_CERTIFICATE_PARAMETER, new Object[]{parameterName, parameterLength});
     }
   }
 
@@ -200,15 +202,15 @@ public class CertificateGenerationRequestParameters {
       && isEmpty(commonName)
       && isEmpty(country)
     ) {
-      throw new ParameterizedValidationException("error.missing_certificate_parameters");
+      throw new ParameterizedValidationException(ErrorMessages.MISSING_CERTIFICATE_PARAMETERS);
     } else if (isEmpty(caName) && !selfSigned && !isCa) {
-      throw new ParameterizedValidationException("error.missing_signing_ca");
+      throw new ParameterizedValidationException(ErrorMessages.MISSING_SIGNING_CA);
     } else if (!isEmpty(caName) && selfSigned) {
-      throw new ParameterizedValidationException("error.ca_and_self_sign");
+      throw new ParameterizedValidationException(ErrorMessages.CA_AND_SELF_SIGN);
     }
 
     if (!validKeyLengths.contains(keyLength)) {
-      throw new ParameterizedValidationException("error.invalid_key_length");
+      throw new ParameterizedValidationException(ErrorMessages.INVALID_KEY_LENGTH);
     }
 
     if (alternativeNames != null) {
@@ -220,7 +222,7 @@ public class CertificateGenerationRequestParameters {
               || DNS_WILDCARD_PATTERN.matcher(name).matches()
             )
         ) {
-          throw new ParameterizedValidationException("error.invalid_alternate_name");
+          throw new ParameterizedValidationException(ErrorMessages.INVALID_ALTERNATE_NAME);
         }
       }
     }
@@ -228,7 +230,7 @@ public class CertificateGenerationRequestParameters {
     if (extendedKeyUsage != null) {
       for (final String extendedKey : extendedKeyUsage) {
         if (!validExtendedKeyUsages.contains(extendedKey)) {
-          throw new ParameterizedValidationException("error.invalid_extended_key_usage",
+          throw new ParameterizedValidationException(ErrorMessages.INVALID_EXTENDED_KEY_USAGE,
             extendedKey);
         }
       }
@@ -237,14 +239,14 @@ public class CertificateGenerationRequestParameters {
     if (keyUsage != null) {
       for (final String keyUse : keyUsage) {
         if (!validKeyUsages.contains(keyUse)) {
-          throw new ParameterizedValidationException("error.invalid_key_usage",
+          throw new ParameterizedValidationException(ErrorMessages.INVALID_KEY_USAGE,
             keyUse);
         }
       }
     }
 
     if (duration < ONE_DAY || duration > TEN_YEARS) {
-      throw new ParameterizedValidationException("error.invalid_duration");
+      throw new ParameterizedValidationException(ErrorMessages.INVALID_DURATION);
     }
 
     validateParameterLength(commonName, "common name", 64);

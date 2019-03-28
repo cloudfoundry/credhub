@@ -6,14 +6,15 @@ import javax.validation.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import org.apache.commons.lang3.StringUtils;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.PermissionOperation;
 
 @JsonAutoDetect
 @SuppressWarnings("unused")
 public class PermissionsV2Request {
-  @NotEmpty(message = "error.permission.missing_path")
+  @NotEmpty(message = ErrorMessages.Permissions.MISSING_PATH)
   private String path;
-  @NotEmpty(message = "error.permission.missing_actor")
+  @NotEmpty(message = ErrorMessages.Permissions.MISSING_ACTOR)
   private String actor;
   private List<PermissionOperation> operations;
 

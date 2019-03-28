@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.views.ResponseError;
 
 @RestControllerAdvice
@@ -26,7 +27,7 @@ public class DefaultExceptionHandler {
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   @ExceptionHandler(Exception.class)
   public ResponseError handleGeneralException(final Exception e) {
-    final String message = messageSourceAccessor.getMessage("error.internal_server_error");
+    final String message = messageSourceAccessor.getMessage(ErrorMessages.INTERNAL_SERVER_ERROR);
     LOGGER.error(message, e.getClass());
     LOGGER.error(message, e);
     return new ResponseError(message);

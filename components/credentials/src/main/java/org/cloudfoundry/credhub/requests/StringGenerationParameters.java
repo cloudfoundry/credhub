@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.generators.PassayStringCredentialGenerator;
 
@@ -85,7 +86,7 @@ public class StringGenerationParameters extends GenerationParameters {
   @Override
   public void validate() {
     if (!isValid()) {
-      throw new ParameterizedValidationException("error.excludes_all_charsets");
+      throw new ParameterizedValidationException(ErrorMessages.EXCLUDES_ALL_CHARSETS);
     }
   }
 

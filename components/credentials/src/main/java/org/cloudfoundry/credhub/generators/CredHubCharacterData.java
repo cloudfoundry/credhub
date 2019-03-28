@@ -1,11 +1,12 @@
 package org.cloudfoundry.credhub.generators;
 
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.passay.CharacterData;
 
 public enum CredHubCharacterData implements CharacterData {
   // reusing library string that indicates whether a validation failed
   SPECIAL("INSUFFICIENT_SPECIAL", "!#$%&()*,-./:;<=>?@[\\]^_`{|}~"),
-  HEX("error.insufficient_hex_alpha", "0123456789ABCDEF");
+  HEX(ErrorMessages.INSUFFICIENT_HEX_ALPHA, "0123456789ABCDEF");
 
   private final String errorCode;
   private final String characters;

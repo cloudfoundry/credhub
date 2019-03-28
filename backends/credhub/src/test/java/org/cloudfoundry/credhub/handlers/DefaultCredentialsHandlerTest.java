@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.PermissionOperation;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.auth.UserContext;
@@ -95,7 +96,7 @@ public class DefaultCredentialsHandlerTest {
       subject.deleteCredential(CREDENTIAL_NAME);
       fail("Should throw exception");
     } catch (final EntryNotFoundException e) {
-      assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.Credential.INVALID_ACCESS));
     }
   }
 
@@ -129,7 +130,7 @@ public class DefaultCredentialsHandlerTest {
       );
       fail("should throw exception");
     } catch (final EntryNotFoundException e) {
-      assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.Credential.INVALID_ACCESS));
     }
   }
 
@@ -154,7 +155,7 @@ public class DefaultCredentialsHandlerTest {
       subject.getCurrentCredentialVersions(CREDENTIAL_NAME);
       fail("should throw exception");
     } catch (final EntryNotFoundException e) {
-      assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.Credential.INVALID_ACCESS));
     }
   }
 
@@ -167,7 +168,7 @@ public class DefaultCredentialsHandlerTest {
       subject.getCurrentCredentialVersions(CREDENTIAL_NAME);
       fail("should throw exception");
     } catch (final EntryNotFoundException e) {
-      assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.Credential.INVALID_ACCESS));
     }
   }
 

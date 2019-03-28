@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.credential.CredentialValue;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 
@@ -34,15 +35,15 @@ public abstract class BaseCredentialSetRequest<T extends CredentialValue> extend
     super.validate();
 
     if (isInvalidTypeForSet(getType())) {
-      throw new ParameterizedValidationException("error.invalid_type_with_set_prompt");
+      throw new ParameterizedValidationException(ErrorMessages.INVALID_TYPE_WITH_SET_PROMPT);
     }
 
     if (getName() != null && getName().length() > 1024) {
-      throw new ParameterizedValidationException("error.name_has_too_many_characters");
+      throw new ParameterizedValidationException(ErrorMessages.NAME_HAS_TOO_MANY_CHARACTERS);
     }
 
     if (getName() != null && getName().length() > 1024) {
-      throw new ParameterizedValidationException("error.name_has_too_many_characters");
+      throw new ParameterizedValidationException(ErrorMessages.NAME_HAS_TOO_MANY_CHARACTERS);
     }
   }
 

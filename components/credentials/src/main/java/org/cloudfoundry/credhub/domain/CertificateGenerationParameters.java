@@ -15,6 +15,7 @@ import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.GeneralNamesBuilder;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.KeyUsage;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters;
 import org.cloudfoundry.credhub.requests.GenerationParameters;
@@ -168,7 +169,7 @@ public class CertificateGenerationParameters extends GenerationParameters {
           bitmask |= KeyUsage.decipherOnly;
           break;
         default:
-          throw new ParameterizedValidationException("error.invalid_key_usage", keyUsage);
+          throw new ParameterizedValidationException(ErrorMessages.INVALID_KEY_USAGE, keyUsage);
       }
     }
     return new KeyUsage(bitmask);
@@ -243,7 +244,7 @@ public class CertificateGenerationParameters extends GenerationParameters {
           keyPurposeIds[i] = KeyPurposeId.id_kp_timeStamping;
           break;
         default:
-          throw new ParameterizedValidationException("error.invalid_extended_key_usage", extendedKeyUsageList[i]);
+          throw new ParameterizedValidationException(ErrorMessages.INVALID_EXTENDED_KEY_USAGE, extendedKeyUsageList[i]);
       }
     }
     return new ExtendedKeyUsage(keyPurposeIds);

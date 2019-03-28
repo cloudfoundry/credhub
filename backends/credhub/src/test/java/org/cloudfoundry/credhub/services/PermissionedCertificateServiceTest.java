@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.PermissionOperation;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.auth.UserContext;
@@ -133,7 +134,7 @@ public class PermissionedCertificateServiceTest {
       );
       fail("should throw exception");
     } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo("error.too_many_transitional_versions"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.TOO_MANY_TRANSITIONAL_VERSIONS));
     }
   }
 

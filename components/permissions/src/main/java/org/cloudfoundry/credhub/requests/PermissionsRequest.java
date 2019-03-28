@@ -6,14 +6,15 @@ import javax.validation.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import org.apache.commons.lang3.StringUtils;
+import org.cloudfoundry.credhub.ErrorMessages;
 
 @JsonAutoDetect
 @SuppressWarnings("unused")
 public class PermissionsRequest {
 
-  @NotEmpty(message = "error.missing_name")
+  @NotEmpty(message = ErrorMessages.MISSING_NAME)
   private String credentialName;
-  @NotEmpty(message = "error.permission.missing_aces")
+  @NotEmpty(message = ErrorMessages.Permissions.MISSING_ACES)
   private List<PermissionEntry> permissions;
 
   public PermissionsRequest() {

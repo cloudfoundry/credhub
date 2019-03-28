@@ -3,6 +3,7 @@ package org.cloudfoundry.credhub.data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.PermissionOperation;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
@@ -31,22 +32,22 @@ public class CertificateAuthorityService {
 
   public CertificateCredentialValue findActiveVersion(final String caName) {
     if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), caName, PermissionOperation.READ)) {
-      throw new EntryNotFoundException("error.credential.invalid_access");
+      throw new EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS);
     }
 
     final CredentialVersion mostRecent = certificateVersionDataService.findActive(caName);
 
     if (mostRecent == null) {
-      throw new EntryNotFoundException("error.credential.invalid_access");
+      throw new EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS);
     }
 
     if (!(mostRecent instanceof CertificateCredentialVersion)) {
-      throw new ParameterizedValidationException("error.not_a_ca_name");
+      throw new ParameterizedValidationException(ErrorMessages.NOT_A_CA_NAME);
     }
     final CertificateCredentialVersion certificateCredential = (CertificateCredentialVersion) mostRecent;
 
     if (!certificateCredential.getParsedCertificate().isCa()) {
-      throw new ParameterizedValidationException("error.cert_not_ca");
+      throw new ParameterizedValidationException(ErrorMessages.CERT_NOT_CA);
     }
 
     return new CertificateCredentialValue(null, certificateCredential.getCertificate(),

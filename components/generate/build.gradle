@@ -31,6 +31,7 @@ dependencies {
 
     implementation project(":components:audit")
     implementation project(":components:credentials")
+    implementation project(":components:errors")
     implementation project(":components:permissions")
     implementation project(":components:string-utilities")
 

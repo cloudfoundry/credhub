@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.credential.JsonCredentialValue;
 import org.cloudfoundry.credhub.entity.JsonCredentialVersionData;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
@@ -63,7 +64,7 @@ public class JsonCredentialVersion extends CredentialVersion {
 
   public void setValue(final JsonNode value) {
     if (value == null) {
-      throw new ParameterizedValidationException("error.missing_value");
+      throw new ParameterizedValidationException(ErrorMessages.MISSING_VALUE);
     }
 
     try {

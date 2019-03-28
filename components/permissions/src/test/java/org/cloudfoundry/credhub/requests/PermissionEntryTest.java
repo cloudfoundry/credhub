@@ -7,6 +7,7 @@ import javax.validation.ConstraintViolation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -41,7 +42,7 @@ public class PermissionEntryTest {
       + "\"path\": \"" + USER_A_PATH + "\""
       + "}";
     final Set<ConstraintViolation<PermissionEntry>> constraintViolations = deserializeAndValidate(json, PermissionEntry.class);
-    assertThat(constraintViolations, contains(hasViolationWithMessage("error.permission.missing_actor")));
+    assertThat(constraintViolations, contains(hasViolationWithMessage(ErrorMessages.Permissions.MISSING_ACTOR)));
   }
 
   @Test
@@ -52,7 +53,7 @@ public class PermissionEntryTest {
       + "\"path\": \"" + USER_A_PATH + "\""
       + "}";
     final Set<ConstraintViolation<PermissionEntry>> constraintViolations = deserializeAndValidate(json, PermissionEntry.class);
-    assertThat(constraintViolations, contains(hasViolationWithMessage("error.permission.missing_actor")));
+    assertThat(constraintViolations, contains(hasViolationWithMessage(ErrorMessages.Permissions.MISSING_ACTOR)));
   }
 
   @Test
@@ -62,7 +63,7 @@ public class PermissionEntryTest {
       + "\"path\": \"" + USER_A_PATH + "\""
       + "}";
     final Set<ConstraintViolation<PermissionEntry>> constraintViolations = deserializeAndValidate(json, PermissionEntry.class);
-    assertThat(constraintViolations, contains(hasViolationWithMessage("error.permission.missing_operations")));
+    assertThat(constraintViolations, contains(hasViolationWithMessage(ErrorMessages.Permissions.MISSING_OPERATIONS)));
   }
 
   @Test
@@ -73,7 +74,7 @@ public class PermissionEntryTest {
       + "\"path\": \"" + USER_A_PATH + "\""
       + "}";
     final Set<ConstraintViolation<PermissionEntry>> constraintViolations = deserializeAndValidate(json, PermissionEntry.class);
-    assertThat(constraintViolations, contains(hasViolationWithMessage("error.permission.missing_operations")));
+    assertThat(constraintViolations, contains(hasViolationWithMessage(ErrorMessages.Permissions.MISSING_OPERATIONS)));
   }
 
   @Test(expected = InvalidFormatException.class)
@@ -97,6 +98,6 @@ public class PermissionEntryTest {
       + "\"operations\": [\"read\"]"
       + "}";
     final Set<ConstraintViolation<PermissionEntry>> constraintViolations = deserializeAndValidate(json, PermissionEntry.class);
-    assertThat(constraintViolations, contains(hasViolationWithMessage("error.permission.missing_path")));
+    assertThat(constraintViolations, contains(hasViolationWithMessage(ErrorMessages.Permissions.MISSING_PATH)));
   }
 }

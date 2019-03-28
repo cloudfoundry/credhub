@@ -5,6 +5,7 @@ import java.util.Set;
 
 import javax.validation.ConstraintViolation;
 
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.PermissionOperation;
 import org.cloudfoundry.credhub.helpers.JsonTestHelper;
 import org.hamcrest.MatcherAssert;
@@ -49,7 +50,7 @@ public class PermissionsRequestTest {
     final Set<ConstraintViolation<PermissionsRequest>> violations = JsonTestHelper.validate(original);
 
     assertThat(violations.size(), equalTo(1));
-    MatcherAssert.assertThat(violations, Matchers.contains(JsonTestHelper.hasViolationWithMessage("error.missing_name")));
+    MatcherAssert.assertThat(violations, Matchers.contains(JsonTestHelper.hasViolationWithMessage(ErrorMessages.MISSING_NAME)));
   }
 
   @Test
@@ -60,7 +61,7 @@ public class PermissionsRequestTest {
     final Set<ConstraintViolation<PermissionsRequest>> violations = JsonTestHelper.validate(original);
 
     assertThat(violations.size(), equalTo(1));
-    MatcherAssert.assertThat(violations, Matchers.contains(JsonTestHelper.hasViolationWithMessage("error.missing_name")));
+    MatcherAssert.assertThat(violations, Matchers.contains(JsonTestHelper.hasViolationWithMessage(ErrorMessages.MISSING_NAME)));
   }
 
   @Test
@@ -69,7 +70,7 @@ public class PermissionsRequestTest {
     final Set<ConstraintViolation<PermissionsRequest>> violations = JsonTestHelper.validate(original);
 
     assertThat(violations.size(), equalTo(1));
-    MatcherAssert.assertThat(violations, Matchers.contains(JsonTestHelper.hasViolationWithMessage("error.permission.missing_aces")));
+    MatcherAssert.assertThat(violations, Matchers.contains(JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_ACES)));
   }
 
   @Test
@@ -78,6 +79,6 @@ public class PermissionsRequestTest {
     final Set<ConstraintViolation<PermissionsRequest>> violations = JsonTestHelper.validate(original);
 
     assertThat(violations.size(), equalTo(1));
-    MatcherAssert.assertThat(violations, Matchers.contains(JsonTestHelper.hasViolationWithMessage("error.permission.missing_aces")));
+    MatcherAssert.assertThat(violations, Matchers.contains(JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_ACES)));
   }
 }

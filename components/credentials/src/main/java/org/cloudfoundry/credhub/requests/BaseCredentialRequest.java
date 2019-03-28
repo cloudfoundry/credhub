@@ -8,6 +8,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 
 public abstract class BaseCredentialRequest {
@@ -17,11 +18,11 @@ public abstract class BaseCredentialRequest {
   private static final String ONLY_VALID_CHARACTERS_IN_NAME = "^[a-zA-Z0-9-_/.:,()\\[\\]+]*$";
   private static final String IS_NOT_EMPTY = "^(.|\n){2,}$";
 
-  @NotEmpty(message = "error.missing_name")
+  @NotEmpty(message = ErrorMessages.MISSING_NAME)
   @Pattern.List({
-    @Pattern(regexp = HAS_NO_DOUBLE_SLASHES_AND_DOES_NOT_END_WITH_A_SLASH, message = "error.credential.invalid_slash_in_name"),
-    @Pattern(regexp = ONLY_VALID_CHARACTERS_IN_NAME, message = "error.credential.invalid_character_in_name"),
-    @Pattern(regexp = IS_NOT_EMPTY, message = "error.missing_name"),
+    @Pattern(regexp = HAS_NO_DOUBLE_SLASHES_AND_DOES_NOT_END_WITH_A_SLASH, message = ErrorMessages.Credential.INVALID_SLASH_IN_NAME),
+    @Pattern(regexp = ONLY_VALID_CHARACTERS_IN_NAME, message = ErrorMessages.Credential.INVALID_CHARACTER_IN_NAME),
+    @Pattern(regexp = IS_NOT_EMPTY, message = ErrorMessages.MISSING_NAME),
   })
   private String name;
   private String type;

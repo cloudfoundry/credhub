@@ -28,7 +28,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
-public class CertificatesHandlerTest {
+public class
+CertificatesHandlerTest {
 
   private static final String UUID_STRING = "fake-uuid";
 

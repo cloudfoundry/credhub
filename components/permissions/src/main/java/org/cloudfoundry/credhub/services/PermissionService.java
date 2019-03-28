@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.PermissionOperation;
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
@@ -54,13 +55,13 @@ public class PermissionService {
     final UserContext userContext = userContextHolder.getUserContext();
     for (final PermissionEntry permissionEntry : permissionEntryList) {
       if (!permissionCheckingService.hasPermission(userContext.getActor(), permissionEntry.getPath(), PermissionOperation.WRITE_ACL)) {
-        throw new EntryNotFoundException("error.credential.invalid_access");
+        throw new EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS);
       }
       if (!permissionCheckingService.userAllowedToOperateOnActor(permissionEntry.getActor())) {
-        throw new InvalidPermissionOperationException("error.permission.invalid_update_operation");
+        throw new InvalidPermissionOperationException(ErrorMessages.Permissions.INVALID_UPDATE_OPERATION);
       }
       if (permissionCheckingService.hasPermissions(permissionEntry.getActor(), permissionEntry.getPath(), permissionEntry.getAllowedOperations())) {
-        throw new PermissionAlreadyExistsException("error.permission.already_exists");
+        throw new PermissionAlreadyExistsException(ErrorMessages.Permissions.ALREADY_EXISTS);
       }
     }
     return permissionDataService.savePermissionsWithLogging(permissionEntryList);
@@ -75,11 +76,11 @@ public class PermissionService {
 
   public List<PermissionEntry> getPermissions(final CredentialVersion credentialVersion) {
     if (credentialVersion == null) {
-      throw new EntryNotFoundException("error.resource_not_found");
+      throw new EntryNotFoundException(ErrorMessages.RESOURCE_NOT_FOUND);
     }
 
     if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), credentialVersion.getName(), PermissionOperation.READ_ACL)) {
-      throw new EntryNotFoundException("error.credential.invalid_access");
+      throw new EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS);
     }
 
     return getPermissions(credentialVersion.getCredential());
@@ -91,7 +92,7 @@ public class PermissionService {
     }
 
     if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), guid, PermissionOperation.READ_ACL)) {
-      throw new InvalidPermissionException("error.credential.invalid_access");
+      throw new InvalidPermissionException(ErrorMessages.Credential.INVALID_ACCESS);
     }
 
     return permissionDataService.getPermission(guid);
@@ -100,11 +101,11 @@ public class PermissionService {
   public boolean deletePermissions(final String credentialName, final String actor) {
     if (!permissionCheckingService
       .hasPermission(userContextHolder.getUserContext().getActor(), credentialName, PermissionOperation.WRITE_ACL)) {
-      throw new EntryNotFoundException("error.credential.invalid_access");
+      throw new EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS);
     }
 
     if (!permissionCheckingService.userAllowedToOperateOnActor(actor)) {
-      throw new InvalidPermissionOperationException("error.permission.invalid_update_operation");
+      throw new InvalidPermissionOperationException(ErrorMessages.Permissions.INVALID_UPDATE_OPERATION);
     }
 
     return permissionDataService.deletePermissions(credentialName, actor);
@@ -133,10 +134,10 @@ public class PermissionService {
   public PermissionData saveV2Permissions(final PermissionsV2Request permissionsRequest) {
     final UserContext userContext = userContextHolder.getUserContext();
     if (!permissionCheckingService.hasPermission(userContext.getActor(), permissionsRequest.getPath(), PermissionOperation.WRITE_ACL)) {
-      throw new EntryNotFoundException("error.credential.invalid_access");
+      throw new EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS);
     }
     if (!permissionCheckingService.userAllowedToOperateOnActor(permissionsRequest.getActor())) {
-      throw new InvalidPermissionOperationException("error.permission.invalid_update_operation");
+      throw new InvalidPermissionOperationException(ErrorMessages.Permissions.INVALID_UPDATE_OPERATION);
     }
     return permissionDataService.saveV2Permissions(permissionsRequest);
   }
@@ -151,17 +152,17 @@ public class PermissionService {
   public PermissionData findByPathAndActor(final String path, final String actor) {
     final UserContext userContext = userContextHolder.getUserContext();
     if (!permissionCheckingService.hasPermission(userContext.getActor(), path, PermissionOperation.READ_ACL)) {
-      throw new EntryNotFoundException("error.permission.invalid_access");
+      throw new EntryNotFoundException(ErrorMessages.Permissions.INVALID_ACCESS);
     }
     return permissionDataService.findByPathAndActor(path, actor);
   }
 
   private void checkActorPermissions(final UUID permissionUUID, final String actor) {
     if (!permissionCheckingService.hasPermission(actor, permissionUUID, PermissionOperation.WRITE_ACL)) {
-      throw new EntryNotFoundException("error.permission.does_not_exist");
+      throw new EntryNotFoundException(ErrorMessages.Permissions.DOES_NOT_EXIST);
     }
     if (!permissionCheckingService.userAllowedToOperateOnActor(permissionUUID)) {
-      throw new InvalidPermissionOperationException("error.permission.invalid_update_operation");
+      throw new InvalidPermissionOperationException(ErrorMessages.Permissions.INVALID_UPDATE_OPERATION);
     }
   }
 
@@ -170,7 +171,7 @@ public class PermissionService {
     try {
       permissionUUID = UUID.fromString(guid);
     } catch (final IllegalArgumentException e) {
-      throw new PermissionDoesNotExistException("error.permission.does_not_exist");
+      throw new PermissionDoesNotExistException(ErrorMessages.Permissions.DOES_NOT_EXIST);
     }
     return permissionUUID;
   }

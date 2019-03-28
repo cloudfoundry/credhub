@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.entities.GetCredentialById;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
@@ -89,7 +90,7 @@ public class DefaultPermissionedCredentialService implements PermissionedCredent
   @Override
   public boolean delete(final String credentialName) {
     if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), credentialName, DELETE)) {
-      throw new EntryNotFoundException("error.credential.invalid_access");
+      throw new EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS);
     }
     return credentialVersionDataService.delete(credentialName);
   }
@@ -97,7 +98,7 @@ public class DefaultPermissionedCredentialService implements PermissionedCredent
   @Override
   public List<CredentialVersion> findAllByName(final String credentialName) {
     if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), credentialName, READ)) {
-      throw new EntryNotFoundException("error.credential.invalid_access");
+      throw new EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS);
     }
 
     final List<CredentialVersion> credentialList = credentialVersionDataService.findAllByName(credentialName);
@@ -113,11 +114,11 @@ public class DefaultPermissionedCredentialService implements PermissionedCredent
   @Override
   public List<CredentialVersion> findNByName(final String credentialName, final int numberOfVersions) {
     if (numberOfVersions < 0) {
-      throw new InvalidQueryParameterException("error.invalid_query_parameter", "versions");
+      throw new InvalidQueryParameterException(ErrorMessages.INVALID_QUERY_PARAMETER, "versions");
     }
 
     if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), credentialName, READ)) {
-      throw new EntryNotFoundException("error.credential.invalid_access");
+      throw new EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS);
     }
 
     return credentialVersionDataService.findNByName(credentialName, numberOfVersions);
@@ -126,7 +127,7 @@ public class DefaultPermissionedCredentialService implements PermissionedCredent
   @Override
   public List<CredentialVersion> findActiveByName(final String credentialName) {
     if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), credentialName, READ)) {
-      throw new EntryNotFoundException("error.credential.invalid_access");
+      throw new EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS);
     }
     final List<CredentialVersion> credentialList = credentialVersionDataService.findActiveByName(credentialName);
 
@@ -142,11 +143,11 @@ public class DefaultPermissionedCredentialService implements PermissionedCredent
   public Credential findByUuid(final UUID credentialUUID) {
     final Credential credential = credentialDataService.findByUUID(credentialUUID);
     if (credential == null) {
-      throw new EntryNotFoundException("error.credential.invalid_access");
+      throw new EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS);
     }
 
     if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), credential.getName(), READ)) {
-      throw new EntryNotFoundException("error.credential.invalid_access");
+      throw new EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS);
     }
     return credential;
   }
@@ -161,13 +162,13 @@ public class DefaultPermissionedCredentialService implements PermissionedCredent
       auditRecord.setVersion(credentialVersion);
       auditRecord.setResource(credentialVersion.getCredential());
     } else {
-      throw new EntryNotFoundException("error.credential.invalid_access");
+      throw new EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS);
     }
 
     final String credentialName = credentialVersion.getName();
 
     if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), credentialName, READ)) {
-      throw new EntryNotFoundException("error.credential.invalid_access");
+      throw new EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS);
     }
     return credentialVersionDataService.findByUuid(credentialUUID);
   }
@@ -175,7 +176,7 @@ public class DefaultPermissionedCredentialService implements PermissionedCredent
   @Override
   public List<String> findAllCertificateCredentialsByCaName(final String caName) {
     if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), caName, READ)) {
-      throw new EntryNotFoundException("error.credential.invalid_access");
+      throw new EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS);
     }
 
     return credentialVersionDataService.findAllCertificateCredentialsByCaName(caName);
@@ -263,7 +264,7 @@ public class DefaultPermissionedCredentialService implements PermissionedCredent
     verifyWritePermission(credentialName);
 
     if (existingCredentialVersion != null && !existingCredentialVersion.getCredentialType().equals(type)) {
-      throw new ParameterizedValidationException("error.type_mismatch");
+      throw new ParameterizedValidationException(ErrorMessages.TYPE_MISMATCH);
     }
   }
 
@@ -273,7 +274,7 @@ public class DefaultPermissionedCredentialService implements PermissionedCredent
     }
 
     if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), credentialName, WRITE)) {
-      throw new PermissionException("error.credential.invalid_access");
+      throw new PermissionException(ErrorMessages.Credential.INVALID_ACCESS);
     }
   }
 }

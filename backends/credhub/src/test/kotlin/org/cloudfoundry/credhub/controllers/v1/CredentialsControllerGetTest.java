@@ -21,6 +21,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.cloudfoundry.credhub.AuthConstants;
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.DatabaseProfileResolver;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.PermissionOperation;
 import org.cloudfoundry.credhub.TestHelper;
 import org.cloudfoundry.credhub.domain.Encryptor;
@@ -346,7 +347,7 @@ public class CredentialsControllerGetTest {
     valueCredential.setVersionCreatedAt(FROZEN_TIME);
     valueCredential.getCredential().setUuid(UUID.randomUUID());
 
-    doThrow(new KeyNotFoundException("error.missing_encryption_key"))
+    doThrow(new KeyNotFoundException(ErrorMessages.MISSING_ENCRYPTION_KEY))
       .when(encryptor).decrypt(any());
     doReturn(Collections.singletonList(valueCredential)).when(credentialVersionDataService)
       .findAllByName(CREDENTIAL_NAME);

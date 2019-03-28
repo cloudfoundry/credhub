@@ -4,6 +4,7 @@ import java.util.Set;
 
 import javax.validation.ConstraintViolation;
 
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -138,7 +139,7 @@ public class RsaSetRequestTest {
     final Set<ConstraintViolation<RsaSetRequest>> violations = deserializeAndValidate(json,
       RsaSetRequest.class);
 
-    assertThat(violations, contains(hasViolationWithMessage("error.missing_value")));
+    assertThat(violations, contains(hasViolationWithMessage(ErrorMessages.MISSING_VALUE)));
   }
 
   @Test
@@ -152,7 +153,7 @@ public class RsaSetRequestTest {
       RsaSetRequest.class);
 
     assertThat(violations,
-      contains(hasViolationWithMessage("error.missing_rsa_ssh_parameters")));
+      contains(hasViolationWithMessage(ErrorMessages.MISSING_RSA_SSH_PARAMETERS)));
   }
 
   @Test
@@ -169,7 +170,7 @@ public class RsaSetRequestTest {
       RsaSetRequest.class);
 
     assertThat(violations,
-      contains(hasViolationWithMessage("error.missing_rsa_ssh_parameters")));
+      contains(hasViolationWithMessage(ErrorMessages.MISSING_RSA_SSH_PARAMETERS)));
   }
 
   @Test
@@ -186,6 +187,6 @@ public class RsaSetRequestTest {
       RsaSetRequest.class);
 
     assertThat(violations,
-      contains(hasViolationWithMessage("error.missing_rsa_ssh_parameters")));
+      contains(hasViolationWithMessage(ErrorMessages.MISSING_RSA_SSH_PARAMETERS)));
   }
 }

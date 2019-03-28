@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.google.common.collect.Lists;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.PermissionOperation;
 import org.cloudfoundry.credhub.data.CredentialDataService;
 import org.cloudfoundry.credhub.data.PermissionData;
@@ -237,7 +238,7 @@ public class DefaultPermissionsHandlerTest {
     try {
       subject.writePermissions(permissionsRequest);
     } catch (final InvalidPermissionOperationException e) {
-      assertThat(e.getMessage(), equalTo("error.permission.invalid_update_operation"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.Permissions.INVALID_UPDATE_OPERATION));
       verify(permissionService, times(0)).savePermissionsForUser(any());
     }
   }
@@ -271,7 +272,7 @@ public class DefaultPermissionsHandlerTest {
       );
       fail("should throw");
     } catch (final EntryNotFoundException e) {
-      assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.Credential.INVALID_ACCESS));
     }
   }
 }

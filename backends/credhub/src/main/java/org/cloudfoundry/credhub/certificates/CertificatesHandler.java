@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.Lists;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
@@ -99,7 +100,7 @@ public class CertificatesHandler {
     try {
       uuid = UUID.fromString(uuidString);
     } catch (final IllegalArgumentException e) {
-      throw new EntryNotFoundException("error.credential.invalid_access");
+      throw new EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS);
     }
     final List<CredentialVersion> credentialList = permissionedCertificateService
       .getVersions(uuid, current);

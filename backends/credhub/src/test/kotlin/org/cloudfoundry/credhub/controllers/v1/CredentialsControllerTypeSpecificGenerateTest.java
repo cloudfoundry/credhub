@@ -26,6 +26,7 @@ import org.cloudfoundry.credhub.AuthConstants;
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.CryptSaltFactory;
 import org.cloudfoundry.credhub.DatabaseProfileResolver;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.TestHelper;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.credential.RsaCredentialValue;
@@ -429,7 +430,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
 
     final DefaultCredentialGenerateRequest requestBody = mock(DefaultCredentialGenerateRequest.class);
 
-    Mockito.doThrow(new ParameterizedValidationException("error.bad_request")).when(requestBody).validate();
+    Mockito.doThrow(new ParameterizedValidationException(ErrorMessages.BAD_REQUEST)).when(requestBody).validate();
     doReturn(requestBody).when(objectMapper).readValue(anyString(), any(Class.class));
 
     mockMvc.perform(request)

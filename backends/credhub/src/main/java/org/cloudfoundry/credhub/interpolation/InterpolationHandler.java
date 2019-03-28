@@ -7,6 +7,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.domain.JsonCredentialVersion;
@@ -56,7 +57,7 @@ public class InterpolationHandler {
           .findNByName(credentialName, 1);
 
         if (credentialVersions.isEmpty()) {
-          throw new EntryNotFoundException("error.credential.invalid_access");
+          throw new EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS);
         }
 
         final CredentialVersion credentialVersion = credentialVersions.get(0);
@@ -67,7 +68,7 @@ public class InterpolationHandler {
         if (credentialVersion instanceof JsonCredentialVersion) {
           propertiesMap.put("credentials", ((JsonCredentialVersion) credentialVersion).getValue());
         } else {
-          throw new ParameterizedValidationException("error.interpolation.invalid_type",
+          throw new ParameterizedValidationException(ErrorMessages.Interpolation.INVALID_TYPE,
             credentialName);
         }
       }

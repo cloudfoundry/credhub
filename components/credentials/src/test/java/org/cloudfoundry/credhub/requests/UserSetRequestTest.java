@@ -5,6 +5,7 @@ import java.util.Set;
 
 import javax.validation.ConstraintViolation;
 
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.credential.UserCredentialValue;
 import org.cloudfoundry.credhub.helpers.JsonTestHelper;
 import org.junit.Before;
@@ -89,7 +90,7 @@ public class UserSetRequestTest {
       UserSetRequest.class);
     final Set<ConstraintViolation<UserSetRequest>> violations = validate(userSetRequest);
 
-    assertThat(violations, contains(hasViolationWithMessage("error.missing_value")));
+    assertThat(violations, contains(hasViolationWithMessage(ErrorMessages.MISSING_VALUE)));
   }
 
   @Test
@@ -104,6 +105,6 @@ public class UserSetRequestTest {
 
     final Set<ConstraintViolation<UserSetRequest>> violations = deserializeAndValidate(invalidSetRequestJson, UserSetRequest.class);
 
-    assertThat(violations, contains(hasViolationWithMessage("error.missing_password")));
+    assertThat(violations, contains(hasViolationWithMessage(ErrorMessages.MISSING_PASSWORD)));
   }
 }

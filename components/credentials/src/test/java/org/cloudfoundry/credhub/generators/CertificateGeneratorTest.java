@@ -22,6 +22,7 @@ import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.TestHelper;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.data.CertificateAuthorityService;
@@ -244,7 +245,7 @@ public class CertificateGeneratorTest {
       subject.generateCredential(new CertificateGenerationParameters(parameters));
       fail("Should throw exception");
     } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo("error.ca_missing_private_key"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.CA_MISSING_PRIVATE_KEY));
     }
   }
 

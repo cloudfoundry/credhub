@@ -1,6 +1,7 @@
 package org.cloudfoundry.credhub.requests;
 
 import org.apache.commons.lang3.RandomStringUtils;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,7 +41,7 @@ public class CertificateGenerationRequestParametersTest {
       subject.validate();
       fail("should throw");
     } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo("error.invalid_extended_key_usage"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.INVALID_EXTENDED_KEY_USAGE));
       assertThat(e.getParameters(), equalTo(new Object[]{"this_is_invalid"}));
     }
   }
@@ -55,7 +56,7 @@ public class CertificateGenerationRequestParametersTest {
       subject.validate();
       fail("should throw");
     } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo("error.missing_signing_ca"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.MISSING_SIGNING_CA));
     }
   }
 
@@ -77,7 +78,7 @@ public class CertificateGenerationRequestParametersTest {
       subject.validate();
       fail("should throw");
     } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo("error.invalid_duration"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.INVALID_DURATION));
     }
   }
 
@@ -94,7 +95,7 @@ public class CertificateGenerationRequestParametersTest {
       subject.validate();
       fail("should throw");
     } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo("error.missing_certificate_parameters"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.MISSING_CERTIFICATE_PARAMETERS));
     }
   }
 
@@ -120,7 +121,7 @@ public class CertificateGenerationRequestParametersTest {
       subject.validate();
       fail("should throw");
     } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo("error.invalid_key_length"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.INVALID_KEY_LENGTH));
     }
   }
 
@@ -132,7 +133,7 @@ public class CertificateGenerationRequestParametersTest {
       subject.validate();
       fail("should throw");
     } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo("error.invalid_key_length"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.INVALID_KEY_LENGTH));
     }
   }
 
@@ -144,7 +145,7 @@ public class CertificateGenerationRequestParametersTest {
       subject.validate();
       fail("should throw");
     } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo("error.invalid_key_length"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.INVALID_KEY_LENGTH));
     }
   }
 
@@ -157,7 +158,7 @@ public class CertificateGenerationRequestParametersTest {
       subject.validate();
       fail("should throw");
     } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo("error.invalid_key_length"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.INVALID_KEY_LENGTH));
     }
   }
 
@@ -177,7 +178,7 @@ public class CertificateGenerationRequestParametersTest {
       subject.validate();
       fail("should throw");
     } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo("error.invalid_alternate_name"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.INVALID_ALTERNATE_NAME));
     }
   }
 
@@ -188,7 +189,7 @@ public class CertificateGenerationRequestParametersTest {
       subject.validate();
       fail("should throw");
     } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo("error.invalid_alternate_name"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.INVALID_ALTERNATE_NAME));
     }
   }
 
@@ -199,7 +200,7 @@ public class CertificateGenerationRequestParametersTest {
       subject.validate();
       fail("should throw");
     } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo("error.invalid_alternate_name"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.INVALID_ALTERNATE_NAME));
     }
   }
 
@@ -212,7 +213,7 @@ public class CertificateGenerationRequestParametersTest {
       subject.validate();
       fail("should throw");
     } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo("error.invalid_alternate_name"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.INVALID_ALTERNATE_NAME));
     }
   }
 
@@ -223,7 +224,7 @@ public class CertificateGenerationRequestParametersTest {
       subject.validate();
       fail("should throw");
     } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo("error.invalid_alternate_name"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.INVALID_ALTERNATE_NAME));
     }
   }
 
@@ -240,7 +241,7 @@ public class CertificateGenerationRequestParametersTest {
       subject.validate();
       fail("should throw");
     } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo("error.credential.invalid_certificate_parameter"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.Credential.INVALID_CERTIFICATE_PARAMETER));
       assertThat(e.getParameters(), equalTo(new Object[]{"common name", 64}));
     }
   }
@@ -258,7 +259,7 @@ public class CertificateGenerationRequestParametersTest {
       subject.validate();
       fail("should throw");
     } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo("error.credential.invalid_certificate_parameter"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.Credential.INVALID_CERTIFICATE_PARAMETER));
       assertThat(e.getParameters(), equalTo(new Object[]{"organization", 64}));
     }
   }
@@ -276,7 +277,7 @@ public class CertificateGenerationRequestParametersTest {
       subject.validate();
       fail("should throw");
     } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo("error.credential.invalid_certificate_parameter"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.Credential.INVALID_CERTIFICATE_PARAMETER));
       assertThat(e.getParameters(), equalTo(new Object[]{"organization unit", 64}));
     }
   }
@@ -294,7 +295,7 @@ public class CertificateGenerationRequestParametersTest {
       subject.validate();
       fail("should throw");
     } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo("error.credential.invalid_certificate_parameter"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.Credential.INVALID_CERTIFICATE_PARAMETER));
       assertThat(e.getParameters(), equalTo(new Object[]{"locality", 128}));
     }
   }
@@ -312,7 +313,7 @@ public class CertificateGenerationRequestParametersTest {
       subject.validate();
       fail("should throw");
     } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo("error.credential.invalid_certificate_parameter"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.Credential.INVALID_CERTIFICATE_PARAMETER));
       assertThat(e.getParameters(), equalTo(new Object[]{"state", 128}));
     }
   }
@@ -330,7 +331,7 @@ public class CertificateGenerationRequestParametersTest {
       subject.validate();
       fail("should throw");
     } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo("error.credential.invalid_certificate_parameter"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.Credential.INVALID_CERTIFICATE_PARAMETER));
       assertThat(e.getParameters(), equalTo(new Object[]{"country", 2}));
     }
   }
@@ -351,7 +352,7 @@ public class CertificateGenerationRequestParametersTest {
       subject.validate();
       fail("should throw");
     } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo("error.credential.invalid_certificate_parameter"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.Credential.INVALID_CERTIFICATE_PARAMETER));
       assertThat(e.getParameters(), equalTo(new Object[]{"alternative name", 253}));
     }
   }

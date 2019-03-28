@@ -11,7 +11,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.security.authentication.AuthenticationEventPublisher;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
@@ -27,6 +26,7 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.auth.OAuth2AuthenticationExceptionHandler;
 import org.cloudfoundry.credhub.auth.OAuth2IssuerService;
 
@@ -34,7 +34,6 @@ import org.cloudfoundry.credhub.auth.OAuth2IssuerService;
 @ConditionalOnProperty("security.oauth2.enabled")
 public class OAuth2ExtraValidationFilter extends OncePerRequestFilter {
 
-  private final MessageSourceAccessor messageSourceAccessor;
   private final TokenStore tokenStore;
   private final OAuth2AuthenticationExceptionHandler oAuth2AuthenticationExceptionHandler;
   private final AuthenticationEventPublisher eventPublisher;
@@ -46,7 +45,6 @@ public class OAuth2ExtraValidationFilter extends OncePerRequestFilter {
     final OAuth2IssuerService oAuth2IssuerService,
     final TokenStore tokenStore,
     final OAuth2AuthenticationExceptionHandler oAuth2AuthenticationExceptionHandler,
-    final MessageSourceAccessor messageSourceAccessor,
     final AuthenticationEventPublisher eventPublisher
   ) {
     super();
@@ -55,7 +53,6 @@ public class OAuth2ExtraValidationFilter extends OncePerRequestFilter {
     this.oAuth2AuthenticationExceptionHandler = oAuth2AuthenticationExceptionHandler;
     this.eventPublisher = eventPublisher;
     this.tokenExtractor = new BearerTokenExtractor();
-    this.messageSourceAccessor = messageSourceAccessor;
   }
 
   @Override
@@ -74,7 +71,7 @@ public class OAuth2ExtraValidationFilter extends OncePerRequestFilter {
         if (!issuer.equals(oAuth2IssuerService.getIssuer())) {
           tokenStore.removeAccessToken(accessToken);
 
-          final String errorMessage = messageSourceAccessor.getMessage("error.oauth.invalid_issuer");
+          final String errorMessage = ErrorMessages.Oauth.INVALID_ISSUER;
           throw new OAuth2Exception(errorMessage);
           //        AuthenticationServiceException authException = new AuthenticationServiceException(errorMessage);
           //        oAuth2AuthenticationExceptionHandler.commence(request, response, authException);

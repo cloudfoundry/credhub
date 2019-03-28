@@ -31,6 +31,7 @@ import com.google.common.collect.ImmutableMap;
 import net.minidev.json.JSONObject;
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.DatabaseProfileResolver;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.TestHelper;
 import org.cloudfoundry.credhub.certificates.DefaultSetHandler;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
@@ -447,7 +448,7 @@ public class CredentialsControllerTypeSpecificSetTest {
         "}");
 
     final BaseCredentialSetRequest requestObject = mock(BaseCredentialSetRequest.class);
-    doThrow(new ParameterizedValidationException("error.bad_request")).when(requestObject).validate();
+    doThrow(new ParameterizedValidationException(ErrorMessages.BAD_REQUEST)).when(requestObject).validate();
     doReturn(requestObject).when(objectMapper).readValue(any(InputStream.class), any(JavaType.class));
 
     mockMvc.perform(request)

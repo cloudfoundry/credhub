@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.requests;
 
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,7 +45,7 @@ public class RsaGenerationParametersTest {
       subject.validate();
       fail("should throw");
     } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo("error.invalid_key_length"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.INVALID_KEY_LENGTH));
     }
   }
 }

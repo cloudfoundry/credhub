@@ -8,6 +8,7 @@ import javax.validation.ValidationException;
 import com.google.common.collect.ImmutableMap;
 import net.minidev.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.TestHelper;
 import org.junit.Before;
 import org.junit.Test;
@@ -171,7 +172,7 @@ public class CertificateSetRequestTest {
     final Set<ConstraintViolation<CertificateSetRequest>> violations = deserializeAndValidate(json,
       CertificateSetRequest.class);
 
-    assertThat(violations, hasItem(hasViolationWithMessage("error.missing_value")));
+    assertThat(violations, hasItem(hasViolationWithMessage(ErrorMessages.MISSING_VALUE)));
   }
 
   @Test
@@ -185,7 +186,7 @@ public class CertificateSetRequestTest {
       CertificateSetRequest.class);
 
     assertThat(violations,
-      hasItem(hasViolationWithMessage("error.missing_certificate_credentials")));
+      hasItem(hasViolationWithMessage(ErrorMessages.MISSING_CERTIFICATE_CREDENTIALS)));
   }
 
   @Test
@@ -204,7 +205,7 @@ public class CertificateSetRequestTest {
       CertificateSetRequest.class);
 
     assertThat(violations,
-      hasItem(hasViolationWithMessage("error.missing_certificate_credentials")));
+      hasItem(hasViolationWithMessage(ErrorMessages.MISSING_CERTIFICATE_CREDENTIALS)));
   }
 
   @Test
@@ -223,7 +224,7 @@ public class CertificateSetRequestTest {
       CertificateSetRequest.class);
 
     assertThat(violations,
-      hasItem(hasViolationWithMessage("error.missing_certificate_credentials")));
+      hasItem(hasViolationWithMessage(ErrorMessages.MISSING_CERTIFICATE_CREDENTIALS)));
   }
 
   @Test
@@ -246,7 +247,7 @@ public class CertificateSetRequestTest {
       CertificateSetRequest.class
     );
 
-    assertThat(violations, hasItem(hasViolationWithMessage("error.mixed_ca_name_and_ca")));
+    assertThat(violations, hasItem(hasViolationWithMessage(ErrorMessages.MIXED_CA_NAME_AND_CA)));
   }
 
   @Test
@@ -317,7 +318,7 @@ public class CertificateSetRequestTest {
       CertificateSetRequest.class
     );
 
-    assertThat(violations, hasItem(hasViolationWithMessage("error.invalid_certificate_length")));
+    assertThat(violations, hasItem(hasViolationWithMessage(ErrorMessages.INVALID_CERTIFICATE_LENGTH)));
   }
 
   @Test
@@ -341,7 +342,7 @@ public class CertificateSetRequestTest {
       CertificateSetRequest.class
     );
 
-    assertThat(violations, hasItem(hasViolationWithMessage("error.invalid_certificate_length")));
+    assertThat(violations, hasItem(hasViolationWithMessage(ErrorMessages.INVALID_CERTIFICATE_LENGTH)));
   }
 
   @Test
@@ -364,7 +365,7 @@ public class CertificateSetRequestTest {
       CertificateSetRequest.class
     );
 
-    assertThat(violations, hasItem(hasViolationWithMessage("error.invalid_ca_value")));
+    assertThat(violations, hasItem(hasViolationWithMessage(ErrorMessages.INVALID_CA_VALUE)));
   }
 
   @Test
@@ -387,7 +388,7 @@ public class CertificateSetRequestTest {
       CertificateSetRequest.class
     );
 
-    assertThat(violations, hasItem(hasViolationWithMessage("error.invalid_ca_value")));
+    assertThat(violations, hasItem(hasViolationWithMessage(ErrorMessages.INVALID_CA_VALUE)));
   }
 
   @Test
@@ -410,6 +411,6 @@ public class CertificateSetRequestTest {
       CertificateSetRequest.class
     );
 
-    assertThat(violations, hasItem(hasViolationWithMessage("error.mismatched_certificate_and_private_key")));
+    assertThat(violations, hasItem(hasViolationWithMessage(ErrorMessages.MISMATCHED_CERTIFICATE_AND_PRIVATE_KEY)));
   }
 }

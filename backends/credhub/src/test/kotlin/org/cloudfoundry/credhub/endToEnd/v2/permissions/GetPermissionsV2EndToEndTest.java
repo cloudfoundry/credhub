@@ -16,6 +16,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.DatabaseProfileResolver;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.PermissionOperation;
 import org.cloudfoundry.credhub.helpers.JsonTestHelper;
 import org.cloudfoundry.credhub.views.PermissionsV2View;
@@ -126,7 +127,7 @@ public class GetPermissionsV2EndToEndTest {
 
     final String content = mockMvc.perform(getUuidRequest).andExpect(status().isNotFound()).andReturn().getResponse().getContentAsString();
     final String errorMessage = new JSONObject(content).getString("error");
-    assertThat(errorMessage, is(equalTo(messageSource.getMessage("error.permission.invalid_access", null, null, Locale.ENGLISH))));
+    assertThat(errorMessage, is(equalTo(messageSource.getMessage(ErrorMessages.Permissions.INVALID_ACCESS, null, null, Locale.ENGLISH))));
   }
 
   @Test
@@ -142,7 +143,7 @@ public class GetPermissionsV2EndToEndTest {
 
     final String content = mockMvc.perform(getUuidRequest).andExpect(status().isNotFound()).andReturn().getResponse().getContentAsString();
     final String errorMessage = new JSONObject(content).getString("error");
-    assertThat(errorMessage, is(equalTo(messageSource.getMessage("error.permission.invalid_access", null, null, Locale.ENGLISH))));
+    assertThat(errorMessage, is(equalTo(messageSource.getMessage(ErrorMessages.Permissions.INVALID_ACCESS, null, null, Locale.ENGLISH))));
   }
 
   @Test
@@ -158,6 +159,6 @@ public class GetPermissionsV2EndToEndTest {
 
     final String content = mockMvc.perform(getUuidRequest).andExpect(status().isNotFound()).andReturn().getResponse().getContentAsString();
     final String errorMessage = new JSONObject(content).getString("error");
-    assertThat(errorMessage, is(equalTo(messageSource.getMessage("error.permission.invalid_access", null, null, Locale.ENGLISH))));
+    assertThat(errorMessage, is(equalTo(messageSource.getMessage(ErrorMessages.Permissions.INVALID_ACCESS, null, null, Locale.ENGLISH))));
   }
 }

@@ -4,6 +4,7 @@ import java.util.Set;
 
 import javax.validation.ConstraintViolation;
 
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -68,7 +69,7 @@ public class ValueSetRequestTest {
       BaseCredentialSetRequest.class);
     final Set<ConstraintViolation<ValueSetRequest>> violations = validate(valueSetRequest);
 
-    assertThat(violations, contains(hasViolationWithMessage("error.missing_value")));
+    assertThat(violations, contains(hasViolationWithMessage(ErrorMessages.MISSING_VALUE)));
   }
 
   @Test
@@ -82,6 +83,6 @@ public class ValueSetRequestTest {
       BaseCredentialSetRequest.class);
     final Set<ConstraintViolation<ValueSetRequest>> violations = validate(valueSetRequest);
 
-    assertThat(violations, contains(hasViolationWithMessage("error.missing_value")));
+    assertThat(violations, contains(hasViolationWithMessage(ErrorMessages.MISSING_VALUE)));
   }
 }

@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.requests;
 
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.helpers.JsonTestHelper;
 import org.junit.Test;
@@ -37,7 +38,7 @@ public class BaseCredentialGenerateRequestTest {
         .deserialize(json, BaseCredentialGenerateRequest.class);
       request.validate();
     } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo("error.invalid_type_with_generate_prompt"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.INVALID_TYPE_WITH_GENERATE_PROMPT));
     }
   }
 
@@ -55,7 +56,7 @@ public class BaseCredentialGenerateRequestTest {
         .deserialize(json, BaseCredentialGenerateRequest.class);
       request.validate();
     } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo("error.cannot_generate_type"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.CANNOT_GENERATE_TYPE));
     }
   }
 
@@ -72,7 +73,7 @@ public class BaseCredentialGenerateRequestTest {
         .deserialize(json, BaseCredentialGenerateRequest.class);
       request.validate();
     } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo("error.cannot_generate_type"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.CANNOT_GENERATE_TYPE));
     }
   }
 
@@ -89,7 +90,7 @@ public class BaseCredentialGenerateRequestTest {
         .deserialize(json, BaseCredentialGenerateRequest.class);
       request.validate();
     } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo("error.invalid_type_with_generate_prompt"));
+      assertThat(e.getMessage(), equalTo(ErrorMessages.INVALID_TYPE_WITH_GENERATE_PROMPT));
     }
   }
 }

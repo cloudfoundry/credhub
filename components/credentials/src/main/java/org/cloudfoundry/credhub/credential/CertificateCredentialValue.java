@@ -5,6 +5,7 @@ import java.time.Instant;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.apache.commons.lang3.StringUtils;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.utils.CertificateReader;
 import org.cloudfoundry.credhub.utils.EmptyStringToNull;
 import org.cloudfoundry.credhub.validators.MutuallyExclusive;
@@ -15,13 +16,13 @@ import org.cloudfoundry.credhub.validators.RequireValidCA;
 import org.cloudfoundry.credhub.validators.RequireValidCertificate;
 import org.cloudfoundry.credhub.validators.ValidCertificateLength;
 
-@RequireAnyOf(message = "error.missing_certificate_credentials", fields = {"ca", "certificate", "privateKey", })
-@MutuallyExclusive(message = "error.mixed_ca_name_and_ca", fields = {"ca", "caName", })
-@ValidCertificateLength(message = "error.invalid_certificate_length", fields = {"certificate", "ca", })
-@RequireValidCertificate(message = "error.invalid_certificate_value", fields = {"certificate", })
-@RequireCertificateSignedByCA(message = "error.certificate_was_not_signed_by_ca", fields = {"ca", })
-@RequireCertificateMatchesPrivateKey(message = "error.mismatched_certificate_and_private_key", fields = {"certificate", "privateKey", })
-@RequireValidCA(message = "error.invalid_ca_value", fields = {"ca", })
+@RequireAnyOf(message = ErrorMessages.MISSING_CERTIFICATE_CREDENTIALS, fields = {"ca", "certificate", "privateKey", })
+@MutuallyExclusive(message = ErrorMessages.MIXED_CA_NAME_AND_CA, fields = {"ca", "caName", })
+@ValidCertificateLength(message = ErrorMessages.INVALID_CERTIFICATE_LENGTH, fields = {"certificate", "ca", })
+@RequireValidCertificate(message = ErrorMessages.INVALID_CERTIFICATE_VALUE, fields = {"certificate", })
+@RequireCertificateSignedByCA(message = ErrorMessages.CERTIFICATE_WAS_NOT_SIGNED_BY_CA, fields = {"ca", })
+@RequireCertificateMatchesPrivateKey(message = ErrorMessages.MISMATCHED_CERTIFICATE_AND_PRIVATE_KEY, fields = {"certificate", "privateKey", })
+@RequireValidCA(message = ErrorMessages.INVALID_CA_VALUE, fields = {"ca", })
 public class CertificateCredentialValue implements CredentialValue {
 
   @JsonDeserialize(using = EmptyStringToNull.class)
