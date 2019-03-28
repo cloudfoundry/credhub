@@ -1,6 +1,8 @@
 package org.cloudfoundry.credhub.requests;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 public class UpdateTransitionalVersionRequest {
   @JsonProperty("version")
@@ -21,5 +23,29 @@ public class UpdateTransitionalVersionRequest {
 
   public void setVersionUuid(final String versionUuid) {
     this.versionUuid = versionUuid;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    UpdateTransitionalVersionRequest that = (UpdateTransitionalVersionRequest) o;
+
+    return new EqualsBuilder()
+      .append(versionUuid, that.versionUuid)
+      .isEquals();
+  }
+
+  @Override
+  public int hashCode() {
+    return new HashCodeBuilder(17, 37)
+      .append(versionUuid)
+      .toHashCode();
   }
 }

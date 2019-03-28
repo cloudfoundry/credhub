@@ -1,7 +1,7 @@
 package org.cloudfoundry.credhub.controllers.v1.certificates
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.commons.lang3.RandomStringUtils
+import org.assertj.core.api.Assertions.assertThat
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.certificates.CertificatesController
@@ -9,8 +9,10 @@ import org.cloudfoundry.credhub.constants.CredentialType
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
 import org.cloudfoundry.credhub.helpers.CredHubRestDocs
+import org.cloudfoundry.credhub.helpers.JsonHelpers
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
 import org.cloudfoundry.credhub.requests.CertificateRegenerateRequest
+import org.cloudfoundry.credhub.requests.UpdateTransitionalVersionRequest
 import org.cloudfoundry.credhub.utils.TestConstants
 import org.cloudfoundry.credhub.views.CertificateCredentialView
 import org.cloudfoundry.credhub.views.CertificateCredentialsView
@@ -23,12 +25,14 @@ import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.http.MediaType
 import org.springframework.restdocs.JUnitRestDocumentation
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
+import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.put
 import org.springframework.restdocs.payload.JsonFieldType
 import org.springframework.restdocs.payload.PayloadDocumentation
 import org.springframework.restdocs.request.RequestDocumentation.parameterWithName
+import org.springframework.restdocs.request.RequestDocumentation.pathParameters
 import org.springframework.restdocs.request.RequestDocumentation.requestParameters
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -49,6 +53,9 @@ class CertificatesControllerTest {
     private lateinit var certificateId: UUID
     private lateinit var name: String
     private lateinit var createdAt: Instant
+    private lateinit var certificateCredentialVersion: CertificateCredentialVersion
+    private lateinit var certificateView: CertificateView
+
 
     @Before
     fun setUp() {
@@ -56,7 +63,7 @@ class CertificatesControllerTest {
 
         val certificateController = CertificatesController(
             spyCertificatesHandler,
-                CEFAuditRecord()
+            CEFAuditRecord()
         )
 
         mockMvc = MockMvcFactory.newSpringRestDocMockMvc(certificateController, restDocumentation)
@@ -64,7 +71,6 @@ class CertificatesControllerTest {
         if (Security.getProvider(BouncyCastleFipsProvider.PROVIDER_NAME) == null) {
             Security.addProvider(BouncyCastleFipsProvider())
         }
-
 
         certificateId = UUID.randomUUID()
         name = RandomStringUtils.randomAlphabetic(10)
@@ -74,7 +80,7 @@ class CertificatesControllerTest {
             TestConstants.TEST_CA,
             TestConstants.TEST_CERTIFICATE,
             TestConstants.TEST_PRIVATE_KEY,
-            null,
+            name,
             true
         )
 
@@ -85,39 +91,53 @@ class CertificatesControllerTest {
             CredentialType.CERTIFICATE.type.toLowerCase(),
             certificateCredentialValue)
 
+        certificateCredentialVersion = CertificateCredentialVersion(certificateCredentialValue, SpyEncryptor())
+        certificateCredentialVersion.createName(name)
+        certificateCredentialVersion.versionCreatedAt = createdAt
+        certificateCredentialVersion.uuid = certificateId
+        certificateCredentialVersion.expiryDate = certificateCredentialValue.expiryDate
+
+        certificateView = CertificateView(certificateCredentialVersion)
 
     }
 
     @Test
     fun POST__certificates_uuid_regenerate__returns_certificate() {
-        val requestBodyContent = CertificateRegenerateRequest(true)
-        spyCertificatesHandler.handleRegenerate__calledWith_request = requestBodyContent
-        spyCertificatesHandler.handleRegenerate__calledWith_credentialUuid = certificateId.toString()
+        // language=json
+        val requestBody = """
+            {"set_as_transitional": true}
+        """.trimIndent()
 
-        val mapper = ObjectMapper()
-        val requestBody = mapper.writeValueAsString(requestBodyContent)
         spyCertificatesHandler.handleRegenerate__returns_credentialView = credentialViewResponse
 
         val mvcResult = mockMvc
-                .perform(
-                    post("${CertificatesController.ENDPOINT}/{certificateId}/regenerate", certificateId.toString())
-                        .header("Authorization", "Bearer [some-token]")
-                        .accept(MediaType.APPLICATION_JSON_UTF8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody)
-                ).andExpect(status().isOk)
-                .andDo(
-                        document(
-                                CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                                PayloadDocumentation.requestFields(
-                                        PayloadDocumentation.fieldWithPath("set_as_transitional")
-                                                .description("Set if certificate is transitional")
-                                                .type(JsonFieldType.BOOLEAN)
-                                                .optional()
-                                )
-                        )
+            .perform(
+                post("${CertificatesController.ENDPOINT}/{certificateId}/regenerate", certificateId.toString())
+                    .header("Authorization", "Bearer [some-token]")
+                    .accept(MediaType.APPLICATION_JSON_UTF8)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(requestBody)
+            ).andExpect(status().isOk)
+            .andDo(
+                document(
+                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                    PayloadDocumentation.requestFields(
+                        PayloadDocumentation.fieldWithPath("set_as_transitional")
+                            .description("Set if certificate is transitional")
+                            .type(JsonFieldType.BOOLEAN)
+                            .optional()
+                    ),
+                    pathParameters(
+                        parameterWithName("certificateId").description("Certificate Id")
+                    )
+                )
 
-                ).andReturn()
+            ).andReturn()
+
+        val expectedRequestBody = CertificateRegenerateRequest(true)
+
+        assertThat(spyCertificatesHandler.handleRegenerate__calledWith_request).isEqualTo(expectedRequestBody)
+        assertThat(spyCertificatesHandler.handleRegenerate__calledWith_credentialUuid).isEqualTo(certificateId.toString())
 
         // language=json
         val expectedResponseBody = """
@@ -139,7 +159,7 @@ class CertificatesControllerTest {
     }
 
     @Test
-    fun GET__certificates__returns_certificates(){
+    fun GET__certificates__returns_certificates() {
         val certificateCredentialsView = CertificateCredentialsView(listOf(CertificateCredentialView(name, certificateId)))
         spyCertificatesHandler.handleGetAllRequest__returns_certificateCredentialsView = certificateCredentialsView
 
@@ -172,7 +192,7 @@ class CertificatesControllerTest {
     }
 
     @Test
-    fun GET__certificates_byName__returns_certificate(){
+    fun GET__certificates_byName__returns_certificate() {
         val certificateCredentialsView = CertificateCredentialsView(listOf(CertificateCredentialView(name, certificateId)))
         spyCertificatesHandler.handleGetByNameRequest__returns_certificateCredentialsView = certificateCredentialsView
 
@@ -186,8 +206,7 @@ class CertificatesControllerTest {
             .andDo(
                 document(
                     CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    requestParameters(parameterWithName("name").
-                        description("Certificate Name"))
+                    requestParameters(parameterWithName("name").description("Certificate Name"))
                 )
             ).andReturn()
 
@@ -208,14 +227,14 @@ class CertificatesControllerTest {
     }
 
     @Test
-    fun PUT__updateTransitionalVersion__returns_certificate(){
+    fun PUT__updateTransitionalVersion__returns_certificate() {
+        val versionId = UUID.randomUUID()
+
         // language=json
         val requestBody = """
-            {"version": "some-version"}
+            {"version": "$versionId"}
         """.trimIndent()
 
-        val certificateCredentialVersion = CertificateCredentialVersion(certificateCredentialValue, StubEncryptor())
-        val certificateView = CertificateView(certificateCredentialVersion)
         spyCertificatesHandler.handleUpdateTransitionalVersion__returns_certificateViewList = listOf(certificateView)
 
         mockMvc
@@ -231,12 +250,162 @@ class CertificatesControllerTest {
                     CredHubRestDocs.DOCUMENT_IDENTIFIER,
                     PayloadDocumentation.requestFields(
                         PayloadDocumentation.fieldWithPath("version")
-                            .description("Version of certificate to set as transitional. Set version to null to ensure no versions are transitional.")
+                            .description("Version UUID of certificate to set as transitional. Set version to null to ensure no versions are transitional.")
                             .type(JsonFieldType.STRING)
+                    ),
+                    pathParameters(
+                        parameterWithName("certificateId").description("Certificate Id")
                     )
                 )
 
             ).andReturn()
 
+        val actualRequestBody = spyCertificatesHandler.handleUpdateTransitionalVersion__calledWith_requestBody
+        val expectedRequestBody = UpdateTransitionalVersionRequest(versionId.toString())
+
+        assertThat(spyCertificatesHandler.handleUpdateTransitionalVersion__calledWith_certificateId).isEqualTo(certificateId.toString())
+        assertThat(expectedRequestBody).isEqualTo(actualRequestBody)
+    }
+
+    @Test
+    fun GET__certificateVersions__returns_certificates() {
+        spyCertificatesHandler.handleGetAllVersionsRequest__returns_certificateViews = listOf(certificateView)
+
+        val mvcResult = mockMvc.perform(
+            get("${CertificatesController.ENDPOINT}/{certificateId}/versions", certificateId.toString())
+                .header("Authorization", "Bearer [some-token]")
+                .accept(MediaType.APPLICATION_JSON_UTF8)
+                .param("current", "true")
+        ).andExpect(status().isOk)
+            .andDo(
+                document(
+                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                    requestParameters(parameterWithName("current").description("Return current active version")
+                        .optional()),
+                    pathParameters(
+                        parameterWithName("certificateId").description("Certificate Id")
+                    )
+                )
+            ).andReturn()
+
+        assertThat(spyCertificatesHandler.handleGetAllVersionsRequest__calledWith_current).isTrue()
+        assertThat(spyCertificatesHandler.handleGetAllVersionsRequest__calledWith_uuid).isEqualTo(certificateId.toString())
+
+        // language=json
+        val expectedResponseBody = """
+            [{
+              "type": "${CredentialType.CERTIFICATE.type.toLowerCase()}",
+              "version_created_at": "${credentialViewResponse.versionCreatedAt}",
+              "id": "$certificateId",
+              "name": "$name",
+              "transitional": true,
+              "expiry_date": "${certificateCredentialValue.expiryDate}",
+              "value": {
+                "ca": "${TestConstants.TEST_CA}",
+                "certificate": "${TestConstants.TEST_CERTIFICATE}",
+                "private_key": "${TestConstants.TEST_PRIVATE_KEY}"
+              }
+            }]
+        """.trimIndent()
+
+        val contentAsString = mvcResult.response.contentAsString
+        JSONAssert.assertEquals(expectedResponseBody, contentAsString, true)
+    }
+
+    @Test
+    fun POST__certificateVersions__returns_certificate() {
+        spyCertificatesHandler.handleCreateVersionRequest__returns_certificateView = certificateView
+
+        // language=json
+        val requestBody = """
+            {
+              "value": {
+                "ca": "${JsonHelpers.escapeNewLinesForJsonSerialization(TestConstants.TEST_CA)}",
+                "certificate": "${JsonHelpers.escapeNewLinesForJsonSerialization(TestConstants.TEST_CERTIFICATE)}",
+                "private_key": "${JsonHelpers.escapeNewLinesForJsonSerialization(TestConstants.TEST_PRIVATE_KEY)}"
+              },
+              "transitional": true
+            }
+        """.trimIndent()
+
+        val mvcResult = mockMvc.perform(
+            post("${CertificatesController.ENDPOINT}/{certificateId}/versions", certificateId.toString())
+                .header("Authorization", "Bearer [some-token]")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .content(requestBody)
+        ).andExpect(status().isOk)
+            .andDo(
+                document(
+                    CredHubRestDocs.DOCUMENT_IDENTIFIER
+                )
+            ).andReturn()
+
+        JSONAssert.assertEquals(mvcResult.request.contentAsString, requestBody, true)
+        assertThat(spyCertificatesHandler.handleCreateVersionRequest__calledWith_certificateId).isEqualTo(certificateId.toString())
+
+        // language=json
+        val expectedResponseBody = """
+            {
+              "type": "${CredentialType.CERTIFICATE.type.toLowerCase()}",
+              "version_created_at": "${credentialViewResponse.versionCreatedAt}",
+              "id": "$certificateId",
+              "name": "$name",
+              "transitional": true,
+              "expiry_date": "${certificateCredentialValue.expiryDate}",
+              "value": {
+                "ca": "${TestConstants.TEST_CA}",
+                "certificate": "${TestConstants.TEST_CERTIFICATE}",
+                "private_key": "${TestConstants.TEST_PRIVATE_KEY}"
+              }
+            }
+        """.trimIndent()
+
+        val contentAsString = mvcResult.response.contentAsString
+        JSONAssert.assertEquals(expectedResponseBody, contentAsString, true)
+    }
+
+    @Test
+    fun DELETE__certificateVersion__returns_certificate() {
+        val versionId = UUID.randomUUID()
+        spyCertificatesHandler.handleDeleteVersionRequest__returns_certificateView = certificateView
+
+        val mvcResult = mockMvc.perform(
+            delete("${CertificatesController.ENDPOINT}/{certificateId}/versions/{versionId}", certificateId.toString(), versionId.toString())
+                .header("Authorization", "Bearer [some-token]")
+                .accept(MediaType.APPLICATION_JSON_UTF8)
+        ).andExpect(status().isOk)
+            .andDo(
+                document(
+                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                    pathParameters(
+                        parameterWithName("certificateId").description("Certificate Id"),
+                        parameterWithName("versionId").description("Version Id")
+                    )
+                )
+            ).andReturn()
+
+        assertThat(spyCertificatesHandler.handleDeleteVersionRequest__calledWith_certificateId).isEqualTo(certificateId.toString())
+        assertThat(spyCertificatesHandler.handleDeleteVersionRequest__calledWith_versionId).isEqualTo(versionId.toString())
+
+        // language=json
+        val expectedResponseBody = """
+            {
+              "type": "${CredentialType.CERTIFICATE.type.toLowerCase()}",
+              "version_created_at": "${credentialViewResponse.versionCreatedAt}",
+              "id": "$certificateId",
+              "name": "$name",
+              "transitional": true,
+              "expiry_date": "${certificateCredentialValue.expiryDate}",
+              "value": {
+                "ca": "${TestConstants.TEST_CA}",
+                "certificate": "${TestConstants.TEST_CERTIFICATE}",
+                "private_key": "${TestConstants.TEST_PRIVATE_KEY}"
+              }
+            }
+        """.trimIndent()
+
+        val contentAsString = mvcResult.response.contentAsString
+        JSONAssert.assertEquals(expectedResponseBody, contentAsString, true)
     }
 }

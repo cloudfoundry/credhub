@@ -3,10 +3,10 @@ package org.cloudfoundry.credhub.controllers.v2.permissions
 import org.assertj.core.api.Assertions.assertThat
 import org.cloudfoundry.credhub.PermissionOperation.READ
 import org.cloudfoundry.credhub.PermissionOperation.WRITE
-import org.cloudfoundry.credhub.permissions.PermissionsV2Controller
-import org.cloudfoundry.credhub.requests.PermissionsV2Request
 import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
+import org.cloudfoundry.credhub.permissions.PermissionsV2Controller
+import org.cloudfoundry.credhub.requests.PermissionsV2Request
 import org.cloudfoundry.credhub.views.PermissionsV2View
 import org.junit.Before
 import org.junit.Rule
@@ -125,8 +125,7 @@ class PermissionsV2ControllerTest {
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
             .andDo(
                 document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    requestParameters()
+                    CredHubRestDocs.DOCUMENT_IDENTIFIER
                 )
             )
             .andReturn()
@@ -230,8 +229,7 @@ class PermissionsV2ControllerTest {
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
             .andDo(
                 document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    requestParameters()
+                    CredHubRestDocs.DOCUMENT_IDENTIFIER
                 )
             )
             .andReturn()

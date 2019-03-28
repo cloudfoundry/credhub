@@ -32,12 +32,24 @@ class SpyCertificatesHandler : CertificatesHandler {
         return handleGetByNameRequest__returns_certificateCredentialsView
     }
 
+    lateinit var handleGetAllVersionsRequest__calledWith_uuid: String
+    var handleGetAllVersionsRequest__calledWith_current = false
+    lateinit var handleGetAllVersionsRequest__returns_certificateViews: List<CertificateView>
     override fun handleGetAllVersionsRequest(uuidString: String, current: Boolean): List<CertificateView> {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        handleGetAllVersionsRequest__calledWith_uuid = uuidString
+        handleGetAllVersionsRequest__calledWith_current = current
+
+        return handleGetAllVersionsRequest__returns_certificateViews
     }
 
+    lateinit var handleDeleteVersionRequest__calledWith_certificateId: String
+    lateinit var handleDeleteVersionRequest__calledWith_versionId: String
+    lateinit var handleDeleteVersionRequest__returns_certificateView: CertificateView
     override fun handleDeleteVersionRequest(certificateId: String, versionId: String): CertificateView {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        handleDeleteVersionRequest__calledWith_certificateId = certificateId
+        handleDeleteVersionRequest__calledWith_versionId = versionId
+
+        return handleDeleteVersionRequest__returns_certificateView
     }
 
     lateinit var handleUpdateTransitionalVersion__calledWith_certificateId: String
@@ -49,7 +61,13 @@ class SpyCertificatesHandler : CertificatesHandler {
         return handleUpdateTransitionalVersion__returns_certificateViewList
     }
 
+    lateinit var handleCreateVersionRequest__calledWith_certificateId: String
+    lateinit var handleCreateVersionRequest__calledWith_requestBody: CreateVersionRequest
+    lateinit var handleCreateVersionRequest__returns_certificateView: CertificateView
     override fun handleCreateVersionsRequest(certificateId: String, requestBody: CreateVersionRequest): CertificateView {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        handleCreateVersionRequest__calledWith_certificateId = certificateId
+        handleCreateVersionRequest__calledWith_requestBody = requestBody
+
+        return handleCreateVersionRequest__returns_certificateView
     }
 }

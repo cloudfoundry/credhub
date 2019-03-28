@@ -156,6 +156,10 @@ operation::DELETE__credential_returns__void[]
 
 == Certificates
 
+include::certificate-rotation-instructions.adoc[]
+
+---
+
 === Get All Certificates
 operation::GET__certificates__returns_certificates[]
 
@@ -173,6 +177,21 @@ operation::POST__certificates_uuid_regenerate__returns_certificate[]
 
 === Update Transitional Version
 operation::PUT__updateTransitionalVersion__returns_certificate[]
+
+---
+
+=== Get All Versions of a Certificate
+operation::GET__certificateVersions__returns_certificates[]
+
+---
+
+=== Create a Version of a Certificate
+operation::POST__certificateVersions__returns_certificate[]
+
+---
+
+=== Delete a Version of a Certificate
+operation::DELETE__certificateVersion__returns_certificate[]
 
 ---
 

@@ -13,6 +13,9 @@ import org.cloudfoundry.credhub.credential.SshCredentialValue
 import org.cloudfoundry.credhub.credential.StringCredentialValue
 import org.cloudfoundry.credhub.credential.UserCredentialValue
 import org.cloudfoundry.credhub.credentials.CredentialsController
+import org.cloudfoundry.credhub.helpers.CredHubRestDocs
+import org.cloudfoundry.credhub.helpers.JsonHelpers.Companion.escapeNewLinesForJsonSerialization
+import org.cloudfoundry.credhub.helpers.MockMvcFactory
 import org.cloudfoundry.credhub.requests.CertificateSetRequest
 import org.cloudfoundry.credhub.requests.JsonSetRequest
 import org.cloudfoundry.credhub.requests.PasswordSetRequest
@@ -21,8 +24,6 @@ import org.cloudfoundry.credhub.requests.SshSetRequest
 import org.cloudfoundry.credhub.requests.UserSetRequest
 import org.cloudfoundry.credhub.requests.ValueSetRequest
 import org.cloudfoundry.credhub.services.SpyPermissionedCredentialService
-import org.cloudfoundry.credhub.helpers.CredHubRestDocs
-import org.cloudfoundry.credhub.helpers.MockMvcFactory
 import org.cloudfoundry.credhub.utils.TestConstants
 import org.cloudfoundry.credhub.views.CredentialView
 import org.junit.Before
@@ -607,9 +608,5 @@ class CredentialsControllerSetTest {
 
     private object SetRequestFieldDescription {
         val VALUE_DESCRIPTION = "Value of credential to set"
-    }
-
-    private fun escapeNewLinesForJsonSerialization(stringThatNeedsEscaping: String): String {
-        return stringThatNeedsEscaping.replace("\n", "\\n")
     }
 }

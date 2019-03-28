@@ -2,6 +2,8 @@ package org.cloudfoundry.credhub.requests;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 @JsonAutoDetect
 @SuppressWarnings("unused")
@@ -29,4 +31,27 @@ public class CertificateRegenerateRequest {
     this.transitional = transitional;
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    CertificateRegenerateRequest that = (CertificateRegenerateRequest) o;
+
+    return new EqualsBuilder()
+      .append(transitional, that.transitional)
+      .isEquals();
+  }
+
+  @Override
+  public int hashCode() {
+    return new HashCodeBuilder(17, 37)
+      .append(transitional)
+      .toHashCode();
+  }
 }

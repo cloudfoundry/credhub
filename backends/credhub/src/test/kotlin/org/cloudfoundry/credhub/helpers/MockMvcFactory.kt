@@ -10,8 +10,6 @@ import org.springframework.restdocs.http.HttpDocumentation.httpRequest
 import org.springframework.restdocs.http.HttpDocumentation.httpResponse
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration
 import org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint
-import org.springframework.restdocs.payload.PayloadDocumentation.requestBody
-import org.springframework.restdocs.payload.PayloadDocumentation.responseBody
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
@@ -43,9 +41,7 @@ class MockMvcFactory {
                         .withDefaults(
                             curlRequest(),
                             httpRequest(),
-                            httpResponse(),
-                            requestBody(),
-                            responseBody()
+                            httpResponse()
                         )
                         .and()
                         .operationPreprocessors()
