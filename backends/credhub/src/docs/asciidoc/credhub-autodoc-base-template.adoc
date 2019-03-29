@@ -245,3 +245,9 @@ operation::POST__regenerate__returns_results[]
 === Bulk Regenerate Credentials
 operation::POST__bulkregenerate__returns_results[]
 
+---
+
+== Health
+
+=== Get Server Status
+operation::GET__health__returns_status[]

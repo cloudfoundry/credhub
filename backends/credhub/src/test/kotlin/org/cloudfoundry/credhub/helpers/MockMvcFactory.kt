@@ -29,12 +29,11 @@ class MockMvcFactory {
         }
 
         @JvmStatic
-        fun newSpringRestDocMockMvc(controller: Any, restDocumentation: JUnitRestDocumentation): MockMvc {
-            return MockMvcBuilders
+        fun newSpringRestDocMockMvc(controller: Any, restDocumentation: JUnitRestDocumentation, disableAuth: Boolean = false): MockMvc {
+            val mockMvcBuilder = MockMvcBuilders
                 .standaloneSetup(controller)
                 .setMessageConverters(getPreconfiguredJacksonConverter())
                 .alwaysDo<StandaloneMockMvcBuilder>(print())
-                .apply<StandaloneMockMvcBuilder>(springSecurity(FakeOauthTokenFilter()))
                 .apply<StandaloneMockMvcBuilder>(
                     documentationConfiguration(restDocumentation)
                         .snippets()
@@ -47,7 +46,12 @@ class MockMvcFactory {
                         .operationPreprocessors()
                         .withResponseDefaults(prettyPrint())
                 )
-                .build()
+
+            if (!disableAuth) {
+                mockMvcBuilder.apply<StandaloneMockMvcBuilder>(springSecurity(FakeOauthTokenFilter()))
+            }
+
+            return mockMvcBuilder.build()
         }
     }
 }
