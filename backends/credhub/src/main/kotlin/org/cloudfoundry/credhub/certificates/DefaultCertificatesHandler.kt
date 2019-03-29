@@ -58,7 +58,7 @@ class DefaultCertificatesHandler(
     }
 
     override fun handleGetAllRequest(): CertificateCredentialsView {
-        val credentialList = permissionedCertificateService.all
+        val credentialList = permissionedCertificateService.getAll()
 
         val list = credentialList.stream().map { credential -> CertificateCredentialView(credential.name, credential.uuid) }.toList()
 

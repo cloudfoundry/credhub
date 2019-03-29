@@ -10,6 +10,8 @@ import org.springframework.validation.annotation.Validated;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.PermissionOperation;
 
@@ -63,5 +65,33 @@ public class PermissionEntry {
 
   public void setPath(final String path) {
     this.path = path;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    PermissionEntry that = (PermissionEntry) o;
+
+    return new EqualsBuilder()
+      .append(actor, that.actor)
+      .append(path, that.path)
+      .append(allowedOperations, that.allowedOperations)
+      .isEquals();
+  }
+
+  @Override
+  public int hashCode() {
+    return new HashCodeBuilder(17, 37)
+      .append(actor)
+      .append(path)
+      .append(allowedOperations)
+      .toHashCode();
   }
 }

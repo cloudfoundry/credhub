@@ -11,7 +11,6 @@ import org.cloudfoundry.credhub.views.PermissionsV2View
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.junit.runner.RunWith
 import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.http.MediaType
 import org.springframework.restdocs.JUnitRestDocumentation
@@ -20,7 +19,6 @@ import org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath
 import org.springframework.restdocs.payload.PayloadDocumentation.requestFields
 import org.springframework.restdocs.request.RequestDocumentation.parameterWithName
 import org.springframework.restdocs.request.RequestDocumentation.requestParameters
-import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
@@ -31,7 +29,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.util.UUID
 
-@RunWith(SpringRunner::class)
 class PermissionsV2ControllerTest {
 
     @Rule
@@ -52,7 +49,7 @@ class PermissionsV2ControllerTest {
     }
 
     @Test
-    fun GET__permissions_by_actor_and_path__returns_a_permission() {
+    fun GET__permissions_v2_by_actor_and_path__returns_a_permission() {
         val permissionsV2View = PermissionsV2View(
             "some-path",
             listOf(READ, WRITE),
@@ -106,7 +103,7 @@ class PermissionsV2ControllerTest {
     }
 
     @Test
-    fun GET__permissions_by_uuid__returns_a_permission() {
+    fun GET__permissions_v2_by_uuid__returns_a_permission() {
         val permissionsV2View = PermissionsV2View(
             "some-path",
             listOf(READ, WRITE),
@@ -210,7 +207,7 @@ class PermissionsV2ControllerTest {
     }
 
     @Test
-    fun DELETE__permissions_by_uuid__returns_a_permission() {
+    fun DELETE__permissions_v2_by_uuid__returns_a_permission() {
         val permissionsV2View = PermissionsV2View(
             "some-path",
             listOf(READ, WRITE),
@@ -253,7 +250,7 @@ class PermissionsV2ControllerTest {
     }
 
     @Test
-    fun PUT__permissions__returns_a_permission() {
+    fun PUT__permissions_v2__returns_a_permission() {
         val permissionsV2View = PermissionsV2View(
             "some-path",
             listOf(READ, WRITE),
@@ -313,7 +310,7 @@ class PermissionsV2ControllerTest {
     }
 
     @Test
-    fun PATCH__permissions__returns_a_permission() {
+    fun PATCH__permissions_v2__returns_a_permission() {
 
         val permissionsV2View = PermissionsV2View(
             "some-path",
@@ -371,7 +368,7 @@ class PermissionsV2ControllerTest {
     }
 
     @Test
-    fun POST__permissions__returns_a_permission() {
+    fun POST__permissions_v2__returns_a_permission() {
         val permissionsV2View = PermissionsV2View(
             "some-path",
             listOf(READ, WRITE),

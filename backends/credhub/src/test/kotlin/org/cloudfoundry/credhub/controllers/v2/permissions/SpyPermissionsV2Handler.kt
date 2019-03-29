@@ -1,29 +1,14 @@
 package org.cloudfoundry.credhub.controllers.v2.permissions
 
 import org.cloudfoundry.credhub.PermissionOperation
-import org.cloudfoundry.credhub.generate.PermissionsHandler
-import org.cloudfoundry.credhub.requests.PermissionsRequest
+import org.cloudfoundry.credhub.handlers.PermissionsV2Handler
 import org.cloudfoundry.credhub.requests.PermissionsV2Request
 import org.cloudfoundry.credhub.views.PermissionsV2View
-import org.cloudfoundry.credhub.views.PermissionsView
 import java.util.UUID
 
-class SpyPermissionsV2Handler : PermissionsHandler {
-
-    override fun getPermissions(name: String?): PermissionsView {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun writePermissions(request: PermissionsRequest?) {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun deletePermissionEntry(credentialName: String?, actor: String?) {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun writePermissions(request: PermissionsV2Request?): PermissionsV2View {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+class SpyPermissionsV2Handler : PermissionsV2Handler {
+    override fun writePermissions(request: PermissionsV2Request): PermissionsV2View {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     lateinit var getPermissions__calledWith_Guid: UUID
@@ -43,9 +28,9 @@ class SpyPermissionsV2Handler : PermissionsHandler {
     }
 
     lateinit var patchPermissions__calledWith_Guid: String
-    lateinit var patchPermissions__calledWith_Operations: MutableList<PermissionOperation>
+    lateinit var patchPermissions__calledWith_Operations: List<PermissionOperation>
     lateinit var patchPermissions__returns: PermissionsV2View
-    override fun patchPermissions(guid: String, operations: MutableList<PermissionOperation>): PermissionsV2View {
+    override fun patchPermissions(guid: String, operations: List<PermissionOperation>): PermissionsV2View {
         patchPermissions__calledWith_Guid = guid
         patchPermissions__calledWith_Operations = operations
         return patchPermissions__returns
