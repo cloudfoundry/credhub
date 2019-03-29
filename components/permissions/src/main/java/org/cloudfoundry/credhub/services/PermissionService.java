@@ -88,7 +88,7 @@ public class PermissionService {
 
   public PermissionData getPermissions(final UUID guid) {
     if (guid == null) {
-      throw new EntryNotFoundException("error.resource_not_found");
+      throw new EntryNotFoundException(ErrorMessages.RESOURCE_NOT_FOUND);
     }
 
     if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), guid, PermissionOperation.READ_ACL)) {

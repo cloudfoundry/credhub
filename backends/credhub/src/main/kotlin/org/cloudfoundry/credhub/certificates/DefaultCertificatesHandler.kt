@@ -1,6 +1,7 @@
 package org.cloudfoundry.credhub.certificates
 
 import com.google.common.collect.Lists
+import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.audit.AuditableCredential
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue
@@ -78,7 +79,7 @@ class DefaultCertificatesHandler(
         try {
             uuid = UUID.fromString(uuidString)
         } catch (e: IllegalArgumentException) {
-            throw EntryNotFoundException("error.credential.invalid_access")
+            throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
         }
 
         val credentialList = permissionedCertificateService

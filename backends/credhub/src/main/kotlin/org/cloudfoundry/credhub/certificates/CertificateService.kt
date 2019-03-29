@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.certificates
 
+import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.PermissionOperation.READ
 import org.cloudfoundry.credhub.auth.UserContextHolder
 import org.cloudfoundry.credhub.data.CertificateVersionDataService
@@ -17,7 +18,7 @@ class CertificateService(val certificateVersionDataService: CertificateVersionDa
 
     fun findByCredentialUuid(uuid: String): CertificateCredentialVersion {
         val certificate = certificateVersionDataService.findByCredentialUUID(uuid)
-            as? CertificateCredentialVersion ?: throw EntryNotFoundException("error.credential.invalid_access")
+            as? CertificateCredentialVersion ?: throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
 
         val hasPermission = permissionCheckingService.hasPermission(
             userContextHolder.userContext.actor,
@@ -26,7 +27,7 @@ class CertificateService(val certificateVersionDataService: CertificateVersionDa
         )
 
         if (!hasPermission) {
-            throw EntryNotFoundException("error.credential.invalid_access")
+            throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
         }
 
         return certificate

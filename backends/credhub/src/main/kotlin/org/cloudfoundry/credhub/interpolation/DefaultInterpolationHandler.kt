@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.interpolation
 
+import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.domain.JsonCredentialVersion
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
@@ -30,7 +31,7 @@ class DefaultInterpolationHandler(
 
                 val credentialVersions = credentialService.findNByName(credentialName, 1)
                 if (credentialVersions.isEmpty()) {
-                    throw EntryNotFoundException("error.credential.invalid_access")
+                    throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
                 }
 
                 val credentialVersion = credentialVersions.get(0)
@@ -38,8 +39,10 @@ class DefaultInterpolationHandler(
                 auditRecord.addResource(credentialVersion.credential)
                 auditRecord.addVersion(credentialVersion)
 
-                val jsonCredentialVersion = credentialVersion as? JsonCredentialVersion ?: throw ParameterizedValidationException("error.interpolation.invalid_type",
-                    credentialName)
+                val jsonCredentialVersion = credentialVersion as? JsonCredentialVersion ?: throw ParameterizedValidationException(
+                    ErrorMessages.Interpolation.INVALID_TYPE,
+                    credentialName
+                )
 
                 val updatedPropertiesMap = (updatedServicesMap[entry.key] as ArrayList<*>)[index] as MutableMap<String, Any>
 
