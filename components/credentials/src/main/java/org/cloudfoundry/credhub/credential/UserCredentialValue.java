@@ -64,14 +64,14 @@ public class UserCredentialValue implements CredentialValue {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    UserCredentialValue that = (UserCredentialValue) o;
+    final UserCredentialValue that = (UserCredentialValue) o;
     return Objects.equals(username, that.username) &&
       Objects.equals(password, that.password) &&
       Objects.equals(salt, that.salt);

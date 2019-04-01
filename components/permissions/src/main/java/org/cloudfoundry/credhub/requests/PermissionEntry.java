@@ -68,7 +68,7 @@ public class PermissionEntry {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
@@ -77,7 +77,7 @@ public class PermissionEntry {
       return false;
     }
 
-    PermissionEntry that = (PermissionEntry) o;
+    final PermissionEntry that = (PermissionEntry) o;
 
     return new EqualsBuilder()
       .append(actor, that.actor)

@@ -11,7 +11,6 @@ import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
-import org.cloudfoundry.credhub.services.PermissionCheckingService;
 import org.cloudfoundry.credhub.utils.CertificateReader;
 import org.cloudfoundry.credhub.utils.CertificateStringConstants;
 import org.junit.Before;

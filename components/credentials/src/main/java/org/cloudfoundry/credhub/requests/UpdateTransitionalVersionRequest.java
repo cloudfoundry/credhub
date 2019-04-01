@@ -26,7 +26,7 @@ public class UpdateTransitionalVersionRequest {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
@@ -35,7 +35,7 @@ public class UpdateTransitionalVersionRequest {
       return false;
     }
 
-    UpdateTransitionalVersionRequest that = (UpdateTransitionalVersionRequest) o;
+    final UpdateTransitionalVersionRequest that = (UpdateTransitionalVersionRequest) o;
 
     return new EqualsBuilder()
       .append(versionUuid, that.versionUuid)

@@ -102,14 +102,14 @@ public class CertificateCredentialValue implements CredentialValue {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    CertificateCredentialValue that = (CertificateCredentialValue) o;
+    final CertificateCredentialValue that = (CertificateCredentialValue) o;
     return transitional == that.transitional &&
       Objects.equals(ca, that.ca) &&
       Objects.equals(certificate, that.certificate) &&

@@ -1,9 +1,9 @@
 package org.cloudfoundry.credhub.controllers.v1.regenerate
 
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
-import org.cloudfoundry.credhub.regenerate.RegenerateController
 import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
+import org.cloudfoundry.credhub.regenerate.RegenerateController
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.equalTo
 import org.junit.Before

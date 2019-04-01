@@ -38,14 +38,14 @@ public class CertificateSetRequest extends BaseCredentialSetRequest<CertificateC
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    CertificateSetRequest that = (CertificateSetRequest) o;
+    final CertificateSetRequest that = (CertificateSetRequest) o;
     return Objects.equals(certificateValue, that.certificateValue);
   }
 

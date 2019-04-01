@@ -42,14 +42,14 @@ public class PasswordSetRequest extends BaseCredentialSetRequest<StringCredentia
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    PasswordSetRequest that = (PasswordSetRequest) o;
+    final PasswordSetRequest that = (PasswordSetRequest) o;
     return Objects.equals(password, that.password) &&
       Objects.equals(generationParameters, that.generationParameters);
   }

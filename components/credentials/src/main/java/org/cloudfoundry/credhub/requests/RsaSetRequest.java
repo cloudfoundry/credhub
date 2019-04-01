@@ -35,14 +35,14 @@ public class RsaSetRequest extends BaseCredentialSetRequest<RsaCredentialValue> 
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    RsaSetRequest that = (RsaSetRequest) o;
+    final RsaSetRequest that = (RsaSetRequest) o;
     return Objects.equals(rsaKeyValue, that.rsaKeyValue);
   }
 

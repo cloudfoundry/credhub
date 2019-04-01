@@ -4,9 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
-import org.cloudfoundry.credhub.interpolation.InterpolationController
 import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
+import org.cloudfoundry.credhub.interpolation.InterpolationController
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test

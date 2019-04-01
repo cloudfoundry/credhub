@@ -54,14 +54,14 @@ public class SshCredentialValue implements CredentialValue {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    SshCredentialValue that = (SshCredentialValue) o;
+    final SshCredentialValue that = (SshCredentialValue) o;
     return Objects.equals(publicKey, that.publicKey) &&
       Objects.equals(privateKey, that.privateKey) &&
       Objects.equals(publicKeyFingerprint, that.publicKeyFingerprint);

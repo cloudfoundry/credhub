@@ -32,7 +32,7 @@ public class CertificateRegenerateRequest {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
@@ -41,7 +41,7 @@ public class CertificateRegenerateRequest {
       return false;
     }
 
-    CertificateRegenerateRequest that = (CertificateRegenerateRequest) o;
+    final CertificateRegenerateRequest that = (CertificateRegenerateRequest) o;
 
     return new EqualsBuilder()
       .append(transitional, that.transitional)

@@ -23,14 +23,14 @@ public class StringCredentialValue implements CredentialValue {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    StringCredentialValue that = (StringCredentialValue) o;
+    final StringCredentialValue that = (StringCredentialValue) o;
     return Objects.equals(string, that.string);
   }
 

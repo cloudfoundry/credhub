@@ -42,7 +42,7 @@ public class PermissionsView {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
@@ -51,7 +51,7 @@ public class PermissionsView {
       return false;
     }
 
-    PermissionsView that = (PermissionsView) o;
+    final PermissionsView that = (PermissionsView) o;
 
     return new EqualsBuilder()
       .append(credentialName, that.credentialName)

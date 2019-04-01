@@ -47,7 +47,7 @@ public class PermissionsRequest {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
@@ -56,7 +56,7 @@ public class PermissionsRequest {
       return false;
     }
 
-    PermissionsRequest that = (PermissionsRequest) o;
+    final PermissionsRequest that = (PermissionsRequest) o;
 
     return new EqualsBuilder()
       .append(credentialName, that.credentialName)

@@ -35,14 +35,14 @@ public class JsonSetRequest extends BaseCredentialSetRequest<JsonCredentialValue
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    JsonSetRequest that = (JsonSetRequest) o;
+    final JsonSetRequest that = (JsonSetRequest) o;
     return Objects.equals(value, that.value);
   }
 

@@ -1,9 +1,9 @@
 package org.cloudfoundry.credhub.controllers.v1.management
 
 import org.assertj.core.api.Assertions.assertThat
-import org.cloudfoundry.credhub.management.ManagementController
 import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
+import org.cloudfoundry.credhub.management.ManagementController
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test

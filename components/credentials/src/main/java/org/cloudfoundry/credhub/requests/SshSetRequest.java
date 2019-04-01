@@ -35,14 +35,14 @@ public class SshSetRequest extends BaseCredentialSetRequest<SshCredentialValue> 
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (this == o) {
       return true;
     }
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    SshSetRequest that = (SshSetRequest) o;
+    final SshSetRequest that = (SshSetRequest) o;
     return Objects.equals(sshKeyValue, that.sshKeyValue);
   }
 
