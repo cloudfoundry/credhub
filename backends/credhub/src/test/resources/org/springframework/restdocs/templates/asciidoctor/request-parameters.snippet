@@ -1,10 +1,28 @@
 |===
-|Parameter|Optional|Description
+|Parameter|Required|Description
 
 {{#parameters}}
-|{{#tableCellContent}}`+{{name}}+`{{/tableCellContent}}
-|{{#tableCellContent}}{{optional}}{{/tableCellContent}}
-|{{#tableCellContent}}{{description}}{{/tableCellContent}}
+
+
+  |{{#tableCellContent}}
+  `+{{name}}+`
+  {{/tableCellContent}}
+
+
+  |{{#tableCellContent}}
+ifeval::["{{optional}}" == "false"]
+  true
+endif::[]
+ifeval::["{{optional}}" == "true"]
+  false
+endif::[]
+  {{/tableCellContent}}
+
+
+  |{{#tableCellContent}}
+  {{description}}
+  {{/tableCellContent}}
+
 
 {{/parameters}}
 |===

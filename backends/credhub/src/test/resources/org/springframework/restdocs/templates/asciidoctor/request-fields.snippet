@@ -1,11 +1,21 @@
 |===
-|Path|Type|Optional|Description
+|Path|Type|Required|Description
 
 {{#fields}}
-|{{path}}
-|{{type}}
-|{{optional}}
-|{{description}}
+
+  |{{path}}
+
+  |{{type}}
+
+ifeval::["{{optional}}" == "false"]
+  |true
+endif::[]
+ifeval::["{{optional}}" == "true"]
+  |false
+endif::[]
+
+  |{{description}}
 
 {{/fields}}
+
 |===
