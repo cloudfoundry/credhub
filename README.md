@@ -52,6 +52,16 @@ Our public PGP key can be obtained from a public key server such as [pgp.mit.edu
 
 We favor pull requests with very small, single commits with a single purpose. Your pull request is much more likely to be accepted if it is small and focused with a clear message that conveys the intent of your change.
 
+### Generating API Documentation
+
+The CredHub API can generate API documentation by running its test suite (via Spring Rest Docs). CredHub API Documentation can be generated as follows:
+
+```
+./scripts/generate_documentation_snippets.sh
+```
+
+CredHub API documentation will be built as an html file in the CredHub backend gradle subproject build directory: `backends/credhub/build/asciidoc/html5`.
+
 ### Development Configuration
 
 Launching in production directly using the `bootRun` target is **unsafe**, as you will launch with a `dev` profile, which has checked-in secret keys in `application-dev.yml`.
