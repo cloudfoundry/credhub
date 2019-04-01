@@ -36,12 +36,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
-public class PermissionServiceTest {
+public class DefaultPermissionServiceTest {
 
   private static final String CREDENTIAL_NAME = "/test/credential";
   private static final String USER_NAME = "test-actor";
 
-  private PermissionService subject;
+  private DefaultPermissionService subject;
 
   private UserContext userContext;
   private PermissionDataService permissionDataService;
@@ -64,7 +64,7 @@ public class PermissionServiceTest {
 
     userContextHolder = mock(UserContextHolder.class);
     when(userContextHolder.getUserContext()).thenReturn(userContext);
-    subject = new PermissionService(permissionDataService, permissionCheckingService, userContextHolder);
+    subject = new DefaultPermissionService(permissionDataService, permissionCheckingService, userContextHolder);
   }
 
   @Test

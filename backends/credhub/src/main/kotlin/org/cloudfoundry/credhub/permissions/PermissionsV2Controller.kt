@@ -56,7 +56,7 @@ class PermissionsV2Controller(private val permissionsHandler: PermissionsV2Handl
         return permissionsHandler.findByPathAndActor(pathWithPrependedSlash, actor)
     }
 
-    @RequestMapping(method = [RequestMethod.PUT], path = ["/{guid}"] )
+    @RequestMapping(method = [RequestMethod.PUT], path = ["/{guid}"])
     @ResponseStatus(HttpStatus.OK)
     fun putPermissions(
         @Validated @RequestBody permissionsRequest: PermissionsV2Request,
@@ -65,7 +65,7 @@ class PermissionsV2Controller(private val permissionsHandler: PermissionsV2Handl
         return permissionsHandler.putPermissions(guid, permissionsRequest)
     }
 
-    @RequestMapping(method = [RequestMethod.PATCH], path = ["/{guid}"] )
+    @RequestMapping(method = [RequestMethod.PATCH], path = ["/{guid}"])
     @ResponseStatus(HttpStatus.OK)
     fun patchPermissions(
         @Validated @RequestBody request: PermissionsV2PatchRequest,
@@ -74,7 +74,7 @@ class PermissionsV2Controller(private val permissionsHandler: PermissionsV2Handl
         return permissionsHandler.patchPermissions(guid, request.operations)
     }
 
-    @RequestMapping(method = [RequestMethod.DELETE], path = ["/{guid}"] )
+    @RequestMapping(method = [RequestMethod.DELETE], path = ["/{guid}"])
     @ResponseStatus(HttpStatus.OK)
     fun deletePermissions(@PathVariable guid: String): PermissionsV2View {
         return permissionsHandler.deletePermissions(guid)

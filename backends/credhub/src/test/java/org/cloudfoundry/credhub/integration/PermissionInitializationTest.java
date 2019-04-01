@@ -26,7 +26,7 @@ import org.cloudfoundry.credhub.requests.PasswordSetRequest;
 import org.cloudfoundry.credhub.requests.PermissionEntry;
 import org.cloudfoundry.credhub.services.DefaultPermissionedCredentialService;
 import org.cloudfoundry.credhub.services.PermissionInitializer;
-import org.cloudfoundry.credhub.services.PermissionService;
+import org.cloudfoundry.credhub.services.DefaultPermissionService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,7 +48,7 @@ public class PermissionInitializationTest {
   @Autowired
   private PermissionRepository permissionRepository;
   @Autowired
-  private PermissionService permissionService;
+  private DefaultPermissionService permissionService;
   @Autowired
   private DefaultPermissionedCredentialService permissionedCredentialService;
   @Autowired

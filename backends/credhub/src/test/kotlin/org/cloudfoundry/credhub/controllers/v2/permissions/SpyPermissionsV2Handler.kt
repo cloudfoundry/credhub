@@ -8,7 +8,7 @@ import java.util.UUID
 
 class SpyPermissionsV2Handler : PermissionsV2Handler {
     override fun writePermissions(request: PermissionsV2Request): PermissionsV2View {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     lateinit var getPermissions__calledWith_Guid: UUID

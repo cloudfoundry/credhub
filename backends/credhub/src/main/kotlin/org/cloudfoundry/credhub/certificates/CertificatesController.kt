@@ -36,7 +36,7 @@ class CertificatesController(
 
     @RequestMapping(method = [RequestMethod.GET], path = [""])
     @ResponseStatus(HttpStatus.OK)
-    fun getAllCertificates() : CertificateCredentialsView {
+    fun getAllCertificates(): CertificateCredentialsView {
         auditRecord.setRequestDetails { OperationDeviceAction.GET_ALL_CERTIFICATES }
 
         return certificatesHandler.handleGetAllRequest()
@@ -44,7 +44,7 @@ class CertificatesController(
 
     @RequestMapping(method = [RequestMethod.GET], path = [""], params = ["name"])
     @ResponseStatus(HttpStatus.OK)
-    fun getCertificateByName(@RequestParam("name") name: String) : CertificateCredentialsView {
+    fun getCertificateByName(@RequestParam("name") name: String): CertificateCredentialsView {
         val credentialName = StringUtils.prependIfMissing(name, "/")
         val details = GetCertificateByName()
         details.name = name
@@ -72,7 +72,7 @@ class CertificatesController(
     fun updateTransitionalVersion(
         @PathVariable("certificateId") certificateId: String,
         @RequestBody requestBody: UpdateTransitionalVersionRequest
-    ) : List<CertificateView> {
+    ): List<CertificateView> {
         val details = UpdateTransitionalVersion()
         details.version = requestBody.versionUuid
         auditRecord.requestDetails = details
@@ -85,16 +85,16 @@ class CertificatesController(
     fun getAllCertificateVersions(
         @PathVariable("certificateId") certificateId: String,
         @RequestParam(value = "current", required = false, defaultValue = "false") current: Boolean
-    ) : List<CertificateView> {
+    ): List<CertificateView> {
 
         return certificatesHandler.handleGetAllVersionsRequest(certificateId, current)
-
     }
 
     @RequestMapping(method = [RequestMethod.POST], path = ["{certificateId}/versions"])
     @ResponseStatus(HttpStatus.OK)
-    fun createVersion(@RequestBody @Validated requestBody: CreateVersionRequest,
-                      @PathVariable("certificateId") certificateId: String
+    fun createVersion(
+        @RequestBody @Validated requestBody: CreateVersionRequest,
+        @PathVariable("certificateId") certificateId: String
     ): CertificateView {
 
         return certificatesHandler.handleCreateVersionsRequest(certificateId, requestBody)
@@ -102,11 +102,11 @@ class CertificatesController(
 
     @RequestMapping(method = [RequestMethod.DELETE], path = ["{certificateId}/versions/{versionId}"])
     @ResponseStatus(HttpStatus.OK)
-    fun deleteVersion(@PathVariable("certificateId") certificateId: String,
-                      @PathVariable("versionId") versionId: String
+    fun deleteVersion(
+        @PathVariable("certificateId") certificateId: String,
+        @PathVariable("versionId") versionId: String
     ): CertificateView {
 
         return certificatesHandler.handleDeleteVersionRequest(certificateId, versionId)
     }
-
 }

@@ -56,7 +56,6 @@ class CertificatesControllerTest {
     private lateinit var certificateCredentialVersion: CertificateCredentialVersion
     private lateinit var certificateView: CertificateView
 
-
     @Before
     fun setUp() {
         spyCertificatesHandler = SpyCertificatesHandler()
@@ -98,7 +97,6 @@ class CertificatesControllerTest {
         certificateCredentialVersion.expiryDate = certificateCredentialValue.expiryDate
 
         certificateView = CertificateView(certificateCredentialVersion)
-
     }
 
     @Test

@@ -4,7 +4,7 @@ import org.cloudfoundry.credhub.handlers.PermissionsV1Handler
 import org.cloudfoundry.credhub.requests.PermissionsRequest
 import org.cloudfoundry.credhub.views.PermissionsView
 
-class SpyPermissionsV1Handler : PermissionsV1Handler{
+class SpyPermissionsV1Handler : PermissionsV1Handler {
 
     lateinit var getPermissions__calledWith_name: String
     lateinit var getPermissions__returns_permissionsView: PermissionsView

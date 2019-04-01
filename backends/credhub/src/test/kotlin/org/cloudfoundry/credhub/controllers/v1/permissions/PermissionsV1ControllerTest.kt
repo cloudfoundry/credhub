@@ -185,5 +185,4 @@ class PermissionsV1ControllerTest {
         assertThat(spyPermissionsV1Handler.deletePermissionEntry__calledWith_credentialName).isEqualTo("/some-credential-name")
         assertThat(spyPermissionsV1Handler.deletePermissionEntry__calledWith_actor).isEqualTo("some-actor")
     }
-
 }

@@ -10,15 +10,24 @@ function go_to_project_root_directory() {
     cd "$script_dir/.."
 }
 
-function generate_documentation_snippets_from_controller_tests() {
-    ./gradlew :backends:credhub:test --tests *Controller*
+function clean_old_autodocs() {
+    ./gradlew :backends:credhub:clean
 }
 
+function generate_documentation_snippets_from_controller_tests() {
+    ./gradlew :backends:credhub:test --tests -- *Controller*
+}
+
+function build_autodoc_html() {
+  ./gradlew asciidoctor -x check -x test
+}
 function main() {
     set_bash_error_handling
     go_to_project_root_directory
 
+    clean_old_autodocs
     generate_documentation_snippets_from_controller_tests
+    build_autodoc_html
 }
 
 main

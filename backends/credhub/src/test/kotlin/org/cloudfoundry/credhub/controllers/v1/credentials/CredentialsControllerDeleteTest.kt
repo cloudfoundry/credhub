@@ -10,18 +10,15 @@ import org.cloudfoundry.credhub.helpers.MockMvcFactory
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.junit.runner.RunWith
 import org.springframework.http.MediaType
 import org.springframework.restdocs.JUnitRestDocumentation
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete
 import org.springframework.restdocs.request.RequestDocumentation
-import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import java.security.Security
 
-@RunWith(SpringRunner::class)
 class CredentialsControllerDeleteTest {
 
     @Rule

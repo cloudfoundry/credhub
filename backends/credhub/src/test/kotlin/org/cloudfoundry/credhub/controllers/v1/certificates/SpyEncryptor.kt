@@ -15,5 +15,4 @@ class SpyEncryptor : Encryptor {
     override fun decrypt(encryption: EncryptedValue?): String? {
         return encrypt__calledWith_string
     }
-
 }

@@ -2,7 +2,6 @@ package org.cloudfoundry.credhub.utils
 
 import org.springframework.stereotype.Component
 import java.io.IOException
-import java.lang.IllegalArgumentException
 
 @Component
 class DefaultVersionProvider(resources: ResourceReader) : VersionProvider {

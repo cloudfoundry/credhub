@@ -59,5 +59,4 @@ class PermissionsV1Controller(
 
         permissionsHandler.deletePermissionEntry(credentialNameWithPrependedSlash, actor)
     }
-
 }

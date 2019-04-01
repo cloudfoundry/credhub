@@ -14,12 +14,12 @@ import org.cloudfoundry.credhub.requests.PermissionEntry;
 
 @Component
 public class PermissionInitializer {
-  private final PermissionService permissionService;
+  private final DefaultPermissionService permissionService;
   private final AuthorizationConfig authorizationConfig;
 
   @Autowired
   public PermissionInitializer(
-    final PermissionService permissionService,
+    final DefaultPermissionService permissionService,
     final AuthorizationConfig authorizationConfig
   ) {
     super();

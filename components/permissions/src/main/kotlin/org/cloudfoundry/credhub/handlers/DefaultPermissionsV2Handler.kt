@@ -21,7 +21,7 @@ class DefaultPermissionsV2Handler(
 
     override fun writePermissions(request: PermissionsV2Request): PermissionsV2View {
         val permission = PermissionEntry(request.actor, request.path, request.operations)
-        val permissionDatas = permissionService.savePermissionsForUser(listOf(permission))
+        val permissionDatas = permissionService.savePermissionsForUser(mutableListOf(permission))
 
         if (permissionDatas.size == 1) {
             val perm = permissionDatas[0]
@@ -49,7 +49,7 @@ class DefaultPermissionsV2Handler(
     }
 
     override fun patchPermissions(guid: String, operations: List<PermissionOperation>): PermissionsV2View {
-        val permission = permissionService.patchPermissions(guid, operations)
+        val permission = permissionService.patchPermissions(guid, operations.toMutableList())
         return PermissionsV2View(
             permission.path,
             permission.generateAccessControlOperations(),
@@ -78,5 +78,3 @@ class DefaultPermissionsV2Handler(
             permissionData.actor, permissionData.uuid)
     }
 }
-
-

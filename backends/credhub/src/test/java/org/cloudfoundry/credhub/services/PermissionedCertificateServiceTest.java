@@ -47,6 +47,7 @@ public class PermissionedCertificateServiceTest {
 
   @Before
   public void beforeEach() {
+    uuid = UUID.randomUUID();
     permissionedCredentialService = mock(DefaultPermissionedCredentialService.class);
     certificateDataService = mock(CertificateDataService.class);
     permissionCheckingService = mock(PermissionCheckingService.class);
@@ -201,7 +202,6 @@ public class PermissionedCertificateServiceTest {
 
     when(permissionCheckingService.hasPermission(user, "my-credential", PermissionOperation.READ)).thenReturn(true);
 
-    uuid = UUID.randomUUID();
     when(certificateVersionDataService.findAllVersions(uuid))
       .thenReturn(versions);
 
@@ -410,7 +410,10 @@ public class PermissionedCertificateServiceTest {
     when(certificate.getName()).thenReturn(credentialName);
 
     final UserContext userContext = mock(UserContext.class);
+    when(userContext.getActor()).thenReturn("some-actor");
     when(userContextHolder.getUserContext()).thenReturn(userContext);
+
+    when(certificate.getName()).thenReturn(credentialName);
     final String user = "my-user";
 
     when(certificateDataService.findByUuid(certificateUuid)).thenReturn(certificate);

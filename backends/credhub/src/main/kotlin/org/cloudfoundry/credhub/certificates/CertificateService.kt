@@ -10,11 +10,11 @@ import org.cloudfoundry.credhub.services.PermissionCheckingService
 import org.springframework.stereotype.Service
 
 @Service
-class CertificateService(val certificateVersionDataService: CertificateVersionDataService,
-                         val permissionCheckingService: PermissionCheckingService,
-                         val userContextHolder: UserContextHolder) {
-
-
+class CertificateService(
+    val certificateVersionDataService: CertificateVersionDataService,
+    val permissionCheckingService: PermissionCheckingService,
+    val userContextHolder: UserContextHolder
+) {
 
     fun findByCredentialUuid(uuid: String): CertificateCredentialVersion {
         val certificate = certificateVersionDataService.findByCredentialUUID(uuid)
@@ -31,6 +31,5 @@ class CertificateService(val certificateVersionDataService: CertificateVersionDa
         }
 
         return certificate
-
     }
 }
