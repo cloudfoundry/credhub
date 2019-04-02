@@ -6,7 +6,7 @@ pmd {
     toolVersion = '6.10.0'
 }
 
-pmdTest.source = "src/test/java"
+pmd.sourceSets = [sourceSets.main]
 
 [pmdMain, pmdTest].each() {
     it.exclude '**/grpc/**.java'
