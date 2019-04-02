@@ -22,7 +22,6 @@ apply from: "${rootDir.toPath()}/ktlint.gradle"
 apply from: "${rootDir.toPath()}/checkstyle-config.gradle"
 apply from: "${rootDir.toPath()}/pmd-config.gradle"
 apply from: "${rootDir.toPath()}/spotbugs.gradle"
-apply from: "${rootDir.toPath()}/test-parallel.gradle"
 
 repositories {
     mavenCentral()
