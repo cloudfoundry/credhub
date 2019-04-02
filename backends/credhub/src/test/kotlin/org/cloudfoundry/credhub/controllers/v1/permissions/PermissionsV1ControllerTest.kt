@@ -5,6 +5,7 @@ import org.cloudfoundry.credhub.PermissionOperation
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
+import org.cloudfoundry.credhub.helpers.credHubAuthHeader
 import org.cloudfoundry.credhub.permissions.PermissionsV1Controller
 import org.cloudfoundry.credhub.requests.PermissionEntry
 import org.cloudfoundry.credhub.requests.PermissionsRequest
@@ -19,7 +20,9 @@ import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post
-import org.springframework.restdocs.payload.PayloadDocumentation
+import org.springframework.restdocs.payload.FieldDescriptor
+import org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath
+import org.springframework.restdocs.payload.PayloadDocumentation.requestFields
 import org.springframework.restdocs.request.RequestDocumentation.parameterWithName
 import org.springframework.restdocs.request.RequestDocumentation.requestParameters
 import org.springframework.test.web.servlet.MockMvc
@@ -63,7 +66,7 @@ class PermissionsV1ControllerTest {
         val mvcResult = mockMvc
             .perform(
                 get(PermissionsV1Controller.ENDPOINT)
-                    .header("Authorization", "Bearer [some-token]")
+                    .credHubAuthHeader()
                     .param("credential_name", "some-credential-name")
             )
             .andExpect(status().isOk)
@@ -123,7 +126,7 @@ class PermissionsV1ControllerTest {
         mockMvc
             .perform(
                 post(PermissionsV1Controller.ENDPOINT)
-                    .header("Authorization", "Bearer [some-token]")
+                    .credHubAuthHeader()
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(requestBody)
             )
@@ -131,13 +134,14 @@ class PermissionsV1ControllerTest {
             .andDo(
                 document(
                     CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    PayloadDocumentation.requestFields(
-                        PayloadDocumentation.fieldWithPath("credential_name")
+                    requestFields(
+                        fieldWithPath("credential_name")
                             .description("The name of the credential to create permissions for"),
-                        PayloadDocumentation.fieldWithPath("permissions[].path")
+                        fieldWithPath("permissions[].path")
                             .description("The credential path"),
-                        PayloadDocumentation.fieldWithPath("permissions[].actor").description("The credential actor"),
-                        PayloadDocumentation.fieldWithPath("permissions[].operations").description("The list of permissions to be granted")
+                        fieldWithPath("permissions[].actor")
+                            .description("The credential actor"),
+                        getPermissionOperationsRequestField()
                     )
                 )
             )
@@ -165,7 +169,7 @@ class PermissionsV1ControllerTest {
         mockMvc
             .perform(
                 delete(PermissionsV1Controller.ENDPOINT)
-                    .header("Authorization", "Bearer [some-token]")
+                    .credHubAuthHeader()
                     .param("credential_name", "some-credential-name")
                     .param("actor", "some-actor")
             )
@@ -184,5 +188,22 @@ class PermissionsV1ControllerTest {
 
         assertThat(spyPermissionsV1Handler.deletePermissionEntry__calledWith_credentialName).isEqualTo("/some-credential-name")
         assertThat(spyPermissionsV1Handler.deletePermissionEntry__calledWith_actor).isEqualTo("some-actor")
+    }
+
+    private fun getPermissionOperationsRequestField(): FieldDescriptor {
+        return fieldWithPath("permissions[].operations")
+            .description(
+                """
+                    The list of permissions to be granted.
+                    Supported operations are: ${
+                        PermissionOperation.values().joinToString(
+                            transform = {
+                                x -> x.operation.toLowerCase()
+                            },
+                            separator = ", "
+                        )
+                    }
+                """.trimIndent()
+            )
     }
 }

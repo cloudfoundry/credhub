@@ -6,6 +6,7 @@ import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
+import org.cloudfoundry.credhub.helpers.credHubAuthHeader
 import org.cloudfoundry.credhub.interpolation.InterpolationController
 import org.junit.Before
 import org.junit.Rule
@@ -72,7 +73,7 @@ class InterpolateControllerTest {
               "service-name": [
                 {
                   "credentials": {
-                    "credhub-ref": "some-credhub-ref"
+                    "credhub-ref": "/some-credhub-ref"
                   },
                   "label": "service-name",
                   "other-metadata": "some-other-metadata"
@@ -86,7 +87,7 @@ class InterpolateControllerTest {
         val mvcResult = mockMvc.perform(
             post(InterpolationController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Bearer [some-token]")
+                .credHubAuthHeader()
                 .content(requestBody)
         )
             .andExpect(status().isOk)

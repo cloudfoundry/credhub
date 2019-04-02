@@ -1,0 +1,6 @@
+
+=== Overview
+
+CredHub manages credentials like passwords, users, certificates, certificate authorities, ssh keys, rsa keys and arbitrary values (strings and JSON blobs). The following spec details the API exposed by the CredHub server and the equivalent requests using the https://github.com/cloudfoundry-incubator/credhub-cli[CredHub CLI].
+
+More information on CredHub https://github.com/cloudfoundry-incubator/credhub[can be found here].

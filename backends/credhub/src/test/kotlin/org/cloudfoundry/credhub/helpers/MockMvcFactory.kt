@@ -36,6 +36,11 @@ class MockMvcFactory {
                 .alwaysDo<StandaloneMockMvcBuilder>(print())
                 .apply<StandaloneMockMvcBuilder>(
                     documentationConfiguration(restDocumentation)
+                        .uris()
+                        .withScheme("https")
+                        .withHost("example.com")
+                        .withPort(443)
+                        .and()
                         .snippets()
                         .withDefaults(
                             curlRequest(),

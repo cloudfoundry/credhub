@@ -1,0 +1,22 @@
+
+=== Overview
+
+All requests to CredHub, with the exception of `/info` and `/health`, must include an authentication method.
+CredHub supports two authentication provider types, https://github.com/cloudfoundry/uaa[UAA] and https://github.com/cloudfoundry-incubator/credhub/blob/master/docs/mutual-tls.md[mutual TLS].
+
+=== UAA (OAuth2)
+
+Authentication via UAA is performed directly with the trusted UAA server.
+When successfully authenticated, the UAA server will return an access token, which must be sent to CredHub in each request.
+
+The address of the UAA server trusted by the targeted CredHub server can be obtained by requesting the `/info` endpoint.
+With that endpoint, you may send a token request https://docs.cloudfoundry.org/api/uaa/#password-grant[as detailed here].
+
+Once you have obtained a token, you must include the token value in the header `Authorization: Bearer [token]` in your request to CredHub.
+
+=== Mutual TLS
+
+CredHub also supports mutual TLS authentication.
+Certificates issued by trusted Certificate Authorities are accepted by CredHub.
+To provide an authenticated identity in the client mtls certificate, CredHub requires the Organization Unit of the certificate to comply with the pattern `app:<v4 UUId>`.
+CredHub validates the https://github.com/cloudfoundry-incubator/credhub/blob/master/docs/authentication-identities.md[authenticated identity], signing authority, validity dates and presence of x509 extension Extended Key Usage 'Client Authentication' during the authentication workflow.

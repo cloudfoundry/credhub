@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.controllers.v1.certificates
 
-import org.apache.commons.lang3.RandomStringUtils
 import org.assertj.core.api.Assertions.assertThat
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
@@ -11,6 +10,7 @@ import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
 import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.JsonHelpers
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
+import org.cloudfoundry.credhub.helpers.credHubAuthHeader
 import org.cloudfoundry.credhub.requests.CertificateRegenerateRequest
 import org.cloudfoundry.credhub.requests.UpdateTransitionalVersionRequest
 import org.cloudfoundry.credhub.utils.TestConstants
@@ -30,7 +30,9 @@ import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.put
 import org.springframework.restdocs.payload.JsonFieldType
-import org.springframework.restdocs.payload.PayloadDocumentation
+import org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath
+import org.springframework.restdocs.payload.PayloadDocumentation.requestFields
+import org.springframework.restdocs.request.ParameterDescriptor
 import org.springframework.restdocs.request.RequestDocumentation.parameterWithName
 import org.springframework.restdocs.request.RequestDocumentation.pathParameters
 import org.springframework.restdocs.request.RequestDocumentation.requestParameters
@@ -72,7 +74,7 @@ class CertificatesControllerTest {
         }
 
         certificateId = UUID.randomUUID()
-        name = RandomStringUtils.randomAlphabetic(10)
+        name = "/some-name"
         createdAt = Instant.ofEpochSecond(1549053472L)
 
         certificateCredentialValue = CertificateCredentialValue(
@@ -111,7 +113,7 @@ class CertificatesControllerTest {
         val mvcResult = mockMvc
             .perform(
                 post("${CertificatesController.ENDPOINT}/{certificateId}/regenerate", certificateId.toString())
-                    .header("Authorization", "Bearer [some-token]")
+                    .credHubAuthHeader()
                     .accept(MediaType.APPLICATION_JSON_UTF8)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(requestBody)
@@ -119,14 +121,14 @@ class CertificatesControllerTest {
             .andDo(
                 document(
                     CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    PayloadDocumentation.requestFields(
-                        PayloadDocumentation.fieldWithPath("set_as_transitional")
+                    requestFields(
+                        fieldWithPath("set_as_transitional")
                             .description("Set if certificate is transitional")
                             .type(JsonFieldType.BOOLEAN)
                             .optional()
                     ),
                     pathParameters(
-                        parameterWithName("certificateId").description("Certificate Id")
+                        getCertificateIdPathParameter()
                     )
                 )
 
@@ -164,7 +166,7 @@ class CertificatesControllerTest {
         val mvcResult = mockMvc
             .perform(
                 get(CertificatesController.ENDPOINT)
-                    .header("Authorization", "Bearer [some-token]")
+                    .credHubAuthHeader()
                     .accept(MediaType.APPLICATION_JSON_UTF8)
             ).andExpect(status().isOk)
             .andDo(
@@ -197,14 +199,14 @@ class CertificatesControllerTest {
         val mvcResult = mockMvc
             .perform(
                 get(CertificatesController.ENDPOINT)
-                    .header("Authorization", "Bearer [some-token]")
+                    .credHubAuthHeader()
                     .accept(MediaType.APPLICATION_JSON_UTF8)
                     .param("name", name)
             ).andExpect(status().isOk)
             .andDo(
                 document(
                     CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    requestParameters(parameterWithName("name").description("Certificate Name"))
+                    requestParameters(parameterWithName("name").description("The name of the certificate."))
                 )
             ).andReturn()
 
@@ -238,7 +240,7 @@ class CertificatesControllerTest {
         mockMvc
             .perform(
                 put("${CertificatesController.ENDPOINT}/{certificateId}/update_transitional_version", certificateId.toString())
-                    .header("Authorization", "Bearer [some-token]")
+                    .credHubAuthHeader()
                     .accept(MediaType.APPLICATION_JSON_UTF8)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(requestBody)
@@ -246,13 +248,13 @@ class CertificatesControllerTest {
             .andDo(
                 document(
                     CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    PayloadDocumentation.requestFields(
-                        PayloadDocumentation.fieldWithPath("version")
+                    requestFields(
+                        fieldWithPath("version")
                             .description("Version UUID of certificate to set as transitional. Set version to null to ensure no versions are transitional.")
                             .type(JsonFieldType.STRING)
                     ),
                     pathParameters(
-                        parameterWithName("certificateId").description("Certificate Id")
+                        getCertificateIdPathParameter()
                     )
                 )
 
@@ -271,7 +273,7 @@ class CertificatesControllerTest {
 
         val mvcResult = mockMvc.perform(
             get("${CertificatesController.ENDPOINT}/{certificateId}/versions", certificateId.toString())
-                .header("Authorization", "Bearer [some-token]")
+                .credHubAuthHeader()
                 .accept(MediaType.APPLICATION_JSON_UTF8)
                 .param("current", "true")
         ).andExpect(status().isOk)
@@ -281,7 +283,7 @@ class CertificatesControllerTest {
                     requestParameters(parameterWithName("current").description("Return current active version")
                         .optional()),
                     pathParameters(
-                        parameterWithName("certificateId").description("Certificate Id")
+                        getCertificateIdPathParameter()
                     )
                 )
             ).andReturn()
@@ -328,14 +330,17 @@ class CertificatesControllerTest {
 
         val mvcResult = mockMvc.perform(
             post("${CertificatesController.ENDPOINT}/{certificateId}/versions", certificateId.toString())
-                .header("Authorization", "Bearer [some-token]")
+                .credHubAuthHeader()
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content(requestBody)
         ).andExpect(status().isOk)
             .andDo(
                 document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER
+                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                    pathParameters(
+                        getCertificateIdPathParameter()
+                    )
                 )
             ).andReturn()
 
@@ -370,14 +375,14 @@ class CertificatesControllerTest {
 
         val mvcResult = mockMvc.perform(
             delete("${CertificatesController.ENDPOINT}/{certificateId}/versions/{versionId}", certificateId.toString(), versionId.toString())
-                .header("Authorization", "Bearer [some-token]")
+                .credHubAuthHeader()
                 .accept(MediaType.APPLICATION_JSON_UTF8)
         ).andExpect(status().isOk)
             .andDo(
                 document(
                     CredHubRestDocs.DOCUMENT_IDENTIFIER,
                     pathParameters(
-                        parameterWithName("certificateId").description("Certificate Id"),
+                        getCertificateIdPathParameter(),
                         parameterWithName("versionId").description("Version Id")
                     )
                 )
@@ -405,5 +410,9 @@ class CertificatesControllerTest {
 
         val contentAsString = mvcResult.response.contentAsString
         JSONAssert.assertEquals(expectedResponseBody, contentAsString, true)
+    }
+
+    private fun getCertificateIdPathParameter(): ParameterDescriptor {
+        return parameterWithName("certificateId").description("The certificate identifier.")
     }
 }

@@ -7,7 +7,20 @@
 
 = CredHub API
 
-== Permissions V2
+== Introduction
+
+include::snippets/introduction.adoc[]
+include::snippets/credhub-conventions.adoc[]
+
+== Authentication
+
+include::snippets/authentication-overview.adoc[]
+
+== Permissions V2 Endpoint
+
+include::snippets/permissions-v2-overview.adoc[]
+
+---
 
 === Get a V2 Permission by Actor and Path
 operation::GET__permissions_v2_by_actor_and_path__returns_a_permission[]
@@ -56,7 +69,11 @@ operation::DELETE__permission_v1__returns_204[]
 
 ---
 
-== Credentials
+== Credentials Endpoint
+
+include::snippets/credentials-overview.adoc[]
+
+---
 
 === Find a Credential by Name
 operation::GET__find_by_name__returns_results[]
@@ -173,7 +190,11 @@ operation::DELETE__credential_returns__void[]
 
 ---
 
-== Regenerate Credentials
+== Regenerate Credentials Endpoint
+
+include::snippets/regenerate-credentials-overview.adoc[]
+
+---
 
 === Regenerate a Credential
 operation::POST__regenerate__returns_results[]
@@ -185,9 +206,9 @@ operation::POST__bulkregenerate__returns_results[]
 
 ---
 
-== Certificates
+== Certificates Endpoint
 
-include::certificate-rotation-instructions.adoc[]
+include::snippets/certificate-rotation-instructions.adoc[]
 
 ---
 
@@ -226,21 +247,36 @@ operation::DELETE__certificateVersion__returns_certificate[]
 
 ---
 
-== Interpolation
+== Interpolation Endpoint
+
 
 === Interpolate a JSON Object
+
+This endpoint receives a VCAP_SERVICES object containing CredHub references and responds with the object containing the credential values interpolated.
+
+NOTE: At this time, only credential references at `credentials.credhub-ref` will be interpolated.
+The key `credhub-ref` will be removed and the referenced credential object will be set as the value of credentials.
+
 operation::POST__interpolate__returns_map[]
 
 ---
 
-== Encryption Key Usage
+== Encryption Key Usage Endpoint
+
+include::snippets/encryption-key-usage-overview.adoc[]
+
+---
 
 === Get Encryption Key Usage
 operation::GET__keyusage__returns_map[]
 
 ---
 
-== Management
+== Management Endpoint
+
+include::snippets/management-overview.adoc[]
+
+---
 
 === Get Read Only Mode Status
 operation::GET__management_mode__returns_result[]
@@ -252,21 +288,29 @@ operation::POST__management_mode__returns_result[]
 
 ---
 
-== Info
+== Info Endpoint
 
 === Get Info
 operation::GET__info__returns_info[]
 
 ---
 
-== Version
+== Version Endpoint
+
+This request displays the server version.
+
+---
 
 === Get Version
 operation::GET__version__returns_version[]
 
 ---
 
-== Health
+== Health Endpoint
+
+This request verifies that communication with the server via the API is possible.
+
+---
 
 === Get Server Status
 operation::GET__health__returns_status[]

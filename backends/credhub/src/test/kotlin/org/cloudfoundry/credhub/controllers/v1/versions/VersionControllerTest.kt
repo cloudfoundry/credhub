@@ -3,6 +3,7 @@ package org.cloudfoundry.credhub.controllers.v1.versions
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
+import org.cloudfoundry.credhub.helpers.credHubAuthHeader
 import org.cloudfoundry.credhub.versions.VersionController
 import org.junit.Before
 import org.junit.Rule
@@ -41,7 +42,7 @@ class VersionControllerTest {
         val mvcResult = mockMvc.perform(
                 RestDocumentationRequestBuilders.get(VersionController.ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header("Authorization", "Bearer [some-token]")
+                        .credHubAuthHeader()
         ).andExpect(MockMvcResultMatchers.status().isOk)
                 .andExpect(MockMvcResultMatchers.content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andDo(

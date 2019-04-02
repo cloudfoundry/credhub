@@ -3,6 +3,7 @@ package org.cloudfoundry.credhub.controllers.v1.management
 import org.assertj.core.api.Assertions.assertThat
 import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
+import org.cloudfoundry.credhub.helpers.credHubAuthHeader
 import org.cloudfoundry.credhub.management.ManagementController
 import org.junit.Before
 import org.junit.Rule
@@ -14,6 +15,9 @@ import org.springframework.restdocs.JUnitRestDocumentation
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post
+import org.springframework.restdocs.payload.JsonFieldType
+import org.springframework.restdocs.payload.PayloadDocumentation
+import org.springframework.restdocs.payload.PayloadDocumentation.requestFields
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
@@ -44,7 +48,7 @@ class ManagementControllerTest {
         val mvcResult = mockMvc.perform(
             get(ManagementController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Bearer [some-token]")
+                .credHubAuthHeader()
         )
             .andExpect(MockMvcResultMatchers.status().isOk)
             .andExpect(MockMvcResultMatchers.content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -68,7 +72,7 @@ class ManagementControllerTest {
         val mvcResult = mockMvc.perform(
             post(ManagementController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Bearer [some-token]")
+                .credHubAuthHeader()
                 .content(
                     """
                         {
@@ -81,7 +85,12 @@ class ManagementControllerTest {
             .andExpect(MockMvcResultMatchers.content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
             .andDo(
                 MockMvcRestDocumentation.document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER
+                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                    requestFields(
+                        PayloadDocumentation.fieldWithPath("read_only_mode")
+                            .description("Enables / disables read only mode for the entire API.")
+                            .type(JsonFieldType.BOOLEAN)
+                    )
                 )
             ).andReturn()
 

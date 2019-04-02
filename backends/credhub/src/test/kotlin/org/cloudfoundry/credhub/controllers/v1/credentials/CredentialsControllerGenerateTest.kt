@@ -13,6 +13,7 @@ import org.cloudfoundry.credhub.credential.UserCredentialValue
 import org.cloudfoundry.credhub.credentials.CredentialsController
 import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
+import org.cloudfoundry.credhub.helpers.credHubAuthHeader
 import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters
 import org.cloudfoundry.credhub.requests.RsaSshGenerationParameters
 import org.cloudfoundry.credhub.services.SpyPermissionedCredentialService
@@ -95,7 +96,7 @@ class CredentialsControllerGenerateTest {
         val mvcResult = mockMvc.perform(
             post(CredentialsController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Bearer [some-token]")
+                .credHubAuthHeader()
                 .content(requestBody)
         )
             .andExpect(status().isOk())
@@ -174,7 +175,7 @@ class CredentialsControllerGenerateTest {
         val mvcResult = mockMvc.perform(
             post(CredentialsController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Bearer [some-token]")
+                .credHubAuthHeader()
                 .content(requestBody)
         )
             .andExpect(status().isOk())
@@ -270,7 +271,7 @@ class CredentialsControllerGenerateTest {
         val mvcResult = mockMvc.perform(
             post(CredentialsController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Bearer [some-token]")
+                .credHubAuthHeader()
                 .content(requestBody)
         )
             .andExpect(status().isOk())
@@ -394,8 +395,8 @@ class CredentialsControllerGenerateTest {
 
         val mvcResult = mockMvc.perform(
             post(CredentialsController.ENDPOINT)
+                .credHubAuthHeader()
                 .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Bearer [some-token]")
                 .content(requestBody)
         )
             .andExpect(status().isOk())
@@ -450,7 +451,7 @@ class CredentialsControllerGenerateTest {
             SshCredentialValue(
                 TestConstants.SSH_PUBLIC_KEY_4096,
                 TestConstants.PRIVATE_KEY_4096,
-                ""
+                "EvI0/GIUgDjcoCzUQM+EtwnVTryNsKRd6TrHAGKJJSI"
             )
         )
 
@@ -466,7 +467,7 @@ class CredentialsControllerGenerateTest {
         val mvcResult = mockMvc.perform(
             post(CredentialsController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Bearer [some-token]")
+                .credHubAuthHeader()
                 .content(requestBody)
         )
             .andExpect(status().isOk())
@@ -508,7 +509,7 @@ class CredentialsControllerGenerateTest {
                   "value": {
                     "public_key": "${TestConstants.SSH_PUBLIC_KEY_4096}",
                     "private_key": "${TestConstants.PRIVATE_KEY_4096}",
-                    "public_key_fingerprint":""
+                    "public_key_fingerprint":"EvI0/GIUgDjcoCzUQM+EtwnVTryNsKRd6TrHAGKJJSI"
                   }
               }
             """.trimIndent()

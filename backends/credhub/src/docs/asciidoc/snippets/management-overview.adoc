@@ -1,0 +1,4 @@
+
+=== Overview
+
+This endpoint can toggle read only mode for the entire API.

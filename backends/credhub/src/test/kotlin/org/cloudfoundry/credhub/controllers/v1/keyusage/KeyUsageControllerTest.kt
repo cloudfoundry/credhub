@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
+import org.cloudfoundry.credhub.helpers.credHubAuthHeader
 import org.cloudfoundry.credhub.keyusage.KeyUsageController
 import org.junit.Before
 import org.junit.Rule
@@ -58,7 +59,7 @@ class KeyUsageControllerTest {
         val mvcResult = mockMvc.perform(
                 get(KeyUsageController.ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header("Authorization", "Bearer [some-token]")
+                        .credHubAuthHeader()
                 ).andExpect(status().isOk)
                 .andExpect(MockMvcResultMatchers.content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andDo(

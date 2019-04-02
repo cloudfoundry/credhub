@@ -1,10 +1,12 @@
 package org.cloudfoundry.credhub.controllers.v2.permissions
 
 import org.assertj.core.api.Assertions.assertThat
+import org.cloudfoundry.credhub.PermissionOperation
 import org.cloudfoundry.credhub.PermissionOperation.READ
 import org.cloudfoundry.credhub.PermissionOperation.WRITE
 import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
+import org.cloudfoundry.credhub.helpers.credHubAuthHeader
 import org.cloudfoundry.credhub.permissions.PermissionsV2Controller
 import org.cloudfoundry.credhub.requests.PermissionsV2Request
 import org.cloudfoundry.credhub.views.PermissionsV2View
@@ -20,6 +22,7 @@ import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.put
+import org.springframework.restdocs.payload.FieldDescriptor
 import org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath
 import org.springframework.restdocs.payload.PayloadDocumentation.requestFields
 import org.springframework.restdocs.request.RequestDocumentation.parameterWithName
@@ -62,7 +65,7 @@ class PermissionsV2ControllerTest {
         val mvcResult = mockMvc
             .perform(
                 get(PermissionsV2Controller.ENDPOINT)
-                    .header("Authorization", "Bearer [some-token]")
+                    .credHubAuthHeader()
                     .contentType(MediaType.APPLICATION_JSON)
                     .param("path", "some-path")
                     .param("actor", "some-actor")
@@ -116,7 +119,7 @@ class PermissionsV2ControllerTest {
         val mvcResult = mockMvc
             .perform(
                 get("${PermissionsV2Controller.ENDPOINT}/{uuid}", uuid.toString())
-                    .header("Authorization", "Bearer [some-token]")
+                    .credHubAuthHeader()
                     .contentType(MediaType.APPLICATION_JSON)
             )
             .andExpect(status().isOk())
@@ -170,7 +173,7 @@ class PermissionsV2ControllerTest {
         val mvcResult = mockMvc
             .perform(
                 post(PermissionsV2Controller.ENDPOINT)
-                    .header("Authorization", "Bearer [some-token]")
+                    .credHubAuthHeader()
                     .contentType(MediaType.APPLICATION_JSON)
                     // language=json
                     .content(
@@ -224,7 +227,7 @@ class PermissionsV2ControllerTest {
         val mvcResult = mockMvc
             .perform(
                 delete("${PermissionsV2Controller.ENDPOINT}/{uuid}", uuid.toString())
-                    .header("Authorization", "Bearer [some-token]")
+                    .credHubAuthHeader()
                     .contentType(MediaType.APPLICATION_JSON)
             )
             .andExpect(status().isOk())
@@ -271,7 +274,7 @@ class PermissionsV2ControllerTest {
         val mvcResult = mockMvc
             .perform(
                 put("${PermissionsV2Controller.ENDPOINT}/{uuid}", uuid.toString())
-                    .header("Authorization", "Bearer [some-token]")
+                    .credHubAuthHeader()
                     .contentType(MediaType.APPLICATION_JSON)
                     // language=json
                     .content("""
@@ -297,8 +300,9 @@ class PermissionsV2ControllerTest {
                     requestFields(
                         fieldWithPath("path")
                             .description("The credential path"),
-                        fieldWithPath("actor").description("The credential actor"),
-                        fieldWithPath("operations").description("The list of permissions to be granted")
+                        fieldWithPath("actor")
+                            .description("The credential actor"),
+                        getPermissionOperationsRequestField()
                     )
                 )
             )
@@ -337,7 +341,7 @@ class PermissionsV2ControllerTest {
         val mvcResult = mockMvc
             .perform(
                 patch("${PermissionsV2Controller.ENDPOINT}/{uuid}", uuid.toString())
-                    .header("Authorization", "Bearer [some-token]")
+                    .credHubAuthHeader()
                     .contentType(MediaType.APPLICATION_JSON)
                     // language=json
                     .content("""
@@ -360,7 +364,7 @@ class PermissionsV2ControllerTest {
                             .description("The permission uuid")
                     ),
                     requestFields(
-                        fieldWithPath("operations").description("The list of permissions to be granted")
+                        getPermissionOperationsRequestField()
                     )
                 )
             )
@@ -398,7 +402,7 @@ class PermissionsV2ControllerTest {
         val mvcResult = mockMvc
             .perform(
                 post(PermissionsV2Controller.ENDPOINT)
-                    .header("Authorization", "Bearer [some-token]")
+                    .credHubAuthHeader()
                     .contentType(MediaType.APPLICATION_JSON)
                     // language=json
                     .content("""
@@ -418,9 +422,11 @@ class PermissionsV2ControllerTest {
                 document(
                     CredHubRestDocs.DOCUMENT_IDENTIFIER,
                     requestFields(
-                        fieldWithPath("path").description("The credential path"),
-                        fieldWithPath("actor").description("The credential actor"),
-                        fieldWithPath("operations").description("The list of permissions to be granted")
+                        fieldWithPath("path")
+                            .description("The credential path"),
+                        fieldWithPath("actor")
+                            .description("The credential actor"),
+                        getPermissionOperationsRequestField()
                     )
                 )
             )
@@ -442,5 +448,22 @@ class PermissionsV2ControllerTest {
         """.trimIndent()
 
         JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true)
+    }
+
+    private fun getPermissionOperationsRequestField(): FieldDescriptor {
+        return fieldWithPath("operations")
+                .description(
+                    """
+                        The list of permissions to be granted.
+                        Supported operations are: ${
+                            PermissionOperation.values().joinToString(
+                                transform = {
+                                    x -> x.operation.toLowerCase()
+                                },
+                                separator = ", "
+                            )
+                        }
+                    """.trimIndent()
+                )
     }
 }

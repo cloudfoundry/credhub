@@ -16,6 +16,7 @@ import org.cloudfoundry.credhub.credentials.CredentialsController
 import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.JsonHelpers.Companion.escapeNewLinesForJsonSerialization
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
+import org.cloudfoundry.credhub.helpers.credHubAuthHeader
 import org.cloudfoundry.credhub.requests.CertificateSetRequest
 import org.cloudfoundry.credhub.requests.JsonSetRequest
 import org.cloudfoundry.credhub.requests.PasswordSetRequest
@@ -99,7 +100,7 @@ class CredentialsControllerSetTest {
         val mvcResult = mockMvc.perform(
             put(CredentialsController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Bearer [some-token]")
+                .credHubAuthHeader()
                 .content(requestBody)
         )
             .andExpect(status().isOk())
@@ -167,7 +168,7 @@ class CredentialsControllerSetTest {
         val mvcResult = mockMvc.perform(
             put(CredentialsController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Bearer [some-token]")
+                .credHubAuthHeader()
                 .content(requestBody)
         )
             .andExpect(status().isOk())
@@ -238,7 +239,7 @@ class CredentialsControllerSetTest {
         val mvcResult = mockMvc.perform(
             put(CredentialsController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Bearer [some-token]")
+                .credHubAuthHeader()
                 .content(requestBody)
         )
             .andExpect(status().isOk())
@@ -305,7 +306,7 @@ class CredentialsControllerSetTest {
         val mvcResult = mockMvc.perform(
             put(CredentialsController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Bearer [some-token]")
+                .credHubAuthHeader()
                 .content(requestBody)
         )
             .andExpect(status().isOk())
@@ -383,7 +384,7 @@ class CredentialsControllerSetTest {
         val mvcResult = mockMvc.perform(
             put(CredentialsController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Bearer [some-token]")
+                .credHubAuthHeader()
                 .content(requestBody)
         )
             .andExpect(status().isOk())
@@ -470,7 +471,7 @@ class CredentialsControllerSetTest {
         val mvcResult = mockMvc.perform(
             put(CredentialsController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Bearer [some-token]")
+                .credHubAuthHeader()
                 .content(requestBody)
         )
             .andExpect(status().isOk())
@@ -546,7 +547,7 @@ class CredentialsControllerSetTest {
         val mvcResult = mockMvc.perform(
             put(CredentialsController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Bearer [some-token]")
+                .credHubAuthHeader()
                 .content(requestBody)
         )
             .andExpect(status().isOk())
