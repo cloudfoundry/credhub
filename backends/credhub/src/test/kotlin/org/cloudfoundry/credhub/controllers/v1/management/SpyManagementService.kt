@@ -4,13 +4,13 @@ import org.cloudfoundry.credhub.ManagementService
 
 class SpyManagementService : ManagementService {
 
-    var toggleReadOnlyMode_calledWithShouldUseReadOnlyMode = false
+    var toggleReadOnlyMode__calledWith_shouldUseReadOnlyMode = false
     override fun toggleReadOnlyMode(shouldUseReadOnlyMode: Boolean) {
-        toggleReadOnlyMode_calledWithShouldUseReadOnlyMode = shouldUseReadOnlyMode
+        toggleReadOnlyMode__calledWith_shouldUseReadOnlyMode = shouldUseReadOnlyMode
     }
 
-    var isReadOnlyMode_returns = false
+    var isReadOnlyMode__returns_boolean = false
     override fun isReadOnlyMode(): Boolean {
-        return isReadOnlyMode_returns
+        return isReadOnlyMode__returns_boolean
     }
 }

@@ -67,7 +67,7 @@ class CredentialsControllerDeleteTest {
             )
             .andReturn()
 
-        assertThat(spyCredentialsHandler.deleteCredential_calledWithCredentialName).isEqualTo("/some-credential-path")
+        assertThat(spyCredentialsHandler.deleteCredential__calledWith_credentialName).isEqualTo("/some-credential-path")
         val actualResponseBody = mvcResult.response.contentAsString
 
         assertThat(actualResponseBody).isEqualTo("")

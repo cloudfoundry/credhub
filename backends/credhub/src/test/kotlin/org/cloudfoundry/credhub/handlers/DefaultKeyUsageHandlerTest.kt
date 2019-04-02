@@ -30,7 +30,7 @@ class DefaultKeyUsageHandlerTest {
         val uuid = UUID.randomUUID()
         val uuid2 = UUID.randomUUID()
         val uuid3 = UUID.randomUUID()
-        credentialVersionDataService.countByEncryptionKey__returns_results = mapOf(uuid to 20L, uuid2 to 10L, uuid3 to 5L)
+        credentialVersionDataService.countByEncryptionKey__returns_map = mapOf(uuid to 20L, uuid2 to 10L, uuid3 to 5L)
 
         val key = EncryptionKey(null, uuid, null, "some-encryption-key-name")
         val uuids = setOf(uuid, uuid2)

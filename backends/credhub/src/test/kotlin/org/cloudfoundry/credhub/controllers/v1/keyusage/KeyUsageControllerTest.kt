@@ -53,7 +53,7 @@ class KeyUsageControllerTest {
         val objectMapper = ObjectMapper()
         val map = objectMapper.readValue(responseBody, Map::class.java) as Map<String, Integer>
         val longMap = map.mapValues { it.value.toLong() }
-        keyUsageHandler.getKeyUsage__returns_results = longMap
+        keyUsageHandler.getKeyUsage__returns_map = longMap
 
         val mvcResult = mockMvc.perform(
                 get(KeyUsageController.ENDPOINT)

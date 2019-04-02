@@ -75,7 +75,7 @@ class CredentialsControllerGetTest {
     @Test
     fun GET__find_by_id__returns_value_results() {
         val uuid = UUID.randomUUID()
-        spyCredentialsHandler.getCredentialVersionByUUID_returns = CredentialView(
+        spyCredentialsHandler.getCredentialVersionByUUID__returns_credentialView = CredentialView(
             Instant.ofEpochSecond(1549053472L),
             uuid,
             "/some-value-path",
@@ -99,7 +99,7 @@ class CredentialsControllerGetTest {
                 )
             ).andReturn()
 
-        assertThat(spyCredentialsHandler.getCredentialVersionByUUID_calledWithCredentialUUID).isEqualTo(uuid.toString())
+        assertThat(spyCredentialsHandler.getCredentialVersionByUUID__calledWith_credentialUUID).isEqualTo(uuid.toString())
         // language=json
         val expectedResponseBody = """
             {
@@ -117,7 +117,7 @@ class CredentialsControllerGetTest {
     @Test
     fun GET__find_by_id__returns_json_results() {
         val uuid = UUID.randomUUID()
-        spyCredentialsHandler.getCredentialVersionByUUID_returns = CredentialView(
+        spyCredentialsHandler.getCredentialVersionByUUID__returns_credentialView = CredentialView(
             Instant.ofEpochSecond(1549053472L),
             uuid,
             "/some-value-path",
@@ -148,7 +148,7 @@ class CredentialsControllerGetTest {
                 )
             ).andReturn()
 
-        assertThat(spyCredentialsHandler.getCredentialVersionByUUID_calledWithCredentialUUID).isEqualTo(uuid.toString())
+        assertThat(spyCredentialsHandler.getCredentialVersionByUUID__calledWith_credentialUUID).isEqualTo(uuid.toString())
         // language=json
         val expectedResponseBody = """
             {
@@ -168,7 +168,7 @@ class CredentialsControllerGetTest {
     @Test
     fun GET__find_by_id__returns_password_results() {
         val uuid = UUID.randomUUID()
-        spyCredentialsHandler.getCredentialVersionByUUID_returns = CredentialView(
+        spyCredentialsHandler.getCredentialVersionByUUID__returns_credentialView = CredentialView(
             Instant.ofEpochSecond(1549053472L),
             uuid,
             "/some-value-path",
@@ -192,7 +192,7 @@ class CredentialsControllerGetTest {
                 )
             ).andReturn()
 
-        assertThat(spyCredentialsHandler.getCredentialVersionByUUID_calledWithCredentialUUID).isEqualTo(uuid.toString())
+        assertThat(spyCredentialsHandler.getCredentialVersionByUUID__calledWith_credentialUUID).isEqualTo(uuid.toString())
         // language=json
         val expectedResponseBody = """
             {
@@ -211,7 +211,7 @@ class CredentialsControllerGetTest {
     @Test
     fun GET__find_by_id__returns_user_results() {
         val uuid = UUID.randomUUID()
-        spyCredentialsHandler.getCredentialVersionByUUID_returns = CredentialView(
+        spyCredentialsHandler.getCredentialVersionByUUID__returns_credentialView = CredentialView(
             Instant.ofEpochSecond(1549053472L),
             uuid,
             "/some-value-path",
@@ -239,7 +239,7 @@ class CredentialsControllerGetTest {
                 )
             ).andReturn()
 
-        assertThat(spyCredentialsHandler.getCredentialVersionByUUID_calledWithCredentialUUID).isEqualTo(uuid.toString())
+        assertThat(spyCredentialsHandler.getCredentialVersionByUUID__calledWith_credentialUUID).isEqualTo(uuid.toString())
         // language=json
         val expectedResponseBody = """
             {
@@ -262,7 +262,7 @@ class CredentialsControllerGetTest {
     @Test
     fun GET__find_by_id__returns_certificate_results() {
         val uuid = UUID.randomUUID()
-        spyCredentialsHandler.getCredentialVersionByUUID_returns = CredentialView(
+        spyCredentialsHandler.getCredentialVersionByUUID__returns_credentialView = CredentialView(
             Instant.ofEpochSecond(1549053472L),
             uuid,
             "/some-value-path",
@@ -291,7 +291,7 @@ class CredentialsControllerGetTest {
                 )
             ).andReturn()
 
-        assertThat(spyCredentialsHandler.getCredentialVersionByUUID_calledWithCredentialUUID).isEqualTo(uuid.toString())
+        assertThat(spyCredentialsHandler.getCredentialVersionByUUID__calledWith_credentialUUID).isEqualTo(uuid.toString())
         // language=json
         val expectedResponseBody = """
             {
@@ -316,7 +316,7 @@ class CredentialsControllerGetTest {
     @Test
     fun GET__find_by_id__returns_rsa_results() {
         val uuid = UUID.randomUUID()
-        spyCredentialsHandler.getCredentialVersionByUUID_returns = CredentialView(
+        spyCredentialsHandler.getCredentialVersionByUUID__returns_credentialView = CredentialView(
             Instant.ofEpochSecond(1549053472L),
             uuid,
             "/some-value-path",
@@ -343,7 +343,7 @@ class CredentialsControllerGetTest {
                 )
             ).andReturn()
 
-        assertThat(spyCredentialsHandler.getCredentialVersionByUUID_calledWithCredentialUUID).isEqualTo(uuid.toString())
+        assertThat(spyCredentialsHandler.getCredentialVersionByUUID__calledWith_credentialUUID).isEqualTo(uuid.toString())
         // language=json
         val expectedResponseBody = """
             {
@@ -365,7 +365,7 @@ class CredentialsControllerGetTest {
     @Test
     fun GET__find_by_id__returns_ssh_results() {
         val uuid = UUID.randomUUID()
-        spyCredentialsHandler.getCredentialVersionByUUID_returns = CredentialView(
+        spyCredentialsHandler.getCredentialVersionByUUID__returns_credentialView = CredentialView(
             Instant.ofEpochSecond(1549053472L),
             uuid,
             "/some-value-path",
@@ -393,7 +393,7 @@ class CredentialsControllerGetTest {
                 )
             ).andReturn()
 
-        assertThat(spyCredentialsHandler.getCredentialVersionByUUID_calledWithCredentialUUID).isEqualTo(uuid.toString())
+        assertThat(spyCredentialsHandler.getCredentialVersionByUUID__calledWith_credentialUUID).isEqualTo(uuid.toString())
         // language=json
         val expectedResponseBody = """
             {
@@ -415,7 +415,7 @@ class CredentialsControllerGetTest {
 
     @Test
     fun GET__find_by_name_like__returns_results() {
-        spyPermissionedCredentialService.findContainingName_returns = listOf(
+        spyPermissionedCredentialService.findContainingName__returns_findCredentialResultList = listOf(
             FindCredentialResult(
                 Instant.ofEpochSecond(1549053472L),
                 "some-credential-name"
@@ -445,8 +445,8 @@ class CredentialsControllerGetTest {
             )
             .andReturn()
 
-        assertThat(spyPermissionedCredentialService.findContainingName_calledWithName).isEqualTo("some-credential")
-        assertThat(spyPermissionedCredentialService.findContainingName_calledWithExpiresWithinDays).isEqualTo("1")
+        assertThat(spyPermissionedCredentialService.findContainingName__calledWith_name).isEqualTo("some-credential")
+        assertThat(spyPermissionedCredentialService.findContainingName__calledWith_expiresWithinDays).isEqualTo("1")
         val actualResponseBody = mvcResult.response.contentAsString
         // language=json
         val expectedResponseBody = """
@@ -465,7 +465,7 @@ class CredentialsControllerGetTest {
 
     @Test
     fun GET__find_by_name__returns_results() {
-        spyPermissionedCredentialService.return_findStartingWithPath = listOf(
+        spyPermissionedCredentialService.findStartingWithPath__returns_findCredentialResultList = listOf(
             FindCredentialResult(
                 Instant.ofEpochSecond(1549053472L),
                 "some-credential-name"
@@ -495,8 +495,8 @@ class CredentialsControllerGetTest {
             )
             .andReturn()
 
-        assertThat(spyPermissionedCredentialService.findStartingWithPathCalledWithPath).isEqualTo("some-credential-path")
-        assertThat(spyPermissionedCredentialService.findStartingWithPathCalledWithExpiresWithinDays).isEqualTo("1")
+        assertThat(spyPermissionedCredentialService.findStartingWithPath__calledWith_path).isEqualTo("some-credential-path")
+        assertThat(spyPermissionedCredentialService.findStartingWithPath__calledWith_expiresWithinDays).isEqualTo("1")
         val actualResponseBody = mvcResult.response.contentAsString
         // language=json
         val expectedResponseBody = """
@@ -515,7 +515,7 @@ class CredentialsControllerGetTest {
 
     @Test
     fun GET__get_by_name__returns_results() {
-        spyCredentialsHandler.getCurrentCredentialVersions_returns = DataResponse(
+        spyCredentialsHandler.getCurrentCredentialVersions__returns_dataResponse = DataResponse(
             listOf(
                 CredentialView(
                     Instant.ofEpochSecond(1549053472L),
@@ -552,7 +552,7 @@ class CredentialsControllerGetTest {
                 )
             ).andReturn()
 
-        assertThat(spyCredentialsHandler.getCurrentCredentialVersions_calledWithCredentialName).isEqualTo("/some-value-path")
+        assertThat(spyCredentialsHandler.getCurrentCredentialVersions__calledWith_credentialName).isEqualTo("/some-value-path")
 
         val actualResponse = mvcResult.response.contentAsString
         // language=json

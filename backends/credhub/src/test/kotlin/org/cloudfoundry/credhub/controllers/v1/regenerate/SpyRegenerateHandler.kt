@@ -6,16 +6,16 @@ import org.cloudfoundry.credhub.views.CredentialView
 
 class SpyRegenerateHandler : RegenerateHandler {
 
-    var handleRegenerate_calledWithCredentialName: String? = null
+    var handleRegenerate__calledWith_credentialName: String? = null
     override fun handleRegenerate(credentialName: String): CredentialView {
-        handleRegenerate_calledWithCredentialName = credentialName
+        handleRegenerate__calledWith_credentialName = credentialName
 
         return CredentialView()
     }
 
-    var handleBulkRegenerate_calledWithSignerName: String? = null
+    var handleBulkRegenerate_calledWith_signerName: String? = null
     override fun handleBulkRegenerate(signerName: String): BulkRegenerateResults {
-        handleBulkRegenerate_calledWithSignerName = signerName
+        handleBulkRegenerate_calledWith_signerName = signerName
 
         return BulkRegenerateResults()
     }

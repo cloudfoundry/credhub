@@ -5,10 +5,10 @@ import org.cloudfoundry.credhub.views.CredentialView
 import java.io.InputStream
 
 class SpyLegacyGenerationHandler : LegacyGenerationHandler {
-    lateinit var auditedHandlePostRequest_calledWithInputStream: InputStream
-    lateinit var auditedHandlePostRequest_returns: CredentialView
+    lateinit var auditedHandlePostRequest__calledWith_inputStream: InputStream
+    lateinit var auditedHandlePostRequest__returns_credentialView: CredentialView
     override fun auditedHandlePostRequest(inputStream: InputStream): CredentialView {
-        auditedHandlePostRequest_calledWithInputStream = inputStream
-        return auditedHandlePostRequest_returns
+        auditedHandlePostRequest__calledWith_inputStream = inputStream
+        return auditedHandlePostRequest__returns_credentialView
     }
 }

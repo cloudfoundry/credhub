@@ -6,9 +6,9 @@ import org.cloudfoundry.credhub.views.DataResponse
 
 class SpyCredentialsHandler : CredentialsHandler {
 
-    lateinit var deleteCredential_calledWithCredentialName: String
+    lateinit var deleteCredential__calledWith_credentialName: String
     override fun deleteCredential(credentialName: String) {
-        deleteCredential_calledWithCredentialName = credentialName
+        deleteCredential__calledWith_credentialName = credentialName
     }
 
     override fun getNCredentialVersions(credentialName: String, numberOfVersions: Int?): DataResponse {
@@ -19,18 +19,18 @@ class SpyCredentialsHandler : CredentialsHandler {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
-    lateinit var getCurrentCredentialVersions_calledWithCredentialName: String
-    lateinit var getCurrentCredentialVersions_returns: DataResponse
+    lateinit var getCurrentCredentialVersions__calledWith_credentialName: String
+    lateinit var getCurrentCredentialVersions__returns_dataResponse: DataResponse
     override fun getCurrentCredentialVersions(credentialName: String): DataResponse {
-        getCurrentCredentialVersions_calledWithCredentialName = credentialName
+        getCurrentCredentialVersions__calledWith_credentialName = credentialName
 
-        return getCurrentCredentialVersions_returns
+        return getCurrentCredentialVersions__returns_dataResponse
     }
 
-    lateinit var getCredentialVersionByUUID_calledWithCredentialUUID: String
-    lateinit var getCredentialVersionByUUID_returns: CredentialView
+    lateinit var getCredentialVersionByUUID__calledWith_credentialUUID: String
+    lateinit var getCredentialVersionByUUID__returns_credentialView: CredentialView
     override fun getCredentialVersionByUUID(credentialUUID: String): CredentialView {
-        getCredentialVersionByUUID_calledWithCredentialUUID = credentialUUID
-        return getCredentialVersionByUUID_returns
+        getCredentialVersionByUUID__calledWith_credentialUUID = credentialUUID
+        return getCredentialVersionByUUID__returns_credentialView
     }
 }

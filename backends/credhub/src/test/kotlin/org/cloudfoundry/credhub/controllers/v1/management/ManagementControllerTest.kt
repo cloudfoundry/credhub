@@ -39,7 +39,7 @@ class ManagementControllerTest {
 
     @Test
     fun GET__management_mode__returns_result() {
-        spyManagementService.isReadOnlyMode_returns = false
+        spyManagementService.isReadOnlyMode__returns_boolean = false
 
         val mvcResult = mockMvc.perform(
             get(ManagementController.ENDPOINT)
@@ -85,7 +85,7 @@ class ManagementControllerTest {
                 )
             ).andReturn()
 
-        assertThat(spyManagementService.toggleReadOnlyMode_calledWithShouldUseReadOnlyMode).isEqualTo(true)
+        assertThat(spyManagementService.toggleReadOnlyMode__calledWith_shouldUseReadOnlyMode).isEqualTo(true)
 
         val expectedResponseBody = """
             {

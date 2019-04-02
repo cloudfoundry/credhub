@@ -75,7 +75,7 @@ class CredentialsControllerGenerateTest {
 
     @Test
     fun POST__generate_password_returns__password_credential() {
-        spyLegacyGenerationHandler.auditedHandlePostRequest_returns = CredentialView(
+        spyLegacyGenerationHandler.auditedHandlePostRequest__returns_credentialView = CredentialView(
             Instant.ofEpochSecond(1549053472L),
             uuid,
             "/some-password-path",
@@ -129,7 +129,7 @@ class CredentialsControllerGenerateTest {
             )
             .andReturn()
 
-        val actualInputStream = BufferedReader(InputStreamReader(spyLegacyGenerationHandler.auditedHandlePostRequest_calledWithInputStream))
+        val actualInputStream = BufferedReader(InputStreamReader(spyLegacyGenerationHandler.auditedHandlePostRequest__calledWith_inputStream))
             .lines().collect(Collectors.joining("\n"))
 
         val expectedInputStream = BufferedReader(InputStreamReader(ByteArrayInputStream(requestBody.toByteArray())))
@@ -154,7 +154,7 @@ class CredentialsControllerGenerateTest {
 
     @Test
     fun POST__generate_user_returns__user_credential() {
-        spyLegacyGenerationHandler.auditedHandlePostRequest_returns = CredentialView(
+        spyLegacyGenerationHandler.auditedHandlePostRequest__returns_credentialView = CredentialView(
             Instant.ofEpochSecond(1549053472L),
             uuid,
             "/some-user-path",
@@ -212,7 +212,7 @@ class CredentialsControllerGenerateTest {
             )
             .andReturn()
 
-        val actualInputStream = BufferedReader(InputStreamReader(spyLegacyGenerationHandler.auditedHandlePostRequest_calledWithInputStream))
+        val actualInputStream = BufferedReader(InputStreamReader(spyLegacyGenerationHandler.auditedHandlePostRequest__calledWith_inputStream))
             .lines().collect(Collectors.joining("\n"))
 
         val expectedInputStream = BufferedReader(InputStreamReader(ByteArrayInputStream(requestBody.toByteArray())))
@@ -242,7 +242,7 @@ class CredentialsControllerGenerateTest {
 
     @Test
     fun POST__generate_certificate_returns__certificate_credential() {
-        spyLegacyGenerationHandler.auditedHandlePostRequest_returns = CredentialView(
+        spyLegacyGenerationHandler.auditedHandlePostRequest__returns_credentialView = CredentialView(
             Instant.ofEpochSecond(1549053472L),
             uuid,
             "/some-certificate-path",
@@ -340,7 +340,7 @@ class CredentialsControllerGenerateTest {
             )
             .andReturn()
 
-        val actualInputStream = BufferedReader(InputStreamReader(spyLegacyGenerationHandler.auditedHandlePostRequest_calledWithInputStream))
+        val actualInputStream = BufferedReader(InputStreamReader(spyLegacyGenerationHandler.auditedHandlePostRequest__calledWith_inputStream))
             .lines().collect(Collectors.joining("\n"))
 
         val expectedInputStream = BufferedReader(InputStreamReader(ByteArrayInputStream(requestBody.toByteArray())))
@@ -372,7 +372,7 @@ class CredentialsControllerGenerateTest {
 
     @Test
     fun POST__generate_rsa_returns__rsa_credential() {
-        spyLegacyGenerationHandler.auditedHandlePostRequest_returns = CredentialView(
+        spyLegacyGenerationHandler.auditedHandlePostRequest__returns_credentialView = CredentialView(
             Instant.ofEpochSecond(1549053472L),
             uuid,
             "/some-rsa-path",
@@ -413,7 +413,7 @@ class CredentialsControllerGenerateTest {
             )
             .andReturn()
 
-        val actualInputStream = BufferedReader(InputStreamReader(spyLegacyGenerationHandler.auditedHandlePostRequest_calledWithInputStream))
+        val actualInputStream = BufferedReader(InputStreamReader(spyLegacyGenerationHandler.auditedHandlePostRequest__calledWith_inputStream))
             .lines().collect(Collectors.joining("\n"))
 
         val expectedInputStream = BufferedReader(InputStreamReader(ByteArrayInputStream(requestBody.toByteArray())))
@@ -442,7 +442,7 @@ class CredentialsControllerGenerateTest {
 
     @Test
     fun POST__generate_ssh_returns__ssh_credential() {
-        spyLegacyGenerationHandler.auditedHandlePostRequest_returns = CredentialView(
+        spyLegacyGenerationHandler.auditedHandlePostRequest__returns_credentialView = CredentialView(
             Instant.ofEpochSecond(1549053472L),
             uuid,
             "/some-ssh-path",
@@ -488,7 +488,7 @@ class CredentialsControllerGenerateTest {
             )
             .andReturn()
 
-        val actualInputStream = BufferedReader(InputStreamReader(spyLegacyGenerationHandler.auditedHandlePostRequest_calledWithInputStream))
+        val actualInputStream = BufferedReader(InputStreamReader(spyLegacyGenerationHandler.auditedHandlePostRequest__calledWith_inputStream))
             .lines().collect(Collectors.joining("\n"))
 
         val expectedInputStream = BufferedReader(InputStreamReader(ByteArrayInputStream(requestBody.toByteArray())))

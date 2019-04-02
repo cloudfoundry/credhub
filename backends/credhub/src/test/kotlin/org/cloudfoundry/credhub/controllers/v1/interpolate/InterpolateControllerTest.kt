@@ -64,7 +64,7 @@ class InterpolateControllerTest {
         val objectMapper = ObjectMapper()
 
         val map = objectMapper.readValue(responseBody, Map::class.java) as Map<String, Any>
-        spyInterpolationHandler.interpolateCredhubReferences__returns_results = map
+        spyInterpolationHandler.interpolateCredhubReferences__returns_map = map
 
         // language=json
         val requestBody = """
@@ -97,7 +97,7 @@ class InterpolateControllerTest {
                 )
             ).andReturn()
 
-        assertThat(spyInterpolationHandler.interpolateCredhubReferences__calledWithServicesMap).isEqualTo(expectedRequest)
+        assertThat(spyInterpolationHandler.interpolateCredhubReferences__calledWith_servicesMap).isEqualTo(expectedRequest)
         JSONAssert.assertEquals(mvcResult.response.contentAsString, responseBody, true)
     }
 }

@@ -5,10 +5,10 @@ import org.cloudfoundry.credhub.requests.BaseCredentialSetRequest
 import org.cloudfoundry.credhub.views.CredentialView
 
 class SpySetHandler : SetHandler {
-    lateinit var handle_calledWithSetRequest: BaseCredentialSetRequest<*>
-    lateinit var handle_returnsCredentialView: CredentialView
+    lateinit var handle__calledWith_setRequest: BaseCredentialSetRequest<*>
+    lateinit var handle__returns_credentialView: CredentialView
     override fun handle(setRequest: BaseCredentialSetRequest<*>): CredentialView {
-        handle_calledWithSetRequest = setRequest
-        return handle_returnsCredentialView
+        handle__calledWith_setRequest = setRequest
+        return handle__returns_credentialView
     }
 }

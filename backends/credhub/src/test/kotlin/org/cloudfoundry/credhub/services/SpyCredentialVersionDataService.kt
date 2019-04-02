@@ -55,9 +55,9 @@ class SpyCredentialVersionDataService : CredentialVersionDataService {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
-    lateinit var countByEncryptionKey__returns_results: Map<UUID, Long>
+    lateinit var countByEncryptionKey__returns_map: Map<UUID, Long>
     override fun countByEncryptionKey(): Map<UUID, Long> {
-        return countByEncryptionKey__returns_results
+        return countByEncryptionKey__returns_map
     }
 
     override fun findActiveByName(name: String): List<CredentialVersion>? {

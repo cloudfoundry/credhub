@@ -41,24 +41,24 @@ class SpyPermissionedCredentialService : PermissionedCredentialService {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
-    lateinit var return_findStartingWithPath: List<FindCredentialResult>
-    lateinit var findStartingWithPathCalledWithPath: String
-    lateinit var findStartingWithPathCalledWithExpiresWithinDays: String
+    lateinit var findStartingWithPath__returns_findCredentialResultList: List<FindCredentialResult>
+    lateinit var findStartingWithPath__calledWith_path: String
+    lateinit var findStartingWithPath__calledWith_expiresWithinDays: String
     override fun findStartingWithPath(path: String, expiresWithinDays: String): List<FindCredentialResult> {
-        findStartingWithPathCalledWithPath = path
-        findStartingWithPathCalledWithExpiresWithinDays = expiresWithinDays
+        findStartingWithPath__calledWith_path = path
+        findStartingWithPath__calledWith_expiresWithinDays = expiresWithinDays
 
-        return return_findStartingWithPath
+        return findStartingWithPath__returns_findCredentialResultList
     }
 
-    lateinit var findContainingName_calledWithName: String
-    lateinit var findContainingName_calledWithExpiresWithinDays: String
-    lateinit var findContainingName_returns: List<FindCredentialResult>
+    lateinit var findContainingName__calledWith_name: String
+    lateinit var findContainingName__calledWith_expiresWithinDays: String
+    lateinit var findContainingName__returns_findCredentialResultList: List<FindCredentialResult>
     override fun findContainingName(name: String, expiresWithinDays: String): List<FindCredentialResult> {
-        findContainingName_calledWithName = name
-        findContainingName_calledWithExpiresWithinDays = expiresWithinDays
+        findContainingName__calledWith_name = name
+        findContainingName__calledWith_expiresWithinDays = expiresWithinDays
 
-        return findContainingName_returns
+        return findContainingName__returns_findCredentialResultList
     }
 
     override fun findMostRecent(credentialName: String): CredentialVersion? {

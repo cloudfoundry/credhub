@@ -173,6 +173,18 @@ operation::DELETE__credential_returns__void[]
 
 ---
 
+== Regenerate Credentials
+
+=== Regenerate a Credential
+operation::POST__regenerate__returns_results[]
+
+---
+
+=== Bulk Regenerate Credentials
+operation::POST__bulkregenerate__returns_results[]
+
+---
+
 == Certificates
 
 include::certificate-rotation-instructions.adoc[]
@@ -221,6 +233,13 @@ operation::POST__interpolate__returns_map[]
 
 ---
 
+== Encryption Key Usage
+
+=== Get Encryption Key Usage
+operation::GET__keyusage__returns_map[]
+
+---
+
 == Management
 
 === Get Read Only Mode Status
@@ -230,13 +249,6 @@ operation::GET__management_mode__returns_result[]
 
 === Set Read Only Mode Status
 operation::POST__management_mode__returns_result[]
-
----
-
-== Encryption Key Usage
-
-=== Get Encryption Key Usage
-operation::GET__keyusage__returns_map[]
 
 ---
 
@@ -254,19 +266,9 @@ operation::GET__version__returns_version[]
 
 ---
 
-== Regenerate Credentials
-
-=== Regenerate a Credential
-operation::POST__regenerate__returns_results[]
-
----
-
-=== Bulk Regenerate Credentials
-operation::POST__bulkregenerate__returns_results[]
-
----
-
 == Health
 
 === Get Server Status
 operation::GET__health__returns_status[]
+
+---

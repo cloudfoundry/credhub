@@ -4,10 +4,10 @@ import org.cloudfoundry.credhub.interpolation.InterpolationHandler
 
 class SpyInterpolationHandler : InterpolationHandler {
 
-    lateinit var interpolateCredhubReferences__calledWithServicesMap: Map<String, Any>
-    lateinit var interpolateCredhubReferences__returns_results: Map<String, Any>
+    lateinit var interpolateCredhubReferences__calledWith_servicesMap: Map<String, Any>
+    lateinit var interpolateCredhubReferences__returns_map: Map<String, Any>
     override fun interpolateCredHubReferences(servicesMap: Map<String, Any>): Map<String, Any> {
-        interpolateCredhubReferences__calledWithServicesMap = servicesMap
-        return interpolateCredhubReferences__returns_results
+        interpolateCredhubReferences__calledWith_servicesMap = servicesMap
+        return interpolateCredhubReferences__returns_map
     }
 }

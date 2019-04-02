@@ -69,7 +69,7 @@ class RegenerateControllerTest {
                     )
             ).andReturn()
 
-        assertThat(spyRegenerateHandler.handleRegenerate_calledWithCredentialName, equalTo("/picard"))
+        assertThat(spyRegenerateHandler.handleRegenerate__calledWith_credentialName, equalTo("/picard"))
     }
 
     @Test
@@ -99,6 +99,6 @@ class RegenerateControllerTest {
                     )
             ).andReturn()
 
-        assertThat(spyRegenerateHandler.handleBulkRegenerate_calledWithSignerName, equalTo("/some-ca"))
+        assertThat(spyRegenerateHandler.handleBulkRegenerate_calledWith_signerName, equalTo("/some-ca"))
     }
 }
