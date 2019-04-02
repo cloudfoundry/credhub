@@ -41,8 +41,20 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
 
   @Override
   public void addInterceptors(final InterceptorRegistry registry) {
-    registry.addInterceptor(auditInterceptor).excludePathPatterns("/info", "/health", "/**/key-usage", "/version");
+    registry.addInterceptor(auditInterceptor).excludePathPatterns(
+      "/info",
+      "/health",
+      "/**/key-usage",
+      "/version",
+      "/docs/index.html"
+    );
     registry.addInterceptor(managementInterceptor);
-    registry.addInterceptor(userContextInterceptor).excludePathPatterns("/info", "/health", "/**/key-usage", "/management");
+    registry.addInterceptor(userContextInterceptor).excludePathPatterns(
+      "/info",
+      "/health",
+      "/**/key-usage",
+      "/management",
+      "/docs/index.html"
+    );
   }
 }

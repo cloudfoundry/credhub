@@ -1,4 +1,6 @@
 
+applications/credhub-api/src/main/resources/static/
+
 # Created by https://www.gitignore.io/api/osx,eclipse,intellij,gradle,maven
 
 ### OSX ###

@@ -77,6 +77,7 @@ public class AuthWithoutOAuthConfiguration extends ResourceServerConfigurerAdapt
     http
       .authorizeRequests()
       .antMatchers("/info").permitAll()
+      .antMatchers("/docs/index.html").permitAll()
       .antMatchers("/health").permitAll()
       .antMatchers("/management").permitAll()
       .antMatchers("**")

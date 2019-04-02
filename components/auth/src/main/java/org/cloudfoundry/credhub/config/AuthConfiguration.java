@@ -85,6 +85,7 @@ public class AuthConfiguration extends ResourceServerConfigurerAdapter {
     http
       .authorizeRequests()
       .antMatchers("/info").permitAll()
+      .antMatchers("/docs/index.html").permitAll()
       .antMatchers("/health").permitAll()
       .antMatchers("/management").permitAll()
       .antMatchers("**")

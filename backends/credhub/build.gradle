@@ -100,9 +100,10 @@ test {
     outputs.upToDateWhen { false }
 }
 
-jar {
+task buildAndCopyRestDocsIntoSpringStaticAssetLocation(type: Copy) {
     dependsOn asciidoctor
-    from ("${asciidoctor.outputDir}/html5") {
-        into 'static/docs'
-    }
+
+    from file("build/asciidoc/html5/index.html")
+    into project(":applications:credhub-api").file("src/main/resources/static/docs/")
 }
+asciidoctor.finalizedBy(buildAndCopyRestDocsIntoSpringStaticAssetLocation)

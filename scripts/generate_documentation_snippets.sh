@@ -19,8 +19,9 @@ function generate_documentation_snippets_from_controller_tests() {
 }
 
 function build_autodoc_html() {
-  ./gradlew asciidoctor -x check -x test
+  ./gradlew buildAndCopyRestDocsIntoSpringStaticAssetLocation -x check -x test
 }
+
 function main() {
     set_bash_error_handling
     go_to_project_root_directory
