@@ -1,5 +1,12 @@
 
+== Encryption Key Usage Endpoint
+
 === Overview
 
 This endpoint retrieves the number of credentials encrypted by the active key, provided inactive keys and unknown keys.
 After initiating an encryption key rotation, you may validate the status of the encryption key rotation, and whether it successfully rotated all of the stored data, using this endpoint.
+
+---
+
+=== Get Encryption Key Usage
+operation::GET__keyusage__returns_map[]

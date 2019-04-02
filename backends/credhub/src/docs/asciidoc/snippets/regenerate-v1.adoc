@@ -1,7 +1,19 @@
 
+== Regenerate Credentials Endpoint
+
 === Overview
 
 The regenerate endpoints generate new values for credentials using the same parameters as the stored value.
 All RSA and SSH credentials may be regenerated.
 Password and user credentials must have been generated to enable regeneration.
 Statically set certificates may be regenerated if they are self-signed or if the CA name has been set to a stored CA certificate.
+
+---
+
+=== Regenerate a Credential
+operation::POST__regenerate__returns_results[]
+
+---
+
+=== Bulk Regenerate Credentials
+operation::POST__bulkregenerate__returns_results[]

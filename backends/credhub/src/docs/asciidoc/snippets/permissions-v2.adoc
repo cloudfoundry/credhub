@@ -1,0 +1,37 @@
+
+== Permissions V2 Endpoint
+
+=== Overview
+
+Permissions can be defined for namespaces as well as on explicit credential names.
+Permissions are additive -- if any rule exists authorizing a user to take an action, then the action will be permitted.
+
+---
+
+=== Get a V2 Permission by Actor and Path
+operation::GET__permissions_v2_by_actor_and_path__returns_a_permission[]
+
+---
+
+=== Get a V2 Permission by UUID
+operation::GET__permissions_v2_by_uuid__returns_a_permission[]
+
+---
+
+=== Create a V2 Permission
+operation::POST__permissions_v2__returns_a_permission[]
+
+---
+
+=== Update a V2 Permission
+operation::PUT__permissions_v2__returns_a_permission[]
+
+---
+
+=== Update a V2 Permission Operation
+operation::PATCH__permissions_v2__returns_a_permission[]
+
+---
+
+=== Delete a V2 Permission
+operation::DELETE__permissions_v2_by_uuid__returns_a_permission[]

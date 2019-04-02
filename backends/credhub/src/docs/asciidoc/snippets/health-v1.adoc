@@ -1,0 +1,11 @@
+
+== Health Endpoint
+
+=== Overview
+
+This endpoint verifies that communication with the server via the API is possible.
+
+---
+
+=== Get Server Status
+operation::GET__health__returns_status[]

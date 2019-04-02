@@ -1,0 +1,106 @@
+
+== Certificates Endpoint
+
+=== Rotation Instructions
+
+CredHub offers support for zero-downtime rotation of certificate credentials by allowing certificates to have multiple "active" versions at the same time.
+
+The workflow at a high-level for transitioning to a new certificate is:
+
+1. Regenerate your CA certificate with the `transitional` flag.
+   This creates a new version that will _not_ be used for signing yet, but can be added to your servers trusted certificate lists.
+2. Remove the transitional flag from the new certificate, and add it to the old certificate.
+   This means that the new certificate will start to be used for signing, but the old one will remain as trusted.
+3. Remove the transitional flag from the old certificate.
+   Now that all your clients should have certificates signed by the new CA's certificate, the old one can be removed from your servers trusted lists.
+
+**Step 1: Regenerate**
+
+First we'll need to get the `Certificate ID`.
+Please note that is different from the `Credential ID` that is returned from the `/api/v1/data` endpoint.
+Assuming you're logged in with the CredHub CLI, this curl -k command will get you the ID:
+
+```
+curl "https://example.com/api/v1/certificates?name=[certificate-name]" -H "Content-Type: application/json" -H "Authorization: bearer [token]"
+```
+
+Next, we use that `Certificate ID` to generate the new, transitional version:
+
+```
+curl "https://example.com/api/v1/certificates/[certificate-id]/regenerate" -X POST -d '{"set_as_transitional": true}' -H "Content-Type: application/json" -H "Authorization: bearer [token]"
+```
+
+You should now see that when you request the "current" versions of that credential, that both certificates are returned:
+
+```
+curl "https://example.com/api/v1/data?name=[certificate-name]&current=true" -H "Content-Type: application/json" -H "Authorization: bearer [token]"
+```
+
+**Step 2: Moving the transitional flag**
+
+To move the transitional flag off of the new certificate and onto the older version, we'll need to grab the older version's `Credential ID`:
+
+```
+curl "https://example.com/api/v1/data?name=[certificate-name]&current=true" -H "Content-Type: application/json" -H "Authorization: bearer [token]"
+```
+
+Find the `Credential ID` of the certificate that currently has `transitional: false`, and then pass it to the next command:
+
+```
+curl "https://example.com/api/v1/certificates/[certificate-id]/update_transitional_version" -X PUT -d '{"version": "[Non-Transitional-Credential-ID]"}' -H "Content-Type: application/json" -H "Authorization: bearer [token]"
+```
+
+You can confirm that now the two certificates have swapped:
+
+```
+curl "https://example.com/api/v1/data?name=[certificate-name]&current=true" -H "Content-Type: application/json" -H "Authorization: bearer [token]"
+```
+
+**Step 3: Removing the transitional flag**
+
+After you have regenerated all your client certificates to be signed by the new cert, you can safely remove the transitional flag from the old one:
+
+```
+curl "https://example.com/api/v1/certificates/[certificate-id]/update_transitional_version" -X PUT -d '{"version": null}' -H "Content-Type: application/json" -H "Authorization: bearer [token]"
+```
+
+You can now confirm that only one certificate is active:
+
+```
+curl "https://example.com/api/v1/data?name=[certificate-name]&current=true" -H "Content-Type: application/json" -H "Authorization: bearer [token]"
+```
+
+---
+
+=== Get All Certificates
+operation::GET__certificates__returns_certificates[]
+
+---
+
+=== Get a Certificate By Name
+operation::GET__certificates_byName__returns_certificate[]
+
+---
+
+=== Regenerate a Certificate
+operation::POST__certificates_uuid_regenerate__returns_certificate[]
+
+---
+
+=== Update Transitional Version
+operation::PUT__updateTransitionalVersion__returns_certificate[]
+
+---
+
+=== Get All Versions of a Certificate
+operation::GET__certificateVersions__returns_certificates[]
+
+---
+
+=== Create a Version of a Certificate
+operation::POST__certificateVersions__returns_certificate[]
+
+---
+
+=== Delete a Version of a Certificate
+operation::DELETE__certificateVersion__returns_certificate[]

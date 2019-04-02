@@ -1,6 +1,36 @@
 
+== Introduction
+
 === Overview
 
 CredHub manages credentials like passwords, users, certificates, certificate authorities, ssh keys, rsa keys and arbitrary values (strings and JSON blobs). The following spec details the API exposed by the CredHub server and the equivalent requests using the https://github.com/cloudfoundry-incubator/credhub-cli[CredHub CLI].
 
 More information on CredHub https://github.com/cloudfoundry-incubator/credhub[can be found here].
+
+=== Credential Naming and Paths
+
+Credentials can be named with any value up to 255 characters containing:
+
+* alpha
+* numeric
+* underscore `_`
+* hyphen `-`
+* forward slash `/`
+* period `.`
+* colon `:`
+* parenthesis `(` `)`
+* bracket `[` `]` characters
+
+The character limit includes the leading slash, which will be prepended automatically if absent.
+
+Paths can be used to namespace a set of credential names for a different deployment or environment. To add a path to a credential, simply add the path prior to the credential name, separated by a forward slash (/), e.g. `credhub set -t password -n /prod/deploy123/cc_password -v 'value'`. If a leading slash is not provided, it will be automatically prepended.
+
+=== Credential IDs
+
+Credential responses include a unique identifier in the key 'id'. This ID is a unique identifier for a specific credential version. When a credential value is updated, a new ID will be returned. This identifier can be useful in applications where a specific credential value should be pinned until a manual action (such as a deployment) is performed. If your application should receive the latest value of the credential, retrieving by name is preferred.
+
+=== Overwriting Credential Values
+
+As of 2.0.0, set requests always overwrite the credential that already exists.
+
+As of 2.0.1, generate requests can be set to overwrite, no-overwrite, or converge for the mode parameter. The default mode for generate is converge as of 2.0.0. Converge will only overwrite if the generate request parameters do not match the existing credential.

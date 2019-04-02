@@ -1,0 +1,15 @@
+
+== Permissions V1 (Deprecated)
+
+=== Get a V1 Permission by Actor and Path
+operation::GET__permissions_v1__returns_permissions[]
+
+---
+
+=== Create a V1 Permission
+operation::POST__permissions_v1__returns_201[]
+
+---
+
+=== Delete a V1 Permission
+operation::DELETE__permission_v1__returns_204[]

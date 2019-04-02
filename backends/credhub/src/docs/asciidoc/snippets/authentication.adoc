@@ -1,4 +1,6 @@
 
+== Authentication
+
 === Overview
 
 All requests to CredHub, with the exception of `/info` and `/health`, must include an authentication method.
