@@ -10,20 +10,16 @@ function go_to_project_root_directory() {
     cd "$script_dir/.."
 }
 
+function download_bouncy_castle_fips() {
+    ./gradlew --no-daemon downloadBouncyCastleFips
+}
+
 function lint_scripts() {
     shellcheck scripts/*.sh
 }
 
-function lint_java() {
-    ./gradlew checkstyleMain checkstyleTest spotbugsMain spotbugsTest pmdMain
-}
-
-function lint_kotlin() {
-    ./gradlew ktlint
-}
-
-function download_bouncy_castle_fips() {
-    ./gradlew --no-daemon downloadBouncyCastleFips
+function lint_jvm_language_code() {
+    ./gradlew check -x test
 }
 
 function main() {
@@ -32,8 +28,7 @@ function main() {
 
     download_bouncy_castle_fips
     lint_scripts
-    lint_kotlin
-    lint_java
+    lint_jvm_language_code
 }
 
 main "$@"
