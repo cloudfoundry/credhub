@@ -86,7 +86,6 @@ class CertificatesController(
         @PathVariable("certificateId") certificateId: String,
         @RequestParam(value = "current", required = false, defaultValue = "false") current: Boolean
     ): List<CertificateView> {
-
         return certificatesHandler.handleGetAllVersionsRequest(certificateId, current)
     }
 
@@ -96,7 +95,6 @@ class CertificatesController(
         @RequestBody @Validated requestBody: CreateVersionRequest,
         @PathVariable("certificateId") certificateId: String
     ): CertificateView {
-
         return certificatesHandler.handleCreateVersionsRequest(certificateId, requestBody)
     }
 
@@ -106,7 +104,6 @@ class CertificatesController(
         @PathVariable("certificateId") certificateId: String,
         @PathVariable("versionId") versionId: String
     ): CertificateView {
-
         return certificatesHandler.handleDeleteVersionRequest(certificateId, versionId)
     }
 }

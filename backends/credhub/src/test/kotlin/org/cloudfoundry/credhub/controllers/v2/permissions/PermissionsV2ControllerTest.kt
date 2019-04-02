@@ -15,16 +15,17 @@ import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.http.MediaType
 import org.springframework.restdocs.JUnitRestDocumentation
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
+import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete
+import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get
+import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch
+import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post
+import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.put
 import org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath
 import org.springframework.restdocs.payload.PayloadDocumentation.requestFields
 import org.springframework.restdocs.request.RequestDocumentation.parameterWithName
+import org.springframework.restdocs.request.RequestDocumentation.pathParameters
 import org.springframework.restdocs.request.RequestDocumentation.requestParameters
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.util.UUID
@@ -114,7 +115,7 @@ class PermissionsV2ControllerTest {
 
         val mvcResult = mockMvc
             .perform(
-                get("${PermissionsV2Controller.ENDPOINT}/$uuid")
+                get("${PermissionsV2Controller.ENDPOINT}/{uuid}", uuid.toString())
                     .header("Authorization", "Bearer [some-token]")
                     .contentType(MediaType.APPLICATION_JSON)
             )
@@ -122,7 +123,11 @@ class PermissionsV2ControllerTest {
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
             .andDo(
                 document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER
+                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                    pathParameters(
+                        parameterWithName("uuid")
+                            .description("The permission uuid")
+                    )
                 )
             )
             .andReturn()
@@ -218,7 +223,7 @@ class PermissionsV2ControllerTest {
 
         val mvcResult = mockMvc
             .perform(
-                delete("${PermissionsV2Controller.ENDPOINT}/$uuid")
+                delete("${PermissionsV2Controller.ENDPOINT}/{uuid}", uuid.toString())
                     .header("Authorization", "Bearer [some-token]")
                     .contentType(MediaType.APPLICATION_JSON)
             )
@@ -226,7 +231,11 @@ class PermissionsV2ControllerTest {
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
             .andDo(
                 document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER
+                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                    pathParameters(
+                        parameterWithName("uuid")
+                            .description("The permission uuid")
+                    )
                 )
             )
             .andReturn()
@@ -261,7 +270,7 @@ class PermissionsV2ControllerTest {
 
         val mvcResult = mockMvc
             .perform(
-                put("${PermissionsV2Controller.ENDPOINT}/$uuid")
+                put("${PermissionsV2Controller.ENDPOINT}/{uuid}", uuid.toString())
                     .header("Authorization", "Bearer [some-token]")
                     .contentType(MediaType.APPLICATION_JSON)
                     // language=json
@@ -281,6 +290,10 @@ class PermissionsV2ControllerTest {
             .andDo(
                 document(
                     CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                    pathParameters(
+                        parameterWithName("uuid")
+                            .description("The permission uuid")
+                    ),
                     requestFields(
                         fieldWithPath("path")
                             .description("The credential path"),
@@ -323,7 +336,7 @@ class PermissionsV2ControllerTest {
 
         val mvcResult = mockMvc
             .perform(
-                patch("${PermissionsV2Controller.ENDPOINT}/$uuid")
+                patch("${PermissionsV2Controller.ENDPOINT}/{uuid}", uuid.toString())
                     .header("Authorization", "Bearer [some-token]")
                     .contentType(MediaType.APPLICATION_JSON)
                     // language=json
@@ -342,6 +355,10 @@ class PermissionsV2ControllerTest {
             .andDo(
                 document(
                     CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                    pathParameters(
+                        parameterWithName("uuid")
+                            .description("The permission uuid")
+                    ),
                     requestFields(
                         fieldWithPath("operations").description("The list of permissions to be granted")
                     )
