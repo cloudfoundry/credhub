@@ -43,7 +43,7 @@ class PermissionsV2Request {
         this.operations = operations
     }
 
-    fun getPath(): String? {
+    fun getPath(): String {
         return path
     }
 

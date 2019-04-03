@@ -51,7 +51,7 @@ public class DefaultPermissionService implements PermissionService {
 
   @NotNull
   @Override
-  public List<PermissionData> savePermissionsForUser(final List<PermissionEntry> permissionEntryList) {
+  public List<PermissionData> savePermissionsForUser(@NotNull final List<PermissionEntry> permissionEntryList) {
 
     if (permissionEntryList.isEmpty()) {
       return new ArrayList<>();
@@ -75,7 +75,7 @@ public class DefaultPermissionService implements PermissionService {
   }
 
   @Override
-  public void savePermissions(final List<PermissionEntry> permissionEntryList) {
+  public void savePermissions(@NotNull final List<PermissionEntry> permissionEntryList) {
     if (permissionEntryList.isEmpty()) {
       return;
     }
@@ -139,7 +139,7 @@ public class DefaultPermissionService implements PermissionService {
 
   @NotNull
   @Override
-  public PermissionData patchPermissions(@NotNull final String guid, final List<PermissionOperation> operations) {
+  public PermissionData patchPermissions(@NotNull final String guid, @NotNull final List<PermissionOperation> operations) {
     final UserContext userContext = userContextHolder.getUserContext();
     final UUID permissionUUID = parseUUID(guid);
     checkActorPermissions(permissionUUID, userContext.getActor());
@@ -149,7 +149,7 @@ public class DefaultPermissionService implements PermissionService {
 
   @NotNull
   @Override
-  public PermissionData saveV2Permissions(final PermissionsV2Request permissionsRequest) {
+  public PermissionData saveV2Permissions(@NotNull final PermissionsV2Request permissionsRequest) {
     final UserContext userContext = userContextHolder.getUserContext();
     if (!permissionCheckingService
       .hasPermission(userContext.getActor(), permissionsRequest.getPath(), PermissionOperation.WRITE_ACL)) {
