@@ -7,6 +7,7 @@ import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
 import org.cloudfoundry.credhub.domain.CredentialVersion
+import org.cloudfoundry.credhub.entity.Credential
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
 import org.cloudfoundry.credhub.generate.GenerationRequestGenerator
 import org.cloudfoundry.credhub.generate.UniversalCredentialGenerator
@@ -16,11 +17,11 @@ import org.cloudfoundry.credhub.requests.CreateVersionRequest
 import org.cloudfoundry.credhub.requests.UpdateTransitionalVersionRequest
 import org.cloudfoundry.credhub.views.CertificateCredentialView
 import org.cloudfoundry.credhub.views.CertificateCredentialsView
+import org.cloudfoundry.credhub.views.CertificateVersionView
 import org.cloudfoundry.credhub.views.CertificateView
 import org.cloudfoundry.credhub.views.CredentialView
 import org.springframework.stereotype.Service
 import java.util.UUID
-import kotlin.streams.toList
 
 @Service
 class DefaultCertificatesHandler(
@@ -59,18 +60,14 @@ class DefaultCertificatesHandler(
 
     override fun handleGetAllRequest(): CertificateCredentialsView {
         val credentialList = permissionedCertificateService.getAll()
-
-        val list = credentialList.stream().map { credential -> CertificateCredentialView(credential.name, credential.uuid) }.toList()
-
+        val list = convertCertificateCredentialsToCertificateCredentialViews(credentialList)
         auditRecord.addAllCredentials(Lists.newArrayList<AuditableCredential>(credentialList))
         return CertificateCredentialsView(list)
     }
 
     override fun handleGetByNameRequest(name: String): CertificateCredentialsView {
         val credentialList = permissionedCertificateService.getByName(name)
-
-        val list = credentialList.stream().map { credential -> CertificateCredentialView(credential.name, credential.uuid) }.toList()
-
+        val list = convertCertificateCredentialsToCertificateCredentialViews(credentialList)
         return CertificateCredentialsView(list)
     }
 
@@ -82,12 +79,9 @@ class DefaultCertificatesHandler(
             throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
         }
 
-        val credentialList = permissionedCertificateService
-                .getVersions(uuid, current)
+        val credentialList = permissionedCertificateService.getVersions(uuid, current)
 
-        return credentialList
-                .stream()
-                .map { credential -> CertificateView(credential as CertificateCredentialVersion) }.toList()
+        return credentialList.map { credential -> CertificateView(credential as CertificateCredentialVersion) }
     }
 
     override fun handleDeleteVersionRequest(certificateId: String, versionId: String): CertificateView {
@@ -111,8 +105,7 @@ class DefaultCertificatesHandler(
                 .updateTransitionalVersion(UUID.fromString(certificateId), versionUUID)
 
         return credentialList
-                .stream()
-                .map { credential -> CertificateView(credential as CertificateCredentialVersion) }.toList()
+                .map { credential -> CertificateView(credential as CertificateCredentialVersion) }
     }
 
     override fun handleCreateVersionsRequest(certificateId: String, requestBody: CreateVersionRequest): CertificateView {
@@ -124,5 +117,22 @@ class DefaultCertificatesHandler(
         )
 
         return CertificateView(credentialVersion)
+    }
+
+    private fun convertCertificateCredentialsToCertificateCredentialViews(certificateCredentialList: List<Credential>): List<CertificateCredentialView> {
+        val list = certificateCredentialList.map { credential ->
+            val certificateVersions = permissionedCertificateService.getVersions(credential.uuid!!, false) as List<CertificateCredentialVersion>
+
+            val certificateVersionViews = certificateVersions.map { certificateVersion ->
+                CertificateVersionView(
+                    id = certificateVersion.uuid!!,
+                    expiryDate = certificateVersion.expiryDate,
+                    transitional = certificateVersion.isVersionTransitional
+                )
+            }
+
+            CertificateCredentialView(credential.name, credential.uuid, certificateVersionViews)
+        }
+        return list
     }
 }

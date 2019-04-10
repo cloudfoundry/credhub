@@ -16,6 +16,7 @@ import org.cloudfoundry.credhub.requests.UpdateTransitionalVersionRequest
 import org.cloudfoundry.credhub.utils.TestConstants
 import org.cloudfoundry.credhub.views.CertificateCredentialView
 import org.cloudfoundry.credhub.views.CertificateCredentialsView
+import org.cloudfoundry.credhub.views.CertificateVersionView
 import org.cloudfoundry.credhub.views.CertificateView
 import org.cloudfoundry.credhub.views.CredentialView
 import org.junit.Before
@@ -40,6 +41,7 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.security.Security
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 class CertificatesControllerTest {
@@ -160,7 +162,19 @@ class CertificatesControllerTest {
 
     @Test
     fun GET__certificates__returns_certificates() {
-        val certificateCredentialsView = CertificateCredentialsView(listOf(CertificateCredentialView(name, certificateId)))
+        val certificateVersions = listOf(
+            CertificateVersionView(
+                id = UUID.randomUUID(),
+                transitional = true,
+                expiryDate = Instant.ofEpochSecond(1549053472L).plus(365, ChronoUnit.DAYS)
+            ),
+            CertificateVersionView(
+                id = UUID.randomUUID(),
+                transitional = false,
+                expiryDate = Instant.ofEpochSecond(1549053472L)
+            )
+        )
+        val certificateCredentialsView = CertificateCredentialsView(listOf(CertificateCredentialView(name, certificateId, certificateVersions)))
         spyCertificatesHandler.handleGetAllRequest__returns_certificateCredentialsView = certificateCredentialsView
 
         val mvcResult = mockMvc
@@ -178,11 +192,22 @@ class CertificatesControllerTest {
         // language=json
         val expectedResponse = """
         {
-          "certificates":
-          [
+          "certificates": [
             {
-              "name":"$name",
-              "id":"$certificateId"
+              "name": "$name",
+              "id": "$certificateId",
+              "versions": [
+                {
+                  "id": "${certificateVersions[0].id}",
+                  "expiry_date": "2020-02-01T20:37:52Z",
+                  "transitional": true
+                },
+                {
+                  "id": "${certificateVersions[1].id}",
+                  "expiry_date": "2019-02-01T20:37:52Z",
+                  "transitional": false
+                }
+              ]
             }
           ]
         }
@@ -193,7 +218,15 @@ class CertificatesControllerTest {
 
     @Test
     fun GET__certificates_byName__returns_certificate() {
-        val certificateCredentialsView = CertificateCredentialsView(listOf(CertificateCredentialView(name, certificateId)))
+        val certificateVersions = listOf(
+            CertificateVersionView(
+                id = UUID.randomUUID(),
+                transitional = false,
+                expiryDate = Instant.ofEpochSecond(1549053472L)
+            )
+        )
+
+        val certificateCredentialsView = CertificateCredentialsView(listOf(CertificateCredentialView(name, certificateId, certificateVersions)))
         spyCertificatesHandler.handleGetByNameRequest__returns_certificateCredentialsView = certificateCredentialsView
 
         val mvcResult = mockMvc
@@ -217,7 +250,14 @@ class CertificatesControllerTest {
           [
             {
               "name":"$name",
-              "id":"$certificateId"
+              "id":"$certificateId",
+              "versions": [
+                {
+                  "id": "${certificateVersions[0].id}",
+                  "expiry_date": "2019-02-01T20:37:52Z",
+                  "transitional": false
+                }
+              ]
             }
           ]
         }

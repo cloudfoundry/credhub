@@ -101,7 +101,7 @@ public class CertificateCredentialVersion extends CredentialVersion {
     return existingGenerationParameters.equals(parameters);
   }
 
-  private void setTransitional(final boolean transitional) {
+  public void setTransitional(final boolean transitional) {
     delegate.setTransitional(transitional);
   }
 
