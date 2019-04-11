@@ -3,17 +3,19 @@ package org.cloudfoundry.credhub.services;
 import java.security.Key;
 
 import javax.crypto.AEADBadTagException;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
 
 import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.entities.EncryptionKeyCanary;
+import org.cloudfoundry.credhub.exceptions.IncorrectKeyException;
 import org.cloudfoundry.credhub.utils.PasswordKeyProxyFactoryTestImpl;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import static org.assertj.core.api.Java6Assertions.fail;
 import static org.cloudfoundry.credhub.services.EncryptionKeyCanaryMapper.CANARY_VALUE;
 import static org.cloudfoundry.credhub.services.EncryptionKeyCanaryMapper.DEPRECATED_CANARY_VALUE;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -63,6 +65,20 @@ public class LunaKeyProxyTest {
   }
 
   @Test
+  public void isMatchingCanary_whenDecryptThrowsRelevantIllegalBlockSizeException_returnsFalse() throws Exception {
+    subject = new LunaKeyProxy(encryptionKey,
+      new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
+        @Override
+        public String decrypt(final Key key, final byte[] encryptedValue, final byte[] nonce)
+          throws Exception {
+          throw new IllegalBlockSizeException("returns 0x40");
+        }
+      });
+
+    assertThat(subject.matchesCanary(mock(EncryptionKeyCanary.class)), equalTo(false));
+  }
+
+  @Test
   public void isMatchingCanary_whenDecryptThrowsAEADBadTagException_returnsFalse() throws Exception {
     subject = new LunaKeyProxy(encryptionKey,
       new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
@@ -76,56 +92,46 @@ public class LunaKeyProxyTest {
     assertThat(subject.matchesCanary(mock(EncryptionKeyCanary.class)), equalTo(false));
   }
 
-  @Test
-  public void isMatchingCanary_whenDecryptThrowsExceptionWithCauseIndicatingTheKeyIsIncorrect_returnsFalse() throws Exception {
+  @Test(expected = IncorrectKeyException.class)
+  public void isMatchingCanary_whenDecryptThrowsBadPaddingException_throwsIncorrectKeyException() throws Exception {
     subject = new LunaKeyProxy(encryptionKey,
       new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
         @Override
-        public String decrypt(final Key key, final byte[] encryptedValue, final byte[] nonce) {
-          throw new RuntimeException(new RuntimeException("returns 0x40 (CKR_ENCRYPTED_DATA_INVALID)"));
+        public String decrypt(final Key key, final byte[] encryptedValue, final byte[] nonce)
+          throws Exception {
+          throw new BadPaddingException("");
         }
       });
 
-    assertThat(subject.matchesCanary(mock(EncryptionKeyCanary.class)), equalTo(false));
+    subject.matchesCanary(mock(EncryptionKeyCanary.class));
   }
 
-  @Test
-  public void isMatchingCanary_whenDecryptThrowsExceptionWithOtherCause_throwsRuntimeException() throws Exception {
+  @Test(expected = IncorrectKeyException.class)
+  public void isMatchingCanary_whenDecryptThrowsIllegalBlockSizeException_throwsIncorrectKeyException() throws Exception {
     subject = new LunaKeyProxy(encryptionKey,
       new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
         @Override
-        public String decrypt(final Key key, final byte[] encryptedValue, final byte[] nonce) {
-          throw new RuntimeException(new RuntimeException(("some message that isn't 0x40...")));
+        public String decrypt(final Key key, final byte[] encryptedValue, final byte[] nonce)
+          throws Exception {
+          throw new IllegalBlockSizeException("");
         }
       });
 
-    try {
-      subject.matchesCanary(mock(EncryptionKeyCanary.class));
-      fail("Expected to get RuntimeException");
-    } catch (RuntimeException e) {
-      assertThat(e.getCause().getCause().getMessage(), equalTo("some message that isn't 0x40..."));
-    }
+    subject.matchesCanary(mock(EncryptionKeyCanary.class));
   }
 
-
-  @Test
-  public void isMatchingCanary_WhenDecryptThrowsExceptionWithNoCause_throwsRuntimeException() throws Exception {
+  @Test(expected = IncorrectKeyException.class)
+  public void isMatchingCanary_whenDecryptThrowsOtherException_throwsIncorrectKeyException() throws Exception {
     subject = new LunaKeyProxy(encryptionKey,
       new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
         @Override
-        public String decrypt(final Key key, final byte[] encryptedValue, final byte[] nonce) {
-          throw new RuntimeException("test message");
+        public String decrypt(final Key key, final byte[] encryptedValue, final byte[] nonce)
+          throws Exception {
+          throw new Exception("");
         }
       });
 
-    try {
-      subject.matchesCanary(mock(EncryptionKeyCanary.class));
-      fail("Expected to get RuntimeException");
-    } catch (RuntimeException e) {
-      assertThat(e.getCause().getMessage(), equalTo("test message"));
-    }
+    subject.matchesCanary(mock(EncryptionKeyCanary.class));
   }
 
-//  @Test(expected = RuntimeException.class)
-//  public void isMatchingCanary_whenDecryptThrows
 }

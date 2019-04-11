@@ -6,8 +6,10 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.crypto.AEADBadTagException;
+import javax.crypto.IllegalBlockSizeException;
 
 import org.cloudfoundry.credhub.entities.EncryptionKeyCanary;
+import org.cloudfoundry.credhub.exceptions.IncorrectKeyException;
 import org.cloudfoundry.credhub.utils.StringUtil;
 
 import static java.util.Collections.unmodifiableList;
@@ -49,19 +51,17 @@ public class LunaKeyProxy implements KeyProxy {
         || Arrays.equals(EncryptionKeyCanaryMapper.DEPRECATED_CANARY_VALUE.getBytes(StringUtil.UTF_8), plaintext.getBytes(
         StringUtil.UTF_8));
     } catch (final AEADBadTagException e) {
-      // internal key was wrong (do noting, fall through to `return false`
-    } catch (final Exception e) {
-      if (errorIsSomethingOtherThanTheKeyBeingIncorrect(e)) {
-        throw new RuntimeException(e);
+    } catch (final IllegalBlockSizeException e) {
+      // Our guess(es) at "HSM key was wrong":
+      if (!e.getMessage().contains("returns 0x40")) {
+        throw new IncorrectKeyException(e);
       }
-      // internal key was wrong (do noting, fall through to `return false`
+      // Could not process input data: function 'C_Decrypt' returns 0x40
+    } catch (final Exception e) {
+      throw new IncorrectKeyException(e);
     }
 
     return false;
-  }
-
-  private boolean errorIsSomethingOtherThanTheKeyBeingIncorrect(final Exception e) {
-    return e.getCause() == null || !e.getCause().getMessage().contains("returns 0x40 (CKR_ENCRYPTED_DATA_INVALID)");
   }
 
   @Override
