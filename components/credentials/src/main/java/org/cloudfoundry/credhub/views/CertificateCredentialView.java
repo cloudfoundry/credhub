@@ -12,6 +12,7 @@ public class CertificateCredentialView {
   private String name;
   private UUID uuid;
   private List<CertificateVersionView> certificateVersionViews;
+  private String signedBy;
 
   public CertificateCredentialView() {
     super(); /* Jackson */
@@ -20,12 +21,13 @@ public class CertificateCredentialView {
   public CertificateCredentialView(
     final String name,
     final UUID uuid,
-    @NotNull final List<CertificateVersionView> certificateVersionViews
-  ) {
+    @NotNull final List<CertificateVersionView> certificateVersionViews,
+    final String signedBy) {
     super();
     this.name = name;
     this.uuid = uuid;
     this.certificateVersionViews = certificateVersionViews;
+    this.signedBy = signedBy;
   }
 
   @JsonProperty("id")
@@ -41,5 +43,10 @@ public class CertificateCredentialView {
   @JsonProperty("versions")
   public List<CertificateVersionView> getCertificateVersionViews() {
     return certificateVersionViews;
+  }
+
+  @JsonProperty("signed_by")
+  public String getSignedBy() {
+    return signedBy;
   }
 }

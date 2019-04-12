@@ -14,6 +14,7 @@ import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.entity.CredentialVersionData;
 import org.cloudfoundry.credhub.repositories.CredentialVersionRepository;
+import org.cloudfoundry.credhub.utils.CertificateReader;
 
 @Service
 public class CertificateVersionDataService {
@@ -78,6 +79,22 @@ public class CertificateVersionDataService {
     return credentialFactory.makeCredentialsFromEntities(credentialVersionDataList);
   }
 
+  public List<CredentialVersion> findAllValidVersions(final UUID uuid) {
+    final List<CredentialVersionData> credentialVersionDataList =
+      credentialVersionRepository.
+        findAllByCredentialUuidAndTypeOrderByVersionCreatedAtDesc(
+          uuid, CertificateCredentialVersionData.CREDENTIAL_DATABASE_TYPE);
+
+    final List<CredentialVersionData> validCredentialVersionDataList = new ArrayList<>();
+    for (final CredentialVersionData credentialVersionData : credentialVersionDataList) {
+      if (isValidCertificate(credentialVersionData)) {
+        validCredentialVersionDataList.add(credentialVersionData);
+      }
+    }
+
+    return credentialFactory.makeCredentialsFromEntities(validCredentialVersionDataList);
+  }
+
   public void deleteVersion(final UUID versionUuid) {
     credentialVersionRepository.deleteById(versionUuid);
   }
@@ -99,5 +116,15 @@ public class CertificateVersionDataService {
       transitionalCertificate.setTransitional(false);
       credentialVersionRepository.save(transitionalCertificate);
     }
+  }
+
+  private boolean isValidCertificate(final CredentialVersionData credentialVersionData) {
+    try {
+      final CertificateCredentialVersionData cert = (CertificateCredentialVersionData) credentialVersionData;
+      new CertificateReader(cert.getCertificate());
+    } catch (Exception e) {
+      return false;
+    }
+    return true;
   }
 }

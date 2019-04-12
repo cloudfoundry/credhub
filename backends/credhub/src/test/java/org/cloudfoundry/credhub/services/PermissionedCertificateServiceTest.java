@@ -279,6 +279,78 @@ public class PermissionedCertificateServiceTest {
   }
 
   @Test
+  public void getAllValidVersions_returnsListWithValidVersions() {
+    final CredentialVersion firstVersion = mock(CredentialVersion.class);
+    when(firstVersion.getName()).thenReturn("my-credential");
+    final CredentialVersion secondVersion = mock(CredentialVersion.class);
+    when(secondVersion.getName()).thenReturn("my-credential");
+
+    final List<CredentialVersion> versions = newArrayList(firstVersion, secondVersion);
+
+    final UserContext userContext = mock(UserContext.class);
+    when(userContextHolder.getUserContext()).thenReturn(userContext);
+
+    final String user = "my-user";
+    when(userContext.getActor()).thenReturn(user);
+
+    when(permissionCheckingService.hasPermission(user, "my-credential", PermissionOperation.READ)).thenReturn(true);
+
+    when(certificateVersionDataService.findAllValidVersions(uuid))
+      .thenReturn(versions);
+
+    final List<CredentialVersion> certificates = subject.getAllValidVersions(uuid);
+    assertThat(certificates, equalTo(versions));
+  }
+
+  @Test(expected = InvalidQueryParameterException.class)
+  public void getAllValidVersions_returnsAnError_whenUUIDisInvalid() {
+    when(certificateVersionDataService.findAllValidVersions(uuid)).thenThrow(new IllegalArgumentException());
+    subject.getAllValidVersions(uuid);
+  }
+
+  @Test
+  public void getAllValidVersions_returnsAnEmptyList_whenCredentialListIsEmpty() {
+    when(certificateVersionDataService.findAllValidVersions(uuid)).thenReturn(Collections.emptyList());
+    assertThat(subject.getAllValidVersions(uuid).size(), equalTo(0));
+  }
+
+  @Test(expected = EntryNotFoundException.class)
+  public void getAllValidVersions_returnsAnError_whenCredentialNameIsNull() {
+    final CredentialVersion versionWithNoName = mock(CredentialVersion.class);
+    when(versionWithNoName.getName()).thenReturn(null);
+
+    final List<CredentialVersion> versions = newArrayList(versionWithNoName);
+
+    when(certificateVersionDataService.findAllValidVersions(uuid))
+      .thenReturn(versions);
+
+    subject.getAllValidVersions(uuid);
+  }
+
+  @Test(expected = EntryNotFoundException.class)
+  public void getAllValidVersions_returnsAnError_whenUserDoesntHavePermission() {
+    final CredentialVersion firstVersion = mock(CredentialVersion.class);
+    when(firstVersion.getName()).thenReturn("my-credential");
+    final CredentialVersion secondVersion = mock(CredentialVersion.class);
+    when(secondVersion.getName()).thenReturn("my-credential");
+
+    final List<CredentialVersion> versions = newArrayList(firstVersion, secondVersion);
+
+    final UserContext userContext = mock(UserContext.class);
+    when(userContextHolder.getUserContext()).thenReturn(userContext);
+
+    final String user = "my-user";
+    when(userContext.getActor()).thenReturn(user);
+
+    when(permissionCheckingService.hasPermission(user, "my-credential", PermissionOperation.READ)).thenReturn(false);
+
+    when(certificateVersionDataService.findAllValidVersions(uuid))
+      .thenReturn(versions);
+
+    subject.getAllValidVersions(uuid);
+  }
+
+  @Test
   public void deleteVersion_deletesTheProvidedVersion() {
     final UUID versionUuid = UUID.randomUUID();
     final UUID certificateUuid = UUID.randomUUID();

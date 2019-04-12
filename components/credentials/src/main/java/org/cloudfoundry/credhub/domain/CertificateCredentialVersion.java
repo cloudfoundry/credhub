@@ -117,6 +117,10 @@ public class CertificateCredentialVersion extends CredentialVersion {
     return delegate.isTransitional();
   }
 
+  public boolean isSelfSigned() {
+    return parsedCertificate.isSelfSigned();
+  }
+
   @Override
   public GenerationParameters getGenerationParameters() {
     return null;

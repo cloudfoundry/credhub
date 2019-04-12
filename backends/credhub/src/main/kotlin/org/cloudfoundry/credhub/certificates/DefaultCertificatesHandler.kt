@@ -38,20 +38,20 @@ class DefaultCertificatesHandler(
     ): CredentialView {
 
         val existingCredentialVersion = certificateService
-                .findByCredentialUuid(credentialUuid)
+            .findByCredentialUuid(credentialUuid)
 
         val generateRequest = generationRequestGenerator
-                .createGenerateRequest(existingCredentialVersion)
+            .createGenerateRequest(existingCredentialVersion)
         val credentialValue = credentialGenerator
-                .generate(generateRequest) as CertificateCredentialValue
+            .generate(generateRequest) as CertificateCredentialValue
         credentialValue.isTransitional = request.isTransitional
 
         val credentialVersion = permissionedCertificateService
-                .save(
-                        existingCredentialVersion,
-                        credentialValue,
-                        generateRequest
-                ) as CertificateCredentialVersion
+            .save(
+                existingCredentialVersion,
+                credentialValue,
+                generateRequest
+            ) as CertificateCredentialVersion
 
         auditRecord.setVersion(credentialVersion)
 
@@ -86,7 +86,7 @@ class DefaultCertificatesHandler(
 
     override fun handleDeleteVersionRequest(certificateId: String, versionId: String): CertificateView {
         val deletedVersion = permissionedCertificateService
-                .deleteVersion(UUID.fromString(certificateId), UUID.fromString(versionId))
+            .deleteVersion(UUID.fromString(certificateId), UUID.fromString(versionId))
         return CertificateView(deletedVersion)
     }
 
@@ -102,26 +102,35 @@ class DefaultCertificatesHandler(
 
         val credentialList: List<CredentialVersion>
         credentialList = permissionedCertificateService
-                .updateTransitionalVersion(UUID.fromString(certificateId), versionUUID)
+            .updateTransitionalVersion(UUID.fromString(certificateId), versionUUID)
 
         return credentialList
-                .map { credential -> CertificateView(credential as CertificateCredentialVersion) }
+            .map { credential -> CertificateView(credential as CertificateCredentialVersion) }
     }
 
     override fun handleCreateVersionsRequest(certificateId: String, requestBody: CreateVersionRequest): CertificateView {
         val certificateCredentialValue = requestBody.value
         certificateCredentialValue.isTransitional = requestBody.isTransitional
         val credentialVersion = permissionedCertificateService.set(
-                UUID.fromString(certificateId),
-                certificateCredentialValue
+            UUID.fromString(certificateId),
+            certificateCredentialValue
         )
 
         return CertificateView(credentialVersion)
     }
 
     private fun convertCertificateCredentialsToCertificateCredentialViews(certificateCredentialList: List<Credential>): List<CertificateCredentialView> {
-        val list = certificateCredentialList.map { credential ->
-            val certificateVersions = permissionedCertificateService.getVersions(credential.uuid!!, false) as List<CertificateCredentialVersion>
+        return certificateCredentialList.map { credential ->
+            val certificateVersions = permissionedCertificateService.getAllValidVersions(credential.uuid!!) as List<CertificateCredentialVersion>
+
+            var signedBy = ""
+            if (certificateVersions.isNotEmpty()) {
+                if (certificateVersions.first().caName != null) {
+                    signedBy = certificateVersions.first().caName
+                } else if (certificateVersions.first().isSelfSigned) {
+                    signedBy = credential.name!!
+                }
+            }
 
             val certificateVersionViews = certificateVersions.map { certificateVersion ->
                 CertificateVersionView(
@@ -131,8 +140,7 @@ class DefaultCertificatesHandler(
                 )
             }
 
-            CertificateCredentialView(credential.name, credential.uuid, certificateVersionViews)
+            CertificateCredentialView(credential.name, credential.uuid, certificateVersionViews, signedBy)
         }
-        return list
     }
 }

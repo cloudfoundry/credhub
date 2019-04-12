@@ -109,6 +109,34 @@ class PermissionedCertificateService(
         return list
     }
 
+    fun getAllValidVersions(uuid: UUID): List<CredentialVersion> {
+        val list: List<CredentialVersion>?
+        val name: String?
+
+        try {
+            list = certificateVersionDataService.findAllValidVersions(uuid)
+            name = if (!list!!.isEmpty()) list[0].name else null
+        } catch (e: IllegalArgumentException) {
+            throw InvalidQueryParameterException(ErrorMessages.BAD_REQUEST, "uuid")
+        }
+
+        if (list!!.isEmpty()) {
+            return emptyList()
+        }
+
+        if (name == null) {
+            throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
+        }
+
+        failForInvalidAccess(
+            userContextHolder.userContext.actor!!,
+            name,
+            PermissionOperation.READ
+        )
+
+        return list
+    }
+
     fun updateTransitionalVersion(certificateUuid: UUID, newTransitionalVersionUuid: UUID?): List<CredentialVersion> {
         val credential = findCertificateCredential(certificateUuid)
 

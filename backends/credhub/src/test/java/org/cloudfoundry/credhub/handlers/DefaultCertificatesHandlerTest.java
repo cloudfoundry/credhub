@@ -1,10 +1,12 @@
 package org.cloudfoundry.credhub.handlers;
 
+import java.security.Security;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.certificates.CertificateService;
 import org.cloudfoundry.credhub.certificates.DefaultCertificatesHandler;
@@ -17,6 +19,7 @@ import org.cloudfoundry.credhub.generate.UniversalCredentialGenerator;
 import org.cloudfoundry.credhub.permissions.PermissionedCertificateService;
 import org.cloudfoundry.credhub.requests.BaseCredentialGenerateRequest;
 import org.cloudfoundry.credhub.requests.CertificateRegenerateRequest;
+import org.cloudfoundry.credhub.utils.TestConstants;
 import org.cloudfoundry.credhub.views.CertificateCredentialView;
 import org.cloudfoundry.credhub.views.CertificateCredentialsView;
 import org.cloudfoundry.credhub.views.CertificateView;
@@ -24,6 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -44,6 +48,10 @@ public class DefaultCertificatesHandlerTest {
 
   @Before
   public void beforeEach() {
+    if (Security.getProvider(BouncyCastleFipsProvider.PROVIDER_NAME) == null) {
+      Security.addProvider(new BouncyCastleFipsProvider());
+    }
+
     permissionedCertificateService = mock(PermissionedCertificateService.class);
     certificateService = mock(CertificateService.class);
     universalCredentialGenerator = mock(UniversalCredentialGenerator.class);
@@ -59,44 +67,59 @@ public class DefaultCertificatesHandlerTest {
 
   @Test
   public void handleGetAllRequest_returnsCertificateCredentialsView() {
-    final UUID uuidA = UUID.randomUUID();
-    final Credential credentialA = mock(Credential.class);
-    when(credentialA.getUuid()).thenReturn(uuidA);
-    when(credentialA.getName()).thenReturn("credentialA");
+    final UUID certWithCaUuid = UUID.randomUUID();
+    final Credential certWithCa = mock(Credential.class);
+    final String certWithCaCaName = "/testCaA";
+    when(certWithCa.getUuid()).thenReturn(certWithCaUuid);
+    when(certWithCa.getName()).thenReturn("certWithCa");
 
-    final UUID uuidB = UUID.randomUUID();
-    final Credential credentialB = mock(Credential.class);
-    when(credentialB.getUuid()).thenReturn(uuidB);
-    when(credentialB.getName()).thenReturn("credentialB");
+    final UUID selfSignedCertUuid = UUID.randomUUID();
+    final Credential selfSignedCert = mock(Credential.class);
+    when(selfSignedCert.getUuid()).thenReturn(selfSignedCertUuid);
+    when(selfSignedCert.getName()).thenReturn("selfSignedCert");
+
+    final UUID certificateWithNoValidVersionsUuid = UUID.randomUUID();
+    final Credential certificateWithNoValidVersions = mock(Credential.class);
+    when(certificateWithNoValidVersions.getUuid()).thenReturn(certificateWithNoValidVersionsUuid);
 
     when(permissionedCertificateService.getAll())
-      .thenReturn(asList(credentialA, credentialB));
+      .thenReturn(asList(certWithCa, selfSignedCert, certificateWithNoValidVersions));
 
-    final CertificateCredentialVersion versionA = new CertificateCredentialVersion("credentialA");
-    versionA.setUuid(UUID.randomUUID());
-    versionA.setExpiryDate(Instant.now());
-    versionA.setTransitional(false);
+    final CertificateCredentialVersion certWithCaVersion = new CertificateCredentialVersion("certWithCa");
+    certWithCaVersion.setUuid(UUID.randomUUID());
+    certWithCaVersion.setExpiryDate(Instant.now());
+    certWithCaVersion.setCaName(certWithCaCaName);
+    certWithCaVersion.setCertificate(TestConstants.TEST_CERTIFICATE);
 
-    final CertificateCredentialVersion versionB = new CertificateCredentialVersion("credentialB");
-    versionB.setUuid(UUID.randomUUID());
-    versionB.setExpiryDate(Instant.now());
-    versionB.setTransitional(false);
+    final CertificateCredentialVersion selfSignedCertVersion = new CertificateCredentialVersion("selfSignedCert");
+    selfSignedCertVersion.setUuid(UUID.randomUUID());
+    selfSignedCertVersion.setExpiryDate(Instant.now());
+    selfSignedCertVersion.setCertificate(TestConstants.TEST_CA);
 
-    when(permissionedCertificateService.getVersions(uuidA, false))
-      .thenReturn(asList(versionA));
+    when(permissionedCertificateService.getAllValidVersions(certWithCaUuid))
+      .thenReturn(asList(certWithCaVersion));
 
-    when(permissionedCertificateService.getVersions(uuidB, false))
-      .thenReturn(asList(versionB));
+    when(permissionedCertificateService.getAllValidVersions(selfSignedCertUuid))
+      .thenReturn(asList(selfSignedCertVersion));
+
+    when(permissionedCertificateService.getAllValidVersions(certificateWithNoValidVersionsUuid))
+      .thenReturn(emptyList());
 
     final CertificateCredentialsView certificateCredentialsView = subject.handleGetAllRequest();
 
-    assertThat(certificateCredentialsView.getCertificates().size(), equalTo(2));
+    assertThat(certificateCredentialsView.getCertificates().size(), equalTo(3));
 
-    final CertificateCredentialView certificateA = certificateCredentialsView.getCertificates().get(0);
-    assertThat(certificateA.getCertificateVersionViews().size(), equalTo(1));
+    final CertificateCredentialView actualCertWithCa = certificateCredentialsView.getCertificates().get(0);
+    assertThat(actualCertWithCa.getCertificateVersionViews().size(), equalTo(1));
+    assertThat(actualCertWithCa.getSignedBy(), equalTo(certWithCaCaName));
 
-    final CertificateCredentialView certificateB = certificateCredentialsView.getCertificates().get(1);
-    assertThat(certificateB.getCertificateVersionViews().size(), equalTo(1));
+    final CertificateCredentialView actualSelfSignedCert = certificateCredentialsView.getCertificates().get(1);
+    assertThat(actualSelfSignedCert.getCertificateVersionViews().size(), equalTo(1));
+    assertThat(actualSelfSignedCert.getSignedBy(), equalTo("selfSignedCert"));
+
+    final CertificateCredentialView actualCertificateWithNoValidVersions = certificateCredentialsView.getCertificates().get(2);
+    assertThat(actualCertificateWithNoValidVersions.getCertificateVersionViews().size(), equalTo(0));
+    assertThat(actualCertificateWithNoValidVersions.getSignedBy(), equalTo(""));
   }
 
   @Test
@@ -125,6 +148,7 @@ public class DefaultCertificatesHandlerTest {
   public void handleGetByNameRequest_returnsCertificateCredentialsViews() {
     final UUID uuid = UUID.randomUUID();
     final String certificateName = "some certificate";
+    final String caName = "/testCa";
 
     final Credential credential = mock(Credential.class);
     when(credential.getUuid()).thenReturn(uuid);
@@ -135,13 +159,15 @@ public class DefaultCertificatesHandlerTest {
     final CertificateCredentialVersion nonTransitionalVersion = new CertificateCredentialVersion(certificateName);
     nonTransitionalVersion.setUuid(UUID.randomUUID());
     nonTransitionalVersion.setExpiryDate(Instant.now());
+    nonTransitionalVersion.setCaName(caName);
     nonTransitionalVersion.setTransitional(false);
+    nonTransitionalVersion.setCertificate(TestConstants.TEST_CERTIFICATE);
     final CertificateCredentialVersion transitionalVersion = new CertificateCredentialVersion(certificateName);
     transitionalVersion.setUuid(UUID.randomUUID());
     transitionalVersion.setExpiryDate(Instant.now());
     transitionalVersion.setTransitional(true);
 
-    when(permissionedCertificateService.getVersions(uuid, false))
+    when(permissionedCertificateService.getAllValidVersions(uuid))
       .thenReturn(asList(nonTransitionalVersion, transitionalVersion));
 
     final CertificateCredentialsView certificateCredentialsView = subject.handleGetByNameRequest(certificateName);
@@ -150,6 +176,7 @@ public class DefaultCertificatesHandlerTest {
 
     final CertificateCredentialView certificate = certificateCredentialsView.getCertificates().get(0);
     assertThat(certificate.getCertificateVersionViews().size(), equalTo(2));
+    assertThat(certificate.getSignedBy(), equalTo(caName));
   }
 
   @Test

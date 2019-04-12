@@ -162,6 +162,7 @@ class CertificatesControllerTest {
 
     @Test
     fun GET__certificates__returns_certificates() {
+        var caName = "/testCa"
         val certificateVersions = listOf(
             CertificateVersionView(
                 id = UUID.randomUUID(),
@@ -174,7 +175,7 @@ class CertificatesControllerTest {
                 expiryDate = Instant.ofEpochSecond(1549053472L)
             )
         )
-        val certificateCredentialsView = CertificateCredentialsView(listOf(CertificateCredentialView(name, certificateId, certificateVersions)))
+        val certificateCredentialsView = CertificateCredentialsView(listOf(CertificateCredentialView(name, certificateId, certificateVersions, caName)))
         spyCertificatesHandler.handleGetAllRequest__returns_certificateCredentialsView = certificateCredentialsView
 
         val mvcResult = mockMvc
@@ -196,6 +197,7 @@ class CertificatesControllerTest {
             {
               "name": "$name",
               "id": "$certificateId",
+              "signed_by": "$caName",
               "versions": [
                 {
                   "id": "${certificateVersions[0].id}",
@@ -218,6 +220,7 @@ class CertificatesControllerTest {
 
     @Test
     fun GET__certificates_byName__returns_certificate() {
+        var caName = "/testCa"
         val certificateVersions = listOf(
             CertificateVersionView(
                 id = UUID.randomUUID(),
@@ -226,7 +229,7 @@ class CertificatesControllerTest {
             )
         )
 
-        val certificateCredentialsView = CertificateCredentialsView(listOf(CertificateCredentialView(name, certificateId, certificateVersions)))
+        val certificateCredentialsView = CertificateCredentialsView(listOf(CertificateCredentialView(name, certificateId, certificateVersions, caName)))
         spyCertificatesHandler.handleGetByNameRequest__returns_certificateCredentialsView = certificateCredentialsView
 
         val mvcResult = mockMvc
@@ -251,6 +254,7 @@ class CertificatesControllerTest {
             {
               "name":"$name",
               "id":"$certificateId",
+              "signed_by": "$caName",
               "versions": [
                 {
                   "id": "${certificateVersions[0].id}",
