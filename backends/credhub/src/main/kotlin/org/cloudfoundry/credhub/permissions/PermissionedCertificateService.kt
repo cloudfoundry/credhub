@@ -137,6 +137,10 @@ class PermissionedCertificateService(
         return list
     }
 
+    fun findSignedCertificates(caName: String): List<String> {
+        return permissionedCredentialService.findAllCertificateCredentialsByCaName(caName)
+    }
+
     fun updateTransitionalVersion(certificateUuid: UUID, newTransitionalVersionUuid: UUID?): List<CredentialVersion> {
         val credential = findCertificateCredential(certificateUuid)
 

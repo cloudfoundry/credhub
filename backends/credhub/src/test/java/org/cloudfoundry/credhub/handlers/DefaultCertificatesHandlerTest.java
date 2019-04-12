@@ -66,63 +66,6 @@ public class DefaultCertificatesHandlerTest {
   }
 
   @Test
-  public void handleGetAllRequest_returnsCertificateCredentialsView() {
-    final UUID certWithCaUuid = UUID.randomUUID();
-    final Credential certWithCa = mock(Credential.class);
-    final String certWithCaCaName = "/testCaA";
-    when(certWithCa.getUuid()).thenReturn(certWithCaUuid);
-    when(certWithCa.getName()).thenReturn("certWithCa");
-
-    final UUID selfSignedCertUuid = UUID.randomUUID();
-    final Credential selfSignedCert = mock(Credential.class);
-    when(selfSignedCert.getUuid()).thenReturn(selfSignedCertUuid);
-    when(selfSignedCert.getName()).thenReturn("selfSignedCert");
-
-    final UUID certificateWithNoValidVersionsUuid = UUID.randomUUID();
-    final Credential certificateWithNoValidVersions = mock(Credential.class);
-    when(certificateWithNoValidVersions.getUuid()).thenReturn(certificateWithNoValidVersionsUuid);
-
-    when(permissionedCertificateService.getAll())
-      .thenReturn(asList(certWithCa, selfSignedCert, certificateWithNoValidVersions));
-
-    final CertificateCredentialVersion certWithCaVersion = new CertificateCredentialVersion("certWithCa");
-    certWithCaVersion.setUuid(UUID.randomUUID());
-    certWithCaVersion.setExpiryDate(Instant.now());
-    certWithCaVersion.setCaName(certWithCaCaName);
-    certWithCaVersion.setCertificate(TestConstants.TEST_CERTIFICATE);
-
-    final CertificateCredentialVersion selfSignedCertVersion = new CertificateCredentialVersion("selfSignedCert");
-    selfSignedCertVersion.setUuid(UUID.randomUUID());
-    selfSignedCertVersion.setExpiryDate(Instant.now());
-    selfSignedCertVersion.setCertificate(TestConstants.TEST_CA);
-
-    when(permissionedCertificateService.getAllValidVersions(certWithCaUuid))
-      .thenReturn(asList(certWithCaVersion));
-
-    when(permissionedCertificateService.getAllValidVersions(selfSignedCertUuid))
-      .thenReturn(asList(selfSignedCertVersion));
-
-    when(permissionedCertificateService.getAllValidVersions(certificateWithNoValidVersionsUuid))
-      .thenReturn(emptyList());
-
-    final CertificateCredentialsView certificateCredentialsView = subject.handleGetAllRequest();
-
-    assertThat(certificateCredentialsView.getCertificates().size(), equalTo(3));
-
-    final CertificateCredentialView actualCertWithCa = certificateCredentialsView.getCertificates().get(0);
-    assertThat(actualCertWithCa.getCertificateVersionViews().size(), equalTo(1));
-    assertThat(actualCertWithCa.getSignedBy(), equalTo(certWithCaCaName));
-
-    final CertificateCredentialView actualSelfSignedCert = certificateCredentialsView.getCertificates().get(1);
-    assertThat(actualSelfSignedCert.getCertificateVersionViews().size(), equalTo(1));
-    assertThat(actualSelfSignedCert.getSignedBy(), equalTo("selfSignedCert"));
-
-    final CertificateCredentialView actualCertificateWithNoValidVersions = certificateCredentialsView.getCertificates().get(2);
-    assertThat(actualCertificateWithNoValidVersions.getCertificateVersionViews().size(), equalTo(0));
-    assertThat(actualCertificateWithNoValidVersions.getSignedBy(), equalTo(""));
-  }
-
-  @Test
   public void handleRegenerate_passesOnTransitionalFlagWhenRegeneratingCertificate() {
     final BaseCredentialGenerateRequest generateRequest = mock(BaseCredentialGenerateRequest.class);
     final CertificateCredentialVersion certificate = mock(CertificateCredentialVersion.class);
@@ -145,13 +88,79 @@ public class DefaultCertificatesHandlerTest {
   }
 
   @Test
+  public void handleGetAllRequest_returnsCertificateCredentialsView() {
+    final Credential certWithCaAndChildren = mock(Credential.class);
+    final UUID certWithCaAndChildrenUuid = UUID.randomUUID();
+    final String certWithCaAndChildrenName = "certWithCaAndChildren";
+    final String certWithCaAndChildrenCaName = "/testCaA";
+    final List<String> childCertNames = asList("childCert1", "childCert2");
+    when(certWithCaAndChildren.getUuid()).thenReturn(certWithCaAndChildrenUuid);
+    when(certWithCaAndChildren.getName()).thenReturn(certWithCaAndChildrenName);
+
+    final Credential selfSignedCert = mock(Credential.class);
+    final UUID selfSignedCertUuid = UUID.randomUUID();
+    final String selfSignedCertName = "selfSignedCert";
+    when(selfSignedCert.getUuid()).thenReturn(selfSignedCertUuid);
+    when(selfSignedCert.getName()).thenReturn(selfSignedCertName);
+
+    final UUID certificateWithNoValidVersionsUuid = UUID.randomUUID();
+    final Credential certificateWithNoValidVersions = mock(Credential.class);
+    when(certificateWithNoValidVersions.getUuid()).thenReturn(certificateWithNoValidVersionsUuid);
+
+    when(permissionedCertificateService.getAll())
+      .thenReturn(asList(certWithCaAndChildren, selfSignedCert, certificateWithNoValidVersions));
+
+    final CertificateCredentialVersion certWithCaAndChildrenVersion = new CertificateCredentialVersion(certWithCaAndChildrenName);
+    certWithCaAndChildrenVersion.setUuid(UUID.randomUUID());
+    certWithCaAndChildrenVersion.setExpiryDate(Instant.now());
+    certWithCaAndChildrenVersion.setCaName(certWithCaAndChildrenCaName);
+    certWithCaAndChildrenVersion.setCertificate(TestConstants.TEST_CERTIFICATE);
+
+    final CertificateCredentialVersion selfSignedCertVersion = new CertificateCredentialVersion(selfSignedCertName);
+    selfSignedCertVersion.setUuid(UUID.randomUUID());
+    selfSignedCertVersion.setExpiryDate(Instant.now());
+    selfSignedCertVersion.setCertificate(TestConstants.TEST_CA);
+
+    when(permissionedCertificateService.getAllValidVersions(certWithCaAndChildrenUuid))
+      .thenReturn(asList(certWithCaAndChildrenVersion));
+    when(permissionedCertificateService.findSignedCertificates(certWithCaAndChildrenName))
+      .thenReturn(childCertNames);
+
+    when(permissionedCertificateService.getAllValidVersions(selfSignedCertUuid))
+      .thenReturn(asList(selfSignedCertVersion));
+    when(permissionedCertificateService.findSignedCertificates(selfSignedCertName))
+      .thenReturn(emptyList());
+
+    when(permissionedCertificateService.getAllValidVersions(certificateWithNoValidVersionsUuid))
+      .thenReturn(emptyList());
+
+    final CertificateCredentialsView certificateCredentialsView = subject.handleGetAllRequest();
+
+    assertThat(certificateCredentialsView.getCertificates().size(), equalTo(3));
+
+    final CertificateCredentialView actualCertWithCa = certificateCredentialsView.getCertificates().get(0);
+    assertThat(actualCertWithCa.getCertificateVersionViews().size(), equalTo(1));
+    assertThat(actualCertWithCa.getSignedBy(), equalTo(certWithCaAndChildrenCaName));
+
+    final CertificateCredentialView actualSelfSignedCert = certificateCredentialsView.getCertificates().get(1);
+    assertThat(actualSelfSignedCert.getCertificateVersionViews().size(), equalTo(1));
+    assertThat(actualSelfSignedCert.getSignedBy(), equalTo(selfSignedCertName));
+
+    final CertificateCredentialView actualCertificateWithNoValidVersions = certificateCredentialsView.getCertificates().get(2);
+    assertThat(actualCertificateWithNoValidVersions.getCertificateVersionViews().size(), equalTo(0));
+    assertThat(actualCertificateWithNoValidVersions.getSignedBy(), equalTo(""));
+  }
+
+  @Test
   public void handleGetByNameRequest_returnsCertificateCredentialsViews() {
     final UUID uuid = UUID.randomUUID();
     final String certificateName = "some certificate";
     final String caName = "/testCa";
+    final List<String> childCertNames = asList("certName1", "certName2");
 
     final Credential credential = mock(Credential.class);
     when(credential.getUuid()).thenReturn(uuid);
+    when(credential.getName()).thenReturn(certificateName);
 
     when(permissionedCertificateService.getByName(certificateName))
       .thenReturn(Collections.singletonList(credential));
@@ -169,6 +178,8 @@ public class DefaultCertificatesHandlerTest {
 
     when(permissionedCertificateService.getAllValidVersions(uuid))
       .thenReturn(asList(nonTransitionalVersion, transitionalVersion));
+    when(permissionedCertificateService.findSignedCertificates(certificateName))
+      .thenReturn(childCertNames);
 
     final CertificateCredentialsView certificateCredentialsView = subject.handleGetByNameRequest(certificateName);
 
@@ -177,6 +188,7 @@ public class DefaultCertificatesHandlerTest {
     final CertificateCredentialView certificate = certificateCredentialsView.getCertificates().get(0);
     assertThat(certificate.getCertificateVersionViews().size(), equalTo(2));
     assertThat(certificate.getSignedBy(), equalTo(caName));
+    assertThat(certificate.getSigns(), equalTo(childCertNames));
   }
 
   @Test

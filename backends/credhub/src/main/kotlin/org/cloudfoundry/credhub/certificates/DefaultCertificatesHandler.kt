@@ -132,6 +132,12 @@ class DefaultCertificatesHandler(
                 }
             }
 
+            val signedCertificates = if (credential.name != null) {
+                permissionedCertificateService.findSignedCertificates(credential.name!!)
+            } else {
+                emptyList()
+            }
+
             val certificateVersionViews = certificateVersions.map { certificateVersion ->
                 CertificateVersionView(
                     id = certificateVersion.uuid!!,
@@ -140,7 +146,7 @@ class DefaultCertificatesHandler(
                 )
             }
 
-            CertificateCredentialView(credential.name, credential.uuid, certificateVersionViews, signedBy)
+            CertificateCredentialView(credential.name, credential.uuid, certificateVersionViews, signedBy, signedCertificates)
         }
     }
 }

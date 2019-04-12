@@ -175,7 +175,12 @@ class CertificatesControllerTest {
                 expiryDate = Instant.ofEpochSecond(1549053472L)
             )
         )
-        val certificateCredentialsView = CertificateCredentialsView(listOf(CertificateCredentialView(name, certificateId, certificateVersions, caName)))
+        var cert1Name = "/cert1"
+        var cert2Name = "/cert2"
+
+        val certificateCredentialsView = CertificateCredentialsView(
+            listOf(CertificateCredentialView(name, certificateId, certificateVersions, caName, listOf(cert1Name, cert2Name)))
+        )
         spyCertificatesHandler.handleGetAllRequest__returns_certificateCredentialsView = certificateCredentialsView
 
         val mvcResult = mockMvc
@@ -198,6 +203,7 @@ class CertificatesControllerTest {
               "name": "$name",
               "id": "$certificateId",
               "signed_by": "$caName",
+              "signs": ["$cert1Name", "$cert2Name"],
               "versions": [
                 {
                   "id": "${certificateVersions[0].id}",
@@ -228,8 +234,12 @@ class CertificatesControllerTest {
                 expiryDate = Instant.ofEpochSecond(1549053472L)
             )
         )
+        var cert1Name = "/cert1"
+        var cert2Name = "/cert2"
 
-        val certificateCredentialsView = CertificateCredentialsView(listOf(CertificateCredentialView(name, certificateId, certificateVersions, caName)))
+        val certificateCredentialsView = CertificateCredentialsView(
+            listOf(CertificateCredentialView(name, certificateId, certificateVersions, caName, listOf(cert1Name, cert2Name)))
+        )
         spyCertificatesHandler.handleGetByNameRequest__returns_certificateCredentialsView = certificateCredentialsView
 
         val mvcResult = mockMvc
@@ -255,6 +265,7 @@ class CertificatesControllerTest {
               "name":"$name",
               "id":"$certificateId",
               "signed_by": "$caName",
+              "signs": ["$cert1Name", "$cert2Name"],
               "versions": [
                 {
                   "id": "${certificateVersions[0].id}",
