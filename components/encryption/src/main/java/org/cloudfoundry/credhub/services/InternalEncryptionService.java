@@ -76,6 +76,10 @@ public abstract class InternalEncryptionService implements EncryptionProvider {
       this.wrappedCipher = wrappedCipher;
     }
 
+    public byte[] getIV() {
+      return this.wrappedCipher.getIV();
+    }
+
     public void init(final int encryptMode, final Key key, final AlgorithmParameterSpec parameterSpec)
       throws InvalidAlgorithmParameterException, InvalidKeyException {
       wrappedCipher.init(encryptMode, key, parameterSpec);
