@@ -43,6 +43,7 @@ public class OAuth2ExtraValidationFilterTest {
 
   private final static String ERROR_MESSAGE = "The request token identity zone does not match the UAA server authorized by CredHub. Please validate that your request token was issued by the UAA server authorized by CredHub and retry your request.";
 
+  private final static String EXPIRED_TOKEN_MESSAGE = "Access token expired";
   @SpyBean
   private OAuth2IssuerService oAuth2IssuerService;
   private MockMvc mockMvc;
@@ -198,6 +199,17 @@ public class OAuth2ExtraValidationFilterTest {
       .contentType(APPLICATION_JSON))
       .andExpect(status().isUnauthorized())
       .andExpect(jsonPath("$.error_description").value(ERROR_MESSAGE));
+  }
+
+  @Test
+  public void whenTokenIsHasExpired_returns401() throws Exception {
+    when(oAuth2IssuerService.getIssuer()).thenReturn("https://valid-uaa:8443/uaa/oauth/token");
+    this.mockMvc.perform(get("/api/v1/data?name=/sample-credential")
+      .header("Authorization", "Bearer " + AuthConstants.EXPIRED_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON))
+      .andExpect(status().isUnauthorized())
+      .andExpect(jsonPath("$.error_description").value(EXPIRED_TOKEN_MESSAGE));
   }
 
   @RestController
