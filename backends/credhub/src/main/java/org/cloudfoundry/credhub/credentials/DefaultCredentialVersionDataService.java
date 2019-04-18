@@ -298,7 +298,8 @@ public class DefaultCredentialVersionDataService implements CredentialVersionDat
     final Timestamp expiresTimestamp = Timestamp
       .from(Instant.now().plus(Duration.ofDays(Long.parseLong(expiresWithinDays))));
 
-    final String query = "select name.name, credential_version.version_created_at, "
+    final String query = "select * from ( " +
+            "select name.name, credential_version.version_created_at, "
       + "certificate_credential.expiry_date from ("
       + "   select "
       + "   max(version_created_at) as version_created_at,"
@@ -310,10 +311,10 @@ public class DefaultCredentialVersionDataService implements CredentialVersionDat
       + " ) as name"
       + " on credential_version.credential_uuid = name.uuid"
       + " inner join ( select * from certificate_credential"
-      + "   where expiry_date <= ?"
       + " ) as certificate_credential "
       + " on credential_version.uuid = certificate_credential.uuid"
-      + " order by version_created_at desc";
+      + " order by version_created_at desc limit 1) as latest"
+      + " where expiry_date <= ?";
 
     final List<FindCredentialResult> certificateResults = jdbcTemplate.query(query,
       new Object[]{path, expiresTimestamp},

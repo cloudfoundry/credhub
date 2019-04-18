@@ -281,6 +281,109 @@ public class CredentialFindTest {
   }
 
   @Test
+  public void findCredentialsByPath_withExpiryDate_andLatestVersionIsNotExpiring_returnsNothing() throws Exception {
+
+    this.mockMvc.perform(post("/api/v1/data")
+            .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            //language=JSON
+            .content("{\n"
+                    + "  \"name\" : \"sample-certificate\",\n"
+                    + "  \"type\" : \"certificate\",\n"
+                    + "  \"parameters\" : {\n"
+                    + "    \"common_name\" : \"some-common-name\",\n"
+                    + "    \"is_ca\" : true,\n"
+                    + "    \"self_sign\" : true,\n"
+                    + "    \"duration\" : 5 \n"
+                    + "  }\n"
+                    + "}"))
+            .andDo(print())
+            .andExpect(status().isOk());
+
+    this.mockMvc.perform(post("/api/v1/data")
+            .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            //language=JSON
+            .content("{\n"
+                    + "  \"name\" : \"sample-certificate\",\n"
+                    + "  \"type\" : \"certificate\",\n"
+                    + "  \"parameters\" : {\n"
+                    + "    \"common_name\" : \"some-common-name\",\n"
+                    + "    \"is_ca\" : true,\n"
+                    + "    \"self_sign\" : true,\n"
+                    + "    \"duration\" : 365 \n"
+                    + "  }\n"
+                    + "}"))
+            .andDo(print())
+            .andExpect(status().isOk());
+
+    final String expiresWithinDays = "30";
+    final MockHttpServletRequestBuilder request = get("/api/v1/data?path=/&expires-within-days=" + expiresWithinDays)
+            .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+            .content("expires-within-days:30")
+            .accept(APPLICATION_JSON);
+
+    mockMvc.perform(request).andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(jsonPath("$.credentials", hasSize(0)));
+
+  }
+
+  @Test
+  public void findCredentialsByPath_withExpiryDate_andLatestVersionIsExpiring_returnsTheLatestVersion() throws Exception {
+
+    this.mockMvc.perform(post("/api/v1/data")
+            .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            //language=JSON
+            .content("{\n"
+                    + "  \"name\" : \"sample-certificate\",\n"
+                    + "  \"type\" : \"certificate\",\n"
+                    + "  \"parameters\" : {\n"
+                    + "    \"common_name\" : \"some-common-name\",\n"
+                    + "    \"is_ca\" : true,\n"
+                    + "    \"self_sign\" : true,\n"
+                    + "    \"duration\" : 5 \n"
+                    + "  }\n"
+                    + "}"))
+            .andDo(print())
+            .andExpect(status().isOk());
+
+    this.mockMvc.perform(post("/api/v1/data")
+            .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            //language=JSON
+            .content("{\n"
+                    + "  \"name\" : \"sample-certificate\",\n"
+                    + "  \"type\" : \"certificate\",\n"
+                    + "  \"parameters\" : {\n"
+                    + "    \"common_name\" : \"some-common-name\",\n"
+                    + "    \"is_ca\" : true,\n"
+                    + "    \"self_sign\" : true,\n"
+                    + "    \"duration\" : 10 \n"
+                    + "  }\n"
+                    + "}"))
+            .andDo(print())
+            .andExpect(status().isOk());
+
+    final String expiresWithinDays = "30";
+    final MockHttpServletRequestBuilder request = get("/api/v1/data?path=/&expires-within-days=" + expiresWithinDays)
+            .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+            .content("expires-within-days:30")
+            .accept(APPLICATION_JSON);
+
+    mockMvc.perform(request).andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(jsonPath("$.credentials", hasSize(1)))
+            .andExpect(jsonPath("$.credentials[0].name").value("/sample-certificate"));
+
+  }
+
+  @Test
   public void findCredentialsByName_withExpiryDate() throws Exception {
 
     this.mockMvc.perform(post("/api/v1/data")
