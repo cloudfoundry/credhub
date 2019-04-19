@@ -54,3 +54,6 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
+
+certificates:
+  concatenate_cas: false

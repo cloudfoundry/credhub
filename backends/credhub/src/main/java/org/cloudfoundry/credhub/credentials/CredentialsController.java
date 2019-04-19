@@ -97,7 +97,7 @@ public class CredentialsController {
 
   @RequestMapping(path = "/{id}", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
-  public CredentialView findById(@PathVariable final String id) {
+  public CredentialView getById(@PathVariable final String id) {
     return credentialsHandler.getCredentialVersionByUUID(id);
   }
 

@@ -15,6 +15,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.cloudfoundry.credhub.AuthConstants;
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.DatabaseProfileResolver;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.credentials.DefaultCredentialsHandler;
 import org.junit.Before;
 import org.junit.Test;
@@ -62,6 +63,6 @@ public class DefaultExceptionHandlerTest {
     mockMvc.perform(request)
       .andExpect(status().isInternalServerError())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-      .andExpect(jsonPath("$.error").value(expectedError));
+      .andExpect(jsonPath("$.error").value(ErrorMessages.INTERNAL_SERVER_ERROR));
   }
 }

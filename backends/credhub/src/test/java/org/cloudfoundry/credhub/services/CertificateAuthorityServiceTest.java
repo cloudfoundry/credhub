@@ -6,7 +6,7 @@ import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.data.CertificateAuthorityService;
-import org.cloudfoundry.credhub.data.CertificateVersionDataService;
+import org.cloudfoundry.credhub.data.DefaultCertificateVersionDataService;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
@@ -32,7 +32,7 @@ public class CertificateAuthorityServiceTest {
   private static final String CREDENTIAL_NAME = "/expectedCredential";
   private static final String USER_NAME = "expectedUser";
   private CertificateAuthorityService certificateAuthorityService;
-  private CertificateVersionDataService certificateVersionDataService;
+  private DefaultCertificateVersionDataService certificateVersionDataService;
   private CertificateCredentialValue certificate;
   private CertificateCredentialVersion certificateCredential;
   private PermissionCheckingService permissionCheckingService;
@@ -50,7 +50,7 @@ public class CertificateAuthorityServiceTest {
     when(permissionCheckingService.hasPermission(USER_NAME, CREDENTIAL_NAME, PermissionOperation.READ))
       .thenReturn(true);
 
-    certificateVersionDataService = mock(CertificateVersionDataService.class);
+    certificateVersionDataService = mock(DefaultCertificateVersionDataService.class);
     final UserContextHolder userContextHolder = new UserContextHolder();
     userContextHolder.setUserContext(userContext);
     certificateAuthorityService = new CertificateAuthorityService(certificateVersionDataService,

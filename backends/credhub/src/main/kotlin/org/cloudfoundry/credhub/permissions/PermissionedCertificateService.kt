@@ -20,6 +20,7 @@ import org.cloudfoundry.credhub.requests.BaseCredentialGenerateRequest
 import org.cloudfoundry.credhub.services.CredentialVersionDataService
 import org.cloudfoundry.credhub.services.PermissionCheckingService
 import org.cloudfoundry.credhub.services.PermissionedCredentialService
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
@@ -34,7 +35,8 @@ class PermissionedCertificateService(
     private val certificateVersionDataService: CertificateVersionDataService,
     private val certificateCredentialFactory: CertificateCredentialFactory,
     private val credentialVersionDataService: CredentialVersionDataService,
-    private val auditRecord: CEFAuditRecord
+    private val auditRecord: CEFAuditRecord,
+    @Value("\${certificates.concatenate_cas:false}") var concatenateCas: Boolean
 ) {
 
     fun save(
@@ -87,10 +89,10 @@ class PermissionedCertificateService(
             if (current) {
                 val credential = findCertificateCredential(uuid)
                 name = credential.name
-                list = certificateVersionDataService.findActiveWithTransitional(name)
+                list = certificateVersionDataService.findActiveWithTransitional(name!!)
             } else {
                 list = certificateVersionDataService.findAllVersions(uuid)
-                name = if (!list!!.isEmpty()) list[0].name else null
+                name = if (!list.isEmpty()) list[0].name else null
             }
         } catch (e: IllegalArgumentException) {
             throw InvalidQueryParameterException(ErrorMessages.BAD_REQUEST, "uuid")
@@ -106,7 +108,7 @@ class PermissionedCertificateService(
             PermissionOperation.READ
         )
 
-        return list
+        return concatenateCas(list)
     }
 
     fun getAllValidVersions(uuid: UUID): List<CredentialVersion> {
@@ -115,12 +117,12 @@ class PermissionedCertificateService(
 
         try {
             list = certificateVersionDataService.findAllValidVersions(uuid)
-            name = if (!list!!.isEmpty()) list[0].name else null
+            name = if (!list.isEmpty()) list[0].name else null
         } catch (e: IllegalArgumentException) {
             throw InvalidQueryParameterException(ErrorMessages.BAD_REQUEST, "uuid")
         }
 
-        if (list!!.isEmpty()) {
+        if (list.isEmpty()) {
             return emptyList()
         }
 
@@ -210,6 +212,21 @@ class PermissionedCertificateService(
             .makeNewCredentialVersion(credential, value)
 
         return credentialVersionDataService.save(certificateCredentialVersion) as CertificateCredentialVersion
+    }
+
+    private fun concatenateCas(credentialVersions: List<CredentialVersion>): List<CredentialVersion> {
+        if (!concatenateCas) return credentialVersions
+        return credentialVersions.map {
+            val certificateCredentialVersion = it as CertificateCredentialVersion
+            if (certificateCredentialVersion.caName != null) {
+                val findActiveWithTransitional = credentialVersionDataService.findActiveByName(certificateCredentialVersion.caName)
+                certificateCredentialVersion.ca = findActiveWithTransitional!!.joinToString("\n") { credentialVersion ->
+                    credentialVersion as CertificateCredentialVersion
+                    credentialVersion.certificate.trim()
+                }
+            }
+            certificateCredentialVersion
+        }
     }
 
     private fun failForInvalidAccess(

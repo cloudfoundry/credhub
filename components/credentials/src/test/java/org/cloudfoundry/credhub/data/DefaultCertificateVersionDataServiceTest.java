@@ -30,9 +30,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
-public class CertificateVersionDataServiceTest {
+public class DefaultCertificateVersionDataServiceTest {
 
-  private CertificateVersionDataService subject;
+  private DefaultCertificateVersionDataService subject;
   private CredentialVersionRepository versionRepository;
   private CredentialFactory factory;
   private CredentialDataService dataService;
@@ -46,7 +46,7 @@ public class CertificateVersionDataServiceTest {
     versionRepository = mock(CredentialVersionRepository.class);
     factory = mock(CredentialFactory.class);
     dataService = mock(CredentialDataService.class);
-    subject = new CertificateVersionDataService(
+    subject = new DefaultCertificateVersionDataService(
       versionRepository,
       factory,
       dataService

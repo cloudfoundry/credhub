@@ -302,8 +302,9 @@ public class ExceptionHandlers {
   }
 
   private ResponseError constructError(final String error) {
+    final String message = MessageFormat.format(error, new Object[0]);
     LOGGER.error(error);
-    return new ResponseError(error);
+    return new ResponseError(message);
   }
 
   private ResponseError constructError(final String error, final String... args) {

@@ -16,12 +16,12 @@ import org.cloudfoundry.credhub.services.PermissionCheckingService;
 @Component
 public class CertificateAuthorityService {
 
-  private final CertificateVersionDataService certificateVersionDataService;
+  private final DefaultCertificateVersionDataService certificateVersionDataService;
   private final PermissionCheckingService permissionCheckingService;
   private final UserContextHolder userContextHolder;
 
   @Autowired
-  public CertificateAuthorityService(final CertificateVersionDataService certificateVersionDataService,
+  public CertificateAuthorityService(final DefaultCertificateVersionDataService certificateVersionDataService,
                                      final PermissionCheckingService permissionCheckingService,
                                      final UserContextHolder userContextHolder) {
     super();

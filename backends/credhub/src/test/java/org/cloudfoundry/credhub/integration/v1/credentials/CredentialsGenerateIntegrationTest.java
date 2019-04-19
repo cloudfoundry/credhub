@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.integration.v1.credentials;
 
+import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.function.Consumer;
 
@@ -18,6 +19,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.cloudfoundry.credhub.AuthConstants;
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.DatabaseProfileResolver;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.TestHelper;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.credential.RsaCredentialValue;
@@ -110,18 +112,18 @@ public class CredentialsGenerateIntegrationTest {
 
   @Test
   public void generatingACredential_returnsAnErrorMessageForUnknownType() throws Exception {
+    String message = MessageFormat.format(ErrorMessages.INVALID_TYPE_WITH_GENERATE_PROMPT, new Object[0]);
+
     final MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
       .content("{\"type\":\"foo\",\"name\":\"" + CREDENTIAL_NAME + "\"}");
 
-    final String expectedError = "The request does not include a valid type. Valid values for generate include 'password', 'user', 'certificate', 'ssh' and 'rsa'.";
-
     mockMvc.perform(postRequest)
       .andExpect(status().isBadRequest())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-      .andExpect(jsonPath("$.error").value(expectedError));
+      .andExpect(jsonPath("$.error").value(message));
   }
 
   @Test
@@ -132,12 +134,10 @@ public class CredentialsGenerateIntegrationTest {
       .contentType(APPLICATION_JSON)
       .content("{\"type\":\"value\",\"name\":\"" + CREDENTIAL_NAME + "\"}");
 
-    final String expectedError = "Credentials of this type cannot be generated. Please adjust the credential type and retry your request.";
-
     mockMvc.perform(postRequest)
       .andExpect(status().isBadRequest())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-      .andExpect(jsonPath("$.error").value(expectedError));
+      .andExpect(jsonPath("$.error").value(ErrorMessages.CANNOT_GENERATE_TYPE));
   }
 
   @Test
@@ -148,17 +148,15 @@ public class CredentialsGenerateIntegrationTest {
       .contentType(APPLICATION_JSON)
       .content("{\"type\":\"json\",\"name\":\"" + CREDENTIAL_NAME + "\"}");
 
-    final String expectedError = "Credentials of this type cannot be generated. Please adjust the credential type and retry your request.";
-
     mockMvc.perform(postRequest)
       .andExpect(status().isBadRequest())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-      .andExpect(jsonPath("$.error").value(expectedError));
+      .andExpect(jsonPath("$.error").value(ErrorMessages.CANNOT_GENERATE_TYPE));
   }
 
   @Test
   public void generatingACredential_whenTypeIsNotPresent_returns400() throws Exception {
-    final String expectedError = "The request does not include a valid type. Valid values for generate include 'password', 'user', 'certificate', 'ssh' and 'rsa'.";
+    String message = MessageFormat.format(ErrorMessages.INVALID_TYPE_WITH_GENERATE_PROMPT, new Object[0]);
 
     mockMvc.perform(post("/api/v1/data")
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
@@ -166,37 +164,34 @@ public class CredentialsGenerateIntegrationTest {
       .content("{\"name\":\"some-new-credential-name\"}")
     )
       .andExpect(status().isBadRequest())
-      .andExpect(jsonPath("$.error").value(expectedError));
+      .andExpect(jsonPath("$.error").value(message));
   }
 
   @Test
   public void generatingACredential_whenNameIsEmpty_throws400() throws Exception {
-    final String expectedError = "A credential name must be provided. Please validate your input and retry your request.";
     mockMvc.perform(post("/api/v1/data")
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .content("{\"type\":\"password\",\"name\":\"\"}")
     )
       .andExpect(status().isBadRequest())
-      .andExpect(jsonPath("$.error").value(expectedError));
+      .andExpect(jsonPath("$.error").value(ErrorMessages.MISSING_NAME));
   }
 
   @Test
   public void generatingACredential_whenNameIsMissing_throws400() throws Exception {
-    final String expectedError = "A credential name must be provided. Please validate your input and retry your request.";
-
     mockMvc.perform(post("/api/v1/data")
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .content("{\"type\":\"password\"}")
     )
       .andExpect(status().isBadRequest())
-      .andExpect(jsonPath("$.error").value(expectedError));
+      .andExpect(jsonPath("$.error").value(ErrorMessages.MISSING_NAME));
   }
 
   @Test
   public void generatingACredential_whenIncorrectParamsAreSent_returns400() throws Exception {
-    final String expectedError = "The request includes an unrecognized parameter 'some_unknown_param'. Please update or remove this parameter and retry your request.";
+    final String message = MessageFormat.format(ErrorMessages.INVALID_JSON_KEY, "some_unknown_param");
 
     mockMvc.perform(post("/api/v1/data")
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
@@ -212,7 +207,7 @@ public class CredentialsGenerateIntegrationTest {
         "}")
     )
       .andExpect(status().isBadRequest())
-      .andExpect(jsonPath("$.error").value(expectedError));
+      .andExpect(jsonPath("$.error").value(message));
   }
 
   @Test
@@ -226,17 +221,15 @@ public class CredentialsGenerateIntegrationTest {
         "\"name\":\"" + CREDENTIAL_NAME + "\"" +
         "}");
 
-    final String expectedError = "This request must include a value for 'parameters'.";
-
+    String message = MessageFormat.format(ErrorMessages.NO_CERTIFICATE_PARAMETERS, new Object[0]);
     mockMvc.perform(postRequest)
       .andExpect(status().isBadRequest())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-      .andExpect(jsonPath("$.error").value(expectedError));
+      .andExpect(jsonPath("$.error").value(message));
   }
 
   @Test
   public void regeneratingACredential_withEmptyName_returns400() throws Exception {
-    final String expectedError = "A credential name must be provided. Please validate your input and retry your request.";
     mockMvc.perform(post("/api/v1/data")
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
@@ -246,6 +239,6 @@ public class CredentialsGenerateIntegrationTest {
         "\"regenerate\": true" +
         "}"))
       .andExpect(status().isBadRequest())
-      .andExpect(jsonPath("$.error").value(expectedError));
+      .andExpect(jsonPath("$.error").value(ErrorMessages.MISSING_NAME));
   }
 }

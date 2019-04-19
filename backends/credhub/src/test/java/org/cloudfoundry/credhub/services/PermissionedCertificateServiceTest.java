@@ -1,8 +1,12 @@
 package org.cloudfoundry.credhub.services;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.PermissionOperation;
@@ -11,7 +15,7 @@ import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.data.CertificateDataService;
-import org.cloudfoundry.credhub.data.CertificateVersionDataService;
+import org.cloudfoundry.credhub.data.DefaultCertificateVersionDataService;
 import org.cloudfoundry.credhub.domain.CertificateCredentialFactory;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
@@ -21,6 +25,7 @@ import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.permissions.PermissionedCertificateService;
 import org.cloudfoundry.credhub.requests.BaseCredentialGenerateRequest;
+import org.cloudfoundry.credhub.utils.TestConstants;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -35,12 +40,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class PermissionedCertificateServiceTest {
-  private PermissionedCertificateService subject;
+  private PermissionedCertificateService subjectWithoutConcatenateCas;
+  private PermissionedCertificateService subjectWithConcatenateCas;
   private DefaultPermissionedCredentialService permissionedCredentialService;
   private CertificateDataService certificateDataService;
   private PermissionCheckingService permissionCheckingService;
   private UserContextHolder userContextHolder;
-  private CertificateVersionDataService certificateVersionDataService;
+  private DefaultCertificateVersionDataService certificateVersionDataService;
   private CertificateCredentialFactory certificateCredentialFactory;
   private UUID uuid;
   private CredentialVersionDataService credentialVersionDataService;
@@ -53,10 +59,10 @@ public class PermissionedCertificateServiceTest {
     permissionCheckingService = mock(PermissionCheckingService.class);
     certificateDataService = mock(CertificateDataService.class);
     userContextHolder = mock(UserContextHolder.class);
-    certificateVersionDataService = mock(CertificateVersionDataService.class);
+    certificateVersionDataService = mock(DefaultCertificateVersionDataService.class);
     certificateCredentialFactory = mock(CertificateCredentialFactory.class);
     credentialVersionDataService = mock(CredentialVersionDataService.class);
-    subject = new PermissionedCertificateService(
+    subjectWithoutConcatenateCas = new PermissionedCertificateService(
       permissionedCredentialService,
       certificateDataService,
       permissionCheckingService,
@@ -64,7 +70,17 @@ public class PermissionedCertificateServiceTest {
       certificateVersionDataService,
       certificateCredentialFactory,
       credentialVersionDataService,
-      new CEFAuditRecord()
+      new CEFAuditRecord(), false
+    );
+    subjectWithConcatenateCas = new PermissionedCertificateService(
+      permissionedCredentialService,
+      certificateDataService,
+      permissionCheckingService,
+      userContextHolder,
+      certificateVersionDataService,
+      certificateCredentialFactory,
+      credentialVersionDataService,
+      new CEFAuditRecord(), true
     );
   }
 
@@ -73,7 +89,7 @@ public class PermissionedCertificateServiceTest {
     final CertificateCredentialValue value = mock(CertificateCredentialValue.class);
     when(value.isTransitional()).thenReturn(false);
     final BaseCredentialGenerateRequest generateRequest = mock(BaseCredentialGenerateRequest.class);
-    subject.save(
+    subjectWithoutConcatenateCas.save(
       mock(CredentialVersion.class),
       value,
       generateRequest
@@ -100,7 +116,7 @@ public class PermissionedCertificateServiceTest {
     when(permissionedCredentialService.findAllByName(eq("/some-name")))
       .thenReturn(newArrayList(previousVersion));
 
-    subject.save(
+    subjectWithoutConcatenateCas.save(
       mock(CredentialVersion.class),
       value,
       generateRequest
@@ -128,7 +144,7 @@ public class PermissionedCertificateServiceTest {
       .thenReturn(newArrayList(previousVersion));
 
     try {
-      subject.save(
+      subjectWithoutConcatenateCas.save(
         mock(CredentialVersion.class),
         value,
         generateRequest
@@ -158,7 +174,7 @@ public class PermissionedCertificateServiceTest {
     when(certificateDataService.findAll())
       .thenReturn(newArrayList(myCredential, yourCredential));
 
-    final List<Credential> certificates = subject.getAll();
+    final List<Credential> certificates = subjectWithoutConcatenateCas.getAll();
     assertThat(certificates, equalTo(newArrayList(myCredential)));
   }
 
@@ -181,7 +197,7 @@ public class PermissionedCertificateServiceTest {
     when(certificateDataService.findByName("my-credential"))
       .thenReturn(myCredential);
 
-    final List<Credential> certificates = subject.getByName("my-credential");
+    final List<Credential> certificates = subjectWithoutConcatenateCas.getByName("my-credential");
     assertThat(certificates, equalTo(newArrayList(myCredential)));
   }
 
@@ -205,7 +221,7 @@ public class PermissionedCertificateServiceTest {
     when(certificateVersionDataService.findAllVersions(uuid))
       .thenReturn(versions);
 
-    final List<CredentialVersion> certificates = subject.getVersions(uuid, false);
+    final List<CredentialVersion> certificates = subjectWithoutConcatenateCas.getVersions(uuid, false);
     assertThat(certificates, equalTo(versions));
   }
 
@@ -233,26 +249,26 @@ public class PermissionedCertificateServiceTest {
     when(certificateVersionDataService.findActiveWithTransitional("my-credential"))
       .thenReturn(versions);
 
-    final List<CredentialVersion> certificates = subject.getVersions(uuid, true);
+    final List<CredentialVersion> certificates = subjectWithoutConcatenateCas.getVersions(uuid, true);
     assertThat(certificates, equalTo(versions));
   }
 
   @Test(expected = InvalidQueryParameterException.class)
   public void getVersions_returnsAnError_whenUUIDisInvalid() {
     when(certificateVersionDataService.findAllVersions(uuid)).thenThrow(new IllegalArgumentException());
-    subject.getVersions(uuid, false);
+    subjectWithoutConcatenateCas.getVersions(uuid, false);
   }
 
   @Test(expected = EntryNotFoundException.class)
   public void getVersions_returnsAnError_whenCredentialDoesNotExist() {
     when(certificateDataService.findByUuid(uuid)).thenReturn(null);
-    subject.getVersions(uuid, true);
+    subjectWithoutConcatenateCas.getVersions(uuid, true);
   }
 
   @Test(expected = EntryNotFoundException.class)
   public void getVersions_returnsAnError_whenCredentialListisEmpty() {
     when(certificateVersionDataService.findAllVersions(uuid)).thenReturn(Collections.emptyList());
-    subject.getVersions(uuid, false);
+    subjectWithoutConcatenateCas.getVersions(uuid, false);
   }
 
   @Test(expected = EntryNotFoundException.class)
@@ -275,7 +291,7 @@ public class PermissionedCertificateServiceTest {
     when(certificateVersionDataService.findAllVersions(uuid))
       .thenReturn(versions);
 
-    subject.getVersions(uuid, false);
+    subjectWithoutConcatenateCas.getVersions(uuid, false);
   }
 
   @Test
@@ -298,20 +314,20 @@ public class PermissionedCertificateServiceTest {
     when(certificateVersionDataService.findAllValidVersions(uuid))
       .thenReturn(versions);
 
-    final List<CredentialVersion> certificates = subject.getAllValidVersions(uuid);
+    final List<CredentialVersion> certificates = subjectWithoutConcatenateCas.getAllValidVersions(uuid);
     assertThat(certificates, equalTo(versions));
   }
 
   @Test(expected = InvalidQueryParameterException.class)
   public void getAllValidVersions_returnsAnError_whenUUIDisInvalid() {
     when(certificateVersionDataService.findAllValidVersions(uuid)).thenThrow(new IllegalArgumentException());
-    subject.getAllValidVersions(uuid);
+    subjectWithoutConcatenateCas.getAllValidVersions(uuid);
   }
 
   @Test
   public void getAllValidVersions_returnsAnEmptyList_whenCredentialListIsEmpty() {
     when(certificateVersionDataService.findAllValidVersions(uuid)).thenReturn(Collections.emptyList());
-    assertThat(subject.getAllValidVersions(uuid).size(), equalTo(0));
+    assertThat(subjectWithoutConcatenateCas.getAllValidVersions(uuid).size(), equalTo(0));
   }
 
   @Test(expected = EntryNotFoundException.class)
@@ -324,7 +340,7 @@ public class PermissionedCertificateServiceTest {
     when(certificateVersionDataService.findAllValidVersions(uuid))
       .thenReturn(versions);
 
-    subject.getAllValidVersions(uuid);
+    subjectWithoutConcatenateCas.getAllValidVersions(uuid);
   }
 
   @Test(expected = EntryNotFoundException.class)
@@ -347,7 +363,7 @@ public class PermissionedCertificateServiceTest {
     when(certificateVersionDataService.findAllValidVersions(uuid))
       .thenReturn(versions);
 
-    subject.getAllValidVersions(uuid);
+    subjectWithoutConcatenateCas.getAllValidVersions(uuid);
   }
 
   @Test
@@ -373,7 +389,7 @@ public class PermissionedCertificateServiceTest {
     when(certificateVersionDataService.findVersion(versionUuid)).thenReturn(versionToDelete);
     when(versionToDelete.getCredential()).thenReturn(certificate);
 
-    final CertificateCredentialVersion certificateCredentialVersion = subject
+    final CertificateCredentialVersion certificateCredentialVersion = subjectWithoutConcatenateCas
       .deleteVersion(certificateUuid, versionUuid);
 
     assertThat(certificateCredentialVersion, equalTo(versionToDelete));
@@ -400,7 +416,7 @@ public class PermissionedCertificateServiceTest {
     when(certificateVersionDataService.findVersion(versionUuid)).thenReturn(versionToDelete);
     when(versionToDelete.getCredential()).thenReturn(certificate);
 
-    subject.deleteVersion(certificateUuid, versionUuid);
+    subjectWithoutConcatenateCas.deleteVersion(certificateUuid, versionUuid);
   }
 
   @Test(expected = EntryNotFoundException.class)
@@ -426,7 +442,7 @@ public class PermissionedCertificateServiceTest {
     when(certificateVersionDataService.findVersion(versionUuid)).thenReturn(versionToDelete);
     when(versionToDelete.getCredential()).thenReturn(someOtherCredential);
 
-    subject.deleteVersion(certificateUuid, versionUuid);
+    subjectWithoutConcatenateCas.deleteVersion(certificateUuid, versionUuid);
   }
 
   @Test(expected = EntryNotFoundException.class)
@@ -449,7 +465,7 @@ public class PermissionedCertificateServiceTest {
     when(certificate.getUuid()).thenReturn(UUID.randomUUID());
     when(certificateVersionDataService.findVersion(versionUuid)).thenReturn(null);
 
-    subject.deleteVersion(certificateUuid, versionUuid);
+    subjectWithoutConcatenateCas.deleteVersion(certificateUuid, versionUuid);
   }
 
   @Test(expected = EntryNotFoundException.class)
@@ -469,7 +485,7 @@ public class PermissionedCertificateServiceTest {
     final CertificateCredentialVersion versionToDelete = mock(CertificateCredentialVersion.class);
     when(certificateVersionDataService.findVersion(versionUuid)).thenReturn(versionToDelete);
 
-    subject.deleteVersion(certificateUuid, versionUuid);
+    subjectWithoutConcatenateCas.deleteVersion(certificateUuid, versionUuid);
   }
 
   @Test(expected = EntryNotFoundException.class)
@@ -491,7 +507,7 @@ public class PermissionedCertificateServiceTest {
     when(certificateDataService.findByUuid(certificateUuid)).thenReturn(certificate);
     when(permissionCheckingService.hasPermission(user, credentialName, PermissionOperation.WRITE)).thenReturn(false);
 
-    subject.updateTransitionalVersion(certificateUuid, transitionalVersionUuid);
+    subjectWithoutConcatenateCas.updateTransitionalVersion(certificateUuid, transitionalVersionUuid);
   }
 
   @Test(expected = EntryNotFoundException.class)
@@ -504,7 +520,7 @@ public class PermissionedCertificateServiceTest {
 
     when(certificateDataService.findByUuid(certificateUuid)).thenReturn(null);
 
-    subject.updateTransitionalVersion(certificateUuid, transitionalVersionUuid);
+    subjectWithoutConcatenateCas.updateTransitionalVersion(certificateUuid, transitionalVersionUuid);
   }
 
   @Test(expected = ParameterizedValidationException.class)
@@ -527,7 +543,7 @@ public class PermissionedCertificateServiceTest {
 
     when(certificateVersionDataService.findVersion(transitionalVersionUuid)).thenReturn(null);
 
-    subject.updateTransitionalVersion(certificateUuid, transitionalVersionUuid);
+    subjectWithoutConcatenateCas.updateTransitionalVersion(certificateUuid, transitionalVersionUuid);
   }
 
   @Test(expected = ParameterizedValidationException.class)
@@ -556,7 +572,7 @@ public class PermissionedCertificateServiceTest {
     when(certificateVersionDataService.findVersion(transitionalVersionUuid)).thenReturn(version);
     when(version.getCredential()).thenReturn(otherCertificate);
 
-    subject.updateTransitionalVersion(certificateUuid, transitionalVersionUuid);
+    subjectWithoutConcatenateCas.updateTransitionalVersion(certificateUuid, transitionalVersionUuid);
   }
 
   @Test(expected = EntryNotFoundException.class)
@@ -575,7 +591,7 @@ public class PermissionedCertificateServiceTest {
     when(certificateDataService.findByUuid(certificateUuid)).thenReturn(certificate);
     when(permissionCheckingService.hasPermission(user, credentialName, PermissionOperation.WRITE)).thenReturn(false);
 
-    subject.set(certificateUuid, mock(CertificateCredentialValue.class));
+    subjectWithoutConcatenateCas.set(certificateUuid, mock(CertificateCredentialValue.class));
   }
 
   @Test(expected = EntryNotFoundException.class)
@@ -583,6 +599,90 @@ public class PermissionedCertificateServiceTest {
     final UUID certificateUuid = UUID.randomUUID();
 
     when(certificateDataService.findByUuid(certificateUuid)).thenReturn(null);
-    subject.set(certificateUuid, mock(CertificateCredentialValue.class));
+    subjectWithoutConcatenateCas.set(certificateUuid, mock(CertificateCredentialValue.class));
   }
+
+  @Test
+  public void getVersions__whenConcatenateCasIsTrue__returnsConcatenatedCas() {
+    UUID certUuid = UUID.randomUUID();
+    CertificateCredentialVersion nonTransitionalCa = mock(CertificateCredentialVersion.class);
+    when(nonTransitionalCa.getCertificate())
+            .thenReturn(TestConstants.TEST_CERTIFICATE);
+    CertificateCredentialVersion transitionalCa = mock(CertificateCredentialVersion.class);
+    when(transitionalCa.getCertificate())
+            .thenReturn(TestConstants.OTHER_TEST_CERTIFICATE);
+
+    CertificateCredentialVersion certificate = new CertificateCredentialVersion("some-cert");
+    certificate.setCaName("testCa");
+    certificate.getCredential().setUuid(certUuid);
+    certificate.setUuid(certUuid);
+    certificate.setCa(TestConstants.TEST_CERTIFICATE);
+    when(credentialVersionDataService.findActiveByName(certificate.getCaName()))
+            .thenReturn(Arrays.asList(nonTransitionalCa, transitionalCa));
+    when(certificateVersionDataService.findAllVersions(certUuid))
+            .thenReturn(Collections.singletonList(certificate));
+
+    final UserContext userContext = mock(UserContext.class);
+    when(userContextHolder.getUserContext()).thenReturn(userContext);
+
+    final String user = "my-user";
+    when(userContext.getActor()).thenReturn(user);
+
+    when(permissionCheckingService.hasPermission(user, "some-cert", PermissionOperation.READ)).thenReturn(true);
+
+
+    final List<CredentialVersion> results = subjectWithConcatenateCas.getVersions(certUuid, false);
+    CertificateCredentialVersion resultCert = (CertificateCredentialVersion) results.get(0);
+
+    List<String> allMatches = new ArrayList<>();
+    Matcher m = Pattern.compile("BEGIN CERTIFICATE")
+            .matcher(resultCert.getCa());
+    while (m.find()) {
+      allMatches.add(m.group());
+    }
+    assertThat(allMatches.size(), equalTo(2));
+
+  }
+
+  @Test
+  public void getVersions__whenConcatenateCasIsFalse__returnsSingleCa() {
+    UUID certUuid = UUID.randomUUID();
+    CertificateCredentialVersion nonTransitionalCa = mock(CertificateCredentialVersion.class);
+    when(nonTransitionalCa.getCertificate())
+            .thenReturn(TestConstants.TEST_CERTIFICATE);
+    CertificateCredentialVersion transitionalCa = mock(CertificateCredentialVersion.class);
+    when(transitionalCa.getCertificate())
+            .thenReturn(TestConstants.OTHER_TEST_CERTIFICATE);
+
+    CertificateCredentialVersion certificate = new CertificateCredentialVersion("some-cert");
+    certificate.setCaName("testCa");
+    certificate.getCredential().setUuid(certUuid);
+    certificate.setUuid(certUuid);
+    certificate.setCa(TestConstants.TEST_CERTIFICATE);
+    when(credentialVersionDataService.findActiveByName(certificate.getCaName()))
+            .thenReturn(Arrays.asList(nonTransitionalCa, transitionalCa));
+    when(certificateVersionDataService.findAllVersions(certUuid))
+            .thenReturn(Collections.singletonList(certificate));
+
+    final UserContext userContext = mock(UserContext.class);
+    when(userContextHolder.getUserContext()).thenReturn(userContext);
+
+    final String user = "my-user";
+    when(userContext.getActor()).thenReturn(user);
+
+    when(permissionCheckingService.hasPermission(user, "some-cert", PermissionOperation.READ)).thenReturn(true);
+
+
+    final List<CredentialVersion> results = subjectWithoutConcatenateCas.getVersions(certUuid, false);
+    CertificateCredentialVersion resultCert = (CertificateCredentialVersion) results.get(0);
+
+    List<String> allMatches = new ArrayList<>();
+    Matcher m = Pattern.compile("BEGIN CERTIFICATE")
+            .matcher(resultCert.getCa());
+    while (m.find()) {
+      allMatches.add(m.group());
+    }
+    assertThat(allMatches.size(), equalTo(1));
+  }
+
 }

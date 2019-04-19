@@ -60,6 +60,7 @@ import org.mockito.ArgumentCaptor;
 import static org.cloudfoundry.credhub.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doReturn;
@@ -374,12 +375,15 @@ public class CredentialsTypeSpecificSetIntegrationTest {
     final ArgumentCaptor<CredentialVersion> argumentCaptor = ArgumentCaptor.forClass(CredentialVersion.class);
     verify(credentialVersionDataService, times(1)).save(argumentCaptor.capture());
 
+    final UUID uuid = argumentCaptor.getValue().getUuid();
+    assertNotNull(uuid);
+
     response
       .andExpect(status().isOk())
       .andExpect(parametizer.jsonAssertions())
       .andExpect(MultiJsonPathMatcher.multiJsonPath(
         "$.type", parametizer.credentialType,
-        "$.id", argumentCaptor.getValue().getUuid().toString(),
+        "$.id", uuid.toString(),
         "$.version_created_at", FROZEN_TIME.toString()))
       .andExpect(status().isOk())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON));
@@ -402,10 +406,13 @@ public class CredentialsTypeSpecificSetIntegrationTest {
     final ArgumentCaptor<CredentialVersion> argumentCaptor = ArgumentCaptor.forClass(CredentialVersion.class);
     verify(credentialVersionDataService, times(1)).save(argumentCaptor.capture());
 
+    final UUID uuid = argumentCaptor.getValue().getUuid();
+    assertNotNull(uuid);
+
     response.andExpect(parametizer.jsonAssertions())
       .andExpect(MultiJsonPathMatcher.multiJsonPath(
         "$.type", parametizer.credentialType,
-        "$.id", argumentCaptor.getValue().getUuid().toString(),
+        "$.id", uuid.toString(),
         "$.version_created_at", FROZEN_TIME.toString()))
       .andExpect(status().isOk())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON));
@@ -475,12 +482,15 @@ public class CredentialsTypeSpecificSetIntegrationTest {
     final ArgumentCaptor<CredentialVersion> argumentCaptor = ArgumentCaptor.forClass(CredentialVersion.class);
     verify(credentialVersionDataService, times(1)).save(argumentCaptor.capture());
 
+    final UUID uuid = argumentCaptor.getValue().getUuid();
+    assertNotNull(uuid);
+
     response.andExpect(status().isOk())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
       .andExpect(parametizer.jsonAssertions())
       .andExpect(MultiJsonPathMatcher.multiJsonPath(
         "$.type", parametizer.credentialType,
-        "$.id", argumentCaptor.getValue().getUuid().toString(),
+        "$.id", uuid.toString(),
         "$.version_created_at", FROZEN_TIME.toString()));
   }
 

@@ -1,7 +1,9 @@
 package org.cloudfoundry.credhub.integration.v1.credentials;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -24,12 +26,16 @@ import org.cloudfoundry.credhub.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.PermissionOperation;
 import org.cloudfoundry.credhub.TestHelper;
+import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
+import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.domain.Encryptor;
 import org.cloudfoundry.credhub.domain.ValueCredentialVersion;
 import org.cloudfoundry.credhub.exceptions.KeyNotFoundException;
 import org.cloudfoundry.credhub.services.CredentialVersionDataService;
+import org.cloudfoundry.credhub.services.DefaultPermissionedCredentialService;
 import org.cloudfoundry.credhub.services.PermissionCheckingService;
 import org.cloudfoundry.credhub.util.CurrentTimeProvider;
+import org.cloudfoundry.credhub.utils.TestConstants;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -77,6 +83,9 @@ public class CredentialsGetIntegrationTest {
   @SpyBean
   private CredentialVersionDataService credentialVersionDataService;
 
+  @SpyBean
+  private DefaultPermissionedCredentialService permissionedCredentialService;
+
   @MockBean
   private CurrentTimeProvider mockCurrentTimeProvider;
 
@@ -92,6 +101,8 @@ public class CredentialsGetIntegrationTest {
       .webAppContextSetup(webApplicationContext)
       .apply(springSecurity())
       .build();
+
+    permissionedCredentialService.setConcatenateCas(false);
   }
 
   @Test
@@ -377,6 +388,82 @@ public class CredentialsGetIntegrationTest {
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
       .andExpect(jsonPath("$.error")
         .value("The query parameters current and versions cannot be provided in the same request."));
+  }
+
+  @Test
+  public void gettingACertificateCredential_byName_whenConcatenateCasIsTrue_returnsTheCredential_withConcatenatedCas() throws Exception {
+    permissionedCredentialService.setConcatenateCas(true);
+    final UUID uuid = UUID.randomUUID();
+    final CertificateCredentialVersion certificate = new CertificateCredentialVersion(CREDENTIAL_NAME);
+    certificate.setEncryptor(encryptor);
+    certificate.setUuid(uuid);
+    certificate.setVersionCreatedAt(FROZEN_TIME);
+    certificate.setCa(TestConstants.TEST_CERTIFICATE);
+    certificate.setCaName("/some-ca");
+    certificate.setCertificate(TestConstants.TEST_CERTIFICATE);
+    certificate.getCredential().setUuid(uuid);
+
+    doReturn(CREDENTIAL_VALUE).when(encryptor).decrypt(any());
+
+    CertificateCredentialVersion credentialVersion1 = new CertificateCredentialVersion("/some-ca");
+    CertificateCredentialVersion credentialVersion2 = new CertificateCredentialVersion("/some-ca");
+    credentialVersion1.setCertificate(TestConstants.TEST_CERTIFICATE);
+    credentialVersion2.setCertificate(TestConstants.OTHER_TEST_CERTIFICATE);
+    List<CredentialVersion> credentialVersionList = Arrays.asList(credentialVersion1, credentialVersion2);
+
+    doReturn(Collections.singletonList(certificate)).when(credentialVersionDataService).findAllByName(CREDENTIAL_NAME);
+    doReturn(credentialVersionList).when(credentialVersionDataService).findActiveByName("/some-ca");
+
+    final MockHttpServletRequestBuilder request = get("/api/v1/data?name=" + CREDENTIAL_NAME)
+      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON);
+
+    mockMvc.perform(request)
+      .andExpect(status().isOk())
+      .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+      .andExpect(jsonPath("$.data[0].type").value("certificate"))
+      .andExpect(jsonPath("$.data[0].value.certificate").value(TestConstants.TEST_CERTIFICATE))
+      .andExpect(jsonPath("$.data[0].id").value(uuid.toString()))
+      .andExpect(jsonPath("$.data[0].version_created_at").value(FROZEN_TIME.toString()))
+      .andExpect(jsonPath("$.data[0].value.ca").value(TestConstants.TEST_CERTIFICATE + "\n" + TestConstants.OTHER_TEST_CERTIFICATE));
+  }
+
+  @Test
+  public void gettingACertificateCredential_byName_whenConcatenateCasIsFalse_returnsTheCredential_withoutConcatenatedCas() throws Exception {
+    permissionedCredentialService.setConcatenateCas(false);
+    final UUID uuid = UUID.randomUUID();
+    final CertificateCredentialVersion certificate = new CertificateCredentialVersion(CREDENTIAL_NAME);
+    certificate.setEncryptor(encryptor);
+    certificate.setUuid(uuid);
+    certificate.setVersionCreatedAt(FROZEN_TIME);
+    certificate.setCa(TestConstants.TEST_CERTIFICATE);
+    certificate.setCaName("/some-ca");
+    certificate.setCertificate(TestConstants.TEST_CERTIFICATE);
+    certificate.getCredential().setUuid(uuid);
+
+    doReturn(CREDENTIAL_VALUE).when(encryptor).decrypt(any());
+
+    CertificateCredentialVersion credentialVersion1 = new CertificateCredentialVersion("/some-ca");
+    CertificateCredentialVersion credentialVersion2 = new CertificateCredentialVersion("/some-ca");
+    credentialVersion1.setCertificate(TestConstants.TEST_CERTIFICATE);
+    credentialVersion2.setCertificate(TestConstants.OTHER_TEST_CERTIFICATE);
+    List<CredentialVersion> credentialVersionList = Arrays.asList(credentialVersion1, credentialVersion2);
+
+    doReturn(Collections.singletonList(certificate)).when(credentialVersionDataService).findAllByName(CREDENTIAL_NAME);
+    doReturn(credentialVersionList).when(credentialVersionDataService).findActiveByName("/some-ca");
+
+    final MockHttpServletRequestBuilder request = get("/api/v1/data?name=" + CREDENTIAL_NAME)
+      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON);
+
+    mockMvc.perform(request)
+      .andExpect(status().isOk())
+      .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+      .andExpect(jsonPath("$.data[0].type").value("certificate"))
+      .andExpect(jsonPath("$.data[0].value.certificate").value(TestConstants.TEST_CERTIFICATE))
+      .andExpect(jsonPath("$.data[0].id").value(uuid.toString()))
+      .andExpect(jsonPath("$.data[0].version_created_at").value(FROZEN_TIME.toString()))
+      .andExpect(jsonPath("$.data[0].value.ca").value(TestConstants.TEST_CERTIFICATE));
   }
 
   private void setUpCredential() {

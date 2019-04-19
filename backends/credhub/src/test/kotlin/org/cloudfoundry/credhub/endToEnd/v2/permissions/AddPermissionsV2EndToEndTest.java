@@ -17,6 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.cloudfoundry.credhub.AuthConstants.ALL_PERMISSIONS_ACTOR_ID;
 import static org.cloudfoundry.credhub.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.cloudfoundry.credhub.AuthConstants.NO_PERMISSIONS_TOKEN;
 import static org.cloudfoundry.credhub.AuthConstants.USER_A_ACTOR_ID;
@@ -139,6 +140,25 @@ public class AddPermissionsV2EndToEndTest {
         + "}");
 
     mockMvc.perform(addPermissionRequestWithRead).andExpect(status().isConflict());
+  }
+
+  @Test
+  public void POST_whenUserTriesToGrantPermissionsToSelf_theyCannotAddAPermission() throws Exception {
+    final String credentialName = "/test";
+
+    PermissionsV2EndToEndTestHelper.setPermissions(mockMvc, credentialName, PermissionOperation.WRITE);
+
+    final MockHttpServletRequestBuilder addPermissionRequestWithRead = post("/api/v2/permissions")
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      .content("{"
+        + "  \"actor\": \"" + ALL_PERMISSIONS_ACTOR_ID + "\",\n"
+        + "  \"path\": \"" + credentialName + "\",\n"
+        + "  \"operations\": [\"write\", \"read\"]\n"
+        + "}");
+
+    mockMvc.perform(addPermissionRequestWithRead).andExpect(status().isBadRequest());
   }
 
 }
