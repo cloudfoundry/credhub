@@ -298,23 +298,23 @@ public class DefaultCredentialVersionDataService implements CredentialVersionDat
     final Timestamp expiresTimestamp = Timestamp
       .from(Instant.now().plus(Duration.ofDays(Long.parseLong(expiresWithinDays))));
 
-    final String query = "select * from ( " +
-            "select name.name, credential_version.version_created_at, "
-      + "certificate_credential.expiry_date from ("
-      + "   select "
-      + "   max(version_created_at) as version_created_at,"
-      + "     credential_uuid, uuid"
-      + "   from credential_version group by credential_uuid, uuid"
-      + " ) as credential_version inner join ("
-      + "   select * from credential"
-      + "     where lower(name) like lower(?)"
-      + " ) as name"
-      + " on credential_version.credential_uuid = name.uuid"
-      + " inner join ( select * from certificate_credential"
-      + " ) as certificate_credential "
-      + " on credential_version.uuid = certificate_credential.uuid"
-      + " order by version_created_at desc limit 1) as latest"
-      + " where expiry_date <= ?";
+    final String query = "SELECT name.name,\n" +
+                    "       latest_credential_version.version_created_at,\n" +
+                    "       certificate_credential.expiry_date\n" +
+                    "FROM (\n" +
+                    "         SELECT credential_uuid, max(version_created_at) AS max_version_created_at\n" +
+                    "         FROM credential_version\n" +
+                    "         GROUP BY credential_uuid) AS credential_uuid_of_max_version_created_at\n" +
+                    "         INNER JOIN (SELECT * FROM credential WHERE lower(name) LIKE lower(?)) AS name\n" +
+                    "                    ON credential_uuid_of_max_version_created_at.credential_uuid = name.uuid\n" +
+                    "         INNER JOIN credential_version AS latest_credential_version\n" +
+                    "                    ON latest_credential_version.credential_uuid =\n" +
+                    "                       credential_uuid_of_max_version_created_at.credential_uuid\n" +
+                    "                        AND latest_credential_version.version_created_at =\n" +
+                    "                            credential_uuid_of_max_version_created_at.max_version_created_at\n" +
+                    "         INNER JOIN (SELECT * FROM certificate_credential) AS certificate_credential\n" +
+                    "                    ON latest_credential_version.uuid = certificate_credential.uuid\n" +
+                    "WHERE certificate_credential.expiry_date <= ?;";
 
     final List<FindCredentialResult> certificateResults = jdbcTemplate.query(query,
       new Object[]{path, expiresTimestamp},

@@ -127,10 +127,9 @@ public class CredentialsController {
     }
   }
 
-  // CredHubDeprecatedStartingAfter(2.1.2) - Path parameter should be name
   @RequestMapping(path = "", params = "path", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
-  public FindCredentialResults findByName(
+  public FindCredentialResults findByPath(
     @RequestParam("path") final String path,
     @RequestParam(value = "expires-within-days", required = false, defaultValue = "") final String expiresWithinDays
   ) {
