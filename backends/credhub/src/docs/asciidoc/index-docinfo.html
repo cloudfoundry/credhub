@@ -1,0 +1,37 @@
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const currentVersion = window.location.pathname.split('/')[2];
+
+    const versionDropdown = document.createElement("div");
+    versionDropdown.innerHTML = "<select id='version-dropdown' class='version-dropdown' onChange='window.location.href=this.value' />\n"
+
+    const toc = document.querySelector('div#toc');
+    toc.insertBefore(versionDropdown, toc.firstChild);
+
+    const req = new XMLHttpRequest();
+    req.onload = function() {
+      if (req.status === 200) {
+        const versionDropdown = document.querySelector('#version-dropdown');
+        const rspObject = JSON.parse(req.responseText);
+        rspObject.map((version) => {
+          const dropdownElement = document.createElement('option');
+          dropdownElement.text = 'Version: ' + version;
+          dropdownElement.value = `../../version/${version}`;
+          dropdownElement.selected = (version === currentVersion) ;
+          versionDropdown.appendChild(dropdownElement);
+        });
+      } else {
+        console.log(`Failed to load versions.json, status: ${req.status} ${req.statusText}`);
+      }
+    };
+
+    req.open('GET', '../../versions.json');
+    req.send();
+  });
+</script>
+
+<style>
+  .version-dropdown {
+    margin-bottom: 10px;
+  }
+</style>
