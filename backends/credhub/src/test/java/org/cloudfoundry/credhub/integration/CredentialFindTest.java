@@ -103,7 +103,7 @@ public class CredentialFindTest {
 
     response.andExpect(status().isOk())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-      .andExpect(jsonPath("$.credentials", hasSize(5)));
+      .andExpect(jsonPath("$.credentials", hasSize(6)));
   }
 
   @Test
@@ -119,6 +119,24 @@ public class CredentialFindTest {
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
       .andExpect(jsonPath("$.credentials", hasSize(1)))
       .andExpect(jsonPath("$.credentials[0].name").value(credentialName));
+  }
+
+  @Test
+  public void findCredentials_byNameLike_withUnderscore_escapesWildcard() throws Exception {
+    final String credentialName = "/other_path/credentialC";
+    final String otherCredentialName = "/other/path/credentialC";
+    generateCredentials();
+
+    setPermissions(credentialName, PermissionOperation.READ, USER_A_ACTOR_ID);
+    setPermissions(otherCredentialName, PermissionOperation.READ, USER_A_ACTOR_ID);
+
+    final ResultActions response = findCredentialsByNameLike("other_path", USER_A_TOKEN);
+
+    response.andExpect(status().isOk())
+      .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+      .andExpect(jsonPath("$.credentials", hasSize(1)))
+      .andExpect(jsonPath("$.credentials[0].name").value(credentialName));
+
   }
 
   @Test
@@ -195,7 +213,7 @@ public class CredentialFindTest {
 
     response.andExpect(status().isOk())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-      .andExpect(jsonPath("$.credentials", hasSize(5)));
+      .andExpect(jsonPath("$.credentials", hasSize(6)));
   }
 
   @Test
@@ -277,6 +295,57 @@ public class CredentialFindTest {
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
       .andExpect(jsonPath("$.credentials", hasSize(1)))
       .andExpect(jsonPath("$.credentials[0].name").value("/willExpire"));
+
+  }
+
+  @Test
+  public void findCertificatesByPath_withExpiryDate_andWithUnderscore_escapesWildcard() throws Exception {
+
+    this.mockMvc.perform(post("/api/v1/data")
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{\n"
+        + "  \"name\" : \"some_path/test\",\n"
+        + "  \"type\" : \"certificate\",\n"
+        + "  \"parameters\" : {\n"
+        + "    \"common_name\" : \"federation\",\n"
+        + "    \"is_ca\" : true,\n"
+        + "    \"self_sign\" : true,\n"
+        + "    \"duration\" : 30 \n"
+        + "  }\n"
+        + "}"))
+      .andDo(print())
+      .andExpect(status().isOk());
+
+    this.mockMvc.perform(post("/api/v1/data")
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{\n"
+        + "  \"name\" : \"some/path/test\",\n"
+        + "  \"type\" : \"certificate\",\n"
+        + "  \"parameters\" : {\n"
+        + "    \"common_name\" : \"federation\",\n"
+        + "    \"is_ca\" : true,\n"
+        + "    \"self_sign\" : true,\n"
+        + "    \"duration\" : 30 \n"
+        + "  }\n"
+        + "}"))
+      .andDo(print())
+      .andExpect(status().isOk());
+
+    final MockHttpServletRequestBuilder request = get("/api/v1/data?path=/some_path&expires-within-days=45")
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .content("expires-within-days:45")
+      .accept(APPLICATION_JSON);
+
+    mockMvc.perform(request).andExpect(status().isOk())
+      .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+      .andExpect(jsonPath("$.credentials", hasSize(1)))
+      .andExpect(jsonPath("$.credentials[0].name").value("/some_path/test"));
 
   }
 
@@ -438,7 +507,7 @@ public class CredentialFindTest {
 
   private void generateCredentials() throws Exception {
     final List<String> names = Arrays.asList(new String[]{"/path/to/credentialA", "/path/something",
-      "/path/to/credentialB", "/other_path/credentialC", "/another/credentialC"});
+      "/path/to/credentialB", "/other_path/credentialC", "/other/path/credentialC", "/another/credentialC"});
 
     for (final String name : names) {
       generatePassword(mockMvc, name, true, 20, ALL_PERMISSIONS_TOKEN);

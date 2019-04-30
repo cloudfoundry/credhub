@@ -295,6 +295,8 @@ public class DefaultCredentialVersionDataService implements CredentialVersionDat
   }
 
   private List<FindCredentialResult> filterCertificates(final String path, final String expiresWithinDays) {
+    final String escapedPath = path.replace("_", "\\_");
+
     final Timestamp expiresTimestamp = Timestamp
       .from(Instant.now().plus(Duration.ofDays(Long.parseLong(expiresWithinDays))));
 
@@ -317,7 +319,7 @@ public class DefaultCredentialVersionDataService implements CredentialVersionDat
                     "WHERE certificate_credential.expiry_date <= ?;";
 
     final List<FindCredentialResult> certificateResults = jdbcTemplate.query(query,
-      new Object[]{path, expiresTimestamp},
+      new Object[]{escapedPath, expiresTimestamp},
       (rowSet, rowNum) -> {
         final Instant versionCreatedAt = Instant
           .ofEpochMilli(rowSet.getLong("version_created_at"));
@@ -344,6 +346,8 @@ public class DefaultCredentialVersionDataService implements CredentialVersionDat
   }
 
   private List<FindCredentialResult> findMatchingName(final String nameLike) {
+    final String escapedNameLike = nameLike.replace("_", "\\_");
+
     final List<FindCredentialResult> credentialResults = jdbcTemplate.query(
       " select name.name, credential_version.version_created_at from ("
         + "   select"
@@ -356,7 +360,7 @@ public class DefaultCredentialVersionDataService implements CredentialVersionDat
         + " ) as name"
         + " on credential_version.credential_uuid = name.uuid"
         + " order by version_created_at desc",
-      new Object[]{nameLike},
+      new Object[]{escapedNameLike},
       (rowSet, rowNum) -> {
         final Instant versionCreatedAt = Instant
           .ofEpochMilli(rowSet.getLong("version_created_at"));
