@@ -11,8 +11,6 @@ import org.cloudfoundry.credhub.entity.CredentialVersionData;
 
 public interface CredentialVersionRepository extends JpaRepository<CredentialVersionData, UUID> {
 
-  int BATCH_SIZE = 50;
-
   CredentialVersionData findOneByUuid(UUID uuid);
 
   @Query(value = "select * from credential_version "
@@ -31,8 +29,6 @@ public interface CredentialVersionRepository extends JpaRepository<CredentialVer
     + "limit 1", nativeQuery = true)
   CredentialVersionData findTransitionalCertificateVersion(UUID credentialUUID);
 
-  Long countByEncryptedCredentialValueEncryptionKeyUuidNot(UUID encryptionKeyUuid);
-
   Long countByEncryptedCredentialValueEncryptionKeyUuidIn(Collection<UUID> encryptionKeyUuids);
 
   List<CredentialVersionData> findByEncryptedCredentialValueEncryptionKeyUuidIn(List<UUID> encryptionKeyUuids);
@@ -45,7 +41,11 @@ public interface CredentialVersionRepository extends JpaRepository<CredentialVer
 
   @Query(value = "select * from credential_version "
     + "inner join certificate_credential on credential_version.uuid = certificate_credential.uuid "
-    + "where expiry_date IS NULL", nativeQuery = true)
-  List<CredentialVersionData> findAllVersionsWithNullExpirationDate();
+    + "where expiry_date IS NULL order by version_created_at limit 1000 offset ?1", nativeQuery = true)
+  List<CredentialVersionData> findUpTo1000VersionsWithNullExpirationDate(int offset);
 
+  @Query(value = "select count(*) from credential_version "
+    + "inner join certificate_credential on credential_version.uuid = certificate_credential.uuid "
+    + "where expiry_date IS NULL", nativeQuery = true)
+  int countVersionsWithNullExpirationDate();
 }
