@@ -12,9 +12,7 @@ import org.springframework.stereotype.Component
 @Component
 class ExpiryDateMigration @Autowired
 constructor(private val credentialVersionRepository: CredentialVersionRepository) {
-
     fun migrate() {
-
         var numberOfInvalidCertsFound = 0
         while (credentialVersionRepository.countVersionsWithNullExpirationDate() != numberOfInvalidCertsFound) {
             val data = credentialVersionRepository.findUpTo1000VersionsWithNullExpirationDate(numberOfInvalidCertsFound)
@@ -48,5 +46,4 @@ constructor(private val credentialVersionRepository: CredentialVersionRepository
     companion object {
         private val LOGGER = LogManager.getLogger(ExpiryDateMigration::class.java)
     }
-
 }
