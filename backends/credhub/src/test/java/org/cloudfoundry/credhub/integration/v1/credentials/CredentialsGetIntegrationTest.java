@@ -32,7 +32,7 @@ import org.cloudfoundry.credhub.domain.Encryptor;
 import org.cloudfoundry.credhub.domain.ValueCredentialVersion;
 import org.cloudfoundry.credhub.exceptions.KeyNotFoundException;
 import org.cloudfoundry.credhub.services.CredentialVersionDataService;
-import org.cloudfoundry.credhub.services.DefaultPermissionedCredentialService;
+import org.cloudfoundry.credhub.services.DefaultCredentialService;
 import org.cloudfoundry.credhub.services.PermissionCheckingService;
 import org.cloudfoundry.credhub.util.CurrentTimeProvider;
 import org.cloudfoundry.credhub.utils.TestConstants;
@@ -84,7 +84,7 @@ public class CredentialsGetIntegrationTest {
   private CredentialVersionDataService credentialVersionDataService;
 
   @SpyBean
-  private DefaultPermissionedCredentialService permissionedCredentialService;
+  private DefaultCredentialService permissionedCredentialService;
 
   @MockBean
   private CurrentTimeProvider mockCurrentTimeProvider;

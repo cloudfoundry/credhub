@@ -1,6 +1,7 @@
 package org.cloudfoundry.credhub.views;
 
 import java.time.Instant;
+import java.util.Objects;
 
 import org.cloudfoundry.credhub.credential.CredentialValue;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
@@ -38,5 +39,26 @@ public class CertificateView extends CredentialView {
 
   public Instant getExpiryDate() {
     return expiryDate;
+  }
+
+  @Override
+  public boolean equals(final Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    if (!super.equals(o)) {
+      return false;
+    }
+    final CertificateView that = (CertificateView) o;
+    return Objects.equals(version, that.version) &&
+      Objects.equals(expiryDate, that.expiryDate);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), version, expiryDate);
   }
 }

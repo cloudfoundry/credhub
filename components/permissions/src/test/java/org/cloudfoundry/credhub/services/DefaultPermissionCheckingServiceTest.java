@@ -1,5 +1,7 @@
 package org.cloudfoundry.credhub.services;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.UUID;
 
 import org.springframework.test.util.ReflectionTestUtils;
@@ -13,6 +15,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
 import static org.cloudfoundry.credhub.PermissionOperation.DELETE;
@@ -27,6 +30,7 @@ import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
 public class DefaultPermissionCheckingServiceTest {
+
   private static final String CREDENTIAL_NAME = "/test/credential";
 
   private DefaultPermissionCheckingService subject;
@@ -125,13 +129,32 @@ public class DefaultPermissionCheckingServiceTest {
     assertFalse(subject.userAllowedToOperateOnActor(input));
   }
 
+  @Test
+  public void findAllPathsByActor_whenActorHasPermissions_returnsPaths() {
+    HashSet<String> paths = new HashSet<>(Collections.singletonList(CREDENTIAL_NAME));
+    when(permissionDataService.findAllPathsByActor("test-actor"))
+      .thenReturn(paths);
+
+    assertEquals(subject.findAllPathsByActor("test-actor"), paths);
+  }
+
+  @Test
+  public void findAllPathsByActor_whenActorDoesNotHavePermissions_returnsEmptySet() {
+    HashSet<String> paths = new HashSet<>();
+    when(permissionDataService.findAllPathsByActor("test-actor"))
+      .thenReturn(paths);
+
+    assertEquals(subject.findAllPathsByActor("test-actor"), paths);
+  }
+
+
   private void initializeEnforcement(final boolean enabled) {
     ReflectionTestUtils
       .setField(subject, DefaultPermissionCheckingService.class, "enforcePermissions", enabled, boolean.class);
   }
 
   private void assertConditionallyHasPermission(final String user, final String credentialName,
-                                                final PermissionOperation permission, final boolean isGranted) {
+    final PermissionOperation permission, final boolean isGranted) {
     when(permissionDataService
       .hasPermission(user, credentialName, permission))
       .thenReturn(isGranted);
@@ -140,11 +163,12 @@ public class DefaultPermissionCheckingServiceTest {
   }
 
   private void assertAlwaysHasPermission(final String user, final String credentialName,
-                                         final PermissionOperation permission, final boolean isGranted) {
+    final PermissionOperation permission, final boolean isGranted) {
     when(permissionDataService
       .hasPermission(user, credentialName, permission))
       .thenReturn(isGranted);
 
     assertThat(subject.hasPermission(user, credentialName, permission), equalTo(true));
   }
+
 }

@@ -23,14 +23,14 @@ import org.springframework.security.oauth2.provider.authentication.BearerTokenEx
 import org.springframework.security.oauth2.provider.authentication.TokenExtractor;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.auth.OAuth2AuthenticationExceptionHandler;
 import org.cloudfoundry.credhub.auth.OAuth2IssuerService;
 
-@Component
+@Service
 @ConditionalOnProperty("security.oauth2.enabled")
 public class OAuth2ExtraValidationFilter extends OncePerRequestFilter {
 

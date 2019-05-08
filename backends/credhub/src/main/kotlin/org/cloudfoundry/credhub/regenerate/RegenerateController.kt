@@ -1,7 +1,6 @@
 package org.cloudfoundry.credhub.regenerate
 
 import org.cloudfoundry.credhub.exceptions.PermissionException
-import org.cloudfoundry.credhub.generate.RegenerateHandler
 import org.cloudfoundry.credhub.requests.BulkRegenerateRequest
 import org.cloudfoundry.credhub.requests.RegenerateRequest
 import org.cloudfoundry.credhub.views.BulkRegenerateResults

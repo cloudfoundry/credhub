@@ -1,7 +1,7 @@
 package org.cloudfoundry.credhub.controllers.v2.permissions
 
 import org.cloudfoundry.credhub.PermissionOperation
-import org.cloudfoundry.credhub.handlers.PermissionsV2Handler
+import org.cloudfoundry.credhub.permissions.PermissionsV2Handler
 import org.cloudfoundry.credhub.requests.PermissionsV2Request
 import org.cloudfoundry.credhub.views.PermissionsV2View
 import java.util.UUID

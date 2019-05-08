@@ -33,7 +33,7 @@ import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.TestHelper;
-import org.cloudfoundry.credhub.certificates.DefaultSetHandler;
+import org.cloudfoundry.credhub.credentials.DefaultCredentialsHandler;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.domain.Encryptor;
@@ -137,7 +137,7 @@ public class CredentialsTypeSpecificSetIntegrationTest {
   @SpyBean
   private CredentialVersionDataService credentialVersionDataService;
   @SpyBean
-  private DefaultSetHandler setHandler;
+  private DefaultCredentialsHandler credentialsHandler;
   @MockBean
   private CurrentTimeProvider mockCurrentTimeProvider;
   @SpyBean
@@ -433,8 +433,8 @@ public class CredentialsTypeSpecificSetIntegrationTest {
 
     mockMvc.perform(request);
 
-    verify(setHandler, times(1))
-      .handle(isA(BaseCredentialSetRequest.class));
+    verify(credentialsHandler, times(1))
+      .setCredential(isA(BaseCredentialSetRequest.class));
     verify(credentialVersionDataService, times(1)).save(argumentCaptor.capture());
 
     final CredentialVersion newCredentialVersion = argumentCaptor.getValue();

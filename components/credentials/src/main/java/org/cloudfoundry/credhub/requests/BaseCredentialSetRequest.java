@@ -42,10 +42,6 @@ public abstract class BaseCredentialSetRequest<T extends CredentialValue> extend
     if (getName() != null && getName().length() > 1024) {
       throw new ParameterizedValidationException(ErrorMessages.NAME_HAS_TOO_MANY_CHARACTERS);
     }
-
-    if (getName() != null && getName().length() > 1024) {
-      throw new ParameterizedValidationException(ErrorMessages.NAME_HAS_TOO_MANY_CHARACTERS);
-    }
   }
 
   private boolean isInvalidTypeForSet(final String type) {

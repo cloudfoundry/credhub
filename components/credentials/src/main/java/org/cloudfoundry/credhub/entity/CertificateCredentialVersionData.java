@@ -1,6 +1,7 @@
 package org.cloudfoundry.credhub.entity;
 
 import java.time.Instant;
+import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
@@ -94,6 +95,27 @@ public class CertificateCredentialVersionData extends CredentialVersionData<Cert
 
   public void setTransitional(final boolean transitional) {
     this.transitional = transitional;
+  }
+
+  @Override
+  public boolean equals(final Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    final CertificateCredentialVersionData that = (CertificateCredentialVersionData) o;
+    return transitional == that.transitional &&
+      Objects.equals(ca, that.ca) &&
+      Objects.equals(certificate, that.certificate) &&
+      Objects.equals(caName, that.caName) &&
+      Objects.equals(expiryDate, that.expiryDate);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(ca, certificate, caName, transitional, expiryDate);
   }
 
   @Override

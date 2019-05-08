@@ -25,11 +25,10 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.TestHelper;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
-import org.cloudfoundry.credhub.data.CertificateAuthorityService;
 import org.cloudfoundry.credhub.domain.CertificateGenerationParameters;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters;
-import org.cloudfoundry.credhub.services.PermissionCheckingService;
+import org.cloudfoundry.credhub.services.CertificateAuthorityService;
 import org.cloudfoundry.credhub.util.CurrentTimeProvider;
 import org.cloudfoundry.credhub.utils.CertificateFormatter;
 import org.junit.Before;
@@ -41,9 +40,7 @@ import static org.assertj.core.api.Assertions.fail;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -69,7 +66,6 @@ public class CertificateGeneratorTest {
   private CertificateGenerationParameters inputParameters;
   private CertificateGenerationRequestParameters generationParameters;
   private X509Certificate childX509Certificate;
-  private PermissionCheckingService permissionCheckingService;
 
   @Before
   public void beforeEach() throws Exception {
@@ -77,7 +73,6 @@ public class CertificateGeneratorTest {
     keyGenerator = mock(RsaKeyPairGenerator.class);
     signedCertificateGenerator = mock(SignedCertificateGenerator.class);
     certificateAuthorityService = mock(CertificateAuthorityService.class);
-    permissionCheckingService = mock(PermissionCheckingService.class);
 
     subject = new CertificateGenerator(
       keyGenerator,
@@ -85,7 +80,6 @@ public class CertificateGeneratorTest {
       certificateAuthorityService
     );
 
-    when(permissionCheckingService.hasPermission(anyString(), anyString(), any())).thenReturn(true);
 
     fakeKeyPairGenerator = new FakeKeyPairGenerator();
 

@@ -1,13 +1,14 @@
 package org.cloudfoundry.credhub.controllers.v1.credentials
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
+import org.cloudfoundry.credhub.controllers.v1.regenerate.SpyRegenerateHandler
 import org.cloudfoundry.credhub.credentials.CredentialsController
 import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
 import org.cloudfoundry.credhub.helpers.credHubAuthHeader
-import org.cloudfoundry.credhub.services.SpyPermissionedCredentialService
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -28,20 +29,18 @@ class CredentialsControllerDeleteTest {
     val restDocumentation = JUnitRestDocumentation()
 
     lateinit var mockMvc: MockMvc
-    lateinit var spyCredentialsHandler: SpyCredentialsHandler
+    var spyCredentialsHandler: SpyCredentialsHandler = SpyCredentialsHandler()
+    var spyRegenerateHandler: SpyRegenerateHandler = SpyRegenerateHandler()
+    private val objectMapper: ObjectMapper = ObjectMapper()
 
     @Before
     fun setUp() {
-        spyCredentialsHandler = SpyCredentialsHandler()
-
         val credentialController = CredentialsController(
-            SpyPermissionedCredentialService(),
             spyCredentialsHandler,
-            SpySetHandler(),
-            SpyLegacyGenerationHandler(),
-            CEFAuditRecord()
+            CEFAuditRecord(),
+            spyRegenerateHandler,
+            objectMapper
         )
-
         mockMvc = MockMvcFactory.newSpringRestDocMockMvc(credentialController, restDocumentation)
 
         if (Security.getProvider(BouncyCastleFipsProvider.PROVIDER_NAME) == null) {

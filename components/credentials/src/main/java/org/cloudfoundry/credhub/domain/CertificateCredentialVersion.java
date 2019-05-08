@@ -1,6 +1,7 @@
 package org.cloudfoundry.credhub.domain;
 
 import java.time.Instant;
+import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
@@ -124,5 +125,25 @@ public class CertificateCredentialVersion extends CredentialVersion {
   @Override
   public GenerationParameters getGenerationParameters() {
     return null;
+  }
+
+  @Override
+  public boolean equals(final Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    final CertificateCredentialVersion that = (CertificateCredentialVersion) o;
+    return Objects.equals(delegate, that.delegate)
+      && Objects.equals(getName(), that.getName())
+      && Objects.equals(getUuid(), that.getUuid())
+      && Objects.equals(getVersionCreatedAt(), that.getVersionCreatedAt());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(delegate);
   }
 }

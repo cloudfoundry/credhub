@@ -1,6 +1,6 @@
 package org.cloudfoundry.credhub.controllers.v1.regenerate
 
-import org.cloudfoundry.credhub.generate.RegenerateHandler
+import org.cloudfoundry.credhub.regenerate.RegenerateHandler
 import org.cloudfoundry.credhub.views.BulkRegenerateResults
 import org.cloudfoundry.credhub.views.CredentialView
 

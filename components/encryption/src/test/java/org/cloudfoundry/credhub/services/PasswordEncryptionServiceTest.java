@@ -1,7 +1,7 @@
 package org.cloudfoundry.credhub.services;
 
 import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
-import org.cloudfoundry.credhub.utils.PasswordKeyProxyFactoryTestImpl;
+import org.cloudfoundry.credhub.utils.TestPasswordKeyProxyFactory;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -13,7 +13,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class PasswordEncryptionServiceTest {
   @Test
   public void createsPasswordBasedKeyProxy() throws Exception {
-    final PasswordEncryptionService subject = new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl());
+    final PasswordEncryptionService subject = new PasswordEncryptionService(new TestPasswordKeyProxyFactory());
 
     final EncryptionKeyMetadata keyMetadata = new EncryptionKeyMetadata();
     keyMetadata.setEncryptionPassword("foobar");

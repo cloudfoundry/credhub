@@ -325,4 +325,8 @@ public class CEFAuditRecord {
       resourceList = new ArrayList<>();
     }
   }
+
+  public List<Version> getVersionList() {
+    return versionList;
+  }
 }

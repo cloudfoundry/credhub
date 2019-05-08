@@ -1,11 +1,12 @@
 package org.cloudfoundry.credhub.services;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.lang3.StringUtils;
@@ -15,7 +16,7 @@ import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.data.PermissionData;
 import org.cloudfoundry.credhub.data.PermissionDataService;
 
-@Component
+@Service
 @SuppressFBWarnings(
   value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE",
   justification = "Let's refactor this class into kotlin"
@@ -40,15 +41,16 @@ public class DefaultPermissionCheckingService implements PermissionCheckingServi
   @Override
   public boolean hasPermission(final String user, final String credentialName, final PermissionOperation permission) {
     if (enforcePermissions) {
-      return permissionDataService.hasPermission(user, credentialName, permission);
+      final String name = StringUtils.prependIfMissing(credentialName, "/");
+      return permissionDataService.hasPermission(user, name, permission);
     }
     return true;
   }
 
   @Override
-  public boolean hasPermission(final String user, final UUID guid, final PermissionOperation permission) {
+  public boolean hasPermission(final String user, final UUID permissionGuid, final PermissionOperation permission) {
     if (enforcePermissions) {
-      final PermissionData permissionData = permissionDataService.getPermission(guid);
+      final PermissionData permissionData = permissionDataService.getPermission(permissionGuid);
       if (permissionData == null) {
         return false;
       }
@@ -90,5 +92,10 @@ public class DefaultPermissionCheckingService implements PermissionCheckingServi
     } else {
       return true;
     }
+  }
+
+  @Override
+  public Set<String> findAllPathsByActor(final String actor) {
+    return permissionDataService.findAllPathsByActor(actor);
   }
 }

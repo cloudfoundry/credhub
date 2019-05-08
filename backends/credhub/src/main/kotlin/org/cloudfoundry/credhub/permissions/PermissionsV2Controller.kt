@@ -1,7 +1,6 @@
 package org.cloudfoundry.credhub.permissions
 
 import org.apache.commons.lang3.StringUtils
-import org.cloudfoundry.credhub.handlers.PermissionsV2Handler
 import org.cloudfoundry.credhub.requests.PermissionsV2PatchRequest
 import org.cloudfoundry.credhub.requests.PermissionsV2Request
 import org.cloudfoundry.credhub.views.PermissionsV2View

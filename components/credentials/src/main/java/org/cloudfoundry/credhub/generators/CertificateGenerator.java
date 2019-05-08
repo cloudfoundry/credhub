@@ -8,10 +8,10 @@ import org.springframework.stereotype.Component;
 
 import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
-import org.cloudfoundry.credhub.data.CertificateAuthorityService;
 import org.cloudfoundry.credhub.domain.CertificateGenerationParameters;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.requests.GenerationParameters;
+import org.cloudfoundry.credhub.services.CertificateAuthorityService;
 import org.cloudfoundry.credhub.utils.CertificateFormatter;
 import org.cloudfoundry.credhub.utils.CertificateReader;
 import org.cloudfoundry.credhub.utils.PrivateKeyReader;

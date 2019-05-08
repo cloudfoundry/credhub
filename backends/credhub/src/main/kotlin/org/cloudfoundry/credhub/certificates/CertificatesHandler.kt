@@ -15,7 +15,7 @@ interface CertificatesHandler {
 
     fun handleGetByNameRequest(name: String): CertificateCredentialsView
 
-    fun handleGetAllVersionsRequest(uuidString: String, current: Boolean): List<CertificateView>
+    fun handleGetAllVersionsRequest(certificateId: String, current: Boolean): List<CertificateView>
 
     fun handleDeleteVersionRequest(certificateId: String, versionId: String): CertificateView
 

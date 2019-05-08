@@ -6,6 +6,7 @@ import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.constants.CredentialType
 import org.cloudfoundry.credhub.constants.CredentialType.JSON
+import org.cloudfoundry.credhub.controllers.v1.regenerate.SpyRegenerateHandler
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue
 import org.cloudfoundry.credhub.credential.JsonCredentialValue
 import org.cloudfoundry.credhub.credential.RsaCredentialValue
@@ -16,7 +17,6 @@ import org.cloudfoundry.credhub.credentials.CredentialsController
 import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
 import org.cloudfoundry.credhub.helpers.credHubAuthHeader
-import org.cloudfoundry.credhub.services.SpyPermissionedCredentialService
 import org.cloudfoundry.credhub.utils.TestConstants
 import org.cloudfoundry.credhub.views.CredentialView
 import org.cloudfoundry.credhub.views.DataResponse
@@ -50,20 +50,20 @@ class CredentialsControllerGetTest {
     val uuid = UUID.randomUUID()
 
     lateinit var mockMvc: MockMvc
-    lateinit var spyPermissionedCredentialService: SpyPermissionedCredentialService
     lateinit var spyCredentialsHandler: SpyCredentialsHandler
+    lateinit var spyRegenerateHandler: SpyRegenerateHandler
+    private val objectMapper: ObjectMapper = ObjectMapper()
 
     @Before
     fun setUp() {
-        spyPermissionedCredentialService = SpyPermissionedCredentialService()
         spyCredentialsHandler = SpyCredentialsHandler()
+        spyRegenerateHandler = SpyRegenerateHandler()
 
         val credentialController = CredentialsController(
-            spyPermissionedCredentialService,
             spyCredentialsHandler,
-            SpySetHandler(),
-            SpyLegacyGenerationHandler(),
-            CEFAuditRecord()
+            CEFAuditRecord(),
+            spyRegenerateHandler,
+            objectMapper
         )
 
         mockMvc = MockMvcFactory.newSpringRestDocMockMvc(credentialController, restDocumentation)
@@ -416,7 +416,7 @@ class CredentialsControllerGetTest {
 
     @Test
     fun GET__find_by_name_like__returns_results() {
-        spyPermissionedCredentialService.findContainingName__returns_findCredentialResultList = listOf(
+        spyCredentialsHandler.findContainingName__returns_findCredentialResultList = listOf(
             FindCredentialResult(
                 Instant.ofEpochSecond(1549053472L),
                 "some-credential-name"
@@ -446,8 +446,8 @@ class CredentialsControllerGetTest {
             )
             .andReturn()
 
-        assertThat(spyPermissionedCredentialService.findContainingName__calledWith_name).isEqualTo("some-credential")
-        assertThat(spyPermissionedCredentialService.findContainingName__calledWith_expiresWithinDays).isEqualTo("1")
+        assertThat(spyCredentialsHandler.findContainingName__calledWith_name).isEqualTo("some-credential")
+        assertThat(spyCredentialsHandler.findContainingName__calledWith_expiresWithinDays).isEqualTo("1")
         val actualResponseBody = mvcResult.response.contentAsString
         // language=json
         val expectedResponseBody = """
@@ -466,7 +466,7 @@ class CredentialsControllerGetTest {
 
     @Test
     fun GET__find_by_name__returns_results() {
-        spyPermissionedCredentialService.findStartingWithPath__returns_findCredentialResultList = listOf(
+        spyCredentialsHandler.findStartingWithPath__returns_findCredentialResultList = listOf(
             FindCredentialResult(
                 Instant.ofEpochSecond(1549053472L),
                 "some-credential-name"
@@ -496,8 +496,8 @@ class CredentialsControllerGetTest {
             )
             .andReturn()
 
-        assertThat(spyPermissionedCredentialService.findStartingWithPath__calledWith_path).isEqualTo("some-credential-path")
-        assertThat(spyPermissionedCredentialService.findStartingWithPath__calledWith_expiresWithinDays).isEqualTo("1")
+        assertThat(spyCredentialsHandler.findStartingWithPath__calledWith_path).isEqualTo("some-credential-path")
+        assertThat(spyCredentialsHandler.findStartingWithPath__calledWith_expiresWithinDays).isEqualTo("1")
         val actualResponseBody = mvcResult.response.contentAsString
         // language=json
         val expectedResponseBody = """

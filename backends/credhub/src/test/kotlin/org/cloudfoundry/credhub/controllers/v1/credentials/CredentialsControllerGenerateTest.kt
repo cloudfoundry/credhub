@@ -1,10 +1,13 @@
 package org.cloudfoundry.credhub.controllers.v1.credentials
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.PropertyNamingStrategy
 import org.assertj.core.api.Assertions.assertThat
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.constants.CredentialType
 import org.cloudfoundry.credhub.constants.CredentialWriteMode
+import org.cloudfoundry.credhub.controllers.v1.regenerate.SpyRegenerateHandler
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue
 import org.cloudfoundry.credhub.credential.RsaCredentialValue
 import org.cloudfoundry.credhub.credential.SshCredentialValue
@@ -14,9 +17,9 @@ import org.cloudfoundry.credhub.credentials.CredentialsController
 import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
 import org.cloudfoundry.credhub.helpers.credHubAuthHeader
+import org.cloudfoundry.credhub.requests.BaseCredentialGenerateRequest
 import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters
 import org.cloudfoundry.credhub.requests.RsaSshGenerationParameters
-import org.cloudfoundry.credhub.services.SpyPermissionedCredentialService
 import org.cloudfoundry.credhub.utils.TestConstants
 import org.cloudfoundry.credhub.views.CredentialView
 import org.junit.Before
@@ -36,13 +39,9 @@ import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import java.io.BufferedReader
-import java.io.ByteArrayInputStream
-import java.io.InputStreamReader
 import java.security.Security
 import java.time.Instant
 import java.util.UUID
-import java.util.stream.Collectors
 
 @RunWith(SpringRunner::class)
 class CredentialsControllerGenerateTest {
@@ -53,18 +52,20 @@ class CredentialsControllerGenerateTest {
     val uuid = UUID.randomUUID()
 
     lateinit var mockMvc: MockMvc
-    lateinit var spyLegacyGenerationHandler: SpyLegacyGenerationHandler
+    private val spyCredentialsHandler: SpyCredentialsHandler = SpyCredentialsHandler()
+    private val spyRegenerateHandler: SpyRegenerateHandler = SpyRegenerateHandler()
+
+    private val objectMapper: ObjectMapper = ObjectMapper()
 
     @Before
     fun setUp() {
-        spyLegacyGenerationHandler = SpyLegacyGenerationHandler()
+        objectMapper.propertyNamingStrategy = PropertyNamingStrategy.SNAKE_CASE
 
         val credentialController = CredentialsController(
-            SpyPermissionedCredentialService(),
-            SpyCredentialsHandler(),
-            SpySetHandler(),
-            spyLegacyGenerationHandler,
-            CEFAuditRecord()
+            spyCredentialsHandler,
+            CEFAuditRecord(),
+            spyRegenerateHandler,
+            objectMapper
         )
 
         mockMvc = MockMvcFactory.newSpringRestDocMockMvc(credentialController, restDocumentation)
@@ -76,7 +77,7 @@ class CredentialsControllerGenerateTest {
 
     @Test
     fun POST__generate_password_returns__password_credential() {
-        spyLegacyGenerationHandler.auditedHandlePostRequest__returns_credentialView = CredentialView(
+        spyCredentialsHandler.generateCredential__returns_credentialView = CredentialView(
             Instant.ofEpochSecond(1549053472L),
             uuid,
             "/some-password-path",
@@ -99,7 +100,7 @@ class CredentialsControllerGenerateTest {
                 .credHubAuthHeader()
                 .content(requestBody)
         )
-            .andExpect(status().isOk())
+            .andExpect(status().isOk)
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
             .andDo(
                 document(
@@ -130,13 +131,11 @@ class CredentialsControllerGenerateTest {
             )
             .andReturn()
 
-        val actualInputStream = BufferedReader(InputStreamReader(spyLegacyGenerationHandler.auditedHandlePostRequest__calledWith_inputStream))
-            .lines().collect(Collectors.joining("\n"))
+        val actualGenerateRequest = spyCredentialsHandler.generateCredential__calledWith_generateRequest
 
-        val expectedInputStream = BufferedReader(InputStreamReader(ByteArrayInputStream(requestBody.toByteArray())))
-            .lines().collect(Collectors.joining("\n"))
+        val expectedGenerateRequest = objectMapper.readValue(requestBody, BaseCredentialGenerateRequest::class.java)
 
-        assertThat(actualInputStream).isEqualTo(expectedInputStream)
+        assertThat(actualGenerateRequest).isEqualTo(expectedGenerateRequest)
 
         val actualResponseBody = mvcResult.response.contentAsString
         // language=json
@@ -155,7 +154,7 @@ class CredentialsControllerGenerateTest {
 
     @Test
     fun POST__generate_user_returns__user_credential() {
-        spyLegacyGenerationHandler.auditedHandlePostRequest__returns_credentialView = CredentialView(
+        spyCredentialsHandler.generateCredential__returns_credentialView = CredentialView(
             Instant.ofEpochSecond(1549053472L),
             uuid,
             "/some-user-path",
@@ -178,7 +177,7 @@ class CredentialsControllerGenerateTest {
                 .credHubAuthHeader()
                 .content(requestBody)
         )
-            .andExpect(status().isOk())
+            .andExpect(status().isOk)
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
             .andDo(
                 document(
@@ -213,13 +212,11 @@ class CredentialsControllerGenerateTest {
             )
             .andReturn()
 
-        val actualInputStream = BufferedReader(InputStreamReader(spyLegacyGenerationHandler.auditedHandlePostRequest__calledWith_inputStream))
-            .lines().collect(Collectors.joining("\n"))
+        val actualGenerateRequest = spyCredentialsHandler.generateCredential__calledWith_generateRequest
 
-        val expectedInputStream = BufferedReader(InputStreamReader(ByteArrayInputStream(requestBody.toByteArray())))
-            .lines().collect(Collectors.joining("\n"))
+        val expectedGenerateRequest = objectMapper.readValue(requestBody, BaseCredentialGenerateRequest::class.java)
 
-        assertThat(actualInputStream).isEqualTo(expectedInputStream)
+        assertThat(actualGenerateRequest).isEqualTo(expectedGenerateRequest)
 
         val actualResponseBody = mvcResult.response.contentAsString
         // language=json
@@ -243,7 +240,7 @@ class CredentialsControllerGenerateTest {
 
     @Test
     fun POST__generate_certificate_returns__certificate_credential() {
-        spyLegacyGenerationHandler.auditedHandlePostRequest__returns_credentialView = CredentialView(
+        spyCredentialsHandler.generateCredential__returns_credentialView = CredentialView(
             Instant.ofEpochSecond(1549053472L),
             uuid,
             "/some-certificate-path",
@@ -263,7 +260,8 @@ class CredentialsControllerGenerateTest {
                   "name": "/some-certificate-path",
                   "type": "${CredentialType.CERTIFICATE.type.toLowerCase()}",
                   "parameters": {
-                    "common_name": "some-common-name"
+                    "common_name": "some-common-name",
+                    "ca": "some-ca"
                   }
                 }
             """.trimIndent()
@@ -274,7 +272,7 @@ class CredentialsControllerGenerateTest {
                 .credHubAuthHeader()
                 .content(requestBody)
         )
-            .andExpect(status().isOk())
+            .andExpect(status().isOk)
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
             .andDo(
                 document(
@@ -341,13 +339,11 @@ class CredentialsControllerGenerateTest {
             )
             .andReturn()
 
-        val actualInputStream = BufferedReader(InputStreamReader(spyLegacyGenerationHandler.auditedHandlePostRequest__calledWith_inputStream))
-            .lines().collect(Collectors.joining("\n"))
+        val actualGenerateRequest = spyCredentialsHandler.generateCredential__calledWith_generateRequest
 
-        val expectedInputStream = BufferedReader(InputStreamReader(ByteArrayInputStream(requestBody.toByteArray())))
-            .lines().collect(Collectors.joining("\n"))
+        val expectedGenerateRequest = objectMapper.readValue(requestBody, BaseCredentialGenerateRequest::class.java)
 
-        assertThat(actualInputStream).isEqualTo(expectedInputStream)
+        assertThat(actualGenerateRequest).isEqualTo(expectedGenerateRequest)
 
         val actualResponseBody = mvcResult.response.contentAsString
         // language=json
@@ -373,7 +369,7 @@ class CredentialsControllerGenerateTest {
 
     @Test
     fun POST__generate_rsa_returns__rsa_credential() {
-        spyLegacyGenerationHandler.auditedHandlePostRequest__returns_credentialView = CredentialView(
+        spyCredentialsHandler.generateCredential__returns_credentialView = CredentialView(
             Instant.ofEpochSecond(1549053472L),
             uuid,
             "/some-rsa-path",
@@ -414,13 +410,11 @@ class CredentialsControllerGenerateTest {
             )
             .andReturn()
 
-        val actualInputStream = BufferedReader(InputStreamReader(spyLegacyGenerationHandler.auditedHandlePostRequest__calledWith_inputStream))
-            .lines().collect(Collectors.joining("\n"))
+        val actualGenerateRequest = spyCredentialsHandler.generateCredential__calledWith_generateRequest
 
-        val expectedInputStream = BufferedReader(InputStreamReader(ByteArrayInputStream(requestBody.toByteArray())))
-            .lines().collect(Collectors.joining("\n"))
+        val expectedGenerateRequest = objectMapper.readValue(requestBody, BaseCredentialGenerateRequest::class.java)
 
-        assertThat(actualInputStream).isEqualTo(expectedInputStream)
+        assertThat(actualGenerateRequest).isEqualTo(expectedGenerateRequest)
 
         val actualResponseBody = mvcResult.response.contentAsString
         // language=json
@@ -443,7 +437,7 @@ class CredentialsControllerGenerateTest {
 
     @Test
     fun POST__generate_ssh_returns__ssh_credential() {
-        spyLegacyGenerationHandler.auditedHandlePostRequest__returns_credentialView = CredentialView(
+        spyCredentialsHandler.generateCredential__returns_credentialView = CredentialView(
             Instant.ofEpochSecond(1549053472L),
             uuid,
             "/some-ssh-path",
@@ -477,7 +471,7 @@ class CredentialsControllerGenerateTest {
                     CredHubRestDocs.DOCUMENT_IDENTIFIER,
                     getCommonGenerateRequestFields().and(
                         fieldWithPath("parameters.key_length")
-                            .description("Key length of generated credential value (Default: ${RsaSshGenerationParameters().getKeyLength()}). Valid key lengths are: ${RsaSshGenerationParameters().validKeyLengths.joinToString(", ")}")
+                            .description("Key length of generated credential value (Default: ${RsaSshGenerationParameters().keyLength}). Valid key lengths are: ${RsaSshGenerationParameters().validKeyLengths.joinToString(", ")}")
                             .type(JsonFieldType.NUMBER)
                             .optional(),
                         fieldWithPath("parameters.ssh_comment")
@@ -489,13 +483,11 @@ class CredentialsControllerGenerateTest {
             )
             .andReturn()
 
-        val actualInputStream = BufferedReader(InputStreamReader(spyLegacyGenerationHandler.auditedHandlePostRequest__calledWith_inputStream))
-            .lines().collect(Collectors.joining("\n"))
+        val actualGenerateRequest = spyCredentialsHandler.generateCredential__calledWith_generateRequest
 
-        val expectedInputStream = BufferedReader(InputStreamReader(ByteArrayInputStream(requestBody.toByteArray())))
-            .lines().collect(Collectors.joining("\n"))
+        val expectedGenerateRequest = objectMapper.readValue(requestBody, BaseCredentialGenerateRequest::class.java)
 
-        assertThat(actualInputStream).isEqualTo(expectedInputStream)
+        assertThat(actualGenerateRequest).isEqualTo(expectedGenerateRequest)
 
         val actualResponseBody = mvcResult.response.contentAsString
         // language=json

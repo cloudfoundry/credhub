@@ -35,8 +35,8 @@ class SpyCertificatesHandler : CertificatesHandler {
     lateinit var handleGetAllVersionsRequest__calledWith_uuid: String
     var handleGetAllVersionsRequest__calledWith_current = false
     lateinit var handleGetAllVersionsRequest__returns_certificateViews: List<CertificateView>
-    override fun handleGetAllVersionsRequest(uuidString: String, current: Boolean): List<CertificateView> {
-        handleGetAllVersionsRequest__calledWith_uuid = uuidString
+    override fun handleGetAllVersionsRequest(certificateId: String, current: Boolean): List<CertificateView> {
+        handleGetAllVersionsRequest__calledWith_uuid = certificateId
         handleGetAllVersionsRequest__calledWith_current = current
 
         return handleGetAllVersionsRequest__returns_certificateViews

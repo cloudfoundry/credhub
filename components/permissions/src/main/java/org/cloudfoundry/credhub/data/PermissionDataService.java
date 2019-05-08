@@ -25,6 +25,7 @@ import org.cloudfoundry.credhub.exceptions.PermissionInvalidPathAndActorExceptio
 import org.cloudfoundry.credhub.repositories.PermissionRepository;
 import org.cloudfoundry.credhub.requests.PermissionEntry;
 import org.cloudfoundry.credhub.requests.PermissionsV2Request;
+import org.cloudfoundry.credhub.services.CredentialDataService;
 
 @SuppressWarnings("PMD.TooManyMethods")
 @Component

@@ -3,24 +3,34 @@ package org.cloudfoundry.credhub.handlers;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.UUID;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cloudfoundry.credhub.ErrorMessages;
+import org.cloudfoundry.credhub.PermissionOperation;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
+import org.cloudfoundry.credhub.auth.UserContext;
+import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.domain.JsonCredentialVersion;
 import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
 import org.cloudfoundry.credhub.entity.Credential;
+import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.interpolation.DefaultInterpolationHandler;
-import org.cloudfoundry.credhub.services.DefaultPermissionedCredentialService;
+import org.cloudfoundry.credhub.services.DefaultCredentialService;
+import org.cloudfoundry.credhub.services.PermissionCheckingService;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.core.IsEqual;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.mockito.internal.verification.VerificationModeFactory;
 
 import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Java6Assertions.fail;
 import static org.cloudfoundry.credhub.helpers.JsonTestHelper.deserialize;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -34,22 +44,45 @@ import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
 public class DefaultInterpolationHandlerTest {
+  private static final String UUID_STRING = UUID.randomUUID().toString();
+  private static final String USER = "darth-sirius";
+  private static final String CREDENTIAL_NAME = "/test/credential";
 
-  private DefaultInterpolationHandler subject;
+  private DefaultInterpolationHandler subjectWithAclsEnabled;
+  private DefaultInterpolationHandler subjectWithAclsDisabled;
   private Map<String, Object> response;
-  private DefaultPermissionedCredentialService credentialService;
+  private DefaultCredentialService credentialService;
   private CEFAuditRecord auditRecord;
+  private PermissionCheckingService permissionCheckingService;
+  private UserContextHolder userContextHolder;
 
   @Before
   public void beforeEach() {
-    credentialService = mock(DefaultPermissionedCredentialService.class);
+    credentialService = mock(DefaultCredentialService.class);
     auditRecord = mock(CEFAuditRecord.class);
+    permissionCheckingService = mock(PermissionCheckingService.class);
+    UserContext userContext = mock(UserContext.class);
+    userContextHolder = mock(UserContextHolder.class);
+    when(userContext.getActor()).thenReturn(USER);
+    when(userContextHolder.getUserContext()).thenReturn(userContext);
 
-    subject = new DefaultInterpolationHandler(credentialService, auditRecord);
+    subjectWithAclsEnabled = new DefaultInterpolationHandler(
+      credentialService,
+      auditRecord,
+      permissionCheckingService,
+      userContextHolder,
+      true);
+
+    subjectWithAclsDisabled = new DefaultInterpolationHandler(
+      credentialService,
+      auditRecord,
+      permissionCheckingService,
+      userContextHolder,
+      false);
   }
 
   @Test
-  public void interpolateCredHubReferences_replacesTheCredHubRefWithSomethingElse() {
+  public void interpolateCredHubReferences_whenUserHasPermission_andAclsAreEnabled_replacesTheCredHubRefWithSomethingElse() {
     setupValidRequest();
 
     final ArrayList firstService = (ArrayList) response.get("pp-config-server");
@@ -105,8 +138,10 @@ public class DefaultInterpolationHandlerTest {
 
     doReturn(singletonList(passwordCredential)).when(credentialService).findNByName("/password_cred", 1);
 
+    when(permissionCheckingService.hasPermission(USER, "/password_cred", PermissionOperation.READ))
+      .thenReturn(true);
     try {
-      subject.interpolateCredHubReferences(deserialize(inputJson, Map.class));
+      subjectWithAclsEnabled.interpolateCredHubReferences(deserialize(inputJson, Map.class));
     } catch (final ParameterizedValidationException exception) {
       assertThat(exception.getMessage(), equalTo(ErrorMessages.Interpolation.INVALID_TYPE));
     }
@@ -122,7 +157,7 @@ public class DefaultInterpolationHandlerTest {
       + "    \"label\": \"pp-config-server\""
       + "  }]"
       + "}", Map.class);
-    final Map<String, Object> response = subject
+    final Map<String, Object> response = subjectWithAclsEnabled
       .interpolateCredHubReferences(inputJson);
 
     assertThat(response, equalTo(inputJson));
@@ -138,7 +173,7 @@ public class DefaultInterpolationHandlerTest {
       + "    \"label\": \"pp-config-server\""
       + "  }]"
       + "}", Map.class);
-    final Map<String, Object> response = subject
+    final Map<String, Object> response = subjectWithAclsEnabled
       .interpolateCredHubReferences(inputJson);
 
     assertThat(response, equalTo(inputJson));
@@ -157,7 +192,7 @@ public class DefaultInterpolationHandlerTest {
       + "  }]"
       + "}";
     final Map<String, Object> inputJson = deserialize(inputJsonString, Map.class);
-    final Map<String, Object> response = subject
+    final Map<String, Object> response = subjectWithAclsEnabled
       .interpolateCredHubReferences(inputJson);
 
     assertThat(response, equalTo(inputJson));
@@ -169,7 +204,7 @@ public class DefaultInterpolationHandlerTest {
       + "  \"pp-config-server\": [\"what is this?\"]"
       + "}";
     final Map<String, Object> inputJson = deserialize(inputJsonString, Map.class);
-    final Map<String, Object> response = subject
+    final Map<String, Object> response = subjectWithAclsEnabled
       .interpolateCredHubReferences(inputJson);
 
     assertThat(response, equalTo(inputJson));
@@ -184,7 +219,7 @@ public class DefaultInterpolationHandlerTest {
       + "  }]"
       + "}";
     final Map<String, Object> inputJson = deserialize(inputJsonString, Map.class);
-    final Map<String, Object> response = subject
+    final Map<String, Object> response = subjectWithAclsEnabled
       .interpolateCredHubReferences(inputJson);
 
     assertThat(response, equalTo(inputJson));
@@ -193,7 +228,7 @@ public class DefaultInterpolationHandlerTest {
   @Test
   public void interpolateCredHubReferences_whenPropertiesAreEmpty_doesNotInterpolateIt() {
     final Map<String, Object> inputJson = deserialize("{}", Map.class);
-    final Map<String, Object> response = subject
+    final Map<String, Object> response = subjectWithAclsEnabled
       .interpolateCredHubReferences(inputJson);
 
     assertThat(response, equalTo(inputJson));
@@ -210,7 +245,7 @@ public class DefaultInterpolationHandlerTest {
       + "  }"
       + "}";
     final Map<String, Object> inputJson = deserialize(inputJsonString, Map.class);
-    final Map response = subject.interpolateCredHubReferences(inputJson);
+    final Map response = subjectWithAclsEnabled.interpolateCredHubReferences(inputJson);
 
     assertThat(response, equalTo(inputJson));
   }
@@ -275,6 +310,14 @@ public class DefaultInterpolationHandlerTest {
     } catch (final IOException e) {
       throw new RuntimeException(e);
     }
+
+    when(permissionCheckingService.hasPermission(USER, "/cred1", PermissionOperation.READ))
+      .thenReturn(true);
+    when(permissionCheckingService.hasPermission(USER, "/cred2", PermissionOperation.READ))
+      .thenReturn(true);
+    when(permissionCheckingService.hasPermission(USER, "/cred3", PermissionOperation.READ))
+      .thenReturn(true);
+
     doReturn(jsonNode3).when(jsonCredential3).getValue();
 
     doReturn(singletonList(jsonCredential1)).when(credentialService).findNByName("/cred1", 1);
@@ -283,7 +326,88 @@ public class DefaultInterpolationHandlerTest {
 
     doReturn(singletonList(jsonCredential3)).when(credentialService).findNByName("/cred3", 1);
 
-    response = subject.interpolateCredHubReferences(inputJson);
+    response = subjectWithAclsEnabled.interpolateCredHubReferences(inputJson);
+  }
+
+  @Test
+  public void interpolateCredhubReferences_whenUserLacksPermission_andAclsAreEnabled_throwsException() {
+    final String inputJsonString = "{"
+      + "  \"pp-config-server\": ["
+      + "    {"
+      + "      \"credentials\": {"
+      + "        \"credhub-ref\": \"((/test/credential))\""
+      + "      },"
+      + "      \"label\": \"pp-config-server\""
+      + "    },"
+      + "    {"
+      + "      \"credentials\": {"
+      + "        \"credhub-ref\": \"((/cred2))\""
+      + "      }"
+      + "    }"
+      + "  ]"
+      + "}";
+    final Map<String, Object> inputJson = deserialize(inputJsonString, Map.class);
+
+    when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.READ))
+      .thenReturn(false);
+
+    try {
+      subjectWithAclsEnabled.interpolateCredHubReferences(inputJson);
+      fail("should throw exception");
+    } catch (final EntryNotFoundException e) {
+        MatcherAssert.assertThat(e.getMessage(), IsEqual.equalTo(ErrorMessages.Credential.INVALID_ACCESS));
+    } catch (final Exception e) {
+        fail("expected EntryNotFoundException but got " + e.getClass().toString());
+    }
+
+    verify(permissionCheckingService, VerificationModeFactory.times(1)).hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.READ);
+
+  }
+
+  @Test
+  public void interpolateCredhubReferenceswhenAclsAreDisabled_interpolatesRefs() {
+
+    final String inputJsonString = "{"
+      + "  \"pp-config-server\": ["
+      + "    {"
+      + "      \"credentials\": {"
+      + "        \"credhub-ref\": \"((/cred1))\""
+      + "      },"
+      + "      \"label\": \"pp-config-server\""
+      + "    }"
+      + "  ]"
+      + "}";
+    final Map<String, Object> inputJson = deserialize(inputJsonString, Map.class);
+
+    final JsonCredentialVersion jsonCredential1 = mock(JsonCredentialVersion.class);
+    when(jsonCredential1.getCredential()).thenReturn(mock(Credential.class));
+    when(jsonCredential1.getName()).thenReturn("/cred1");
+    final String credJson1 = "{\"secret1\":\"secret1-value\"}";
+    final JsonNode jsonNode1;
+    try {
+      jsonNode1 = new ObjectMapper().readTree(credJson1);
+    } catch (final IOException e) {
+      throw new RuntimeException(e);
+    }
+    doReturn(jsonNode1).when(jsonCredential1).getValue();
+
+    doReturn(singletonList(jsonCredential1)).when(credentialService).findNByName("/cred1", 1);
+
+    Map<String, Object> result = subjectWithAclsDisabled.interpolateCredHubReferences(inputJson);
+
+    final ArrayList service = (ArrayList) result.get("pp-config-server");
+
+    final JsonNode credentialsBlock = (JsonNode) ((Map<String, Object>) service.get(0))
+      .get("credentials");
+
+    verify(permissionCheckingService, times(0))
+    .hasPermission(USER, "/cred1", PermissionOperation.READ);
+    assertThat(credentialsBlock.size(), equalTo(1));
+    assertThat(credentialsBlock.get("secret1").toString(), equalTo("\"secret1-value\""));
+
+
+
+
   }
 }
 

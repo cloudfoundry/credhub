@@ -9,8 +9,8 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.bouncycastle.util.encoders.Hex;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.entities.EncryptionKeyCanary;
-import org.cloudfoundry.credhub.utils.PasswordKeyProxyFactoryTestImpl;
 import org.cloudfoundry.credhub.utils.StringUtil;
+import org.cloudfoundry.credhub.utils.TestPasswordKeyProxyFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,7 +41,7 @@ public class PasswordBasedKeyProxyTest {
   @Before
   public void beforeEach() throws Exception {
     password = "abcdefghijklmnopqrst";
-    encryptionService = new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl());
+    encryptionService = new PasswordEncryptionService(new TestPasswordKeyProxyFactory());
     subject = new PasswordBasedKeyProxy(password, 1, encryptionService);
   }
 

@@ -1,6 +1,6 @@
 package org.cloudfoundry.credhub.controllers.v1.permissions
 
-import org.cloudfoundry.credhub.handlers.PermissionsV1Handler
+import org.cloudfoundry.credhub.permissions.PermissionsV1Handler
 import org.cloudfoundry.credhub.requests.PermissionsRequest
 import org.cloudfoundry.credhub.views.PermissionsView
 
