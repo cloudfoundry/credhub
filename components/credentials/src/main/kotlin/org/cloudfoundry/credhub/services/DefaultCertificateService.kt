@@ -7,6 +7,7 @@ import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue
 import org.cloudfoundry.credhub.domain.CertificateCredentialFactory
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
+import org.cloudfoundry.credhub.domain.CertificateMetadata
 import org.cloudfoundry.credhub.domain.CredentialVersion
 import org.cloudfoundry.credhub.entity.Credential
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
@@ -104,6 +105,10 @@ class DefaultCertificateService(
         return list
     }
 
+    fun findAllValidMetadata(names: List<String>): List<CertificateMetadata> {
+        return certificateDataService.findAllValidMetadata(names)
+    }
+
     fun findSignedCertificates(caName: String): List<String> {
         return credentialService.findAllCertificateCredentialsByCaName(caName)
     }
@@ -150,7 +155,8 @@ class DefaultCertificateService(
 
     fun findByCredentialUuid(uuid: String): CertificateCredentialVersion {
         return certificateVersionDataService.findByCredentialUUID(uuid)
-            as? CertificateCredentialVersion ?: throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
+            as? CertificateCredentialVersion
+            ?: throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
     }
 
     operator fun set(certificateUuid: UUID, value: CertificateCredentialValue): CertificateCredentialVersion {

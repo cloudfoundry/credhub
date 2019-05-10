@@ -76,7 +76,7 @@ class DefaultCertificatesHandler(
 
     override fun handleGetAllRequest(): CertificateCredentialsView {
         val credentialList = filterPermissions(certificateService.getAll())
-        val list = convertCertificateCredentialsToCertificateCredentialViews(credentialList)
+        val list = convertCertificateCredentialsToCertificateCredentialViews(credentialList, true)
 
         auditRecord.addAllCredentials(Lists.newArrayList<AuditableCredential>(credentialList))
 
@@ -87,7 +87,7 @@ class DefaultCertificatesHandler(
         checkPermissionsByName(name, READ)
 
         val credentialList = certificateService.getByName(name)
-        val list = convertCertificateCredentialsToCertificateCredentialViews(credentialList)
+        val list = convertCertificateCredentialsToCertificateCredentialViews(credentialList, false)
 
         return CertificateCredentialsView(list)
     }
@@ -147,34 +147,42 @@ class DefaultCertificatesHandler(
         return CertificateView(credentialVersion)
     }
 
-    private fun convertCertificateCredentialsToCertificateCredentialViews(certificateCredentialList: List<Credential>): List<CertificateCredentialView> {
-        return certificateCredentialList.map { credential ->
-            val certificateVersions = certificateService.getAllValidVersions(credential.uuid!!) as List<CertificateCredentialVersion>
+    private fun convertCertificateCredentialsToCertificateCredentialViews(certificateCredentialList: List<Credential>, getAllRequest: Boolean): List<CertificateCredentialView> {
+        val names = certificateCredentialList.map { it.name!! }
+        val certificates = certificateService.findAllValidMetadata(names)
+        val caMapping = mutableMapOf<String, MutableList<String>>()
 
-            var signedBy = ""
-            if (certificateVersions.isNotEmpty()) {
-                if (certificateVersions.first().caName != null) {
-                    signedBy = certificateVersions.first().caName
-                } else if (certificateVersions.first().isSelfSigned) {
-                    signedBy = credential.name!!
-                }
-            }
-
-            val signedCertificates = if (credential.name != null) {
-                certificateService.findSignedCertificates(credential.name!!)
-            } else {
-                emptyList()
-            }
-
-            val certificateVersionViews = certificateVersions.map { certificateVersion ->
+        return certificates.map { certificateMetadata ->
+            val certificateVersionViews = certificateMetadata.versions.map { certificateVersion ->
                 CertificateVersionView(
-                    id = certificateVersion.uuid!!,
+                    id = certificateVersion.id,
                     expiryDate = certificateVersion.expiryDate,
-                    transitional = certificateVersion.isVersionTransitional
+                    transitional = certificateVersion.isTransitional
                 )
             }
+            val signedBy = certificateMetadata.caName ?: ""
+            val signedCertificates: List<String>
 
-            CertificateCredentialView(credential.name, credential.uuid, certificateVersionViews, signedBy, signedCertificates)
+            // determine signed certs in memory
+            if (getAllRequest) {
+
+                if (certificateMetadata.caName != null) {
+                    val caName = certificateMetadata.caName
+
+                    if (!caMapping.containsKey(caName)) {
+                        caMapping[caName] = mutableListOf()
+                    }
+
+                    if (certificateMetadata.name != caName) {
+                        caMapping.getValue(caName).add(certificateMetadata.name)
+                    }
+                }
+                signedCertificates = caMapping.getOrDefault(certificateMetadata.name, mutableListOf())
+            } else {
+                // not all certs read into memory so we need to go to db to get signed certificates
+                signedCertificates = certificateService.findSignedCertificates(certificateMetadata.name)
+            }
+            CertificateCredentialView(certificateMetadata.name, certificateMetadata.id, certificateVersionViews, signedBy, signedCertificates)
         }
     }
 

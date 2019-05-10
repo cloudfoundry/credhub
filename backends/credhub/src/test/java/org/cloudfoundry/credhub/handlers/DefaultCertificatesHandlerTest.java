@@ -16,6 +16,8 @@ import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.certificates.DefaultCertificatesHandler;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
+import org.cloudfoundry.credhub.domain.CertificateMetadata;
+import org.cloudfoundry.credhub.domain.CertificateVersionMetadata;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
@@ -104,7 +106,6 @@ public class DefaultCertificatesHandlerTest {
     final UUID certWithCaAndChildrenUuid = UUID.randomUUID();
     final String certWithCaAndChildrenName = "/certWithCaAndChildren";
     final String certWithCaAndChildrenCaName = "/testCa";
-    final List<String> childCertNames = asList("childCert1", "childCert2");
     when(certWithCaAndChildren.getUuid()).thenReturn(certWithCaAndChildrenUuid);
     when(certWithCaAndChildren.getName()).thenReturn(certWithCaAndChildrenName);
 
@@ -125,6 +126,28 @@ public class DefaultCertificatesHandlerTest {
     when(certificateWithNoValidVersions.getName()).thenReturn("/notValid");
     when(certificateWithNoValidVersions.getUuid()).thenReturn(certificateWithNoValidVersionsUuid);
 
+    final Credential childCert1 = mock(Credential.class);
+    final UUID childCert1Uuid = UUID.randomUUID();
+    final String childCert1Name = "/childCert1";
+    when(childCert1.getUuid()).thenReturn(childCert1Uuid);
+    when(childCert1.getName()).thenReturn(childCert1Name);
+    final CertificateCredentialVersion childCert1Version = new CertificateCredentialVersion(childCert1Name);
+    childCert1Version.setUuid(UUID.randomUUID());
+    childCert1Version.setExpiryDate(Instant.now());
+    childCert1Version.setCaName(certWithCaAndChildrenName);
+    childCert1Version.setCertificate(TestConstants.TEST_CERTIFICATE);
+
+    final Credential childCert2 = mock(Credential.class);
+    final UUID childCert2Uuid = UUID.randomUUID();
+    final String childCert2Name = "/childCert2";
+    when(childCert2.getUuid()).thenReturn(childCert2Uuid);
+    when(childCert2.getName()).thenReturn(childCert2Name);
+    final CertificateCredentialVersion childCert2Version = new CertificateCredentialVersion(childCert2Name);
+    childCert2Version.setUuid(UUID.randomUUID());
+    childCert2Version.setExpiryDate(Instant.now());
+    childCert2Version.setCaName(certWithCaAndChildrenName);
+    childCert2Version.setCertificate(TestConstants.TEST_CERTIFICATE);
+
     final CertificateCredentialVersion certWithCaAndChildrenVersion = new CertificateCredentialVersion(certWithCaAndChildrenName);
     certWithCaAndChildrenVersion.setUuid(UUID.randomUUID());
     certWithCaAndChildrenVersion.setExpiryDate(Instant.now());
@@ -136,28 +159,75 @@ public class DefaultCertificatesHandlerTest {
     selfSignedCertVersion.setExpiryDate(Instant.now());
     selfSignedCertVersion.setCertificate(TestConstants.TEST_CA);
 
-    final HashSet<String> allowedPaths = new HashSet<>(asList("/certWithCaAndChildren", "/selfSignedCert", "/notValid"));
+    final CertificateMetadata certWithCaAndChildrenMetadata
+      = new CertificateMetadata(
+      certWithCaAndChildrenUuid,
+      certWithCaAndChildrenName,
+      certWithCaAndChildrenCaName,
+      Collections.singletonList(
+        new CertificateVersionMetadata(
+          certWithCaAndChildrenVersion.getUuid(),
+          certWithCaAndChildrenVersion.getExpiryDate(),
+          false
+        ))
+    );
 
-    when(certificateService.getAll())
-      .thenReturn(asList(certWithCaAndChildren, selfSignedCert, certificateWithNoValidVersions, noPermissionCert));
+    final CertificateMetadata childCert1Metadata
+      = new CertificateMetadata(
+      childCert1Uuid,
+      childCert1Name,
+      childCert1Version.getCaName(),
+      Collections.singletonList(
+        new CertificateVersionMetadata(
+          childCert1Version.getUuid(),
+          childCert1Version.getExpiryDate(),
+          false
+        ))
+    );
 
-    when(certificateService.getAllValidVersions(certWithCaAndChildrenUuid))
-      .thenReturn(Collections.singletonList(certWithCaAndChildrenVersion));
+    final CertificateMetadata childCert2Metadata
+      = new CertificateMetadata(
+      childCert2Uuid,
+      childCert2Name,
+      childCert2Version.getCaName(),
+      Collections.singletonList(
+        new CertificateVersionMetadata(
+          childCert2Version.getUuid(),
+          childCert2Version.getExpiryDate(),
+          false
+        ))
+    );
 
-    when(certificateService.findSignedCertificates(certWithCaAndChildrenName))
-      .thenReturn(childCertNames);
+    final CertificateMetadata selfSignedCertMetadata
+      = new CertificateMetadata(
+      selfSignedCertUuid,
+      selfSignedCertName,
+      selfSignedCertName,
+      Collections.singletonList(
+        new CertificateVersionMetadata(
+          selfSignedCertVersion.getUuid(),
+          selfSignedCertVersion.getExpiryDate(),
+          false
+        ))
+    );
 
-    when(certificateService.getAllValidVersions(selfSignedCertUuid))
-      .thenReturn(Collections.singletonList(selfSignedCertVersion));
+    final CertificateMetadata certificateWithNoValidVersionsMetadata
+      = new CertificateMetadata(
+      certificateWithNoValidVersionsUuid,
+      "/notValid",
+      null,
+      emptyList());
 
-    when(certificateService.findSignedCertificates(selfSignedCertName))
-      .thenReturn(emptyList());
-
-    when(certificateService.getAllValidVersions(certificateWithNoValidVersionsUuid))
-      .thenReturn(emptyList());
+    final HashSet<String> allowedPaths = new HashSet<>(asList("/certWithCaAndChildren", "/selfSignedCert", "/notValid", "/childCert1", "/childCert2"));
 
     when(permissionCheckingService.findAllPathsByActor(USER))
       .thenReturn(allowedPaths);
+
+    when(certificateService.getAll())
+      .thenReturn(asList(certWithCaAndChildren, selfSignedCert, certificateWithNoValidVersions, noPermissionCert, childCert1, childCert2));
+
+    when(certificateService.findAllValidMetadata(any()))
+      .thenReturn(asList(certWithCaAndChildrenMetadata, selfSignedCertMetadata, certificateWithNoValidVersionsMetadata, childCert1Metadata, childCert2Metadata));
 
     final CertificateCredentialsView certificateCredentialsView = subjectWithAcls.handleGetAllRequest();
 
@@ -165,7 +235,7 @@ public class DefaultCertificatesHandlerTest {
     final CertificateCredentialView actualSelfSignedCert = certificateCredentialsView.getCertificates().get(1);
     final CertificateCredentialView actualCertificateWithNoValidVersions = certificateCredentialsView.getCertificates().get(2);
 
-    assertThat(certificateCredentialsView.getCertificates().size(), equalTo(3));
+    assertThat(certificateCredentialsView.getCertificates().size(), equalTo(5));
     assertThat(actualCertWithCa.getCertificateVersionViews().size(), equalTo(1));
     assertThat(actualCertWithCa.getSignedBy(), equalTo(certWithCaAndChildrenCaName));
     assertThat(actualSelfSignedCert.getCertificateVersionViews().size(), equalTo(1));
@@ -190,7 +260,6 @@ public class DefaultCertificatesHandlerTest {
     final UUID certWithCaAndChildrenUuid = UUID.randomUUID();
     final String certWithCaAndChildrenName = "/certWithCaAndChildren";
     final String certWithCaAndChildrenCaName = "/testCa";
-    final List<String> childCertNames = asList("childCert1", "childCert2");
     when(certWithCaAndChildren.getUuid()).thenReturn(certWithCaAndChildrenUuid);
     when(certWithCaAndChildren.getName()).thenReturn(certWithCaAndChildrenName);
 
@@ -222,23 +291,52 @@ public class DefaultCertificatesHandlerTest {
     selfSignedCertVersion.setExpiryDate(Instant.now());
     selfSignedCertVersion.setCertificate(TestConstants.TEST_CA);
 
+    final CertificateMetadata certWithCaAndChildrenMetadata
+      = new CertificateMetadata(
+      certWithCaAndChildrenUuid,
+      certWithCaAndChildrenName,
+      certWithCaAndChildrenCaName,
+      Collections.singletonList(
+        new CertificateVersionMetadata(
+          certWithCaAndChildrenVersion.getUuid(),
+          certWithCaAndChildrenVersion.getExpiryDate(),
+          false
+        ))
+    );
+
+    final CertificateMetadata selfSignedCertMetadata
+      = new CertificateMetadata(
+      selfSignedCertUuid,
+      selfSignedCertName,
+      selfSignedCertName,
+      Collections.singletonList(
+        new CertificateVersionMetadata(
+          selfSignedCertVersion.getUuid(),
+          selfSignedCertVersion.getExpiryDate(),
+          false
+        ))
+    );
+
+    final CertificateMetadata certificateWithNoValidVersionsMetadata
+      = new CertificateMetadata(
+      certificateWithNoValidVersionsUuid,
+      "/notValid",
+      null,
+      emptyList());
+
+    final CertificateMetadata noPermissionCertMetadata
+      = new CertificateMetadata(
+      noPermissionCertUuid,
+      noPermissionCertName,
+      noPermissionCertName,
+      emptyList());
+
+
     when(certificateService.getAll())
       .thenReturn(asList(certWithCaAndChildren, selfSignedCert, certificateWithNoValidVersions, noPermissionCert));
 
-    when(certificateService.getAllValidVersions(certWithCaAndChildrenUuid))
-      .thenReturn(Collections.singletonList(certWithCaAndChildrenVersion));
-
-    when(certificateService.findSignedCertificates(certWithCaAndChildrenName))
-      .thenReturn(childCertNames);
-
-    when(certificateService.getAllValidVersions(selfSignedCertUuid))
-      .thenReturn(Collections.singletonList(selfSignedCertVersion));
-
-    when(certificateService.findSignedCertificates(selfSignedCertName))
-      .thenReturn(emptyList());
-
-    when(certificateService.getAllValidVersions(certificateWithNoValidVersionsUuid))
-      .thenReturn(emptyList());
+    when(certificateService.findAllValidMetadata(asList(certWithCaAndChildrenName, selfSignedCertName, certificateWithNoValidVersions.getName(), noPermissionCertName)))
+      .thenReturn(asList(certWithCaAndChildrenMetadata, selfSignedCertMetadata, certificateWithNoValidVersionsMetadata, noPermissionCertMetadata));
 
     final CertificateCredentialsView certificateCredentialsView = subjectWithoutAcls.handleGetAllRequest();
 
@@ -285,8 +383,28 @@ public class DefaultCertificatesHandlerTest {
     transitionalVersion.setExpiryDate(Instant.now());
     transitionalVersion.setTransitional(true);
 
-    when(certificateService.getAllValidVersions(uuid))
-      .thenReturn(asList(nonTransitionalVersion, transitionalVersion));
+    final CertificateMetadata metadata
+      = new CertificateMetadata(
+      credential.getUuid(),
+      certificateName,
+      caName,
+      asList(
+        new CertificateVersionMetadata(
+          nonTransitionalVersion.getUuid(),
+          nonTransitionalVersion.getExpiryDate(),
+          nonTransitionalVersion.isVersionTransitional()
+        ),
+        new CertificateVersionMetadata(
+          transitionalVersion.getUuid(),
+          transitionalVersion.getExpiryDate(),
+          transitionalVersion.isVersionTransitional()
+        )
+      )
+    );
+
+    when(certificateService.findAllValidMetadata(Collections.singletonList(nonTransitionalVersion.getName())))
+      .thenReturn(Collections.singletonList(metadata));
+
     when(certificateService.findSignedCertificates(certificateName))
       .thenReturn(childCertNames);
 
@@ -334,13 +452,34 @@ public class DefaultCertificatesHandlerTest {
     nonTransitionalVersion.setCaName(caName);
     nonTransitionalVersion.setTransitional(false);
     nonTransitionalVersion.setCertificate(TestConstants.TEST_CERTIFICATE);
+
     final CertificateCredentialVersion transitionalVersion = new CertificateCredentialVersion(certificateName);
     transitionalVersion.setUuid(UUID.randomUUID());
     transitionalVersion.setExpiryDate(Instant.now());
     transitionalVersion.setTransitional(true);
 
-    when(certificateService.getAllValidVersions(uuid))
-      .thenReturn(asList(nonTransitionalVersion, transitionalVersion));
+    final CertificateMetadata metadata
+      = new CertificateMetadata(
+      credential.getUuid(),
+      certificateName,
+      caName,
+      asList(
+        new CertificateVersionMetadata(
+          nonTransitionalVersion.getUuid(),
+          nonTransitionalVersion.getExpiryDate(),
+          nonTransitionalVersion.isVersionTransitional()
+        ),
+        new CertificateVersionMetadata(
+          transitionalVersion.getUuid(),
+          transitionalVersion.getExpiryDate(),
+          transitionalVersion.isVersionTransitional()
+        )
+      )
+    );
+
+    when(certificateService.findAllValidMetadata(Collections.singletonList(nonTransitionalVersion.getName())))
+      .thenReturn(Collections.singletonList(metadata));
+
     when(certificateService.findSignedCertificates(certificateName))
       .thenReturn(childCertNames);
 

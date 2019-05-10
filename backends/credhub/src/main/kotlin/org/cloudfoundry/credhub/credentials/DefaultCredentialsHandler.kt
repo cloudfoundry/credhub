@@ -8,6 +8,7 @@ import org.cloudfoundry.credhub.PermissionOperation.WRITE
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.auth.UserContextHolder
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue
+import org.cloudfoundry.credhub.domain.CertificateGenerationParameters
 import org.cloudfoundry.credhub.domain.CredentialVersion
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException
@@ -52,8 +53,15 @@ class DefaultCredentialsHandler(
 
     override fun generateCredential(generateRequest: BaseCredentialGenerateRequest): CredentialView {
         if (generateRequest.type == "certificate") {
-            val caName = (generateRequest as CertificateGenerateRequest).generationRequestParameters.caName
-            if (caName != null) {
+            val req = generateRequest as CertificateGenerateRequest
+            val caName = req.generationRequestParameters.caName
+            if (caName == null) {
+                if (req.generationRequestParameters.isCa) {
+                    generateRequest.generationRequestParameters.caName = req.name
+                    val certificateGenerationParameters = CertificateGenerationParameters(generateRequest.generationRequestParameters)
+                    generateRequest.setCertificateGenerationParameters(certificateGenerationParameters)
+                }
+            } else {
                 checkPermissionsByName(caName, READ)
             }
         }
@@ -77,8 +85,12 @@ class DefaultCredentialsHandler(
             val certificateValue = setRequest.certificateValue
 
             val caName = certificateValue.caName
-
-            if (caName != null) {
+            if (caName == null) {
+                val certificateReader = CertificateReader(setRequest.certificateValue.certificate)
+                if (certificateReader.isCa) {
+                    setRequest.certificateValue.caName = setRequest.name
+                }
+            } else {
                 validateCertificateValueIsSignedByCa(certificateValue, caName)
             }
         }

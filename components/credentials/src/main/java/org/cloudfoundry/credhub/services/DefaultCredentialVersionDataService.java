@@ -113,7 +113,9 @@ public class DefaultCredentialVersionDataService implements CredentialVersionDat
       + "and credential_version.uuid=certificate_credential.uuid "
       + "and lower(certificate_credential.ca_name) "
       + "like lower(?)";
-    return jdbcTemplate.queryForList(query, String.class, caName);
+    final List<String> results = jdbcTemplate.queryForList(query, String.class, caName);
+    results.remove(caName);
+    return results;
   }
 
   @Override

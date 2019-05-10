@@ -10,7 +10,7 @@ encryption:
   - provider_name: internal
     provider_type: internal
     keys:
-    - encryption_password: opensesame
+    - encryption_password: somehardcodedencryptionpassword
       provider_type: internal
       active: true
     - encryption_password: correcthorsebatterystaple

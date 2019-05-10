@@ -476,8 +476,8 @@ public class DefaultCredentialsHandlerTest {
     final CertificateSetRequest setRequest = new CertificateSetRequest();
     final CertificateCredentialValue certificateValue = new CertificateCredentialValue(
       null,
-      "Picard",
-      "Enterprise",
+      TestConstants.TEST_CERTIFICATE,
+      TestConstants.TEST_PRIVATE_KEY,
       null);
 
     setRequest.setType("certificate");

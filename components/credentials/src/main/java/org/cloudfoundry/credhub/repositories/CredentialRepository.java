@@ -38,4 +38,5 @@ public interface CredentialRepository extends JpaRepository<Credential, UUID> {
     + "where credential.name = ?1 limit 1 ",
     nativeQuery = true)
   Credential findCertificateByName(String name);
+
 }
