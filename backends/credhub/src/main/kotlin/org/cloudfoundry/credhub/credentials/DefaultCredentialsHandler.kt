@@ -25,10 +25,12 @@ import org.cloudfoundry.credhub.views.CredentialView
 import org.cloudfoundry.credhub.views.DataResponse
 import org.cloudfoundry.credhub.views.FindCredentialResult
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.stereotype.Component
+import org.springframework.context.annotation.Profile
+import org.springframework.stereotype.Service
 import java.util.ArrayList
 
-@Component
+@Service
+@Profile("!remote")
 class DefaultCredentialsHandler(
     private val credentialService: CredentialService,
     private val auditRecord: CEFAuditRecord,

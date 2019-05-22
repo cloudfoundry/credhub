@@ -28,10 +28,12 @@ import org.cloudfoundry.credhub.views.CertificateVersionView
 import org.cloudfoundry.credhub.views.CertificateView
 import org.cloudfoundry.credhub.views.CredentialView
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.util.ArrayList
 import java.util.UUID
 
+@Profile("!remote")
 @Service
 class DefaultCertificatesHandler(
     private val certificateService: DefaultCertificateService,

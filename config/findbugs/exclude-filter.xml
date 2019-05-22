@@ -24,4 +24,8 @@
     <Match>
         <Package name="~.*org\.cloudfoundry\.credhub\.services\.grpc.*" />
     </Match>
+
+    <Match>
+        <Package name="~.*org\.cloudfoundry\.credhub\.remote\.grpc.*" />
+    </Match>
 </FindBugsFilter>

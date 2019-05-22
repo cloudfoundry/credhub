@@ -1,4 +1,8 @@
 buildscript {
+    ext {
+        grpcVersion = '1.14.0'
+        nettyVersion = '4.1.29.Final'
+    }
     repositories {
         mavenCentral()
         maven { url("https://repo.spring.io/plugins-release") }
@@ -6,7 +10,6 @@ buildscript {
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:$springBootVersion")
-        classpath("org.asciidoctor:asciidoctor-gradle-plugin:${asciiDoctorPluginVersion}")
         classpath("com.google.protobuf:protobuf-gradle-plugin:0.8.8")
     }
 }
@@ -16,14 +19,13 @@ apply plugin: "idea"
 apply plugin: 'kotlin'
 apply plugin: 'kotlin-spring'
 apply plugin: 'io.spring.dependency-management'
-apply plugin: 'org.asciidoctor.convert'
-apply from: "${rootDir.toPath()}/spring-rest-docs-config.gradle"
+apply plugin: "com.google.protobuf"
+
 apply from: "${rootDir.toPath()}/kotlin.gradle"
 apply from: "${rootDir.toPath()}/ktlint.gradle"
 apply from: "${rootDir.toPath()}/checkstyle-config.gradle"
 apply from: "${rootDir.toPath()}/pmd-config.gradle"
 apply from: "${rootDir.toPath()}/spotbugs.gradle"
-apply plugin: "com.google.protobuf"
 
 repositories {
     mavenCentral()
@@ -31,17 +33,8 @@ repositories {
 }
 
 dependencies {
-    implementation project(":backends:shared-backend-configuration")
-    implementation project(":backends:remote")
-    implementation project(":components:audit")
-    implementation project(":components:auth")
     implementation project(":components:constants")
-    implementation project(":components:credentials")
-    implementation project(":components:encryption")
     implementation project(":components:errors")
-    implementation project(":components:generate")
-    implementation project(":components:management")
-    implementation project(":components:permissions")
     implementation project(":components:string-utilities")
     implementation project(":components:time-support")
 
@@ -49,32 +42,31 @@ dependencies {
 
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    testImplementation("org.springframework.security:spring-security-test")
+    implementation("org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:${springSecurityOauth2AutoconfigureVersion}")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 
     implementation('com.fasterxml.jackson.module:jackson-module-kotlin')
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 
-    // DB
-    implementation("org.postgresql:postgresql:${postgresqlJdbcVersion}")
-    implementation("org.mariadb.jdbc:mariadb-java-client")
-    implementation("org.flywaydb:flyway-core")
-    implementation("com.h2database:h2")
 
     // Other
-    compile files("${rootDir.toPath()}/libs/bcpkix-fips-${bcpkixFipsVersion}.jar")
-    compile files("${rootDir.toPath()}/libs/bc-fips-${bcFipsVersion}.jar")
-
-    // proto
-    implementation "com.google.api.grpc:proto-google-common-protos:1.12.0"
-
-    implementation("com.google.guava:guava:${guavaVersion}")
     implementation("org.apache.commons:commons-lang3:${apacheCommonsLang3Version}")
-    implementation("com.jayway.jsonpath:json-path:${jsonPathVersion}")
 
-    testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc:$springRestDocsVersion")
-    asciidoctor("org.springframework.restdocs:spring-restdocs-asciidoctor:$springRestDocsVersion")
+    //gRPC
+    implementation "com.google.api.grpc:proto-google-common-protos:1.12.0"
+    implementation "io.grpc:grpc-services:${grpcVersion}"
+
+    //gRPC - Netty
+    implementation "io.grpc:grpc-netty:${grpcVersion}"
+
+    //Netty
+    implementation "io.netty:netty-transport-native-unix-common:${nettyVersion}"
+    implementation "io.netty:netty-all:${nettyVersion}"
+    implementation "io.netty:netty-codec-http2:${nettyVersion}"
+
+    //tcnative
+    implementation "io.netty:netty-tcnative-boringssl-static:2.0.12.Final"
 }
 
 dependencyManagement {
@@ -84,12 +76,38 @@ dependencyManagement {
 }
 
 sourceSets {
+    main {
+        proto {
+            srcDir "$project/src/main/proto"
+        }
+        java {
+            srcDirs 'build/generated/source/proto/main/grpc'
+            srcDirs 'build/generated/source/proto/main/java'
+        }
+    }
     test {
         resources {
             srcDirs += [
                     project(":applications:credhub-api").sourceSets.main.resources,
                     project(":applications:credhub-api").sourceSets.test.resources
             ]
+        }
+    }
+}
+
+assemble.mustRunAfter("clean")
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:3.6.1"
+    }
+    plugins {
+        grpc {
+            artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}"
+        }
+    }
+    generateProtoTasks {
+        all()*.plugins {
+            grpc {}
         }
     }
 }
@@ -104,18 +122,4 @@ test {
     systemProperties["spring.profiles.active"] = System.getProperty("spring.profiles.active", "unit-test-h2")
     systemProperties["java.security.egd"] = System.getProperty("java.security.egd", "file:/dev/urandom")
     outputs.upToDateWhen { false }
-}
-
-task buildAndCopyRestDocsIntoSpringStaticAssetLocation(type: Copy) {
-    dependsOn asciidoctor
-
-    from file("build/asciidoc/html5/index.html")
-    into project(":applications:credhub-api").file("src/main/resources/static/docs/")
-}
-asciidoctor.finalizedBy(buildAndCopyRestDocsIntoSpringStaticAssetLocation)
-
-protobuf {
-    protoc {
-        artifact = "com.google.protobuf:protoc:3.6.1"
-    }
 }

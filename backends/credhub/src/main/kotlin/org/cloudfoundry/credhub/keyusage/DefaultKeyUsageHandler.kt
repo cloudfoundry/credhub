@@ -2,9 +2,11 @@ package org.cloudfoundry.credhub.keyusage
 
 import org.cloudfoundry.credhub.services.CredentialVersionDataService
 import org.cloudfoundry.credhub.services.EncryptionKeySet
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
 @Service
+@Profile("!remote")
 class DefaultKeyUsageHandler(
     val credentialVersionDataService: CredentialVersionDataService,
     val keySet: EncryptionKeySet

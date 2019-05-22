@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.jayway.jsonpath.InvalidJsonException;
+import kotlin.NotImplementedError;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.cloudfoundry.credhub.ErrorMessages;
@@ -257,6 +258,12 @@ public class ExceptionHandlers {
     } else {
       return responseError;
     }
+  }
+
+  @ExceptionHandler(NotImplementedError.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ResponseError handleNotImplementedError(final NotImplementedError exception) {
+    return constructError(ErrorMessages.RemoteBackend.NOT_IMPLEMENTED);
   }
 
   @SuppressWarnings("PMD.UselessParentheses")

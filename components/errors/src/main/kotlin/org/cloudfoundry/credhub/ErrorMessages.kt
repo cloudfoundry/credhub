@@ -97,4 +97,8 @@ object ErrorMessages {
         const val INVALID_SLASH_IN_NAME = "A credential name cannot end with a ''/'' character or contain ''//''. Credential names should be in the form of /[path]/[name] or [path]/[name]. Please update and retry your request."
         const val MISMATCHED_CREDENTIAL_AND_VERSION = "The request could not be completed because the specified version does not exist or does not belong to the specified credential."
     }
+
+    object RemoteBackend {
+        const val NOT_IMPLEMENTED = "This resource has not been implemented for this backend."
+    }
 }

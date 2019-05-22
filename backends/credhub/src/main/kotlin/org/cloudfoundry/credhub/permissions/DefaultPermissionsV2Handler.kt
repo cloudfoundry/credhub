@@ -7,9 +7,11 @@ import org.cloudfoundry.credhub.requests.PermissionEntry
 import org.cloudfoundry.credhub.requests.PermissionsV2Request
 import org.cloudfoundry.credhub.services.PermissionService
 import org.cloudfoundry.credhub.views.PermissionsV2View
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 import java.util.UUID
 
+@Profile("!remote")
 @Component
 class DefaultPermissionsV2Handler(
     private val permissionService: PermissionService

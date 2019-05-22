@@ -6,8 +6,10 @@ import org.cloudfoundry.credhub.requests.PermissionsRequest
 import org.cloudfoundry.credhub.services.CredentialService
 import org.cloudfoundry.credhub.services.PermissionService
 import org.cloudfoundry.credhub.views.PermissionsView
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 
+@Profile("!remote")
 @Component
 class DefaultPermissionsV1Handler(
     private val permissionService: PermissionService,

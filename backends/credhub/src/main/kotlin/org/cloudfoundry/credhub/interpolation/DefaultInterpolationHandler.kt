@@ -13,10 +13,12 @@ import org.cloudfoundry.credhub.exceptions.PermissionException
 import org.cloudfoundry.credhub.services.CredentialService
 import org.cloudfoundry.credhub.services.PermissionCheckingService
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.util.ArrayList
 
 @Service
+@Profile("!remote")
 class DefaultInterpolationHandler(
     val credentialService: CredentialService,
     val auditRecord: CEFAuditRecord,

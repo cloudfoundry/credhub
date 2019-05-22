@@ -2,6 +2,7 @@ rootProject.name = 'credhub'
 include "applications:credhub-api"
 include "backends:credhub"
 include "backends:shared-backend-configuration"
+include "backends:remote"
 include "components:audit"
 include "components:auth"
 include "components:constants"

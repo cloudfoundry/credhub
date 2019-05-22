@@ -21,12 +21,14 @@ import org.cloudfoundry.credhub.utils.CertificateReader
 import org.cloudfoundry.credhub.views.BulkRegenerateResults
 import org.cloudfoundry.credhub.views.CredentialView
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.util.TreeSet
 
 @SuppressFBWarnings(value = ["NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"],
     justification = "This will be refactored into safer non-nullable types")
 @Service
+@Profile("!remote")
 class DefaultRegenerateHandler(
     private val credentialService: CredentialService,
     private val credentialGenerator: UniversalCredentialGenerator,
