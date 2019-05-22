@@ -20,11 +20,12 @@ import org.cloudfoundry.credhub.remote.grpc.GetByIdRequest
 import org.cloudfoundry.credhub.remote.grpc.GetByNameRequest
 import org.cloudfoundry.credhub.remote.grpc.GetResponse
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.util.concurrent.TimeUnit
 
-
 @Service
+@Profile("remote")
 class RemoteBackendClient(
     @Value("\${backend.socket_file}") private val socketFile: String
 ) {
@@ -36,8 +37,6 @@ class RemoteBackendClient(
     private lateinit var group: EventLoopGroup
     private lateinit var channelType: Class<out Channel>
     private lateinit var blockingStub: CredentialServiceGrpc.CredentialServiceBlockingStub
-
-
 
     init {
         setChannelInfo()
@@ -101,7 +100,6 @@ class RemoteBackendClient(
                 LOGGER.info("Using KQueue for Netty transport.")
             }
             else -> {
-                //todo: look into nio as a default option
                 throw RuntimeException("Unsupported OS '" + System.getProperty("os.name") + "', only Unix and Mac are supported")
             }
         }

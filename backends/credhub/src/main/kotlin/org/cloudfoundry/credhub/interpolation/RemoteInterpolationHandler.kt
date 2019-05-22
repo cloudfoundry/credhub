@@ -7,6 +7,6 @@ import org.springframework.stereotype.Service
 @Profile("remote")
 class RemoteInterpolationHandler : InterpolationHandler {
     override fun interpolateCredHubReferences(servicesMap: Map<String, Any>): Map<String, Any> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 }

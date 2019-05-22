@@ -11,32 +11,32 @@ import org.springframework.stereotype.Service
 
 @Profile("remote")
 @Service
-class RemoteCertificatesHandler : CertificatesHandler{
+class RemoteCertificatesHandler : CertificatesHandler {
     override fun handleRegenerate(credentialUuid: String, request: CertificateRegenerateRequest): CredentialView {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun handleGetAllRequest(): CertificateCredentialsView {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun handleGetByNameRequest(name: String): CertificateCredentialsView {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun handleGetAllVersionsRequest(certificateId: String, current: Boolean): List<CertificateView> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun handleDeleteVersionRequest(certificateId: String, versionId: String): CertificateView {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun handleUpdateTransitionalVersion(certificateId: String, requestBody: UpdateTransitionalVersionRequest): List<CertificateView> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun handleCreateVersionsRequest(certificateId: String, requestBody: CreateVersionRequest): CertificateView {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 }

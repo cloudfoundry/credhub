@@ -9,10 +9,10 @@ import org.springframework.stereotype.Service
 @Profile("remote")
 class RemoteRegenerateHandler : RegenerateHandler {
     override fun handleRegenerate(credentialName: String): CredentialView {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun handleBulkRegenerate(signerName: String): BulkRegenerateResults {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 }

@@ -7,16 +7,16 @@ import org.springframework.stereotype.Service
 
 @Service
 @Profile("remote")
-class RemotePermissionsV1Handler : PermissionsV1Handler{
+class RemotePermissionsV1Handler : PermissionsV1Handler {
     override fun getPermissions(name: String): PermissionsView {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun writePermissions(request: PermissionsRequest) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun deletePermissionEntry(credentialName: String, actor: String) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 }
