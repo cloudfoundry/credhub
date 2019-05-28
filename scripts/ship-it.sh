@@ -38,7 +38,7 @@ function start_background_server(){
         echo "Connection attempt #" ${COUNTER}
         COUNTER=$((COUNTER + 1))
         sleep 10
-    done;
+    done
 }
 
 function check_for_local_server(){
@@ -53,6 +53,7 @@ function check_for_local_server(){
 }
 
 function run_tests() {
+  export CREDENTIAL_ROOT="$PWD/applications/credhub-api/src/test/resources"
   export GOPATH=~/go
   pushd ${GOPATH}/src/github.com/cloudfoundry-incubator/credhub-acceptance-tests
       ./scripts/run_tests.sh
@@ -69,6 +70,7 @@ function display_ascii_success_message() {
 }
 
 function main() {
+    PID=
     set_bash_error_handling
     go_to_project_root_directory
     check_ssh_key
@@ -79,7 +81,9 @@ function main() {
 
     push_code
     display_ascii_success_message
-    kill ${PID}
+    if [[ -n "${PID}" ]]; then
+     kill ${PID}
+    fi
 }
 
 main
