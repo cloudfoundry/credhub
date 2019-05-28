@@ -41,4 +41,7 @@ task downloadBouncyCastleFips(type: Exec) {
     }
 }
 
-tasks.matching {it != downloadBouncyCastleFips}.all {it.dependsOn downloadBouncyCastleFips}
+
+subprojects {
+    tasks.matching {it != downloadBouncyCastleFips}.all {it.dependsOn downloadBouncyCastleFips}
+}
