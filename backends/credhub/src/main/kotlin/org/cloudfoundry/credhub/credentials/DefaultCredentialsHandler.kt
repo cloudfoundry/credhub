@@ -81,13 +81,12 @@ class DefaultCredentialsHandler(
     override fun setCredential(setRequest: BaseCredentialSetRequest<*>): CredentialView {
         checkPermissionsByName(setRequest.name, WRITE)
         if (setRequest is CertificateSetRequest) {
-            // fill in the ca value if it's one of ours
             val certificateValue = setRequest.certificateValue
-
             val caName = certificateValue.caName
+
             if (caName == null) {
-                val certificateReader = CertificateReader(setRequest.certificateValue.certificate)
-                if (certificateReader.isCa) {
+                val certificateReader = CertificateReader(certificateValue.certificate)
+                if (certificateReader.isCa && (certificateValue.ca == null || certificateValue.ca == certificateValue.certificate)) {
                     setRequest.certificateValue.caName = setRequest.name
                 }
             } else {
