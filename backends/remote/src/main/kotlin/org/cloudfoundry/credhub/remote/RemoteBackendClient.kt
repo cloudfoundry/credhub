@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.remote
 
+import com.google.protobuf.ByteString
 import io.grpc.internal.GrpcUtil
 import io.grpc.netty.NegotiationType
 import io.grpc.netty.NettyChannelBuilder
@@ -19,6 +20,8 @@ import org.cloudfoundry.credhub.remote.grpc.CredentialServiceGrpc
 import org.cloudfoundry.credhub.remote.grpc.GetByIdRequest
 import org.cloudfoundry.credhub.remote.grpc.GetByNameRequest
 import org.cloudfoundry.credhub.remote.grpc.GetResponse
+import org.cloudfoundry.credhub.remote.grpc.SetRequest
+import org.cloudfoundry.credhub.remote.grpc.SetResponse
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
@@ -85,6 +88,26 @@ class RemoteBackendClient(
         }
 
         return getResponse
+    }
+
+    fun setRequest(name: String, type: String, data: ByteString, user: String): SetResponse {
+        val request = SetRequest
+            .newBuilder()
+            .setName(name)
+            .setRequester(user)
+            .setType(type)
+            .setData(data)
+            .build()
+
+        val setResponse: SetResponse
+
+        try {
+            setResponse = blockingStub.set(request)
+        } catch (e: RuntimeException) {
+            throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
+        }
+
+        return setResponse
     }
 
     private fun setChannelInfo() {

@@ -33,7 +33,8 @@ message SetResponse {
   string name = 1;
   string type = 2;
   string id = 3;
-  bytes data = 4;
+  string versionCreatedAt = 4;
+  bytes data = 5;
 }
 
 message DeleteByNameRequest {
