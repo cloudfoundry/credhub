@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.PropertyNamingStrategy
 import junit.framework.Assert.assertEquals
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
+import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.auth.UserContext
 import org.cloudfoundry.credhub.auth.UserContextHolder
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue
@@ -15,6 +17,7 @@ import org.cloudfoundry.credhub.credential.StringCredentialValue
 import org.cloudfoundry.credhub.credential.UserCredentialValue
 import org.cloudfoundry.credhub.credentials.RemoteCredentialsHandler
 import org.cloudfoundry.credhub.remote.RemoteBackendClient
+import org.cloudfoundry.credhub.remote.grpc.DeleteResponse
 import org.cloudfoundry.credhub.remote.grpc.GetResponse
 import org.cloudfoundry.credhub.remote.grpc.SetResponse
 import org.cloudfoundry.credhub.requests.CertificateSetRequest
@@ -630,5 +633,31 @@ class RemoteCredentialsHandlerTest {
         assertEquals(sshCredential, request.sshKeyValue)
         assertEquals(CREDENTIAL_NAME, result.name)
         assertThat(result.value).isInstanceOf(SshCredentialValue::class.java)
+    }
+
+    @Test
+    fun deleteCredential_whenCredentialExists_doesNotThrowException() {
+        val response = DeleteResponse
+            .newBuilder()
+            .setName(CREDENTIAL_NAME)
+            .setDeleted(true)
+            .build()
+        `when`(client.deleteRequest(CREDENTIAL_NAME, USER)).thenReturn(response)
+
+        subject.deleteCredential(CREDENTIAL_NAME)
+    }
+
+    @Test
+    fun deleteCredential_whenCredentialExists_ThrowsException() {
+        val response = DeleteResponse
+            .newBuilder()
+            .setName(CREDENTIAL_NAME)
+            .setDeleted(false)
+            .build()
+        `when`(client.deleteRequest(CREDENTIAL_NAME, USER)).thenReturn(response)
+
+        assertThatThrownBy {
+            subject.deleteCredential(CREDENTIAL_NAME)
+        }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
     }
 }

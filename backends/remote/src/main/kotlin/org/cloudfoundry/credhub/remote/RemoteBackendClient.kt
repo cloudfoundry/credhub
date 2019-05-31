@@ -17,6 +17,8 @@ import org.apache.logging.log4j.LogManager
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
 import org.cloudfoundry.credhub.remote.grpc.CredentialServiceGrpc
+import org.cloudfoundry.credhub.remote.grpc.DeleteByNameRequest
+import org.cloudfoundry.credhub.remote.grpc.DeleteResponse
 import org.cloudfoundry.credhub.remote.grpc.GetByIdRequest
 import org.cloudfoundry.credhub.remote.grpc.GetByNameRequest
 import org.cloudfoundry.credhub.remote.grpc.GetResponse
@@ -108,6 +110,24 @@ class RemoteBackendClient(
         }
 
         return setResponse
+    }
+
+    fun deleteRequest(name: String, user: String): DeleteResponse {
+        val request = DeleteByNameRequest
+            .newBuilder()
+            .setName(name)
+            .setRequester(user)
+            .build()
+
+        val deleteResponse: DeleteResponse
+
+        try {
+            deleteResponse = blockingStub.delete(request)
+        } catch (e: RuntimeException) {
+            throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
+        }
+
+        return deleteResponse
     }
 
     private fun setChannelInfo() {

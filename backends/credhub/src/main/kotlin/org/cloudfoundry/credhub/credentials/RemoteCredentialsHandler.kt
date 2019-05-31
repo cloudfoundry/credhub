@@ -3,6 +3,7 @@ package org.cloudfoundry.credhub.credentials
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.protobuf.ByteString
+import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.auth.UserContextHolder
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue
 import org.cloudfoundry.credhub.credential.CredentialValue
@@ -11,6 +12,7 @@ import org.cloudfoundry.credhub.credential.RsaCredentialValue
 import org.cloudfoundry.credhub.credential.SshCredentialValue
 import org.cloudfoundry.credhub.credential.StringCredentialValue
 import org.cloudfoundry.credhub.credential.UserCredentialValue
+import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
 import org.cloudfoundry.credhub.remote.RemoteBackendClient
 import org.cloudfoundry.credhub.requests.BaseCredentialGenerateRequest
 import org.cloudfoundry.credhub.requests.BaseCredentialSetRequest
@@ -61,7 +63,12 @@ class RemoteCredentialsHandler(
     }
 
     override fun deleteCredential(credentialName: String) {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        val actor = userContextHolder.userContext.actor
+        val response = client.deleteRequest(credentialName, actor)
+
+        if (!response.deleted) {
+            throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
+        }
     }
 
     override fun getNCredentialVersions(credentialName: String, numberOfVersions: Int?): DataResponse {

@@ -42,7 +42,10 @@ message DeleteByNameRequest {
   string requester = 2;
 }
 
-message DeleteResponse {}
+message DeleteResponse {
+  string name = 1;
+  bool deleted = 2;
+}
 
 service CredentialService {
   rpc GetByName (GetByNameRequest) returns (GetResponse);
