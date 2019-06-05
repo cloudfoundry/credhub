@@ -92,13 +92,14 @@ class RemoteBackendClient(
         return getResponse
     }
 
-    fun setRequest(name: String, type: String, data: ByteString, user: String): SetResponse {
+    fun setRequest(name: String, type: String, data: ByteString, user: String, generationParameters: ByteString): SetResponse {
         val request = SetRequest
             .newBuilder()
             .setName(name)
             .setRequester(user)
             .setType(type)
             .setData(data)
+            .setGenerationParameters(generationParameters)
             .build()
 
         val setResponse: SetResponse
@@ -148,3 +149,6 @@ class RemoteBackendClient(
         }
     }
 }
+
+
+

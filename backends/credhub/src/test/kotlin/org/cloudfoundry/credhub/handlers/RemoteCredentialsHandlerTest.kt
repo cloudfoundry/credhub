@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.handlers
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.PropertyNamingStrategy
+import com.google.protobuf.ByteString
 import junit.framework.Assert.assertEquals
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -16,15 +17,26 @@ import org.cloudfoundry.credhub.credential.SshCredentialValue
 import org.cloudfoundry.credhub.credential.StringCredentialValue
 import org.cloudfoundry.credhub.credential.UserCredentialValue
 import org.cloudfoundry.credhub.credentials.RemoteCredentialsHandler
+import org.cloudfoundry.credhub.domain.CertificateGenerationParameters
+import org.cloudfoundry.credhub.generate.UniversalCredentialGenerator
 import org.cloudfoundry.credhub.remote.RemoteBackendClient
 import org.cloudfoundry.credhub.remote.grpc.DeleteResponse
 import org.cloudfoundry.credhub.remote.grpc.GetResponse
 import org.cloudfoundry.credhub.remote.grpc.SetResponse
+import org.cloudfoundry.credhub.requests.CertificateGenerateRequest
+import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters
 import org.cloudfoundry.credhub.requests.CertificateSetRequest
 import org.cloudfoundry.credhub.requests.JsonSetRequest
+import org.cloudfoundry.credhub.requests.PasswordGenerateRequest
 import org.cloudfoundry.credhub.requests.PasswordSetRequest
+import org.cloudfoundry.credhub.requests.RsaGenerateRequest
+import org.cloudfoundry.credhub.requests.RsaGenerationParameters
 import org.cloudfoundry.credhub.requests.RsaSetRequest
+import org.cloudfoundry.credhub.requests.SshGenerateRequest
+import org.cloudfoundry.credhub.requests.SshGenerationParameters
 import org.cloudfoundry.credhub.requests.SshSetRequest
+import org.cloudfoundry.credhub.requests.StringGenerationParameters
+import org.cloudfoundry.credhub.requests.UserGenerateRequest
 import org.cloudfoundry.credhub.requests.UserSetRequest
 import org.cloudfoundry.credhub.requests.ValueSetRequest
 import org.cloudfoundry.credhub.utils.TestConstants
@@ -47,6 +59,7 @@ class RemoteCredentialsHandlerTest {
     private val userContextHolder = mock<UserContextHolder>(UserContextHolder::class.java)!!
     private val objectMapper = ObjectMapper()
     private var client = mock<RemoteBackendClient>(RemoteBackendClient::class.java)!!
+    private val credentialGenerator = mock<UniversalCredentialGenerator>(UniversalCredentialGenerator::class.java)!!
     private lateinit var subject: RemoteCredentialsHandler
     private lateinit var versionCreatedAt: String
 
@@ -61,7 +74,8 @@ class RemoteCredentialsHandlerTest {
         subject = RemoteCredentialsHandler(
             userContextHolder,
             objectMapper,
-            client)
+            client,
+            credentialGenerator)
 
         val userContext = mock(UserContext::class.java)
         `when`(userContext.actor).thenReturn(USER)
@@ -414,7 +428,7 @@ class RemoteCredentialsHandlerTest {
             .setData(byteValue)
             .setId(uuid)
             .build()
-        `when`(client.setRequest(CREDENTIAL_NAME, type, byteValue, USER)).thenReturn(response)
+        `when`(client.setRequest(CREDENTIAL_NAME, type, byteValue, USER, ByteString.EMPTY)).thenReturn(response)
 
         val request = ValueSetRequest()
         request.value = stringCredential
@@ -447,7 +461,7 @@ class RemoteCredentialsHandlerTest {
             .setData(byteValue)
             .setId(uuid)
             .build()
-        `when`(client.setRequest(CREDENTIAL_NAME, type, byteValue, USER)).thenReturn(response)
+        `when`(client.setRequest(CREDENTIAL_NAME, type, byteValue, USER, ByteString.EMPTY)).thenReturn(response)
 
         val request = PasswordSetRequest()
         request.password = stringCredential
@@ -481,7 +495,7 @@ class RemoteCredentialsHandlerTest {
             .setData(byteValue)
             .setId(uuid)
             .build()
-        `when`(client.setRequest(CREDENTIAL_NAME, type, byteValue, USER)).thenReturn(response)
+        `when`(client.setRequest(CREDENTIAL_NAME, type, byteValue, USER, ByteString.EMPTY)).thenReturn(response)
 
         val request = JsonSetRequest()
         request.value = jsonCredential
@@ -518,7 +532,7 @@ class RemoteCredentialsHandlerTest {
             .setData(byteValue)
             .setId(uuid)
             .build()
-        `when`(client.setRequest(CREDENTIAL_NAME, type, byteValue, USER)).thenReturn(response)
+        `when`(client.setRequest(CREDENTIAL_NAME, type, byteValue, USER, ByteString.EMPTY)).thenReturn(response)
 
         val request = CertificateSetRequest()
         request.certificateValue = certificateCredential
@@ -554,7 +568,7 @@ class RemoteCredentialsHandlerTest {
             .setData(byteValue)
             .setId(uuid)
             .build()
-        `when`(client.setRequest(CREDENTIAL_NAME, type, byteValue, USER)).thenReturn(response)
+        `when`(client.setRequest(CREDENTIAL_NAME, type, byteValue, USER, ByteString.EMPTY)).thenReturn(response)
 
         val request = UserSetRequest()
         request.userValue = userCredential
@@ -587,7 +601,7 @@ class RemoteCredentialsHandlerTest {
             .setData(byteValue)
             .setId(uuid)
             .build()
-        `when`(client.setRequest(CREDENTIAL_NAME, type, byteValue, USER)).thenReturn(response)
+        `when`(client.setRequest(CREDENTIAL_NAME, type, byteValue, USER, ByteString.EMPTY)).thenReturn(response)
 
         val request = RsaSetRequest()
         request.rsaKeyValue = rsaCredential
@@ -620,7 +634,7 @@ class RemoteCredentialsHandlerTest {
             .setData(byteValue)
             .setId(uuid)
             .build()
-        `when`(client.setRequest(CREDENTIAL_NAME, type, byteValue, USER)).thenReturn(response)
+        `when`(client.setRequest(CREDENTIAL_NAME, type, byteValue, USER, ByteString.EMPTY)).thenReturn(response)
 
         val request = SshSetRequest()
         request.sshKeyValue = sshCredential
@@ -659,5 +673,294 @@ class RemoteCredentialsHandlerTest {
         assertThatThrownBy {
             subject.deleteCredential(CREDENTIAL_NAME)
         }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
+    }
+
+    @Test
+    fun generatePassword_whenExistingPasswordMatchesGenerationParameters_doesNotRegenerate() {
+        val type = "password"
+        val uuid = UUID.randomUUID().toString()
+        val shouldntBeReturned = StringCredentialValue("1bad-password")
+        val shouldBeReturned = StringCredentialValue("good-password")
+
+        val generationParameters = StringGenerationParameters()
+        generationParameters.length = 13
+        generationParameters.isExcludeLower = false
+        generationParameters.isExcludeNumber = false
+        generationParameters.isExcludeUpper = false
+        generationParameters.isIncludeSpecial = false
+
+        val oldByteValue = subject.createByteStringFromData(type, shouldBeReturned)
+        val getResponse = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
+            .setType(type).setData(oldByteValue)
+            .setId(uuid).setVersionCreatedAt(versionCreatedAt)
+            .setGenerationParameters(subject.createByteStringFromGenerationParameters(type, generationParameters))
+            .build()
+        `when`(client.getByNameRequest(CREDENTIAL_NAME, USER)).thenReturn(getResponse)
+
+        val newByteValue = subject.createByteStringFromData(type, shouldntBeReturned)
+        val byteGenerationParameters = subject.createByteStringFromGenerationParameters(type, generationParameters)
+        val setResponse = SetResponse.newBuilder()
+            .setName(CREDENTIAL_NAME)
+            .setVersionCreatedAt(versionCreatedAt)
+            .setType(type)
+            .setData(newByteValue)
+            .setId(uuid)
+            .build()
+        `when`(client.setRequest(CREDENTIAL_NAME, type, newByteValue, USER, byteGenerationParameters)).thenReturn(setResponse)
+
+        val passwordGenerateRequest = PasswordGenerateRequest()
+        passwordGenerateRequest.setGenerationParameters(generationParameters)
+        passwordGenerateRequest.name = CREDENTIAL_NAME
+        passwordGenerateRequest.type = type
+
+        `when`(credentialGenerator.generate(passwordGenerateRequest)).thenReturn(shouldntBeReturned)
+
+        val generateResponse = subject.generateCredential(passwordGenerateRequest)
+        val actualValue = (generateResponse.value as StringCredentialValue).stringCredential.toString()
+
+        assertThat(actualValue).isEqualTo(shouldBeReturned.stringCredential.toString())
+    }
+
+    @Test
+    fun generateCertificate_whenExistingCertificateMatchesGenerationParameters_doesNotRegenerate() {
+        val type = "certificate"
+        val uuid = UUID.randomUUID().toString()
+
+        val shouldntBeReturned = CertificateCredentialValue(
+            TestConstants.TEST_CA,
+            TestConstants.TEST_CERTIFICATE,
+            TestConstants.TEST_PRIVATE_KEY,
+            "/some-ca")
+
+        val shouldBeReturned = CertificateCredentialValue(
+            TestConstants.TEST_CA,
+            TestConstants.OTHER_TEST_CERTIFICATE,
+            TestConstants.OTHER_TEST_PRIVATE_KEY,
+            "/some-ca")
+
+        val generationRequestParameters = CertificateGenerationRequestParameters()
+        generationRequestParameters.caName = "some-ca"
+        generationRequestParameters.commonName = "some-common-name"
+
+        val generationParameters = CertificateGenerationParameters(generationRequestParameters)
+
+        val oldByteValue = subject.createByteStringFromData(type, shouldBeReturned)
+        val getResponse = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
+            .setType(type).setData(oldByteValue)
+            .setId(uuid).setVersionCreatedAt(versionCreatedAt)
+            .setGenerationParameters(subject.createByteStringFromGenerationParameters(type, generationParameters))
+            .build()
+        `when`(client.getByNameRequest(CREDENTIAL_NAME, USER)).thenReturn(getResponse)
+
+        val newByteValue = subject.createByteStringFromData(type, shouldntBeReturned)
+        val byteGenerationParameters = subject.createByteStringFromGenerationParameters(type, generationParameters)
+        val setResponse = SetResponse.newBuilder()
+            .setName(CREDENTIAL_NAME)
+            .setVersionCreatedAt(versionCreatedAt)
+            .setType(type)
+            .setData(newByteValue)
+            .setId(uuid)
+            .build()
+        `when`(client.setRequest(CREDENTIAL_NAME, type, newByteValue, USER, byteGenerationParameters)).thenReturn(setResponse)
+
+        val certificateGenerateRequest = CertificateGenerateRequest()
+        certificateGenerateRequest.setRequestGenerationParameters(generationRequestParameters)
+        certificateGenerateRequest.setCertificateGenerationParameters(generationParameters)
+        certificateGenerateRequest.name = CREDENTIAL_NAME
+        certificateGenerateRequest.type = type
+
+        `when`(credentialGenerator.generate(certificateGenerateRequest)).thenReturn(shouldntBeReturned)
+
+        val generateResponse = subject.generateCredential(certificateGenerateRequest)
+        val actualValue = (generateResponse.value as CertificateCredentialValue).certificate
+
+        assertThat(actualValue).isEqualTo(shouldBeReturned.certificate)
+    }
+
+    @Test
+    fun generateSsh_whenExistingSshMatchesGenerationParameters_doesNotRegenerate() {
+        val type = "ssh"
+        val uuid = UUID.randomUUID().toString()
+        val shouldntBeReturned = SshCredentialValue(TestConstants.SSH_PUBLIC_KEY_4096_WITH_COMMENT, TestConstants.PRIVATE_KEY_4096, "fingerprint")
+        val shouldBeReturned = SshCredentialValue(TestConstants.SSH_PUBLIC_KEY_4096, TestConstants.PRIVATE_KEY_4096, "fingerprint")
+
+        val generationParameters = SshGenerationParameters()
+        generationParameters.keyLength = 4096
+
+        val oldByteValue = subject.createByteStringFromData(type, shouldBeReturned)
+        val getResponse = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
+            .setType(type).setData(oldByteValue)
+            .setId(uuid).setVersionCreatedAt(versionCreatedAt)
+            .setGenerationParameters(subject.createByteStringFromGenerationParameters(type, generationParameters))
+            .build()
+        `when`(client.getByNameRequest(CREDENTIAL_NAME, USER)).thenReturn(getResponse)
+
+        val newByteValue = subject.createByteStringFromData(type, shouldntBeReturned)
+        val byteGenerationParameters = subject.createByteStringFromGenerationParameters(type, generationParameters)
+        val setResponse = SetResponse.newBuilder()
+            .setName(CREDENTIAL_NAME)
+            .setVersionCreatedAt(versionCreatedAt)
+            .setType(type)
+            .setData(newByteValue)
+            .setId(uuid)
+            .build()
+        `when`(client.setRequest(CREDENTIAL_NAME, type, newByteValue, USER, byteGenerationParameters)).thenReturn(setResponse)
+
+        val sshGenerateRequest = SshGenerateRequest()
+        sshGenerateRequest.setGenerationParameters(generationParameters)
+        sshGenerateRequest.name = CREDENTIAL_NAME
+        sshGenerateRequest.type = type
+
+        `when`(credentialGenerator.generate(sshGenerateRequest)).thenReturn(shouldntBeReturned)
+
+        val generateResponse = subject.generateCredential(sshGenerateRequest)
+        val actualValue = (generateResponse.value as SshCredentialValue).publicKey
+
+        assertThat(actualValue).isEqualTo(shouldBeReturned.publicKey)
+    }
+
+    @Test
+    fun generateRsa_whenExistingRsaMatchesGenerationParameters_doesNotRegenerate() {
+        val type = "rsa"
+        val uuid = UUID.randomUUID().toString()
+        val shouldntBeReturned = RsaCredentialValue(TestConstants.RSA_PUBLIC_KEY_4096 + "fake data", TestConstants.PRIVATE_KEY_4096)
+
+        val shouldBeReturned = RsaCredentialValue(TestConstants.RSA_PUBLIC_KEY_4096, TestConstants.PRIVATE_KEY_4096)
+
+        val generationParameters = RsaGenerationParameters()
+        generationParameters.keyLength = 4096
+
+        val oldByteValue = subject.createByteStringFromData(type, shouldBeReturned)
+        val getResponse = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
+            .setType(type).setData(oldByteValue)
+            .setId(uuid).setVersionCreatedAt(versionCreatedAt)
+            .setGenerationParameters(subject.createByteStringFromGenerationParameters(type, generationParameters))
+            .build()
+        `when`(client.getByNameRequest(CREDENTIAL_NAME, USER)).thenReturn(getResponse)
+
+        val newByteValue = subject.createByteStringFromData(type, shouldntBeReturned)
+        val byteGenerationParameters = subject.createByteStringFromGenerationParameters(type, generationParameters)
+        val setResponse = SetResponse.newBuilder()
+            .setName(CREDENTIAL_NAME)
+            .setVersionCreatedAt(versionCreatedAt)
+            .setType(type)
+            .setData(newByteValue)
+            .setId(uuid)
+            .build()
+        `when`(client.setRequest(CREDENTIAL_NAME, type, newByteValue, USER, byteGenerationParameters)).thenReturn(setResponse)
+
+        val rsaGenerateRequest = RsaGenerateRequest()
+        rsaGenerateRequest.setGenerationParameters(generationParameters)
+        rsaGenerateRequest.name = CREDENTIAL_NAME
+        rsaGenerateRequest.type = type
+
+        `when`(credentialGenerator.generate(rsaGenerateRequest)).thenReturn(shouldntBeReturned)
+
+        val generateResponse = subject.generateCredential(rsaGenerateRequest)
+        val actualValue = (generateResponse.value as RsaCredentialValue).publicKey
+
+        assertThat(actualValue).isEqualTo(shouldBeReturned.publicKey)
+    }
+
+    @Test
+    fun generateUser_whenExistingUserMatchesGenerationParameters_doesNotRegenerate() {
+        val type = "user"
+        val uuid = UUID.randomUUID().toString()
+        val shouldntBeReturned = UserCredentialValue("user2", "passwardo", "yesplease")
+        val shouldBeReturned = UserCredentialValue("user1", "passvard", "nothanksidontlikesalt")
+
+        val generationParameters = StringGenerationParameters()
+        generationParameters.length = 4
+        generationParameters.isExcludeLower = false
+        generationParameters.isExcludeNumber = false
+        generationParameters.isExcludeUpper = false
+        generationParameters.isIncludeSpecial = false
+
+
+        val oldByteValue = subject.createByteStringFromData(type, shouldBeReturned)
+        val getResponse = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
+            .setType(type).setData(oldByteValue)
+            .setId(uuid).setVersionCreatedAt(versionCreatedAt)
+            .setGenerationParameters(subject.createByteStringFromGenerationParameters(type, generationParameters))
+            .build()
+        `when`(client.getByNameRequest(CREDENTIAL_NAME, USER)).thenReturn(getResponse)
+
+        val newByteValue = subject.createByteStringFromData(type, shouldntBeReturned)
+        val byteGenerationParameters = subject.createByteStringFromGenerationParameters(type, generationParameters)
+        val setResponse = SetResponse.newBuilder()
+            .setName(CREDENTIAL_NAME)
+            .setVersionCreatedAt(versionCreatedAt)
+            .setType(type)
+            .setData(newByteValue)
+            .setId(uuid)
+            .build()
+        `when`(client.setRequest(CREDENTIAL_NAME, type, newByteValue, USER, byteGenerationParameters)).thenReturn(setResponse)
+
+        val userGenerateRequest = UserGenerateRequest()
+        userGenerateRequest.setGenerationParameters(generationParameters)
+        userGenerateRequest.name = CREDENTIAL_NAME
+        userGenerateRequest.type = type
+
+        `when`(credentialGenerator.generate(userGenerateRequest)).thenReturn(shouldntBeReturned)
+
+        val generateResponse = subject.generateCredential(userGenerateRequest)
+        val actualValue = (generateResponse.value as UserCredentialValue).username
+
+        assertThat(actualValue).isEqualTo(shouldBeReturned.username)
+    }
+
+    @Test
+    fun generatePassword_whenExistingPasswordGenerationParametersDontMatch_generateNewCredential() {
+        val type = "password"
+        val uuid = UUID.randomUUID().toString()
+        val password = StringCredentialValue("good-password")
+        val newPassword = StringCredentialValue("H38FHHFUFUFYTYTYTYTYTYTYTYTYTYTYT")
+
+        val generationParameters = StringGenerationParameters()
+        generationParameters.length = 13
+        generationParameters.isExcludeLower = false
+        generationParameters.isExcludeNumber = false
+        generationParameters.isExcludeUpper = false
+        generationParameters.isIncludeSpecial = false
+
+
+        val newGenerationParameters = StringGenerationParameters()
+        generationParameters.length = 32
+        generationParameters.isExcludeLower = true
+        generationParameters.isExcludeNumber = false
+        generationParameters.isExcludeUpper = false
+        generationParameters.isIncludeSpecial = false
+
+        val oldByteValue = subject.createByteStringFromData(type, password)
+        val getResponse = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
+            .setType(type).setData(oldByteValue)
+            .setId(uuid).setVersionCreatedAt(versionCreatedAt)
+            .setGenerationParameters(subject.createByteStringFromGenerationParameters(type, generationParameters))
+            .build()
+        `when`(client.getByNameRequest(CREDENTIAL_NAME, USER)).thenReturn(getResponse)
+
+        val newByteValue = subject.createByteStringFromData(type, newPassword)
+        val byteGenerationParameters = subject.createByteStringFromGenerationParameters(type, newGenerationParameters)
+        val setResponse = SetResponse.newBuilder()
+            .setName(CREDENTIAL_NAME)
+            .setVersionCreatedAt(versionCreatedAt)
+            .setType(type)
+            .setData(newByteValue)
+            .setId(uuid)
+            .build()
+        `when`(client.setRequest(CREDENTIAL_NAME, type, newByteValue, USER, byteGenerationParameters)).thenReturn(setResponse)
+
+
+        val passwordGenerateRequest = PasswordGenerateRequest()
+        passwordGenerateRequest.setGenerationParameters(newGenerationParameters)
+        passwordGenerateRequest.name = CREDENTIAL_NAME
+        passwordGenerateRequest.type = type
+
+        `when`(credentialGenerator.generate(passwordGenerateRequest)).thenReturn(newPassword)
+
+        val generateResponse = subject.generateCredential(passwordGenerateRequest)
+        val actualValue = (generateResponse.value as StringCredentialValue).stringCredential.toString()
+
+        assertThat(actualValue).isNotEqualTo(password.stringCredential.toString())
     }
 }
