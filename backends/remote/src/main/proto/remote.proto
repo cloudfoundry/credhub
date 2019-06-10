@@ -47,9 +47,24 @@ message DeleteResponse {
   bool deleted = 2;
 }
 
+message FindContainingNameRequest {
+  string name = 1;
+  string requester = 2;
+}
+
+message FindResponse{
+  repeated FindResult results = 1;
+}
+
+message FindResult{
+  string name = 1;
+  string versionCreatedAt = 2;
+}
+
 service CredentialService {
   rpc GetByName (GetByNameRequest) returns (GetResponse);
   rpc GetById (GetByIdRequest) returns (GetResponse);
   rpc Set (SetRequest) returns (SetResponse);
   rpc Delete (DeleteByNameRequest) returns (DeleteResponse);
+  rpc FindContainingName (FindContainingNameRequest) returns (FindResponse);
 }

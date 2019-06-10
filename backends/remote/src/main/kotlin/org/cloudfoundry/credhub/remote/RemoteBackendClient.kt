@@ -19,6 +19,8 @@ import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
 import org.cloudfoundry.credhub.remote.grpc.CredentialServiceGrpc
 import org.cloudfoundry.credhub.remote.grpc.DeleteByNameRequest
 import org.cloudfoundry.credhub.remote.grpc.DeleteResponse
+import org.cloudfoundry.credhub.remote.grpc.FindContainingNameRequest
+import org.cloudfoundry.credhub.remote.grpc.FindResponse
 import org.cloudfoundry.credhub.remote.grpc.GetByIdRequest
 import org.cloudfoundry.credhub.remote.grpc.GetByNameRequest
 import org.cloudfoundry.credhub.remote.grpc.GetResponse
@@ -128,6 +130,24 @@ class RemoteBackendClient(
         }
 
         return deleteResponse
+    }
+
+    fun findContainingNameRequest(name: String, user: String): FindResponse {
+        val request = FindContainingNameRequest
+            .newBuilder()
+            .setName(name)
+            .setRequester(user)
+            .build()
+
+        val findResponse: FindResponse
+
+        try {
+            findResponse = blockingStub.findContainingName(request)
+        } catch (e: RuntimeException) {
+            throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
+        }
+
+        return findResponse
     }
 
     private fun setChannelInfo() {

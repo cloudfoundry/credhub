@@ -18,6 +18,8 @@ import org.cloudfoundry.credhub.credential.UserCredentialValue
 import org.cloudfoundry.credhub.credentials.RemoteCredentialsHandler
 import org.cloudfoundry.credhub.remote.RemoteBackendClient
 import org.cloudfoundry.credhub.remote.grpc.DeleteResponse
+import org.cloudfoundry.credhub.remote.grpc.FindResponse
+import org.cloudfoundry.credhub.remote.grpc.FindResult
 import org.cloudfoundry.credhub.remote.grpc.GetResponse
 import org.cloudfoundry.credhub.remote.grpc.SetResponse
 import org.cloudfoundry.credhub.requests.CertificateSetRequest
@@ -659,5 +661,30 @@ class RemoteCredentialsHandlerTest {
         assertThatThrownBy {
             subject.deleteCredential(CREDENTIAL_NAME)
         }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
+    }
+
+    @Test
+    fun findCredential_withName_returnsCorrectDataResponse() {
+        val response = FindResponse
+            .newBuilder()
+            .addResults(FindResult
+                .newBuilder()
+                .setName("/test/some-other-credential")
+                .setVersionCreatedAt(versionCreatedAt))
+            .addResults(FindResult
+                .newBuilder()
+                .setName("/test/another-credential")
+                .setVersionCreatedAt(versionCreatedAt))
+            .build()
+
+        `when`(client.findContainingNameRequest("other", USER)).thenReturn(response)
+
+        val result = subject.findContainingName("other", "365")
+
+        assertEquals(result.size, 2)
+        assertEquals(result.get(0).name, "/test/some-other-credential")
+        assertEquals(result.get(1).name, "/test/another-credential")
+        assertEquals(result.get(0).versionCreatedAt.toString(), versionCreatedAt)
+        assertEquals(result.get(1).versionCreatedAt.toString(), versionCreatedAt)
     }
 }

@@ -14,6 +14,7 @@ import org.cloudfoundry.credhub.credential.StringCredentialValue
 import org.cloudfoundry.credhub.credential.UserCredentialValue
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
 import org.cloudfoundry.credhub.remote.RemoteBackendClient
+import org.cloudfoundry.credhub.remote.grpc.FindResult
 import org.cloudfoundry.credhub.requests.BaseCredentialGenerateRequest
 import org.cloudfoundry.credhub.requests.BaseCredentialSetRequest
 import org.cloudfoundry.credhub.views.CredentialView
@@ -37,7 +38,10 @@ class RemoteCredentialsHandler(
     }
 
     override fun findContainingName(name: String, expiresWithinDays: String): List<FindCredentialResult> {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        val actor = userContextHolder.userContext.actor
+        val response = client.findContainingNameRequest(name, actor)
+
+        return getListFromResponse(response.resultsList)
     }
 
     override fun generateCredential(generateRequest: BaseCredentialGenerateRequest): CredentialView {
@@ -108,6 +112,12 @@ class RemoteCredentialsHandler(
             response.type,
             credentialValue
         )
+    }
+
+    private fun getListFromResponse(results: List<FindResult>): List<FindCredentialResult> {
+        return results.map { result ->
+            FindCredentialResult(Instant.parse(result.versionCreatedAt), result.name)
+        }
     }
 
     private fun getValueFromResponse(type: String, data: ByteString): CredentialValue {
