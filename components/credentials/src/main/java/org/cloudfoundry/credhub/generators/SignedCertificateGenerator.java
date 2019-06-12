@@ -88,7 +88,7 @@ public class SignedCertificateGenerator {
     final X500Principal issuerDn,
     final SubjectKeyIdentifier caSubjectKeyIdentifier,
     final KeyPair keyPair,
-    final CertificateGenerationParameters params) throws Exception {
+    final   CertificateGenerationParameters params) throws Exception {
     final Instant now = Instant.from(timeProvider.getInstant());
 
     final BigInteger certificateSerialNumber = serialNumberGenerator.generate();

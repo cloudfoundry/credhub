@@ -20,6 +20,7 @@ message GetResponse {
   string id = 3;
   string versionCreatedAt = 4;
   bytes data = 5;
+  bytes generationParameters = 6;
 }
 
 message SetRequest {
@@ -27,6 +28,7 @@ message SetRequest {
   string type = 2;
   bytes data = 3;
   string requester = 4;
+  bytes generationParameters = 5;
 }
 
 message SetResponse {
