@@ -703,6 +703,31 @@ class RemoteCredentialsHandlerTest {
     }
 
     @Test
+    fun findStarting_withPath_returnsCorrectDataResponse() {
+        val response = FindResponse
+            .newBuilder()
+            .addResults(FindResult
+                .newBuilder()
+                .setName("/test/some-other-credential")
+                .setVersionCreatedAt(versionCreatedAt))
+            .addResults(FindResult
+                .newBuilder()
+                .setName("/test/another-credential")
+                .setVersionCreatedAt(versionCreatedAt))
+            .build()
+
+        `when`(client.findStartingWithPathRequest("/test", USER)).thenReturn(response)
+
+        val result = subject.findStartingWithPath("/test", "365")
+
+        assertEquals(result.size, 2)
+        assertEquals(result.get(0).name, "/test/some-other-credential")
+        assertEquals(result.get(1).name, "/test/another-credential")
+        assertEquals(result.get(0).versionCreatedAt.toString(), versionCreatedAt)
+        assertEquals(result.get(1).versionCreatedAt.toString(), versionCreatedAt)
+    }
+
+    @Test
     fun generatePassword_whenExistingPasswordMatchesGenerationParameters_doesNotRegenerate() {
         val type = "password"
         val uuid = UUID.randomUUID().toString()

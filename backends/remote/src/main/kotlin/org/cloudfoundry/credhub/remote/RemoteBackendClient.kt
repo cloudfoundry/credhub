@@ -13,6 +13,7 @@ import io.netty.channel.kqueue.KQueue
 import io.netty.channel.kqueue.KQueueDomainSocketChannel
 import io.netty.channel.kqueue.KQueueEventLoopGroup
 import io.netty.channel.unix.DomainSocketAddress
+import org.apache.commons.lang3.StringUtils
 import org.apache.logging.log4j.LogManager
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
@@ -21,6 +22,7 @@ import org.cloudfoundry.credhub.remote.grpc.DeleteByNameRequest
 import org.cloudfoundry.credhub.remote.grpc.DeleteResponse
 import org.cloudfoundry.credhub.remote.grpc.FindContainingNameRequest
 import org.cloudfoundry.credhub.remote.grpc.FindResponse
+import org.cloudfoundry.credhub.remote.grpc.FindStartingWithPathRequest
 import org.cloudfoundry.credhub.remote.grpc.GetByIdRequest
 import org.cloudfoundry.credhub.remote.grpc.GetByNameRequest
 import org.cloudfoundry.credhub.remote.grpc.GetResponse
@@ -144,6 +146,27 @@ class RemoteBackendClient(
 
         try {
             findResponse = blockingStub.findContainingName(request)
+        } catch (e: RuntimeException) {
+            throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
+        }
+
+        return findResponse
+    }
+
+    fun findStartingWithPathRequest(path: String, user: String): FindResponse {
+        var adjustedPath = StringUtils.prependIfMissing(path, "/")
+        adjustedPath = StringUtils.appendIfMissing(adjustedPath, "/")
+
+        val request = FindStartingWithPathRequest
+            .newBuilder()
+            .setPath(adjustedPath)
+            .setRequester(user)
+            .build()
+
+        val findResponse: FindResponse
+
+        try {
+            findResponse = blockingStub.findStartingWithPath(request)
         } catch (e: RuntimeException) {
             throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
         }

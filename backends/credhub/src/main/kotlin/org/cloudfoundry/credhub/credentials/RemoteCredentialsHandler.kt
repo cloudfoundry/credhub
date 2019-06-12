@@ -43,7 +43,10 @@ class RemoteCredentialsHandler(
 ) : CredentialsHandler {
 
     override fun findStartingWithPath(path: String, expiresWithinDays: String): List<FindCredentialResult> {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        val actor = userContextHolder.userContext.actor
+        val response = client.findStartingWithPathRequest(path, actor)
+
+        return getListFromResponse(response.resultsList)
     }
 
     override fun findContainingName(name: String, expiresWithinDays: String): List<FindCredentialResult> {

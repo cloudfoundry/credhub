@@ -54,6 +54,11 @@ message FindContainingNameRequest {
   string requester = 2;
 }
 
+message FindStartingWithPathRequest {
+  string path = 1;
+  string requester = 2;
+}
+
 message FindResponse{
   repeated FindResult results = 1;
 }
@@ -69,4 +74,5 @@ service CredentialService {
   rpc Set (SetRequest) returns (SetResponse);
   rpc Delete (DeleteByNameRequest) returns (DeleteResponse);
   rpc FindContainingName (FindContainingNameRequest) returns (FindResponse);
+  rpc FindStartingWithPath (FindStartingWithPathRequest) returns (FindResponse);
 }
