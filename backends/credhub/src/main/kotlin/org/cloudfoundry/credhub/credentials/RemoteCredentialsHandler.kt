@@ -362,7 +362,7 @@ class RemoteCredentialsHandler(
         return when (type) {
             "password" -> {
                 val jsonString = generationParams.toStringUtf8()
-                val jsonNode = objectMapper.readTree(jsonString)
+                val jsonNode = objectMapper.readTree(jsonString) ?: return StringGenerationParameters()
 
                 val generationParameters = StringGenerationParameters()
 
@@ -390,7 +390,7 @@ class RemoteCredentialsHandler(
 
             "user" -> {
                 val jsonString = generationParams.toStringUtf8()
-                val jsonNode = objectMapper.readTree(jsonString)
+                val jsonNode = objectMapper.readTree(jsonString) ?: return StringGenerationParameters()
 
                 val generationParameters = StringGenerationParameters()
 
@@ -417,7 +417,7 @@ class RemoteCredentialsHandler(
 
             "ssh" -> {
                 val jsonString = generationParams.toStringUtf8()
-                val jsonNode = objectMapper.readTree(jsonString)
+                val jsonNode = objectMapper.readTree(jsonString) ?: return SshGenerationParameters()
 
                 val generationParameters = SshGenerationParameters()
 
@@ -433,7 +433,7 @@ class RemoteCredentialsHandler(
 
             "rsa" -> {
                 val jsonString = generationParams.toStringUtf8()
-                val jsonNode = objectMapper.readTree(jsonString)
+                val jsonNode = objectMapper.readTree(jsonString) ?: return RsaGenerationParameters()
 
                 val generationParameters = RsaGenerationParameters()
 
@@ -446,7 +446,7 @@ class RemoteCredentialsHandler(
 
             "certificate" -> {
                 val jsonString = generationParams.toStringUtf8()
-                val jsonNode = objectMapper.readTree(jsonString)
+                val jsonNode = objectMapper.readTree(jsonString) ?: return CertificateGenerationParameters(CertificateGenerationRequestParameters())
 
                 val generationRequestParameters = CertificateGenerationRequestParameters()
 
