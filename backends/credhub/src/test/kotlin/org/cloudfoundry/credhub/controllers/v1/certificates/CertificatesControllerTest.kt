@@ -84,6 +84,8 @@ class CertificatesControllerTest {
             TestConstants.TEST_CERTIFICATE,
             TestConstants.TEST_PRIVATE_KEY,
             name,
+            false,
+            false,
             true
         )
 
@@ -153,7 +155,9 @@ class CertificatesControllerTest {
                 "certificate": "${TestConstants.TEST_CERTIFICATE}",
                 "private_key": "${TestConstants.TEST_PRIVATE_KEY}",
                 "transitional": true,
-                "expiry_date": "${certificateCredentialValue.expiryDate}"
+                "expiry_date": "${certificateCredentialValue.expiryDate}",
+                "certificate_authority": false,
+                "self_signed": false
               }
             }
         """.trimIndent()
@@ -167,12 +171,16 @@ class CertificatesControllerTest {
             CertificateVersionView(
                 id = UUID.randomUUID(),
                 transitional = true,
-                expiryDate = Instant.ofEpochSecond(1549053472L).plus(365, ChronoUnit.DAYS)
+                expiryDate = Instant.ofEpochSecond(1549053472L).plus(365, ChronoUnit.DAYS),
+                certificateAuthority = false,
+                selfSigned = false
             ),
             CertificateVersionView(
                 id = UUID.randomUUID(),
                 transitional = false,
-                expiryDate = Instant.ofEpochSecond(1549053472L)
+                expiryDate = Instant.ofEpochSecond(1549053472L),
+                certificateAuthority = false,
+                selfSigned = false
             )
         )
         var cert1Name = "/cert1"
@@ -208,12 +216,16 @@ class CertificatesControllerTest {
                 {
                   "id": "${certificateVersions[0].id}",
                   "expiry_date": "2020-02-01T20:37:52Z",
-                  "transitional": true
+                  "transitional": true,
+                  "certificate_authority": false,
+                  "self_signed": false
                 },
                 {
                   "id": "${certificateVersions[1].id}",
                   "expiry_date": "2019-02-01T20:37:52Z",
-                  "transitional": false
+                  "transitional": false,
+                  "certificate_authority": false,
+                  "self_signed": false
                 }
               ]
             }
@@ -231,7 +243,9 @@ class CertificatesControllerTest {
             CertificateVersionView(
                 id = UUID.randomUUID(),
                 transitional = false,
-                expiryDate = Instant.ofEpochSecond(1549053472L)
+                expiryDate = Instant.ofEpochSecond(1549053472L),
+                certificateAuthority = false,
+                selfSigned = false
             )
         )
         var cert1Name = "/cert1"
@@ -270,7 +284,9 @@ class CertificatesControllerTest {
                 {
                   "id": "${certificateVersions[0].id}",
                   "expiry_date": "2019-02-01T20:37:52Z",
-                  "transitional": false
+                  "transitional": false,
+                  "certificate_authority": false,
+                  "self_signed": false
                 }
               ]
             }
@@ -354,6 +370,8 @@ class CertificatesControllerTest {
               "id": "$certificateId",
               "name": "$name",
               "transitional": true,
+              "certificate_authority": false,
+              "self_signed": false,
               "expiry_date": "${certificateCredentialValue.expiryDate}",
               "value": {
                 "ca": "${TestConstants.TEST_CA}",
@@ -410,6 +428,8 @@ class CertificatesControllerTest {
               "id": "$certificateId",
               "name": "$name",
               "transitional": true,
+              "certificate_authority": false,
+              "self_signed": false,
               "expiry_date": "${certificateCredentialValue.expiryDate}",
               "value": {
                 "ca": "${TestConstants.TEST_CA}",
@@ -454,6 +474,8 @@ class CertificatesControllerTest {
               "id": "$certificateId",
               "name": "$name",
               "transitional": true,
+              "certificate_authority": false,
+              "self_signed": false,
               "expiry_date": "${certificateCredentialValue.expiryDate}",
               "value": {
                 "ca": "${TestConstants.TEST_CA}",

@@ -48,9 +48,8 @@ constructor(
               certificate_credential.ca_name as CA_NAME,
               certificate_credential.expiry_date as EXPIRY_DATE,
               certificate_credential.transitional as TRANSITIONAL,
-              case when certificate_credential.ca_name is null
-              and certificate_credential.ca = certificate_credential.certificate
-              then true else false end as SELF_SIGNED
+              certificate_credential.certificate_authority as CERTIFICATE_AUTHORITY,
+              certificate_credential.self_signed as SELF_SIGNED
             from certificate_credential
             inner join credential_version on certificate_credential.uuid = credential_version.uuid
             inner join credential on credential_version.credential_uuid = credential.uuid
@@ -61,10 +60,15 @@ constructor(
             val name = rowSet.getString("NAME")
             val expiryDate = rowSet.getObject("EXPIRY_DATE") as Timestamp
             if (nameSet.contains(name)) {
+                val isSelfSigned = rowSet.getBoolean("SELF_SIGNED")
+                val isCertificateAuthority = rowSet.getBoolean("CERTIFICATE_AUTHORITY")
+
                 val certificateVersionMetadata = CertificateVersionMetadata(
                     toUUID(rowSet.getObject("VERSION_UUID")),
                     expiryDate.toInstant(),
-                    rowSet.getBoolean("TRANSITIONAL")
+                    rowSet.getBoolean("TRANSITIONAL"),
+                    isCertificateAuthority,
+                    isSelfSigned
                 )
 
                 val credentialUUID: UUID = toUUID(rowSet.getObject("CREDENTIAL_UUID"))
@@ -72,7 +76,7 @@ constructor(
                 if (certificateMetadataMap.containsKey(credentialUUID)) {
                     certificateMetadataMap.getValue(credentialUUID).versions.add(certificateVersionMetadata)
                 } else {
-                    val caName = if (rowSet.getBoolean("SELF_SIGNED")) name else rowSet.getString("CA_NAME")
+                    val caName = if (isSelfSigned) name else rowSet.getString("CA_NAME")
 
                     val certificateMetadata = CertificateMetadata(
                         credentialUUID,

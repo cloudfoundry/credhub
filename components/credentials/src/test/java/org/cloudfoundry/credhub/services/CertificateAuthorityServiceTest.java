@@ -39,7 +39,7 @@ public class CertificateAuthorityServiceTest {
       Security.addProvider(new BouncyCastleFipsProvider());
     }
 
-    certificate = new CertificateCredentialValue(null, CertificateStringConstants.SELF_SIGNED_CA_CERT, "my-key", null);
+    certificate = new CertificateCredentialValue(null, CertificateStringConstants.SELF_SIGNED_CA_CERT, "my-key", null, true, true);
     certificateCredential = mock(CertificateCredentialVersion.class);
 
     when(certificateCredential.getName()).thenReturn(CREDENTIAL_NAME);
@@ -77,6 +77,8 @@ public class CertificateAuthorityServiceTest {
     when(certificateCredential.getPrivateKey()).thenReturn("my-key");
     when(certificateCredential.getParsedCertificate()).thenReturn(certificateReader);
     when(certificateReader.isCa()).thenReturn(true);
+    when(certificateCredential.isCertificateAuthority()).thenReturn(true);
+    when(certificateCredential.isSelfSigned()).thenReturn(true);
     when(certificateCredential.getCertificate()).thenReturn(CertificateStringConstants.SELF_SIGNED_CA_CERT);
 
     assertThat(certificateAuthorityService.findActiveVersion(CREDENTIAL_NAME),

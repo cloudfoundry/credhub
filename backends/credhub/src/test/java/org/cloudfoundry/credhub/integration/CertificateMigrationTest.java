@@ -10,12 +10,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.DatabaseProfileResolver;
-import org.cloudfoundry.credhub.data.ExpiryDateMigration;
+import org.cloudfoundry.credhub.data.CertificateMigration;
 import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.repositories.CredentialRepository;
 import org.cloudfoundry.credhub.repositories.CredentialVersionRepository;
 import org.cloudfoundry.credhub.utils.CertificateReader;
+import org.cloudfoundry.credhub.utils.TestConstants;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -33,7 +34,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 )
 @SpringBootTest(classes = CredhubTestApp.class)
 @Transactional
-public class ExpiryDateMigrationTest {
+public class CertificateMigrationTest {
   @Autowired
   private CredentialVersionRepository credentialVersionRepository;
 
@@ -41,7 +42,7 @@ public class ExpiryDateMigrationTest {
   private CredentialRepository credentialRepository;
 
   @Autowired
-  private ExpiryDateMigration subject;
+  private CertificateMigration subject;
 
   @Test
   public void getCertificate_withNullExpiryDateInTheDatabase_andExpectExpiryDateAfterMigration() throws Exception {
@@ -87,6 +88,34 @@ public class ExpiryDateMigrationTest {
       (CertificateCredentialVersionData) credentialVersionRepository.findOneByUuid(originalVersion.getUuid());
 
     assertThat(migratedVersion.getExpiryDate(), is(equalTo(expiryDate)));
+  }
+
+  @Test
+  public void getCertificate_withNullCertificateAuthorityOrSelfSigned_andExpectCertificateAuthorityAndSelfSignedAfterMigration() throws Exception {
+    final String certificate = TestConstants.TEST_CA;
+
+    final Credential credential = new Credential("test_credential");
+    credentialRepository.save(credential);
+
+    final CertificateCredentialVersionData versionData = new CertificateCredentialVersionData();
+    versionData.setTransitional(true);
+    versionData.setCa("ca");
+    versionData.setCaName("ca_name");
+    versionData.setCertificate(certificate);
+    versionData.setCredential(credential);
+
+    final CertificateCredentialVersionData originalVersion = credentialVersionRepository.save(versionData);
+
+    assertThat(originalVersion.isCertificateAuthority(), is(equalTo(false)));
+    assertThat(originalVersion.isSelfSigned(), is(equalTo(false)));
+
+    subject.migrate();
+
+    final CertificateCredentialVersionData migratedVersion =
+      (CertificateCredentialVersionData) credentialVersionRepository.findOneByUuid(originalVersion.getUuid());
+
+    assertThat(migratedVersion.isCertificateAuthority(), is(equalTo(true)));
+    assertThat(migratedVersion.isSelfSigned(), is(equalTo(true)));
   }
 
   @Test

@@ -4,20 +4,20 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
-import org.cloudfoundry.credhub.data.ExpiryDateMigration;
+import org.cloudfoundry.credhub.data.CertificateMigration;
 
 @Component
 public class ApplicationStartup implements ApplicationListener<ApplicationReadyEvent> {
 
-  private final ExpiryDateMigration expiryDateMigration;
+  private final CertificateMigration certificateMigration;
 
-  public ApplicationStartup(final ExpiryDateMigration expiryDateMigration) {
+  public ApplicationStartup(final CertificateMigration certificateMigration) {
     super();
-    this.expiryDateMigration = expiryDateMigration;
+    this.certificateMigration = certificateMigration;
   }
 
   @Override
   public void onApplicationEvent(final ApplicationReadyEvent event) {
-    expiryDateMigration.migrate();
+    certificateMigration.migrate();
   }
 }

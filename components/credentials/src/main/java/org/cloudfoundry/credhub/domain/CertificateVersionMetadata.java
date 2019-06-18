@@ -8,11 +8,22 @@ public class CertificateVersionMetadata {
   private UUID id;
   private Instant expiryDate;
   private boolean transitional;
+  private boolean certificateAuthority;
+  private boolean selfSigned;
 
-  public CertificateVersionMetadata(final UUID id, final Instant expiryDate, final boolean transitional) {
+  public CertificateVersionMetadata(
+    final UUID id,
+    final Instant expiryDate,
+    final boolean transitional,
+    final boolean certificateAuthority,
+    final boolean selfSigned
+  ) {
+
     this.id = id;
     this.expiryDate = expiryDate;
     this.transitional = transitional;
+    this.certificateAuthority = certificateAuthority;
+    this.selfSigned = selfSigned;
   }
 
   public UUID getId() {
@@ -37,5 +48,21 @@ public class CertificateVersionMetadata {
 
   public void setTransitional(final boolean transitional) {
     this.transitional = transitional;
+  }
+
+  public boolean isCertificateAuthority() {
+    return certificateAuthority;
+  }
+
+  public void setCertificateAuthority(final boolean certificateAuthority) {
+    this.certificateAuthority = certificateAuthority;
+  }
+
+  public boolean isSelfSigned() {
+    return selfSigned;
+  }
+
+  public void setSelfSigned(final boolean selfSigned) {
+    this.selfSigned = selfSigned;
   }
 }

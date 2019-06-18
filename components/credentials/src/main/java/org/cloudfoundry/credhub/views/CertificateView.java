@@ -11,6 +11,8 @@ public class CertificateView extends CredentialView {
   private CertificateCredentialVersion version;
 
   private Instant expiryDate;
+  private boolean certificateAuthority;
+  private boolean selfSigned;
 
   CertificateView() {
     super(); /* Jackson */
@@ -26,6 +28,8 @@ public class CertificateView extends CredentialView {
     );
     this.version = version;
     this.expiryDate = version.getExpiryDate();
+    this.certificateAuthority = version.isCertificateAuthority();
+    this.selfSigned = version.isSelfSigned();
   }
 
   @Override
@@ -41,6 +45,14 @@ public class CertificateView extends CredentialView {
     return expiryDate;
   }
 
+  public boolean isCertificateAuthority() {
+    return certificateAuthority;
+  }
+
+  public boolean isSelfSigned() {
+    return selfSigned;
+  }
+
   @Override
   public boolean equals(final Object o) {
     if (this == o) {
@@ -53,12 +65,14 @@ public class CertificateView extends CredentialView {
       return false;
     }
     final CertificateView that = (CertificateView) o;
-    return Objects.equals(version, that.version) &&
+    return certificateAuthority == that.certificateAuthority &&
+      selfSigned == that.selfSigned &&
+      Objects.equals(version, that.version) &&
       Objects.equals(expiryDate, that.expiryDate);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), version, expiryDate);
+    return Objects.hash(super.hashCode(), version, expiryDate, certificateAuthority, selfSigned);
   }
 }

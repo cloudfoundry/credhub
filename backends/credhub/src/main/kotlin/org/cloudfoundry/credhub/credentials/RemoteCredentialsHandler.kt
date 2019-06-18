@@ -173,6 +173,8 @@ class RemoteCredentialsHandler(
                     jsonNode["certificate"]?.textValue(),
                     jsonNode["private_key"]?.textValue(),
                     jsonNode["ca_name"]?.textValue(),
+                    jsonNode["certificate_authority"]?.booleanValue() ?: false,
+                    jsonNode["self_signed"]?.booleanValue() ?: false,
                     jsonNode["transitional"]?.booleanValue() ?: false
                 )
             }
@@ -234,7 +236,10 @@ class RemoteCredentialsHandler(
                     "ca_name" to certificateCredentialValue.caName,
                     "certificate" to certificateCredentialValue.certificate,
                     "private_key" to certificateCredentialValue.privateKey,
-                    "transitional" to certificateCredentialValue.isTransitional
+                    "transitional" to certificateCredentialValue.isTransitional,
+                    "certificate_authority" to certificateCredentialValue.isCertificateAuthority,
+                    "self_signed" to certificateCredentialValue.isSelfSigned
+
                 ))
                 ByteString.copyFromUtf8(json)
             }

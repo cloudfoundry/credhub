@@ -169,6 +169,62 @@ public class CertificateSetAndRegenerateTest {
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.data[0].transitional", equalTo(true)));
   }
+  @Test
+  public void certificateRegenerate_withSelfSignSetToTrue_generatesANewCertThatIsSelfSigned() throws Exception {
+    final MockHttpServletRequestBuilder generateCaRequest = post("/api/v1/data")
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{\n"
+        + "  \"name\" :\"" + CA_NAME + "\",\n"
+        + "  \"type\" : \"certificate\",\n"
+        + "  \"parameters\" : {\n"
+        + "    \"common_name\" : \"federation\",\n"
+        + "    \"is_ca\" : true,\n"
+        + "    \"self_sign\" : true\n"
+        + "  }\n"
+        + "}");
+
+    final String generateCaResponse = this.mockMvc
+      .perform(generateCaRequest)
+      .andExpect(status().isOk())
+      .andReturn().getResponse()
+      .getContentAsString();
+
+    final Boolean selfSigned = JsonPath.parse(generateCaResponse)
+      .read("$.self_signed");
+
+    assertThat(selfSigned, equalTo(true));
+  }
+  @Test
+  public void certificateRegenerate_withisCaSetToTrue_generatesANewCertThatIsACertificateAuthority() throws Exception {
+    final MockHttpServletRequestBuilder generateCaRequest = post("/api/v1/data")
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{\n"
+        + "  \"name\" :\"" + CA_NAME + "\",\n"
+        + "  \"type\" : \"certificate\",\n"
+        + "  \"parameters\" : {\n"
+        + "    \"common_name\" : \"federation\",\n"
+        + "    \"is_ca\" : true,\n"
+        + "    \"self_sign\" : true\n"
+        + "  }\n"
+        + "}");
+
+    final String generateCaResponse = this.mockMvc
+      .perform(generateCaRequest)
+      .andExpect(status().isOk())
+      .andReturn().getResponse()
+      .getContentAsString();
+
+    final Boolean certificateAuthority = JsonPath.parse(generateCaResponse)
+      .read("$.certificate_authority");
+
+    assertThat(certificateAuthority, equalTo(true));
+  }
 
   @Test
   public void certificateRegenerate_withTransitionalSetToTrue_failsIfThereIsAlreadyATransitionalCert()

@@ -58,6 +58,7 @@ class DefaultCredentialsHandler(
             if (caName == null) {
                 if (req.generationRequestParameters.isCa) {
                     generateRequest.generationRequestParameters.caName = req.name
+                    generateRequest.generationRequestParameters.isSelfSigned = true
                     val certificateGenerationParameters = CertificateGenerationParameters(generateRequest.generationRequestParameters)
                     generateRequest.setCertificateGenerationParameters(certificateGenerationParameters)
                 }
@@ -88,6 +89,8 @@ class DefaultCredentialsHandler(
                 val certificateReader = CertificateReader(certificateValue.certificate)
                 if (certificateReader.isCa && (certificateValue.ca == null || certificateValue.ca == certificateValue.certificate)) {
                     setRequest.certificateValue.caName = setRequest.name
+                    setRequest.certificateValue.isSelfSigned = true
+                    setRequest.certificateValue.isCertificateAuthority = true
                 }
             } else {
                 validateCertificateValueIsSignedByCa(certificateValue, caName)

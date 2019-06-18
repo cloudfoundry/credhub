@@ -104,7 +104,6 @@ public class CertificateGenerateTest {
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
 
-
     final String picardCert = (new JSONObject(caResult)).getJSONObject("value").getString("certificate");
     final String picardCA = (new JSONObject(caResult)).getJSONObject("value").getString("ca");
     assertThat(picardCert, equalTo(picardCA));
@@ -120,6 +119,8 @@ public class CertificateGenerateTest {
 
     assertThat(truncatedExpiryDate, equalTo(truncatedExpected));
 
+    assertThat((new JSONObject(caResult)).getBoolean("certificate_authority"), equalTo(true));
+    assertThat((new JSONObject(caResult)).getBoolean("self_signed"), equalTo(true));
 
     assertThat(picardCert, notNullValue());
 

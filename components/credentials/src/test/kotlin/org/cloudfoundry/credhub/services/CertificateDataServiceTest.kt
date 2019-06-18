@@ -45,6 +45,8 @@ class CertificateDataServiceTest {
         `when`(rowSet.getBoolean("TRANSITIONAL")).thenReturn(false)
         `when`(rowSet.getObject("CREDENTIAL_UUID")).thenReturn(credentialUuid)
         `when`(rowSet.getString("CA_NAME")).thenReturn("some-ca")
+        `when`(rowSet.getBoolean("CERTIFICATE_AUTHORITY")).thenReturn(false)
+        `when`(rowSet.getBoolean("SELF_SIGNED")).thenReturn(false)
 
         val result = subject.findAllValidMetadata(permissions)
 
@@ -55,6 +57,8 @@ class CertificateDataServiceTest {
         assertEquals("some-ca", result[0].caName)
         assertEquals(false, result[0].versions[0].isTransitional)
         assertEquals(expectedExpiryDate, result[0].versions[0].expiryDate)
+        assertEquals(false, result[0].versions[0].isCertificateAuthority)
+        assertEquals(false, result[0].versions[0].isSelfSigned)
     }
 
     @Test
@@ -73,6 +77,8 @@ class CertificateDataServiceTest {
         `when`(rowSet.getBoolean("TRANSITIONAL")).thenReturn(false)
         `when`(rowSet.getObject("CREDENTIAL_UUID")).thenReturn(credentialUuid)
         `when`(rowSet.getString("CA_NAME")).thenReturn("some-ca")
+        `when`(rowSet.getBoolean("CERTIFICATE_AUTHORITY")).thenReturn(false)
+        `when`(rowSet.getBoolean("SELF_SIGNED")).thenReturn(false)
 
         val result = subject.findAllValidMetadata(permissions)
 

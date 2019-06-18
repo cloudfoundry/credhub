@@ -53,6 +53,8 @@ public class CertificateCredentialTest {
     entity.setPrivateKey(CertificateStringConstants.PRIVATE_KEY);
     entity.setExpiryDate(expiryDate);
     entity.setUuid(uuid);
+    entity.setCertificateAuthority(true);
+    entity.setSelfSigned(false);
   }
 
   @Test
@@ -66,6 +68,8 @@ public class CertificateCredentialTest {
       + "\"type\":\"certificate\","
       + "\"expiry_date\":\"" + expiryDateWithoutMillis + "\","
       + "\"transitional\":false,"
+      + "\"certificate_authority\":true,"
+      + "\"self_signed\":false,"
       + "\"version_created_at\":null,"
       + "\"id\":\"" + uuid.toString() + "\","
       + "\"name\":\"" + credentialName + "\","
@@ -106,6 +110,8 @@ public class CertificateCredentialTest {
       + "\"type\":\"certificate\","
       + "\"expiry_date\":null,"
       + "\"transitional\":false,"
+      + "\"certificate_authority\":false,"
+      + "\"self_signed\":false,"
       + "\"version_created_at\":null,"
       + "\"id\":\""
       + uuid.toString() + "\",\"name\":\""

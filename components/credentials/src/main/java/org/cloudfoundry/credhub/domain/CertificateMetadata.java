@@ -10,6 +10,7 @@ public class CertificateMetadata {
   private String caName;
   private List<CertificateVersionMetadata> versions;
 
+
   public CertificateMetadata(final UUID id, final String name, final String caName,
     final List<CertificateVersionMetadata> versions) {
     this.id = id;
@@ -49,4 +50,5 @@ public class CertificateMetadata {
   public void setVersions(final List<CertificateVersionMetadata> versions) {
     this.versions = versions;
   }
+
 }

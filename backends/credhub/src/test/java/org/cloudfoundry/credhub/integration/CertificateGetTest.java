@@ -39,6 +39,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -250,5 +251,29 @@ public class CertificateGetTest {
 
     assertThat(response, containsString(
       "The request could not be completed because the credential does not exist or you do not have sufficient authorization."));
+  }
+
+  @Test
+  public void getCertificateCredentials_returnsWithCertificateAuthorityField() throws Exception {
+    generateCa(mockMvc, "my-certificate", ALL_PERMISSIONS_TOKEN);
+
+    final String response = getCertificateCredentialsByName(mockMvc, ALL_PERMISSIONS_TOKEN, "my-certificate");
+    final List<Boolean> values = JsonPath.parse(response)
+      .read("$.certificates[*].versions[*].certificate_authority");
+
+    assertThat(values, hasSize(1));
+    assertThat(values.get(0), is(true));
+  }
+
+  @Test
+  public void getCertificateCredentials_returnsWithSelfSignedField() throws Exception {
+    generateCa(mockMvc, "my-certificate", ALL_PERMISSIONS_TOKEN);
+
+    final String response = getCertificateCredentialsByName(mockMvc, ALL_PERMISSIONS_TOKEN, "my-certificate");
+    final List<Boolean> values = JsonPath.parse(response)
+      .read("$.certificates[*].versions[*].self_signed");
+
+    assertThat(values, hasSize(1));
+    assertThat(values.get(0), is(true));
   }
 }

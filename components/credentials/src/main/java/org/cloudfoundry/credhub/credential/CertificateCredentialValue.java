@@ -37,18 +37,31 @@ public class CertificateCredentialValue implements CredentialValue {
   private String caName;
 
   private boolean transitional;
+  private boolean certificateAuthority;
+  private boolean selfSigned;
 
   @SuppressWarnings("unused")
   public CertificateCredentialValue() {
     super();
   }
 
+  // TODO: remove this implementation. actually maybe not
+
   public CertificateCredentialValue(
     final String ca,
     final String certificate,
     final String privateKey,
     final String caName) {
-    this(ca, certificate, privateKey, caName, false);
+    this(ca, certificate, privateKey, caName, false, false, false);
+  }
+  public CertificateCredentialValue(
+    final String ca,
+    final String certificate,
+    final String privateKey,
+    final String caName,
+    final boolean certificateAuthority,
+    final boolean selfSigned) {
+    this(ca, certificate, privateKey, caName, certificateAuthority, selfSigned, false);
   }
 
   public CertificateCredentialValue(
@@ -56,12 +69,17 @@ public class CertificateCredentialValue implements CredentialValue {
     final String certificate,
     final String privateKey,
     final String caName,
+    final boolean certificateAuthority,
+    final boolean selfSigned,
     final boolean transitional) {
+
     super();
     this.ca = ca;
     this.certificate = certificate;
     this.privateKey = privateKey;
     this.transitional = transitional;
+    this.certificateAuthority = certificateAuthority;
+    this.selfSigned = selfSigned;
     setCaName(caName);
   }
 
@@ -101,6 +119,22 @@ public class CertificateCredentialValue implements CredentialValue {
     return new CertificateReader(certificate).getNotAfter();
   }
 
+  public boolean isCertificateAuthority() {
+    return certificateAuthority;
+  }
+
+  public void setCertificateAuthority(final boolean certificateAuthority) {
+    this.certificateAuthority = certificateAuthority;
+  }
+
+  public void setSelfSigned(final boolean selfSigned) {
+    this.selfSigned = selfSigned;
+  }
+
+  public boolean isSelfSigned() {
+    return selfSigned;
+  }
+
   @Override
   public boolean equals(final Object o) {
     if (this == o) {
@@ -111,6 +145,8 @@ public class CertificateCredentialValue implements CredentialValue {
     }
     final CertificateCredentialValue that = (CertificateCredentialValue) o;
     return transitional == that.transitional &&
+      certificateAuthority == that.certificateAuthority &&
+      selfSigned == that.selfSigned &&
       Objects.equals(ca, that.ca) &&
       Objects.equals(certificate, that.certificate) &&
       Objects.equals(privateKey, that.privateKey) &&
@@ -119,6 +155,6 @@ public class CertificateCredentialValue implements CredentialValue {
 
   @Override
   public int hashCode() {
-    return Objects.hash(ca, certificate, privateKey, caName, transitional);
+    return Objects.hash(ca, certificate, privateKey, caName, transitional, certificateAuthority, selfSigned);
   }
 }

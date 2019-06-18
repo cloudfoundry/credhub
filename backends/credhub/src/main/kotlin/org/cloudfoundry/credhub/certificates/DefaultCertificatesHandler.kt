@@ -157,7 +157,9 @@ class DefaultCertificatesHandler(
                 CertificateVersionView(
                     id = certificateVersion.id,
                     expiryDate = certificateVersion.expiryDate,
-                    transitional = certificateVersion.isTransitional
+                    transitional = certificateVersion.isTransitional,
+                    certificateAuthority = certificateVersion.isCertificateAuthority,
+                    selfSigned = certificateVersion.isSelfSigned
                 )
             }
             val signedBy = certificateMetadata.caName ?: ""
@@ -182,7 +184,11 @@ class DefaultCertificatesHandler(
                 // not all certs read into memory so we need to go to db to get signed certificates
                 signedCertificates = certificateService.findSignedCertificates(certificateMetadata.name)
             }
-            CertificateCredentialView(certificateMetadata.name, certificateMetadata.id, certificateVersionViews, signedBy, signedCertificates)
+            CertificateCredentialView(certificateMetadata.name,
+                certificateMetadata.id,
+                certificateVersionViews,
+                signedBy,
+                signedCertificates)
         }
     }
 

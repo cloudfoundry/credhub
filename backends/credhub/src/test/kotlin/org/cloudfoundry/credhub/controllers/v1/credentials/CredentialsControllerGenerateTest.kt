@@ -249,7 +249,10 @@ class CredentialsControllerGenerateTest {
                 TestConstants.TEST_CA,
                 TestConstants.TEST_CERTIFICATE,
                 TestConstants.TEST_PRIVATE_KEY,
-                "some-ca"
+                "some-ca",
+                true,
+                false,
+                false
             )
         )
 
@@ -261,7 +264,8 @@ class CredentialsControllerGenerateTest {
                   "type": "${CredentialType.CERTIFICATE.type.toLowerCase()}",
                   "parameters": {
                     "common_name": "some-common-name",
-                    "ca": "some-ca"
+                    "ca": "some-ca",
+                    "is_ca": true
                   }
                 }
             """.trimIndent()
@@ -359,7 +363,9 @@ class CredentialsControllerGenerateTest {
                     "certificate": "${TestConstants.TEST_CERTIFICATE}",
                     "private_key": "${TestConstants.TEST_PRIVATE_KEY}",
                     "transitional": false,
-                    "expiry_date": "2018-11-21T16:25:20Z"
+                    "expiry_date": "2018-11-21T16:25:20Z",
+                    "certificate_authority": true,
+                    "self_signed": false
                   }
               }
             """.trimIndent()

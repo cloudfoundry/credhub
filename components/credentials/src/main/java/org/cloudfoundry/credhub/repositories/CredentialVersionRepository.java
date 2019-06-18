@@ -39,13 +39,18 @@ public interface CredentialVersionRepository extends JpaRepository<CredentialVer
 
   CredentialVersionData findFirstByCredentialUuidOrderByVersionCreatedAtDesc(UUID uuid);
 
-  @Query(value = "select * from credential_version "
-    + "inner join certificate_credential on credential_version.uuid = certificate_credential.uuid "
-    + "where expiry_date IS NULL order by version_created_at limit 1000 offset ?1", nativeQuery = true)
-  List<CredentialVersionData> findUpTo1000VersionsWithNullExpirationDate(int offset);
+  @Query(value = "select * from credential_version " +
+    "inner join certificate_credential on credential_version.uuid = certificate_credential.uuid " +
+    "where expiry_date IS NULL " +
+    "or certificate_authority IS NULL " +
+    "or self_signed IS NULL " +
+    "order by version_created_at limit 1000 offset ?1", nativeQuery = true)
+  List<CredentialVersionData> findUpTo1000VersionsWithNullCertificateMetadata(int offset);
 
-  @Query(value = "select count(*) from credential_version "
-    + "inner join certificate_credential on credential_version.uuid = certificate_credential.uuid "
-    + "where expiry_date IS NULL", nativeQuery = true)
-  int countVersionsWithNullExpirationDate();
+  @Query(value = "select count(*) from credential_version " +
+    "inner join certificate_credential on credential_version.uuid = certificate_credential.uuid " +
+    "where expiry_date IS NULL " +
+    "or certificate_authority IS NULL " +
+    "or self_signed IS NULL", nativeQuery = true)
+  int countVersionsWithNullCertificateMetadata();
 }
