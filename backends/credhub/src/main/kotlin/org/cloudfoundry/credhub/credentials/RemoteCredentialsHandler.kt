@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.protobuf.ByteString
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.auth.UserContextHolder
+import org.cloudfoundry.credhub.constants.CredentialWriteMode.NO_OVERWRITE
+import org.cloudfoundry.credhub.constants.CredentialWriteMode.OVERWRITE
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue
 import org.cloudfoundry.credhub.credential.CredentialValue
 import org.cloudfoundry.credhub.credential.JsonCredentialValue
@@ -518,8 +520,12 @@ class RemoteCredentialsHandler(
             originalValue = client.getByNameRequest(credentialRequest.name, userContextHolder.userContext.actor)
             val generationParameters =
                 getGenerationParametersFromResponse(originalValue.type, originalValue.generationParameters)
-            if (generationParameters != credentialRequest.generationParameters) {
+            // if the generation parameters don't match, and we're not set to no_overwrite, go generate a new password. OR if overwrite is set, go generate regardless
+            if ((credentialRequest.mode == OVERWRITE || credentialRequest.isOverwrite) || (generationParameters != credentialRequest.generationParameters && credentialRequest.mode != NO_OVERWRITE)) {
                 return null
+            }
+            if (credentialRequest.mode == NO_OVERWRITE) {
+                return originalValue
             }
         } catch (e: EntryNotFoundException) {
             return null

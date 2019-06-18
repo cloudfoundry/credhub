@@ -10,6 +10,8 @@ import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.auth.UserContext
 import org.cloudfoundry.credhub.auth.UserContextHolder
+import org.cloudfoundry.credhub.constants.CredentialWriteMode.NO_OVERWRITE
+import org.cloudfoundry.credhub.constants.CredentialWriteMode.OVERWRITE
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue
 import org.cloudfoundry.credhub.credential.JsonCredentialValue
 import org.cloudfoundry.credhub.credential.RsaCredentialValue
@@ -1011,5 +1013,106 @@ class RemoteCredentialsHandlerTest {
         val actualValue = (generateResponse.value as StringCredentialValue).stringCredential.toString()
 
         assertThat(actualValue).isNotEqualTo(password.stringCredential.toString())
+    }
+
+    @Test
+    fun generatePassword_whenOverwriteParameterIsSet_andGenerationParametersAreEqual_stillGenerateNewCredential() {
+        val type = "password"
+        val uuid = UUID.randomUUID().toString()
+        val newPassword = StringCredentialValue("nice-password")
+        val originalPassword = StringCredentialValue("good-password")
+
+        val generationParameters = StringGenerationParameters()
+        generationParameters.length = 13
+        generationParameters.isExcludeLower = false
+        generationParameters.isExcludeNumber = false
+        generationParameters.isExcludeUpper = false
+        generationParameters.isIncludeSpecial = false
+
+        val oldByteValue = subject.createByteStringFromData(type, originalPassword)
+        val getResponse = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
+            .setType(type).setData(oldByteValue)
+            .setId(uuid).setVersionCreatedAt(versionCreatedAt)
+            .setGenerationParameters(subject.createByteStringFromGenerationParameters(type, generationParameters))
+            .build()
+        `when`(client.getByNameRequest(CREDENTIAL_NAME, USER)).thenReturn(getResponse)
+
+        val newByteValue = subject.createByteStringFromData(type, newPassword)
+        val byteGenerationParameters = subject.createByteStringFromGenerationParameters(type, generationParameters)
+        val setResponse = SetResponse.newBuilder()
+            .setName(CREDENTIAL_NAME)
+            .setVersionCreatedAt(versionCreatedAt)
+            .setType(type)
+            .setData(newByteValue)
+            .setId(uuid)
+            .build()
+        `when`(client.setRequest(CREDENTIAL_NAME, type, newByteValue, USER, byteGenerationParameters)).thenReturn(setResponse)
+
+        val passwordGenerateRequest = PasswordGenerateRequest()
+        passwordGenerateRequest.setGenerationParameters(generationParameters)
+        passwordGenerateRequest.name = CREDENTIAL_NAME
+        passwordGenerateRequest.type = type
+        passwordGenerateRequest.mode = OVERWRITE
+
+        `when`(credentialGenerator.generate(passwordGenerateRequest)).thenReturn(newPassword)
+
+        val generateResponse = subject.generateCredential(passwordGenerateRequest)
+        val actualValue = (generateResponse.value as StringCredentialValue).stringCredential.toString()
+
+        assertThat(actualValue).isEqualTo(newPassword.stringCredential.toString())
+    }
+
+    @Test
+    fun generatePassword_whenNoOverwriteParameterIsSet_andGenerationParametersAreNotEqual_doNotGenerateNewCredential() {
+        val type = "password"
+        val uuid = UUID.randomUUID().toString()
+        val newPassword = StringCredentialValue("nice-password")
+        val originalPassword = StringCredentialValue("good-password")
+
+        val generationParameters = StringGenerationParameters()
+        generationParameters.length = 13
+        generationParameters.isExcludeLower = false
+        generationParameters.isExcludeNumber = false
+        generationParameters.isExcludeUpper = false
+        generationParameters.isIncludeSpecial = false
+
+        val oldByteValue = subject.createByteStringFromData(type, originalPassword)
+        val getResponse = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
+            .setType(type).setData(oldByteValue)
+            .setId(uuid).setVersionCreatedAt(versionCreatedAt)
+            .setGenerationParameters(subject.createByteStringFromGenerationParameters(type, generationParameters))
+            .build()
+        `when`(client.getByNameRequest(CREDENTIAL_NAME, USER)).thenReturn(getResponse)
+
+        val newGenerationParameters = StringGenerationParameters()
+        newGenerationParameters.length = 13
+        newGenerationParameters.isExcludeLower = false
+        newGenerationParameters.isExcludeNumber = true
+        newGenerationParameters.isExcludeUpper = false
+        newGenerationParameters.isIncludeSpecial = false
+
+        val newByteValue = subject.createByteStringFromData(type, newPassword)
+        val byteGenerationParameters = subject.createByteStringFromGenerationParameters(type, newGenerationParameters)
+        val setResponse = SetResponse.newBuilder()
+            .setName(CREDENTIAL_NAME)
+            .setVersionCreatedAt(versionCreatedAt)
+            .setType(type)
+            .setData(newByteValue)
+            .setId(uuid)
+            .build()
+        `when`(client.setRequest(CREDENTIAL_NAME, type, newByteValue, USER, byteGenerationParameters)).thenReturn(setResponse)
+
+        val passwordGenerateRequest = PasswordGenerateRequest()
+        passwordGenerateRequest.setGenerationParameters(newGenerationParameters)
+        passwordGenerateRequest.name = CREDENTIAL_NAME
+        passwordGenerateRequest.type = type
+        passwordGenerateRequest.mode = NO_OVERWRITE
+
+        `when`(credentialGenerator.generate(passwordGenerateRequest)).thenReturn(newPassword)
+
+        val generateResponse = subject.generateCredential(passwordGenerateRequest)
+        val actualValue = (generateResponse.value as StringCredentialValue).stringCredential.toString()
+
+        assertThat(actualValue).isEqualTo(originalPassword.stringCredential.toString())
     }
 }
