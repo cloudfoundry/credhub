@@ -537,7 +537,6 @@ class RemoteCredentialsHandler(
             if (credentialRequest.mode == NO_OVERWRITE) {
                 return originalValue
             }
-
         } catch (e: EntryNotFoundException) {
             return null
         }
