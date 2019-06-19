@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.protobuf.ByteString
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.auth.UserContextHolder
+import org.cloudfoundry.credhub.constants.CredentialWriteMode.CONVERGE
 import org.cloudfoundry.credhub.constants.CredentialWriteMode.NO_OVERWRITE
 import org.cloudfoundry.credhub.constants.CredentialWriteMode.OVERWRITE
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue
@@ -518,15 +519,25 @@ class RemoteCredentialsHandler(
         val originalValue: GetResponse
         try {
             originalValue = client.getByNameRequest(credentialRequest.name, userContextHolder.userContext.actor)
-            val generationParameters =
+            val originalGenerationParameters =
                 getGenerationParametersFromResponse(originalValue.type, originalValue.generationParameters)
-            // if the generation parameters don't match, and we're not set to no_overwrite, go generate a new password. OR if overwrite is set, go generate regardless
-            if ((credentialRequest.mode == OVERWRITE || credentialRequest.isOverwrite) || (generationParameters != credentialRequest.generationParameters && credentialRequest.mode != NO_OVERWRITE)) {
+
+            if (credentialRequest.mode == OVERWRITE || credentialRequest.isOverwrite) {
                 return null
             }
+
+            if (credentialRequest.mode == CONVERGE || credentialRequest.mode == null) {
+                return if (originalGenerationParameters != credentialRequest.generationParameters) {
+                    null
+                } else {
+                    originalValue
+                }
+            }
+
             if (credentialRequest.mode == NO_OVERWRITE) {
                 return originalValue
             }
+
         } catch (e: EntryNotFoundException) {
             return null
         }
