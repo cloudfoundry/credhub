@@ -414,4 +414,67 @@ final public class TestConstants {
         "v26oVrck/L0v2+XfAfRH34LXrQ==\n" +
         "-----END PRIVATE KEY-----";
   }
+
+  public static final String TEST_INTERMEDIATE_CA;
+
+  static {
+    TEST_INTERMEDIATE_CA =
+      "-----BEGIN CERTIFICATE----- fake\n" +
+      "MIIEBDCCAeygAwIBAgIUOwSBHY39ZTGCqWPMH2sm2dX4qbQwDQYJKoZIhvcNAQEL\n" +
+      "BQAwFDESMBAGA1UEAwwJbG9jYWxob3N0MB4XDTE5MDYyMDE1MjkxOVoXDTIwMDYx\n" +
+      "OTE1MjkxOVowDzENMAsGA1UEAxMEdGVzdDCCASIwDQYJKoZIhvcNAQEBBQADggEP\n" +
+      "ADCCAQoCggEBAPK/m50epo+HNh0sYk1khF6G4j1ntK9nEhBMww75BzpJCpp3LKK2\n" +
+      "+A5p++1T2OyuZhPWME3bga2np5Q1NgYZvoYqwEOLzyDkKwRPpBzRpVBGa8ndzeOc\n" +
+      "cPzBOLqh4SYOWh92C7PIy1u2xZOLOob5YVFlkx+nKS9vr5uowzaFV5Uu4y3zbaSX\n" +
+      "4GfY2xiyUbN76DVf4z0HCeKZ8XPqO4920WJyD1hQi7k50I8p/Omoaw9pS9Zjkdx2\n" +
+      "8LpdPTFFwK/XBmOvI+UBD5sXRns3OE17/D3eHwCMX5taU8mimYcyVIWBoH+DySke\n" +
+      "E/SgfoM06CsoiPwmjAMJ33488VBKUlTu8VMCAwEAAaNTMFEwHQYDVR0OBBYEFDCx\n" +
+      "oQrZSnFoygOdX1N+JYGEWGr0MB8GA1UdIwQYMBaAFLqXBNnFz1QvrxxS0/oOIrBu\n" +
+      "hdtEMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggIBAAvMSE4zBE0g\n" +
+      "gEMUigfKL8U7IXbUsbX5m3+YoFNVYbHWPskpA/tHrt8hEHUOzDxD4XqvG0eDd4qf\n" +
+      "AKJ3Wg0eapukWab9tijMWML8CYDaDVaKX51bzyigjIzdwTpNOVLeFS1icJPVGCwq\n" +
+      "JBPHh/LcSXbBJb0MOKgjdCco3FieHXPBdyRNbYD17cri1iQ4Vfmy2HfVXlWsyQwM\n" +
+      "cCLcpBydlupJ18QA1npRjqWVstbq9hlZ7WA4L1+sVtcc6h7cCSh61JIL0Y+41VYP\n" +
+      "B4p8ijLh5TCopWj/TNupiey/h81AGXOpP2/sj8GhuRj9AD1Urlf2UWuAQA+FMKGr\n" +
+      "uz0SbMhfEmmZP7MDB5Z0oWBXZKv/DsibiEXGZRGod5OBOql7km0c4Wg5AkijdqgB\n" +
+      "LOcrccRHS2rrr2RCKQNHdz4AmPHM0oykd16jSMO5TIY1bSVFk1Ovnc49HUNHcw6I\n" +
+      "Um/b83GHrV9kc9+pUkhbsS2+OnXwnpJoKIbNaz2b5ZlNuyzbM+5JrR5xqzRJndkp\n" +
+      "GDW5CIWUlKEvEkc/qPgyQ2ldLIN7Ric6n/lmOsCSiAPCPnbV6OZLsZtl30HyvN7X\n" +
+      "aGwN84ZjvNAlGRArd2OEe6plLF3D9U6DLeNAQ8dBCOrLvMurw+vVqHn3Xj1lFRie\n" +
+      "b2ltprVCB8XTz1I54jB/QId1rDKqx5ai\n" +
+      "-----END CERTIFICATE-----\n";
+  }
+
+  public static final String TEST_INTERMEDIATE_CA_PRIVATE_KEY;
+
+  static {
+    TEST_INTERMEDIATE_CA_PRIVATE_KEY =
+     "-----BEGIN RSA PRIVATE KEY----- fake\n" +
+     "MIIEpAIBAAKCAQEA8r+bnR6mj4c2HSxiTWSEXobiPWe0r2cSEEzDDvkHOkkKmncs\n" +
+     "orb4Dmn77VPY7K5mE9YwTduBraenlDU2Bhm+hirAQ4vPIOQrBE+kHNGlUEZryd3N\n" +
+     "45xw/ME4uqHhJg5aH3YLs8jLW7bFk4s6hvlhUWWTH6cpL2+vm6jDNoVXlS7jLfNt\n" +
+     "pJfgZ9jbGLJRs3voNV/jPQcJ4pnxc+o7j3bRYnIPWFCLuTnQjyn86ahrD2lL1mOR\n" +
+     "3Hbwul09MUXAr9cGY68j5QEPmxdGezc4TXv8Pd4fAIxfm1pTyaKZhzJUhYGgf4PJ\n" +
+     "KR4T9KB+gzToKyiI/CaMAwnffjzxUEpSVO7xUwIDAQABAoIBAAqJ5N75BOVxAdBZ\n" +
+     "tUuxSK4rVM1EqWbaCy/KHVoS/F6OxxckFhdbMlNNTVUAkYe2sADQUjRk05XKgeYy\n" +
+     "8Xr75LZBuL2M1RclieH79bo4kc6H4UeqgGvYfVyxf6bHvsvMPCQdqhKKAC9KNNfS\n" +
+     "wzkSwLXHcX3HFtqT28jxBBAIY4TNOLyf4MgiE5IG5rlHj9eir/iJEUxsJ2mv8sMB\n" +
+     "ulk28fvtaBmK8ImrSsHkRDizi2dZC9IdbRqiU3ELDsYIALAp1alWxqYs3q+EIVZL\n" +
+     "Q/wPOBf6y96WYWwW80HO+d7e/1OjXEoqG2s0ozItXb9spW0mfvkak7mPC8SgKiMx\n" +
+     "/J/ACyECgYEA+ZVZIn8Er/HWpCXjAxjOdAFz/k+1hXkYKDXSzTQ8sZd2q8ZXkX40\n" +
+     "6292yuqpM5JrObERJ7sTcJbPV4hFWKZWTifl28/4UfovDKr/OZdRL94O/y9voCrl\n" +
+     "ED/++tAisjhQOVuStMcSfPzoq4SEyiAVlIWNONUVfYv7L7sKX2Jlw+ECgYEA+P1G\n" +
+     "bot1nS5JqjXV0b7H5AkNELHUW00WUJUzpSGIXALLxsrNLyiYie+u1zAWPBFB75fv\n" +
+     "Y7eqywKpbUcQXsR9TAxD9UBI9rcqvnAW/MYJNfZKVxkaOkWGg64Loo8pjg0esceF\n" +
+     "MqAPI8bk7ZNocIFFPX7IPkyjPXpWlmuPhD/mW7MCgYAnQnPr9jkBiDQwS/lislM/\n" +
+     "cj8RwO4X2c2P/a90MgReFypGqQN7UnP2mOkB0FnfT+foAk9lhYrwSfjBlyD5aejn\n" +
+     "kGUa56LzGjyubHOLVp8hvXd0crzHYBf6L2bngzgB+tO7wgjYwPvKh2n+GPFebh+W\n" +
+     "5k8ponMn9Y4EmxJtoKfLYQKBgQDUeKVCrgU2lQpNklUdADVpVYPtrCJvqu+Q4lFI\n" +
+     "572J7uTfha3kQTsx8fN8M8+1gHCIuVmR+WhohqP32X2RsRDO9WSEg1AAILv7+IDV\n" +
+     "QVUY1EwJ2ST1duDbu4i4NnyaeH2p7X2vfsCMoiw2w+SKpPVmDato5lMioiQDhlPY\n" +
+     "4gJ8WwKBgQDK3G80mrc6kQnGnlWp9r6xMVg65Ij7fu06m0owEACF4PSiKsCHuoDJ\n" +
+     "/zwPeFbKQFp+AH0vHvxXP7pRK7Xpu9T5PX4MViSOYY5zLFHuk8z4JeFtLqTVqazU\n" +
+     "n5bwBtICjYOIozCVHAry26KaYUCOb/b0qkYsMVL1ZPe62HKZG1t7UQ==\n" +
+     "-----END RSA PRIVATE KEY-----\n";
+  }
 }

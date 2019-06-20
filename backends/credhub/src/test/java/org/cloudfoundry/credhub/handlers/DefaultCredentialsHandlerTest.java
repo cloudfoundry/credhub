@@ -476,8 +476,8 @@ public class DefaultCredentialsHandlerTest {
     final CertificateSetRequest setRequest = new CertificateSetRequest();
     final CertificateCredentialValue certificateValue = new CertificateCredentialValue(
       null,
-      TestConstants.TEST_CERTIFICATE,
-      TestConstants.TEST_PRIVATE_KEY,
+      TestConstants.TEST_INTERMEDIATE_CA,
+      TestConstants.TEST_INTERMEDIATE_CA_PRIVATE_KEY,
       null);
 
     setRequest.setType("certificate");
@@ -489,7 +489,19 @@ public class DefaultCredentialsHandlerTest {
 
     subjectWithAcls.setCredential(setRequest);
 
-    verify(credentialService).save(null, certificateValue, setRequest);
+    final CertificateCredentialValue expected = new CertificateCredentialValue(
+            null,
+            TestConstants.TEST_INTERMEDIATE_CA,
+            TestConstants.TEST_INTERMEDIATE_CA_PRIVATE_KEY,
+            null);
+    expected.setCertificateAuthority(true);
+    expected.setSelfSigned(false);
+
+    final ArgumentCaptor<CertificateSetRequest> setRequestArgumentCaptor = ArgumentCaptor.forClass(CertificateSetRequest.class);
+
+    verify(credentialService).save(eq(null), eq(certificateValue), setRequestArgumentCaptor.capture());
+    CertificateCredentialValue actualValue = setRequestArgumentCaptor.getValue().getCertificateValue();
+    assertEquals(expected, actualValue);
   }
 
   @Test
