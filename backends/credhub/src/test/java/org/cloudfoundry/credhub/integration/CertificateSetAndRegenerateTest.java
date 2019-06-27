@@ -227,6 +227,35 @@ public class CertificateSetAndRegenerateTest {
   }
 
   @Test
+  public void certificateRegenerate_generatesANewCertWithGeneratedFieldTrue() throws Exception {
+    final MockHttpServletRequestBuilder generateCaRequest = post("/api/v1/data")
+            .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            //language=JSON
+            .content("{\n"
+                    + "  \"name\" :\"" + CA_NAME + "\",\n"
+                    + "  \"type\" : \"certificate\",\n"
+                    + "  \"parameters\" : {\n"
+                    + "    \"common_name\" : \"federation\",\n"
+                    + "    \"is_ca\" : true,\n"
+                    + "    \"self_sign\" : true\n"
+                    + "  }\n"
+                    + "}");
+
+    final String generateCaResponse = this.mockMvc
+            .perform(generateCaRequest)
+            .andExpect(status().isOk())
+            .andReturn().getResponse()
+            .getContentAsString();
+
+    final Boolean certificateAuthority = JsonPath.parse(generateCaResponse)
+            .read("$.generated");
+
+    assertThat(certificateAuthority, equalTo(true));
+  }
+
+  @Test
   public void certificateRegenerate_withTransitionalSetToTrue_failsIfThereIsAlreadyATransitionalCert()
     throws Exception {
     final MockHttpServletRequestBuilder regenerateRequest = post("/api/v1/certificates/" + caCredentialUuid + "/regenerate")
@@ -651,5 +680,30 @@ public class CertificateSetAndRegenerateTest {
       .andDo(print())
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.expiry_date", equalTo(certificate.getNotAfter().toInstant().toString())));
+  }
+
+  @Test
+  public void certificateSetRequest_returnsWithGenerated() throws Exception {
+    final String setJson = JSONObject.toJSONString(
+      ImmutableMap.<String, String>builder()
+        .put("ca_name", "")
+        .put("certificate", TEST_CERTIFICATE)
+        .put("private_key", TEST_PRIVATE_KEY)
+        .build());
+
+    final MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{\n"
+        + "  \"name\" : \"/certificate\",\n"
+        + "  \"type\" : \"certificate\",\n"
+        + "  \"value\" : " + setJson + "}");
+
+    this.mockMvc.perform(certificateSetRequest)
+      .andDo(print())
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.generated", equalTo(false)));
   }
 }

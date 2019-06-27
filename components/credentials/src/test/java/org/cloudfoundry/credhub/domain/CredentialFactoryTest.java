@@ -135,7 +135,11 @@ public class CredentialFactoryTest {
       CertificateStringConstants.SELF_SIGNED_CA_CERT,
       CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT,
       PLAINTEXT_VALUE,
-      "my-ca"
+      "my-ca",
+      false,
+      true,
+      false,
+      false
     );
 
     final CertificateCredentialVersion credential =

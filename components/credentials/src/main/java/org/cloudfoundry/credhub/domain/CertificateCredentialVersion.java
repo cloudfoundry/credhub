@@ -39,6 +39,7 @@ public class CertificateCredentialVersion extends CredentialVersion {
     this.setExpiryDate(certificate.getExpiryDate());
     this.setCertificateAuthority(certificate.isCertificateAuthority());
     this.setSelfSigned(certificate.isSelfSigned());
+    this.setGenerated(certificate.getGenerated());
   }
 
   public CertificateReader getParsedCertificate() {
@@ -134,6 +135,14 @@ public class CertificateCredentialVersion extends CredentialVersion {
 
   public void setCertificateAuthority(final boolean certificateAuthority) {
     delegate.setCertificateAuthority(certificateAuthority);
+  }
+
+  public Boolean getGenerated() {
+    return delegate.getGenerated();
+  }
+
+  public void setGenerated(final Boolean generated) {
+    delegate.setGenerated(generated);
   }
 
   @Override

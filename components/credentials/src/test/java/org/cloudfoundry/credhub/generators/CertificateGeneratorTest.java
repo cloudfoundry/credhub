@@ -94,7 +94,11 @@ public class CertificateGeneratorTest {
       null,
       CertificateFormatter.pemOf(rootCaX509Certificate),
       CertificateFormatter.pemOf(rootCaKeyPair.getPrivate()),
-      null);
+      null,
+      true,
+      true,
+      false,
+      false);
 
     generationParameters = new CertificateGenerationRequestParameters();
     generationParameters.setOrganization("foo");
@@ -164,7 +168,11 @@ public class CertificateGeneratorTest {
       null,
       CertificateFormatter.pemOf(intermediateX509Certificate),
       CertificateFormatter.pemOf(intermediateCaKeyPair.getPrivate()),
-      null);
+      null,
+      true,
+      false,
+      false,
+      false);
     when(certificateAuthorityService.findActiveVersion("/my-ca-name")).thenReturn(intermediateCa);
 
     when(keyGenerator.generateKeyPair(anyInt())).thenReturn(childCertificateKeyPair);

@@ -39,29 +39,11 @@ public class CertificateCredentialValue implements CredentialValue {
   private boolean transitional;
   private boolean certificateAuthority;
   private boolean selfSigned;
+  private Boolean generated;
 
   @SuppressWarnings("unused")
   public CertificateCredentialValue() {
     super();
-  }
-
-  // TODO: remove this implementation. actually maybe not
-
-  public CertificateCredentialValue(
-    final String ca,
-    final String certificate,
-    final String privateKey,
-    final String caName) {
-    this(ca, certificate, privateKey, caName, false, false, false);
-  }
-  public CertificateCredentialValue(
-    final String ca,
-    final String certificate,
-    final String privateKey,
-    final String caName,
-    final boolean certificateAuthority,
-    final boolean selfSigned) {
-    this(ca, certificate, privateKey, caName, certificateAuthority, selfSigned, false);
   }
 
   public CertificateCredentialValue(
@@ -71,6 +53,7 @@ public class CertificateCredentialValue implements CredentialValue {
     final String caName,
     final boolean certificateAuthority,
     final boolean selfSigned,
+    final Boolean generated,
     final boolean transitional) {
 
     super();
@@ -80,6 +63,7 @@ public class CertificateCredentialValue implements CredentialValue {
     this.transitional = transitional;
     this.certificateAuthority = certificateAuthority;
     this.selfSigned = selfSigned;
+    this.generated = generated;
     setCaName(caName);
   }
 
@@ -133,6 +117,14 @@ public class CertificateCredentialValue implements CredentialValue {
 
   public boolean isSelfSigned() {
     return selfSigned;
+  }
+
+  public void setGenerated(final Boolean generated) {
+    this.generated = generated;
+  }
+
+  public Boolean getGenerated() {
+    return generated;
   }
 
   @Override

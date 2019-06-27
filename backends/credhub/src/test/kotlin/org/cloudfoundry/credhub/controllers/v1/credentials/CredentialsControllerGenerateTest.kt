@@ -252,6 +252,7 @@ class CredentialsControllerGenerateTest {
                 "some-ca",
                 true,
                 false,
+                true,
                 false
             )
         )
@@ -365,7 +366,8 @@ class CredentialsControllerGenerateTest {
                     "transitional": false,
                     "expiry_date": "2018-11-21T16:25:20Z",
                     "certificate_authority": true,
-                    "self_signed": false
+                    "self_signed": false,
+                    "generated": true
                   }
               }
             """.trimIndent()

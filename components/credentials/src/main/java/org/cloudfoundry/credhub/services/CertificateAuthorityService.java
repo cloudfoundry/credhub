@@ -37,7 +37,14 @@ public class CertificateAuthorityService {
       throw new ParameterizedValidationException(ErrorMessages.CERT_NOT_CA);
     }
 
-    return new CertificateCredentialValue(null, certificateCredential.getCertificate(),
-      certificateCredential.getPrivateKey(), null, certificateCredential.isCertificateAuthority(), certificateCredential.isSelfSigned(), certificateCredential.isVersionTransitional());
+    return new CertificateCredentialValue(
+            null,
+            certificateCredential.getCertificate(),
+            certificateCredential.getPrivateKey(),
+            null,
+            certificateCredential.isCertificateAuthority(),
+            certificateCredential.isSelfSigned(),
+            certificateCredential.getGenerated(),
+            certificateCredential.isVersionTransitional());
   }
 }

@@ -49,7 +49,8 @@ constructor(
               certificate_credential.expiry_date as EXPIRY_DATE,
               certificate_credential.transitional as TRANSITIONAL,
               certificate_credential.certificate_authority as CERTIFICATE_AUTHORITY,
-              certificate_credential.self_signed as SELF_SIGNED
+              certificate_credential.self_signed as SELF_SIGNED,
+              certificate_credential.generated as GENERATED
             from certificate_credential
             inner join credential_version on certificate_credential.uuid = credential_version.uuid
             inner join credential on credential_version.credential_uuid = credential.uuid
@@ -62,13 +63,15 @@ constructor(
             if (nameSet.contains(name)) {
                 val isSelfSigned = rowSet.getBoolean("SELF_SIGNED")
                 val isCertificateAuthority = rowSet.getBoolean("CERTIFICATE_AUTHORITY")
+                val isGenerated = rowSet.getObject("GENERATED") as? Boolean
 
                 val certificateVersionMetadata = CertificateVersionMetadata(
                     toUUID(rowSet.getObject("VERSION_UUID")),
                     expiryDate.toInstant(),
                     rowSet.getBoolean("TRANSITIONAL"),
                     isCertificateAuthority,
-                    isSelfSigned
+                    isSelfSigned,
+                    isGenerated
                 )
 
                 val credentialUUID: UUID = toUUID(rowSet.getObject("CREDENTIAL_UUID"))

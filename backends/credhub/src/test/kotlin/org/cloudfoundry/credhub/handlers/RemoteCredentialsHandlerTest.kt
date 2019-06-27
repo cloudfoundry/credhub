@@ -142,7 +142,11 @@ class RemoteCredentialsHandlerTest {
             TestConstants.TEST_CA,
             TestConstants.TEST_CERTIFICATE,
             TestConstants.TEST_PRIVATE_KEY,
-            "/some-ca")
+            "/some-ca",
+            false,
+            false,
+            false,
+            false)
 
         val byteValue = subject.createByteStringFromData(
             type,
@@ -302,10 +306,14 @@ class RemoteCredentialsHandlerTest {
         val type = "certificate"
         val uuid = "00000000-0000-0000-0000-000000000003"
         val certificateCredential = CertificateCredentialValue(
-            TestConstants.TEST_CA,
-            TestConstants.TEST_CERTIFICATE,
-            TestConstants.TEST_PRIVATE_KEY,
-            "/some-ca")
+                TestConstants.TEST_CA,
+                TestConstants.TEST_CERTIFICATE,
+                TestConstants.TEST_PRIVATE_KEY,
+                "/some-ca",
+                false,
+                false,
+                false,
+                false)
 
         val byteValue = subject.createByteStringFromData(
             type,
@@ -519,10 +527,14 @@ class RemoteCredentialsHandlerTest {
         val type = "certificate"
         val uuid = UUID.randomUUID().toString()
         val certificateCredential = CertificateCredentialValue(
-            TestConstants.TEST_CA,
-            TestConstants.TEST_CERTIFICATE,
-            TestConstants.TEST_PRIVATE_KEY,
-            "/some-ca")
+                TestConstants.TEST_CA,
+                TestConstants.TEST_CERTIFICATE,
+                TestConstants.TEST_PRIVATE_KEY,
+                "/some-ca",
+                false,
+                false,
+                false,
+                false)
 
         val byteValue = subject.createByteStringFromData(
             type,
@@ -781,16 +793,24 @@ class RemoteCredentialsHandlerTest {
         val uuid = UUID.randomUUID().toString()
 
         val shouldntBeReturned = CertificateCredentialValue(
-            TestConstants.TEST_CA,
-            TestConstants.TEST_CERTIFICATE,
-            TestConstants.TEST_PRIVATE_KEY,
-            "/some-ca")
+                TestConstants.TEST_CA,
+                TestConstants.TEST_CERTIFICATE,
+                TestConstants.TEST_PRIVATE_KEY,
+                "/some-ca",
+                false,
+                false,
+                true,
+                false)
 
         val shouldBeReturned = CertificateCredentialValue(
-            TestConstants.TEST_CA,
-            TestConstants.OTHER_TEST_CERTIFICATE,
-            TestConstants.OTHER_TEST_PRIVATE_KEY,
-            "/some-ca")
+                TestConstants.TEST_CA,
+                TestConstants.OTHER_TEST_CERTIFICATE,
+                TestConstants.OTHER_TEST_PRIVATE_KEY,
+                "/some-ca",
+                false,
+                false,
+                true,
+                false)
 
         val generationRequestParameters = CertificateGenerationRequestParameters()
         generationRequestParameters.caName = "some-ca"
