@@ -23,8 +23,12 @@ import org.cloudfoundry.credhub.remote.grpc.FindStartingWithPathRequest
 import org.cloudfoundry.credhub.remote.grpc.GetByIdRequest
 import org.cloudfoundry.credhub.remote.grpc.GetByNameRequest
 import org.cloudfoundry.credhub.remote.grpc.GetResponse
+import org.cloudfoundry.credhub.remote.grpc.PatchPermissionsRequest
+import org.cloudfoundry.credhub.remote.grpc.PermissionsResponse
+import org.cloudfoundry.credhub.remote.grpc.PutPermissionsRequest
 import org.cloudfoundry.credhub.remote.grpc.SetRequest
 import org.cloudfoundry.credhub.remote.grpc.SetResponse
+import org.cloudfoundry.credhub.remote.grpc.WritePermissionsRequest
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
@@ -121,6 +125,42 @@ class RemoteBackendClient(
             .build()
 
         blockingStub.delete(request)
+    }
+
+    fun writePermissionRequest(path: String, actor: String, operations: MutableIterable<String>, requester: String): PermissionsResponse {
+        val request = WritePermissionsRequest
+            .newBuilder()
+            .setPath(path)
+            .setActor(actor)
+            .addAllOperations(operations)
+            .setRequester(requester)
+            .build()
+
+        return blockingStub.savePermissions(request)
+    }
+
+    fun putPermissionRequest(uuid: String, path: String, actor: String, operations: MutableIterable<String>, requester: String): PermissionsResponse {
+        val request = PutPermissionsRequest
+            .newBuilder()
+            .setUuid(uuid)
+            .setActor(actor)
+            .setPath(path)
+            .addAllOperations(operations)
+            .setRequester(requester)
+            .build()
+
+        return blockingStub.putPermissions(request)
+    }
+
+    fun patchPermissionRequest(uuid: String, operations: MutableIterable<String>, requester: String): PermissionsResponse {
+        val request = PatchPermissionsRequest
+            .newBuilder()
+            .setUuid(uuid)
+            .addAllOperations(operations)
+            .setRequester(requester)
+            .build()
+
+        return blockingStub.patchPermissions(request)
     }
 
     private fun setChannelInfo() {

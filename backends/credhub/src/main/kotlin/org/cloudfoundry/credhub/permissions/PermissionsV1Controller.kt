@@ -7,6 +7,7 @@ import org.cloudfoundry.credhub.audit.entities.DeletePermissions
 import org.cloudfoundry.credhub.audit.entities.GetPermissions
 import org.cloudfoundry.credhub.requests.PermissionsRequest
 import org.cloudfoundry.credhub.views.PermissionsView
+import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.validation.annotation.Validated
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 
+@Profile("!remote")
 @RestController
 @RequestMapping(path = [PermissionsV1Controller.ENDPOINT], produces = [MediaType.APPLICATION_JSON_UTF8_VALUE])
 class PermissionsV1Controller(
