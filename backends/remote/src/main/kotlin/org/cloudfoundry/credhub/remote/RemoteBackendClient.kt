@@ -15,11 +15,8 @@ import io.netty.channel.kqueue.KQueueEventLoopGroup
 import io.netty.channel.unix.DomainSocketAddress
 import org.apache.commons.lang3.StringUtils
 import org.apache.logging.log4j.LogManager
-import org.cloudfoundry.credhub.ErrorMessages
-import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
 import org.cloudfoundry.credhub.remote.grpc.CredentialServiceGrpc
 import org.cloudfoundry.credhub.remote.grpc.DeleteByNameRequest
-import org.cloudfoundry.credhub.remote.grpc.DeleteResponse
 import org.cloudfoundry.credhub.remote.grpc.FindContainingNameRequest
 import org.cloudfoundry.credhub.remote.grpc.FindResponse
 import org.cloudfoundry.credhub.remote.grpc.FindStartingWithPathRequest
@@ -67,15 +64,7 @@ class RemoteBackendClient(
             .setRequester(user)
             .build()
 
-        val getResponse: GetResponse
-
-        try {
-            getResponse = blockingStub.getByName(request)
-        } catch (e: RuntimeException) {
-            throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
-        }
-
-        return getResponse
+        return blockingStub.getByName(request)
     }
 
     fun getByIdRequest(credentialUuid: String, user: String): GetResponse {
@@ -85,54 +74,7 @@ class RemoteBackendClient(
             .setRequester(user)
             .build()
 
-        val getResponse: GetResponse
-
-        try {
-            getResponse = blockingStub.getById(request)
-        } catch (e: RuntimeException) {
-            throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
-        }
-
-        return getResponse
-    }
-
-    fun setRequest(name: String, type: String, data: ByteString, user: String, generationParameters: ByteString): SetResponse {
-        val request = SetRequest
-            .newBuilder()
-            .setName(name)
-            .setRequester(user)
-            .setType(type)
-            .setData(data)
-            .setGenerationParameters(generationParameters)
-            .build()
-
-        val setResponse: SetResponse
-
-        try {
-            setResponse = blockingStub.set(request)
-        } catch (e: RuntimeException) {
-            throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
-        }
-
-        return setResponse
-    }
-
-    fun deleteRequest(name: String, user: String): DeleteResponse {
-        val request = DeleteByNameRequest
-            .newBuilder()
-            .setName(name)
-            .setRequester(user)
-            .build()
-
-        val deleteResponse: DeleteResponse
-
-        try {
-            deleteResponse = blockingStub.delete(request)
-        } catch (e: RuntimeException) {
-            throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
-        }
-
-        return deleteResponse
+        return blockingStub.getById(request)
     }
 
     fun findContainingNameRequest(name: String, user: String): FindResponse {
@@ -142,15 +84,7 @@ class RemoteBackendClient(
             .setRequester(user)
             .build()
 
-        val findResponse: FindResponse
-
-        try {
-            findResponse = blockingStub.findContainingName(request)
-        } catch (e: RuntimeException) {
-            throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
-        }
-
-        return findResponse
+        return blockingStub.findContainingName(request)
     }
 
     fun findStartingWithPathRequest(path: String, user: String): FindResponse {
@@ -163,15 +97,30 @@ class RemoteBackendClient(
             .setRequester(user)
             .build()
 
-        val findResponse: FindResponse
+        return blockingStub.findStartingWithPath(request)
+    }
 
-        try {
-            findResponse = blockingStub.findStartingWithPath(request)
-        } catch (e: RuntimeException) {
-            throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
-        }
+    fun setRequest(name: String, type: String, data: ByteString, user: String, generationParameters: ByteString): SetResponse {
+        val request = SetRequest
+            .newBuilder()
+            .setName(name)
+            .setRequester(user)
+            .setType(type)
+            .setData(data)
+            .setGenerationParameters(generationParameters)
+            .build()
 
-        return findResponse
+        return blockingStub.set(request)
+    }
+
+    fun deleteRequest(name: String, user: String) {
+        val request = DeleteByNameRequest
+            .newBuilder()
+            .setName(name)
+            .setRequester(user)
+            .build()
+
+        blockingStub.delete(request)
     }
 
     private fun setChannelInfo() {

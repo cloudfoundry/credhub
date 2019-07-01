@@ -44,11 +44,6 @@ message DeleteByNameRequest {
   string requester = 2;
 }
 
-message DeleteResponse {
-  string name = 1;
-  bool deleted = 2;
-}
-
 message FindContainingNameRequest {
   string name = 1;
   string requester = 2;
@@ -68,11 +63,15 @@ message FindResult{
   string versionCreatedAt = 2;
 }
 
+message Empty {
+
+}
+
 service CredentialService {
   rpc GetByName (GetByNameRequest) returns (GetResponse);
   rpc GetById (GetByIdRequest) returns (GetResponse);
   rpc Set (SetRequest) returns (SetResponse);
-  rpc Delete (DeleteByNameRequest) returns (DeleteResponse);
+  rpc Delete (DeleteByNameRequest) returns (Empty);
   rpc FindContainingName (FindContainingNameRequest) returns (FindResponse);
   rpc FindStartingWithPath (FindStartingWithPathRequest) returns (FindResponse);
 }
