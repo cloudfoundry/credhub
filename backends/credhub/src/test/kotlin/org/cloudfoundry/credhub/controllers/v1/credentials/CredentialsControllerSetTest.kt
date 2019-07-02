@@ -366,6 +366,7 @@ class CredentialsControllerSetTest {
                 null,
                 true,
                 false,
+                false,
                 false
             )
         )
@@ -418,7 +419,11 @@ class CredentialsControllerSetTest {
             TestConstants.TEST_CA,
             TestConstants.TEST_CERTIFICATE,
             TestConstants.TEST_PRIVATE_KEY,
-            null
+            null,
+            false,
+            false,
+            false,
+            false
         )
         expectedValueSetRequest.name = "/some-certificate-path"
         expectedValueSetRequest.type = CredentialType.CERTIFICATE.type.toLowerCase()
@@ -439,7 +444,8 @@ class CredentialsControllerSetTest {
                 "transitional": false,
                 "expiry_date": "2018-11-21T16:25:20Z",
                 "certificate_authority": true,
-                "self_signed": false
+                "self_signed": false,
+                "generated": false
               }
             }
         """.trimIndent()

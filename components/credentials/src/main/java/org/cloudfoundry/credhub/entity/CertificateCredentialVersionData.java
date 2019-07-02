@@ -46,6 +46,8 @@ public class CertificateCredentialVersionData extends CredentialVersionData<Cert
   @Column(table = CertificateCredentialVersionData.TABLE_NAME)
   private Boolean selfSigned;
 
+  @Column(table = CertificateCredentialVersionData.TABLE_NAME)
+  private Boolean generated;
 
   public CertificateCredentialVersionData() {
     super();
@@ -126,6 +128,14 @@ public class CertificateCredentialVersionData extends CredentialVersionData<Cert
 
   public void setCertificateAuthority(final boolean certificateAuthority) {
     this.certificateAuthority = certificateAuthority;
+  }
+
+  public Boolean getGenerated() {
+    return generated;
+  }
+
+  public void setGenerated(final Boolean generated) {
+    this.generated = generated;
   }
 
   @Override

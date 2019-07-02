@@ -12,5 +12,6 @@ data class CertificateVersionView(
     @JsonProperty("certificate_authority")
     val certificateAuthority: Boolean,
     @JsonProperty("self_signed")
-    val selfSigned: Boolean
+    val selfSigned: Boolean,
+    val generated: Boolean?
 )

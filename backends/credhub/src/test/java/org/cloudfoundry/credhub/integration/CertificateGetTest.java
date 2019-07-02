@@ -276,4 +276,16 @@ public class CertificateGetTest {
     assertThat(values, hasSize(1));
     assertThat(values.get(0), is(true));
   }
+
+  @Test
+  public void getCertificateCredentials_returnsWithGeneratedField() throws Exception {
+    generateCa(mockMvc, "my-certificate", ALL_PERMISSIONS_TOKEN);
+
+    final String response = getCertificateCredentialsByName(mockMvc, ALL_PERMISSIONS_TOKEN, "my-certificate");
+    final List<Boolean> values = JsonPath.parse(response)
+            .read("$.certificates[*].versions[*].generated");
+
+    assertThat(values, hasSize(1));
+    assertThat(values.get(0), is(true));
+  }
 }

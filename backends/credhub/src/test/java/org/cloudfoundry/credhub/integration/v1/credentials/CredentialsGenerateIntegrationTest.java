@@ -107,7 +107,7 @@ public class CredentialsGenerateIntegrationTest {
                 .thenReturn(new RsaCredentialValue(PUBLIC_KEY, PRIVATE_KEY));
 
         when(certificateGenerator.generateCredential(any(CertificateGenerationParameters.class)))
-                .thenReturn(new CertificateCredentialValue("ca_cert", CERT, PRIVATE_KEY, null));
+                .thenReturn(new CertificateCredentialValue("ca_cert", CERT, PRIVATE_KEY, null, false, false, true, false));
     }
 
     @Test

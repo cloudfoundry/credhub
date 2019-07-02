@@ -412,7 +412,7 @@ public class CredentialsTypeSpecificGenerateIntegrationTest {
       .thenReturn(new StringCredentialValue(FAKE_PASSWORD));
 
     when(certificateGenerator.generateCredential(any(GenerationParameters.class)))
-      .thenReturn(new CertificateCredentialValue(CA, CERTIFICATE, CERTIFICATE_PRIVATE_KEY, null));
+      .thenReturn(new CertificateCredentialValue(CA, CERTIFICATE, CERTIFICATE_PRIVATE_KEY, null, false, false, true, false));
 
     when(sshGenerator.generateCredential(any(GenerationParameters.class)))
       .thenReturn(new SshCredentialValue(PUBLIC_KEY, PRIVATE_KEY, null));

@@ -94,6 +94,7 @@ class DefaultCredentialsHandler(
                         setRequest.certificateValue.isSelfSigned = true
                     }
                 }
+                setRequest.certificateValue.generated = false
             } else {
                 validateCertificateValueIsSignedByCa(certificateValue, caName)
             }

@@ -159,7 +159,8 @@ class DefaultCertificatesHandler(
                     expiryDate = certificateVersion.expiryDate,
                     transitional = certificateVersion.isTransitional,
                     certificateAuthority = certificateVersion.isCertificateAuthority,
-                    selfSigned = certificateVersion.isSelfSigned
+                    selfSigned = certificateVersion.isSelfSigned,
+                    generated = certificateVersion.generated
                 )
             }
             val signedBy = certificateMetadata.caName ?: ""

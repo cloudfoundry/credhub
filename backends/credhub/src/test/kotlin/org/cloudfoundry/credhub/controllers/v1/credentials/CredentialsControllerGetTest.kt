@@ -275,6 +275,7 @@ class CredentialsControllerGetTest {
                 null,
                 true,
                 false,
+                    true,
                 false
             )
         )
@@ -310,7 +311,8 @@ class CredentialsControllerGetTest {
                 "transitional": false,
                 "expiry_date": "2018-11-21T16:25:20Z",
                 "certificate_authority": true,
-                "self_signed": false
+                "self_signed": false,
+                "generated": true
               }
             }
         """.trimMargin()

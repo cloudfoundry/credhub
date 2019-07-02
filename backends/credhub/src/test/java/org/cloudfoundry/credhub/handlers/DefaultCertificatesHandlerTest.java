@@ -33,6 +33,7 @@ import org.cloudfoundry.credhub.services.PermissionCheckingService;
 import org.cloudfoundry.credhub.utils.TestConstants;
 import org.cloudfoundry.credhub.views.CertificateCredentialView;
 import org.cloudfoundry.credhub.views.CertificateCredentialsView;
+import org.cloudfoundry.credhub.views.CertificateVersionView;
 import org.cloudfoundry.credhub.views.CertificateView;
 import org.hamcrest.core.IsEqual;
 import org.junit.Before;
@@ -45,6 +46,7 @@ import static org.assertj.core.api.Java6Assertions.fail;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -178,7 +180,8 @@ public class DefaultCertificatesHandlerTest {
           certWithCaAndChildrenVersion.getExpiryDate(),
           false,
           certWithCaAndChildrenIsCa,
-          certWithCaAndChildrenIsSelfSigned
+          certWithCaAndChildrenIsSelfSigned,
+          true
         ))
 
     );
@@ -190,11 +193,12 @@ public class DefaultCertificatesHandlerTest {
       childCert1Version.getCaName(),
       Collections.singletonList(
         new CertificateVersionMetadata(
-          childCert1Version.getUuid(),
-          childCert1Version.getExpiryDate(),
-          false,
-          false,
-          false
+                childCert1Version.getUuid(),
+                childCert1Version.getExpiryDate(),
+                false,
+                false,
+                false,
+                true
         ))
     );
 
@@ -209,7 +213,8 @@ public class DefaultCertificatesHandlerTest {
           childCert2Version.getExpiryDate(),
           false,
           false,
-          false
+          false,
+            true
         ))
 
     );
@@ -225,7 +230,8 @@ public class DefaultCertificatesHandlerTest {
           selfSignedCertVersion.getExpiryDate(),
           false,
           selfSignedIsCA,
-          selfSignedIsSelfSigned
+          selfSignedIsSelfSigned,
+          false
         ))
     );
 
@@ -258,10 +264,12 @@ public class DefaultCertificatesHandlerTest {
     assertThat(actualCertWithCa.getSignedBy(), equalTo(certWithCaAndChildrenCaName));
     assertThat(actualCertWithCa.getCertificateVersionViews().get(0).getCertificateAuthority(), equalTo(true));
     assertThat(actualCertWithCa.getCertificateVersionViews().get(0).getSelfSigned(), equalTo(false));
+    assertThat(actualCertWithCa.getCertificateVersionViews().get(0).getGenerated(), equalTo(true));
     assertThat(actualSelfSignedCert.getCertificateVersionViews().size(), equalTo(1));
     assertThat(actualSelfSignedCert.getSignedBy(), equalTo(selfSignedCertName));
     assertThat(actualSelfSignedCert.getCertificateVersionViews().get(0).getCertificateAuthority(), equalTo(true));
     assertThat(actualSelfSignedCert.getCertificateVersionViews().get(0).getSelfSigned(), equalTo(true));
+    assertThat(actualSelfSignedCert.getCertificateVersionViews().get(0).getGenerated(), equalTo(false));
     assertThat(actualCertificateWithNoValidVersions.getCertificateVersionViews().size(), equalTo(0));
     assertThat(actualCertificateWithNoValidVersions.getSignedBy(), equalTo(""));
   }
@@ -332,7 +340,8 @@ public class DefaultCertificatesHandlerTest {
           certWithCaAndChildrenVersion.getExpiryDate(),
           false,
           certWithCaAndChildrenIsCa,
-          certWithCaAndChildrenIsSelfSigned
+          certWithCaAndChildrenIsSelfSigned,
+          false
         ))
     );
 
@@ -347,8 +356,8 @@ public class DefaultCertificatesHandlerTest {
           selfSignedCertVersion.getExpiryDate(),
           false,
           selfSignedCertIsCa,
-          selfSignedCertIsSelfSigned
-
+          selfSignedCertIsSelfSigned,
+          false
         ))
     );
 
@@ -396,6 +405,47 @@ public class DefaultCertificatesHandlerTest {
   }
 
   @Test
+  public void handleGetAllRequest_whenGeneratedFieldIsNullReturnsCertificateCredentialViewWithNullField() {
+    final Credential selfSignedCert = mock(Credential.class);
+    final UUID selfSignedCertUuid = UUID.randomUUID();
+    final String selfSignedCertName = "/selfSignedCert";
+    final boolean selfSignedCertIsCa = true;
+    final boolean selfSignedCertIsSelfSigned = true;
+    when(selfSignedCert.getUuid()).thenReturn(selfSignedCertUuid);
+    when(selfSignedCert.getName()).thenReturn(selfSignedCertName);
+
+    final CertificateCredentialVersion selfSignedCertVersion = new CertificateCredentialVersion(selfSignedCertName);
+    selfSignedCertVersion.setUuid(UUID.randomUUID());
+    selfSignedCertVersion.setExpiryDate(Instant.now());
+    selfSignedCertVersion.setCertificate(TestConstants.TEST_CA);
+    selfSignedCertVersion.setSelfSigned(selfSignedCertIsSelfSigned);
+    selfSignedCertVersion.setCertificateAuthority(selfSignedCertIsCa);
+
+    final CertificateMetadata selfSignedCertMetadata
+            = new CertificateMetadata(
+            selfSignedCertUuid,
+            selfSignedCertName,
+            selfSignedCertName,
+            Collections.singletonList(
+                    new CertificateVersionMetadata(
+                            selfSignedCertVersion.getUuid(),
+                            selfSignedCertVersion.getExpiryDate(),
+                            false,
+                            selfSignedCertIsCa,
+                            selfSignedCertIsSelfSigned,
+                            null
+                    ))
+    );
+
+    when(certificateService.findAllValidMetadata(Collections.singletonList(selfSignedCertName)))
+            .thenReturn(Collections.singletonList(selfSignedCertMetadata));
+    when(certificateService.getAll()).thenReturn(Collections.singletonList(selfSignedCert));
+
+    CertificateCredentialsView actual = subjectWithoutAcls.handleGetAllRequest();
+    assertNull(actual.getCertificates().get(0).getCertificateVersionViews().get(0).getGenerated());
+  }
+
+  @Test
   public void handleGetByNameRequest_returnsCertificateCredentialsViews() {
     final UUID uuid = UUID.randomUUID();
     final String certificateName = "some certificate";
@@ -420,12 +470,14 @@ public class DefaultCertificatesHandlerTest {
     nonTransitionalVersion.setCertificate(TestConstants.TEST_CERTIFICATE);
     nonTransitionalVersion.setCertificateAuthority(true);
     nonTransitionalVersion.setSelfSigned(false);
+    nonTransitionalVersion.setGenerated(true);
     final CertificateCredentialVersion transitionalVersion = new CertificateCredentialVersion(certificateName);
     transitionalVersion.setUuid(UUID.randomUUID());
     transitionalVersion.setExpiryDate(Instant.now());
     transitionalVersion.setTransitional(true);
     transitionalVersion.setSelfSigned(false);
     transitionalVersion.setCertificateAuthority(true);
+    transitionalVersion.setGenerated(false);
 
     final CertificateMetadata metadata
       = new CertificateMetadata(
@@ -438,14 +490,16 @@ public class DefaultCertificatesHandlerTest {
           nonTransitionalVersion.getExpiryDate(),
           nonTransitionalVersion.isVersionTransitional(),
           nonTransitionalVersion.isCertificateAuthority(),
-          nonTransitionalVersion.isSelfSigned()
+          nonTransitionalVersion.isSelfSigned(),
+          nonTransitionalVersion.getGenerated()
         ),
         new CertificateVersionMetadata(
           transitionalVersion.getUuid(),
           transitionalVersion.getExpiryDate(),
           transitionalVersion.isVersionTransitional(),
           transitionalVersion.isCertificateAuthority(),
-          transitionalVersion.isSelfSigned()
+          transitionalVersion.isSelfSigned(),
+          transitionalVersion.getGenerated()
         )
       )
     );
@@ -464,6 +518,18 @@ public class DefaultCertificatesHandlerTest {
     assertThat(certificate.getCertificateVersionViews().size(), equalTo(2));
     assertThat(certificate.getSignedBy(), equalTo(caName));
     assertThat(certificate.getSigns(), equalTo(childCertNames));
+
+    final CertificateVersionView actualNonTransitionalVersion = certificate.getCertificateVersionViews().get(0);
+    assertThat(actualNonTransitionalVersion.getGenerated(), equalTo(true));
+    assertThat(actualNonTransitionalVersion.getSelfSigned(), equalTo(false));
+    assertThat(actualNonTransitionalVersion.getTransitional(), equalTo(false));
+    assertThat(actualNonTransitionalVersion.getCertificateAuthority(), equalTo(true));
+
+    final CertificateVersionView actualTransitionalVersion = certificate.getCertificateVersionViews().get(1);
+    assertThat(actualTransitionalVersion.getGenerated(), equalTo(false));
+    assertThat(actualTransitionalVersion.getSelfSigned(), equalTo(false));
+    assertThat(actualTransitionalVersion.getTransitional(), equalTo(true));
+    assertThat(actualTransitionalVersion.getCertificateAuthority(), equalTo(true));
   }
 
   @Test
@@ -521,14 +587,16 @@ public class DefaultCertificatesHandlerTest {
           nonTransitionalVersion.getExpiryDate(),
           nonTransitionalVersion.isVersionTransitional(),
           nonTransitionalVersion.isCertificateAuthority(),
-          nonTransitionalVersion.isSelfSigned()
+          nonTransitionalVersion.isSelfSigned(),
+          nonTransitionalVersion.getGenerated()
         ),
         new CertificateVersionMetadata(
           transitionalVersion.getUuid(),
           transitionalVersion.getExpiryDate(),
           transitionalVersion.isVersionTransitional(),
           transitionalVersion.isCertificateAuthority(),
-          transitionalVersion.isSelfSigned()
+          transitionalVersion.isSelfSigned(),
+          transitionalVersion.getGenerated()
         )
       )
     );

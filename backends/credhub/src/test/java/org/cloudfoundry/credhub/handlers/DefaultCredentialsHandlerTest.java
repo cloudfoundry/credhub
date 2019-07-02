@@ -478,7 +478,12 @@ public class DefaultCredentialsHandlerTest {
       null,
       TestConstants.TEST_INTERMEDIATE_CA,
       TestConstants.TEST_INTERMEDIATE_CA_PRIVATE_KEY,
-      null);
+      null,
+      false,
+      false,
+      false,
+      false
+    );
 
     setRequest.setType("certificate");
     setRequest.setName(CREDENTIAL_NAME);
@@ -493,7 +498,13 @@ public class DefaultCredentialsHandlerTest {
             null,
             TestConstants.TEST_INTERMEDIATE_CA,
             TestConstants.TEST_INTERMEDIATE_CA_PRIVATE_KEY,
-            null);
+            null,
+            false,
+            false,
+            false,
+            false
+    );
+
     expected.setCertificateAuthority(true);
     expected.setSelfSigned(false);
 
@@ -510,8 +521,13 @@ public class DefaultCredentialsHandlerTest {
       null,
       TestConstants.TEST_CA,
       null,
-      null
+      null,
+      false,
+      false,
+      false,
+      false
     );
+
     when(permissionCheckingService.hasPermission(USER, "/test-ca-name", PermissionOperation.READ))
       .thenReturn(true);
 
@@ -523,7 +539,12 @@ public class DefaultCredentialsHandlerTest {
       null,
       TestConstants.TEST_CERTIFICATE,
       "Enterprise",
-      "test-ca-name");
+      "test-ca-name",
+      false,
+      false,
+      false,
+      false
+    );
 
     setRequest.setType("certificate");
     setRequest.setName("/captain");
@@ -533,7 +554,11 @@ public class DefaultCredentialsHandlerTest {
       TestConstants.TEST_CA,
       TestConstants.TEST_CERTIFICATE,
       "Enterprise",
-      "/test-ca-name"
+      "/test-ca-name",
+      false,
+      false,
+      false,
+      false
     );
     final ArgumentCaptor<CredentialValue> credentialValueArgumentCaptor = ArgumentCaptor.forClass(CredentialValue.class);
 

@@ -55,6 +55,7 @@ public class CertificateCredentialTest {
     entity.setUuid(uuid);
     entity.setCertificateAuthority(true);
     entity.setSelfSigned(false);
+    entity.setGenerated(false);
   }
 
   @Test
@@ -70,6 +71,7 @@ public class CertificateCredentialTest {
       + "\"transitional\":false,"
       + "\"certificate_authority\":true,"
       + "\"self_signed\":false,"
+      + "\"generated\":false,"
       + "\"version_created_at\":null,"
       + "\"id\":\"" + uuid.toString() + "\","
       + "\"name\":\"" + credentialName + "\","
@@ -112,6 +114,7 @@ public class CertificateCredentialTest {
       + "\"transitional\":false,"
       + "\"certificate_authority\":false,"
       + "\"self_signed\":false,"
+      + "\"generated\":null,"
       + "\"version_created_at\":null,"
       + "\"id\":\""
       + uuid.toString() + "\",\"name\":\""

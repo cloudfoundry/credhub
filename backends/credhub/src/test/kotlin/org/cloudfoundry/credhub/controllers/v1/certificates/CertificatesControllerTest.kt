@@ -86,6 +86,7 @@ class CertificatesControllerTest {
             name,
             false,
             false,
+            true,
             true
         )
 
@@ -155,6 +156,7 @@ class CertificatesControllerTest {
                 "certificate": "${TestConstants.TEST_CERTIFICATE}",
                 "private_key": "${TestConstants.TEST_PRIVATE_KEY}",
                 "transitional": true,
+                "generated": true,
                 "expiry_date": "${certificateCredentialValue.expiryDate}",
                 "certificate_authority": false,
                 "self_signed": false
@@ -173,14 +175,16 @@ class CertificatesControllerTest {
                 transitional = true,
                 expiryDate = Instant.ofEpochSecond(1549053472L).plus(365, ChronoUnit.DAYS),
                 certificateAuthority = false,
-                selfSigned = false
+                selfSigned = false,
+                generated = false
             ),
             CertificateVersionView(
                 id = UUID.randomUUID(),
                 transitional = false,
                 expiryDate = Instant.ofEpochSecond(1549053472L),
                 certificateAuthority = false,
-                selfSigned = false
+                selfSigned = false,
+                generated = false
             )
         )
         var cert1Name = "/cert1"
@@ -218,14 +222,16 @@ class CertificatesControllerTest {
                   "expiry_date": "2020-02-01T20:37:52Z",
                   "transitional": true,
                   "certificate_authority": false,
-                  "self_signed": false
+                  "self_signed": false,
+                  "generated": false
                 },
                 {
                   "id": "${certificateVersions[1].id}",
                   "expiry_date": "2019-02-01T20:37:52Z",
                   "transitional": false,
                   "certificate_authority": false,
-                  "self_signed": false
+                  "self_signed": false,
+                  "generated": false
                 }
               ]
             }
@@ -245,7 +251,8 @@ class CertificatesControllerTest {
                 transitional = false,
                 expiryDate = Instant.ofEpochSecond(1549053472L),
                 certificateAuthority = false,
-                selfSigned = false
+                selfSigned = false,
+                generated = false
             )
         )
         var cert1Name = "/cert1"
@@ -285,6 +292,7 @@ class CertificatesControllerTest {
                   "id": "${certificateVersions[0].id}",
                   "expiry_date": "2019-02-01T20:37:52Z",
                   "transitional": false,
+                  "generated": false,
                   "certificate_authority": false,
                   "self_signed": false
                 }
@@ -370,6 +378,7 @@ class CertificatesControllerTest {
               "id": "$certificateId",
               "name": "$name",
               "transitional": true,
+              "generated": true,
               "certificate_authority": false,
               "self_signed": false,
               "expiry_date": "${certificateCredentialValue.expiryDate}",
@@ -387,7 +396,32 @@ class CertificatesControllerTest {
 
     @Test
     fun POST__certificateVersions__returns_certificate() {
-        spyCertificatesHandler.handleCreateVersionRequest__returns_certificateView = certificateView
+        val expectedCertificateCredentialValue = CertificateCredentialValue(
+                TestConstants.TEST_CA,
+                TestConstants.TEST_CERTIFICATE,
+                TestConstants.TEST_PRIVATE_KEY,
+                name,
+                false,
+                false,
+                false,
+                true
+        )
+
+        val expectedCredentialViewResponse = CredentialView(
+                createdAt,
+                certificateId,
+                name,
+                CredentialType.CERTIFICATE.type.toLowerCase(),
+                expectedCertificateCredentialValue)
+
+        val expectedCertificateCredentialVersion = CertificateCredentialVersion(expectedCertificateCredentialValue, SpyEncryptor())
+        expectedCertificateCredentialVersion.createName(name)
+        expectedCertificateCredentialVersion.versionCreatedAt = createdAt
+        expectedCertificateCredentialVersion.uuid = certificateId
+        expectedCertificateCredentialVersion.expiryDate = expectedCertificateCredentialValue.expiryDate
+
+        val expectedCertificateView = CertificateView(expectedCertificateCredentialVersion)
+        spyCertificatesHandler.handleCreateVersionRequest__returns_certificateView = expectedCertificateView
 
         // language=json
         val requestBody = """
@@ -424,13 +458,14 @@ class CertificatesControllerTest {
         val expectedResponseBody = """
             {
               "type": "${CredentialType.CERTIFICATE.type.toLowerCase()}",
-              "version_created_at": "${credentialViewResponse.versionCreatedAt}",
+              "version_created_at": "${expectedCredentialViewResponse.versionCreatedAt}",
               "id": "$certificateId",
               "name": "$name",
               "transitional": true,
               "certificate_authority": false,
               "self_signed": false,
-              "expiry_date": "${certificateCredentialValue.expiryDate}",
+              "generated": false,
+              "expiry_date": "${expectedCertificateCredentialValue.expiryDate}",
               "value": {
                 "ca": "${TestConstants.TEST_CA}",
                 "certificate": "${TestConstants.TEST_CERTIFICATE}",
@@ -476,6 +511,7 @@ class CertificatesControllerTest {
               "transitional": true,
               "certificate_authority": false,
               "self_signed": false,
+              "generated": true,
               "expiry_date": "${certificateCredentialValue.expiryDate}",
               "value": {
                 "ca": "${TestConstants.TEST_CA}",

@@ -149,11 +149,11 @@ class RemoteCredentialsHandler(
         }
 
         return CredentialView(
-            versionCreatedAt,
-            uuid,
-            name,
-            type,
-            credentialValue
+                versionCreatedAt,
+                uuid,
+                name,
+                type,
+                credentialValue
         )
     }
 
@@ -171,11 +171,11 @@ class RemoteCredentialsHandler(
         val credentialValue = getValueFromResponse(response.type, response.data)
 
         return CredentialView(
-            Instant.parse(response.versionCreatedAt),
-            UUID.fromString(response.id),
-            response.name,
-            response.type,
-            credentialValue
+                Instant.parse(response.versionCreatedAt),
+                UUID.fromString(response.id),
+                response.name,
+                response.type,
+                credentialValue
         )
     }
 
@@ -204,13 +204,14 @@ class RemoteCredentialsHandler(
                 val jsonNode = objectMapper.readTree(jsonString)
 
                 CertificateCredentialValue(
-                    jsonNode["ca"]?.textValue(),
-                    jsonNode["certificate"]?.textValue(),
-                    jsonNode["private_key"]?.textValue(),
-                    jsonNode["ca_name"]?.textValue(),
-                    jsonNode["certificate_authority"]?.booleanValue() ?: false,
-                    jsonNode["self_signed"]?.booleanValue() ?: false,
-                    jsonNode["transitional"]?.booleanValue() ?: false
+                        jsonNode["ca"]?.textValue(),
+                        jsonNode["certificate"]?.textValue(),
+                        jsonNode["private_key"]?.textValue(),
+                        jsonNode["ca_name"]?.textValue(),
+                        jsonNode["certificate_authority"]?.booleanValue() ?: false,
+                        jsonNode["self_signed"]?.booleanValue() ?: false,
+                        jsonNode["generated"]?.booleanValue() ?: false,
+                        jsonNode["transitional"]?.booleanValue() ?: false
                 )
             }
             "json" -> {
@@ -222,26 +223,26 @@ class RemoteCredentialsHandler(
                 val jsonString = data.toStringUtf8()
                 val jsonNode = objectMapper.readTree(jsonString)
                 UserCredentialValue(
-                    jsonNode["username"]?.textValue(),
-                    jsonNode["password"]?.textValue(),
-                    jsonNode["salt"]?.textValue()
+                        jsonNode["username"]?.textValue(),
+                        jsonNode["password"]?.textValue(),
+                        jsonNode["salt"]?.textValue()
                 )
             }
             "rsa" -> {
                 val jsonString = data.toStringUtf8()
                 val jsonNode = objectMapper.readTree(jsonString)
                 RsaCredentialValue(
-                    jsonNode["public_key"]?.textValue(),
-                    jsonNode["private_key"]?.textValue()
+                        jsonNode["public_key"]?.textValue(),
+                        jsonNode["private_key"]?.textValue()
                 )
             }
             "ssh" -> {
                 val jsonString = data.toStringUtf8()
                 val jsonNode = objectMapper.readTree(jsonString)
                 SshCredentialValue(
-                    jsonNode["public_key"]?.textValue(),
-                    jsonNode["private_key"]?.textValue(),
-                    jsonNode["public_key_fingerprint"]?.textValue()
+                        jsonNode["public_key"]?.textValue(),
+                        jsonNode["private_key"]?.textValue(),
+                        jsonNode["public_key_fingerprint"]?.textValue()
 
                 )
             }
@@ -267,13 +268,14 @@ class RemoteCredentialsHandler(
                 val certificateCredentialValue = data as CertificateCredentialValue
 
                 val json = objectMapper.writeValueAsString(mapOf(
-                    "ca" to certificateCredentialValue.ca,
-                    "ca_name" to certificateCredentialValue.caName,
-                    "certificate" to certificateCredentialValue.certificate,
-                    "private_key" to certificateCredentialValue.privateKey,
-                    "transitional" to certificateCredentialValue.isTransitional,
-                    "certificate_authority" to certificateCredentialValue.isCertificateAuthority,
-                    "self_signed" to certificateCredentialValue.isSelfSigned
+                        "ca" to certificateCredentialValue.ca,
+                        "ca_name" to certificateCredentialValue.caName,
+                        "certificate" to certificateCredentialValue.certificate,
+                        "private_key" to certificateCredentialValue.privateKey,
+                        "transitional" to certificateCredentialValue.isTransitional,
+                        "certificate_authority" to certificateCredentialValue.isCertificateAuthority,
+                        "self_signed" to certificateCredentialValue.isSelfSigned,
+                        "generated" to certificateCredentialValue.generated
 
                 ))
                 ByteString.copyFromUtf8(json)
@@ -288,9 +290,9 @@ class RemoteCredentialsHandler(
                 val userCredentialValue = data as UserCredentialValue
 
                 val json = objectMapper.writeValueAsString(mapOf(
-                    "username" to userCredentialValue.username,
-                    "password" to userCredentialValue.password,
-                    "salt" to userCredentialValue.salt
+                        "username" to userCredentialValue.username,
+                        "password" to userCredentialValue.password,
+                        "salt" to userCredentialValue.salt
                 ))
                 ByteString.copyFromUtf8(json)
             }
@@ -298,8 +300,8 @@ class RemoteCredentialsHandler(
                 val rsaCredentialValue = data as RsaCredentialValue
 
                 val json = objectMapper.writeValueAsString(mapOf(
-                    "public_key" to rsaCredentialValue.publicKey,
-                    "private_key" to rsaCredentialValue.privateKey
+                        "public_key" to rsaCredentialValue.publicKey,
+                        "private_key" to rsaCredentialValue.privateKey
                 ))
                 ByteString.copyFromUtf8(json)
             }
@@ -307,9 +309,9 @@ class RemoteCredentialsHandler(
                 val sshCredentialValue = data as SshCredentialValue
 
                 val json = objectMapper.writeValueAsString(mapOf(
-                    "public_key" to sshCredentialValue.publicKey,
-                    "private_key" to sshCredentialValue.privateKey,
-                    "public_key_fingerprint" to sshCredentialValue.publicKeyFingerprint
+                        "public_key" to sshCredentialValue.publicKey,
+                        "private_key" to sshCredentialValue.privateKey,
+                        "public_key_fingerprint" to sshCredentialValue.publicKeyFingerprint
                 ))
                 ByteString.copyFromUtf8(json)
             }
@@ -322,12 +324,12 @@ class RemoteCredentialsHandler(
             "password" -> {
                 val stringGenerationParameters = generationParams as StringGenerationParameters
                 val json = objectMapper.writeValueAsString(mapOf(
-                    "include_special" to stringGenerationParameters.isIncludeSpecial,
-                    "exclude_number" to stringGenerationParameters.isExcludeNumber,
-                    "exclude_upper" to stringGenerationParameters.isExcludeUpper,
-                    "exclude_lower" to stringGenerationParameters.isExcludeLower,
-                    "username" to stringGenerationParameters.username,
-                    "length" to stringGenerationParameters.length
+                        "include_special" to stringGenerationParameters.isIncludeSpecial,
+                        "exclude_number" to stringGenerationParameters.isExcludeNumber,
+                        "exclude_upper" to stringGenerationParameters.isExcludeUpper,
+                        "exclude_lower" to stringGenerationParameters.isExcludeLower,
+                        "username" to stringGenerationParameters.username,
+                        "length" to stringGenerationParameters.length
                 ))
 
                 ByteString.copyFromUtf8(json)
@@ -336,8 +338,8 @@ class RemoteCredentialsHandler(
             "ssh" -> {
                 val sshGenerationParameters = generationParams as SshGenerationParameters
                 val json = objectMapper.writeValueAsString(mapOf(
-                    "key_length" to sshGenerationParameters.keyLength,
-                    "ssh_comment" to sshGenerationParameters.sshComment
+                        "key_length" to sshGenerationParameters.keyLength,
+                        "ssh_comment" to sshGenerationParameters.sshComment
                 ))
 
                 ByteString.copyFromUtf8(json)
@@ -346,7 +348,7 @@ class RemoteCredentialsHandler(
             "rsa" -> {
                 val rsaGenerationParameters = generationParams as RsaGenerationParameters
                 val json = objectMapper.writeValueAsString(mapOf(
-                    "key_length" to rsaGenerationParameters.keyLength
+                        "key_length" to rsaGenerationParameters.keyLength
                 ))
 
                 ByteString.copyFromUtf8(json)
@@ -355,12 +357,12 @@ class RemoteCredentialsHandler(
             "user" -> {
                 val userGenerationParameters = generationParams as StringGenerationParameters
                 val json = objectMapper.writeValueAsString(mapOf(
-                    "include_special" to userGenerationParameters.isIncludeSpecial,
-                    "exclude_number" to userGenerationParameters.isExcludeNumber,
-                    "exclude_upper" to userGenerationParameters.isExcludeUpper,
-                    "exclude_lower" to userGenerationParameters.isExcludeLower,
-                    "username" to userGenerationParameters.username,
-                    "length" to userGenerationParameters.length
+                        "include_special" to userGenerationParameters.isIncludeSpecial,
+                        "exclude_number" to userGenerationParameters.isExcludeNumber,
+                        "exclude_upper" to userGenerationParameters.isExcludeUpper,
+                        "exclude_lower" to userGenerationParameters.isExcludeLower,
+                        "username" to userGenerationParameters.username,
+                        "length" to userGenerationParameters.length
 
                 ))
 
@@ -379,20 +381,20 @@ class RemoteCredentialsHandler(
 
                 val json = objectMapper.writeValueAsString(mapOf(
 
-                    "is_ca" to certGenerationParams.isCa,
-                    "organization_unit" to x500Names["OU"],
-                    "organization" to x500Names["O"],
-                    "state" to x500Names["ST"],
-                    "country" to x500Names["C"],
-                    "locality" to x500Names["L"],
-                    "common_name" to x500Names["CN"],
-                    "key_length" to certGenerationParams.keyLength,
-                    "duration" to certGenerationParams.duration,
-                    "self_signed" to certGenerationParams.isSelfSigned,
-                    "ca_name" to certGenerationParams.caName,
-                    "alternative_names" to certGenerationParams.alternativeNames,
-                    "key_usage" to certGenerationParams.keyUsage,
-                    "extended_key_usage" to certGenerationParams.extendedKeyUsage
+                        "is_ca" to certGenerationParams.isCa,
+                        "organization_unit" to x500Names["OU"],
+                        "organization" to x500Names["O"],
+                        "state" to x500Names["ST"],
+                        "country" to x500Names["C"],
+                        "locality" to x500Names["L"],
+                        "common_name" to x500Names["CN"],
+                        "key_length" to certGenerationParams.keyLength,
+                        "duration" to certGenerationParams.duration,
+                        "self_signed" to certGenerationParams.isSelfSigned,
+                        "ca_name" to certGenerationParams.caName,
+                        "alternative_names" to certGenerationParams.alternativeNames,
+                        "key_usage" to certGenerationParams.keyUsage,
+                        "extended_key_usage" to certGenerationParams.extendedKeyUsage
                 ).filterValues { it != null })
                 ByteString.copyFromUtf8(json)
             }
@@ -489,7 +491,8 @@ class RemoteCredentialsHandler(
 
             "certificate" -> {
                 val jsonString = generationParams.toStringUtf8()
-                val jsonNode = objectMapper.readTree(jsonString) ?: return CertificateGenerationParameters(CertificateGenerationRequestParameters())
+                val jsonNode = objectMapper.readTree(jsonString)
+                        ?: return CertificateGenerationParameters(CertificateGenerationRequestParameters())
 
                 val generationRequestParameters = CertificateGenerationRequestParameters()
 
@@ -552,7 +555,7 @@ class RemoteCredentialsHandler(
         try {
             originalValue = client.getByNameRequest(credentialRequest.name, userContextHolder.userContext.actor)
             val originalGenerationParameters =
-                getGenerationParametersFromResponse(originalValue.type, originalValue.generationParameters)
+                    getGenerationParametersFromResponse(originalValue.type, originalValue.generationParameters)
 
             if (credentialRequest.mode == OVERWRITE || credentialRequest.isOverwrite) {
                 return null

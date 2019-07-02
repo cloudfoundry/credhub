@@ -104,11 +104,12 @@ public class CertificateGenerateTest {
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
 
-    final String picardCert = (new JSONObject(caResult)).getJSONObject("value").getString("certificate");
-    final String picardCA = (new JSONObject(caResult)).getJSONObject("value").getString("ca");
+    JSONObject result = new JSONObject(caResult);
+    final String picardCert = result.getJSONObject("value").getString("certificate");
+    final String picardCA = result.getJSONObject("value").getString("ca");
     assertThat(picardCert, equalTo(picardCA));
 
-    final String expiryDate = (new JSONObject(caResult)).getString("expiry_date");
+    final String expiryDate = result.getString("expiry_date");
     final String truncatedExpiryDate = expiryDate.substring(0, expiryDate.indexOf('T'));
 
     final Calendar calendar = Calendar.getInstance();
@@ -118,9 +119,9 @@ public class CertificateGenerateTest {
 
 
     assertThat(truncatedExpiryDate, equalTo(truncatedExpected));
-
-    assertThat((new JSONObject(caResult)).getBoolean("certificate_authority"), equalTo(true));
-    assertThat((new JSONObject(caResult)).getBoolean("self_signed"), equalTo(true));
+    assertThat(result.getBoolean("certificate_authority"), equalTo(true));
+    assertThat(result.getBoolean("self_signed"), equalTo(true));
+    assertThat(result.getBoolean("generated"), equalTo(true));
 
     assertThat(picardCert, notNullValue());
 
