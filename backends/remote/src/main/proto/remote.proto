@@ -44,11 +44,6 @@ message DeleteByNameRequest {
   string requester = 2;
 }
 
-message DeleteResponse {
-  string name = 1;
-  bool deleted = 2;
-}
-
 message FindContainingNameRequest {
   string name = 1;
   string requester = 2;
@@ -68,11 +63,47 @@ message FindResult{
   string versionCreatedAt = 2;
 }
 
+// Permissions
+message WritePermissionsRequest {
+  string actor = 1;
+  string path = 2;
+  repeated string operations = 3;
+  string requester = 4;
+}
+
+message PutPermissionsRequest {
+  string uuid = 1;
+  string actor = 2;
+  string path = 3;
+  repeated string operations = 4;
+  string requester = 5;
+}
+
+message PatchPermissionsRequest {
+  string uuid = 1;
+  repeated string operations = 2;
+  string requester = 3;
+}
+
+message PermissionsResponse {
+  string uuid = 1;
+  string actor = 2;
+  string path = 3;
+  repeated string operations = 4;
+}
+
+message Empty {
+
+}
+
 service CredentialService {
   rpc GetByName (GetByNameRequest) returns (GetResponse);
   rpc GetById (GetByIdRequest) returns (GetResponse);
   rpc Set (SetRequest) returns (SetResponse);
-  rpc Delete (DeleteByNameRequest) returns (DeleteResponse);
+  rpc Delete (DeleteByNameRequest) returns (Empty);
   rpc FindContainingName (FindContainingNameRequest) returns (FindResponse);
   rpc FindStartingWithPath (FindStartingWithPathRequest) returns (FindResponse);
+  rpc SavePermissions(WritePermissionsRequest) returns (PermissionsResponse);
+  rpc PutPermissions(PutPermissionsRequest) returns (PermissionsResponse);
+  rpc PatchPermissions(PatchPermissionsRequest) returns (PermissionsResponse);
 }

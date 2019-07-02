@@ -3,6 +3,8 @@ package org.cloudfoundry.credhub.credentials
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.protobuf.ByteString
+import io.grpc.Status
+import io.grpc.StatusRuntimeException
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.auth.UserContextHolder
 import org.cloudfoundry.credhub.constants.CredentialWriteMode.CONVERGE
@@ -19,8 +21,10 @@ import org.cloudfoundry.credhub.domain.CertificateGenerationParameters
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
 import org.cloudfoundry.credhub.generate.UniversalCredentialGenerator
 import org.cloudfoundry.credhub.remote.RemoteBackendClient
+import org.cloudfoundry.credhub.remote.grpc.FindResponse
 import org.cloudfoundry.credhub.remote.grpc.FindResult
 import org.cloudfoundry.credhub.remote.grpc.GetResponse
+import org.cloudfoundry.credhub.remote.grpc.SetResponse
 import org.cloudfoundry.credhub.requests.BaseCredentialGenerateRequest
 import org.cloudfoundry.credhub.requests.BaseCredentialSetRequest
 import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters
@@ -45,17 +49,74 @@ class RemoteCredentialsHandler(
     private val credentialGenerator: UniversalCredentialGenerator
 ) : CredentialsHandler {
 
-    override fun findStartingWithPath(path: String, expiresWithinDays: String): List<FindCredentialResult> {
-        val actor = userContextHolder.userContext.actor
-        val response = client.findStartingWithPathRequest(path, actor)
+    override fun getNCredentialVersions(credentialName: String, numberOfVersions: Int?): DataResponse {
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+    }
 
-        return getListFromResponse(response.resultsList)
+    override fun getAllCredentialVersions(credentialName: String): DataResponse {
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun getCurrentCredentialVersions(credentialName: String): DataResponse {
+        val actor = userContextHolder.userContext.actor
+        val response: GetResponse
+        try {
+            response = client.getByNameRequest(credentialName, actor)
+        } catch (e: StatusRuntimeException) {
+            throw handleException(e)
+        }
+
+        val credentialValue = getValueFromResponse(response.type, response.data)
+
+        return DataResponse(listOf(CredentialView(
+            Instant.parse(response.versionCreatedAt),
+            UUID.fromString(response.id),
+            credentialName,
+            response.type,
+            credentialValue
+        )))
+    }
+
+    override fun getCredentialVersionByUUID(credentialUUID: String): CredentialView {
+        val actor = userContextHolder.userContext.actor
+        val response: GetResponse
+        try {
+            response = client.getByIdRequest(credentialUUID, actor)
+        } catch (e: StatusRuntimeException) {
+            throw handleException(e)
+        }
+
+        val credentialValue = getValueFromResponse(response.type, response.data)
+
+        return CredentialView(
+            Instant.parse(response.versionCreatedAt),
+            UUID.fromString(response.id),
+            response.name,
+            response.type,
+            credentialValue
+        )
     }
 
     override fun findContainingName(name: String, expiresWithinDays: String): List<FindCredentialResult> {
         val actor = userContextHolder.userContext.actor
-        val response = client.findContainingNameRequest(name, actor)
+        val response: FindResponse
+        try {
+            response = client.findContainingNameRequest(name, actor)
+        } catch (e: StatusRuntimeException) {
+            throw handleException(e)
+        }
 
+        return getListFromResponse(response.resultsList)
+    }
+
+    override fun findStartingWithPath(path: String, expiresWithinDays: String): List<FindCredentialResult> {
+        val actor = userContextHolder.userContext.actor
+        val response: FindResponse
+        try {
+            response = client.findStartingWithPathRequest(path, actor)
+        } catch (e: StatusRuntimeException) {
+            throw handleException(e)
+        }
         return getListFromResponse(response.resultsList)
     }
 
@@ -76,10 +137,15 @@ class RemoteCredentialsHandler(
             val value = credentialGenerator.generate(generateRequest)
             val data = createByteStringFromData(type, value)
             val genParams = createByteStringFromGenerationParameters(type, generateRequest.generationParameters)
-            val setResponse = client.setRequest(name, type, data, actor, genParams)
-            credentialValue = getValueFromResponse(setResponse.type, setResponse.data)
-            versionCreatedAt = Instant.parse(setResponse.versionCreatedAt)
-            uuid = UUID.fromString(setResponse.id)
+            val response: SetResponse
+            try {
+                response = client.setRequest(name, type, data, actor, genParams)
+            } catch (e: StatusRuntimeException) {
+                throw handleException(e)
+            }
+            credentialValue = getValueFromResponse(response.type, response.data)
+            versionCreatedAt = Instant.parse(response.versionCreatedAt)
+            uuid = UUID.fromString(response.id)
         }
 
         return CredentialView(
@@ -96,8 +162,12 @@ class RemoteCredentialsHandler(
         val type = setRequest.type
         val data = createByteStringFromData(type, setRequest.credentialValue)
         val actor = userContextHolder.userContext.actor
-
-        val response = client.setRequest(name, type, data, actor, ByteString.EMPTY)
+        val response: SetResponse
+        try {
+            response = client.setRequest(name, type, data, actor, ByteString.EMPTY)
+        } catch (e: StatusRuntimeException) {
+            throw handleException(e)
+        }
         val credentialValue = getValueFromResponse(response.type, response.data)
 
         return CredentialView(
@@ -111,50 +181,12 @@ class RemoteCredentialsHandler(
 
     override fun deleteCredential(credentialName: String) {
         val actor = userContextHolder.userContext.actor
-        val response = client.deleteRequest(credentialName, actor)
 
-        if (!response.deleted) {
-            throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
+        try {
+            client.deleteRequest(credentialName, actor)
+        } catch (e: StatusRuntimeException) {
+            throw handleException(e)
         }
-    }
-
-    override fun getNCredentialVersions(credentialName: String, numberOfVersions: Int?): DataResponse {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun getAllCredentialVersions(credentialName: String): DataResponse {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun getCurrentCredentialVersions(credentialName: String): DataResponse {
-
-        val actor = userContextHolder.userContext.actor
-        val response = client.getByNameRequest(credentialName, actor)
-
-        val credentialValue = getValueFromResponse(response.type, response.data)
-
-        return DataResponse(listOf(CredentialView(
-                Instant.parse(response.versionCreatedAt),
-                UUID.fromString(response.id),
-                credentialName,
-                response.type,
-                credentialValue
-        )))
-    }
-
-    override fun getCredentialVersionByUUID(credentialUUID: String): CredentialView {
-        val actor = userContextHolder.userContext.actor
-        val response = client.getByIdRequest(credentialUUID, actor)
-
-        val credentialValue = getValueFromResponse(response.type, response.data)
-
-        return CredentialView(
-                Instant.parse(response.versionCreatedAt),
-                UUID.fromString(response.id),
-                response.name,
-                response.type,
-                credentialValue
-        )
     }
 
     private fun getListFromResponse(results: List<FindResult>): List<FindCredentialResult> {
@@ -540,9 +572,16 @@ class RemoteCredentialsHandler(
             if (credentialRequest.mode == NO_OVERWRITE) {
                 return originalValue
             }
-        } catch (e: EntryNotFoundException) {
+        } catch (e: StatusRuntimeException) {
             return null
         }
         return originalValue
+    }
+
+    private fun handleException(e: StatusRuntimeException): Exception {
+        if (e.status.code == Status.NOT_FOUND.code) {
+            return EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
+        }
+        return RuntimeException("Request failed with status code: ${e.status.code}")
     }
 }

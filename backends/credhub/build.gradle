@@ -1,4 +1,7 @@
 buildscript {
+    ext {
+        grpcVersion = '1.14.0'
+    }
     repositories {
         mavenCentral()
         maven { url("https://repo.spring.io/plugins-release") }
@@ -68,6 +71,7 @@ dependencies {
 
     // proto
     implementation "com.google.api.grpc:proto-google-common-protos:1.12.0"
+    implementation "io.grpc:grpc-services:${grpcVersion}"
 
     implementation("com.google.guava:guava:${guavaVersion}")
     implementation("org.apache.commons:commons-lang3:${apacheCommonsLang3Version}")

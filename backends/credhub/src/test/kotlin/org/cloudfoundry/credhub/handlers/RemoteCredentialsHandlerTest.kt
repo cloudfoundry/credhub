@@ -3,9 +3,11 @@ package org.cloudfoundry.credhub.handlers
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.PropertyNamingStrategy
 import com.google.protobuf.ByteString
+import io.grpc.Status
+import io.grpc.StatusRuntimeException
 import junit.framework.Assert.assertEquals
+import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.auth.UserContext
@@ -22,7 +24,6 @@ import org.cloudfoundry.credhub.credentials.RemoteCredentialsHandler
 import org.cloudfoundry.credhub.domain.CertificateGenerationParameters
 import org.cloudfoundry.credhub.generate.UniversalCredentialGenerator
 import org.cloudfoundry.credhub.remote.RemoteBackendClient
-import org.cloudfoundry.credhub.remote.grpc.DeleteResponse
 import org.cloudfoundry.credhub.remote.grpc.FindResponse
 import org.cloudfoundry.credhub.remote.grpc.FindResult
 import org.cloudfoundry.credhub.remote.grpc.GetResponse
@@ -667,28 +668,7 @@ class RemoteCredentialsHandlerTest {
 
     @Test
     fun deleteCredential_whenCredentialExists_doesNotThrowException() {
-        val response = DeleteResponse
-            .newBuilder()
-            .setName(CREDENTIAL_NAME)
-            .setDeleted(true)
-            .build()
-        `when`(client.deleteRequest(CREDENTIAL_NAME, USER)).thenReturn(response)
-
         subject.deleteCredential(CREDENTIAL_NAME)
-    }
-
-    @Test
-    fun deleteCredential_whenCredentialExists_ThrowsException() {
-        val response = DeleteResponse
-            .newBuilder()
-            .setName(CREDENTIAL_NAME)
-            .setDeleted(false)
-            .build()
-        `when`(client.deleteRequest(CREDENTIAL_NAME, USER)).thenReturn(response)
-
-        assertThatThrownBy {
-            subject.deleteCredential(CREDENTIAL_NAME)
-        }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
     }
 
     @Test
@@ -1134,5 +1114,77 @@ class RemoteCredentialsHandlerTest {
         val actualValue = (generateResponse.value as StringCredentialValue).stringCredential.toString()
 
         assertThat(actualValue).isEqualTo(originalPassword.stringCredential.toString())
+    }
+
+    @Test
+    fun getCredentialByName_whenCredentialDoesNotExist_throwsCorrectError() {
+        val exception = StatusRuntimeException(Status.NOT_FOUND)
+        `when`(client.getByNameRequest(CREDENTIAL_NAME, USER)).thenThrow(exception)
+
+        Assertions.assertThatThrownBy {
+            subject.getCurrentCredentialVersions(CREDENTIAL_NAME)
+        }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
+    }
+
+    @Test
+    fun getCredentialById_whenCredentialDoesNotExist_throwsCorrectError() {
+        val uuid = UUID.randomUUID().toString()
+        val exception = StatusRuntimeException(Status.NOT_FOUND)
+        `when`(client.getByIdRequest(uuid, USER)).thenThrow(exception)
+
+        Assertions.assertThatThrownBy {
+            subject.getCredentialVersionByUUID(uuid)
+        }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
+    }
+
+    @Test
+    fun setCredential_whenUserDoesNotHavePermission_throwsCorrectError() {
+        val type = "value"
+        val stringCredential = StringCredentialValue("test-value")
+        val byteValue = subject.createByteStringFromData(
+            type,
+            stringCredential
+        )
+        val exception = StatusRuntimeException(Status.NOT_FOUND)
+        `when`(client.setRequest(CREDENTIAL_NAME, type, byteValue, USER, ByteString.EMPTY)).thenThrow(exception)
+
+        val request = ValueSetRequest()
+        request.value = stringCredential
+        request.name = CREDENTIAL_NAME
+        request.type = type
+
+        Assertions.assertThatThrownBy {
+            subject.setCredential(request)
+        }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
+    }
+
+    @Test
+    fun findContainingName_whenUserDoesNotHavePermission_throwsCorrectError() {
+        val exception = StatusRuntimeException(Status.NOT_FOUND)
+        `when`(client.findContainingNameRequest(CREDENTIAL_NAME, USER)).thenThrow(exception)
+
+        Assertions.assertThatThrownBy {
+            subject.findContainingName(CREDENTIAL_NAME, "365")
+        }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
+    }
+
+    @Test
+    fun findStartingWithPath_whenUserDoesNotHavePermission_throwsCorrectError() {
+        val exception = StatusRuntimeException(Status.NOT_FOUND)
+        `when`(client.findStartingWithPathRequest("/", USER)).thenThrow(exception)
+
+        Assertions.assertThatThrownBy {
+            subject.findStartingWithPath("/", "365")
+        }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
+    }
+
+    @Test
+    fun deleteCredential_whenUserDoesNotHavePermission_throwsCorrectError() {
+        val exception = StatusRuntimeException(Status.NOT_FOUND)
+        `when`(client.deleteRequest(CREDENTIAL_NAME, USER)).thenThrow(exception)
+
+        Assertions.assertThatThrownBy {
+            subject.deleteCredential(CREDENTIAL_NAME)
+        }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
     }
 }
