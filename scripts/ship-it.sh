@@ -74,9 +74,9 @@ function main() {
     set_bash_error_handling
     go_to_project_root_directory
     check_ssh_key
+    run_linters
     check_for_local_server
 
-    run_linters
     run_tests
 
     push_code
