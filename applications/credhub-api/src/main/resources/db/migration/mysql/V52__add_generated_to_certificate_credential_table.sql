@@ -1,2 +1,2 @@
 ALTER TABLE certificate_credential
-  ADD COLUMN generated BOOLEAN;
+  ADD COLUMN `generated` BOOLEAN;
