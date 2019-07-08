@@ -26,6 +26,16 @@ public class DataResponse {
     return new DataResponse(views);
   }
 
+  public static DataResponse fromEntity(final List<CredentialVersion> models, final boolean concatenateCas) {
+    final List<CredentialView> views = newArrayList();
+    for (final CredentialVersion model : models) {
+      if (model != null) {
+        views.add(CredentialView.fromEntity(model, concatenateCas));
+      }
+    }
+    return new DataResponse(views);
+  }
+
   @JsonProperty
   public List<CredentialView> getData() {
     return data;

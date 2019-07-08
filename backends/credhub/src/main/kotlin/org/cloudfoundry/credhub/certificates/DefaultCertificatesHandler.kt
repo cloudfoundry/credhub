@@ -42,7 +42,8 @@ class DefaultCertificatesHandler(
     private val auditRecord: CEFAuditRecord,
     private val permissionCheckingService: PermissionCheckingService,
     private val userContextHolder: UserContextHolder,
-    @Value("\${security.authorization.acls.enabled}") private val enforcePermissions: Boolean
+    @Value("\${security.authorization.acls.enabled}") private val enforcePermissions: Boolean,
+    @Value("\${certificates.concatenate_cas:false}") var concatenateCas: Boolean
 ) : CertificatesHandler {
 
     override fun handleRegenerate(
@@ -104,7 +105,7 @@ class DefaultCertificatesHandler(
         checkPermissionsByUuid(uuid.toString(), READ)
         val credentialList = certificateService.getVersions(uuid, current)
 
-        return credentialList.map { credential -> CertificateView(credential as CertificateCredentialVersion) }
+        return credentialList.map { credential -> CertificateView(credential as CertificateCredentialVersion, concatenateCas) }
     }
 
     override fun handleDeleteVersionRequest(certificateId: String, versionId: String): CertificateView {

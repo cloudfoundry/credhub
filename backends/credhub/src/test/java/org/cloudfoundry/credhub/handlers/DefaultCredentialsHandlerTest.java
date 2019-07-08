@@ -104,7 +104,8 @@ public class DefaultCredentialsHandlerTest {
       userContextHolder,
       certificateAuthorityService,
       universalCredentialGenerator,
-      true);
+      true,
+      false);
 
     subjectWithoutAcls = new DefaultCredentialsHandler(
       credentialService,
@@ -113,6 +114,7 @@ public class DefaultCredentialsHandlerTest {
       userContextHolder,
       certificateAuthorityService,
       universalCredentialGenerator,
+      false,
       false);
 
 

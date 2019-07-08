@@ -12,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -32,7 +33,6 @@ import org.cloudfoundry.credhub.domain.Encryptor;
 import org.cloudfoundry.credhub.domain.ValueCredentialVersion;
 import org.cloudfoundry.credhub.exceptions.KeyNotFoundException;
 import org.cloudfoundry.credhub.services.CredentialVersionDataService;
-import org.cloudfoundry.credhub.services.DefaultCredentialService;
 import org.cloudfoundry.credhub.services.PermissionCheckingService;
 import org.cloudfoundry.credhub.util.CurrentTimeProvider;
 import org.cloudfoundry.credhub.utils.TestConstants;
@@ -63,6 +63,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
   },
   resolver = DatabaseProfileResolver.class
 )
+@TestPropertySource(properties = {"certificates.concatenate_cas=false", })
 @SpringBootTest(classes = CredhubTestApp.class)
 @Transactional
 public class CredentialsGetIntegrationTest {
@@ -83,9 +84,6 @@ public class CredentialsGetIntegrationTest {
   @SpyBean
   private CredentialVersionDataService credentialVersionDataService;
 
-  @SpyBean
-  private DefaultCredentialService permissionedCredentialService;
-
   @MockBean
   private CurrentTimeProvider mockCurrentTimeProvider;
 
@@ -102,7 +100,6 @@ public class CredentialsGetIntegrationTest {
       .apply(springSecurity())
       .build();
 
-    permissionedCredentialService.setConcatenateCas(false);
   }
 
   @Test
@@ -391,8 +388,7 @@ public class CredentialsGetIntegrationTest {
   }
 
   @Test
-  public void gettingACertificateCredential_byName_whenConcatenateCasIsTrue_returnsTheCredential_withConcatenatedCas() throws Exception {
-    permissionedCredentialService.setConcatenateCas(true);
+  public void gettingCurrentVersionOfACertificateCredential_byName_whenConcatenateCasIsFalse_returnsTheCredential_withoutConcatenatedCas() throws Exception {
     final UUID uuid = UUID.randomUUID();
     final CertificateCredentialVersion certificate = new CertificateCredentialVersion(CREDENTIAL_NAME);
     certificate.setEncryptor(encryptor);
@@ -402,57 +398,13 @@ public class CredentialsGetIntegrationTest {
     certificate.setCaName("/some-ca");
     certificate.setCertificate(TestConstants.TEST_CERTIFICATE);
     certificate.getCredential().setUuid(uuid);
+    certificate.setTrustedCa(TestConstants.OTHER_TEST_CERTIFICATE);
 
     doReturn(CREDENTIAL_VALUE).when(encryptor).decrypt(any());
 
-    CertificateCredentialVersion credentialVersion1 = new CertificateCredentialVersion("/some-ca");
-    CertificateCredentialVersion credentialVersion2 = new CertificateCredentialVersion("/some-ca");
-    credentialVersion1.setCertificate(TestConstants.TEST_CERTIFICATE);
-    credentialVersion2.setCertificate(TestConstants.OTHER_TEST_CERTIFICATE);
-    List<CredentialVersion> credentialVersionList = Arrays.asList(credentialVersion1, credentialVersion2);
+    doReturn(Collections.singletonList(certificate)).when(credentialVersionDataService).findActiveByName(CREDENTIAL_NAME);
 
-    doReturn(Collections.singletonList(certificate)).when(credentialVersionDataService).findAllByName(CREDENTIAL_NAME);
-    doReturn(credentialVersionList).when(credentialVersionDataService).findActiveByName("/some-ca");
-
-    final MockHttpServletRequestBuilder request = get("/api/v1/data?name=" + CREDENTIAL_NAME)
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-      .accept(APPLICATION_JSON);
-
-    mockMvc.perform(request)
-      .andExpect(status().isOk())
-      .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-      .andExpect(jsonPath("$.data[0].type").value("certificate"))
-      .andExpect(jsonPath("$.data[0].value.certificate").value(TestConstants.TEST_CERTIFICATE))
-      .andExpect(jsonPath("$.data[0].id").value(uuid.toString()))
-      .andExpect(jsonPath("$.data[0].version_created_at").value(FROZEN_TIME.toString()))
-      .andExpect(jsonPath("$.data[0].value.ca").value(TestConstants.TEST_CERTIFICATE + "\n" + TestConstants.OTHER_TEST_CERTIFICATE));
-  }
-
-  @Test
-  public void gettingACertificateCredential_byName_whenConcatenateCasIsFalse_returnsTheCredential_withoutConcatenatedCas() throws Exception {
-    permissionedCredentialService.setConcatenateCas(false);
-    final UUID uuid = UUID.randomUUID();
-    final CertificateCredentialVersion certificate = new CertificateCredentialVersion(CREDENTIAL_NAME);
-    certificate.setEncryptor(encryptor);
-    certificate.setUuid(uuid);
-    certificate.setVersionCreatedAt(FROZEN_TIME);
-    certificate.setCa(TestConstants.TEST_CERTIFICATE);
-    certificate.setCaName("/some-ca");
-    certificate.setCertificate(TestConstants.TEST_CERTIFICATE);
-    certificate.getCredential().setUuid(uuid);
-
-    doReturn(CREDENTIAL_VALUE).when(encryptor).decrypt(any());
-
-    CertificateCredentialVersion credentialVersion1 = new CertificateCredentialVersion("/some-ca");
-    CertificateCredentialVersion credentialVersion2 = new CertificateCredentialVersion("/some-ca");
-    credentialVersion1.setCertificate(TestConstants.TEST_CERTIFICATE);
-    credentialVersion2.setCertificate(TestConstants.OTHER_TEST_CERTIFICATE);
-    List<CredentialVersion> credentialVersionList = Arrays.asList(credentialVersion1, credentialVersion2);
-
-    doReturn(Collections.singletonList(certificate)).when(credentialVersionDataService).findAllByName(CREDENTIAL_NAME);
-    doReturn(credentialVersionList).when(credentialVersionDataService).findActiveByName("/some-ca");
-
-    final MockHttpServletRequestBuilder request = get("/api/v1/data?name=" + CREDENTIAL_NAME)
+    final MockHttpServletRequestBuilder request = get("/api/v1/data?name=" + CREDENTIAL_NAME + "&current=true")
       .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON);
 
@@ -464,6 +416,94 @@ public class CredentialsGetIntegrationTest {
       .andExpect(jsonPath("$.data[0].id").value(uuid.toString()))
       .andExpect(jsonPath("$.data[0].version_created_at").value(FROZEN_TIME.toString()))
       .andExpect(jsonPath("$.data[0].value.ca").value(TestConstants.TEST_CERTIFICATE));
+  }
+
+  @Test
+  public void gettingNVersionsOfACertificateCredential_byName_whenConcatenateCasIsFalse_returnsTheCredential_withoutConcatenatedCas() throws Exception {
+    final UUID uuid = UUID.randomUUID();
+    final UUID uuid2 = UUID.randomUUID();
+    final CertificateCredentialVersion certificateVersion1 = new CertificateCredentialVersion(CREDENTIAL_NAME);
+    certificateVersion1.setEncryptor(encryptor);
+    certificateVersion1.setUuid(uuid);
+    certificateVersion1.setVersionCreatedAt(FROZEN_TIME);
+    certificateVersion1.setCa(TestConstants.TEST_CERTIFICATE);
+    certificateVersion1.setCaName("/some-ca");
+    certificateVersion1.setCertificate(TestConstants.TEST_CERTIFICATE);
+    certificateVersion1.getCredential().setUuid(uuid);
+    certificateVersion1.setTrustedCa(TestConstants.TEST_CA);
+
+    doReturn(CREDENTIAL_VALUE).when(encryptor).decrypt(any());
+
+    CertificateCredentialVersion certificateVersion2 = new CertificateCredentialVersion(CREDENTIAL_NAME);
+    certificateVersion2.setCertificate(TestConstants.OTHER_TEST_CERTIFICATE);
+    certificateVersion2.setTrustedCa(TestConstants.TEST_INTERMEDIATE_CA);
+    certificateVersion2.setCa(TestConstants.OTHER_TEST_CERTIFICATE);
+    certificateVersion2.setEncryptor(encryptor);
+    certificateVersion2.setUuid(uuid2);
+    certificateVersion2.getCredential().setUuid(uuid2);
+    List<CredentialVersion> credentialVersionList = Arrays.asList(certificateVersion1, certificateVersion2);
+
+    doReturn(credentialVersionList).when(credentialVersionDataService).findNByName(CREDENTIAL_NAME, 2);
+
+    final MockHttpServletRequestBuilder request = get("/api/v1/data?name=" + CREDENTIAL_NAME + "&versions=2")
+      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON);
+
+    mockMvc.perform(request)
+      .andExpect(status().isOk())
+      .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+      .andExpect(jsonPath("$.data[0].type").value("certificate"))
+      .andExpect(jsonPath("$.data[0].value.certificate").value(TestConstants.TEST_CERTIFICATE))
+      .andExpect(jsonPath("$.data[0].id").value(uuid.toString()))
+      .andExpect(jsonPath("$.data[0].version_created_at").value(FROZEN_TIME.toString()))
+      .andExpect(jsonPath("$.data[0].value.ca").value(TestConstants.TEST_CERTIFICATE))
+      .andExpect(jsonPath("$.data[1].type").value("certificate"))
+      .andExpect(jsonPath("$.data[1].value.certificate").value(TestConstants.OTHER_TEST_CERTIFICATE))
+      .andExpect(jsonPath("$.data[1].value.ca").value(TestConstants.OTHER_TEST_CERTIFICATE));
+  }
+
+  @Test
+  public void gettingAllVersionsOfACertificateCredential_byName_whenConcatenateCasIsFalse_returnsTheCredential_withoutConcatenatedCas() throws Exception {
+    final UUID uuid = UUID.randomUUID();
+    final UUID uuid2 = UUID.randomUUID();
+    final CertificateCredentialVersion certificateVersion1 = new CertificateCredentialVersion(CREDENTIAL_NAME);
+    certificateVersion1.setEncryptor(encryptor);
+    certificateVersion1.setUuid(uuid);
+    certificateVersion1.setVersionCreatedAt(FROZEN_TIME);
+    certificateVersion1.setCa(TestConstants.TEST_CERTIFICATE);
+    certificateVersion1.setCaName("/some-ca");
+    certificateVersion1.setCertificate(TestConstants.TEST_CERTIFICATE);
+    certificateVersion1.getCredential().setUuid(uuid);
+    certificateVersion1.setTrustedCa(TestConstants.TEST_CA);
+
+    doReturn(CREDENTIAL_VALUE).when(encryptor).decrypt(any());
+
+    CertificateCredentialVersion certificateVersion2 = new CertificateCredentialVersion(CREDENTIAL_NAME);
+    certificateVersion2.setCertificate(TestConstants.OTHER_TEST_CERTIFICATE);
+    certificateVersion2.setTrustedCa(TestConstants.TEST_INTERMEDIATE_CA);
+    certificateVersion2.setCa(TestConstants.OTHER_TEST_CERTIFICATE);
+    certificateVersion2.setEncryptor(encryptor);
+    certificateVersion2.setUuid(uuid2);
+    certificateVersion2.getCredential().setUuid(uuid2);
+    List<CredentialVersion> credentialVersionList = Arrays.asList(certificateVersion1, certificateVersion2);
+
+    doReturn(credentialVersionList).when(credentialVersionDataService).findAllByName(CREDENTIAL_NAME);
+
+    final MockHttpServletRequestBuilder request = get("/api/v1/data?name=" + CREDENTIAL_NAME)
+      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON);
+
+    mockMvc.perform(request)
+      .andExpect(status().isOk())
+      .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+      .andExpect(jsonPath("$.data[0].type").value("certificate"))
+      .andExpect(jsonPath("$.data[0].value.certificate").value(TestConstants.TEST_CERTIFICATE))
+      .andExpect(jsonPath("$.data[0].id").value(uuid.toString()))
+      .andExpect(jsonPath("$.data[0].version_created_at").value(FROZEN_TIME.toString()))
+      .andExpect(jsonPath("$.data[0].value.ca").value(TestConstants.TEST_CERTIFICATE))
+      .andExpect(jsonPath("$.data[1].type").value("certificate"))
+      .andExpect(jsonPath("$.data[1].value.certificate").value(TestConstants.OTHER_TEST_CERTIFICATE))
+      .andExpect(jsonPath("$.data[1].value.ca").value(TestConstants.OTHER_TEST_CERTIFICATE));
   }
 
   private void setUpCredential() {

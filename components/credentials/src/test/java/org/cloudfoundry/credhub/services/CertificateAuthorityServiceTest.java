@@ -1,6 +1,8 @@
 package org.cloudfoundry.credhub.services;
 
 import java.security.Security;
+import java.util.Arrays;
+import java.util.Collections;
 
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
 import org.cloudfoundry.credhub.ErrorMessages;
@@ -18,6 +20,7 @@ import org.junit.runners.JUnit4;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -28,10 +31,12 @@ import static org.mockito.Mockito.when;
 public class CertificateAuthorityServiceTest {
 
   private static final String CREDENTIAL_NAME = "/expectedCredential";
+  private static final String TRANSITIONAL_CREDENTIAL_NAME = "/transitionalCredential";
   private CertificateAuthorityService certificateAuthorityService;
   private DefaultCertificateVersionDataService certificateVersionDataService;
   private CertificateCredentialValue certificate;
   private CertificateCredentialVersion certificateCredential;
+  private CertificateCredentialVersion transitionalCertificateCredential;
 
   @Before
   public void beforeEach() {
@@ -41,11 +46,35 @@ public class CertificateAuthorityServiceTest {
 
     certificate = new CertificateCredentialValue(null, CertificateStringConstants.SELF_SIGNED_CA_CERT, "my-key", null, true, true, false, false);
     certificateCredential = mock(CertificateCredentialVersion.class);
+    transitionalCertificateCredential = mock(CertificateCredentialVersion.class);
 
     when(certificateCredential.getName()).thenReturn(CREDENTIAL_NAME);
+    when(transitionalCertificateCredential.getName()).thenReturn(TRANSITIONAL_CREDENTIAL_NAME);
+    when(transitionalCertificateCredential.isVersionTransitional()).thenReturn(true);
 
     certificateVersionDataService = mock(DefaultCertificateVersionDataService.class);
     certificateAuthorityService = new CertificateAuthorityService(certificateVersionDataService);
+  }
+
+  @Test
+  public void findTransitionalVersion_whenATransitionalCaDoesNotExist_returnsNull() {
+    when(certificateVersionDataService.findActiveWithTransitional(CREDENTIAL_NAME)).thenReturn(
+      Collections.singletonList(certificateCredential));
+
+    CertificateCredentialValue transitionalVersion = certificateAuthorityService.findTransitionalVersion(CREDENTIAL_NAME);
+    assertNull(transitionalVersion);
+  }
+
+  @Test
+  public void findTransitionalVersion_givenExistingTransitionalCa_returnsTheTransitionalCa() {
+    final CertificateReader certificateReader = mock(CertificateReader.class);
+    when(transitionalCertificateCredential.getParsedCertificate()).thenReturn(certificateReader);
+    when(certificateReader.isCa()).thenReturn(true);
+    when(certificateVersionDataService.findActiveWithTransitional(CREDENTIAL_NAME)).thenReturn(Arrays.asList(certificateCredential, transitionalCertificateCredential));
+    when(transitionalCertificateCredential.getCertificate()).thenReturn(CertificateStringConstants.SELF_SIGNED_CA_CERT);
+
+    assertThat(certificateAuthorityService.findTransitionalVersion(CREDENTIAL_NAME).getCertificate(),
+      equalTo(transitionalCertificateCredential.getCertificate()));
   }
 
   @Test

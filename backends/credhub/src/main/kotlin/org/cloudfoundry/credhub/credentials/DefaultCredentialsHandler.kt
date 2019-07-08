@@ -39,7 +39,8 @@ class DefaultCredentialsHandler(
     private val userContextHolder: UserContextHolder,
     private val certificateAuthorityService: CertificateAuthorityService,
     private val credentialGenerator: UniversalCredentialGenerator,
-    @Value("\${security.authorization.acls.enabled}") private val enforcePermissions: Boolean
+    @Value("\${security.authorization.acls.enabled}") private val enforcePermissions: Boolean,
+    @Value("\${certificates.concatenate_cas:false}") var concatenateCas: Boolean
 ) : CredentialsHandler {
     override fun findStartingWithPath(path: String, expiresWithinDays: String): List<FindCredentialResult> {
         val unfilteredResults = credentialService.findStartingWithPath(path, expiresWithinDays)
@@ -138,7 +139,7 @@ class DefaultCredentialsHandler(
         if (credentialVersions.isEmpty()) {
             throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
         }
-        return DataResponse.fromEntity(credentialVersions)
+        return DataResponse.fromEntity(credentialVersions, concatenateCas)
     }
 
     override fun getAllCredentialVersions(credentialName: String): DataResponse {
@@ -153,7 +154,7 @@ class DefaultCredentialsHandler(
         if (credentialVersions.isEmpty()) {
             throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
         }
-        return DataResponse.fromEntity(credentialVersions)
+        return DataResponse.fromEntity(credentialVersions, concatenateCas)
     }
 
     override fun getCredentialVersionByUUID(credentialUUID: String): CredentialView {

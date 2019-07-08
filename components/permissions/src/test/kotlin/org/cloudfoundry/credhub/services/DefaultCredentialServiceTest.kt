@@ -66,8 +66,7 @@ class DefaultCredentialServiceTest {
     @Mock
     private lateinit var auditRecord: CEFAuditRecord
 
-    private lateinit var subjectWithoutConcatenateCas: DefaultCredentialService
-    private lateinit var subjectWithConcatenateCas: DefaultCredentialService
+    private lateinit var subject: DefaultCredentialService
     private lateinit var existingCredentialVersion: CredentialVersion
     private lateinit var userContext: UserContext
     private lateinit var generationParameters: StringGenerationParameters
@@ -89,22 +88,12 @@ class DefaultCredentialServiceTest {
         val userContextHolder = UserContextHolder()
         userContextHolder.userContext = userContext
 
-        subjectWithoutConcatenateCas = DefaultCredentialService(
+        this.subject = DefaultCredentialService(
                 credentialVersionDataService,
                 credentialFactory,
                 certificateAuthorityService,
                 credentialDataService,
-                auditRecord,
-                false
-        )
-
-        subjectWithConcatenateCas = DefaultCredentialService(
-                credentialVersionDataService,
-                credentialFactory,
-                certificateAuthorityService,
-                credentialDataService,
-                auditRecord,
-                true
+                auditRecord
         )
 
         generationParameters = mock<StringGenerationParameters>(StringGenerationParameters::class.java)
@@ -142,6 +131,7 @@ class DefaultCredentialServiceTest {
         certificate.credential.uuid = certUuid
         certificate.uuid = certUuid
         certificate.ca = TestConstants.TEST_CERTIFICATE
+        certificate.trustedCa = TestConstants.TEST_CA
         `when`<List<CredentialVersion>>(credentialVersionDataService.findActiveByName(certificate.caName))
                 .thenReturn(Arrays.asList<CredentialVersion>(nonTransitionalCa, transitionalCa))
     }
@@ -152,7 +142,7 @@ class DefaultCredentialServiceTest {
         `when`<CredentialVersion>(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredentialVersion)
 
         Assertions.assertThatThrownBy {
-            subjectWithoutConcatenateCas.save(existingCredentialVersion, credentialValue, request)
+            this.subject.save(existingCredentialVersion, credentialValue, request)
         }.isInstanceOf(ParameterizedValidationException::class.java)
     }
 
@@ -162,7 +152,7 @@ class DefaultCredentialServiceTest {
             .thenReturn(true)
 
         Assertions.assertThatThrownBy {
-            subjectWithoutConcatenateCas.findNByName(CREDENTIAL_NAME, -1)
+            this.subject.findNByName(CREDENTIAL_NAME, -1)
         }.isInstanceOf(InvalidQueryParameterException::class.java)
             .hasMessage(ErrorMessages.INVALID_QUERY_PARAMETER)
     }
@@ -173,7 +163,7 @@ class DefaultCredentialServiceTest {
             .thenReturn(null)
 
         Assertions.assertThatThrownBy {
-            subjectWithoutConcatenateCas.findVersionByUuid(VERSION_UUID_STRING)
+            this.subject.findVersionByUuid(VERSION_UUID_STRING)
         }.isInstanceOf(EntryNotFoundException::class.java)
             .hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
     }
@@ -181,7 +171,7 @@ class DefaultCredentialServiceTest {
     @Test
     fun findByUuid_whenNoMatchingCredentialExists_throwsEntryNotFound() {
         Assertions.assertThatThrownBy {
-            subjectWithoutConcatenateCas.findByUuid(UUID.randomUUID())
+            this.subject.findByUuid(UUID.randomUUID())
         }.isInstanceOf(EntryNotFoundException::class.java)
             .hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
     }
@@ -207,7 +197,7 @@ class DefaultCredentialServiceTest {
             request.generationParameters)
         ).thenReturn(passwordCredentialVersion)
 
-        subjectWithoutConcatenateCas.save(null, stringCredentialValue, request)
+        this.subject.save(null, stringCredentialValue, request)
 
         verify(credentialVersionDataService).save(passwordCredentialVersion)
     }
@@ -221,7 +211,7 @@ class DefaultCredentialServiceTest {
         `when`(credentialVersionDataService.findAllByName(CREDENTIAL_NAME))
             .thenReturn(expectedCredentials)
 
-        subjectWithoutConcatenateCas.findAllByName(CREDENTIAL_NAME)
+        this.subject.findAllByName(CREDENTIAL_NAME)
 
         verify(auditRecord, times(1)).addResource(ArgumentMatchers.any(Credential::class.java))
         verify(auditRecord, times(1)).addVersion(ArgumentMatchers.any(CredentialVersion::class.java))
@@ -236,7 +226,7 @@ class DefaultCredentialServiceTest {
         `when`<List<CredentialVersion>>(credentialVersionDataService.findActiveByName(CREDENTIAL_NAME))
             .thenReturn(expectedCredentials)
 
-        subjectWithoutConcatenateCas.findActiveByName(CREDENTIAL_NAME)
+        this.subject.findActiveByName(CREDENTIAL_NAME)
 
         verify(auditRecord, times(1)).addResource(ArgumentMatchers.any(Credential::class.java))
         verify(auditRecord, times(1)).addVersion(ArgumentMatchers.any(CredentialVersion::class.java))
@@ -247,7 +237,7 @@ class DefaultCredentialServiceTest {
         `when`<CredentialVersion>(credentialVersionDataService.findByUuid(CREDENTIAL_UUID.toString()))
             .thenReturn(existingCredentialVersion)
 
-        subjectWithoutConcatenateCas.findVersionByUuid(CREDENTIAL_UUID.toString())
+        this.subject.findVersionByUuid(CREDENTIAL_UUID.toString())
 
         verify(auditRecord, times(1)).setResource(ArgumentMatchers.any(Credential::class.java))
         verify(auditRecord, times(1)).setVersion(ArgumentMatchers.any(CredentialVersion::class.java))
@@ -255,7 +245,7 @@ class DefaultCredentialServiceTest {
 
     @Test
     fun getCredentialVersion_whenTheVersionExists_returnsTheCredential() {
-        val credentialVersionFound = subjectWithoutConcatenateCas
+        val credentialVersionFound = this.subject
             .findVersionByUuid(VERSION_UUID_STRING)
 
         assertThat(credentialVersionFound).isEqualTo(existingCredentialVersion)
@@ -270,7 +260,7 @@ class DefaultCredentialServiceTest {
         `when`(credentialVersionDataService.findAllCertificateCredentialsByCaName(CREDENTIAL_NAME))
             .thenReturn(expectedCertificates)
 
-        val foundCertificates = subjectWithoutConcatenateCas
+        val foundCertificates = this.subject
             .findAllCertificateCredentialsByCaName(CREDENTIAL_NAME)
 
         assertThat(foundCertificates).isEqualTo(expectedCertificates)
@@ -308,7 +298,7 @@ class DefaultCredentialServiceTest {
             originalCredentialVersion,
             generationParameters)).thenReturn(newVersion)
 
-        subjectWithoutConcatenateCas.save(originalCredentialVersion, credentialValue, generateRequest)
+        this.subject.save(originalCredentialVersion, credentialValue, generateRequest)
 
         verify(credentialVersionDataService, never()).save(newVersion)
     }
@@ -342,7 +332,7 @@ class DefaultCredentialServiceTest {
             originalCredentialVersion,
             stringGenerationParameters)).thenReturn(newVersion)
 
-        subjectWithoutConcatenateCas.save(originalCredentialVersion, stringCredentialValue, request)
+        this.subject.save(originalCredentialVersion, stringCredentialValue, request)
 
         verify(credentialVersionDataService).save(newVersion)
     }
@@ -352,35 +342,17 @@ class DefaultCredentialServiceTest {
         `when`(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
             .thenReturn(true)
 
-        assertThat(subjectWithoutConcatenateCas.findByUuid(CREDENTIAL_UUID)).isEqualTo(credential)
+        assertThat(this.subject.findByUuid(CREDENTIAL_UUID)).isEqualTo(credential)
     }
 
     @Test
-    fun findAllByName__whenConcatenateCasIsTrue__returnsConcatenatedCas() {
-        `when`<List<CredentialVersion>>(credentialVersionDataService.findAllByName("some-cert"))
-                .thenReturn(listOf<CredentialVersion>(certificate))
-        `when`(permissionCheckingService.hasPermission(USER, "some-cert", PermissionOperation.READ)).thenReturn(true)
-
-        val results = subjectWithConcatenateCas.findAllByName("some-cert")
-        val resultCert = results[0] as CertificateCredentialVersion
-
-        val allMatches = ArrayList<String>()
-        val m = Pattern.compile("BEGIN CERTIFICATE")
-                .matcher(resultCert.ca)
-        while (m.find()) {
-            allMatches.add(m.group())
-        }
-        assertThat(allMatches.size).isEqualTo(2)
-    }
-
-    @Test
-    fun findAllByName__whenConcatenateCasIsFalse__returnsSingleCa() {
+    fun findAllByName__whenConcatenateCasIsTrue__returnsSingleCa() {
         `when`<List<CredentialVersion>>(credentialVersionDataService.findAllByName("some-cert"))
                 .thenReturn(listOf<CredentialVersion>(certificate))
 
         `when`(permissionCheckingService.hasPermission(USER, "some-cert", PermissionOperation.READ)).thenReturn(true)
 
-        val results = subjectWithoutConcatenateCas.findAllByName("some-cert")
+        val results = this.subject.findAllByName("some-cert")
         val resultCert = results[0] as CertificateCredentialVersion
 
         val allMatches = ArrayList<String>()
@@ -393,31 +365,13 @@ class DefaultCredentialServiceTest {
     }
 
     @Test
-    fun findNByName__whenConcatenateCasIsTrue__returnsConcatenatedCas() {
-        `when`<List<CredentialVersion>>(credentialVersionDataService.findNByName("some-cert", 1))
-                .thenReturn(listOf<CredentialVersion>(certificate))
-        `when`(permissionCheckingService.hasPermission(USER, "some-cert", PermissionOperation.READ)).thenReturn(true)
-
-        val results = subjectWithConcatenateCas.findNByName("some-cert", 1)
-        val resultCert = results[0] as CertificateCredentialVersion
-
-        val allMatches = ArrayList<String>()
-        val m = Pattern.compile("BEGIN CERTIFICATE")
-                .matcher(resultCert.ca)
-        while (m.find()) {
-            allMatches.add(m.group())
-        }
-        assertThat(allMatches.size).isEqualTo(2)
-    }
-
-    @Test
-    fun findNByName__whenConcatenateCasIsFalse__returnsSingleCa() {
+    fun findNByName__whenConcatenateCasIsTrue__returnsSingleCa() {
         `when`<List<CredentialVersion>>(credentialVersionDataService.findNByName("some-cert", 1))
                 .thenReturn(listOf<CredentialVersion>(certificate))
 
         `when`(permissionCheckingService.hasPermission(USER, "some-cert", PermissionOperation.READ)).thenReturn(true)
 
-        val results = subjectWithoutConcatenateCas.findNByName("some-cert", 1)
+        val results = this.subject.findNByName("some-cert", 1)
         val resultCert = results[0] as CertificateCredentialVersion
 
         val allMatches = ArrayList<String>()
@@ -430,31 +384,13 @@ class DefaultCredentialServiceTest {
     }
 
     @Test
-    fun findActiveByName__whenConcatenateCasIsTrue__returnsConcatenatedCas() {
-        `when`<List<CredentialVersion>>(credentialVersionDataService.findActiveByName("some-cert"))
-                .thenReturn(listOf<CredentialVersion>(certificate))
-        `when`(permissionCheckingService.hasPermission(USER, "some-cert", PermissionOperation.READ)).thenReturn(true)
-
-        val results = subjectWithConcatenateCas.findActiveByName("some-cert")
-        val resultCert = results[0] as CertificateCredentialVersion
-
-        val allMatches = ArrayList<String>()
-        val m = Pattern.compile("BEGIN CERTIFICATE")
-                .matcher(resultCert.ca)
-        while (m.find()) {
-            allMatches.add(m.group())
-        }
-        assertThat(allMatches.size).isEqualTo(2)
-    }
-
-    @Test
-    fun findActiveByName__whenConcatenateCasIsFalse__returnsSingleCa() {
+    fun findActiveByName__whenConcatenateCasIsTrue__returnsSingleCa() {
         `when`<List<CredentialVersion>>(credentialVersionDataService.findActiveByName("some-cert"))
                 .thenReturn(listOf<CredentialVersion>(certificate))
 
         `when`(permissionCheckingService.hasPermission(USER, "some-cert", PermissionOperation.READ)).thenReturn(true)
 
-        val results = subjectWithoutConcatenateCas.findActiveByName("some-cert")
+        val results = this.subject.findActiveByName("some-cert")
         val resultCert = results[0] as CertificateCredentialVersion
 
         val allMatches = ArrayList<String>()
@@ -467,31 +403,13 @@ class DefaultCredentialServiceTest {
     }
 
     @Test
-    fun findVersionByUuid__whenConcatenateCasIsTrue__returnsConcatenatedCas() {
-        `when`(credentialVersionDataService.findByUuid(certUuid.toString()))
-                .thenReturn(certificate)
-        `when`(permissionCheckingService.hasPermission(USER, "some-cert", PermissionOperation.READ)).thenReturn(true)
-
-        val results = subjectWithConcatenateCas.findVersionByUuid(certUuid.toString())
-        val resultCert = results as CertificateCredentialVersion
-
-        val allMatches = ArrayList<String>()
-        val m = Pattern.compile("BEGIN CERTIFICATE")
-                .matcher(resultCert.ca)
-        while (m.find()) {
-            allMatches.add(m.group())
-        }
-        assertThat(allMatches.size).isEqualTo(2)
-    }
-
-    @Test
-    fun findVersionByUuid__whenConcatenateCasIsFalse__returnsSingleCa() {
+    fun findVersionByUuid__whenConcatenateCasIsTrue__returnsSingleCa() {
         `when`(credentialVersionDataService.findByUuid(certUuid.toString()))
                 .thenReturn(certificate)
 
         `when`(permissionCheckingService.hasPermission(USER, "some-cert", PermissionOperation.READ)).thenReturn(true)
 
-        val results = subjectWithoutConcatenateCas.findVersionByUuid(certUuid.toString())
+        val results = this.subject.findVersionByUuid(certUuid.toString())
         val resultCert = results as CertificateCredentialVersion
 
         val allMatches = ArrayList<String>()

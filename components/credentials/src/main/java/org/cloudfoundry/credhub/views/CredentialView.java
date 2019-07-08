@@ -43,13 +43,17 @@ public class CredentialView {
   }
 
   public static CredentialView fromEntity(final CredentialVersion credentialVersion) {
+    return fromEntity(credentialVersion, false);
+  }
+
+  public static CredentialView fromEntity(final CredentialVersion credentialVersion, final boolean concatenateCas) {
     final CredentialView result;
-    if (credentialVersion instanceof ValueCredentialVersion) {
+      if (credentialVersion instanceof ValueCredentialVersion) {
       result = new ValueView((ValueCredentialVersion) credentialVersion);
     } else if (credentialVersion instanceof PasswordCredentialVersion) {
       result = new PasswordView((PasswordCredentialVersion) credentialVersion);
     } else if (credentialVersion instanceof CertificateCredentialVersion) {
-      result = new CertificateView((CertificateCredentialVersion) credentialVersion);
+      result = new CertificateView((CertificateCredentialVersion) credentialVersion, concatenateCas);
     } else if (credentialVersion instanceof SshCredentialVersion) {
       result = new SshView((SshCredentialVersion) credentialVersion);
     } else if (credentialVersion instanceof RsaCredentialVersion) {

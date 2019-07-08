@@ -1,5 +1,7 @@
 package org.cloudfoundry.credhub.services;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -46,5 +48,36 @@ public class CertificateAuthorityService {
             certificateCredential.isSelfSigned(),
             certificateCredential.getGenerated(),
             certificateCredential.isVersionTransitional());
+  }
+
+  public CertificateCredentialValue findTransitionalVersion(final String caName) {
+    final List<CredentialVersion> credentialVersions = certificateVersionDataService.findActiveWithTransitional(caName);
+
+    if (credentialVersions == null) {
+      throw new EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS);
+    }
+
+    final CertificateCredentialVersion transitionalVersion = (CertificateCredentialVersion) credentialVersions.stream().filter(version -> {
+      if (!(version instanceof CertificateCredentialVersion)) {
+        throw new ParameterizedValidationException(ErrorMessages.NOT_A_CA_NAME);
+      }
+      return ((CertificateCredentialVersion) version).isVersionTransitional();
+    }).findFirst().orElse(null);
+
+    if (transitionalVersion == null) {
+      return null;
+    } else if (!transitionalVersion.getParsedCertificate().isCa()) {
+      throw new ParameterizedValidationException(ErrorMessages.CERT_NOT_CA);
+    }
+
+    return new CertificateCredentialValue(
+      null,
+      transitionalVersion.getCertificate(),
+      transitionalVersion.getPrivateKey(),
+      null,
+      transitionalVersion.isCertificateAuthority(),
+      transitionalVersion.isSelfSigned(),
+      transitionalVersion.getGenerated(),
+      transitionalVersion.isVersionTransitional());
   }
 }

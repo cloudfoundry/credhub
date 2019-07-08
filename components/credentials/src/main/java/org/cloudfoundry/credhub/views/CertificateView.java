@@ -3,6 +3,7 @@ package org.cloudfoundry.credhub.views;
 import java.time.Instant;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import org.cloudfoundry.credhub.credential.CredentialValue;
@@ -10,6 +11,8 @@ import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 
 @SuppressWarnings("unused")
 public class CertificateView extends CredentialView {
+    @JsonIgnore
+    private boolean concatenateCas;
     private CertificateCredentialVersion version;
 
     private Instant expiryDate;
@@ -35,11 +38,28 @@ public class CertificateView extends CredentialView {
         this.certificateAuthority = version.isCertificateAuthority();
         this.selfSigned = version.isSelfSigned();
         this.generated = version.getGenerated();
+        this.concatenateCas = false;
+    }
+
+    public CertificateView(final CertificateCredentialVersion version, final boolean concatenateCas) {
+        super(
+          version.getVersionCreatedAt(),
+          version.getUuid(),
+          version.getName(),
+          version.getCredentialType(),
+          null
+        );
+        this.version = version;
+        this.expiryDate = version.getExpiryDate();
+        this.certificateAuthority = version.isCertificateAuthority();
+        this.selfSigned = version.isSelfSigned();
+        this.generated = version.getGenerated();
+        this.concatenateCas = concatenateCas;
     }
 
     @Override
     public CredentialValue getValue() {
-        return new CertificateValueView(version);
+        return new CertificateValueView(version, concatenateCas);
     }
 
     public boolean isTransitional() {

@@ -208,6 +208,45 @@ public class CertificateGeneratorTest {
   }
 
   @Test
+  public void whenCAExists_andHasATransitionalVersion_aValidChildCertificateIsGenerated() throws Exception {
+    final KeyPair childCertificateKeyPair = setupKeyPair();
+    setupMocksForRootCA(childCertificateKeyPair);
+
+    KeyPair transitionalCaKeyPair = fakeKeyPairGenerator.generate();
+    final X509CertificateHolder caX509CertHolder = makeCert(transitionalCaKeyPair, transitionalCaKeyPair.getPrivate(),
+      rootCaDn, rootCaDn, true);
+    X509Certificate transitionalCaX509Certificate = new JcaX509CertificateConverter()
+      .setProvider(BouncyCastleFipsProvider.PROVIDER_NAME).getCertificate(caX509CertHolder);
+    CertificateCredentialValue transitionalCa = new CertificateCredentialValue(
+      null,
+      CertificateFormatter.pemOf(transitionalCaX509Certificate),
+      CertificateFormatter.pemOf(transitionalCaKeyPair.getPrivate()),
+      null,
+      true,
+      true,
+      false,
+      true);
+
+    generationParameters.setKeyLength(4096);
+    final CertificateGenerationParameters params = new CertificateGenerationParameters(generationParameters);
+
+    when(
+      signedCertificateGenerator
+        .getSignedByIssuer(childCertificateKeyPair, params, rootCaX509Certificate, rootCaKeyPair.getPrivate())
+    ).thenReturn(childX509Certificate);
+
+    when(certificateAuthorityService.findTransitionalVersion("/my-ca-name")).thenReturn(transitionalCa);
+
+    final CertificateCredentialValue certificateWithTrustedCa = subject.generateCredential(inputParameters);
+
+    assertThat(certificateWithTrustedCa.getCa(),
+      equalTo(rootCa.getCertificate()));
+
+    assertThat(certificateWithTrustedCa.getTrustedCa(),
+      equalTo(transitionalCa.getCertificate()));
+  }
+
+  @Test
   public void whenSelfSignIsTrue_itGeneratesAValidSelfSignedCertificate() throws Exception {
     final X509Certificate certificate = new JcaX509CertificateConverter().setProvider(BouncyCastleFipsProvider.PROVIDER_NAME)
       .getCertificate(generateX509SelfSignedCert());

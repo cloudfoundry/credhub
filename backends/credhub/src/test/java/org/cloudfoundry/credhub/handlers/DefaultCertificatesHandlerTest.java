@@ -89,7 +89,8 @@ public class DefaultCertificatesHandlerTest {
       new CEFAuditRecord(),
       permissionCheckingService,
       userContextHolder,
-      true
+      true,
+      false
     );
     subjectWithoutAcls = new DefaultCertificatesHandler(
       certificateService,
@@ -98,6 +99,7 @@ public class DefaultCertificatesHandlerTest {
       new CEFAuditRecord(),
       permissionCheckingService,
       userContextHolder,
+      false,
       false
     );
   }

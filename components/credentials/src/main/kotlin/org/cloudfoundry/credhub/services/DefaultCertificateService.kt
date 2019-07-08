@@ -40,12 +40,17 @@ class DefaultCertificateService(
         if (credentialValue.isTransitional) {
             validateNoTransitionalVersionsAlreadyExist(generateRequest.name)
         }
-        return credentialService
+        val version = credentialService
             .save(
                 existingCredentialVersion,
                 credentialValue,
                 generateRequest
-            )
+            ) as CertificateCredentialVersion
+
+        if (version.isVersionTransitional) {
+            createNewChildVersions(version.name)
+        }
+        return version
     }
 
     fun getAll(): List<Credential> {
@@ -80,7 +85,7 @@ class DefaultCertificateService(
             throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
         }
 
-        return concatenateCas(list)
+        return list
     }
 
     fun getAllValidVersions(uuid: UUID): List<CredentialVersion> {
@@ -132,6 +137,8 @@ class DefaultCertificateService(
         val credentialVersions = certificateVersionDataService.findActiveWithTransitional(name!!)
         auditRecord.addAllVersions(Lists.newArrayList<AuditableCredentialVersion>(credentialVersions!!))
 
+        createNewChildVersions(name)
+
         return credentialVersions
     }
 
@@ -150,6 +157,11 @@ class DefaultCertificateService(
         }
 
         certificateVersionDataService.deleteVersion(versionUuid)
+
+        if (versionToDelete.isVersionTransitional) {
+            createNewChildVersions(versionToDelete.name)
+        }
+
         return versionToDelete
     }
 
@@ -169,21 +181,56 @@ class DefaultCertificateService(
         val certificateCredentialVersion = certificateCredentialFactory
             .makeNewCredentialVersion(credential, value)
 
-        return credentialVersionDataService.save(certificateCredentialVersion) as CertificateCredentialVersion
+        val version = credentialVersionDataService.save(certificateCredentialVersion) as CertificateCredentialVersion
+
+        if (version.isVersionTransitional) {
+            createNewChildVersions(version.name)
+        }
+
+        return version
     }
 
-    private fun concatenateCas(credentialVersions: List<CredentialVersion>): List<CredentialVersion> {
-        if (!concatenateCas) return credentialVersions
-        return credentialVersions.map {
-            val certificateCredentialVersion = it as CertificateCredentialVersion
-            if (certificateCredentialVersion.caName != null) {
-                val findActiveWithTransitional = credentialVersionDataService.findActiveByName(certificateCredentialVersion.caName)
-                certificateCredentialVersion.ca = findActiveWithTransitional!!.joinToString("\n") { credentialVersion ->
-                    credentialVersion as CertificateCredentialVersion
-                    credentialVersion.certificate.trim()
+    private fun createNewChildVersions(parentCredentialName: String) {
+        if (!concatenateCas) {
+            return
+        }
+
+        val signedCertificates = findSignedCertificates(parentCredentialName)
+        signedCertificates.forEach {
+            val credentialVersion = credentialVersionDataService.findMostRecent(it) as? CertificateCredentialVersion
+            val credential = credentialVersion?.credential
+
+            val signingCa = credentialVersion?.ca
+            var trustedCa: CertificateCredentialVersion? = null
+            val activeWithTransitional = certificateVersionDataService.findActiveWithTransitional(parentCredentialName)
+
+            val caVersion = activeWithTransitional?.get(0) as CertificateCredentialVersion
+
+            if (caVersion.certificate != signingCa) {
+                if (activeWithTransitional.size == 2 || caVersion.isVersionTransitional) {
+                    trustedCa = caVersion
                 }
+            } else if (activeWithTransitional.size == 2) {
+                trustedCa = activeWithTransitional[1] as CertificateCredentialVersion
             }
-            certificateCredentialVersion
+
+            val value = CertificateCredentialValue(
+                signingCa,
+                credentialVersion?.certificate,
+                credentialVersion?.privateKey,
+                credentialVersion?.caName,
+                credentialVersion?.isCertificateAuthority ?: false,
+                credentialVersion?.isSelfSigned ?: false,
+                credentialVersion?.generated,
+                credentialVersion?.isVersionTransitional ?: false
+            )
+
+            val newCredentialVersion = certificateCredentialFactory
+                .makeNewCredentialVersion(credential, value)
+
+            newCredentialVersion.trustedCa = trustedCa?.certificate
+
+            credentialVersionDataService.save(newCredentialVersion)
         }
     }
 

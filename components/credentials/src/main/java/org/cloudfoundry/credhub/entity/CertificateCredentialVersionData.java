@@ -49,6 +49,9 @@ public class CertificateCredentialVersionData extends CredentialVersionData<Cert
   @Column(table = CertificateCredentialVersionData.TABLE_NAME)
   private Boolean generated;
 
+  @Column(table = CertificateCredentialVersionData.TABLE_NAME, length = 7000, columnDefinition = "TEXT")
+  private String trustedCa;
+
   public CertificateCredentialVersionData() {
     super();
   }
@@ -75,6 +78,14 @@ public class CertificateCredentialVersionData extends CredentialVersionData<Cert
 
   public void setCertificate(final String certificate) {
     this.certificate = certificate;
+  }
+
+  public String getTrustedCa() {
+    return trustedCa;
+  }
+
+  public void setTrustedCa(final String trustedCa) {
+    this.trustedCa = trustedCa;
   }
 
   public String getCaName() {

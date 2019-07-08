@@ -17,7 +17,6 @@ import org.cloudfoundry.credhub.requests.BaseCredentialGenerateRequest
 import org.cloudfoundry.credhub.requests.BaseCredentialRequest
 import org.cloudfoundry.credhub.requests.BaseCredentialSetRequest
 import org.cloudfoundry.credhub.views.FindCredentialResult
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.util.UUID
 
@@ -27,8 +26,7 @@ class DefaultCredentialService(
     private val credentialFactory: CredentialFactory,
     private val certificateAuthorityService: CertificateAuthorityService,
     private val credentialDataService: CredentialDataService,
-    private val auditRecord: CEFAuditRecord,
-    @Value("\${certificates.concatenate_cas:false}") var concatenateCas: Boolean
+    private val auditRecord: CEFAuditRecord
 )
     : CredentialService {
 
@@ -58,7 +56,7 @@ class DefaultCredentialService(
             auditRecord.addResource(credentialVersion.credential)
         }
 
-        return concatenateCas(credentialList)
+        return credentialList
     }
 
     override fun findNByName(credentialName: String, numberOfVersions: Int): List<CredentialVersion> {
@@ -66,9 +64,7 @@ class DefaultCredentialService(
             throw InvalidQueryParameterException(ErrorMessages.INVALID_QUERY_PARAMETER, "versions")
         }
 
-        val credentialList = credentialVersionDataService.findNByName(credentialName, numberOfVersions)
-
-        return concatenateCas(credentialList)
+        return credentialVersionDataService.findNByName(credentialName, numberOfVersions)
     }
 
     override fun findActiveByName(credentialName: String): List<CredentialVersion> {
@@ -79,7 +75,7 @@ class DefaultCredentialService(
             auditRecord.addResource(credentialVersion.credential)
         }
 
-        return concatenateCas(credentialList)
+        return credentialList
     }
 
     override fun findByUuid(credentialUUID: UUID): Credential {
@@ -100,7 +96,7 @@ class DefaultCredentialService(
             throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
         }
 
-        return concatenateCas(listOf(credentialVersion))[0]
+        return listOf(credentialVersion)[0]
     }
 
     override fun findAllCertificateCredentialsByCaName(caName: String): List<String> {
@@ -122,21 +118,6 @@ class DefaultCredentialService(
 
     override fun findMostRecent(credentialName: String): CredentialVersion? {
         return credentialVersionDataService.findMostRecent(credentialName)
-    }
-
-    private fun concatenateCas(credentialVersions: List<CredentialVersion>): List<CredentialVersion> {
-        if (!concatenateCas) return credentialVersions
-        return credentialVersions.map {
-            val certificateCredentialVersion = it as? CertificateCredentialVersion ?: return credentialVersions
-            if (certificateCredentialVersion.caName != null) {
-                val findActiveWithTransitional = credentialVersionDataService.findActiveByName(certificateCredentialVersion.caName)
-                certificateCredentialVersion.ca = findActiveWithTransitional?.joinToString("\n") { credentialVersion ->
-                    credentialVersion as CertificateCredentialVersion
-                    credentialVersion.certificate.trim()
-                } ?: certificateCredentialVersion.ca
-            }
-            certificateCredentialVersion
-        }
     }
 
     private fun makeAndSaveNewCredential(

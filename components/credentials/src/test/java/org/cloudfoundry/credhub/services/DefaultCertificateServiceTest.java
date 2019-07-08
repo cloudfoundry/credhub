@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.services;
 
+import java.security.Security;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -8,6 +9,7 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
 import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.auth.UserContext;
@@ -35,12 +37,13 @@ import static org.hamcrest.core.IsNull.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class DefaultCertificateServiceTest {
   private DefaultCertificateService subjectWithoutConcatenateCas;
   private DefaultCertificateService subjectWithConcatenateCas;
-  private DefaultCredentialService permissionedCredentialService;
+  private DefaultCredentialService credentialService;
   private CertificateDataService certificateDataService;
   private UserContextHolder userContextHolder;
   private DefaultCertificateVersionDataService certificateVersionDataService;
@@ -49,11 +52,28 @@ public class DefaultCertificateServiceTest {
   private CredentialVersionDataService credentialVersionDataService;
   private UserContext userContext;
   private final static String actor = "Actor";
+  private CertificateCredentialVersion childCert;
+  private CertificateCredentialVersion nonTransitionalCa;
+  private CertificateCredentialVersion transitionalCa;
+  private CertificateCredentialVersion newChildCert;
+  private UUID certVersionUuid;
+  private UUID newCertVersionUuid;
+  private UUID caUuid;
+  private UUID certUuid;
+  private UUID nonTransitionalVersionId;
+  private UUID transitionalVersionId;
+  private CertificateCredentialValue value;
+  private Credential credential;
+  private Credential childCredential;
 
   @Before
   public void beforeEach() {
+    if (Security.getProvider(BouncyCastleFipsProvider.PROVIDER_NAME) == null) {
+      Security.addProvider(new BouncyCastleFipsProvider());
+    }
+
     uuid = UUID.randomUUID();
-    permissionedCredentialService = mock(DefaultCredentialService.class);
+    credentialService = mock(DefaultCredentialService.class);
     certificateDataService = mock(CertificateDataService.class);
     certificateDataService = mock(CertificateDataService.class);
     userContextHolder = mock(UserContextHolder.class);
@@ -64,7 +84,7 @@ public class DefaultCertificateServiceTest {
     when(userContext.getActor()).thenReturn(actor);
     when(userContextHolder.getUserContext()).thenReturn(userContext);
     subjectWithoutConcatenateCas = new DefaultCertificateService(
-      permissionedCredentialService,
+      credentialService,
       certificateDataService,
       certificateVersionDataService,
       certificateCredentialFactory,
@@ -72,59 +92,252 @@ public class DefaultCertificateServiceTest {
       new CEFAuditRecord(), false
     );
     subjectWithConcatenateCas = new DefaultCertificateService(
-      permissionedCredentialService,
+      credentialService,
       certificateDataService,
       certificateVersionDataService,
       certificateCredentialFactory,
       credentialVersionDataService,
       new CEFAuditRecord(), true
     );
+
+    certVersionUuid = UUID.randomUUID();
+    newCertVersionUuid = UUID.randomUUID();
+    caUuid = UUID.randomUUID();
+    certUuid = UUID.randomUUID();
+    nonTransitionalVersionId = UUID.randomUUID();
+    transitionalVersionId = UUID.randomUUID();
+
+    credential = mock(Credential.class);
+    when(credential.getName()).thenReturn("some-ca");
+    when(credential.getUuid()).thenReturn(caUuid);
+
+    childCredential = mock(Credential.class);
+    when(childCredential.getName()).thenReturn("some-cert");
+    when(childCredential.getUuid()).thenReturn(certUuid);
+
+    value = mock(CertificateCredentialValue.class);
+    when(value.getCa()).thenReturn(TestConstants.TEST_CA);
+    when(value.getCertificate()).thenReturn(TestConstants.TEST_CERTIFICATE);
+    when(value.getPrivateKey()).thenReturn(TestConstants.TEST_PRIVATE_KEY);
+    when(value.getCaName()).thenReturn("some-ca");
+    when(value.getGenerated()).thenReturn(true);
+
+    nonTransitionalCa = mock(CertificateCredentialVersion.class);
+    when(nonTransitionalCa.getCertificate())
+      .thenReturn(TestConstants.TEST_CERTIFICATE);
+    when(nonTransitionalCa.isVersionTransitional()).thenReturn(false);
+    when(nonTransitionalCa.getName()).thenReturn("some-ca");
+    when(nonTransitionalCa.getUuid()).thenReturn(nonTransitionalVersionId);
+    when(nonTransitionalCa.getCredential()).thenReturn(credential);
+
+    transitionalCa = mock(CertificateCredentialVersion.class);
+    when(transitionalCa.getCertificate())
+      .thenReturn(TestConstants.OTHER_TEST_CERTIFICATE);
+    when(transitionalCa.isVersionTransitional()).thenReturn(true);
+    when(transitionalCa.getName()).thenReturn("some-ca");
+    when(transitionalCa.getUuid()).thenReturn(transitionalVersionId);
+    when(transitionalCa.getCredential()).thenReturn(credential);
+
+    childCert = mock(CertificateCredentialVersion.class);
+    when(childCert.getCaName()).thenReturn("some-ca");
+    when(childCert.getCredential()).thenReturn(childCredential);
+    when(childCert.getName()).thenReturn("some-cert");
+    when(childCert.getUuid()).thenReturn(certVersionUuid);
+    when(childCert.getCertificate()).thenReturn(TestConstants.TEST_CERTIFICATE);
+    when(childCert.getPrivateKey()).thenReturn(TestConstants.TEST_PRIVATE_KEY);
+    when(childCert.getGenerated()).thenReturn(true);
+    when(childCert.getValue()).thenReturn(value);
+
+
+    newChildCert = mock(CertificateCredentialVersion.class);
+    when(newChildCert.getCaName()).thenReturn("some-ca");
+    when(newChildCert.getName()).thenReturn("some-cert");
+    when(newChildCert.getUuid()).thenReturn(newCertVersionUuid);
+    when(newChildCert.getValue()).thenReturn(value);
   }
 
   @Test
-  public void save_whenTransitionalIsFalse_delegatesToPermissionedCredentialService() {
-    final CertificateCredentialValue value = mock(CertificateCredentialValue.class);
+  public void save_whenTransitionalIsFalse_delegatesToCredentialService() {
     when(value.isTransitional()).thenReturn(false);
+
     final BaseCredentialGenerateRequest generateRequest = mock(BaseCredentialGenerateRequest.class);
+
+    when(credentialService.save(nonTransitionalCa, value, generateRequest))
+      .thenReturn(transitionalCa);
+
     subjectWithoutConcatenateCas.save(
-      mock(CredentialVersion.class),
+      nonTransitionalCa,
       value,
       generateRequest
     );
 
     Mockito.verify(generateRequest).setType(eq("certificate"));
-    Mockito.verify(permissionedCredentialService).save(any(),
+    Mockito.verify(credentialService).save(any(),
+      eq(value),
+      eq(generateRequest)
+    );
+    verify(credentialVersionDataService, Mockito.times(0)).save(any(CertificateCredentialVersion.class));
+
+  }
+
+  @Test
+  public void save_whenTransitionalIsTrue_andThereAreNoOtherTransitionalVersions_delegatesToCredentialService() {
+    when(value.isTransitional()).thenReturn(true);
+
+    final BaseCredentialGenerateRequest generateRequest = mock(BaseCredentialGenerateRequest.class);
+    when(generateRequest.getName()).thenReturn("some-ca");
+
+    when(credentialService.findAllByName(eq("/some-ca")))
+      .thenReturn(newArrayList(nonTransitionalCa));
+
+    when(credentialService.save(transitionalCa, value, generateRequest))
+      .thenReturn(transitionalCa);
+
+    subjectWithoutConcatenateCas.save(
+      transitionalCa,
+      value,
+      generateRequest
+    );
+
+    Mockito.verify(generateRequest).setType(eq("certificate"));
+    Mockito.verify(credentialService).save(any(),
       eq(value),
       eq(generateRequest)
     );
   }
 
   @Test
-  public void save_whenTransitionalIsTrue_andThereAreNoOtherTransitionalVersions_delegatesToPermissionedCredentialService() {
-    final CertificateCredentialValue value = mock(CertificateCredentialValue.class);
+  public void save_whenTransitionalIsTrue_andConcatenateCasIsTrue_generatesNewChildVersion() {
     when(value.isTransitional()).thenReturn(true);
 
     final BaseCredentialGenerateRequest generateRequest = mock(BaseCredentialGenerateRequest.class);
-    when(generateRequest.getName()).thenReturn("/some-name");
+    when(generateRequest.getName()).thenReturn("some-ca");
 
     final CertificateCredentialVersion previousVersion = mock(CertificateCredentialVersion.class);
     when(previousVersion.isVersionTransitional()).thenReturn(false);
 
-    when(permissionedCredentialService.findAllByName(eq("/some-name")))
-      .thenReturn(newArrayList(previousVersion));
+    when(credentialService.findAllByName(eq("some-ca")))
+      .thenReturn(newArrayList(nonTransitionalCa));
+    when(certificateVersionDataService.findActiveWithTransitional("some-ca"))
+      .thenReturn(Arrays.asList(nonTransitionalCa, transitionalCa));
+    when(credentialService.findAllCertificateCredentialsByCaName("some-ca"))
+      .thenReturn(Collections.singletonList("some-cert"));
+    when(credentialVersionDataService.findMostRecent(childCert.getName()))
+      .thenReturn(childCert);
+    when(certificateCredentialFactory.makeNewCredentialVersion(eq(childCert.getCredential()), any()))
+      .thenReturn(newChildCert);
+    when(credentialService.save(nonTransitionalCa, value, generateRequest))
+      .thenReturn(transitionalCa);
 
-    subjectWithoutConcatenateCas.save(
-      mock(CredentialVersion.class),
+    subjectWithConcatenateCas.save(
+      nonTransitionalCa,
       value,
       generateRequest
     );
 
-    Mockito.verify(generateRequest).setType(eq("certificate"));
-    Mockito.verify(permissionedCredentialService).save(any(),
-      eq(value),
-      eq(generateRequest)
-    );
+    verify(credentialVersionDataService, Mockito.times(1)).save(newChildCert);
   }
+
+
+  @Test
+  public void set_whenTransitionalIsTrue_andConcatenateCasIsTrue_generatesNewChildVersion() {
+    when(value.isTransitional()).thenReturn(true);
+
+    final CertificateCredentialVersion previousVersion = mock(CertificateCredentialVersion.class);
+    when(previousVersion.isVersionTransitional()).thenReturn(false);
+
+    when(certificateDataService.findByUuid(caUuid)).thenReturn(credential);
+    when(credentialVersionDataService.findActiveByName(childCert.getCaName()))
+      .thenReturn(Arrays.asList(nonTransitionalCa, transitionalCa));
+    when(certificateVersionDataService.findActiveWithTransitional("some-ca"))
+      .thenReturn(Arrays.asList(nonTransitionalCa, transitionalCa));
+    when(credentialService.findAllCertificateCredentialsByCaName("some-ca"))
+      .thenReturn(Collections.singletonList("some-cert"));
+
+    when(credentialVersionDataService.findMostRecent(childCert.getName()))
+      .thenReturn(childCert);
+
+    when(certificateCredentialFactory.makeNewCredentialVersion(eq(nonTransitionalCa.getCredential()), any()))
+      .thenReturn(transitionalCa);
+    when(certificateCredentialFactory.makeNewCredentialVersion(eq(childCert.getCredential()), any()))
+      .thenReturn(newChildCert);
+
+    when(credentialVersionDataService.save(transitionalCa)).thenReturn(transitionalCa);
+
+    subjectWithConcatenateCas.set(
+      caUuid,
+      value
+    );
+
+    verify(credentialVersionDataService, Mockito.times(1)).save(newChildCert);
+  }
+
+  @Test
+  public void set_whenTransitionalIsTrue_andConcatenateCasIsFalse_doesNotGeneratesNewChildVersion() {
+    when(value.isTransitional()).thenReturn(true);
+
+    final CertificateCredentialVersion previousVersion = mock(CertificateCredentialVersion.class);
+    when(previousVersion.isVersionTransitional()).thenReturn(false);
+
+    when(certificateDataService.findByUuid(caUuid)).thenReturn(credential);
+    when(credentialVersionDataService.findActiveByName(childCert.getCaName()))
+      .thenReturn(Arrays.asList(nonTransitionalCa, transitionalCa));
+    when(certificateVersionDataService.findActiveWithTransitional("some-ca"))
+      .thenReturn(Arrays.asList(nonTransitionalCa, transitionalCa));
+    when(credentialService.findAllCertificateCredentialsByCaName("some-ca"))
+      .thenReturn(Collections.singletonList("some-cert"));
+
+    when(credentialVersionDataService.findMostRecent(childCert.getName()))
+      .thenReturn(childCert);
+
+    when(certificateCredentialFactory.makeNewCredentialVersion(nonTransitionalCa.getCredential(), value))
+      .thenReturn(transitionalCa);
+    when(certificateCredentialFactory.makeNewCredentialVersion(childCert.getCredential(), (CertificateCredentialValue) childCert.getValue()))
+      .thenReturn(newChildCert);
+
+    when(credentialVersionDataService.save(transitionalCa)).thenReturn(transitionalCa);
+
+    subjectWithoutConcatenateCas.set(
+      caUuid,
+      value
+    );
+
+    verify(credentialVersionDataService, Mockito.times(0)).save(newChildCert);
+  }
+
+
+  @Test
+  public void save_whenTransitionalIsTrue_andConcatenateCasIsFalse_doesNotGeneratesNewChildVersion() {
+    when(value.isTransitional()).thenReturn(true);
+
+    final BaseCredentialGenerateRequest generateRequest = mock(BaseCredentialGenerateRequest.class);
+    when(generateRequest.getName()).thenReturn("some-ca");
+
+    final CertificateCredentialVersion previousVersion = mock(CertificateCredentialVersion.class);
+    when(previousVersion.isVersionTransitional()).thenReturn(false);
+
+    when(credentialService.findAllByName(eq("some-ca")))
+      .thenReturn(newArrayList(nonTransitionalCa));
+    when(certificateVersionDataService.findActiveWithTransitional("some-ca"))
+      .thenReturn(Arrays.asList(nonTransitionalCa, transitionalCa));
+    when(credentialService.findAllCertificateCredentialsByCaName("some-ca"))
+      .thenReturn(Collections.singletonList("some-cert"));
+    when(credentialVersionDataService.findMostRecent(childCert.getName()))
+      .thenReturn(childCert);
+    when(certificateCredentialFactory.makeNewCredentialVersion(childCert.getCredential(), (CertificateCredentialValue) childCert.getValue()))
+      .thenReturn(newChildCert);
+    when(credentialService.save(nonTransitionalCa, value, generateRequest))
+      .thenReturn(transitionalCa);
+
+    subjectWithoutConcatenateCas.save(
+      nonTransitionalCa,
+      value,
+      generateRequest
+    );
+
+    verify(credentialVersionDataService, Mockito.times(0)).save(newChildCert);
+  }
+
 
   @Test
   public void save_whenTransitionalIsTrue_AndThereIsAnotherTransitionalVersion_throwsAnException() {
@@ -137,7 +350,7 @@ public class DefaultCertificateServiceTest {
     final CertificateCredentialVersion previousVersion = mock(CertificateCredentialVersion.class);
     when(previousVersion.isVersionTransitional()).thenReturn(true);
 
-    when(permissionedCredentialService.findAllByName(eq("/some-name")))
+    when(credentialService.findAllByName(eq("/some-name")))
       .thenReturn(newArrayList(previousVersion));
 
     try {
@@ -329,6 +542,42 @@ public class DefaultCertificateServiceTest {
     assertThat(certificateCredentialVersion, equalTo(versionToDelete));
   }
 
+  @Test
+  public void deleteVersion_whenVersionIsTransitional_generatesNewChildVersion() {
+    when(certificateDataService.findByUuid(caUuid)).thenReturn(credential);
+    when(certificateVersionDataService.findVersion(transitionalVersionId))
+      .thenReturn(transitionalCa);
+    when(credentialService.findAllByName(eq("some-ca")))
+      .thenReturn(newArrayList(nonTransitionalCa));
+    when(certificateVersionDataService.findActiveWithTransitional("some-ca"))
+      .thenReturn(Arrays.asList(nonTransitionalCa, transitionalCa));
+    when(credentialService.findAllCertificateCredentialsByCaName("some-ca"))
+      .thenReturn(Collections.singletonList("some-cert"));
+    when(credentialVersionDataService.findMostRecent(childCert.getName()))
+      .thenReturn(childCert);
+    when(certificateCredentialFactory.makeNewCredentialVersion(eq(childCert.getCredential()), any()))
+      .thenReturn(newChildCert);
+
+    subjectWithConcatenateCas
+      .deleteVersion(caUuid, transitionalVersionId);
+
+    verify(credentialVersionDataService, Mockito.times(1)).save(newChildCert);
+
+  }
+
+  @Test
+  public void deleteVersion_whenVersionIsNotTransitional_doesNotGeneratesNewChildVersion() {
+    when(certificateDataService.findByUuid(caUuid)).thenReturn(credential);
+    when(certificateVersionDataService.findVersion(nonTransitionalVersionId))
+      .thenReturn(nonTransitionalCa);
+
+    subjectWithConcatenateCas
+      .deleteVersion(caUuid, nonTransitionalVersionId);
+
+    verify(credentialVersionDataService, Mockito.times(0)).save(newChildCert);
+  }
+
+
   @Test(expected = EntryNotFoundException.class)
   public void deleteVersion_whenTheProvidedVersionDoesNotExistForTheSpecifiedCredential_returnsAnError() {
     final UUID versionUuid = UUID.randomUUID();
@@ -467,7 +716,49 @@ public class DefaultCertificateServiceTest {
   }
 
   @Test
-  public void getVersions__whenConcatenateCasIsTrue__returnsConcatenatedCas() {
+  public void updateTransitionalVersion__whenConcatenateCasIsTrue__generatesNewChildVersion() {
+    when(certificateDataService.findByUuid(caUuid)).thenReturn(credential);
+    when(credentialVersionDataService.findActiveByName(childCert.getCaName()))
+      .thenReturn(Arrays.asList(nonTransitionalCa, transitionalCa));
+    when(certificateVersionDataService.findActiveWithTransitional("some-ca"))
+      .thenReturn(Arrays.asList(nonTransitionalCa, transitionalCa));
+    when(credentialService.findAllCertificateCredentialsByCaName("some-ca"))
+      .thenReturn(Collections.singletonList("some-cert"));
+    when(credentialVersionDataService.findMostRecent(childCert.getName()))
+      .thenReturn(childCert);
+    when(certificateCredentialFactory.makeNewCredentialVersion(eq(childCert.getCredential()), any()))
+      .thenReturn(newChildCert);
+    when(certificateVersionDataService.findVersion(nonTransitionalVersionId))
+      .thenReturn(nonTransitionalCa);
+
+    subjectWithConcatenateCas.updateTransitionalVersion(caUuid, nonTransitionalVersionId);
+
+    verify(credentialVersionDataService, Mockito.times(1)).save(newChildCert);
+  }
+
+  @Test
+  public void updateTransitionalVersion__whenConcatenateCasIsFalse__doesNotGenerateNewChildVersion() {
+    when(certificateDataService.findByUuid(caUuid)).thenReturn(credential);
+    when(credentialVersionDataService.findActiveByName(childCert.getCaName()))
+      .thenReturn(Arrays.asList(nonTransitionalCa, transitionalCa));
+    when(certificateVersionDataService.findActiveWithTransitional("some-ca"))
+      .thenReturn(Arrays.asList(nonTransitionalCa, transitionalCa));
+    when(credentialService.findAllCertificateCredentialsByCaName("some-ca"))
+      .thenReturn(Collections.singletonList("some-cert"));
+    when(credentialVersionDataService.findMostRecent(childCert.getName()))
+      .thenReturn(childCert);
+    when(certificateCredentialFactory.makeNewCredentialVersion(childCert.getCredential(), (CertificateCredentialValue) childCert.getValue()))
+      .thenReturn(newChildCert);
+    when(certificateVersionDataService.findVersion(nonTransitionalVersionId))
+      .thenReturn(nonTransitionalCa);
+
+    subjectWithoutConcatenateCas.updateTransitionalVersion(caUuid, nonTransitionalVersionId);
+
+    verify(credentialVersionDataService, Mockito.times(0)).save(newChildCert);
+  }
+
+  @Test
+  public void getVersions__whenConcatenateCasIsTrue__returnsSingleCa() {
     UUID certUuid = UUID.randomUUID();
     CertificateCredentialVersion nonTransitionalCa = mock(CertificateCredentialVersion.class);
     when(nonTransitionalCa.getCertificate())
@@ -493,45 +784,6 @@ public class DefaultCertificateServiceTest {
     when(userContext.getActor()).thenReturn(user);
 
     final List<CredentialVersion> results = subjectWithConcatenateCas.getVersions(certUuid, false);
-    CertificateCredentialVersion resultCert = (CertificateCredentialVersion) results.get(0);
-
-    List<String> allMatches = new ArrayList<>();
-    Matcher m = Pattern.compile("BEGIN CERTIFICATE")
-            .matcher(resultCert.getCa());
-    while (m.find()) {
-      allMatches.add(m.group());
-    }
-    assertThat(allMatches.size(), equalTo(2));
-
-  }
-
-  @Test
-  public void getVersions__whenConcatenateCasIsFalse__returnsSingleCa() {
-    UUID certUuid = UUID.randomUUID();
-    CertificateCredentialVersion nonTransitionalCa = mock(CertificateCredentialVersion.class);
-    when(nonTransitionalCa.getCertificate())
-            .thenReturn(TestConstants.TEST_CERTIFICATE);
-    CertificateCredentialVersion transitionalCa = mock(CertificateCredentialVersion.class);
-    when(transitionalCa.getCertificate())
-            .thenReturn(TestConstants.OTHER_TEST_CERTIFICATE);
-
-    CertificateCredentialVersion certificate = new CertificateCredentialVersion("some-cert");
-    certificate.setCaName("testCa");
-    certificate.getCredential().setUuid(certUuid);
-    certificate.setUuid(certUuid);
-    certificate.setCa(TestConstants.TEST_CERTIFICATE);
-    when(credentialVersionDataService.findActiveByName(certificate.getCaName()))
-            .thenReturn(Arrays.asList(nonTransitionalCa, transitionalCa));
-    when(certificateVersionDataService.findAllVersions(certUuid))
-            .thenReturn(Collections.singletonList(certificate));
-
-    final UserContext userContext = mock(UserContext.class);
-    when(userContextHolder.getUserContext()).thenReturn(userContext);
-
-    final String user = "my-user";
-    when(userContext.getActor()).thenReturn(user);
-
-    final List<CredentialVersion> results = subjectWithoutConcatenateCas.getVersions(certUuid, false);
     CertificateCredentialVersion resultCert = (CertificateCredentialVersion) results.get(0);
 
     List<String> allMatches = new ArrayList<>();

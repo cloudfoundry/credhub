@@ -38,6 +38,7 @@ public class CertificateCredentialVersion extends CredentialVersion {
     this.setTransitional(certificate.isTransitional());
     this.setExpiryDate(certificate.getExpiryDate());
     this.setCertificateAuthority(certificate.isCertificateAuthority());
+    this.setTrustedCa(certificate.getTrustedCa());
     this.setSelfSigned(certificate.isSelfSigned());
     this.setGenerated(certificate.getGenerated());
   }
@@ -63,6 +64,14 @@ public class CertificateCredentialVersion extends CredentialVersion {
     if (StringUtils.isNotEmpty(delegate.getCertificate())) {
       parsedCertificate = new CertificateReader(certificate);
     }
+  }
+
+  public String getTrustedCa() {
+    return delegate.getTrustedCa();
+  }
+
+  public void setTrustedCa(final String trustedCa) {
+    delegate.setTrustedCa(trustedCa);
   }
 
   public String getPrivateKey() {

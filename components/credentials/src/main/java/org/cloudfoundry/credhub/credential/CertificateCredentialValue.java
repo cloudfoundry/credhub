@@ -3,6 +3,7 @@ package org.cloudfoundry.credhub.credential;
 import java.time.Instant;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -37,6 +38,8 @@ public class CertificateCredentialValue implements CredentialValue {
   @JsonDeserialize(using = EmptyStringToNull.class)
   @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
   private String caName;
+  @JsonIgnore
+  private String trustedCa;
 
   private boolean transitional;
   private boolean certificateAuthority;
@@ -59,8 +62,23 @@ public class CertificateCredentialValue implements CredentialValue {
     final Boolean generated,
     final boolean transitional) {
 
+    this(ca, certificate, privateKey, caName, null, certificateAuthority, selfSigned, generated, transitional);
+  }
+
+  public CertificateCredentialValue(
+    final String ca,
+    final String certificate,
+    final String privateKey,
+    final String caName,
+    final String trustedCa,
+    final boolean certificateAuthority,
+    final boolean selfSigned,
+    final Boolean generated,
+    final boolean transitional) {
+
     super();
     this.ca = ca;
+    this.trustedCa = trustedCa;
     this.certificate = certificate;
     this.privateKey = privateKey;
     this.transitional = transitional;
@@ -76,6 +94,10 @@ public class CertificateCredentialValue implements CredentialValue {
 
   public void setCa(final String ca) {
     this.ca = ca;
+  }
+
+  public String getTrustedCa() {
+    return trustedCa;
   }
 
   public String getCertificate() {

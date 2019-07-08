@@ -61,6 +61,11 @@ public class CertificateGenerator implements CredentialGenerator<CertificateCred
         throw new ParameterizedValidationException(ErrorMessages.CA_MISSING_PRIVATE_KEY);
       }
       final String caCertificate = ca.getCertificate();
+      final CertificateCredentialValue trustedCa = certificateAuthorityService.findTransitionalVersion(caName);
+      String trustedCaCertificate = null;
+      if (trustedCa != null) {
+        trustedCaCertificate = trustedCa.getCertificate();
+      }
 
       try {
 
@@ -72,7 +77,7 @@ public class CertificateGenerator implements CredentialGenerator<CertificateCred
           certificateReader.getCertificate(),
           PrivateKeyReader.getPrivateKey(ca.getPrivateKey())
         );
-        return new CertificateCredentialValue(caCertificate, CertificateFormatter.pemOf(cert), privatePem, caName, params.isCa(), params.isSelfSigned(), true, false);
+        return new CertificateCredentialValue(caCertificate, CertificateFormatter.pemOf(cert), privatePem, caName, trustedCaCertificate, params.isCa(), params.isSelfSigned(), true, false);
       } catch (final Exception e) {
         throw new RuntimeException(e);
       }
