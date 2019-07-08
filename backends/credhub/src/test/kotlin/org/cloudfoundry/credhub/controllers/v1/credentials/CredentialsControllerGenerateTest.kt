@@ -80,7 +80,7 @@ class CredentialsControllerGenerateTest {
         spyCredentialsHandler.generateCredential__returns_credentialView = CredentialView(
             Instant.ofEpochSecond(1549053472L),
             uuid,
-            "/some-password-path",
+            "/some-password-name",
             "password",
             StringCredentialValue("some-password")
         )
@@ -89,7 +89,7 @@ class CredentialsControllerGenerateTest {
         val requestBody =
             """
                 {
-                  "name": "/some-password-path",
+                  "name": "/some-password-name",
                   "type": "password"
                 }
             """.trimIndent()
@@ -145,7 +145,7 @@ class CredentialsControllerGenerateTest {
                   "type": "password",
                   "version_created_at": "2019-02-01T20:37:52Z",
                   "id": $uuid,
-                  "name": "/some-password-path",
+                  "name": "/some-password-name",
                   "value": "some-password"
               }
             """.trimIndent()
@@ -157,7 +157,7 @@ class CredentialsControllerGenerateTest {
         spyCredentialsHandler.generateCredential__returns_credentialView = CredentialView(
             Instant.ofEpochSecond(1549053472L),
             uuid,
-            "/some-user-path",
+            "/some-user-name",
             CredentialType.USER.type.toLowerCase(),
             UserCredentialValue("some-username", "some-password", "foo")
         )
@@ -166,7 +166,7 @@ class CredentialsControllerGenerateTest {
         val requestBody =
             """
                 {
-                  "name": "/some-user-path",
+                  "name": "/some-user-name",
                   "type": "${CredentialType.USER.type.toLowerCase()}"
                 }
             """.trimIndent()
@@ -226,7 +226,7 @@ class CredentialsControllerGenerateTest {
                   "type": "${CredentialType.USER.type.toLowerCase()}",
                   "version_created_at": "2019-02-01T20:37:52Z",
                   "id": $uuid,
-                  "name": "/some-user-path",
+                  "name": "/some-user-name",
                   "value": {
                     "username": "some-username",
                     "password": "some-password",
@@ -243,7 +243,7 @@ class CredentialsControllerGenerateTest {
         spyCredentialsHandler.generateCredential__returns_credentialView = CredentialView(
             Instant.ofEpochSecond(1549053472L),
             uuid,
-            "/some-certificate-path",
+            "/some-certificate-name",
             CredentialType.CERTIFICATE.type.toLowerCase(),
             CertificateCredentialValue(
                 TestConstants.TEST_CA,
@@ -261,7 +261,7 @@ class CredentialsControllerGenerateTest {
         val requestBody =
             """
                 {
-                  "name": "/some-certificate-path",
+                  "name": "/some-certificate-name",
                   "type": "${CredentialType.CERTIFICATE.type.toLowerCase()}",
                   "parameters": {
                     "common_name": "some-common-name",
@@ -358,7 +358,7 @@ class CredentialsControllerGenerateTest {
                   "type": "${CredentialType.CERTIFICATE.type.toLowerCase()}",
                   "version_created_at": "2019-02-01T20:37:52Z",
                   "id": $uuid,
-                  "name": "/some-certificate-path",
+                  "name": "/some-certificate-name",
                   "value": {
                     "ca": "${TestConstants.TEST_CA}",
                     "certificate": "${TestConstants.TEST_CERTIFICATE}",
@@ -380,7 +380,7 @@ class CredentialsControllerGenerateTest {
         spyCredentialsHandler.generateCredential__returns_credentialView = CredentialView(
             Instant.ofEpochSecond(1549053472L),
             uuid,
-            "/some-rsa-path",
+            "/some-rsa-name",
             CredentialType.RSA.type.toLowerCase(),
             RsaCredentialValue(
                 TestConstants.RSA_PUBLIC_KEY_4096,
@@ -392,7 +392,7 @@ class CredentialsControllerGenerateTest {
         val requestBody =
             """
                 {
-                  "name": "/some-rsa-path",
+                  "name": "/some-rsa-name",
                   "type": "${CredentialType.RSA.type.toLowerCase()}"
                 }
             """.trimIndent()
@@ -432,7 +432,7 @@ class CredentialsControllerGenerateTest {
                   "type": "${CredentialType.RSA.type.toLowerCase()}",
                   "version_created_at": "2019-02-01T20:37:52Z",
                   "id": $uuid,
-                  "name": "/some-rsa-path",
+                  "name": "/some-rsa-name",
                   "value": {
                     "public_key": "${TestConstants.RSA_PUBLIC_KEY_4096}",
                     "private_key": "${TestConstants.PRIVATE_KEY_4096}"
@@ -448,7 +448,7 @@ class CredentialsControllerGenerateTest {
         spyCredentialsHandler.generateCredential__returns_credentialView = CredentialView(
             Instant.ofEpochSecond(1549053472L),
             uuid,
-            "/some-ssh-path",
+            "/some-ssh-name",
             CredentialType.SSH.type.toLowerCase(),
             SshCredentialValue(
                 TestConstants.SSH_PUBLIC_KEY_4096,
@@ -461,7 +461,7 @@ class CredentialsControllerGenerateTest {
         val requestBody =
             """
                 {
-                  "name": "/some-ssh-path",
+                  "name": "/some-ssh-name",
                   "type": "${CredentialType.SSH.type.toLowerCase()}"
                 }
             """.trimIndent()
@@ -505,7 +505,7 @@ class CredentialsControllerGenerateTest {
                   "type": "${CredentialType.SSH.type.toLowerCase()}",
                   "version_created_at": "2019-02-01T20:37:52Z",
                   "id": $uuid,
-                  "name": "/some-ssh-path",
+                  "name": "/some-ssh-name",
                   "value": {
                     "public_key": "${TestConstants.SSH_PUBLIC_KEY_4096}",
                     "private_key": "${TestConstants.PRIVATE_KEY_4096}",
@@ -521,7 +521,7 @@ class CredentialsControllerGenerateTest {
         return requestFields(
             fieldWithPath("name")
                 .type(JsonFieldType.STRING)
-                .description("The path that represents the credential."),
+                .description("The name of the credential."),
             fieldWithPath("type")
                 .type(JsonFieldType.STRING)
                 .description("The type of credential."),

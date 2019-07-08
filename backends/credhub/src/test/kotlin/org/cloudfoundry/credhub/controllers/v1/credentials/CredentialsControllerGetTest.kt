@@ -444,7 +444,7 @@ class CredentialsControllerGetTest {
                     CredHubRestDocs.DOCUMENT_IDENTIFIER,
                     requestParameters(
                         parameterWithName("name-like")
-                            .description("The credential path substring"),
+                            .description("The credential name substring"),
                         parameterWithName("expires-within-days")
                             .description("The number of days the credential should expire within")
                             .optional()
@@ -472,7 +472,7 @@ class CredentialsControllerGetTest {
     }
 
     @Test
-    fun GET__find_by_name__returns_results() {
+    fun GET__find_by_path__returns_results() {
         spyCredentialsHandler.findStartingWithPath__returns_findCredentialResultList = listOf(
             FindCredentialResult(
                 Instant.ofEpochSecond(1549053472L),
@@ -528,7 +528,7 @@ class CredentialsControllerGetTest {
                 CredentialView(
                     Instant.ofEpochSecond(1549053472L),
                     uuid,
-                    "/some-value-path",
+                    "/some-name",
                     CredentialType.VALUE.type.toLowerCase(),
                     StringCredentialValue("some-value")
                 )
@@ -539,7 +539,7 @@ class CredentialsControllerGetTest {
             get(CredentialsController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
                 .credHubAuthHeader()
-                .param("name", "/some-value-path")
+                .param("name", "/some-name")
                 .param("current", "true")
         )
             .andExpect(status().isOk)
@@ -560,7 +560,7 @@ class CredentialsControllerGetTest {
                 )
             ).andReturn()
 
-        assertThat(spyCredentialsHandler.getCurrentCredentialVersions__calledWith_credentialName).isEqualTo("/some-value-path")
+        assertThat(spyCredentialsHandler.getCurrentCredentialVersions__calledWith_credentialName).isEqualTo("/some-name")
 
         val actualResponse = mvcResult.response.contentAsString
         // language=json
@@ -571,7 +571,7 @@ class CredentialsControllerGetTest {
                       "type": "value",
                       "version_created_at": "2019-02-01T20:37:52Z",
                       "id": "$uuid",
-                      "name": "/some-value-path",
+                      "name": "/some-name",
                       "value": "some-value"
                   }
               ]

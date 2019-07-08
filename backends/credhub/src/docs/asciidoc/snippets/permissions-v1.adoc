@@ -1,7 +1,7 @@
 
 == Permissions V1 (Deprecated)
 
-=== Get a V1 Permission by Actor and Path
+=== Get a V1 Permission by Actor and Name
 operation::GET__permissions_v1__returns_permissions[]
 
 ---

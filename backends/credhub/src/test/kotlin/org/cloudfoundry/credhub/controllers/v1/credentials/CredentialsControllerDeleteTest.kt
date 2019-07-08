@@ -51,10 +51,10 @@ class CredentialsControllerDeleteTest {
     @Test
     fun DELETE__credential_returns__void() {
         val mvcResult = mockMvc.perform(
-            delete("${CredentialsController.ENDPOINT}?name=/some-credential-path")
+            delete("${CredentialsController.ENDPOINT}?name=/some-credential-name")
                 .credHubAuthHeader()
                 .contentType(MediaType.APPLICATION_JSON)
-                .param("name", "/some-credential-path")
+                .param("name", "/some-credential-name")
         )
             .andExpect(status().isNoContent())
             .andDo(
@@ -62,13 +62,13 @@ class CredentialsControllerDeleteTest {
                     CredHubRestDocs.DOCUMENT_IDENTIFIER,
                     requestParameters(
                         parameterWithName("name")
-                            .description("The credential path")
+                            .description("The credential name")
                     )
                 )
             )
             .andReturn()
 
-        assertThat(spyCredentialsHandler.deleteCredential__calledWith_credentialName).contains("/some-credential-path")
+        assertThat(spyCredentialsHandler.deleteCredential__calledWith_credentialName).contains("/some-credential-name")
         val actualResponseBody = mvcResult.response.contentAsString
 
         assertThat(actualResponseBody).isEqualTo("")

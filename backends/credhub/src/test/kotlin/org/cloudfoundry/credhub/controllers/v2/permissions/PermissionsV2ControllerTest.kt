@@ -55,7 +55,7 @@ class PermissionsV2ControllerTest {
     @Test
     fun GET__permissions_v2_by_actor_and_path__returns_a_permission() {
         val permissionsV2View = PermissionsV2View(
-            "some-path",
+            "/some-path/*",
             listOf(READ, WRITE),
             "some-actor",
             uuid
@@ -67,7 +67,7 @@ class PermissionsV2ControllerTest {
                 get(PermissionsV2Controller.ENDPOINT)
                     .credHubAuthHeader()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .param("path", "some-path")
+                    .param("path", "/some-path/*")
                     .param("actor", "some-actor")
             )
             .andExpect(status().isOk())
@@ -77,7 +77,7 @@ class PermissionsV2ControllerTest {
                     CredHubRestDocs.DOCUMENT_IDENTIFIER,
                     requestParameters(
                         parameterWithName("path")
-                            .description("The credential path"),
+                            .description("The credential path. Can be either a path with an asterisk (*) at the end, or the full name of a credential."),
                         parameterWithName("actor")
                             .description("The credential actor")
                     )
@@ -87,13 +87,13 @@ class PermissionsV2ControllerTest {
             .andReturn()
 
         assertThat(spyPermissionsV2Handler.findByPathAndActor__calledWith_Actor).isEqualTo("some-actor")
-        assertThat(spyPermissionsV2Handler.findByPathAndActor__calledWith_Path).isEqualTo("/some-path")
+        assertThat(spyPermissionsV2Handler.findByPathAndActor__calledWith_Path).isEqualTo("/some-path/*")
         val actualResponseBody = mvcResult.response.contentAsString
 
         // language=json
         val expectedResponseBody = """
             {
-              "path": "some-path",
+              "path": "/some-path/*",
               "operations": [
                 "read",
                 "write"
@@ -109,7 +109,7 @@ class PermissionsV2ControllerTest {
     @Test
     fun GET__permissions_v2_by_uuid__returns_a_permission() {
         val permissionsV2View = PermissionsV2View(
-            "some-path",
+            "/some-path/*",
             listOf(READ, WRITE),
             "some-actor",
             uuid
@@ -141,7 +141,7 @@ class PermissionsV2ControllerTest {
         // language=json
         val expectedResponseBody = """
             {
-              "path": "some-path",
+              "path": "/some-path/*",
               "operations": [
                 "read",
                 "write"
@@ -156,14 +156,14 @@ class PermissionsV2ControllerTest {
     @Test
     fun POST__permissions__adds_a_leading_slash() {
         val permissionsV2View = PermissionsV2View(
-            "some-path",
+            "some-path/*",
             listOf(READ, WRITE),
             "some-actor",
             uuid
         )
 
         val expectedPermissionsV2Request = PermissionsV2Request(
-            "/some-path",
+            "/some-path/*",
             "some-actor",
             listOf(READ, WRITE)
         )
@@ -179,7 +179,7 @@ class PermissionsV2ControllerTest {
                     .content(
                         """
                             {
-                              "path": "some-path",
+                              "path": "some-path/*",
                               "actor": "some-actor",
                               "operations": [
                                 "read",
@@ -201,7 +201,7 @@ class PermissionsV2ControllerTest {
         // language=json
         val expectedResponseBody = """
             {
-              "path": "some-path",
+              "path": "some-path/*",
               "operations": [
                 "read",
                 "write"
@@ -217,7 +217,7 @@ class PermissionsV2ControllerTest {
     @Test
     fun DELETE__permissions_v2_by_uuid__returns_a_permission() {
         val permissionsV2View = PermissionsV2View(
-            "some-path",
+            "/some-path/*",
             listOf(READ, WRITE),
             "some-actor",
             uuid
@@ -249,7 +249,7 @@ class PermissionsV2ControllerTest {
         // language=json
         val expectedResponseBody = """
             {
-              "path": "some-path",
+              "path": "/some-path/*",
               "operations": [
                 "read",
                 "write"
@@ -264,7 +264,7 @@ class PermissionsV2ControllerTest {
     @Test
     fun PUT__permissions_v2__returns_a_permission() {
         val permissionsV2View = PermissionsV2View(
-            "some-path",
+            "/some-path/*",
             listOf(READ, WRITE),
             "some-actor",
             uuid
@@ -279,7 +279,7 @@ class PermissionsV2ControllerTest {
                     // language=json
                     .content("""
                         {
-                          "path": "some-path",
+                          "path": "/some-path/*",
                           "actor": "some-actor",
                           "operations": [
                             "read",
@@ -299,7 +299,7 @@ class PermissionsV2ControllerTest {
                     ),
                     requestFields(
                         fieldWithPath("path")
-                            .description("The credential path"),
+                            .description("The credential path. Can be either a path with an asterisk (*) at the end, or the full name of a credential."),
                         fieldWithPath("actor")
                             .description("The credential actor"),
                         getPermissionOperationsRequestField()
@@ -314,7 +314,7 @@ class PermissionsV2ControllerTest {
         // language=json
         val expectedResponseBody = """
             {
-              "path": "some-path",
+              "path": "/some-path/*",
               "operations": [
                 "read",
                 "write"
@@ -330,7 +330,7 @@ class PermissionsV2ControllerTest {
     fun PATCH__permissions_v2__returns_a_permission() {
 
         val permissionsV2View = PermissionsV2View(
-            "some-path",
+            "/some-path/*",
             listOf(READ, WRITE),
             "some-actor",
             uuid
@@ -376,7 +376,7 @@ class PermissionsV2ControllerTest {
         // language=json
         val expectedResponseBody = """
             {
-              "path": "some-path",
+              "path": "/some-path/*",
               "operations": [
                 "read",
                 "write"
@@ -391,7 +391,7 @@ class PermissionsV2ControllerTest {
     @Test
     fun POST__permissions_v2__returns_a_permission() {
         val permissionsV2View = PermissionsV2View(
-            "some-path",
+            "/some-path/*",
             listOf(READ, WRITE),
             "some-actor",
             uuid
@@ -407,7 +407,7 @@ class PermissionsV2ControllerTest {
                     // language=json
                     .content("""
                         {
-                          "path": "some-path",
+                          "path": "/some-path/*",
                           "actor": "some-actor",
                           "operations": [
                             "read",
@@ -423,7 +423,7 @@ class PermissionsV2ControllerTest {
                     CredHubRestDocs.DOCUMENT_IDENTIFIER,
                     requestFields(
                         fieldWithPath("path")
-                            .description("The credential path"),
+                            .description("The credential path. Can be either a path with an asterisk (*) at the end, or the full name of a credential."),
                         fieldWithPath("actor")
                             .description("The credential actor"),
                         getPermissionOperationsRequestField()
@@ -437,7 +437,7 @@ class PermissionsV2ControllerTest {
         // language=json
         val expectedResponseBody = """
             {
-              "path": "some-path",
+              "path": "/some-path/*",
               "operations": [
                 "read",
                 "write"

@@ -82,7 +82,7 @@ class CredentialsControllerSetTest {
         spyCredentialsHandler.setCredential__returns_credentialView = CredentialView(
             Instant.ofEpochSecond(1549053472L),
             uuid,
-            "/some-value-path",
+            "/some-value-name",
             CredentialType.VALUE.type.toLowerCase(),
             StringCredentialValue("some-value")
         )
@@ -90,7 +90,7 @@ class CredentialsControllerSetTest {
         // language=json
         val requestBody = """
             {
-              "name": "/some-value-path",
+              "name": "/some-value-name",
               "type": "${CredentialType.VALUE.type.toLowerCase()}",
               "value": "some-value"
             }
@@ -118,7 +118,7 @@ class CredentialsControllerSetTest {
 
         val expectedValueSetRequest = ValueSetRequest()
         expectedValueSetRequest.value = StringCredentialValue("some-value")
-        expectedValueSetRequest.name = "/some-value-path"
+        expectedValueSetRequest.name = "/some-value-name"
         expectedValueSetRequest.type = CredentialType.VALUE.type.toLowerCase()
 
         assertThat(spyCredentialsHandler.setCredential__calledWith_setRequest).isEqualTo(expectedValueSetRequest)
@@ -129,7 +129,7 @@ class CredentialsControllerSetTest {
               "type": "${CredentialType.VALUE.type.toLowerCase()}",
               "version_created_at": "2019-02-01T20:37:52Z",
               "id": "$uuid",
-              "name": "/some-value-path",
+              "name": "/some-value-name",
               "value": "some-value"
             }
         """.trimIndent()
@@ -142,7 +142,7 @@ class CredentialsControllerSetTest {
         spyCredentialsHandler.setCredential__returns_credentialView = CredentialView(
             Instant.ofEpochSecond(1549053472L),
             uuid,
-            "/some-value-path",
+            "/some-value-name",
             JSON.type.toLowerCase(),
             JsonCredentialValue(ObjectMapper().readTree(
                 // language=json
@@ -156,7 +156,7 @@ class CredentialsControllerSetTest {
         // language=json
         val requestBody = """
             {
-              "name": "/some-value-path",
+              "name": "/some-value-name",
               "type": "${CredentialType.JSON.type.toLowerCase()}",
               "value": {
                 "some-json-key": "some-json-value"
@@ -195,7 +195,7 @@ class CredentialsControllerSetTest {
             }
             """.trimIndent()
         ))
-        expectedValueSetRequest.name = "/some-value-path"
+        expectedValueSetRequest.name = "/some-value-name"
         expectedValueSetRequest.type = CredentialType.JSON.type.toLowerCase()
 
         assertThat(spyCredentialsHandler.setCredential__calledWith_setRequest).isEqualTo(expectedValueSetRequest)
@@ -206,7 +206,7 @@ class CredentialsControllerSetTest {
               "type": "${CredentialType.JSON.type.toLowerCase()}",
               "version_created_at": "2019-02-01T20:37:52Z",
               "id": "$uuid",
-              "name": "/some-value-path",
+              "name": "/some-value-name",
               "value": {
                 "some-json-key": "some-json-value"
               }
@@ -221,7 +221,7 @@ class CredentialsControllerSetTest {
         spyCredentialsHandler.setCredential__returns_credentialView = CredentialView(
             Instant.ofEpochSecond(1549053472L),
             uuid,
-            "/some-password-path",
+            "/some-password-name",
             CredentialType.PASSWORD.type.toLowerCase(),
             StringCredentialValue("some-password")
         )
@@ -229,7 +229,7 @@ class CredentialsControllerSetTest {
         // language=json
         val requestBody = """
             {
-              "name": "/some-password-path",
+              "name": "/some-password-name",
               "type": "${CredentialType.PASSWORD.type.toLowerCase()}",
               "value": "some-password"
             }
@@ -257,7 +257,7 @@ class CredentialsControllerSetTest {
 
         val expectedValueSetRequest = PasswordSetRequest()
         expectedValueSetRequest.password = StringCredentialValue("some-password")
-        expectedValueSetRequest.name = "/some-password-path"
+        expectedValueSetRequest.name = "/some-password-name"
         expectedValueSetRequest.type = CredentialType.PASSWORD.type.toLowerCase()
 
         assertThat(spyCredentialsHandler.setCredential__calledWith_setRequest).isEqualTo(expectedValueSetRequest)
@@ -268,7 +268,7 @@ class CredentialsControllerSetTest {
               "type": "${CredentialType.PASSWORD.type.toLowerCase()}",
               "version_created_at": "2019-02-01T20:37:52Z",
               "id": "$uuid",
-              "name": "/some-password-path",
+              "name": "/some-password-name",
               "value": "some-password"
             }
         """.trimIndent()
@@ -281,7 +281,7 @@ class CredentialsControllerSetTest {
         spyCredentialsHandler.setCredential__returns_credentialView = CredentialView(
             Instant.ofEpochSecond(1549053472L),
             uuid,
-            "/some-user-path",
+            "/some-user-name",
             CredentialType.USER.type.toLowerCase(),
             UserCredentialValue(
                 "some-username",
@@ -293,7 +293,7 @@ class CredentialsControllerSetTest {
         // language=json
         val requestBody = """
             {
-              "name": "/some-user-path",
+              "name": "/some-user-name",
               "type": "${CredentialType.USER.type.toLowerCase()}",
               "value": {
                 "username": "some-username",
@@ -329,7 +329,7 @@ class CredentialsControllerSetTest {
             "some-password",
             null
         )
-        expectedValueSetRequest.name = "/some-user-path"
+        expectedValueSetRequest.name = "/some-user-name"
         expectedValueSetRequest.type = CredentialType.USER.type.toLowerCase()
 
         assertThat(spyCredentialsHandler.setCredential__calledWith_setRequest).isEqualTo(expectedValueSetRequest)
@@ -340,7 +340,7 @@ class CredentialsControllerSetTest {
               "type": "${CredentialType.USER.type.toLowerCase()}",
               "version_created_at": "2019-02-01T20:37:52Z",
               "id": "$uuid",
-              "name": "/some-user-path",
+              "name": "/some-user-name",
               "value": {
                 "username": "some-username",
                 "password": "some-password",
@@ -357,7 +357,7 @@ class CredentialsControllerSetTest {
         spyCredentialsHandler.setCredential__returns_credentialView = CredentialView(
             Instant.ofEpochSecond(1549053472L),
             uuid,
-            "/some-certificate-path",
+            "/some-certificate-name",
             CredentialType.CERTIFICATE.type.toLowerCase(),
             CertificateCredentialValue(
                 TestConstants.TEST_CA,
@@ -374,7 +374,7 @@ class CredentialsControllerSetTest {
         // language=json
         val requestBody = """
             {
-              "name": "/some-certificate-path",
+              "name": "/some-certificate-name",
               "type": "${CredentialType.CERTIFICATE.type.toLowerCase()}",
               "value": {
                 "ca": "${escapeNewLinesForJsonSerialization(TestConstants.TEST_CA)}",
@@ -425,7 +425,7 @@ class CredentialsControllerSetTest {
             false,
             false
         )
-        expectedValueSetRequest.name = "/some-certificate-path"
+        expectedValueSetRequest.name = "/some-certificate-name"
         expectedValueSetRequest.type = CredentialType.CERTIFICATE.type.toLowerCase()
 
         assertThat(spyCredentialsHandler.setCredential__calledWith_setRequest).isEqualTo(expectedValueSetRequest)
@@ -436,7 +436,7 @@ class CredentialsControllerSetTest {
               "type": "${CredentialType.CERTIFICATE.type.toLowerCase()}",
               "version_created_at": "2019-02-01T20:37:52Z",
               "id": "$uuid",
-              "name": "/some-certificate-path",
+              "name": "/some-certificate-name",
               "value": {
                 "ca": "${TestConstants.TEST_CA}",
                 "certificate": "${TestConstants.TEST_CERTIFICATE}",
@@ -458,7 +458,7 @@ class CredentialsControllerSetTest {
         spyCredentialsHandler.setCredential__returns_credentialView = CredentialView(
             Instant.ofEpochSecond(1549053472L),
             uuid,
-            "/some-rsa-path",
+            "/some-rsa-name",
             CredentialType.RSA.type.toLowerCase(),
             RsaCredentialValue(
                 TestConstants.RSA_PUBLIC_KEY_4096,
@@ -469,7 +469,7 @@ class CredentialsControllerSetTest {
         // language=json
         val requestBody = """
             {
-              "name": "/some-rsa-path",
+              "name": "/some-rsa-name",
               "type": "${CredentialType.RSA.type.toLowerCase()}",
               "value": {
                 "public_key": "${escapeNewLinesForJsonSerialization(TestConstants.RSA_PUBLIC_KEY_4096)}",
@@ -506,7 +506,7 @@ class CredentialsControllerSetTest {
             TestConstants.RSA_PUBLIC_KEY_4096,
             TestConstants.PRIVATE_KEY_4096
         )
-        expectedValueSetRequest.name = "/some-rsa-path"
+        expectedValueSetRequest.name = "/some-rsa-name"
         expectedValueSetRequest.type = CredentialType.RSA.type.toLowerCase()
 
         assertThat(spyCredentialsHandler.setCredential__calledWith_setRequest).isEqualTo(expectedValueSetRequest)
@@ -517,7 +517,7 @@ class CredentialsControllerSetTest {
               "type": "${CredentialType.RSA.type.toLowerCase()}",
               "version_created_at": "2019-02-01T20:37:52Z",
               "id": "$uuid",
-              "name": "/some-rsa-path",
+              "name": "/some-rsa-name",
               "value": {
                 "public_key": "${TestConstants.RSA_PUBLIC_KEY_4096}",
                 "private_key": "${TestConstants.PRIVATE_KEY_4096}"
@@ -533,7 +533,7 @@ class CredentialsControllerSetTest {
         spyCredentialsHandler.setCredential__returns_credentialView = CredentialView(
             Instant.ofEpochSecond(1549053472L),
             uuid,
-            "/some-ssh-path",
+            "/some-ssh-name",
             CredentialType.SSH.type.toLowerCase(),
             SshCredentialValue(
                 TestConstants.SSH_PUBLIC_KEY_4096,
@@ -545,7 +545,7 @@ class CredentialsControllerSetTest {
         // language=json
         val requestBody = """
             {
-              "name": "/some-ssh-path",
+              "name": "/some-ssh-name",
               "type": "${CredentialType.SSH.type.toLowerCase()}",
               "value": {
                 "public_key": "${escapeNewLinesForJsonSerialization(TestConstants.SSH_PUBLIC_KEY_4096)}",
@@ -583,7 +583,7 @@ class CredentialsControllerSetTest {
             TestConstants.PRIVATE_KEY_4096,
             null
         )
-        expectedValueSetRequest.name = "/some-ssh-path"
+        expectedValueSetRequest.name = "/some-ssh-name"
         expectedValueSetRequest.type = CredentialType.SSH.type.toLowerCase()
 
         assertThat(spyCredentialsHandler.setCredential__calledWith_setRequest).isEqualTo(expectedValueSetRequest)
@@ -594,7 +594,7 @@ class CredentialsControllerSetTest {
               "type": "${CredentialType.SSH.type.toLowerCase()}",
               "version_created_at": "2019-02-01T20:37:52Z",
               "id": "$uuid",
-              "name": "/some-ssh-path",
+              "name": "/some-ssh-name",
               "value": {
                 "public_key": "${TestConstants.SSH_PUBLIC_KEY_4096}",
                 "private_key": "${TestConstants.PRIVATE_KEY_4096}",
@@ -610,7 +610,7 @@ class CredentialsControllerSetTest {
         return requestFields(
             fieldWithPath("name")
                 .type(JsonFieldType.STRING)
-                .description("The path that represents the credential."),
+                .description("The name of the credential."),
             fieldWithPath("type")
                 .type(JsonFieldType.STRING)
                 .description("The type of credential.")

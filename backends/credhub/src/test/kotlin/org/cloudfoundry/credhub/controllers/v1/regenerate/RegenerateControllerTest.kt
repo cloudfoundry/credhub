@@ -108,8 +108,8 @@ class RegenerateControllerTest {
         spyRegenerateHandler.handleBulkRegenerate__returns_bulkRegenerateResults = {
             val bulkRegenerateResults = BulkRegenerateResults()
             bulkRegenerateResults.regeneratedCredentials = mutableSetOf(
-                "/some-credential-path",
-                "/some-other-credential-path"
+                "/some-credential-name",
+                "/some-other-credential-name"
             )
 
             bulkRegenerateResults
@@ -143,8 +143,8 @@ class RegenerateControllerTest {
         val expectedResponse = """
           {
             "regenerated_credentials": [
-              "/some-credential-path",
-              "/some-other-credential-path"
+              "/some-credential-name",
+              "/some-other-credential-name"
             ]
           }
         """.trimIndent()
