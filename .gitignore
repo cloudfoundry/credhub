@@ -178,5 +178,5 @@ gradle-app.setting
 *.jks
 
 applications/credhub-api/src/main/resources/version
-applications/credhub-api/src/main/resources/application-dev-external-provider.yml
+application-*-generated.yml
 libs/

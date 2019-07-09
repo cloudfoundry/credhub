@@ -1,19 +1,28 @@
 package org.cloudfoundry.credhub.services;
 
+import java.io.ByteArrayInputStream;
 import java.nio.charset.Charset;
 import java.util.concurrent.TimeUnit;
 
 import javax.crypto.AEADBadTagException;
+import javax.net.ssl.SSLException;
 
 import com.google.protobuf.ByteString;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.internal.GrpcUtil;
-import io.grpc.netty.NegotiationType;
+import io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.NettyChannelBuilder;
+import io.netty.channel.Channel;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollDomainSocketChannel;
 import io.netty.channel.epoll.EpollEventLoopGroup;
+import io.netty.channel.kqueue.KQueue;
+import io.netty.channel.kqueue.KQueueDomainSocketChannel;
+import io.netty.channel.kqueue.KQueueEventLoopGroup;
 import io.netty.channel.unix.DomainSocketAddress;
+import io.netty.handler.ssl.SslContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.cloudfoundry.credhub.config.EncryptionConfiguration;
@@ -24,20 +33,37 @@ import org.cloudfoundry.credhub.services.grpc.DecryptResponse;
 import org.cloudfoundry.credhub.services.grpc.EncryptRequest;
 import org.cloudfoundry.credhub.services.grpc.EncryptResponse;
 import org.cloudfoundry.credhub.services.grpc.KeyManagementServiceGrpc;
+import org.cloudfoundry.credhub.utils.StringUtil;
 
 public class KMSEncryptionProvider implements EncryptionProvider {
   private static final Logger LOGGER = LogManager.getLogger(KMSEncryptionProvider.class.getName());
   private static final String CHARSET = "UTF-8";
   private final KeyManagementServiceGrpc.KeyManagementServiceBlockingStub blockingStub;
+  private EventLoopGroup group;
+  private Class<? extends Channel> channelType;
 
   public KMSEncryptionProvider(final EncryptionConfiguration configuration) {
     super();
+
+    setChannelInfo();
+
+    SslContext sslContext;
+    try {
+      sslContext = GrpcSslContexts.forClient()
+        .trustManager(new ByteArrayInputStream(configuration.getCa().getBytes(StringUtil.UTF_8)))
+        .build();
+    } catch (SSLException e) {
+      throw new RuntimeException(e);
+    }
+
     blockingStub = KeyManagementServiceGrpc.newBlockingStub(
       NettyChannelBuilder.forAddress(new DomainSocketAddress(configuration.getEndpoint()))
-        .eventLoopGroup(new EpollEventLoopGroup())
-        .channelType(EpollDomainSocketChannel.class)
-        .negotiationType(NegotiationType.PLAINTEXT)
+        .eventLoopGroup(group)
+        .channelType(channelType)
         .keepAliveTime(GrpcUtil.DEFAULT_KEEPALIVE_TIME_NANOS, TimeUnit.NANOSECONDS)
+        .useTransportSecurity()
+        .sslContext(sslContext)
+        .overrideAuthority(configuration.getHost())
         .build());
   }
 
@@ -75,5 +101,22 @@ public class KMSEncryptionProvider implements EncryptionProvider {
   @Override
   public KeyProxy createKeyProxy(final EncryptionKeyMetadata encryptionKeyMetadata) {
     return new ExternalKeyProxy(encryptionKeyMetadata, this);
+  }
+
+  private void setChannelInfo() {
+    if (Epoll.isAvailable()) {
+      this.group = new EpollEventLoopGroup();
+      this.channelType = EpollDomainSocketChannel.class;
+      LOGGER.info("Using epoll for Netty transport.");
+    } else {
+      if (!KQueue.isAvailable()) {
+        throw new RuntimeException("Unsupported OS '" + System.getProperty("os.name") + "', only Unix and Mac are supported");
+      }
+
+      this.group = new KQueueEventLoopGroup();
+      this.channelType = KQueueDomainSocketChannel.class;
+      LOGGER.info("Using KQueue for Netty transport.");
+    }
+
   }
 }
