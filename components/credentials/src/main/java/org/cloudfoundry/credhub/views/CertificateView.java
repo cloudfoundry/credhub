@@ -3,6 +3,8 @@ package org.cloudfoundry.credhub.views;
 import java.time.Instant;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import org.cloudfoundry.credhub.credential.CredentialValue;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 
@@ -13,6 +15,7 @@ public class CertificateView extends CredentialView {
     private Instant expiryDate;
     private boolean certificateAuthority;
     private boolean selfSigned;
+    @JsonInclude(Include.NON_NULL)
     private Boolean generated;
 
     CertificateView() {

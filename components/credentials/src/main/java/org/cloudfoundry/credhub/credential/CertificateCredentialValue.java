@@ -3,6 +3,8 @@ package org.cloudfoundry.credhub.credential;
 import java.time.Instant;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.apache.commons.lang3.StringUtils;
@@ -39,6 +41,7 @@ public class CertificateCredentialValue implements CredentialValue {
   private boolean transitional;
   private boolean certificateAuthority;
   private boolean selfSigned;
+  @JsonInclude(Include.NON_NULL)
   private Boolean generated;
 
   @SuppressWarnings("unused")

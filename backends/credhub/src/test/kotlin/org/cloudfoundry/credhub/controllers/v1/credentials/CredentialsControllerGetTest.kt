@@ -322,6 +322,58 @@ class CredentialsControllerGetTest {
     }
 
     @Test
+    fun GET__find_by_id__WhenGeneratedIsNull_returns_certificate_results() {
+        val uuid = UUID.randomUUID()
+        spyCredentialsHandler.getCredentialVersionByUUID__returns_credentialView = CredentialView(
+            Instant.ofEpochSecond(1549053472L),
+            uuid,
+            "/some-value-path",
+            CredentialType.CERTIFICATE.type.toLowerCase(),
+            CertificateCredentialValue(
+                TestConstants.TEST_CA,
+                TestConstants.TEST_CERTIFICATE,
+                TestConstants.TEST_PRIVATE_KEY,
+                null,
+                true,
+                false,
+                null,
+                false
+            )
+        )
+
+        val mvcResult = mockMvc.perform(
+            get("${CredentialsController.ENDPOINT}/{uuid}", uuid.toString())
+                .contentType(MediaType.APPLICATION_JSON)
+                .credHubAuthHeader()
+        )
+            .andExpect(status().isOk)
+            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)).andReturn()
+
+        assertThat(spyCredentialsHandler.getCredentialVersionByUUID__calledWith_credentialUUID).isEqualTo(uuid.toString())
+        // language=json
+        val expectedResponseBody = """
+            {
+              "type": "${CredentialType.CERTIFICATE.type.toLowerCase()}",
+              "version_created_at": "2019-02-01T20:37:52Z",
+              "id": "$uuid",
+              "name": "/some-value-path",
+              "value": {
+                "ca": "${TestConstants.TEST_CA}",
+                "certificate": "${TestConstants.TEST_CERTIFICATE}",
+                "private_key": "${TestConstants.TEST_PRIVATE_KEY}",
+                "transitional": false,
+                "expiry_date": "2018-11-21T16:25:20Z",
+                "certificate_authority": true,
+                "self_signed": false
+              }
+            }
+        """.trimMargin()
+
+        val actualResponseBody = mvcResult.response.contentAsString
+        JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true)
+    }
+
+    @Test
     fun GET__find_by_id__returns_rsa_results() {
         val uuid = UUID.randomUUID()
         spyCredentialsHandler.getCredentialVersionByUUID__returns_credentialView = CredentialView(

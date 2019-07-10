@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.helpers
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.PropertyNamingStrategy.SNAKE_CASE
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.cloudfoundry.credhub.util.TimeModuleFactory
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
 import org.springframework.restdocs.JUnitRestDocumentation
@@ -22,9 +23,10 @@ class MockMvcFactory {
             val converter = MappingJackson2HttpMessageConverter()
             val objectMapper = ObjectMapper()
                 .registerModule(TimeModuleFactory.createTimeModule())
+                .registerKotlinModule()
                 .setPropertyNamingStrategy(SNAKE_CASE)
 
-            converter.setObjectMapper(objectMapper)
+            converter.objectMapper = objectMapper
             return converter
         }
 

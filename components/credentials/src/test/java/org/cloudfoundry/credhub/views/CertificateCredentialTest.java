@@ -114,7 +114,6 @@ public class CertificateCredentialTest {
       + "\"transitional\":false,"
       + "\"certificate_authority\":false,"
       + "\"self_signed\":false,"
-      + "\"generated\":null,"
       + "\"version_created_at\":null,"
       + "\"id\":\""
       + uuid.toString() + "\",\"name\":\""
