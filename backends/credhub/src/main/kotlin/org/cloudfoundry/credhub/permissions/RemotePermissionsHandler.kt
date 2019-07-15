@@ -88,7 +88,7 @@ class RemotePermissionsHandler(
     private fun mapOperationStringsToOperations(operations: ProtocolStringList): MutableList<PermissionOperation> {
         val result = mutableListOf<PermissionOperation>()
         for (o in operations) {
-            when (o) {
+            when (o.toLowerCase()) {
                 "read" -> result.add(PermissionOperation.READ)
                 "write" -> result.add(PermissionOperation.WRITE)
                 "delete" -> result.add(PermissionOperation.DELETE)
