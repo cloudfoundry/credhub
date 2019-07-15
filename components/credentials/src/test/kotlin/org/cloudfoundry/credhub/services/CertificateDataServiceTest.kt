@@ -1,61 +1,68 @@
 package org.cloudfoundry.credhub.services
 
+import org.cloudfoundry.credhub.CredhubTestApp
+import org.cloudfoundry.credhub.DatabaseProfileResolver
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
+import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
+import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData
+import org.cloudfoundry.credhub.entity.Credential
 import org.cloudfoundry.credhub.repositories.CredentialRepository
 import org.junit.Assert.assertEquals
-import org.junit.Before
+import org.junit.Assert.assertTrue
 import org.junit.Test
-import org.mockito.Mockito.`when`
-import org.mockito.Mockito.anyString
-import org.mockito.Mockito.mock
+import org.junit.runner.RunWith
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.jdbc.core.JdbcTemplate
-import org.springframework.jdbc.support.rowset.SqlRowSet
-import java.sql.Timestamp
+import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.junit4.SpringRunner
+import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
-import java.util.UUID
 
+@RunWith(SpringRunner::class)
+@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver::class)
+@SpringBootTest(classes = [CredhubTestApp::class])
+@Transactional
 class CertificateDataServiceTest {
-
-    private lateinit var jdbcTemplate: JdbcTemplate
+    @Autowired
     private lateinit var subject: CertificateDataService
-    private lateinit var auditRecord: CEFAuditRecord
+
+    @Autowired
     private lateinit var credentialRepository: CredentialRepository
 
-    @Before
-    fun beforeEach() {
-        jdbcTemplate = mock(JdbcTemplate::class.java)
-        auditRecord = mock(CEFAuditRecord::class.java)
-        credentialRepository = mock(CredentialRepository::class.java)
-        subject = CertificateDataService(credentialRepository, auditRecord, jdbcTemplate)
-    }
+    @Autowired
+    private lateinit var credentialDataService: CredentialDataService
+
+    @Autowired
+    private lateinit var cefAuditRecord: CEFAuditRecord
+
+    @Autowired
+    private lateinit var jdbcTemplate: JdbcTemplate
+
+    @Autowired
+    private lateinit var credentialVersionDataService: CredentialVersionDataService
 
     @Test
-    fun `find all valid metadata when user has permissions returns certificates`() {
-        val permissions = listOf("cert")
-        val rowSet = mock(SqlRowSet::class.java)
-        val versionUuid = UUID.randomUUID()
-        val credentialUuid = UUID.randomUUID()
+    fun `findAllValidMetadata when certificate is in 'names' returns certificates`() {
+        val name = "some-credential"
+        val caName = "/some-ca"
         val expectedExpiryDate = Instant.now()
+        val certificateCredentialVersionData = CertificateCredentialVersionData(name)
+        certificateCredentialVersionData.caName = caName
+        certificateCredentialVersionData.isTransitional = false
+        certificateCredentialVersionData.expiryDate = expectedExpiryDate
+        certificateCredentialVersionData.isCertificateAuthority = false
+        certificateCredentialVersionData.isSelfSigned = false
+        certificateCredentialVersionData.generated = true
 
-        `when`(jdbcTemplate.queryForRowSet(anyString())).thenReturn(rowSet)
-        `when`(rowSet.next()).thenReturn(true).thenReturn(false)
-        `when`(rowSet.getString("NAME")).thenReturn("cert")
-        `when`(rowSet.getObject("VERSION_UUID")).thenReturn(versionUuid)
-        `when`(rowSet.getObject("EXPIRY_DATE")).thenReturn(Timestamp.from(expectedExpiryDate))
-        `when`(rowSet.getBoolean("TRANSITIONAL")).thenReturn(false)
-        `when`(rowSet.getObject("CREDENTIAL_UUID")).thenReturn(credentialUuid)
-        `when`(rowSet.getString("CA_NAME")).thenReturn("some-ca")
-        `when`(rowSet.getBoolean("CERTIFICATE_AUTHORITY")).thenReturn(false)
-        `when`(rowSet.getBoolean("SELF_SIGNED")).thenReturn(false)
-        `when`(rowSet.getObject("GENERATED")).thenReturn(true)
+        val certificateCredentialVersion = CertificateCredentialVersion(certificateCredentialVersionData)
+        credentialVersionDataService.save(certificateCredentialVersion)
 
-        val result = subject.findAllValidMetadata(permissions)
+        val result = subject.findAllValidMetadata(listOf(name))
 
         assertEquals(1, result.size)
-        assertEquals("cert", result[0].name)
-        assertEquals(versionUuid, result[0].versions[0].id)
-        assertEquals(credentialUuid, result[0].id)
-        assertEquals("some-ca", result[0].caName)
+        assertEquals(name, result[0].name)
+        assertEquals(caName, result[0].caName)
         assertEquals(false, result[0].versions[0].isTransitional)
         assertEquals(expectedExpiryDate, result[0].versions[0].expiryDate)
         assertEquals(false, result[0].versions[0].isCertificateAuthority)
@@ -64,26 +71,38 @@ class CertificateDataServiceTest {
     }
 
     @Test
-    fun `find all valid metadata when user does not have permissions returns empty list`() {
-        val permissions = emptyList<String>()
-        val rowSet = mock(SqlRowSet::class.java)
-        val versionUuid = UUID.randomUUID()
-        val credentialUuid = UUID.randomUUID()
-        val expectedExpiryDate = Instant.now()
+    fun `findAllValidMetadata returns certificate versions in order by versionCreatedAt`() {
+        val name = "some-credential"
 
-        `when`(jdbcTemplate.queryForRowSet(anyString())).thenReturn(rowSet)
-        `when`(rowSet.next()).thenReturn(true).thenReturn(false)
-        `when`(rowSet.getString("NAME")).thenReturn("cert")
-        `when`(rowSet.getObject("VERSION_UUID")).thenReturn(versionUuid)
-        `when`(rowSet.getObject("EXPIRY_DATE")).thenReturn(Timestamp.from(expectedExpiryDate))
-        `when`(rowSet.getBoolean("TRANSITIONAL")).thenReturn(false)
-        `when`(rowSet.getObject("CREDENTIAL_UUID")).thenReturn(credentialUuid)
-        `when`(rowSet.getString("CA_NAME")).thenReturn("some-ca")
-        `when`(rowSet.getBoolean("CERTIFICATE_AUTHORITY")).thenReturn(false)
-        `when`(rowSet.getBoolean("SELF_SIGNED")).thenReturn(false)
-        `when`(rowSet.getBoolean("GENERATED")).thenReturn(false)
+        val credential = Credential(name)
+        credentialDataService.save(credential)
 
-        val result = subject.findAllValidMetadata(permissions)
+        for (certificateVersion in 0..10) {
+            val certificateCredentialVersionData = CertificateCredentialVersionData(name)
+            certificateCredentialVersionData.expiryDate = Instant.now()
+            certificateCredentialVersionData.credential = credential
+            credentialVersionDataService.save(certificateCredentialVersionData)
+        }
+
+        val result = subject.findAllValidMetadata(listOf(name))
+
+        var previousExpiryDate = Instant.MAX
+        for (credentialVersion in result[0].versions) {
+            assertTrue(credentialVersion.expiryDate < previousExpiryDate)
+            previousExpiryDate = credentialVersion.expiryDate
+        }
+    }
+
+    @Test
+    fun `findAllValidMetadata when certificate is not in 'names' returns empty list`() {
+        val name = "some-credential"
+        val certificateCredentialVersionData = CertificateCredentialVersionData(name)
+        certificateCredentialVersionData.expiryDate = Instant.now()
+
+        val certificateCredentialVersion = CertificateCredentialVersion(certificateCredentialVersionData)
+        credentialVersionDataService.save(certificateCredentialVersion)
+
+        val result = subject.findAllValidMetadata(emptyList())
 
         assertEquals(0, result.size)
     }

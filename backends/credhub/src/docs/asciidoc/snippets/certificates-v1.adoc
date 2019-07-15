@@ -10,10 +10,14 @@ See https://github.com/pivotal-cf/credhub-release/blob/master/docs/ca-rotation.m
 === Get All Certificates
 operation::GET__certificates__returns_certificates[]
 
+Note: The certificate versions will be sorted in descending order of their creation date.
+
 ---
 
 === Get a Certificate By Name
 operation::GET__certificates_byName__returns_certificate[]
+
+Note: The certificate versions will be sorted in descending order of their creation date.
 
 ---
 
@@ -29,6 +33,8 @@ operation::PUT__updateTransitionalVersion__returns_certificate[]
 
 === Get All Versions of a Certificate
 operation::GET__certificateVersions__returns_certificates[]
+
+Note: The certificate versions will be sorted in descending order of their creation date.
 
 ---
 

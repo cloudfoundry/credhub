@@ -54,6 +54,7 @@ constructor(
             from certificate_credential
             inner join credential_version on certificate_credential.uuid = credential_version.uuid
             inner join credential on credential_version.credential_uuid = credential.uuid
+            order by credential_version.version_created_at desc
         """.trimIndent()
 
         val rowSet = jdbcTemplate.queryForRowSet(query)
