@@ -56,7 +56,7 @@ spring:
       ddl-auto: validate
 
 certificates:
-  concatenate_cas: false
+  concatenate_cas: true
 
 backend:
   socket_file: "/tmp/socket/test.sock"
