@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.remote
 
 import com.google.protobuf.ByteString
 import io.grpc.internal.GrpcUtil
+import io.grpc.netty.GrpcSslContexts
 import io.grpc.netty.NegotiationType
 import io.grpc.netty.NettyChannelBuilder
 import io.netty.channel.Channel
@@ -13,6 +14,7 @@ import io.netty.channel.kqueue.KQueue
 import io.netty.channel.kqueue.KQueueDomainSocketChannel
 import io.netty.channel.kqueue.KQueueEventLoopGroup
 import io.netty.channel.unix.DomainSocketAddress
+import io.netty.handler.ssl.SslContext
 import org.apache.commons.lang3.StringUtils
 import org.apache.logging.log4j.LogManager
 import org.cloudfoundry.credhub.remote.grpc.CredentialServiceGrpc
@@ -29,15 +31,20 @@ import org.cloudfoundry.credhub.remote.grpc.PutPermissionsRequest
 import org.cloudfoundry.credhub.remote.grpc.SetRequest
 import org.cloudfoundry.credhub.remote.grpc.SetResponse
 import org.cloudfoundry.credhub.remote.grpc.WritePermissionsRequest
+import org.cloudfoundry.credhub.utils.StringUtil
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import java.io.ByteArrayInputStream
 import java.util.concurrent.TimeUnit
+import javax.net.ssl.SSLException
 
 @Service
 @Profile("remote")
 class RemoteBackendClient(
-    @Value("\${backend.socket_file}") private val socketFile: String
+    @Value("\${backend.socket_file}") private val socketFile: String,
+    @Value("\${backend.host}") private val host: String,
+    @Value("\${backend.ca_cert}") private val caCert: String
 ) {
 
     companion object {
@@ -50,12 +57,25 @@ class RemoteBackendClient(
 
     init {
         setChannelInfo()
+
+        val sslContext: SslContext
+        try {
+            sslContext = GrpcSslContexts.forClient()
+                .trustManager(ByteArrayInputStream(caCert.toByteArray(StringUtil.UTF_8)))
+                .build()
+        } catch (e: SSLException) {
+            throw RuntimeException(e)
+        }
+
         blockingStub = CredentialServiceGrpc.newBlockingStub(
             NettyChannelBuilder.forAddress(DomainSocketAddress(socketFile))
                 .eventLoopGroup(group)
                 .channelType(channelType)
                 .negotiationType(NegotiationType.PLAINTEXT)
                 .keepAliveTime(GrpcUtil.DEFAULT_KEEPALIVE_TIME_NANOS, TimeUnit.NANOSECONDS)
+                .useTransportSecurity()
+                .sslContext(sslContext)
+                .overrideAuthority(host)
                 .build())
 
         LOGGER.info("using socket file $socketFile")
