@@ -9,8 +9,20 @@ message GetByNameRequest {
   string name = 1;
   string requester = 2;
 }
+
 message GetByIdRequest {
   string id = 1;
+  string requester = 2;
+}
+
+message GetNVersionsRequest {
+  string name = 1;
+  int32 numberOfVersions = 2;
+  string requester = 3;
+}
+
+message GetAllVersionsRequest {
+  string name = 1;
   string requester = 2;
 }
 
@@ -21,6 +33,10 @@ message GetResponse {
   string versionCreatedAt = 4;
   bytes data = 5;
   bytes generationParameters = 6;
+}
+
+message GetNVersionsResponse {
+  repeated GetResponse versions = 1;
 }
 
 message SetRequest {
@@ -99,6 +115,8 @@ message Empty {
 service CredentialService {
   rpc GetByName (GetByNameRequest) returns (GetResponse);
   rpc GetById (GetByIdRequest) returns (GetResponse);
+  rpc GetAllVersions (GetAllVersionsRequest) returns (GetNVersionsResponse);
+  rpc GetNVersions (GetNVersionsRequest) returns (GetNVersionsResponse);
   rpc Set (SetRequest) returns (SetResponse);
   rpc Delete (DeleteByNameRequest) returns (Empty);
   rpc FindContainingName (FindContainingNameRequest) returns (FindResponse);

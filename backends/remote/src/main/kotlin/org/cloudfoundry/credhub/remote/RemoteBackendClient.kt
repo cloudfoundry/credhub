@@ -22,8 +22,11 @@ import org.cloudfoundry.credhub.remote.grpc.DeleteByNameRequest
 import org.cloudfoundry.credhub.remote.grpc.FindContainingNameRequest
 import org.cloudfoundry.credhub.remote.grpc.FindResponse
 import org.cloudfoundry.credhub.remote.grpc.FindStartingWithPathRequest
+import org.cloudfoundry.credhub.remote.grpc.GetAllVersionsRequest
 import org.cloudfoundry.credhub.remote.grpc.GetByIdRequest
 import org.cloudfoundry.credhub.remote.grpc.GetByNameRequest
+import org.cloudfoundry.credhub.remote.grpc.GetNVersionsRequest
+import org.cloudfoundry.credhub.remote.grpc.GetNVersionsResponse
 import org.cloudfoundry.credhub.remote.grpc.GetResponse
 import org.cloudfoundry.credhub.remote.grpc.PatchPermissionsRequest
 import org.cloudfoundry.credhub.remote.grpc.PermissionsResponse
@@ -79,6 +82,27 @@ class RemoteBackendClient(
                 .build())
 
         LOGGER.info("using socket file $socketFile")
+    }
+
+    fun getNVersionsRequest(credentialName: String, user: String, numberOfVersions: Int): GetNVersionsResponse {
+        val request = GetNVersionsRequest
+            .newBuilder()
+            .setName(credentialName)
+            .setRequester(user)
+            .setNumberOfVersions(numberOfVersions)
+            .build()
+
+        return blockingStub.getNVersions(request)
+    }
+
+    fun getAllVersionsRequest(credentialName: String, user: String): GetNVersionsResponse {
+        val request = GetAllVersionsRequest
+            .newBuilder()
+            .setName(credentialName)
+            .setRequester(user)
+            .build()
+
+        return blockingStub.getAllVersions(request)
     }
 
     fun getByNameRequest(credentialName: String, user: String): GetResponse {

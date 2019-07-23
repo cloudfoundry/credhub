@@ -26,6 +26,7 @@ import org.cloudfoundry.credhub.generate.UniversalCredentialGenerator
 import org.cloudfoundry.credhub.remote.RemoteBackendClient
 import org.cloudfoundry.credhub.remote.grpc.FindResponse
 import org.cloudfoundry.credhub.remote.grpc.FindResult
+import org.cloudfoundry.credhub.remote.grpc.GetNVersionsResponse
 import org.cloudfoundry.credhub.remote.grpc.GetResponse
 import org.cloudfoundry.credhub.remote.grpc.SetResponse
 import org.cloudfoundry.credhub.requests.CertificateGenerateRequest
@@ -61,10 +62,10 @@ class RemoteCredentialsHandlerTest {
     private val CREDENTIAL_NAME = "/test/credential"
     private val USER = "test-user"
 
-    private val userContextHolder = mock<UserContextHolder>(UserContextHolder::class.java)!!
+    private val userContextHolder = mock(UserContextHolder::class.java)!!
     private val objectMapper = ObjectMapper()
-    private var client = mock<RemoteBackendClient>(RemoteBackendClient::class.java)!!
-    private val credentialGenerator = mock<UniversalCredentialGenerator>(UniversalCredentialGenerator::class.java)!!
+    private var client = mock(RemoteBackendClient::class.java)!!
+    private val credentialGenerator = mock(UniversalCredentialGenerator::class.java)!!
     private lateinit var subject: RemoteCredentialsHandler
     private lateinit var versionCreatedAt: String
 
@@ -90,7 +91,174 @@ class RemoteCredentialsHandlerTest {
     }
 
     @Test
-    fun getCurrentCredentialVersion_withValueCredential_returnsCorrectDataReponse() {
+    fun getAllCredentialVersions_returnsCorrectDataResponse() {
+        val type = "value"
+        val uuid1 = "00000000-0000-0000-0000-000000000001"
+        val uuid2 = "00000000-0000-0000-0000-000000000002"
+        val value1 = StringCredentialValue("value1")
+        val value2 = StringCredentialValue("value2")
+
+        val byteValue1 = subject.createByteStringFromData(
+            type,
+            value1
+        )
+
+        val byteValue2 = subject.createByteStringFromData(
+            type,
+            value2
+        )
+
+        val response1 = GetResponse.newBuilder()
+            .setName(CREDENTIAL_NAME)
+            .setType(type).setData(byteValue1)
+            .setId(uuid1)
+            .setVersionCreatedAt(versionCreatedAt)
+            .build()
+
+        val response2 = GetResponse.newBuilder()
+            .setName(CREDENTIAL_NAME)
+            .setType(type).setData(byteValue2)
+            .setId(uuid2)
+            .setVersionCreatedAt(versionCreatedAt)
+            .build()
+
+        val multiVersionResponse = GetNVersionsResponse.newBuilder()
+            .addAllVersions(mutableListOf(response1, response2))
+            .build()
+
+        `when`(client.getAllVersionsRequest(CREDENTIAL_NAME, USER)).thenReturn(multiVersionResponse)
+
+        val result = subject.getAllCredentialVersions(CREDENTIAL_NAME)
+
+        assertThat(result.data.size).isEqualTo(2)
+        assertThat(result.data[0].type).isEqualTo(type)
+        assertThat(result.data[0].uuid).isEqualTo(uuid1)
+        assertThat(result.data[0].value).isInstanceOf(StringCredentialValue::class.java)
+        assertThat(result.data[1].type).isEqualTo(type)
+        assertThat(result.data[1].uuid).isEqualTo(uuid2)
+        assertThat(result.data[1].value).isInstanceOf(StringCredentialValue::class.java)
+    }
+
+    @Test
+    fun getAllCredentialVersions_whenCredentialDoesNotExist_throwsCorrectError() {
+        val exception = StatusRuntimeException(Status.NOT_FOUND)
+        `when`(client.getAllVersionsRequest(CREDENTIAL_NAME, USER)).thenThrow(exception)
+
+        Assertions.assertThatThrownBy {
+            subject.getAllCredentialVersions(CREDENTIAL_NAME)
+        }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
+    }
+
+    @Test
+    fun getNCredentialVersions_returnsCorrectDataResponse() {
+        val type = "value"
+        val uuid1 = "00000000-0000-0000-0000-000000000001"
+        val uuid2 = "00000000-0000-0000-0000-000000000002"
+        val value1 = StringCredentialValue("value1")
+        val value2 = StringCredentialValue("value2")
+
+        val byteValue1 = subject.createByteStringFromData(
+            type,
+            value1
+        )
+
+        val byteValue2 = subject.createByteStringFromData(
+            type,
+            value2
+        )
+
+        val response1 = GetResponse.newBuilder()
+            .setName(CREDENTIAL_NAME)
+            .setType(type).setData(byteValue1)
+            .setId(uuid1)
+            .setVersionCreatedAt(versionCreatedAt)
+            .build()
+
+        val response2 = GetResponse.newBuilder()
+            .setName(CREDENTIAL_NAME)
+            .setType(type).setData(byteValue2)
+            .setId(uuid2)
+            .setVersionCreatedAt(versionCreatedAt)
+            .build()
+
+        val multiVersionResponse = GetNVersionsResponse.newBuilder()
+            .addAllVersions(mutableListOf(response1, response2))
+            .build()
+
+        `when`(client.getNVersionsRequest(CREDENTIAL_NAME, USER, 2)).thenReturn(multiVersionResponse)
+
+        val result = subject.getNCredentialVersions(CREDENTIAL_NAME, 2)
+
+        assertThat(result.data.size).isEqualTo(2)
+        assertThat(result.data[0].type).isEqualTo(type)
+        assertThat(result.data[0].uuid).isEqualTo(uuid1)
+        assertThat(result.data[0].value).isInstanceOf(StringCredentialValue::class.java)
+        assertThat(result.data[1].type).isEqualTo(type)
+        assertThat(result.data[1].uuid).isEqualTo(uuid2)
+        assertThat(result.data[1].value).isInstanceOf(StringCredentialValue::class.java)
+    }
+
+    @Test
+    fun getNCredentialVersions_calledWithNullNumberOfVersions_returnsCorrectDataResponse() {
+        val type = "value"
+        val uuid1 = "00000000-0000-0000-0000-000000000001"
+        val uuid2 = "00000000-0000-0000-0000-000000000002"
+        val value1 = StringCredentialValue("value1")
+        val value2 = StringCredentialValue("value2")
+
+        val byteValue1 = subject.createByteStringFromData(
+            type,
+            value1
+        )
+
+        val byteValue2 = subject.createByteStringFromData(
+            type,
+            value2
+        )
+
+        val response1 = GetResponse.newBuilder()
+            .setName(CREDENTIAL_NAME)
+            .setType(type).setData(byteValue1)
+            .setId(uuid1)
+            .setVersionCreatedAt(versionCreatedAt)
+            .build()
+
+        val response2 = GetResponse.newBuilder()
+            .setName(CREDENTIAL_NAME)
+            .setType(type).setData(byteValue2)
+            .setId(uuid2)
+            .setVersionCreatedAt(versionCreatedAt)
+            .build()
+
+        val multiVersionResponse = GetNVersionsResponse.newBuilder()
+            .addAllVersions(mutableListOf(response1, response2))
+            .build()
+
+        `when`(client.getAllVersionsRequest(CREDENTIAL_NAME, USER)).thenReturn(multiVersionResponse)
+
+        val result = subject.getNCredentialVersions(CREDENTIAL_NAME, null)
+
+        assertThat(result.data.size).isEqualTo(2)
+        assertThat(result.data[0].type).isEqualTo(type)
+        assertThat(result.data[0].uuid).isEqualTo(uuid1)
+        assertThat(result.data[0].value).isInstanceOf(StringCredentialValue::class.java)
+        assertThat(result.data[1].type).isEqualTo(type)
+        assertThat(result.data[1].uuid).isEqualTo(uuid2)
+        assertThat(result.data[1].value).isInstanceOf(StringCredentialValue::class.java)
+    }
+
+    @Test
+    fun getNCredentialVersions_whenCredentialDoesNotExist_throwsCorrectError() {
+        val exception = StatusRuntimeException(Status.NOT_FOUND)
+        `when`(client.getNVersionsRequest(CREDENTIAL_NAME, USER, 3)).thenThrow(exception)
+
+        Assertions.assertThatThrownBy {
+            subject.getNCredentialVersions(CREDENTIAL_NAME, 3)
+        }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
+    }
+
+    @Test
+    fun getCurrentCredentialVersion_withValueCredential_returnsCorrectDataResponse() {
         val type = "value"
         val uuid = "00000000-0000-0000-0000-000000000001"
         val stringCredential = StringCredentialValue("test-value")
@@ -105,6 +273,7 @@ class RemoteCredentialsHandlerTest {
         `when`(client.getByNameRequest(CREDENTIAL_NAME, USER)).thenReturn(response)
 
         val result = subject.getCurrentCredentialVersions(CREDENTIAL_NAME)
+
         assertEquals(result.data.size, 1)
         assertEquals(result.data[0].type, type)
         assertEquals(result.data[0].uuid, uuid)
@@ -690,10 +859,10 @@ class RemoteCredentialsHandlerTest {
         val result = subject.findContainingName("other", "365")
 
         assertEquals(result.size, 2)
-        assertEquals(result.get(0).name, "/test/some-other-credential")
-        assertEquals(result.get(1).name, "/test/another-credential")
-        assertEquals(result.get(0).versionCreatedAt.toString(), versionCreatedAt)
-        assertEquals(result.get(1).versionCreatedAt.toString(), versionCreatedAt)
+        assertEquals(result[0].name, "/test/some-other-credential")
+        assertEquals(result[1].name, "/test/another-credential")
+        assertEquals(result[0].versionCreatedAt.toString(), versionCreatedAt)
+        assertEquals(result[1].versionCreatedAt.toString(), versionCreatedAt)
     }
 
     @Test
