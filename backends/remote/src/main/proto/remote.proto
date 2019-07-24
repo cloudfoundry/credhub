@@ -80,6 +80,12 @@ message FindResult{
 }
 
 // Permissions
+message FindPermissionByPathAndActorRequest {
+  string path = 1;
+  string actor = 2;
+  string requester = 3;
+}
+
 message WritePermissionsRequest {
   string actor = 1;
   string path = 2;
@@ -121,6 +127,7 @@ service CredentialService {
   rpc Delete (DeleteByNameRequest) returns (Empty);
   rpc FindContainingName (FindContainingNameRequest) returns (FindResponse);
   rpc FindStartingWithPath (FindStartingWithPathRequest) returns (FindResponse);
+  rpc FindPermissionByPathAndActor(FindPermissionByPathAndActorRequest) returns (PermissionsResponse);
   rpc SavePermissions(WritePermissionsRequest) returns (PermissionsResponse);
   rpc PutPermissions(PutPermissionsRequest) returns (PermissionsResponse);
   rpc PatchPermissions(PatchPermissionsRequest) returns (PermissionsResponse);

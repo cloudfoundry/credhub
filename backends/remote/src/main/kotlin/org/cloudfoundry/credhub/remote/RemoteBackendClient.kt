@@ -20,6 +20,7 @@ import org.apache.logging.log4j.LogManager
 import org.cloudfoundry.credhub.remote.grpc.CredentialServiceGrpc
 import org.cloudfoundry.credhub.remote.grpc.DeleteByNameRequest
 import org.cloudfoundry.credhub.remote.grpc.FindContainingNameRequest
+import org.cloudfoundry.credhub.remote.grpc.FindPermissionByPathAndActorRequest
 import org.cloudfoundry.credhub.remote.grpc.FindResponse
 import org.cloudfoundry.credhub.remote.grpc.FindStartingWithPathRequest
 import org.cloudfoundry.credhub.remote.grpc.GetAllVersionsRequest
@@ -169,6 +170,17 @@ class RemoteBackendClient(
             .build()
 
         blockingStub.delete(request)
+    }
+
+    fun findPermissionByPathAndActor(path: String, actor: String, requester: String): PermissionsResponse {
+        val request = FindPermissionByPathAndActorRequest
+            .newBuilder()
+            .setPath(path)
+            .setActor(actor)
+            .setRequester(requester)
+            .build()
+
+        return blockingStub.findPermissionByPathAndActor(request)
     }
 
     fun writePermissionRequest(path: String, actor: String, operations: MutableIterable<String>, requester: String): PermissionsResponse {
