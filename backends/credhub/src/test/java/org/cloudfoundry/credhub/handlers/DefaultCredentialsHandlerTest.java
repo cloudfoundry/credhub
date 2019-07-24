@@ -35,6 +35,7 @@ import org.cloudfoundry.credhub.requests.PasswordSetRequest;
 import org.cloudfoundry.credhub.requests.StringGenerationParameters;
 import org.cloudfoundry.credhub.requests.UserSetRequest;
 import org.cloudfoundry.credhub.services.CertificateAuthorityService;
+import org.cloudfoundry.credhub.services.DefaultCertificateAuthorityService;
 import org.cloudfoundry.credhub.services.DefaultCredentialService;
 import org.cloudfoundry.credhub.services.PermissionCheckingService;
 import org.cloudfoundry.credhub.utils.TestConstants;
@@ -98,7 +99,7 @@ public class DefaultCredentialsHandlerTest {
     auditRecord = new CEFAuditRecord();
     permissionCheckingService = mock(PermissionCheckingService.class);
     UserContextHolder userContextHolder = mock(UserContextHolder.class);
-    certificateAuthorityService = mock(CertificateAuthorityService.class);
+    certificateAuthorityService = mock(DefaultCertificateAuthorityService.class);
     universalCredentialGenerator = mock(UniversalCredentialGenerator.class);
 
     subjectWithAcls = new DefaultCredentialsHandler(

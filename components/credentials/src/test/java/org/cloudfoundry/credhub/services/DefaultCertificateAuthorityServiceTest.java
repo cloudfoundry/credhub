@@ -28,7 +28,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
-public class CertificateAuthorityServiceTest {
+public class DefaultCertificateAuthorityServiceTest {
 
   private static final String CREDENTIAL_NAME = "/expectedCredential";
   private static final String TRANSITIONAL_CREDENTIAL_NAME = "/transitionalCredential";
@@ -53,7 +53,7 @@ public class CertificateAuthorityServiceTest {
     when(transitionalCertificateCredential.isVersionTransitional()).thenReturn(true);
 
     certificateVersionDataService = mock(DefaultCertificateVersionDataService.class);
-    certificateAuthorityService = new CertificateAuthorityService(certificateVersionDataService);
+    certificateAuthorityService = new DefaultCertificateAuthorityService(certificateVersionDataService);
   }
 
   @Test

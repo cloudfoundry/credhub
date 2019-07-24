@@ -29,6 +29,7 @@ import org.cloudfoundry.credhub.domain.CertificateGenerationParameters;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters;
 import org.cloudfoundry.credhub.services.CertificateAuthorityService;
+import org.cloudfoundry.credhub.services.DefaultCertificateAuthorityService;
 import org.cloudfoundry.credhub.util.CurrentTimeProvider;
 import org.cloudfoundry.credhub.utils.CertificateFormatter;
 import org.junit.Before;
@@ -72,7 +73,7 @@ public class CertificateGeneratorTest {
     TestHelper.getBouncyCastleFipsProvider();
     keyGenerator = mock(RsaKeyPairGenerator.class);
     signedCertificateGenerator = mock(SignedCertificateGenerator.class);
-    certificateAuthorityService = mock(CertificateAuthorityService.class);
+    certificateAuthorityService = mock(DefaultCertificateAuthorityService.class);
 
     subject = new CertificateGenerator(
       keyGenerator,
