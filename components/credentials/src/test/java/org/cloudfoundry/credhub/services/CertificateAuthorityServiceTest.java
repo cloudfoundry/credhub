@@ -84,7 +84,7 @@ public class CertificateAuthorityServiceTest {
     try {
       certificateAuthorityService.findActiveVersion("any ca name");
     } catch (final EntryNotFoundException pe) {
-      assertThat(pe.getMessage(), equalTo(ErrorMessages.Credential.INVALID_ACCESS));
+      assertThat(pe.getMessage(), equalTo(ErrorMessages.Credential.CERTIFICATE_ACCESS));
     }
   }
 

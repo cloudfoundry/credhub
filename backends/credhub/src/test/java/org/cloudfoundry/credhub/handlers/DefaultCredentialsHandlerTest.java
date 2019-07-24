@@ -12,6 +12,7 @@ import org.cloudfoundry.credhub.TestHelper;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
+import org.cloudfoundry.credhub.constants.CredentialType;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.credential.CredentialValue;
 import org.cloudfoundry.credhub.credential.StringCredentialValue;
@@ -26,6 +27,8 @@ import org.cloudfoundry.credhub.entity.PasswordCredentialVersionData;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.exceptions.PermissionException;
 import org.cloudfoundry.credhub.generate.UniversalCredentialGenerator;
+import org.cloudfoundry.credhub.requests.CertificateGenerateRequest;
+import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters;
 import org.cloudfoundry.credhub.requests.CertificateSetRequest;
 import org.cloudfoundry.credhub.requests.PasswordGenerateRequest;
 import org.cloudfoundry.credhub.requests.PasswordSetRequest;
@@ -85,6 +88,7 @@ public class DefaultCredentialsHandlerTest {
   private UniversalCredentialGenerator universalCredentialGenerator;
 
   private Encryptor encryptor;
+
   @Before
   public void beforeEach() {
     TestHelper.getBouncyCastleFipsProvider();
@@ -497,14 +501,14 @@ public class DefaultCredentialsHandlerTest {
     subjectWithAcls.setCredential(setRequest);
 
     final CertificateCredentialValue expected = new CertificateCredentialValue(
-            null,
-            TestConstants.TEST_INTERMEDIATE_CA,
-            TestConstants.TEST_INTERMEDIATE_CA_PRIVATE_KEY,
-            null,
-            false,
-            false,
-            false,
-            false
+      null,
+      TestConstants.TEST_INTERMEDIATE_CA,
+      TestConstants.TEST_INTERMEDIATE_CA_PRIVATE_KEY,
+      null,
+      false,
+      false,
+      false,
+      false
     );
 
     expected.setCertificateAuthority(true);
@@ -698,6 +702,32 @@ public class DefaultCredentialsHandlerTest {
 
     assertEquals("/captain", auditRecord.getResourceName());
     assertEquals(uuid.toString(), auditRecord.getVersionUUID());
+  }
+
+  @Test
+  public void generateCredential_whenCADoesNotExist_throwsException() {
+    String caName = "caName";
+    CertificateGenerationRequestParameters requestParameters = new CertificateGenerationRequestParameters();
+    requestParameters.setCaName(caName);
+
+    CertificateGenerateRequest generateRequest = new CertificateGenerateRequest();
+    generateRequest.setRequestGenerationParameters(requestParameters);
+    generateRequest.setName("generateRequestName");
+    generateRequest.setType(CredentialType.CERTIFICATE.toString());
+
+    when(certificateAuthorityService.findActiveVersion(caName))
+      .thenThrow(new EntryNotFoundException(ErrorMessages.Credential.CERTIFICATE_ACCESS));
+
+    try {
+      subjectWithAcls.generateCredential(generateRequest);
+      fail("should throw exception");
+    } catch (final EntryNotFoundException e) {
+      assertThat(e.getMessage(), equalTo(ErrorMessages.Credential.CERTIFICATE_ACCESS));
+    }
+
+    verify(credentialService, times(0)).findMostRecent(any());
+    verify(universalCredentialGenerator, times(0)).generate(any());
+    verify(credentialService, times(0)).save(any(), any(), any());
   }
 
   @Test

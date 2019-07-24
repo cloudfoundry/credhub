@@ -64,7 +64,7 @@ class DefaultCredentialsHandler(
                     generateRequest.setCertificateGenerationParameters(certificateGenerationParameters)
                 }
             } else {
-                checkPermissionsByName(caName, READ)
+                checkPermissionsByName(caName, READ, true)
             }
         }
         checkPermissionsByName(generateRequest.name, WRITE)
@@ -163,7 +163,7 @@ class DefaultCredentialsHandler(
     }
 
     private fun validateCertificateValueIsSignedByCa(certificateValue: CertificateCredentialValue, caName: String) {
-        checkPermissionsByName(caName, READ)
+        checkPermissionsByName(caName, READ, true)
         val caValue = certificateAuthorityService.findActiveVersion(caName).certificate
         certificateValue.ca = caValue
 
@@ -210,16 +210,14 @@ class DefaultCredentialsHandler(
         return filteredResult
     }
 
-    private fun checkPermissionsByName(name: String, permissionOperation: PermissionOperation) {
+    private fun checkPermissionsByName(name: String, permissionOperation: PermissionOperation, isCa: Boolean = false) {
         if (!enforcePermissions) return
 
-        if (!permissionCheckingService.hasPermission(
-                userContextHolder.userContext.actor!!,
-                name,
-                permissionOperation
-            )) {
+        if (!permissionCheckingService.hasPermission(userContextHolder.userContext.actor!!, name, permissionOperation)) {
             if (permissionOperation == WRITE) {
                 throw PermissionException(ErrorMessages.Credential.INVALID_ACCESS)
+            } else if (isCa) {
+                throw EntryNotFoundException(ErrorMessages.Credential.CERTIFICATE_ACCESS)
             } else {
                 throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
             }

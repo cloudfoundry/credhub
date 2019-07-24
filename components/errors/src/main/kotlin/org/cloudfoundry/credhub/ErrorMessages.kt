@@ -90,6 +90,7 @@ object ErrorMessages {
     }
 
     object Credential {
+        const val CERTIFICATE_ACCESS = "The request could not be completed because the CA does not exist or you do not have sufficient authorization."
         const val CANNOT_DELETE_LAST_VERSION = "The minimum number of versions for a Certificate is 1."
         const val INVALID_ACCESS = "The request could not be completed because the credential does not exist or you do not have sufficient authorization."
         const val INVALID_CERTIFICATE_PARAMETER = "The request could not be completed because the {0} is too long. The max length for {0} is {1} characters."

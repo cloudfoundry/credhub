@@ -27,6 +27,7 @@ import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.DatabaseProfileResolver;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.helpers.JsonTestHelper;
 import org.cloudfoundry.credhub.utils.StringUtil;
 import org.cloudfoundry.credhub.utils.TestConstants;
@@ -74,7 +75,7 @@ public class CertificateGenerateTest {
   private MockMvc mockMvc;
 
   @Before
-  public void beforeEach() throws Exception {
+  public void beforeEach() {
     mockMvc = MockMvcBuilders
       .webAppContextSetup(webApplicationContext)
       .apply(springSecurity())
@@ -172,8 +173,7 @@ public class CertificateGenerateTest {
   public void certificateGeneration_whenUserNotAuthorizedToReadCa_shouldReturnCorrectError() throws Exception {
     generateCa(mockMvc, "picard", ALL_PERMISSIONS_TOKEN);
     // try to generate with a different token that doesn't have read permission
-    expect404WhileGeneratingCertificate(mockMvc, "riker", USER_B_TOKEN,
-      "The request could not be completed because the credential does not exist or you do not have sufficient authorization.");
+    expect404WhileGeneratingCertificate(mockMvc, "riker", USER_B_TOKEN, ErrorMessages.Credential.CERTIFICATE_ACCESS);
   }
 
   @Test
