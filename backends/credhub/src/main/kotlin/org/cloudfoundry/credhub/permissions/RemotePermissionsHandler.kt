@@ -25,7 +25,16 @@ class RemotePermissionsHandler(
 ) : PermissionsV2Handler {
 
     override fun getPermissions(guid: UUID): PermissionsV2View {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        val response: PermissionsResponse
+
+        try {
+            response = client.getPermissionByUUID(guid.toString(), userContextHolder.userContext.actor)
+        } catch (e: StatusRuntimeException) {
+            throw handleException(e)
+        }
+
+        val responseOperations = mapOperationStringsToOperations(response.operationsList)
+        return PermissionsV2View(response.path, responseOperations, response.actor, UUID.fromString(response.uuid))
     }
 
     override fun putPermissions(guid: String, permissionsRequest: PermissionsV2Request): PermissionsV2View {

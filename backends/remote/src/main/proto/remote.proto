@@ -80,6 +80,11 @@ message FindResult{
 }
 
 // Permissions
+message GetPermissionRequest {
+  string uuid = 1;
+  string requester = 2;
+}
+
 message FindPermissionByPathAndActorRequest {
   string path = 1;
   string actor = 2;
@@ -128,6 +133,7 @@ service CredentialService {
   rpc FindContainingName (FindContainingNameRequest) returns (FindResponse);
   rpc FindStartingWithPath (FindStartingWithPathRequest) returns (FindResponse);
   rpc FindPermissionByPathAndActor(FindPermissionByPathAndActorRequest) returns (PermissionsResponse);
+  rpc GetPermission(GetPermissionRequest) returns (PermissionsResponse);
   rpc SavePermissions(WritePermissionsRequest) returns (PermissionsResponse);
   rpc PutPermissions(PutPermissionsRequest) returns (PermissionsResponse);
   rpc PatchPermissions(PatchPermissionsRequest) returns (PermissionsResponse);

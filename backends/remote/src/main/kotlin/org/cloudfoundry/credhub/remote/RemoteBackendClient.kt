@@ -28,6 +28,7 @@ import org.cloudfoundry.credhub.remote.grpc.GetByIdRequest
 import org.cloudfoundry.credhub.remote.grpc.GetByNameRequest
 import org.cloudfoundry.credhub.remote.grpc.GetNVersionsRequest
 import org.cloudfoundry.credhub.remote.grpc.GetNVersionsResponse
+import org.cloudfoundry.credhub.remote.grpc.GetPermissionRequest
 import org.cloudfoundry.credhub.remote.grpc.GetResponse
 import org.cloudfoundry.credhub.remote.grpc.PatchPermissionsRequest
 import org.cloudfoundry.credhub.remote.grpc.PermissionsResponse
@@ -181,6 +182,16 @@ class RemoteBackendClient(
             .build()
 
         return blockingStub.findPermissionByPathAndActor(request)
+    }
+
+    fun getPermissionByUUID(uuid: String, requester: String): PermissionsResponse {
+        val request = GetPermissionRequest
+            .newBuilder()
+            .setUuid(uuid)
+            .setRequester(requester)
+            .build()
+
+        return blockingStub.getPermission(request)
     }
 
     fun writePermissionRequest(path: String, actor: String, operations: MutableIterable<String>, requester: String): PermissionsResponse {

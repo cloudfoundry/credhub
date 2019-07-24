@@ -194,4 +194,36 @@ class RemotePermissionsHandlerTest {
             subject.findByPathAndActor(CREDENTIAL_NAME, ACTOR)
         }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
     }
+
+    @Test
+    fun getPermissionByUUID_whenUserDoesHaveReadACL_returnsCorrectResponse() {
+        val operations = listOf(PermissionOperation.READ, PermissionOperation.WRITE)
+        val operationStrings = operations.map { o -> o.operation }.toMutableList()
+        val uuid = UUID.randomUUID()
+
+        val response = PermissionsResponse.newBuilder().setActor(ACTOR).setPath(CREDENTIAL_NAME).setUuid(uuid.toString())
+            .addAllOperations(operationStrings).build()
+
+        `when`(client.getPermissionByUUID(uuid.toString(), USER))
+            .thenReturn(response)
+
+        val result = subject.getPermissions(uuid)
+
+        assertEquals(result.actor, ACTOR)
+        assertEquals(result.path, CREDENTIAL_NAME)
+        assertEquals(result.operations, operations)
+        assertEquals(result.uuid, uuid)
+    }
+
+    @Test
+    fun getPermissionByUUID_whenUserDoesNotHaveReadACL_returnsException() {
+        val uuid = UUID.randomUUID()
+        val exception = StatusRuntimeException(Status.NOT_FOUND)
+        `when`(client.getPermissionByUUID(uuid.toString(), USER))
+            .thenThrow(exception)
+
+        Assertions.assertThatThrownBy {
+            subject.getPermissions(uuid)
+        }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
+    }
 }
