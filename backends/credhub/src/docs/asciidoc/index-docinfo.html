@@ -8,13 +8,6 @@
     const toc = document.querySelector('div#toc');
     toc.insertBefore(versionDropdown, toc.firstChild);
 
-    const versionSelect = document.querySelector('#version-dropdown');
-    const dropdownElement = document.createElement('option');
-    dropdownElement.text = 'Version: Master';
-    dropdownElement.value = `../../version/master`;
-    dropdownElement.selected = ('master' === currentVersion) ;
-    versionSelect.appendChild(dropdownElement);
-
     const req = new XMLHttpRequest();
     req.onload = function() {
       if (req.status === 200) {
