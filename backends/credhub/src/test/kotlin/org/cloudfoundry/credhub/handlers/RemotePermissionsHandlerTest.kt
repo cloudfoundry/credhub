@@ -226,4 +226,36 @@ class RemotePermissionsHandlerTest {
             subject.getPermissions(uuid)
         }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
     }
+
+    @Test
+    fun deletePermissionByUUID_whenUserDoesHaveWriteACL_returnsCorrectResponse() {
+        val operations = listOf(PermissionOperation.READ, PermissionOperation.WRITE)
+        val operationStrings = operations.map { o -> o.operation }.toMutableList()
+        val uuid = UUID.randomUUID()
+
+        val response = PermissionsResponse.newBuilder().setActor(ACTOR).setPath(CREDENTIAL_NAME).setUuid(uuid.toString())
+            .addAllOperations(operationStrings).build()
+
+        `when`(client.deletePermissionByUUID(uuid.toString(), USER))
+            .thenReturn(response)
+
+        val result = subject.deletePermissions(uuid.toString())
+
+        assertEquals(result.actor, ACTOR)
+        assertEquals(result.path, CREDENTIAL_NAME)
+        assertEquals(result.operations, operations)
+        assertEquals(result.uuid, uuid)
+    }
+
+    @Test
+    fun deletePermissionByUUID_whenUserDoesNotHaveWriteACL_returnsException() {
+        val uuid = UUID.randomUUID()
+        val exception = StatusRuntimeException(Status.NOT_FOUND)
+        `when`(client.deletePermissionByUUID(uuid.toString(), USER))
+            .thenThrow(exception)
+
+        Assertions.assertThatThrownBy {
+            subject.deletePermissions(uuid.toString())
+        }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
+    }
 }

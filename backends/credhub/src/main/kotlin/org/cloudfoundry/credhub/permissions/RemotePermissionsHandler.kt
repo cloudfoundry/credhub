@@ -87,7 +87,16 @@ class RemotePermissionsHandler(
     }
 
     override fun deletePermissions(guid: String): PermissionsV2View {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        val response: PermissionsResponse
+
+        try {
+            response = client.deletePermissionByUUID(guid, userContextHolder.userContext.actor)
+        } catch (e: StatusRuntimeException) {
+            throw handleException(e)
+        }
+
+        val responseOperations = mapOperationStringsToOperations(response.operationsList)
+        return PermissionsV2View(response.path, responseOperations, response.actor, UUID.fromString(response.uuid))
     }
 
     override fun findByPathAndActor(path: String, actor: String): PermissionsV2View {

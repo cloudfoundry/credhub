@@ -112,6 +112,11 @@ message PatchPermissionsRequest {
   string requester = 3;
 }
 
+message DeletePermissionRequest {
+  string uuid = 1;
+  string requester = 2;
+}
+
 message PermissionsResponse {
   string uuid = 1;
   string actor = 2;
@@ -137,4 +142,5 @@ service CredentialService {
   rpc SavePermissions(WritePermissionsRequest) returns (PermissionsResponse);
   rpc PutPermissions(PutPermissionsRequest) returns (PermissionsResponse);
   rpc PatchPermissions(PatchPermissionsRequest) returns (PermissionsResponse);
+  rpc DeletePermission(DeletePermissionRequest) returns (PermissionsResponse);
 }
