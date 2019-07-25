@@ -33,7 +33,8 @@ class RemoteCertificateAuthorityService(
     }
 
     override fun findTransitionalVersion(caName: String): CertificateCredentialValue? {
-        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+        // To be changed when certificates endpoint is implemented
+        return null
     }
 
     private fun handleException(e: StatusRuntimeException): Exception {
