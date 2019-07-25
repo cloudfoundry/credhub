@@ -719,6 +719,9 @@ public class DefaultCredentialsHandlerTest {
     when(certificateAuthorityService.findActiveVersion(caName))
       .thenThrow(new EntryNotFoundException(ErrorMessages.Credential.CERTIFICATE_ACCESS));
 
+    when(permissionCheckingService.hasPermission(USER, generateRequest.getName(), PermissionOperation.WRITE))
+      .thenReturn(true);
+
     try {
       subjectWithAcls.generateCredential(generateRequest);
       fail("should throw exception");

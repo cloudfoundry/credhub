@@ -1,19 +1,27 @@
 package org.cloudfoundry.credhub.helpers;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import com.google.common.collect.ImmutableMap;
 import com.jayway.jsonpath.JsonPath;
+import org.cloudfoundry.credhub.PermissionOperation;
+import org.cloudfoundry.credhub.views.PermissionsV2View;
 import org.cloudfoundry.credhub.views.PermissionsView;
+import org.hamcrest.Matchers;
 import org.hamcrest.core.IsEqual;
 
 import static java.lang.String.join;
 import static org.cloudfoundry.credhub.AuthConstants.ALL_PERMISSIONS_TOKEN;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -334,8 +342,8 @@ final public class RequestHelper {
       .andExpect(status().isOk());
   }
 
-  public static void expect404WhileGeneratingCertificate(final MockMvc mockMvc, final String certName,
-                                                         final String token, final String expectedMessage) throws Exception {
+  public static void expectErrorCodeWhileGeneratingCertificate(final MockMvc mockMvc, final String certName,
+                                                               final String token, final String expectedMessage, ResultMatcher errCode) throws Exception {
     final MockHttpServletRequestBuilder certPost = post("/api/v1/data")
       .header("Authorization", "Bearer " + token)
       .accept(APPLICATION_JSON)
@@ -352,7 +360,7 @@ final public class RequestHelper {
 
     mockMvc.perform(certPost)
       .andDo(print())
-      .andExpect(status().isNotFound())
+      .andExpect(errCode)
       .andExpect(jsonPath("$.error", equalTo(expectedMessage)));
 
   }

@@ -38,11 +38,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.cloudfoundry.credhub.AuthConstants.ALL_PERMISSIONS_TOKEN;
-import static org.cloudfoundry.credhub.AuthConstants.USER_B_TOKEN;
-import static org.cloudfoundry.credhub.helpers.RequestHelper.expect404WhileGeneratingCertificate;
+import static org.cloudfoundry.credhub.AuthConstants.NO_PERMISSIONS_ACTOR_ID;
+import static org.cloudfoundry.credhub.AuthConstants.NO_PERMISSIONS_TOKEN;
+import static org.cloudfoundry.credhub.AuthConstants.USER_A_ACTOR_ID;
+import static org.cloudfoundry.credhub.helpers.RequestHelper.expectErrorCodeWhileGeneratingCertificate;
 import static org.cloudfoundry.credhub.helpers.RequestHelper.generateCa;
 import static org.cloudfoundry.credhub.helpers.RequestHelper.generateCertificateCredential;
 import static org.cloudfoundry.credhub.helpers.RequestHelper.getCertificateCredentialsByName;
+import static org.cloudfoundry.credhub.helpers.RequestHelper.grantPermissions;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -169,11 +172,23 @@ public class CertificateGenerateTest {
     assertThat(subjectKeyId, equalTo(authKeyId));
   }
 
+
+  @Test
+  public void certificateGeneration_whenCaDoesNotExist_shouldReturnCorrectError() throws Exception {
+    expectErrorCodeWhileGeneratingCertificate(mockMvc, "riker", ALL_PERMISSIONS_TOKEN, ErrorMessages.Credential.CERTIFICATE_ACCESS, status().isNotFound());
+  }
+
   @Test
   public void certificateGeneration_whenUserNotAuthorizedToReadCa_shouldReturnCorrectError() throws Exception {
     generateCa(mockMvc, "picard", ALL_PERMISSIONS_TOKEN);
-    // try to generate with a different token that doesn't have read permission
-    expect404WhileGeneratingCertificate(mockMvc, "riker", USER_B_TOKEN, ErrorMessages.Credential.CERTIFICATE_ACCESS);
+    grantPermissions(mockMvc, "*", ALL_PERMISSIONS_TOKEN, NO_PERMISSIONS_ACTOR_ID, "write");
+    expectErrorCodeWhileGeneratingCertificate(mockMvc, "riker", NO_PERMISSIONS_TOKEN, ErrorMessages.Credential.CERTIFICATE_ACCESS, status().isNotFound());
+  }
+
+  @Test
+  public void certificateGeneration_whenUserCantReadCA_andCantWriteCert_shouldReturnCorrectError() throws Exception {
+    generateCa(mockMvc, "picard", ALL_PERMISSIONS_TOKEN);
+    expectErrorCodeWhileGeneratingCertificate(mockMvc, "riker", NO_PERMISSIONS_TOKEN, ErrorMessages.Credential.INVALID_ACCESS, status().isForbidden());
   }
 
   @Test

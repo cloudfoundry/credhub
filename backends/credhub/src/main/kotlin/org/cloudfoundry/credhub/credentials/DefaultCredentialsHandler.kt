@@ -53,6 +53,7 @@ class DefaultCredentialsHandler(
     }
 
     override fun generateCredential(generateRequest: BaseCredentialGenerateRequest): CredentialView {
+        checkPermissionsByName(generateRequest.name, WRITE)
         if (generateRequest.type == "certificate") {
             val req = generateRequest as CertificateGenerateRequest
             val caName = req.generationRequestParameters.caName
@@ -67,7 +68,6 @@ class DefaultCredentialsHandler(
                 checkPermissionsByName(caName, READ, true)
             }
         }
-        checkPermissionsByName(generateRequest.name, WRITE)
 
         val existingCredentialVersion = credentialService.findMostRecent(generateRequest.name)
 
