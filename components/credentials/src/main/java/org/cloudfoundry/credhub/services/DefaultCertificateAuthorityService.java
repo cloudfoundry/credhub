@@ -30,7 +30,7 @@ public class DefaultCertificateAuthorityService implements CertificateAuthorityS
     final CredentialVersion mostRecent = certificateVersionDataService.findActive(caName);
 
     if (mostRecent == null) {
-      throw new EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS);
+      throw new EntryNotFoundException(ErrorMessages.Credential.CERTIFICATE_ACCESS);
     }
 
     if (!(mostRecent instanceof CertificateCredentialVersion)) {
