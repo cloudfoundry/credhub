@@ -40,7 +40,6 @@ import org.junit.runner.RunWith;
 import static org.cloudfoundry.credhub.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.cloudfoundry.credhub.AuthConstants.NO_PERMISSIONS_ACTOR_ID;
 import static org.cloudfoundry.credhub.AuthConstants.NO_PERMISSIONS_TOKEN;
-import static org.cloudfoundry.credhub.AuthConstants.USER_A_ACTOR_ID;
 import static org.cloudfoundry.credhub.helpers.RequestHelper.expectErrorCodeWhileGeneratingCertificate;
 import static org.cloudfoundry.credhub.helpers.RequestHelper.generateCa;
 import static org.cloudfoundry.credhub.helpers.RequestHelper.generateCertificateCredential;

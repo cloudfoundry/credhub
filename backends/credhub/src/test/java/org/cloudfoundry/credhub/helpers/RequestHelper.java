@@ -1,9 +1,7 @@
 package org.cloudfoundry.credhub.helpers;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -12,16 +10,11 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 
 import com.google.common.collect.ImmutableMap;
 import com.jayway.jsonpath.JsonPath;
-import org.cloudfoundry.credhub.PermissionOperation;
-import org.cloudfoundry.credhub.views.PermissionsV2View;
 import org.cloudfoundry.credhub.views.PermissionsView;
-import org.hamcrest.Matchers;
 import org.hamcrest.core.IsEqual;
 
 import static java.lang.String.join;
 import static org.cloudfoundry.credhub.AuthConstants.ALL_PERMISSIONS_TOKEN;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
