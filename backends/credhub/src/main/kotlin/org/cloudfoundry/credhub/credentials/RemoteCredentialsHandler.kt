@@ -148,7 +148,7 @@ class RemoteCredentialsHandler(
             throw handleException(e)
         }
 
-        return getListFromResponse(response.resultsList)
+        return getListFromResponse(response.resultsList).sortedByDescending { it.versionCreatedAt }
     }
 
     override fun findStartingWithPath(path: String, expiresWithinDays: String): List<FindCredentialResult> {
@@ -159,7 +159,7 @@ class RemoteCredentialsHandler(
         } catch (e: StatusRuntimeException) {
             throw handleException(e)
         }
-        return getListFromResponse(response.resultsList)
+        return getListFromResponse(response.resultsList).sortedByDescending { it.versionCreatedAt }
     }
 
     override fun generateCredential(generateRequest: BaseCredentialGenerateRequest): CredentialView {

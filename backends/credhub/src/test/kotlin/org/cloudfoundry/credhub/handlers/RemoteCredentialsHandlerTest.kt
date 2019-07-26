@@ -842,16 +842,18 @@ class RemoteCredentialsHandlerTest {
 
     @Test
     fun findCredential_withName_returnsCorrectDataResponse() {
+        val nowVersionCreatedAt = Instant.now().toString()
+        val fiveMinutesAgoVersion = Instant.now().minusSeconds(300).toString()
         val response = FindResponse
             .newBuilder()
             .addResults(FindResult
                 .newBuilder()
-                .setName("/test/some-other-credential")
-                .setVersionCreatedAt(versionCreatedAt))
+                .setName("/test/another-credential")
+                .setVersionCreatedAt(fiveMinutesAgoVersion))
             .addResults(FindResult
                 .newBuilder()
-                .setName("/test/another-credential")
-                .setVersionCreatedAt(versionCreatedAt))
+                .setName("/test/some-other-credential")
+                .setVersionCreatedAt(nowVersionCreatedAt))
             .build()
 
         `when`(client.findContainingNameRequest("other", USER)).thenReturn(response)
@@ -861,22 +863,24 @@ class RemoteCredentialsHandlerTest {
         assertEquals(result.size, 2)
         assertEquals(result[0].name, "/test/some-other-credential")
         assertEquals(result[1].name, "/test/another-credential")
-        assertEquals(result[0].versionCreatedAt.toString(), versionCreatedAt)
-        assertEquals(result[1].versionCreatedAt.toString(), versionCreatedAt)
+        assertEquals(result[0].versionCreatedAt.toString(), nowVersionCreatedAt)
+        assertEquals(result[1].versionCreatedAt.toString(), fiveMinutesAgoVersion)
     }
 
     @Test
     fun findStarting_withPath_returnsCorrectDataResponse() {
+        val nowVersionCreatedAt = Instant.now().toString()
+        val fiveMinutesAgoVersion = Instant.now().minusSeconds(300).toString()
         val response = FindResponse
             .newBuilder()
             .addResults(FindResult
                 .newBuilder()
-                .setName("/test/some-other-credential")
-                .setVersionCreatedAt(versionCreatedAt))
+                .setName("/test/another-credential")
+                .setVersionCreatedAt(fiveMinutesAgoVersion))
             .addResults(FindResult
                 .newBuilder()
-                .setName("/test/another-credential")
-                .setVersionCreatedAt(versionCreatedAt))
+                .setName("/test/some-other-credential")
+                .setVersionCreatedAt(nowVersionCreatedAt))
             .build()
 
         `when`(client.findStartingWithPathRequest("/test", USER)).thenReturn(response)
@@ -886,8 +890,8 @@ class RemoteCredentialsHandlerTest {
         assertEquals(result.size, 2)
         assertEquals(result.get(0).name, "/test/some-other-credential")
         assertEquals(result.get(1).name, "/test/another-credential")
-        assertEquals(result.get(0).versionCreatedAt.toString(), versionCreatedAt)
-        assertEquals(result.get(1).versionCreatedAt.toString(), versionCreatedAt)
+        assertEquals(result.get(0).versionCreatedAt.toString(), nowVersionCreatedAt)
+        assertEquals(result.get(1).versionCreatedAt.toString(), fiveMinutesAgoVersion)
     }
 
     @Test
