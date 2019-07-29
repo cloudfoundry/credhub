@@ -389,6 +389,17 @@ public class DefaultCredentialVersionDataServiceTest {
   }
 
   @Test
+  public void findContainingName_givenACredentialName_returnsNonTransitionalVersion() {
+    final CertificateCredentialVersion nonTransitionalVersion  = saveCertificate(2000000000123L, "/some-certificate");
+    saveTransitionalCertificate(3000000000123L, "/some-certificate");
+
+    final List<FindCredentialResult> credentialVersions = subject.findContainingName("/some-certificate");
+
+    assertThat(credentialVersions.size(), equalTo(1));
+    assertThat(credentialVersions.get(0).getVersionCreatedAt(), equalTo(nonTransitionalVersion.getVersionCreatedAt()));
+  }
+
+  @Test
   public void findContainingName_whenThereAreMultipleVerionsOfACredential() {
     savePassword(2000000000123L, "/foo/DUPLICATE");
     savePassword(1000000000123L, "/foo/DUPLICATE");

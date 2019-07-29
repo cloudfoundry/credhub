@@ -245,11 +245,14 @@ constructor(
 
         val credentialResults = jdbcTemplate.query<FindCredentialResult>(
             (""" select name.name, credential_version.version_created_at from
-                 (select max(version_created_at) as version_created_at, credential_uuid from credential_version
-                 group by credential_uuid ) as credential_version
+                 (select max(version_created_at) as version_created_at, credential_uuid from
+                    (select version_created_at, credential_uuid from credential_version LEFT OUTER JOIN
+                        certificate_credential on credential_version.uuid = certificate_credential.uuid
+                        WHERE transitional = 0 or transitional IS NULL) as credential_version
+                    group by credential_uuid ) as credential_version
                  inner join
-                 (select * from credential where lower(name) like lower(?) )
-                 as name on credential_version.credential_uuid = name.uuid
+                    (select * from credential where lower(name) like lower(?) )
+                    as name on credential_version.credential_uuid = name.uuid
                  order by version_created_at desc""".trimMargin()),
             arrayOf<Any>(escapedNameLike),
             { rowSet, rowNum ->
