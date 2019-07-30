@@ -16,6 +16,7 @@ shift
 rm -rf "$DIR/build"
 "$DIR/scripts/setup_dev_mtls.sh"
 "$DIR/scripts/setup_dev_grpc_certs.sh"
+"$DIR/gradlew" --no-daemon assemble
 
 indented_ca=$(sed 's/^/        /' "$ca_path")
 cat >"$DIR/applications/credhub-api/src/main/resources/application-kms-plugin-generated.yml" <<-EOF

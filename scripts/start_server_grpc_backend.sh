@@ -7,6 +7,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )"/.. && pwd )"
 rm -rf "$DIR/build"
 "$DIR/scripts/setup_dev_mtls.sh"
 "$DIR/scripts/setup_dev_grpc_certs.sh"
+"$DIR/gradlew" --no-daemon assemble
 
 exec "$DIR/gradlew" \
   --no-daemon \
