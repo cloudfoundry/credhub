@@ -97,6 +97,8 @@ class RemoteCredentialsHandlerTest {
         val uuid2 = "00000000-0000-0000-0000-000000000002"
         val value1 = StringCredentialValue("value1")
         val value2 = StringCredentialValue("value2")
+        val nowVersionCreatedAt = Instant.now().toString()
+        val fiveMinutesAgoVersion = Instant.now().minusSeconds(300).toString()
 
         val byteValue1 = subject.createByteStringFromData(
             type,
@@ -112,18 +114,18 @@ class RemoteCredentialsHandlerTest {
             .setName(CREDENTIAL_NAME)
             .setType(type).setData(byteValue1)
             .setId(uuid1)
-            .setVersionCreatedAt(versionCreatedAt)
+            .setVersionCreatedAt(nowVersionCreatedAt)
             .build()
 
         val response2 = GetResponse.newBuilder()
             .setName(CREDENTIAL_NAME)
             .setType(type).setData(byteValue2)
             .setId(uuid2)
-            .setVersionCreatedAt(versionCreatedAt)
+            .setVersionCreatedAt(fiveMinutesAgoVersion)
             .build()
 
         val multiVersionResponse = GetNVersionsResponse.newBuilder()
-            .addAllVersions(mutableListOf(response1, response2))
+            .addAllVersions(mutableListOf(response2, response1))
             .build()
 
         `when`(client.getAllVersionsRequest(CREDENTIAL_NAME, USER)).thenReturn(multiVersionResponse)
@@ -156,6 +158,8 @@ class RemoteCredentialsHandlerTest {
         val uuid2 = "00000000-0000-0000-0000-000000000002"
         val value1 = StringCredentialValue("value1")
         val value2 = StringCredentialValue("value2")
+        val nowVersionCreatedAt = Instant.now().toString()
+        val fiveMinutesAgoVersion = Instant.now().minusSeconds(300).toString()
 
         val byteValue1 = subject.createByteStringFromData(
             type,
@@ -171,18 +175,18 @@ class RemoteCredentialsHandlerTest {
             .setName(CREDENTIAL_NAME)
             .setType(type).setData(byteValue1)
             .setId(uuid1)
-            .setVersionCreatedAt(versionCreatedAt)
+            .setVersionCreatedAt(nowVersionCreatedAt)
             .build()
 
         val response2 = GetResponse.newBuilder()
             .setName(CREDENTIAL_NAME)
             .setType(type).setData(byteValue2)
             .setId(uuid2)
-            .setVersionCreatedAt(versionCreatedAt)
+            .setVersionCreatedAt(fiveMinutesAgoVersion)
             .build()
 
         val multiVersionResponse = GetNVersionsResponse.newBuilder()
-            .addAllVersions(mutableListOf(response1, response2))
+            .addAllVersions(mutableListOf(response2, response1))
             .build()
 
         `when`(client.getNVersionsRequest(CREDENTIAL_NAME, USER, 2)).thenReturn(multiVersionResponse)

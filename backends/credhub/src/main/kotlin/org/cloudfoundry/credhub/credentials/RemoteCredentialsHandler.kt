@@ -73,7 +73,7 @@ class RemoteCredentialsHandler(
             ))
         }
 
-        return DataResponse(result)
+        return DataResponse(result.sortedByDescending { it.versionCreatedAt })
     }
 
     override fun getAllCredentialVersions(credentialName: String): DataResponse {
@@ -96,7 +96,7 @@ class RemoteCredentialsHandler(
             ))
         }
 
-        return DataResponse(result)
+        return DataResponse(result.sortedByDescending { it.versionCreatedAt })
     }
 
     override fun getCurrentCredentialVersions(credentialName: String): DataResponse {
