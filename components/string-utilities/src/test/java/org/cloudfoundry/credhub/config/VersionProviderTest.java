@@ -1,7 +1,7 @@
 package org.cloudfoundry.credhub.config;
 
-import org.cloudfoundry.credhub.utils.VersionProvider;
 import org.cloudfoundry.credhub.utils.ResourceReader;
+import org.cloudfoundry.credhub.utils.VersionProvider;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
