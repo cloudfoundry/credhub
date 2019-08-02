@@ -1,6 +1,19 @@
 package org.cloudfoundry.credhub.utils
 
-interface VersionProvider {
+import org.springframework.stereotype.Component
+import java.io.IOException
 
-    fun currentVersion(): String
+@Component
+class VersionProvider(resources: ResourceReader) {
+    final var version: String = try {
+        resources.readFileToString("version").trim { it <= ' ' }
+    } catch (e: IOException) {
+        "0.0.0"
+    } catch (e: IllegalArgumentException) {
+        "0.0.0"
+    }
+
+    fun currentVersion(): String {
+        return version
+    }
 }
