@@ -70,10 +70,8 @@ class ConcatenateCasEnabledEndToEndTest {
         certResponse = RequestHelper.getCertificateVersions(mockMvc, certUUID, ALL_PERMISSIONS_TOKEN)
         certCa = JsonPath.parse(certResponse).read<String>("\$[0].value.ca")
 
-
         numCas = certCa.split("BEGIN CERTIFICATE").size - 1
 
         assertThat(numCas, equalTo(2))
     }
-
 }
