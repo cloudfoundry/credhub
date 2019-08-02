@@ -508,4 +508,39 @@ final public class RequestHelper {
       .andExpect(status().is2xxSuccessful())
       .andReturn().getResponse().getContentAsString();
   }
+
+  public static String getCertificate(final MockMvc mockMvc, final String name, final String token) throws Exception {
+    final MockHttpServletRequestBuilder regenerateRequest = get("/api/v1/certificates?name=" + name)
+      .header("Authorization", "Bearer " + token)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON);
+
+    return mockMvc.perform(regenerateRequest)
+      .andExpect(status().is2xxSuccessful())
+      .andReturn().getResponse().getContentAsString();
+  }
+
+  public static String getCertificateVersions(final MockMvc mockMvc, final String uuid, final String token) throws Exception {
+    final MockHttpServletRequestBuilder regenerateRequest = get("/api/v1/certificates/" + uuid + "/versions")
+      .header("Authorization", "Bearer " + token)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON);
+
+    return mockMvc.perform(regenerateRequest)
+      .andExpect(status().is2xxSuccessful())
+      .andReturn().getResponse().getContentAsString();
+  }
+
+  public static String getCredential(final MockMvc mockMvc, final String name, final String token) throws Exception {
+    final MockHttpServletRequestBuilder regenerateRequest = get("/api/v1/data?name=" + name)
+      .header("Authorization", "Bearer " + token)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON);
+
+    return mockMvc.perform(regenerateRequest)
+      .andExpect(status().is2xxSuccessful())
+      .andReturn().getResponse().getContentAsString();
+  }
+
+
 }
