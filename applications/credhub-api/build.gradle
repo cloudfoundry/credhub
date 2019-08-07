@@ -19,7 +19,6 @@ apply plugin: 'kotlin-spring'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 apply plugin: 'spring-cloud-contract'
-apply from: "server-version.gradle"
 apply from: "${rootDir.toPath()}/spring-cloud-contract-config.gradle"
 apply from: "${rootDir.toPath()}/kotlin.gradle"
 apply from: "${rootDir.toPath()}/ktlint.gradle"
@@ -92,7 +91,6 @@ dependencyManagement {
 }
 
 bootRun {
-    dependsOn updateVersionFile
     sourceResources sourceSets.main
     systemProperties = System.properties
     systemProperties["spring.profiles.active"] = System.getProperty("spring.profiles.active", "dev, dev-h2")
@@ -101,9 +99,6 @@ bootRun {
 bootJar {
     archiveName = "credhub.jar"
     def versionFile = new File("$projectDir/src/main/resources/version")
-    if (System.getenv("VERSION")) {
-        versionFile.write(System.getenv("VERSION"))
-    }
 }
 
 test {

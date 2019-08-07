@@ -1,9 +1,0 @@
-task updateVersionFile(type: Exec) {
-    commandLine "${rootDir.toPath()}/scripts/fetch-version.sh"
-}
-
-processResources {
-    outputs.upToDateWhen { false }
-}
-
-processResources.dependsOn updateVersionFile
