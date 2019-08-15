@@ -8,6 +8,7 @@ import org.cloudfoundry.credhub.PermissionOperation.WRITE
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.audit.entities.BulkRegenerateCredential
 import org.cloudfoundry.credhub.auth.UserContextHolder
+import org.cloudfoundry.credhub.credential.CertificateCredentialValue
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
 import org.cloudfoundry.credhub.domain.CertificateGenerationParameters
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
@@ -24,6 +25,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.util.TreeSet
+import java.util.UUID
 
 @SuppressFBWarnings(value = ["NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"],
     justification = "This will be refactored into safer non-nullable types")
@@ -62,7 +64,22 @@ class DefaultRegenerateHandler(
 
         auditRecord.setVersion(credentialVersion)
         auditRecord.setResource(credentialVersion.credential)
-        return CredentialView.fromEntity(credentialVersion)
+
+        val credentialView = CredentialView.fromEntity(credentialVersion)
+
+        // It doesn't look like concatenated CAs are saved to the database. The CAs are concatenated on the fly
+        // The view needs to be updated with concatenated CAs if there is a transitional
+        if ((credentialValue is CertificateCredentialValue) && !credentialValue.trustedCa.isNullOrEmpty()) {
+            credentialValue.ca = credentialValue.ca + credentialValue.trustedCa
+            return CredentialView(
+                    credentialView.versionCreatedAt,
+                    UUID.fromString(credentialView.uuid),
+                    credentialView.name,
+                    credentialView.type,
+                    credentialValue)
+        }
+
+        return credentialView
     }
 
     override fun handleBulkRegenerate(signerName: String): BulkRegenerateResults {

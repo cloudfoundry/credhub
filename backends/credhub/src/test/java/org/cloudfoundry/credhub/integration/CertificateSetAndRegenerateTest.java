@@ -103,6 +103,49 @@ public class CertificateSetAndRegenerateTest {
   }
 
   @Test
+  public void regenerateLeaf_whenRootCaIsTransitional_returnsConcatenatedCas() throws Exception {
+    RequestHelper.generateCertificateCredential(
+            mockMvc,
+            "leafCertificate",
+            true,
+            "leaf-cert",
+            CA_NAME,
+            ALL_PERMISSIONS_TOKEN
+    );
+
+    final MockHttpServletRequestBuilder regenerateRequest = post("/api/v1/certificates/" + caCredentialUuid + "/regenerate")
+            .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{" +
+                    "\"set_as_transitional\": true" +
+                    "}");
+
+    final String regenerateCaCertificateResponse = this.mockMvc.perform(regenerateRequest)
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.transitional", equalTo(true)))
+            .andReturn().getResponse()
+            .getContentAsString();
+
+    final String regenerateCaCertificate = JsonPath.parse(regenerateCaCertificateResponse)
+            .read("$.value.certificate");
+
+    final MockHttpServletRequestBuilder regenerateLeafRequest = post("/api/v1/regenerate")
+            .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{\"name\":\"leafCertificate\"}");
+
+    final String response = this.mockMvc.perform(regenerateLeafRequest)
+            .andExpect(status().isOk())
+            .andReturn().getResponse()
+            .getContentAsString();
+
+    final String leafCA = JsonPath.parse(response).read("$.value.ca");
+    assertThat(leafCA, equalTo(caCertificate + regenerateCaCertificate));
+  }
+
+  @Test
   public void certificateSet_withCaName_canBeRegeneratedWithSameCA() throws Exception {
     final String generatedCertificate = RequestHelper.generateCertificateCredential(
       mockMvc,

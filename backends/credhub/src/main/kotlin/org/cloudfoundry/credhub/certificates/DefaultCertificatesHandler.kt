@@ -72,6 +72,12 @@ class DefaultCertificatesHandler(
 
         auditRecord.setVersion(credentialVersion)
 
+        // It doesn't look like concatenated CAs are saved to the database. The CAs are concatenated on the fly
+        // The view needs to be updated with concatenated CAs if there is a transitional
+        if (!credentialVersion.trustedCa.isNullOrEmpty()) {
+            credentialVersion.ca = credentialVersion.ca + credentialVersion.trustedCa
+        }
+
         return CertificateView(credentialVersion)
     }
 

@@ -45,6 +45,7 @@ import static org.cloudfoundry.credhub.helpers.RequestHelper.generateCa;
 import static org.cloudfoundry.credhub.helpers.RequestHelper.generateCertificateCredential;
 import static org.cloudfoundry.credhub.helpers.RequestHelper.getCertificateCredentialsByName;
 import static org.cloudfoundry.credhub.helpers.RequestHelper.grantPermissions;
+import static org.cloudfoundry.credhub.helpers.RequestHelper.regenerateCertificate;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -396,7 +397,7 @@ public class CertificateGenerateTest {
     final String transitionalCaCertificate = JsonPath.parse(transitionalCaResponse)
       .read("$.value.certificate");
 
-    final String generateCertificateResponse = generateCertificateCredential(
+    generateCertificateCredential(
       mockMvc,
       "/some-cert",
       true,
@@ -405,10 +406,21 @@ public class CertificateGenerateTest {
       ALL_PERMISSIONS_TOKEN
     );
 
-    final String actualCaCertificate = JsonPath.parse(generateCertificateResponse)
-      .read("$.value.ca");
+    final String getCertificateResponse = getCertificateCredentialsByName(mockMvc, ALL_PERMISSIONS_TOKEN, "/some-cert");
 
-    assertThat(actualCaCertificate, not(equalTo(transitionalCaCertificate)));
-    assertThat(actualCaCertificate, equalTo(originalCaCertificate));
+    final String certificateUuid = JsonPath.parse(getCertificateResponse)
+      .read("$.certificates[0].id");
+
+    final String regenerateCertificateResponse = regenerateCertificate(
+            mockMvc,
+            certificateUuid,
+            false,
+            ALL_PERMISSIONS_TOKEN
+    );
+
+    final String actualCaCertificate = JsonPath.parse(regenerateCertificateResponse)
+            .read("$.value.ca");
+
+    assertThat(actualCaCertificate, equalTo(originalCaCertificate + transitionalCaCertificate));
   }
 }
