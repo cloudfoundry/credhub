@@ -1,0 +1,9 @@
+encryption:
+  key_creation_enabled: true
+  providers:
+    - provider_name: int
+      provider_type: internal
+      keys:
+        - active: true
+          encryption_password: changeme
+

@@ -1,0 +1,2 @@
+logging:
+  config: /etc/config/log4j2.properties

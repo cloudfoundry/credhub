@@ -1,0 +1,15 @@
+server:
+   port: 9000
+   ssl:
+     enabled: true
+     key_store: key_store.jks
+     key_store_password: changeit
+     key_password: changeit
+     key_alias: cert
+     ciphers: TLS_DHE_RSA_WITH_AES_128_GCM_SHA256, TLS_DHE_RSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+     client_auth: want
+     trust_store: trust_store.jks
+     trust_store_password: ${TRUST_STORE_PASSWORD}
+     trust_store_type: JKS
+     enabled-protocols: TLSv1.2
+
