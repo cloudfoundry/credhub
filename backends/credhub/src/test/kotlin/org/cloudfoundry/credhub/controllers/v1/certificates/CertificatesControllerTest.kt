@@ -298,6 +298,62 @@ class CertificatesControllerTest {
     }
 
     @Test
+    fun GET__certificates_whenExpiryDateisNull_returns_certificates_certificateWithEmptyExpiryDateField() {
+        var caName = "/testCa"
+        val certificateVersions = listOf(
+            CertificateVersionView(
+                id = UUID.randomUUID(),
+                transitional = true,
+                expiryDate = null,
+                certificateAuthority = false,
+                selfSigned = false,
+                generated = true
+            )
+        )
+        var cert1Name = "/cert1"
+        var cert2Name = "/cert2"
+
+        val certificateCredentialsView = CertificateCredentialsView(
+            listOf(CertificateCredentialView(name, certificateId, certificateVersions, caName, listOf(cert1Name, cert2Name)))
+        )
+        spyCertificatesHandler.handleGetAllRequest__returns_certificateCredentialsView = certificateCredentialsView
+
+        val mvcResult = mockMvc
+            .perform(
+                get(CertificatesController.ENDPOINT)
+                    .credHubAuthHeader()
+                    .accept(MediaType.APPLICATION_JSON_UTF8)
+            ).andExpect(status().isOk)
+            .andReturn()
+
+        // language=json
+        val expectedResponse = """
+        {
+          "certificates": [
+            {
+              "name": "$name",
+              "id": "$certificateId",
+              "signed_by": "$caName",
+              "signs": ["$cert1Name", "$cert2Name"],
+              "versions": [
+                {
+                  "id": "${certificateVersions[0].id}",
+                  "expiry_date": "",
+                  "transitional": true,
+                  "certificate_authority": false,
+                  "self_signed": false,
+                  "generated": true
+                }
+              ]
+            }
+          ]
+        }
+        """.trimIndent()
+
+        JSONAssert.assertEquals(expectedResponse, mvcResult.response.contentAsString, true)
+    }
+
+    @Test
     fun GET__certificates_byName__returns_certificate() {
         var caName = "/testCa"
         val certificateVersions = listOf(

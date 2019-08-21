@@ -2,18 +2,15 @@ package org.cloudfoundry.credhub.services
 
 import org.cloudfoundry.credhub.CredhubTestApp
 import org.cloudfoundry.credhub.DatabaseProfileResolver
-import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
 import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData
 import org.cloudfoundry.credhub.entity.Credential
-import org.cloudfoundry.credhub.repositories.CredentialRepository
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.transaction.annotation.Transactional
@@ -28,16 +25,7 @@ class CertificateDataServiceTest {
     private lateinit var subject: CertificateDataService
 
     @Autowired
-    private lateinit var credentialRepository: CredentialRepository
-
-    @Autowired
     private lateinit var credentialDataService: CredentialDataService
-
-    @Autowired
-    private lateinit var cefAuditRecord: CEFAuditRecord
-
-    @Autowired
-    private lateinit var jdbcTemplate: JdbcTemplate
 
     @Autowired
     private lateinit var credentialVersionDataService: CredentialVersionDataService
@@ -46,11 +34,48 @@ class CertificateDataServiceTest {
     fun `findAllValidMetadata when certificate is in 'names' returns certificates`() {
         val name = "some-credential"
         val caName = "/some-ca"
+        val otherName = "some-other-credential"
+        val otherCaName = "/some-other-ca"
         val expectedExpiryDate = Instant.now()
         val certificateCredentialVersionData = CertificateCredentialVersionData(name)
+        val otherCertificateCredentialVersionData = CertificateCredentialVersionData(otherName)
         certificateCredentialVersionData.caName = caName
         certificateCredentialVersionData.isTransitional = false
         certificateCredentialVersionData.expiryDate = expectedExpiryDate
+        certificateCredentialVersionData.isCertificateAuthority = false
+        certificateCredentialVersionData.isSelfSigned = false
+        certificateCredentialVersionData.generated = true
+        otherCertificateCredentialVersionData.caName = otherCaName
+        otherCertificateCredentialVersionData.isTransitional = false
+        otherCertificateCredentialVersionData.isCertificateAuthority = false
+        otherCertificateCredentialVersionData.isSelfSigned = false
+        otherCertificateCredentialVersionData.generated = true
+
+        val certificateCredentialVersion = CertificateCredentialVersion(certificateCredentialVersionData)
+        val otherCertificateCredentialVersion = CertificateCredentialVersion(otherCertificateCredentialVersionData)
+        credentialVersionDataService.save(certificateCredentialVersion)
+        credentialVersionDataService.save(otherCertificateCredentialVersion)
+
+        val result = subject.findAllValidMetadata(listOf(name))
+
+        assertEquals(1, result.size)
+        assertEquals(name, result[0].name)
+        assertEquals(caName, result[0].caName)
+        assertEquals(false, result[0].versions[0].isTransitional)
+        assertEquals(expectedExpiryDate, result[0].versions[0].expiryDate)
+        assertEquals(false, result[0].versions[0].isCertificateAuthority)
+        assertEquals(false, result[0].versions[0].isSelfSigned)
+        assertEquals(true, result[0].versions[0].generated)
+    }
+
+    @Test
+    fun `findAllValidMetadata returns certificate with null expiryDate when none exists`() {
+        val name = "some-credential"
+        val caName = "/some-ca"
+        val certificateCredentialVersionData = CertificateCredentialVersionData(name)
+        certificateCredentialVersionData.caName = caName
+        certificateCredentialVersionData.isTransitional = false
+        certificateCredentialVersionData.expiryDate = null
         certificateCredentialVersionData.isCertificateAuthority = false
         certificateCredentialVersionData.isSelfSigned = false
         certificateCredentialVersionData.generated = true
@@ -64,7 +89,7 @@ class CertificateDataServiceTest {
         assertEquals(name, result[0].name)
         assertEquals(caName, result[0].caName)
         assertEquals(false, result[0].versions[0].isTransitional)
-        assertEquals(expectedExpiryDate, result[0].versions[0].expiryDate)
+        assertEquals(null, result[0].versions[0].expiryDate)
         assertEquals(false, result[0].versions[0].isCertificateAuthority)
         assertEquals(false, result[0].versions[0].isSelfSigned)
         assertEquals(true, result[0].versions[0].generated)
