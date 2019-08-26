@@ -7,8 +7,9 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import java.time.Instant
 import java.util.UUID
 
-data class CertificateVersionView(
+class CertificateVersionView(
     val id: UUID,
+    @JsonProperty("expiry_date")
     val expiryDate: Instant?,
     val transitional: Boolean,
     @JsonProperty("certificate_authority")
@@ -18,7 +19,6 @@ data class CertificateVersionView(
     @JsonInclude(NON_NULL)
     val generated: Boolean?
 ) {
-    @JsonProperty("expiry_date")
     @JsonGetter
     fun getExpiryDate(): String {
         return expiryDate?.toString() ?: ""
