@@ -121,9 +121,13 @@ public class SignedCertificateGenerator {
     }
 
     if (caSubjectKeyIdentifier.getKeyIdentifier() != null) {
-      final PublicKey issuerPublicKey = issuerCertificate != null ? issuerCertificate.getPublicKey() : keyPair.getPublic();
-      final AuthorityKeyIdentifier authorityKeyIdentifier = jcaX509ExtensionUtils
-        .createAuthorityKeyIdentifier(issuerPublicKey);
+      AuthorityKeyIdentifier authorityKeyIdentifier;
+      if (issuerCertificate != null) {
+        authorityKeyIdentifier = new AuthorityKeyIdentifier(jcaX509ExtensionUtils
+                .createAuthorityKeyIdentifier(issuerCertificate).getKeyIdentifier());
+      } else {
+        authorityKeyIdentifier = jcaX509ExtensionUtils.createAuthorityKeyIdentifier(keyPair.getPublic());
+      }
 
       certificateBuilder
         .addExtension(Extension.authorityKeyIdentifier, false, authorityKeyIdentifier);
