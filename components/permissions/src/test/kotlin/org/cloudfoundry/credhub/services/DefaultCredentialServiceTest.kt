@@ -58,7 +58,7 @@ class DefaultCredentialServiceTest {
     private lateinit var credentialFactory: CredentialFactory
 
     @Mock
-    private lateinit var certificateAuthorityService: DefaultCertificateAuthorityService
+    private lateinit var certificateAuthorityService: CertificateAuthorityService
 
     @Mock
     private lateinit var credentialDataService: CredentialDataService

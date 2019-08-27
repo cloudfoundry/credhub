@@ -19,17 +19,11 @@ import org.apache.commons.lang3.StringUtils
 import org.apache.logging.log4j.LogManager
 import org.cloudfoundry.credhub.remote.grpc.CredentialServiceGrpc
 import org.cloudfoundry.credhub.remote.grpc.DeleteByNameRequest
-import org.cloudfoundry.credhub.remote.grpc.DeletePermissionRequest
 import org.cloudfoundry.credhub.remote.grpc.FindContainingNameRequest
-import org.cloudfoundry.credhub.remote.grpc.FindPermissionByPathAndActorRequest
 import org.cloudfoundry.credhub.remote.grpc.FindResponse
 import org.cloudfoundry.credhub.remote.grpc.FindStartingWithPathRequest
-import org.cloudfoundry.credhub.remote.grpc.GetAllVersionsRequest
 import org.cloudfoundry.credhub.remote.grpc.GetByIdRequest
 import org.cloudfoundry.credhub.remote.grpc.GetByNameRequest
-import org.cloudfoundry.credhub.remote.grpc.GetNVersionsRequest
-import org.cloudfoundry.credhub.remote.grpc.GetNVersionsResponse
-import org.cloudfoundry.credhub.remote.grpc.GetPermissionRequest
 import org.cloudfoundry.credhub.remote.grpc.GetResponse
 import org.cloudfoundry.credhub.remote.grpc.PatchPermissionsRequest
 import org.cloudfoundry.credhub.remote.grpc.PermissionsResponse
@@ -85,27 +79,6 @@ class RemoteBackendClient(
                 .build())
 
         LOGGER.info("using socket file $socketFile")
-    }
-
-    fun getNVersionsRequest(credentialName: String, user: String, numberOfVersions: Int): GetNVersionsResponse {
-        val request = GetNVersionsRequest
-            .newBuilder()
-            .setName(credentialName)
-            .setRequester(user)
-            .setNumberOfVersions(numberOfVersions)
-            .build()
-
-        return blockingStub.getNVersions(request)
-    }
-
-    fun getAllVersionsRequest(credentialName: String, user: String): GetNVersionsResponse {
-        val request = GetAllVersionsRequest
-            .newBuilder()
-            .setName(credentialName)
-            .setRequester(user)
-            .build()
-
-        return blockingStub.getAllVersions(request)
     }
 
     fun getByNameRequest(credentialName: String, user: String): GetResponse {
@@ -174,27 +147,6 @@ class RemoteBackendClient(
         blockingStub.delete(request)
     }
 
-    fun findPermissionByPathAndActor(path: String, actor: String, requester: String): PermissionsResponse {
-        val request = FindPermissionByPathAndActorRequest
-            .newBuilder()
-            .setPath(path)
-            .setActor(actor)
-            .setRequester(requester)
-            .build()
-
-        return blockingStub.findPermissionByPathAndActor(request)
-    }
-
-    fun getPermissionByUUID(uuid: String, requester: String): PermissionsResponse {
-        val request = GetPermissionRequest
-            .newBuilder()
-            .setUuid(uuid)
-            .setRequester(requester)
-            .build()
-
-        return blockingStub.getPermission(request)
-    }
-
     fun writePermissionRequest(path: String, actor: String, operations: MutableIterable<String>, requester: String): PermissionsResponse {
         val request = WritePermissionsRequest
             .newBuilder()
@@ -205,16 +157,6 @@ class RemoteBackendClient(
             .build()
 
         return blockingStub.savePermissions(request)
-    }
-
-    fun deletePermissionByUUID(uuid: String, requester: String): PermissionsResponse {
-        val request = DeletePermissionRequest
-            .newBuilder()
-            .setUuid(uuid)
-            .setRequester(requester)
-            .build()
-
-        return blockingStub.deletePermission(request)
     }
 
     fun putPermissionRequest(uuid: String, path: String, actor: String, operations: MutableIterable<String>, requester: String): PermissionsResponse {

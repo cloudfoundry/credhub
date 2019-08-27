@@ -28,7 +28,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
-public class DefaultCertificateAuthorityServiceTest {
+public class CertificateAuthorityServiceTest {
 
   private static final String CREDENTIAL_NAME = "/expectedCredential";
   private static final String TRANSITIONAL_CREDENTIAL_NAME = "/transitionalCredential";
@@ -53,7 +53,7 @@ public class DefaultCertificateAuthorityServiceTest {
     when(transitionalCertificateCredential.isVersionTransitional()).thenReturn(true);
 
     certificateVersionDataService = mock(DefaultCertificateVersionDataService.class);
-    certificateAuthorityService = new DefaultCertificateAuthorityService(certificateVersionDataService);
+    certificateAuthorityService = new CertificateAuthorityService(certificateVersionDataService);
   }
 
   @Test
@@ -84,7 +84,7 @@ public class DefaultCertificateAuthorityServiceTest {
     try {
       certificateAuthorityService.findActiveVersion("any ca name");
     } catch (final EntryNotFoundException pe) {
-      assertThat(pe.getMessage(), equalTo(ErrorMessages.Credential.CERTIFICATE_ACCESS));
+      assertThat(pe.getMessage(), equalTo(ErrorMessages.Credential.INVALID_ACCESS));
     }
   }
 

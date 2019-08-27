@@ -25,16 +25,7 @@ class RemotePermissionsHandler(
 ) : PermissionsV2Handler {
 
     override fun getPermissions(guid: UUID): PermissionsV2View {
-        val response: PermissionsResponse
-
-        try {
-            response = client.getPermissionByUUID(guid.toString(), userContextHolder.userContext.actor)
-        } catch (e: StatusRuntimeException) {
-            throw handleException(e)
-        }
-
-        val responseOperations = mapOperationStringsToOperations(response.operationsList)
-        return PermissionsV2View(response.path, responseOperations, response.actor, UUID.fromString(response.uuid))
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun putPermissions(guid: String, permissionsRequest: PermissionsV2Request): PermissionsV2View {
@@ -87,29 +78,11 @@ class RemotePermissionsHandler(
     }
 
     override fun deletePermissions(guid: String): PermissionsV2View {
-        val response: PermissionsResponse
-
-        try {
-            response = client.deletePermissionByUUID(guid, userContextHolder.userContext.actor)
-        } catch (e: StatusRuntimeException) {
-            throw handleException(e)
-        }
-
-        val responseOperations = mapOperationStringsToOperations(response.operationsList)
-        return PermissionsV2View(response.path, responseOperations, response.actor, UUID.fromString(response.uuid))
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun findByPathAndActor(path: String, actor: String): PermissionsV2View {
-        val response: PermissionsResponse
-
-        try {
-            response = client.findPermissionByPathAndActor(path, actor, userContextHolder.userContext.actor)
-        } catch (e: StatusRuntimeException) {
-            throw handleException(e)
-        }
-
-        val responseOperations = mapOperationStringsToOperations(response.operationsList)
-        return PermissionsV2View(response.path, responseOperations, response.actor, UUID.fromString(response.uuid))
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     private fun mapOperationStringsToOperations(operations: ProtocolStringList): MutableList<PermissionOperation> {

@@ -16,6 +16,7 @@ shift
 rm -rf "$DIR/build"
 "$DIR/scripts/setup_dev_mtls.sh"
 "$DIR/scripts/setup_dev_grpc_certs.sh"
+"$DIR/gradlew" --no-daemon downloadBouncyCastleFips
 "$DIR/gradlew" --no-daemon assemble
 
 indented_ca=$(sed 's/^/        /' "$ca_path")

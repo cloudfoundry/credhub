@@ -53,7 +53,6 @@ class DefaultCredentialsHandler(
     }
 
     override fun generateCredential(generateRequest: BaseCredentialGenerateRequest): CredentialView {
-        checkPermissionsByName(generateRequest.name, WRITE)
         if (generateRequest.type == "certificate") {
             val req = generateRequest as CertificateGenerateRequest
             val caName = req.generationRequestParameters.caName
@@ -65,9 +64,10 @@ class DefaultCredentialsHandler(
                     generateRequest.setCertificateGenerationParameters(certificateGenerationParameters)
                 }
             } else {
-                checkPermissionsByName(caName, READ, true)
+                checkPermissionsByName(caName, READ)
             }
         }
+        checkPermissionsByName(generateRequest.name, WRITE)
 
         val existingCredentialVersion = credentialService.findMostRecent(generateRequest.name)
 
@@ -163,7 +163,7 @@ class DefaultCredentialsHandler(
     }
 
     private fun validateCertificateValueIsSignedByCa(certificateValue: CertificateCredentialValue, caName: String) {
-        checkPermissionsByName(caName, READ, true)
+        checkPermissionsByName(caName, READ)
         val caValue = certificateAuthorityService.findActiveVersion(caName).certificate
         certificateValue.ca = caValue
 
@@ -210,14 +210,16 @@ class DefaultCredentialsHandler(
         return filteredResult
     }
 
-    private fun checkPermissionsByName(name: String, permissionOperation: PermissionOperation, isCa: Boolean = false) {
+    private fun checkPermissionsByName(name: String, permissionOperation: PermissionOperation) {
         if (!enforcePermissions) return
 
-        if (!permissionCheckingService.hasPermission(userContextHolder.userContext.actor!!, name, permissionOperation)) {
+        if (!permissionCheckingService.hasPermission(
+                userContextHolder.userContext.actor!!,
+                name,
+                permissionOperation
+            )) {
             if (permissionOperation == WRITE) {
                 throw PermissionException(ErrorMessages.Credential.INVALID_ACCESS)
-            } else if (isCa) {
-                throw EntryNotFoundException(ErrorMessages.Credential.CERTIFICATE_ACCESS)
             } else {
                 throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
             }

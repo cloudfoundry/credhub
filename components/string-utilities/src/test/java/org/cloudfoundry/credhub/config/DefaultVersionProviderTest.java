@@ -1,7 +1,7 @@
 package org.cloudfoundry.credhub.config;
 
+import org.cloudfoundry.credhub.utils.DefaultVersionProvider;
 import org.cloudfoundry.credhub.utils.ResourceReader;
-import org.cloudfoundry.credhub.utils.VersionProvider;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -12,13 +12,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
-public class VersionProviderTest {
+public class DefaultVersionProviderTest {
   @Test
   public void currentVersion_returnsTheCurrentVersion() throws Exception {
     final ResourceReader resourceReader = mock(ResourceReader.class);
     when(resourceReader.readFileToString("version")).thenReturn("test version");
 
-    final VersionProvider subject = new VersionProvider(resourceReader);
+    final DefaultVersionProvider subject = new DefaultVersionProvider(resourceReader);
 
     assertThat(subject.currentVersion(), equalTo("test version"));
   }
@@ -28,7 +28,7 @@ public class VersionProviderTest {
     final ResourceReader resourceReader = mock(ResourceReader.class);
     when(resourceReader.readFileToString("version")).thenReturn("   test version   ");
 
-    final VersionProvider subject = new VersionProvider(resourceReader);
+    final DefaultVersionProvider subject = new DefaultVersionProvider(resourceReader);
 
     assertThat(subject.currentVersion(), equalTo("test version"));
   }

@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import com.google.common.collect.ImmutableMap;
@@ -335,8 +334,8 @@ final public class RequestHelper {
       .andExpect(status().isOk());
   }
 
-  public static void expectErrorCodeWhileGeneratingCertificate(final MockMvc mockMvc, final String certName,
-                                                               final String token, final String expectedMessage, ResultMatcher errCode) throws Exception {
+  public static void expect404WhileGeneratingCertificate(final MockMvc mockMvc, final String certName,
+                                                         final String token, final String expectedMessage) throws Exception {
     final MockHttpServletRequestBuilder certPost = post("/api/v1/data")
       .header("Authorization", "Bearer " + token)
       .accept(APPLICATION_JSON)
@@ -353,7 +352,7 @@ final public class RequestHelper {
 
     mockMvc.perform(certPost)
       .andDo(print())
-      .andExpect(errCode)
+      .andExpect(status().isNotFound())
       .andExpect(jsonPath("$.error", equalTo(expectedMessage)));
 
   }
@@ -508,39 +507,4 @@ final public class RequestHelper {
       .andExpect(status().is2xxSuccessful())
       .andReturn().getResponse().getContentAsString();
   }
-
-  public static String getCertificate(final MockMvc mockMvc, final String name, final String token) throws Exception {
-    final MockHttpServletRequestBuilder regenerateRequest = get("/api/v1/certificates?name=" + name)
-      .header("Authorization", "Bearer " + token)
-      .accept(APPLICATION_JSON)
-      .contentType(APPLICATION_JSON);
-
-    return mockMvc.perform(regenerateRequest)
-      .andExpect(status().is2xxSuccessful())
-      .andReturn().getResponse().getContentAsString();
-  }
-
-  public static String getCertificateVersions(final MockMvc mockMvc, final String uuid, final String token) throws Exception {
-    final MockHttpServletRequestBuilder regenerateRequest = get("/api/v1/certificates/" + uuid + "/versions")
-      .header("Authorization", "Bearer " + token)
-      .accept(APPLICATION_JSON)
-      .contentType(APPLICATION_JSON);
-
-    return mockMvc.perform(regenerateRequest)
-      .andExpect(status().is2xxSuccessful())
-      .andReturn().getResponse().getContentAsString();
-  }
-
-  public static String getCredential(final MockMvc mockMvc, final String name, final String token) throws Exception {
-    final MockHttpServletRequestBuilder regenerateRequest = get("/api/v1/data?name=" + name)
-      .header("Authorization", "Bearer " + token)
-      .accept(APPLICATION_JSON)
-      .contentType(APPLICATION_JSON);
-
-    return mockMvc.perform(regenerateRequest)
-      .andExpect(status().is2xxSuccessful())
-      .andReturn().getResponse().getContentAsString();
-  }
-
-
 }

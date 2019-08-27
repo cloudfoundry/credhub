@@ -18,7 +18,6 @@ import net.minidev.json.JSONObject;
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.DatabaseUtilities;
-import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.SpringUtilities;
 import org.cloudfoundry.credhub.utils.TestConstants;
 import org.junit.Before;
@@ -329,11 +328,12 @@ public class CredentialSetErrorHandlingTest {
         "  \"type\":\"certificate\"," +
         "  \"value\": " + setJson +
         "}");
+    final String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
 
     mockMvc.perform(request)
       .andExpect(status().isNotFound())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-      .andExpect(jsonPath("$.error").value(ErrorMessages.Credential.CERTIFICATE_ACCESS));
+      .andExpect(jsonPath("$.error").value(expectedError));
   }
 
   @Test

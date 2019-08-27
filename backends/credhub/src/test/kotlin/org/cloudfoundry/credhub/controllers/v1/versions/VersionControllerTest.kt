@@ -4,12 +4,10 @@ import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
 import org.cloudfoundry.credhub.helpers.credHubAuthHeader
-import org.cloudfoundry.credhub.utils.VersionProvider
 import org.cloudfoundry.credhub.versions.VersionController
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.Mockito
 import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.http.MediaType
 import org.springframework.restdocs.JUnitRestDocumentation
@@ -25,13 +23,12 @@ class VersionControllerTest {
     val restDocumentation = JUnitRestDocumentation()
 
     lateinit var mockMvc: MockMvc
-    lateinit var versionProvider: VersionProvider
+    lateinit var stubVersionProvider: StubVersionProvider
 
     @Before
     fun setUp() {
-        versionProvider = Mockito.mock(VersionProvider::class.java)
-
-        val versionController = VersionController(versionProvider)
+        stubVersionProvider = StubVersionProvider()
+        val versionController = VersionController(stubVersionProvider)
 
         mockMvc = MockMvcFactory.newSpringRestDocMockMvc(versionController, restDocumentation)
 
@@ -42,7 +39,6 @@ class VersionControllerTest {
 
     @Test
     fun GET__version__returns_version() {
-        Mockito.`when`(versionProvider.currentVersion()).thenReturn("x.x.x")
         val mvcResult = mockMvc.perform(
                 RestDocumentationRequestBuilders.get(VersionController.ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)

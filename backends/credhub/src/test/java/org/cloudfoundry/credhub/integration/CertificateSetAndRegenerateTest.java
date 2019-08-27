@@ -21,7 +21,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.DatabaseProfileResolver;
-import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.helpers.RequestHelper;
 import org.json.JSONArray;
 import org.junit.Before;
@@ -29,11 +28,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.cloudfoundry.credhub.AuthConstants.ALL_PERMISSIONS_TOKEN;
-import static org.cloudfoundry.credhub.AuthConstants.NO_PERMISSIONS_ACTOR_ID;
-import static org.cloudfoundry.credhub.AuthConstants.NO_PERMISSIONS_TOKEN;
-import static org.cloudfoundry.credhub.helpers.RequestHelper.generateCa;
 import static org.cloudfoundry.credhub.helpers.RequestHelper.getCertificateId;
-import static org.cloudfoundry.credhub.helpers.RequestHelper.grantPermissions;
 import static org.cloudfoundry.credhub.utils.StringUtil.UTF_8;
 import static org.cloudfoundry.credhub.utils.TestConstants.INVALID_PRIVATE_KEY_NO_HEADERS;
 import static org.cloudfoundry.credhub.utils.TestConstants.OTHER_TEST_CERTIFICATE;
@@ -50,12 +45,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@ActiveProfiles(value = {"unit-test", "unit-test-permissions", }, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredhubTestApp.class)
 @Transactional
 public class CertificateSetAndRegenerateTest {
@@ -218,7 +212,6 @@ public class CertificateSetAndRegenerateTest {
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.data[0].transitional", equalTo(true)));
   }
-
   @Test
   public void certificateRegenerate_withSelfSignSetToTrue_generatesANewCertThatIsSelfSigned() throws Exception {
     final MockHttpServletRequestBuilder generateCaRequest = post("/api/v1/data")
@@ -247,7 +240,6 @@ public class CertificateSetAndRegenerateTest {
 
     assertThat(selfSigned, equalTo(true));
   }
-
   @Test
   public void certificateRegenerate_withisCaSetToTrue_generatesANewCertThatIsACertificateAuthority() throws Exception {
     final MockHttpServletRequestBuilder generateCaRequest = post("/api/v1/data")
@@ -280,28 +272,28 @@ public class CertificateSetAndRegenerateTest {
   @Test
   public void certificateRegenerate_generatesANewCertWithGeneratedFieldTrue() throws Exception {
     final MockHttpServletRequestBuilder generateCaRequest = post("/api/v1/data")
-      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-      .accept(APPLICATION_JSON)
-      .contentType(APPLICATION_JSON)
-      //language=JSON
-      .content("{\n"
-        + "  \"name\" :\"" + CA_NAME + "\",\n"
-        + "  \"type\" : \"certificate\",\n"
-        + "  \"parameters\" : {\n"
-        + "    \"common_name\" : \"federation\",\n"
-        + "    \"is_ca\" : true,\n"
-        + "    \"self_sign\" : true\n"
-        + "  }\n"
-        + "}");
+            .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            //language=JSON
+            .content("{\n"
+                    + "  \"name\" :\"" + CA_NAME + "\",\n"
+                    + "  \"type\" : \"certificate\",\n"
+                    + "  \"parameters\" : {\n"
+                    + "    \"common_name\" : \"federation\",\n"
+                    + "    \"is_ca\" : true,\n"
+                    + "    \"self_sign\" : true\n"
+                    + "  }\n"
+                    + "}");
 
     final String generateCaResponse = this.mockMvc
-      .perform(generateCaRequest)
-      .andExpect(status().isOk())
-      .andReturn().getResponse()
-      .getContentAsString();
+            .perform(generateCaRequest)
+            .andExpect(status().isOk())
+            .andReturn().getResponse()
+            .getContentAsString();
 
     final Boolean certificateAuthority = JsonPath.parse(generateCaResponse)
-      .read("$.generated");
+            .read("$.generated");
 
     assertThat(certificateAuthority, equalTo(true));
   }
@@ -587,91 +579,6 @@ public class CertificateSetAndRegenerateTest {
     this.mockMvc.perform(certificateSetRequest)
       .andExpect(status().isBadRequest())
       .andExpect(jsonPath("$.error", equalTo("The provided certificate does not match the private key.")));
-  }
-
-  @Test
-  public void certificateSetRequest_whenCaDoesNotExist_shouldReturnCorrectError() throws Exception {
-    final String setJson = JSONObject.toJSONString(
-      ImmutableMap.<String, String>builder()
-        .put("ca_name", "invalid-ca")
-        .put("certificate", TEST_CERTIFICATE)
-        .put("private_key", TEST_PRIVATE_KEY)
-        .build());
-
-    String content = "{" +
-      "  \"name\":\"some-name\"," +
-      "  \"type\":\"certificate\"," +
-      "  \"value\": " + setJson +
-      "}";
-    final MockHttpServletRequestBuilder request = put("/api/v1/data")
-      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
-      .accept(APPLICATION_JSON)
-      .contentType(APPLICATION_JSON)
-      .content(content);
-
-    mockMvc.perform(request)
-      .andExpect(status().isNotFound())
-      .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-      .andExpect(jsonPath("$.error").value(ErrorMessages.Credential.CERTIFICATE_ACCESS));
-  }
-
-  @Test
-  public void certificateSetRequest_whenUserNotAuthorizedToReadCa_shouldReturnCorrectError() throws Exception {
-    final String UNAUTHORIZED_CA_NAME = "/unauthorized-ca";
-    generateCa(mockMvc, UNAUTHORIZED_CA_NAME, ALL_PERMISSIONS_TOKEN);
-    grantPermissions(mockMvc, "*", ALL_PERMISSIONS_TOKEN, NO_PERMISSIONS_ACTOR_ID, "write");
-
-    final String setJson = JSONObject.toJSONString(
-      ImmutableMap.<String, String>builder()
-        .put("ca_name", UNAUTHORIZED_CA_NAME)
-        .put("certificate", TEST_CERTIFICATE)
-        .put("private_key", TEST_PRIVATE_KEY)
-        .build());
-
-    String content = "{" +
-      "  \"name\":\"some-name\"," +
-      "  \"type\":\"certificate\"," +
-      "  \"value\": " + setJson +
-      "}";
-    final MockHttpServletRequestBuilder request = put("/api/v1/data")
-      .header("Authorization", "Bearer " + NO_PERMISSIONS_TOKEN)
-      .accept(APPLICATION_JSON)
-      .contentType(APPLICATION_JSON)
-      .content(content);
-
-    mockMvc.perform(request)
-      .andExpect(status().isNotFound())
-      .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-      .andExpect(jsonPath("$.error").value(ErrorMessages.Credential.CERTIFICATE_ACCESS));
-  }
-
-  @Test
-  public void certificateSetRequest_whenUserCantReadCA_andCantWriteCert_shouldReturnCorrectError() throws Exception {
-    final String UNAUTHORIZED_CA_NAME = "/unauthorized-ca";
-    generateCa(mockMvc, UNAUTHORIZED_CA_NAME, ALL_PERMISSIONS_TOKEN);
-
-    final String setJson = JSONObject.toJSONString(
-      ImmutableMap.<String, String>builder()
-        .put("ca_name", UNAUTHORIZED_CA_NAME)
-        .put("certificate", TEST_CERTIFICATE)
-        .put("private_key", TEST_PRIVATE_KEY)
-        .build());
-
-    String content = "{" +
-      "  \"name\":\"some-name\"," +
-      "  \"type\":\"certificate\"," +
-      "  \"value\": " + setJson +
-      "}";
-    final MockHttpServletRequestBuilder request = put("/api/v1/data")
-      .header("Authorization", "Bearer " + NO_PERMISSIONS_TOKEN)
-      .accept(APPLICATION_JSON)
-      .contentType(APPLICATION_JSON)
-      .content(content);
-
-    mockMvc.perform(request)
-      .andExpect(status().isForbidden())
-      .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-      .andExpect(jsonPath("$.error").value(ErrorMessages.Credential.INVALID_ACCESS));
   }
 
   @Test

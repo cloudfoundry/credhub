@@ -9,6 +9,7 @@
     toc.insertBefore(versionDropdown, toc.firstChild);
 
     const req = new XMLHttpRequest();
+
     req.onload = function() {
       if (req.status === 200) {
         const versionDropdown = document.querySelector('#version-dropdown');

@@ -65,7 +65,7 @@ class RemotePermissionsHandlerTest {
     }
 
     @Test
-    fun writeV2Permissions_whenUserDoesNotHaveACL_returnsException() {
+    fun writeV2Permissions_whenUserDoesNotHaveAcl_returnsException() {
         val operations = listOf(PermissionOperation.READ, PermissionOperation.WRITE)
         val operationStrings = operations.map { o -> o.operation }.toMutableList()
 
@@ -104,7 +104,7 @@ class RemotePermissionsHandlerTest {
     }
 
     @Test
-    fun patchPermissions_whenUserDoesNotHaveACL_returnsException() {
+    fun patchPermissions_whenUserDoesNotHaveAcl_returnsException() {
         val operations = listOf(PermissionOperation.READ, PermissionOperation.WRITE)
         val operationStrings = operations.map { o -> o.operation }.toMutableList()
         val uuid = UUID.randomUUID()
@@ -144,7 +144,7 @@ class RemotePermissionsHandlerTest {
     }
 
     @Test
-    fun putPermissions_whenUserDoesNotHaveACL_returnsException() {
+    fun putPermissions_whenUserDoesNotHaveAcl_returnsException() {
         val operations = listOf(PermissionOperation.READ, PermissionOperation.WRITE)
         val operationStrings = operations.map { o -> o.operation }.toMutableList()
         val uuid = UUID.randomUUID()
@@ -161,101 +161,6 @@ class RemotePermissionsHandlerTest {
 
         Assertions.assertThatThrownBy {
             subject.putPermissions(uuid.toString(), request)
-        }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
-    }
-
-    @Test
-    fun findByPathAndActor_whenUserDoesHaveReadACL_returnsCorrectResponse() {
-        val operations = listOf(PermissionOperation.READ, PermissionOperation.WRITE)
-        val operationStrings = operations.map { o -> o.operation }.toMutableList()
-        val uuid = UUID.randomUUID()
-
-        val response = PermissionsResponse.newBuilder().setActor(ACTOR).setPath(CREDENTIAL_NAME).setUuid(uuid.toString())
-            .addAllOperations(operationStrings).build()
-
-        `when`(client.findPermissionByPathAndActor(CREDENTIAL_NAME, ACTOR, USER))
-            .thenReturn(response)
-
-        val result = subject.findByPathAndActor(CREDENTIAL_NAME, ACTOR)
-
-        assertEquals(result.actor, ACTOR)
-        assertEquals(result.path, CREDENTIAL_NAME)
-        assertEquals(result.operations, operations)
-        assertEquals(result.uuid, uuid)
-    }
-
-    @Test
-    fun findByPathAndActor_whenUserDoesNotHaveReadACL_returnsException() {
-        val exception = StatusRuntimeException(Status.NOT_FOUND)
-        `when`(client.findPermissionByPathAndActor(CREDENTIAL_NAME, ACTOR, USER))
-            .thenThrow(exception)
-
-        Assertions.assertThatThrownBy {
-            subject.findByPathAndActor(CREDENTIAL_NAME, ACTOR)
-        }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
-    }
-
-    @Test
-    fun getPermissionByUUID_whenUserDoesHaveReadACL_returnsCorrectResponse() {
-        val operations = listOf(PermissionOperation.READ, PermissionOperation.WRITE)
-        val operationStrings = operations.map { o -> o.operation }.toMutableList()
-        val uuid = UUID.randomUUID()
-
-        val response = PermissionsResponse.newBuilder().setActor(ACTOR).setPath(CREDENTIAL_NAME).setUuid(uuid.toString())
-            .addAllOperations(operationStrings).build()
-
-        `when`(client.getPermissionByUUID(uuid.toString(), USER))
-            .thenReturn(response)
-
-        val result = subject.getPermissions(uuid)
-
-        assertEquals(result.actor, ACTOR)
-        assertEquals(result.path, CREDENTIAL_NAME)
-        assertEquals(result.operations, operations)
-        assertEquals(result.uuid, uuid)
-    }
-
-    @Test
-    fun getPermissionByUUID_whenUserDoesNotHaveReadACL_returnsException() {
-        val uuid = UUID.randomUUID()
-        val exception = StatusRuntimeException(Status.NOT_FOUND)
-        `when`(client.getPermissionByUUID(uuid.toString(), USER))
-            .thenThrow(exception)
-
-        Assertions.assertThatThrownBy {
-            subject.getPermissions(uuid)
-        }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
-    }
-
-    @Test
-    fun deletePermissionByUUID_whenUserDoesHaveWriteACL_returnsCorrectResponse() {
-        val operations = listOf(PermissionOperation.READ, PermissionOperation.WRITE)
-        val operationStrings = operations.map { o -> o.operation }.toMutableList()
-        val uuid = UUID.randomUUID()
-
-        val response = PermissionsResponse.newBuilder().setActor(ACTOR).setPath(CREDENTIAL_NAME).setUuid(uuid.toString())
-            .addAllOperations(operationStrings).build()
-
-        `when`(client.deletePermissionByUUID(uuid.toString(), USER))
-            .thenReturn(response)
-
-        val result = subject.deletePermissions(uuid.toString())
-
-        assertEquals(result.actor, ACTOR)
-        assertEquals(result.path, CREDENTIAL_NAME)
-        assertEquals(result.operations, operations)
-        assertEquals(result.uuid, uuid)
-    }
-
-    @Test
-    fun deletePermissionByUUID_whenUserDoesNotHaveWriteACL_returnsException() {
-        val uuid = UUID.randomUUID()
-        val exception = StatusRuntimeException(Status.NOT_FOUND)
-        `when`(client.deletePermissionByUUID(uuid.toString(), USER))
-            .thenThrow(exception)
-
-        Assertions.assertThatThrownBy {
-            subject.deletePermissions(uuid.toString())
         }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
     }
 }

@@ -27,7 +27,6 @@ import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.DatabaseProfileResolver;
-import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.helpers.JsonTestHelper;
 import org.cloudfoundry.credhub.utils.StringUtil;
 import org.cloudfoundry.credhub.utils.TestConstants;
@@ -38,13 +37,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.cloudfoundry.credhub.AuthConstants.ALL_PERMISSIONS_TOKEN;
-import static org.cloudfoundry.credhub.AuthConstants.NO_PERMISSIONS_ACTOR_ID;
-import static org.cloudfoundry.credhub.AuthConstants.NO_PERMISSIONS_TOKEN;
-import static org.cloudfoundry.credhub.helpers.RequestHelper.expectErrorCodeWhileGeneratingCertificate;
+import static org.cloudfoundry.credhub.AuthConstants.USER_B_TOKEN;
+import static org.cloudfoundry.credhub.helpers.RequestHelper.expect404WhileGeneratingCertificate;
 import static org.cloudfoundry.credhub.helpers.RequestHelper.generateCa;
 import static org.cloudfoundry.credhub.helpers.RequestHelper.generateCertificateCredential;
 import static org.cloudfoundry.credhub.helpers.RequestHelper.getCertificateCredentialsByName;
-import static org.cloudfoundry.credhub.helpers.RequestHelper.grantPermissions;
 import static org.cloudfoundry.credhub.helpers.RequestHelper.regenerateCertificate;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -78,7 +75,7 @@ public class CertificateGenerateTest {
   private MockMvc mockMvc;
 
   @Before
-  public void beforeEach() {
+  public void beforeEach() throws Exception {
     mockMvc = MockMvcBuilders
       .webAppContextSetup(webApplicationContext)
       .apply(springSecurity())
@@ -172,23 +169,12 @@ public class CertificateGenerateTest {
     assertThat(subjectKeyId, equalTo(authKeyId));
   }
 
-
-  @Test
-  public void certificateGeneration_whenCaDoesNotExist_shouldReturnCorrectError() throws Exception {
-    expectErrorCodeWhileGeneratingCertificate(mockMvc, "riker", ALL_PERMISSIONS_TOKEN, ErrorMessages.Credential.CERTIFICATE_ACCESS, status().isNotFound());
-  }
-
   @Test
   public void certificateGeneration_whenUserNotAuthorizedToReadCa_shouldReturnCorrectError() throws Exception {
     generateCa(mockMvc, "picard", ALL_PERMISSIONS_TOKEN);
-    grantPermissions(mockMvc, "*", ALL_PERMISSIONS_TOKEN, NO_PERMISSIONS_ACTOR_ID, "write");
-    expectErrorCodeWhileGeneratingCertificate(mockMvc, "riker", NO_PERMISSIONS_TOKEN, ErrorMessages.Credential.CERTIFICATE_ACCESS, status().isNotFound());
-  }
-
-  @Test
-  public void certificateGeneration_whenUserCantReadCA_andCantWriteCert_shouldReturnCorrectError() throws Exception {
-    generateCa(mockMvc, "picard", ALL_PERMISSIONS_TOKEN);
-    expectErrorCodeWhileGeneratingCertificate(mockMvc, "riker", NO_PERMISSIONS_TOKEN, ErrorMessages.Credential.INVALID_ACCESS, status().isForbidden());
+    // try to generate with a different token that doesn't have read permission
+    expect404WhileGeneratingCertificate(mockMvc, "riker", USER_B_TOKEN,
+      "The request could not be completed because the credential does not exist or you do not have sufficient authorization.");
   }
 
   @Test

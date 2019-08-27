@@ -9,20 +9,8 @@ message GetByNameRequest {
   string name = 1;
   string requester = 2;
 }
-
 message GetByIdRequest {
   string id = 1;
-  string requester = 2;
-}
-
-message GetNVersionsRequest {
-  string name = 1;
-  int32 numberOfVersions = 2;
-  string requester = 3;
-}
-
-message GetAllVersionsRequest {
-  string name = 1;
   string requester = 2;
 }
 
@@ -33,10 +21,6 @@ message GetResponse {
   string versionCreatedAt = 4;
   bytes data = 5;
   bytes generationParameters = 6;
-}
-
-message GetNVersionsResponse {
-  repeated GetResponse versions = 1;
 }
 
 message SetRequest {
@@ -80,17 +64,6 @@ message FindResult{
 }
 
 // Permissions
-message GetPermissionRequest {
-  string uuid = 1;
-  string requester = 2;
-}
-
-message FindPermissionByPathAndActorRequest {
-  string path = 1;
-  string actor = 2;
-  string requester = 3;
-}
-
 message WritePermissionsRequest {
   string actor = 1;
   string path = 2;
@@ -112,11 +85,6 @@ message PatchPermissionsRequest {
   string requester = 3;
 }
 
-message DeletePermissionRequest {
-  string uuid = 1;
-  string requester = 2;
-}
-
 message PermissionsResponse {
   string uuid = 1;
   string actor = 2;
@@ -131,16 +99,11 @@ message Empty {
 service CredentialService {
   rpc GetByName (GetByNameRequest) returns (GetResponse);
   rpc GetById (GetByIdRequest) returns (GetResponse);
-  rpc GetAllVersions (GetAllVersionsRequest) returns (GetNVersionsResponse);
-  rpc GetNVersions (GetNVersionsRequest) returns (GetNVersionsResponse);
   rpc Set (SetRequest) returns (SetResponse);
   rpc Delete (DeleteByNameRequest) returns (Empty);
   rpc FindContainingName (FindContainingNameRequest) returns (FindResponse);
   rpc FindStartingWithPath (FindStartingWithPathRequest) returns (FindResponse);
-  rpc FindPermissionByPathAndActor(FindPermissionByPathAndActorRequest) returns (PermissionsResponse);
-  rpc GetPermission(GetPermissionRequest) returns (PermissionsResponse);
   rpc SavePermissions(WritePermissionsRequest) returns (PermissionsResponse);
   rpc PutPermissions(PutPermissionsRequest) returns (PermissionsResponse);
   rpc PatchPermissions(PatchPermissionsRequest) returns (PermissionsResponse);
-  rpc DeletePermission(DeletePermissionRequest) returns (PermissionsResponse);
 }
