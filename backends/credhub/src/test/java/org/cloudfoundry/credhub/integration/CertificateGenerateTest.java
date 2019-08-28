@@ -383,7 +383,7 @@ public class CertificateGenerateTest {
     final String transitionalCaCertificate = JsonPath.parse(transitionalCaResponse)
       .read("$.value.certificate");
 
-    generateCertificateCredential(
+    final String dataCertificateResponse = generateCertificateCredential(
       mockMvc,
       "/some-cert",
       true,
@@ -392,10 +392,15 @@ public class CertificateGenerateTest {
       ALL_PERMISSIONS_TOKEN
     );
 
+    final String dataCertificateCA = JsonPath.parse(dataCertificateResponse).read("$.value.ca");
+    assertThat(dataCertificateCA, equalTo(originalCaCertificate + transitionalCaCertificate));
+
     final String getCertificateResponse = getCertificateCredentialsByName(mockMvc, ALL_PERMISSIONS_TOKEN, "/some-cert");
 
     final String certificateUuid = JsonPath.parse(getCertificateResponse)
       .read("$.certificates[0].id");
+
+
 
     final String regenerateCertificateResponse = regenerateCertificate(
             mockMvc,
