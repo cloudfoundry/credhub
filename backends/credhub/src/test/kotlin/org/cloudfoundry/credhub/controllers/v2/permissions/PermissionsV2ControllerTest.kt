@@ -135,7 +135,7 @@ class PermissionsV2ControllerTest {
             )
             .andReturn()
 
-        assertThat(spyPermissionsV2Handler.getPermissions__calledWith_Guid).isEqualTo(uuid)
+        assertThat(spyPermissionsV2Handler.getPermissions__calledWith_Guid).isEqualTo(uuid.toString())
         val actualResponseBody = mvcResult.response.contentAsString
 
         // language=json

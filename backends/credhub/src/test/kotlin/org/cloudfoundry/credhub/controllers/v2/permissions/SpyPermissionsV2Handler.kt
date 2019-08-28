@@ -4,16 +4,15 @@ import org.cloudfoundry.credhub.PermissionOperation
 import org.cloudfoundry.credhub.permissions.PermissionsV2Handler
 import org.cloudfoundry.credhub.requests.PermissionsV2Request
 import org.cloudfoundry.credhub.views.PermissionsV2View
-import java.util.UUID
 
 class SpyPermissionsV2Handler : PermissionsV2Handler {
     override fun writePermissions(request: PermissionsV2Request): PermissionsV2View {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
-    lateinit var getPermissions__calledWith_Guid: UUID
+    lateinit var getPermissions__calledWith_Guid: String
     lateinit var getPermissionByGuid__returns: PermissionsV2View
-    override fun getPermissions(guid: UUID): PermissionsV2View {
+    override fun getPermissions(guid: String): PermissionsV2View {
         getPermissions__calledWith_Guid = guid
         return getPermissionByGuid__returns
     }

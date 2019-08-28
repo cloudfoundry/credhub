@@ -24,11 +24,11 @@ class RemotePermissionsHandler(
     private val client: RemoteBackendClient
 ) : PermissionsV2Handler {
 
-    override fun getPermissions(guid: UUID): PermissionsV2View {
+    override fun getPermissions(guid: String): PermissionsV2View {
         val response: PermissionsResponse
 
         try {
-            response = client.getPermissionByUUID(guid.toString(), userContextHolder.userContext.actor)
+            response = client.getPermissionByUUID(guid, userContextHolder.userContext.actor)
         } catch (e: StatusRuntimeException) {
             throw handleException(e)
         }

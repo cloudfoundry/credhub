@@ -8,6 +8,7 @@ import org.cloudfoundry.credhub.domain.CredentialFactory
 import org.cloudfoundry.credhub.domain.CredentialVersion
 import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData
 import org.cloudfoundry.credhub.entity.CredentialVersionData
+import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
 import org.cloudfoundry.credhub.exceptions.MaximumSizeException
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException
 import org.cloudfoundry.credhub.repositories.CredentialVersionRepository
@@ -72,8 +73,13 @@ constructor(
     }
 
     override fun findByUuid(uuid: String): CredentialVersion? {
+        val uuid = try {
+            UUID.fromString(uuid)
+        } catch (e: IllegalArgumentException) {
+            throw EntryNotFoundException(ErrorMessages.RESOURCE_NOT_FOUND)
+        }
         return credentialFactory
-            .makeCredentialFromEntity(credentialVersionRepository.findOneByUuid(UUID.fromString(uuid)))
+            .makeCredentialFromEntity(credentialVersionRepository.findOneByUuid(uuid))
     }
 
     override fun findAllCertificateCredentialsByCaName(caName: String): List<String> {

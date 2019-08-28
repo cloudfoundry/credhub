@@ -38,10 +38,15 @@ class DefaultPermissionsV2Handler(
         }
     }
 
-    override fun getPermissions(guid: UUID): PermissionsV2View {
-        val permission = permissionService.getPermissions(guid)
+    override fun getPermissions(guid: String): PermissionsV2View {
+        val uuid = try {
+            UUID.fromString(guid)
+        } catch (e: IllegalArgumentException) {
+            throw EntryNotFoundException(ErrorMessages.Permissions.INVALID_ACCESS)
+        }
+        val permission = permissionService.getPermissions(uuid)
         return PermissionsV2View(permission.path, permission.generateAccessControlOperations(),
-            permission.actor, guid)
+            permission.actor, uuid)
     }
 
     override fun putPermissions(guid: String, permissionsRequest: PermissionsV2Request): PermissionsV2View {

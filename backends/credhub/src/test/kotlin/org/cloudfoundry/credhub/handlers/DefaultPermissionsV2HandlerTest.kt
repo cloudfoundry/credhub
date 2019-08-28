@@ -103,7 +103,7 @@ class DefaultPermissionsV2HandlerTest {
             )
         )
 
-        val actual = subject.getPermissions(uuid)
+        val actual = subject.getPermissions(uuid.toString())
 
         val expected = PermissionsV2View(
             CREDENTIAL_NAME,
@@ -116,6 +116,13 @@ class DefaultPermissionsV2HandlerTest {
 
         assertThat(spyPermissionService.getPermissions__calledWith_uuid).isEqualTo(uuid)
         assertThat(actual).isEqualTo(expected)
+    }
+
+    @Test
+    fun `getPermissions withInvalidUUID throwsNotFound`() {
+        assertThatThrownBy {
+            subject.getPermissions("Invalid-UUID")
+        }.hasMessage(ErrorMessages.Permissions.INVALID_ACCESS)
     }
 
     @Test

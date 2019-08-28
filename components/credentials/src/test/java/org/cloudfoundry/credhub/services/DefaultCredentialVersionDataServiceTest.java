@@ -16,6 +16,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.DatabaseUtilities;
+import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.SpringUtilities;
 import org.cloudfoundry.credhub.TestHelper;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
@@ -352,10 +353,17 @@ public class DefaultCredentialVersionDataServiceTest {
 
     assertNotNull(savedCredential.getUuid());
     final PasswordCredentialVersion oneByUuid = (PasswordCredentialVersion) subject
-      .findByUuid(savedCredential.getUuid().toString());
+            .findByUuid(savedCredential.getUuid().toString());
     assertThat(oneByUuid.getName(), equalTo("/my-credential"));
     assertThat(passwordCredentialData.getEncryptedValueData().getEncryptedValue(),
-      equalTo("credential-password".getBytes(StringUtil.UTF_8)));
+            equalTo("credential-password".getBytes(StringUtil.UTF_8)));
+  }
+
+  @Test
+  public void findByUuid_givenAUuid_thatDoesNotExist() {
+    assertThatThrownBy(() -> {
+      subject.findByUuid("some-uuid");
+    }).hasMessage(ErrorMessages.RESOURCE_NOT_FOUND);
   }
 
   @Test

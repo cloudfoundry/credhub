@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
 
 @RestController
 @RequestMapping(
@@ -40,7 +39,7 @@ class PermissionsV2Controller(private val permissionsHandler: PermissionsV2Handl
     @RequestMapping(method = [RequestMethod.GET], path = ["/{uuid}"])
     @ResponseStatus(HttpStatus.OK)
     fun getPermissions(@PathVariable("uuid") uuid: String): PermissionsV2View {
-        return permissionsHandler.getPermissions(UUID.fromString(uuid))
+        return permissionsHandler.getPermissions(uuid)
     }
 
     @RequestMapping(method = [RequestMethod.GET])

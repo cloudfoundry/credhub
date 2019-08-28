@@ -207,7 +207,7 @@ class RemotePermissionsHandlerTest {
         `when`(client.getPermissionByUUID(uuid.toString(), USER))
             .thenReturn(response)
 
-        val result = subject.getPermissions(uuid)
+        val result = subject.getPermissions(uuid.toString())
 
         assertEquals(result.actor, ACTOR)
         assertEquals(result.path, CREDENTIAL_NAME)
@@ -223,7 +223,7 @@ class RemotePermissionsHandlerTest {
             .thenThrow(exception)
 
         Assertions.assertThatThrownBy {
-            subject.getPermissions(uuid)
+            subject.getPermissions(uuid.toString())
         }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
     }
 
