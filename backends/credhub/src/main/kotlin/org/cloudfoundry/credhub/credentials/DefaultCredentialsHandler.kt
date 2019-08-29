@@ -8,7 +8,6 @@ import org.cloudfoundry.credhub.PermissionOperation.WRITE
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.auth.UserContextHolder
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue
-import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
 import org.cloudfoundry.credhub.domain.CertificateGenerationParameters
 import org.cloudfoundry.credhub.domain.CredentialVersion
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
@@ -79,11 +78,7 @@ class DefaultCredentialsHandler(
         auditRecord.setVersion(credentialVersion)
         auditRecord.setResource(credentialVersion.credential)
 
-        if (credentialVersion is CertificateCredentialVersion && !credentialVersion.trustedCa.isNullOrEmpty() && concatenateCas) {
-            credentialVersion.ca = credentialVersion.ca + credentialVersion.trustedCa
-        }
-
-        return CredentialView.fromEntity(credentialVersion)
+        return CredentialView.fromEntity(credentialVersion, concatenateCas)
     }
 
     override fun setCredential(setRequest: BaseCredentialSetRequest<*>): CredentialView {
