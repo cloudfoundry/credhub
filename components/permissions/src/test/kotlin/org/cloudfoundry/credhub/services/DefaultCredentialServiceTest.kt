@@ -68,6 +68,7 @@ class DefaultCredentialServiceTest {
 
     private lateinit var subject: DefaultCredentialService
     private lateinit var existingCredentialVersion: CredentialVersion
+    private lateinit var existingCertificateVersion: CredentialVersion
     private lateinit var userContext: UserContext
     private lateinit var generationParameters: StringGenerationParameters
     private lateinit var credentialValue: CredentialValue
@@ -106,6 +107,8 @@ class DefaultCredentialServiceTest {
         existingCredentialVersion = PasswordCredentialVersion(CREDENTIAL_NAME)
         existingCredentialVersion.setEncryptor(encryptor)
 
+        existingCertificateVersion = CertificateCredentialVersion(CREDENTIAL_NAME)
+
         `when`<Boolean>(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
             .thenReturn(true)
         `when`<Boolean>(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, WRITE))
@@ -143,6 +146,16 @@ class DefaultCredentialServiceTest {
 
         Assertions.assertThatThrownBy {
             this.subject.save(existingCredentialVersion, credentialValue, request)
+        }.isInstanceOf(ParameterizedValidationException::class.java)
+    }
+
+    @Test
+    fun save_whenGivenTypeAndExistingTypeDontMatch_andExistingTypeIsCertificate_throwsException() {
+        `when`(request.type).thenReturn("user")
+        `when`<CredentialVersion>(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCertificateVersion)
+
+        Assertions.assertThatThrownBy {
+            this.subject.save(existingCertificateVersion, credentialValue, request)
         }.isInstanceOf(ParameterizedValidationException::class.java)
     }
 
