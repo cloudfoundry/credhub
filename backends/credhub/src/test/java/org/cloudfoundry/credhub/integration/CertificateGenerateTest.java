@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -66,6 +67,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = CredhubTestApp.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 @Transactional
+@TestPropertySource(properties = "certificates.concatenate_cas=true")
 public class CertificateGenerateTest {
   private static final String CREDENTIAL_NAME = "some-certificate";
   private static final String CA_NAME = "some-ca";
@@ -361,29 +363,29 @@ public class CertificateGenerateTest {
 
   @Test
   public void usesTheLatestNonTransitionalCaAsTheSigningCertificate() throws Exception {
-    final String generateCaResponse = generateCa(mockMvc, "/originalCA", ALL_PERMISSIONS_TOKEN);
-    final String originalCaCertificate = JsonPath.parse(generateCaResponse)
+    String generateCaResponse = generateCa(mockMvc, "/originalCA", ALL_PERMISSIONS_TOKEN);
+    String originalCaCertificate = JsonPath.parse(generateCaResponse)
       .read("$.value.certificate");
 
-    final String response = getCertificateCredentialsByName(mockMvc, ALL_PERMISSIONS_TOKEN, "/originalCA");
-    final String uuid = JsonPath.parse(response)
+    String response = getCertificateCredentialsByName(mockMvc, ALL_PERMISSIONS_TOKEN, "/originalCA");
+    String uuid = JsonPath.parse(response)
       .read("$.certificates[0].id");
 
-    final MockHttpServletRequestBuilder caRegenerateRequest = post("/api/v1/certificates/" + uuid + "/regenerate")
+    MockHttpServletRequestBuilder caRegenerateRequest = post("/api/v1/certificates/" + uuid + "/regenerate")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
       //language=JSON
       .content("{\"set_as_transitional\" : true}");
 
-    final String transitionalCaResponse = this.mockMvc.perform(caRegenerateRequest)
+    String transitionalCaResponse = this.mockMvc.perform(caRegenerateRequest)
       .andExpect(status().is2xxSuccessful())
       .andReturn().getResponse().getContentAsString();
 
-    final String transitionalCaCertificate = JsonPath.parse(transitionalCaResponse)
+    String transitionalCaCertificate = JsonPath.parse(transitionalCaResponse)
       .read("$.value.certificate");
 
-    final String dataCertificateResponse = generateCertificateCredential(
+    String dataCertificateResponse = generateCertificateCredential(
       mockMvc,
       "/some-cert",
       true,
@@ -392,24 +394,22 @@ public class CertificateGenerateTest {
       ALL_PERMISSIONS_TOKEN
     );
 
-    final String dataCertificateCA = JsonPath.parse(dataCertificateResponse).read("$.value.ca");
+    String dataCertificateCA = JsonPath.parse(dataCertificateResponse).read("$.value.ca");
     assertThat(dataCertificateCA, equalTo(originalCaCertificate + transitionalCaCertificate));
 
-    final String getCertificateResponse = getCertificateCredentialsByName(mockMvc, ALL_PERMISSIONS_TOKEN, "/some-cert");
+    String getCertificateResponse = getCertificateCredentialsByName(mockMvc, ALL_PERMISSIONS_TOKEN, "/some-cert");
 
-    final String certificateUuid = JsonPath.parse(getCertificateResponse)
+    String certificateUuid = JsonPath.parse(getCertificateResponse)
       .read("$.certificates[0].id");
 
-
-
-    final String regenerateCertificateResponse = regenerateCertificate(
+    String regenerateCertificateResponse = regenerateCertificate(
             mockMvc,
             certificateUuid,
             false,
             ALL_PERMISSIONS_TOKEN
     );
 
-    final String actualCaCertificate = JsonPath.parse(regenerateCertificateResponse)
+    String actualCaCertificate = JsonPath.parse(regenerateCertificateResponse)
             .read("$.value.ca");
 
     assertThat(actualCaCertificate, equalTo(originalCaCertificate + transitionalCaCertificate));
