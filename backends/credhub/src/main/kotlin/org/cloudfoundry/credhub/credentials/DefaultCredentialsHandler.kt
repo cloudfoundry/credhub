@@ -79,7 +79,7 @@ class DefaultCredentialsHandler(
         auditRecord.setVersion(credentialVersion)
         auditRecord.setResource(credentialVersion.credential)
 
-        if (credentialVersion is CertificateCredentialVersion && !credentialVersion.trustedCa.isNullOrEmpty()) {
+        if (credentialVersion is CertificateCredentialVersion && !credentialVersion.trustedCa.isNullOrEmpty() && concatenateCas) {
             credentialVersion.ca = credentialVersion.ca + credentialVersion.trustedCa
         }
 
