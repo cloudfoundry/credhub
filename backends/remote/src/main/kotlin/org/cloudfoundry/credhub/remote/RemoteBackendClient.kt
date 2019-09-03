@@ -1,7 +1,7 @@
 package org.cloudfoundry.credhub.remote
 
 import com.google.protobuf.ByteString
-import io.grpc.internal.GrpcUtil
+import io.grpc.internal.GrpcUtil.DEFAULT_KEEPALIVE_TIMEOUT_NANOS
 import io.grpc.netty.GrpcSslContexts
 import io.grpc.netty.NegotiationType
 import io.grpc.netty.NettyChannelBuilder
@@ -78,7 +78,7 @@ class RemoteBackendClient(
                 .eventLoopGroup(group)
                 .channelType(channelType)
                 .negotiationType(NegotiationType.PLAINTEXT)
-                .keepAliveTime(GrpcUtil.DEFAULT_KEEPALIVE_TIME_NANOS, TimeUnit.NANOSECONDS)
+                .keepAliveTime(DEFAULT_KEEPALIVE_TIMEOUT_NANOS, TimeUnit.NANOSECONDS)
                 .useTransportSecurity()
                 .sslContext(sslContext)
                 .overrideAuthority(host)
