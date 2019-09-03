@@ -33,8 +33,10 @@ import org.cloudfoundry.credhub.services.PermissionCheckingService;
 import org.cloudfoundry.credhub.utils.TestConstants;
 import org.cloudfoundry.credhub.views.CertificateCredentialView;
 import org.cloudfoundry.credhub.views.CertificateCredentialsView;
+import org.cloudfoundry.credhub.views.CertificateValueView;
 import org.cloudfoundry.credhub.views.CertificateVersionView;
 import org.cloudfoundry.credhub.views.CertificateView;
+import org.cloudfoundry.credhub.views.CredentialView;
 import org.hamcrest.core.IsEqual;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,6 +45,8 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Java6Assertions.fail;
+import static org.cloudfoundry.credhub.utils.TestConstants.TEST_CA;
+import static org.cloudfoundry.credhub.utils.TestConstants.TEST_TRUSTED_CA;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -51,6 +55,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -63,6 +68,8 @@ public class DefaultCertificatesHandlerTest {
 
   private DefaultCertificatesHandler subjectWithAcls;
   private DefaultCertificatesHandler subjectWithoutAcls;
+  private DefaultCertificatesHandler subjectWithConcatenateCas;
+  private DefaultCertificatesHandler subjectWithoutConcatenateCas;
   private UniversalCredentialGenerator universalCredentialGenerator;
   private GenerationRequestGenerator generationRequestGenerator;
   private DefaultCertificateService certificateService;
@@ -93,6 +100,26 @@ public class DefaultCertificatesHandlerTest {
       false
     );
     subjectWithoutAcls = new DefaultCertificatesHandler(
+      certificateService,
+      universalCredentialGenerator,
+      generationRequestGenerator,
+      new CEFAuditRecord(),
+      permissionCheckingService,
+      userContextHolder,
+      false,
+      false
+    );
+    subjectWithConcatenateCas = new DefaultCertificatesHandler(
+      certificateService,
+      universalCredentialGenerator,
+      generationRequestGenerator,
+      new CEFAuditRecord(),
+      permissionCheckingService,
+      userContextHolder,
+      false,
+      true
+    );
+    subjectWithoutConcatenateCas = new DefaultCertificatesHandler(
       certificateService,
       universalCredentialGenerator,
       generationRequestGenerator,
@@ -169,7 +196,7 @@ public class DefaultCertificatesHandlerTest {
     selfSignedCertVersion.setCertificateAuthority(selfSignedIsCA);
     selfSignedCertVersion.setSelfSigned(selfSignedIsSelfSigned);
     selfSignedCertVersion.setExpiryDate(Instant.now());
-    selfSignedCertVersion.setCertificate(TestConstants.TEST_CA);
+    selfSignedCertVersion.setCertificate(TEST_CA);
 
     final CertificateMetadata certWithCaAndChildrenMetadata
       = new CertificateMetadata(
@@ -327,7 +354,7 @@ public class DefaultCertificatesHandlerTest {
     final CertificateCredentialVersion selfSignedCertVersion = new CertificateCredentialVersion(selfSignedCertName);
     selfSignedCertVersion.setUuid(UUID.randomUUID());
     selfSignedCertVersion.setExpiryDate(Instant.now());
-    selfSignedCertVersion.setCertificate(TestConstants.TEST_CA);
+    selfSignedCertVersion.setCertificate(TEST_CA);
     selfSignedCertVersion.setSelfSigned(selfSignedCertIsSelfSigned);
     selfSignedCertVersion.setCertificateAuthority(selfSignedCertIsCa);
 
@@ -419,7 +446,7 @@ public class DefaultCertificatesHandlerTest {
     final CertificateCredentialVersion selfSignedCertVersion = new CertificateCredentialVersion(selfSignedCertName);
     selfSignedCertVersion.setUuid(UUID.randomUUID());
     selfSignedCertVersion.setExpiryDate(Instant.now());
-    selfSignedCertVersion.setCertificate(TestConstants.TEST_CA);
+    selfSignedCertVersion.setCertificate(TEST_CA);
     selfSignedCertVersion.setSelfSigned(selfSignedCertIsSelfSigned);
     selfSignedCertVersion.setCertificateAuthority(selfSignedCertIsCa);
 
@@ -736,6 +763,58 @@ public class DefaultCertificatesHandlerTest {
 
     verify(permissionCheckingService, times(0)).hasPermission(any(), anyString(), any());
     verify(newValue).setTransitional(true);
+  }
+
+  @Test
+  public void handleRegenerate_whenConcatenateCasisDisabled_doesNotConcatenateCas() {
+    final BaseCredentialGenerateRequest generateRequest = mock(BaseCredentialGenerateRequest.class);
+    final CertificateCredentialVersion certificate = mock(CertificateCredentialVersion.class);
+    final CertificateCredentialValue newValue = mock(CertificateCredentialValue.class);
+    final CertificateCredentialVersion credentialVersion = mock(CertificateCredentialVersion.class);
+
+    when(certificate.getName()).thenReturn("test");
+    when(credentialVersion.getCa()).thenReturn(TEST_CA);
+    when(credentialVersion.getTrustedCa()).thenReturn(TEST_TRUSTED_CA);
+
+    when(certificateService.findByCredentialUuid(eq(UUID_STRING))).thenReturn(certificate);
+    when(generationRequestGenerator.createGenerateRequest(eq(certificate)))
+      .thenReturn(generateRequest);
+    when(universalCredentialGenerator.generate(eq(generateRequest))).thenReturn(newValue);
+    when(certificateService.save(eq(certificate), any(), any()))
+      .thenReturn(credentialVersion);
+
+    final CertificateRegenerateRequest regenerateRequest = new CertificateRegenerateRequest(true);
+
+    CredentialView regeneratedCredential = subjectWithoutConcatenateCas.handleRegenerate(UUID_STRING, regenerateRequest);
+
+    verify(credentialVersion, never()).setCa(any());
+    assertEquals(((CertificateValueView) regeneratedCredential.getValue()).getCa(), TEST_CA);
+  }
+
+  @Test
+  public void handleRegenerate_whenConcatenateCasisEnabled_ConcatenateCas() {
+    final BaseCredentialGenerateRequest generateRequest = mock(BaseCredentialGenerateRequest.class);
+    final CertificateCredentialVersion certificate = mock(CertificateCredentialVersion.class);
+    final CertificateCredentialValue newValue = mock(CertificateCredentialValue.class);
+    final CertificateCredentialVersion credentialVersion = mock(CertificateCredentialVersion.class);
+
+    when(certificate.getName()).thenReturn("test");
+    when(credentialVersion.getCa()).thenReturn(TEST_CA);
+    when(credentialVersion.getTrustedCa()).thenReturn(TEST_TRUSTED_CA);
+
+    when(certificateService.findByCredentialUuid(eq(UUID_STRING))).thenReturn(certificate);
+    when(generationRequestGenerator.createGenerateRequest(eq(certificate)))
+      .thenReturn(generateRequest);
+    when(universalCredentialGenerator.generate(eq(generateRequest))).thenReturn(newValue);
+    when(certificateService.save(eq(certificate), any(), any()))
+      .thenReturn(credentialVersion);
+
+    final CertificateRegenerateRequest regenerateRequest = new CertificateRegenerateRequest(true);
+
+    CredentialView regeneratedCredential = subjectWithConcatenateCas.handleRegenerate(UUID_STRING, regenerateRequest);
+
+    assertEquals(((CertificateValueView) regeneratedCredential.getValue())
+      .getCa(), TEST_CA + "\n" + TEST_TRUSTED_CA + "\n");
   }
 
   @Test

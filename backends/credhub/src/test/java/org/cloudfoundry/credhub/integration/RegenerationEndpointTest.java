@@ -10,8 +10,10 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import com.jayway.jsonpath.JsonPath;
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.DatabaseProfileResolver;
+import org.cloudfoundry.credhub.helpers.RequestHelper;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,6 +29,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
@@ -47,6 +50,7 @@ public class RegenerationEndpointTest {
 
   @Autowired
   private WebApplicationContext webApplicationContext;
+
 
   private MockMvc mockMvc;
   private String originalPassword;
@@ -114,4 +118,31 @@ public class RegenerationEndpointTest {
       .andDo(print())
       .andExpect(status().isForbidden());
   }
+
+  @Test
+  public void certificateRegeneration_withoutConcatenateCas_shouldNotConcatenateCas() throws Exception {
+    final String caName = "test-ca";
+    final String certName = "test-cert";
+    String generatedCa = JsonPath.parse(RequestHelper.generateCa(mockMvc, caName, ALL_PERMISSIONS_TOKEN))
+      .read("$.value.ca");
+    RequestHelper.generateCertificate(mockMvc,  certName, caName, ALL_PERMISSIONS_TOKEN);
+    String generatedCaUUID = RequestHelper.getCertificateId(mockMvc, caName);
+    JsonPath.parse(RequestHelper.regenerateCertificate(mockMvc, generatedCaUUID, true, ALL_PERMISSIONS_TOKEN))
+      .read("$.value.ca");
+    final MockHttpServletRequestBuilder regenerateCertificateRequest = post(API_V1_REGENERATE_ENDPOINT)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{\n"
+        + "  \"name\" : \"" + certName + "\"\n"
+        + "}");
+
+   this.mockMvc.perform(regenerateCertificateRequest)
+      .andDo(print())
+      .andExpect(status().is2xxSuccessful())
+      .andExpect(jsonPath("$.value.ca", equalTo(generatedCa)));
+  }
+
+
 }

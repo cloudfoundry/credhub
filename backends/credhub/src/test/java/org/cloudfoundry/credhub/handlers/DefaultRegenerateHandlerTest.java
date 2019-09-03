@@ -4,6 +4,7 @@ import java.security.Security;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
 import org.cloudfoundry.credhub.ErrorMessages;
@@ -12,6 +13,7 @@ import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.entities.BulkRegenerateCredential;
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
+import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.credential.CredentialValue;
 import org.cloudfoundry.credhub.credential.StringCredentialValue;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
@@ -31,6 +33,7 @@ import org.cloudfoundry.credhub.services.DefaultCredentialService;
 import org.cloudfoundry.credhub.services.PermissionCheckingService;
 import org.cloudfoundry.credhub.utils.TestConstants;
 import org.cloudfoundry.credhub.views.BulkRegenerateResults;
+import org.cloudfoundry.credhub.views.CertificateValueView;
 import org.cloudfoundry.credhub.views.CredentialView;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.core.IsEqual;
@@ -42,11 +45,14 @@ import org.junit.runners.JUnit4;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Java6Assertions.fail;
+import static org.cloudfoundry.credhub.utils.TestConstants.TEST_CA;
+import static org.cloudfoundry.credhub.utils.TestConstants.TEST_TRUSTED_CA;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isOneOf;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -64,6 +70,8 @@ public class DefaultRegenerateHandlerTest {
 
   private DefaultRegenerateHandler subjectWithAclsEnabled;
   private DefaultRegenerateHandler subjectWithAclsDisabled;
+  private DefaultRegenerateHandler subjectWithConcatenateCasEnabled;
+  private DefaultRegenerateHandler subjectWithconcatenateCasDisabled;
   private DefaultCredentialService credentialService;
   private UniversalCredentialGenerator credentialGenerator;
   private GenerationRequestGenerator generationRequestGenerator;
@@ -92,7 +100,8 @@ public class DefaultRegenerateHandlerTest {
       cefAuditRecord,
       permissionCheckingService,
       userContextHolder,
-      true
+      true,
+      false
       );
     subjectWithAclsDisabled = new DefaultRegenerateHandler(
       credentialService,
@@ -101,8 +110,29 @@ public class DefaultRegenerateHandlerTest {
       cefAuditRecord,
       permissionCheckingService,
       userContextHolder,
+      false,
       false
       );
+    subjectWithconcatenateCasDisabled = new DefaultRegenerateHandler(
+      credentialService,
+      credentialGenerator,
+      generationRequestGenerator,
+      cefAuditRecord,
+      permissionCheckingService,
+      userContextHolder,
+      false,
+      false
+    );
+    subjectWithConcatenateCasEnabled = new DefaultRegenerateHandler(
+      credentialService,
+      credentialGenerator,
+      generationRequestGenerator,
+      cefAuditRecord,
+      permissionCheckingService,
+      userContextHolder,
+      false,
+      true
+    );
 
     UserContext userContext = mock(UserContext.class);
     when(userContext.getActor()).thenReturn(USER);
@@ -156,6 +186,66 @@ public class DefaultRegenerateHandlerTest {
 
     verify(permissionCheckingService, times(1)).hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.WRITE);
     assertThat(actualCredentialView).isEqualTo(expectedCredentialView);
+  }
+
+  @Test
+  public void handleRegenerate_whenConcatenateCasIsEnabled_regeneratesTheCredentialWithConcatenatedCas() {
+    final CertificateCredentialVersion existingCredentialVersion = mock(CertificateCredentialVersion.class);
+    final CertificateGenerateRequest generateRequest = new CertificateGenerateRequest();
+    final CertificateCredentialValue credentialValue = mock(CertificateCredentialValue.class);
+    final CertificateCredentialVersion credentialVersion = mock(CertificateCredentialVersion.class);
+
+
+    when(existingCredentialVersion.getName()).thenReturn(CREDENTIAL_NAME);
+    when(credentialService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredentialVersion);
+
+    when(credentialValue.getCa()).thenReturn(TEST_CA);
+    when(credentialValue.getTrustedCa()).thenReturn(TestConstants.TEST_TRUSTED_CA);
+
+    when(credentialVersion.getCa()).thenReturn(TEST_CA);
+    when(credentialVersion.getTrustedCa()).thenReturn(TestConstants.TEST_TRUSTED_CA);
+    when(credentialVersion.getName()).thenReturn(CREDENTIAL_NAME);
+    when(credentialVersion.getUuid()).thenReturn(UUID.randomUUID());
+
+    when(generationRequestGenerator.createGenerateRequest(existingCredentialVersion)).thenReturn(generateRequest);
+    when(credentialGenerator.generate(generateRequest)).thenReturn(credentialValue);
+    when(credentialService.save(existingCredentialVersion, credentialValue, generateRequest))
+      .thenReturn(credentialVersion);
+
+    CredentialView actualCredentialView = subjectWithConcatenateCasEnabled.handleRegenerate(CREDENTIAL_NAME);
+
+    assertThat(((CertificateValueView) actualCredentialView.getValue()).getCa())
+      .isEqualTo(TEST_CA + "\n" + TEST_TRUSTED_CA + "\n");
+  }
+
+  @Test
+  public void handleRegenerate_whenConcatenateCasIsDisabled_regeneratesTheCredentialWithoutConcatenatedCas() {
+    final CertificateCredentialVersion existingCredentialVersion = mock(CertificateCredentialVersion.class);
+    when(existingCredentialVersion.getName()).thenReturn(CREDENTIAL_NAME);
+    when(credentialService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredentialVersion);
+
+    final CertificateGenerateRequest generateRequest = new CertificateGenerateRequest();
+    final CertificateCredentialValue credentialValue = mock(CertificateCredentialValue.class);
+    when(credentialValue.getCa()).thenReturn(TEST_CA);
+    when(credentialValue.getTrustedCa()).thenReturn(TestConstants.TEST_TRUSTED_CA);
+
+    final CertificateCredentialVersion credentialVersion = mock(CertificateCredentialVersion.class);
+    when(credentialVersion.getCa()).thenReturn(TEST_CA);
+    when(credentialVersion.getTrustedCa()).thenReturn(TestConstants.TEST_TRUSTED_CA);
+    when(credentialVersion.getName()).thenReturn(CREDENTIAL_NAME);
+    when(credentialVersion.getUuid()).thenReturn(UUID.randomUUID());
+
+    when(generationRequestGenerator.createGenerateRequest(existingCredentialVersion)).thenReturn(generateRequest);
+    when(credentialGenerator.generate(generateRequest)).thenReturn(credentialValue);
+    when(credentialService.save(existingCredentialVersion, credentialValue, generateRequest))
+      .thenReturn(credentialVersion);
+
+
+    CredentialView actualCredentialView = subjectWithconcatenateCasDisabled.handleRegenerate(CREDENTIAL_NAME);
+
+    verify(credentialValue, never()).setCa(any());
+    assertThat(((CertificateValueView) actualCredentialView.getValue()).getCa())
+      .isEqualTo(TEST_CA);
   }
 
   @Test
@@ -241,7 +331,7 @@ public class DefaultRegenerateHandlerTest {
     final String fourthExpectedName = "/fourthExpectedName";
 
     CertificateCredentialVersion existingCredentialVersion1 = new CertificateCredentialVersion(firstExpectedName);
-    existingCredentialVersion1.setCertificate(TestConstants.TEST_CA);
+    existingCredentialVersion1.setCertificate(TEST_CA);
     CertificateCredentialVersion existingCredentialVersion2 = new CertificateCredentialVersion(secondExpectedName);
     existingCredentialVersion2.setCertificate(TestConstants.TEST_CERTIFICATE);
     CertificateCredentialVersion existingCredentialVersion3 = new CertificateCredentialVersion(thirdExpectedName);
@@ -250,7 +340,7 @@ public class DefaultRegenerateHandlerTest {
     existingCredentialVersion4.setCertificate(TestConstants.TEST_CERTIFICATE);
 
     CertificateCredentialVersion savedCredentialVersion1 = new CertificateCredentialVersion(firstExpectedName);
-    savedCredentialVersion1.setCertificate(TestConstants.TEST_CA);
+    savedCredentialVersion1.setCertificate(TEST_CA);
     CertificateCredentialVersion savedCredentialVersion2 = new CertificateCredentialVersion(secondExpectedName);
     savedCredentialVersion2.setCertificate(TestConstants.TEST_CERTIFICATE);
     CertificateCredentialVersion savedCredentialVersion3 = new CertificateCredentialVersion(thirdExpectedName);
@@ -345,7 +435,7 @@ public class DefaultRegenerateHandlerTest {
   @Test
   public void handleBulkRegenerate_whenLacksPermission_andAclsEnabled_throwsException() {
     CertificateCredentialVersion credentialVersion1 = new CertificateCredentialVersion();
-    credentialVersion1.setCertificate(TestConstants.TEST_CA);
+    credentialVersion1.setCertificate(TEST_CA);
     CertificateCredentialVersion credentialVersion2 = new CertificateCredentialVersion();
     credentialVersion2.setCertificate(TestConstants.TEST_CERTIFICATE);
     CertificateCredentialVersion credentialVersion3 = new CertificateCredentialVersion();
@@ -412,7 +502,7 @@ public class DefaultRegenerateHandlerTest {
     final String fourthExpectedName = "/fourthExpectedName";
 
     CertificateCredentialVersion existingCredentialVersion1 = new CertificateCredentialVersion(firstExpectedName);
-    existingCredentialVersion1.setCertificate(TestConstants.TEST_CA);
+    existingCredentialVersion1.setCertificate(TEST_CA);
     CertificateCredentialVersion existingCredentialVersion2 = new CertificateCredentialVersion(secondExpectedName);
     existingCredentialVersion2.setCertificate(TestConstants.TEST_CERTIFICATE);
     CertificateCredentialVersion existingCredentialVersion3 = new CertificateCredentialVersion(thirdExpectedName);
@@ -421,7 +511,7 @@ public class DefaultRegenerateHandlerTest {
     existingCredentialVersion4.setCertificate(TestConstants.TEST_CERTIFICATE);
 
     CertificateCredentialVersion savedCredentialVersion1 = new CertificateCredentialVersion(firstExpectedName);
-    savedCredentialVersion1.setCertificate(TestConstants.TEST_CA);
+    savedCredentialVersion1.setCertificate(TEST_CA);
     CertificateCredentialVersion savedCredentialVersion2 = new CertificateCredentialVersion(secondExpectedName);
     savedCredentialVersion2.setCertificate(TestConstants.TEST_CERTIFICATE);
     CertificateCredentialVersion savedCredentialVersion3 = new CertificateCredentialVersion(thirdExpectedName);
