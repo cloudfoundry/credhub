@@ -10,7 +10,6 @@ import javax.net.ssl.SSLException;
 import com.google.protobuf.ByteString;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import io.grpc.internal.GrpcUtil;
 import io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.NettyChannelBuilder;
 import io.netty.channel.Channel;
@@ -34,6 +33,8 @@ import org.cloudfoundry.credhub.services.grpc.EncryptRequest;
 import org.cloudfoundry.credhub.services.grpc.EncryptResponse;
 import org.cloudfoundry.credhub.services.grpc.KeyManagementServiceGrpc;
 import org.cloudfoundry.credhub.utils.StringUtil;
+
+import static io.grpc.internal.GrpcUtil.DEFAULT_KEEPALIVE_TIMEOUT_NANOS;
 
 public class KMSEncryptionProvider implements EncryptionProvider {
   private static final Logger LOGGER = LogManager.getLogger(KMSEncryptionProvider.class.getName());
@@ -60,7 +61,7 @@ public class KMSEncryptionProvider implements EncryptionProvider {
       NettyChannelBuilder.forAddress(new DomainSocketAddress(configuration.getEndpoint()))
         .eventLoopGroup(group)
         .channelType(channelType)
-        .keepAliveTime(GrpcUtil.DEFAULT_KEEPALIVE_TIME_NANOS, TimeUnit.NANOSECONDS)
+        .keepAliveTime(DEFAULT_KEEPALIVE_TIMEOUT_NANOS, TimeUnit.NANOSECONDS)
         .useTransportSecurity()
         .sslContext(sslContext)
         .overrideAuthority(configuration.getHost())
