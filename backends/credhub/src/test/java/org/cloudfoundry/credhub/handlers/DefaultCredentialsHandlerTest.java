@@ -574,6 +574,62 @@ public class DefaultCredentialsHandlerTest {
   }
 
   @Test
+  public void setCredential_withACertificateSetRequest_andACaName_andMissingGeneratedAndIsCaFields_providesCaCertificate() {
+    final CertificateCredentialValue cerificateAuthority = new CertificateCredentialValue(
+      null,
+      TestConstants.TEST_CA,
+      null,
+      null,
+      false,
+      false,
+      false,
+      false
+    );
+
+    when(permissionCheckingService.hasPermission(USER, "/test-ca-name", PermissionOperation.READ))
+      .thenReturn(true);
+
+    when(certificateAuthorityService.findActiveVersion("/test-ca-name"))
+      .thenReturn(cerificateAuthority);
+
+    final CertificateSetRequest setRequest = new CertificateSetRequest();
+    final CertificateCredentialValue credentialValue = new CertificateCredentialValue(
+      null,
+      TestConstants.TEST_INTERMEDIATE_CA,
+      null,
+      "test-ca-name",
+      false,
+      false,
+      null,
+      false
+    );
+
+    setRequest.setType("certificate");
+    setRequest.setName("/captain");
+    setRequest.setCertificateValue(credentialValue);
+
+    final CertificateCredentialValue expectedCredentialValue = new CertificateCredentialValue(
+      TestConstants.TEST_CA,
+      TestConstants.TEST_INTERMEDIATE_CA,
+      null,
+      "/test-ca-name",
+      true,
+      false,
+      false,
+      false
+    );
+    final ArgumentCaptor<CredentialValue> credentialValueArgumentCaptor = ArgumentCaptor.forClass(CredentialValue.class);
+
+    when(permissionCheckingService.hasPermission(USER, setRequest.getName(), PermissionOperation.WRITE))
+      .thenReturn(true);
+
+    subjectWithAcls.setCredential(setRequest);
+
+    verify(credentialService).save(eq(null), credentialValueArgumentCaptor.capture(), eq(setRequest));
+    assertThat(credentialValueArgumentCaptor.getValue(), samePropertyValuesAs(expectedCredentialValue));
+  }
+
+  @Test
   public void setCredential_whenAclsDisabled_whenPasswordSetRequest_doesNotCheckPermissions_setsCredential() {
     final StringCredentialValue password = new StringCredentialValue("federation");
     final PasswordSetRequest setRequest = new PasswordSetRequest();
