@@ -442,7 +442,7 @@ class CredentialsControllerSetTest {
                 "certificate": "${TestConstants.TEST_CERTIFICATE}",
                 "private_key": "${TestConstants.TEST_PRIVATE_KEY}",
                 "transitional": false,
-                "expiry_date": "2018-11-21T16:25:20Z",
+                "expiry_date": "2020-09-03T18:30:11Z",
                 "certificate_authority": true,
                 "self_signed": false,
                 "generated": false

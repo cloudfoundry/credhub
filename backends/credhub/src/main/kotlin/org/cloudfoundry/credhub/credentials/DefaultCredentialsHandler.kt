@@ -84,20 +84,20 @@ class DefaultCredentialsHandler(
     override fun setCredential(setRequest: BaseCredentialSetRequest<*>): CredentialView {
         checkPermissionsByName(setRequest.name, WRITE)
         if (setRequest is CertificateSetRequest) {
+            setRequest.certificateValue.generated = false
             val certificateValue = setRequest.certificateValue
             val caName = certificateValue.caName
 
-            if (caName == null) {
-                val certificateReader = CertificateReader(certificateValue.certificate)
-                if (certificateReader.isCa) {
-                    setRequest.certificateValue.isCertificateAuthority = true
-                    if (certificateReader.isSelfSigned) {
-                        setRequest.certificateValue.caName = setRequest.name
-                        setRequest.certificateValue.isSelfSigned = true
-                    }
+            val certificateReader = CertificateReader(certificateValue.certificate)
+            if (certificateReader.isCa) {
+                setRequest.certificateValue.isCertificateAuthority = true
+                if (caName == null && certificateReader.isSelfSigned) {
+                    setRequest.certificateValue.caName = setRequest.name
+                    setRequest.certificateValue.isSelfSigned = true
                 }
-                setRequest.certificateValue.generated = false
-            } else {
+            }
+
+            if (caName != null) {
                 validateCertificateValueIsSignedByCa(certificateValue, caName)
             }
         }
