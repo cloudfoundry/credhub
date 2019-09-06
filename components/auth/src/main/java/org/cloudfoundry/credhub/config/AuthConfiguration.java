@@ -17,6 +17,7 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Res
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
 
+import org.cloudfoundry.credhub.auth.ActuatorPortFilter;
 import org.cloudfoundry.credhub.auth.OAuth2AuthenticationExceptionHandler;
 import org.cloudfoundry.credhub.auth.PreAuthenticationFailureFilter;
 import org.cloudfoundry.credhub.auth.X509AuthenticationProvider;
@@ -34,19 +35,22 @@ public class AuthConfiguration extends ResourceServerConfigurerAdapter {
   private final OAuth2AuthenticationExceptionHandler oAuth2AuthenticationExceptionHandler;
   private final PreAuthenticationFailureFilter preAuthenticationFailureFilter;
   private final OAuth2ExtraValidationFilter oAuth2ExtraValidationFilter;
+  private final ActuatorPortFilter actuatorPortFilter;
 
   @Autowired
   AuthConfiguration(
     final ResourceServerProperties resourceServerProperties,
     final OAuth2AuthenticationExceptionHandler oAuth2AuthenticationExceptionHandler,
     final PreAuthenticationFailureFilter preAuthenticationFailureFilter,
-    final OAuth2ExtraValidationFilter oAuth2ExtraValidationFilter
+    final OAuth2ExtraValidationFilter oAuth2ExtraValidationFilter,
+    final ActuatorPortFilter actuatorPortFilter
   ) {
     super();
     this.resourceServerProperties = resourceServerProperties;
     this.oAuth2AuthenticationExceptionHandler = oAuth2AuthenticationExceptionHandler;
     this.preAuthenticationFailureFilter = preAuthenticationFailureFilter;
     this.oAuth2ExtraValidationFilter = oAuth2ExtraValidationFilter;
+    this.actuatorPortFilter = actuatorPortFilter;
   }
 
   @Override
@@ -78,7 +82,8 @@ public class AuthConfiguration extends ResourceServerConfigurerAdapter {
         }
       });
 
-    http.addFilterBefore(preAuthenticationFailureFilter, X509AuthenticationFilter.class)
+    http.addFilterBefore(actuatorPortFilter, X509AuthenticationFilter.class)
+      .addFilterAfter(preAuthenticationFailureFilter, actuatorPortFilter.getClass())
       .addFilterAfter(oAuth2ExtraValidationFilter, preAuthenticationFailureFilter.getClass())
       .authenticationProvider(getPreAuthenticatedAuthenticationProvider());
 
