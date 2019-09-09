@@ -284,16 +284,17 @@ public class DefaultCertificatesHandlerTest {
 
     final CertificateCredentialsView certificateCredentialsView = subjectWithAcls.handleGetAllRequest();
 
-    final CertificateCredentialView actualCertWithCa = certificateCredentialsView.getCertificates().get(0);
+    final CertificateCredentialView actualCertWithCaAndChildren = certificateCredentialsView.getCertificates().get(0);
     final CertificateCredentialView actualSelfSignedCert = certificateCredentialsView.getCertificates().get(1);
     final CertificateCredentialView actualCertificateWithNoValidVersions = certificateCredentialsView.getCertificates().get(2);
 
     assertThat(certificateCredentialsView.getCertificates().size(), equalTo(5));
-    assertThat(actualCertWithCa.getCertificateVersionViews().size(), equalTo(1));
-    assertThat(actualCertWithCa.getSignedBy(), equalTo(certWithCaAndChildrenCaName));
-    assertThat(actualCertWithCa.getCertificateVersionViews().get(0).getCertificateAuthority(), equalTo(true));
-    assertThat(actualCertWithCa.getCertificateVersionViews().get(0).getSelfSigned(), equalTo(false));
-    assertThat(actualCertWithCa.getCertificateVersionViews().get(0).getGenerated(), equalTo(true));
+    assertThat(actualCertWithCaAndChildren.getCertificateVersionViews().size(), equalTo(1));
+    assertThat(actualCertWithCaAndChildren.getSigns().size(), equalTo(2));
+    assertThat(actualCertWithCaAndChildren.getSignedBy(), equalTo(certWithCaAndChildrenCaName));
+    assertThat(actualCertWithCaAndChildren.getCertificateVersionViews().get(0).getCertificateAuthority(), equalTo(true));
+    assertThat(actualCertWithCaAndChildren.getCertificateVersionViews().get(0).getSelfSigned(), equalTo(false));
+    assertThat(actualCertWithCaAndChildren.getCertificateVersionViews().get(0).getGenerated(), equalTo(true));
     assertThat(actualSelfSignedCert.getCertificateVersionViews().size(), equalTo(1));
     assertThat(actualSelfSignedCert.getSignedBy(), equalTo(selfSignedCertName));
     assertThat(actualSelfSignedCert.getCertificateVersionViews().get(0).getCertificateAuthority(), equalTo(true));
