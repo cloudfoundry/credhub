@@ -153,23 +153,8 @@ class DefaultCertificatesHandler(
         val certificates = certificateService.findAllValidMetadata(names)
         val caMapping = mutableMapOf<String, MutableList<String>>()
 
-        return certificates.map { certificateMetadata ->
-            val certificateVersionViews = certificateMetadata.versions.map { certificateVersion ->
-                CertificateVersionView(
-                    id = certificateVersion.id,
-                    expiryDate = certificateVersion.expiryDate,
-                    transitional = certificateVersion.isTransitional,
-                    certificateAuthority = certificateVersion.isCertificateAuthority,
-                    selfSigned = certificateVersion.isSelfSigned,
-                    generated = certificateVersion.generated
-                )
-            }
-            val signedBy = certificateMetadata.caName ?: ""
-            val signedCertificates: List<String>
-
-            // determine signed certs in memory
-            if (getAllRequest) {
-
+        if (getAllRequest) {
+            certificates.forEach { certificateMetadata ->
                 if (certificateMetadata.caName != null) {
                     val caName = certificateMetadata.caName
 
@@ -181,9 +166,18 @@ class DefaultCertificatesHandler(
                         caMapping.getValue(caName).add(certificateMetadata.name)
                     }
                 }
+            }
+        }
+
+        return certificates.map { certificateMetadata ->
+            val certificateVersionViews = certificateMetadata.versions.map { certificateVersion ->
+                CertificateVersionView(certificateVersion)
+            }
+            val signedBy = certificateMetadata.caName ?: ""
+            val signedCertificates: List<String>
+            if (getAllRequest) {
                 signedCertificates = caMapping.getOrDefault(certificateMetadata.name, mutableListOf())
             } else {
-                // not all certs read into memory so we need to go to db to get signed certificates
                 signedCertificates = certificateService.findSignedCertificates(certificateMetadata.name)
             }
             CertificateCredentialView(certificateMetadata.name,
