@@ -160,7 +160,7 @@ class DefaultCredentialsHandler(
 
     override fun getCredentialVersionByUUID(credentialUUID: String): CredentialView {
         checkPermissionsByUuid(credentialUUID, READ)
-        return CredentialView.fromEntity(credentialService.findVersionByUuid(credentialUUID))
+        return CredentialView.fromEntity(credentialService.findVersionByUuid(credentialUUID), concatenateCas)
     }
 
     private fun validateCertificateValueIsSignedByCa(certificateValue: CertificateCredentialValue, caName: String) {

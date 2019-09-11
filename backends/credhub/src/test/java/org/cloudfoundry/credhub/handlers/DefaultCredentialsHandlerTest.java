@@ -18,6 +18,7 @@ import org.cloudfoundry.credhub.credential.CredentialValue;
 import org.cloudfoundry.credhub.credential.StringCredentialValue;
 import org.cloudfoundry.credhub.credential.UserCredentialValue;
 import org.cloudfoundry.credhub.credentials.DefaultCredentialsHandler;
+import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.domain.Encryptor;
 import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
@@ -39,6 +40,7 @@ import org.cloudfoundry.credhub.services.DefaultCertificateAuthorityService;
 import org.cloudfoundry.credhub.services.DefaultCredentialService;
 import org.cloudfoundry.credhub.services.PermissionCheckingService;
 import org.cloudfoundry.credhub.utils.TestConstants;
+import org.cloudfoundry.credhub.views.CertificateValueView;
 import org.cloudfoundry.credhub.views.CredentialView;
 import org.cloudfoundry.credhub.views.DataResponse;
 import org.cloudfoundry.credhub.views.FindCredentialResult;
@@ -77,6 +79,7 @@ public class DefaultCredentialsHandlerTest {
 
   private DefaultCredentialsHandler subjectWithAcls;
   private DefaultCredentialsHandler subjectWithoutAcls;
+  private DefaultCredentialsHandler subjectWithAclsAndConcatenate;
   private DefaultCredentialService credentialService;
   private CEFAuditRecord auditRecord;
   private PermissionCheckingService permissionCheckingService;
@@ -122,6 +125,15 @@ public class DefaultCredentialsHandlerTest {
       false,
       false);
 
+    subjectWithAclsAndConcatenate = new DefaultCredentialsHandler(
+      credentialService,
+      auditRecord,
+      permissionCheckingService,
+      userContextHolder,
+      certificateAuthorityService,
+      universalCredentialGenerator,
+      true,
+      true);
 
     generationParameters = new StringGenerationParameters();
     UserContext userContext = mock(UserContext.class);
@@ -333,6 +345,33 @@ public class DefaultCredentialsHandlerTest {
     final CredentialView credentialVersion = subjectWithAcls.getCredentialVersionByUUID(UUID_STRING);
     assertThat(credentialVersion.getName(), equalTo(CREDENTIAL_NAME));
     assertThat(credentialVersion.getVersionCreatedAt(), equalTo(VERSION1_CREATED_AT));
+  }
+
+  @Test
+  public void getCredentialVersionByUUID_whenConcatenateCasIsTrue_PassesArgumentToCredentialView() {
+    UUID uuid = UUID.randomUUID();
+
+    Credential credential = new Credential("/some-name");
+    credential.setUuid(UUID.randomUUID());
+
+    CertificateCredentialVersion certificateCredentialVersion = mock(CertificateCredentialVersion.class);
+    when(certificateCredentialVersion.getCredential()).thenReturn(credential);
+    when(certificateCredentialVersion.getCa()).thenReturn(TestConstants.TEST_CA);
+    when(certificateCredentialVersion.getCertificate()).thenReturn(TestConstants.TEST_CERTIFICATE);
+    when(certificateCredentialVersion.getPrivateKey()).thenReturn(TestConstants.TEST_PRIVATE_KEY);
+    when(certificateCredentialVersion.getTrustedCa()).thenReturn(TestConstants.TEST_TRUSTED_CA);
+    when(certificateCredentialVersion.getUuid()).thenReturn(uuid);
+    when(certificateCredentialVersion.getName()).thenReturn("/some-name");
+
+    when(credentialService.findVersionByUuid(uuid.toString()))
+      .thenReturn(certificateCredentialVersion);
+    when(credentialService.findByUuid(uuid)).thenReturn(credential);
+    when(permissionCheckingService.hasPermission(USER, "/some-name", PermissionOperation.READ))
+      .thenReturn(true);
+
+    final CredentialView credentialVersion = subjectWithAclsAndConcatenate.getCredentialVersionByUUID(uuid.toString());
+    assertThat(credentialVersion.getName(), equalTo("/some-name"));
+    assertThat(((CertificateValueView) credentialVersion.getValue()).getCa().trim(), equalTo(TestConstants.TEST_CA + "\n" + TestConstants.TEST_TRUSTED_CA));
   }
 
   @Test
