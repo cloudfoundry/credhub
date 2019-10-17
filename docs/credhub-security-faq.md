@@ -42,7 +42,7 @@ CredHub internal provider implements:  AES 256 GCM.
 RSA.  2048 as default modulus
 
 ## What are the hash function algorithms supported?
-SHA1, SHA256
+SHA256
 
 ## What external key management hardware vendor products are supported?
 Luna Safenet HSM (AWS CloudHSM Classic)
