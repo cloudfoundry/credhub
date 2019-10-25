@@ -30,7 +30,7 @@ final public class JsonTestHelper {
 
   public static ObjectMapper createObjectMapper() {
     return new ObjectMapper()
-      .registerModule(TimeModuleFactory.createTimeModule())
+      .registerModule(TimeModuleFactory.Companion.createTimeModule())
       .setPropertyNamingStrategy(SNAKE_CASE);
   }
 

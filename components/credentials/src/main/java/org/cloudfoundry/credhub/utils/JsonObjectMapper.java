@@ -17,7 +17,7 @@ public class JsonObjectMapper {
   public JsonObjectMapper() {
     super();
     snakeCaseMapper = new ObjectMapper()
-      .registerModule(TimeModuleFactory.createTimeModule())
+      .registerModule(TimeModuleFactory.Companion.createTimeModule())
       .setPropertyNamingStrategy(SNAKE_CASE);
 
   }
@@ -31,7 +31,7 @@ public class JsonObjectMapper {
       return snakeCaseMapper.readValue(stringValue, type);
     } catch (final Exception e) {
       final ObjectMapper camelCaseMapper = new ObjectMapper()
-        .registerModule(TimeModuleFactory.createTimeModule())
+        .registerModule(TimeModuleFactory.Companion.createTimeModule())
         .setPropertyNamingStrategy(LOWER_CAMEL_CASE);
       return camelCaseMapper.readValue(stringValue, type);
     }
