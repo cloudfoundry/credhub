@@ -6,6 +6,7 @@ import org.junit.Test
 
 import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.MatcherAssert.assertThat
+import java.util.function.Supplier
 
 class TimedRetryTest {
 
@@ -27,14 +28,13 @@ class TimedRetryTest {
         endTime = startTime + 1000 * durationInSeconds
         currentTimeProvider!!.setCurrentTimeMillis(startTime)
 
-        subject = TimedRetry(currentTimeProvider)
+        subject = TimedRetry(currentTimeProvider!!)
     }
 
     @Test
     @Throws(Exception::class)
     fun retryEverySecondUntil_alwaysTriesAtLeastOnce() {
-        subject!!.retryEverySecondUntil(0L) { incrementCountToTen() }
-
+        subject!!.retryEverySecondUntil(0L, Supplier { incrementCountToTen() })
         assertThat(retryCount, equalTo(1))
     }
 
@@ -44,7 +44,7 @@ class TimedRetryTest {
         expectedTime = startTime
         // this should get called twice, once right away and once again after one second has passed
         // it asserts that and allows the TimedRetry to stop after the second assertion
-        val checkTime = {
+        val checkTime = Supplier {
             assertThat(expectedTime, equalTo(currentTimeProvider!!.currentTimeMillis()))
             if (expectedTime < endTime) {
                 expectedTime += 1000
@@ -61,7 +61,7 @@ class TimedRetryTest {
 
     @Test
     fun retryEverySecondUntil_returnsFalseOnTimeout() {
-        assertThat(subject!!.retryEverySecondUntil(durationInSeconds) { false }, equalTo(false))
+        assertThat(subject!!.retryEverySecondUntil(durationInSeconds, Supplier { false }), equalTo(false))
         assertThat(currentTimeProvider!!.currentTimeMillis(), equalTo(endTime))
     }
 

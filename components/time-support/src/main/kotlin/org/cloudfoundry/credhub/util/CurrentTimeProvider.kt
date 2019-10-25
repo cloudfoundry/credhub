@@ -8,20 +8,21 @@ import org.springframework.data.auditing.DateTimeProvider
 import org.springframework.stereotype.Component
 
 @Component
-class CurrentTimeProvider : DateTimeProvider {
-    val instant: Instant
+open class CurrentTimeProvider : DateTimeProvider {
+
+    open val instant: Instant
         get() = Instant.now()
 
     override fun getNow(): Optional<TemporalAccessor> {
         return Optional.of(instant)
     }
 
-    fun currentTimeMillis(): Long {
+    open fun currentTimeMillis(): Long {
         return System.currentTimeMillis()
     }
 
     @Throws(InterruptedException::class)
-    fun sleep(sleepTimeInMillis: Long) {
+    open fun sleep(sleepTimeInMillis: Long) {
         Thread.sleep(sleepTimeInMillis)
     }
 }
