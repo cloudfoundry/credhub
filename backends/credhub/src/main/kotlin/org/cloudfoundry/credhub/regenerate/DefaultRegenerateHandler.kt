@@ -76,7 +76,7 @@ class DefaultRegenerateHandler(
         val certificateSet = TreeSet(String.CASE_INSENSITIVE_ORDER)
 
         certificateSet.addAll(regenerateCertificatesSignedByCA(signerName))
-        results.regeneratedCredentials = certificateSet
+        results.setRegeneratedCredentials(certificateSet)
         return results
     }
 

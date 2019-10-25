@@ -25,13 +25,13 @@ class RegenerateController(val regenerateHandler: RegenerateHandler) {
     @PostMapping(path = [REGENERATE_ENDPOINT], produces = [MediaType.APPLICATION_JSON_UTF8_VALUE])
     @ResponseStatus(HttpStatus.OK)
     fun regenerate(@RequestBody @Validated requestBody: RegenerateRequest): CredentialView {
-        return regenerateHandler.handleRegenerate(requestBody.name)
+        return regenerateHandler.handleRegenerate(requestBody.getName())
     }
 
     @PostMapping(path = [BULK_REGENERATE_ENDPOINT], produces = [MediaType.APPLICATION_JSON_UTF8_VALUE])
     @ResponseStatus(HttpStatus.OK)
     @Transactional(rollbackFor = [PermissionException::class])
     fun bulkRegenerate(@RequestBody @Valid requestBody: BulkRegenerateRequest): BulkRegenerateResults {
-        return regenerateHandler.handleBulkRegenerate(requestBody.signedBy)
+        return regenerateHandler.handleBulkRegenerate(requestBody.getSignedBy())
     }
 }

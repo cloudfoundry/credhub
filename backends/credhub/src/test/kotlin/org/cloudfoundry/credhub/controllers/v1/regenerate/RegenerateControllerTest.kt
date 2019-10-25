@@ -107,10 +107,10 @@ class RegenerateControllerTest {
     fun POST__bulkregenerate__returns_results() {
         spyRegenerateHandler.handleBulkRegenerate__returns_bulkRegenerateResults = {
             val bulkRegenerateResults = BulkRegenerateResults()
-            bulkRegenerateResults.regeneratedCredentials = mutableSetOf(
+            bulkRegenerateResults.setRegeneratedCredentials(mutableSetOf(
                 "/some-credential-name",
                 "/some-other-credential-name"
-            )
+            ))
 
             bulkRegenerateResults
         }()
