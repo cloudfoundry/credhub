@@ -12,10 +12,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import static org.cloudfoundry.credhub.AuthConstants.USER_A_ACTOR_ID;
-import static org.cloudfoundry.credhub.AuthConstants.USER_A_PATH;
 import static org.cloudfoundry.credhub.helpers.JsonTestHelper.deserializeAndValidate;
 import static org.cloudfoundry.credhub.helpers.JsonTestHelper.hasViolationWithMessage;
+import static org.cloudfoundry.credhub.utils.AuthConstants.USER_A_ACTOR_ID;
+import static org.cloudfoundry.credhub.utils.AuthConstants.USER_A_PATH;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;

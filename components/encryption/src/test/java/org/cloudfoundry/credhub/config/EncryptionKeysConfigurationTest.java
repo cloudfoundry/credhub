@@ -9,7 +9,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import org.cloudfoundry.credhub.CredhubTestApp;
-import org.cloudfoundry.credhub.DatabaseProfileResolver;
+import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

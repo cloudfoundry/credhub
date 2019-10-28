@@ -21,9 +21,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import org.cloudfoundry.credhub.AuthConstants;
+import org.cloudfoundry.credhub.utils.AuthConstants;
 import org.cloudfoundry.credhub.CredhubTestApp;
-import org.cloudfoundry.credhub.DatabaseProfileResolver;
+import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.PermissionOperation;
 import org.cloudfoundry.credhub.TestHelper;
@@ -41,6 +41,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static org.cloudfoundry.credhub.utils.AuthConstants.ALL_PERMISSIONS_TOKEN;
+import static org.cloudfoundry.credhub.utils.AuthConstants.NO_PERMISSIONS_TOKEN;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.mockito.ArgumentMatchers.any;
@@ -121,7 +123,7 @@ public class CredentialsGetIntegrationTest {
     doReturn(newArrayList(credential)).when(credentialVersionDataService).findAllByName(CREDENTIAL_NAME);
 
     final MockHttpServletRequestBuilder request = get("/api/v1/data?name=" + CREDENTIAL_NAME)
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON);
 
     mockMvc.perform(request)
@@ -152,7 +154,7 @@ public class CredentialsGetIntegrationTest {
     doReturn(newArrayList(credential)).when(credentialVersionDataService).findAllByName(CREDENTIAL_NAME);
 
     final MockHttpServletRequestBuilder request = get("/api/v1/data?name=" + CREDENTIAL_NAME)
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON);
 
     mockMvc.perform(request)
@@ -168,7 +170,7 @@ public class CredentialsGetIntegrationTest {
       any(String.class), eq(PermissionOperation.READ));
 
     final MockHttpServletRequestBuilder get1 = get("/api/v1/data?name=invalid_name")
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON);
 
     final String expectedError1 = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
@@ -188,7 +190,7 @@ public class CredentialsGetIntegrationTest {
       any(String.class), eq(PermissionOperation.READ));
 
     final MockHttpServletRequestBuilder get1 = get("/api/v1/data?name=invalid_name&current=true")
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON);
 
     final String expectedError1 = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
@@ -207,7 +209,7 @@ public class CredentialsGetIntegrationTest {
       .when(permissionCheckingService).hasPermission(any(String.class),
       any(String.class), eq(PermissionOperation.READ));
     final MockHttpServletRequestBuilder get1 = get("/api/v1/data?name=" + CREDENTIAL_NAME)
-      .header("Authorization", "Bearer " + AuthConstants.NO_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + NO_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON);
 
     final ResultActions response = mockMvc.perform(get1);
@@ -225,7 +227,7 @@ public class CredentialsGetIntegrationTest {
     setUpCredential();
 
     mockMvc.perform(get("/api/v1/data?current=true&name=" + CREDENTIAL_NAME)
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON))
       .andExpect(status().isOk())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -257,7 +259,7 @@ public class CredentialsGetIntegrationTest {
     ).when(credentialVersionDataService).findAllByName(CREDENTIAL_NAME);
 
     mockMvc.perform(get("/api/v1/data?current=false&name=" + CREDENTIAL_NAME)
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON))
       .andExpect(status().isOk())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -298,7 +300,7 @@ public class CredentialsGetIntegrationTest {
     ).when(credentialVersionDataService).findNByName(CREDENTIAL_NAME, 2);
 
     mockMvc.perform(get("/api/v1/data?current=false&name=" + CREDENTIAL_NAME + "&versions=2")
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON))
       .andExpect(status().isOk())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -310,7 +312,7 @@ public class CredentialsGetIntegrationTest {
   @Test
   public void gettingACredential_byName_returnsAnErrorWhenTheNameIsNotGiven() throws Exception {
     final MockHttpServletRequestBuilder get = get("/api/v1/data?name=")
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON);
 
     mockMvc.perform(get)
@@ -334,7 +336,7 @@ public class CredentialsGetIntegrationTest {
     doReturn(credential).when(credentialVersionDataService).findByUuid(uuid.toString());
 
     final MockHttpServletRequestBuilder request = get("/api/v1/data/" + uuid)
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON);
 
     mockMvc.perform(request)
@@ -362,7 +364,7 @@ public class CredentialsGetIntegrationTest {
 
     final MockHttpServletRequestBuilder get =
       get("/api/v1/data?name=" + CREDENTIAL_NAME)
-        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON);
 
     final String expectedError = "The credential could not be accessed with the provided encryption keys. You must update your deployment configuration to continue.";
@@ -377,7 +379,7 @@ public class CredentialsGetIntegrationTest {
   public void providingCurrentTrueAndVersions_throwsAnException() throws Exception {
     final MockHttpServletRequestBuilder get =
       get("/api/v1/data?name=" + CREDENTIAL_NAME + "&current=true&versions=45")
-        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON);
 
     mockMvc.perform(get)
@@ -405,7 +407,7 @@ public class CredentialsGetIntegrationTest {
     doReturn(Collections.singletonList(certificate)).when(credentialVersionDataService).findActiveByName(CREDENTIAL_NAME);
 
     final MockHttpServletRequestBuilder request = get("/api/v1/data?name=" + CREDENTIAL_NAME + "&current=true")
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON);
 
     mockMvc.perform(request)
@@ -446,7 +448,7 @@ public class CredentialsGetIntegrationTest {
     doReturn(credentialVersionList).when(credentialVersionDataService).findNByName(CREDENTIAL_NAME, 2);
 
     final MockHttpServletRequestBuilder request = get("/api/v1/data?name=" + CREDENTIAL_NAME + "&versions=2")
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON);
 
     mockMvc.perform(request)
@@ -490,7 +492,7 @@ public class CredentialsGetIntegrationTest {
     doReturn(credentialVersionList).when(credentialVersionDataService).findAllByName(CREDENTIAL_NAME);
 
     final MockHttpServletRequestBuilder request = get("/api/v1/data?name=" + CREDENTIAL_NAME)
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON);
 
     mockMvc.perform(request)

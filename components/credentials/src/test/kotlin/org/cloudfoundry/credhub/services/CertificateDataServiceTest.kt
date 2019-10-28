@@ -1,7 +1,7 @@
 package org.cloudfoundry.credhub.services
 
 import org.cloudfoundry.credhub.CredhubTestApp
-import org.cloudfoundry.credhub.DatabaseProfileResolver
+import org.cloudfoundry.credhub.utils.DatabaseProfileResolver
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
 import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData
 import org.cloudfoundry.credhub.entity.Credential

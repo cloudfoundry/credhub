@@ -16,9 +16,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import org.cloudfoundry.credhub.AuthConstants;
+import org.cloudfoundry.credhub.utils.AuthConstants;
 import org.cloudfoundry.credhub.CredhubTestApp;
-import org.cloudfoundry.credhub.DatabaseProfileResolver;
+import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.TestHelper;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
@@ -40,6 +40,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.cloudfoundry.credhub.utils.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -115,7 +116,7 @@ public class CredentialsGenerateIntegrationTest {
         String message = MessageFormat.format(ErrorMessages.INVALID_TYPE_WITH_GENERATE_PROMPT, new Object[0]);
 
         final MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
-                .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+                .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
                 .content("{\"type\":\"foo\",\"name\":\"" + CREDENTIAL_NAME + "\"}");
@@ -129,7 +130,7 @@ public class CredentialsGenerateIntegrationTest {
     @Test
     public void generatingACredential_returnsAnErrorForValueType() throws Exception {
         final MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
-                .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+                .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
                 .content("{\"type\":\"value\",\"name\":\"" + CREDENTIAL_NAME + "\"}");
@@ -143,7 +144,7 @@ public class CredentialsGenerateIntegrationTest {
     @Test
     public void generatingACredential_returnsAnErrorForJsonType() throws Exception {
         final MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
-                .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+                .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
                 .content("{\"type\":\"json\",\"name\":\"" + CREDENTIAL_NAME + "\"}");
@@ -159,7 +160,7 @@ public class CredentialsGenerateIntegrationTest {
         String message = MessageFormat.format(ErrorMessages.INVALID_TYPE_WITH_GENERATE_PROMPT, new Object[0]);
 
         mockMvc.perform(post("/api/v1/data")
-                .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+                .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
                 .content("{\"name\":\"some-new-credential-name\"}")
@@ -171,7 +172,7 @@ public class CredentialsGenerateIntegrationTest {
     @Test
     public void generatingACredential_whenNameIsEmpty_throws400() throws Exception {
         mockMvc.perform(post("/api/v1/data")
-                .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+                .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
                 .content("{\"type\":\"password\",\"name\":\"\"}")
@@ -183,7 +184,7 @@ public class CredentialsGenerateIntegrationTest {
     @Test
     public void generatingACredential_whenNameIsMissing_throws400() throws Exception {
         mockMvc.perform(post("/api/v1/data")
-                .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+                .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
                 .contentType(APPLICATION_JSON)
                 .accept(APPLICATION_JSON)
                 .content("{\"type\":\"password\"}")
@@ -197,7 +198,7 @@ public class CredentialsGenerateIntegrationTest {
         final String message = MessageFormat.format(ErrorMessages.INVALID_JSON_KEY, "some_unknown_param");
 
         mockMvc.perform(post("/api/v1/data")
-                .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+                .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
                 //language=JSON
@@ -217,7 +218,7 @@ public class CredentialsGenerateIntegrationTest {
     @Test
     public void generatingACertificate_withoutParameters_returns400() throws Exception {
         final MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
-                .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+                .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
                 .content("{" +
@@ -235,7 +236,7 @@ public class CredentialsGenerateIntegrationTest {
     @Test
     public void regeneratingACredential_withEmptyName_returns400() throws Exception {
         mockMvc.perform(post("/api/v1/data")
-                .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+                .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
                 //language=JSON

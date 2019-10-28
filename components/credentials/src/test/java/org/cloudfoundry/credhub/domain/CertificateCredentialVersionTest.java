@@ -5,13 +5,15 @@ import java.util.UUID;
 import org.cloudfoundry.credhub.TestHelper;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData;
-import org.cloudfoundry.credhub.utils.CertificateStringConstants;
 import org.cloudfoundry.credhub.utils.StringUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import static org.cloudfoundry.credhub.utils.CertificateStringConstants.PRIVATE_KEY;
+import static org.cloudfoundry.credhub.utils.CertificateStringConstants.SELF_SIGNED_CA_CERT;
+import static org.cloudfoundry.credhub.utils.CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.notNullValue;
@@ -47,9 +49,9 @@ public class CertificateCredentialVersionTest {
     certificateCredentialData = new CertificateCredentialVersionData("/Foo");
     subject = new CertificateCredentialVersion(certificateCredentialData);
     subject.setEncryptor(encryptor);
-    subject.setCa(CertificateStringConstants.SELF_SIGNED_CA_CERT);
-    subject.setCertificate(CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT);
-    subject.setPrivateKey(CertificateStringConstants.PRIVATE_KEY);
+    subject.setCa(SELF_SIGNED_CA_CERT);
+    subject.setCertificate(SIMPLE_SELF_SIGNED_TEST_CERT);
+    subject.setPrivateKey(PRIVATE_KEY);
   }
 
   @Test

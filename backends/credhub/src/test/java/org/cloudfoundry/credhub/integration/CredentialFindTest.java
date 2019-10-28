@@ -17,7 +17,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.cloudfoundry.credhub.CredhubTestApp;
-import org.cloudfoundry.credhub.DatabaseProfileResolver;
+import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.PermissionOperation;
 import org.cloudfoundry.credhub.helpers.JsonTestHelper;
 import org.cloudfoundry.credhub.views.PermissionsV2View;
@@ -25,10 +25,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.cloudfoundry.credhub.AuthConstants.ALL_PERMISSIONS_TOKEN;
-import static org.cloudfoundry.credhub.AuthConstants.USER_A_ACTOR_ID;
-import static org.cloudfoundry.credhub.AuthConstants.USER_A_TOKEN;
 import static org.cloudfoundry.credhub.helpers.RequestHelper.generatePassword;
+import static org.cloudfoundry.credhub.utils.AuthConstants.ALL_PERMISSIONS_TOKEN;
+import static org.cloudfoundry.credhub.utils.AuthConstants.USER_A_ACTOR_ID;
+import static org.cloudfoundry.credhub.utils.AuthConstants.USER_A_TOKEN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
@@ -76,7 +76,7 @@ public class CredentialFindTest {
   public void findCredentials_byNameLike_whenSearchTermContainsNoSlash_returnsCredentialMetadata() throws Exception {
     generatePassword(mockMvc, credentialName, true, 20, ALL_PERMISSIONS_TOKEN);
     final ResultActions response = findCredentialsByNameLike(credentialName.substring(4).toUpperCase(),
-      ALL_PERMISSIONS_TOKEN);
+            ALL_PERMISSIONS_TOKEN);
 
     response.andExpect(status().isOk())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))

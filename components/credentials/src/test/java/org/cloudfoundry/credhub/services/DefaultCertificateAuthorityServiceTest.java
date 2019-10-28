@@ -12,12 +12,13 @@ import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.utils.CertificateReader;
-import org.cloudfoundry.credhub.utils.CertificateStringConstants;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import static org.cloudfoundry.credhub.utils.CertificateStringConstants.SELF_SIGNED_CA_CERT;
+import static org.cloudfoundry.credhub.utils.CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.junit.Assert.assertNull;
@@ -44,7 +45,7 @@ public class DefaultCertificateAuthorityServiceTest {
       Security.addProvider(new BouncyCastleFipsProvider());
     }
 
-    certificate = new CertificateCredentialValue(null, CertificateStringConstants.SELF_SIGNED_CA_CERT, "my-key", null, true, true, false, false);
+    certificate = new CertificateCredentialValue(null, SELF_SIGNED_CA_CERT, "my-key", null, true, true, false, false);
     certificateCredential = mock(CertificateCredentialVersion.class);
     transitionalCertificateCredential = mock(CertificateCredentialVersion.class);
 
@@ -71,7 +72,7 @@ public class DefaultCertificateAuthorityServiceTest {
     when(transitionalCertificateCredential.getParsedCertificate()).thenReturn(certificateReader);
     when(certificateReader.isCa()).thenReturn(true);
     when(certificateVersionDataService.findActiveWithTransitional(CREDENTIAL_NAME)).thenReturn(Arrays.asList(certificateCredential, transitionalCertificateCredential));
-    when(transitionalCertificateCredential.getCertificate()).thenReturn(CertificateStringConstants.SELF_SIGNED_CA_CERT);
+    when(transitionalCertificateCredential.getCertificate()).thenReturn(SELF_SIGNED_CA_CERT);
 
     assertThat(certificateAuthorityService.findTransitionalVersion(CREDENTIAL_NAME).getCertificate(),
       equalTo(transitionalCertificateCredential.getCertificate()));
@@ -108,7 +109,7 @@ public class DefaultCertificateAuthorityServiceTest {
     when(certificateReader.isCa()).thenReturn(true);
     when(certificateCredential.isCertificateAuthority()).thenReturn(true);
     when(certificateCredential.isSelfSigned()).thenReturn(true);
-    when(certificateCredential.getCertificate()).thenReturn(CertificateStringConstants.SELF_SIGNED_CA_CERT);
+    when(certificateCredential.getCertificate()).thenReturn(SELF_SIGNED_CA_CERT);
     when(certificateCredential.getGenerated()).thenReturn(false);
     when(certificateCredential.isVersionTransitional()).thenReturn(false);
 
@@ -134,7 +135,7 @@ public class DefaultCertificateAuthorityServiceTest {
   public void findActiveVersion_whenCertificateIsNotACa_throwsException() {
     final CertificateCredentialVersion notACertificateAuthority = mock(CertificateCredentialVersion.class);
     when(notACertificateAuthority.getParsedCertificate()).thenReturn(mock(CertificateReader.class));
-    when(notACertificateAuthority.getCertificate()).thenReturn(CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT);
+    when(notACertificateAuthority.getCertificate()).thenReturn(SIMPLE_SELF_SIGNED_TEST_CERT);
     when(certificateVersionDataService.findActive(CREDENTIAL_NAME))
       .thenReturn(notACertificateAuthority);
 

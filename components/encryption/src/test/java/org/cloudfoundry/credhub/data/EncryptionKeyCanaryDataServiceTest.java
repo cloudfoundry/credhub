@@ -12,9 +12,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import org.cloudfoundry.credhub.CredhubTestApp;
-import org.cloudfoundry.credhub.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.entities.EncryptionKeyCanary;
 import org.cloudfoundry.credhub.repositories.EncryptionKeyCanaryRepository;
+import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.utils.StringUtil;
 import org.junit.Before;
 import org.junit.Test;

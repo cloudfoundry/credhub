@@ -17,10 +17,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.cloudfoundry.credhub.AuthConstants;
+import org.cloudfoundry.credhub.utils.AuthConstants;
 import org.cloudfoundry.credhub.CertificateStringConstants;
 import org.cloudfoundry.credhub.CredHubApp;
-import org.cloudfoundry.credhub.DatabaseProfileResolver;
+import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.services.DefaultCredentialVersionDataService;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
@@ -29,6 +29,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.cloudfoundry.credhub.utils.AuthConstants.ALL_PERMISSIONS_TOKEN;
+import static org.cloudfoundry.credhub.utils.AuthConstants.INVALID_SCOPE_KEY_JWT;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -97,7 +99,7 @@ public class AuthConfigurationTest {
     setupDataEndpointMocks();
 
     final MockHttpServletRequestBuilder post = post(dataApiPath)
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(MediaType.APPLICATION_JSON)
       .contentType(MediaType.APPLICATION_JSON)
       .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
@@ -114,7 +116,7 @@ public class AuthConfigurationTest {
     setupDataEndpointMocks();
 
     final MockHttpServletRequestBuilder post = post(dataApiPath)
-      .header("Authorization", "Bearer " + AuthConstants.INVALID_SCOPE_KEY_JWT)
+      .header("Authorization", "Bearer " + INVALID_SCOPE_KEY_JWT)
       .accept(MediaType.APPLICATION_JSON)
       .contentType(MediaType.APPLICATION_JSON)
       .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
@@ -261,7 +263,7 @@ public class AuthConfigurationTest {
   @Test
   public void interpolateEndpoint_withAcceptedToken_allowsAccess() throws Exception {
     final MockHttpServletRequestBuilder post = post("/api/v1/interpolate")
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(MediaType.APPLICATION_JSON)
       .contentType(MediaType.APPLICATION_JSON)
       .content("{}");

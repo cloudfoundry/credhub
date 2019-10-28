@@ -10,14 +10,15 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import org.cloudfoundry.credhub.AuthConstants;
+import org.cloudfoundry.credhub.utils.AuthConstants;
 import org.cloudfoundry.credhub.CredhubTestApp;
-import org.cloudfoundry.credhub.DatabaseProfileResolver;
+import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.cloudfoundry.credhub.utils.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -50,7 +51,7 @@ public class UserRegenerationTest {
   @Test
   public void userRegeneration_withDefaultParametersAndStaticUsernameInValue_shouldRegenerateUserPassword() throws Exception {
     final MockHttpServletRequestBuilder post = post("/api/v1/data")
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
       //language=JSON
@@ -73,7 +74,7 @@ public class UserRegenerationTest {
     assertThat(originalPassword, notNullValue());
 
     final MockHttpServletRequestBuilder regeneratePost = post("/api/v1/data")
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
       //language=JSON
@@ -100,7 +101,7 @@ public class UserRegenerationTest {
   @Test
   public void userRegeneration_withDefaultParametersAndStaticUsernameInParameters_shouldRegenerateUserPassword() throws Exception {
     final MockHttpServletRequestBuilder post = post("/api/v1/data")
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
       //language=JSON
@@ -124,7 +125,7 @@ public class UserRegenerationTest {
     assertThat(originalPassword, notNullValue());
 
     final MockHttpServletRequestBuilder regeneratePost = post("/api/v1/data")
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
       //language=JSON
@@ -151,7 +152,7 @@ public class UserRegenerationTest {
   @Test
   public void userRegeneration_withDefaultParametersAndGeneratedUsername_shouldRegenerateUserPasswordButNotUsername() throws Exception {
     final MockHttpServletRequestBuilder post = post("/api/v1/data")
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
       //language=JSON
@@ -174,7 +175,7 @@ public class UserRegenerationTest {
     assertThat(originalPassword, notNullValue());
 
     final MockHttpServletRequestBuilder regeneratePost = post("/api/v1/data")
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
       //language=JSON

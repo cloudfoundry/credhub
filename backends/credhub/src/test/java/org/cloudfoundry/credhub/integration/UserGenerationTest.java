@@ -14,9 +14,9 @@ import org.springframework.web.context.WebApplicationContext;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
-import org.cloudfoundry.credhub.AuthConstants;
+import org.cloudfoundry.credhub.utils.AuthConstants;
 import org.cloudfoundry.credhub.CredhubTestApp;
-import org.cloudfoundry.credhub.DatabaseProfileResolver;
+import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -28,6 +28,7 @@ import org.junit.runner.RunWith;
 
 import static org.apache.commons.lang3.math.NumberUtils.isDigits;
 import static org.cloudfoundry.credhub.helpers.RequestHelper.generateUser;
+import static org.cloudfoundry.credhub.utils.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -68,7 +69,7 @@ public class UserGenerationTest {
     getPost(credentialName2);
 
     final MvcResult cred1 = this.mockMvc.perform(get("/api/v1/data?name=" + credentialName1)
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON))
       .andExpect(status().isOk())
@@ -78,7 +79,7 @@ public class UserGenerationTest {
 
 
     final MvcResult cred2 = this.mockMvc.perform(get("/api/v1/data?name=" + credentialName2)
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON))
       .andDo(print())
@@ -100,7 +101,7 @@ public class UserGenerationTest {
     final String password = "passwordA";
 
     final MockHttpServletRequestBuilder setRequest = put("/api/v1/data")
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON_UTF8)
       .content("{" +
@@ -114,7 +115,7 @@ public class UserGenerationTest {
       .andExpect(status().isOk());
 
     final MockHttpServletRequestBuilder generateRequest = post("/api/v1/data")
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON_UTF8)
       .content("{\"type\":\"user\",\"name\":\"" + credentialName1 + "\"}");
@@ -134,7 +135,7 @@ public class UserGenerationTest {
     final String password = "passwordA";
 
     final MockHttpServletRequestBuilder setRequest = put("/api/v1/data")
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON_UTF8)
       .content("{" +
@@ -148,7 +149,7 @@ public class UserGenerationTest {
       .andExpect(status().isOk());
 
     final MockHttpServletRequestBuilder generateRequest = post("/api/v1/data")
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON_UTF8)
       .content("{" +
@@ -171,7 +172,7 @@ public class UserGenerationTest {
   @Test
   public void generatesOnlyPasswordWhenGivenStaticUsernameProvidedInValues() throws Exception {
     final MockHttpServletRequestBuilder post = post("/api/v1/data")
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
       //language=JSON
@@ -187,7 +188,7 @@ public class UserGenerationTest {
       .andExpect(status().isOk());
 
     this.mockMvc.perform(get("/api/v1/data?name=" + credentialName1)
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON))
       .andDo(print())
@@ -200,7 +201,7 @@ public class UserGenerationTest {
   @Test
   public void generatesOnlyPasswordWhenGivenStaticUsernameProvidedInParams() throws Exception {
     final MockHttpServletRequestBuilder post = post("/api/v1/data")
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
       //language=JSON
@@ -216,7 +217,7 @@ public class UserGenerationTest {
       .andExpect(status().isOk());
 
     this.mockMvc.perform(get("/api/v1/data?name=" + credentialName1)
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON))
       .andDo(print())
@@ -229,7 +230,7 @@ public class UserGenerationTest {
   @Test
   public void whenGivenPasswordParameters_shouldGeneratePasswordFromParameters() throws Exception {
     final MockHttpServletRequestBuilder post = post("/api/v1/data")
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
       .content("{" +
@@ -262,7 +263,7 @@ public class UserGenerationTest {
   @Test
   public void whenGivenAUsernameAndPasswordParameters_usesUsernameAndGeneratesPassword() throws Exception {
     final MockHttpServletRequestBuilder post = post("/api/v1/data")
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
       .content("{" +
@@ -297,7 +298,7 @@ public class UserGenerationTest {
   @Test
   public void returnsAConsistentPasswordHash() throws Exception {
     final MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
       .content("{" +
@@ -315,7 +316,7 @@ public class UserGenerationTest {
       .getResponse();
 
     final MockHttpServletRequestBuilder getRequest = get("/api/v1/data?name=" + credentialName1)
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON);
 
@@ -423,7 +424,7 @@ public class UserGenerationTest {
 
   private void getPost(final String name) throws Exception {
     final MockHttpServletRequestBuilder post = post("/api/v1/data")
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
       .content("{"

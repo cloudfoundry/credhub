@@ -11,17 +11,17 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import org.cloudfoundry.credhub.CredhubTestApp;
-import org.cloudfoundry.credhub.DatabaseProfileResolver;
+import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.PermissionOperation;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.cloudfoundry.credhub.AuthConstants.ALL_PERMISSIONS_ACTOR_ID;
-import static org.cloudfoundry.credhub.AuthConstants.ALL_PERMISSIONS_TOKEN;
-import static org.cloudfoundry.credhub.AuthConstants.NO_PERMISSIONS_TOKEN;
-import static org.cloudfoundry.credhub.AuthConstants.USER_A_ACTOR_ID;
-import static org.cloudfoundry.credhub.AuthConstants.USER_A_TOKEN;
+import static org.cloudfoundry.credhub.utils.AuthConstants.ALL_PERMISSIONS_ACTOR_ID;
+import static org.cloudfoundry.credhub.utils.AuthConstants.ALL_PERMISSIONS_TOKEN;
+import static org.cloudfoundry.credhub.utils.AuthConstants.NO_PERMISSIONS_TOKEN;
+import static org.cloudfoundry.credhub.utils.AuthConstants.USER_A_ACTOR_ID;
+import static org.cloudfoundry.credhub.utils.AuthConstants.USER_A_TOKEN;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -115,7 +115,7 @@ public class AddPermissionsV2EndToEndTest {
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
       .content("{"
-        + "  \"actor\": \"" + USER_A_ACTOR_ID + "\",\n"
+        + "  \"actor\": \"" + USER_A_ACTOR_ID+ "\",\n"
         + "  \"path\": \"" + credentialName + "\",\n"
         + "  \"operations\": [\"read\"]\n"
         + "}");

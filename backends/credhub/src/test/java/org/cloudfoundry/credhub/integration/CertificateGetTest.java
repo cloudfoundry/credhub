@@ -15,24 +15,24 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.jayway.jsonpath.JsonPath;
-import org.cloudfoundry.credhub.AuthConstants;
+import org.cloudfoundry.credhub.utils.AuthConstants;
 import org.cloudfoundry.credhub.CredhubTestApp;
-import org.cloudfoundry.credhub.DatabaseProfileResolver;
+import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.helpers.RequestHelper;
 import org.json.JSONArray;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.cloudfoundry.credhub.AuthConstants.ALL_PERMISSIONS_TOKEN;
-import static org.cloudfoundry.credhub.AuthConstants.NO_PERMISSIONS_TOKEN;
-import static org.cloudfoundry.credhub.AuthConstants.USER_A_TOKEN;
-import static org.cloudfoundry.credhub.AuthConstants.USER_B_TOKEN;
 import static org.cloudfoundry.credhub.helpers.RequestHelper.generateCa;
 import static org.cloudfoundry.credhub.helpers.RequestHelper.generateCertificateCredential;
 import static org.cloudfoundry.credhub.helpers.RequestHelper.generatePassword;
 import static org.cloudfoundry.credhub.helpers.RequestHelper.getCertificateCredentials;
 import static org.cloudfoundry.credhub.helpers.RequestHelper.getCertificateCredentialsByName;
+import static org.cloudfoundry.credhub.utils.AuthConstants.ALL_PERMISSIONS_TOKEN;
+import static org.cloudfoundry.credhub.utils.AuthConstants.NO_PERMISSIONS_TOKEN;
+import static org.cloudfoundry.credhub.utils.AuthConstants.USER_A_TOKEN;
+import static org.cloudfoundry.credhub.utils.AuthConstants.USER_B_TOKEN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
@@ -221,7 +221,7 @@ public class CertificateGetTest {
       .read("$.value.certificate");
 
     final MockHttpServletRequestBuilder request = get("/api/v1/certificates/" + uuid + "/versions?current=true")
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON);
 
     response = mockMvc.perform(request)

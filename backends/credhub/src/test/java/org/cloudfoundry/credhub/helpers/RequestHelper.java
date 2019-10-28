@@ -14,7 +14,7 @@ import org.cloudfoundry.credhub.views.PermissionsView;
 import org.hamcrest.core.IsEqual;
 
 import static java.lang.String.join;
-import static org.cloudfoundry.credhub.AuthConstants.ALL_PERMISSIONS_TOKEN;
+import static org.cloudfoundry.credhub.utils.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;

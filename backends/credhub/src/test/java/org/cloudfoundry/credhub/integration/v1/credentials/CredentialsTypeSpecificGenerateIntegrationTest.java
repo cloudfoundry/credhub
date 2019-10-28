@@ -22,10 +22,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.cloudfoundry.credhub.AuthConstants;
+import org.cloudfoundry.credhub.utils.AuthConstants;
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.CryptSaltFactory;
-import org.cloudfoundry.credhub.DatabaseProfileResolver;
+import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.TestHelper;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
@@ -61,6 +61,7 @@ import org.junit.runners.Parameterized;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import static org.cloudfoundry.credhub.utils.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
@@ -443,7 +444,7 @@ public class CredentialsTypeSpecificGenerateIntegrationTest {
   @Test
   public void shouldAcceptAnyCasingForType() throws Exception {
     final MockHttpServletRequestBuilder request = post("/api/v1/data")
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
       .content("{" +
@@ -546,7 +547,7 @@ public class CredentialsTypeSpecificGenerateIntegrationTest {
 
   private MockHttpServletRequestBuilder createGenerateNewCredentialRequest() {
     return post("/api/v1/data")
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
       .content("{" +
@@ -565,7 +566,7 @@ public class CredentialsTypeSpecificGenerateIntegrationTest {
 
   private MockHttpServletRequestBuilder beforeEachOverwriteSetToTrue() {
     return post("/api/v1/data")
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
       .content("{" +
@@ -578,7 +579,7 @@ public class CredentialsTypeSpecificGenerateIntegrationTest {
 
   private MockHttpServletRequestBuilder beforeEachOverwriteSetToFalse() {
     return post("/api/v1/data")
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
       .content("{" +

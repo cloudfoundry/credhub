@@ -16,13 +16,19 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.cloudfoundry.credhub.AuthConstants;
 import org.cloudfoundry.credhub.CredhubTestApp;
-import org.cloudfoundry.credhub.DatabaseProfileResolver;
+import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.cloudfoundry.credhub.utils.AuthConstants.EMPTY_ISSUER_JWT;
+import static org.cloudfoundry.credhub.utils.AuthConstants.EXPIRED_TOKEN;
+import static org.cloudfoundry.credhub.utils.AuthConstants.INVALID_ISSUER_JWT;
+import static org.cloudfoundry.credhub.utils.AuthConstants.INVALID_SIGNATURE_JWT;
+import static org.cloudfoundry.credhub.utils.AuthConstants.MALFORMED_TOKEN;
+import static org.cloudfoundry.credhub.utils.AuthConstants.NULL_ISSUER_JWT;
+import static org.cloudfoundry.credhub.utils.AuthConstants.VALID_ISSUER_JWT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Mockito.when;
@@ -70,7 +76,7 @@ public class OAuth2ExtraValidationFilterTest {
     when(oAuth2IssuerService.getIssuer()).thenReturn("https://valid-uaa:8443/uaa/oauth/token");
 
     this.mockMvc.perform(get("/api/v1/data")
-      .header("Authorization", "Bearer " + AuthConstants.VALID_ISSUER_JWT)
+      .header("Authorization", "Bearer " + VALID_ISSUER_JWT)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
     )
@@ -84,7 +90,7 @@ public class OAuth2ExtraValidationFilterTest {
   @Test
   public void whenGivenInvalidIssuer_returns401() throws Exception {
     final MockHttpServletRequestBuilder request = get("/api/v1/data?name=/picard")
-      .header("Authorization", "Bearer " + AuthConstants.INVALID_ISSUER_JWT)
+      .header("Authorization", "Bearer " + INVALID_ISSUER_JWT)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON);
 
@@ -103,7 +109,7 @@ public class OAuth2ExtraValidationFilterTest {
   @Test
   public void whenGivenInvalidIssuer_onlyReturnsIntendedResponse() throws Exception {
     final MockHttpServletRequestBuilder request = get("/api/v1/data?name=/picard")
-      .header("Authorization", "Bearer " + AuthConstants.INVALID_ISSUER_JWT)
+      .header("Authorization", "Bearer " + INVALID_ISSUER_JWT)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON);
 //      .content(
@@ -130,7 +136,7 @@ public class OAuth2ExtraValidationFilterTest {
   @Test
   public void whenGivenMalformedToken_onlyReturnsIntendedResponse() throws Exception {
     final MockHttpServletRequestBuilder request = get("/api/v1/data?name=/picard")
-      .header("Authorization", "Bearer " + AuthConstants.MALFORMED_TOKEN)
+      .header("Authorization", "Bearer " + MALFORMED_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON);
 //      .content(
@@ -157,7 +163,7 @@ public class OAuth2ExtraValidationFilterTest {
   @Test
   public void whenGivenValidTokenDoesNotMatchJWTSignature_onlyReturnsIntendedResponse() throws Exception {
     final MockHttpServletRequestBuilder request = get("/api/v1/data?name=/picard")
-      .header("Authorization", "Bearer " + AuthConstants.INVALID_SIGNATURE_JWT)
+      .header("Authorization", "Bearer " + INVALID_SIGNATURE_JWT)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON);
 //      .content(
@@ -184,7 +190,7 @@ public class OAuth2ExtraValidationFilterTest {
   @Test
   public void whenGivenNullIssuer_returns401() throws Exception {
     this.mockMvc.perform(get("/api/v1/data?name=/picard")
-      .header("Authorization", "Bearer " + AuthConstants.NULL_ISSUER_JWT)
+      .header("Authorization", "Bearer " + NULL_ISSUER_JWT)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON))
       .andExpect(status().isUnauthorized())
@@ -194,7 +200,7 @@ public class OAuth2ExtraValidationFilterTest {
   @Test
   public void whenEmptyIssuerSpecified_returns401() throws Exception {
     this.mockMvc.perform(get("/api/v1/data?name=/picard")
-      .header("Authorization", "Bearer " + AuthConstants.EMPTY_ISSUER_JWT)
+      .header("Authorization", "Bearer " + EMPTY_ISSUER_JWT)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON))
       .andExpect(status().isUnauthorized())
@@ -205,7 +211,7 @@ public class OAuth2ExtraValidationFilterTest {
   public void whenTokenIsHasExpired_returns401() throws Exception {
     when(oAuth2IssuerService.getIssuer()).thenReturn("https://valid-uaa:8443/uaa/oauth/token");
     this.mockMvc.perform(get("/api/v1/data?name=/sample-credential")
-      .header("Authorization", "Bearer " + AuthConstants.EXPIRED_TOKEN)
+      .header("Authorization", "Bearer " + EXPIRED_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON))
       .andExpect(status().isUnauthorized())

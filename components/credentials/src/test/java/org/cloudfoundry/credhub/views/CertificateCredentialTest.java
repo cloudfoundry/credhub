@@ -7,7 +7,6 @@ import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.Encryptor;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.helpers.JsonTestHelper;
-import org.cloudfoundry.credhub.utils.CertificateStringConstants;
 import org.cloudfoundry.credhub.utils.StringUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,6 +15,10 @@ import org.junit.runners.JUnit4;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 import static org.cloudfoundry.credhub.TestHelper.getBouncyCastleFipsProvider;
+import static org.cloudfoundry.credhub.helpers.JsonTestHelper.serializeToString;
+import static org.cloudfoundry.credhub.utils.CertificateStringConstants.PRIVATE_KEY;
+import static org.cloudfoundry.credhub.utils.CertificateStringConstants.SELF_SIGNED_CA_CERT;
+import static org.cloudfoundry.credhub.utils.CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
@@ -41,16 +44,16 @@ public class CertificateCredentialTest {
 
     encryptor = mock(Encryptor.class);
     final EncryptedValue encryption = new EncryptedValue(canaryUuid, encryptedValue, nonce);
-    when(encryptor.encrypt(CertificateStringConstants.PRIVATE_KEY)).thenReturn(encryption);
-    when(encryptor.decrypt(encryption)).thenReturn(CertificateStringConstants.PRIVATE_KEY);
+    when(encryptor.encrypt(PRIVATE_KEY)).thenReturn(encryption);
+    when(encryptor.decrypt(encryption)).thenReturn(PRIVATE_KEY);
 
     credentialName = "/foo";
     uuid = UUID.randomUUID();
     entity = new CertificateCredentialVersion(credentialName);
     entity.setEncryptor(encryptor);
-    entity.setCa(CertificateStringConstants.SELF_SIGNED_CA_CERT);
-    entity.setCertificate(CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT);
-    entity.setPrivateKey(CertificateStringConstants.PRIVATE_KEY);
+    entity.setCa(SELF_SIGNED_CA_CERT);
+    entity.setCertificate(SIMPLE_SELF_SIGNED_TEST_CERT);
+    entity.setPrivateKey(PRIVATE_KEY);
     entity.setExpiryDate(expiryDate);
     entity.setUuid(uuid);
     entity.setCertificateAuthority(true);
@@ -61,7 +64,7 @@ public class CertificateCredentialTest {
   @Test
   public void createsAViewFromEntity() throws Exception {
     final CredentialView subject = CertificateView.fromEntity(entity);
-    final String actualJson = JsonTestHelper.serializeToString(subject);
+    final String actualJson = serializeToString(subject);
 
     final Instant expiryDateWithoutMillis = Instant.ofEpochSecond(expiryDate.getEpochSecond());
 
@@ -76,9 +79,9 @@ public class CertificateCredentialTest {
       + "\"id\":\"" + uuid.toString() + "\","
       + "\"name\":\"" + credentialName + "\","
       + "\"value\":{"
-      + "\"ca\":\"" + CertificateStringConstants.SELF_SIGNED_CA_CERT + "\","
-      + "\"certificate\":\"" + CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT + "\","
-      + "\"private_key\":\"" + CertificateStringConstants.PRIVATE_KEY + "\""
+      + "\"ca\":\"" + SELF_SIGNED_CA_CERT + "\","
+      + "\"certificate\":\"" + SIMPLE_SELF_SIGNED_TEST_CERT + "\","
+      + "\"private_key\":\"" + PRIVATE_KEY + "\""
       + "}"
       + "}";
 
@@ -106,7 +109,7 @@ public class CertificateCredentialTest {
     certificateCredentialVersion.setUuid(uuid);
 
     final CredentialView subject = CertificateView.fromEntity(certificateCredentialVersion);
-    final String actualJson = JsonTestHelper.serializeToString(subject);
+    final String actualJson = serializeToString(subject);
 
     final String expectedJson = "{"
       + "\"type\":\"certificate\","

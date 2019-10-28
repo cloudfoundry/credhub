@@ -16,17 +16,19 @@ import com.google.common.collect.ImmutableMap;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import net.minidev.json.JSONObject;
 import org.cloudfoundry.credhub.CredhubTestApp;
-import org.cloudfoundry.credhub.DatabaseProfileResolver;
-import org.cloudfoundry.credhub.DatabaseUtilities;
+import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.ErrorMessages;
-import org.cloudfoundry.credhub.SpringUtilities;
+import org.cloudfoundry.credhub.utils.DatabaseUtilities;
+import org.cloudfoundry.credhub.utils.SpringUtilities;
 import org.cloudfoundry.credhub.utils.TestConstants;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.cloudfoundry.credhub.AuthConstants.ALL_PERMISSIONS_TOKEN;
+import static org.cloudfoundry.credhub.utils.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.cloudfoundry.credhub.helpers.RequestHelper.setPassword;
+import static org.cloudfoundry.credhub.utils.SpringUtilities.activeProfilesString;
+import static org.cloudfoundry.credhub.utils.SpringUtilities.unitTestPostgresProfile;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -365,11 +367,11 @@ public class CredentialSetErrorHandlingTest {
 
   @Test
   public void givenAPayloadThatExceedsTheMaximumSize_returnsA413() throws Exception {
-    if (System.getProperty(SpringUtilities.activeProfilesString).contains(SpringUtilities.unitTestPostgresProfile)) {
+    if (System.getProperty(activeProfilesString).contains(unitTestPostgresProfile)) {
       return;
     }
 
-    final byte[] exceedsMaxBlobStoreSizeBytes = DatabaseUtilities.getExceedsMaxBlobStoreSizeBytes();
+    final byte[] exceedsMaxBlobStoreSizeBytes = DatabaseUtilities.Companion.getExceedsMaxBlobStoreSizeBytes();
     final String exceedsMaxBlobStoreSizeValue = Base64.getEncoder().encodeToString(exceedsMaxBlobStoreSizeBytes);
 
     System.out.println("string is: " + exceedsMaxBlobStoreSizeValue);

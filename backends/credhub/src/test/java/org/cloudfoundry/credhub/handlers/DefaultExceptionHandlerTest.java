@@ -12,15 +12,15 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import org.cloudfoundry.credhub.AuthConstants;
 import org.cloudfoundry.credhub.CredhubTestApp;
-import org.cloudfoundry.credhub.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.credentials.DefaultCredentialsHandler;
+import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.cloudfoundry.credhub.utils.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -37,32 +37,32 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 public class DefaultExceptionHandlerTest {
 
-  @MockBean
-  private DefaultCredentialsHandler credentialsHandler;
-  @Autowired
-  private WebApplicationContext webApplicationContext;
-  private MockMvc mockMvc;
+    @MockBean
+    private DefaultCredentialsHandler credentialsHandler;
+    @Autowired
+    private WebApplicationContext webApplicationContext;
+    private MockMvc mockMvc;
 
-  @Before
-  public void setUp() {
-    mockMvc = MockMvcBuilders
-      .webAppContextSetup(webApplicationContext)
-      .apply(springSecurity())
-      .build();
-  }
+    @Before
+    public void setUp() {
+        mockMvc = MockMvcBuilders
+                .webAppContextSetup(webApplicationContext)
+                .apply(springSecurity())
+                .build();
+    }
 
-  @Test
-  public void wheGenericExceptionIsThrown_returns500() throws Exception {
-    when(credentialsHandler.getNCredentialVersions(eq("/foo"), any())).thenThrow(new RuntimeException());
+    @Test
+    public void wheGenericExceptionIsThrown_returns500() throws Exception {
+        when(credentialsHandler.getNCredentialVersions(eq("/foo"), any())).thenThrow(new RuntimeException());
 
-    final MockHttpServletRequestBuilder request = get("/api/v1/data?name=foo")
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-      .accept(APPLICATION_JSON);
+        final MockHttpServletRequestBuilder request = get("/api/v1/data?name=foo")
+                .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+                .accept(APPLICATION_JSON);
 
-    final String expectedError = "An application error occurred. Please contact your CredHub administrator.";
-    mockMvc.perform(request)
-      .andExpect(status().isInternalServerError())
-      .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-      .andExpect(jsonPath("$.error").value(ErrorMessages.INTERNAL_SERVER_ERROR));
-  }
+        final String expectedError = "An application error occurred. Please contact your CredHub administrator.";
+        mockMvc.perform(request)
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(jsonPath("$.error").value(ErrorMessages.INTERNAL_SERVER_ERROR));
+    }
 }

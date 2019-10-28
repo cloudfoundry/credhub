@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import org.cloudfoundry.credhub.CredhubTestApp;
-import org.cloudfoundry.credhub.DatabaseProfileResolver;
+import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.PermissionOperation;
 import org.cloudfoundry.credhub.helpers.RequestHelper;
 import org.cloudfoundry.credhub.requests.PermissionEntry;
@@ -23,11 +23,11 @@ import org.junit.runner.RunWith;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static org.cloudfoundry.credhub.AuthConstants.ALL_PERMISSIONS_TOKEN;
-import static org.cloudfoundry.credhub.AuthConstants.NO_PERMISSIONS_TOKEN;
-import static org.cloudfoundry.credhub.AuthConstants.USER_A_ACTOR_ID;
-import static org.cloudfoundry.credhub.AuthConstants.USER_A_TOKEN;
-import static org.cloudfoundry.credhub.AuthConstants.USER_B_ACTOR_ID;
+import static org.cloudfoundry.credhub.utils.AuthConstants.ALL_PERMISSIONS_TOKEN;
+import static org.cloudfoundry.credhub.utils.AuthConstants.NO_PERMISSIONS_TOKEN;
+import static org.cloudfoundry.credhub.utils.AuthConstants.USER_A_ACTOR_ID;
+import static org.cloudfoundry.credhub.utils.AuthConstants.USER_A_TOKEN;
+import static org.cloudfoundry.credhub.utils.AuthConstants.USER_B_ACTOR_ID;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
@@ -73,7 +73,7 @@ public class PermissionsEndpointWithoutEnforcementTest {
       400,
       expectedErrorMessage,
       null,
-      NO_PERMISSIONS_TOKEN
+            NO_PERMISSIONS_TOKEN
     );
   }
 
@@ -82,8 +82,8 @@ public class PermissionsEndpointWithoutEnforcementTest {
     RequestHelper.grantPermissions(
       mockMvc,
       credentialName,
-      NO_PERMISSIONS_TOKEN,
-      USER_A_ACTOR_ID,
+            NO_PERMISSIONS_TOKEN,
+            USER_A_ACTOR_ID,
       "read"
     );
 
@@ -102,8 +102,8 @@ public class PermissionsEndpointWithoutEnforcementTest {
     RequestHelper.grantPermissions(
       mockMvc,
       credentialName,
-      NO_PERMISSIONS_TOKEN,
-      USER_A_ACTOR_ID,
+            NO_PERMISSIONS_TOKEN,
+            USER_A_ACTOR_ID,
       "read"
     );
 
@@ -131,7 +131,7 @@ public class PermissionsEndpointWithoutEnforcementTest {
       404,
       expectedErrorMessage,
       "/unicorn",
-      NO_PERMISSIONS_TOKEN
+            NO_PERMISSIONS_TOKEN
     );
   }
 
@@ -144,8 +144,8 @@ public class PermissionsEndpointWithoutEnforcementTest {
       400,
       expectedErrorMessage,
       null,
-      NO_PERMISSIONS_TOKEN,
-      USER_A_ACTOR_ID
+            NO_PERMISSIONS_TOKEN,
+            USER_A_ACTOR_ID
     );
   }
 
@@ -158,7 +158,7 @@ public class PermissionsEndpointWithoutEnforcementTest {
       400,
       expectedErrorMessage,
       credentialName,
-      NO_PERMISSIONS_TOKEN,
+            NO_PERMISSIONS_TOKEN,
       null
     );
   }
@@ -168,7 +168,7 @@ public class PermissionsEndpointWithoutEnforcementTest {
     RequestHelper.grantPermissions(
       mockMvc,
       credentialName,
-      NO_PERMISSIONS_TOKEN,
+            NO_PERMISSIONS_TOKEN,
       "test-actor",
       "read"
     );
@@ -176,7 +176,7 @@ public class PermissionsEndpointWithoutEnforcementTest {
     RequestHelper.revokePermissions(
       mockMvc,
       credentialName,
-      NO_PERMISSIONS_TOKEN,
+            NO_PERMISSIONS_TOKEN,
       "test-actor"
     );
   }
@@ -187,16 +187,16 @@ public class PermissionsEndpointWithoutEnforcementTest {
     RequestHelper.grantPermissions(
       mockMvc,
       credentialName,
-      NO_PERMISSIONS_TOKEN,
-      USER_A_ACTOR_ID,
+            NO_PERMISSIONS_TOKEN,
+            USER_A_ACTOR_ID,
       "read"
     );
 
     RequestHelper.revokePermissions(
       mockMvc,
       credentialName,
-      USER_A_TOKEN,
-      USER_A_ACTOR_ID
+            USER_A_TOKEN,
+            USER_A_ACTOR_ID
     );
   }
 
@@ -209,7 +209,7 @@ public class PermissionsEndpointWithoutEnforcementTest {
       404,
       expectedError,
       "/not-valid",
-      NO_PERMISSIONS_TOKEN,
+            NO_PERMISSIONS_TOKEN,
       "something"
     );
   }
@@ -219,16 +219,16 @@ public class PermissionsEndpointWithoutEnforcementTest {
     RequestHelper.grantPermissions(
       mockMvc,
       credentialName,
-      NO_PERMISSIONS_TOKEN,
-      USER_A_ACTOR_ID,
+            NO_PERMISSIONS_TOKEN,
+            USER_A_ACTOR_ID,
       "read", "write"
     );
 
     RequestHelper.grantPermissions(
       mockMvc,
       credentialName,
-      NO_PERMISSIONS_TOKEN,
-      USER_B_ACTOR_ID,
+            NO_PERMISSIONS_TOKEN,
+            USER_B_ACTOR_ID,
       "delete"
     );
 
@@ -249,16 +249,16 @@ public class PermissionsEndpointWithoutEnforcementTest {
     RequestHelper.grantPermissions(
       mockMvc,
       credentialName,
-      NO_PERMISSIONS_TOKEN,
-      USER_A_ACTOR_ID,
+            NO_PERMISSIONS_TOKEN,
+            USER_A_ACTOR_ID,
       "read", "delete"
     );
 
     RequestHelper.grantPermissions(
       mockMvc,
       credentialName,
-      NO_PERMISSIONS_TOKEN,
-      USER_A_ACTOR_ID,
+            NO_PERMISSIONS_TOKEN,
+            USER_A_ACTOR_ID,
       "read", "write"
     );
 
@@ -279,8 +279,8 @@ public class PermissionsEndpointWithoutEnforcementTest {
     RequestHelper.grantPermissions(
       mockMvc,
       credentialName,
-      USER_A_TOKEN,
-      USER_A_ACTOR_ID,
+            USER_A_TOKEN,
+            USER_A_ACTOR_ID,
       "read", "write"
     );
   }
@@ -290,8 +290,8 @@ public class PermissionsEndpointWithoutEnforcementTest {
     RequestHelper.grantPermissions(
       mockMvc,
       credentialName,
-      NO_PERMISSIONS_TOKEN,
-      USER_A_ACTOR_ID,
+            NO_PERMISSIONS_TOKEN,
+            USER_A_ACTOR_ID,
       "read"
     );
 
@@ -334,8 +334,8 @@ public class PermissionsEndpointWithoutEnforcementTest {
     RequestHelper.grantPermissions(
       mockMvc,
       "/this-is-a-fake-credential",
-      NO_PERMISSIONS_TOKEN,
-      USER_A_ACTOR_ID,
+            NO_PERMISSIONS_TOKEN,
+            USER_A_ACTOR_ID,
       "read"
     );
   }
@@ -348,8 +348,8 @@ public class PermissionsEndpointWithoutEnforcementTest {
       422,
       expectedErrorMessage,
       "/this-is-a-fake-credential",
-      NO_PERMISSIONS_TOKEN,
-      USER_A_ACTOR_ID,
+            NO_PERMISSIONS_TOKEN,
+            USER_A_ACTOR_ID,
       "unicorn"
     );
   }

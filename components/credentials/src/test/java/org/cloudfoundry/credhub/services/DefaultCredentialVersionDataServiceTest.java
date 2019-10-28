@@ -14,10 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.cloudfoundry.credhub.CredhubTestApp;
-import org.cloudfoundry.credhub.DatabaseProfileResolver;
-import org.cloudfoundry.credhub.DatabaseUtilities;
 import org.cloudfoundry.credhub.ErrorMessages;
-import org.cloudfoundry.credhub.SpringUtilities;
 import org.cloudfoundry.credhub.TestHelper;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.data.EncryptionKeyCanaryDataService;
@@ -39,6 +36,8 @@ import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.repositories.CredentialRepository;
 import org.cloudfoundry.credhub.repositories.CredentialVersionRepository;
 import org.cloudfoundry.credhub.util.CurrentTimeProvider;
+import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
+import org.cloudfoundry.credhub.utils.DatabaseUtilities;
 import org.cloudfoundry.credhub.utils.StringUtil;
 import org.cloudfoundry.credhub.views.FindCredentialResult;
 import org.hamcrest.collection.IsIterableContainingInOrder;
@@ -47,6 +46,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.cloudfoundry.credhub.utils.SpringUtilities.activeProfilesString;
+import static org.cloudfoundry.credhub.utils.SpringUtilities.unitTestPostgresProfile;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -765,18 +766,16 @@ public class DefaultCredentialVersionDataServiceTest {
 
   @Test
   public void shouldThrowAnMaximumSizeException_whenDataExceedsMaximumSize() {
-    if (System.getProperty(SpringUtilities.activeProfilesString).contains(SpringUtilities.unitTestPostgresProfile)) {
+    if (System.getProperty(activeProfilesString).contains(unitTestPostgresProfile)) {
       return;
     }
-
-    final byte[] exceedsMaxBlobStoreValue = DatabaseUtilities.getExceedsMaxBlobStoreSizeBytes();
 
     final String credentialName = "some_name";
     final ValueCredentialVersionData entity = new ValueCredentialVersionData();
     final Credential credential = credentialRepository.save(new Credential(credentialName));
 
     EncryptedValue encryptedValue = new EncryptedValue();
-    encryptedValue.setEncryptedValue(exceedsMaxBlobStoreValue);
+    encryptedValue.setEncryptedValue(DatabaseUtilities.Companion.getExceedsMaxBlobStoreSizeBytes());
     encryptedValue.setEncryptionKeyUuid(activeCanaryUuid);
     encryptedValue.setNonce("nonce".getBytes(StringUtil.UTF_8));
 

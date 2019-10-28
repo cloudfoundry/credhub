@@ -16,6 +16,9 @@ import org.junit.runners.JUnit4;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.cloudfoundry.credhub.helpers.JsonTestHelper.deserialize;
+import static org.cloudfoundry.credhub.helpers.JsonTestHelper.hasViolationWithMessage;
+import static org.cloudfoundry.credhub.helpers.JsonTestHelper.serialize;
+import static org.cloudfoundry.credhub.helpers.JsonTestHelper.validate;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -30,7 +33,7 @@ public class PermissionsRequestTest {
     final List<PermissionEntry> entryList = newArrayList(
       new PermissionEntry("someone", "test-path", newArrayList(PermissionOperation.READ)));
     final PermissionsRequest original = new PermissionsRequest("test-name", entryList);
-    final byte[] json = JsonTestHelper.serialize(original);
+    final byte[] json = serialize(original);
     final PermissionsRequest actual = deserialize(json, PermissionsRequest.class);
 
     assertThat(actual.getCredentialName(), equalTo("/test-name"));
@@ -47,10 +50,10 @@ public class PermissionsRequestTest {
     final List<PermissionEntry> entryList = newArrayList(
       new PermissionEntry("someone", "test-path", newArrayList(PermissionOperation.READ)));
     final PermissionsRequest original = new PermissionsRequest(null, entryList);
-    final Set<ConstraintViolation<PermissionsRequest>> violations = JsonTestHelper.validate(original);
+    final Set<ConstraintViolation<PermissionsRequest>> violations = validate(original);
 
     assertThat(violations.size(), equalTo(1));
-    MatcherAssert.assertThat(violations, Matchers.contains(JsonTestHelper.hasViolationWithMessage(ErrorMessages.MISSING_NAME)));
+    MatcherAssert.assertThat(violations, Matchers.contains(hasViolationWithMessage(ErrorMessages.MISSING_NAME)));
   }
 
   @Test
@@ -58,27 +61,27 @@ public class PermissionsRequestTest {
     final List<PermissionEntry> entryList = newArrayList(
       new PermissionEntry("someone", "test-path", newArrayList(PermissionOperation.READ)));
     final PermissionsRequest original = new PermissionsRequest("", entryList);
-    final Set<ConstraintViolation<PermissionsRequest>> violations = JsonTestHelper.validate(original);
+    final Set<ConstraintViolation<PermissionsRequest>> violations = validate(original);
 
     assertThat(violations.size(), equalTo(1));
-    MatcherAssert.assertThat(violations, Matchers.contains(JsonTestHelper.hasViolationWithMessage(ErrorMessages.MISSING_NAME)));
+    MatcherAssert.assertThat(violations, Matchers.contains(hasViolationWithMessage(ErrorMessages.MISSING_NAME)));
   }
 
   @Test
   public void validation_ensuresOperationsIsNotNull() {
     final PermissionsRequest original = new PermissionsRequest("foo", null);
-    final Set<ConstraintViolation<PermissionsRequest>> violations = JsonTestHelper.validate(original);
+    final Set<ConstraintViolation<PermissionsRequest>> violations = validate(original);
 
     assertThat(violations.size(), equalTo(1));
-    MatcherAssert.assertThat(violations, Matchers.contains(JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_ACES)));
+    MatcherAssert.assertThat(violations, Matchers.contains(hasViolationWithMessage(ErrorMessages.Permissions.MISSING_ACES)));
   }
 
   @Test
   public void validation_ensuresOperationsIsNotEmpty() {
     final PermissionsRequest original = new PermissionsRequest("foo", newArrayList());
-    final Set<ConstraintViolation<PermissionsRequest>> violations = JsonTestHelper.validate(original);
+    final Set<ConstraintViolation<PermissionsRequest>> violations = validate(original);
 
     assertThat(violations.size(), equalTo(1));
-    MatcherAssert.assertThat(violations, Matchers.contains(JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_ACES)));
+    MatcherAssert.assertThat(violations, Matchers.contains(hasViolationWithMessage(ErrorMessages.Permissions.MISSING_ACES)));
   }
 }

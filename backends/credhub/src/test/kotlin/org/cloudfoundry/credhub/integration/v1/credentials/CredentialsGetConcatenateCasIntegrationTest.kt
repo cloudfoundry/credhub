@@ -1,8 +1,8 @@
 package org.cloudfoundry.credhub.integration.v1.credentials
 
-import org.cloudfoundry.credhub.AuthConstants
+import org.cloudfoundry.credhub.utils.AuthConstants
 import org.cloudfoundry.credhub.CredhubTestApp
-import org.cloudfoundry.credhub.DatabaseProfileResolver
+import org.cloudfoundry.credhub.utils.DatabaseProfileResolver
 import org.cloudfoundry.credhub.TestHelper
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
 import org.cloudfoundry.credhub.domain.CredentialVersion

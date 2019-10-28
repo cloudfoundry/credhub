@@ -11,14 +11,15 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import org.cloudfoundry.credhub.AuthConstants;
+import org.cloudfoundry.credhub.utils.AuthConstants;
 import org.cloudfoundry.credhub.CredhubTestApp;
-import org.cloudfoundry.credhub.DatabaseProfileResolver;
+import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.ManagementRegistry;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.cloudfoundry.credhub.utils.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -53,7 +54,7 @@ public class ManagementIntegrationTest {
   @Test
   public void settingReadOnlyMode_updatesTheGlobalManagementVariable() throws Exception {
     MockHttpServletRequestBuilder request = post("/management")
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .header("content-type", APPLICATION_JSON)
       .content("{\"read_only_mode\":\"true\"}");
     mockMvc.perform(request).andExpect(status().isOk());
@@ -61,7 +62,7 @@ public class ManagementIntegrationTest {
     assertThat(managementRegistry.getReadOnlyMode(), is(true));
 
     request = post("/management")
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .header("content-type", APPLICATION_JSON)
       .content("{\"read_only_mode\":\"false\"}");
     mockMvc.perform(request).andExpect(status().isOk());
@@ -74,7 +75,7 @@ public class ManagementIntegrationTest {
     managementRegistry.setReadOnlyMode(true);
 
     MockHttpServletRequestBuilder request = get("/management")
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON);
     mockMvc.perform(request)
       .andExpect(status().isOk())
@@ -84,7 +85,7 @@ public class ManagementIntegrationTest {
     managementRegistry.setReadOnlyMode(false);
 
     request = get("/management")
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON);
     mockMvc.perform(request)
       .andExpect(status().isOk())
@@ -95,7 +96,7 @@ public class ManagementIntegrationTest {
   @Test
   public void providingAnInvalidRequestBody_returns400() throws Exception {
     final MockHttpServletRequestBuilder request = post("/management")
-      .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .header("content-type", APPLICATION_JSON)
       .content("{\"read_only_mode\":\"pizza\"}");
     mockMvc.perform(request).andExpect(status().isBadRequest());

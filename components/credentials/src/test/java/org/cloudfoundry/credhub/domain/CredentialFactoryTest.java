@@ -16,7 +16,6 @@ import org.cloudfoundry.credhub.credential.StringCredentialValue;
 import org.cloudfoundry.credhub.credential.UserCredentialValue;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.requests.StringGenerationParameters;
-import org.cloudfoundry.credhub.utils.CertificateStringConstants;
 import org.cloudfoundry.credhub.utils.JsonObjectMapper;
 import org.cloudfoundry.credhub.utils.StringUtil;
 import org.hamcrest.MatcherAssert;
@@ -25,6 +24,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import static org.cloudfoundry.credhub.utils.CertificateStringConstants.SELF_SIGNED_CA_CERT;
+import static org.cloudfoundry.credhub.utils.CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.beans.SamePropertyValuesAs.samePropertyValuesAs;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -132,8 +133,8 @@ public class CredentialFactoryTest {
   @Test
   public void makeCredentialFromRequest_givenCertificateType_andNoExisting_returnsCertificateCredential() throws Exception {
     final CertificateCredentialValue certificateValue = new CertificateCredentialValue(
-      CertificateStringConstants.SELF_SIGNED_CA_CERT,
-      CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT,
+            SELF_SIGNED_CA_CERT,
+            SIMPLE_SELF_SIGNED_TEST_CERT,
       PLAINTEXT_VALUE,
       "my-ca",
       false,
@@ -150,8 +151,8 @@ public class CredentialFactoryTest {
         null,
         null);
     MatcherAssert.assertThat(credential.getCredential().getName(), equalTo(CREDENTIAL_NAME));
-    assertThat(credential.getCa(), equalTo(CertificateStringConstants.SELF_SIGNED_CA_CERT));
-    assertThat(credential.getCertificate(), equalTo(CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT));
+    assertThat(credential.getCa(), equalTo(SELF_SIGNED_CA_CERT));
+    assertThat(credential.getCertificate(), equalTo(SIMPLE_SELF_SIGNED_TEST_CERT));
     assertThat(credential.getPrivateKey(), equalTo(PLAINTEXT_VALUE));
     assertThat(credential.getCaName(), equalTo("/my-ca"));
   }
