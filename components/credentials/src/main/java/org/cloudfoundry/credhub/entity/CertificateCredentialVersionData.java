@@ -46,7 +46,7 @@ public class CertificateCredentialVersionData extends CredentialVersionData<Cert
   @Column(table = CertificateCredentialVersionData.TABLE_NAME)
   private Boolean selfSigned;
 
-  @Column(table = CertificateCredentialVersionData.TABLE_NAME)
+  @Column(table = CertificateCredentialVersionData.TABLE_NAME, name = "certificate_generated")
   private Boolean generated;
 
   @Column(table = CertificateCredentialVersionData.TABLE_NAME, length = 7000, columnDefinition = "TEXT")

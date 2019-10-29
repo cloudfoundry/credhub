@@ -2,7 +2,7 @@ spring:
   datasource:
     username: root
     password:
-    url: jdbc:mariadb://localhost:3306/credhub_dev
+    url: jdbc:mysql://localhost:3306/credhub_dev?serverTimezone=UTC
   profiles:
     include: dev
   flyway:
