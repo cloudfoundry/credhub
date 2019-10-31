@@ -23,7 +23,7 @@ class ParallelMysqlTestDataSourceConfiguration {
 
         val tempDataSource = DataSourceBuilder
             .create()
-            .url("jdbc:mysql://localhost:3306?user=root&serverTimezone=UTC")
+            .url("jdbc:mariadb://localhost:3306?user=root")
             .build()
 
         val jdbcTemplate = JdbcTemplate(tempDataSource)
@@ -50,7 +50,7 @@ class ParallelMysqlTestDataSourceConfiguration {
         createTestDatabaseForWorker(workerId)
 
         val dataSource = DataSourceBuilder.create()
-            .url("jdbc:mysql://localhost:3306/credhub_test_$workerId?user=root&serverTimezone=UTC")
+            .url("jdbc:mariadb://localhost:3306/credhub_test_$workerId?user=root")
             .build()
 
         return dataSource
