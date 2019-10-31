@@ -155,11 +155,11 @@ Then to run in development mode with Postgres
 ./scripts/start_server.sh -Dspring.profiles.active=dev,dev-postgres
 ```
 
-##### MariaDB
+##### MySQL
 
-MariaDB datasource configuration is in `application-dev-mysql.yml`.
+MySQL datasource configuration is in `application-dev-mysql.yml`.
 
-Log into your MariaDB server and create databases `credhub_dev` and `credhub_test` with privileges granted to `root`.
+Log into your MySQL server and create databases `credhub_dev` and `credhub_test` with privileges granted to `root`.
 
 ```shell
 mysql -u root
@@ -167,9 +167,9 @@ create database credhub_test;
 create database credhub_dev;
 ```
 
-If you're on a Mac using Homebrew and you run into a problem where you install MariaDB and it isn't running (i.e., `mysql -u root` errors with a socket error), you may need to uninstall mysql, delete the `/usr/local/var/mysql` directory (*Warning: this will delete all local mysql & mariadb data!*), and then reinstall mariadb.
+If you're on a Mac using Homebrew and you run into a problem where you install MySQL and it isn't running (i.e., `mysql -u root` errors with a socket error), you may need to uninstall mysql, delete the `/usr/local/var/mysql` directory (*Warning: this will delete all local MySQL data!*), and then reinstall MySQL.
 
-Then to run in development mode with MariaDB:
+Then to run in development mode with MySQL:
 
 ```sh
 ./scripts/start_server.sh -Dspring.profiles.active=dev,dev-mysql
@@ -182,7 +182,7 @@ Testing with different databases requires you to set a system property with the 
 During development, it is helpful to set up different IntelliJ testing profiles that use the following VM Options:
 
 - `-ea -Dspring.profiles.active=unit-test-h2` for testing with H2
-- `-ea -Dspring.profiles.active=unit-test-mysql` for testing with MariaDB
+- `-ea -Dspring.profiles.active=unit-test-mysql` for testing with MySQL
 - `-ea -Dspring.profiles.active=unit-test-postgres` for testing with Postgres
 
 ### Testing with the CLI and Acceptance Tests

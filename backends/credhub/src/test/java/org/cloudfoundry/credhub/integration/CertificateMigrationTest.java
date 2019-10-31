@@ -9,13 +9,13 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import org.cloudfoundry.credhub.CredhubTestApp;
-import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.data.CertificateMigration;
 import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.repositories.CredentialRepository;
 import org.cloudfoundry.credhub.repositories.CredentialVersionRepository;
 import org.cloudfoundry.credhub.utils.CertificateReader;
+import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.utils.TestConstants;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,6 +35,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 @SpringBootTest(classes = CredhubTestApp.class)
 @Transactional
 public class CertificateMigrationTest {
+
   @Autowired
   private CredentialVersionRepository credentialVersionRepository;
 
@@ -91,7 +92,8 @@ public class CertificateMigrationTest {
   }
 
   @Test
-  public void getCertificate_withNullCertificateAuthorityOrSelfSigned_andExpectCertificateAuthorityAndSelfSignedAfterMigration() throws Exception {
+  public void getCertificate_withNullCertificateAuthorityOrSelfSigned_andExpectCertificateAuthorityAndSelfSignedAfterMigration()
+    throws Exception {
     final String certificate = TestConstants.TEST_CA;
 
     final Credential credential = new Credential("test_credential");

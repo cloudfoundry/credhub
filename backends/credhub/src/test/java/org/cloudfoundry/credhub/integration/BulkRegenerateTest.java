@@ -15,9 +15,9 @@ import org.springframework.web.context.WebApplicationContext;
 
 import com.jayway.jsonpath.JsonPath;
 import org.cloudfoundry.credhub.CredhubTestApp;
-import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.repositories.CredentialVersionRepository;
 import org.cloudfoundry.credhub.services.CredentialVersionDataService;
+import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.After;

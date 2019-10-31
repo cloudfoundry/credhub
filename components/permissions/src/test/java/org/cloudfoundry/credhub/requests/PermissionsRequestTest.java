@@ -7,7 +7,6 @@ import javax.validation.ConstraintViolation;
 
 import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.PermissionOperation;
-import org.cloudfoundry.credhub.helpers.JsonTestHelper;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Test;
@@ -34,6 +33,7 @@ public class PermissionsRequestTest {
       new PermissionEntry("someone", "test-path", newArrayList(PermissionOperation.READ)));
     final PermissionsRequest original = new PermissionsRequest("test-name", entryList);
     final byte[] json = serialize(original);
+    assert json != null;
     final PermissionsRequest actual = deserialize(json, PermissionsRequest.class);
 
     assertThat(actual.getCredentialName(), equalTo("/test-name"));

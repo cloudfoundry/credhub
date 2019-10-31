@@ -15,7 +15,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import org.cloudfoundry.credhub.CredhubTestApp;
-import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.PermissionOperation;
 import org.cloudfoundry.credhub.config.AuthorizationConfig;
 import org.cloudfoundry.credhub.constants.CredentialType;
@@ -27,6 +26,7 @@ import org.cloudfoundry.credhub.requests.PermissionEntry;
 import org.cloudfoundry.credhub.services.DefaultCredentialService;
 import org.cloudfoundry.credhub.services.DefaultPermissionService;
 import org.cloudfoundry.credhub.services.PermissionInitializer;
+import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

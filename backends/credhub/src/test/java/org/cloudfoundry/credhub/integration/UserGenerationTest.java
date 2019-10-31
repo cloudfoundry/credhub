@@ -14,7 +14,6 @@ import org.springframework.web.context.WebApplicationContext;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
-import org.cloudfoundry.credhub.utils.AuthConstants;
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.hamcrest.BaseMatcher;

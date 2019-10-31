@@ -7,8 +7,6 @@ import org.springframework.context.annotation.Profile
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.config.annotation.ObjectPostProcessor
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
-import org.springframework.security.oauth2.provider.error.DefaultWebResponseExceptionTranslator
-import org.springframework.security.oauth2.provider.error.WebResponseExceptionTranslator
 import org.springframework.security.oauth2.provider.token.DefaultAccessTokenConverter
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices
@@ -28,10 +26,10 @@ class Oauth2TestConfiguration {
     @Bean
     @Throws(Exception::class)
     fun jwtAccessTokenConverter(): JwtAccessTokenConverter {
-        return  JwtAccessTokenConverter()
+        return JwtAccessTokenConverter()
             .apply {
                 accessTokenConverter = DefaultAccessTokenConverter()
-                    .apply{ setIncludeGrantType(true) }
+                    .apply { setIncludeGrantType(true) }
                 setVerifierKey(resourceServerProperties().jwt.keyValue)
                 afterPropertiesSet()
             }
@@ -54,7 +52,7 @@ class Oauth2TestConfiguration {
                 return dataObject
             }
         }
-       return AuthenticationManagerBuilder(objectPostProcessor)
+        return AuthenticationManagerBuilder(objectPostProcessor)
             .parentAuthenticationManager(authenticationManager())
     }
 

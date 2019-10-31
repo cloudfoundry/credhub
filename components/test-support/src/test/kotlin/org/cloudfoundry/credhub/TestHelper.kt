@@ -9,7 +9,7 @@ import java.time.temporal.TemporalAccessor
 import java.util.Optional
 import java.util.function.Consumer
 
-class TestHelper private constructor(){
+class TestHelper private constructor() {
     companion object {
 
         @JvmStatic

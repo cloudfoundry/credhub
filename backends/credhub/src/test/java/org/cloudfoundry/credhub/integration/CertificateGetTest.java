@@ -15,10 +15,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.jayway.jsonpath.JsonPath;
-import org.cloudfoundry.credhub.utils.AuthConstants;
 import org.cloudfoundry.credhub.CredhubTestApp;
-import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.helpers.RequestHelper;
+import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.json.JSONArray;
 import org.junit.Before;
 import org.junit.Test;
@@ -214,10 +213,12 @@ public class CertificateGetTest {
     final String uuid = JsonPath.parse(response)
       .read("$.certificates[0].id");
 
-    final String transitionalCertificate = JsonPath.parse(RequestHelper.regenerateCertificate(mockMvc, uuid, true, ALL_PERMISSIONS_TOKEN))
+    final String transitionalCertificate = JsonPath
+      .parse(RequestHelper.regenerateCertificate(mockMvc, uuid, true, ALL_PERMISSIONS_TOKEN))
       .read("$.value.certificate");
 
-    final String nonTransitionalCertificate = JsonPath.parse(RequestHelper.regenerateCertificate(mockMvc, uuid, false, ALL_PERMISSIONS_TOKEN))
+    final String nonTransitionalCertificate = JsonPath
+      .parse(RequestHelper.regenerateCertificate(mockMvc, uuid, false, ALL_PERMISSIONS_TOKEN))
       .read("$.value.certificate");
 
     final MockHttpServletRequestBuilder request = get("/api/v1/certificates/" + uuid + "/versions?current=true")
@@ -283,7 +284,7 @@ public class CertificateGetTest {
 
     final String response = getCertificateCredentialsByName(mockMvc, ALL_PERMISSIONS_TOKEN, "my-certificate");
     final List<Boolean> values = JsonPath.parse(response)
-            .read("$.certificates[*].versions[*].generated");
+      .read("$.certificates[*].versions[*].generated");
 
     assertThat(values, hasSize(1));
     assertThat(values.get(0), is(true));

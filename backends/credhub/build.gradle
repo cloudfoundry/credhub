@@ -63,7 +63,7 @@ dependencies {
     implementation("org.postgresql:postgresql:${postgresqlJdbcVersion}")
 
     implementation("org.flywaydb:flyway-core")
-    implementation("mysql:mysql-connector-java:${mysqlJdbcVersion}")
+    implementation("org.mariadb.jdbc:mariadb-java-client:${mariadbJdbcVersion}")
     implementation("com.h2database:h2")
 
     // Other

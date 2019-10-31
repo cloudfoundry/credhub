@@ -12,8 +12,8 @@ import org.springframework.web.context.WebApplicationContext;
 
 import com.jayway.jsonpath.JsonPath;
 import org.cloudfoundry.credhub.CredhubTestApp;
-import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.helpers.RequestHelper;
+import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;

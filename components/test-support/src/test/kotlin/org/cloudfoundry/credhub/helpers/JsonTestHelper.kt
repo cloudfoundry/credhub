@@ -11,8 +11,6 @@ import org.hamcrest.Matcher
 import java.io.IOException
 import javax.validation.ConstraintViolation
 import javax.validation.Validation
-import javassist.bytecode.ByteArray
-
 
 class JsonTestHelper private constructor() {
 
@@ -116,5 +114,4 @@ class JsonTestHelper private constructor() {
             return OBJECT_MAPPER.readTree(jsonString)
         }
     }
-
 }

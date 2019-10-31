@@ -49,7 +49,7 @@ dependencies {
     implementation("org.postgresql:postgresql:${postgresqlJdbcVersion}")
 
     implementation("com.h2database:h2")
-    implementation("mysql:mysql-connector-java:${mysqlJdbcVersion}")
+    implementation("org.mariadb.jdbc:mariadb-java-client:${mariadbJdbcVersion}")
 
 
     // Other
