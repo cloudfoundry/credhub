@@ -22,15 +22,8 @@ class TestHelper private constructor() {
 
         @JvmStatic
         fun getBouncyCastleFipsProvider(): BouncyCastleFipsProvider {
-            var bouncyCastleFipsProvider: BouncyCastleFipsProvider? = Security
-                .getProvider(BouncyCastleFipsProvider.PROVIDER_NAME) as BouncyCastleFipsProvider
-
-            if (bouncyCastleFipsProvider == null) {
-                bouncyCastleFipsProvider = BouncyCastleFipsProvider()
-                Security.addProvider(bouncyCastleFipsProvider)
-            }
-
-            return bouncyCastleFipsProvider
+            return Security.getProvider(BouncyCastleFipsProvider.PROVIDER_NAME) as? BouncyCastleFipsProvider
+                ?: BouncyCastleFipsProvider().apply { Security.addProvider(this) }
         }
     }
 }
