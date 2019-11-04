@@ -1,7 +1,6 @@
 package org.cloudfoundry.credhub.entities;
 
 import org.cloudfoundry.credhub.entity.PasswordCredentialVersionData;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

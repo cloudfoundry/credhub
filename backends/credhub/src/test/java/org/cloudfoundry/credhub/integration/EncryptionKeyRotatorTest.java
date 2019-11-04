@@ -47,7 +47,6 @@ import org.cloudfoundry.credhub.services.PasswordEncryptionService;
 import org.cloudfoundry.credhub.services.PasswordKeyProxyFactory;
 import org.cloudfoundry.credhub.utils.CertificateStringConstants;
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

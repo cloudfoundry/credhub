@@ -21,7 +21,6 @@ import org.cloudfoundry.credhub.data.EncryptionKeyCanaryDataService;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.entities.EncryptionKeyCanary;
 import org.cloudfoundry.credhub.util.TimedRetry;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

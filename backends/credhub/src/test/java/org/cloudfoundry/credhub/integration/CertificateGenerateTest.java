@@ -30,7 +30,6 @@ import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.helpers.JsonTestHelper;
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
-
 import org.cloudfoundry.credhub.utils.TestConstants;
 import org.hamcrest.Matchers;
 import org.json.JSONObject;

@@ -4,7 +4,6 @@ import java.util.UUID;
 
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.entity.ValueCredentialVersionData;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

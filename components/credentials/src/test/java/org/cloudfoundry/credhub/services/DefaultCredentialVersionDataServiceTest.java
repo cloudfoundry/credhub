@@ -38,7 +38,6 @@ import org.cloudfoundry.credhub.repositories.CredentialVersionRepository;
 import org.cloudfoundry.credhub.util.CurrentTimeProvider;
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.utils.DatabaseUtilities;
-
 import org.cloudfoundry.credhub.views.FindCredentialResult;
 import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.Before;

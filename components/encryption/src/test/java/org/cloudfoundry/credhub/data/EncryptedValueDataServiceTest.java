@@ -16,7 +16,6 @@ import org.cloudfoundry.credhub.domain.Encryptor;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.repositories.EncryptedValueRepository;
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,51 +33,51 @@ import static org.mockito.Mockito.when;
 @SpringBootTest(classes = CredhubTestApp.class)
 public class EncryptedValueDataServiceTest {
 
-    @MockBean
-    private EncryptedValueRepository encryptedValueRepository;
+  @MockBean
+  private EncryptedValueRepository encryptedValueRepository;
 
-    @MockBean
-    private Encryptor encryptor;
+  @MockBean
+  private Encryptor encryptor;
 
-    private EncryptedValueDataService subject;
+  private EncryptedValueDataService subject;
 
-    @Before
-    public void beforeEach() {
-        subject = new EncryptedValueDataService(encryptedValueRepository, encryptor);
-    }
+  @Before
+  public void beforeEach() {
+    subject = new EncryptedValueDataService(encryptedValueRepository, encryptor);
+  }
 
-    @Test
-    public void countAllByCanaryUuid() throws Exception {
-        final UUID uuid = UUID.randomUUID();
+  @Test
+  public void countAllByCanaryUuid() throws Exception {
+    final UUID uuid = UUID.randomUUID();
 
-        subject.countAllByCanaryUuid(uuid);
+    subject.countAllByCanaryUuid(uuid);
 
-        verify(encryptedValueRepository).countByEncryptionKeyUuidNot(uuid);
-    }
+    verify(encryptedValueRepository).countByEncryptionKeyUuidNot(uuid);
+  }
 
-    @Test
-    public void findByCanaryUuids() throws Exception {
-        final List<UUID> canaryUuids = Collections.singletonList(UUID.randomUUID());
-        final Slice<EncryptedValue> encryptedValues = new SliceImpl(Collections.singletonList(new EncryptedValue()));
-        when(encryptedValueRepository.findByEncryptionKeyUuidIn(eq(canaryUuids), any())).thenReturn(encryptedValues);
+  @Test
+  public void findByCanaryUuids() throws Exception {
+    final List<UUID> canaryUuids = Collections.singletonList(UUID.randomUUID());
+    final Slice<EncryptedValue> encryptedValues = new SliceImpl(Collections.singletonList(new EncryptedValue()));
+    when(encryptedValueRepository.findByEncryptionKeyUuidIn(eq(canaryUuids), any())).thenReturn(encryptedValues);
 
-        assertThat(subject.findByCanaryUuids(canaryUuids), equalTo(encryptedValues));
-    }
+    assertThat(subject.findByCanaryUuids(canaryUuids), equalTo(encryptedValues));
+  }
 
-    @Test
-    public void rotate() throws Exception {
-        final EncryptedValue newEncryption = new EncryptedValue(UUID.randomUUID(), "expected value".getBytes(UTF_8),
-                "nonce".getBytes(UTF_8));
-        final EncryptedValue value = new EncryptedValue();
-        value.setEncryptedValue("bytes".getBytes(UTF_8));
-        value.setEncryptionKeyUuid(UUID.randomUUID());
-        value.setNonce("nonce".getBytes(UTF_8));
-        when(encryptor.decrypt(any(EncryptedValue.class))).thenReturn("expected value");
-        when(encryptor.encrypt("expected value")).thenReturn(newEncryption);
-        subject.rotate(value);
+  @Test
+  public void rotate() throws Exception {
+    final EncryptedValue newEncryption = new EncryptedValue(UUID.randomUUID(), "expected value".getBytes(UTF_8),
+      "nonce".getBytes(UTF_8));
+    final EncryptedValue value = new EncryptedValue();
+    value.setEncryptedValue("bytes".getBytes(UTF_8));
+    value.setEncryptionKeyUuid(UUID.randomUUID());
+    value.setNonce("nonce".getBytes(UTF_8));
+    when(encryptor.decrypt(any(EncryptedValue.class))).thenReturn("expected value");
+    when(encryptor.encrypt("expected value")).thenReturn(newEncryption);
+    subject.rotate(value);
 
-        verify(encryptedValueRepository).saveAndFlush(newEncryption);
-        assertThat(newEncryption.getUuid(), equalTo(value.getUuid()));
-    }
+    verify(encryptedValueRepository).saveAndFlush(newEncryption);
+    assertThat(newEncryption.getUuid(), equalTo(value.getUuid()));
+  }
 
 }

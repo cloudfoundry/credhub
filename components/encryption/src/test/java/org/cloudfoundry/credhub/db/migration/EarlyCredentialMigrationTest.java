@@ -17,7 +17,6 @@ import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.entities.EncryptionKeyCanary;
 import org.cloudfoundry.credhub.repositories.EncryptionKeyCanaryRepository;
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
-
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationVersion;
 import org.junit.After;

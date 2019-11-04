@@ -9,7 +9,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.bouncycastle.util.encoders.Hex;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.entities.EncryptionKeyCanary;
-
 import org.cloudfoundry.credhub.utils.TestPasswordKeyProxyFactory;
 import org.junit.Before;
 import org.junit.Test;

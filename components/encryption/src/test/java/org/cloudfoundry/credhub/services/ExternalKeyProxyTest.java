@@ -6,7 +6,6 @@ import javax.crypto.IllegalBlockSizeException;
 import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
 import org.cloudfoundry.credhub.entities.EncryptionKeyCanary;
 import org.cloudfoundry.credhub.exceptions.IncorrectKeyException;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

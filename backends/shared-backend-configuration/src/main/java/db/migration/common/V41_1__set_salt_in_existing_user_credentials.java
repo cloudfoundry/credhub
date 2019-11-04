@@ -8,7 +8,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.cloudfoundry.credhub.CryptSaltFactory;
-
 import org.cloudfoundry.credhub.utils.UuidUtil;
 import org.flywaydb.core.api.migration.spring.SpringJdbcMigration;
 

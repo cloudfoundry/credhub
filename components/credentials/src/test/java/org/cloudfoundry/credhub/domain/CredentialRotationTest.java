@@ -12,7 +12,6 @@ import org.cloudfoundry.credhub.entity.SshCredentialVersionData;
 import org.cloudfoundry.credhub.entity.ValueCredentialVersionData;
 import org.cloudfoundry.credhub.requests.StringGenerationParameters;
 import org.cloudfoundry.credhub.services.RetryingEncryptionService;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

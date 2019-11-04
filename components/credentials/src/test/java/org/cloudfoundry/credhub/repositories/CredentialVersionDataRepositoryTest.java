@@ -17,7 +17,6 @@ import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.entity.ValueCredentialVersionData;
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

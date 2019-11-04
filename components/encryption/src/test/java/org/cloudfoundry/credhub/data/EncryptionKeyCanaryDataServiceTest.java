@@ -15,7 +15,6 @@ import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.entities.EncryptionKeyCanary;
 import org.cloudfoundry.credhub.repositories.EncryptionKeyCanaryRepository;
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

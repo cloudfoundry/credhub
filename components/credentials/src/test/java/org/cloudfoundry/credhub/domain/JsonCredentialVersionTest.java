@@ -10,7 +10,6 @@ import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.entity.JsonCredentialVersionData;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

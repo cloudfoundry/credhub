@@ -6,7 +6,6 @@ import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.entity.PasswordCredentialVersionData;
 import org.cloudfoundry.credhub.requests.StringGenerationParameters;
 import org.cloudfoundry.credhub.utils.JsonObjectMapper;
-
 import org.hamcrest.MatcherAssert;
 import org.junit.Before;
 import org.junit.Test;

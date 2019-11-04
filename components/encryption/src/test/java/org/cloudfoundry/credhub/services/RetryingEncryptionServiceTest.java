@@ -9,7 +9,6 @@ import javax.crypto.IllegalBlockSizeException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.exceptions.KeyNotFoundException;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

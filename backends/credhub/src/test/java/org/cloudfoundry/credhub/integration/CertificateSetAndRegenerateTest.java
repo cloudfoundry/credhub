@@ -36,7 +36,6 @@ import static org.cloudfoundry.credhub.helpers.RequestHelper.grantPermissions;
 import static org.cloudfoundry.credhub.utils.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.cloudfoundry.credhub.utils.AuthConstants.NO_PERMISSIONS_ACTOR_ID;
 import static org.cloudfoundry.credhub.utils.AuthConstants.NO_PERMISSIONS_TOKEN;
-
 import static org.cloudfoundry.credhub.utils.TestConstants.INVALID_PRIVATE_KEY_NO_HEADERS;
 import static org.cloudfoundry.credhub.utils.TestConstants.OTHER_TEST_CERTIFICATE;
 import static org.cloudfoundry.credhub.utils.TestConstants.OTHER_TEST_PRIVATE_KEY;
