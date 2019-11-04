@@ -9,13 +9,14 @@ import javax.crypto.IllegalBlockSizeException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.exceptions.KeyNotFoundException;
-import org.cloudfoundry.credhub.utils.StringUtil;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.InOrder;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
@@ -233,12 +234,12 @@ public class RetryingEncryptionServiceTest {
 
     when(keySet.get(activeKeyUuid))
       .thenReturn(firstActiveKey);
-    when(firstActiveKey.decrypt("fake-encrypted-value".getBytes(StringUtil.UTF_8), "fake-nonce".getBytes(StringUtil.UTF_8)))
+    when(firstActiveKey.decrypt("fake-encrypted-value".getBytes(UTF_8), "fake-nonce".getBytes(UTF_8)))
       .thenReturn("fake-plaintext");
 
 
     assertThat(
-      subject.decrypt(new EncryptedValue(activeKeyUuid, "fake-encrypted-value".getBytes(StringUtil.UTF_8), "fake-nonce".getBytes(StringUtil.UTF_8))),
+      subject.decrypt(new EncryptedValue(activeKeyUuid, "fake-encrypted-value".getBytes(UTF_8), "fake-nonce".getBytes(UTF_8))),
       equalTo("fake-plaintext"));
 
     verify(encryptionService, times(0)).reconnect(any(IllegalBlockSizeException.class));
@@ -260,7 +261,7 @@ public class RetryingEncryptionServiceTest {
     when(firstActiveKey.getProvider()).thenReturn(encryptionService);
 
     try {
-      subject.decrypt(new EncryptedValue(activeKeyUuid, "an encrypted value".getBytes(StringUtil.UTF_8), "a nonce".getBytes(StringUtil.UTF_8)));
+      subject.decrypt(new EncryptedValue(activeKeyUuid, "an encrypted value".getBytes(UTF_8), "a nonce".getBytes(UTF_8)));
       fail("Expected exception");
     } catch (final ProviderException e) {
       // expected
@@ -288,7 +289,7 @@ public class RetryingEncryptionServiceTest {
     reset(writeLock);
 
     try {
-      subject.decrypt(new EncryptedValue(activeKeyUuid, "an encrypted value".getBytes(StringUtil.UTF_8), "a nonce".getBytes(StringUtil.UTF_8)));
+      subject.decrypt(new EncryptedValue(activeKeyUuid, "an encrypted value".getBytes(UTF_8), "a nonce".getBytes(UTF_8)));
     } catch (final ProviderException e) {
       // expected
     }
@@ -312,7 +313,7 @@ public class RetryingEncryptionServiceTest {
       .reconnect(any(Exception.class));
 
     try {
-      subject.decrypt(new EncryptedValue(activeKeyUuid, "an encrypted value".getBytes(StringUtil.UTF_8), "a nonce".getBytes(StringUtil.UTF_8)));
+      subject.decrypt(new EncryptedValue(activeKeyUuid, "an encrypted value".getBytes(UTF_8), "a nonce".getBytes(UTF_8)));
     } catch (final IllegalBlockSizeException | RuntimeException e) {
       // expected
     }
@@ -335,17 +336,17 @@ public class RetryingEncryptionServiceTest {
       .thenReturn(firstActiveKey);
 
     when(firstActiveKey
-      .decrypt("fake-encrypted-value".getBytes(StringUtil.UTF_8), "fake-nonce".getBytes(StringUtil.UTF_8)))
+      .decrypt("fake-encrypted-value".getBytes(UTF_8), "fake-nonce".getBytes(UTF_8)))
       .thenThrow(new IllegalBlockSizeException("test exception"));
     when(firstActiveKey.getProvider()).thenReturn(encryptionService);
 
     when(secondActiveKey
-      .decrypt("fake-encrypted-value".getBytes(StringUtil.UTF_8), "fake-nonce".getBytes(StringUtil.UTF_8)))
+      .decrypt("fake-encrypted-value".getBytes(UTF_8), "fake-nonce".getBytes(UTF_8)))
       .thenReturn("fake-plaintext");
     when(secondActiveKey.getProvider()).thenReturn(encryptionService);
 
     assertThat(subject
-        .decrypt(new EncryptedValue(activeKeyUuid, "fake-encrypted-value".getBytes(StringUtil.UTF_8), "fake-nonce".getBytes(StringUtil.UTF_8))),
+        .decrypt(new EncryptedValue(activeKeyUuid, "fake-encrypted-value".getBytes(UTF_8), "fake-nonce".getBytes(UTF_8))),
       equalTo("fake-plaintext"));
 
     verify(encryptionService, times(1))
@@ -358,7 +359,7 @@ public class RetryingEncryptionServiceTest {
     final UUID fakeUuid = UUID.randomUUID();
     reset(encryptionService);
     when(keySet.get(fakeUuid)).thenReturn(null);
-    subject.decrypt(new EncryptedValue(fakeUuid, "something we cant read".getBytes(StringUtil.UTF_8), "nonce".getBytes(StringUtil.UTF_8)));
+    subject.decrypt(new EncryptedValue(fakeUuid, "something we cant read".getBytes(UTF_8), "nonce".getBytes(UTF_8)));
   }
 
   @Test
@@ -367,7 +368,7 @@ public class RetryingEncryptionServiceTest {
     when(keySet.get(activeKeyUuid))
       .thenReturn(firstActiveKey);
 
-    subject.decrypt(new EncryptedValue(activeKeyUuid, "an encrypted value".getBytes(StringUtil.UTF_8), "a nonce".getBytes(StringUtil.UTF_8)));
+    subject.decrypt(new EncryptedValue(activeKeyUuid, "an encrypted value".getBytes(UTF_8), "a nonce".getBytes(UTF_8)));
     verify(readLock, times(1)).lock();
     verify(readLock, times(1)).unlock();
 
@@ -386,7 +387,7 @@ public class RetryingEncryptionServiceTest {
       @Override
       public void run() {
         try {
-          subject.decrypt(new EncryptedValue(activeKeyUuid, "a value 1".getBytes(StringUtil.UTF_8), "nonce".getBytes(StringUtil.UTF_8)));
+          subject.decrypt(new EncryptedValue(activeKeyUuid, "a value 1".getBytes(UTF_8), "nonce".getBytes(UTF_8)));
         } catch (final Exception e) {
           //do nothing
         }
@@ -400,7 +401,7 @@ public class RetryingEncryptionServiceTest {
       @Override
       public void run() {
         try {
-          subject.decrypt(new EncryptedValue(activeKeyUuid, "a value 2".getBytes(StringUtil.UTF_8), "nonce".getBytes(StringUtil.UTF_8)));
+          subject.decrypt(new EncryptedValue(activeKeyUuid, "a value 2".getBytes(UTF_8), "nonce".getBytes(UTF_8)));
         } catch (final Exception e) {
           //do nothing
         }

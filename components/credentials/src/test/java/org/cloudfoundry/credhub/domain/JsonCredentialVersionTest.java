@@ -10,12 +10,13 @@ import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.entity.JsonCredentialVersionData;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
-import org.cloudfoundry.credhub.utils.StringUtil;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static junit.framework.TestCase.fail;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -45,8 +46,8 @@ public class JsonCredentialVersionTest {
     }
 
     final Encryptor encryptor = mock(Encryptor.class);
-    final byte[] encryptedValue = "fake-encrypted-value".getBytes(StringUtil.UTF_8);
-    final byte[] nonce = "fake-nonce".getBytes(StringUtil.UTF_8);
+    final byte[] encryptedValue = "fake-encrypted-value".getBytes(UTF_8);
+    final byte[] nonce = "fake-nonce".getBytes(UTF_8);
     final UUID canaryUuid = UUID.randomUUID();
     final EncryptedValue encryption = new EncryptedValue(canaryUuid, encryptedValue, nonce);
     when(encryptor.encrypt(serializedValue))

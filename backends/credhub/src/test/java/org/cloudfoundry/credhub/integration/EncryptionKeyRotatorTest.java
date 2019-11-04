@@ -47,11 +47,12 @@ import org.cloudfoundry.credhub.services.PasswordEncryptionService;
 import org.cloudfoundry.credhub.services.PasswordKeyProxyFactory;
 import org.cloudfoundry.credhub.utils.CertificateStringConstants;
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
-import org.cloudfoundry.credhub.utils.StringUtil;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.cloudfoundry.credhub.helpers.JsonTestHelper.parse;
 import static org.cloudfoundry.credhub.services.EncryptionKeyCanaryMapper.CANARY_VALUE;
 import static org.cloudfoundry.credhub.utils.AuthConstants.ALL_PERMISSIONS_TOKEN;
@@ -341,8 +342,8 @@ public class EncryptionKeyRotatorTest {
 
   private void createUnknownKey() {
     unknownCanary = new EncryptionKeyCanary();
-    unknownCanary.setEncryptedCanaryValue("bad-encrypted-value".getBytes(StringUtil.UTF_8));
-    unknownCanary.setNonce("bad-nonce".getBytes(StringUtil.UTF_8));
+    unknownCanary.setEncryptedCanaryValue("bad-encrypted-value".getBytes(UTF_8));
+    unknownCanary.setNonce("bad-nonce".getBytes(UTF_8));
     unknownCanary = encryptionKeyCanaryDataService.save(unknownCanary);
   }
 

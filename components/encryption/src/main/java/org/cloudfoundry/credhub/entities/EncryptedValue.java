@@ -20,8 +20,9 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.cloudfoundry.credhub.constants.EncryptionConstants;
 import org.cloudfoundry.credhub.constants.UuidConstants;
 import org.cloudfoundry.credhub.util.InstantMillisecondsConverter;
-import org.cloudfoundry.credhub.utils.StringUtil;
 import org.hibernate.annotations.GenericGenerator;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Entity
 @Table(name = EncryptedValue.TABLE_NAME)
@@ -58,7 +59,7 @@ public class EncryptedValue {
   }
 
   public EncryptedValue(final UUID encryptionKeyUuid, final String encryptedValueString, final String nonceString) {
-    this(encryptionKeyUuid, encryptedValueString.getBytes(StringUtil.UTF_8), nonceString.getBytes(StringUtil.UTF_8));
+    this(encryptionKeyUuid, encryptedValueString.getBytes(UTF_8), nonceString.getBytes(UTF_8));
   }
 
   public EncryptedValue(final UUID encryptionKeyUuid, final byte[] encryptedValue, final byte[] nonce) {

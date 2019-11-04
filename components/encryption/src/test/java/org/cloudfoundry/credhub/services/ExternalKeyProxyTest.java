@@ -6,13 +6,14 @@ import javax.crypto.IllegalBlockSizeException;
 import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
 import org.cloudfoundry.credhub.entities.EncryptionKeyCanary;
 import org.cloudfoundry.credhub.exceptions.IncorrectKeyException;
-import org.cloudfoundry.credhub.utils.StringUtil;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.ArgumentCaptor;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -39,8 +40,8 @@ public class ExternalKeyProxyTest {
 
   @Test
   public void matchesCanary_shouldReturnTrue_IfTheCanaryDecryptsToTheCanaryValue() throws Exception {
-    when(encryptionKeyCanary.getEncryptedCanaryValue()).thenReturn("value".getBytes(StringUtil.UTF_8));
-    when(encryptionKeyCanary.getNonce()).thenReturn("nonce".getBytes(StringUtil.UTF_8));
+    when(encryptionKeyCanary.getEncryptedCanaryValue()).thenReturn("value".getBytes(UTF_8));
+    when(encryptionKeyCanary.getNonce()).thenReturn("nonce".getBytes(UTF_8));
     when(encryptionKeyMetadata.getEncryptionKeyName()).thenReturn("name");
     when(encryptionProvider.decrypt(any(), any(), any())).thenReturn(EncryptionKeyCanaryMapper.CANARY_VALUE);
 
@@ -48,7 +49,7 @@ public class ExternalKeyProxyTest {
     assertTrue(subject.matchesCanary(encryptionKeyCanary));
 
     final ArgumentCaptor<EncryptionKey> argument = ArgumentCaptor.forClass(EncryptionKey.class);
-    verify(encryptionProvider).decrypt(argument.capture(), eq("value".getBytes(StringUtil.UTF_8)), eq("nonce".getBytes(StringUtil.UTF_8)));
+    verify(encryptionProvider).decrypt(argument.capture(), eq("value".getBytes(UTF_8)), eq("nonce".getBytes(UTF_8)));
     assertEquals(encryptionProvider, argument.getValue().getProvider());
     assertEquals("name", argument.getValue().getEncryptionKeyName());
   }

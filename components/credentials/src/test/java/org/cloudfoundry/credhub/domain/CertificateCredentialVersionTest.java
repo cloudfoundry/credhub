@@ -5,12 +5,13 @@ import java.util.UUID;
 import org.cloudfoundry.credhub.TestHelper;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData;
-import org.cloudfoundry.credhub.utils.StringUtil;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.cloudfoundry.credhub.utils.CertificateStringConstants.PRIVATE_KEY;
 import static org.cloudfoundry.credhub.utils.CertificateStringConstants.SELF_SIGNED_CA_CERT;
 import static org.cloudfoundry.credhub.utils.CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT;
@@ -37,8 +38,8 @@ public class CertificateCredentialVersionTest {
     TestHelper.getBouncyCastleFipsProvider();
     encryptor = mock(Encryptor.class);
 
-    encryptedValue = "fake-encrypted-value".getBytes(StringUtil.UTF_8);
-    nonce = "fake-nonce".getBytes(StringUtil.UTF_8);
+    encryptedValue = "fake-encrypted-value".getBytes(UTF_8);
+    nonce = "fake-nonce".getBytes(UTF_8);
     canaryUuid = UUID.randomUUID();
 
     final EncryptedValue encryption = new EncryptedValue(canaryUuid, encryptedValue, nonce);

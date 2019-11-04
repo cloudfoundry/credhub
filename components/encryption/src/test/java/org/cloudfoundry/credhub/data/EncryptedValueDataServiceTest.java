@@ -16,11 +16,12 @@ import org.cloudfoundry.credhub.domain.Encryptor;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.repositories.EncryptedValueRepository;
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
-import org.cloudfoundry.credhub.utils.StringUtil;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -66,12 +67,12 @@ public class EncryptedValueDataServiceTest {
 
     @Test
     public void rotate() throws Exception {
-        final EncryptedValue newEncryption = new EncryptedValue(UUID.randomUUID(), "expected value".getBytes(StringUtil.UTF_8),
-                "nonce".getBytes(StringUtil.UTF_8));
+        final EncryptedValue newEncryption = new EncryptedValue(UUID.randomUUID(), "expected value".getBytes(UTF_8),
+                "nonce".getBytes(UTF_8));
         final EncryptedValue value = new EncryptedValue();
-        value.setEncryptedValue("bytes".getBytes(StringUtil.UTF_8));
+        value.setEncryptedValue("bytes".getBytes(UTF_8));
         value.setEncryptionKeyUuid(UUID.randomUUID());
-        value.setNonce("nonce".getBytes(StringUtil.UTF_8));
+        value.setNonce("nonce".getBytes(UTF_8));
         when(encryptor.decrypt(any(EncryptedValue.class))).thenReturn("expected value");
         when(encryptor.encrypt("expected value")).thenReturn(newEncryption);
         subject.rotate(value);

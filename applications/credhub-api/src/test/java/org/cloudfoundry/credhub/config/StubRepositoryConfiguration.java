@@ -9,10 +9,11 @@ import org.springframework.context.annotation.Profile;
 import org.cloudfoundry.credhub.PermissionOperation;
 import org.cloudfoundry.credhub.data.PermissionData;
 import org.cloudfoundry.credhub.repositories.PermissionRepository;
-import org.cloudfoundry.credhub.utils.StringUtil;
+
 import org.mockito.Mockito;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.mockito.ArgumentMatchers.any;
 
 @Profile("stub-repositories")
@@ -33,7 +34,7 @@ public class StubRepositoryConfiguration {
       )
     );
 
-    permissionData.setUuid(UUID.nameUUIDFromBytes("some-permission-uuid".getBytes(StringUtil.UTF_8)));
+    permissionData.setUuid(UUID.nameUUIDFromBytes("some-permission-uuid".getBytes(UTF_8)));
 
     Mockito.when(mockPermissionRepository.findByPathAndActor(any(), any())).thenReturn(permissionData);
 

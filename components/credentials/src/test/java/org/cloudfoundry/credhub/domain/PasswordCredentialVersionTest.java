@@ -6,13 +6,14 @@ import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.entity.PasswordCredentialVersionData;
 import org.cloudfoundry.credhub.requests.StringGenerationParameters;
 import org.cloudfoundry.credhub.utils.JsonObjectMapper;
-import org.cloudfoundry.credhub.utils.StringUtil;
+
 import org.hamcrest.MatcherAssert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -45,10 +46,10 @@ public class PasswordCredentialVersionTest {
     canaryUuid = UUID.randomUUID();
     encryptor = mock(Encryptor.class);
 
-    encryptedValue = "fake-encrypted-value".getBytes(StringUtil.UTF_8);
-    nonce = "fake-nonce".getBytes(StringUtil.UTF_8);
-    encryptedParametersValue = "fake-encrypted-parameters".getBytes(StringUtil.UTF_8);
-    parametersNonce = "fake-parameters-nonce".getBytes(StringUtil.UTF_8);
+    encryptedValue = "fake-encrypted-value".getBytes(UTF_8);
+    nonce = "fake-nonce".getBytes(UTF_8);
+    encryptedParametersValue = "fake-encrypted-parameters".getBytes(UTF_8);
+    parametersNonce = "fake-parameters-nonce".getBytes(UTF_8);
 
     generationParameters = new StringGenerationParameters();
     generationParameters.setExcludeLower(true);

@@ -9,13 +9,14 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.bouncycastle.util.encoders.Hex;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.entities.EncryptionKeyCanary;
-import org.cloudfoundry.credhub.utils.StringUtil;
+
 import org.cloudfoundry.credhub.utils.TestPasswordKeyProxyFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static org.apache.commons.lang3.ArrayUtils.toPrimitive;
 import static org.cloudfoundry.credhub.constants.EncryptionConstants.NONCE_SIZE;
@@ -107,7 +108,7 @@ public class PasswordBasedKeyProxyTest {
   @Test
   public void matchesCanary_whenCanaryHasEmptySalt_returnsFalse() {
     final EncryptionKeyCanary canary = new EncryptionKeyCanary();
-    canary.setSalt("".getBytes(StringUtil.UTF_8));
+    canary.setSalt("".getBytes(UTF_8));
     assertFalse(subject.matchesCanary(canary));
   }
 

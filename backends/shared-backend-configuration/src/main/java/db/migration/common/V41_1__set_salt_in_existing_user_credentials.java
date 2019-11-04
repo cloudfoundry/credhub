@@ -8,9 +8,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.cloudfoundry.credhub.CryptSaltFactory;
-import org.cloudfoundry.credhub.utils.StringUtil;
+
 import org.cloudfoundry.credhub.utils.UuidUtil;
 import org.flywaydb.core.api.migration.spring.SpringJdbcMigration;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 @SuppressWarnings("unused")
 public class V41_1__set_salt_in_existing_user_credentials implements SpringJdbcMigration {
@@ -34,7 +36,7 @@ public class V41_1__set_salt_in_existing_user_credentials implements SpringJdbcM
     final List<UUID> uuids = jdbcTemplate.query("select uuid from user_credential", (rowSet, rowNum) -> {
       final byte[] uuidBytes = rowSet.getBytes("uuid");
       if ("postgresql".equals(databaseName)) {
-        return UUID.fromString(new String(uuidBytes, StringUtil.UTF_8));
+        return UUID.fromString(new String(uuidBytes, UTF_8));
       } else {
         final ByteBuffer byteBuffer = ByteBuffer.wrap(uuidBytes);
         return new UUID(byteBuffer.getLong(), byteBuffer.getLong());

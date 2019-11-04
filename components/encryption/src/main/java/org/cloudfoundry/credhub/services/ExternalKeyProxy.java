@@ -11,8 +11,9 @@ import javax.crypto.IllegalBlockSizeException;
 import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
 import org.cloudfoundry.credhub.entities.EncryptionKeyCanary;
 import org.cloudfoundry.credhub.exceptions.IncorrectKeyException;
-import org.cloudfoundry.credhub.utils.StringUtil;
 
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.unmodifiableList;
 
 public class ExternalKeyProxy implements KeyProxy {
@@ -44,9 +45,9 @@ public class ExternalKeyProxy implements KeyProxy {
     try {
       plaintext = encryptionProvider.decrypt(new EncryptionKey(encryptionProvider, null, null, encryptionKeyMetadata.getEncryptionKeyName()), canary.getEncryptedCanaryValue(), canary.getNonce());
       return Arrays.equals(
-        EncryptionKeyCanaryMapper.CANARY_VALUE.getBytes(StringUtil.UTF_8), plaintext.getBytes(StringUtil.UTF_8))
-        || Arrays.equals(EncryptionKeyCanaryMapper.DEPRECATED_CANARY_VALUE.getBytes(StringUtil.UTF_8), plaintext.getBytes(
-        StringUtil.UTF_8));
+        EncryptionKeyCanaryMapper.CANARY_VALUE.getBytes(UTF_8), plaintext.getBytes(UTF_8))
+        || Arrays.equals(EncryptionKeyCanaryMapper.DEPRECATED_CANARY_VALUE.getBytes(UTF_8), plaintext.getBytes(
+        UTF_8));
     } catch (final AEADBadTagException e) {
     } catch (final IllegalBlockSizeException e) {
       if (!e.getMessage().contains("returns 0x40")) {

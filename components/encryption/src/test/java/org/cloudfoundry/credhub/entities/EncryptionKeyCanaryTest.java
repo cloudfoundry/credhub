@@ -2,12 +2,13 @@ package org.cloudfoundry.credhub.entities;
 
 import java.util.UUID;
 
-import org.cloudfoundry.credhub.utils.StringUtil;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
@@ -45,7 +46,7 @@ public class EncryptionKeyCanaryTest {
 
   @Test
   public void nonce_doesNotStoreOrPassByReference() throws Exception {
-    final byte[] toModify = "foobar".getBytes(StringUtil.UTF_8);
+    final byte[] toModify = "foobar".getBytes(UTF_8);
     subject.setEncryptedCanaryValue(toModify);
 
 
@@ -67,7 +68,7 @@ public class EncryptionKeyCanaryTest {
 
   @Test
   public void salt_doesNotStoreOrPassByReference() throws Exception {
-    final byte[] toModify = "foobar".getBytes(StringUtil.UTF_8);
+    final byte[] toModify = "foobar".getBytes(UTF_8);
 
     subject.setSalt(toModify);
     final byte[] unModified = toModify.clone();

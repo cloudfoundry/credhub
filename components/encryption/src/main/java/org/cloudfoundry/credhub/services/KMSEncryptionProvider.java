@@ -32,9 +32,9 @@ import org.cloudfoundry.credhub.services.grpc.DecryptResponse;
 import org.cloudfoundry.credhub.services.grpc.EncryptRequest;
 import org.cloudfoundry.credhub.services.grpc.EncryptResponse;
 import org.cloudfoundry.credhub.services.grpc.KeyManagementServiceGrpc;
-import org.cloudfoundry.credhub.utils.StringUtil;
 
 import static io.grpc.internal.GrpcUtil.DEFAULT_KEEPALIVE_TIMEOUT_NANOS;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class KMSEncryptionProvider implements EncryptionProvider {
   private static final Logger LOGGER = LogManager.getLogger(KMSEncryptionProvider.class.getName());
@@ -51,7 +51,7 @@ public class KMSEncryptionProvider implements EncryptionProvider {
     SslContext sslContext;
     try {
       sslContext = GrpcSslContexts.forClient()
-        .trustManager(new ByteArrayInputStream(configuration.getCa().getBytes(StringUtil.UTF_8)))
+        .trustManager(new ByteArrayInputStream(configuration.getCa().getBytes(UTF_8)))
         .build();
     } catch (SSLException e) {
       throw new RuntimeException(e);

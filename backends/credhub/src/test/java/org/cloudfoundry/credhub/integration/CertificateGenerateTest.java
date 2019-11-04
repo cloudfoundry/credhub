@@ -30,7 +30,7 @@ import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.helpers.JsonTestHelper;
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
-import org.cloudfoundry.credhub.utils.StringUtil;
+
 import org.cloudfoundry.credhub.utils.TestConstants;
 import org.hamcrest.Matchers;
 import org.json.JSONObject;
@@ -38,6 +38,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.cloudfoundry.credhub.helpers.RequestHelper.expectErrorCodeWhileGeneratingCertificate;
 import static org.cloudfoundry.credhub.helpers.RequestHelper.generateCa;
 import static org.cloudfoundry.credhub.helpers.RequestHelper.generateCertificateCredential;
@@ -158,10 +159,10 @@ public class CertificateGenerateTest {
 
         final CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
         final X509Certificate caPem = (X509Certificate) certificateFactory
-                .generateCertificate(new ByteArrayInputStream(picardCert.getBytes(StringUtil.UTF_8)));
+                .generateCertificate(new ByteArrayInputStream(picardCert.getBytes(UTF_8)));
 
         final X509Certificate certPem = (X509Certificate) certificateFactory
-                .generateCertificate(new ByteArrayInputStream(cert.getBytes(StringUtil.UTF_8)));
+                .generateCertificate(new ByteArrayInputStream(cert.getBytes(UTF_8)));
 
         final byte[] subjectKeyIdDer = caPem.getExtensionValue(Extension.subjectKeyIdentifier.getId());
         final SubjectKeyIdentifier subjectKeyIdentifier = SubjectKeyIdentifier.getInstance(JcaX509ExtensionUtils.parseExtensionValue(subjectKeyIdDer));

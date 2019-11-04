@@ -17,13 +17,15 @@ import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.entities.EncryptionKeyCanary;
 import org.cloudfoundry.credhub.repositories.EncryptionKeyCanaryRepository;
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
-import org.cloudfoundry.credhub.utils.StringUtil;
+
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationVersion;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 @RunWith(SpringRunner.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -67,7 +69,7 @@ public class EarlyCredentialMigrationTest {
     public void successfullyAppliesLatestMigration() {
         jdbcTemplate.update(
                 "insert into named_canary (id, name, encrypted_value, nonce) values (?, ?, ?, ?)",
-                10, "canary", "encrypted-value".getBytes(StringUtil.UTF_8), "nonce".getBytes(StringUtil.UTF_8)
+                10, "canary", "encrypted-value".getBytes(UTF_8), "nonce".getBytes(UTF_8)
         );
 
         // we use raw sql because the entities assume the latest version

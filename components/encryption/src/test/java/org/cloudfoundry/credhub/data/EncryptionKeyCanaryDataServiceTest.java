@@ -15,12 +15,13 @@ import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.entities.EncryptionKeyCanary;
 import org.cloudfoundry.credhub.repositories.EncryptionKeyCanaryRepository;
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
-import org.cloudfoundry.credhub.utils.StringUtil;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
@@ -47,8 +48,8 @@ public class EncryptionKeyCanaryDataServiceTest {
   @Test
   public void save_savesTheEncryptionCanary() {
     final EncryptionKeyCanary encryptionKeyCanary = new EncryptionKeyCanary();
-    encryptionKeyCanary.setNonce("test-nonce".getBytes(StringUtil.UTF_8));
-    encryptionKeyCanary.setEncryptedCanaryValue("test-value".getBytes(StringUtil.UTF_8));
+    encryptionKeyCanary.setNonce("test-nonce".getBytes(UTF_8));
+    encryptionKeyCanary.setEncryptedCanaryValue("test-value".getBytes(UTF_8));
     subject.save(encryptionKeyCanary);
 
     final List<EncryptionKeyCanary> canaries = subject.findAll();
@@ -59,8 +60,8 @@ public class EncryptionKeyCanaryDataServiceTest {
 
     assertNotNull(actual.getUuid());
     assertThat(actual.getUuid(), equalTo(encryptionKeyCanary.getUuid()));
-    assertThat(actual.getNonce(), equalTo("test-nonce".getBytes(StringUtil.UTF_8)));
-    assertThat(actual.getEncryptedCanaryValue(), equalTo("test-value".getBytes(StringUtil.UTF_8)));
+    assertThat(actual.getNonce(), equalTo("test-nonce".getBytes(UTF_8)));
+    assertThat(actual.getEncryptedCanaryValue(), equalTo("test-value".getBytes(UTF_8)));
   }
 
   @Test

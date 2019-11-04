@@ -6,7 +6,9 @@ import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
 import org.apache.commons.lang3.StringUtils;
-import org.cloudfoundry.credhub.utils.StringUtil;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 
 public class CertificateLengthValidator implements ConstraintValidator<ValidCertificateLength, Object> {
 
@@ -29,7 +31,7 @@ public class CertificateLengthValidator implements ConstraintValidator<ValidCert
         }
 
         final String certificate = (String) field.get(value);
-        if (certificate.getBytes(StringUtil.UTF_8).length > 7000) {
+        if (certificate.getBytes(UTF_8).length > 7000) {
           return false;
         }
 

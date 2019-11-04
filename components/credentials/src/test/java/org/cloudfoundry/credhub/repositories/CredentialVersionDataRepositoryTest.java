@@ -17,12 +17,13 @@ import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.entity.ValueCredentialVersionData;
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
-import org.cloudfoundry.credhub.utils.StringUtil;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
@@ -70,7 +71,7 @@ public class CredentialVersionDataRepositoryTest {
     final EncryptedValue entityEncryptedValue = new EncryptedValue();
     entityEncryptedValue.setEncryptionKeyUuid(canaryUuid);
     entityEncryptedValue.setEncryptedValue(encryptedValue);
-    entityEncryptedValue.setNonce("nonce".getBytes(StringUtil.UTF_8));
+    entityEncryptedValue.setNonce("nonce".getBytes(UTF_8));
 
     final CertificateCredentialVersionData entity = new CertificateCredentialVersionData();
     entity.setCredential(credential);
@@ -99,7 +100,7 @@ public class CredentialVersionDataRepositoryTest {
     final EncryptedValue entityEncryptedValue = new EncryptedValue();
     entityEncryptedValue.setEncryptedValue(encryptedValue);
     entityEncryptedValue.setEncryptionKeyUuid(canaryUuid);
-    entityEncryptedValue.setNonce("nonce".getBytes(StringUtil.UTF_8));
+    entityEncryptedValue.setNonce("nonce".getBytes(UTF_8));
 
     final Credential credential = credentialRepository.save(new Credential(name));
     entity.setCredential(credential);

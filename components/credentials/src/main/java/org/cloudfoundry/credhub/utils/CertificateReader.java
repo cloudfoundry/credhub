@@ -28,6 +28,7 @@ import org.cloudfoundry.credhub.exceptions.MissingCertificateException;
 import org.cloudfoundry.credhub.exceptions.UnreadableCertificateException;
 
 import static java.lang.Math.toIntExact;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.temporal.ChronoUnit.DAYS;
 
 public class CertificateReader {
@@ -147,6 +148,6 @@ public class CertificateReader {
   private X509Certificate parseStringIntoCertificate(final String pemString) throws CertificateException, NoSuchProviderException {
     return (X509Certificate) CertificateFactory
       .getInstance("X.509", BouncyCastleFipsProvider.PROVIDER_NAME)
-      .generateCertificate(new ByteArrayInputStream(pemString.getBytes(StringUtil.UTF_8)));
+      .generateCertificate(new ByteArrayInputStream(pemString.getBytes(UTF_8)));
   }
 }

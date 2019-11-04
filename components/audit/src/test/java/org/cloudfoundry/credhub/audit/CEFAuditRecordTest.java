@@ -2,10 +2,11 @@ package org.cloudfoundry.credhub.audit;
 
 import org.springframework.mock.web.MockHttpServletRequest;
 
-import org.cloudfoundry.credhub.utils.StringUtil;
+
 import org.junit.Before;
 import org.junit.Test;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -48,7 +49,7 @@ public class CEFAuditRecordTest {
   @Test
   public void setHttpRequest() {
     final String data = "{\"name\":\"example-value\",\"value\":\"secret\"}";
-    httpRequest.setContent(data.getBytes(StringUtil.UTF_8));
+    httpRequest.setContent(data.getBytes(UTF_8));
     httpRequest.setMethod("PUT");
 
     auditRecord.setHttpRequest(httpRequest);

@@ -29,13 +29,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.cloudfoundry.credhub.helpers.RequestHelper.generateCa;
 import static org.cloudfoundry.credhub.helpers.RequestHelper.getCertificateId;
 import static org.cloudfoundry.credhub.helpers.RequestHelper.grantPermissions;
 import static org.cloudfoundry.credhub.utils.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.cloudfoundry.credhub.utils.AuthConstants.NO_PERMISSIONS_ACTOR_ID;
 import static org.cloudfoundry.credhub.utils.AuthConstants.NO_PERMISSIONS_TOKEN;
-import static org.cloudfoundry.credhub.utils.StringUtil.UTF_8;
+
 import static org.cloudfoundry.credhub.utils.TestConstants.INVALID_PRIVATE_KEY_NO_HEADERS;
 import static org.cloudfoundry.credhub.utils.TestConstants.OTHER_TEST_CERTIFICATE;
 import static org.cloudfoundry.credhub.utils.TestConstants.OTHER_TEST_PRIVATE_KEY;

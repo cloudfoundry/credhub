@@ -10,6 +10,8 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.cloudfoundry.credhub.entity.RsaCredentialVersionData;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 public class RsaCredentialHelper {
 
   private static final String RSA_START = "-----BEGIN PUBLIC KEY-----\n";
@@ -35,7 +37,7 @@ public class RsaCredentialHelper {
         .replaceFirst(RSA_START, "")
         .replaceFirst(RSA_END, "")
         .replaceAll(NEW_LINE, "");
-      final byte[] byteKey = Base64.decodeBase64(key.getBytes(StringUtil.UTF_8));
+      final byte[] byteKey = Base64.decodeBase64(key.getBytes(UTF_8));
       final X509EncodedKeySpec x509publicKey = new X509EncodedKeySpec(byteKey);
       final KeyFactory kf = KeyFactory.getInstance("RSA");
       return ((RSAPublicKey) kf.generatePublic(x509publicKey)).getModulus().bitLength();

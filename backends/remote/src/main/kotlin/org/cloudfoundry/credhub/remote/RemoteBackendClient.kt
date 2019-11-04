@@ -37,11 +37,12 @@ import org.cloudfoundry.credhub.remote.grpc.PutPermissionsRequest
 import org.cloudfoundry.credhub.remote.grpc.SetRequest
 import org.cloudfoundry.credhub.remote.grpc.SetResponse
 import org.cloudfoundry.credhub.remote.grpc.WritePermissionsRequest
-import org.cloudfoundry.credhub.utils.StringUtil
+
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.io.ByteArrayInputStream
+import java.nio.charset.StandardCharsets.UTF_8
 import java.util.concurrent.TimeUnit
 import javax.net.ssl.SSLException
 
@@ -67,7 +68,7 @@ class RemoteBackendClient(
         val sslContext: SslContext
         try {
             sslContext = GrpcSslContexts.forClient()
-                .trustManager(ByteArrayInputStream(caCert.toByteArray(StringUtil.UTF_8)))
+                .trustManager(ByteArrayInputStream(caCert.toByteArray(UTF_8)))
                 .build()
         } catch (e: SSLException) {
             throw RuntimeException(e)

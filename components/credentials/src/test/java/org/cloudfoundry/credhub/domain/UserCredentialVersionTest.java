@@ -8,12 +8,13 @@ import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.entity.UserCredentialVersionData;
 import org.cloudfoundry.credhub.requests.StringGenerationParameters;
 import org.cloudfoundry.credhub.utils.JsonObjectMapper;
-import org.cloudfoundry.credhub.utils.StringUtil;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
@@ -33,10 +34,10 @@ public class UserCredentialVersionTest {
   private final String CREDENTIAL_NAME = "/test/user";
   private final String USER_PASSWORD = "test-user-password";
   private final UUID ENCRYPTION_KEY_UUID = UUID.randomUUID();
-  private final byte[] ENCRYPTED_PASSWORD = "encrypted-user-password".getBytes(StringUtil.UTF_8);
-  private final byte[] ENCRYPTED_GENERATION_PARAMS = "encrypted-user-generation-params".getBytes(StringUtil.UTF_8);
-  private final byte[] NONCE = "user-NONCE".getBytes(StringUtil.UTF_8);
-  private final byte[] PARAMETERS_NONCE = "user-NONCE".getBytes(StringUtil.UTF_8);
+  private final byte[] ENCRYPTED_PASSWORD = "encrypted-user-password".getBytes(UTF_8);
+  private final byte[] ENCRYPTED_GENERATION_PARAMS = "encrypted-user-generation-params".getBytes(UTF_8);
+  private final byte[] NONCE = "user-NONCE".getBytes(UTF_8);
+  private final byte[] PARAMETERS_NONCE = "user-NONCE".getBytes(UTF_8);
   private StringGenerationParameters stringGenerationParameters;
   private String userGenerationParametersString;
   private UserCredentialVersion subject;
@@ -126,11 +127,11 @@ public class UserCredentialVersionTest {
   @Test
   public void rotate_reEncryptsPasswordWithNewEncryptionKey() {
     final UUID oldEncryptionKeyUuid = UUID.randomUUID();
-    final byte[] oldEncryptedPassword = "old-encrypted-password".getBytes(StringUtil.UTF_8);
-    final byte[] oldEncryptedGenerationParams = "old-encrypted-generation-params".getBytes(StringUtil.UTF_8);
+    final byte[] oldEncryptedPassword = "old-encrypted-password".getBytes(UTF_8);
+    final byte[] oldEncryptedGenerationParams = "old-encrypted-generation-params".getBytes(UTF_8);
 
-    final byte[] oldNonce = "old-nonce".getBytes(StringUtil.UTF_8);
-    final byte[] oldParametersNonce = "old-parameters-nonce".getBytes(StringUtil.UTF_8);
+    final byte[] oldNonce = "old-nonce".getBytes(UTF_8);
+    final byte[] oldParametersNonce = "old-parameters-nonce".getBytes(UTF_8);
 
     final EncryptedValue parametersEncryption = new EncryptedValue(oldEncryptionKeyUuid, oldEncryptedGenerationParams, oldParametersNonce);
 

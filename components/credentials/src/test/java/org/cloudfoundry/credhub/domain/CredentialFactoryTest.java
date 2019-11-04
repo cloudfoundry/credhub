@@ -17,13 +17,14 @@ import org.cloudfoundry.credhub.credential.UserCredentialValue;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.requests.StringGenerationParameters;
 import org.cloudfoundry.credhub.utils.JsonObjectMapper;
-import org.cloudfoundry.credhub.utils.StringUtil;
+
 import org.hamcrest.MatcherAssert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.cloudfoundry.credhub.utils.CertificateStringConstants.SELF_SIGNED_CA_CERT;
 import static org.cloudfoundry.credhub.utils.CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -70,16 +71,16 @@ public class CredentialFactoryTest {
     generationParameters.setLength(PLAINTEXT_VALUE.length());
 
     final UUID encryptionKeyUuid = UUID.randomUUID();
-    final EncryptedValue encryption = new EncryptedValue(encryptionKeyUuid, PLAINTEXT_VALUE.getBytes(StringUtil.UTF_8), "test-nonce".getBytes(StringUtil.UTF_8));
+    final EncryptedValue encryption = new EncryptedValue(encryptionKeyUuid, PLAINTEXT_VALUE.getBytes(UTF_8), "test-nonce".getBytes(UTF_8));
     when(encryptor.encrypt(PLAINTEXT_VALUE)).thenReturn(encryption);
     when(encryptor.decrypt(encryption)).thenReturn(PLAINTEXT_VALUE);
 
     final String generationParametersJsonString = objectMapper.writeValueAsString(generationParameters);
-    final EncryptedValue parametersEncryption = new EncryptedValue(encryptionKeyUuid, "test-parameters".getBytes(StringUtil.UTF_8), "test-parameters-nonce".getBytes(StringUtil.UTF_8));
+    final EncryptedValue parametersEncryption = new EncryptedValue(encryptionKeyUuid, "test-parameters".getBytes(UTF_8), "test-parameters-nonce".getBytes(UTF_8));
     when(encryptor.encrypt(generationParametersJsonString)).thenReturn(parametersEncryption);
     when(encryptor.decrypt(parametersEncryption)).thenReturn(generationParametersJsonString);
 
-    final EncryptedValue jsonEncryption = new EncryptedValue(encryptionKeyUuid, jsonValueJsonString.getBytes(StringUtil.UTF_8), "test-nonce".getBytes(StringUtil.UTF_8));
+    final EncryptedValue jsonEncryption = new EncryptedValue(encryptionKeyUuid, jsonValueJsonString.getBytes(UTF_8), "test-nonce".getBytes(UTF_8));
     when(encryptor.encrypt(jsonValueJsonString)).thenReturn(jsonEncryption);
     when(encryptor.decrypt(jsonEncryption)).thenReturn(jsonValueJsonString);
   }

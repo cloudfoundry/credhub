@@ -38,13 +38,14 @@ import org.cloudfoundry.credhub.repositories.CredentialVersionRepository;
 import org.cloudfoundry.credhub.util.CurrentTimeProvider;
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.utils.DatabaseUtilities;
-import org.cloudfoundry.credhub.utils.StringUtil;
+
 import org.cloudfoundry.credhub.views.FindCredentialResult;
 import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.cloudfoundry.credhub.utils.SpringUtilities.activeProfilesString;
 import static org.cloudfoundry.credhub.utils.SpringUtilities.unitTestPostgresProfile;
@@ -137,7 +138,7 @@ public class DefaultCredentialVersionDataServiceTest {
 
     assertThat(credentialVersionData.getCredential().getName(), equalTo("/my-credential"));
     assertThat(credentialVersionData.getEncryptedValueData().getEncryptedValue(),
-      equalTo("credential-password".getBytes(StringUtil.UTF_8)));
+      equalTo("credential-password".getBytes(UTF_8)));
   }
 
   @Test
@@ -152,7 +153,7 @@ public class DefaultCredentialVersionDataServiceTest {
 
     subject.save(credential);
 
-    passwordCredentialData.getEncryptedValueData().setEncryptedValue("irynas-ninja-skills".getBytes(StringUtil.UTF_8));
+    passwordCredentialData.getEncryptedValueData().setEncryptedValue("irynas-ninja-skills".getBytes(UTF_8));
 
     subject.save(credential);
 
@@ -163,7 +164,7 @@ public class DefaultCredentialVersionDataServiceTest {
 
     assertThat(credentialVersionData.getCredential().getName(), equalTo("/my-credential-2"));
     assertThat(credentialVersionData.getEncryptedValueData().getEncryptedValue(),
-      equalTo("irynas-ninja-skills".getBytes(StringUtil.UTF_8)));
+      equalTo("irynas-ninja-skills".getBytes(UTF_8)));
     assertThat(credentialVersionData.getUuid(), equalTo(credential.getUuid()));
   }
 
@@ -183,7 +184,7 @@ public class DefaultCredentialVersionDataServiceTest {
 
     final EncryptedValue encryptedValueB = new EncryptedValue();
     encryptedValueB.setEncryptionKeyUuid(activeCanaryUuid);
-    encryptedValueB.setEncryptedValue("some value".getBytes(StringUtil.UTF_8));
+    encryptedValueB.setEncryptedValue("some value".getBytes(UTF_8));
 
     final ValueCredentialVersionData newCredentialData = new ValueCredentialVersionData();
     newCredentialData.setEncryptedValueData(encryptedValueB);
@@ -258,8 +259,8 @@ public class DefaultCredentialVersionDataServiceTest {
 
     final EncryptedValue encryptedValueA = new EncryptedValue();
     encryptedValueA.setEncryptionKeyUuid(activeCanaryUuid);
-    encryptedValueA.setEncryptedValue("credential-password".getBytes(StringUtil.UTF_8));
-    encryptedValueA.setNonce("nonce".getBytes(StringUtil.UTF_8));
+    encryptedValueA.setEncryptedValue("credential-password".getBytes(UTF_8));
+    encryptedValueA.setNonce("nonce".getBytes(UTF_8));
 
     final PasswordCredentialVersionData credentialDataA = new PasswordCredentialVersionData();
     credentialDataA.setCredential(credential);
@@ -268,8 +269,8 @@ public class DefaultCredentialVersionDataServiceTest {
 
     final EncryptedValue encryptedValueB = new EncryptedValue();
     encryptedValueB.setEncryptionKeyUuid(activeCanaryUuid);
-    encryptedValueB.setEncryptedValue("another password".getBytes(StringUtil.UTF_8));
-    encryptedValueB.setNonce("nonce".getBytes(StringUtil.UTF_8));
+    encryptedValueB.setEncryptedValue("another password".getBytes(UTF_8));
+    encryptedValueB.setNonce("nonce".getBytes(UTF_8));
 
     final PasswordCredentialVersionData credentialDataB = new PasswordCredentialVersionData("/my-credential");
     credentialDataB.setCredential(credential);
@@ -291,7 +292,7 @@ public class DefaultCredentialVersionDataServiceTest {
 
     final EncryptedValue encryptedValueA = new EncryptedValue();
     encryptedValueA.setEncryptionKeyUuid(activeCanaryUuid);
-    encryptedValueA.setEncryptedValue("credential-password".getBytes(StringUtil.UTF_8));
+    encryptedValueA.setEncryptedValue("credential-password".getBytes(UTF_8));
     encryptedValueA.setNonce(new byte[]{});
 
     PasswordCredentialVersionData credential = new PasswordCredentialVersionData();
@@ -301,7 +302,7 @@ public class DefaultCredentialVersionDataServiceTest {
 
     final EncryptedValue encryptedValueB = new EncryptedValue();
     encryptedValueB.setEncryptionKeyUuid(activeCanaryUuid);
-    encryptedValueB.setEncryptedValue("another password".getBytes(StringUtil.UTF_8));
+    encryptedValueB.setEncryptedValue("another password".getBytes(UTF_8));
     encryptedValueB.setNonce(new byte[]{});
 
     credential = new PasswordCredentialVersionData();
@@ -336,7 +337,7 @@ public class DefaultCredentialVersionDataServiceTest {
     final PasswordCredentialVersion passwordCredential = (PasswordCredentialVersion) subject.findMostRecent("/my-credential");
 
     assertThat(passwordCredential.getName(), equalTo("/my-CREDENTIAL"));
-    assertThat(passwordCredential2.getEncryptedValueData().getEncryptedValue(), equalTo("/my-new-password".getBytes(StringUtil.UTF_8)));
+    assertThat(passwordCredential2.getEncryptedValueData().getEncryptedValue(), equalTo("/my-new-password".getBytes(UTF_8)));
   }
 
   @Test
@@ -344,8 +345,8 @@ public class DefaultCredentialVersionDataServiceTest {
 
     final EncryptedValue encryptedValue = new EncryptedValue();
     encryptedValue.setEncryptionKeyUuid(activeCanaryUuid);
-    encryptedValue.setEncryptedValue("credential-password".getBytes(StringUtil.UTF_8));
-    encryptedValue.setNonce("nonce".getBytes(StringUtil.UTF_8));
+    encryptedValue.setEncryptedValue("credential-password".getBytes(UTF_8));
+    encryptedValue.setNonce("nonce".getBytes(UTF_8));
 
     final PasswordCredentialVersionData passwordCredentialData = new PasswordCredentialVersionData("/my-credential");
     passwordCredentialData.setEncryptedValueData(encryptedValue);
@@ -357,7 +358,7 @@ public class DefaultCredentialVersionDataServiceTest {
             .findByUuid(savedCredential.getUuid().toString());
     assertThat(oneByUuid.getName(), equalTo("/my-credential"));
     assertThat(passwordCredentialData.getEncryptedValueData().getEncryptedValue(),
-            equalTo("credential-password".getBytes(StringUtil.UTF_8)));
+            equalTo("credential-password".getBytes(UTF_8)));
   }
 
   @Test
@@ -382,8 +383,8 @@ public class DefaultCredentialVersionDataServiceTest {
 
     final EncryptedValue encryptedValue = new EncryptedValue();
     encryptedValue.setEncryptionKeyUuid(activeCanaryUuid);
-    encryptedValue.setEncryptedValue("new-encrypted-value".getBytes(StringUtil.UTF_8));
-    encryptedValue.setNonce("nonce".getBytes(StringUtil.UTF_8));
+    encryptedValue.setEncryptedValue("new-encrypted-value".getBytes(UTF_8));
+    encryptedValue.setNonce("nonce".getBytes(UTF_8));
 
     final ValueCredentialVersion valueCredential = (ValueCredentialVersion) subject.findMostRecent("/value.Credential");
     valueCredentialData.setEncryptedValueData(encryptedValue);
@@ -695,7 +696,7 @@ public class DefaultCredentialVersionDataServiceTest {
 
     final EncryptedValue encryptedValueA = new EncryptedValue();
     encryptedValueA.setEncryptionKeyUuid(activeCanaryUuid);
-    encryptedValueA.setEncryptedValue("/my-old-password".getBytes(StringUtil.UTF_8));
+    encryptedValueA.setEncryptedValue("/my-old-password".getBytes(UTF_8));
     encryptedValueA.setNonce(new byte[]{});
 
     namedPasswordCredential1 = new PasswordCredentialVersionData();
@@ -704,7 +705,7 @@ public class DefaultCredentialVersionDataServiceTest {
 
     final EncryptedValue encryptedValueB = new EncryptedValue();
     encryptedValueB.setEncryptionKeyUuid(activeCanaryUuid);
-    encryptedValueB.setEncryptedValue("/my-new-password".getBytes(StringUtil.UTF_8));
+    encryptedValueB.setEncryptedValue("/my-new-password".getBytes(UTF_8));
     encryptedValueB.setNonce(new byte[]{});
 
     passwordCredential2 = new PasswordCredentialVersionData();
@@ -724,7 +725,7 @@ public class DefaultCredentialVersionDataServiceTest {
 
     final EncryptedValue encryptedValueA = new EncryptedValue();
     encryptedValueA.setEncryptionKeyUuid(activeCanaryUuid);
-    encryptedValueA.setEncryptedValue("value".getBytes(StringUtil.UTF_8));
+    encryptedValueA.setEncryptedValue("value".getBytes(UTF_8));
     encryptedValueA.setNonce(new byte[]{});
 
     fakeTimeSetter.accept(2000000000123L);
@@ -742,7 +743,7 @@ public class DefaultCredentialVersionDataServiceTest {
 
     final EncryptedValue encryptedValueB = new EncryptedValue();
     encryptedValueB.setEncryptionKeyUuid(activeCanaryUuid);
-    encryptedValueB.setEncryptedValue("password".getBytes(StringUtil.UTF_8));
+    encryptedValueB.setEncryptedValue("password".getBytes(UTF_8));
     encryptedValueB.setNonce(new byte[]{});
 
     fakeTimeSetter.accept(1000000000123L);
@@ -777,7 +778,7 @@ public class DefaultCredentialVersionDataServiceTest {
     EncryptedValue encryptedValue = new EncryptedValue();
     encryptedValue.setEncryptedValue(DatabaseUtilities.Companion.getExceedsMaxBlobStoreSizeBytes());
     encryptedValue.setEncryptionKeyUuid(activeCanaryUuid);
-    encryptedValue.setNonce("nonce".getBytes(StringUtil.UTF_8));
+    encryptedValue.setNonce("nonce".getBytes(UTF_8));
 
     entity.setCredential(credential);
     entity.setEncryptedValueData(encryptedValue);

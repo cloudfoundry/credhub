@@ -9,6 +9,8 @@ import java.security.interfaces.RSAPublicKey;
 import org.apache.commons.codec.binary.Base64;
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 final public class CertificateFormatter {
   public static final String SSH_RSA = "ssh-rsa";
 
@@ -32,11 +34,11 @@ final public class CertificateFormatter {
     final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
     final DataOutputStream dataStream = new DataOutputStream(byteStream);
 
-    writeBytesToDataStream(SSH_RSA.getBytes(StringUtil.UTF_8), dataStream);
+    writeBytesToDataStream(SSH_RSA.getBytes(UTF_8), dataStream);
     writeBytesToDataStream(rsaPublicKey.getPublicExponent().toByteArray(), dataStream);
     writeBytesToDataStream(rsaPublicKey.getModulus().toByteArray(), dataStream);
 
-    final String publicKeyEncoded = new String(Base64.encodeBase64(byteStream.toByteArray()), StringUtil.UTF_8);
+    final String publicKeyEncoded = new String(Base64.encodeBase64(byteStream.toByteArray()), UTF_8);
     return SSH_RSA + " " + publicKeyEncoded;
   }
 
