@@ -63,7 +63,7 @@ constructor(
         permissionDataService.savePermissions(permissionEntryList)
     }
 
-    override fun getPermissions(credentialVersion: CredentialVersion?): List<PermissionEntry> {
+    override fun getPermissions(credentialVersion: CredentialVersion?): MutableList<PermissionEntry> {
         if (credentialVersion == null) {
             throw EntryNotFoundException(ErrorMessages.RESOURCE_NOT_FOUND)
         }
@@ -166,7 +166,7 @@ constructor(
         return permissionUUID
     }
 
-    private fun getPermissions(credential: Credential): List<PermissionEntry> {
+    private fun getPermissions(credential: Credential): MutableList<PermissionEntry> {
         return permissionDataService.getPermissions(credential)
     }
 }

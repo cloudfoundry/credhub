@@ -34,7 +34,7 @@ constructor(
     private val auditRecord: CEFAuditRecord
 ) {
 
-    fun getPermissions(credential: Credential): List<PermissionEntry> {
+    fun getPermissions(credential: Credential): MutableList<PermissionEntry> {
         return createViewsFromPermissionsFor(credential)
     }
 
@@ -165,11 +165,11 @@ constructor(
         return entry
     }
 
-    private fun createViewsFromPermissionsFor(credential: Credential): List<PermissionEntry> {
+    private fun createViewsFromPermissionsFor(credential: Credential): MutableList<PermissionEntry> {
         val data = permissionRepository.findAllByPath(credential.name)
         auditRecord.addAllResources(Lists.newArrayList<AuditablePermissionData>(data))
 
-        return data.stream().map<PermissionEntry> { this.createViewFor(it) }.toList()
+        return data.stream().map<PermissionEntry> { this.createViewFor(it) }.toList().toMutableList()
     }
 
     private fun findAccessEntryForActor(

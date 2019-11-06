@@ -27,7 +27,7 @@ class PermissionEntry {
 
     constructor(actor: String, path: String, vararg operations: PermissionOperation) : this(actor, path, Lists.newArrayList<PermissionOperation>(*operations)) {}
 
-    constructor(actor: String, path: String, operations: List<PermissionOperation>) : super() {
+    constructor(actor: String, path: String?, operations: List<PermissionOperation>) : super() {
         this.actor = actor
         this.path = path
         this.allowedOperations = operations
