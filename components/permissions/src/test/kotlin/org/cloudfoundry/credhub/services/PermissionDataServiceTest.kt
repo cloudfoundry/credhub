@@ -127,7 +127,6 @@ class PermissionDataServiceTest {
         } catch (enfe: EntryNotFoundException) {
             assertThat(enfe.message, Matchers.equalTo(ErrorMessages.RESOURCE_NOT_FOUND))
         }
-
     }
 
     @Test
@@ -160,7 +159,6 @@ class PermissionDataServiceTest {
         subject!!.savePermissionsWithLogging(aces)
 
         val response = subject.getPermissions(credential2)
-
 
         val permissionEntry = response[0]
 
@@ -258,7 +256,6 @@ class PermissionDataServiceTest {
         assertThat(requestDetails.actor, `is`(LUKE))
         assertThat(requestDetails.operations, contains(PermissionOperation.WRITE))
         assertThat(requestDetails.operation(), `is`(OperationDeviceAction.PUT_PERMISSIONS))
-
     }
 
     @Test
@@ -302,7 +299,6 @@ class PermissionDataServiceTest {
         assertThat(requestDetails.path, `is`(path))
         assertThat(requestDetails.actor, `is`(LUKE))
         assertThat(requestDetails.operation(), `is`(OperationDeviceAction.ADD_PERMISSIONS))
-
     }
 
     @Test

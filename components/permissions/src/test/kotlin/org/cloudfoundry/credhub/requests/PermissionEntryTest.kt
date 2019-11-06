@@ -68,7 +68,6 @@ class PermissionEntryTest {
         } catch (e: RuntimeException) {
             throw e.cause!!
         }
-
     }
 
     @Test

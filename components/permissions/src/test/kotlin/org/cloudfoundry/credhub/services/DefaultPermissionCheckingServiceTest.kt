@@ -179,5 +179,4 @@ class DefaultPermissionCheckingServiceTest {
 
         private val CREDENTIAL_NAME = "/test/credential"
     }
-
 }
