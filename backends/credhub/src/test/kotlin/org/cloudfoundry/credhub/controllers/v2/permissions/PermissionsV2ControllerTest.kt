@@ -165,7 +165,7 @@ class PermissionsV2ControllerTest {
         val expectedPermissionsV2Request = PermissionsV2Request(
             "/some-path/*",
             "some-actor",
-            listOf(READ, WRITE)
+            mutableListOf(READ, WRITE)
         )
 
         spyPermissionsV2Handler.writeV2Permissions__returns = permissionsV2View

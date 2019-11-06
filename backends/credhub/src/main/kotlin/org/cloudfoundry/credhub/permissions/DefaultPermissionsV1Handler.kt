@@ -23,7 +23,7 @@ class DefaultPermissionsV1Handler(
     }
 
     override fun writePermissions(request: PermissionsRequest) {
-        for (entry in request.permissions) {
+        request.permissions?.forEach { entry ->
             entry.path = request.credentialName
         }
         permissionService.savePermissionsForUser(request.permissions)

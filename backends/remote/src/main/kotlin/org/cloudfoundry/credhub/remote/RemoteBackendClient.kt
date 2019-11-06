@@ -231,7 +231,7 @@ class RemoteBackendClient(
         return blockingStub.putPermissions(request)
     }
 
-    fun patchPermissionRequest(uuid: String, operations: MutableIterable<String>, requester: String): PermissionsResponse {
+    fun patchPermissionRequest(uuid: String, operations: MutableList<String>?, requester: String): PermissionsResponse {
         val request = PatchPermissionsRequest
             .newBuilder()
             .setUuid(uuid)

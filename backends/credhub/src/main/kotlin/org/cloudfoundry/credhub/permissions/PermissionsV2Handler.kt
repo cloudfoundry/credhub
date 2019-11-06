@@ -11,7 +11,7 @@ interface PermissionsV2Handler {
 
     fun putPermissions(guid: String, permissionsRequest: PermissionsV2Request): PermissionsV2View
 
-    fun patchPermissions(guid: String, operations: List<PermissionOperation>): PermissionsV2View
+    fun patchPermissions(guid: String, operations: MutableList<PermissionOperation>?): PermissionsV2View
 
     fun writeV2Permissions(permissionsRequest: PermissionsV2Request): PermissionsV2View
 

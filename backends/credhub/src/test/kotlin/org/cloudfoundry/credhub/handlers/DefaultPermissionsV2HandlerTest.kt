@@ -4,6 +4,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.PermissionOperation
+import org.cloudfoundry.credhub.PermissionOperation.DELETE
+import org.cloudfoundry.credhub.PermissionOperation.READ
 import org.cloudfoundry.credhub.data.PermissionData
 import org.cloudfoundry.credhub.domain.CredentialVersion
 import org.cloudfoundry.credhub.domain.ValueCredentialVersion
@@ -48,7 +50,7 @@ class DefaultPermissionsV2HandlerTest {
         )
 
         spyPermissionService.savePermissionsForUser__returns_permissionDataList =
-            listOf(PermissionData(CREDENTIAL_NAME,
+            mutableListOf(PermissionData(CREDENTIAL_NAME,
                 ACTOR_NAME,
                 mutableListOf(PermissionOperation.DELETE)
             ))
@@ -73,7 +75,7 @@ class DefaultPermissionsV2HandlerTest {
             mutableListOf(PermissionOperation.DELETE)
         )
 
-        spyPermissionService.savePermissionsForUser__returns_permissionDataList = emptyList()
+        spyPermissionService.savePermissionsForUser__returns_permissionDataList = emptyList<PermissionData>().toMutableList()
 
         assertThatThrownBy {
             subject.writePermissions(permissionsRequest)
@@ -108,7 +110,7 @@ class DefaultPermissionsV2HandlerTest {
         val expected = PermissionsV2View(
             CREDENTIAL_NAME,
             mutableListOf(
-                PermissionOperation.READ
+                READ
             ),
             ACTOR_NAME,
             uuid
@@ -147,7 +149,7 @@ class DefaultPermissionsV2HandlerTest {
         val expected = PermissionsV2View(
             CREDENTIAL_NAME,
             mutableListOf(
-                PermissionOperation.DELETE
+                DELETE
             ),
             ACTOR_NAME,
             null
@@ -161,7 +163,7 @@ class DefaultPermissionsV2HandlerTest {
     @Test
     fun `patchPermissions returns PermissionsV2View`() {
         val uuid = UUID.randomUUID()
-        val operations = listOf(PermissionOperation.READ)
+        val operations = mutableListOf(PermissionOperation.READ)
 
         spyPermissionService.patchPermissions__returns_permissionData = PermissionData(
             CREDENTIAL_NAME,
@@ -175,7 +177,7 @@ class DefaultPermissionsV2HandlerTest {
         val expected = PermissionsV2View(
             CREDENTIAL_NAME,
             mutableListOf(
-                PermissionOperation.READ
+                READ
             ),
             ACTOR_NAME,
             null
@@ -206,7 +208,7 @@ class DefaultPermissionsV2HandlerTest {
         val expected = PermissionsV2View(
             CREDENTIAL_NAME,
             mutableListOf(
-                PermissionOperation.DELETE
+                DELETE
             ),
             ACTOR_NAME,
             null
@@ -231,7 +233,7 @@ class DefaultPermissionsV2HandlerTest {
         val expected = PermissionsV2View(
             CREDENTIAL_NAME,
             mutableListOf(
-                PermissionOperation.DELETE
+                DELETE
             ),
             ACTOR_NAME,
             null
@@ -253,7 +255,7 @@ class DefaultPermissionsV2HandlerTest {
         val expected = PermissionsV2View(
             CREDENTIAL_NAME,
             mutableListOf(
-                PermissionOperation.DELETE
+                DELETE
             ),
             ACTOR_NAME,
             null

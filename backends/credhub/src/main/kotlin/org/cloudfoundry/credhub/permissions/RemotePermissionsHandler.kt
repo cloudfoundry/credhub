@@ -52,9 +52,9 @@ class RemotePermissionsHandler(
         return PermissionsV2View(response.path, responseOperations, response.actor, UUID.fromString(response.uuid))
     }
 
-    override fun patchPermissions(guid: String, operations: List<PermissionOperation>): PermissionsV2View {
+    override fun patchPermissions(guid: String, operations: MutableList<PermissionOperation>?): PermissionsV2View {
         val requester = userContextHolder.userContext.actor
-        val operationStrings = operations.map { o -> o.operation }.toMutableList()
+        val operationStrings = operations?.map { o -> o.operation }?.toMutableList()
 
         val response: PermissionsResponse
         try {

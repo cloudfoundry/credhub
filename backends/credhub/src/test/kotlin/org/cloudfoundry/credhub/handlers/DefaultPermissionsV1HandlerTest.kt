@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.PermissionOperation
+import org.cloudfoundry.credhub.data.PermissionData
 
 import org.cloudfoundry.credhub.domain.CredentialVersion
 import org.cloudfoundry.credhub.domain.ValueCredentialVersion
@@ -75,7 +76,7 @@ class DefaultPermissionsV1HandlerTest {
                 PermissionEntry(OTHER_ACTOR_NAME, CREDENTIAL_NAME, mutableListOf(PermissionOperation.READ))
             )
         )
-        spyPermissionService.savePermissionsForUser__returns_permissionDataList = emptyList()
+        spyPermissionService.savePermissionsForUser__returns_permissionDataList = emptyList<PermissionData>().toMutableList()
 
         subject.writePermissions(permissionsRequest)
 

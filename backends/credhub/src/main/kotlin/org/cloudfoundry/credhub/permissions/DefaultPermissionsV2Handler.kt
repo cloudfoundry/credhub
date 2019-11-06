@@ -45,8 +45,8 @@ class DefaultPermissionsV2Handler(
             throw EntryNotFoundException(ErrorMessages.Permissions.INVALID_ACCESS)
         }
         val permission = permissionService.getPermissions(uuid)
-        return PermissionsV2View(permission.path, permission.generateAccessControlOperations(),
-            permission.actor, uuid)
+        return PermissionsV2View(permission?.path, permission?.generateAccessControlOperations(),
+            permission?.actor, uuid)
     }
 
     override fun putPermissions(guid: String, permissionsRequest: PermissionsV2Request): PermissionsV2View {
@@ -55,8 +55,8 @@ class DefaultPermissionsV2Handler(
             permission.actor, permission.uuid)
     }
 
-    override fun patchPermissions(guid: String, operations: List<PermissionOperation>): PermissionsV2View {
-        val permission = permissionService.patchPermissions(guid, operations.toMutableList())
+    override fun patchPermissions(guid: String, operations: MutableList<PermissionOperation>?): PermissionsV2View {
+        val permission = permissionService.patchPermissions(guid, operations)
         return PermissionsV2View(
             permission.path,
             permission.generateAccessControlOperations(),

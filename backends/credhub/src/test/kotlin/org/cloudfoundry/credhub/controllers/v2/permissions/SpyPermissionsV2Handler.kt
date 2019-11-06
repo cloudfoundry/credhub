@@ -29,9 +29,11 @@ class SpyPermissionsV2Handler : PermissionsV2Handler {
     lateinit var patchPermissions__calledWith_Guid: String
     lateinit var patchPermissions__calledWith_Operations: List<PermissionOperation>
     lateinit var patchPermissions__returns: PermissionsV2View
-    override fun patchPermissions(guid: String, operations: List<PermissionOperation>): PermissionsV2View {
+    override fun patchPermissions(guid: String, operations: MutableList<PermissionOperation>?): PermissionsV2View {
         patchPermissions__calledWith_Guid = guid
-        patchPermissions__calledWith_Operations = operations
+        if (operations != null) {
+            patchPermissions__calledWith_Operations = operations
+        }
         return patchPermissions__returns
     }
 

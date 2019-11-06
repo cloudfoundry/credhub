@@ -31,13 +31,13 @@ class PermissionsV2Request {
     final lateinit var actor: String
 
     @NotEmpty(message = ErrorMessages.Permissions.MISSING_OPERATIONS)
-    final lateinit var operations: List<PermissionOperation>
+    final lateinit var operations: MutableList<PermissionOperation>
 
     constructor() : super() {
         /* this needs to be there for jackson to be happy */
     }
 
-    constructor(path: String, actor: String, operations: List<PermissionOperation>) : super() {
+    constructor(path: String, actor: String, operations: MutableList<PermissionOperation>) : super() {
         this.path = path
         this.actor = actor
         this.operations = operations

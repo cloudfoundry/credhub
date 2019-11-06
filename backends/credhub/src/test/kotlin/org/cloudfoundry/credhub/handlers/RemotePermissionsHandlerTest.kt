@@ -42,7 +42,7 @@ class RemotePermissionsHandlerTest {
 
     @Test
     fun writeV2Permissions_whenUserHasWriteACL_returnsCorrectResponse() {
-        val operations = listOf(PermissionOperation.READ, PermissionOperation.WRITE)
+        val operations = mutableListOf(PermissionOperation.READ, PermissionOperation.WRITE)
         val operationStrings = operations.map { o -> o.operation }.toMutableList()
         val uuid = UUID.randomUUID()
 
@@ -66,7 +66,7 @@ class RemotePermissionsHandlerTest {
 
     @Test
     fun writeV2Permissions_whenUserDoesNotHaveACL_returnsException() {
-        val operations = listOf(PermissionOperation.READ, PermissionOperation.WRITE)
+        val operations = mutableListOf(PermissionOperation.READ, PermissionOperation.WRITE)
         val operationStrings = operations.map { o -> o.operation }.toMutableList()
 
         val request = PermissionsV2Request()
@@ -86,7 +86,7 @@ class RemotePermissionsHandlerTest {
 
     @Test
     fun patchPermissions_whenUserHasWriteACL_returnsCorrectResponse() {
-        val operations = listOf(PermissionOperation.READ, PermissionOperation.WRITE)
+        val operations = mutableListOf(PermissionOperation.READ, PermissionOperation.WRITE)
         val operationStrings = operations.map { o -> o.operation }.toMutableList()
         val uuid = UUID.randomUUID()
 
@@ -105,7 +105,7 @@ class RemotePermissionsHandlerTest {
 
     @Test
     fun patchPermissions_whenUserDoesNotHaveACL_returnsException() {
-        val operations = listOf(PermissionOperation.READ, PermissionOperation.WRITE)
+        val operations = mutableListOf(PermissionOperation.READ, PermissionOperation.WRITE)
         val operationStrings = operations.map { o -> o.operation }.toMutableList()
         val uuid = UUID.randomUUID()
 
@@ -121,7 +121,7 @@ class RemotePermissionsHandlerTest {
 
     @Test
     fun putPermissions_whenUserHasWriteACL_returnsCorrectResponse() {
-        val operations = listOf(PermissionOperation.READ, PermissionOperation.WRITE)
+        val operations = mutableListOf(PermissionOperation.READ, PermissionOperation.WRITE)
         val operationStrings = operations.map { o -> o.operation }.toMutableList()
         val uuid = UUID.randomUUID()
 
@@ -145,7 +145,7 @@ class RemotePermissionsHandlerTest {
 
     @Test
     fun putPermissions_whenUserDoesNotHaveACL_returnsException() {
-        val operations = listOf(PermissionOperation.READ, PermissionOperation.WRITE)
+        val operations = mutableListOf(PermissionOperation.READ, PermissionOperation.WRITE)
         val operationStrings = operations.map { o -> o.operation }.toMutableList()
         val uuid = UUID.randomUUID()
 

@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.controllers.v1.permissions
 
 import org.assertj.core.api.Assertions.assertThat
 import org.cloudfoundry.credhub.PermissionOperation
+import org.cloudfoundry.credhub.PermissionOperation.READ
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
@@ -57,7 +58,7 @@ class PermissionsV1ControllerTest {
                     "some-actor",
                     "some-path",
                     listOf(
-                        PermissionOperation.READ
+                        READ
                     )
                 )
             )
@@ -149,7 +150,7 @@ class PermissionsV1ControllerTest {
 
         val expectedPermissionsRequest = PermissionsRequest(
             "/some-credential-name",
-            listOf(
+            mutableListOf(
                 PermissionEntry(
                     "some-actor",
                     "some-path",

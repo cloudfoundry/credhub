@@ -14,9 +14,11 @@ class SpyPermissionService : PermissionService {
     }
 
     lateinit var savePermissionsForUser__calledWith_permissionEntryList: MutableList<PermissionEntry>
-    lateinit var savePermissionsForUser__returns_permissionDataList: List<PermissionData>
-    override fun savePermissionsForUser(permissionEntryList: MutableList<PermissionEntry>): List<PermissionData> {
-        savePermissionsForUser__calledWith_permissionEntryList = permissionEntryList
+    lateinit var savePermissionsForUser__returns_permissionDataList: MutableList<PermissionData>
+    override fun savePermissionsForUser(permissionEntryList: MutableList<PermissionEntry>?): MutableList<PermissionData> {
+        if (permissionEntryList != null) {
+            savePermissionsForUser__calledWith_permissionEntryList = permissionEntryList
+        }
         return savePermissionsForUser__returns_permissionDataList
     }
 
@@ -62,9 +64,11 @@ class SpyPermissionService : PermissionService {
     lateinit var patchPermissions__calledWith_guid: String
     lateinit var patchPermissions__calledWith_operations: MutableList<PermissionOperation>
     lateinit var patchPermissions__returns_permissionData: PermissionData
-    override fun patchPermissions(guid: String, operations: MutableList<PermissionOperation>): PermissionData {
+    override fun patchPermissions(guid: String, operations: MutableList<PermissionOperation>?): PermissionData {
         patchPermissions__calledWith_guid = guid
-        patchPermissions__calledWith_operations = operations
+        if (operations != null) {
+            patchPermissions__calledWith_operations = operations
+        }
 
         return patchPermissions__returns_permissionData
     }
