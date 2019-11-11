@@ -1,9 +1,9 @@
 package org.cloudfoundry.credhub.services
 
+import java.util.UUID
 import org.cloudfoundry.credhub.domain.CredentialVersion
 import org.cloudfoundry.credhub.entity.CredentialVersionData
 import org.cloudfoundry.credhub.views.FindCredentialResult
-import java.util.UUID
 
 interface CredentialVersionDataService {
 

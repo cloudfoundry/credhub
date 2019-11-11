@@ -1,8 +1,8 @@
 package org.cloudfoundry.credhub.utils
 
 import com.google.common.io.Resources
-import org.springframework.stereotype.Component
 import kotlin.text.Charsets.UTF_8
+import org.springframework.stereotype.Component
 
 @Component
 class ResourceReader {

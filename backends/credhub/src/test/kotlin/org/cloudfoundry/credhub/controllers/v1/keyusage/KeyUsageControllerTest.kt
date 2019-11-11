@@ -1,6 +1,7 @@
 package org.cloudfoundry.credhub.controllers.v1.keyusage
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import java.security.Security
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
@@ -17,7 +18,6 @@ import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import java.security.Security
 
 class KeyUsageControllerTest {
 

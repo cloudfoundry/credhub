@@ -1,12 +1,13 @@
 package org.cloudfoundry.credhub.integration.v1.credentials
 
-import org.cloudfoundry.credhub.utils.AuthConstants
+import java.time.Instant
 import org.cloudfoundry.credhub.CredhubTestApp
-import org.cloudfoundry.credhub.utils.DatabaseProfileResolver
 import org.cloudfoundry.credhub.TestHelper
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue
 import org.cloudfoundry.credhub.services.CertificateAuthorityService
 import org.cloudfoundry.credhub.util.CurrentTimeProvider
+import org.cloudfoundry.credhub.utils.AuthConstants
+import org.cloudfoundry.credhub.utils.DatabaseProfileResolver
 import org.cloudfoundry.credhub.utils.TestConstants
 import org.junit.Before
 import org.junit.Test
@@ -28,7 +29,6 @@ import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.WebApplicationContext
-import java.time.Instant
 
 @RunWith(SpringRunner::class)
 @ActiveProfiles(value = ["unit-test", "unit-test-permissions"], resolver = DatabaseProfileResolver::class)

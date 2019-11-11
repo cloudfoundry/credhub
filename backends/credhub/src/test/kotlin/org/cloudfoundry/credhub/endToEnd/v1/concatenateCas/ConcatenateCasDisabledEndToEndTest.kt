@@ -2,9 +2,9 @@ package org.cloudfoundry.credhub.endToEnd.v1.concatenateCas
 
 import com.jayway.jsonpath.JsonPath
 import org.cloudfoundry.credhub.CredhubTestApp
-import org.cloudfoundry.credhub.utils.DatabaseProfileResolver
 import org.cloudfoundry.credhub.helpers.RequestHelper
 import org.cloudfoundry.credhub.utils.AuthConstants.Companion.ALL_PERMISSIONS_TOKEN
+import org.cloudfoundry.credhub.utils.DatabaseProfileResolver
 import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Before

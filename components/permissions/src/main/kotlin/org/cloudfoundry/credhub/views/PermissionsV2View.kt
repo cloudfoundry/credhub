@@ -1,9 +1,8 @@
 package org.cloudfoundry.credhub.views
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect
 import java.util.Objects
 import java.util.UUID
-
-import com.fasterxml.jackson.annotation.JsonAutoDetect
 import org.cloudfoundry.credhub.PermissionOperation
 
 @JsonAutoDetect

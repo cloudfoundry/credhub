@@ -1,11 +1,5 @@
 package org.cloudfoundry.credhub.utils
 
-import org.bouncycastle.asn1.pkcs.PrivateKeyInfo
-import org.bouncycastle.openssl.PEMException
-import org.bouncycastle.openssl.PEMKeyPair
-import org.bouncycastle.openssl.PEMParser
-import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter
-import org.cloudfoundry.credhub.exceptions.MalformedPrivateKeyException
 import java.io.StringReader
 import java.security.KeyFactory
 import java.security.PrivateKey
@@ -13,6 +7,12 @@ import java.security.PublicKey
 import java.security.interfaces.RSAPrivateCrtKey
 import java.security.interfaces.RSAPrivateKey
 import java.security.spec.RSAPublicKeySpec
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo
+import org.bouncycastle.openssl.PEMException
+import org.bouncycastle.openssl.PEMKeyPair
+import org.bouncycastle.openssl.PEMParser
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter
+import org.cloudfoundry.credhub.exceptions.MalformedPrivateKeyException
 
 class PrivateKeyReader private constructor() {
     companion object {

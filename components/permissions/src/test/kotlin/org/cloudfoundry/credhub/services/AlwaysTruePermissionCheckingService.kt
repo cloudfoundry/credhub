@@ -1,7 +1,7 @@
 package org.cloudfoundry.credhub.services
 
-import org.cloudfoundry.credhub.PermissionOperation
 import java.util.UUID
+import org.cloudfoundry.credhub.PermissionOperation
 
 class AlwaysTruePermissionCheckingService : PermissionCheckingService {
     override fun findAllPathsByActor(actor: String): Set<String> {

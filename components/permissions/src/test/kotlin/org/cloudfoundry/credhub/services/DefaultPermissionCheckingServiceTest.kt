@@ -2,30 +2,27 @@ package org.cloudfoundry.credhub.services
 
 import java.util.HashSet
 import java.util.UUID
-
-import org.springframework.test.util.ReflectionTestUtils
-
-import org.cloudfoundry.credhub.PermissionOperation
-import org.cloudfoundry.credhub.auth.UserContext
-import org.cloudfoundry.credhub.auth.UserContextHolder
-import org.cloudfoundry.credhub.data.PermissionDataService
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
-
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertFalse
 import junit.framework.TestCase.assertTrue
+import org.cloudfoundry.credhub.PermissionOperation
 import org.cloudfoundry.credhub.PermissionOperation.DELETE
 import org.cloudfoundry.credhub.PermissionOperation.READ
 import org.cloudfoundry.credhub.PermissionOperation.READ_ACL
 import org.cloudfoundry.credhub.PermissionOperation.WRITE
 import org.cloudfoundry.credhub.PermissionOperation.WRITE_ACL
+import org.cloudfoundry.credhub.auth.UserContext
+import org.cloudfoundry.credhub.auth.UserContextHolder
+import org.cloudfoundry.credhub.data.PermissionDataService
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.equalTo
-import org.mockito.Mockito.mock
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.JUnit4
 import org.mockito.Mockito.`when`
+import org.mockito.Mockito.mock
+import org.springframework.test.util.ReflectionTestUtils
 
 @RunWith(JUnit4::class)
 class DefaultPermissionCheckingServiceTest {
