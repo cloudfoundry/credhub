@@ -57,7 +57,7 @@ constructor(
             credentialFactory
                 .makeCredentialFromEntity(credentialVersionRepository.saveAndFlush(credentialVersionData))
         } catch (e: DataIntegrityViolationException) {
-            throw MaximumSizeException(e.message)
+            throw MaximumSizeException(e.message!!)
         }
     }
 
