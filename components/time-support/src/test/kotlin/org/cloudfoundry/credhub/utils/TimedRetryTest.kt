@@ -1,7 +1,5 @@
 package org.cloudfoundry.credhub.utils
 
-import java.util.function.Supplier
-
 import org.cloudfoundry.credhub.util.TimedRetry
 import org.junit.Before
 import org.junit.Test
