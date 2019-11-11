@@ -28,6 +28,7 @@ security:
       actors:
       - "uaa-client:credhub_client"
       - "uaa-user:66e087aa-b6e2-4e98-b699-a0c17f175b27"
+      - "mtls-app:0dfd8dfe-0083-4654-845a-decb3196a52b"
       operations: [read,write,delete,read_acl,write_acl]
 
 logging:
