@@ -17,6 +17,11 @@ clean() {
 }
 
 setup_tls_key_store() {
+    cat > server.cnf <<EOF
+[v3_ca]
+subjectKeyIdentifier=hash
+EOF
+
     echo "Generating a key store for the certificate the server presents during TLS"
     # generate keypair for the server cert
     openssl genrsa -out server_key.pem 2048
@@ -26,7 +31,7 @@ setup_tls_key_store() {
 
     echo "Generate server certificate signed by our CA"
     openssl x509 -req -in server.csr -sha384 -CA server_ca_cert.pem -CAkey server_ca_private.pem \
-        -CAcreateserial -out server.pem
+        -CAcreateserial -out server.pem -extensions v3_ca -extfile server.cnf
 
     echo "Create a .p12 file that contains both server cert and private key"
     openssl pkcs12 -export -in server.pem -inkey server_key.pem \
@@ -84,6 +89,25 @@ setup_auth_server_trust_store() {
         -storepass ${KEYSTORE_PASSWORD}
 }
 
+generate_client_cert() {
+    echo "Generating client certificate signed by client_ca for mtls auth"
+  cat > client.cnf <<EOF
+[v3_cert]
+subjectKeyIdentifier=hash
+authorityKeyIdentifier=keyid,issuer
+basicConstraints = critical,CA:FALSE
+extendedKeyUsage = clientAuth
+EOF
+
+  openssl genrsa -out client_key.pem 2048
+
+  openssl req -new -sha256 -key client_key.pem \
+    -subj "/CN=localhost/OU=app:0dfd8dfe-0083-4654-845a-decb3196a52b" -out client.csr
+
+  openssl x509 -req -in client.csr -sha384 -CA client_ca_cert.pem -CAkey client_ca_private.pem \
+    -CAcreateserial -out client_cert.pem -extensions v3_cert -extfile client.cnf
+}
+
 main() {
     pushd "${DIRNAME}/applications/credhub-api/src/test/resources" >/dev/null
         clean
@@ -92,6 +116,7 @@ main() {
         add_client_ca_to_trust_store
         setup_tls_key_store
         setup_auth_server_trust_store
+        generate_client_cert
 
         echo "Finished setting up key stores for TLS and mTLS!"
 
