@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
+import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.CredentialFactory;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData;
@@ -26,6 +27,8 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -51,6 +54,39 @@ public class DefaultCertificateVersionDataServiceTest {
       factory,
       dataService
     );
+  }
+
+  @Test
+  public void findByCredentialUUID_ReturnsLatestNonTransitionalVersion_WhenThereAreTransitionalAndNonTransitionalVersions() {
+    final UUID uuid = UUID.randomUUID();
+    final String uuidString = uuid.toString();
+    final CredentialVersionData certificateEntity = mock(CredentialVersionData.class);
+    final CertificateCredentialVersion certificateCredentialVersion = mock(CertificateCredentialVersion.class);
+
+    when(versionRepository.findLatestNonTransitionalCertificateVersion(uuid)).thenReturn(certificateEntity);
+    when(factory.makeCredentialFromEntity(certificateEntity)).thenReturn(certificateCredentialVersion);
+
+    assertThat(subject.findByCredentialUUID(uuidString), equalTo(certificateCredentialVersion));
+    verify(versionRepository, times(1)).findLatestNonTransitionalCertificateVersion(uuid);
+    verify(versionRepository, never()).findTransitionalCertificateVersion(uuid);
+    verify(factory, times(1)).makeCredentialFromEntity(certificateEntity);
+  }
+
+  @Test
+  public void findByCredentialUUID_ReturnsLatestTransitionalVersion_WhenThereAreOnlyTransitionalVersions() {
+    final UUID uuid = UUID.randomUUID();
+    final String uuidString = uuid.toString();
+    final CredentialVersionData certificateEntity = mock(CredentialVersionData.class);
+    final CertificateCredentialVersion certificateCredentialVersion = mock(CertificateCredentialVersion.class);
+
+    when(versionRepository.findLatestNonTransitionalCertificateVersion(uuid)).thenReturn(null);
+    when(versionRepository.findTransitionalCertificateVersion(uuid)).thenReturn(certificateEntity);
+    when(factory.makeCredentialFromEntity(certificateEntity)).thenReturn(certificateCredentialVersion);
+
+    assertThat(subject.findByCredentialUUID(uuidString), equalTo(certificateCredentialVersion));
+    verify(versionRepository, times(1)).findLatestNonTransitionalCertificateVersion(uuid);
+    verify(versionRepository, times(1)).findTransitionalCertificateVersion(uuid);
+    verify(factory, times(1)).makeCredentialFromEntity(certificateEntity);
   }
 
   @Test
