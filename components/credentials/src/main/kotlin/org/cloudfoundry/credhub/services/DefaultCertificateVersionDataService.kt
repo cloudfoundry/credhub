@@ -33,7 +33,7 @@ class DefaultCertificateVersionDataService(
         val uuid = UUID.fromString(uuid)
         var credentialVersion = credentialVersionRepository.findLatestNonTransitionalCertificateVersion(uuid)
         if (credentialVersion == null) {
-           credentialVersion = credentialVersionRepository.findTransitionalCertificateVersion(uuid)
+            credentialVersion = credentialVersionRepository.findTransitionalCertificateVersion(uuid)
         }
         return credentialFactory.makeCredentialFromEntity(credentialVersion)
     }
