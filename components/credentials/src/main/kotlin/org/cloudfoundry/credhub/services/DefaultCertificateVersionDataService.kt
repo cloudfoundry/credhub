@@ -30,8 +30,12 @@ class DefaultCertificateVersionDataService(
     }
 
     override fun findByCredentialUUID(uuid: String): CredentialVersion? {
-        return credentialFactory.makeCredentialFromEntity(credentialVersionRepository
-            .findLatestNonTransitionalCertificateVersion(UUID.fromString(uuid)))
+        val uuid = UUID.fromString(uuid)
+        var credentialVersion = credentialVersionRepository.findLatestNonTransitionalCertificateVersion(uuid)
+        if (credentialVersion == null) {
+           credentialVersion = credentialVersionRepository.findTransitionalCertificateVersion(uuid)
+        }
+        return credentialFactory.makeCredentialFromEntity(credentialVersion)
     }
 
     override fun findActiveWithTransitional(certificateName: String): List<CredentialVersion>? {
