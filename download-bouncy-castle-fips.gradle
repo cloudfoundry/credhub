@@ -1,7 +1,7 @@
 def getBouncyCastleFipsJarSHA256Checksums() {
     return [
-            "bcpkix-fips-1.0.2.jar": "8bac9a0700fc551b3d3cf4b9b3f5466726fd4ff9a26e94ea422fd6a3933b7382",
-            "bc-fips-1.0.1.jar": "a1d690a5f6044829cf7b1964f5285014e03075e87a37aeb6d0bd14afdd522ff1",
+            "bcpkix-fips-1.0.3.jar": "d23dfbc1f842e5a1a94967d2a5ead56f257b3d51b24c8996a834f291c782374d",
+            "bc-fips-1.0.2.jar": "b4340d7a9cc0d3664d6c560e2fcee9c7da6e6ae314855923c758fa32fff5b94e",
     ]
 }
 
