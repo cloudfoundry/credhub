@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
 
 @RunWith(SpringRunner::class)
-@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver::class)
+@ActiveProfiles(value = ["unit-test"], resolver = DatabaseProfileResolver::class)
 @SpringBootTest(classes = [CredhubTestApp::class])
 @Transactional
 class CertificateDataServiceTest {
@@ -98,6 +98,7 @@ class CertificateDataServiceTest {
     @Test
     fun `findAllValidMetadata returns certificate versions in order by versionCreatedAt`() {
         val name = "some-credential"
+        val caName = "some-ca"
 
         val credential = Credential(name)
         credentialDataService.save(credential)
@@ -106,11 +107,13 @@ class CertificateDataServiceTest {
             val certificateCredentialVersionData = CertificateCredentialVersionData(name)
             certificateCredentialVersionData.expiryDate = Instant.now()
             certificateCredentialVersionData.credential = credential
+            certificateCredentialVersionData.caName = caName
             credentialVersionDataService.save(certificateCredentialVersionData)
         }
 
         val result = subject.findAllValidMetadata(listOf(name))
 
+        println("result = ${result[0].caName}")
         var previousExpiryDate = Instant.MAX
         for (credentialVersion in result[0].versions) {
             assertTrue(credentialVersion.expiryDate < previousExpiryDate)

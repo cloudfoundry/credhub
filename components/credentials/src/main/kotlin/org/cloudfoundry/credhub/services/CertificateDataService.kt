@@ -36,7 +36,7 @@ constructor(
         return credentialRepository.findCertificateByUuid(uuid)
     }
 
-    fun findAllValidMetadata(names: List<String>): List<CertificateMetadata> {
+    fun     findAllValidMetadata(names: List<String>): List<CertificateMetadata> {
         val certificateMetadataMap = mutableMapOf<UUID, CertificateMetadata>()
 
         if (names.isEmpty()) { return certificateMetadataMap.values.toList() }

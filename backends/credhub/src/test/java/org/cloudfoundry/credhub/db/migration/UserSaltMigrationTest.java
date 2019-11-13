@@ -3,6 +3,8 @@ package org.cloudfoundry.credhub.db.migration;
 import java.time.Instant;
 import java.util.List;
 
+import javax.sql.DataSource;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -65,15 +67,20 @@ public class UserSaltMigrationTest {
       .getDatabaseProductName()
       .toLowerCase();
 
-    flyway.clean();
-    flyway.setTarget(MigrationVersion.fromVersion("40"));
-    flyway.migrate();
+    Flyway flywayV40 = Flyway
+      .configure()
+      .target(MigrationVersion.fromVersion("40"))
+      .dataSource(flyway.getConfiguration().getDataSource())
+      .locations(flyway.getConfiguration().getLocations())
+      .load();
+
+    flywayV40.clean();
+    flywayV40.migrate();
   }
 
   @After
   public void afterEach() {
     flyway.clean();
-    flyway.setTarget(MigrationVersion.LATEST);
     flyway.migrate();
 
     encryptionKeyCanaryRepository.saveAll(canaries);
@@ -91,7 +98,6 @@ public class UserSaltMigrationTest {
     createCanary(encryptionKeyUuid);
     createCredential(encryptionKeyUuid, credentialName, credentialNameUuid, userCredentialUuid);
 
-    flyway.setTarget(MigrationVersion.LATEST);
     flyway.migrate();
 
     final UserCredentialVersion migratedUser = (UserCredentialVersion) credentialVersionDataService.findMostRecent(credentialName);
@@ -115,7 +121,6 @@ public class UserSaltMigrationTest {
     createCredential(encryptionKeyUuid, credentialName1, credentialNameUuid1, userCredentialUuid1);
     createCredential(encryptionKeyUuid, credentialName2, credentialNameUuid2, userCredentialUuid2);
 
-    flyway.setTarget(MigrationVersion.LATEST);
     flyway.migrate();
 
     final UserCredentialVersion migratedUser1 = (UserCredentialVersion) credentialVersionDataService.findMostRecent(credentialName1);

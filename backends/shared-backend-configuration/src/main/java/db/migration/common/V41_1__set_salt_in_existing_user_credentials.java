@@ -5,22 +5,26 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.cloudfoundry.credhub.CryptSaltFactory;
 import org.cloudfoundry.credhub.utils.StringUtil;
 import org.cloudfoundry.credhub.utils.UuidUtil;
-import org.flywaydb.core.api.migration.spring.SpringJdbcMigration;
+import org.flywaydb.core.api.migration.BaseJavaMigration;
+import org.flywaydb.core.api.migration.Context;
 
 @SuppressWarnings("unused")
-public class V41_1__set_salt_in_existing_user_credentials implements SpringJdbcMigration {
+public class V41_1__set_salt_in_existing_user_credentials extends BaseJavaMigration {
 
   @SuppressFBWarnings(
     value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE",
     justification = "The database will definitely exist"
   )
   @Override
-  public void migrate(final JdbcTemplate jdbcTemplate) throws Exception {
+  public void migrate(Context context) throws Exception {
+    JdbcTemplate jdbcTemplate =
+      new JdbcTemplate(new SingleConnectionDataSource(context.getConnection(), true));
 
     final String databaseName = jdbcTemplate
       .getDataSource()

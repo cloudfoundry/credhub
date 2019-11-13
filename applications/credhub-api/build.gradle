@@ -61,8 +61,8 @@ dependencies {
     implementation("org.postgresql:postgresql:${postgresqlJdbcVersion}")
 
     implementation("org.mariadb.jdbc:mariadb-java-client:${mariadbJdbcVersion}")
-    implementation("org.flywaydb:flyway-core")
-    implementation("com.h2database:h2")
+    implementation("org.flywaydb:flyway-core:${flywayVersion}")
+    implementation("com.h2database:h2:${h2Version}")
 
     compile files("${rootDir.toPath()}/libs/bcpkix-fips-${bcpkixFipsVersion}.jar")
     compile files("${rootDir.toPath()}/libs/bc-fips-${bcFipsVersion}.jar")

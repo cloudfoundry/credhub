@@ -3,6 +3,8 @@ package org.cloudfoundry.credhub.db.migration;
 import java.util.List;
 import java.util.UUID;
 
+import javax.sql.DataSource;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
@@ -29,7 +31,6 @@ import org.junit.runner.RunWith;
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredhubTestApp.class)
 public class EarlyCredentialMigrationTest {
-
   @Autowired
   private Flyway flyway;
   @Autowired
@@ -48,15 +49,20 @@ public class EarlyCredentialMigrationTest {
   public void beforeEach() {
     canaries = encryptionKeyCanaryRepository.findAll();
 
-    flyway.clean();
-    flyway.setTarget(MigrationVersion.fromVersion("4"));
-    flyway.migrate();
+    Flyway flywayV4 = Flyway
+      .configure()
+      .target(MigrationVersion.fromVersion("4"))
+      .dataSource(flyway.getConfiguration().getDataSource())
+      .locations(flyway.getConfiguration().getLocations())
+      .load();
+
+    flywayV4.clean();
+    flywayV4.migrate();
   }
 
   @After
   public void afterEach() {
     flyway.clean();
-    flyway.setTarget(MigrationVersion.LATEST);
     flyway.migrate();
 
     encryptionKeyCanaryRepository.saveAll(canaries);
