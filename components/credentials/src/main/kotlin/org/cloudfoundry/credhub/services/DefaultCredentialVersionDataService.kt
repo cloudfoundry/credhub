@@ -40,7 +40,7 @@ constructor(
         return credentialVersion.save<CredentialVersion>(this)
     }
 
-    @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification = "Let's refactor this class into kotlin")
+    @SuppressFBWarnings(value = ["NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"], justification = "Let's refactor this class into kotlin")
     override fun save(credentialVersionData: CredentialVersionData<*>): CredentialVersion {
         val credential = credentialVersionData.credential
 

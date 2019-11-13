@@ -49,16 +49,21 @@ public class EarlyCredentialMigrationTest {
     public void beforeEach() {
         canaries = encryptionKeyCanaryRepository.findAll();
 
-        flyway.clean();
-        flyway.setTarget(MigrationVersion.fromVersion("4"));
-        flyway.migrate();
-    }
+    Flyway flywayV4 = Flyway
+      .configure()
+      .target(MigrationVersion.fromVersion("4"))
+      .dataSource(flyway.getConfiguration().getDataSource())
+      .locations(flyway.getConfiguration().getLocations())
+      .load();
 
-    @After
-    public void afterEach() {
-        flyway.clean();
-        flyway.setTarget(MigrationVersion.LATEST);
-        flyway.migrate();
+    flywayV4.clean();
+    flywayV4.migrate();
+  }
+
+  @After
+  public void afterEach() {
+    flyway.clean();
+    flyway.migrate();
 
         encryptionKeyCanaryRepository.saveAll(canaries);
         encryptionKeyCanaryRepository.flush();
