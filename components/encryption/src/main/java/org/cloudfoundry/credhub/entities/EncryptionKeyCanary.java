@@ -8,12 +8,10 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import org.cloudfoundry.credhub.constants.UuidConstants;
+import org.cloudfoundry.credhub.constants.EncryptionConstants;
 import org.hibernate.annotations.GenericGenerator;
 
-import static org.cloudfoundry.credhub.constants.EncryptionConstants.ENCRYPTED_BYTES;
-import static org.cloudfoundry.credhub.constants.EncryptionConstants.NONCE_SIZE;
-import static org.cloudfoundry.credhub.constants.EncryptionConstants.SALT_SIZE;
+import static org.cloudfoundry.credhub.constants.UuidConstants.UUID_BYTES;
 
 @Entity
 @Table(name = "encryption_key_canary")
@@ -24,18 +22,18 @@ public class EncryptionKeyCanary {
   // https://hibernate.atlassian.net/browse/HHH-9835 and
   // https://github.com/h2database/h2database/issues/345
   @Id
-  @Column(length = UuidConstants.UUID_BYTES, columnDefinition = "VARBINARY")
+  @Column(length = UUID_BYTES, columnDefinition = "VARBINARY")
   @GeneratedValue(generator = "uuid2")
   @GenericGenerator(name = "uuid2", strategy = "org.cloudfoundry.credhub.entities.UuidGenerator")
   private UUID uuid;
 
-  @Column(length = ENCRYPTED_BYTES + NONCE_SIZE, name = "encrypted_value")
+  @Column(length = EncryptionConstants.ENCRYPTED_BYTES + EncryptionConstants.NONCE_SIZE, name = "encrypted_value")
   private byte[] encryptedCanaryValue;
 
-  @Column(length = NONCE_SIZE)
+  @Column(length = EncryptionConstants.NONCE_SIZE)
   private byte[] nonce;
 
-  @Column(length = SALT_SIZE)
+  @Column(length = EncryptionConstants.SALT_SIZE)
   private byte[] salt;
 
   public UUID getUuid() {

@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.bouncycastle.util.encoders.Hex;
+import org.cloudfoundry.credhub.constants.EncryptionConstants;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.entities.EncryptionKeyCanary;
 import org.cloudfoundry.credhub.utils.TestPasswordKeyProxyFactory;
@@ -18,8 +19,6 @@ import org.junit.runners.JUnit4;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static org.apache.commons.lang3.ArrayUtils.toPrimitive;
-import static org.cloudfoundry.credhub.constants.EncryptionConstants.NONCE_SIZE;
-import static org.cloudfoundry.credhub.constants.EncryptionConstants.SALT_SIZE;
 import static org.cloudfoundry.credhub.services.EncryptionKeyCanaryMapper.CANARY_VALUE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
@@ -84,8 +83,8 @@ public class PasswordBasedKeyProxyTest {
   public void matchesCanary_whenCanaryDoesNotMatch_doesNotAffectTheKey() throws Exception {
     // Create a canary whose value cannot be decrypted by any key
     final EncryptionKeyCanary canary = new EncryptionKeyCanary();
-    canary.setSalt(new byte[SALT_SIZE]);
-    canary.setNonce(new byte[NONCE_SIZE]);
+    canary.setSalt(new byte[EncryptionConstants.SALT_SIZE]);
+    canary.setNonce(new byte[EncryptionConstants.NONCE_SIZE]);
     canary.setEncryptedCanaryValue(new byte[32]);
 
     // Set some well-known but bogus key into the subject

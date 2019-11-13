@@ -12,13 +12,12 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.cloudfoundry.credhub.constants.EncryptionConstants;
 import org.cloudfoundry.credhub.entities.EncryptionKeyCanary;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
 import static org.apache.commons.lang3.ArrayUtils.toPrimitive;
-import static org.cloudfoundry.credhub.constants.EncryptionConstants.KEY_BIT_LENGTH;
-import static org.cloudfoundry.credhub.constants.EncryptionConstants.SALT_SIZE;
 
 public class PasswordBasedKeyProxy extends LunaKeyProxy implements KeyProxy {
 
@@ -35,7 +34,7 @@ public class PasswordBasedKeyProxy extends LunaKeyProxy implements KeyProxy {
   }
 
   public List<Byte> generateSalt() {
-    final byte[] salt = new byte[SALT_SIZE];
+    final byte[] salt = new byte[EncryptionConstants.SALT_SIZE];
 
     secureRandom.nextBytes(salt);
     secureRandom.nextBytes(salt);
@@ -53,7 +52,7 @@ public class PasswordBasedKeyProxy extends LunaKeyProxy implements KeyProxy {
   public Key deriveKey(final List<Byte> salt) {
     final Byte[] saltArray = salt.toArray(new Byte[0]);
     final PBEKeySpec pbeSpec = new PBEKeySpec(password.toCharArray(), toPrimitive(saltArray), numIterations,
-      KEY_BIT_LENGTH);
+      EncryptionConstants.KEY_BIT_LENGTH);
 
     try {
       final SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA384");

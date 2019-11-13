@@ -13,9 +13,9 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
+import org.cloudfoundry.credhub.constants.EncryptionConstants;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 
-import static org.cloudfoundry.credhub.constants.EncryptionConstants.NONCE_SIZE;
 import static org.cloudfoundry.credhub.services.EncryptionKeyCanaryMapper.CHARSET;
 
 // This class is tested in BCEncryptionServiceTest.
@@ -58,7 +58,7 @@ public abstract class InternalEncryptionService implements EncryptionProvider {
 
   private byte[] generateNonce() {
     final SecureRandom secureRandom = getSecureRandom();
-    final byte[] nonce = new byte[NONCE_SIZE];
+    final byte[] nonce = new byte[EncryptionConstants.NONCE_SIZE];
     secureRandom.nextBytes(nonce);
     return nonce;
   }
