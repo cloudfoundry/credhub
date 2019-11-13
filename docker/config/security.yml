@@ -3,7 +3,7 @@ security:
     acls:
       enabled: true
     permissions:
-      actors:
+    - actors:
         - "uaa-client:credhub_client"
       operations:
         - read
