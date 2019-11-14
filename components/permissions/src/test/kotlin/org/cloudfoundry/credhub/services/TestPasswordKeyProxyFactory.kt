@@ -1,8 +1,9 @@
 package org.cloudfoundry.credhub.services
 
-import org.cloudfoundry.credhub.config.EncryptionKeyMetadata
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+
+import org.cloudfoundry.credhub.config.EncryptionKeyMetadata
 
 @Service
 @Profile("unit-test")

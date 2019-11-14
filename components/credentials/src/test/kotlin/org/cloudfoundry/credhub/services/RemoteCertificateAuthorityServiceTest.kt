@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy
 import com.google.protobuf.ByteString
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
-import java.util.UUID
 import org.assertj.core.api.Assertions
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.auth.UserContext
@@ -23,6 +22,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
+import java.util.UUID
 
 @RunWith(JUnit4::class)
 class RemoteCertificateAuthorityServiceTest {

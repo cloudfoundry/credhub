@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.protobuf.ByteString
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
-import java.time.Instant
-import java.util.UUID
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.auth.UserContextHolder
 import org.cloudfoundry.credhub.constants.CredentialWriteMode.CONVERGE
@@ -40,6 +38,8 @@ import org.cloudfoundry.credhub.views.DataResponse
 import org.cloudfoundry.credhub.views.FindCredentialResult
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import java.time.Instant
+import java.util.UUID
 
 @Service
 @Profile("remote")

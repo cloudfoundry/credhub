@@ -1,12 +1,13 @@
 package org.cloudfoundry.credhub.exceptions
 
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.JUnit4
+
 import org.hamcrest.Matchers.array
 import org.hamcrest.core.IsEqual.equalTo
 import org.hamcrest.core.IsInstanceOf.instanceOf
 import org.junit.Assert.assertThat
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
 class ParameterizedValidationExceptionTest {

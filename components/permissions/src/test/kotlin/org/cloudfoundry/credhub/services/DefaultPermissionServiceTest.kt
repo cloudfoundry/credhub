@@ -1,9 +1,6 @@
 package org.cloudfoundry.credhub.services
 
 import com.google.common.collect.Lists
-import com.google.common.collect.Lists.newArrayList
-import java.util.Arrays.asList
-import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.PermissionOperation
 import org.cloudfoundry.credhub.auth.UserContext
@@ -16,22 +13,26 @@ import org.cloudfoundry.credhub.entity.Credential
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
 import org.cloudfoundry.credhub.exceptions.InvalidPermissionOperationException
 import org.cloudfoundry.credhub.requests.PermissionEntry
-import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.Matchers.equalTo
 import org.hamcrest.core.IsEqual
-import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
+
+import com.google.common.collect.Lists.newArrayList
+import java.util.Arrays.asList
+import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.Matchers.equalTo
+import org.junit.Assert.fail
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.ArgumentMatchers.eq
 import org.mockito.Mockito
-import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when`
 
 @RunWith(JUnit4::class)
 class DefaultPermissionServiceTest {

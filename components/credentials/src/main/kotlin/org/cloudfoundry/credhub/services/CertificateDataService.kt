@@ -1,8 +1,5 @@
 package org.cloudfoundry.credhub.services
 
-import java.nio.ByteBuffer
-import java.sql.Timestamp
-import java.util.UUID
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.domain.CertificateMetadata
 import org.cloudfoundry.credhub.domain.CertificateVersionMetadata
@@ -13,6 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Service
+import java.nio.ByteBuffer
+import java.sql.Timestamp
+import java.util.UUID
 
 @Service
 class CertificateDataService @Autowired

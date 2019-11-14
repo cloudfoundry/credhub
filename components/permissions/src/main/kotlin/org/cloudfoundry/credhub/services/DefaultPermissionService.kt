@@ -2,6 +2,10 @@ package org.cloudfoundry.credhub.services
 
 import java.util.ArrayList
 import java.util.UUID
+
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Service
+
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.PermissionOperation
 import org.cloudfoundry.credhub.auth.UserContextHolder
@@ -16,8 +20,6 @@ import org.cloudfoundry.credhub.exceptions.PermissionAlreadyExistsException
 import org.cloudfoundry.credhub.exceptions.PermissionDoesNotExistException
 import org.cloudfoundry.credhub.requests.PermissionEntry
 import org.cloudfoundry.credhub.requests.PermissionsV2Request
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Service
 
 @Service
 class DefaultPermissionService @Autowired

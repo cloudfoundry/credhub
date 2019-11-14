@@ -1,13 +1,13 @@
 package org.cloudfoundry.credhub
 
+import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
+import org.cloudfoundry.credhub.util.CurrentTimeProvider
+import org.mockito.Mockito.`when`
 import java.security.Security
 import java.time.Instant
 import java.time.temporal.TemporalAccessor
 import java.util.Optional
 import java.util.function.Consumer
-import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
-import org.cloudfoundry.credhub.util.CurrentTimeProvider
-import org.mockito.Mockito.`when`
 
 class TestHelper private constructor() {
     companion object {

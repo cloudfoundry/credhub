@@ -1,23 +1,24 @@
 package org.cloudfoundry.credhub.requests
 
-import com.google.common.collect.Lists.newArrayList
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.PermissionOperation
+import org.hamcrest.MatcherAssert
+import org.hamcrest.Matchers
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.JUnit4
+
+import com.google.common.collect.Lists.newArrayList
 import org.cloudfoundry.credhub.helpers.JsonTestHelper.Companion.deserialize
 import org.cloudfoundry.credhub.helpers.JsonTestHelper.Companion.hasViolationWithMessage
 import org.cloudfoundry.credhub.helpers.JsonTestHelper.Companion.serialize
 import org.cloudfoundry.credhub.helpers.JsonTestHelper.Companion.validate
 import org.hamcrest.CoreMatchers.allOf
-import org.hamcrest.MatcherAssert
 import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.Matchers
 import org.hamcrest.Matchers.contains
 import org.hamcrest.Matchers.hasProperty
 import org.hamcrest.core.IsCollectionContaining.hasItems
 import org.hamcrest.core.IsEqual.equalTo
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
 class PermissionsRequestTest {

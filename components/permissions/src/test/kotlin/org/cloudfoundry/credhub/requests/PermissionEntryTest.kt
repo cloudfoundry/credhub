@@ -1,20 +1,23 @@
 package org.cloudfoundry.credhub.requests
 
+import java.io.IOException
+
+import javax.validation.ConstraintViolation
+
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
-import java.io.IOException
-import javax.validation.ConstraintViolation
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.helpers.JsonTestHelper.Companion.deserializeAndValidate
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.JUnit4
+
 import org.cloudfoundry.credhub.helpers.JsonTestHelper.Companion.hasViolationWithMessage
 import org.cloudfoundry.credhub.utils.AuthConstants.Companion.USER_A_ACTOR_ID
 import org.cloudfoundry.credhub.utils.AuthConstants.Companion.USER_A_PATH
 import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.contains
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
 class PermissionEntryTest {

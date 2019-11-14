@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.controllers.v2.permissions
 
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.cloudfoundry.credhub.PermissionOperation
 import org.cloudfoundry.credhub.PermissionOperation.READ
@@ -32,6 +31,7 @@ import org.springframework.restdocs.request.RequestDocumentation.requestParamete
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.util.UUID
 
 class PermissionsV2ControllerTest {
 

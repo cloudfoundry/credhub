@@ -3,7 +3,6 @@ package org.cloudfoundry.credhub.permissions
 import com.google.protobuf.ProtocolStringList
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
-import java.util.UUID
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.PermissionOperation
 import org.cloudfoundry.credhub.auth.UserContextHolder
@@ -15,6 +14,7 @@ import org.cloudfoundry.credhub.views.PermissionsV2View
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
+import java.util.UUID
 
 @Service
 @Profile("remote")

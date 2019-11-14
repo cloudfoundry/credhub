@@ -1,11 +1,12 @@
 package org.cloudfoundry.credhub.utils
 
-import java.util.function.Supplier
 import org.cloudfoundry.credhub.util.TimedRetry
-import org.hamcrest.CoreMatchers.equalTo
-import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Before
 import org.junit.Test
+
+import org.hamcrest.CoreMatchers.equalTo
+import org.hamcrest.MatcherAssert.assertThat
+import java.util.function.Supplier
 
 class TimedRetryTest {
 

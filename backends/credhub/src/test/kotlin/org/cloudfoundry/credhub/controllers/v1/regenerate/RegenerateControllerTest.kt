@@ -1,8 +1,5 @@
 package org.cloudfoundry.credhub.controllers.v1.regenerate
 
-import java.security.Security
-import java.time.Instant
-import java.util.UUID
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.constants.CredentialType
 import org.cloudfoundry.credhub.credential.StringCredentialValue
@@ -28,6 +25,9 @@ import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.security.Security
+import java.time.Instant
+import java.util.UUID
 
 @RunWith(SpringRunner::class)
 class RegenerateControllerTest {

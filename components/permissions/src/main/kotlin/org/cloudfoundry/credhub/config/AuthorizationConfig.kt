@@ -1,8 +1,9 @@
 package org.cloudfoundry.credhub.config
 
-import org.cloudfoundry.credhub.PermissionOperation
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Configuration
+
+import org.cloudfoundry.credhub.PermissionOperation
 
 @Configuration
 @ConfigurationProperties("security.authorization")

@@ -1,8 +1,6 @@
 package org.cloudfoundry.credhub.certificates
 
 import com.google.common.collect.Lists
-import java.util.ArrayList
-import java.util.UUID
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.PermissionOperation
 import org.cloudfoundry.credhub.PermissionOperation.DELETE
@@ -32,6 +30,8 @@ import org.cloudfoundry.credhub.views.CredentialView
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import java.util.ArrayList
+import java.util.UUID
 
 @Profile("!remote")
 @Service

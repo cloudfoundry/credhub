@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.permissions
 
-import java.util.UUID
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.PermissionOperation
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
@@ -10,6 +9,7 @@ import org.cloudfoundry.credhub.services.PermissionService
 import org.cloudfoundry.credhub.views.PermissionsV2View
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
+import java.util.UUID
 
 @Profile("!remote")
 @Component

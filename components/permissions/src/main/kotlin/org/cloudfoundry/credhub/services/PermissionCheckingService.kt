@@ -1,7 +1,7 @@
 package org.cloudfoundry.credhub.services
 
-import java.util.UUID
 import org.cloudfoundry.credhub.PermissionOperation
+import java.util.UUID
 
 interface PermissionCheckingService {
 

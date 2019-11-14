@@ -1,11 +1,14 @@
 package org.cloudfoundry.credhub.data
 
-import com.google.common.collect.Lists
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import java.util.ArrayList
 import java.util.HashSet
 import java.util.UUID
-import kotlin.streams.toList
+
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
+
+import com.google.common.collect.Lists
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.PermissionOperation
 import org.cloudfoundry.credhub.audit.AuditablePermissionData
@@ -20,11 +23,10 @@ import org.cloudfoundry.credhub.repositories.PermissionRepository
 import org.cloudfoundry.credhub.requests.PermissionEntry
 import org.cloudfoundry.credhub.requests.PermissionsV2Request
 import org.cloudfoundry.credhub.services.CredentialDataService
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
+import kotlin.streams.toList
 
 @Component
-@SuppressFBWarnings(value = ["NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"], justification = "Let's refactor this class into kotlin")
+@SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification = "Let's refactor this class into kotlin")
 class PermissionDataService @Autowired
 constructor(
     private val permissionRepository: PermissionRepository,

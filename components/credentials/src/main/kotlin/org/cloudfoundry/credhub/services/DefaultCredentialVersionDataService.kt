@@ -2,13 +2,6 @@ package org.cloudfoundry.credhub.services
 
 import com.google.common.collect.Lists
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
-import java.sql.Timestamp
-import java.time.Duration
-import java.time.Instant
-import java.util.HashMap
-import java.util.UUID
-import java.util.stream.Collectors
-import kotlin.experimental.and
 import org.apache.commons.lang3.StringUtils
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.domain.CredentialFactory
@@ -25,6 +18,13 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
+import java.sql.Timestamp
+import java.time.Duration
+import java.time.Instant
+import java.util.HashMap
+import java.util.UUID
+import java.util.stream.Collectors
+import kotlin.experimental.and
 
 @Service
 class DefaultCredentialVersionDataService @Autowired
@@ -40,7 +40,7 @@ constructor(
         return credentialVersion.save<CredentialVersion>(this)
     }
 
-    @SuppressFBWarnings(value = ["NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"], justification = "Let's refactor this class into kotlin")
+    @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification = "Let's refactor this class into kotlin")
     override fun save(credentialVersionData: CredentialVersionData<*>): CredentialVersion {
         val credential = credentialVersionData.credential
 

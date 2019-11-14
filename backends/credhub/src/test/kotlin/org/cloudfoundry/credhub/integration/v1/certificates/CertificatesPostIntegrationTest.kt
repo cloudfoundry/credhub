@@ -2,12 +2,12 @@ package org.cloudfoundry.credhub.integration.v1.certificates
 
 import com.jayway.jsonpath.JsonPath
 import org.cloudfoundry.credhub.CredhubTestApp
+import org.cloudfoundry.credhub.utils.DatabaseProfileResolver
 import org.cloudfoundry.credhub.helpers.RequestHelper.generateCa
 import org.cloudfoundry.credhub.helpers.RequestHelper.generateCertificateCredential
 import org.cloudfoundry.credhub.helpers.RequestHelper.getCertificateId
 import org.cloudfoundry.credhub.helpers.RequestHelper.regenerateCertificate
 import org.cloudfoundry.credhub.utils.AuthConstants.Companion.ALL_PERMISSIONS_TOKEN
-import org.cloudfoundry.credhub.utils.DatabaseProfileResolver
 import org.hamcrest.core.IsEqual.equalTo
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertThat

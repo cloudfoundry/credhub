@@ -1,7 +1,7 @@
 package org.cloudfoundry.credhub.utils
 
-import java.io.IOException
 import org.springframework.stereotype.Component
+import java.io.IOException
 
 @Component
 class VersionProvider(resources: ResourceReader) {

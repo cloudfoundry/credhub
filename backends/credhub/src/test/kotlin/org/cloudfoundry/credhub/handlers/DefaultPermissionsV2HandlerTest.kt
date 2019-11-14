@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.handlers
 
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.cloudfoundry.credhub.ErrorMessages
@@ -19,6 +18,7 @@ import org.cloudfoundry.credhub.requests.PermissionsV2Request
 import org.cloudfoundry.credhub.views.PermissionsV2View
 import org.junit.Before
 import org.junit.Test
+import java.util.UUID
 
 class DefaultPermissionsV2HandlerTest {
     private lateinit var credentialVersion: CredentialVersion

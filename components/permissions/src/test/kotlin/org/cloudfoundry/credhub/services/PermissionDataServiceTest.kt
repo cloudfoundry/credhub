@@ -1,18 +1,18 @@
 package org.cloudfoundry.credhub.services
 
-import com.google.common.collect.Lists.newArrayList
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import java.util.ArrayList
-import junit.framework.TestCase.assertFalse
+
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.junit4.SpringRunner
+import org.springframework.transaction.annotation.Transactional
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import org.apache.commons.lang3.RandomStringUtils
 import org.cloudfoundry.credhub.CredhubTestApp
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.PermissionOperation
-import org.cloudfoundry.credhub.PermissionOperation.DELETE
-import org.cloudfoundry.credhub.PermissionOperation.READ
-import org.cloudfoundry.credhub.PermissionOperation.READ_ACL
-import org.cloudfoundry.credhub.PermissionOperation.WRITE
-import org.cloudfoundry.credhub.PermissionOperation.WRITE_ACL
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.audit.OperationDeviceAction
 import org.cloudfoundry.credhub.audit.entities.V2Permission
@@ -24,10 +24,21 @@ import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
 import org.cloudfoundry.credhub.requests.PermissionEntry
 import org.cloudfoundry.credhub.requests.PermissionsV2Request
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver
+import org.hamcrest.Matchers
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+
+import com.google.common.collect.Lists.newArrayList
+import junit.framework.TestCase.assertFalse
+import org.cloudfoundry.credhub.PermissionOperation.DELETE
+import org.cloudfoundry.credhub.PermissionOperation.READ
+import org.cloudfoundry.credhub.PermissionOperation.READ_ACL
+import org.cloudfoundry.credhub.PermissionOperation.WRITE
+import org.cloudfoundry.credhub.PermissionOperation.WRITE_ACL
 import org.hamcrest.CoreMatchers.allOf
 import org.hamcrest.CoreMatchers.notNullValue
 import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.Matchers
 import org.hamcrest.Matchers.contains
 import org.hamcrest.Matchers.containsInAnyOrder
 import org.hamcrest.Matchers.hasItem
@@ -37,20 +48,12 @@ import org.hamcrest.collection.IsCollectionWithSize.hasSize
 import org.hamcrest.core.Is.`is`
 import org.hamcrest.core.IsCollectionContaining.hasItems
 import org.hamcrest.core.IsEqual.equalTo
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.junit4.SpringRunner
-import org.springframework.transaction.annotation.Transactional
 
 @RunWith(SpringRunner::class)
-@ActiveProfiles(value = ["unit-test"], resolver = DatabaseProfileResolver::class)
+@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver::class)
 @SpringBootTest(classes = [CredhubTestApp::class])
 @Transactional
-@SuppressFBWarnings(value = ["NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"], justification = "Let's refactor this class into kotlin")
+@SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE", justification = "Let's refactor this class into kotlin")
 class PermissionDataServiceTest {
 
     @Autowired

@@ -1,12 +1,12 @@
 package org.cloudfoundry.credhub
 
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
 import org.cloudfoundry.credhub.exceptions.InvalidRemoteAddressException
 import org.cloudfoundry.credhub.exceptions.ReadOnlyException
 import org.springframework.stereotype.Component
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
 
 @Component
 class ManagementInterceptor(private val managementRegistry: ManagementRegistry) : HandlerInterceptorAdapter() {

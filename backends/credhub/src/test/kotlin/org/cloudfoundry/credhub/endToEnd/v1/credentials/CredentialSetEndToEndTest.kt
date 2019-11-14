@@ -1,12 +1,12 @@
 package org.cloudfoundry.credhub.endToEnd.v1.credentials
 
 import org.apache.commons.lang3.StringUtils
+import org.cloudfoundry.credhub.utils.AuthConstants
 import org.cloudfoundry.credhub.CredhubTestApp
+import org.cloudfoundry.credhub.utils.DatabaseProfileResolver
 import org.cloudfoundry.credhub.helpers.RequestHelper.generatePassword
 import org.cloudfoundry.credhub.helpers.RequestHelper.setPassword
-import org.cloudfoundry.credhub.utils.AuthConstants
 import org.cloudfoundry.credhub.utils.AuthConstants.Companion.ALL_PERMISSIONS_TOKEN
-import org.cloudfoundry.credhub.utils.DatabaseProfileResolver
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.CoreMatchers.containsString
 import org.hamcrest.CoreMatchers.equalTo

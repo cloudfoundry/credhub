@@ -1,7 +1,8 @@
 package org.cloudfoundry.credhub.requests
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect
 import javax.validation.constraints.NotEmpty
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect
 import org.apache.commons.lang3.StringUtils.prependIfMissing
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder

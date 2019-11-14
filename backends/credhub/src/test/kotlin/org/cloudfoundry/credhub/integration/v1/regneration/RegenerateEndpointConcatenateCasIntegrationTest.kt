@@ -2,9 +2,9 @@ package org.cloudfoundry.credhub.integration.v1.regneration
 
 import com.jayway.jsonpath.JsonPath
 import org.cloudfoundry.credhub.CredhubTestApp
+import org.cloudfoundry.credhub.utils.DatabaseProfileResolver
 import org.cloudfoundry.credhub.helpers.RequestHelper
 import org.cloudfoundry.credhub.utils.AuthConstants.Companion.ALL_PERMISSIONS_TOKEN
-import org.cloudfoundry.credhub.utils.DatabaseProfileResolver
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith

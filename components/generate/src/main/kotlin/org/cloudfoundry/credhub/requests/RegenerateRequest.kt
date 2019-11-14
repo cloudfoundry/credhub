@@ -1,7 +1,8 @@
 package org.cloudfoundry.credhub.requests
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect
 import javax.validation.constraints.NotNull
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect
 import org.apache.commons.lang3.StringUtils
 import org.cloudfoundry.credhub.ErrorMessages
 

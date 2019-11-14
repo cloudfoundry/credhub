@@ -1,8 +1,8 @@
 package org.cloudfoundry.credhub.controllers.v1.certificates
 
-import java.util.UUID
 import org.cloudfoundry.credhub.domain.Encryptor
 import org.cloudfoundry.credhub.entities.EncryptedValue
+import java.util.UUID
 
 class SpyEncryptor : Encryptor {
 

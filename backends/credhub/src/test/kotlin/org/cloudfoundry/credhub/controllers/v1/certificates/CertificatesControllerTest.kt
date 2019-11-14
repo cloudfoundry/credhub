@@ -1,9 +1,5 @@
 package org.cloudfoundry.credhub.controllers.v1.certificates
 
-import java.security.Security
-import java.time.Instant
-import java.time.temporal.ChronoUnit
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
@@ -43,6 +39,10 @@ import org.springframework.restdocs.request.RequestDocumentation.pathParameters
 import org.springframework.restdocs.request.RequestDocumentation.requestParameters
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.security.Security
+import java.time.Instant
+import java.time.temporal.ChronoUnit
+import java.util.UUID
 
 class CertificatesControllerTest {
     @Rule

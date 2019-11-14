@@ -6,9 +6,6 @@ import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import com.fasterxml.jackson.databind.exc.InvalidTypeIdException
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException
 import com.jayway.jsonpath.InvalidJsonException
-import java.io.InvalidObjectException
-import java.text.MessageFormat
-import javax.servlet.http.HttpServletResponse
 import org.apache.logging.log4j.LogManager
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
@@ -41,6 +38,9 @@ import org.springframework.web.bind.MissingServletRequestParameterException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import java.io.InvalidObjectException
+import java.text.MessageFormat
+import javax.servlet.http.HttpServletResponse
 
 @RestControllerAdvice
 @Order(HIGHEST_PRECEDENCE)

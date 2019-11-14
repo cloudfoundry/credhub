@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.validators
 
-import java.security.Security
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
@@ -9,6 +8,7 @@ import org.cloudfoundry.credhub.exceptions.MalformedPrivateKeyException
 import org.cloudfoundry.credhub.utils.TestConstants
 import org.junit.Before
 import org.junit.Test
+import java.security.Security
 
 class CertificateMatchesPrivateKeyValidatorTest {
 
