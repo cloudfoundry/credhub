@@ -23,8 +23,8 @@ public class V41_1__set_salt_in_existing_user_credentials extends BaseJavaMigrat
     justification = "The database will definitely exist"
   )
   @Override
-  public void migrate(Context context) throws Exception {
-    JdbcTemplate jdbcTemplate =
+  public void migrate(final Context context) throws Exception {
+    final JdbcTemplate jdbcTemplate =
       new JdbcTemplate(new SingleConnectionDataSource(context.getConnection(), true));
 
     final String databaseName = jdbcTemplate

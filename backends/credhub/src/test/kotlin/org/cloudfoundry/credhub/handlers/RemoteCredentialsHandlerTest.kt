@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy
 import com.google.protobuf.ByteString
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
+import java.security.Security
+import java.time.Instant
+import java.util.UUID
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
@@ -45,16 +48,13 @@ import org.cloudfoundry.credhub.requests.UserGenerateRequest
 import org.cloudfoundry.credhub.requests.UserSetRequest
 import org.cloudfoundry.credhub.requests.ValueSetRequest
 import org.cloudfoundry.credhub.utils.TestConstants
-import org.junit.Before
 import org.junit.Assert.assertEquals
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
-import java.security.Security
-import java.time.Instant
-import java.util.UUID
 
 @RunWith(JUnit4::class)
 class RemoteCredentialsHandlerTest {

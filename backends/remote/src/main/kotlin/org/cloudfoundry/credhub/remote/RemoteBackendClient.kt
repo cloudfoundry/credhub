@@ -15,6 +15,10 @@ import io.netty.channel.kqueue.KQueueDomainSocketChannel
 import io.netty.channel.kqueue.KQueueEventLoopGroup
 import io.netty.channel.unix.DomainSocketAddress
 import io.netty.handler.ssl.SslContext
+import java.io.ByteArrayInputStream
+import java.nio.charset.StandardCharsets.UTF_8
+import java.util.concurrent.TimeUnit
+import javax.net.ssl.SSLException
 import org.apache.commons.lang3.StringUtils
 import org.apache.logging.log4j.LogManager
 import org.cloudfoundry.credhub.remote.grpc.CredentialServiceGrpc
@@ -37,14 +41,9 @@ import org.cloudfoundry.credhub.remote.grpc.PutPermissionsRequest
 import org.cloudfoundry.credhub.remote.grpc.SetRequest
 import org.cloudfoundry.credhub.remote.grpc.SetResponse
 import org.cloudfoundry.credhub.remote.grpc.WritePermissionsRequest
-
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import java.io.ByteArrayInputStream
-import java.nio.charset.StandardCharsets.UTF_8
-import java.util.concurrent.TimeUnit
-import javax.net.ssl.SSLException
 
 @Service
 @Profile("remote")

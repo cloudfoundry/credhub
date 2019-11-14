@@ -1,10 +1,8 @@
 package org.cloudfoundry.credhub.exceptions
 
-import java.util.stream.Collectors
-
-import javax.validation.ValidationException
-
 import com.google.common.collect.Lists
+import java.util.stream.Collectors
+import javax.validation.ValidationException
 
 class ParameterizedValidationException @JvmOverloads constructor(messageCode: String, parameters: Array<Any> = arrayOf()) : ValidationException(messageCode) {
 

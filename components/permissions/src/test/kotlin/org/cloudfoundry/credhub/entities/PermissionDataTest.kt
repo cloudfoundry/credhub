@@ -1,16 +1,14 @@
 package org.cloudfoundry.credhub.entities
 
 import java.util.Arrays
-
 import org.cloudfoundry.credhub.PermissionOperation
 import org.cloudfoundry.credhub.data.PermissionData
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
-
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
 
 @RunWith(JUnit4::class)
 class PermissionDataTest {

@@ -20,7 +20,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
 
 @RunWith(SpringRunner::class)
-@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver::class)
+@ActiveProfiles(value = ["unit-test"], resolver = DatabaseProfileResolver::class)
 @SpringBootTest(classes = [CredhubTestApp::class])
 class ManagementInterceptorTest {
     private var subject: ManagementInterceptor? = null

@@ -1,14 +1,13 @@
 package org.cloudfoundry.credhub.requests
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect
+import javax.validation.constraints.NotEmpty
+import javax.validation.constraints.NotNull
+import javax.validation.constraints.Pattern
 import org.apache.commons.lang3.StringUtils
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.PermissionOperation
 import org.springframework.validation.annotation.Validated
-
-import javax.validation.constraints.NotEmpty
-import javax.validation.constraints.NotNull
-import javax.validation.constraints.Pattern
 
 @JsonAutoDetect
 @Validated

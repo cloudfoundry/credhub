@@ -12,8 +12,8 @@ import org.flywaydb.core.api.migration.Context;
 public class V47_2__insert_checksum_values_for_existing_credentials extends BaseJavaMigration {
 
   @Override
-  public void migrate(Context context) throws Exception {
-    JdbcTemplate jdbcTemplate =
+  public void migrate(final Context context) throws Exception {
+    final JdbcTemplate jdbcTemplate =
       new JdbcTemplate(new SingleConnectionDataSource(context.getConnection(), true));
 
     final SqlRowSet credentials = jdbcTemplate.queryForRowSet("select * from credential");

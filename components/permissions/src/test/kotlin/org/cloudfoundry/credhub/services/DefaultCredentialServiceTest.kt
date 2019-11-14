@@ -1,6 +1,10 @@
 package org.cloudfoundry.credhub.services
 
 import com.google.common.collect.Lists.newArrayList
+import java.util.ArrayList
+import java.util.Arrays
+import java.util.UUID
+import java.util.regex.Pattern
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.cloudfoundry.credhub.ErrorMessages
@@ -38,10 +42,6 @@ import org.mockito.Mockito.never
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.MockitoAnnotations.initMocks
-import java.util.ArrayList
-import java.util.Arrays
-import java.util.UUID
-import java.util.regex.Pattern
 
 class DefaultCredentialServiceTest {
 

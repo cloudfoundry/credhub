@@ -1,8 +1,8 @@
 package org.cloudfoundry.credhub.services
 
+import java.util.UUID
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
 import org.cloudfoundry.credhub.domain.CredentialVersion
-import java.util.UUID
 
 class SpyCertificateVersionDataService : CertificateVersionDataService {
     override fun findActive(caName: String): CredentialVersion? {

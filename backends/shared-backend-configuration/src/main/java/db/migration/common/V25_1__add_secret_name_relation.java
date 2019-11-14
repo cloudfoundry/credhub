@@ -19,8 +19,8 @@ public class V25_1__add_secret_name_relation extends BaseJavaMigration {
     justification = "The database will definitely exist"
   )
   @Override
-  public void migrate(Context context) throws Exception {
-    JdbcTemplate jdbcTemplate =
+  public void migrate(final Context context) throws Exception {
+    final JdbcTemplate jdbcTemplate =
       new JdbcTemplate(new SingleConnectionDataSource(context.getConnection(), true));
     final String databaseName = jdbcTemplate
       .getDataSource()

@@ -20,8 +20,8 @@ public class V44_2__migrate_encypted_values_to_encryped_value_table extends Base
     justification = "The database will definitely exist"
   )
   @Override
-  public void migrate(Context context) throws Exception {
-    JdbcTemplate jdbcTemplate =
+  public void migrate(final Context context) throws Exception {
+    final JdbcTemplate jdbcTemplate =
       new JdbcTemplate(new SingleConnectionDataSource(context.getConnection(), true));
     final String databaseName = jdbcTemplate
       .getDataSource()

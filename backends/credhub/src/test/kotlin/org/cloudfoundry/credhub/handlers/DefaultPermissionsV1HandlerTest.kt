@@ -5,7 +5,6 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.PermissionOperation
 import org.cloudfoundry.credhub.data.PermissionData
-
 import org.cloudfoundry.credhub.domain.CredentialVersion
 import org.cloudfoundry.credhub.domain.ValueCredentialVersion
 import org.cloudfoundry.credhub.entity.ValueCredentialVersionData
