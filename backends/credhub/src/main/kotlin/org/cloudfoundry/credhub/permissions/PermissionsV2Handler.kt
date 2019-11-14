@@ -1,9 +1,9 @@
 package org.cloudfoundry.credhub.permissions
 
+import java.util.UUID
 import org.cloudfoundry.credhub.PermissionOperation
 import org.cloudfoundry.credhub.requests.PermissionsV2Request
 import org.cloudfoundry.credhub.views.PermissionsV2View
-import java.util.UUID
 
 interface PermissionsV2Handler {
     fun writePermissions(request: PermissionsV2Request): PermissionsV2View

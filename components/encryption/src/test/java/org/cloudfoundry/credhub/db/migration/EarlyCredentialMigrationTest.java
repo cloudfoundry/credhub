@@ -3,8 +3,6 @@ package org.cloudfoundry.credhub.db.migration;
 import java.util.List;
 import java.util.UUID;
 
-import javax.sql.DataSource;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;

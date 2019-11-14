@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy
 import com.google.protobuf.ByteString
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
+import java.security.Security
+import java.time.Instant
+import java.util.UUID
 import junit.framework.Assert.assertEquals
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
@@ -51,9 +54,6 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
-import java.security.Security
-import java.time.Instant
-import java.util.UUID
 
 @RunWith(JUnit4::class)
 class RemoteCredentialsHandlerTest {

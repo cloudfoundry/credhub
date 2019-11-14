@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.interpolation
 
+import java.util.ArrayList
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.PermissionOperation
 import org.cloudfoundry.credhub.PermissionOperation.READ
@@ -15,7 +16,6 @@ import org.cloudfoundry.credhub.services.PermissionCheckingService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import java.util.ArrayList
 
 @Service
 @Profile("!remote")

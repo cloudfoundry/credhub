@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.permissions
 
+import java.util.UUID
 import org.apache.commons.lang3.StringUtils
 import org.cloudfoundry.credhub.requests.PermissionsV2PatchRequest
 import org.cloudfoundry.credhub.requests.PermissionsV2Request
@@ -14,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
-import java.util.UUID
 
 @RestController
 @RequestMapping(

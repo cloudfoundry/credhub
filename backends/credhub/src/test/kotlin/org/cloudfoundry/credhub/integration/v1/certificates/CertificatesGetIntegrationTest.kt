@@ -1,5 +1,7 @@
 package org.cloudfoundry.credhub.integration.v1.certificates
 
+import java.time.Instant
+import java.util.UUID
 import org.cloudfoundry.credhub.AuthConstants
 import org.cloudfoundry.credhub.CredhubTestApp
 import org.cloudfoundry.credhub.DatabaseProfileResolver
@@ -32,8 +34,6 @@ import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.WebApplicationContext
-import java.time.Instant
-import java.util.UUID
 
 @RunWith(SpringRunner::class)
 @ActiveProfiles(value = ["unit-test", "unit-test-permissions"], resolver = DatabaseProfileResolver::class)

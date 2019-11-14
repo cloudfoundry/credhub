@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.handlers
 
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
+import java.util.UUID
 import org.assertj.core.api.Assertions
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.PermissionOperation
@@ -18,7 +19,6 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import org.mockito.Mockito
 import org.mockito.Mockito.`when`
-import java.util.UUID
 
 @RunWith(JUnit4::class)
 class RemotePermissionsHandlerTest {

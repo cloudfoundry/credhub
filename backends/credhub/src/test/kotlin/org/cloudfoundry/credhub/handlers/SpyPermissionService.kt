@@ -1,12 +1,12 @@
 package org.cloudfoundry.credhub.handlers
 
+import java.util.UUID
 import org.cloudfoundry.credhub.PermissionOperation
 import org.cloudfoundry.credhub.data.PermissionData
 import org.cloudfoundry.credhub.domain.CredentialVersion
 import org.cloudfoundry.credhub.requests.PermissionEntry
 import org.cloudfoundry.credhub.requests.PermissionsV2Request
 import org.cloudfoundry.credhub.services.PermissionService
-import java.util.UUID
 
 class SpyPermissionService : PermissionService {
     override fun getAllowedOperationsForLogging(credentialName: String, actor: String): List<PermissionOperation> {

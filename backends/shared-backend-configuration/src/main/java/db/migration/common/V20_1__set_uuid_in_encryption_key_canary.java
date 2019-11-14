@@ -20,8 +20,8 @@ public class V20_1__set_uuid_in_encryption_key_canary extends BaseJavaMigration 
     justification = "The database will definitely exist"
   )
   @Override
-  public void migrate(Context context) throws Exception {
-    JdbcTemplate jdbcTemplate =
+  public void migrate(final Context context) throws Exception {
+    final JdbcTemplate jdbcTemplate =
       new JdbcTemplate(new SingleConnectionDataSource(context.getConnection(), true));
     final String databaseName = jdbcTemplate
       .getDataSource()

@@ -2,6 +2,13 @@ package org.cloudfoundry.credhub.services
 
 import com.google.common.collect.Lists
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import java.sql.Timestamp
+import java.time.Duration
+import java.time.Instant
+import java.util.HashMap
+import java.util.UUID
+import java.util.stream.Collectors
+import kotlin.experimental.and
 import org.apache.commons.lang3.StringUtils
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.domain.CredentialFactory
@@ -17,13 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
-import java.sql.Timestamp
-import java.time.Duration
-import java.time.Instant
-import java.util.HashMap
-import java.util.UUID
-import java.util.stream.Collectors
-import kotlin.experimental.and
 
 @Service
 class DefaultCredentialVersionDataService @Autowired
