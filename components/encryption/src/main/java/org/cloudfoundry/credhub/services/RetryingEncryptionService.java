@@ -71,7 +71,7 @@ public class RetryingEncryptionService {
             LOGGER.info("Trying reconnect");
             final LunaEncryptionService lunaEncryptionService = (LunaEncryptionService) provider;
             lunaEncryptionService.reconnect(e);
-            if(lunaEncryptionService.isLoggedIn()) {
+            if (lunaEncryptionService.isLoggedIn()) {
               LOGGER.info("Connected to the hsm successfully");
               keySet.reload();
               clearNeedsReconnectFlag();

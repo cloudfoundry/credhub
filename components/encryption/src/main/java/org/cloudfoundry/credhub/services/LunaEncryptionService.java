@@ -118,7 +118,7 @@ public class LunaEncryptionService extends InternalEncryptionService {
     lunaConnection.reconnect();
   }
 
-  public boolean isLoggedIn(){
+  public boolean isLoggedIn() {
     return lunaConnection.isLoggedIn();
   }
 }
