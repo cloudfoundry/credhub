@@ -9,6 +9,7 @@ import org.cloudfoundry.credhub.PermissionOperation.WRITE
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.auth.UserContextHolder
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue
+import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
 import org.cloudfoundry.credhub.domain.CertificateGenerationParameters
 import org.cloudfoundry.credhub.domain.CredentialVersion
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
@@ -69,7 +70,15 @@ class DefaultCredentialsHandler(
             }
         }
 
-        val existingCredentialVersion = credentialService.findMostRecent(generateRequest.name)
+        val activeVersionList = credentialService.findActiveByName(generateRequest.name)
+
+        val existingCredentialVersion = when {
+            activeVersionList.size > 1 && (activeVersionList[0] as CertificateCredentialVersion).isVersionTransitional
+                -> activeVersionList[1]
+            activeVersionList.isNotEmpty() -> activeVersionList[0]
+            else -> null
+        }
+//        val existingCredentialVersion = credentialService.findMostRecent(generateRequest.name)
 
         val value = credentialGenerator.generate(generateRequest)
 

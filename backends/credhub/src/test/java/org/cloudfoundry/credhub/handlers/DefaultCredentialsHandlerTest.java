@@ -1,6 +1,7 @@
 package org.cloudfoundry.credhub.handlers;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -19,6 +20,7 @@ import org.cloudfoundry.credhub.credential.StringCredentialValue;
 import org.cloudfoundry.credhub.credential.UserCredentialValue;
 import org.cloudfoundry.credhub.credentials.DefaultCredentialsHandler;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
+import org.cloudfoundry.credhub.domain.CertificateGenerationParameters;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.domain.Encryptor;
 import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
@@ -51,6 +53,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.ArgumentCaptor;
 
+import static com.google.common.collect.Lists.asList;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Collections.EMPTY_SET;
 import static java.util.Collections.emptyList;
@@ -848,6 +851,32 @@ public class DefaultCredentialsHandlerTest {
     verify(universalCredentialGenerator, times(0)).generate(any());
     verify(credentialService, times(0)).save(any(), any(), any());
   }
+
+  @Test
+  public void generateCredential_whenCertificate_andModeConverge_andTransitionalVersionExists_checksLatestNonTransitionalVersion() {
+    CertificateGenerationRequestParameters requestParameters = new CertificateGenerationRequestParameters();
+
+    CertificateGenerateRequest generateRequest = new CertificateGenerateRequest();
+    generateRequest.setRequestGenerationParameters(requestParameters);
+    generateRequest.setName(CREDENTIAL_NAME);
+    generateRequest.setType(CredentialType.CERTIFICATE.toString());
+
+    CertificateCredentialVersion nonTransitionalVersion = new CertificateCredentialVersion();
+    nonTransitionalVersion.setTransitional(false);
+
+    CertificateCredentialVersion transitionalVersion = new CertificateCredentialVersion();
+    transitionalVersion.setTransitional(true);
+
+    when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.WRITE))
+      .thenReturn(true);
+
+    when(credentialService.findActiveByName(CREDENTIAL_NAME))
+      .thenReturn(Arrays.asList(transitionalVersion, nonTransitionalVersion));
+
+    subjectWithAcls.generateCredential(generateRequest);
+
+    verify(credentialService, times(1)).save(eq(nonTransitionalVersion), any(), any());
+   }
 
   @Test
   public void findStartingWithPath_withAclsEnabled_andUserLacksPermissions_returnsEmptyList() {
