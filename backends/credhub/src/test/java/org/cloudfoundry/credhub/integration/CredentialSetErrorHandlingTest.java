@@ -373,8 +373,6 @@ public class CredentialSetErrorHandlingTest {
     final byte[] exceedsMaxBlobStoreSizeBytes = DatabaseUtilities.Companion.getExceedsMaxBlobStoreSizeBytes();
     final String exceedsMaxBlobStoreSizeValue = Base64.getEncoder().encodeToString(exceedsMaxBlobStoreSizeBytes);
 
-    System.out.println("string is: " + exceedsMaxBlobStoreSizeValue);
-
     final MockHttpServletRequestBuilder request = put("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)

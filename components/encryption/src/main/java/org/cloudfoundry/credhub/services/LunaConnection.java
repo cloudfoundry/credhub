@@ -83,6 +83,16 @@ public class LunaConnection {
     return keyStore.getKey(encryptionKeyAlias, null);
   }
 
+  public boolean isLoggedIn() {
+    try {
+      return (boolean) lunaSlotManager.getClass().getMethod("isLoggedIn").invoke(lunaSlotManager);
+    } catch (final IllegalAccessException | NoSuchMethodException e) {
+      throw new RuntimeException(e);
+    } catch (final Exception e) {
+      return false;
+    }
+  }
+
   private void makeKeyStore() throws Exception {
     keyStore = KeyStore.getInstance("Luna", provider);
     keyStore.load(null, null);
@@ -102,16 +112,6 @@ public class LunaConnection {
       lunaSlotManager.getClass().getMethod("reinitialize").invoke(lunaSlotManager);
     } catch (final Exception e) {
       throw new RuntimeException(e);
-    }
-  }
-
-  private boolean isLoggedIn() {
-    try {
-      return (boolean) lunaSlotManager.getClass().getMethod("isLoggedIn").invoke(lunaSlotManager);
-    } catch (final IllegalAccessException | NoSuchMethodException e) {
-      throw new RuntimeException(e);
-    } catch (final Exception e) {
-      return false;
     }
   }
 }
