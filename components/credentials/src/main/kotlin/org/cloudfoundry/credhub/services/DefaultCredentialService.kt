@@ -67,14 +67,7 @@ class DefaultCredentialService(
     }
 
     override fun findActiveByName(credentialName: String): List<CredentialVersion> {
-        val credentialList = credentialVersionDataService.findActiveByName(credentialName)
-
-        for (credentialVersion in credentialList!!) {
-            auditRecord.addVersion(credentialVersion)
-            auditRecord.addResource(credentialVersion.credential)
-        }
-
-        return credentialList
+        return credentialVersionDataService.findActiveByName(credentialName)!!
     }
 
     override fun findByUuid(credentialUUID: UUID): Credential {

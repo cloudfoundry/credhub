@@ -231,21 +231,6 @@ class DefaultCredentialServiceTest {
     }
 
     @Test
-    fun findActiveByName_addsToTheAuditRecord() {
-        `when`(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
-            .thenReturn(true)
-
-        val expectedCredentials = newArrayList(existingCredentialVersion)
-        `when`<List<CredentialVersion>>(credentialVersionDataService.findActiveByName(CREDENTIAL_NAME))
-            .thenReturn(expectedCredentials)
-
-        this.subject.findActiveByName(CREDENTIAL_NAME)
-
-        verify(auditRecord, times(1)).addResource(ArgumentMatchers.any(Credential::class.java))
-        verify(auditRecord, times(1)).addVersion(ArgumentMatchers.any(CredentialVersion::class.java))
-    }
-
-    @Test
     fun findVersionByUuid_addsToTheAuditRecord() {
         `when`<CredentialVersion>(credentialVersionDataService.findByUuid(CREDENTIAL_UUID.toString()))
             .thenReturn(existingCredentialVersion)

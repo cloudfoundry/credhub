@@ -9,6 +9,7 @@ import org.cloudfoundry.credhub.PermissionOperation.WRITE
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.auth.UserContextHolder
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue
+import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
 import org.cloudfoundry.credhub.domain.CertificateGenerationParameters
 import org.cloudfoundry.credhub.domain.CredentialVersion
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
@@ -69,7 +70,16 @@ class DefaultCredentialsHandler(
             }
         }
 
-        val existingCredentialVersion = credentialService.findMostRecent(generateRequest.name)
+        val activeVersionList = credentialService.findActiveByName(generateRequest.name)
+
+        val existingCredentialVersion = when {
+            activeVersionList.size > 1 && (activeVersionList[0] as CertificateCredentialVersion).isVersionTransitional ->
+                activeVersionList[1]
+            activeVersionList.isNotEmpty() &&
+                (activeVersionList[0] !is CertificateCredentialVersion || !(activeVersionList[0] as CertificateCredentialVersion).isVersionTransitional) ->
+                    activeVersionList[0]
+            else -> null
+        }
 
         val value = credentialGenerator.generate(generateRequest)
 
@@ -151,6 +161,11 @@ class DefaultCredentialsHandler(
     override fun getCurrentCredentialVersions(credentialName: String): DataResponse {
         checkPermissionsByName(credentialName, READ)
         val credentialVersions = credentialService.findActiveByName(credentialName)
+
+        for (credentialVersion in credentialVersions) {
+            auditRecord.addVersion(credentialVersion)
+            auditRecord.addResource(credentialVersion.credential)
+        }
 
         if (credentialVersions.isEmpty()) {
             throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)

@@ -1,6 +1,7 @@
 package org.cloudfoundry.credhub.handlers;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -332,6 +333,17 @@ public class DefaultCredentialsHandlerTest {
     assertThat(credentialView.getVersionCreatedAt(), equalTo(VERSION1_CREATED_AT));
     verify(permissionCheckingService, times(0)).hasPermission(any(), anyString(), any());
 
+  }
+
+  @Test
+  public void getCurrentCredentialVersions_whenTheCredentialExists_addsToAuditRecord() {
+    when(credentialService.findActiveByName(eq(CREDENTIAL_NAME)))
+      .thenReturn(Collections.singletonList(version1));
+
+    subjectWithoutAcls.getCurrentCredentialVersions(CREDENTIAL_NAME);
+
+    assertEquals(1, auditRecord.getResourceList().size());
+    assertEquals(1, auditRecord.getVersionList().size());
   }
 
   @Test
@@ -847,6 +859,55 @@ public class DefaultCredentialsHandlerTest {
     verify(credentialService, times(0)).findMostRecent(any());
     verify(universalCredentialGenerator, times(0)).generate(any());
     verify(credentialService, times(0)).save(any(), any(), any());
+  }
+
+  @Test
+  public void generateCredential_whenCertificate_andOnlyTransitionalVersionExists_callsSaveWithNoExistingVersion() {
+    CertificateGenerationRequestParameters requestParameters = new CertificateGenerationRequestParameters();
+
+    CertificateGenerateRequest generateRequest = new CertificateGenerateRequest();
+    generateRequest.setRequestGenerationParameters(requestParameters);
+    generateRequest.setName(CREDENTIAL_NAME);
+    generateRequest.setType(CredentialType.CERTIFICATE.toString());
+
+    CertificateCredentialVersion transitionalVersion = new CertificateCredentialVersion();
+    transitionalVersion.setTransitional(true);
+
+    when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.WRITE))
+      .thenReturn(true);
+
+    when(credentialService.findActiveByName(CREDENTIAL_NAME))
+      .thenReturn(Collections.singletonList(transitionalVersion));
+
+    subjectWithAcls.generateCredential(generateRequest);
+
+    verify(credentialService, times(1)).save(eq(null), any(), any());
+  }
+
+  @Test
+  public void generateCredential_whenCertificate_andTransitionalVersionExists_callsSaveWithLatestNonTransitionalVersion() {
+    CertificateGenerationRequestParameters requestParameters = new CertificateGenerationRequestParameters();
+
+    CertificateGenerateRequest generateRequest = new CertificateGenerateRequest();
+    generateRequest.setRequestGenerationParameters(requestParameters);
+    generateRequest.setName(CREDENTIAL_NAME);
+    generateRequest.setType(CredentialType.CERTIFICATE.toString());
+
+    CertificateCredentialVersion nonTransitionalVersion = new CertificateCredentialVersion();
+    nonTransitionalVersion.setTransitional(false);
+
+    CertificateCredentialVersion transitionalVersion = new CertificateCredentialVersion();
+    transitionalVersion.setTransitional(true);
+
+    when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.WRITE))
+      .thenReturn(true);
+
+    when(credentialService.findActiveByName(CREDENTIAL_NAME))
+      .thenReturn(Arrays.asList(transitionalVersion, nonTransitionalVersion));
+
+    subjectWithAcls.generateCredential(generateRequest);
+
+    verify(credentialService, times(1)).save(eq(nonTransitionalVersion), any(), any());
   }
 
   @Test

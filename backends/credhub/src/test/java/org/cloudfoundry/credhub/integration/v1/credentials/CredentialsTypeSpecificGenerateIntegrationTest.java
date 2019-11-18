@@ -3,6 +3,7 @@ package org.cloudfoundry.credhub.integration.v1.credentials;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -558,7 +559,11 @@ public class CredentialsTypeSpecificGenerateIntegrationTest {
   }
 
   private void beforeEachExistingCredential() {
-    doReturn(parametizer.createCredential(encryptor))
+    CredentialVersion credentialVersion = parametizer.createCredential(encryptor);
+    doReturn(Collections.singletonList(credentialVersion))
+      .when(credentialVersionDataService)
+      .findActiveByName(CREDENTIAL_NAME);
+    doReturn(credentialVersion)
       .when(credentialVersionDataService)
       .findMostRecent(CREDENTIAL_NAME);
   }
