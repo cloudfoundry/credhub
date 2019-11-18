@@ -70,7 +70,16 @@ class DefaultCredentialsHandler(
         }
         checkPermissionsByName(generateRequest.name, WRITE)
 
-        val existingCredentialVersion = credentialService.findMostRecent(generateRequest.name)
+        val activeVersionList = credentialService.findActiveByName(generateRequest.name)
+
+        val existingCredentialVersion = when {
+            activeVersionList.size > 1 && (activeVersionList[0] as CertificateCredentialVersion).isVersionTransitional ->
+                activeVersionList[1]
+            activeVersionList.isNotEmpty() &&
+                (activeVersionList[0] !is CertificateCredentialVersion || !(activeVersionList[0] as CertificateCredentialVersion).isVersionTransitional) ->
+                    activeVersionList[0]
+            else -> null
+        }
 
         val value = credentialGenerator.generate(generateRequest)
 
@@ -156,6 +165,11 @@ class DefaultCredentialsHandler(
     override fun getCurrentCredentialVersions(credentialName: String): DataResponse {
         checkPermissionsByName(credentialName, READ)
         val credentialVersions = credentialService.findActiveByName(credentialName)
+
+        for (credentialVersion in credentialVersions) {
+            auditRecord.addVersion(credentialVersion)
+            auditRecord.addResource(credentialVersion.credential)
+        }
 
         if (credentialVersions.isEmpty()) {
             throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
