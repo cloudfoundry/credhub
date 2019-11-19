@@ -33,6 +33,10 @@ public abstract class BaseCredentialGenerateRequest extends BaseCredentialReques
   private String rawOverwrite;
   private CredentialWriteMode mode;
 
+  public Boolean getOverwrite() {
+    return this.overwrite;
+  }
+
   public boolean isOverwrite() {
     if (overwrite == null) {
       return false;

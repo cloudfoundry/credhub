@@ -145,6 +145,10 @@ class DefaultCredentialService(
                 return false
             }
 
+            if (request.overwrite != null && !request.isOverwrite) {
+                return false
+            }
+
             if (request.mode != null && request.mode == CredentialWriteMode.OVERWRITE) {
                 return true
             }
