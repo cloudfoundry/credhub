@@ -194,8 +194,8 @@ class DefaultCredentialsHandler(
         if (!enforcePermissions) {
             return unfilteredResult
         }
-        val actor = userContextHolder.userContext.actor
-        val paths = permissionCheckingService.findAllPathsByActor(actor)
+        val actor = userContextHolder.userContext?.actor
+        val paths = permissionCheckingService.findAllPathsByActor(actor.toString())
 
         if (paths.contains("/*")) return unfilteredResult
         if (paths.isEmpty()) return ArrayList()
@@ -229,7 +229,7 @@ class DefaultCredentialsHandler(
     private fun checkPermissionsByName(name: String, permissionOperation: PermissionOperation, isCa: Boolean = false) {
         if (!enforcePermissions) return
 
-        if (!permissionCheckingService.hasPermission(userContextHolder.userContext.actor!!, name, permissionOperation)) {
+        if (!permissionCheckingService.hasPermission(userContextHolder.userContext?.actor!!, name, permissionOperation)) {
             if (permissionOperation == WRITE) {
                 throw PermissionException(ErrorMessages.Credential.INVALID_ACCESS)
             } else if (isCa) {
@@ -246,7 +246,7 @@ class DefaultCredentialsHandler(
         val credential = credentialService.findVersionByUuid(uuid)
 
         if (!permissionCheckingService.hasPermission(
-                userContextHolder.userContext.actor!!,
+                userContextHolder.userContext?.actor!!,
                 credential.name,
                 permissionOperation
             )) {

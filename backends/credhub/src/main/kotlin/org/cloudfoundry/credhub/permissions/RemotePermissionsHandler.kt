@@ -28,7 +28,7 @@ class RemotePermissionsHandler(
         val response: PermissionsResponse
 
         try {
-            response = client.getPermissionByUUID(guid, userContextHolder.userContext.actor)
+            response = client.getPermissionByUUID(guid, userContextHolder.userContext?.actor!!)
         } catch (e: StatusRuntimeException) {
             throw handleException(e)
         }
@@ -38,12 +38,12 @@ class RemotePermissionsHandler(
     }
 
     override fun putPermissions(guid: String, permissionsRequest: PermissionsV2Request): PermissionsV2View {
-        val requester = userContextHolder.userContext.actor
+        val requester = userContextHolder.userContext?.actor
         val operationStrings = permissionsRequest.operations.map { o -> o.operation }.toMutableList()
 
         val response: PermissionsResponse
         try {
-            response = client.putPermissionRequest(guid, permissionsRequest.getPath(), permissionsRequest.actor, operationStrings, requester)
+            response = client.putPermissionRequest(guid, permissionsRequest.getPath(), permissionsRequest.actor, operationStrings, requester!!)
         } catch (e: StatusRuntimeException) {
             throw handleException(e)
         }
@@ -53,7 +53,7 @@ class RemotePermissionsHandler(
     }
 
     override fun patchPermissions(guid: String, operations: MutableList<PermissionOperation>?): PermissionsV2View {
-        val requester = userContextHolder.userContext.actor
+        val requester = userContextHolder.userContext?.actor!!
         val operationStrings = operations?.map { o -> o.operation }?.toMutableList()
 
         val response: PermissionsResponse
@@ -72,7 +72,7 @@ class RemotePermissionsHandler(
     }
 
     override fun writeV2Permissions(permissionsRequest: PermissionsV2Request): PermissionsV2View {
-        val requester = userContextHolder.userContext.actor
+        val requester = userContextHolder.userContext?.actor!!
         val operationStrings = permissionsRequest.operations.map { o -> o.operation }.toMutableList()
 
         val response: PermissionsResponse
@@ -90,7 +90,7 @@ class RemotePermissionsHandler(
         val response: PermissionsResponse
 
         try {
-            response = client.deletePermissionByUUID(guid, userContextHolder.userContext.actor)
+            response = client.deletePermissionByUUID(guid, userContextHolder.userContext?.actor!!)
         } catch (e: StatusRuntimeException) {
             throw handleException(e)
         }
@@ -103,7 +103,7 @@ class RemotePermissionsHandler(
         val response: PermissionsResponse
 
         try {
-            response = client.findPermissionByPathAndActor(path, actor, userContextHolder.userContext.actor)
+            response = client.findPermissionByPathAndActor(path, actor, userContextHolder.userContext?.actor!!)
         } catch (e: StatusRuntimeException) {
             throw handleException(e)
         }

@@ -50,7 +50,7 @@ constructor(
         if (enforcePermissions) {
             val userContext = userContextHolder.userContext
             return actor != null &&
-                userContext.actor != null &&
+                userContext?.actor != null &&
                 !StringUtils.equals(userContext.actor, actor)
         } else {
             return true
@@ -62,7 +62,7 @@ constructor(
             val userContext = userContextHolder.userContext
             val actor = permissionDataService.getPermission(guid)!!.actor
             return actor != null &&
-                userContext.actor != null &&
+                userContext?.actor != null &&
                 !StringUtils.equals(userContext.actor, actor)
         } else {
             return true

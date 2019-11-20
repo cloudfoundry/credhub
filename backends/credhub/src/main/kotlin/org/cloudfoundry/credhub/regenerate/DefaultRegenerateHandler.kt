@@ -136,7 +136,7 @@ class DefaultRegenerateHandler(
         if (!enforcePermissions) return
 
         if (!permissionCheckingService.hasPermission(
-                userContextHolder.userContext.actor!!,
+                userContextHolder.userContext?.actor!!,
                 name,
                 permissionOperation
             )) {

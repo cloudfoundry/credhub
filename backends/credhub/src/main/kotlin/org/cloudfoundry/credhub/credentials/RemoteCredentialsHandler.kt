@@ -56,7 +56,7 @@ class RemoteCredentialsHandler(
         }
         val response: GetNVersionsResponse
         try {
-            response = client.getNVersionsRequest(credentialName, userContextHolder.userContext.actor, numberOfVersions)
+            response = client.getNVersionsRequest(credentialName, userContextHolder.userContext?.actor.toString(), numberOfVersions)
         } catch (e: StatusRuntimeException) {
             throw handleException(e)
         }
@@ -79,7 +79,7 @@ class RemoteCredentialsHandler(
     override fun getAllCredentialVersions(credentialName: String): DataResponse {
         val response: GetNVersionsResponse
         try {
-            response = client.getAllVersionsRequest(credentialName, userContextHolder.userContext.actor)
+            response = client.getAllVersionsRequest(credentialName, userContextHolder.userContext?.actor.toString())
         } catch (e: StatusRuntimeException) {
             throw handleException(e)
         }
@@ -100,10 +100,10 @@ class RemoteCredentialsHandler(
     }
 
     override fun getCurrentCredentialVersions(credentialName: String): DataResponse {
-        val actor = userContextHolder.userContext.actor
+        val actor = userContextHolder.userContext?.actor
         val response: GetResponse
         try {
-            response = client.getByNameRequest(credentialName, actor)
+            response = client.getByNameRequest(credentialName, actor.toString())
         } catch (e: StatusRuntimeException) {
             throw handleException(e)
         }
@@ -120,10 +120,10 @@ class RemoteCredentialsHandler(
     }
 
     override fun getCredentialVersionByUUID(credentialUUID: String): CredentialView {
-        val actor = userContextHolder.userContext.actor
+        val actor = userContextHolder.userContext?.actor
         val response: GetResponse
         try {
-            response = client.getByIdRequest(credentialUUID, actor)
+            response = client.getByIdRequest(credentialUUID, actor.toString())
         } catch (e: StatusRuntimeException) {
             throw handleException(e)
         }
@@ -140,10 +140,10 @@ class RemoteCredentialsHandler(
     }
 
     override fun findContainingName(name: String, expiresWithinDays: String): List<FindCredentialResult> {
-        val actor = userContextHolder.userContext.actor
+        val actor = userContextHolder.userContext?.actor
         val response: FindResponse
         try {
-            response = client.findContainingNameRequest(name, actor)
+            response = client.findContainingNameRequest(name, actor.toString())
         } catch (e: StatusRuntimeException) {
             throw handleException(e)
         }
@@ -152,10 +152,10 @@ class RemoteCredentialsHandler(
     }
 
     override fun findStartingWithPath(path: String, expiresWithinDays: String): List<FindCredentialResult> {
-        val actor = userContextHolder.userContext.actor
+        val actor = userContextHolder.userContext?.actor
         val response: FindResponse
         try {
-            response = client.findStartingWithPathRequest(path, actor)
+            response = client.findStartingWithPathRequest(path, actor.toString())
         } catch (e: StatusRuntimeException) {
             throw handleException(e)
         }
@@ -166,7 +166,7 @@ class RemoteCredentialsHandler(
         val getResponse = getCredentialFromRequest(generateRequest)
         val credentialValue: CredentialValue
         val name = generateRequest.name
-        val actor = userContextHolder.userContext.actor
+        val actor = userContextHolder.userContext?.actor
         val type = generateRequest.type
         val versionCreatedAt: Instant
         val uuid: UUID
@@ -181,7 +181,7 @@ class RemoteCredentialsHandler(
             val genParams = createByteStringFromGenerationParameters(type, generateRequest.generationParameters)
             val response: SetResponse
             try {
-                response = client.setRequest(name, type, data, actor, genParams)
+                response = client.setRequest(name, type, data, actor.toString(), genParams)
             } catch (e: StatusRuntimeException) {
                 throw handleException(e)
             }
@@ -203,10 +203,10 @@ class RemoteCredentialsHandler(
         val name = setRequest.name
         val type = setRequest.type
         val data = createByteStringFromData(type, setRequest.credentialValue)
-        val actor = userContextHolder.userContext.actor
+        val actor = userContextHolder.userContext?.actor
         val response: SetResponse
         try {
-            response = client.setRequest(name, type, data, actor, ByteString.EMPTY)
+            response = client.setRequest(name, type, data, actor.toString(), ByteString.EMPTY)
         } catch (e: StatusRuntimeException) {
             throw handleException(e)
         }
@@ -222,10 +222,10 @@ class RemoteCredentialsHandler(
     }
 
     override fun deleteCredential(credentialName: String) {
-        val actor = userContextHolder.userContext.actor
+        val actor = userContextHolder.userContext?.actor
 
         try {
-            client.deleteRequest(credentialName, actor)
+            client.deleteRequest(credentialName, actor.toString())
         } catch (e: StatusRuntimeException) {
             throw handleException(e)
         }
@@ -566,7 +566,7 @@ class RemoteCredentialsHandler(
                     generationRequestParameters.extendedKeyUsage = arrayOf(jsonNode["extended_key_usage"].textValue())
                 }
                 if (jsonNode.hasNonNull("alternative_names")) {
-                    var altNames: MutableList<String> = ArrayList()
+                    val altNames: MutableList<String> = ArrayList()
                     jsonNode["alternative_names"]["names"].forEach {
                         altNames.add(it["name"]["string"].toString())
                     }
@@ -595,7 +595,7 @@ class RemoteCredentialsHandler(
     private fun getCredentialFromRequest(credentialRequest: BaseCredentialGenerateRequest): GetResponse? {
         val originalValue: GetResponse
         try {
-            originalValue = client.getByNameRequest(credentialRequest.name, userContextHolder.userContext.actor)
+            originalValue = client.getByNameRequest(credentialRequest.name, userContextHolder.userContext?.actor.toString())
             val originalGenerationParameters =
                 getGenerationParametersFromResponse(originalValue.type, originalValue.generationParameters)
 

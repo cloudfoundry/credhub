@@ -57,6 +57,14 @@ dependencyUpdates.resolutionStrategy = {
     }
 }
 
+subprojects {
+    plugins.withType(JavaPlugin) {
+        dependencies {
+            testImplementation("org.mockito:mockito-inline:3.1.0")
+        }
+    }
+}
+
 configurations.all {
     exclude group: "org.bouncycastle"
 }

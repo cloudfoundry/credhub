@@ -24,7 +24,7 @@ class RemoteCertificateAuthorityService(
     override fun findActiveVersion(caName: String): CertificateCredentialValue? {
         val response: GetResponse
         try {
-            response = client.getByNameRequest(caName, userContextHolder.userContext.actor)
+            response = client.getByNameRequest(caName, userContextHolder.userContext?.actor.toString())
         } catch (e: StatusRuntimeException) {
             throw handleException(e)
         }

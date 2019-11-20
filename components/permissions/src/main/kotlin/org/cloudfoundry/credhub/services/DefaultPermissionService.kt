@@ -40,7 +40,7 @@ constructor(
         val userContext = userContextHolder.userContext
         permissionEntryList.forEach { permissionEntry ->
             if (!permissionCheckingService
-                    .hasPermission(userContext.actor!!, permissionEntry.path!!, PermissionOperation.WRITE_ACL)) {
+                    .hasPermission(userContext?.actor!!, permissionEntry.path!!, PermissionOperation.WRITE_ACL)) {
                 throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
             }
             if (!permissionCheckingService.userAllowedToOperateOnActor(permissionEntry.actor)) {
@@ -67,7 +67,7 @@ constructor(
         }
 
         if (!permissionCheckingService
-                .hasPermission(userContextHolder.userContext.actor!!, credentialVersion.name,
+                .hasPermission(userContextHolder.userContext?.actor!!, credentialVersion.name,
                     PermissionOperation.READ_ACL)) {
             throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
         }
@@ -81,7 +81,7 @@ constructor(
         }
 
         if (!permissionCheckingService
-                .hasPermission(userContextHolder.userContext.actor!!, guid, PermissionOperation.READ_ACL)) {
+                .hasPermission(userContextHolder.userContext?.actor!!, guid, PermissionOperation.READ_ACL)) {
             throw InvalidPermissionException(ErrorMessages.Credential.INVALID_ACCESS)
         }
 
@@ -90,7 +90,7 @@ constructor(
 
     override fun deletePermissions(credentialName: String, actor: String): Boolean {
         if (!permissionCheckingService
-                .hasPermission(userContextHolder.userContext.actor!!, credentialName, PermissionOperation.WRITE_ACL)) {
+                .hasPermission(userContextHolder.userContext?.actor!!, credentialName, PermissionOperation.WRITE_ACL)) {
             throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
         }
 
@@ -104,7 +104,7 @@ constructor(
     override fun putPermissions(guid: String, permissionsRequest: PermissionsV2Request): PermissionData {
         val userContext = userContextHolder.userContext
         val permissionUUID = parseUUID(guid)
-        checkActorPermissions(permissionUUID, userContext.actor)
+        checkActorPermissions(permissionUUID, userContext?.actor)
 
         return permissionDataService.putPermissions(guid, permissionsRequest)
     }
@@ -112,7 +112,7 @@ constructor(
     override fun patchPermissions(guid: String, operations: MutableList<PermissionOperation>?): PermissionData {
         val userContext = userContextHolder.userContext
         val permissionUUID = parseUUID(guid)
-        checkActorPermissions(permissionUUID, userContext.actor)
+        checkActorPermissions(permissionUUID, userContext?.actor)
 
         return permissionDataService.patchPermissions(guid, operations)
     }
@@ -120,7 +120,7 @@ constructor(
     override fun saveV2Permissions(permissionsRequest: PermissionsV2Request): PermissionData {
         val userContext = userContextHolder.userContext
         if (!permissionCheckingService
-                .hasPermission(userContext.actor!!, permissionsRequest.getPath(), PermissionOperation.WRITE_ACL)) {
+                .hasPermission(userContext?.actor!!, permissionsRequest.getPath(), PermissionOperation.WRITE_ACL)) {
             throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
         }
         if (!permissionCheckingService.userAllowedToOperateOnActor(permissionsRequest.actor)) {
@@ -132,13 +132,13 @@ constructor(
     override fun deletePermissions(guid: String): PermissionData {
         val userContext = userContextHolder.userContext
         val permissionUUID = parseUUID(guid)
-        checkActorPermissions(permissionUUID, userContext.actor)
+        checkActorPermissions(permissionUUID, userContext?.actor)
         return permissionDataService.deletePermissions(permissionUUID)
     }
 
     override fun findByPathAndActor(path: String, actor: String): PermissionData? {
         val userContext = userContextHolder.userContext
-        if (!permissionCheckingService.hasPermission(userContext.actor!!, path, PermissionOperation.READ_ACL)) {
+        if (!permissionCheckingService.hasPermission(userContext?.actor!!, path, PermissionOperation.READ_ACL)) {
             throw EntryNotFoundException(ErrorMessages.Permissions.INVALID_ACCESS)
         }
         return permissionDataService.findByPathAndActor(path, actor)

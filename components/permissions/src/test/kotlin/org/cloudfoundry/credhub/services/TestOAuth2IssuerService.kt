@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service
 @Service
 @Profile("unit-test")
 class TestOAuth2IssuerService : OAuth2IssuerService {
-    override fun getIssuer(): String {
+    override fun getIssuer(): String? {
         return "https://example.com:8443/oauth/token"
     }
 }

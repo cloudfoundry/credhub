@@ -192,7 +192,7 @@ class DefaultCertificatesHandler(
         if (!enforcePermissions) return
 
         if (!permissionCheckingService.hasPermission(
-                userContextHolder.userContext.actor!!,
+                userContextHolder.userContext?.actor!!,
                 name,
                 permissionOperation
             )) {
@@ -210,7 +210,7 @@ class DefaultCertificatesHandler(
         val certificate = certificateService.findByCredentialUuid(uuid)
 
         if (!permissionCheckingService.hasPermission(
-                userContextHolder.userContext.actor!!,
+                userContextHolder.userContext?.actor!!,
                 certificate.name,
                 permissionOperation
             )) {
@@ -226,8 +226,8 @@ class DefaultCertificatesHandler(
         if (!enforcePermissions) {
             return unfilteredCredentials
         }
-        val actor = userContextHolder.userContext.actor
-        val paths = permissionCheckingService.findAllPathsByActor(actor)
+        val actor = userContextHolder.userContext?.actor
+        val paths = permissionCheckingService.findAllPathsByActor(actor.toString())
 
         if (paths.contains("/*")) return unfilteredCredentials
         if (paths.isEmpty()) return ArrayList()

@@ -51,7 +51,7 @@ class CertificatesGetConcatenateCasIntegrationTest {
     @SpyBean
     private val encryptor: Encryptor? = null
 
-    @SpyBean
+    @MockBean
     private val certificateService: DefaultCertificateService? = null
 
     @MockBean

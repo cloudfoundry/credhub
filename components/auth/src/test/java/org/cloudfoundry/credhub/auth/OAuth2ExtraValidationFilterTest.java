@@ -78,12 +78,7 @@ public class OAuth2ExtraValidationFilterTest {
     this.mockMvc.perform(get("/api/v1/data")
       .header("Authorization", "Bearer " + VALID_ISSUER_JWT)
       .accept(APPLICATION_JSON)
-      .contentType(APPLICATION_JSON)
-    )
-//      .content("{  " +
-//        "\"name\": \"/picard\", \n" +
-//        "  \"type\": \"password\" \n" +
-//        "}"))
+      .contentType(APPLICATION_JSON))
       .andExpect(status().isOk());
   }
 
@@ -94,12 +89,6 @@ public class OAuth2ExtraValidationFilterTest {
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON);
 
-//      .content(
-//        "{  " +
-//          "  \"name\": \"/picard\", \n" +
-//          "  \"type\": \"password\" \n" +
-//          "}"
-//      );
 
     this.mockMvc.perform(request)
       .andExpect(status().isUnauthorized())
@@ -112,12 +101,6 @@ public class OAuth2ExtraValidationFilterTest {
       .header("Authorization", "Bearer " + INVALID_ISSUER_JWT)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON);
-//      .content(
-//        "{  " +
-//          "  \"name\": \"/picard\", \n" +
-//          "  \"type\": \"password\" \n" +
-//          "}"
-//      );
 
     final String response = this.mockMvc.perform(request)
       .andExpect(status().isUnauthorized())
@@ -139,12 +122,7 @@ public class OAuth2ExtraValidationFilterTest {
       .header("Authorization", "Bearer " + MALFORMED_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON);
-//      .content(
-//        "{  " +
-//          "  \"name\": \"/picard\", \n" +
-//          "  \"type\": \"password\" \n" +
-//          "}"
-//      );
+
 
     final String response = this.mockMvc.perform(request)
       .andExpect(status().isUnauthorized())
@@ -166,12 +144,6 @@ public class OAuth2ExtraValidationFilterTest {
       .header("Authorization", "Bearer " + INVALID_SIGNATURE_JWT)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON);
-//      .content(
-//        "{  " +
-//          "  \"name\": \"/picard\", \n" +
-//          "  \"type\": \"password\" \n" +
-//          "}"
-//      );
 
     final String response = this.mockMvc.perform(request)
       .andExpect(status().isUnauthorized())
