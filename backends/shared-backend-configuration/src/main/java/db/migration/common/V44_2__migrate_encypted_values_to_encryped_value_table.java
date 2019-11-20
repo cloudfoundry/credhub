@@ -4,25 +4,21 @@ import java.sql.Types;
 import java.util.List;
 
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.flywaydb.core.api.migration.BaseJavaMigration;
-import org.flywaydb.core.api.migration.Context;
+import org.flywaydb.core.api.migration.spring.SpringJdbcMigration;
 
 import static org.cloudfoundry.credhub.utils.UuidUtil.makeUuid;
 
 @SuppressWarnings("unused")
-public class V44_2__migrate_encypted_values_to_encryped_value_table extends BaseJavaMigration {
+public class V44_2__migrate_encypted_values_to_encryped_value_table implements SpringJdbcMigration {
 
   @SuppressFBWarnings(
     value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE",
     justification = "The database will definitely exist"
   )
   @Override
-  public void migrate(final Context context) throws Exception {
-    final JdbcTemplate jdbcTemplate =
-      new JdbcTemplate(new SingleConnectionDataSource(context.getConnection(), true));
+  public void migrate(final JdbcTemplate jdbcTemplate) throws Exception {
     final String databaseName = jdbcTemplate
       .getDataSource()
       .getConnection()

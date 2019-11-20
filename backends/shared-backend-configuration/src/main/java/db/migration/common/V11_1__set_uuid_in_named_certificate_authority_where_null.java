@@ -4,18 +4,14 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
-import org.flywaydb.core.api.migration.BaseJavaMigration;
-import org.flywaydb.core.api.migration.Context;
+import org.flywaydb.core.api.migration.spring.SpringJdbcMigration;
 
 @SuppressWarnings("unused")
-public class V11_1__set_uuid_in_named_certificate_authority_where_null extends BaseJavaMigration {
+public class V11_1__set_uuid_in_named_certificate_authority_where_null implements SpringJdbcMigration {
 
   @Override
-  public void migrate(final Context context) throws Exception {
-    final JdbcTemplate jdbcTemplate =
-      new JdbcTemplate(new SingleConnectionDataSource(context.getConnection(), true));
+  public void migrate(final JdbcTemplate jdbcTemplate) throws Exception {
     final List<Long> nullUuidRecords = jdbcTemplate.queryForList(
       "select id from named_certificate_authority where uuid is null",
       Long.class);
