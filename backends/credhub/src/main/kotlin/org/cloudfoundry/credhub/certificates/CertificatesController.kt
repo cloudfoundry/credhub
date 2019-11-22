@@ -2,7 +2,7 @@ package org.cloudfoundry.credhub.certificates
 
 import org.apache.commons.lang3.StringUtils
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
-import org.cloudfoundry.credhub.audit.OperationDeviceAction
+import org.cloudfoundry.credhub.audit.entities.GetAllCertificates
 import org.cloudfoundry.credhub.audit.entities.GetCertificateByName
 import org.cloudfoundry.credhub.audit.entities.RegenerateCertificate
 import org.cloudfoundry.credhub.audit.entities.UpdateTransitionalVersion
@@ -37,7 +37,7 @@ class CertificatesController(
     @RequestMapping(method = [RequestMethod.GET], path = [""])
     @ResponseStatus(HttpStatus.OK)
     fun getAllCertificates(): CertificateCredentialsView {
-        auditRecord.setRequestDetails { OperationDeviceAction.GET_ALL_CERTIFICATES }
+        auditRecord.requestDetails = GetAllCertificates()
 
         return certificatesHandler.handleGetAllRequest()
     }

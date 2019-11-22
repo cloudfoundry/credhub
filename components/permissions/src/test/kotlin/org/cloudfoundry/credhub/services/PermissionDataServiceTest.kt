@@ -272,7 +272,7 @@ class PermissionDataServiceTest {
 
         val resources = auditRecord!!.resourceList
 
-        assertThat(resources[resources.size - 1].resourceName, `is`(CREDENTIAL_NAME))
+        assertThat(resources?.get(resources.size - 1)?.resourceName, `is`(CREDENTIAL_NAME))
         val requestDetails = auditRecord.requestDetails as V2Permission
         assertThat(requestDetails.path, `is`(CREDENTIAL_NAME))
         assertThat(requestDetails.actor, `is`(LUKE))
