@@ -8,6 +8,7 @@ import javax.security.auth.x500.X500Principal;
 import org.springframework.util.StringUtils;
 
 import com.google.common.net.InetAddresses;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
 import org.bouncycastle.asn1.x509.GeneralName;
@@ -24,6 +25,20 @@ import org.cloudfoundry.credhub.utils.CertificateReader;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.apache.commons.lang3.StringUtils.join;
 import static org.apache.commons.lang3.StringUtils.prependIfMissing;
+import static org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.CLIENT_AUTH;
+import static org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.CODE_SIGNING;
+import static org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.CRL_SIGN;
+import static org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.DATA_ENCIPHERMENT;
+import static org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.DECIPHER_ONLY;
+import static org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.DIGITAL_SIGNATURE;
+import static org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.EMAIL_PROTECTION;
+import static org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.ENCIPHER_ONLY;
+import static org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.KEY_AGREEMENT;
+import static org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.KEY_CERT_SIGN;
+import static org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.KEY_ENCIPHERMENT;
+import static org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.NON_REPUDIATION;
+import static org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.SERVER_AUTH;
+import static org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.TIMESTAMPING;
 
 public class CertificateGenerationParameters extends GenerationParameters {
 
@@ -134,6 +149,7 @@ public class CertificateGenerationParameters extends GenerationParameters {
     return keyUsage;
   }
 
+  @SuppressFBWarnings
   private KeyUsage buildKeyUsage(final CertificateGenerationRequestParameters keyUsageList) {
     if (keyUsageList.getKeyUsage() == null) {
       return null;
@@ -141,31 +157,31 @@ public class CertificateGenerationParameters extends GenerationParameters {
     int bitmask = 0;
     for (final String keyUsage : keyUsageList.getKeyUsage()) {
       switch (keyUsage) {
-        case CertificateGenerationRequestParameters.DIGITAL_SIGNATURE:
+        case DIGITAL_SIGNATURE:
           bitmask |= KeyUsage.digitalSignature;
           break;
-        case CertificateGenerationRequestParameters.NON_REPUDIATION:
+        case NON_REPUDIATION:
           bitmask |= KeyUsage.nonRepudiation;
           break;
-        case CertificateGenerationRequestParameters.KEY_ENCIPHERMENT:
+        case KEY_ENCIPHERMENT:
           bitmask |= KeyUsage.keyEncipherment;
           break;
-        case CertificateGenerationRequestParameters.DATA_ENCIPHERMENT:
+        case DATA_ENCIPHERMENT:
           bitmask |= KeyUsage.dataEncipherment;
           break;
-        case CertificateGenerationRequestParameters.KEY_AGREEMENT:
+        case KEY_AGREEMENT:
           bitmask |= KeyUsage.keyAgreement;
           break;
-        case CertificateGenerationRequestParameters.KEY_CERT_SIGN:
+        case KEY_CERT_SIGN:
           bitmask |= KeyUsage.keyCertSign;
           break;
-        case CertificateGenerationRequestParameters.CRL_SIGN:
+        case CRL_SIGN:
           bitmask |= KeyUsage.cRLSign;
           break;
-        case CertificateGenerationRequestParameters.ENCIPHER_ONLY:
+        case ENCIPHER_ONLY:
           bitmask |= KeyUsage.encipherOnly;
           break;
-        case CertificateGenerationRequestParameters.DECIPHER_ONLY:
+        case DECIPHER_ONLY:
           bitmask |= KeyUsage.decipherOnly;
           break;
         default:
@@ -228,19 +244,19 @@ public class CertificateGenerationParameters extends GenerationParameters {
     final KeyPurposeId[] keyPurposeIds = new KeyPurposeId[extendedKeyUsageList.length];
     for (int i = 0; i < extendedKeyUsageList.length; i++) {
       switch (extendedKeyUsageList[i]) {
-        case CertificateGenerationRequestParameters.SERVER_AUTH:
+        case SERVER_AUTH:
           keyPurposeIds[i] = KeyPurposeId.id_kp_serverAuth;
           break;
-        case CertificateGenerationRequestParameters.CLIENT_AUTH:
+        case CLIENT_AUTH:
           keyPurposeIds[i] = KeyPurposeId.id_kp_clientAuth;
           break;
-        case CertificateGenerationRequestParameters.CODE_SIGNING:
+        case CODE_SIGNING:
           keyPurposeIds[i] = KeyPurposeId.id_kp_codeSigning;
           break;
-        case CertificateGenerationRequestParameters.EMAIL_PROTECTION:
+        case EMAIL_PROTECTION:
           keyPurposeIds[i] = KeyPurposeId.id_kp_emailProtection;
           break;
-        case CertificateGenerationRequestParameters.TIMESTAMPING:
+        case TIMESTAMPING:
           keyPurposeIds[i] = KeyPurposeId.id_kp_timeStamping;
           break;
         default:

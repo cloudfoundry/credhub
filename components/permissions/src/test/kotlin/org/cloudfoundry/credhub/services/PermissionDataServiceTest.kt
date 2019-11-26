@@ -151,11 +151,11 @@ class PermissionDataServiceTest {
         val credential2 = valueCredentialData2.credential
 
         credentialDataService!!.save(credential2)
-        aces = listOf(PermissionEntry(LUKE, credential2.name, listOf<PermissionOperation>(READ)))
+        aces = listOf(PermissionEntry(LUKE, credential2?.name, listOf<PermissionOperation>(READ)))
 
         subject!!.savePermissionsWithLogging(aces)
 
-        val response = subject.getPermissions(credential2)
+        val response = subject.getPermissions(credential2!!)
 
         val permissionEntry = response[0]
 

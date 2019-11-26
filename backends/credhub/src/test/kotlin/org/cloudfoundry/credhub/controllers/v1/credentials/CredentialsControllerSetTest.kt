@@ -30,6 +30,7 @@ import org.cloudfoundry.credhub.requests.UserSetRequest
 import org.cloudfoundry.credhub.requests.ValueSetRequest
 import org.cloudfoundry.credhub.utils.TestConstants
 import org.cloudfoundry.credhub.views.CredentialView
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -332,7 +333,7 @@ class CredentialsControllerSetTest {
         expectedValueSetRequest.name = "/some-user-name"
         expectedValueSetRequest.type = CredentialType.USER.type.toLowerCase()
 
-        assertThat(spyCredentialsHandler.setCredential__calledWith_setRequest).isEqualTo(expectedValueSetRequest)
+        assertThat(expectedValueSetRequest).isEqualTo(spyCredentialsHandler.setCredential__calledWith_setRequest)
 
         // language=json
         val expectedResponse = """

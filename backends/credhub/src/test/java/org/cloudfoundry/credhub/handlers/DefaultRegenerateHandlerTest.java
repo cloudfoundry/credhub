@@ -145,6 +145,7 @@ public class DefaultRegenerateHandlerTest {
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.WRITE))
       .thenReturn(true);
     when(credentialVersion.getCredential()).thenReturn(mock(Credential.class));
+    when(((PasswordCredentialVersion) credentialVersion).getPassword()).thenReturn("password");
     when(credentialService.findMostRecent(CREDENTIAL_NAME)).thenReturn(credentialVersion);
     when(generationRequestGenerator.createGenerateRequest(credentialVersion))
       .thenReturn(request);

@@ -171,10 +171,10 @@ class DefaultCertificateService(
             ?: throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
     }
 
-    operator fun set(certificateUuid: UUID, value: CertificateCredentialValue): CertificateCredentialVersion {
+    operator fun set(certificateUuid: UUID, value: CertificateCredentialValue?): CertificateCredentialVersion {
         val credential = findCertificateCredential(certificateUuid)
 
-        if (value.isTransitional) {
+        if (value?.isTransitional!!) {
             validateNoTransitionalVersionsAlreadyExist(credential.name)
         }
 

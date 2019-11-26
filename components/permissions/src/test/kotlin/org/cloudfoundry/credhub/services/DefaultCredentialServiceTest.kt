@@ -192,7 +192,7 @@ class DefaultCredentialServiceTest {
     @Test
     fun save_whenWritingCredential_savesANewVersion() {
         `when`(request.type).thenReturn("password")
-        `when`<CredentialVersion>(credentialVersionDataService.findMostRecent(request.name)).thenReturn(null)
+        `when`<CredentialVersion>(credentialVersionDataService.findMostRecent(request.name.toString())).thenReturn(null)
         val stringGenerationParameters = StringGenerationParameters()
         `when`<GenerationParameters>(request.generationParameters).thenReturn(stringGenerationParameters)
 
@@ -203,7 +203,7 @@ class DefaultCredentialServiceTest {
                 encryptor)
 
         `when`<CredentialVersion>(credentialFactory.makeNewCredentialVersion(
-                CredentialType.valueOf(request.type.toUpperCase()),
+                CredentialType.valueOf(request.type?.toUpperCase().toString()),
                 request.name,
                 stringCredentialValue,
                 null,

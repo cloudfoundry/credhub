@@ -122,7 +122,7 @@ class CredentialsController(
                 regenerateCredential.name = regenerateRequest.name
                 auditRecord.requestDetails = regenerateCredential
 
-                return regenerateHandler.handleRegenerate(regenerateRequest.name)
+                return regenerateHandler.handleRegenerate(regenerateRequest.name!!)
             } else {
                 val requestString = request.toString()
                 val generateRequest = objectMapper.readValue(requestString, BaseCredentialGenerateRequest::class.java)
@@ -144,7 +144,7 @@ class CredentialsController(
     @Synchronized
     fun set(@RequestBody requestBody: BaseCredentialSetRequest<*>): CredentialView {
         requestBody.validate()
-        auditRecord.requestDetails = SetCredential(requestBody.name, requestBody.type)
+        auditRecord.requestDetails = SetCredential(requestBody.name!!, requestBody.type!!)
 
         return credentialsHandler.setCredential(requestBody)
     }

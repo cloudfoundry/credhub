@@ -127,7 +127,7 @@ class DefaultRegenerateHandler(
         val generationParameters = generateRequest
             .generationParameters as CertificateGenerationParameters
         if (generationParameters.isCa) {
-            results.addAll(this.regenerateCertificatesSignedByCA(generateRequest.name))
+            results.addAll(this.regenerateCertificatesSignedByCA(generateRequest.name!!))
         }
         return results
     }

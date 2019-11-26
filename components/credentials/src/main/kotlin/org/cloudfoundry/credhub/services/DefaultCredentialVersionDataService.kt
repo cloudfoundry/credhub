@@ -44,8 +44,8 @@ constructor(
     override fun save(credentialVersionData: CredentialVersionData<*>): CredentialVersion {
         val credential = credentialVersionData.credential
 
-        if (credential.uuid == null) {
-            credentialVersionData.setCredential(credentialDataService.save(credential))
+        if (credential?.uuid == null) {
+            credentialVersionData.credential = credentialDataService.save(credential)
         } else {
             val existingCredentialVersion = findMostRecent(credential.name!!)
             if ((existingCredentialVersion != null && existingCredentialVersion.credentialType != credentialVersionData.credentialType)) {
@@ -167,7 +167,7 @@ constructor(
             credentialVersionData = credentialVersionRepository
                 .findFirstByCredentialUuidOrderByVersionCreatedAtDesc(credential.uuid)
 
-            if (credentialVersionData.getCredentialType() == CertificateCredentialVersionData.CREDENTIAL_TYPE) {
+            if (credentialVersionData.credentialType == CertificateCredentialVersionData.CREDENTIAL_TYPE) {
                 return certificateVersionDataService.findActiveWithTransitional(name)
             }
             result.add(credentialFactory.makeCredentialFromEntity(credentialVersionData))

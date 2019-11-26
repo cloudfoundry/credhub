@@ -37,7 +37,7 @@ public class UniversalCredentialGenerator {
   }
 
   public CredentialValue generate(final BaseCredentialGenerateRequest generateRequest) {
-    final CredentialGenerator generator = credentialGenerators.get(generateRequest.getType());
+    final CredentialGenerator generator = this.credentialGenerators.get(generateRequest.getType());
     return generator.generateCredential(generateRequest.getGenerationParameters());
   }
 }

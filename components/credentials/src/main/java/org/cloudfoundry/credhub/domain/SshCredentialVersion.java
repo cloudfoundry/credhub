@@ -1,5 +1,7 @@
 package org.cloudfoundry.credhub.domain;
 
+import java.util.Objects;
+
 import org.cloudfoundry.credhub.credential.SshCredentialValue;
 import org.cloudfoundry.credhub.entity.SshCredentialVersionData;
 import org.cloudfoundry.credhub.requests.GenerationParameters;
@@ -67,7 +69,7 @@ public class SshCredentialVersion extends CredentialVersion {
     }
 
     final SshGenerationParameters parameters = (SshGenerationParameters) generationParameters;
-    return parameters.getKeyLength() == getKeyLength() && parameters.getSshComment().equals(getComment());
+    return parameters.getKeyLength() == getKeyLength() && Objects.equals(parameters.getSshComment(), getComment());
   }
 
   @Override

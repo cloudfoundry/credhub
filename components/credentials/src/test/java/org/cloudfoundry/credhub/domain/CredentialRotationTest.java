@@ -110,13 +110,18 @@ public class CredentialRotationTest {
 
     assertThat(passwordCredentialData.getEncryptionKeyUuid(),
       equalTo(activeEncryptionKeyUuid));
-    assertThat(passwordCredentialData.getEncryptedValueData().getEncryptedValue(),
+
+    EncryptedValue encryptedValueData = passwordCredentialData.getEncryptedValueData();
+    assert encryptedValueData != null;
+    assertThat(encryptedValueData.getEncryptedValue(),
       equalTo("new-encrypted-value".getBytes(UTF_8)));
     assertThat(passwordCredentialData.getNonce(), equalTo("new-nonce".getBytes(UTF_8)));
 
-    assertThat(passwordCredentialData.getEncryptedGenerationParameters().getEncryptedValue(),
+    encryptedValueData = passwordCredentialData.getEncryptedGenerationParameters();
+    assert encryptedValueData != null;
+    assertThat(encryptedValueData.getEncryptedValue(),
       equalTo("new-encrypted-parameters".getBytes(UTF_8)));
-    assertThat(passwordCredentialData.getEncryptedGenerationParameters().getNonce(),
+    assertThat(encryptedValueData.getNonce(),
       equalTo("new-nonce-parameters".getBytes(UTF_8)));
   }
 
@@ -133,7 +138,9 @@ public class CredentialRotationTest {
     credentialVersion.rotate();
 
     assertThat(delegate.getEncryptionKeyUuid(), equalTo(activeEncryptionKeyUuid));
-    assertThat(delegate.getEncryptedValueData().getEncryptedValue(), equalTo("new-encrypted-value".getBytes(UTF_8)));
+    EncryptedValue encryptedValueData = delegate.getEncryptedValueData();
+    assert encryptedValueData != null;
+    assertThat(encryptedValueData.getEncryptedValue(), equalTo("new-encrypted-value".getBytes(UTF_8)));
     assertThat(delegate.getNonce(), equalTo("new-nonce".getBytes(UTF_8)));
   }
 }

@@ -48,7 +48,7 @@ public class CertificateGenerationRequestParametersTest {
 
   @Test
   public void validate_withoutSelfSigned_orIsCa_requiresCaName() {
-    subject.setIsCa(false);
+    subject.setCa(false);
     subject.setSelfSigned(false);
     subject.setCommonName("foo");
 
@@ -62,7 +62,7 @@ public class CertificateGenerationRequestParametersTest {
 
   @Test
   public void validate_withSelfSigned_andIsCa_shouldNotThrow() {
-    subject.setIsCa(true);
+    subject.setCa(true);
     subject.setSelfSigned(false);
     subject.setCommonName("foo");
 

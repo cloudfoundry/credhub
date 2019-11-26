@@ -35,7 +35,7 @@ class DefaultCredentialService(
         credentialValue: CredentialValue?,
         generateRequest: BaseCredentialRequest
     ): CredentialVersion {
-        validateCredentialSave(generateRequest.type, existingCredentialVersion)
+        validateCredentialSave(generateRequest.type!!, existingCredentialVersion)
         val shouldWriteNewCredential = shouldWriteNewCredential(existingCredentialVersion, generateRequest)
 
         return if (!shouldWriteNewCredential) {
@@ -118,7 +118,7 @@ class DefaultCredentialService(
         request: BaseCredentialRequest
     ): CredentialVersion {
         val newVersion = credentialFactory.makeNewCredentialVersion(
-            CredentialType.valueOf(request.type.toUpperCase()),
+            CredentialType.valueOf(request.type?.toUpperCase()!!),
             request.name,
             credentialValue,
             existingCredentialVersion,

@@ -3,6 +3,7 @@ package org.cloudfoundry.credhub.domain;
 import java.time.Instant;
 import java.util.UUID;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.cloudfoundry.credhub.audit.AuditableCredentialVersion;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.entity.Credential;
@@ -43,6 +44,7 @@ public abstract class CredentialVersion implements AuditableCredentialVersion {
     delegate.setUuid(uuid);
   }
 
+  @SuppressFBWarnings
   public String getName() {
     return delegate.getCredential().getName();
   }

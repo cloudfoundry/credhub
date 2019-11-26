@@ -157,6 +157,7 @@ public class DefaultCredentialsHandlerTest {
     cred.setUuid(UUID.fromString(UUID_STRING));
 
     credentialVersion = mock(PasswordCredentialVersion.class);
+    when(((PasswordCredentialVersion) credentialVersion).getPassword()).thenReturn("federation");
     when(credentialVersion.getCredential()).thenReturn(cred);
     when(credentialVersion.getName()).thenReturn(cred.getName());
     when(credentialVersion.getUuid()).thenReturn(cred.getUuid());
@@ -480,7 +481,9 @@ public class DefaultCredentialsHandlerTest {
     setRequest.setPassword(password);
     setRequest.setName(CREDENTIAL_NAME);
 
-    when(permissionCheckingService.hasPermission(USER, setRequest.getName(), PermissionOperation.WRITE))
+    String requestName = setRequest.getName();
+    assert requestName != null;
+    when(permissionCheckingService.hasPermission(USER, requestName, PermissionOperation.WRITE))
       .thenReturn(true);
 
     subjectWithAcls.setCredential(setRequest);
@@ -501,7 +504,10 @@ public class DefaultCredentialsHandlerTest {
     setRequest.setPassword(password);
     setRequest.setName(CREDENTIAL_NAME);
 
-    when(permissionCheckingService.hasPermission(USER, setRequest.getName(), PermissionOperation.WRITE))
+    String requestName = setRequest.getName();
+    assert requestName != null;
+
+    when(permissionCheckingService.hasPermission(USER, requestName, PermissionOperation.WRITE))
       .thenReturn(true);
 
     subjectWithAcls.setCredential(setRequest);
@@ -521,7 +527,9 @@ public class DefaultCredentialsHandlerTest {
     setRequest.setName(CREDENTIAL_NAME);
     setRequest.setUserValue(userCredentialValue);
 
-    when(permissionCheckingService.hasPermission(USER, setRequest.getName(), PermissionOperation.WRITE))
+    String requestName = setRequest.getName();
+    assert requestName != null;
+    when(permissionCheckingService.hasPermission(USER, requestName, PermissionOperation.WRITE))
       .thenReturn(true);
 
     subjectWithAcls.setCredential(setRequest);
@@ -547,7 +555,10 @@ public class DefaultCredentialsHandlerTest {
     setRequest.setName(CREDENTIAL_NAME);
     setRequest.setCertificateValue(certificateValue);
 
-    when(permissionCheckingService.hasPermission(USER, setRequest.getName(), PermissionOperation.WRITE))
+    String requestName = setRequest.getName();
+    assert requestName != null;
+
+    when(permissionCheckingService.hasPermission(USER, requestName, PermissionOperation.WRITE))
       .thenReturn(true);
 
     subjectWithAcls.setCredential(setRequest);
@@ -620,7 +631,10 @@ public class DefaultCredentialsHandlerTest {
     );
     final ArgumentCaptor<CredentialValue> credentialValueArgumentCaptor = ArgumentCaptor.forClass(CredentialValue.class);
 
-    when(permissionCheckingService.hasPermission(USER, setRequest.getName(), PermissionOperation.WRITE))
+    String requestName = setRequest.getName();
+    assert requestName != null;
+
+    when(permissionCheckingService.hasPermission(USER, requestName, PermissionOperation.WRITE))
       .thenReturn(true);
 
     subjectWithAcls.setCredential(setRequest);
@@ -676,7 +690,10 @@ public class DefaultCredentialsHandlerTest {
     );
     final ArgumentCaptor<CredentialValue> credentialValueArgumentCaptor = ArgumentCaptor.forClass(CredentialValue.class);
 
-    when(permissionCheckingService.hasPermission(USER, setRequest.getName(), PermissionOperation.WRITE))
+    String requestName = setRequest.getName();
+    assert requestName != null;
+
+    when(permissionCheckingService.hasPermission(USER, requestName, PermissionOperation.WRITE))
       .thenReturn(true);
 
     subjectWithAcls.setCredential(setRequest);
@@ -698,6 +715,7 @@ public class DefaultCredentialsHandlerTest {
     final CredentialVersion credentialVersion = mock(PasswordCredentialVersion.class);
     when(credentialVersion.getName()).thenReturn(CREDENTIAL_NAME);
     when(credentialVersion.getUuid()).thenReturn(UUID.fromString(UUID_STRING));
+    when(((PasswordCredentialVersion) credentialVersion).getPassword()).thenReturn("federation");
 
     when(credentialService.save(null, password, setRequest)).thenReturn(credentialVersion);
 
@@ -721,6 +739,7 @@ public class DefaultCredentialsHandlerTest {
 
     final CredentialVersion credentialVersion = mock(PasswordCredentialVersion.class);
     when(credentialVersion.getName()).thenReturn(CREDENTIAL_NAME);
+    when(((PasswordCredentialVersion) credentialVersion).getPassword()).thenReturn(password.getStringCredential());
     when(credentialVersion.getUuid()).thenReturn(UUID.fromString(UUID_STRING));
 
     when(credentialService.save(null, password, setRequest)).thenReturn(credentialVersion);
@@ -770,7 +789,9 @@ public class DefaultCredentialsHandlerTest {
     generateRequest.setName("/captain");
     generateRequest.setOverwrite(false);
 
-    when(permissionCheckingService.hasPermission(USER, generateRequest.getName(), PermissionOperation.WRITE))
+    String requestName = generateRequest.getName();
+    assert requestName != null;
+    when(permissionCheckingService.hasPermission(USER, requestName, PermissionOperation.WRITE))
       .thenReturn(true);
 
     subjectWithAcls.generateCredential(generateRequest);
@@ -783,10 +804,6 @@ public class DefaultCredentialsHandlerTest {
     final PasswordGenerateRequest generateRequest = new PasswordGenerateRequest();
     final UUID uuid = UUID.randomUUID();
 
-    generateRequest.setType("password");
-    generateRequest.setGenerationParameters(generationParameters);
-    generateRequest.setName("/captain");
-    generateRequest.setOverwrite(false);
 
     Credential credential = new Credential("/captain");
     final PasswordCredentialVersionData delegate = mock(PasswordCredentialVersionData.class);
@@ -795,15 +812,24 @@ public class DefaultCredentialsHandlerTest {
     when(delegate.getCredential()).thenReturn(credential);
     when(delegate.getUuid()).thenReturn(uuid);
 
-    final CredentialVersion credentialVersion = new PasswordCredentialVersion(delegate);
+    when(encryptor.decrypt(any())).thenReturn("federation");
+
+    final PasswordCredentialVersion credentialVersion = new PasswordCredentialVersion(delegate);
     credentialVersion.setEncryptor(encryptor);
     credentialVersion.setValue("some-value");
     credentialVersion.setCredential(credential);
     credentialVersion.setUuid(uuid);
 
+    generateRequest.setType("password");
+    generateRequest.setGenerationParameters(generationParameters);
+    generateRequest.setName("/captain");
+    generateRequest.setOverwrite(false);
+
     when(credentialService.save(any(), any(), any())).thenReturn(credentialVersion);
 
-    when(permissionCheckingService.hasPermission(USER, generateRequest.getName(), PermissionOperation.WRITE))
+    String requestName = generateRequest.getName();
+    assert requestName != null;
+    when(permissionCheckingService.hasPermission(USER, requestName, PermissionOperation.WRITE))
       .thenReturn(true);
 
     subjectWithAcls.generateCredential(generateRequest);
@@ -826,7 +852,9 @@ public class DefaultCredentialsHandlerTest {
     when(certificateAuthorityService.findActiveVersion(caName))
       .thenThrow(new EntryNotFoundException(ErrorMessages.Credential.CERTIFICATE_ACCESS));
 
-    when(permissionCheckingService.hasPermission(USER, generateRequest.getName(), PermissionOperation.WRITE))
+    String requestName = generateRequest.getName();
+    assert requestName != null;
+    when(permissionCheckingService.hasPermission(USER, requestName, PermissionOperation.WRITE))
       .thenReturn(true);
 
     try {

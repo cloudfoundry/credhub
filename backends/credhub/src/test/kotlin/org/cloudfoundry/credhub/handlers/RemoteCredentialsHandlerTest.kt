@@ -907,10 +907,10 @@ class RemoteCredentialsHandlerTest {
 
         val generationParameters = StringGenerationParameters()
         generationParameters.length = 13
-        generationParameters.isExcludeLower = false
-        generationParameters.isExcludeNumber = false
-        generationParameters.isExcludeUpper = false
-        generationParameters.isIncludeSpecial = false
+        generationParameters.excludeLower = false
+        generationParameters.excludeNumber = false
+        generationParameters.excludeUpper = false
+        generationParameters.includeSpecial = false
 
         val oldByteValue = subject.createByteStringFromData(type, shouldBeReturned)
         val getResponse = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
@@ -932,7 +932,7 @@ class RemoteCredentialsHandlerTest {
         `when`(client.setRequest(CREDENTIAL_NAME, type, newByteValue, USER, byteGenerationParameters)).thenReturn(setResponse)
 
         val passwordGenerateRequest = PasswordGenerateRequest()
-        passwordGenerateRequest.setGenerationParameters(generationParameters)
+        passwordGenerateRequest.generationParameters = generationParameters
         passwordGenerateRequest.name = CREDENTIAL_NAME
         passwordGenerateRequest.type = type
 
@@ -1038,7 +1038,7 @@ class RemoteCredentialsHandlerTest {
         `when`(client.setRequest(CREDENTIAL_NAME, type, newByteValue, USER, byteGenerationParameters)).thenReturn(setResponse)
 
         val sshGenerateRequest = SshGenerateRequest()
-        sshGenerateRequest.setGenerationParameters(generationParameters)
+        sshGenerateRequest.generationParameters = generationParameters
         sshGenerateRequest.name = CREDENTIAL_NAME
         sshGenerateRequest.type = type
 
@@ -1081,7 +1081,7 @@ class RemoteCredentialsHandlerTest {
         `when`(client.setRequest(CREDENTIAL_NAME, type, newByteValue, USER, byteGenerationParameters)).thenReturn(setResponse)
 
         val rsaGenerateRequest = RsaGenerateRequest()
-        rsaGenerateRequest.setGenerationParameters(generationParameters)
+        rsaGenerateRequest.generationParameters = generationParameters
         rsaGenerateRequest.name = CREDENTIAL_NAME
         rsaGenerateRequest.type = type
 
@@ -1102,10 +1102,10 @@ class RemoteCredentialsHandlerTest {
 
         val generationParameters = StringGenerationParameters()
         generationParameters.length = 4
-        generationParameters.isExcludeLower = false
-        generationParameters.isExcludeNumber = false
-        generationParameters.isExcludeUpper = false
-        generationParameters.isIncludeSpecial = false
+        generationParameters.excludeLower = false
+        generationParameters.excludeNumber = false
+        generationParameters.excludeUpper = false
+        generationParameters.includeSpecial = false
 
         val oldByteValue = subject.createByteStringFromData(type, shouldBeReturned)
         val getResponse = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
@@ -1148,17 +1148,17 @@ class RemoteCredentialsHandlerTest {
 
         val generationParameters = StringGenerationParameters()
         generationParameters.length = 13
-        generationParameters.isExcludeLower = false
-        generationParameters.isExcludeNumber = false
-        generationParameters.isExcludeUpper = false
-        generationParameters.isIncludeSpecial = false
+        generationParameters.excludeLower = false
+        generationParameters.excludeNumber = false
+        generationParameters.excludeUpper = false
+        generationParameters.includeSpecial = false
 
         val newGenerationParameters = StringGenerationParameters()
         generationParameters.length = 32
-        generationParameters.isExcludeLower = true
-        generationParameters.isExcludeNumber = false
-        generationParameters.isExcludeUpper = false
-        generationParameters.isIncludeSpecial = false
+        generationParameters.excludeLower = true
+        generationParameters.excludeNumber = false
+        generationParameters.excludeUpper = false
+        generationParameters.includeSpecial = false
 
         val oldByteValue = subject.createByteStringFromData(type, password)
         val getResponse = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
@@ -1180,7 +1180,7 @@ class RemoteCredentialsHandlerTest {
         `when`(client.setRequest(CREDENTIAL_NAME, type, newByteValue, USER, byteGenerationParameters)).thenReturn(setResponse)
 
         val passwordGenerateRequest = PasswordGenerateRequest()
-        passwordGenerateRequest.setGenerationParameters(newGenerationParameters)
+        passwordGenerateRequest.generationParameters = newGenerationParameters
         passwordGenerateRequest.name = CREDENTIAL_NAME
         passwordGenerateRequest.type = type
 
@@ -1201,10 +1201,10 @@ class RemoteCredentialsHandlerTest {
 
         val generationParameters = StringGenerationParameters()
         generationParameters.length = 13
-        generationParameters.isExcludeLower = false
-        generationParameters.isExcludeNumber = false
-        generationParameters.isExcludeUpper = false
-        generationParameters.isIncludeSpecial = false
+        generationParameters.excludeLower = false
+        generationParameters.excludeNumber = false
+        generationParameters.excludeUpper = false
+        generationParameters.includeSpecial = false
 
         val oldByteValue = subject.createByteStringFromData(type, originalPassword)
         val getResponse = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
@@ -1226,7 +1226,7 @@ class RemoteCredentialsHandlerTest {
         `when`(client.setRequest(CREDENTIAL_NAME, type, newByteValue, USER, byteGenerationParameters)).thenReturn(setResponse)
 
         val passwordGenerateRequest = PasswordGenerateRequest()
-        passwordGenerateRequest.setGenerationParameters(generationParameters)
+        passwordGenerateRequest.generationParameters = generationParameters
         passwordGenerateRequest.name = CREDENTIAL_NAME
         passwordGenerateRequest.type = type
         passwordGenerateRequest.mode = OVERWRITE
@@ -1248,10 +1248,10 @@ class RemoteCredentialsHandlerTest {
 
         val generationParameters = StringGenerationParameters()
         generationParameters.length = 13
-        generationParameters.isExcludeLower = false
-        generationParameters.isExcludeNumber = false
-        generationParameters.isExcludeUpper = false
-        generationParameters.isIncludeSpecial = false
+        generationParameters.excludeLower = false
+        generationParameters.excludeNumber = false
+        generationParameters.excludeUpper = false
+        generationParameters.includeSpecial = false
 
         val oldByteValue = subject.createByteStringFromData(type, originalPassword)
         val getResponse = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
@@ -1263,10 +1263,10 @@ class RemoteCredentialsHandlerTest {
 
         val newGenerationParameters = StringGenerationParameters()
         newGenerationParameters.length = 13
-        newGenerationParameters.isExcludeLower = false
-        newGenerationParameters.isExcludeNumber = true
-        newGenerationParameters.isExcludeUpper = false
-        newGenerationParameters.isIncludeSpecial = false
+        newGenerationParameters.excludeLower = false
+        newGenerationParameters.excludeNumber = true
+        newGenerationParameters.excludeUpper = false
+        newGenerationParameters.includeSpecial = false
 
         val newByteValue = subject.createByteStringFromData(type, newPassword)
         val byteGenerationParameters = subject.createByteStringFromGenerationParameters(type, newGenerationParameters)
@@ -1280,7 +1280,7 @@ class RemoteCredentialsHandlerTest {
         `when`(client.setRequest(CREDENTIAL_NAME, type, newByteValue, USER, byteGenerationParameters)).thenReturn(setResponse)
 
         val passwordGenerateRequest = PasswordGenerateRequest()
-        passwordGenerateRequest.setGenerationParameters(newGenerationParameters)
+        passwordGenerateRequest.generationParameters = newGenerationParameters
         passwordGenerateRequest.name = CREDENTIAL_NAME
         passwordGenerateRequest.type = type
         passwordGenerateRequest.mode = NO_OVERWRITE

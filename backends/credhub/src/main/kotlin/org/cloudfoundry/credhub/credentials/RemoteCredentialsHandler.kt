@@ -181,7 +181,7 @@ class RemoteCredentialsHandler(
             val genParams = createByteStringFromGenerationParameters(type, generateRequest.generationParameters)
             val response: SetResponse
             try {
-                response = client.setRequest(name, type, data, actor.toString(), genParams)
+                response = client.setRequest(name!!, type!!, data, actor.toString(), genParams)
             } catch (e: StatusRuntimeException) {
                 throw handleException(e)
             }
@@ -206,7 +206,7 @@ class RemoteCredentialsHandler(
         val actor = userContextHolder.userContext?.actor
         val response: SetResponse
         try {
-            response = client.setRequest(name, type, data, actor.toString(), ByteString.EMPTY)
+            response = client.setRequest(name!!, type!!, data, actor.toString(), ByteString.EMPTY)
         } catch (e: StatusRuntimeException) {
             throw handleException(e)
         }
@@ -265,17 +265,17 @@ class RemoteCredentialsHandler(
                 val jsonString = data.toStringUtf8()
                 val jsonNode = objectMapper.readTree(jsonString)
                 UserCredentialValue(
-                    jsonNode["username"]?.textValue(),
-                    jsonNode["password"]?.textValue(),
-                    jsonNode["salt"]?.textValue()
+                    jsonNode["username"]?.textValue()!!,
+                    jsonNode["password"]?.textValue()!!,
+                    jsonNode["salt"]?.textValue()!!
                 )
             }
             "rsa" -> {
                 val jsonString = data.toStringUtf8()
                 val jsonNode = objectMapper.readTree(jsonString)
                 RsaCredentialValue(
-                    jsonNode["public_key"]?.textValue(),
-                    jsonNode["private_key"]?.textValue()
+                    jsonNode["public_key"]?.textValue()!!,
+                    jsonNode["private_key"]?.textValue()!!
                 )
             }
             "ssh" -> {
@@ -292,7 +292,7 @@ class RemoteCredentialsHandler(
         }
     }
 
-    internal fun createByteStringFromData(type: String, data: CredentialValue): ByteString {
+    internal fun createByteStringFromData(type: String?, data: CredentialValue?): ByteString {
         return when (type) {
             "value" -> {
                 val stringCredentialValue = data as StringCredentialValue
@@ -334,7 +334,7 @@ class RemoteCredentialsHandler(
                 val json = objectMapper.writeValueAsString(mapOf(
                     "username" to userCredentialValue.username,
                     "password" to userCredentialValue.password,
-                    "salt" to userCredentialValue.salt
+                    "salt" to userCredentialValue.getOrGenerateSalt()
                 ))
                 ByteString.copyFromUtf8(json)
             }
@@ -361,15 +361,15 @@ class RemoteCredentialsHandler(
         }
     }
 
-    internal fun createByteStringFromGenerationParameters(type: String, generationParams: GenerationParameters): ByteString {
+    internal fun createByteStringFromGenerationParameters(type: String?, generationParams: GenerationParameters?): ByteString {
         return when (type) {
             "password" -> {
                 val stringGenerationParameters = generationParams as StringGenerationParameters
                 val json = objectMapper.writeValueAsString(mapOf(
-                    "include_special" to stringGenerationParameters.isIncludeSpecial,
-                    "exclude_number" to stringGenerationParameters.isExcludeNumber,
-                    "exclude_upper" to stringGenerationParameters.isExcludeUpper,
-                    "exclude_lower" to stringGenerationParameters.isExcludeLower,
+                    "include_special" to stringGenerationParameters.includeSpecial,
+                    "exclude_number" to stringGenerationParameters.excludeNumber,
+                    "exclude_upper" to stringGenerationParameters.excludeUpper,
+                    "exclude_lower" to stringGenerationParameters.excludeLower,
                     "username" to stringGenerationParameters.username,
                     "length" to stringGenerationParameters.length
                 ))
@@ -399,10 +399,10 @@ class RemoteCredentialsHandler(
             "user" -> {
                 val userGenerationParameters = generationParams as StringGenerationParameters
                 val json = objectMapper.writeValueAsString(mapOf(
-                    "include_special" to userGenerationParameters.isIncludeSpecial,
-                    "exclude_number" to userGenerationParameters.isExcludeNumber,
-                    "exclude_upper" to userGenerationParameters.isExcludeUpper,
-                    "exclude_lower" to userGenerationParameters.isExcludeLower,
+                    "include_special" to userGenerationParameters.includeSpecial,
+                    "exclude_number" to userGenerationParameters.excludeNumber,
+                    "exclude_upper" to userGenerationParameters.excludeUpper,
+                    "exclude_lower" to userGenerationParameters.excludeLower,
                     "username" to userGenerationParameters.username,
                     "length" to userGenerationParameters.length
 
@@ -460,16 +460,16 @@ class RemoteCredentialsHandler(
                     generationParameters.username = jsonNode["username"].textValue()
                 }
                 if (jsonNode.hasNonNull("exclude_lower")) {
-                    generationParameters.isExcludeLower = jsonNode["exclude_lower"].booleanValue()
+                    generationParameters.excludeLower = jsonNode["exclude_lower"].booleanValue()
                 }
                 if (jsonNode.hasNonNull("exlude_upper")) {
-                    generationParameters.isExcludeUpper = jsonNode["exlude_upper"].booleanValue()
+                    generationParameters.excludeUpper = jsonNode["exlude_upper"].booleanValue()
                 }
                 if (jsonNode.hasNonNull("exclude_number")) {
-                    generationParameters.isExcludeNumber = jsonNode["exclude_number"].booleanValue()
+                    generationParameters.excludeNumber = jsonNode["exclude_number"].booleanValue()
                 }
                 if (jsonNode.hasNonNull("include_special")) {
-                    generationParameters.isIncludeSpecial = jsonNode["include_special"].booleanValue()
+                    generationParameters.includeSpecial = jsonNode["include_special"].booleanValue()
                 }
 
                 generationParameters
@@ -488,16 +488,16 @@ class RemoteCredentialsHandler(
                     generationParameters.username = jsonNode["username"].textValue()
                 }
                 if (jsonNode.hasNonNull("exclude_lower")) {
-                    generationParameters.isExcludeLower = jsonNode["exclude_lower"].booleanValue()
+                    generationParameters.excludeLower = jsonNode["exclude_lower"].booleanValue()
                 }
                 if (jsonNode.hasNonNull("exlude_upper")) {
-                    generationParameters.isExcludeUpper = jsonNode["exlude_upper"].booleanValue()
+                    generationParameters.excludeUpper = jsonNode["exlude_upper"].booleanValue()
                 }
                 if (jsonNode.hasNonNull("exclude_number")) {
-                    generationParameters.isExcludeNumber = jsonNode["exclude_number"].booleanValue()
+                    generationParameters.excludeNumber = jsonNode["exclude_number"].booleanValue()
                 }
                 if (jsonNode.hasNonNull("include_special")) {
-                    generationParameters.isIncludeSpecial = jsonNode["include_special"].booleanValue()
+                    generationParameters.includeSpecial = jsonNode["include_special"].booleanValue()
                 }
                 generationParameters
             }
@@ -557,7 +557,7 @@ class RemoteCredentialsHandler(
                     generationRequestParameters.locality = jsonNode["locality"].textValue()
                 }
                 if (jsonNode.hasNonNull("is_ca")) {
-                    generationRequestParameters.setIsCa(jsonNode["is_ca"].booleanValue())
+                    generationRequestParameters.isCa = jsonNode["is_ca"].booleanValue()
                 }
                 if (jsonNode.hasNonNull("key_usage")) {
                     generationRequestParameters.keyUsage = arrayOf(jsonNode["key_usage"].textValue())
@@ -595,7 +595,7 @@ class RemoteCredentialsHandler(
     private fun getCredentialFromRequest(credentialRequest: BaseCredentialGenerateRequest): GetResponse? {
         val originalValue: GetResponse
         try {
-            originalValue = client.getByNameRequest(credentialRequest.name, userContextHolder.userContext?.actor.toString())
+            originalValue = client.getByNameRequest(credentialRequest.name!!, userContextHolder.userContext?.actor.toString())
             val originalGenerationParameters =
                 getGenerationParametersFromResponse(originalValue.type, originalValue.generationParameters)
 

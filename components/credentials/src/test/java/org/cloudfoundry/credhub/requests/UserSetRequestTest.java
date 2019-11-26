@@ -51,6 +51,7 @@ public class UserSetRequestTest {
     final UserSetRequest userSetRequest = deserialize(validSetRequestJson, UserSetRequest.class);
 
     final UserCredentialValue userValue = userSetRequest.getUserValue();
+    assert userValue != null;
     assertThat(userValue.getUsername(), equalTo("dan"));
     assertThat(userValue.getPassword(), equalTo("example-password"));
   }

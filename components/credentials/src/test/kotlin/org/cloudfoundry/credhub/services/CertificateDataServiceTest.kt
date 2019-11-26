@@ -40,13 +40,13 @@ class CertificateDataServiceTest {
         val certificateCredentialVersionData = CertificateCredentialVersionData(name)
         val otherCertificateCredentialVersionData = CertificateCredentialVersionData(otherName)
         certificateCredentialVersionData.caName = caName
-        certificateCredentialVersionData.isTransitional = false
+        certificateCredentialVersionData.transitional = false
         certificateCredentialVersionData.expiryDate = expectedExpiryDate
         certificateCredentialVersionData.isCertificateAuthority = false
         certificateCredentialVersionData.isSelfSigned = false
         certificateCredentialVersionData.generated = true
         otherCertificateCredentialVersionData.caName = otherCaName
-        otherCertificateCredentialVersionData.isTransitional = false
+        otherCertificateCredentialVersionData.transitional = false
         otherCertificateCredentialVersionData.isCertificateAuthority = false
         otherCertificateCredentialVersionData.isSelfSigned = false
         otherCertificateCredentialVersionData.generated = true
@@ -74,7 +74,7 @@ class CertificateDataServiceTest {
         val caName = "/some-ca"
         val certificateCredentialVersionData = CertificateCredentialVersionData(name)
         certificateCredentialVersionData.caName = caName
-        certificateCredentialVersionData.isTransitional = false
+        certificateCredentialVersionData.transitional = false
         certificateCredentialVersionData.expiryDate = null
         certificateCredentialVersionData.isCertificateAuthority = false
         certificateCredentialVersionData.isSelfSigned = false

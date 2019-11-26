@@ -139,7 +139,7 @@ class DefaultCertificatesHandler(
         checkPermissionsByUuid(certificateId, WRITE)
 
         val certificateCredentialValue = requestBody.value
-        certificateCredentialValue.isTransitional = requestBody.isTransitional
+        certificateCredentialValue?.isTransitional = requestBody.isTransitional
         val credentialVersion = certificateService.set(
             UUID.fromString(certificateId),
             certificateCredentialValue

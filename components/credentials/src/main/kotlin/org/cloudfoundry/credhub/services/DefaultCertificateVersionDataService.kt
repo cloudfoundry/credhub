@@ -92,14 +92,14 @@ class DefaultCertificateVersionDataService(
 
     override fun setTransitionalVersion(newTransitionalVersionUuid: UUID) {
         val newTransitionalCertificate = credentialVersionRepository.findOneByUuid(newTransitionalVersionUuid) as CertificateCredentialVersionData
-        newTransitionalCertificate.isTransitional = true
+        newTransitionalCertificate.transitional = true
         credentialVersionRepository.save(newTransitionalCertificate)
     }
 
     override fun unsetTransitionalVersion(certificateUuid: UUID) {
         val transitionalCertificate = credentialVersionRepository.findTransitionalCertificateVersion(certificateUuid) as? CertificateCredentialVersionData
         if (transitionalCertificate != null) {
-            transitionalCertificate.isTransitional = false
+            transitionalCertificate.transitional = false
             credentialVersionRepository.save(transitionalCertificate)
         }
     }

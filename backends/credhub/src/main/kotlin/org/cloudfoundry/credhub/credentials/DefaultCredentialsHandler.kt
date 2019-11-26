@@ -57,11 +57,11 @@ class DefaultCredentialsHandler(
         checkPermissionsByName(generateRequest.name, WRITE)
         if (generateRequest.type == "certificate") {
             val req = generateRequest as CertificateGenerateRequest
-            val caName = req.generationRequestParameters.caName
+            val caName = req.generationRequestParameters?.caName
             if (caName == null) {
-                if (req.generationRequestParameters.isCa) {
-                    generateRequest.generationRequestParameters.caName = req.name
-                    generateRequest.generationRequestParameters.isSelfSigned = true
+                if (req.generationRequestParameters?.isCa!!) {
+                    generateRequest.generationRequestParameters?.caName = req.name
+                    generateRequest.generationRequestParameters?.isSelfSigned = true
                     val certificateGenerationParameters = CertificateGenerationParameters(generateRequest.generationRequestParameters)
                     generateRequest.setCertificateGenerationParameters(certificateGenerationParameters)
                 }
@@ -70,7 +70,7 @@ class DefaultCredentialsHandler(
             }
         }
 
-        val activeVersionList = credentialService.findActiveByName(generateRequest.name)
+        val activeVersionList = credentialService.findActiveByName(generateRequest.name!!)
 
         val existingCredentialVersion = when {
             activeVersionList.size > 1 && (activeVersionList[0] as CertificateCredentialVersion).isVersionTransitional ->
@@ -94,16 +94,16 @@ class DefaultCredentialsHandler(
     override fun setCredential(setRequest: BaseCredentialSetRequest<*>): CredentialView {
         checkPermissionsByName(setRequest.name, WRITE)
         if (setRequest is CertificateSetRequest) {
-            setRequest.certificateValue.generated = false
+            setRequest.certificateValue?.generated = false
             val certificateValue = setRequest.certificateValue
-            val caName = certificateValue.caName
+            val caName = certificateValue?.caName
 
-            val certificateReader = CertificateReader(certificateValue.certificate)
+            val certificateReader = CertificateReader(certificateValue?.certificate)
             if (certificateReader.isCa) {
-                setRequest.certificateValue.isCertificateAuthority = true
+                setRequest.certificateValue?.isCertificateAuthority = true
                 if (caName == null && certificateReader.isSelfSigned) {
-                    setRequest.certificateValue.caName = setRequest.name
-                    setRequest.certificateValue.isSelfSigned = true
+                    setRequest.certificateValue?.caName = setRequest.name
+                    setRequest.certificateValue?.isSelfSigned = true
                 }
             }
 
@@ -112,7 +112,7 @@ class DefaultCredentialsHandler(
             }
         }
 
-        val existingCredentialVersion = credentialService.findMostRecent(setRequest.name)
+        val existingCredentialVersion = credentialService.findMostRecent(setRequest.name!!)
 
         val credentialVersion = credentialService.save(
             existingCredentialVersion,
@@ -226,10 +226,10 @@ class DefaultCredentialsHandler(
         return filteredResult
     }
 
-    private fun checkPermissionsByName(name: String, permissionOperation: PermissionOperation, isCa: Boolean = false) {
+    private fun checkPermissionsByName(name: String?, permissionOperation: PermissionOperation, isCa: Boolean = false) {
         if (!enforcePermissions) return
 
-        if (!permissionCheckingService.hasPermission(userContextHolder.userContext?.actor!!, name, permissionOperation)) {
+        if (!permissionCheckingService.hasPermission(userContextHolder.userContext?.actor!!, name!!, permissionOperation)) {
             if (permissionOperation == WRITE) {
                 throw PermissionException(ErrorMessages.Credential.INVALID_ACCESS)
             } else if (isCa) {

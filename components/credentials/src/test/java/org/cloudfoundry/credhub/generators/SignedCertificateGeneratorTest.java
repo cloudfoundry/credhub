@@ -320,7 +320,7 @@ public class SignedCertificateGeneratorTest {
     final CertificateGenerationRequestParameters parameters = new CertificateGenerationRequestParameters();
     parameters.setDuration(expectedDurationInDays);
     parameters.setCommonName(expectedCertificateCommonName);
-    parameters.setIsCa(true);
+    parameters.setCa(true);
 
     return new CertificateGenerationParameters(parameters);
   }

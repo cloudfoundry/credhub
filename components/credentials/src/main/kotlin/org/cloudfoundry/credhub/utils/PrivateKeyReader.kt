@@ -17,11 +17,11 @@ import org.cloudfoundry.credhub.exceptions.MalformedPrivateKeyException
 class PrivateKeyReader private constructor() {
     companion object {
         @JvmStatic
-        fun getPrivateKey(privateKeyPem: String): PrivateKey {
+        fun getPrivateKey(privateKeyPem: String?): PrivateKey {
             val pemParser: PEMParser
             val parsed: Any?
             try {
-                pemParser = PEMParser(StringReader(privateKeyPem))
+                pemParser = PEMParser(StringReader(privateKeyPem!!))
                 parsed = pemParser.readObject()
                 pemParser.close()
             } catch (e: PEMException) {
@@ -38,7 +38,7 @@ class PrivateKeyReader private constructor() {
         }
 
         @JvmStatic
-        fun getPublicKey(privateKeyPem: String): PublicKey {
+        fun getPublicKey(privateKeyPem: String?): PublicKey {
             val privateKey = getPrivateKey(privateKeyPem) as RSAPrivateCrtKey
             val publicKeySpec = RSAPublicKeySpec(privateKey.modulus, privateKey.publicExponent)
 

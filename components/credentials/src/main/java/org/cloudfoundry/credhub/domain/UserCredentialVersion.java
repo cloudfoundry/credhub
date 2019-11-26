@@ -38,7 +38,7 @@ public class UserCredentialVersion extends CredentialVersion {
     this.setPassword(userValue.getPassword());
     this.setUsername(userValue.getUsername());
     this.setGenerationParameters(generationParameters);
-    this.setSalt(userValue.getSalt());
+    this.setSalt(userValue.getOrGenerateSalt());
   }
 
   @Override

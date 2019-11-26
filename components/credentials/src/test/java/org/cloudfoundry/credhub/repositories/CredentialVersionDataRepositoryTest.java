@@ -106,7 +106,8 @@ public class CredentialVersionDataRepositoryTest {
     entity.setEncryptedValueData(entityEncryptedValue);
 
     subject.save(entity);
-    assertThat(subject.findFirstByCredentialUuidOrderByVersionCreatedAtDesc(credential.getUuid())
-      .getEncryptedValueData().getEncryptedValue().length, equalTo(7016));
+    EncryptedValue encryptedValueData = subject.findFirstByCredentialUuidOrderByVersionCreatedAtDesc(credential.getUuid()).getEncryptedValueData();
+    assert encryptedValueData != null;
+    assertThat(encryptedValueData.getEncryptedValue().length, equalTo(7016));
   }
 }

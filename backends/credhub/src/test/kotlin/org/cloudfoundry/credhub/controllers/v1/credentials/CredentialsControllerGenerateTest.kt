@@ -410,7 +410,7 @@ class CredentialsControllerGenerateTest {
                     CredHubRestDocs.DOCUMENT_IDENTIFIER,
                     getCommonGenerateRequestFields().and(
                         fieldWithPath("parameters.key_length")
-                            .description("Key length of generated credential value (Default: ${RsaSshGenerationParameters().getKeyLength()}). Valid key lengths are: ${RsaSshGenerationParameters().validKeyLengths.joinToString(", ")}")
+                            .description("Key length of generated credential value (Default: ${RsaSshGenerationParameters().keyLength}). Valid key lengths are: ${RsaSshGenerationParameters().validKeyLengths.joinToString(", ")}")
                             .type(JsonFieldType.NUMBER)
                             .optional()
                     )
