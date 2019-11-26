@@ -19,6 +19,7 @@ function lint_scripts() {
 }
 
 function lint_jvm_language_code() {
+    ./gradlew ktlintFormat
     ./gradlew check -x test
 }
 
