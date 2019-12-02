@@ -62,7 +62,7 @@ class DefaultCredentialsHandler(
                 if (req.generationRequestParameters?.isCa!!) {
                     generateRequest.generationRequestParameters?.caName = req.name
                     generateRequest.generationRequestParameters?.isSelfSigned = true
-                    val certificateGenerationParameters = CertificateGenerationParameters(generateRequest.generationRequestParameters)
+                    val certificateGenerationParameters = CertificateGenerationParameters(generateRequest.generationRequestParameters!!)
                     generateRequest.setCertificateGenerationParameters(certificateGenerationParameters)
                 }
             } else {
@@ -247,7 +247,7 @@ class DefaultCredentialsHandler(
 
         if (!permissionCheckingService.hasPermission(
                 userContextHolder.userContext?.actor!!,
-                credential.name,
+                credential.name!!,
                 permissionOperation
             )) {
             if (permissionOperation == WRITE) {

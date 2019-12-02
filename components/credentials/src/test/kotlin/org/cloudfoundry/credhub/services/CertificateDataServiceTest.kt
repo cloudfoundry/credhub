@@ -61,11 +61,11 @@ class CertificateDataServiceTest {
         assertEquals(1, result.size)
         assertEquals(name, result[0].name)
         assertEquals(caName, result[0].caName)
-        assertEquals(false, result[0].versions[0].isTransitional)
-        assertEquals(expectedExpiryDate, result[0].versions[0].expiryDate)
-        assertEquals(false, result[0].versions[0].isCertificateAuthority)
-        assertEquals(false, result[0].versions[0].isSelfSigned)
-        assertEquals(true, result[0].versions[0].generated)
+        assertEquals(false, result[0].versions?.get(0)?.isTransitional)
+        assertEquals(expectedExpiryDate, result[0].versions?.get(0)?.expiryDate)
+        assertEquals(false, result[0].versions?.get(0)?.isCertificateAuthority)
+        assertEquals(false, result[0].versions?.get(0)?.isSelfSigned)
+        assertEquals(true, result[0].versions?.get(0)?.generated)
     }
 
     @Test
@@ -88,11 +88,11 @@ class CertificateDataServiceTest {
         assertEquals(1, result.size)
         assertEquals(name, result[0].name)
         assertEquals(caName, result[0].caName)
-        assertEquals(false, result[0].versions[0].isTransitional)
-        assertEquals(null, result[0].versions[0].expiryDate)
-        assertEquals(false, result[0].versions[0].isCertificateAuthority)
-        assertEquals(false, result[0].versions[0].isSelfSigned)
-        assertEquals(true, result[0].versions[0].generated)
+        assertEquals(false, result[0].versions?.get(0)?.isTransitional)
+        assertEquals(null, result[0].versions?.get(0)?.expiryDate)
+        assertEquals(false, result[0].versions?.get(0)?.isCertificateAuthority)
+        assertEquals(false, result[0].versions?.get(0)?.isSelfSigned)
+        assertEquals(true, result[0].versions?.get(0)?.generated)
     }
 
     @Test
@@ -115,8 +115,8 @@ class CertificateDataServiceTest {
 
         println("result = ${result[0].caName}")
         var previousExpiryDate = Instant.MAX
-        for (credentialVersion in result[0].versions) {
-            assertTrue(credentialVersion.expiryDate < previousExpiryDate)
+        for (credentialVersion in result[0].versions!!) {
+            assertTrue(credentialVersion.expiryDate!! < previousExpiryDate)
             previousExpiryDate = credentialVersion.expiryDate
         }
     }

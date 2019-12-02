@@ -19,7 +19,7 @@ class CertificateVersionView(
     val generated: Boolean?
 ) {
     constructor(certificateVersion: CertificateVersionMetadata) : this(
-        certificateVersion.id,
+        certificateVersion.id!!,
         certificateVersion.expiryDate,
         certificateVersion.isTransitional,
         certificateVersion.isCertificateAuthority,

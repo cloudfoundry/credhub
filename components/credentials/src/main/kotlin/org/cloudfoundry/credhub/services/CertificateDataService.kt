@@ -86,7 +86,7 @@ constructor(
             val credentialUUID: UUID = toUUID(rowSet.getObject("CREDENTIAL_UUID"))
 
             if (certificateMetadataMap.containsKey(credentialUUID)) {
-                certificateMetadataMap.getValue(credentialUUID).versions.add(certificateVersionMetadata)
+                certificateMetadataMap.getValue(credentialUUID).versions?.add(certificateVersionMetadata)
             } else {
                 val caName: String? = if (isSelfSigned) name else rowSet.getString("CA_NAME")
 

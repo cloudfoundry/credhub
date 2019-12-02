@@ -45,7 +45,7 @@ class DefaultRegenerateHandler(
 
         val existingCredentialVersion = credentialService.findMostRecent(credentialName)
             ?: throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
-        if (existingCredentialVersion.credentialType == "certificate") {
+        if (existingCredentialVersion.getCredentialType() == "certificate") {
             val caName = (existingCredentialVersion as CertificateCredentialVersion).caName
             if (caName != null) {
                 checkPermissionsByName(caName, READ)

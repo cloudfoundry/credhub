@@ -159,18 +159,18 @@ class DefaultCertificatesHandler(
                     val caName = certificateMetadata.caName
 
                     if (!caMapping.containsKey(caName)) {
-                        caMapping[caName] = mutableListOf()
+                        caMapping[caName!!] = mutableListOf()
                     }
 
                     if (certificateMetadata.name != caName) {
-                        caMapping.getValue(caName).add(certificateMetadata.name)
+                        caMapping.getValue(caName!!).add(certificateMetadata.name!!)
                     }
                 }
             }
         }
 
         return certificates.map { certificateMetadata ->
-            val certificateVersionViews = certificateMetadata.versions.map { certificateVersion ->
+            val certificateVersionViews = certificateMetadata.versions?.map { certificateVersion ->
                 CertificateVersionView(certificateVersion)
             }
             val signedBy = certificateMetadata.caName ?: ""
@@ -178,7 +178,7 @@ class DefaultCertificatesHandler(
             if (getAllRequest) {
                 signedCertificates = caMapping.getOrDefault(certificateMetadata.name, mutableListOf())
             } else {
-                signedCertificates = certificateService.findSignedCertificates(certificateMetadata.name)
+                signedCertificates = certificateService.findSignedCertificates(certificateMetadata.name!!)
             }
             CertificateCredentialView(certificateMetadata.name,
                 certificateMetadata.id,
@@ -211,7 +211,7 @@ class DefaultCertificatesHandler(
 
         if (!permissionCheckingService.hasPermission(
                 userContextHolder.userContext?.actor!!,
-                certificate.name,
+                certificate.name!!,
                 permissionOperation
             )) {
             if (permissionOperation == WRITE) {

@@ -131,11 +131,11 @@ class DefaultCredentialServiceTest {
                 .thenReturn(TestConstants.OTHER_TEST_CERTIFICATE)
         certificate = CertificateCredentialVersion("some-cert")
         certificate.caName = "testCa"
-        certificate.credential.uuid = certUuid
+        certificate.credential?.uuid = certUuid
         certificate.uuid = certUuid
         certificate.ca = TestConstants.TEST_CERTIFICATE
         certificate.trustedCa = TestConstants.TEST_CA
-        `when`<List<CredentialVersion>>(credentialVersionDataService.findActiveByName(certificate.caName))
+        `when`<List<CredentialVersion>>(credentialVersionDataService.findActiveByName(certificate.caName!!))
                 .thenReturn(Arrays.asList<CredentialVersion>(nonTransitionalCa, transitionalCa))
     }
 
@@ -287,7 +287,7 @@ class DefaultCredentialServiceTest {
         `when`(originalCredentialVersion.matchesGenerationParameters(stringGenerationParameters)).thenReturn(true)
 
         `when`<CredentialVersion>(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(originalCredentialVersion)
-        `when`(originalCredentialVersion.credentialType).thenReturn("password")
+        `when`(originalCredentialVersion.getCredentialType()).thenReturn("password")
 
         `when`(credentialFactory.makeNewCredentialVersion(
                 CredentialType.valueOf("PASSWORD"),
@@ -319,7 +319,7 @@ class DefaultCredentialServiceTest {
         `when`(originalCredentialVersion.matchesGenerationParameters(stringGenerationParameters)).thenReturn(false)
 
         `when`<CredentialVersion>(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(originalCredentialVersion)
-        `when`(originalCredentialVersion.credentialType).thenReturn("password")
+        `when`(originalCredentialVersion.getCredentialType()).thenReturn("password")
 
         this.subject.save(originalCredentialVersion, credentialValue, generateRequest)
 
@@ -347,7 +347,7 @@ class DefaultCredentialServiceTest {
         `when`(originalCredentialVersion.matchesGenerationParameters(stringGenerationParameters)).thenReturn(false)
 
         `when`<CredentialVersion>(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(originalCredentialVersion)
-        `when`(originalCredentialVersion.credentialType).thenReturn("password")
+        `when`(originalCredentialVersion.getCredentialType()).thenReturn("password")
 
         `when`(credentialFactory.makeNewCredentialVersion(
                 CredentialType.valueOf("PASSWORD"),

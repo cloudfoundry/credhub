@@ -77,13 +77,13 @@ class CertificatesGetConcatenateCasIntegrationTest {
         val uuid = UUID.randomUUID()
         val uuid2 = UUID.randomUUID()
         val certificateVersion1 = CertificateCredentialVersion(CREDENTIAL_NAME)
-        certificateVersion1.setEncryptor(encryptor)
+        certificateVersion1.setEncryptor(encryptor!!)
         certificateVersion1.uuid = uuid
         certificateVersion1.versionCreatedAt = FROZEN_TIME
         certificateVersion1.ca = TestConstants.TEST_CERTIFICATE
         certificateVersion1.caName = "/some-ca"
         certificateVersion1.certificate = TestConstants.TEST_CERTIFICATE
-        certificateVersion1.credential.uuid = uuid
+        certificateVersion1.credential?.uuid = uuid
         certificateVersion1.trustedCa = TestConstants.OTHER_TEST_CERTIFICATE
 
         doReturn(CREDENTIAL_VALUE).`when`<Encryptor>(encryptor).decrypt(any())
@@ -93,7 +93,7 @@ class CertificatesGetConcatenateCasIntegrationTest {
         certificateVersion2.ca = TestConstants.TEST_CA
         certificateVersion2.setEncryptor(encryptor)
         certificateVersion2.uuid = uuid2
-        certificateVersion2.credential.uuid = uuid2
+        certificateVersion2.credential?.uuid = uuid2
 
         doReturn(listOf(certificateVersion1, certificateVersion2)).`when`<DefaultCertificateService>(certificateService).getVersions(uuid, false)
         doReturn(certificateVersion1).`when`<DefaultCertificateService>(certificateService).findByCredentialUuid(uuid.toString())

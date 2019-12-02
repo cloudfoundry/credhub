@@ -78,13 +78,13 @@ class CredentialsGetConcatenateCasIntegrationTest {
     fun gettingCurrentVersionOfACertificateCredential_byName_whenConcatenateCasIsTrue_returnsTheCredential_withConcatenatedCas() {
         val uuid = UUID.randomUUID()
         val certificate = CertificateCredentialVersion(CREDENTIAL_NAME)
-        certificate.setEncryptor(encryptor)
+        certificate.setEncryptor(encryptor!!)
         certificate.uuid = uuid
         certificate.versionCreatedAt = FROZEN_TIME
         certificate.ca = TestConstants.TEST_CERTIFICATE
         certificate.caName = "/some-ca"
         certificate.certificate = TestConstants.TEST_CERTIFICATE
-        certificate.credential.uuid = uuid
+        certificate.credential?.uuid = uuid
         certificate.trustedCa = TestConstants.OTHER_TEST_CERTIFICATE
 
         doReturn(CREDENTIAL_VALUE).`when`<Encryptor>(encryptor).decrypt(any())
@@ -111,13 +111,13 @@ class CredentialsGetConcatenateCasIntegrationTest {
         val uuid = UUID.randomUUID()
         val uuid2 = UUID.randomUUID()
         val certificateVersion1 = CertificateCredentialVersion(CREDENTIAL_NAME)
-        certificateVersion1.setEncryptor(encryptor)
+        certificateVersion1.setEncryptor(encryptor!!)
         certificateVersion1.uuid = uuid
         certificateVersion1.versionCreatedAt = FROZEN_TIME
         certificateVersion1.ca = TestConstants.TEST_CERTIFICATE
         certificateVersion1.caName = "/some-ca"
         certificateVersion1.certificate = TestConstants.TEST_CERTIFICATE
-        certificateVersion1.credential.uuid = uuid
+        certificateVersion1.credential?.uuid = uuid
         certificateVersion1.trustedCa = TestConstants.OTHER_TEST_CERTIFICATE
 
         doReturn(CREDENTIAL_VALUE).`when`<Encryptor>(encryptor).decrypt(any())
@@ -125,9 +125,9 @@ class CredentialsGetConcatenateCasIntegrationTest {
         val certificateVersion2 = CertificateCredentialVersion(CREDENTIAL_NAME)
         certificateVersion2.certificate = TestConstants.TEST_CA
         certificateVersion2.ca = TestConstants.TEST_CA
-        certificateVersion2.setEncryptor(encryptor)
+        certificateVersion2.setEncryptor(encryptor!!)
         certificateVersion2.uuid = uuid2
-        certificateVersion2.credential.uuid = uuid2
+        certificateVersion2.credential?.uuid = uuid2
         val credentialVersionList = Arrays.asList<CredentialVersion>(certificateVersion1, certificateVersion2)
 
         doReturn(credentialVersionList).`when`<CredentialVersionDataService>(credentialVersionDataService).findNByName(CREDENTIAL_NAME, 2)
@@ -155,13 +155,13 @@ class CredentialsGetConcatenateCasIntegrationTest {
         val uuid = UUID.randomUUID()
         val uuid2 = UUID.randomUUID()
         val certificateVersion1 = CertificateCredentialVersion(CREDENTIAL_NAME)
-        certificateVersion1.setEncryptor(encryptor)
+        certificateVersion1.setEncryptor(encryptor!!)
         certificateVersion1.uuid = uuid
         certificateVersion1.versionCreatedAt = FROZEN_TIME
         certificateVersion1.ca = TestConstants.TEST_CERTIFICATE
         certificateVersion1.caName = "/some-ca"
         certificateVersion1.certificate = TestConstants.TEST_CERTIFICATE
-        certificateVersion1.credential.uuid = uuid
+        certificateVersion1.credential?.uuid = uuid
         certificateVersion1.trustedCa = TestConstants.OTHER_TEST_CERTIFICATE
 
         doReturn(CREDENTIAL_VALUE).`when`<Encryptor>(encryptor).decrypt(any())
@@ -169,9 +169,9 @@ class CredentialsGetConcatenateCasIntegrationTest {
         val certificateVersion2 = CertificateCredentialVersion(CREDENTIAL_NAME)
         certificateVersion2.certificate = TestConstants.OTHER_TEST_CERTIFICATE
         certificateVersion2.ca = TestConstants.TEST_CA
-        certificateVersion2.setEncryptor(encryptor)
+        certificateVersion2.setEncryptor(encryptor!!)
         certificateVersion2.uuid = uuid2
-        certificateVersion2.credential.uuid = uuid2
+        certificateVersion2.credential?.uuid = uuid2
         val credentialVersionList = Arrays.asList<CredentialVersion>(certificateVersion1, certificateVersion2)
 
         doReturn(credentialVersionList).`when`<CredentialVersionDataService>(credentialVersionDataService).findAllByName(CREDENTIAL_NAME)

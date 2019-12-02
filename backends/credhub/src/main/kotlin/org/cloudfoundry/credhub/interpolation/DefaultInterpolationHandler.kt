@@ -59,7 +59,7 @@ class DefaultInterpolationHandler(
 
                 val updatedPropertiesMap = (updatedServicesMap[entry.key] as ArrayList<*>)[index] as MutableMap<String, Any>
 
-                updatedPropertiesMap["credentials"] = jsonCredentialVersion.value
+                updatedPropertiesMap["credentials"] = jsonCredentialVersion.getValue() as Any
             }
         }
         return updatedServicesMap

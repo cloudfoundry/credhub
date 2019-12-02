@@ -9,6 +9,7 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
 import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
@@ -40,6 +41,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
 public class DefaultCertificateServiceTest {
   private DefaultCertificateService subjectWithoutConcatenateCas;
   private DefaultCertificateService subjectWithConcatenateCas;

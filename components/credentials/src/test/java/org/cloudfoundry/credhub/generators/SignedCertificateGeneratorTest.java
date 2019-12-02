@@ -62,7 +62,7 @@ import static org.mockito.Mockito.when;
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = BouncyCastleProviderConfiguration.class)
 @SuppressFBWarnings(
-  value = "SS_SHOULD_BE_STATIC",
+  value = {"SS_SHOULD_BE_STATIC", "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"},
   justification = "Test files generally don't need static fields."
 )
 public class SignedCertificateGeneratorTest {

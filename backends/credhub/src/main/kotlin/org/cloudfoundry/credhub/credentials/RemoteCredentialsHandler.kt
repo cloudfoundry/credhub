@@ -413,10 +413,10 @@ class RemoteCredentialsHandler(
 
             "certificate" -> {
                 val certGenerationParams = generationParams as CertificateGenerationParameters
-                val names = certGenerationParams.x500Principal.getName("RFC1779")
+                val names = certGenerationParams.x500Principal?.getName("RFC1779")
                 val x500Names: MutableMap<String, String> = mutableMapOf()
-                val namesArray = names.split(",")
-                namesArray.forEach {
+                val namesArray = names?.split(",")
+                namesArray?.forEach {
                     val kv = it.split('=')
                     x500Names[kv[0]] = kv[1]
                 }

@@ -41,7 +41,7 @@ public class PasswordCredentialVersion extends CredentialVersion {
 
   public String getPassword() {
     if (password == null) {
-      password = encryptor.decrypt(delegate.getEncryptedValueData());
+      password = getEncryptor().decrypt(delegate.getEncryptedValueData());
     }
     return password;
   }
@@ -58,11 +58,11 @@ public class PasswordCredentialVersion extends CredentialVersion {
       final String generationParameterJson = generationParameters != null ? jsonObjectMapper.writeValueAsString(generationParameters) : null;
 
       if (generationParameterJson != null) {
-        final EncryptedValue encryptedParameters = encryptor.encrypt(generationParameterJson);
+        final EncryptedValue encryptedParameters = getEncryptor().encrypt(generationParameterJson);
         delegate.setEncryptedGenerationParameters(encryptedParameters);
       }
 
-      final EncryptedValue encryptedPassword = encryptor.encrypt(password);
+      final EncryptedValue encryptedPassword = getEncryptor().encrypt(password);
       delegate.setEncryptedValueData(encryptedPassword);
     } catch (final Exception e) {
       throw new RuntimeException(e);
@@ -76,7 +76,7 @@ public class PasswordCredentialVersion extends CredentialVersion {
       return null;
     }
 
-    final String parameterJson = encryptor.decrypt(delegate.getEncryptedGenerationParameters());
+    final String parameterJson = getEncryptor().decrypt(delegate.getEncryptedGenerationParameters());
 
     if (parameterJson == null) {
       return null;

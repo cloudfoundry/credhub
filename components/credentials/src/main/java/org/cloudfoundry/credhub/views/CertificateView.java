@@ -27,11 +27,11 @@ public class CertificateView extends CredentialView {
 
     public CertificateView(final CertificateCredentialVersion version) {
         super(
-                version.getVersionCreatedAt(),
-                version.getUuid(),
-                version.getName(),
-                version.getCredentialType(),
-                null
+            version.getVersionCreatedAt(),
+            version.getUuid(),
+            version.getName(),
+            version.getCredentialType(),
+            null
         );
         this.version = version;
         this.expiryDate = version.getExpiryDate();

@@ -67,12 +67,12 @@ constructor(
         }
 
         if (!permissionCheckingService
-                .hasPermission(userContextHolder.userContext?.actor!!, credentialVersion.name,
+                .hasPermission(userContextHolder.userContext?.actor!!, credentialVersion.name!!,
                     PermissionOperation.READ_ACL)) {
             throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
         }
 
-        return getPermissions(credentialVersion.credential)
+        return getPermissions(credentialVersion.credential!!)
     }
 
     override fun getPermissions(guid: UUID?): PermissionData? {

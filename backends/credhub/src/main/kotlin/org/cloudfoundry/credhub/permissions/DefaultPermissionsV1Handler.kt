@@ -19,7 +19,7 @@ class DefaultPermissionsV1Handler(
     override fun getPermissions(name: String): PermissionsView {
         val credentialVersion = credentialService.findMostRecent(name)
         val permissions = permissionService.getPermissions(credentialVersion)
-        return PermissionsView(credentialVersion!!.name, permissions)
+        return PermissionsView(credentialVersion?.name!!, permissions)
     }
 
     override fun writePermissions(request: PermissionsRequest) {

@@ -1,0 +1,143 @@
+package org.cloudfoundry.credhub.domain
+
+import java.time.Instant
+import java.util.Objects
+import org.apache.commons.lang3.StringUtils
+import org.cloudfoundry.credhub.credential.CertificateCredentialValue
+import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData
+import org.cloudfoundry.credhub.requests.GenerationParameters
+import org.cloudfoundry.credhub.utils.CertificateReader
+
+class CertificateCredentialVersion constructor(delegate: CertificateCredentialVersionData) : CredentialVersion(delegate) {
+    var parsedCertificate: CertificateReader? = null
+        private set
+
+    var ca: String?
+        get() = (delegate as CertificateCredentialVersionData).ca
+        set(ca) {
+            (delegate as CertificateCredentialVersionData).ca = ca
+        }
+
+    var certificate: String?
+        get() = (delegate as CertificateCredentialVersionData).certificate
+        set(certificate) {
+            (delegate as CertificateCredentialVersionData).certificate = certificate
+            if (StringUtils.isNotEmpty((delegate as CertificateCredentialVersionData).certificate)) {
+                parsedCertificate = CertificateReader(certificate)
+            }
+        }
+
+    var trustedCa: String?
+        get() = (delegate as CertificateCredentialVersionData).trustedCa
+        set(trustedCa) {
+            (delegate as CertificateCredentialVersionData).trustedCa = trustedCa
+        }
+
+    var privateKey: String?
+        get() = super.getValue() as String?
+        set(privateKey) {
+            if (privateKey != null) {
+                super.setValue(privateKey)
+            }
+        }
+
+    var caName: String?
+        get() = (delegate as CertificateCredentialVersionData).caName
+        set(caName) {
+            (delegate as CertificateCredentialVersionData).caName = caName
+        }
+
+    var expiryDate: Instant?
+        get() = (delegate as CertificateCredentialVersionData).expiryDate
+        set(expiryDate) {
+            (delegate as CertificateCredentialVersionData).expiryDate = expiryDate
+        }
+
+    val isVersionTransitional: Boolean
+        get() = (delegate as CertificateCredentialVersionData).isTransitional()
+
+    var isSelfSigned: Boolean
+        get() = (delegate as CertificateCredentialVersionData).isSelfSigned
+        set(isSelfSigned) {
+            (delegate as CertificateCredentialVersionData).isSelfSigned = isSelfSigned
+        }
+
+    var isCertificateAuthority: Boolean
+        get() = (delegate as CertificateCredentialVersionData).isCertificateAuthority
+        set(certificateAuthority) {
+            (delegate as CertificateCredentialVersionData).isCertificateAuthority = certificateAuthority
+        }
+
+    var generated: Boolean?
+        get() = (delegate as CertificateCredentialVersionData).generated
+        set(generated) {
+            (delegate as CertificateCredentialVersionData).generated = generated
+        }
+
+    init {
+        this.certificate = delegate.certificate
+    }
+
+    constructor() : this(CertificateCredentialVersionData()) {}
+
+    constructor(name: String) : this(CertificateCredentialVersionData(name)) {}
+
+    constructor(certificate: CertificateCredentialValue, encryptor: Encryptor) : this() {
+        this.setEncryptor(encryptor)
+        this.ca = certificate.ca
+        this.privateKey = certificate.privateKey
+        this.caName = certificate.caName
+        this.certificate = certificate.certificate
+        this.setTransitional(certificate.isTransitional)
+        this.expiryDate = certificate.expiryDate
+        this.isCertificateAuthority = certificate.isCertificateAuthority
+        this.trustedCa = certificate.trustedCa
+        this.isSelfSigned = certificate.isSelfSigned
+        this.generated = certificate.generated
+    }
+
+    override fun getCredentialType(): String {
+        return delegate.credentialType
+    }
+
+    override fun rotate() {
+        val decryptedPrivateKey = this.privateKey
+        this.privateKey = decryptedPrivateKey
+    }
+
+    override fun matchesGenerationParameters(generationParameters: GenerationParameters?): Boolean {
+        if (generationParameters == null) {
+            return true
+        }
+
+        val parameters = generationParameters as CertificateGenerationParameters?
+        val existingGenerationParameters = CertificateGenerationParameters(parsedCertificate!!, caName)
+        return existingGenerationParameters == parameters
+    }
+
+    fun setTransitional(transitional: Boolean) {
+        (delegate as CertificateCredentialVersionData).transitional = transitional
+    }
+
+    override fun getGenerationParameters(): GenerationParameters? {
+        return null
+    }
+
+    override fun equals(o: Any?): Boolean {
+        if (this === o) {
+            return true
+        }
+        if (o == null || javaClass != o.javaClass) {
+            return false
+        }
+        val that = o as CertificateCredentialVersion?
+        return (delegate == that!!.delegate &&
+            name == that.name &&
+            uuid == that.uuid &&
+            versionCreatedAt == that.versionCreatedAt)
+    }
+
+    override fun hashCode(): Int {
+        return Objects.hash(delegate)
+    }
+}

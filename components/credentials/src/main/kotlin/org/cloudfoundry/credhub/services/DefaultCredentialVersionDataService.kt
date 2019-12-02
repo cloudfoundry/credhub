@@ -48,7 +48,7 @@ constructor(
             credentialVersionData.credential = credentialDataService.save(credential)
         } else {
             val existingCredentialVersion = findMostRecent(credential.name!!)
-            if ((existingCredentialVersion != null && existingCredentialVersion.credentialType != credentialVersionData.credentialType)) {
+            if ((existingCredentialVersion != null && existingCredentialVersion.getCredentialType() != credentialVersionData.credentialType)) {
                 throw ParameterizedValidationException(ErrorMessages.TYPE_MISMATCH)
             }
         }

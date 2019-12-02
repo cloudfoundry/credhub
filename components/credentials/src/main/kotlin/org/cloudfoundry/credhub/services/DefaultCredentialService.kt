@@ -174,7 +174,7 @@ class DefaultCredentialService(
 
     private fun validateCredentialSave(type: String, existingCredentialVersion: CredentialVersion?) {
 
-        if (existingCredentialVersion != null && existingCredentialVersion.credentialType != type) {
+        if (existingCredentialVersion != null && existingCredentialVersion.getCredentialType() != type) {
             throw ParameterizedValidationException(ErrorMessages.TYPE_MISMATCH)
         }
     }

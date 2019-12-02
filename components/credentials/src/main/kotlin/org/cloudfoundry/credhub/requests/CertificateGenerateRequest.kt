@@ -30,7 +30,7 @@ class CertificateGenerateRequest : BaseCredentialGenerateRequest() {
             }
 
             if (certificateGenerationParameters == null) {
-                certificateGenerationParameters = CertificateGenerationParameters(requestGenerationParameters)
+                certificateGenerationParameters = CertificateGenerationParameters(requestGenerationParameters!!)
             }
             return certificateGenerationParameters
         }

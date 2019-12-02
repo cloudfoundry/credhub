@@ -48,7 +48,7 @@ class DefaultCertificateService(
             ) as CertificateCredentialVersion
 
         if (version.isVersionTransitional) {
-            createNewChildVersions(version.name)
+            createNewChildVersions(version.name!!)
         }
         return version
     }
@@ -159,7 +159,7 @@ class DefaultCertificateService(
         certificateVersionDataService.deleteVersion(versionUuid)
 
         if (versionToDelete.isVersionTransitional) {
-            createNewChildVersions(versionToDelete.name)
+            createNewChildVersions(versionToDelete.name!!)
         }
 
         return versionToDelete
@@ -184,7 +184,7 @@ class DefaultCertificateService(
         val version = credentialVersionDataService.save(certificateCredentialVersion) as CertificateCredentialVersion
 
         if (version.isVersionTransitional) {
-            createNewChildVersions(version.name)
+            createNewChildVersions(version.name!!)
         }
 
         return version
@@ -226,7 +226,7 @@ class DefaultCertificateService(
             )
 
             val newCredentialVersion = certificateCredentialFactory
-                .makeNewCredentialVersion(credential, value)
+                .makeNewCredentialVersion(credential!!, value)
 
             newCredentialVersion.trustedCa = trustedCa?.certificate
 
@@ -235,7 +235,7 @@ class DefaultCertificateService(
     }
 
     private fun versionDoesNotBelongToCertificate(certificate: Credential, version: CertificateCredentialVersion?): Boolean {
-        return version == null || certificate.uuid != version.credential.uuid
+        return version == null || certificate.uuid != version.credential?.uuid
     }
 
     private fun certificateHasOnlyOneVersion(certificateUuid: UUID): Boolean {
