@@ -1,9 +1,6 @@
 package org.cloudfoundry.credhub.audit
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
-import java.time.Instant
-import java.util.ArrayList
-import javax.servlet.http.HttpServletRequest
 import org.apache.commons.lang3.StringUtils
 import org.cloudfoundry.credhub.utils.VersionProvider
 import org.springframework.beans.factory.annotation.Autowired
@@ -11,6 +8,9 @@ import org.springframework.context.annotation.Scope
 import org.springframework.context.annotation.ScopedProxyMode
 import org.springframework.stereotype.Component
 import org.springframework.web.context.WebApplicationContext
+import java.time.Instant
+import java.util.ArrayList
+import javax.servlet.http.HttpServletRequest
 
 @Component
 @Scope(scopeName = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
@@ -18,19 +18,19 @@ import org.springframework.web.context.WebApplicationContext
 class CEFAuditRecord {
 
     // CEF Spec
-    lateinit var signatureId: String
-    private lateinit var credhubServerVersion: String
+    var signatureId: String? = null
+    private var credhubServerVersion: String? = null
 
     // Data Inherited (somewhat) from CC
     var timestamp = Instant.now().toEpochMilli().toString()
-    lateinit var username: String
-    private lateinit var userGuid: String
-    lateinit var authMechanism: String
-    lateinit var requestPath: String
-    lateinit var requestMethod: String
-    lateinit var result: String
-    lateinit var sourceAddress: String
-    lateinit var destinationAddress: String
+    var username: String? = null
+    private var userGuid: String? = null
+    var authMechanism: String? = null
+    var requestPath: String? = null
+    var requestMethod: String? = null
+    var result: String? = null
+    var sourceAddress: String? = null
+    var destinationAddress: String? = null
     var httpStatusCode: Int? = null
         set(httpStatusCode) {
             field = httpStatusCode
@@ -38,10 +38,10 @@ class CEFAuditRecord {
         }
 
     // CredHub-specific Data
-    lateinit var resourceName: String
-    lateinit var resourceUUID: String
-    lateinit var versionUUID: String
-    lateinit var operation: OperationDeviceAction
+    var resourceName: String? = null
+    var resourceUUID: String? = null
+    var versionUUID: String? = null
+    var operation: OperationDeviceAction? = null
     var requestDetails: RequestDetails? = null
         set(requestDetails) {
             field = requestDetails
