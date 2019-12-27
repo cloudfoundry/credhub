@@ -1,6 +1,9 @@
 package org.cloudfoundry.credhub.audit
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import java.time.Instant
+import java.util.ArrayList
+import javax.servlet.http.HttpServletRequest
 import org.apache.commons.lang3.StringUtils
 import org.cloudfoundry.credhub.utils.VersionProvider
 import org.springframework.beans.factory.annotation.Autowired
@@ -8,9 +11,6 @@ import org.springframework.context.annotation.Scope
 import org.springframework.context.annotation.ScopedProxyMode
 import org.springframework.stereotype.Component
 import org.springframework.web.context.WebApplicationContext
-import java.time.Instant
-import java.util.ArrayList
-import javax.servlet.http.HttpServletRequest
 
 @Component
 @Scope(scopeName = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
