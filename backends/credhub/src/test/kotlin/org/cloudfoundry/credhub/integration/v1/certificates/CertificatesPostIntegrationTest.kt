@@ -41,9 +41,9 @@ class CertificatesPostIntegrationTest {
     @Autowired
     private val webApplicationContext: WebApplicationContext? = null
 
-    private var mockMvc: MockMvc? = null
+    private lateinit var mockMvc: MockMvc
     private var caCertificate: String? = null
-    private var caCredentialUuid: String? = null
+    private var caCredentialUuid: String = ""
 
     @Before
     @Throws(Exception::class)

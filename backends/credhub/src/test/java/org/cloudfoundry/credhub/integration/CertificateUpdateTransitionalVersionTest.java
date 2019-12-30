@@ -57,11 +57,9 @@ public class CertificateUpdateTransitionalVersionTest {
       .build();
 
     final String generateCaResponse = generateCa(mockMvc, caName, ALL_PERMISSIONS_TOKEN);
-    caCertificate = JsonPath.parse(generateCaResponse)
-      .read("$.value.certificate");
+    caCertificate = JsonPath.parse(generateCaResponse).read("$.value.certificate");
     final String response = getCertificateCredentialsByName(mockMvc, ALL_PERMISSIONS_TOKEN, caName);
-    caCredentialUuid = JsonPath.parse(response)
-      .read("$.certificates[0].id");
+    caCredentialUuid = JsonPath.parse(response).read("$.certificates[0].id");
     assertNotNull(caCertificate);
   }
 

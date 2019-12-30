@@ -36,7 +36,7 @@ class RegenerateEndpointConcatenateCasIntegrationTest {
 
     private val API_V1_REGENERATE_ENDPOINT = "/api/v1/regenerate"
 
-    private var mockMvc: MockMvc? = null
+    private lateinit var mockMvc: MockMvc
 
     @Before
     fun beforeEach() {
@@ -50,7 +50,7 @@ class RegenerateEndpointConcatenateCasIntegrationTest {
     @Throws(Exception::class)
     fun certificateRegeneration_withConcatenateCasEnabled_shouldConcatenateCas() {
         val caName = "test-ca"
-        val certName = "test-cert"
+        val certName = "testCert"
         val generatedCa = JsonPath.parse(RequestHelper.generateCa(mockMvc, caName, ALL_PERMISSIONS_TOKEN))
             .read<String>("$.value.ca")
         RequestHelper.generateCertificate(mockMvc, certName, caName, ALL_PERMISSIONS_TOKEN)
@@ -63,9 +63,9 @@ class RegenerateEndpointConcatenateCasIntegrationTest {
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)
             // language=JSON
-            .content("{\n" +
-                "  \"name\" : \"$certName\"\n" +
-                "}")
+            .content("""{
+                "name": "$certName"
+            }""".trimIndent())
 
         this.mockMvc!!.perform(regenerateCertificateRequest)
             .andDo(print())
