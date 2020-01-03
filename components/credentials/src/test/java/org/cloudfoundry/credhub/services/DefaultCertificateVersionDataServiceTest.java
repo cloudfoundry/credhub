@@ -141,7 +141,7 @@ public class DefaultCertificateVersionDataServiceTest {
     final CertificateCredentialVersionData badCert = mock(CertificateCredentialVersionData.class);
     when(badCert.getCertificate()).thenReturn("some bad cert");
 
-    List<CredentialVersionData> certs = Arrays.asList(goodCert0, goodCert1, badCert);
+    List<CredentialVersionData<?>> certs = Arrays.asList(goodCert0, goodCert1, badCert);
     when(versionRepository.findAllByCredentialUuidAndTypeOrderByVersionCreatedAtDesc(eq(uuid), any())).thenReturn(certs);
 
     ArgumentCaptor<List<CredentialVersionData<?>>> validCertsArgument = ArgumentCaptor.forClass(List.class);

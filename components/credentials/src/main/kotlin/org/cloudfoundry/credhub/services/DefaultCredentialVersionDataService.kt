@@ -161,13 +161,13 @@ constructor(
 
     override fun findActiveByName(name: String): List<CredentialVersion>? {
         val credential = credentialDataService.find(name)
-        val credentialVersionData: CredentialVersionData<*>
+        val credentialVersionData: CredentialVersionData<*>?
         val result = Lists.newArrayList<CredentialVersion>()
         if (credential != null) {
             credentialVersionData = credentialVersionRepository
                 .findFirstByCredentialUuidOrderByVersionCreatedAtDesc(credential.uuid)
 
-            if (credentialVersionData.credentialType == CertificateCredentialVersionData.CREDENTIAL_TYPE) {
+            if (credentialVersionData?.credentialType == CertificateCredentialVersionData.CREDENTIAL_TYPE) {
                 return certificateVersionDataService.findActiveWithTransitional(name)
             }
             result.add(credentialFactory.makeCredentialFromEntity(credentialVersionData))

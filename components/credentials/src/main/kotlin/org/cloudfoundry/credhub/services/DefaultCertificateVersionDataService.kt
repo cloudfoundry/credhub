@@ -73,7 +73,7 @@ class DefaultCertificateVersionDataService(
 
         val validCredentialVersionDataList = ArrayList<CredentialVersionData<*>>()
         for (credentialVersionData in credentialVersionDataList) {
-            if (isValidCertificate(credentialVersionData)) {
+            if (credentialVersionData != null && isValidCertificate(credentialVersionData)) {
                 validCredentialVersionDataList.add(credentialVersionData)
             }
         }

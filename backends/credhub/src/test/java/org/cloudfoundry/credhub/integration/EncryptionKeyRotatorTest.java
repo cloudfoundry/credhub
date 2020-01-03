@@ -131,7 +131,7 @@ public class EncryptionKeyRotatorTest {
 
     setupInitialContext();
 
-    final List<CredentialVersionData> beforeRotation = credentialVersionRepository
+    final List<CredentialVersionData<?>> beforeRotation = credentialVersionRepository
       .findByEncryptedCredentialValueEncryptionKeyUuidIn(keySet.getInactiveUuids());
     final int numberToRotate = beforeRotation.size();
 
@@ -141,7 +141,7 @@ public class EncryptionKeyRotatorTest {
 
     encryptionKeyRotator.rotate();
 
-    final List<CredentialVersionData> afterRotation = credentialVersionRepository
+    final List<CredentialVersionData<?>> afterRotation = credentialVersionRepository
       .findByEncryptedCredentialValueEncryptionKeyUuidIn(keySet.getInactiveUuids());
     final int numberToRotateWhenDone = afterRotation.size();
 
