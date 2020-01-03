@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.domain;
 
 import java.util.UUID;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.entity.ValueCredentialVersionData;
 import org.junit.Before;
@@ -17,6 +18,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
+@SuppressFBWarnings(
+  value = "NP_NONNULL_PARAM_VIOLATION",
+  justification = "We are testing null explicitly."
+)
 public class ValueCredentialVersionTest {
 
   private ValueCredentialVersion subject;

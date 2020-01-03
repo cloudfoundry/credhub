@@ -10,7 +10,7 @@ import org.cloudfoundry.credhub.requests.GenerationParameters
 import org.cloudfoundry.credhub.services.CredentialVersionDataService
 
 abstract class CredentialVersion(protected var delegate: CredentialVersionData<*>) : AuditableCredentialVersion {
-    private var encryptor: Encryptor? = null
+    private lateinit var encryptor: Encryptor
 
     override var uuid: UUID?
         get() = delegate.uuid
@@ -35,7 +35,7 @@ abstract class CredentialVersion(protected var delegate: CredentialVersionData<*
 
     abstract fun rotate()
 
-    protected fun getEncryptor(): Encryptor? {
+    protected fun getEncryptor(): Encryptor {
         return this.encryptor
     }
 
@@ -44,11 +44,11 @@ abstract class CredentialVersion(protected var delegate: CredentialVersionData<*
     }
 
     open fun getValue(): Any? {
-        return encryptor?.decrypt(delegate.getEncryptedValueData())
+        return encryptor.decrypt(delegate.getEncryptedValueData())
     }
 
     open fun setValue(value: String) {
-        val encryption = encryptor?.encrypt(value)
+        val encryption = encryptor.encrypt(value)
         delegate.setEncryptedValueData(encryption)
     }
 

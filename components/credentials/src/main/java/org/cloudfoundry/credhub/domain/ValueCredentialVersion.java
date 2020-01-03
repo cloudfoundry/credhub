@@ -50,6 +50,9 @@ public class ValueCredentialVersion extends CredentialVersion {
   @Override
   public void rotate() {
     final String decryptedValue = (String) this.getValue();
+    if (decryptedValue == null) {
+      throw new IllegalArgumentException("value cannot be null");
+    }
     this.setValue(decryptedValue);
   }
 

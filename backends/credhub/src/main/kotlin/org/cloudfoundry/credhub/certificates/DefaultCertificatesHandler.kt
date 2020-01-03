@@ -172,7 +172,7 @@ class DefaultCertificatesHandler(
         return certificates.map { certificateMetadata ->
             val certificateVersionViews = certificateMetadata.versions?.map { certificateVersion ->
                 CertificateVersionView(certificateVersion)
-            }
+            }?.toMutableList()
             val signedBy = certificateMetadata.caName ?: ""
             val signedCertificates: List<String>
             if (getAllRequest) {

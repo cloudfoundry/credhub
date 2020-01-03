@@ -49,12 +49,12 @@ class DefaultCertificateVersionDataService(
 
             val active = credentialVersionRepository.findLatestNonTransitionalCertificateVersion(uuid)
             if (active != null) {
-                result.add(credentialFactory.makeCredentialFromEntity(active))
+                result.add(credentialFactory.makeCredentialFromEntity(active)!!)
             }
 
             val transitional = credentialVersionRepository.findTransitionalCertificateVersion(uuid)
             if (transitional != null) {
-                result.add(credentialFactory.makeCredentialFromEntity(transitional))
+                result.add(credentialFactory.makeCredentialFromEntity(transitional)!!)
             }
             return result
         }

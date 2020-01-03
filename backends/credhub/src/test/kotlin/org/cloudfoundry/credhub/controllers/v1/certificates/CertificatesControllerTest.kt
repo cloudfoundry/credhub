@@ -169,7 +169,7 @@ class CertificatesControllerTest {
     @Test
     fun GET__certificates__returns_certificates() {
         var caName = "/testCa"
-        val certificateVersions = listOf(
+        val certificateVersions = mutableListOf(
             CertificateVersionView(
                 id = UUID.randomUUID(),
                 transitional = true,
@@ -245,7 +245,7 @@ class CertificatesControllerTest {
     @Test
     fun GET__certificates_whenGeneratedisNull_returns_certificates_certificateWithoutGeneratedField() {
         var caName = "/testCa"
-        val certificateVersions = listOf(
+        val certificateVersions = mutableListOf(
             CertificateVersionView(
                 id = UUID.randomUUID(),
                 transitional = true,
@@ -300,7 +300,7 @@ class CertificatesControllerTest {
     @Test
     fun GET__certificates_whenExpiryDateisNull_returns_certificates_certificateWithEmptyExpiryDateField() {
         var caName = "/testCa"
-        val certificateVersions = listOf(
+        val certificateVersions = mutableListOf(
             CertificateVersionView(
                 id = UUID.randomUUID(),
                 transitional = true,
@@ -356,7 +356,7 @@ class CertificatesControllerTest {
     @Test
     fun GET__certificates_byName__returns_certificate() {
         var caName = "/testCa"
-        val certificateVersions = listOf(
+        val certificateVersions = mutableListOf(
             CertificateVersionView(
                 id = UUID.randomUUID(),
                 transitional = false,
@@ -419,7 +419,7 @@ class CertificatesControllerTest {
     @Test
     fun GET__certificates_byName__WhenGeneratedIsNull_returns_certificateWithoutGeneratedField() {
         var caName = "/testCa"
-        val certificateVersions = listOf(
+        val certificateVersions = mutableListOf(
             CertificateVersionView(
                 id = UUID.randomUUID(),
                 transitional = false,

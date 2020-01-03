@@ -144,7 +144,7 @@ public class DefaultCertificateVersionDataServiceTest {
     List<CredentialVersionData> certs = Arrays.asList(goodCert0, goodCert1, badCert);
     when(versionRepository.findAllByCredentialUuidAndTypeOrderByVersionCreatedAtDesc(eq(uuid), any())).thenReturn(certs);
 
-    ArgumentCaptor<List<CredentialVersionData>> validCertsArgument = ArgumentCaptor.forClass(List.class);
+    ArgumentCaptor<List<CredentialVersionData<?>>> validCertsArgument = ArgumentCaptor.forClass(List.class);
 
     List<CredentialVersion> validCredentialVersions = mock(List.class);
     when(factory.makeCredentialsFromEntities(any())).thenReturn(validCredentialVersions);

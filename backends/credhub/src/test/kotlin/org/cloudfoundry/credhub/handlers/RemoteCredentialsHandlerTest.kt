@@ -134,10 +134,10 @@ class RemoteCredentialsHandlerTest {
 
         assertThat(result.data.size).isEqualTo(2)
         assertThat(result.data[0].type).isEqualTo(type)
-        assertThat(result.data[0].uuid).isEqualTo(uuid1)
+        assertThat(result.data[0].getUuid()).isEqualTo(uuid1)
         assertThat(result.data[0].value).isInstanceOf(StringCredentialValue::class.java)
         assertThat(result.data[1].type).isEqualTo(type)
-        assertThat(result.data[1].uuid).isEqualTo(uuid2)
+        assertThat(result.data[1].getUuid()).isEqualTo(uuid2)
         assertThat(result.data[1].value).isInstanceOf(StringCredentialValue::class.java)
     }
 
@@ -195,10 +195,10 @@ class RemoteCredentialsHandlerTest {
 
         assertThat(result.data.size).isEqualTo(2)
         assertThat(result.data[0].type).isEqualTo(type)
-        assertThat(result.data[0].uuid).isEqualTo(uuid1)
+        assertThat(result.data[0].getUuid()).isEqualTo(uuid1)
         assertThat(result.data[0].value).isInstanceOf(StringCredentialValue::class.java)
         assertThat(result.data[1].type).isEqualTo(type)
-        assertThat(result.data[1].uuid).isEqualTo(uuid2)
+        assertThat(result.data[1].getUuid()).isEqualTo(uuid2)
         assertThat(result.data[1].value).isInstanceOf(StringCredentialValue::class.java)
     }
 
@@ -244,10 +244,10 @@ class RemoteCredentialsHandlerTest {
 
         assertThat(result.data.size).isEqualTo(2)
         assertThat(result.data[0].type).isEqualTo(type)
-        assertThat(result.data[0].uuid).isEqualTo(uuid1)
+        assertThat(result.data[0].getUuid()).isEqualTo(uuid1)
         assertThat(result.data[0].value).isInstanceOf(StringCredentialValue::class.java)
         assertThat(result.data[1].type).isEqualTo(type)
-        assertThat(result.data[1].uuid).isEqualTo(uuid2)
+        assertThat(result.data[1].getUuid()).isEqualTo(uuid2)
         assertThat(result.data[1].value).isInstanceOf(StringCredentialValue::class.java)
     }
 
@@ -280,7 +280,7 @@ class RemoteCredentialsHandlerTest {
 
         assertEquals(result.data.size, 1)
         assertEquals(result.data[0].type, type)
-        assertEquals(result.data[0].uuid, uuid)
+        assertEquals(result.data[0].getUuid(), uuid)
         assertThat(result.data[0].value).isInstanceOf(StringCredentialValue::class.java)
     }
 
@@ -304,7 +304,7 @@ class RemoteCredentialsHandlerTest {
         val result = subject.getCurrentCredentialVersions(CREDENTIAL_NAME)
         assertEquals(result.data.size, 1)
         assertEquals(result.data[0].type, type)
-        assertEquals(result.data[0].uuid, uuid)
+        assertEquals(result.data[0].getUuid(), uuid)
         assertThat(result.data[0].value).isInstanceOf(JsonCredentialValue::class.java)
     }
 
@@ -335,7 +335,7 @@ class RemoteCredentialsHandlerTest {
         val result = subject.getCurrentCredentialVersions(CREDENTIAL_NAME)
         assertEquals(result.data.size, 1)
         assertEquals(result.data[0].type, type)
-        assertEquals(result.data[0].uuid, uuid)
+        assertEquals(result.data[0].getUuid(), uuid)
         assertThat(result.data[0].value).isInstanceOf(CertificateCredentialValue::class.java)
     }
 
@@ -357,7 +357,7 @@ class RemoteCredentialsHandlerTest {
         val result = subject.getCurrentCredentialVersions(CREDENTIAL_NAME)
         assertEquals(result.data.size, 1)
         assertEquals(result.data[0].type, type)
-        assertEquals(result.data[0].uuid, uuid)
+        assertEquals(result.data[0].getUuid(), uuid)
         assertThat(result.data[0].value).isInstanceOf(StringCredentialValue::class.java)
     }
 
@@ -383,7 +383,7 @@ class RemoteCredentialsHandlerTest {
         val result = subject.getCurrentCredentialVersions(CREDENTIAL_NAME)
         assertEquals(result.data.size, 1)
         assertEquals(result.data[0].type, type)
-        assertEquals(result.data[0].uuid, uuid)
+        assertEquals(result.data[0].getUuid(), uuid)
         assertThat(result.data[0].value).isInstanceOf(UserCredentialValue::class.java)
     }
 
@@ -405,7 +405,7 @@ class RemoteCredentialsHandlerTest {
         val result = subject.getCurrentCredentialVersions(CREDENTIAL_NAME)
         assertEquals(result.data.size, 1)
         assertEquals(result.data[0].type, type)
-        assertEquals(result.data[0].uuid, uuid)
+        assertEquals(result.data[0].getUuid(), uuid)
         assertThat(result.data[0].value).isInstanceOf(RsaCredentialValue::class.java)
     }
 
@@ -427,7 +427,7 @@ class RemoteCredentialsHandlerTest {
         val result = subject.getCurrentCredentialVersions(CREDENTIAL_NAME)
         assertEquals(result.data.size, 1)
         assertEquals(result.data[0].type, type)
-        assertEquals(result.data[0].uuid, uuid)
+        assertEquals(result.data[0].getUuid(), uuid)
         assertThat(result.data[0].value).isInstanceOf(SshCredentialValue::class.java)
     }
 
@@ -448,7 +448,7 @@ class RemoteCredentialsHandlerTest {
 
         val result = subject.getCredentialVersionByUUID(uuid)
         assertEquals(result.type, type)
-        assertEquals(result.uuid, uuid)
+        assertEquals(result.getUuid(), uuid)
         assertThat(result.value).isInstanceOf(StringCredentialValue::class.java)
     }
 
@@ -471,7 +471,7 @@ class RemoteCredentialsHandlerTest {
 
         val result = subject.getCredentialVersionByUUID(uuid)
         assertEquals(result.type, type)
-        assertEquals(result.uuid, uuid)
+        assertEquals(result.getUuid(), uuid)
         assertThat(result.value).isInstanceOf(JsonCredentialValue::class.java)
     }
 
@@ -502,7 +502,7 @@ class RemoteCredentialsHandlerTest {
 
         val result = subject.getCredentialVersionByUUID(uuid)
         assertEquals(result.type, type)
-        assertEquals(result.uuid, uuid)
+        assertEquals(result.getUuid(), uuid)
         assertThat(result.value).isInstanceOf(CertificateCredentialValue::class.java)
     }
 
@@ -524,7 +524,7 @@ class RemoteCredentialsHandlerTest {
 
         val result = subject.getCredentialVersionByUUID(uuid)
         assertEquals(result.type, type)
-        assertEquals(result.uuid, uuid)
+        assertEquals(result.getUuid(), uuid)
         assertThat(result.value).isInstanceOf(StringCredentialValue::class.java)
     }
 
@@ -548,7 +548,7 @@ class RemoteCredentialsHandlerTest {
 
         val result = subject.getCredentialVersionByUUID(uuid)
         assertEquals(result.type, type)
-        assertEquals(result.uuid, uuid)
+        assertEquals(result.getUuid(), uuid)
         assertThat(result.value).isInstanceOf(UserCredentialValue::class.java)
     }
 
@@ -570,7 +570,7 @@ class RemoteCredentialsHandlerTest {
 
         val result = subject.getCredentialVersionByUUID(uuid)
         assertEquals(result.type, type)
-        assertEquals(result.uuid, uuid)
+        assertEquals(result.getUuid(), uuid)
         assertThat(result.value).isInstanceOf(RsaCredentialValue::class.java)
     }
 
@@ -592,7 +592,7 @@ class RemoteCredentialsHandlerTest {
 
         val result = subject.getCredentialVersionByUUID(uuid)
         assertEquals(result.type, type)
-        assertEquals(result.uuid, uuid)
+        assertEquals(result.getUuid(), uuid)
         assertThat(result.value).isInstanceOf(SshCredentialValue::class.java)
     }
 
@@ -623,7 +623,7 @@ class RemoteCredentialsHandlerTest {
 
         val result = subject.setCredential(request)
         assertEquals(type, result.type)
-        assertEquals(uuid, result.uuid)
+        assertEquals(uuid, result.getUuid())
         assertEquals(stringCredential, request.value)
         assertEquals(CREDENTIAL_NAME, result.name)
         assertThat(result.value).isInstanceOf(StringCredentialValue::class.java)
@@ -656,7 +656,7 @@ class RemoteCredentialsHandlerTest {
 
         val result = subject.setCredential(request)
         assertEquals(type, result.type)
-        assertEquals(uuid, result.uuid)
+        assertEquals(uuid, result.getUuid())
         assertEquals(stringCredential, request.password)
         assertEquals(CREDENTIAL_NAME, result.name)
         assertThat(result.value).isInstanceOf(StringCredentialValue::class.java)
@@ -690,7 +690,7 @@ class RemoteCredentialsHandlerTest {
 
         val result = subject.setCredential(request)
         assertEquals(type, result.type)
-        assertEquals(uuid, result.uuid)
+        assertEquals(uuid, result.getUuid())
         assertEquals(jsonCredential, request.value)
         assertEquals(CREDENTIAL_NAME, result.name)
         assertThat(result.value).isInstanceOf(JsonCredentialValue::class.java)
@@ -731,7 +731,7 @@ class RemoteCredentialsHandlerTest {
 
         val result = subject.setCredential(request)
         assertEquals(type, result.type)
-        assertEquals(uuid, result.uuid)
+        assertEquals(uuid, result.getUuid())
         assertEquals(certificateCredential, request.certificateValue)
         assertEquals(CREDENTIAL_NAME, result.name)
         assertThat(result.value).isInstanceOf(CertificateCredentialValue::class.java)
@@ -767,7 +767,7 @@ class RemoteCredentialsHandlerTest {
 
         val result = subject.setCredential(request)
         assertEquals(type, result.type)
-        assertEquals(uuid, result.uuid)
+        assertEquals(uuid, result.getUuid())
         assertEquals(userCredential, request.userValue)
         assertEquals(CREDENTIAL_NAME, result.name)
         assertThat(result.value).isInstanceOf(UserCredentialValue::class.java)
@@ -800,7 +800,7 @@ class RemoteCredentialsHandlerTest {
 
         val result = subject.setCredential(request)
         assertEquals(type, result.type)
-        assertEquals(uuid, result.uuid)
+        assertEquals(uuid, result.getUuid())
         assertEquals(rsaCredential, request.rsaKeyValue)
         assertEquals(CREDENTIAL_NAME, result.name)
         assertThat(result.value).isInstanceOf(RsaCredentialValue::class.java)
@@ -833,7 +833,7 @@ class RemoteCredentialsHandlerTest {
 
         val result = subject.setCredential(request)
         assertEquals(type, result.type)
-        assertEquals(uuid, result.uuid)
+        assertEquals(uuid, result.getUuid())
         assertEquals(sshCredential, request.sshKeyValue)
         assertEquals(CREDENTIAL_NAME, result.name)
         assertThat(result.value).isInstanceOf(SshCredentialValue::class.java)

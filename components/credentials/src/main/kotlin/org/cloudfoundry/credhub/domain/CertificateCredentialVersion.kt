@@ -9,7 +9,7 @@ import org.cloudfoundry.credhub.requests.GenerationParameters
 import org.cloudfoundry.credhub.utils.CertificateReader
 
 class CertificateCredentialVersion constructor(delegate: CertificateCredentialVersionData) : CredentialVersion(delegate) {
-    var parsedCertificate: CertificateReader? = null
+    lateinit var parsedCertificate: CertificateReader
         private set
 
     var ca: String?
