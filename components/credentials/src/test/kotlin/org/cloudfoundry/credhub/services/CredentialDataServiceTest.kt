@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.services
 
+import java.util.UUID
 import org.cloudfoundry.credhub.CredhubTestApp
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.entity.Credential
@@ -16,7 +17,6 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.transaction.annotation.Transactional
-import java.util.UUID
 
 @RunWith(SpringRunner::class)
 @ActiveProfiles(value = ["unit-test"], resolver = DatabaseProfileResolver::class)
