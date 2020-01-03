@@ -54,8 +54,7 @@ function check_for_local_server(){
 
 function run_tests() {
   export CREDENTIAL_ROOT="$PWD/applications/credhub-api/src/test/resources"
-  export GOPATH=~/go
-  pushd ${GOPATH}/src/github.com/cloudfoundry-incubator/credhub-acceptance-tests
+  pushd ~/workspace/credhub-acceptance-tests
       ./scripts/run_tests.sh
   popd
 }
