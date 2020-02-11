@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 
-function set_bash_error_handling() {
-    set -euo pipefail
-}
+set -euo pipefail
 
 function go_to_project_root_directory() {
     local -r script_dir=$( dirname "${BASH_SOURCE[0]}")

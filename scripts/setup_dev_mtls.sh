@@ -70,7 +70,7 @@ generate_client_ca() {
 add_client_ca_to_trust_store() {
     echo "Adding root CA to servers trust store for mTLS..."
     keytool -import -trustcacerts -noprompt -alias client_ca -file client_ca_cert.pem \
-	    -keystore ${MTLS_TRUST_STORE} -storepass ${KEYSTORE_PASSWORD}
+	    -keystore "${MTLS_TRUST_STORE}" -storepass "${KEYSTORE_PASSWORD}"
 }
 
 setup_auth_server_trust_store() {
@@ -79,9 +79,9 @@ setup_auth_server_trust_store() {
         -trustcacerts \
         -noprompt \
         -alias auth_server_ca \
-        -file ${UAA_CA} \
-        -keystore ${AUTH_SERVER_TRUST_STORE} \
-        -storepass ${KEYSTORE_PASSWORD}
+        -file "${UAA_CA}" \
+        -keystore "${AUTH_SERVER_TRUST_STORE}" \
+        -storepass "${KEYSTORE_PASSWORD}"
 }
 
 main() {
