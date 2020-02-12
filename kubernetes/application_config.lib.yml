@@ -1,0 +1,72 @@
+#@ load("@ytt:data", "data")
+#@ load("database.functions.lib.star", "database_connection_string")
+#@ def config():
+---
+  auth-server:
+    url: https://35.196.32.64:8443
+    trust_store: /app/stores/trust_store.jks
+    trust_store_password: #@ data.values.trust_store_password
+
+  encryption:
+    key_creation_enabled: true
+    providers:
+      - provider_name: int
+        provider_type: internal
+        keys:
+          - active: true
+            encryption_password: #@ data.values.encryption_password
+
+  security:
+    authorization:
+      acls:
+        enabled: true
+      permissions:
+        - actors:
+            - "uaa-client:credhub_client"
+            - "uaa-user:66e087aa-b6e2-4e98-b699-a0c17f175b27"
+          operations:
+            - read
+            - write
+            - delete
+            - read_acl
+            - write_acl
+          path: "/*"
+    oauth2:
+      resource:
+        id: credhub
+      enabled: true
+
+  server:
+    port: 9000
+    ssl:
+      enabled: true
+      key_store: /app/stores/key_store.jks
+      key_store_password: #@ data.values.key_store_password
+      key_password: #@ data.values.key_store_password
+      key_alias: cert
+      ciphers: TLS_DHE_RSA_WITH_AES_128_GCM_SHA256, TLS_DHE_RSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+      client_auth: want
+      trust_store: /app/stores/trust_store.jks
+      trust_store_password: #@ data.values.trust_store_password
+      trust_store_type: JKS
+      enabled-protocols: TLSv1.2
+
+  spring:
+    flyway:
+      enabled: true
+      locations:
+        - classpath:/db/migration/common
+        - #@ "classpath:/db/migration/{}".format(data.values.database.scheme)
+    jpa:
+      hibernate:
+        ddl-auto: validate
+    datasource:
+      username: #@ data.values.database.username
+      password: #@ data.values.database.password
+      url: #@ database_connection_string(data.values.database)
+    profiles:
+      active: prod
+
+  certificates:
+    concatenate_cas: true
+#@ end

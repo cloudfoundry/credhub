@@ -1,0 +1,22 @@
+#@ load("@ytt:data", "data")
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: credhub
+  labels:
+    app: credhub
+spec:
+  loadBalancerIP: #@ data.values.load_balancer_ip
+  type: LoadBalancer
+  ports:
+    - port: 9000
+      name: credhub-https
+      targetPort: 9000
+      protocol: TCP
+    - port: 9001
+      name: credhub-health
+      targetPort: 9001
+      protocol: TCP
+  selector:
+    app: credhub

@@ -1,0 +1,23 @@
+#@data/values
+---
+key_store_password: changeit
+trust_store_password: changeit
+encryption_password: changeit
+use_local_image: false
+load_balancer_ip: 35.196.203.226
+
+database:
+ scheme: h2
+ username: admin
+ password:
+ address:
+ port:
+ name:
+
+#!database:
+#!  scheme: postgres
+#!  username: admin
+#!  password: admin
+#!  address: postgres
+#!  port: 5432
+#!  name: credhub

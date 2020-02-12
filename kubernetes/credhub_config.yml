@@ -1,0 +1,9 @@
+#@ load("@ytt:yaml", "yaml")
+#@ load("application_config.lib.yml", "config")
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: credhub-config
+data:
+  application.yml: #@ yaml.encode(config())

@@ -1,5 +1,0 @@
-auth-server:
-  url: ${CREDHUB_AUTH_SERVER_EXTERNAL_URL}
-  internal_url: ${CREDHUB_AUTH_SERVER_INTERNAL_URL}
-  trust_store: trust_store.jks
-  trust_store_password: ${TRUST_STORE_PASSWORD}

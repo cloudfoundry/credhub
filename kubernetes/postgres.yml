@@ -1,0 +1,47 @@
+#@ load("@ytt:data", "data")
+#@ if data.values.database.scheme == "postgres":
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  labels:
+    app: postgres
+spec:
+  publishNotReadyAddresses: true
+  ports:
+    - port: #@ data.values.database.port
+      targetPort: 5432
+  selector:
+    app: postgres
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  labels:
+    app: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      name: postgres
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: #@ data.values.database.name
+            - name: POSTGRES_USER
+              value: #@ data.values.database.username
+            - name: POSTGRES_PASSWORD
+              value: #@ data.values.database.password
+#@ end

@@ -1,32 +1,45 @@
-FROM openjdk:8
+FROM openjdk:8 as build
 WORKDIR /app
 COPY . /app
-RUN ./scripts/setup_dev_mtls.sh
-RUN ./gradlew clean bootJar
+RUN ./gradlew bootJar -x test -x check
 
-FROM openjdk:8-jre-alpine
+FROM openjdk:8-jre as run
 WORKDIR /app
 COPY \
-  --from=0 \
+  --from=build \
   /app/applications/credhub-api/build/libs/credhub.jar \
   .
+
 COPY \
-  --from=0 \
-  /app/applications/credhub-api/src/test/resources/key_store.jks \
-  .
+  --from=build \
+  /app/docker/config/application.yml \
+  /app/config/application.yml
+
 COPY \
-  --from=0 \
-  /app/applications/credhub-api/src/test/resources/auth_server_trust_store.jks \
-  ./trust_store.jks
+  --from=build \
+  /app/docker/dev_uaa.pem \
+  /etc/trusted_cas/dev_uaa.pem
+
+COPY \
+ --from=build \
+ /app/docker/setup_trust_store.sh \
+ .
+
+COPY \
+ --from=build \
+ /app/docker/start_server.sh \
+ .
+
+RUN mkdir -p /etc/config
+
 EXPOSE 9000
-CMD [ \
-  "java", \
-  "-Dspring.config.additional-location=/etc/config/spring.yml,/etc/config/server.yml,/etc/config/security.yml,/etc/config/logging.yml,/etc/config/encryption.yml,/etc/config/auth-server.yml", \
-  "-Djava.security.egd=file:/dev/urandom", \
-  "-Djdk.tls.ephemeralDHKeySize=4096", \
-  "-Djdk.tls.namedGroups=\"secp384r1\"", \
-  "-Djavax.net.ssl.trustStore=trust_store.jks", \
-  "-Djavax.net.ssl.trustStorePassword=changeit", \
-  "-jar", \
-  "credhub.jar" \
-]
+
+ENV TRUST_STORE_PASSWORD=changeit
+ENV KEY_STORE_PASSWORD=changeit
+ENV ENCRYPTION_PASSWORD=changeme
+ENV SERVER_CA_CERT_PATH="/etc/server_certs/server_ca_cert.pem"
+ENV SERVER_CA_PRIVATE_KEY_PATH="/etc/server_certs/server_ca_private.pem"
+ENV UAA_CA_PATH="/etc/trusted_cas/dev_uaa.pem"
+ENV SUBJECT_ALTERNATIVE_NAMES="DNS:localhost, IP:127.0.0.1"
+
+CMD /app/setup_trust_store.sh && /app/start_server.sh

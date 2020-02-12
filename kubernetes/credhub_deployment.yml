@@ -1,0 +1,62 @@
+#@ load("@ytt:data", "data")
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: credhub
+  labels:
+    app: credhub
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: credhub
+  template:
+    metadata:
+      name: credhub
+      labels:
+        app: credhub
+    spec:
+      containers:
+        - name: credhub-server
+          image: pcfseceng/credhub-src:latest
+          #@ if/end data.values.use_local_image == "true":
+          imagePullPolicy: Never
+          ports:
+            - name: credhub-https
+              containerPort: 9000
+            - name: credhub-health
+              containerPort: 9001
+          env:
+            - name: TRUST_STORE_PASSWORD
+              value: #@ data.values.trust_store_password
+            - name: KEY_STORE_PASSWORD
+              value: #@ data.values.key_store_password
+            - name: ENCRYPTION_PASSWORD
+              value: #@ data.values.encryption_password
+            - name: SERVER_CA_PRIVATE_KEY_PATH
+              value: /etc/server_ca/private_key
+            - name: SERVER_CA_CERT_PATH
+              value: /etc/server_ca/certificate
+            - name: UAA_CA_PATH
+              value: /etc/trusted_cas/certificate
+            - name: SUBJECT_ALTERNATIVE_NAMES
+              #@yaml/text-templated-strings
+              value: "IP: (@= data.values.load_balancer_ip @)"
+          volumeMounts:
+            - name: uaa-ca
+              mountPath: /etc/trusted_cas
+            - name: server-ca
+              mountPath: /etc/server_ca
+            - name: config
+              mountPath: /app/config
+      volumes:
+        - name: config
+          configMap:
+            name: credhub-config
+        - name: uaa-ca
+          secret:
+            secretName: uaa-ca
+        - name: server-ca
+          secret:
+            secretName: server-ca

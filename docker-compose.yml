@@ -1,12 +1,6 @@
 version: '3'
 
 services:
-  uaa:
-    image: pcfseceng/uaa:latest
-    ports:
-      - 8080:8080
-    volumes:
-      - ./config/uaa.yml:/uaa/uaa.yml
   db:
     image: postgres
     ports:
@@ -17,22 +11,13 @@ services:
       POSTGRES_PASSWORD: admin
   credhub:
     build: .
-    image: credhub/credhub:local
-    volumes:
-    - ./docker/config/:/etc/config/
-    - .:/src
-    depends_on: [db, uaa]
+    image: credhub
+    depends_on: [db]
     links:
       - db
-      - uaa
     ports:
     - 9000:9000
     environment:
-      CREDHUB_AUTH_SERVER_EXTERNAL_URL: http://localhost:8080/uaa/
-      CREDHUB_AUTH_SERVER_INTERNAL_URL: http://uaa:8080/uaa/
-      #https://35.196.32.64:8443
-      TRUST_STORE_PASSWORD: changeit
-      LOG_LEVEL: debug
       DATABASE: postgres
       DATABASE_USERNAME: admin
       DATABASE_PASSWORD: admin

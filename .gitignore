@@ -172,6 +172,7 @@ gradle-app.setting
 *.p12
 *.pem
 !applications/credhub-api/src/test/resources/ca/dev_uaa.pem
+!docker/dev_uaa.pem
 *.srl
 
 #ignore certificate configuration files
