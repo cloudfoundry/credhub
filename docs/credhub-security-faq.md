@@ -56,5 +56,5 @@ PBKDF2WithHmacSHA384
 ## What requirements are placed on PBE password inputs? 
 When Luna HSM is used, password generation is delegated to Luna.  When generation is done internally,  PBKDF2WithHmacSHA384 is invoked with no truncation of password string supplied by the caller.   When internal, it goes through 100K iterations
 
-## What signature algorithm is used when generating certifiates?
+## What signature algorithm is used when generating certificates?
 [SHA256withRSA](https://github.com/cloudfoundry-incubator/credhub/blob/master/components/encryption/src/main/java/org/cloudfoundry/credhub/config/BouncyCastleProviderConfiguration.java#L23)
