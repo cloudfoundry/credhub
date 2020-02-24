@@ -23,6 +23,7 @@ import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfig
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -269,5 +270,47 @@ class CredentialSetEndToEndTest {
             """.trimIndent(),
             true
         )
+    }
+
+    @Test
+    fun `credential contains metadata`() {
+        val setUserRequest = put("/api/v1/data")
+            .header("Authorization", "Bearer ${AuthConstants.ALL_PERMISSIONS_TOKEN}")
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            // language=JSON
+            .content("""
+              {
+                "name": "$CREDENTIAL_NAME",
+                "type": "user",
+                "metadata": { "description": "example metadata" },
+                "value": {
+                  "username": "some_silly_username",
+                  "password": "some_silly_password"
+                }
+              }
+            """.trimIndent())
+
+        val setResponse = this.mockMvc
+            .perform(setUserRequest)
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andReturn().response
+            .contentAsString
+
+        assertThat(setResponse, containsString("\"metadata\":{\"description\":\"example metadata\"}"))
+
+        val getUserRequest = get("/api/v1/data?name=$CREDENTIAL_NAME")
+            .header("Authorization", "Bearer ${AuthConstants.ALL_PERMISSIONS_TOKEN}")
+            .accept(APPLICATION_JSON)
+
+        val getResponse = this.mockMvc
+            .perform(getUserRequest)
+            .andDo(print())
+            .andExpect(status().isOk)
+            .andReturn().response
+            .contentAsString
+
+        assertThat(getResponse, containsString("\"metadata\":{\"description\":\"example metadata\"}"))
     }
 }

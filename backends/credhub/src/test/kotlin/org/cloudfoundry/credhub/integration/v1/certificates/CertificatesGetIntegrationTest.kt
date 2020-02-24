@@ -94,6 +94,7 @@ class CertificatesGetIntegrationTest {
         certificateVersion2.setEncryptor(encryptor)
         certificateVersion2.uuid = uuid2
         certificateVersion2.credential?.uuid = uuid2
+        certificateVersion2.versionCreatedAt = FROZEN_TIME
 
         doReturn(listOf(certificateVersion1, certificateVersion2)).`when`<DefaultCertificateService>(certificateService).getVersions(uuid, false)
         doReturn(certificateVersion1).`when`<DefaultCertificateService>(certificateService).findByCredentialUuid(uuid.toString())

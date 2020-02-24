@@ -660,6 +660,7 @@ public class DefaultCertificatesHandlerTest {
       .thenReturn(true);
 
     final CredentialVersion credentialVersion = new CertificateCredentialVersion(certificateName);
+    credentialVersion.setVersionCreatedAt(Instant.now());
     when(certificateService.getVersions(uuid, false))
       .thenReturn(Collections.singletonList(credentialVersion));
     final List<CertificateView> certificateViews = subjectWithAcls
@@ -693,6 +694,7 @@ public class DefaultCertificatesHandlerTest {
     when(certificateService.findByCredentialUuid(uuid.toString())).thenReturn(credential);
 
     final CredentialVersion credentialVersion = new CertificateCredentialVersion(certificateName);
+    credentialVersion.setVersionCreatedAt(Instant.now());
     when(certificateService.getVersions(uuid, false))
       .thenReturn(Collections.singletonList(credentialVersion));
     List<CertificateView> certificateViews = subjectWithoutAcls

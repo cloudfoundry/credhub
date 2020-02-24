@@ -58,6 +58,7 @@ class RegenerateControllerTest {
             randomUUID,
             "/some-name",
             CredentialType.VALUE.type.toLowerCase(),
+            null,
             StringCredentialValue("some-value")
         )
 

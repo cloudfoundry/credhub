@@ -128,6 +128,7 @@ class CredentialsGetConcatenateCasIntegrationTest {
         certificateVersion2.setEncryptor(encryptor!!)
         certificateVersion2.uuid = uuid2
         certificateVersion2.credential?.uuid = uuid2
+        certificateVersion2.versionCreatedAt = FROZEN_TIME
         val credentialVersionList = Arrays.asList<CredentialVersion>(certificateVersion1, certificateVersion2)
 
         doReturn(credentialVersionList).`when`<CredentialVersionDataService>(credentialVersionDataService).findNByName(CREDENTIAL_NAME, 2)
@@ -172,6 +173,7 @@ class CredentialsGetConcatenateCasIntegrationTest {
         certificateVersion2.setEncryptor(encryptor!!)
         certificateVersion2.uuid = uuid2
         certificateVersion2.credential?.uuid = uuid2
+        certificateVersion2.versionCreatedAt = FROZEN_TIME
         val credentialVersionList = Arrays.asList<CredentialVersion>(certificateVersion1, certificateVersion2)
 
         doReturn(credentialVersionList).`when`<CredentialVersionDataService>(credentialVersionDataService).findAllByName(CREDENTIAL_NAME)

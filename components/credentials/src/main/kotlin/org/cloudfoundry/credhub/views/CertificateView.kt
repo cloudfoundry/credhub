@@ -27,6 +27,7 @@ class CertificateView : CredentialView {
         version.uuid,
         version.name,
         version.getCredentialType(),
+        version.metadata,
         null
     ) {
         this.version = version
@@ -42,6 +43,7 @@ class CertificateView : CredentialView {
         version.uuid,
         version.name,
         version.getCredentialType(),
+        version.metadata,
         null
     ) {
         this.version = version

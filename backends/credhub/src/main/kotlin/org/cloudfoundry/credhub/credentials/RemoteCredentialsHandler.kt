@@ -69,6 +69,7 @@ class RemoteCredentialsHandler(
                 UUID.fromString(v.id),
                 credentialName,
                 v.type,
+                null,
                 credentialValue
             ))
         }
@@ -92,6 +93,7 @@ class RemoteCredentialsHandler(
                 UUID.fromString(v.id),
                 credentialName,
                 v.type,
+                null,
                 credentialValue
             ))
         }
@@ -115,6 +117,7 @@ class RemoteCredentialsHandler(
             UUID.fromString(response.id),
             credentialName,
             response.type,
+            null,
             credentialValue
         )))
     }
@@ -135,6 +138,7 @@ class RemoteCredentialsHandler(
             UUID.fromString(response.id),
             response.name,
             response.type,
+            null,
             credentialValue
         )
     }
@@ -195,6 +199,7 @@ class RemoteCredentialsHandler(
             uuid,
             name,
             type,
+            null,
             credentialValue
         )
     }
@@ -217,6 +222,7 @@ class RemoteCredentialsHandler(
             UUID.fromString(response.id),
             response.name,
             response.type,
+            null,
             credentialValue
         )
     }

@@ -10,6 +10,7 @@ class ValueView : CredentialView {
         valueCredential.uuid,
         valueCredential.name,
         valueCredential.getCredentialType(),
+        valueCredential.metadata,
         StringCredentialValue((valueCredential.getValue() as String?)!!)
     ) {
     }

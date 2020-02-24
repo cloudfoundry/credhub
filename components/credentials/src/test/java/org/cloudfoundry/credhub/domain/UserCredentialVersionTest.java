@@ -61,7 +61,7 @@ public class UserCredentialVersionTest {
 
   @Test
   public void getCredentialType_returnsUser() {
-    subject = new UserCredentialVersion();
+    subject = new UserCredentialVersion("test cred");
     assertThat(subject.getCredentialType(), equalTo("user"));
   }
 

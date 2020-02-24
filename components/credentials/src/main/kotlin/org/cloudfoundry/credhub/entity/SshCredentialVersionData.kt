@@ -18,7 +18,6 @@ class SshCredentialVersionData @JvmOverloads constructor(name: String? = null) :
         get() = CREDENTIAL_TYPE
 
     companion object {
-
         const val CREDENTIAL_TYPE = "ssh"
         const val TABLE_NAME = "ssh_credential"
     }

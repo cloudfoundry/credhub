@@ -10,6 +10,7 @@ class JsonView : CredentialView {
         jsonCredential.uuid,
         jsonCredential.name,
         jsonCredential.getCredentialType(),
+        jsonCredential.metadata,
         JsonCredentialValue(jsonCredential.getValue()!!)
     ) {
     }

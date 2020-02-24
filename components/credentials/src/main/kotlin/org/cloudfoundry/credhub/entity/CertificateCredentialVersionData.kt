@@ -67,6 +67,7 @@ class CertificateCredentialVersionData : CredentialVersionData<CertificateCreden
             this.certificateAuthority = certificateAuthority
         }
 
+    // Needed for hibernate
     constructor() : super() {}
 
     constructor(name: String) : super(name) {}
@@ -109,7 +110,6 @@ class CertificateCredentialVersionData : CredentialVersionData<CertificateCreden
     }
 
     companion object {
-
         const val CREDENTIAL_DATABASE_TYPE = "cert"
         const val CREDENTIAL_TYPE = "certificate"
         const val TABLE_NAME = "certificate_credential"

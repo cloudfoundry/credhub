@@ -27,12 +27,8 @@ public class SshCredentialVersion extends CredentialVersion {
     this(new SshCredentialVersionData(name));
   }
 
-  public SshCredentialVersion() {
-    this(new SshCredentialVersionData());
-  }
-
-  public SshCredentialVersion(final SshCredentialValue sshValue, final Encryptor encryptor) {
-    this();
+  public SshCredentialVersion(final SshCredentialValue sshValue, final String name, final Encryptor encryptor) {
+    this(name);
     this.setEncryptor(encryptor);
     this.setPublicKey(sshValue.getPublicKey());
     this.setPrivateKey(sshValue.getPrivateKey());

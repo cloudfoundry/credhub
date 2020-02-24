@@ -1,5 +1,7 @@
 package org.cloudfoundry.credhub.controllers.v1.certificates
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
 import java.security.Security
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -59,6 +61,8 @@ class CertificatesControllerTest {
     private lateinit var createdAt: Instant
     private lateinit var certificateCredentialVersion: CertificateCredentialVersion
     private lateinit var certificateView: CertificateView
+    private val objectMapper: ObjectMapper = ObjectMapper()
+    private lateinit var metadata: JsonNode
 
     @Before
     fun setUp() {
@@ -70,6 +74,7 @@ class CertificatesControllerTest {
         )
 
         mockMvc = MockMvcFactory.newSpringRestDocMockMvc(certificateController, restDocumentation)
+        metadata = objectMapper.readTree("{\"description\":\"example metadata\"}")
 
         if (Security.getProvider(BouncyCastleFipsProvider.PROVIDER_NAME) == null) {
             Security.addProvider(BouncyCastleFipsProvider())
@@ -95,13 +100,14 @@ class CertificatesControllerTest {
             certificateId,
             name,
             CredentialType.CERTIFICATE.type.toLowerCase(),
+            metadata,
             certificateCredentialValue)
 
-        certificateCredentialVersion = CertificateCredentialVersion(certificateCredentialValue, SpyEncryptor())
-        certificateCredentialVersion.createName(name)
+        certificateCredentialVersion = CertificateCredentialVersion(certificateCredentialValue, name, SpyEncryptor())
         certificateCredentialVersion.versionCreatedAt = createdAt
         certificateCredentialVersion.uuid = certificateId
         certificateCredentialVersion.expiryDate = certificateCredentialValue.expiryDate
+        certificateCredentialVersion.metadata = metadata
 
         certificateView = CertificateView(certificateCredentialVersion)
     }
@@ -151,6 +157,7 @@ class CertificatesControllerTest {
               "version_created_at": "${credentialViewResponse.versionCreatedAt}",
               "id": "$certificateId",
               "name": "$name",
+              "metadata": { "description": "example metadata"},
               "value": {
                 "ca": "${TestConstants.TEST_CA}",
                 "certificate": "${TestConstants.TEST_CERTIFICATE}",
@@ -549,6 +556,7 @@ class CertificatesControllerTest {
               "certificate_authority": false,
               "self_signed": false,
               "expiry_date": "${certificateCredentialValue.expiryDate}",
+              "metadata": { "description": "example metadata"},
               "value": {
                 "ca": "${TestConstants.TEST_CA}",
                 "certificate": "${TestConstants.TEST_CERTIFICATE}",
@@ -575,11 +583,11 @@ class CertificatesControllerTest {
             true
         )
 
-        val credentialVersion = CertificateCredentialVersion(value, SpyEncryptor())
+        val credentialVersion = CertificateCredentialVersion(value, name, SpyEncryptor())
         credentialVersion.expiryDate = certificateCredentialValue.expiryDate
-        credentialVersion.createName(name)
         credentialVersion.versionCreatedAt = createdAt
         credentialVersion.uuid = certificateId
+        credentialVersion.metadata = metadata
         val nullGeneratedView = CertificateView(credentialVersion)
 
         spyCertificatesHandler.handleGetAllVersionsRequest__returns_certificateViews = listOf(nullGeneratedView)
@@ -604,7 +612,8 @@ class CertificatesControllerTest {
               "transitional": true,
               "certificate_authority": false,
               "self_signed": false,
-              "expiry_date": "${certificateCredentialValue.expiryDate}",
+              "expiry_date": "${certificateCredentialValue.expiryDate}", 
+              "metadata": { "description": "example metadata"},
               "value": {
                 "ca": "${TestConstants.TEST_CA}",
                 "certificate": "${TestConstants.TEST_CERTIFICATE}",
@@ -635,12 +644,13 @@ class CertificatesControllerTest {
             certificateId,
             name,
             CredentialType.CERTIFICATE.type.toLowerCase(),
+            null,
             expectedCertificateCredentialValue)
 
-        val expectedCertificateCredentialVersion = CertificateCredentialVersion(expectedCertificateCredentialValue, SpyEncryptor())
-        expectedCertificateCredentialVersion.createName(name)
+        val expectedCertificateCredentialVersion = CertificateCredentialVersion(expectedCertificateCredentialValue, name, SpyEncryptor())
         expectedCertificateCredentialVersion.versionCreatedAt = createdAt
         expectedCertificateCredentialVersion.uuid = certificateId
+        expectedCertificateCredentialVersion.metadata = metadata
         expectedCertificateCredentialVersion.expiryDate = expectedCertificateCredentialValue.expiryDate
 
         val expectedCertificateView = CertificateView(expectedCertificateCredentialVersion)
@@ -689,6 +699,7 @@ class CertificatesControllerTest {
               "self_signed": false,
               "generated": false,
               "expiry_date": "${expectedCertificateCredentialValue.expiryDate}",
+              "metadata": { "description": "example metadata"},
               "value": {
                 "ca": "${TestConstants.TEST_CA}",
                 "certificate": "${TestConstants.TEST_CERTIFICATE}",
@@ -736,6 +747,7 @@ class CertificatesControllerTest {
               "self_signed": false,
               "generated": true,
               "expiry_date": "${certificateCredentialValue.expiryDate}",
+              "metadata": { "description": "example metadata"},
               "value": {
                 "ca": "${TestConstants.TEST_CA}",
                 "certificate": "${TestConstants.TEST_CERTIFICATE}",

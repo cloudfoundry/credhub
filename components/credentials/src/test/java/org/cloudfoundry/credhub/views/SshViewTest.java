@@ -1,12 +1,15 @@
 package org.cloudfoundry.credhub.views;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.UUID;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.cloudfoundry.credhub.domain.Encryptor;
 import org.cloudfoundry.credhub.domain.SshCredentialVersion;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.helpers.JsonTestHelper;
+import org.cloudfoundry.credhub.utils.JsonObjectMapper;
 import org.cloudfoundry.credhub.utils.TestConstants;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,6 +28,8 @@ public class SshViewTest {
   private static final UUID CREDENTIAL_UUID = java.util.UUID.randomUUID();
 
   private SshCredentialVersion entity;
+  private Instant createdAt;
+  private JsonNode metadata;
 
   @Before
   public void beforeEach() {
@@ -40,19 +45,29 @@ public class SshViewTest {
     entity.setPublicKey(TestConstants.SSH_PUBLIC_KEY_4096_WITH_COMMENT);
     entity.setPrivateKey(TestConstants.PRIVATE_KEY_4096);
     entity.setUuid(CREDENTIAL_UUID);
+    JsonObjectMapper objectMapper = new JsonObjectMapper();
+    try {
+      metadata = objectMapper.readTree("{\"name\":\"test\"}");
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    entity.setMetadata(metadata);
+    createdAt = Instant.now();
+    entity.setVersionCreatedAt(createdAt);
   }
 
   @Test
   public void createsAViewFromEntity() throws Exception {
     final CredentialView subject = SshView.fromEntity(entity);
-
+    final Instant createdAtWithoutMillis = Instant.ofEpochSecond(createdAt.getEpochSecond());
     final String escapedPrivateKey = TestConstants.PRIVATE_KEY_4096.replaceAll("\\\\n", "\\n");
     System.out.println(escapedPrivateKey);
     final String expected = "{"
       + "\"type\":\"ssh\","
-      + "\"version_created_at\":null,"
+      + "\"version_created_at\":\"" + createdAtWithoutMillis + "\","
       + "\"id\":\"" + CREDENTIAL_UUID.toString() + "\","
       + "\"name\":\"/foo\","
+      + "\"metadata\":{\"name\":\"test\"},"
       + "\"value\":{"
       + "\"public_key\":\"" + TestConstants.SSH_PUBLIC_KEY_4096_WITH_COMMENT + "\","
       + "\"private_key\":\"" + escapedPrivateKey + "\","
@@ -76,5 +91,12 @@ public class SshViewTest {
   public void setsUuidOnGeneratedView() {
     final SshView subject = (SshView) SshView.fromEntity(entity);
     assertThat(subject.getUuid(), equalTo(CREDENTIAL_UUID.toString()));
+  }
+
+  @Test
+  public void hasMetadataInTheView() {
+    final SshView actual = (SshView) SshView.fromEntity(entity);
+
+    assertThat(actual.getMetadata(), equalTo(metadata));
   }
 }

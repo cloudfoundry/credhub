@@ -1,6 +1,7 @@
 package org.cloudfoundry.credhub.views
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.databind.JsonNode
 import java.time.Instant
 import java.util.Objects
 import java.util.UUID
@@ -25,6 +26,8 @@ open class CredentialView {
     @get:JsonProperty
     var type: String? = null
         private set
+    @get:JsonProperty("metadata")
+    open var metadata: JsonNode? = null
     @get:JsonProperty("value")
     open var value: CredentialValue? = null
 
@@ -34,12 +37,14 @@ open class CredentialView {
         uuid: UUID?,
         name: String?,
         type: String?,
+        metadata: JsonNode?,
         value: CredentialValue?
     ) : super() {
         this.versionCreatedAt = versionCreatedAt
         this.uuid = uuid
         this.name = name
         this.type = type
+        this.metadata = metadata
         this.value = value
     }
 
@@ -60,11 +65,12 @@ open class CredentialView {
             uuid == that.uuid &&
             name == that.name &&
             type == that.type &&
+            metadata == that.metadata &&
             value == that.value
     }
 
     override fun hashCode(): Int {
-        return Objects.hash(versionCreatedAt, uuid, name, type, value)
+        return Objects.hash(versionCreatedAt, uuid, name, type, metadata, value)
     }
 
     companion object {

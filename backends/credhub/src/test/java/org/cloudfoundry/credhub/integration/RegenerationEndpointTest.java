@@ -46,7 +46,7 @@ public class RegenerationEndpointTest {
 
   private static final String API_V1_DATA_ENDPOINT = "/api/v1/data";
   private static final String API_V1_REGENERATE_ENDPOINT = "/api/v1/regenerate";
-  private static final String CREDENTIAL_NAME = "some-credential";
+  private static final String CREDENTIAL_NAME = "/some-credential";
 
   @Autowired
   private WebApplicationContext webApplicationContext;
@@ -121,8 +121,8 @@ public class RegenerationEndpointTest {
 
   @Test
   public void certificateRegeneration_withoutConcatenateCas_shouldNotConcatenateCas() throws Exception {
-    final String caName = "test-ca";
-    final String certName = "test-cert";
+    final String caName = "/test-ca";
+    final String certName = "/test-cert";
     String generatedCa = JsonPath.parse(RequestHelper.generateCa(mockMvc, caName, ALL_PERMISSIONS_TOKEN))
       .read("$.value.ca");
     RequestHelper.generateCertificate(mockMvc,  certName, caName, ALL_PERMISSIONS_TOKEN);
@@ -143,6 +143,4 @@ public class RegenerationEndpointTest {
       .andExpect(status().is2xxSuccessful())
       .andExpect(jsonPath("$.value.ca", equalTo(generatedCa)));
   }
-
-
 }

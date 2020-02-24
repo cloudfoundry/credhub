@@ -14,10 +14,6 @@ public class UserCredentialVersion extends CredentialVersion {
   private final JsonObjectMapper jsonObjectMapper;
   private String password;
 
-  public UserCredentialVersion() {
-    this(new UserCredentialVersionData());
-  }
-
   public UserCredentialVersion(final UserCredentialVersionData delegate) {
     super(delegate);
     this.delegate = delegate;
@@ -30,10 +26,11 @@ public class UserCredentialVersion extends CredentialVersion {
 
   public UserCredentialVersion(
     final UserCredentialValue userValue,
+    final String name,
     final StringGenerationParameters generationParameters,
     final Encryptor encryptor
   ) {
-    this();
+    this(name);
     this.setEncryptor(encryptor);
     this.setPassword(userValue.getPassword());
     this.setUsername(userValue.getUsername());

@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.controllers.v1.credentials
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import java.security.Security
 import java.time.Instant
@@ -30,7 +31,6 @@ import org.cloudfoundry.credhub.requests.UserSetRequest
 import org.cloudfoundry.credhub.requests.ValueSetRequest
 import org.cloudfoundry.credhub.utils.TestConstants
 import org.cloudfoundry.credhub.views.CredentialView
-import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -61,6 +61,7 @@ class CredentialsControllerSetTest {
     private var spyCredentialsHandler: SpyCredentialsHandler = SpyCredentialsHandler()
     private var spyRegenerateHandler: SpyRegenerateHandler = SpyRegenerateHandler()
     private val objectMapper: ObjectMapper = ObjectMapper()
+    lateinit var metadata: JsonNode
 
     @Before
     fun setUp() {
@@ -70,6 +71,8 @@ class CredentialsControllerSetTest {
             spyRegenerateHandler,
             objectMapper
         )
+
+        metadata = objectMapper.readTree("{\"description\":\"example metadata\"}")
 
         mockMvc = MockMvcFactory.newSpringRestDocMockMvc(credentialController, restDocumentation)
 
@@ -85,6 +88,7 @@ class CredentialsControllerSetTest {
             uuid,
             "/some-value-name",
             CredentialType.VALUE.type.toLowerCase(),
+            metadata,
             StringCredentialValue("some-value")
         )
 
@@ -93,6 +97,7 @@ class CredentialsControllerSetTest {
             {
               "name": "/some-value-name",
               "type": "${CredentialType.VALUE.type.toLowerCase()}",
+              "metadata": { "description": "example metadata"},
               "value": "some-value"
             }
         """.trimIndent()
@@ -131,6 +136,7 @@ class CredentialsControllerSetTest {
               "version_created_at": "2019-02-01T20:37:52Z",
               "id": "$uuid",
               "name": "/some-value-name",
+              "metadata": { "description": "example metadata"},
               "value": "some-value"
             }
         """.trimIndent()
@@ -145,6 +151,7 @@ class CredentialsControllerSetTest {
             uuid,
             "/some-value-name",
             JSON.type.toLowerCase(),
+            metadata,
             JsonCredentialValue(ObjectMapper().readTree(
                 // language=json
                 """
@@ -159,6 +166,7 @@ class CredentialsControllerSetTest {
             {
               "name": "/some-value-name",
               "type": "${CredentialType.JSON.type.toLowerCase()}",
+              "metadata": { "description": "example metadata"},
               "value": {
                 "some-json-key": "some-json-value"
               }
@@ -208,6 +216,7 @@ class CredentialsControllerSetTest {
               "version_created_at": "2019-02-01T20:37:52Z",
               "id": "$uuid",
               "name": "/some-value-name",
+              "metadata": { "description": "example metadata"},
               "value": {
                 "some-json-key": "some-json-value"
               }
@@ -224,6 +233,7 @@ class CredentialsControllerSetTest {
             uuid,
             "/some-password-name",
             CredentialType.PASSWORD.type.toLowerCase(),
+            metadata,
             StringCredentialValue("some-password")
         )
 
@@ -232,6 +242,7 @@ class CredentialsControllerSetTest {
             {
               "name": "/some-password-name",
               "type": "${CredentialType.PASSWORD.type.toLowerCase()}",
+              "metadata": { "description": "example metadata"},
               "value": "some-password"
             }
         """.trimIndent()
@@ -270,6 +281,7 @@ class CredentialsControllerSetTest {
               "version_created_at": "2019-02-01T20:37:52Z",
               "id": "$uuid",
               "name": "/some-password-name",
+              "metadata": { "description": "example metadata"},
               "value": "some-password"
             }
         """.trimIndent()
@@ -284,6 +296,7 @@ class CredentialsControllerSetTest {
             uuid,
             "/some-user-name",
             CredentialType.USER.type.toLowerCase(),
+            metadata,
             UserCredentialValue(
                 "some-username",
                 "some-password",
@@ -296,6 +309,7 @@ class CredentialsControllerSetTest {
             {
               "name": "/some-user-name",
               "type": "${CredentialType.USER.type.toLowerCase()}",
+              "metadata": { "description": "example metadata"},
               "value": {
                 "username": "some-username",
                 "password": "some-password"
@@ -342,6 +356,7 @@ class CredentialsControllerSetTest {
               "version_created_at": "2019-02-01T20:37:52Z",
               "id": "$uuid",
               "name": "/some-user-name",
+              "metadata": { "description": "example metadata"},
               "value": {
                 "username": "some-username",
                 "password": "some-password",
@@ -360,6 +375,7 @@ class CredentialsControllerSetTest {
             uuid,
             "/some-certificate-name",
             CredentialType.CERTIFICATE.type.toLowerCase(),
+            metadata,
             CertificateCredentialValue(
                 TestConstants.TEST_CA,
                 TestConstants.TEST_CERTIFICATE,
@@ -377,6 +393,7 @@ class CredentialsControllerSetTest {
             {
               "name": "/some-certificate-name",
               "type": "${CredentialType.CERTIFICATE.type.toLowerCase()}",
+              "metadata": { "description": "example metadata"},
               "value": {
                 "ca": "${escapeNewLinesForJsonSerialization(TestConstants.TEST_CA)}",
                 "certificate": "${escapeNewLinesForJsonSerialization(TestConstants.TEST_CERTIFICATE)}",
@@ -438,6 +455,7 @@ class CredentialsControllerSetTest {
               "version_created_at": "2019-02-01T20:37:52Z",
               "id": "$uuid",
               "name": "/some-certificate-name",
+              "metadata": { "description": "example metadata"},
               "value": {
                 "ca": "${TestConstants.TEST_CA}",
                 "certificate": "${TestConstants.TEST_CERTIFICATE}",
@@ -461,6 +479,7 @@ class CredentialsControllerSetTest {
             uuid,
             "/some-rsa-name",
             CredentialType.RSA.type.toLowerCase(),
+            metadata,
             RsaCredentialValue(
                 TestConstants.RSA_PUBLIC_KEY_4096,
                 TestConstants.PRIVATE_KEY_4096
@@ -472,6 +491,7 @@ class CredentialsControllerSetTest {
             {
               "name": "/some-rsa-name",
               "type": "${CredentialType.RSA.type.toLowerCase()}",
+              "metadata": { "description": "example metadata"},
               "value": {
                 "public_key": "${escapeNewLinesForJsonSerialization(TestConstants.RSA_PUBLIC_KEY_4096)}",
                 "private_key": "${escapeNewLinesForJsonSerialization(TestConstants.PRIVATE_KEY_4096)}"
@@ -519,6 +539,7 @@ class CredentialsControllerSetTest {
               "version_created_at": "2019-02-01T20:37:52Z",
               "id": "$uuid",
               "name": "/some-rsa-name",
+              "metadata": { "description": "example metadata"},
               "value": {
                 "public_key": "${TestConstants.RSA_PUBLIC_KEY_4096}",
                 "private_key": "${TestConstants.PRIVATE_KEY_4096}"
@@ -536,6 +557,7 @@ class CredentialsControllerSetTest {
             uuid,
             "/some-ssh-name",
             CredentialType.SSH.type.toLowerCase(),
+            metadata,
             SshCredentialValue(
                 TestConstants.SSH_PUBLIC_KEY_4096,
                 TestConstants.PRIVATE_KEY_4096,
@@ -548,6 +570,7 @@ class CredentialsControllerSetTest {
             {
               "name": "/some-ssh-name",
               "type": "${CredentialType.SSH.type.toLowerCase()}",
+              "metadata": { "description": "example metadata" },
               "value": {
                 "public_key": "${escapeNewLinesForJsonSerialization(TestConstants.SSH_PUBLIC_KEY_4096)}",
                 "private_key": "${escapeNewLinesForJsonSerialization(TestConstants.PRIVATE_KEY_4096)}"
@@ -573,6 +596,7 @@ class CredentialsControllerSetTest {
                         fieldWithPath("value.private_key")
                             .description("Private key value of credential to set.")
                             .type(JsonFieldType.STRING)
+
                     )
                 )
             )
@@ -596,6 +620,7 @@ class CredentialsControllerSetTest {
               "version_created_at": "2019-02-01T20:37:52Z",
               "id": "$uuid",
               "name": "/some-ssh-name",
+              "metadata": { "description": "example metadata" },
               "value": {
                 "public_key": "${TestConstants.SSH_PUBLIC_KEY_4096}",
                 "private_key": "${TestConstants.PRIVATE_KEY_4096}",
@@ -614,7 +639,12 @@ class CredentialsControllerSetTest {
                 .description("The name of the credential."),
             fieldWithPath("type")
                 .type(JsonFieldType.STRING)
-                .description("The type of credential.")
+                .description("The type of credential."),
+            fieldWithPath("metadata")
+                .description("Additional metadata for credential to set.")
+                .optional(),
+            fieldWithPath("metadata.*")
+                .ignored()
         )
     }
 

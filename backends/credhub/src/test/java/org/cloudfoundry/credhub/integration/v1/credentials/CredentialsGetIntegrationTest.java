@@ -444,6 +444,7 @@ public class CredentialsGetIntegrationTest {
     certificateVersion2.setEncryptor(encryptor);
     certificateVersion2.setUuid(uuid2);
     certificateVersion2.getCredential().setUuid(uuid2);
+    certificateVersion2.setVersionCreatedAt(FROZEN_TIME);
     List<CredentialVersion> credentialVersionList = Arrays.asList(certificateVersion1, certificateVersion2);
 
     doReturn(credentialVersionList).when(credentialVersionDataService).findNByName(CREDENTIAL_NAME, 2);
@@ -488,6 +489,7 @@ public class CredentialsGetIntegrationTest {
     certificateVersion2.setEncryptor(encryptor);
     certificateVersion2.setUuid(uuid2);
     certificateVersion2.getCredential().setUuid(uuid2);
+    certificateVersion2.setVersionCreatedAt(FROZEN_TIME);
     List<CredentialVersion> credentialVersionList = Arrays.asList(certificateVersion1, certificateVersion2);
 
     doReturn(credentialVersionList).when(credentialVersionDataService).findAllByName(CREDENTIAL_NAME);

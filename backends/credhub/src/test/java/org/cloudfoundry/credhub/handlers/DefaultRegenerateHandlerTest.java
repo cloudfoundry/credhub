@@ -299,7 +299,7 @@ public class DefaultRegenerateHandlerTest {
   public void handleBulkRegenerate_addsToAuditRecord() {
     final String signedBy = "fooCA";
     final List<String> certificateCredentials = Arrays.asList("foo", "bar", "baz");
-    final CredentialVersion credVersion = new CertificateCredentialVersion();
+    final CredentialVersion credVersion = new CertificateCredentialVersion("some-name");
     credVersion.setCredential(new Credential("foo"));
     final BulkRegenerateCredential bulkRegenerateCredential = new BulkRegenerateCredential(signedBy);
 
@@ -435,13 +435,13 @@ public class DefaultRegenerateHandlerTest {
 
   @Test
   public void handleBulkRegenerate_whenLacksPermission_andAclsEnabled_throwsException() {
-    CertificateCredentialVersion credentialVersion1 = new CertificateCredentialVersion();
+    CertificateCredentialVersion credentialVersion1 = new CertificateCredentialVersion("some-name");
     credentialVersion1.setCertificate(TEST_CA);
-    CertificateCredentialVersion credentialVersion2 = new CertificateCredentialVersion();
+    CertificateCredentialVersion credentialVersion2 = new CertificateCredentialVersion("some-name");
     credentialVersion2.setCertificate(TestConstants.TEST_CERTIFICATE);
-    CertificateCredentialVersion credentialVersion3 = new CertificateCredentialVersion();
+    CertificateCredentialVersion credentialVersion3 = new CertificateCredentialVersion("some-name");
     credentialVersion3.setCertificate(TestConstants.TEST_CERTIFICATE);
-    CertificateCredentialVersion credentialVersion4 = new CertificateCredentialVersion();
+    CertificateCredentialVersion credentialVersion4 = new CertificateCredentialVersion("some-name");
     credentialVersion4.setCertificate(TestConstants.TEST_CERTIFICATE);
 
     when(credentialService.findAllCertificateCredentialsByCaName(SIGNER_NAME))

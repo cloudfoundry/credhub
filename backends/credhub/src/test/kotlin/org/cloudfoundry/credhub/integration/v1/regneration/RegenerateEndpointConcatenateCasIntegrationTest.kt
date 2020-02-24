@@ -49,8 +49,9 @@ class RegenerateEndpointConcatenateCasIntegrationTest {
     @Test
     @Throws(Exception::class)
     fun certificateRegeneration_withConcatenateCasEnabled_shouldConcatenateCas() {
-        val caName = "test-ca"
-        val certName = "testCert"
+        val caName = "/test-ca"
+        val certName = "/testCert"
+
         val generatedCa = JsonPath.parse(RequestHelper.generateCa(mockMvc, caName, ALL_PERMISSIONS_TOKEN))
             .read<String>("$.value.ca")
         RequestHelper.generateCertificate(mockMvc, certName, caName, ALL_PERMISSIONS_TOKEN)

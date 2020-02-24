@@ -6,8 +6,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.cloudfoundry.credhub.domain.Encryptor;
 import org.cloudfoundry.credhub.domain.JsonCredentialVersion;
+import org.cloudfoundry.credhub.utils.JsonObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,6 +30,8 @@ public class JsonViewTest {
   private Encryptor encryptor;
   private Map<String, Object> value;
   private String serializedValue;
+  private Instant createdAt;
+  private JsonNode metadata;
 
   @Before
   public void beforeEach() {
@@ -43,19 +47,29 @@ public class JsonViewTest {
     entity = new JsonCredentialVersion("/foo");
     entity.setEncryptor(encryptor);
     entity.setUuid(uuid);
-
+    JsonObjectMapper objectMapper = new JsonObjectMapper();
+    try {
+      metadata = objectMapper.readTree("{\"name\":\"test\"}");
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    entity.setMetadata(metadata);
     when(encryptor.decrypt(any()))
       .thenReturn(serializedValue);
+    createdAt = Instant.now();
+    entity.setVersionCreatedAt(createdAt);
   }
 
   @Test
   public void itCanCreateViewFromEntity() throws IOException {
+    final Instant createdAtWithoutMillis = Instant.ofEpochSecond(createdAt.getEpochSecond());
     final JsonView actual = (JsonView) JsonView.fromEntity(entity);
     assertThat(serializeToString(actual), equalTo("{"
       + "\"type\":\"json\","
-      + "\"version_created_at\":null,"
+      + "\"version_created_at\":\"" + createdAtWithoutMillis + "\","
       + "\"id\":\"" + uuid.toString() + "\","
       + "\"name\":\"/foo\","
+      + "\"metadata\":{\"name\":\"test\"},"
       + "\"value\":" + serializedValue
       + "}"));
   }
@@ -82,5 +96,12 @@ public class JsonViewTest {
     final JsonView actual = (JsonView) JsonView.fromEntity(entity);
 
     assertThat(actual.getUuid(), equalTo(uuid.toString()));
+  }
+
+  @Test
+  public void hasMetadataInTheView() {
+    final JsonView actual = (JsonView) JsonView.fromEntity(entity);
+
+    assertThat(actual.getMetadata(), equalTo(metadata));
   }
 }

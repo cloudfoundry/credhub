@@ -108,7 +108,7 @@ public class CertificateSetAndRegenerateTest {
     public void regenerateLeaf_whenRootCaIsTransitional_returnsConcatenatedCas() throws Exception {
         RequestHelper.generateCertificateCredential(
                 mockMvc,
-                "leafCertificate",
+                "/leafCertificate",
                 true,
                 "leaf-cert",
                 CA_NAME,
@@ -136,7 +136,7 @@ public class CertificateSetAndRegenerateTest {
                 .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
-                .content("{\"name\":\"leafCertificate\"}");
+                .content("{\"name\":\"/leafCertificate\"}");
 
         final String response = this.mockMvc.perform(regenerateLeafRequest)
                 .andExpect(status().isOk())

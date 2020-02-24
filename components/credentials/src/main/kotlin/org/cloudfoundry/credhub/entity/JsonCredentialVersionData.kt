@@ -15,7 +15,6 @@ class JsonCredentialVersionData : CredentialVersionData<JsonCredentialVersionDat
     constructor(name: String) : super(name) {}
 
     companion object {
-
         const val CREDENTIAL_TYPE = "json"
     }
 }

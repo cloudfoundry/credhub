@@ -8,7 +8,7 @@ import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData
 import org.cloudfoundry.credhub.requests.GenerationParameters
 import org.cloudfoundry.credhub.utils.CertificateReader
 
-class CertificateCredentialVersion constructor(delegate: CertificateCredentialVersionData) : CredentialVersion(delegate) {
+class CertificateCredentialVersion(delegate: CertificateCredentialVersionData) : CredentialVersion(delegate) {
     lateinit var parsedCertificate: CertificateReader
         private set
 
@@ -78,11 +78,9 @@ class CertificateCredentialVersion constructor(delegate: CertificateCredentialVe
         this.certificate = delegate.certificate
     }
 
-    constructor() : this(CertificateCredentialVersionData()) {}
-
     constructor(name: String) : this(CertificateCredentialVersionData(name)) {}
 
-    constructor(certificate: CertificateCredentialValue, encryptor: Encryptor) : this() {
+    constructor(certificate: CertificateCredentialValue, credentialName: String, encryptor: Encryptor) : this(credentialName) {
         this.setEncryptor(encryptor)
         this.ca = certificate.ca
         this.privateKey = certificate.privateKey

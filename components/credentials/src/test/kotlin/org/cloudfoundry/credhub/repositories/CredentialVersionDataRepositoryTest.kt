@@ -60,7 +60,7 @@ class CredentialVersionDataRepositoryTest {
         entityEncryptedValue.encryptionKeyUuid = canaryUuid
         entityEncryptedValue.encryptedValue = encryptedValue
         entityEncryptedValue.nonce = "nonce".toByteArray(StandardCharsets.UTF_8)
-        val entity = CertificateCredentialVersionData()
+        val entity = CertificateCredentialVersionData("test-ca")
         entity.credential = credential
         entity.ca = longString
         entity.certificate = longString
@@ -80,7 +80,7 @@ class CredentialVersionDataRepositoryTest {
         Arrays.fill(encryptedValue, 'A'.toByte())
         val stringBuilder = StringBuilder(7000)
         Stream.generate { "a" }.limit(stringBuilder.capacity().toLong()).forEach { str: String? -> stringBuilder.append(str) }
-        val entity = ValueCredentialVersionData()
+        val entity = ValueCredentialVersionData("test-credential")
         val entityEncryptedValue = EncryptedValue()
         entityEncryptedValue.encryptedValue = encryptedValue
         entityEncryptedValue.encryptionKeyUuid = canaryUuid

@@ -10,6 +10,7 @@ class PasswordView : CredentialView {
         passwordCredential.uuid,
         passwordCredential.name,
         passwordCredential.getCredentialType(),
+        passwordCredential.metadata,
         StringCredentialValue(passwordCredential.password)
     ) {
     }

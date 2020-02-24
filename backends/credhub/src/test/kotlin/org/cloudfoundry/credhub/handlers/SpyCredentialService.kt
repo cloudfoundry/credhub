@@ -10,7 +10,7 @@ import org.cloudfoundry.credhub.views.FindCredentialResult
 
 class SpyCredentialService : CredentialService {
 
-    override fun save(existingCredentialVersion: CredentialVersion?, credentialValue: CredentialValue?, generateRequest: BaseCredentialRequest): CredentialVersion {
+    override fun save(existingCredentialVersion: CredentialVersion?, credentialValue: CredentialValue?, credentialRequest: BaseCredentialRequest): CredentialVersion {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 

@@ -900,7 +900,7 @@ public class DefaultCredentialsHandlerTest {
     generateRequest.setName(CREDENTIAL_NAME);
     generateRequest.setType(CredentialType.CERTIFICATE.toString());
 
-    CertificateCredentialVersion transitionalVersion = new CertificateCredentialVersion();
+    CertificateCredentialVersion transitionalVersion = new CertificateCredentialVersion("some-name");
     transitionalVersion.setTransitional(true);
 
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.WRITE))
@@ -923,10 +923,10 @@ public class DefaultCredentialsHandlerTest {
     generateRequest.setName(CREDENTIAL_NAME);
     generateRequest.setType(CredentialType.CERTIFICATE.toString());
 
-    CertificateCredentialVersion nonTransitionalVersion = new CertificateCredentialVersion();
+    CertificateCredentialVersion nonTransitionalVersion = new CertificateCredentialVersion("some-name");
     nonTransitionalVersion.setTransitional(false);
 
-    CertificateCredentialVersion transitionalVersion = new CertificateCredentialVersion();
+    CertificateCredentialVersion transitionalVersion = new CertificateCredentialVersion("some-name");
     transitionalVersion.setTransitional(true);
 
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.WRITE))

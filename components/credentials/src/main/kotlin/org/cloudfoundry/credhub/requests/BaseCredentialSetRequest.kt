@@ -28,6 +28,10 @@ abstract class BaseCredentialSetRequest<T : CredentialValue?> : BaseCredentialRe
         if (name != null && name!!.length > 1024) {
             throw ParameterizedValidationException(ErrorMessages.NAME_HAS_TOO_MANY_CHARACTERS)
         }
+
+        if (metadata != null && metadata!!.toString().length > 7000) {
+            throw ParameterizedValidationException(ErrorMessages.METADATA_HAS_TOO_MANY_CHARACTERS)
+        }
     }
 
     private fun isInvalidTypeForSet(type: String): Boolean {

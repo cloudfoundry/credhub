@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.domain
 
+import com.fasterxml.jackson.databind.JsonNode
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import java.time.Instant
 import java.util.UUID
@@ -21,7 +22,7 @@ abstract class CredentialVersion(protected var delegate: CredentialVersionData<*
         @SuppressFBWarnings
         get() = delegate.credential!!.name
 
-    var versionCreatedAt: Instant?
+    var versionCreatedAt: Instant
         get() = delegate.versionCreatedAt
         set(versionCreatedAt) {
             delegate.versionCreatedAt = versionCreatedAt
@@ -31,6 +32,12 @@ abstract class CredentialVersion(protected var delegate: CredentialVersionData<*
         get() = delegate.credential
         set(credential) {
             this.delegate.credential = credential
+        }
+
+    var metadata: JsonNode?
+        get() = delegate.metadata
+        set(metadata) {
+            this.delegate.metadata = metadata
         }
 
     abstract fun rotate()

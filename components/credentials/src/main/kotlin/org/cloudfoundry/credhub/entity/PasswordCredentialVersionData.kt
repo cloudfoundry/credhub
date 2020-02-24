@@ -18,15 +18,15 @@ class PasswordCredentialVersionData : CredentialVersionData<PasswordCredentialVe
 
     @OneToOne(cascade = [CascadeType.ALL])
     @NotFound(action = NotFoundAction.IGNORE)
-    @JoinColumn(table = PasswordCredentialVersionData.TABLE_NAME, name = "password_parameters_uuid")
+    @JoinColumn(table = TABLE_NAME, name = "password_parameters_uuid")
     var encryptedGenerationParameters: EncryptedValue? = null
 
     override val credentialType: String
         get() = CREDENTIAL_TYPE
 
-    constructor() : super() {}
+    constructor() : super()
 
-    constructor(name: String) : super(name) {}
+    constructor(name: String) : super(name)
 
     companion object {
 

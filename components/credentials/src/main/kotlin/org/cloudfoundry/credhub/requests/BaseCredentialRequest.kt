@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.requests
 
+import com.fasterxml.jackson.databind.JsonNode
 import javax.validation.Validation
 import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.Pattern
@@ -19,6 +20,7 @@ abstract class BaseCredentialRequest {
         set(type) {
             field = type?.toLowerCase()
         }
+    var metadata: JsonNode? = null
 
     abstract val generationParameters: GenerationParameters?
 

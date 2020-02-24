@@ -16,10 +16,6 @@ public class JsonCredentialVersion extends CredentialVersion {
   private final JsonObjectMapper objectMapper;
   private final JsonCredentialVersionData delegate;
 
-  public JsonCredentialVersion() {
-    this(new JsonCredentialVersionData());
-  }
-
   public JsonCredentialVersion(final JsonCredentialVersionData delegate) {
     super(delegate);
     this.delegate = delegate;
@@ -35,8 +31,8 @@ public class JsonCredentialVersion extends CredentialVersion {
     this(new JsonCredentialVersionData(name));
   }
 
-  public JsonCredentialVersion(final JsonCredentialValue jsonValue, final Encryptor encryptor) {
-    this();
+  public JsonCredentialVersion(final JsonCredentialValue jsonValue, final String name, final Encryptor encryptor) {
+    this(name);
     this.setEncryptor(encryptor);
     this.setValue(jsonValue.getValue());
   }

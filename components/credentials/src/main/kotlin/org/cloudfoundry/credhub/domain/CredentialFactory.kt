@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.domain
 
+import com.fasterxml.jackson.databind.JsonNode
 import org.cloudfoundry.credhub.constants.CredentialType
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue
 import org.cloudfoundry.credhub.credential.CredentialValue
@@ -59,7 +60,8 @@ class CredentialFactory @Autowired internal constructor(private val encryptor: E
         name: String?,
         credentialValue: CredentialValue?,
         existingCredentialVersion: CredentialVersion?,
-        passwordGenerationParameters: GenerationParameters?
+        passwordGenerationParameters: GenerationParameters?,
+        metadata: JsonNode?
     ): CredentialVersion {
         val credentialVersion = when (type) {
             CredentialType.PASSWORD -> PasswordCredentialVersion(
@@ -67,13 +69,14 @@ class CredentialFactory @Autowired internal constructor(private val encryptor: E
                 passwordGenerationParameters as StringGenerationParameters?,
                 encryptor
             )
-            CredentialType.CERTIFICATE -> CertificateCredentialVersion((credentialValue as CertificateCredentialValue?)!!, encryptor)
+            CredentialType.CERTIFICATE -> CertificateCredentialVersion((credentialValue as CertificateCredentialValue?)!!, name!!, encryptor)
             CredentialType.VALUE -> ValueCredentialVersion(credentialValue as StringCredentialValue?, encryptor)
-            CredentialType.RSA -> RsaCredentialVersion(credentialValue as RsaCredentialValue?, encryptor)
-            CredentialType.SSH -> SshCredentialVersion(credentialValue as SshCredentialValue?, encryptor)
-            CredentialType.JSON -> JsonCredentialVersion(credentialValue as JsonCredentialValue?, encryptor)
+            CredentialType.RSA -> RsaCredentialVersion(credentialValue as RsaCredentialValue?, name!!, encryptor)
+            CredentialType.SSH -> SshCredentialVersion(credentialValue as SshCredentialValue?, name!!, encryptor)
+            CredentialType.JSON -> JsonCredentialVersion(credentialValue as JsonCredentialValue?, name!!, encryptor)
             CredentialType.USER -> UserCredentialVersion(
                 credentialValue as UserCredentialValue?,
+                name!!,
                 passwordGenerationParameters as StringGenerationParameters?,
                 encryptor
             )
@@ -84,6 +87,11 @@ class CredentialFactory @Autowired internal constructor(private val encryptor: E
         } else {
             credentialVersion.copyNameReferenceFrom(existingCredentialVersion)
         }
+
+        if (metadata != null) {
+            credentialVersion.metadata = metadata
+        }
+
         return credentialVersion
     }
 }

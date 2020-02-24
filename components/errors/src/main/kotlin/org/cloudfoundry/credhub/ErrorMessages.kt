@@ -57,6 +57,7 @@ object ErrorMessages {
     const val MISSING_VALUE = "A non-empty value must be specified for the credential. Please validate and retry your request."
     const val MIXED_CA_NAME_AND_CA = "Only one of the values ''ca_name'' and ''ca'' may be provided. Please update and retry your request."
     const val NAME_HAS_TOO_MANY_CHARACTERS = "The request could not be completed. The credential name cannot exceed 1024 characters"
+    const val METADATA_HAS_TOO_MANY_CHARACTERS = "The request could not be completed. The credential metadata cannot exceed 7000 characters"
     const val NO_CERTIFICATE_PARAMETERS = "This request must include a value for ''parameters''."
     const val NOT_A_CA_NAME = "The name given for the CA does not reference a CA type credential."
     const val OVERWRITE_AND_MODE_BOTH_PROVIDED = "The parameters overwrite and mode cannot be combined. Please update and retry your request."

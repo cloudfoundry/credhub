@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.controllers.v1.credentials
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import java.security.Security
 import java.time.Instant
@@ -53,6 +54,7 @@ class CredentialsControllerGetTest {
     lateinit var spyCredentialsHandler: SpyCredentialsHandler
     lateinit var spyRegenerateHandler: SpyRegenerateHandler
     private val objectMapper: ObjectMapper = ObjectMapper()
+    lateinit var metadata: JsonNode
 
     @Before
     fun setUp() {
@@ -65,6 +67,8 @@ class CredentialsControllerGetTest {
             spyRegenerateHandler,
             objectMapper
         )
+
+        metadata = objectMapper.readTree("{\"description\":\"example metadata\"}")
 
         mockMvc = MockMvcFactory.newSpringRestDocMockMvc(credentialController, restDocumentation)
 
@@ -81,6 +85,7 @@ class CredentialsControllerGetTest {
             uuid,
             "/some-value-path",
             CredentialType.VALUE.type.toLowerCase(),
+            metadata,
             StringCredentialValue("some-value")
         )
 
@@ -108,6 +113,7 @@ class CredentialsControllerGetTest {
               "version_created_at": "2019-02-01T20:37:52Z",
               "id": "$uuid",
               "name": "/some-value-path",
+              "metadata": { "description": "example metadata"},
               "value": "some-value"
             }
         """.trimMargin()
@@ -123,6 +129,7 @@ class CredentialsControllerGetTest {
             uuid,
             "/some-value-path",
             JSON.type.toLowerCase(),
+            metadata,
             JsonCredentialValue(ObjectMapper().readTree(
                 // language=json
                 """
@@ -157,6 +164,7 @@ class CredentialsControllerGetTest {
               "version_created_at": "2019-02-01T20:37:52Z",
               "id": "$uuid",
               "name": "/some-value-path",
+              "metadata": { "description": "example metadata"},
               "value": {
                 "some-json-key": "some-json-value"
               }
@@ -174,6 +182,7 @@ class CredentialsControllerGetTest {
             uuid,
             "/some-value-path",
             CredentialType.PASSWORD.type.toLowerCase(),
+            metadata,
             StringCredentialValue("some-password")
         )
 
@@ -201,6 +210,7 @@ class CredentialsControllerGetTest {
               "version_created_at": "2019-02-01T20:37:52Z",
               "id": "$uuid",
               "name": "/some-value-path",
+              "metadata": { "description": "example metadata"},
               "value": "some-password"
             }
         """.trimMargin()
@@ -217,6 +227,7 @@ class CredentialsControllerGetTest {
             uuid,
             "/some-value-path",
             CredentialType.USER.type.toLowerCase(),
+            metadata,
             UserCredentialValue(
                 "some-username",
                 "some-password",
@@ -248,6 +259,7 @@ class CredentialsControllerGetTest {
               "version_created_at": "2019-02-01T20:37:52Z",
               "id": "$uuid",
               "name": "/some-value-path",
+              "metadata": { "description": "example metadata"},
               "value": {
                 "username": "some-username",
                 "password": "some-password",
@@ -268,6 +280,7 @@ class CredentialsControllerGetTest {
             uuid,
             "/some-value-path",
             CredentialType.CERTIFICATE.type.toLowerCase(),
+            metadata,
             CertificateCredentialValue(
                 TestConstants.TEST_CA,
                 TestConstants.TEST_CERTIFICATE,
@@ -304,6 +317,7 @@ class CredentialsControllerGetTest {
               "version_created_at": "2019-02-01T20:37:52Z",
               "id": "$uuid",
               "name": "/some-value-path",
+              "metadata": { "description": "example metadata"},
               "value": {
                 "ca": "${TestConstants.TEST_CA}",
                 "certificate": "${TestConstants.TEST_CERTIFICATE}",
@@ -329,6 +343,7 @@ class CredentialsControllerGetTest {
             uuid,
             "/some-value-path",
             CredentialType.CERTIFICATE.type.toLowerCase(),
+            metadata,
             CertificateCredentialValue(
                 TestConstants.TEST_CA,
                 TestConstants.TEST_CERTIFICATE,
@@ -357,6 +372,7 @@ class CredentialsControllerGetTest {
               "version_created_at": "2019-02-01T20:37:52Z",
               "id": "$uuid",
               "name": "/some-value-path",
+              "metadata": { "description": "example metadata"},
               "value": {
                 "ca": "${TestConstants.TEST_CA}",
                 "certificate": "${TestConstants.TEST_CERTIFICATE}",
@@ -381,6 +397,7 @@ class CredentialsControllerGetTest {
             uuid,
             "/some-value-path",
             CredentialType.RSA.type.toLowerCase(),
+            metadata,
             RsaCredentialValue(
                 TestConstants.RSA_PUBLIC_KEY_4096,
                 TestConstants.PRIVATE_KEY_4096
@@ -411,6 +428,7 @@ class CredentialsControllerGetTest {
               "version_created_at": "2019-02-01T20:37:52Z",
               "id": "$uuid",
               "name": "/some-value-path",
+              "metadata": { "description": "example metadata"},
               "value": {
                 "public_key": "${TestConstants.RSA_PUBLIC_KEY_4096}",
                 "private_key": "${TestConstants.PRIVATE_KEY_4096}"
@@ -430,6 +448,7 @@ class CredentialsControllerGetTest {
             uuid,
             "/some-value-path",
             CredentialType.SSH.type.toLowerCase(),
+            metadata,
             SshCredentialValue(
                 TestConstants.SSH_PUBLIC_KEY_4096,
                 TestConstants.PRIVATE_KEY_4096,
@@ -461,6 +480,7 @@ class CredentialsControllerGetTest {
               "version_created_at": "2019-02-01T20:37:52Z",
               "id": "$uuid",
               "name": "/some-value-path",
+              "metadata": { "description": "example metadata"},
               "value": {
                 "public_key": "${TestConstants.SSH_PUBLIC_KEY_4096}",
                 "private_key": "${TestConstants.PRIVATE_KEY_4096}",
@@ -582,6 +602,7 @@ class CredentialsControllerGetTest {
                     uuid,
                     "/some-name",
                     CredentialType.VALUE.type.toLowerCase(),
+                    metadata,
                     StringCredentialValue("some-value")
                 )
             )
@@ -624,6 +645,7 @@ class CredentialsControllerGetTest {
                       "version_created_at": "2019-02-01T20:37:52Z",
                       "id": "$uuid",
                       "name": "/some-name",
+                      "metadata": { "description": "example metadata"},
                       "value": "some-value"
                   }
               ]

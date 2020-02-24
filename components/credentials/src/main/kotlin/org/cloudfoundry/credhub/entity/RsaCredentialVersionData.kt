@@ -10,7 +10,7 @@ import org.cloudfoundry.credhub.utils.RsaCredentialHelper
 @Entity
 @DiscriminatorValue(RsaCredentialVersionData.CREDENTIAL_TYPE)
 @SecondaryTable(name = RsaCredentialVersionData.TABLE_NAME, pkJoinColumns = [PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")])
-class RsaCredentialVersionData @JvmOverloads constructor(name: String? = null) : CredentialVersionData<RsaCredentialVersionData>(name) {
+class RsaCredentialVersionData @JvmOverloads constructor(name: String) : CredentialVersionData<RsaCredentialVersionData>(name) {
 
     @Column(table = RsaCredentialVersionData.TABLE_NAME, length = 7000)
     var publicKey: String? = null
@@ -25,7 +25,6 @@ class RsaCredentialVersionData @JvmOverloads constructor(name: String? = null) :
         }
 
     companion object {
-
         const val CREDENTIAL_TYPE = "rsa"
         const val TABLE_NAME = "rsa_credential"
     }

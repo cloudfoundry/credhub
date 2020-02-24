@@ -18,12 +18,8 @@ public class RsaCredentialVersion extends CredentialVersion {
     this(new RsaCredentialVersionData(name));
   }
 
-  public RsaCredentialVersion() {
-    this(new RsaCredentialVersionData());
-  }
-
-  public RsaCredentialVersion(final RsaCredentialValue rsaValue, final Encryptor encryptor) {
-    this();
+  public RsaCredentialVersion(final RsaCredentialValue rsaValue, final String name, final Encryptor encryptor) {
+    this(name);
     this.setEncryptor(encryptor);
     this.setPublicKey(rsaValue.getPublicKey());
     this.setPrivateKey(rsaValue.getPrivateKey());

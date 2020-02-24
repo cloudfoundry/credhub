@@ -13,7 +13,7 @@ import org.hibernate.annotations.GenericGenerator
 
 @Entity
 @Table(name = "credential")
-class Credential(name: String?) : AuditableCredential {
+class Credential : AuditableCredential {
 
     @Id
     @Column(length = UUID_BYTES, columnDefinition = "VARBINARY")
@@ -36,7 +36,7 @@ class Credential(name: String?) : AuditableCredential {
     // Needed for hibernate
     internal constructor() : this(null) {}
 
-    init {
+    constructor(name: String?) {
         this.name = name
     }
 }

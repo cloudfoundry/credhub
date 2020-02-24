@@ -10,12 +10,11 @@ class ValueCredentialVersionData : CredentialVersionData<ValueCredentialVersionD
     override val credentialType: String
         get() = CREDENTIAL_TYPE
 
-    constructor() : super() {}
+    constructor() : super()
 
-    constructor(name: String) : super(name) {}
+    constructor(name: String) : super(name)
 
     companion object {
-
         const val CREDENTIAL_TYPE = "value"
     }
 }

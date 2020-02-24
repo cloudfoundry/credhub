@@ -73,7 +73,7 @@ public class CertificateMigrationTest {
     final Credential credential = new Credential("test_credential");
     credentialRepository.save(credential);
 
-    final CertificateCredentialVersionData versionData = new CertificateCredentialVersionData();
+    final CertificateCredentialVersionData versionData = new CertificateCredentialVersionData("test-ca");
     versionData.setTransitional(true);
     versionData.setCa("ca");
     versionData.setCaName("ca_name");
@@ -101,7 +101,7 @@ public class CertificateMigrationTest {
     final Credential credential = new Credential("test_credential");
     credentialRepository.save(credential);
 
-    final CertificateCredentialVersionData versionData = new CertificateCredentialVersionData();
+    final CertificateCredentialVersionData versionData = new CertificateCredentialVersionData("test-ca");
     versionData.setTransitional(true);
     versionData.setCa("ca");
     versionData.setCaName("ca_name");
@@ -129,7 +129,7 @@ public class CertificateMigrationTest {
     final Credential credential = new Credential("test_malformed_credential");
     credentialRepository.save(credential);
 
-    final CertificateCredentialVersionData versionData = new CertificateCredentialVersionData();
+    final CertificateCredentialVersionData versionData = new CertificateCredentialVersionData("test-ca");
     versionData.setTransitional(true);
     versionData.setCa("ca");
     versionData.setCaName("ca_name");
@@ -146,7 +146,7 @@ public class CertificateMigrationTest {
     final Credential credential = new Credential("test_empty_credential");
     credentialRepository.save(credential);
 
-    final CertificateCredentialVersionData versionData = new CertificateCredentialVersionData();
+    final CertificateCredentialVersionData versionData = new CertificateCredentialVersionData("test-ca");
     versionData.setTransitional(true);
     versionData.setCa("ca");
     versionData.setCaName("ca_name");

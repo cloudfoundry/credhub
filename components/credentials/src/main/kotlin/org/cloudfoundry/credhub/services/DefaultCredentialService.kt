@@ -33,14 +33,14 @@ class DefaultCredentialService(
     override fun save(
         existingCredentialVersion: CredentialVersion?,
         credentialValue: CredentialValue?,
-        generateRequest: BaseCredentialRequest
+        credentialRequest: BaseCredentialRequest
     ): CredentialVersion {
-        validateCredentialSave(generateRequest.type!!, existingCredentialVersion)
-        val shouldWriteNewCredential = shouldWriteNewCredential(existingCredentialVersion, generateRequest)
+        validateCredentialSave(credentialRequest.type!!, existingCredentialVersion)
+        val shouldWriteNewCredential = shouldWriteNewCredential(existingCredentialVersion, credentialRequest)
 
         return if (!shouldWriteNewCredential) {
             existingCredentialVersion!!
-        } else makeAndSaveNewCredential(existingCredentialVersion, credentialValue, generateRequest)
+        } else makeAndSaveNewCredential(existingCredentialVersion, credentialValue, credentialRequest)
     }
 
     override fun delete(credentialName: String): Boolean {
@@ -122,7 +122,8 @@ class DefaultCredentialService(
             request.name,
             credentialValue,
             existingCredentialVersion,
-            request.generationParameters
+            request.generationParameters,
+            request.metadata
         )
         return credentialVersionDataService.save(newVersion)
     }

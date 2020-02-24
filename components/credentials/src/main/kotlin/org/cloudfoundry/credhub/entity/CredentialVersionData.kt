@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.entity
 
+import com.fasterxml.jackson.databind.JsonNode
 import java.time.Instant
 import java.util.UUID
 import javax.persistence.CascadeType
@@ -20,6 +21,7 @@ import javax.persistence.Table
 import org.cloudfoundry.credhub.constants.UuidConstants
 import org.cloudfoundry.credhub.entities.EncryptedValue
 import org.cloudfoundry.credhub.util.InstantMillisecondsConverter
+import org.cloudfoundry.credhub.utils.JsonNodeConverter
 import org.hibernate.annotations.GenericGenerator
 import org.hibernate.annotations.NotFound
 import org.hibernate.annotations.NotFoundAction
@@ -31,7 +33,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @EntityListeners(AuditingEntityListener::class)
 @DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
-abstract class CredentialVersionData<Z : CredentialVersionData<Z>>(credentialName: Credential?) {
+abstract class CredentialVersionData<Z : CredentialVersionData<Z>>(credential: Credential?) {
 
     // Use VARBINARY to make all 3 DB types happy.
     // H2 doesn't distinguish between "binary" and "varbinary" - see
@@ -51,16 +53,20 @@ abstract class CredentialVersionData<Z : CredentialVersionData<Z>>(credentialNam
     @Convert(converter = InstantMillisecondsConverter::class)
     @Column(nullable = false, columnDefinition = "BIGINT NOT NULL")
     @CreatedDate
-    var versionCreatedAt: Instant? = null
+    lateinit var versionCreatedAt: Instant
 
     @ManyToOne
     @JoinColumn(name = "credential_uuid", nullable = false)
-    var credential: Credential? = null
+    var credential: Credential? = credential
 
     // this is mapped with updatable and insertable false since it's managed by the DiscriminatorColumn annotation
     // surfacing property here lets us use it in JPA queries
     @Column(name = "type", insertable = false, updatable = false)
     private val type: String? = null
+
+    @Convert(converter = JsonNodeConverter::class)
+    @Column(name = "metadata")
+    var metadata: JsonNode? = null
 
     val nonce: ByteArray?
         get() = if (encryptedCredentialValue != null) this.encryptedCredentialValue!!.nonce else null
@@ -70,14 +76,6 @@ abstract class CredentialVersionData<Z : CredentialVersionData<Z>>(credentialNam
     val encryptionKeyUuid: UUID?
         get() = if (encryptedCredentialValue != null) encryptedCredentialValue!!.encryptionKeyUuid else null
 
-    init {
-        if (this.credential != null) {
-            this.credential!!.name = credentialName?.name
-        } else {
-            credential = credentialName
-        }
-    }
-
     fun getEncryptedValueData(): EncryptedValue? {
         return this.encryptedCredentialValue
     }
@@ -86,7 +84,7 @@ abstract class CredentialVersionData<Z : CredentialVersionData<Z>>(credentialNam
         this.encryptedCredentialValue = encryptedValue
     }
 
-    constructor(name: String?) : this(Credential(name = name))
+    constructor(name: String?) : this(Credential(name))
 
-    constructor() : this(credentialName = null)
+    constructor() : this(credential = null)
 }

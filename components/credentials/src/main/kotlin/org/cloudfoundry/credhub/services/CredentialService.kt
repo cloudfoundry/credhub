@@ -12,7 +12,7 @@ interface CredentialService {
     fun save(
         existingCredentialVersion: CredentialVersion?,
         credentialValue: CredentialValue?,
-        generateRequest: BaseCredentialRequest
+        credentialRequest: BaseCredentialRequest
     ): CredentialVersion
 
     fun delete(credentialName: String): Boolean

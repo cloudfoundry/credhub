@@ -8,5 +8,6 @@ class UserView(userCredential: UserCredentialVersion) : CredentialView(
     userCredential.uuid,
     userCredential.name,
     userCredential.getCredentialType(),
+    userCredential.metadata,
     UserCredentialValue(userCredential.username, userCredential.password, userCredential.salt)
 )

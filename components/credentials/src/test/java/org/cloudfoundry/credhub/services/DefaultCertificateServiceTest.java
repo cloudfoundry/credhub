@@ -799,8 +799,7 @@ public class DefaultCertificateServiceTest {
 
   @Test
   public void findByUuid_ReturnsCertificateWithMatchingUuid() {
-    final CredentialVersion credentialVersion = new CertificateCredentialVersion();
-    credentialVersion.createName("credential-name");
+    final CredentialVersion credentialVersion = new CertificateCredentialVersion("credential-name");
     String credentialUuid = UUID.randomUUID().toString();
     when(certificateVersionDataService.findByCredentialUUID(credentialUuid)).thenReturn(credentialVersion);
 

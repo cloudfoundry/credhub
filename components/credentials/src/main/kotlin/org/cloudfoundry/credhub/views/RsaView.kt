@@ -10,6 +10,7 @@ class RsaView : CredentialView {
         rsaCredential.uuid,
         rsaCredential.name,
         rsaCredential.getCredentialType(),
+        rsaCredential.metadata,
         RsaCredentialValue(rsaCredential.publicKey, rsaCredential.privateKey)
     ) {
     }
