@@ -3,7 +3,7 @@
 #@ def config():
 ---
   auth-server:
-    url: https://35.196.32.64:8443
+    url:  #@ data.values.uaa_url
     trust_store: /app/stores/trust_store.jks
     trust_store_password: #@ data.values.trust_store_password
 

@@ -5,6 +5,7 @@ trust_store_password: changeit
 encryption_password: changeit
 use_local_image: false
 load_balancer_ip: 35.196.203.226
+uaa_url: https://35.196.32.64:8443
 
 database:
  scheme: h2
