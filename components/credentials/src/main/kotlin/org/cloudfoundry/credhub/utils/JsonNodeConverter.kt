@@ -13,6 +13,10 @@ class JsonNodeConverter : AttributeConverter<JsonNode, String> {
     override fun convertToEntityAttribute(dbData: String?): JsonNode {
         val objectMapper = ObjectMapper()
 
+        if (dbData == null) {
+            return objectMapper.readTree("")
+        }
+
         return objectMapper.readTree(dbData)
     }
 }
