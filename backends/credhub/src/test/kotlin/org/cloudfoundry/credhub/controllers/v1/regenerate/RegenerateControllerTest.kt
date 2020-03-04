@@ -95,6 +95,7 @@ class RegenerateControllerTest {
                   "version_created_at": "2019-02-01T20:37:52Z",
                   "id": "$randomUUID",
                   "name": "/some-name",
+                  "metadata": null,
                   "value": "some-value"
                 }
             """.trimIndent()
