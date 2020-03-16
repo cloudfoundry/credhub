@@ -1059,4 +1059,42 @@ public class DefaultCertificatesHandlerTest {
       .set(certificateId, newValue);
 
   }
+
+  @Test
+  public void handleUpdateTransitionalVersionRequest_whenLatestPassedIn_findsLatestVersionId() {
+    UUID versionId = UUID.randomUUID();
+    UUID versionId2 = UUID.randomUUID();
+    UUID certificateId = UUID.randomUUID();
+
+    final Credential credential = mock(Credential.class);
+    when(credential.getName()).thenReturn(CREDENTIAL_NAME);
+    when(credential.getUuid()).thenReturn(certificateId);
+
+    final CertificateCredentialVersion certificate = mock(CertificateCredentialVersion.class);
+    when(certificate.getName()).thenReturn(CREDENTIAL_NAME);
+    when(certificate.getUuid()).thenReturn(versionId);
+    when(certificate.getCredential()).thenReturn(credential);
+
+    final CertificateCredentialVersion certificate2 = mock(CertificateCredentialVersion.class);
+    when(certificate2.getName()).thenReturn(CREDENTIAL_NAME);
+    when(certificate2.getUuid()).thenReturn(versionId2);
+    when(certificate2.getCredential()).thenReturn(credential);
+
+    when(certificateService.findByCredentialUuid(certificateId.toString()))
+            .thenReturn(certificate);
+    when(certificateService.updateTransitionalVersion(certificateId, versionId2))
+            .thenReturn(Collections.singletonList(certificate));
+    when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.WRITE))
+            .thenReturn(true);
+    when(certificateService.getAllValidVersions(certificateId)).thenReturn(asList(certificate2, certificate));
+
+    final UpdateTransitionalVersionRequest request = new UpdateTransitionalVersionRequest("latest");
+    final List<CertificateView> certificateViews = subjectWithAcls.handleUpdateTransitionalVersion(certificateId.toString(), request);
+
+    verify(certificateService, times(1))
+            .getAllValidVersions(certificateId);
+    verify(certificateService, times(1))
+            .updateTransitionalVersion(certificateId, versionId2);
+
+  }
 }

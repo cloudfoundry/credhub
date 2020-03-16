@@ -122,14 +122,19 @@ class DefaultCertificatesHandler(
     ): List<CertificateView> {
         checkPermissionsByUuid(certificateId, WRITE)
         var versionUUID: UUID? = null
+        val certificateUUID: UUID = UUID.fromString(certificateId)
 
         if (requestBody.versionUuid != null) {
-            versionUUID = UUID.fromString(requestBody.versionUuid)
+            versionUUID = if (requestBody.versionUuid == "latest") {
+                certificateService.getAllValidVersions(certificateUUID).getOrNull(0)?.uuid
+            } else {
+                UUID.fromString(requestBody.versionUuid)
+            }
         }
 
         val credentialList: List<CredentialVersion>
         credentialList = certificateService
-            .updateTransitionalVersion(UUID.fromString(certificateId), versionUUID)
+            .updateTransitionalVersion(certificateUUID, versionUUID)
 
         return credentialList
             .map { credential -> CertificateView(credential as CertificateCredentialVersion) }
