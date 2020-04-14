@@ -14,6 +14,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.data.EncryptionKeyCanaryDataService;
@@ -147,14 +149,15 @@ public class CredentialRegenerateTest {
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
-      .content("{\"regenerate\":true,\"name\":\"my-rsa\"}");
+      .content("{\"regenerate\":true,\"name\":\"my-rsa\",\"metadata\":{\"some\":\"metadata example\"}}");
 
     mockMvc.perform(request)
       .andExpect(status().isOk())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
       .andExpect(jsonPath("$.type").value("rsa"))
       .andExpect(
-        jsonPath("$.version_created_at").value(FROZEN_TIME.plusSeconds(10).toString()));
+        jsonPath("$.version_created_at").value(FROZEN_TIME.plusSeconds(10).toString()))
+      .andExpect(jsonPath("$.metadata.some").value("metadata example"));
 
     final RsaCredentialVersion newRsa = (RsaCredentialVersion) credentialVersionDataService.findMostRecent("/my-rsa");
 
@@ -162,6 +165,10 @@ public class CredentialRegenerateTest {
     assertTrue(newRsa.getPrivateKey().contains("-----BEGIN RSA PRIVATE KEY-----"));
     assertThat(originalCredential.getPublicKey(), not(equalTo(newRsa.getPublicKey())));
     assertThat(originalCredential.getPrivateKey(), not(equalTo(newRsa.getPrivateKey())));
+
+    final JsonNode metadata = new ObjectMapper().readTree("{\"some\":\"metadata example\"}");
+
+    assertThat(newRsa.getMetadata(), equalTo(metadata));
   }
 
   @Test

@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
 import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.PermissionOperation;
@@ -152,7 +154,7 @@ public class DefaultRegenerateHandlerTest {
     when(credentialGenerator.generate(request)).thenReturn(credValue);
     when(credentialService.save(any(), any(), any())).thenReturn(credentialVersion);
 
-    subjectWithAclsEnabled.handleRegenerate(CREDENTIAL_NAME);
+    subjectWithAclsEnabled.handleRegenerate(CREDENTIAL_NAME, null);
 
     verify(cefAuditRecord, times(1)).setVersion(any(CredentialVersion.class));
     verify(cefAuditRecord, times(1)).setResource(any(Credential.class));
@@ -182,7 +184,7 @@ public class DefaultRegenerateHandlerTest {
     when(credentialService.save(existingCredentialVersion, credValue, generateRequest1))
       .thenReturn(savedCredentialVersion);
 
-    CredentialView actualCredentialView = subjectWithAclsEnabled.handleRegenerate(CREDENTIAL_NAME);
+    CredentialView actualCredentialView = subjectWithAclsEnabled.handleRegenerate(CREDENTIAL_NAME, null);
     CredentialView expectedCredentialView = CredentialView.fromEntity(savedCredentialVersion);
 
     verify(permissionCheckingService, times(1)).hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.WRITE);
@@ -213,7 +215,7 @@ public class DefaultRegenerateHandlerTest {
     when(credentialService.save(existingCredentialVersion, credentialValue, generateRequest))
       .thenReturn(credentialVersion);
 
-    CredentialView actualCredentialView = subjectWithConcatenateCasEnabled.handleRegenerate(CREDENTIAL_NAME);
+    CredentialView actualCredentialView = subjectWithConcatenateCasEnabled.handleRegenerate(CREDENTIAL_NAME, null);
 
     assertThat(((CertificateValueView) actualCredentialView.getValue()).getCa())
       .isEqualTo(TEST_CA + "\n" + TEST_TRUSTED_CA + "\n");
@@ -242,7 +244,7 @@ public class DefaultRegenerateHandlerTest {
       .thenReturn(credentialVersion);
 
 
-    CredentialView actualCredentialView = subjectWithconcatenateCasDisabled.handleRegenerate(CREDENTIAL_NAME);
+    CredentialView actualCredentialView = subjectWithconcatenateCasDisabled.handleRegenerate(CREDENTIAL_NAME, null);
 
     verify(credentialValue, never()).setCa(any());
     assertThat(((CertificateValueView) actualCredentialView.getValue()).getCa())
@@ -255,7 +257,7 @@ public class DefaultRegenerateHandlerTest {
       .thenReturn(false);
 
     try {
-      subjectWithAclsEnabled.handleRegenerate(CREDENTIAL_NAME);
+      subjectWithAclsEnabled.handleRegenerate(CREDENTIAL_NAME, null);
       fail("should throw exception");
     } catch (final PermissionException e) {
       MatcherAssert.assertThat(e.getMessage(), IsEqual.equalTo(ErrorMessages.Credential.INVALID_ACCESS));
@@ -288,7 +290,7 @@ public class DefaultRegenerateHandlerTest {
     when(credentialService.save(existingCredentialVersion, credValue, generateRequest1))
       .thenReturn(savedCredentialVersion);
 
-    CredentialView actualCredentialView = subjectWithAclsDisabled.handleRegenerate(CREDENTIAL_NAME);
+    CredentialView actualCredentialView = subjectWithAclsDisabled.handleRegenerate(CREDENTIAL_NAME, null);
     CredentialView expectedCredentialView = CredentialView.fromEntity(savedCredentialVersion);
 
     verify(permissionCheckingService, times(0)).hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.WRITE);
@@ -592,7 +594,6 @@ public class DefaultRegenerateHandlerTest {
     verify(credentialService).save(eq(existingCredentialVersion4), any(), eq(generateRequest4));
   }
 
-
   @Test
   public void handleRegenerate_whenRegeneratingCertificate_andCanNotReadCa_throwsException() {
     CertificateCredentialVersion credentialVersion = new CertificateCredentialVersion(CREDENTIAL_NAME);
@@ -615,7 +616,7 @@ public class DefaultRegenerateHandlerTest {
       .thenReturn(false);
 
     try {
-      subjectWithAclsEnabled.handleRegenerate(CREDENTIAL_NAME);
+      subjectWithAclsEnabled.handleRegenerate(CREDENTIAL_NAME, null);
       fail("should throw exception");
     } catch (final EntryNotFoundException e) {
       MatcherAssert.assertThat(e.getMessage(), IsEqual.equalTo(ErrorMessages.Credential.INVALID_ACCESS));
@@ -627,5 +628,30 @@ public class DefaultRegenerateHandlerTest {
     verify(permissionCheckingService, times(1)).hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.WRITE);
     verify(permissionCheckingService, times(1)).hasPermission(USER, SIGNER_NAME, PermissionOperation.READ);
 
+  }
+
+  @Test
+  public void handleRegenerate_withMetadata() {
+    final BaseCredentialGenerateRequest request = new PasswordGenerateRequest();
+    when(((PasswordCredentialVersion) credentialVersion).getPassword()).thenReturn("password");
+    when(credentialService.findMostRecent(CREDENTIAL_NAME)).thenReturn(credentialVersion);
+    when(generationRequestGenerator.createGenerateRequest(credentialVersion))
+            .thenReturn(request);
+    when(credentialGenerator.generate(request)).thenReturn(credValue);
+    when(credentialService.save(any(), any(), any())).thenReturn(credentialVersion);
+
+    JsonNode metadata = null;
+    try {
+      metadata = new ObjectMapper().readTree("{\"some\":\"metadata example\"}");
+    } catch (Exception e) {
+      fail(e.toString());
+    }
+
+    assertThat(metadata).isNotEmpty();
+
+    CredentialView actualCredentialView = subjectWithAclsDisabled.handleRegenerate(CREDENTIAL_NAME, metadata);
+    CredentialView expectedCredentialView = CredentialView.fromEntity(credentialVersion);
+
+    assertThat(actualCredentialView).isEqualTo(expectedCredentialView);
   }
 }

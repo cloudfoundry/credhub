@@ -1,5 +1,7 @@
 package org.cloudfoundry.credhub.controllers.v1.regenerate
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
 import java.security.Security
 import java.time.Instant
 import java.util.UUID
@@ -39,10 +41,15 @@ class RegenerateControllerTest {
     private lateinit var spyRegenerateHandler: SpyRegenerateHandler
     private lateinit var mockMvc: MockMvc
 
+    private val objectMapper: ObjectMapper = ObjectMapper()
+    lateinit var metadata: JsonNode
+
     @Before
     fun beforeEach() {
         spyRegenerateHandler = SpyRegenerateHandler()
         val regenerateController = RegenerateController(spyRegenerateHandler)
+
+        metadata = objectMapper.readTree("{\"description\":\"example metadata\"}")
 
         mockMvc = MockMvcFactory.newSpringRestDocMockMvc(regenerateController, restDocumentation)
         if (Security.getProvider(BouncyCastleFipsProvider.PROVIDER_NAME) == null) {
@@ -58,7 +65,7 @@ class RegenerateControllerTest {
             randomUUID,
             "/some-name",
             CredentialType.VALUE.type.toLowerCase(),
-            null,
+            metadata,
             StringCredentialValue("some-value")
         )
 
@@ -70,7 +77,8 @@ class RegenerateControllerTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("""
                         {
-                            "name": "/some-name"
+                            "name": "/some-name",
+                            "metadata": { "some": "example metadata"}
                         }
                     """.trimIndent()
                     )
@@ -82,6 +90,9 @@ class RegenerateControllerTest {
                             PayloadDocumentation.requestFields(
                                     PayloadDocumentation.fieldWithPath("name")
                                             .description("The credential name to regenerate.")
+                                            .type(JsonFieldType.STRING),
+                                    PayloadDocumentation.fieldWithPath("metadata.some")
+                                            .description("The credential metadata to add.")
                                             .type(JsonFieldType.STRING)
                             )
                     )
@@ -95,7 +106,7 @@ class RegenerateControllerTest {
                   "version_created_at": "2019-02-01T20:37:52Z",
                   "id": "$randomUUID",
                   "name": "/some-name",
-                  "metadata": null,
+                  "metadata": { "description": "example metadata"},
                   "value": "some-value"
                 }
             """.trimIndent()

@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.regenerate
 
+import com.fasterxml.jackson.databind.JsonNode
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import java.util.TreeSet
 import org.cloudfoundry.credhub.ErrorMessages
@@ -40,7 +41,7 @@ class DefaultRegenerateHandler(
     @Value("\${certificates.concatenate_cas:false}") private val concatenateCas: Boolean
 ) : RegenerateHandler {
 
-    override fun handleRegenerate(credentialName: String): CredentialView {
+    override fun handleRegenerate(credentialName: String, credentialMetadata: JsonNode?): CredentialView {
         checkPermissionsByName(credentialName, WRITE)
 
         val existingCredentialVersion = credentialService.findMostRecent(credentialName)
@@ -53,6 +54,7 @@ class DefaultRegenerateHandler(
         }
         val generateRequest = generationRequestGenerator
             .createGenerateRequest(existingCredentialVersion)
+        generateRequest.metadata = credentialMetadata
         val credentialValue = credentialGenerator.generate(generateRequest)
 
         val credentialVersion = credentialService.save(

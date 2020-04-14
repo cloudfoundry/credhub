@@ -122,7 +122,7 @@ class CredentialsController(
                 regenerateCredential.name = regenerateRequest.name
                 auditRecord.requestDetails = regenerateCredential
 
-                return regenerateHandler.handleRegenerate(regenerateRequest.name!!)
+                return regenerateHandler.handleRegenerate(regenerateRequest.name!!, regenerateRequest.metadata)
             } else {
                 val requestString = request.toString()
                 val generateRequest = objectMapper.readValue(requestString, BaseCredentialGenerateRequest::class.java)

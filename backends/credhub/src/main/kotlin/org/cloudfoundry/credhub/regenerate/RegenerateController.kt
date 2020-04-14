@@ -25,7 +25,7 @@ class RegenerateController(val regenerateHandler: RegenerateHandler) {
     @PostMapping(path = [REGENERATE_ENDPOINT], produces = [MediaType.APPLICATION_JSON_UTF8_VALUE])
     @ResponseStatus(HttpStatus.OK)
     fun regenerate(@RequestBody @Validated requestBody: RegenerateRequest): CredentialView {
-        return regenerateHandler.handleRegenerate(requestBody.getName())
+        return regenerateHandler.handleRegenerate(requestBody.getName(), requestBody.getMetadata())
     }
 
     @PostMapping(path = [BULK_REGENERATE_ENDPOINT], produces = [MediaType.APPLICATION_JSON_UTF8_VALUE])

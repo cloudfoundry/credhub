@@ -23,6 +23,7 @@ import org.cloudfoundry.credhub.helpers.MockMvcFactory
 import org.cloudfoundry.credhub.helpers.credHubAuthHeader
 import org.cloudfoundry.credhub.requests.BaseCredentialGenerateRequest
 import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters
+import org.cloudfoundry.credhub.requests.CredentialRegenerateRequest
 import org.cloudfoundry.credhub.requests.RsaSshGenerationParameters
 import org.cloudfoundry.credhub.utils.TestConstants
 import org.cloudfoundry.credhub.views.CredentialView
@@ -36,6 +37,7 @@ import org.springframework.restdocs.JUnitRestDocumentation
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post
 import org.springframework.restdocs.payload.JsonFieldType
+import org.springframework.restdocs.payload.PayloadDocumentation
 import org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath
 import org.springframework.restdocs.payload.PayloadDocumentation.requestFields
 import org.springframework.restdocs.payload.RequestFieldsSnippet
@@ -532,6 +534,77 @@ class CredentialsControllerGenerateTest {
               }
             """.trimIndent()
 
+        JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true)
+    }
+
+    @Test
+    fun POST__regenerate_password_returns__password_credential() {
+        spyRegenerateHandler.handleRegenerate__returns_credentialView = CredentialView(
+                Instant.ofEpochSecond(1549053472L),
+                uuid,
+                "/some-password-name",
+                "password",
+                metadata,
+                StringCredentialValue("some-password")
+        )
+
+        // language=json
+        val requestBody =
+                """
+                {
+                  "name": "/some-password-name",
+                  "regenerate": true,
+                  "metadata": { "description": "example metadata"}
+                }
+            """.trimIndent()
+
+        val mvcResult = mockMvc.perform(
+                post(CredentialsController.ENDPOINT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .credHubAuthHeader()
+                        .content(requestBody)
+        )
+                .andExpect(status().isOk)
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andDo(
+                        document(
+                                CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                                PayloadDocumentation.requestFields(
+                                        PayloadDocumentation.fieldWithPath("name")
+                                                .description("The credential name to regenerate.")
+                                                .type(JsonFieldType.STRING),
+                                        PayloadDocumentation.fieldWithPath("regenerate")
+                                                .description("The credential name to regenerate.")
+                                                .type(JsonFieldType.BOOLEAN),
+                                        PayloadDocumentation.fieldWithPath("metadata.description")
+                                                .description("The credential metadata to add.")
+                                                .type(JsonFieldType.STRING)
+                                )
+                        )
+                )
+                .andReturn()
+
+        val actualRegenerateRequestName = spyRegenerateHandler.handleRegenerate__calledWith_credentialName
+        val actualRegenerateRequestMetadata = spyRegenerateHandler.handleRegenerate__calledWith_credentialMetadata
+
+        val expectedRegenerateRequest = objectMapper.readValue(requestBody, CredentialRegenerateRequest::class.java)
+
+        assertThat(actualRegenerateRequestName).isEqualTo(expectedRegenerateRequest.name)
+        assertThat(actualRegenerateRequestMetadata).isEqualTo(expectedRegenerateRequest.metadata)
+
+        val actualResponseBody = mvcResult.response.contentAsString
+        // language=json
+        val expectedResponseBody =
+                """
+              {
+                  "type": "password",
+                  "version_created_at": "2019-02-01T20:37:52Z",
+                  "id": $uuid,
+                  "name": "/some-password-name",
+                  "metadata": { "description": "example metadata"},
+                  "value": "some-password"
+              }
+            """.trimIndent()
         JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true)
     }
 
