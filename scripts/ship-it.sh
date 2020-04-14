@@ -81,7 +81,7 @@ function main() {
     push_code
     display_ascii_success_message
     if [[ -n "${PID}" ]]; then
-     kill ${PID}
+     kill "${PID}"
     fi
 }
 
