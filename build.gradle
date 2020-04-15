@@ -8,7 +8,7 @@ buildscript {
         asciiDoctorPluginVersion = '1.5.3'
         bcpkixFipsVersion = '1.0.2'
         bcFipsVersion = '1.0.1'
-        flywayVersion = '5.2.4'
+        flywayVersion = '6.3.3'
         guavaVersion = '23.6-jre'
         h2Version = '1.4.199'
         jsonPathVersion = '2.4.0'
