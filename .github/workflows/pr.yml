@@ -25,40 +25,6 @@ jobs:
       # Runs a set of commands using the runners shell
       - name: Run unit tests
         run: |
-          #!/bin/bash
-
-          set -eux
-          set -o pipefail
-
-          export TERM=xterm
-          export DATABASE_PROFILE=mysql
-
-          if [[ $DATABASE_PROFILE == *"mysql" ]]; then
             service mysql start
               ./scripts/run_tests_mysql.sh
             service mysql stop
-
-          elif [[ $DATABASE_PROFILE == *"postgres" ]]; then
-            function start_postgres() {
-              PGDATA=/usr/local/var/postgres
-              mkdir -p "${PGDATA}" && chown postgres "${PGDATA}"
-              su - postgres -c "/usr/lib/postgresql/9.5/bin/pg_ctl init -D ${PGDATA}"
-              su - postgres -c "sed -i.bak -e 's/max_connections = .*/max_connections = 1000/' `ls /etc/postgresql/*/main/postgresql.conf`"
-              su - postgres -c "sed -i.bak -e 's/max_connections = .*/max_connections = 1000/' /usr/local/var/postgres/postgresql.conf"
-              su - postgres -c "/usr/lib/postgresql/9.5/bin/pg_ctl start -w -D ${PGDATA} -l /usr/local/var/postgres/server.log"
-              su - postgres -c "createuser -l -d -c 1000 root"
-              su - postgres -c "createuser -l -d -c 1000 pivotal"
-              createdb pivotal
-            }
-
-            start_postgres
-              ./scripts/run_tests_postgres.sh
-            service postgresql stop
-
-          elif [[ $DATABASE_PROFILE == *"h2" ]]; then
-            ./scripts/run_tests_h2.sh
-
-          else
-            echo "You must set a valid DATABASE_PROFILE"
-            exit 1
-          fi
