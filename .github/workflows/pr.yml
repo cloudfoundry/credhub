@@ -1,0 +1,58 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  pull_request:
+    branches: [ develop ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  run-unit-tests:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    container:
+      image: pcfseceng/credhub-ci
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      # Runs a set of commands using the runners shell
+      - name: Run unit tests
+        run: |
+          export TERM=xterm
+
+          if [[ $DATABASE_PROFILE == *"mysql" ]]; then
+            service mysql start
+              ./scripts/run_tests_mysql.sh
+            service mysql stop
+
+          elif [[ $DATABASE_PROFILE == *"postgres" ]]; then
+            function start_postgres() {
+              PGDATA=/usr/local/var/postgres
+              mkdir -p "${PGDATA}" && chown postgres "${PGDATA}"
+              su - postgres -c "/usr/lib/postgresql/9.5/bin/pg_ctl init -D ${PGDATA}"
+              su - postgres -c "sed -i.bak -e 's/max_connections = .*/max_connections = 1000/' `ls /etc/postgresql/*/main/postgresql.conf`"
+              su - postgres -c "sed -i.bak -e 's/max_connections = .*/max_connections = 1000/' /usr/local/var/postgres/postgresql.conf"
+              su - postgres -c "/usr/lib/postgresql/9.5/bin/pg_ctl start -w -D ${PGDATA} -l /usr/local/var/postgres/server.log"
+              su - postgres -c "createuser -l -d -c 1000 root"
+              su - postgres -c "createuser -l -d -c 1000 pivotal"
+              createdb pivotal
+            }
+
+            start_postgres
+              ./scripts/run_tests_postgres.sh
+            service postgresql stop
+
+          elif [[ $DATABASE_PROFILE == *"h2" ]]; then
+            ./scripts/run_tests_h2.sh
+
+          else
+            echo "You must set a valid DATABASE_PROFILE"
+            exit 1
+          fi
