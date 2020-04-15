@@ -25,6 +25,11 @@ jobs:
       # Runs a set of commands using the runners shell
       - name: Run unit tests
         run: |
+          #!/bin/bash
+
+          set -eux
+          set -o pipefail
+
           export TERM=xterm
           export DATABASE_PROFILE=mysql
 
