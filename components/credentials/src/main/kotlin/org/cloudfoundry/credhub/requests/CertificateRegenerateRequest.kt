@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.requests
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.databind.JsonNode
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
 
@@ -12,11 +13,15 @@ class CertificateRegenerateRequest {
     @set:JsonProperty("set_as_transitional")
     var isTransitional: Boolean = false
 
+    @JsonProperty("metadata")
+    @set:JsonProperty("metadata")
+    var metadata: JsonNode? = null
+
     constructor() : super() {
         /* this needs to be there for jackson to be happy */
     }
 
-    constructor(transitional: Boolean) : super() {
+    constructor(transitional: Boolean, metadata: JsonNode?) : super() {
         this.isTransitional = transitional
     }
 

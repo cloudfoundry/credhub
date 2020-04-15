@@ -222,6 +222,29 @@ public class CertificateSetAndRegenerateTest {
     }
 
     @Test
+    public void certificateRegenerate_withMetadata_generatesANewCertificateWithMetadata() throws Exception {
+        final MockHttpServletRequestBuilder regenerateRequest = post("/api/v1/certificates/" + caCredentialUuid + "/regenerate")
+                .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+                .accept(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
+                .content("{" +
+                        "\"metadata\": {\"some\":\"example metadata\"}" +
+                        "}");
+
+        this.mockMvc.perform(regenerateRequest)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.metadata.some").value("example metadata"));
+
+        final MockHttpServletRequestBuilder getRequest = get("/api/v1/data?name=" + CA_NAME)
+                .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+                .accept(APPLICATION_JSON);
+
+        this.mockMvc.perform(getRequest)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].metadata.some").value("example metadata"));
+    }
+
+    @Test
     public void certificateRegenerate_withSelfSignSetToTrue_generatesANewCertThatIsSelfSigned() throws Exception {
         final MockHttpServletRequestBuilder generateCaRequest = post("/api/v1/data")
                 .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)

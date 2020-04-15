@@ -116,7 +116,7 @@ class CertificatesControllerTest {
     fun POST__certificates_uuid_regenerate__returns_certificate() {
         // language=json
         val requestBody = """
-            {"set_as_transitional": true}
+            {"set_as_transitional": true, "metadata": {"description": "example metadata"}}
         """.trimIndent()
 
         spyCertificatesHandler.handleRegenerate__returns_credentialView = credentialViewResponse
@@ -136,6 +136,9 @@ class CertificatesControllerTest {
                         fieldWithPath("set_as_transitional")
                             .description("Set if certificate is transitional")
                             .type(JsonFieldType.BOOLEAN)
+                            .optional(),
+                        fieldWithPath("metadata.description")
+                            .description("Additional metadata of the credential.")
                             .optional()
                     ),
                     pathParameters(
@@ -145,7 +148,7 @@ class CertificatesControllerTest {
 
             ).andReturn()
 
-        val expectedRequestBody = CertificateRegenerateRequest(true)
+        val expectedRequestBody = CertificateRegenerateRequest(true, metadata)
 
         assertThat(spyCertificatesHandler.handleRegenerate__calledWith_request).isEqualTo(expectedRequestBody)
         assertThat(spyCertificatesHandler.handleRegenerate__calledWith_credentialUuid).isEqualTo(certificateId.toString())

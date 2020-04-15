@@ -58,6 +58,7 @@ class DefaultCertificatesHandler(
 
         val generateRequest = generationRequestGenerator
             .createGenerateRequest(existingCredentialVersion)
+        generateRequest.metadata = request.metadata
         val credentialValue = credentialGenerator
             .generate(generateRequest) as CertificateCredentialValue
 

@@ -721,7 +721,7 @@ public class DefaultCertificatesHandlerTest {
     when(certificateService.save(eq(certificate), any(), any()))
       .thenReturn(mock(CertificateCredentialVersion.class));
 
-    final CertificateRegenerateRequest regenerateRequest = new CertificateRegenerateRequest(true);
+    final CertificateRegenerateRequest regenerateRequest = new CertificateRegenerateRequest(true, null);
 
     subjectWithAcls.handleRegenerate(UUID_STRING, regenerateRequest);
 
@@ -762,7 +762,7 @@ public class DefaultCertificatesHandlerTest {
     when(certificateService.save(eq(certificate), any(), any()))
       .thenReturn(mock(CertificateCredentialVersion.class));
 
-    final CertificateRegenerateRequest regenerateRequest = new CertificateRegenerateRequest(true);
+    final CertificateRegenerateRequest regenerateRequest = new CertificateRegenerateRequest(true, null);
 
     subjectWithoutAcls.handleRegenerate(UUID_STRING, regenerateRequest);
 
@@ -788,7 +788,7 @@ public class DefaultCertificatesHandlerTest {
     when(certificateService.save(eq(certificate), any(), any()))
       .thenReturn(credentialVersion);
 
-    final CertificateRegenerateRequest regenerateRequest = new CertificateRegenerateRequest(true);
+    final CertificateRegenerateRequest regenerateRequest = new CertificateRegenerateRequest(true, null);
 
     CredentialView regeneratedCredential = subjectWithoutConcatenateCas.handleRegenerate(UUID_STRING, regenerateRequest);
 
@@ -814,7 +814,7 @@ public class DefaultCertificatesHandlerTest {
     when(certificateService.save(eq(certificate), any(), any()))
       .thenReturn(credentialVersion);
 
-    final CertificateRegenerateRequest regenerateRequest = new CertificateRegenerateRequest(true);
+    final CertificateRegenerateRequest regenerateRequest = new CertificateRegenerateRequest(true, null);
 
     CredentialView regeneratedCredential = subjectWithConcatenateCas.handleRegenerate(UUID_STRING, regenerateRequest);
 
