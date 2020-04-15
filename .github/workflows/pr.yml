@@ -26,6 +26,7 @@ jobs:
       - name: Run unit tests
         run: |
           export TERM=xterm
+          export DATABASE_PROFILE=mysql
 
           if [[ $DATABASE_PROFILE == *"mysql" ]]; then
             service mysql start
