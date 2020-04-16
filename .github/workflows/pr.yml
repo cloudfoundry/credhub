@@ -25,6 +25,4 @@ jobs:
       # Runs a set of commands using the runners shell
       - name: Run unit tests
         run: |
-            service mysql start
-              ./scripts/run_tests_mysql.sh
-            service mysql stop
+              ./scripts/run_tests_h2.sh
