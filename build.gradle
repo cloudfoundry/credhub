@@ -4,7 +4,7 @@ buildscript {
     ext {
         apacheCommonsLang3Version = '3.7'
         apacheCommonsIoVersion = '1.3.2'
-        apacheHttpClientVersion = '4.5.5'
+        apacheHttpClientVersion = '4.5.12'
         asciiDoctorPluginVersion = '1.5.3'
         bcpkixFipsVersion = '1.0.2'
         bcFipsVersion = '1.0.1'
