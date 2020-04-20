@@ -23,6 +23,7 @@ import org.cloudfoundry.credhub.views.FindCertificateResult
 import org.cloudfoundry.credhub.views.FindCredentialResult
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.dao.DataIntegrityViolationException
+import org.springframework.dao.InvalidDataAccessResourceUsageException
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
 
@@ -56,6 +57,8 @@ constructor(
         return try {
             credentialFactory
                 .makeCredentialFromEntity(credentialVersionRepository.saveAndFlush(credentialVersionData))!!
+        } catch (e: InvalidDataAccessResourceUsageException) {
+            throw MaximumSizeException(e.message!!)
         } catch (e: DataIntegrityViolationException) {
             throw MaximumSizeException(e.message!!)
         }
