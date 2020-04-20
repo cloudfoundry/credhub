@@ -38,6 +38,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 
     implementation("com.google.guava:guava:${guavaVersion}")
+    implementation("commons-codec:commons-codec:${commonsCodecVersion}")
 }
 
 dependencyManagement {

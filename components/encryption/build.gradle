@@ -62,6 +62,7 @@ dependencies {
     compile files("${rootDir.toPath()}/libs/bc-fips-${bcFipsVersion}.jar")
 
     implementation("org.apache.commons:commons-lang3:${apacheCommonsLang3Version}")
+    implementation("commons-codec:commons-codec:${commonsCodecVersion}")
 
     //gRPC
     implementation "com.google.api.grpc:proto-google-common-protos:1.17.0"

@@ -76,6 +76,7 @@ dependencies {
 
     implementation("com.google.guava:guava:${guavaVersion}")
     implementation("org.apache.commons:commons-lang3:${apacheCommonsLang3Version}")
+    implementation("commons-codec:commons-codec:${commonsCodecVersion}")
     implementation("com.jayway.jsonpath:json-path:${jsonPathVersion}")
 
     testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc:$springRestDocsVersion")

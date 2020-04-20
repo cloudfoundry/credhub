@@ -40,6 +40,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 
     implementation("org.apache.commons:commons-lang3:${apacheCommonsLang3Version}")
+    implementation("commons-codec:commons-codec:${commonsCodecVersion}")
 }
 
 dependencyManagement {
