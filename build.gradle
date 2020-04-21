@@ -6,8 +6,8 @@ buildscript {
         apacheCommonsIoVersion = '1.3.2'
         apacheHttpClientVersion = '4.5.12'
         asciiDoctorPluginVersion = '1.6.1'
-        bcpkixFipsVersion = '1.0.2'
-        bcFipsVersion = '1.0.1'
+        bcpkixFipsVersion = '1.0.3'
+        bcFipsVersion = '1.0.2'
         commonsCodecVersion = '1.14' // remove this after deleting (now deprecated) spring-security-oauth2
         flywayVersion = '5.2.4'
         guavaVersion = '29.0-jre'
@@ -34,6 +34,8 @@ buildscript {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}")
         classpath("org.jetbrains.kotlin:kotlin-allopen:${kotlinVersion}")
         classpath("org.owasp:dependency-check-gradle:5.3.2.1")
+        classpath("org.bouncycastle:bc-fips:${bcFipsVersion}")
+        classpath("org.bouncycastle:bcpkix-fips:${bcpkixFipsVersion}")
     }
 }
 
@@ -43,7 +45,6 @@ plugins {
 
 apply plugin: DependenciesGraphPlugin
 apply plugin: "org.owasp.dependencycheck"
-apply from: "download-bouncy-castle-fips.gradle"
 
 dependencyUpdates.resolutionStrategy = {
     componentSelection { rules ->

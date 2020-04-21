@@ -53,8 +53,8 @@ dependencies {
     implementation("com.h2database:h2:${h2Version}")
 
     // Other
-    compile files("${rootDir.toPath()}/libs/bcpkix-fips-${bcpkixFipsVersion}.jar")
-    compile files("${rootDir.toPath()}/libs/bc-fips-${bcFipsVersion}.jar")
+    implementation("org.bouncycastle:bc-fips:${bcFipsVersion}")
+    implementation("org.bouncycastle:bcpkix-fips:${bcpkixFipsVersion}")
     implementation("com.google.guava:guava:${guavaVersion}")
     implementation("org.apache.commons:commons-lang3:${apacheCommonsLang3Version}")
     implementation("commons-codec:commons-codec:${commonsCodecVersion}")
