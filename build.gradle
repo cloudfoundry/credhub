@@ -66,7 +66,3 @@ subprojects {
         }
     }
 }
-
-configurations.all {
-    exclude group: "org.bouncycastle"
-}

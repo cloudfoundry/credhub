@@ -8,10 +8,6 @@ function go_to_project_root_directory() {
     cd "$script_dir/.."
 }
 
-function download_bouncy_castle_fips() {
-    ./gradlew --no-daemon downloadBouncyCastleFips
-}
-
 function lint_scripts() {
     shellcheck scripts/*.sh
 }
@@ -24,7 +20,6 @@ function lint_jvm_language_code() {
 function main() {
     go_to_project_root_directory
 
-    download_bouncy_castle_fips
     lint_scripts
     lint_jvm_language_code
 }

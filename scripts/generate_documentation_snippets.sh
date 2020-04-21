@@ -14,10 +14,6 @@ function clean_old_autodocs() {
     ./gradlew :backends:credhub:clean
 }
 
-function download_bouncy_castle_fips() {
-  ./gradlew downloadBouncyCastleFips
-}
-
 function generate_documentation_snippets_from_controller_tests() {
     ./gradlew :backends:credhub:test --tests -- *Controller*
 }
@@ -31,7 +27,6 @@ function main() {
     go_to_project_root_directory
 
     clean_old_autodocs
-    download_bouncy_castle_fips
     generate_documentation_snippets_from_controller_tests
     build_autodoc_html
 }
