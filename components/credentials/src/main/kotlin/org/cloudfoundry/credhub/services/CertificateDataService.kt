@@ -75,7 +75,7 @@ constructor(
             val isGenerated = rowSet.getObject("CERTIFICATE_GENERATED") as? Boolean
 
             val certificateVersionMetadata = CertificateVersionMetadata(
-                toUUID(rowSet.getObject("VERSION_UUID")!!),
+                toUUID(rowSet.getObject("VERSION_UUID")),
                 expiryDate,
                 rowSet.getBoolean("TRANSITIONAL"),
                 isCertificateAuthority,
@@ -83,7 +83,7 @@ constructor(
                 isGenerated
             )
 
-            val credentialUUID: UUID = toUUID(rowSet.getObject("CREDENTIAL_UUID")!!)
+            val credentialUUID: UUID = toUUID(rowSet.getObject("CREDENTIAL_UUID"))
 
             if (certificateMetadataMap.containsKey(credentialUUID)) {
                 certificateMetadataMap.getValue(credentialUUID).versions?.add(certificateVersionMetadata)
