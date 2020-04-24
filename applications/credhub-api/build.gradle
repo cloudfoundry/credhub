@@ -64,8 +64,8 @@ dependencies {
     implementation("org.flywaydb:flyway-core:${flywayVersion}")
     implementation("com.h2database:h2:${h2Version}")
 
-    compile files("${rootDir.toPath()}/libs/bcpkix-fips-${bcpkixFipsVersion}.jar")
-    compile files("${rootDir.toPath()}/libs/bc-fips-${bcFipsVersion}.jar")
+    api("org.bouncycastle:bc-fips:${bcFipsVersion}")
+    api("org.bouncycastle:bcpkix-fips:${bcpkixFipsVersion}")
 
     implementation("com.google.guava:guava:${guavaVersion}")
     implementation("org.apache.commons:commons-lang3:${apacheCommonsLang3Version}")
