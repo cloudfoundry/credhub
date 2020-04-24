@@ -67,8 +67,8 @@ dependencies {
     implementation("com.h2database:h2:${h2Version}")
 
     // Other
-    api("org.bouncycastle:bc-fips:${bcFipsVersion}")
-    api("org.bouncycastle:bcpkix-fips:${bcpkixFipsVersion}")
+    implementation("org.bouncycastle:bc-fips:${bcFipsVersion}")
+    implementation("org.bouncycastle:bcpkix-fips:${bcpkixFipsVersion}")
 
     // proto
     implementation "com.google.api.grpc:proto-google-common-protos:1.17.0"

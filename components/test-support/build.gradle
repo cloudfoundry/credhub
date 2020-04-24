@@ -39,8 +39,8 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 
-    api("org.bouncycastle:bc-fips:${bcFipsVersion}")
-    api("org.bouncycastle:bcpkix-fips:${bcpkixFipsVersion}")
+    implementation("org.bouncycastle:bc-fips:${bcFipsVersion}")
+    implementation("org.bouncycastle:bcpkix-fips:${bcpkixFipsVersion}")
 
     implementation("org.apache.commons:commons-lang3:${apacheCommonsLang3Version}")
     implementation("commons-codec:commons-codec:${commonsCodecVersion}")
