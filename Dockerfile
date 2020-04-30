@@ -34,8 +34,8 @@ RUN mkdir -p /etc/config
 
 EXPOSE 9000
 
-ENV TRUST_STORE_PASSWORD=changeit
-ENV KEY_STORE_PASSWORD=changeit
+ENV TRUST_STORE_PASSWORD=changeme
+ENV KEY_STORE_PASSWORD=changeme
 ENV ENCRYPTION_PASSWORD=changeme
 ENV SERVER_CA_CERT_PATH="/etc/server_certs/server_ca_cert.pem"
 ENV SERVER_CA_PRIVATE_KEY_PATH="/etc/server_certs/server_ca_private.pem"
