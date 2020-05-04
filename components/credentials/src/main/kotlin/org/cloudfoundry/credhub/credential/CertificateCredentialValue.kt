@@ -43,9 +43,9 @@ class CertificateCredentialValue : CredentialValue {
     @JsonIgnore
     var trustedCa: String? = null
 
-    var isTransitional: Boolean = false
-    var isCertificateAuthority: Boolean = false
-    var isSelfSigned: Boolean = false
+    var transitional: Boolean = false
+    var certificateAuthority: Boolean = false
+    var selfSigned: Boolean = false
     @JsonInclude(Include.NON_NULL)
     var generated: Boolean? = null
 
@@ -91,9 +91,9 @@ class CertificateCredentialValue : CredentialValue {
         this.trustedCa = trustedCa
         this.certificate = certificate
         this.privateKey = privateKey
-        this.isTransitional = transitional
-        this.isCertificateAuthority = certificateAuthority
-        this.isSelfSigned = selfSigned
+        this.transitional = transitional
+        this.certificateAuthority = certificateAuthority
+        this.selfSigned = selfSigned
         this.generated = generated
         this.caName = caName
     }
@@ -106,9 +106,9 @@ class CertificateCredentialValue : CredentialValue {
             return false
         }
         val that = o as CertificateCredentialValue?
-        return isTransitional == that!!.isTransitional &&
-            isCertificateAuthority == that.isCertificateAuthority &&
-            isSelfSigned == that.isSelfSigned &&
+        return transitional == that!!.transitional &&
+            certificateAuthority == that.certificateAuthority &&
+            selfSigned == that.selfSigned &&
             ca == that.ca &&
             certificate == that.certificate &&
             privateKey == that.privateKey &&
@@ -116,6 +116,6 @@ class CertificateCredentialValue : CredentialValue {
     }
 
     override fun hashCode(): Int {
-        return Objects.hash(ca, certificate, privateKey, this.caName, isTransitional, isCertificateAuthority, isSelfSigned)
+        return Objects.hash(ca, certificate, privateKey, this.caName, transitional, certificateAuthority, selfSigned)
     }
 }

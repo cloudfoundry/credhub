@@ -160,7 +160,7 @@ public class DefaultCertificateServiceTest {
 
   @Test
   public void save_whenTransitionalIsFalse_delegatesToCredentialService() {
-    when(value.isTransitional()).thenReturn(false);
+    when(value.getTransitional()).thenReturn(false);
 
     final BaseCredentialGenerateRequest generateRequest = mock(BaseCredentialGenerateRequest.class);
 
@@ -184,7 +184,7 @@ public class DefaultCertificateServiceTest {
 
   @Test
   public void save_whenTransitionalIsTrue_andThereAreNoOtherTransitionalVersions_delegatesToCredentialService() {
-    when(value.isTransitional()).thenReturn(true);
+    when(value.getTransitional()).thenReturn(true);
 
     final BaseCredentialGenerateRequest generateRequest = mock(BaseCredentialGenerateRequest.class);
     when(generateRequest.getName()).thenReturn("some-ca");
@@ -210,7 +210,7 @@ public class DefaultCertificateServiceTest {
 
   @Test
   public void save_whenTransitionalIsTrue_andConcatenateCasIsTrue_generatesNewChildVersion() {
-    when(value.isTransitional()).thenReturn(true);
+    when(value.getTransitional()).thenReturn(true);
 
     final BaseCredentialGenerateRequest generateRequest = mock(BaseCredentialGenerateRequest.class);
     when(generateRequest.getName()).thenReturn("some-ca");
@@ -243,7 +243,7 @@ public class DefaultCertificateServiceTest {
 
   @Test
   public void set_whenTransitionalIsTrue_andConcatenateCasIsTrue_generatesNewChildVersion() {
-    when(value.isTransitional()).thenReturn(true);
+    when(value.getTransitional()).thenReturn(true);
 
     final CertificateCredentialVersion previousVersion = mock(CertificateCredentialVersion.class);
     when(previousVersion.isVersionTransitional()).thenReturn(false);
@@ -276,7 +276,7 @@ public class DefaultCertificateServiceTest {
 
   @Test
   public void set_whenTransitionalIsTrue_andConcatenateCasIsFalse_doesNotGeneratesNewChildVersion() {
-    when(value.isTransitional()).thenReturn(true);
+    when(value.getTransitional()).thenReturn(true);
 
     final CertificateCredentialVersion previousVersion = mock(CertificateCredentialVersion.class);
     when(previousVersion.isVersionTransitional()).thenReturn(false);
@@ -310,7 +310,7 @@ public class DefaultCertificateServiceTest {
 
   @Test
   public void save_whenTransitionalIsTrue_andConcatenateCasIsFalse_doesNotGeneratesNewChildVersion() {
-    when(value.isTransitional()).thenReturn(true);
+    when(value.getTransitional()).thenReturn(true);
 
     final BaseCredentialGenerateRequest generateRequest = mock(BaseCredentialGenerateRequest.class);
     when(generateRequest.getName()).thenReturn("some-ca");
@@ -344,7 +344,7 @@ public class DefaultCertificateServiceTest {
   @Test
   public void save_whenTransitionalIsTrue_AndThereIsAnotherTransitionalVersion_throwsAnException() {
     final CertificateCredentialValue value = mock(CertificateCredentialValue.class);
-    when(value.isTransitional()).thenReturn(true);
+    when(value.getTransitional()).thenReturn(true);
 
     final BaseCredentialGenerateRequest generateRequest = mock(BaseCredentialGenerateRequest.class);
     when(generateRequest.getName()).thenReturn("/some-name");

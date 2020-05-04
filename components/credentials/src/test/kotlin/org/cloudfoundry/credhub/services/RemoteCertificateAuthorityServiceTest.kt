@@ -79,10 +79,10 @@ class RemoteCertificateAuthorityServiceTest {
         assertEquals(result.certificate, TestConstants.OTHER_TEST_CERTIFICATE)
         assertEquals(result.privateKey, TestConstants.OTHER_TEST_PRIVATE_KEY)
         assertEquals(result.caName, "/some-ca")
-        assertEquals(result.isCertificateAuthority, true)
-        assertEquals(result.isSelfSigned, true)
+        assertEquals(result.certificateAuthority, true)
+        assertEquals(result.selfSigned, true)
         assertEquals(result.generated, true)
-        assertEquals(result.isTransitional, false)
+        assertEquals(result.transitional, false)
     }
 
     @Test
@@ -101,9 +101,9 @@ class RemoteCertificateAuthorityServiceTest {
             "ca_name" to data.caName,
             "certificate" to data.certificate,
             "private_key" to data.privateKey,
-            "transitional" to data.isTransitional,
-            "certificate_authority" to data.isCertificateAuthority,
-            "self_signed" to data.isSelfSigned,
+            "transitional" to data.transitional,
+            "certificate_authority" to data.certificateAuthority,
+            "self_signed" to data.selfSigned,
             "generated" to data.generated
 
         ))

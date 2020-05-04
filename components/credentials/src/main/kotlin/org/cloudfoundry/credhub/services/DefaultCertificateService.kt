@@ -37,7 +37,7 @@ class DefaultCertificateService(
         generateRequest: BaseCredentialGenerateRequest
     ): CredentialVersion {
         generateRequest.type = "certificate"
-        if (credentialValue.isTransitional) {
+        if (credentialValue.transitional) {
             validateNoTransitionalVersionsAlreadyExist(generateRequest.name)
         }
         val version = credentialService
@@ -174,7 +174,7 @@ class DefaultCertificateService(
     operator fun set(certificateUuid: UUID, value: CertificateCredentialValue?): CertificateCredentialVersion {
         val credential = findCertificateCredential(certificateUuid)
 
-        if (value?.isTransitional!!) {
+        if (value?.transitional!!) {
             validateNoTransitionalVersionsAlreadyExist(credential.name)
         }
 

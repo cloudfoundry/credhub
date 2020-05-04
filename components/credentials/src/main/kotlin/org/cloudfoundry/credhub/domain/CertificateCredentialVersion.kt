@@ -86,11 +86,11 @@ class CertificateCredentialVersion(delegate: CertificateCredentialVersionData) :
         this.privateKey = certificate.privateKey
         this.caName = certificate.caName
         this.certificate = certificate.certificate
-        this.setTransitional(certificate.isTransitional)
+        this.setTransitional(certificate.transitional)
         this.expiryDate = certificate.expiryDate
-        this.isCertificateAuthority = certificate.isCertificateAuthority
+        this.isCertificateAuthority = certificate.certificateAuthority
         this.trustedCa = certificate.trustedCa
-        this.isSelfSigned = certificate.isSelfSigned
+        this.isSelfSigned = certificate.selfSigned
         this.generated = certificate.generated
     }
 

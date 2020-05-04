@@ -38,9 +38,9 @@ class ManagementController(private val managementService: ManagementService) {
     @ResponseStatus(HttpStatus.OK)
     fun updateManagementRegistry(@RequestBody management: Management): Management {
 
-        managementService.toggleReadOnlyMode(management.isReadOnlyMode)
+        managementService.toggleReadOnlyMode(management.readOnlyMode)
 
-        LOGGER.info("Setting read only mode to " + management.isReadOnlyMode)
+        LOGGER.info("Setting read only mode to " + management.readOnlyMode)
 
         return management
     }

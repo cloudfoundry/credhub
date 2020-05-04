@@ -13,9 +13,9 @@ class CertificateView : CredentialView {
     private var version: CertificateCredentialVersion? = null
     var expiryDate: Instant? = null
         private set
-    var isCertificateAuthority = false
+    var certificateAuthority = false
         private set
-    var isSelfSigned = false
+    var selfSigned = false
         private set
     @JsonInclude(JsonInclude.Include.NON_NULL)
     var generated: Boolean? = null
@@ -32,8 +32,8 @@ class CertificateView : CredentialView {
     ) {
         this.version = version
         expiryDate = version.expiryDate
-        isCertificateAuthority = version.isCertificateAuthority
-        isSelfSigned = version.isSelfSigned
+        certificateAuthority = version.isCertificateAuthority
+        selfSigned = version.isSelfSigned
         generated = version.generated
         concatenateCas = false
     }
@@ -48,8 +48,8 @@ class CertificateView : CredentialView {
     ) {
         this.version = version
         expiryDate = version.expiryDate
-        isCertificateAuthority = version.isCertificateAuthority
-        isSelfSigned = version.isSelfSigned
+        certificateAuthority = version.isCertificateAuthority
+        selfSigned = version.isSelfSigned
         generated = version.generated
         this.concatenateCas = concatenateCas
     }
@@ -74,13 +74,13 @@ class CertificateView : CredentialView {
             return false
         }
         val that = o as CertificateView
-        return isCertificateAuthority == that.isCertificateAuthority && isSelfSigned == that.isSelfSigned &&
+        return certificateAuthority == that.certificateAuthority && selfSigned == that.selfSigned &&
             generated == that.generated &&
             version == that.version &&
             expiryDate == that.expiryDate
     }
 
     override fun hashCode(): Int {
-        return Objects.hash(super.hashCode(), version, expiryDate, isCertificateAuthority, isSelfSigned, generated)
+        return Objects.hash(super.hashCode(), version, expiryDate, certificateAuthority, selfSigned, generated)
     }
 }
