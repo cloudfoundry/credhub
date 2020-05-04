@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        springCloudContractVersion = '2.0.2.RELEASE'
+        springCloudContractVersion = '2.2.2.RELEASE'
     }
     repositories {
         mavenCentral()
