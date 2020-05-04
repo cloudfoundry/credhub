@@ -320,9 +320,9 @@ class RemoteCredentialsHandler(
                     "ca_name" to certificateCredentialValue.caName,
                     "certificate" to certificateCredentialValue.certificate,
                     "private_key" to certificateCredentialValue.privateKey,
-                    "transitional" to certificateCredentialValue.isTransitional,
-                    "certificate_authority" to certificateCredentialValue.isCertificateAuthority,
-                    "self_signed" to certificateCredentialValue.isSelfSigned,
+                    "transitional" to certificateCredentialValue.transitional,
+                    "certificate_authority" to certificateCredentialValue.certificateAuthority,
+                    "self_signed" to certificateCredentialValue.selfSigned,
                     "generated" to certificateCredentialValue.generated
 
                 ))

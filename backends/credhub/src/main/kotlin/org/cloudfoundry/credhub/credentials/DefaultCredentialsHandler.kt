@@ -100,10 +100,10 @@ class DefaultCredentialsHandler(
 
             val certificateReader = CertificateReader(certificateValue?.certificate)
             if (certificateReader.isCa) {
-                setRequest.certificateValue?.isCertificateAuthority = true
+                setRequest.certificateValue?.certificateAuthority = true
                 if (caName == null && certificateReader.isSelfSigned) {
                     setRequest.certificateValue?.caName = setRequest.name
-                    setRequest.certificateValue?.isSelfSigned = true
+                    setRequest.certificateValue?.selfSigned = true
                 }
             }
 
