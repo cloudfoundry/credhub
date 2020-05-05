@@ -29,8 +29,8 @@ class DefaultCertificateVersionDataService(
         }
     }
 
-    override fun findByCredentialUUID(uuid: String): CredentialVersion? {
-        val uuid = UUID.fromString(uuid)
+    override fun findByCredentialUUID(uuidString: String): CredentialVersion? {
+        val uuid = UUID.fromString(uuidString)
         var credentialVersion = credentialVersionRepository.findLatestNonTransitionalCertificateVersion(uuid)
         if (credentialVersion == null) {
             credentialVersion = credentialVersionRepository.findTransitionalCertificateVersion(uuid)

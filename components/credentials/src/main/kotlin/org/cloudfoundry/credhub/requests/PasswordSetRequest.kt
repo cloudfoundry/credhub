@@ -22,14 +22,14 @@ class PasswordSetRequest : BaseCredentialSetRequest<StringCredentialValue?>() {
             return password
         }
 
-    override fun equals(o: Any?): Boolean {
-        if (this === o) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
             return true
         }
-        if (o == null || javaClass != o.javaClass) {
+        if (other == null || javaClass != other.javaClass) {
             return false
         }
-        val that = o as PasswordSetRequest?
+        val that = other as PasswordSetRequest?
         return password == that!!.password && generationParameters == that.generationParameters
     }
 

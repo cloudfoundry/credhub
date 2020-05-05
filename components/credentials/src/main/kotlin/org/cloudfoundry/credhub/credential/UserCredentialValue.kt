@@ -39,14 +39,14 @@ class UserCredentialValue : CredentialValue {
     @JsonProperty(value = "password_hash", access = READ_ONLY)
     fun getPasswordHash(): String = Crypt.crypt(password!!, getOrGenerateSalt())
 
-    override fun equals(o: Any?): Boolean {
-        if (this === o) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
             return true
         }
-        if (o == null || javaClass != o.javaClass) {
+        if (other == null || javaClass != other.javaClass) {
             return false
         }
-        val that = o as UserCredentialValue?
+        val that = other as UserCredentialValue?
         return Objects.equals(username, that!!.username) &&
             Objects.equals(password, that.password) &&
             Objects.equals(salt, that.salt)

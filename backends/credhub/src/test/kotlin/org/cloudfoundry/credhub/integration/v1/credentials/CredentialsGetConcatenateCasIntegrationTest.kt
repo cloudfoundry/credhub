@@ -125,7 +125,7 @@ class CredentialsGetConcatenateCasIntegrationTest {
         val certificateVersion2 = CertificateCredentialVersion(CREDENTIAL_NAME)
         certificateVersion2.certificate = TestConstants.TEST_CA
         certificateVersion2.ca = TestConstants.TEST_CA
-        certificateVersion2.setEncryptor(encryptor!!)
+        certificateVersion2.setEncryptor(encryptor)
         certificateVersion2.uuid = uuid2
         certificateVersion2.credential?.uuid = uuid2
         certificateVersion2.versionCreatedAt = FROZEN_TIME
@@ -170,7 +170,7 @@ class CredentialsGetConcatenateCasIntegrationTest {
         val certificateVersion2 = CertificateCredentialVersion(CREDENTIAL_NAME)
         certificateVersion2.certificate = TestConstants.OTHER_TEST_CERTIFICATE
         certificateVersion2.ca = TestConstants.TEST_CA
-        certificateVersion2.setEncryptor(encryptor!!)
+        certificateVersion2.setEncryptor(encryptor)
         certificateVersion2.uuid = uuid2
         certificateVersion2.credential?.uuid = uuid2
         certificateVersion2.versionCreatedAt = FROZEN_TIME

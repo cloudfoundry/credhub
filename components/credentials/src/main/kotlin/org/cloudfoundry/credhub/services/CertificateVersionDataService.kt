@@ -8,7 +8,7 @@ interface CertificateVersionDataService {
 
     fun findActive(caName: String): CredentialVersion?
 
-    fun findByCredentialUUID(uuid: String): CredentialVersion?
+    fun findByCredentialUUID(uuidString: String): CredentialVersion?
 
     fun findActiveWithTransitional(certificateName: String): List<CredentialVersion>?
 

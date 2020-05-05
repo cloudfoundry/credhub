@@ -75,9 +75,9 @@ constructor(
         }
     }
 
-    override fun findByUuid(uuid: String): CredentialVersion? {
+    override fun findByUuid(uuidString: String): CredentialVersion? {
         val uuid = try {
-            UUID.fromString(uuid)
+            UUID.fromString(uuidString)
         } catch (e: IllegalArgumentException) {
             throw EntryNotFoundException(ErrorMessages.RESOURCE_NOT_FOUND)
         }
@@ -156,9 +156,8 @@ constructor(
         jdbcTemplate.query<Long>(
             (" SELECT count(*) as count, encryption_key_uuid FROM credential_version " +
                 "LEFT JOIN encrypted_value ON credential_version.encrypted_value_uuid = encrypted_value.uuid " +
-                "GROUP BY encrypted_value.encryption_key_uuid"),
-            { rowSet, rowNum -> map.put(toUUID(rowSet.getObject("encryption_key_uuid")), rowSet.getLong("count")) }
-        )
+                "GROUP BY encrypted_value.encryption_key_uuid")
+        ) { rowSet, _ -> map.put(toUUID(rowSet.getObject("encryption_key_uuid")), rowSet.getLong("count")) }
         return map
     }
 
@@ -238,14 +237,13 @@ constructor(
             "WHERE certificate_credential.expiry_date <= ?;")
 
         val certificateResults = jdbcTemplate.query<FindCredentialResult>(query,
-            arrayOf<Any>(escapedPath, expiresTimestamp),
-            { rowSet, rowNum ->
-                val versionCreatedAt = Instant.ofEpochMilli(rowSet.getLong("version_created_at"))
-                val name = rowSet.getString("name")
-                val expiryDate = rowSet.getTimestamp("expiry_date").toInstant()
-                FindCertificateResult(versionCreatedAt, name, expiryDate)
-            }
-        )
+            arrayOf<Any>(escapedPath, expiresTimestamp)
+        ) { rowSet, _ ->
+            val versionCreatedAt = Instant.ofEpochMilli(rowSet.getLong("version_created_at"))
+            val name = rowSet.getString("name")
+            val expiryDate = rowSet.getTimestamp("expiry_date").toInstant()
+            FindCertificateResult(versionCreatedAt, name, expiryDate)
+        }
         return certificateResults
     }
 
@@ -263,13 +261,12 @@ constructor(
                     (select * from credential where lower(name) like lower(?) )
                     as name on credential_version.credential_uuid = name.uuid
                  order by version_created_at desc""".trimMargin()),
-            arrayOf<Any>(escapedNameLike),
-            { rowSet, rowNum ->
-                val versionCreatedAt = Instant.ofEpochMilli(rowSet.getLong("version_created_at"))
-                val name = rowSet.getString("name")
-                FindCredentialResult(versionCreatedAt, name)
-            }
-        )
+            arrayOf<Any>(escapedNameLike)
+        ) { rowSet, _ ->
+            val versionCreatedAt = Instant.ofEpochMilli(rowSet.getLong("version_created_at"))
+            val name = rowSet.getString("name")
+            FindCredentialResult(versionCreatedAt, name)
+        }
         return credentialResults
     }
 }

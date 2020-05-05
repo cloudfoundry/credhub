@@ -13,7 +13,7 @@ interface CredentialVersionDataService {
 
     fun findMostRecent(name: String): CredentialVersion?
 
-    fun findByUuid(uuid: String): CredentialVersion?
+    fun findByUuid(uuidString: String): CredentialVersion?
 
     fun findAllCertificateCredentialsByCaName(caName: String): List<String>
 

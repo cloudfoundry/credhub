@@ -3,16 +3,16 @@ package org.cloudfoundry.credhub.requests
 import java.util.Objects
 
 class RsaGenerationParameters : RsaSshGenerationParameters() {
-    override fun equals(o: Any?): Boolean {
-        if (this === o) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
             return true
         }
 
-        if (o == null || javaClass != o.javaClass) {
+        if (other == null || javaClass != other.javaClass) {
             return false
         }
 
-        val that = o as RsaGenerationParameters?
+        val that = other as RsaGenerationParameters?
         return keyLength == that!!.keyLength
     }
 

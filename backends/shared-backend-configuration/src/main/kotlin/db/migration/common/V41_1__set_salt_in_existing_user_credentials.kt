@@ -24,7 +24,7 @@ class V41_1__set_salt_in_existing_user_credentials : BaseJavaMigration() {
             ?.databaseProductName
             ?.toLowerCase()
         val saltFactory = CryptSaltFactory()
-        val uuids = jdbcTemplate.query("select uuid from user_credential") { rowSet: ResultSet, rowNum: Int ->
+        val uuids = jdbcTemplate.query("select uuid from user_credential") { rowSet: ResultSet, _: Int ->
             val uuidBytes = rowSet.getBytes("uuid")
             if ("postgresql" == databaseName) {
                 return@query UUID.fromString(String(uuidBytes, StandardCharsets.UTF_8))

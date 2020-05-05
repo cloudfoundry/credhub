@@ -28,14 +28,14 @@ class SshCredentialValue : CredentialValue {
         this.publicKeyFingerprint = publicKeyFingerprint
     }
 
-    override fun equals(o: Any?): Boolean {
-        if (this === o) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
             return true
         }
-        if (o == null || javaClass != o.javaClass) {
+        if (other == null || javaClass != other.javaClass) {
             return false
         }
-        val that = o as SshCredentialValue?
+        val that = other as SshCredentialValue?
         return publicKey == that!!.publicKey &&
             privateKey == that.privateKey &&
             publicKeyFingerprint == that.publicKeyFingerprint

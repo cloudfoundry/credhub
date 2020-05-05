@@ -81,7 +81,7 @@ class CertificatesPostIntegrationTest {
             .contentType(APPLICATION_JSON)
             .content("{\"set_as_transitional\":\"false\"}")
 
-        val response = this.mockMvc!!.perform(regenerateLeafRequest)
+        val response = this.mockMvc.perform(regenerateLeafRequest)
             .andExpect(status().isOk)
             .andReturn().response
             .contentAsString

@@ -9,7 +9,7 @@ class SpyCertificateVersionDataService : CertificateVersionDataService {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun findByCredentialUUID(uuid: String): CredentialVersion? {
+    override fun findByCredentialUUID(uuidString: String): CredentialVersion? {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 

@@ -54,16 +54,16 @@ class StringGenerationParameters : GenerationParameters() {
         }
     }
 
-    override fun equals(o: Any?): Boolean {
-        if (this === o) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
             return true
         }
 
-        if (o == null || javaClass != o.javaClass) {
+        if (other == null || javaClass != other.javaClass) {
             return false
         }
 
-        val that = o as StringGenerationParameters?
+        val that = other as StringGenerationParameters?
         return excludeLower == that!!.excludeLower &&
             excludeNumber == that.excludeNumber &&
             excludeUpper == that.excludeUpper &&

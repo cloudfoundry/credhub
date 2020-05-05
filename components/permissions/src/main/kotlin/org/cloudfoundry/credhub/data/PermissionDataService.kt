@@ -105,8 +105,8 @@ constructor(
     }
 
     fun hasNoDefinedAccessControl(name: String): Boolean {
-        val credential = credentialDataService.find(name) ?: return false
-        return permissionRepository.findAllByPath(name).size == 0
+        credentialDataService.find(name) ?: return false
+        return permissionRepository.findAllByPath(name).isEmpty()
     }
 
     fun hasPermission(user: String, path: String, requiredPermission: PermissionOperation): Boolean {

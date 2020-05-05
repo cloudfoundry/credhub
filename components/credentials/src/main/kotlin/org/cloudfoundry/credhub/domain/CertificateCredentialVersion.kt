@@ -109,7 +109,7 @@ class CertificateCredentialVersion(delegate: CertificateCredentialVersionData) :
         }
 
         val parameters = generationParameters as CertificateGenerationParameters?
-        val existingGenerationParameters = CertificateGenerationParameters(parsedCertificate!!, caName)
+        val existingGenerationParameters = CertificateGenerationParameters(parsedCertificate, caName)
         return existingGenerationParameters == parameters
     }
 
@@ -121,14 +121,14 @@ class CertificateCredentialVersion(delegate: CertificateCredentialVersionData) :
         return null
     }
 
-    override fun equals(o: Any?): Boolean {
-        if (this === o) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
             return true
         }
-        if (o == null || javaClass != o.javaClass) {
+        if (other == null || javaClass != other.javaClass) {
             return false
         }
-        val that = o as CertificateCredentialVersion?
+        val that = other as CertificateCredentialVersion?
         return (delegate == that!!.delegate &&
             name == that.name &&
             uuid == that.uuid &&

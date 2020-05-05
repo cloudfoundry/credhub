@@ -18,7 +18,7 @@ class DummyCredentialVersionDataService : CredentialVersionDataService {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun findByUuid(uuid: String): CredentialVersion? {
+    override fun findByUuid(uuidString: String): CredentialVersion? {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 

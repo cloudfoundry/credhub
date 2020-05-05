@@ -68,7 +68,7 @@ class RegenerateEndpointConcatenateCasIntegrationTest {
                 "name": "$certName"
             }""".trimIndent())
 
-        this.mockMvc!!.perform(regenerateCertificateRequest)
+        this.mockMvc.perform(regenerateCertificateRequest)
             .andDo(print())
             .andExpect(status().is2xxSuccessful)
             .andExpect(jsonPath("$.value.ca").value(generatedCa + regeneratedCa))
