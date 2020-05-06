@@ -7,12 +7,12 @@ CredHub manages credentials like passwords, certificates, certificate authoritie
 * [Documentation](docs/)
 * [CredHub Tracker](https://www.pivotaltracker.com/n/projects/1977341)
 
-CredHub is intended to be deployed by [BOSH](https://bosh.io) using the [credhub-release](https://github.com/pivotal-cf/credhub-release) BOSH release. This repository is for development and is **not intended to be directly deployable**.
+CredHub is intended to be deployed by [BOSH](https://bosh.io) using the [credhub-release](https://github.com/pivotal/credhub-release) BOSH release. This repository is for development and is **not intended to be directly deployable**.
 
 Additional repos:
 
 * [credhub-cli](https://github.com/cloudfoundry-incubator/credhub-cli): command line interface for credhub
-* [credhub-release](https://github.com/pivotal-cf/credhub-release): BOSH release of CredHub server
+* [credhub-release](https://github.com/pivotal/credhub-release): BOSH release of CredHub server
 * [credhub-acceptance-tests](https://github.com/cloudfoundry-incubator/credhub-acceptance-tests): integration tests written in Go.
 
 # Contributing to CredHub
