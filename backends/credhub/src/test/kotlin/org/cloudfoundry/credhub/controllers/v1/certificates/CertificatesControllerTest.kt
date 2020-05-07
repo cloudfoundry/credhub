@@ -137,9 +137,11 @@ class CertificatesControllerTest {
                             .description("Set if certificate is transitional")
                             .type(JsonFieldType.BOOLEAN)
                             .optional(),
-                        fieldWithPath("metadata.description")
+                        fieldWithPath("metadata")
                             .description("Additional metadata of the credential.")
-                            .optional()
+                            .optional(),
+                        fieldWithPath("metadata.*")
+                            .ignored()
                     ),
                     pathParameters(
                         getCertificateIdPathParameter()

@@ -91,9 +91,11 @@ class RegenerateControllerTest {
                                     PayloadDocumentation.fieldWithPath("name")
                                             .description("The credential name to regenerate.")
                                             .type(JsonFieldType.STRING),
-                                    PayloadDocumentation.fieldWithPath("metadata.some")
-                                            .description("The credential metadata to add.")
-                                            .type(JsonFieldType.STRING)
+                                    PayloadDocumentation.fieldWithPath("metadata")
+                                            .description("Additional metadata of the credential.")
+                                            .optional(),
+                                    PayloadDocumentation.fieldWithPath("metadata.*")
+                                            .ignored()
                             )
                     )
             ).andReturn().response
