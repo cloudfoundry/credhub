@@ -121,17 +121,17 @@ class UserContextFactoryTest {
     private fun setupOAuthMock(grantType: String): OAuth2Authentication {
         val authentication = mock(OAuth2Authentication::class.java)
         val oauth2Request = spy(OAuth2Request(
-									null,
-									"TEST_CLIENT_ID",
-									null,
-									false,
-									null,
-									null,
-									null,
-									null,
-									null
-								)
-		)
+                null,
+                "TEST_CLIENT_ID",
+                null,
+                false,
+                null,
+                null,
+                null,
+                null,
+                null
+        )
+        )
         val token = mock(OAuth2AccessToken::class.java)
         val authDetails = mock(OAuth2AuthenticationDetails::class.java)
 
