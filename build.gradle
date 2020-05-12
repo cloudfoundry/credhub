@@ -23,7 +23,7 @@ buildscript {
         springBootVersion = '2.2.7.RELEASE'
         springRestDocsVersion = '2.0.4.RELEASE'
         springSecurityOauth2Version = '2.4.1.RELEASE'
-        springSecurityOauth2AutoconfigureVersion = '2.2.6.RELEASE'
+        springSecurityOauth2AutoconfigureVersion = '2.2.7.RELEASE'
     }
     repositories {
         mavenCentral()
