@@ -1,10 +1,5 @@
 package org.cloudfoundry.credhub.auth
 
-import java.io.IOException
-import java.security.SignatureException
-import javax.servlet.ServletException
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.exceptions.AccessTokenExpiredException
 import org.cloudfoundry.credhub.util.CurrentTimeProvider
@@ -14,12 +9,19 @@ import org.springframework.security.core.AuthenticationException
 import org.springframework.security.jwt.JwtHelper
 import org.springframework.security.jwt.crypto.sign.InvalidSignatureException
 import org.springframework.security.oauth2.common.exceptions.InvalidTokenException
+import org.springframework.security.oauth2.common.exceptions.OAuth2Exception
 import org.springframework.security.oauth2.common.util.JsonParser
 import org.springframework.security.oauth2.common.util.JsonParserFactory
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails
 import org.springframework.security.oauth2.provider.error.OAuth2AuthenticationEntryPoint
 import org.springframework.security.oauth2.provider.token.AccessTokenConverter
 import org.springframework.stereotype.Service
+import java.io.IOException
+import java.security.SignatureException
+import java.security.cert.CertPathValidatorException
+import javax.servlet.ServletException
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
 
 @Service
 @ConditionalOnProperty("security.oauth2.enabled")
@@ -55,11 +57,19 @@ internal constructor(
         exception = when {
             tokenIsExpired(tokenInformation) -> AccessTokenExpiredException("Access token expired", cause!!)
             cause is InvalidSignatureException -> OAuthSignatureException(
-                removeTokenFromMessage(ErrorMessages.INVALID_TOKEN_SIGNATURE, token))
+                removeTokenFromMessage(ErrorMessages.INVALID_TOKEN_SIGNATURE, token)
+            )
             cause is SignatureException -> OAuthSignatureException(
-                removeTokenFromMessage(ErrorMessages.MALFORMED_TOKEN, token))
+                removeTokenFromMessage(ErrorMessages.MALFORMED_TOKEN, token)
+            )
+            cause is CertPathValidatorException ->
+                InvalidUAACertificateException(
+                    "Server unable to communicate with backend UAA due to untrusted CA: " + runtimeException.message,
+                    cause
+                )
             else -> InvalidTokenException(
-                removeTokenFromMessage(runtimeException.message.toString(), token), cause)
+                removeTokenFromMessage(runtimeException.message.toString(), token), cause
+            )
         }
 
         exception.stackTrace = runtimeException.stackTrace
@@ -100,5 +110,15 @@ internal constructor(
 
     private fun removeTokenFromMessage(message: String, token: String?): String {
         return message.replace(": $token", "")
+    }
+}
+
+class InvalidUAACertificateException(msg: String?, t: Throwable?) : OAuth2Exception(msg, t) {
+    override fun getOAuth2ErrorCode(): String? {
+        return "server_error"
+    }
+
+    override fun getHttpErrorCode(): Int {
+        return 500
     }
 }
