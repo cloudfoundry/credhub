@@ -22,7 +22,7 @@ buildscript {
         spotBugsGradlePluginVersion = '1.6.9'
         springBootVersion = '2.2.7.RELEASE'
         springRestDocsVersion = '2.0.4.RELEASE'
-        springSecurityOauth2Version = '2.4.1.RELEASE'
+        springSecurityOauth2Version = '2.5.0.RELEASE'
         springSecurityOauth2AutoconfigureVersion = '2.3.0.RELEASE'
     }
     repositories {
