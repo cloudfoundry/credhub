@@ -57,6 +57,7 @@ dependencies {
     implementation("org.apache.commons:commons-lang3:${apacheCommonsLang3Version}")
     implementation("org.apache.commons:commons-io:${apacheCommonsIoVersion}")
     implementation("commons-codec:commons-codec:${commonsCodecVersion}")
+    implementation("jakarta.validation:jakarta.validation-api:2.0.2")
 }
 
 dependencyManagement {

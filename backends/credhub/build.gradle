@@ -81,6 +81,8 @@ dependencies {
 
     testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc:$springRestDocsVersion")
     asciidoctor("org.springframework.restdocs:spring-restdocs-asciidoctor:$springRestDocsVersion")
+
+    implementation("jakarta.validation:jakarta.validation-api:2.0.2")
 }
 
 dependencyManagement {

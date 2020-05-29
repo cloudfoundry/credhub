@@ -38,6 +38,7 @@ dependencies {
     implementation("com.jayway.jsonpath:json-path:${jsonPathVersion}")
     implementation("com.google.guava:guava:${guavaVersion}")
     implementation("commons-codec:commons-codec:${commonsCodecVersion}")
+    implementation("jakarta.validation:jakarta.validation-api:2.0.2")
 }
 
 dependencyManagement {
