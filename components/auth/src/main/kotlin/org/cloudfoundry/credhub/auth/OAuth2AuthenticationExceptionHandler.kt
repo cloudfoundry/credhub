@@ -1,5 +1,11 @@
 package org.cloudfoundry.credhub.auth
 
+import java.io.IOException
+import java.security.SignatureException
+import java.security.cert.CertPathValidatorException
+import javax.servlet.ServletException
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.exceptions.AccessTokenExpiredException
 import org.cloudfoundry.credhub.util.CurrentTimeProvider
@@ -16,12 +22,6 @@ import org.springframework.security.oauth2.provider.authentication.OAuth2Authent
 import org.springframework.security.oauth2.provider.error.OAuth2AuthenticationEntryPoint
 import org.springframework.security.oauth2.provider.token.AccessTokenConverter
 import org.springframework.stereotype.Service
-import java.io.IOException
-import java.security.SignatureException
-import java.security.cert.CertPathValidatorException
-import javax.servlet.ServletException
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
 
 @Service
 @ConditionalOnProperty("security.oauth2.enabled")
