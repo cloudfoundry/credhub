@@ -2,6 +2,8 @@
 
 CredHub has introduced credential types to make generation and management of multi-part credentials easier. For example, a TLS certificate contains 3 parts - root CA, certificate and private key. If these were stored as separate objects, the association between them may not be clear.
 
+Credentials have a maximum size of 64 KB.
+
 CredHub supports the following credential types: 
 
 * **Value** - This type holds a single string value. It is meant for arbitrary configurations and other non-generated or validated strings. 
