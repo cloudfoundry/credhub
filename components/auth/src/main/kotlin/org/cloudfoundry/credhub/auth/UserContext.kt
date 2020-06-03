@@ -5,6 +5,8 @@ import org.bouncycastle.asn1.x500.X500Name
 import org.bouncycastle.asn1.x500.style.BCStyle
 
 class UserContext {
+    class UnsupportedGrantTypeException(message: String) : Exception(message)
+    class UnsupportedAuthMethodException(message: String) : Exception(message)
 
     var userId = VALUE_MISSING_OR_IRRELEVANT_TO_AUTH_TYPE
     var userName = VALUE_MISSING_OR_IRRELEVANT_TO_AUTH_TYPE
@@ -20,19 +22,27 @@ class UserContext {
     var authMethod: String? = null
         private set
 
-    val actor: String?
+    val actor: String
         get() {
             if (AUTH_METHOD_UAA == this.authMethod) {
-                if (UAA_PASSWORD_GRANT_TYPE == this.grantType) {
-                    return UAA_USER_ACTOR_PREFIX + ":" + this.userId
-                } else if (UAA_CLIENT_CREDENTIALS_GRANT_TYPE == this.grantType) {
-                    return UAA_CLIENT_ACTOR_PREFIX + ":" + this.clientId
+                return when (this.grantType) {
+                    UAA_PASSWORD_GRANT_TYPE -> {
+                        UAA_USER_ACTOR_PREFIX + ":" + this.userId
+                    }
+                    UAA_CLIENT_CREDENTIALS_GRANT_TYPE -> {
+                        UAA_CLIENT_ACTOR_PREFIX + ":" + this.clientId
+                    }
+                    else -> {
+                        throw UnsupportedGrantTypeException(this.grantType.toString())
+                    }
                 }
             }
 
             return if (AUTH_METHOD_MUTUAL_TLS == this.authMethod) {
                 MTLS_ACTOR_PREFIX + "-" + parseAppIdentifier(this.clientId)
-            } else null
+            } else {
+                throw UnsupportedAuthMethodException(this.authMethod.toString())
+            }
         }
 
     // Needed for UserContextArgumentResolver
