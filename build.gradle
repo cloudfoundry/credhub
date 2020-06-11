@@ -17,7 +17,7 @@ buildscript {
         ktlintVersion = '0.35.0'
         mariadbJdbcVersion = '2.6.0'
         passayVersion = '1.6.0'
-        postgresqlJdbcVersion = '42.2.13'
+        postgresqlJdbcVersion = '42.2.14'
         spotBugsToolVersion = '3.1.9'
         spotBugsGradlePluginVersion = '1.6.9'
         springBootVersion = '2.2.7.RELEASE'
