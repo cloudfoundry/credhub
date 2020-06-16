@@ -264,7 +264,7 @@ public class CertificateGeneratorTest {
       equalTo(CertificateFormatter.pemOf(rootCaKeyPair.getPrivate())));
     assertThat(certificateCredential.getCertificate(),
       equalTo(CertificateFormatter.pemOf(certificate)));
-    assertThat(certificateCredential.getCa(), equalTo(CertificateFormatter.pemOf(certificate)));
+    assertThat(certificateCredential.getCa(), equalTo(""));
     verify(signedCertificateGenerator, times(1)).getSelfSigned(rootCaKeyPair, inputParameters);
   }
 

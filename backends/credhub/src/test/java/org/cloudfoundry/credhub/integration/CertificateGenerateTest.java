@@ -1,6 +1,7 @@
 package org.cloudfoundry.credhub.integration;
 
 import java.io.ByteArrayInputStream;
+import java.io.StringReader;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.time.temporal.ChronoUnit;
@@ -8,6 +9,9 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.bouncycastle.asn1.x509.*;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.openssl.PEMParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
@@ -22,9 +26,6 @@ import org.springframework.web.context.WebApplicationContext;
 
 import com.google.common.collect.ImmutableMap;
 import com.jayway.jsonpath.JsonPath;
-import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
-import org.bouncycastle.asn1.x509.Extension;
-import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.ErrorMessages;
@@ -191,6 +192,67 @@ public class CertificateGenerateTest {
     public void certificateGeneration_whenUserCantReadCA_andCantWriteCert_shouldReturnCorrectError() throws Exception {
         generateCa(mockMvc, "picard", ALL_PERMISSIONS_TOKEN);
         expectErrorCodeWhileGeneratingCertificate(mockMvc, "riker", NO_PERMISSIONS_TOKEN, ErrorMessages.Credential.INVALID_ACCESS, status().isForbidden());
+    }
+
+    @Test
+    public void certificateGeneration_shouldGenerateCorrectCertificateAsCa() throws Exception {
+        final MockHttpServletRequestBuilder request = post("/api/v1/data")
+                .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+                .accept(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
+                //language=JSON
+                .content("{\n"
+                        + "  \"name\" : \"picard\",\n"
+                        + "  \"type\" : \"certificate\",\n"
+                        + "  \"parameters\" : {\n"
+                        + "    \"common_name\" : \"no_real_existing_ca\",\n"
+                        + "    \"self_sign\" : true,\n"
+                        + "    \"is_ca\" : true,\n"
+                        + "    \"duration\" : 1\n"
+                        + "  }\n"
+                        + "}");
+
+        final String certResult = this.mockMvc
+                .perform(request)
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        final String certCa = (new JSONObject(certResult)).getJSONObject("value").getString("ca");
+        final String cert = (new JSONObject(certResult)).getJSONObject("value").getString("certificate");
+
+        assertThat(certCa,equalTo(cert));
+
+        X509CertificateHolder certificateHolder = (X509CertificateHolder) (new PEMParser(new StringReader(certCa)).readObject());
+        final Extensions extensions = certificateHolder.getExtensions();
+        final BasicConstraints basicConstraints = BasicConstraints
+                .fromExtensions(Extensions.getInstance(extensions));
+        assertThat(basicConstraints.isCA(), Matchers.is(Boolean.TRUE));
+    }
+
+    @Test
+    public void certificateGeneration_shouldGenerateCorrectCertificateWithoutCa() throws Exception {
+        final MockHttpServletRequestBuilder request = post("/api/v1/data")
+                .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+                .accept(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
+                //language=JSON
+                .content("{\n"
+                        + "  \"name\" : \"picard\",\n"
+                        + "  \"type\" : \"certificate\",\n"
+                        + "  \"parameters\" : {\n"
+                        + "    \"common_name\" : \"no_real_existing_ca\",\n"
+                        + "    \"self_sign\" : true\n"
+                        + "  }\n"
+                        + "}");
+
+        final String certResult = this.mockMvc
+                .perform(request)
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        final String certCa = (new JSONObject(certResult)).getJSONObject("value").getString("ca");
+        final String cert = (new JSONObject(certResult)).getJSONObject("value").getString("certificate");
+
+        assertThat(certCa,equalTo(""));
+        assertThat(cert, Matchers.notNullValue());
     }
 
     @Test
