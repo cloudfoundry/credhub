@@ -1,12 +1,12 @@
 package org.cloudfoundry.credhub.audit
 
-import java.nio.charset.StandardCharsets.UTF_8
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.`is`
 import org.hamcrest.Matchers.equalTo
 import org.junit.Before
 import org.junit.Test
 import org.springframework.mock.web.MockHttpServletRequest
+import java.nio.charset.StandardCharsets.UTF_8
 
 class CEFAuditRecordTest {
 

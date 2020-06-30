@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.controllers.v1.info
 
-import java.security.Security
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
@@ -19,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.security.Security
 
 @RunWith(SpringRunner::class)
 class InfoControllerTest {
@@ -47,20 +47,21 @@ class InfoControllerTest {
     @Test
     fun GET__info__returns_info() {
         val mvcResult = mockMvc.perform(
-                get(InfoController.ENDPOINT)
-                    .credHubAuthHeader()
-                    .contentType(MediaType.APPLICATION_JSON)
+            get(InfoController.ENDPOINT)
+                .credHubAuthHeader()
+                .contentType(MediaType.APPLICATION_JSON)
+        )
+            .andExpect(status().isOk)
+            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+            .andDo(
+                document(
+                    CredHubRestDocs.DOCUMENT_IDENTIFIER
                 )
-                .andExpect(status().isOk)
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andDo(
-                        document(
-                                CredHubRestDocs.DOCUMENT_IDENTIFIER
-                        )
-                ).andReturn()
+            ).andReturn()
 
         // language=json
-        val expectedResponseBody = """
+        val expectedResponseBody =
+            """
             {
               "app": {
                 "name": "${InfoController.CREHUB_NAME}"
@@ -69,7 +70,7 @@ class InfoControllerTest {
                 "url": "$uaaUrl"
               }
             }
-        """.trimIndent()
+            """.trimIndent()
         JSONAssert.assertEquals(mvcResult.response.contentAsString, expectedResponseBody, true)
     }
 }

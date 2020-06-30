@@ -1,12 +1,12 @@
 package org.cloudfoundry.credhub.config
 
-import java.net.URI
-import java.net.URISyntaxException
-import java.nio.file.Paths
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Configuration
+import java.net.URI
+import java.net.URISyntaxException
+import java.nio.file.Paths
 
 @Configuration
 @ConfigurationProperties("auth-server")

@@ -1,14 +1,14 @@
 package org.cloudfoundry.credhub.auth
 
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpStatus
+import org.springframework.stereotype.Component
+import org.springframework.web.filter.OncePerRequestFilter
 import java.io.IOException
 import javax.servlet.FilterChain
 import javax.servlet.ServletException
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.http.HttpStatus
-import org.springframework.stereotype.Component
-import org.springframework.web.filter.OncePerRequestFilter
 
 @Component
 class ActuatorPortFilter : OncePerRequestFilter() {

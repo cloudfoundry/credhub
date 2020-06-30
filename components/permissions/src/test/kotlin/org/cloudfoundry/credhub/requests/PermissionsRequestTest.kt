@@ -24,24 +24,29 @@ class PermissionsRequestTest {
     @Test
     fun validation_allowsGoodJson() {
         val entryList = newArrayList(
-            PermissionEntry("someone", "test-path", newArrayList(PermissionOperation.READ)))
+            PermissionEntry("someone", "test-path", newArrayList(PermissionOperation.READ))
+        )
         val original = PermissionsRequest("test-name", entryList)
         val json = serialize(original)!!
         val actual = deserialize<PermissionsRequest>(json, PermissionsRequest::class.java)
 
         assertThat(actual.credentialName, equalTo("/test-name"))
-        assertThat(actual.permissions, contains(
-            allOf(
-                hasProperty("actor", equalTo("someone")),
-                hasProperty<PermissionEntry>("allowedOperations", hasItems(PermissionOperation.READ))
+        assertThat(
+            actual.permissions,
+            contains(
+                allOf(
+                    hasProperty("actor", equalTo("someone")),
+                    hasProperty<PermissionEntry>("allowedOperations", hasItems(PermissionOperation.READ))
+                )
             )
-        ))
+        )
     }
 
     @Test
     fun validation_ensuresCredentialNameIsNotNull() {
         val entryList = newArrayList(
-            PermissionEntry("someone", "test-path", newArrayList(PermissionOperation.READ)))
+            PermissionEntry("someone", "test-path", newArrayList(PermissionOperation.READ))
+        )
         val original = PermissionsRequest(null, entryList)
         val violations = validate(original)
 
@@ -52,7 +57,8 @@ class PermissionsRequestTest {
     @Test
     fun validation_ensuresCredentialNameIsNotEmpty() {
         val entryList = newArrayList(
-            PermissionEntry("someone", "test-path", newArrayList(PermissionOperation.READ)))
+            PermissionEntry("someone", "test-path", newArrayList(PermissionOperation.READ))
+        )
         val original = PermissionsRequest("", entryList)
         val violations = validate(original)
 

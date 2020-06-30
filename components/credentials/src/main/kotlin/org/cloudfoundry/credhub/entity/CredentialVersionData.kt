@@ -1,6 +1,15 @@
 package org.cloudfoundry.credhub.entity
 
 import com.fasterxml.jackson.databind.JsonNode
+import org.cloudfoundry.credhub.constants.UuidConstants
+import org.cloudfoundry.credhub.entities.EncryptedValue
+import org.cloudfoundry.credhub.util.InstantMillisecondsConverter
+import org.cloudfoundry.credhub.utils.JsonNodeConverter
+import org.hibernate.annotations.GenericGenerator
+import org.hibernate.annotations.NotFound
+import org.hibernate.annotations.NotFoundAction
+import org.springframework.data.annotation.CreatedDate
+import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.time.Instant
 import java.util.UUID
 import javax.persistence.CascadeType
@@ -18,15 +27,6 @@ import javax.persistence.JoinColumn
 import javax.persistence.ManyToOne
 import javax.persistence.OneToOne
 import javax.persistence.Table
-import org.cloudfoundry.credhub.constants.UuidConstants
-import org.cloudfoundry.credhub.entities.EncryptedValue
-import org.cloudfoundry.credhub.util.InstantMillisecondsConverter
-import org.cloudfoundry.credhub.utils.JsonNodeConverter
-import org.hibernate.annotations.GenericGenerator
-import org.hibernate.annotations.NotFound
-import org.hibernate.annotations.NotFoundAction
-import org.springframework.data.annotation.CreatedDate
-import org.springframework.data.jpa.domain.support.AuditingEntityListener
 
 @Entity
 @Table(name = "credential_version")

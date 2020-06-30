@@ -1,10 +1,10 @@
 package org.cloudfoundry.credhub.util
 
+import org.springframework.data.auditing.DateTimeProvider
+import org.springframework.stereotype.Component
 import java.time.Instant
 import java.time.temporal.TemporalAccessor
 import java.util.Optional
-import org.springframework.data.auditing.DateTimeProvider
-import org.springframework.stereotype.Component
 
 @Component
 open class CurrentTimeProvider : DateTimeProvider {

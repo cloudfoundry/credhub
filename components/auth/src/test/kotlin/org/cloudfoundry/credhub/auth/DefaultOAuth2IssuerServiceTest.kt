@@ -1,13 +1,5 @@
 package org.cloudfoundry.credhub.auth
 
-import java.io.IOException
-import java.net.URI
-import java.net.URISyntaxException
-import java.security.KeyManagementException
-import java.security.KeyStoreException
-import java.security.NoSuchAlgorithmException
-import java.security.cert.CertificateException
-import java.util.HashMap
 import org.cloudfoundry.credhub.RestTemplateFactory
 import org.cloudfoundry.credhub.config.OAuthProperties
 import org.hamcrest.MatcherAssert.assertThat
@@ -21,6 +13,14 @@ import org.mockito.Mockito.mock
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.client.RestTemplate
+import java.io.IOException
+import java.net.URI
+import java.net.URISyntaxException
+import java.security.KeyManagementException
+import java.security.KeyStoreException
+import java.security.NoSuchAlgorithmException
+import java.security.cert.CertificateException
+import java.util.HashMap
 
 @RunWith(JUnit4::class)
 class DefaultOAuth2IssuerServiceTest {

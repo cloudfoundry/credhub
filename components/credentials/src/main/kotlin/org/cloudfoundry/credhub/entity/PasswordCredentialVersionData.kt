@@ -1,5 +1,8 @@
 package org.cloudfoundry.credhub.entity
 
+import org.cloudfoundry.credhub.entities.EncryptedValue
+import org.hibernate.annotations.NotFound
+import org.hibernate.annotations.NotFoundAction
 import javax.persistence.CascadeType
 import javax.persistence.DiscriminatorValue
 import javax.persistence.Entity
@@ -7,9 +10,6 @@ import javax.persistence.JoinColumn
 import javax.persistence.OneToOne
 import javax.persistence.PrimaryKeyJoinColumn
 import javax.persistence.SecondaryTable
-import org.cloudfoundry.credhub.entities.EncryptedValue
-import org.hibernate.annotations.NotFound
-import org.hibernate.annotations.NotFoundAction
 
 @Entity
 @DiscriminatorValue(PasswordCredentialVersionData.CREDENTIAL_TYPE)

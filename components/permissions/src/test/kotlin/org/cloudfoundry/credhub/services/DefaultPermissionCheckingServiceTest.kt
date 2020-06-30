@@ -1,7 +1,5 @@
 package org.cloudfoundry.credhub.services
 
-import java.util.HashSet
-import java.util.UUID
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertFalse
 import junit.framework.TestCase.assertTrue
@@ -23,6 +21,8 @@ import org.junit.runners.JUnit4
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
 import org.springframework.test.util.ReflectionTestUtils
+import java.util.HashSet
+import java.util.UUID
 
 @RunWith(JUnit4::class)
 class DefaultPermissionCheckingServiceTest {
@@ -86,7 +86,8 @@ class DefaultPermissionCheckingServiceTest {
         initializeEnforcement(false)
 
         assertTrue(
-            subject!!.userAllowedToOperateOnActor("test-actor"))
+            subject!!.userAllowedToOperateOnActor("test-actor")
+        )
     }
 
     @Test
@@ -94,7 +95,8 @@ class DefaultPermissionCheckingServiceTest {
         initializeEnforcement(true)
 
         assertTrue(
-            subject!!.userAllowedToOperateOnActor("random-actor"))
+            subject!!.userAllowedToOperateOnActor("random-actor")
+        )
     }
 
     @Test
@@ -102,7 +104,8 @@ class DefaultPermissionCheckingServiceTest {
         initializeEnforcement(true)
 
         assertFalse(
-            subject!!.userAllowedToOperateOnActor("test-actor"))
+            subject!!.userAllowedToOperateOnActor("test-actor")
+        )
     }
 
     @Test
@@ -111,7 +114,8 @@ class DefaultPermissionCheckingServiceTest {
         `when`(userContext!!.actor).thenReturn(null)
 
         assertFalse(
-            subject!!.userAllowedToOperateOnActor("test-actor"))
+            subject!!.userAllowedToOperateOnActor("test-actor")
+        )
     }
 
     @Test
@@ -152,8 +156,10 @@ class DefaultPermissionCheckingServiceTest {
         permission: PermissionOperation,
         isGranted: Boolean
     ) {
-        `when`(permissionDataService!!
-            .hasPermission(user, credentialName, permission))
+        `when`(
+            permissionDataService!!
+                .hasPermission(user, credentialName, permission)
+        )
             .thenReturn(isGranted)
 
         assertThat(subject!!.hasPermission(user, credentialName, permission), equalTo(isGranted))
@@ -165,8 +171,10 @@ class DefaultPermissionCheckingServiceTest {
         permission: PermissionOperation,
         isGranted: Boolean
     ) {
-        `when`(permissionDataService!!
-            .hasPermission(user, credentialName, permission))
+        `when`(
+            permissionDataService!!
+                .hasPermission(user, credentialName, permission)
+        )
             .thenReturn(isGranted)
 
         assertThat(subject!!.hasPermission(user, credentialName, permission), equalTo(true))

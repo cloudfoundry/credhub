@@ -1,13 +1,13 @@
 package org.cloudfoundry.credhub.utils
 
-import java.security.PrivateKey
-import java.security.PublicKey
-import java.security.interfaces.RSAPrivateKey
-import java.security.interfaces.RSAPublicKey
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.cloudfoundry.credhub.exceptions.MalformedPrivateKeyException
 import org.junit.Test
+import java.security.PrivateKey
+import java.security.PublicKey
+import java.security.interfaces.RSAPrivateKey
+import java.security.interfaces.RSAPublicKey
 
 class PrivateKeyReaderTest {
 

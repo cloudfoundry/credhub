@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.controllers.v1.versions
 
-import java.security.Security
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
@@ -18,6 +17,7 @@ import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
+import java.security.Security
 
 class VersionControllerTest {
     @Rule
@@ -44,23 +44,24 @@ class VersionControllerTest {
     fun GET__version__returns_version() {
         Mockito.`when`(versionProvider.currentVersion()).thenReturn("x.x.x")
         val mvcResult = mockMvc.perform(
-                RestDocumentationRequestBuilders.get(VersionController.ENDPOINT)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .credHubAuthHeader()
+            RestDocumentationRequestBuilders.get(VersionController.ENDPOINT)
+                .contentType(MediaType.APPLICATION_JSON)
+                .credHubAuthHeader()
         ).andExpect(MockMvcResultMatchers.status().isOk)
-                .andExpect(MockMvcResultMatchers.content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andDo(
-                        MockMvcRestDocumentation.document(
-                                CredHubRestDocs.DOCUMENT_IDENTIFIER
-                        )
-                ).andReturn()
+            .andExpect(MockMvcResultMatchers.content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+            .andDo(
+                MockMvcRestDocumentation.document(
+                    CredHubRestDocs.DOCUMENT_IDENTIFIER
+                )
+            ).andReturn()
 
         // language=json
-        val expectedResponse = """
+        val expectedResponse =
+            """
             {
               "version": "x.x.x"
             }
-        """.trimIndent()
+            """.trimIndent()
         JSONAssert.assertEquals(mvcResult.response.contentAsString, expectedResponse, true)
     }
 }

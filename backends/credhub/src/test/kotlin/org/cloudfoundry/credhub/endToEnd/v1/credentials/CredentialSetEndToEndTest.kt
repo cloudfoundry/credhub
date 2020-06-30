@@ -67,7 +67,8 @@ class CredentialSetEndToEndTest {
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)
             // language=JSON
-            .content("""
+            .content(
+                """
                 {
                     "name": "$CREDENTIAL_NAME",
                     "type": "rsa",
@@ -76,7 +77,8 @@ class CredentialSetEndToEndTest {
                       "private_key": ""
                     }
                 }
-            """.trimIndent())
+                """.trimIndent()
+            )
 
         this.mockMvc
             .perform(setRsaRequest)
@@ -93,7 +95,8 @@ class CredentialSetEndToEndTest {
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)
             // language=JSON
-            .content("""
+            .content(
+                """
               {
                 "name": "$CREDENTIAL_NAME",
                 "type": "user",
@@ -102,7 +105,8 @@ class CredentialSetEndToEndTest {
                   "password": "some_silly_password"
                 }
               }
-            """.trimIndent())
+                """.trimIndent()
+            )
 
         val response = this.mockMvc
             .perform(setUserRequest)
@@ -182,7 +186,8 @@ class CredentialSetEndToEndTest {
     @Test
     fun `malformed private key should result in 400`() {
 
-        val certificate = """
+        val certificate =
+            """
             -----BEGIN CERTIFICATE----- fake
             MIIDPjCCAiagAwIBAgIUIgg7xZVYF3qFsUVAhAFldTvCDJ4wDQYJKoZIhvcNAQEL
             BQAwFjEUMBIGA1UEAxMLZXhhbXBsZS5jb20wHhcNMTgwNjE1MTUwMDU3WhcNMTkw
@@ -203,9 +208,10 @@ class CredentialSetEndToEndTest {
             Wv7ec0Gguo4GtOomkmFIgXBLZd0ZqWywEjSGRy4us/71gBioTgCBMw8g75SzxX5u
             hQHS5//LiA50aEI4X0k5TDQp
             -----END CERTIFICATE-----
-        """.trimIndent().replace("\n", "\\n")
+            """.trimIndent().replace("\n", "\\n")
 
-        val invalidPrivateKey = """
+        val invalidPrivateKey =
+            """
             -----BEGIN RSA PRIVATE KEY----- fake
             MIIEpQIBAAKCAQEAwqIrV8HpCuPyuJ6VvyG7gVhYJGAOX4zhclxkTAKT5rkE4Lfj
             048GZsDghK+pHs+tVotfyrJzYGJoEBTn9Wy7kP5pQmLRF54imDztep15OlyoJmLZ
@@ -233,7 +239,7 @@ class CredentialSetEndToEndTest {
             OlKeNTSxn9AkyYx9PJ8i1TIx6GyFIX4pkJczLEu+XINm82MKSBGuRL1EUvkVddx3
             6clZk5BLDXjmCtCr5DGZ01EbT0wsbsBM1GtoCS4+vUQkJVHb0r6/ZdXX=
             -----END RSA PRIVATE KEY-----
-        """.trimIndent().replace("\n", "\\n")
+            """.trimIndent().replace("\n", "\\n")
 
         val request = put("/api/v1/data")
             .header("Authorization", "Bearer ${AuthConstants.ALL_PERMISSIONS_TOKEN}")
@@ -279,7 +285,8 @@ class CredentialSetEndToEndTest {
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)
             // language=JSON
-            .content("""
+            .content(
+                """
               {
                 "name": "$CREDENTIAL_NAME",
                 "type": "user",
@@ -289,7 +296,8 @@ class CredentialSetEndToEndTest {
                   "password": "some_silly_password"
                 }
               }
-            """.trimIndent())
+                """.trimIndent()
+            )
 
         val setResponse = this.mockMvc
             .perform(setUserRequest)

@@ -4,12 +4,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import java.util.Objects
-import javax.validation.constraints.NotEmpty
 import org.apache.commons.codec.digest.Crypt
 import org.cloudfoundry.credhub.CryptSaltFactory
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.utils.EmptyStringToNull
+import java.util.Objects
+import javax.validation.constraints.NotEmpty
 
 class UserCredentialValue : CredentialValue {
     @JsonDeserialize(using = EmptyStringToNull::class)

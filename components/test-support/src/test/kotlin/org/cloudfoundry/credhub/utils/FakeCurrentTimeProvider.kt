@@ -1,9 +1,9 @@
 package org.cloudfoundry.credhub.utils
 
+import org.cloudfoundry.credhub.util.CurrentTimeProvider
 import java.time.Instant
 import java.time.temporal.TemporalAccessor
 import java.util.Optional
-import org.cloudfoundry.credhub.util.CurrentTimeProvider
 
 class FakeCurrentTimeProvider : CurrentTimeProvider() {
 

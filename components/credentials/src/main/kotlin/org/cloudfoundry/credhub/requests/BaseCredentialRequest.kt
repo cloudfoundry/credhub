@@ -1,12 +1,12 @@
 package org.cloudfoundry.credhub.requests
 
 import com.fasterxml.jackson.databind.JsonNode
-import javax.validation.Validation
-import javax.validation.constraints.NotEmpty
-import javax.validation.constraints.Pattern
 import org.apache.commons.lang3.StringUtils
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException
+import javax.validation.Validation
+import javax.validation.constraints.NotEmpty
+import javax.validation.constraints.Pattern
 
 abstract class BaseCredentialRequest {
 

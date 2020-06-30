@@ -1,10 +1,10 @@
 package org.cloudfoundry.credhub.requests
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import javax.validation.Valid
-import javax.validation.constraints.NotNull
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue
+import javax.validation.Valid
+import javax.validation.constraints.NotNull
 
 class CreateVersionRequest {
 

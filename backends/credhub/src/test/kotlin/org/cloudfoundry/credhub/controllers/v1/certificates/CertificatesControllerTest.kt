@@ -2,10 +2,6 @@ package org.cloudfoundry.credhub.controllers.v1.certificates
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import java.security.Security
-import java.time.Instant
-import java.time.temporal.ChronoUnit
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
@@ -45,6 +41,10 @@ import org.springframework.restdocs.request.RequestDocumentation.pathParameters
 import org.springframework.restdocs.request.RequestDocumentation.requestParameters
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.security.Security
+import java.time.Instant
+import java.time.temporal.ChronoUnit
+import java.util.UUID
 
 class CertificatesControllerTest {
     @Rule
@@ -101,7 +101,8 @@ class CertificatesControllerTest {
             name,
             CredentialType.CERTIFICATE.type.toLowerCase(),
             metadata,
-            certificateCredentialValue)
+            certificateCredentialValue
+        )
 
         certificateCredentialVersion = CertificateCredentialVersion(certificateCredentialValue, name, SpyEncryptor())
         certificateCredentialVersion.versionCreatedAt = createdAt
@@ -115,9 +116,10 @@ class CertificatesControllerTest {
     @Test
     fun POST__certificates_uuid_regenerate__returns_certificate() {
         // language=json
-        val requestBody = """
+        val requestBody =
+            """
             {"set_as_transitional": true, "metadata": {"description": "example metadata"}}
-        """.trimIndent()
+            """.trimIndent()
 
         spyCertificatesHandler.handleRegenerate__returns_credentialView = credentialViewResponse
 
@@ -156,7 +158,8 @@ class CertificatesControllerTest {
         assertThat(spyCertificatesHandler.handleRegenerate__calledWith_credentialUuid).isEqualTo(certificateId.toString())
 
         // language=json
-        val expectedResponseBody = """
+        val expectedResponseBody =
+            """
             {
               "type": "${CredentialType.CERTIFICATE.type.toLowerCase()}",
               "version_created_at": "${credentialViewResponse.versionCreatedAt}",
@@ -174,7 +177,7 @@ class CertificatesControllerTest {
                 "self_signed": false
               }
             }
-        """.trimIndent()
+            """.trimIndent()
         JSONAssert.assertEquals(mvcResult.response.contentAsString, expectedResponseBody, true)
     }
 
@@ -220,7 +223,8 @@ class CertificatesControllerTest {
             ).andReturn()
 
         // language=json
-        val expectedResponse = """
+        val expectedResponse =
+            """
         {
           "certificates": [
             {
@@ -249,7 +253,7 @@ class CertificatesControllerTest {
             }
           ]
         }
-        """.trimIndent()
+            """.trimIndent()
 
         JSONAssert.assertEquals(mvcResult.response.contentAsString, expectedResponse, true)
     }
@@ -284,7 +288,8 @@ class CertificatesControllerTest {
             .andReturn()
 
         // language=json
-        val expectedResponse = """
+        val expectedResponse =
+            """
         {
           "certificates": [
             {
@@ -304,7 +309,7 @@ class CertificatesControllerTest {
             }
           ]
         }
-        """.trimIndent()
+            """.trimIndent()
 
         JSONAssert.assertEquals(expectedResponse, mvcResult.response.contentAsString, true)
     }
@@ -339,7 +344,8 @@ class CertificatesControllerTest {
             .andReturn()
 
         // language=json
-        val expectedResponse = """
+        val expectedResponse =
+            """
         {
           "certificates": [
             {
@@ -360,7 +366,7 @@ class CertificatesControllerTest {
             }
           ]
         }
-        """.trimIndent()
+            """.trimIndent()
 
         JSONAssert.assertEquals(expectedResponse, mvcResult.response.contentAsString, true)
     }
@@ -401,7 +407,8 @@ class CertificatesControllerTest {
             ).andReturn()
 
         // language=json
-        val expectedResponse = """
+        val expectedResponse =
+            """
         {
           "certificates":
           [
@@ -423,7 +430,7 @@ class CertificatesControllerTest {
             }
           ]
         }
-        """.trimIndent()
+            """.trimIndent()
 
         JSONAssert.assertEquals(mvcResult.response.contentAsString, expectedResponse, true)
     }
@@ -458,7 +465,8 @@ class CertificatesControllerTest {
             ).andExpect(status().isOk).andReturn()
 
         // language=json
-        val expectedResponse = """
+        val expectedResponse =
+            """
         {
           "certificates":
           [
@@ -479,7 +487,7 @@ class CertificatesControllerTest {
             }
           ]
         }
-        """.trimIndent()
+            """.trimIndent()
 
         JSONAssert.assertEquals(mvcResult.response.contentAsString, expectedResponse, true)
     }
@@ -489,9 +497,10 @@ class CertificatesControllerTest {
         val versionId = UUID.randomUUID()
 
         // language=json
-        val requestBody = """
+        val requestBody =
+            """
             {"version": "$versionId"}
-        """.trimIndent()
+            """.trimIndent()
 
         spyCertificatesHandler.handleUpdateTransitionalVersion__returns_certificateViewList = listOf(certificateView)
 
@@ -538,8 +547,10 @@ class CertificatesControllerTest {
             .andDo(
                 document(
                     CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    requestParameters(parameterWithName("current").description("Return current active version")
-                        .optional()),
+                    requestParameters(
+                        parameterWithName("current").description("Return current active version")
+                            .optional()
+                    ),
                     pathParameters(
                         getCertificateIdPathParameter()
                     )
@@ -550,7 +561,8 @@ class CertificatesControllerTest {
         assertThat(spyCertificatesHandler.handleGetAllVersionsRequest__calledWith_uuid).isEqualTo(certificateId.toString())
 
         // language=json
-        val expectedResponseBody = """
+        val expectedResponseBody =
+            """
             [{
               "type": "${CredentialType.CERTIFICATE.type.toLowerCase()}",
               "version_created_at": "${credentialViewResponse.versionCreatedAt}",
@@ -568,7 +580,7 @@ class CertificatesControllerTest {
                 "private_key": "${TestConstants.TEST_PRIVATE_KEY}"
               }
             }]
-        """.trimIndent()
+            """.trimIndent()
 
         val contentAsString = mvcResult.response.contentAsString
         JSONAssert.assertEquals(expectedResponseBody, contentAsString, true)
@@ -608,7 +620,8 @@ class CertificatesControllerTest {
         assertThat(spyCertificatesHandler.handleGetAllVersionsRequest__calledWith_uuid).isEqualTo(certificateId.toString())
 
         // language=json
-        val expectedResponseBody = """
+        val expectedResponseBody =
+            """
             [{
               "type": "${CredentialType.CERTIFICATE.type.toLowerCase()}",
               "version_created_at": "${credentialViewResponse.versionCreatedAt}",
@@ -625,7 +638,7 @@ class CertificatesControllerTest {
                 "private_key": "${TestConstants.TEST_PRIVATE_KEY}"
               }
             }]
-        """.trimIndent()
+            """.trimIndent()
 
         val contentAsString = mvcResult.response.contentAsString
         JSONAssert.assertEquals(expectedResponseBody, contentAsString, true)
@@ -650,7 +663,8 @@ class CertificatesControllerTest {
             name,
             CredentialType.CERTIFICATE.type.toLowerCase(),
             null,
-            expectedCertificateCredentialValue)
+            expectedCertificateCredentialValue
+        )
 
         val expectedCertificateCredentialVersion = CertificateCredentialVersion(expectedCertificateCredentialValue, name, SpyEncryptor())
         expectedCertificateCredentialVersion.versionCreatedAt = createdAt
@@ -662,7 +676,8 @@ class CertificatesControllerTest {
         spyCertificatesHandler.handleCreateVersionRequest__returns_certificateView = expectedCertificateView
 
         // language=json
-        val requestBody = """
+        val requestBody =
+            """
             {
               "value": {
                 "ca": "${JsonHelpers.escapeNewLinesForJsonSerialization(TestConstants.TEST_CA)}",
@@ -671,7 +686,7 @@ class CertificatesControllerTest {
               },
               "transitional": true
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val mvcResult = mockMvc.perform(
             post("${CertificatesController.ENDPOINT}/{certificateId}/versions", certificateId.toString())
@@ -693,7 +708,8 @@ class CertificatesControllerTest {
         assertThat(spyCertificatesHandler.handleCreateVersionRequest__calledWith_certificateId).isEqualTo(certificateId.toString())
 
         // language=json
-        val expectedResponseBody = """
+        val expectedResponseBody =
+            """
             {
               "type": "${CredentialType.CERTIFICATE.type.toLowerCase()}",
               "version_created_at": "${expectedCredentialViewResponse.versionCreatedAt}",
@@ -711,7 +727,7 @@ class CertificatesControllerTest {
                 "private_key": "${TestConstants.TEST_PRIVATE_KEY}"
               }
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val contentAsString = mvcResult.response.contentAsString
         JSONAssert.assertEquals(expectedResponseBody, contentAsString, true)
@@ -741,7 +757,8 @@ class CertificatesControllerTest {
         assertThat(spyCertificatesHandler.handleDeleteVersionRequest__calledWith_versionId).isEqualTo(versionId.toString())
 
         // language=json
-        val expectedResponseBody = """
+        val expectedResponseBody =
+            """
             {
               "type": "${CredentialType.CERTIFICATE.type.toLowerCase()}",
               "version_created_at": "${credentialViewResponse.versionCreatedAt}",
@@ -759,7 +776,7 @@ class CertificatesControllerTest {
                 "private_key": "${TestConstants.TEST_PRIVATE_KEY}"
               }
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val contentAsString = mvcResult.response.contentAsString
         JSONAssert.assertEquals(expectedResponseBody, contentAsString, true)

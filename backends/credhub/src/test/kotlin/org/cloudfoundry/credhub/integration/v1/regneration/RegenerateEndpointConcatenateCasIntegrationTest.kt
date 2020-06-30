@@ -64,9 +64,12 @@ class RegenerateEndpointConcatenateCasIntegrationTest {
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)
             // language=JSON
-            .content("""{
+            .content(
+                """{
                 "name": "$certName"
-            }""".trimIndent())
+            }
+                """.trimIndent()
+            )
 
         this.mockMvc.perform(regenerateCertificateRequest)
             .andDo(print())

@@ -2,10 +2,10 @@ package org.cloudfoundry.credhub.views
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
-import java.time.Instant
-import java.util.Objects
 import org.cloudfoundry.credhub.credential.CredentialValue
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
+import java.time.Instant
+import java.util.Objects
 
 class CertificateView : CredentialView {
     @JsonIgnore

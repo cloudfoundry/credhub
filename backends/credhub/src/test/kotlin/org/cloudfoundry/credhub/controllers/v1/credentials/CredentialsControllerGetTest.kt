@@ -2,9 +2,6 @@ package org.cloudfoundry.credhub.controllers.v1.credentials
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import java.security.Security
-import java.time.Instant
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
@@ -41,6 +38,9 @@ import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.security.Security
+import java.time.Instant
+import java.util.UUID
 
 @RunWith(SpringRunner::class)
 class CredentialsControllerGetTest {
@@ -107,7 +107,8 @@ class CredentialsControllerGetTest {
 
         assertThat(spyCredentialsHandler.getCredentialVersionByUUID__calledWith_credentialUUID).isEqualTo(uuid.toString())
         // language=json
-        val expectedResponseBody = """
+        val expectedResponseBody =
+            """
             {
               "type": "value",
               "version_created_at": "2019-02-01T20:37:52Z",
@@ -130,13 +131,15 @@ class CredentialsControllerGetTest {
             "/some-value-path",
             JSON.type.toLowerCase(),
             metadata,
-            JsonCredentialValue(ObjectMapper().readTree(
-                // language=json
-                """
+            JsonCredentialValue(
+                ObjectMapper().readTree(
+                    // language=json
+                    """
                     {
                         "some-json-key": "some-json-value"
                     }
-                """.trimIndent())
+                    """.trimIndent()
+                )
             )
         )
 
@@ -158,7 +161,8 @@ class CredentialsControllerGetTest {
 
         assertThat(spyCredentialsHandler.getCredentialVersionByUUID__calledWith_credentialUUID).isEqualTo(uuid.toString())
         // language=json
-        val expectedResponseBody = """
+        val expectedResponseBody =
+            """
             {
               "type": "${CredentialType.JSON.type.toLowerCase()}",
               "version_created_at": "2019-02-01T20:37:52Z",
@@ -204,7 +208,8 @@ class CredentialsControllerGetTest {
 
         assertThat(spyCredentialsHandler.getCredentialVersionByUUID__calledWith_credentialUUID).isEqualTo(uuid.toString())
         // language=json
-        val expectedResponseBody = """
+        val expectedResponseBody =
+            """
             {
               "type": "${CredentialType.PASSWORD.type.toLowerCase()}",
               "version_created_at": "2019-02-01T20:37:52Z",
@@ -253,7 +258,8 @@ class CredentialsControllerGetTest {
 
         assertThat(spyCredentialsHandler.getCredentialVersionByUUID__calledWith_credentialUUID).isEqualTo(uuid.toString())
         // language=json
-        val expectedResponseBody = """
+        val expectedResponseBody =
+            """
             {
               "type": "${CredentialType.USER.type.toLowerCase()}",
               "version_created_at": "2019-02-01T20:37:52Z",
@@ -288,7 +294,7 @@ class CredentialsControllerGetTest {
                 null,
                 true,
                 false,
-                    true,
+                true,
                 false
             )
         )
@@ -311,7 +317,8 @@ class CredentialsControllerGetTest {
 
         assertThat(spyCredentialsHandler.getCredentialVersionByUUID__calledWith_credentialUUID).isEqualTo(uuid.toString())
         // language=json
-        val expectedResponseBody = """
+        val expectedResponseBody =
+            """
             {
               "type": "${CredentialType.CERTIFICATE.type.toLowerCase()}",
               "version_created_at": "2019-02-01T20:37:52Z",
@@ -366,7 +373,8 @@ class CredentialsControllerGetTest {
 
         assertThat(spyCredentialsHandler.getCredentialVersionByUUID__calledWith_credentialUUID).isEqualTo(uuid.toString())
         // language=json
-        val expectedResponseBody = """
+        val expectedResponseBody =
+            """
             {
               "type": "${CredentialType.CERTIFICATE.type.toLowerCase()}",
               "version_created_at": "2019-02-01T20:37:52Z",
@@ -422,7 +430,8 @@ class CredentialsControllerGetTest {
 
         assertThat(spyCredentialsHandler.getCredentialVersionByUUID__calledWith_credentialUUID).isEqualTo(uuid.toString())
         // language=json
-        val expectedResponseBody = """
+        val expectedResponseBody =
+            """
             {
               "type": "${CredentialType.RSA.type.toLowerCase()}",
               "version_created_at": "2019-02-01T20:37:52Z",
@@ -474,7 +483,8 @@ class CredentialsControllerGetTest {
 
         assertThat(spyCredentialsHandler.getCredentialVersionByUUID__calledWith_credentialUUID).isEqualTo(uuid.toString())
         // language=json
-        val expectedResponseBody = """
+        val expectedResponseBody =
+            """
             {
               "type": "${CredentialType.SSH.type.toLowerCase()}",
               "version_created_at": "2019-02-01T20:37:52Z",
@@ -529,7 +539,8 @@ class CredentialsControllerGetTest {
         assertThat(spyCredentialsHandler.findContainingName__calledWith_expiresWithinDays).isEqualTo("1")
         val actualResponseBody = mvcResult.response.contentAsString
         // language=json
-        val expectedResponseBody = """
+        val expectedResponseBody =
+            """
             {
                 "credentials": [
                     {
@@ -579,7 +590,8 @@ class CredentialsControllerGetTest {
         assertThat(spyCredentialsHandler.findStartingWithPath__calledWith_expiresWithinDays).isEqualTo("1")
         val actualResponseBody = mvcResult.response.contentAsString
         // language=json
-        val expectedResponseBody = """
+        val expectedResponseBody =
+            """
             {
                 "credentials": [
                     {
@@ -637,7 +649,8 @@ class CredentialsControllerGetTest {
 
         val actualResponse = mvcResult.response.contentAsString
         // language=json
-        val expectedResponseBody = """
+        val expectedResponseBody =
+            """
             {
               "data": [
                   {

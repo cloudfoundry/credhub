@@ -1,7 +1,5 @@
 package org.cloudfoundry.credhub.interceptors
 
-import java.security.Principal
-import javax.servlet.http.HttpServletRequest
 import junit.framework.TestCase.assertFalse
 import org.cloudfoundry.credhub.auth.UserContext
 import org.cloudfoundry.credhub.auth.UserContextFactory
@@ -17,6 +15,8 @@ import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.security.core.Authentication
+import java.security.Principal
+import javax.servlet.http.HttpServletRequest
 
 @RunWith(JUnit4::class)
 class UserContextInterceptorTest {

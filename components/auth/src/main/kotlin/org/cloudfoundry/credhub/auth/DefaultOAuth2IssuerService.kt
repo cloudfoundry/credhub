@@ -1,6 +1,13 @@
 package org.cloudfoundry.credhub.auth
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import org.cloudfoundry.credhub.RestTemplateFactory
+import org.cloudfoundry.credhub.config.OAuthProperties
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.context.annotation.Profile
+import org.springframework.stereotype.Service
+import org.springframework.web.client.RestTemplate
 import java.io.IOException
 import java.net.URI
 import java.net.URISyntaxException
@@ -9,13 +16,6 @@ import java.security.KeyStoreException
 import java.security.NoSuchAlgorithmException
 import java.security.cert.CertificateException
 import java.util.HashMap
-import org.cloudfoundry.credhub.RestTemplateFactory
-import org.cloudfoundry.credhub.config.OAuthProperties
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
-import org.springframework.context.annotation.Profile
-import org.springframework.stereotype.Service
-import org.springframework.web.client.RestTemplate
 
 @Service
 @ConditionalOnProperty("security.oauth2.enabled")

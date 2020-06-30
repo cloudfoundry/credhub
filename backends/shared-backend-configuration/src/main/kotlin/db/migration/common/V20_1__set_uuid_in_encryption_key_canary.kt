@@ -1,13 +1,13 @@
 package db.migration.common
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
-import java.sql.Types
-import java.util.UUID
 import org.cloudfoundry.credhub.utils.UuidUtil
 import org.flywaydb.core.api.migration.BaseJavaMigration
 import org.flywaydb.core.api.migration.Context
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.datasource.SingleConnectionDataSource
+import java.sql.Types
+import java.util.UUID
 
 class V20_1__set_uuid_in_encryption_key_canary : BaseJavaMigration() {
     @SuppressFBWarnings(value = ["NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"], justification = "The database will definitely exist")

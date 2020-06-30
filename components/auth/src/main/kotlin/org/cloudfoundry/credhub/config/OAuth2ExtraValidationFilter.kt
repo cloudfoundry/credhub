@@ -1,11 +1,5 @@
 package org.cloudfoundry.credhub.config
 
-import java.io.IOException
-import java.security.SignatureException
-import javax.servlet.FilterChain
-import javax.servlet.ServletException
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.auth.OAuth2AuthenticationExceptionHandler
 import org.cloudfoundry.credhub.auth.OAuth2IssuerService
@@ -23,6 +17,12 @@ import org.springframework.security.oauth2.provider.token.TokenStore
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
 import org.springframework.stereotype.Service
 import org.springframework.web.filter.OncePerRequestFilter
+import java.io.IOException
+import java.security.SignatureException
+import javax.servlet.FilterChain
+import javax.servlet.ServletException
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
 
 @Service
 @ConditionalOnProperty("security.oauth2.enabled")
@@ -66,13 +66,17 @@ internal constructor(
         } catch (exception: OAuth2Exception) {
             SecurityContextHolder.clearContext()
             val authException = InsufficientAuthenticationException(
-                exception.message, exception)
-            eventPublisher.publishAuthenticationFailure(BadCredentialsException(exception.message, exception),
-                PreAuthenticatedAuthenticationToken("access-token", "N/A"))
+                exception.message, exception
+            )
+            eventPublisher.publishAuthenticationFailure(
+                BadCredentialsException(exception.message, exception),
+                PreAuthenticatedAuthenticationToken("access-token", "N/A")
+            )
             oAuth2AuthenticationExceptionHandler.handleException(request, response, authException)
         } catch (exception: RuntimeException) {
             if (exception.cause is SignatureException || exception
-                    .cause is InvalidSignatureException) {
+                .cause is InvalidSignatureException
+            ) {
                 oAuth2AuthenticationExceptionHandler.handleException(request, response, exception)
             } else {
                 throw exception

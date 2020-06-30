@@ -2,7 +2,6 @@ package org.cloudfoundry.credhub.services
 
 import com.google.common.collect.Lists
 import com.google.common.collect.Lists.newArrayList
-import java.util.Arrays.asList
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.PermissionOperation
@@ -32,6 +31,7 @@ import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
+import java.util.Arrays.asList
 
 @RunWith(JUnit4::class)
 class DefaultPermissionServiceTest {

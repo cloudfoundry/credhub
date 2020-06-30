@@ -5,8 +5,6 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import java.time.Instant
-import java.util.Objects
 import org.apache.commons.lang3.StringUtils
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.utils.CertificateReader
@@ -18,6 +16,8 @@ import org.cloudfoundry.credhub.validators.RequireCertificateSignedByCA
 import org.cloudfoundry.credhub.validators.RequireValidCA
 import org.cloudfoundry.credhub.validators.RequireValidCertificate
 import org.cloudfoundry.credhub.validators.ValidCertificateLength
+import java.time.Instant
+import java.util.Objects
 
 @RequireAnyOf(message = ErrorMessages.MISSING_CERTIFICATE_CREDENTIALS, fields = ["ca", "certificate", "privateKey"])
 @MutuallyExclusive(message = ErrorMessages.MIXED_CA_NAME_AND_CA, fields = ["ca", "caName"])

@@ -1,11 +1,5 @@
 package org.cloudfoundry.credhub.auth
 
-import java.security.Principal
-import java.security.cert.X509Certificate
-import java.time.Instant
-import java.util.Date
-import java.util.HashMap
-import java.util.HashSet
 import org.cloudfoundry.credhub.CredhubTestApp
 import org.cloudfoundry.credhub.auth.UserContext.Companion.AUTH_METHOD_MUTUAL_TLS
 import org.cloudfoundry.credhub.auth.UserContext.Companion.AUTH_METHOD_UAA
@@ -30,6 +24,12 @@ import org.springframework.security.oauth2.provider.token.ResourceServerTokenSer
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
+import java.security.Principal
+import java.security.cert.X509Certificate
+import java.time.Instant
+import java.util.Date
+import java.util.HashMap
+import java.util.HashSet
 
 @RunWith(SpringRunner::class)
 @ActiveProfiles(profiles = ["unit-test"], resolver = DatabaseProfileResolver::class)
@@ -78,8 +78,12 @@ class UserContextFactoryTest {
         val mtlsAuth = setupMtlsMock()
         val context = subject!!.createUserContext(mtlsAuth)
 
-        assertThat<String>(context.userName, equalTo<String>(
-            null))
+        assertThat<String>(
+            context.userName,
+            equalTo<String>(
+                null
+            )
+        )
         assertThat<String>(context.userId, equalTo<String>(null))
         assertThat<String>(context.issuer, equalTo<String>(null))
         assertThat<String>(context.scope, equalTo<String>(null))
@@ -95,8 +99,10 @@ class UserContextFactoryTest {
         val oauth2Authentication = setupOAuthMock("password")
         val context = subject!!.createUserContext(oauth2Authentication)
 
-        assertThat<String>(context.actor,
-            equalTo("uaa-user:TEST_USER_ID"))
+        assertThat<String>(
+            context.actor,
+            equalTo("uaa-user:TEST_USER_ID")
+        )
     }
 
     @Test
@@ -105,8 +111,10 @@ class UserContextFactoryTest {
         val oauth2Authentication = setupOAuthMock("client_credentials")
         val context = subject!!.createUserContext(oauth2Authentication)
 
-        assertThat<String>(context.actor,
-            equalTo("uaa-client:TEST_CLIENT_ID"))
+        assertThat<String>(
+            context.actor,
+            equalTo("uaa-client:TEST_CLIENT_ID")
+        )
     }
 
     @Test
@@ -115,8 +123,10 @@ class UserContextFactoryTest {
         val authenticationToken = setupMtlsMock()
         val context = subject!!.createUserContext(authenticationToken)
 
-        assertThat<String>(context.actor,
-            equalTo("mtls-app:e054393e-c9c3-478b-9047-e6d05c307bf2"))
+        assertThat<String>(
+            context.actor,
+            equalTo("mtls-app:e054393e-c9c3-478b-9047-e6d05c307bf2")
+        )
     }
 
     @Test
@@ -134,15 +144,15 @@ class UserContextFactoryTest {
     fun getAclUser_withInvalidAuthMethod_throwsException() {
         val invalidAuthMethod = "not a valid auth method"
         val context = UserContext(
-                "some-user-id",
-                "some-user-name",
-                "some-issuer",
-                11223344,
-                22334455,
-                "some-client-id",
-                "some-scope",
-                "some-grant-type",
-                invalidAuthMethod
+            "some-user-id",
+            "some-user-name",
+            "some-issuer",
+            11223344,
+            22334455,
+            "some-client-id",
+            "some-scope",
+            "some-grant-type",
+            invalidAuthMethod
         )
 
         Assertions.assertThrows(UserContext.UnsupportedAuthMethodException::class.java) {
@@ -152,7 +162,8 @@ class UserContextFactoryTest {
 
     private fun setupOAuthMock(grantType: String): OAuth2Authentication {
         val authentication = mock(OAuth2Authentication::class.java)
-        val oauth2Request = spy(OAuth2Request(
+        val oauth2Request = spy(
+            OAuth2Request(
                 null,
                 "TEST_CLIENT_ID",
                 null,
@@ -162,7 +173,7 @@ class UserContextFactoryTest {
                 null,
                 null,
                 null
-        )
+            )
         )
         val token = mock(OAuth2AccessToken::class.java)
         val authDetails = mock(OAuth2AuthenticationDetails::class.java)

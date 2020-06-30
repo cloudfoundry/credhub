@@ -2,10 +2,6 @@ package org.cloudfoundry.credhub.data
 
 import com.google.common.collect.Lists
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
-import java.util.ArrayList
-import java.util.HashSet
-import java.util.UUID
-import kotlin.streams.toList
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.PermissionOperation
 import org.cloudfoundry.credhub.audit.AuditablePermissionData
@@ -22,6 +18,10 @@ import org.cloudfoundry.credhub.requests.PermissionsV2Request
 import org.cloudfoundry.credhub.services.CredentialDataService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import java.util.ArrayList
+import java.util.HashSet
+import java.util.UUID
+import kotlin.streams.toList
 
 @Component
 @SuppressFBWarnings(value = ["NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"], justification = "Let's refactor this class into kotlin")
@@ -47,9 +47,11 @@ constructor(
 
         auditRecord.addAllResources(Lists.newArrayList<AuditablePermissionData>(permissionDatas))
 
-        val requestDetails = V2Permission(permissionDatas[0].path!!,
+        val requestDetails = V2Permission(
+            permissionDatas[0].path!!,
             permissionDatas[0].actor!!, permissionDatas[0].generateAccessControlOperations(),
-            OperationDeviceAction.ADD_PERMISSIONS)
+            OperationDeviceAction.ADD_PERMISSIONS
+        )
         auditRecord.requestDetails = requestDetails
         return permissionDatas
     }
@@ -59,8 +61,12 @@ constructor(
         for (permission in permissions!!) {
             val path = permission.path
             val existingPermissions = permissionRepository.findAllByPath(path)
-            result.add(upsertPermissions(path, existingPermissions, permission.actor,
-                permission.allowedOperations))
+            result.add(
+                upsertPermissions(
+                    path, existingPermissions, permission.actor,
+                    permission.allowedOperations
+                )
+            )
         }
 
         return result
@@ -203,16 +209,20 @@ constructor(
             throw PermissionInvalidPathAndActorException(ErrorMessages.Permissions.WRONG_PATH_AND_ACTOR)
         }
 
-        val permissionData = PermissionData(permissionsRequest.getPath(),
-            permissionsRequest.actor, permissionsRequest.operations)
+        val permissionData = PermissionData(
+            permissionsRequest.getPath(),
+            permissionsRequest.actor, permissionsRequest.operations
+        )
 
         permissionData.uuid = existingPermissionData.uuid
         permissionRepository.save(permissionData)
         auditRecord.setResource(permissionData)
 
-        val requestDetails = V2Permission(permissionData.path!!,
+        val requestDetails = V2Permission(
+            permissionData.path!!,
             permissionData.actor!!, permissionData.generateAccessControlOperations(),
-            OperationDeviceAction.PUT_PERMISSIONS)
+            OperationDeviceAction.PUT_PERMISSIONS
+        )
         auditRecord.requestDetails = requestDetails
 
         return permissionData
@@ -227,24 +237,30 @@ constructor(
             throw PermissionDoesNotExistException(ErrorMessages.Permissions.DOES_NOT_EXIST)
         }
 
-        val patchedRecord = PermissionData(existingPermissionData.path,
-            existingPermissionData.actor, operations)
+        val patchedRecord = PermissionData(
+            existingPermissionData.path,
+            existingPermissionData.actor, operations
+        )
         patchedRecord.uuid = existingPermissionData.uuid
 
         permissionRepository.save(patchedRecord)
         auditRecord.setResource(patchedRecord)
 
-        val requestDetails = V2Permission(patchedRecord.path!!,
+        val requestDetails = V2Permission(
+            patchedRecord.path!!,
             patchedRecord.actor!!, patchedRecord.generateAccessControlOperations(),
-            OperationDeviceAction.PATCH_PERMISSIONS)
+            OperationDeviceAction.PATCH_PERMISSIONS
+        )
         auditRecord.requestDetails = requestDetails
 
         return patchedRecord
     }
 
     fun saveV2Permissions(permissionsRequest: PermissionsV2Request): PermissionData {
-        val existingPermissionData = permissionRepository.findByPathAndActor(permissionsRequest.getPath(),
-            permissionsRequest.actor)
+        val existingPermissionData = permissionRepository.findByPathAndActor(
+            permissionsRequest.getPath(),
+            permissionsRequest.actor
+        )
 
         if (existingPermissionData != null) {
             throw PermissionAlreadyExistsException(ErrorMessages.Permissions.ALREADY_EXISTS)
@@ -259,8 +275,10 @@ constructor(
 
         auditRecord.setResource(record)
 
-        val requestDetails = V2Permission(record.path!!, record.actor!!,
-            record.generateAccessControlOperations(), OperationDeviceAction.ADD_PERMISSIONS)
+        val requestDetails = V2Permission(
+            record.path!!, record.actor!!,
+            record.generateAccessControlOperations(), OperationDeviceAction.ADD_PERMISSIONS
+        )
         auditRecord.requestDetails = requestDetails
 
         return record
@@ -270,9 +288,11 @@ constructor(
         val existingPermission = permissionRepository.findByUuid(guid)
         permissionRepository.delete(existingPermission!!)
 
-        val requestDetails = V2Permission(existingPermission.path!!,
+        val requestDetails = V2Permission(
+            existingPermission.path!!,
             existingPermission.actor!!, existingPermission.generateAccessControlOperations(),
-            OperationDeviceAction.DELETE_PERMISSIONS)
+            OperationDeviceAction.DELETE_PERMISSIONS
+        )
         auditRecord.requestDetails = requestDetails
         auditRecord.setResource(existingPermission)
 

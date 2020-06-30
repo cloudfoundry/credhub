@@ -3,8 +3,6 @@ package org.cloudfoundry.credhub.domain
 import com.google.common.collect.Lists.newArrayList
 import com.google.common.net.InetAddresses
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
-import java.util.Objects
-import javax.security.auth.x500.X500Principal
 import org.apache.commons.lang3.StringUtils.join
 import org.apache.commons.lang3.StringUtils.prependIfMissing
 import org.bouncycastle.asn1.x500.X500Name
@@ -34,6 +32,8 @@ import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.
 import org.cloudfoundry.credhub.requests.GenerationParameters
 import org.cloudfoundry.credhub.utils.CertificateReader
 import org.springframework.util.StringUtils
+import java.util.Objects
+import javax.security.auth.x500.X500Principal
 
 class CertificateGenerationParameters : GenerationParameters {
 

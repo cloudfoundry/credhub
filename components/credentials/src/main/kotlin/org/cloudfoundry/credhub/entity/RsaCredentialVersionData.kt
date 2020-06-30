@@ -1,11 +1,11 @@
 package org.cloudfoundry.credhub.entity
 
+import org.cloudfoundry.credhub.utils.RsaCredentialHelper
 import javax.persistence.Column
 import javax.persistence.DiscriminatorValue
 import javax.persistence.Entity
 import javax.persistence.PrimaryKeyJoinColumn
 import javax.persistence.SecondaryTable
-import org.cloudfoundry.credhub.utils.RsaCredentialHelper
 
 @Entity
 @DiscriminatorValue(RsaCredentialVersionData.CREDENTIAL_TYPE)

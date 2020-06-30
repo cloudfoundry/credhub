@@ -2,7 +2,6 @@ package org.cloudfoundry.credhub.regenerate
 
 import com.fasterxml.jackson.databind.JsonNode
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
-import java.util.TreeSet
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.PermissionOperation
 import org.cloudfoundry.credhub.PermissionOperation.READ
@@ -25,9 +24,12 @@ import org.cloudfoundry.credhub.views.CredentialView
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import java.util.TreeSet
 
-@SuppressFBWarnings(value = ["NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"],
-    justification = "This will be refactored into safer non-nullable types")
+@SuppressFBWarnings(
+    value = ["NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"],
+    justification = "This will be refactored into safer non-nullable types"
+)
 @Service
 @Profile("!remote")
 class DefaultRegenerateHandler(
@@ -138,10 +140,11 @@ class DefaultRegenerateHandler(
         if (!enforcePermissions) return
 
         if (!permissionCheckingService.hasPermission(
-                userContextHolder.userContext?.actor!!,
-                name,
-                permissionOperation
-            )) {
+            userContextHolder.userContext?.actor!!,
+            name,
+            permissionOperation
+        )
+        ) {
             if (permissionOperation == WRITE) {
                 throw PermissionException(ErrorMessages.Credential.INVALID_ACCESS)
             } else {

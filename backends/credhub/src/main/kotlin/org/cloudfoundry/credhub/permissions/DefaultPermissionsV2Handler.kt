@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.permissions
 
-import java.util.UUID
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.PermissionOperation
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
@@ -10,6 +9,7 @@ import org.cloudfoundry.credhub.services.PermissionService
 import org.cloudfoundry.credhub.views.PermissionsV2View
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
+import java.util.UUID
 
 @Profile("!remote")
 @Component
@@ -45,14 +45,18 @@ class DefaultPermissionsV2Handler(
             throw EntryNotFoundException(ErrorMessages.Permissions.INVALID_ACCESS)
         }
         val permission = permissionService.getPermissions(uuid)
-        return PermissionsV2View(permission?.path, permission?.generateAccessControlOperations(),
-            permission?.actor, uuid)
+        return PermissionsV2View(
+            permission?.path, permission?.generateAccessControlOperations(),
+            permission?.actor, uuid
+        )
     }
 
     override fun putPermissions(guid: String, permissionsRequest: PermissionsV2Request): PermissionsV2View {
         val permission = permissionService.putPermissions(guid, permissionsRequest)
-        return PermissionsV2View(permission.path, permission.generateAccessControlOperations(),
-            permission.actor, permission.uuid)
+        return PermissionsV2View(
+            permission.path, permission.generateAccessControlOperations(),
+            permission.actor, permission.uuid
+        )
     }
 
     override fun patchPermissions(guid: String, operations: MutableList<PermissionOperation>?): PermissionsV2View {
@@ -67,21 +71,27 @@ class DefaultPermissionsV2Handler(
 
     override fun writeV2Permissions(permissionsRequest: PermissionsV2Request): PermissionsV2View {
         val permission = permissionService.saveV2Permissions(permissionsRequest)
-        return PermissionsV2View(permission.path, permission.generateAccessControlOperations(),
-            permission.actor, permission.uuid)
+        return PermissionsV2View(
+            permission.path, permission.generateAccessControlOperations(),
+            permission.actor, permission.uuid
+        )
     }
 
     override fun deletePermissions(guid: String): PermissionsV2View {
         val permission = permissionService.deletePermissions(guid)
-        return PermissionsV2View(permission.path, permission.generateAccessControlOperations(),
-            permission.actor, permission.uuid)
+        return PermissionsV2View(
+            permission.path, permission.generateAccessControlOperations(),
+            permission.actor, permission.uuid
+        )
     }
 
     override fun findByPathAndActor(path: String, actor: String): PermissionsV2View {
         val permissionData = permissionService.findByPathAndActor(path, actor)
             ?: throw EntryNotFoundException(ErrorMessages.Permissions.INVALID_ACCESS)
 
-        return PermissionsV2View(permissionData.path, permissionData.generateAccessControlOperations(),
-            permissionData.actor, permissionData.uuid)
+        return PermissionsV2View(
+            permissionData.path, permissionData.generateAccessControlOperations(),
+            permissionData.actor, permissionData.uuid
+        )
     }
 }

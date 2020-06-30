@@ -41,8 +41,10 @@ class PermissionsV1Controller(
     @RequestMapping(method = [RequestMethod.POST], path = [""], consumes = [MediaType.APPLICATION_JSON_UTF8_VALUE])
     @ResponseStatus(HttpStatus.CREATED)
     fun setAccessControlEntries(@Validated @RequestBody accessEntriesRequest: PermissionsRequest) {
-        val addPermission = AddPermission(accessEntriesRequest.credentialName,
-            accessEntriesRequest.permissions)
+        val addPermission = AddPermission(
+            accessEntriesRequest.credentialName,
+            accessEntriesRequest.permissions
+        )
         auditRecord.requestDetails = addPermission
         permissionsHandler.writePermissions(accessEntriesRequest)
     }

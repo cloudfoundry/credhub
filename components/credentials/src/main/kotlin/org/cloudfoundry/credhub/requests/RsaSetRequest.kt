@@ -1,11 +1,11 @@
 package org.cloudfoundry.credhub.requests
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import org.cloudfoundry.credhub.ErrorMessages
+import org.cloudfoundry.credhub.credential.RsaCredentialValue
 import java.util.Objects
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
-import org.cloudfoundry.credhub.ErrorMessages
-import org.cloudfoundry.credhub.credential.RsaCredentialValue
 
 class RsaSetRequest : BaseCredentialSetRequest<RsaCredentialValue?>() {
     @NotNull(message = ErrorMessages.MISSING_VALUE)

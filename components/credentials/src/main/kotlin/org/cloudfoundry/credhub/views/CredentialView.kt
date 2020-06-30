@@ -2,9 +2,6 @@ package org.cloudfoundry.credhub.views
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonNode
-import java.time.Instant
-import java.util.Objects
-import java.util.UUID
 import org.cloudfoundry.credhub.credential.CredentialValue
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
 import org.cloudfoundry.credhub.domain.CredentialVersion
@@ -14,6 +11,9 @@ import org.cloudfoundry.credhub.domain.RsaCredentialVersion
 import org.cloudfoundry.credhub.domain.SshCredentialVersion
 import org.cloudfoundry.credhub.domain.UserCredentialVersion
 import org.cloudfoundry.credhub.domain.ValueCredentialVersion
+import java.time.Instant
+import java.util.Objects
+import java.util.UUID
 
 open class CredentialView {
     @get:JsonProperty("version_created_at")

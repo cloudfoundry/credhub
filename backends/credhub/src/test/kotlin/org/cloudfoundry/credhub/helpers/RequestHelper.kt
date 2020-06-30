@@ -199,8 +199,8 @@ object RequestHelper {
     @JvmStatic
     fun generateCertificateCredential(mockMvc: MockMvc, credentialName: String?, overwrite: Boolean, commonName: String?, caName: String?, token: String): String {
         val certRequestBody: MutableMap<String, Any?> = HashMap()
-            certRequestBody["name"] = credentialName
-            certRequestBody["type"] = "certificate"
+        certRequestBody["name"] = credentialName
+        certRequestBody["type"] = "certificate"
 
         if (overwrite) {
             certRequestBody["overwrite"] = true
@@ -262,7 +262,8 @@ object RequestHelper {
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
             //language=JSON
-            .content("""{
+            .content(
+                """{
                 "name" : "$caName",
                 "type" : "certificate",
                 "overwrite": true,
@@ -272,7 +273,9 @@ object RequestHelper {
                     "is_ca" : true,
                     "self_sign": true
                   }
-              }""".trimIndent())
+              }
+                """.trimIndent()
+            )
 
         return mockMvc.perform(caPost)
             .andExpect(MockMvcResultMatchers.status().isOk)
@@ -290,7 +293,8 @@ object RequestHelper {
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
             //language=JSON
-            .content("""{
+            .content(
+                """{
                 "name" : "$certName",
                 "type" : "certificate",
                 "parameters" : 
@@ -298,7 +302,9 @@ object RequestHelper {
                     "common_name" : "federation",
                     "ca" : "$caName"
                   }
-              }""".trimIndent())
+              }
+                """.trimIndent()
+            )
     }
 
     @Throws(Exception::class)
@@ -329,7 +335,8 @@ object RequestHelper {
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
             //language=JSON
-            .content("""{
+            .content(
+                """{
                 "name" : "$certName",
                 "type" : "certificate",
                 "parameters" : 
@@ -337,7 +344,9 @@ object RequestHelper {
                     "common_name" : "federation",
                     "ca" : "picard"
                   }
-              }""".trimIndent())
+              }
+                """.trimIndent()
+            )
         mockMvc.perform(certPost)
             .andDo(MockMvcResultHandlers.print())
             .andExpect(errCode!!)
@@ -374,7 +383,8 @@ object RequestHelper {
     ) {
         val post = createAddPermissionsRequest(
             grantorToken, credentialName, granteeName,
-            *permissions)
+            *permissions
+        )
         mockMvc.perform(post)
             .andExpect(MockMvcResultMatchers.status().isCreated)
     }
@@ -392,7 +402,8 @@ object RequestHelper {
     ) {
         val post = createAddPermissionsRequest(
             grantorToken, credentialName, grantee,
-            *permissions)
+            *permissions
+        )
         mockMvc.perform(post)
             .andExpect(MockMvcResultMatchers.status().`is`(status))
             .andExpect(MockMvcResultMatchers.content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -406,8 +417,10 @@ object RequestHelper {
         credentialName: String,
         requesterToken: String
     ): PermissionsView {
-        val content = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/permissions?credential_name=$credentialName")
-            .header("Authorization", "Bearer $requesterToken"))
+        val content = mockMvc.perform(
+            MockMvcRequestBuilders.get("/api/v1/permissions?credential_name=$credentialName")
+                .header("Authorization", "Bearer $requesterToken")
+        )
             .andExpect(MockMvcResultMatchers.status().isOk)
             .andExpect(MockMvcResultMatchers.content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
             .andReturn()
@@ -425,9 +438,13 @@ object RequestHelper {
         credentialName: String?,
         requesterToken: String
     ) {
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/permissions" +
-            if (credentialName == null) "" else "?credential_name=$credentialName")
-            .header("Authorization", "Bearer $requesterToken"))
+        mockMvc.perform(
+            MockMvcRequestBuilders.get(
+                "/api/v1/permissions" +
+                    if (credentialName == null) "" else "?credential_name=$credentialName"
+            )
+                .header("Authorization", "Bearer $requesterToken")
+        )
             .andExpect(MockMvcResultMatchers.status().`is`(status))
             .andExpect(MockMvcResultMatchers.jsonPath("$.error", IsEqual.equalTo(expectedErrorMessage)))
     }
@@ -440,7 +457,8 @@ object RequestHelper {
         grantorToken: String,
         grantee: String?
     ) {
-        expectStatusWhenDeletingPermissions(mockMvc, 204, credentialName, grantee,
+        expectStatusWhenDeletingPermissions(
+            mockMvc, 204, credentialName, grantee,
             grantorToken
         )
     }
@@ -454,7 +472,8 @@ object RequestHelper {
         grantee: String?,
         grantorToken: String
     ) {
-        expectErrorWhenDeletingPermissions(mockMvc, status, null, credentialName, grantorToken, grantee
+        expectErrorWhenDeletingPermissions(
+            mockMvc, status, null, credentialName, grantorToken, grantee
         )
     }
 
@@ -469,9 +488,10 @@ object RequestHelper {
         grantee: String?
     ) {
         val result = mockMvc.perform(
-            MockMvcRequestBuilders.delete("/api/v1/permissions?" +
-                (if (credentialName == null) "" else "credential_name=$credentialName") +
-                if (grantee == null) "" else "&actor=$grantee"
+            MockMvcRequestBuilders.delete(
+                "/api/v1/permissions?" +
+                    (if (credentialName == null) "" else "credential_name=$credentialName") +
+                    if (grantee == null) "" else "&actor=$grantee"
             ).header("Authorization", "Bearer $grantorToken")
         )
         result.andExpect(MockMvcResultMatchers.status().`is`(status))
@@ -491,15 +511,17 @@ object RequestHelper {
             .header("Authorization", "Bearer $grantorToken")
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{" +
-                "  \"credential_name\": \"" + credentialName + "\",\n" +
-                "  \"permissions\": [\n" +
-                "     { \n" +
-                "       \"actor\": \"" + grantee + "\",\n" +
-                "       \"path\": \"" + credentialName + "\",\n" +
-                "       \"operations\": [\"" + java.lang.String.join("\", \"", *permissions) + "\"]\n" +
-                "     }]" +
-                "}")
+            .content(
+                "{" +
+                    "  \"credential_name\": \"" + credentialName + "\",\n" +
+                    "  \"permissions\": [\n" +
+                    "     { \n" +
+                    "       \"actor\": \"" + grantee + "\",\n" +
+                    "       \"path\": \"" + credentialName + "\",\n" +
+                    "       \"operations\": [\"" + java.lang.String.join("\", \"", *permissions) + "\"]\n" +
+                    "     }]" +
+                    "}"
+            )
     }
 
     @Throws(Exception::class)

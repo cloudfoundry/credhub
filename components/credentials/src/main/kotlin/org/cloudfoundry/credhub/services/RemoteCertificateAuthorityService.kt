@@ -48,14 +48,14 @@ class RemoteCertificateAuthorityService(
         val jsonString = data.toStringUtf8()
         val jsonNode = objectMapper.readTree(jsonString)
         return CertificateCredentialValue(
-                jsonNode["ca"]?.textValue(),
-                jsonNode["certificate"]?.textValue(),
-                jsonNode["private_key"]?.textValue(),
-                jsonNode["ca_name"]?.textValue(),
-                jsonNode["certificate_authority"]?.booleanValue() ?: false,
-                jsonNode["self_signed"]?.booleanValue() ?: false,
-                jsonNode["generated"]?.booleanValue() ?: false,
-                jsonNode["transitional"]?.booleanValue() ?: false
-            )
+            jsonNode["ca"]?.textValue(),
+            jsonNode["certificate"]?.textValue(),
+            jsonNode["private_key"]?.textValue(),
+            jsonNode["ca_name"]?.textValue(),
+            jsonNode["certificate_authority"]?.booleanValue() ?: false,
+            jsonNode["self_signed"]?.booleanValue() ?: false,
+            jsonNode["generated"]?.booleanValue() ?: false,
+            jsonNode["transitional"]?.booleanValue() ?: false
+        )
     }
 }

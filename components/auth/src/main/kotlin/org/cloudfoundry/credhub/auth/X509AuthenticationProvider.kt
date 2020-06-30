@@ -1,7 +1,5 @@
 package org.cloudfoundry.credhub.auth
 
-import java.security.cert.CertificateParsingException
-import java.security.cert.X509Certificate
 import org.bouncycastle.asn1.x509.KeyPurposeId
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.InternalAuthenticationServiceException
@@ -12,6 +10,8 @@ import org.springframework.security.core.userdetails.User
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
 import org.springframework.stereotype.Component
+import java.security.cert.CertificateParsingException
+import java.security.cert.X509Certificate
 
 @Component
 class X509AuthenticationProvider : PreAuthenticatedAuthenticationProvider() {

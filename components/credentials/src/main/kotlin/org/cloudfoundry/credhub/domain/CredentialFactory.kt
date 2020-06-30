@@ -52,7 +52,8 @@ class CredentialFactory @Autowired internal constructor(private val encryptor: E
 
     fun makeCredentialsFromEntities(daos: List<CredentialVersionData<*>?>): List<CredentialVersion> {
         return daos.mapNotNull { credentialVersionData: CredentialVersionData<*>? ->
-            makeCredentialFromEntity(credentialVersionData) }.toList()
+            makeCredentialFromEntity(credentialVersionData)
+        }.toList()
     }
 
     fun makeNewCredentialVersion(

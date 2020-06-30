@@ -1,7 +1,5 @@
 package org.cloudfoundry.credhub.services
 
-import java.util.ArrayList
-import java.util.UUID
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.PermissionOperation
 import org.cloudfoundry.credhub.auth.UserContextHolder
@@ -18,6 +16,8 @@ import org.cloudfoundry.credhub.requests.PermissionEntry
 import org.cloudfoundry.credhub.requests.PermissionsV2Request
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import java.util.ArrayList
+import java.util.UUID
 
 @Service
 class DefaultPermissionService @Autowired
@@ -40,14 +40,18 @@ constructor(
         val userContext = userContextHolder.userContext
         permissionEntryList.forEach { permissionEntry ->
             if (!permissionCheckingService
-                    .hasPermission(userContext?.actor!!, permissionEntry.path!!, PermissionOperation.WRITE_ACL)) {
+                .hasPermission(userContext?.actor!!, permissionEntry.path!!, PermissionOperation.WRITE_ACL)
+            ) {
                 throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
             }
             if (!permissionCheckingService.userAllowedToOperateOnActor(permissionEntry.actor)) {
                 throw InvalidPermissionOperationException(ErrorMessages.Permissions.INVALID_UPDATE_OPERATION)
             }
-            if (permissionCheckingService.hasPermissions(permissionEntry.actor!!, permissionEntry.path!!,
-                    permissionEntry.allowedOperations!!)) {
+            if (permissionCheckingService.hasPermissions(
+                permissionEntry.actor!!, permissionEntry.path!!,
+                permissionEntry.allowedOperations!!
+            )
+            ) {
                 throw PermissionAlreadyExistsException(ErrorMessages.Permissions.ALREADY_EXISTS)
             }
         }
@@ -67,8 +71,11 @@ constructor(
         }
 
         if (!permissionCheckingService
-                .hasPermission(userContextHolder.userContext?.actor!!, credentialVersion.name!!,
-                    PermissionOperation.READ_ACL)) {
+            .hasPermission(
+                userContextHolder.userContext?.actor!!, credentialVersion.name!!,
+                PermissionOperation.READ_ACL
+            )
+        ) {
             throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
         }
 
@@ -81,7 +88,8 @@ constructor(
         }
 
         if (!permissionCheckingService
-                .hasPermission(userContextHolder.userContext?.actor!!, guid, PermissionOperation.READ_ACL)) {
+            .hasPermission(userContextHolder.userContext?.actor!!, guid, PermissionOperation.READ_ACL)
+        ) {
             throw InvalidPermissionException(ErrorMessages.Credential.INVALID_ACCESS)
         }
 
@@ -90,7 +98,8 @@ constructor(
 
     override fun deletePermissions(credentialName: String, actor: String): Boolean {
         if (!permissionCheckingService
-                .hasPermission(userContextHolder.userContext?.actor!!, credentialName, PermissionOperation.WRITE_ACL)) {
+            .hasPermission(userContextHolder.userContext?.actor!!, credentialName, PermissionOperation.WRITE_ACL)
+        ) {
             throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
         }
 
@@ -120,7 +129,8 @@ constructor(
     override fun saveV2Permissions(permissionsRequest: PermissionsV2Request): PermissionData {
         val userContext = userContextHolder.userContext
         if (!permissionCheckingService
-                .hasPermission(userContext?.actor!!, permissionsRequest.getPath(), PermissionOperation.WRITE_ACL)) {
+            .hasPermission(userContext?.actor!!, permissionsRequest.getPath(), PermissionOperation.WRITE_ACL)
+        ) {
             throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
         }
         if (!permissionCheckingService.userAllowedToOperateOnActor(permissionsRequest.actor)) {

@@ -1,7 +1,6 @@
 package org.cloudfoundry.credhub.services
 
 import com.google.common.collect.Lists
-import java.util.UUID
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.audit.AuditableCredentialVersion
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
@@ -18,6 +17,7 @@ import org.cloudfoundry.credhub.requests.BaseCredentialGenerateRequest
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.util.UUID
 
 @Service
 @Transactional

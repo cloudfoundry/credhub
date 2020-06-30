@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.handlers
 
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.cloudfoundry.credhub.ErrorMessages
@@ -19,6 +18,7 @@ import org.cloudfoundry.credhub.requests.PermissionsV2Request
 import org.cloudfoundry.credhub.views.PermissionsV2View
 import org.junit.Before
 import org.junit.Test
+import java.util.UUID
 
 class DefaultPermissionsV2HandlerTest {
     private lateinit var credentialVersion: CredentialVersion
@@ -50,21 +50,26 @@ class DefaultPermissionsV2HandlerTest {
         )
 
         spyPermissionService.savePermissionsForUser__returns_permissionDataList =
-            mutableListOf(PermissionData(CREDENTIAL_NAME,
-                ACTOR_NAME,
-                mutableListOf(PermissionOperation.DELETE)
-            ))
+            mutableListOf(
+                PermissionData(
+                    CREDENTIAL_NAME,
+                    ACTOR_NAME,
+                    mutableListOf(PermissionOperation.DELETE)
+                )
+            )
 
         subject.writePermissions(permissionsRequest)
 
         assertThat(spyPermissionService.savePermissionsForUser__calledWith_permissionEntryList)
-            .isEqualTo(mutableListOf(
-                PermissionEntry(
-                    ACTOR_NAME,
-                    CREDENTIAL_NAME,
-                    mutableListOf(PermissionOperation.DELETE)
+            .isEqualTo(
+                mutableListOf(
+                    PermissionEntry(
+                        ACTOR_NAME,
+                        CREDENTIAL_NAME,
+                        mutableListOf(PermissionOperation.DELETE)
+                    )
                 )
-            ))
+            )
     }
 
     @Test
@@ -84,13 +89,15 @@ class DefaultPermissionsV2HandlerTest {
             .hasMessage(INVALID_NUMBER_OF_PERMISSIONS)
 
         assertThat(spyPermissionService.savePermissionsForUser__calledWith_permissionEntryList)
-            .isEqualTo(mutableListOf(
-                PermissionEntry(
-                    ACTOR_NAME,
-                    CREDENTIAL_NAME,
-                    mutableListOf(PermissionOperation.DELETE)
+            .isEqualTo(
+                mutableListOf(
+                    PermissionEntry(
+                        ACTOR_NAME,
+                        CREDENTIAL_NAME,
+                        mutableListOf(PermissionOperation.DELETE)
+                    )
                 )
-            ))
+            )
     }
 
     @Test

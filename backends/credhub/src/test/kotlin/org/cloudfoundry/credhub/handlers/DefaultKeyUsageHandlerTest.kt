@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.handlers
 
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.cloudfoundry.credhub.keyusage.DefaultKeyUsageHandler
 import org.cloudfoundry.credhub.services.EncryptionKey
@@ -10,6 +9,7 @@ import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
+import java.util.UUID
 
 class DefaultKeyUsageHandlerTest {
 

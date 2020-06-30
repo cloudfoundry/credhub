@@ -68,10 +68,12 @@ class OAuth2ExtraValidationFilterTest {
     fun whenGivenValidIssuer_returns200() {
         `when`<String>(oAuth2IssuerService!!.getIssuer()).thenReturn("https://valid-uaa:8443/uaa/oauth/token")
 
-        this.mockMvc!!.perform(get("/api/v1/data")
-            .header("Authorization", "Bearer $VALID_ISSUER_JWT")
-            .accept(APPLICATION_JSON)
-            .contentType(APPLICATION_JSON))
+        this.mockMvc!!.perform(
+            get("/api/v1/data")
+                .header("Authorization", "Bearer $VALID_ISSUER_JWT")
+                .accept(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
+        )
             .andExpect(status().isOk)
     }
 
@@ -157,10 +159,12 @@ class OAuth2ExtraValidationFilterTest {
     @Test
     @Throws(Exception::class)
     fun whenGivenNullIssuer_returns401() {
-        this.mockMvc!!.perform(get("/api/v1/data?name=/picard")
-            .header("Authorization", "Bearer $NULL_ISSUER_JWT")
-            .accept(APPLICATION_JSON)
-            .contentType(APPLICATION_JSON))
+        this.mockMvc!!.perform(
+            get("/api/v1/data?name=/picard")
+                .header("Authorization", "Bearer $NULL_ISSUER_JWT")
+                .accept(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
+        )
             .andExpect(status().isUnauthorized)
             .andExpect(jsonPath("$.error_description").value(ERROR_MESSAGE))
     }
@@ -168,10 +172,12 @@ class OAuth2ExtraValidationFilterTest {
     @Test
     @Throws(Exception::class)
     fun whenEmptyIssuerSpecified_returns401() {
-        this.mockMvc!!.perform(get("/api/v1/data?name=/picard")
-            .header("Authorization", "Bearer $EMPTY_ISSUER_JWT")
-            .accept(APPLICATION_JSON)
-            .contentType(APPLICATION_JSON))
+        this.mockMvc!!.perform(
+            get("/api/v1/data?name=/picard")
+                .header("Authorization", "Bearer $EMPTY_ISSUER_JWT")
+                .accept(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
+        )
             .andExpect(status().isUnauthorized)
             .andExpect(jsonPath("$.error_description").value(ERROR_MESSAGE))
     }
@@ -180,10 +186,12 @@ class OAuth2ExtraValidationFilterTest {
     @Throws(Exception::class)
     fun whenTokenIsHasExpired_returns401() {
         `when`<String>(oAuth2IssuerService!!.getIssuer()).thenReturn("https://valid-uaa:8443/uaa/oauth/token")
-        this.mockMvc!!.perform(get("/api/v1/data?name=/sample-credential")
-            .header("Authorization", "Bearer $EXPIRED_TOKEN")
-            .accept(APPLICATION_JSON)
-            .contentType(APPLICATION_JSON))
+        this.mockMvc!!.perform(
+            get("/api/v1/data?name=/sample-credential")
+                .header("Authorization", "Bearer $EXPIRED_TOKEN")
+                .accept(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
+        )
             .andExpect(status().isUnauthorized)
             .andExpect(jsonPath("$.error_description").value(EXPIRED_TOKEN_MESSAGE))
     }

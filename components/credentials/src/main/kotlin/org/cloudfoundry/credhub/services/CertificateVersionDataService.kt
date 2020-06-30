@@ -1,8 +1,8 @@
 package org.cloudfoundry.credhub.services
 
-import java.util.UUID
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
 import org.cloudfoundry.credhub.domain.CredentialVersion
+import java.util.UUID
 
 interface CertificateVersionDataService {
 

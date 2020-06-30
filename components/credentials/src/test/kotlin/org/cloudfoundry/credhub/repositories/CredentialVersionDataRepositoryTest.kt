@@ -1,9 +1,5 @@
 package org.cloudfoundry.credhub.repositories
 
-import java.nio.charset.StandardCharsets
-import java.util.Arrays
-import java.util.UUID
-import java.util.stream.Stream
 import org.cloudfoundry.credhub.CredhubTestApp
 import org.cloudfoundry.credhub.entities.EncryptedValue
 import org.cloudfoundry.credhub.entities.EncryptionKeyCanary
@@ -22,6 +18,10 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
+import java.nio.charset.StandardCharsets
+import java.util.Arrays
+import java.util.UUID
+import java.util.stream.Stream
 
 @RunWith(SpringRunner::class)
 @ActiveProfiles(value = ["unit-test"], resolver = DatabaseProfileResolver::class)

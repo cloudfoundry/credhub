@@ -5,11 +5,11 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.common.net.InetAddresses
 import com.google.common.net.InternetDomainName
-import java.util.Arrays
-import java.util.regex.Pattern
 import org.apache.commons.lang3.StringUtils.isEmpty
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException
+import java.util.Arrays
+import java.util.regex.Pattern
 
 @JsonInclude(NON_DEFAULT)
 class CertificateGenerationRequestParameters {
@@ -57,8 +57,10 @@ class CertificateGenerationRequestParameters {
         .asList(SERVER_AUTH, CLIENT_AUTH, CODE_SIGNING, EMAIL_PROTECTION, TIMESTAMPING)
 
     private val validKeyUsages = Arrays
-        .asList(DIGITAL_SIGNATURE, NON_REPUDIATION, KEY_ENCIPHERMENT, DATA_ENCIPHERMENT,
-            KEY_AGREEMENT, KEY_CERT_SIGN, CRL_SIGN, ENCIPHER_ONLY, DECIPHER_ONLY)
+        .asList(
+            DIGITAL_SIGNATURE, NON_REPUDIATION, KEY_ENCIPHERMENT, DATA_ENCIPHERMENT,
+            KEY_AGREEMENT, KEY_CERT_SIGN, CRL_SIGN, ENCIPHER_ONLY, DECIPHER_ONLY
+        )
 
     var isSelfSigned: Boolean
         get() {
@@ -79,7 +81,8 @@ class CertificateGenerationRequestParameters {
             isEmpty(locality) &&
             isEmpty(organizationUnit) &&
             isEmpty(commonName) &&
-            isEmpty(country)) {
+            isEmpty(country)
+        ) {
             throw ParameterizedValidationException(ErrorMessages.MISSING_CERTIFICATE_PARAMETERS)
         } else if (isEmpty(caName) && !selfSigned && !isCa) {
             throw ParameterizedValidationException(ErrorMessages.MISSING_SIGNING_CA)
@@ -102,8 +105,10 @@ class CertificateGenerationRequestParameters {
         if (extendedKeyUsage != null) {
             for (extendedKey in extendedKeyUsage!!) {
                 if (!validExtendedKeyUsages.contains(extendedKey)) {
-                    throw ParameterizedValidationException(ErrorMessages.INVALID_EXTENDED_KEY_USAGE,
-                        extendedKey)
+                    throw ParameterizedValidationException(
+                        ErrorMessages.INVALID_EXTENDED_KEY_USAGE,
+                        extendedKey
+                    )
                 }
             }
         }
@@ -111,8 +116,10 @@ class CertificateGenerationRequestParameters {
         if (keyUsage != null) {
             for (keyUse in keyUsage!!) {
                 if (!validKeyUsages.contains(keyUse)) {
-                    throw ParameterizedValidationException(ErrorMessages.INVALID_KEY_USAGE,
-                        keyUse)
+                    throw ParameterizedValidationException(
+                        ErrorMessages.INVALID_KEY_USAGE,
+                        keyUse
+                    )
                 }
             }
         }
@@ -162,7 +169,8 @@ class CertificateGenerationRequestParameters {
         private fun validateParameterLength(parameter: String?, parameterName: String, parameterLength: Int) {
             if (!isEmpty(parameter) && parameter!!.length > parameterLength) {
                 throw ParameterizedValidationException(
-                    ErrorMessages.Credential.INVALID_CERTIFICATE_PARAMETER, arrayOf(parameterName, parameterLength))
+                    ErrorMessages.Credential.INVALID_CERTIFICATE_PARAMETER, arrayOf(parameterName, parameterLength)
+                )
             }
         }
     }

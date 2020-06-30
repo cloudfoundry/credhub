@@ -5,10 +5,10 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonProperty.Access
-import java.util.Objects
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException
 import org.cloudfoundry.credhub.generators.PassayStringCredentialGenerator
+import java.util.Objects
 
 @JsonInclude(NON_DEFAULT)
 class StringGenerationParameters : GenerationParameters() {
@@ -26,10 +26,12 @@ class StringGenerationParameters : GenerationParameters() {
 
     @JsonIgnore
     fun isValid(): Boolean {
-        return !(!includeSpecial &&
-            excludeNumber &&
-            excludeUpper &&
-            excludeLower)
+        return !(
+            !includeSpecial &&
+                excludeNumber &&
+                excludeUpper &&
+                excludeLower
+            )
     }
 
     fun isExcludeLower(): Boolean {

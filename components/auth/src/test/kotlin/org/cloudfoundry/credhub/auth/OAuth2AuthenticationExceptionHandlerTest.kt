@@ -1,8 +1,6 @@
 package org.cloudfoundry.credhub.auth
 
 import com.jayway.jsonpath.JsonPath
-import java.security.cert.CertPathValidatorException
-import javax.servlet.http.HttpServletRequest
 import org.cloudfoundry.credhub.util.CurrentTimeProvider
 import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.MatcherAssert.assertThat
@@ -13,6 +11,8 @@ import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.security.authentication.InsufficientAuthenticationException
 import org.springframework.security.oauth2.provider.token.store.jwk.JwkException
+import java.security.cert.CertPathValidatorException
+import javax.servlet.http.HttpServletRequest
 
 internal class OAuth2AuthenticationExceptionHandlerTest {
     private lateinit var oAuth2AuthenticationExceptionHandler: OAuth2AuthenticationExceptionHandler

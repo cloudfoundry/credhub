@@ -1,9 +1,9 @@
 package org.cloudfoundry.credhub.credential
 
 import com.fasterxml.jackson.annotation.JsonValue
+import org.cloudfoundry.credhub.ErrorMessages
 import java.util.Objects
 import javax.validation.constraints.NotEmpty
-import org.cloudfoundry.credhub.ErrorMessages
 
 class StringCredentialValue(
     @field:NotEmpty(message = ErrorMessages.MISSING_VALUE)

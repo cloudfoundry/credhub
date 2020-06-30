@@ -16,189 +16,239 @@ class PermissionsV2RequestTest {
     @Test
     fun whenPathEndsWithSlash_shouldBeInvalid() {
         // language=JSON
-        val json = """
+        val json =
+            """
             {
               "actor": "some-actor",
               "path": "some-path/",
               "operations": ["read", "write"]
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val violations = JsonTestHelper
-                .deserializeAndValidate(json, PermissionsV2Request::class.java)
+            .deserializeAndValidate(json, PermissionsV2Request::class.java)
 
         assertThat(violations.size, equalTo(1))
-        MatcherAssert.assertThat(violations, IsIterableContainingInOrder.contains(
-                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.INVALID_SLASH_IN_PATH)))
+        MatcherAssert.assertThat(
+            violations,
+            IsIterableContainingInOrder.contains(
+                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.INVALID_SLASH_IN_PATH)
+            )
+        )
     }
 
     @Test
     fun whenPathContainsDoubleSlash_shouldBeInvalid() {
         // language=JSON
-        val json = """
+        val json =
+            """
             {
               "actor": "some-actor",
               "path": "some//path",
               "operations": ["read", "write"]
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val violations = JsonTestHelper
-                .deserializeAndValidate(json, PermissionsV2Request::class.java)
+            .deserializeAndValidate(json, PermissionsV2Request::class.java)
 
         assertThat(violations.size, equalTo(1))
-        MatcherAssert.assertThat(violations, IsIterableContainingInOrder.contains(
-                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.INVALID_SLASH_IN_PATH)))
+        MatcherAssert.assertThat(
+            violations,
+            IsIterableContainingInOrder.contains(
+                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.INVALID_SLASH_IN_PATH)
+            )
+        )
     }
 
     @Test
     fun whenPathIsNotSet_shouldBeInvalid() {
         // language=JSON
-        val json = """
+        val json =
+            """
             {
               "actor": "some-actor",
               "operations": ["read", "write"]
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val violations = JsonTestHelper
-                .deserializeAndValidate(json, PermissionsV2Request::class.java)
+            .deserializeAndValidate(json, PermissionsV2Request::class.java)
 
         assertThat(violations.size, equalTo(1))
-        MatcherAssert.assertThat(violations, IsIterableContainingInOrder.contains(
-                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_PATH)))
+        MatcherAssert.assertThat(
+            violations,
+            IsIterableContainingInOrder.contains(
+                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_PATH)
+            )
+        )
     }
 
     @Test
     fun whenActorIsNotSet_shouldBeInvalid() {
         // language=JSON
-        val json = """
+        val json =
+            """
             {
               "path": "some-path",
               "operations": ["read", "write"]
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val violations = JsonTestHelper
-                .deserializeAndValidate(json, PermissionsV2Request::class.java)
+            .deserializeAndValidate(json, PermissionsV2Request::class.java)
 
         assertThat(violations.size, equalTo(1))
-        MatcherAssert.assertThat(violations, IsIterableContainingInOrder.contains(
-                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_ACTOR)))
+        MatcherAssert.assertThat(
+            violations,
+            IsIterableContainingInOrder.contains(
+                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_ACTOR)
+            )
+        )
     }
 
     @Test
     fun whenOperationsAreNotSet_shouldBeInvalid() {
         // language=JSON
-        val json = """
+        val json =
+            """
             {
               "actor": "some-actor",
               "path": "some-path"
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val violations = JsonTestHelper
-                .deserializeAndValidate(json, PermissionsV2Request::class.java)
+            .deserializeAndValidate(json, PermissionsV2Request::class.java)
 
         assertThat(violations.size, equalTo(1))
-        MatcherAssert.assertThat(violations, IsIterableContainingInOrder.contains(
-                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_OPERATIONS)))
+        MatcherAssert.assertThat(
+            violations,
+            IsIterableContainingInOrder.contains(
+                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_OPERATIONS)
+            )
+        )
     }
 
     @Test
     fun whenPathIsEmpty_shouldBeInvalid() {
         // language=JSON
-        val json = """
+        val json =
+            """
             {
               "actor": "some-actor",
               "path": "",
               "operations": ["read", "write"]
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val violations = JsonTestHelper
-                .deserializeAndValidate(json, PermissionsV2Request::class.java)
+            .deserializeAndValidate(json, PermissionsV2Request::class.java)
 
         assertThat(violations.size, equalTo(1))
-        MatcherAssert.assertThat(violations, IsIterableContainingInOrder.contains(
-                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_PATH)))
+        MatcherAssert.assertThat(
+            violations,
+            IsIterableContainingInOrder.contains(
+                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_PATH)
+            )
+        )
     }
 
     @Test
     fun whenActorIsEmpty_shouldBeInvalid() {
         // language=JSON
-        val json = """
+        val json =
+            """
             {
               "actor": "",
               "path": "some-path",
               "operations": ["read", "write"]
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val violations = JsonTestHelper
-                .deserializeAndValidate(json, PermissionsV2Request::class.java)
+            .deserializeAndValidate(json, PermissionsV2Request::class.java)
 
         assertThat(violations.size, equalTo(1))
-        MatcherAssert.assertThat(violations, IsIterableContainingInOrder.contains(
-                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_ACTOR)))
+        MatcherAssert.assertThat(
+            violations,
+            IsIterableContainingInOrder.contains(
+                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_ACTOR)
+            )
+        )
     }
 
     @Test
     fun whenOperationsAreEmpty_shouldBeInvalid() {
         // language=JSON
-        val json = """
+        val json =
+            """
             {
               "actor": "some-actor",
               "path": "some-path",
               "operations": []
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val violations = JsonTestHelper
-                .deserializeAndValidate(json, PermissionsV2Request::class.java)
+            .deserializeAndValidate(json, PermissionsV2Request::class.java)
 
         assertThat(violations.size, equalTo(1))
-        MatcherAssert.assertThat(violations, IsIterableContainingInOrder.contains(
-                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_OPERATIONS)))
+        MatcherAssert.assertThat(
+            violations,
+            IsIterableContainingInOrder.contains(
+                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_OPERATIONS)
+            )
+        )
     }
 
     @Test
     fun whenPathIsJustASlash_shouldBeInvalid() {
         // language=JSON
-        val json = """
+        val json =
+            """
             {
               "actor": "some-actor",
               "path": "/",
               "operations": ["read", "write"]
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val violations = JsonTestHelper
-                .deserializeAndValidate(json, PermissionsV2Request::class.java)
+            .deserializeAndValidate(json, PermissionsV2Request::class.java)
 
         assertThat(violations.size, equalTo(1))
-        MatcherAssert.assertThat(violations, IsIterableContainingInOrder.contains(
-                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_PATH)))
+        MatcherAssert.assertThat(
+            violations,
+            IsIterableContainingInOrder.contains(
+                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_PATH)
+            )
+        )
     }
 
     @Test
     fun whenPathContainsInvalidCharacter_shouldBeInvalid() {
         for (invalidCharacter in charArrayOf(' ', '\\', '*')) {
             // language=JSON
-            val json = """
+            val json =
+                """
             {
               "actor": "some-actor",
               "path": "test${invalidCharacter}test",
               "operations": ["read", "write"]
             }
-        """.trimIndent()
+                """.trimIndent()
 
             val violations = JsonTestHelper
-                    .deserializeAndValidate(json, PermissionsV2Request::class.java)
+                .deserializeAndValidate(json, PermissionsV2Request::class.java)
 
             assertThat(violations.size, equalTo(1))
-            MatcherAssert.assertThat(violations, IsIterableContainingInOrder.contains(
-                    JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.INVALID_CHARACTER_IN_PATH)))
+            MatcherAssert.assertThat(
+                violations,
+                IsIterableContainingInOrder.contains(
+                    JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.INVALID_CHARACTER_IN_PATH)
+                )
+            )
         }
     }
 
@@ -207,16 +257,17 @@ class PermissionsV2RequestTest {
 
         for (specialCharacter in charArrayOf('.', ':', '(', ')', '[', ']', '+')) {
             // language=JSON
-            val json = """
+            val json =
+                """
             {
               "actor": "some-actor",
               "path": "some${specialCharacter}path",
               "operations": ["read", "write"]
             }
-        """.trimIndent()
+                """.trimIndent()
 
             val violations = JsonTestHelper
-                    .deserializeAndValidate(json, PermissionsV2Request::class.java)
+                .deserializeAndValidate(json, PermissionsV2Request::class.java)
 
             MatcherAssert.assertThat(violations.size, equalTo(0))
         }
@@ -225,16 +276,17 @@ class PermissionsV2RequestTest {
     @Test
     fun whenPathEndsInSlashStar_shouldBeValid() {
         // language=JSON
-        val json = """
+        val json =
+            """
         {
           "actor": "some-actor",
           "path": "some-path/*",
           "operations": ["read", "write"]
         }
-        """.trimIndent()
+            """.trimIndent()
 
         val violations = JsonTestHelper
-                .deserializeAndValidate(json, PermissionsV2Request::class.java)
+            .deserializeAndValidate(json, PermissionsV2Request::class.java)
 
         MatcherAssert.assertThat(violations.size, equalTo(0))
     }

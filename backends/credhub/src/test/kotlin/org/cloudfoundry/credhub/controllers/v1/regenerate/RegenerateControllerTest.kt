@@ -2,9 +2,6 @@ package org.cloudfoundry.credhub.controllers.v1.regenerate
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import java.security.Security
-import java.time.Instant
-import java.util.UUID
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.constants.CredentialType
 import org.cloudfoundry.credhub.credential.StringCredentialValue
@@ -30,6 +27,9 @@ import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.security.Security
+import java.time.Instant
+import java.util.UUID
 
 @RunWith(SpringRunner::class)
 class RegenerateControllerTest {
@@ -75,29 +75,30 @@ class RegenerateControllerTest {
                     .credHubAuthHeader()
                     .accept(MediaType.APPLICATION_JSON)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content("""
+                    .content(
+                        """
                         {
                             "name": "/some-name",
                             "metadata": { "some": "example metadata"}
                         }
-                    """.trimIndent()
+                        """.trimIndent()
                     )
             )
             .andExpect(status().isOk)
             .andDo(
-                    document(
-                            CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                            PayloadDocumentation.requestFields(
-                                    PayloadDocumentation.fieldWithPath("name")
-                                            .description("The credential name to regenerate.")
-                                            .type(JsonFieldType.STRING),
-                                    PayloadDocumentation.fieldWithPath("metadata")
-                                            .description("Additional metadata of the credential.")
-                                            .optional(),
-                                    PayloadDocumentation.fieldWithPath("metadata.*")
-                                            .ignored()
-                            )
+                document(
+                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                    PayloadDocumentation.requestFields(
+                        PayloadDocumentation.fieldWithPath("name")
+                            .description("The credential name to regenerate.")
+                            .type(JsonFieldType.STRING),
+                        PayloadDocumentation.fieldWithPath("metadata")
+                            .description("Additional metadata of the credential.")
+                            .optional(),
+                        PayloadDocumentation.fieldWithPath("metadata.*")
+                            .ignored()
                     )
+                )
             ).andReturn().response
 
         // language=json
@@ -122,10 +123,12 @@ class RegenerateControllerTest {
     fun POST__bulkregenerate__returns_results() {
         spyRegenerateHandler.handleBulkRegenerate__returns_bulkRegenerateResults = {
             val bulkRegenerateResults = BulkRegenerateResults()
-            bulkRegenerateResults.setRegeneratedCredentials(mutableSetOf(
-                "/some-credential-name",
-                "/some-other-credential-name"
-            ))
+            bulkRegenerateResults.setRegeneratedCredentials(
+                mutableSetOf(
+                    "/some-credential-name",
+                    "/some-other-credential-name"
+                )
+            )
 
             bulkRegenerateResults
         }()
@@ -136,33 +139,36 @@ class RegenerateControllerTest {
                     .credHubAuthHeader()
                     .accept(MediaType.APPLICATION_JSON)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content("""
+                    .content(
+                        """
                         {
                             "signed_by": "/some-ca"
                         }
-                    """.trimIndent())
+                        """.trimIndent()
+                    )
             )
             .andExpect(status().isOk)
             .andDo(
-                    document(
-                            CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                            PayloadDocumentation.requestFields(
-                                    PayloadDocumentation.fieldWithPath("signed_by")
-                                            .description("The name of the CA that signs regenerated certificates.")
-                                            .type(JsonFieldType.STRING)
-                            )
+                document(
+                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                    PayloadDocumentation.requestFields(
+                        PayloadDocumentation.fieldWithPath("signed_by")
+                            .description("The name of the CA that signs regenerated certificates.")
+                            .type(JsonFieldType.STRING)
                     )
+                )
             ).andReturn().response
 
         // language=json
-        val expectedResponse = """
+        val expectedResponse =
+            """
           {
             "regenerated_credentials": [
               "/some-credential-name",
               "/some-other-credential-name"
             ]
           }
-        """.trimIndent()
+            """.trimIndent()
 
         JSONAssert.assertEquals(expectedResponse, actualResponse.contentAsString, true)
 

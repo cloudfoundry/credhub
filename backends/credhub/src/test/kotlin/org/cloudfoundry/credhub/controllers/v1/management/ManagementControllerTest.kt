@@ -58,11 +58,12 @@ class ManagementControllerTest {
                 )
             ).andReturn()
 
-        val expectedResponseBody = """
+        val expectedResponseBody =
+            """
             {
                 "read_only_mode": false
             }
-        """.trimIndent()
+            """.trimIndent()
         val actualResponseBody = mvcResult.response.contentAsString
         JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true)
     }
@@ -96,11 +97,12 @@ class ManagementControllerTest {
 
         assertThat(spyManagementService.toggleReadOnlyMode__calledWith_shouldUseReadOnlyMode).isEqualTo(true)
 
-        val expectedResponseBody = """
+        val expectedResponseBody =
+            """
             {
                 "read_only_mode": true
             }
-        """.trimIndent()
+            """.trimIndent()
         val actualResponseBody = mvcResult.response.contentAsString
         JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true)
     }

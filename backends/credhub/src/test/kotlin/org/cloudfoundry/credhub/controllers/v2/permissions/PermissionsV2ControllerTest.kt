@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.controllers.v2.permissions
 
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.cloudfoundry.credhub.PermissionOperation
 import org.cloudfoundry.credhub.PermissionOperation.READ
@@ -32,6 +31,7 @@ import org.springframework.restdocs.request.RequestDocumentation.requestParamete
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.util.UUID
 
 class PermissionsV2ControllerTest {
 
@@ -91,7 +91,8 @@ class PermissionsV2ControllerTest {
         val actualResponseBody = mvcResult.response.contentAsString
 
         // language=json
-        val expectedResponseBody = """
+        val expectedResponseBody =
+            """
             {
               "path": "/some-path/*",
               "operations": [
@@ -101,7 +102,7 @@ class PermissionsV2ControllerTest {
               "actor": "some-actor",
               "uuid": $uuid
             }
-        """.trimIndent()
+            """.trimIndent()
 
         JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true)
     }
@@ -139,7 +140,8 @@ class PermissionsV2ControllerTest {
         val actualResponseBody = mvcResult.response.contentAsString
 
         // language=json
-        val expectedResponseBody = """
+        val expectedResponseBody =
+            """
             {
               "path": "/some-path/*",
               "operations": [
@@ -149,7 +151,7 @@ class PermissionsV2ControllerTest {
               "actor": "some-actor",
               "uuid": "$uuid"
             }
-        """.trimIndent()
+            """.trimIndent()
         JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true)
     }
 
@@ -199,7 +201,8 @@ class PermissionsV2ControllerTest {
         val actualResponseBody = mvcResult.response.contentAsString
 
         // language=json
-        val expectedResponseBody = """
+        val expectedResponseBody =
+            """
             {
               "path": "some-path/*",
               "operations": [
@@ -209,7 +212,7 @@ class PermissionsV2ControllerTest {
               "actor": "some-actor",
               "uuid": "$uuid"
             }
-        """.trimIndent()
+            """.trimIndent()
 
         JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true)
     }
@@ -247,7 +250,8 @@ class PermissionsV2ControllerTest {
         val actualResponseBody = mvcResult.response.contentAsString
 
         // language=json
-        val expectedResponseBody = """
+        val expectedResponseBody =
+            """
             {
               "path": "/some-path/*",
               "operations": [
@@ -257,7 +261,7 @@ class PermissionsV2ControllerTest {
               "actor": "some-actor",
               "uuid": "$uuid"
             }
-        """.trimIndent()
+            """.trimIndent()
         JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true)
     }
 
@@ -277,7 +281,8 @@ class PermissionsV2ControllerTest {
                     .credHubAuthHeader()
                     .contentType(MediaType.APPLICATION_JSON)
                     // language=json
-                    .content("""
+                    .content(
+                        """
                         {
                           "path": "/some-path/*",
                           "actor": "some-actor",
@@ -286,7 +291,8 @@ class PermissionsV2ControllerTest {
                             "write"
                           ]
                         }
-                    """.trimIndent())
+                        """.trimIndent()
+                    )
             )
             .andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -312,7 +318,8 @@ class PermissionsV2ControllerTest {
         val actualResponseBody = mvcResult.response.contentAsString
 
         // language=json
-        val expectedResponseBody = """
+        val expectedResponseBody =
+            """
             {
               "path": "/some-path/*",
               "operations": [
@@ -322,7 +329,7 @@ class PermissionsV2ControllerTest {
               "actor": "some-actor",
               "uuid": "$uuid"
             }
-        """.trimIndent()
+            """.trimIndent()
         JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true)
     }
 
@@ -344,14 +351,15 @@ class PermissionsV2ControllerTest {
                     .credHubAuthHeader()
                     .contentType(MediaType.APPLICATION_JSON)
                     // language=json
-                    .content("""
+                    .content(
+                        """
                         {
                           "operations": [
                             "read",
                             "write"
                           ]
                         }
-                    """.trimIndent()
+                        """.trimIndent()
                     )
             )
             .andExpect(status().isOk())
@@ -374,7 +382,8 @@ class PermissionsV2ControllerTest {
         val actualResponseBody = mvcResult.response.contentAsString
 
         // language=json
-        val expectedResponseBody = """
+        val expectedResponseBody =
+            """
             {
               "path": "/some-path/*",
               "operations": [
@@ -384,7 +393,7 @@ class PermissionsV2ControllerTest {
               "actor": "some-actor",
               "uuid": "$uuid"
             }
-        """.trimIndent()
+            """.trimIndent()
         JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true)
     }
 
@@ -405,7 +414,8 @@ class PermissionsV2ControllerTest {
                     .credHubAuthHeader()
                     .contentType(MediaType.APPLICATION_JSON)
                     // language=json
-                    .content("""
+                    .content(
+                        """
                         {
                           "path": "/some-path/*",
                           "actor": "some-actor",
@@ -414,7 +424,8 @@ class PermissionsV2ControllerTest {
                             "write"
                           ]
                         }
-                    """.trimIndent())
+                        """.trimIndent()
+                    )
             )
             .andExpect(status().isCreated())
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -435,7 +446,8 @@ class PermissionsV2ControllerTest {
         val actualResponseBody = mvcResult.response.contentAsString
 
         // language=json
-        val expectedResponseBody = """
+        val expectedResponseBody =
+            """
             {
               "path": "/some-path/*",
               "operations": [
@@ -445,25 +457,26 @@ class PermissionsV2ControllerTest {
               "actor": "some-actor",
               "uuid": "$uuid"
             }
-        """.trimIndent()
+            """.trimIndent()
 
         JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true)
     }
 
     private fun getPermissionOperationsRequestField(): FieldDescriptor {
         return fieldWithPath("operations")
-                .description(
-                    """
+            .description(
+                """
                         The list of permissions to be granted.
                         Supported operations are: ${
-                            PermissionOperation.values().joinToString(
-                                transform = {
-                                    x -> x.operation.toLowerCase()
-                                },
-                                separator = ", "
-                            )
-                        }
-                    """.trimIndent()
+                PermissionOperation.values().joinToString(
+                    transform = {
+                        x ->
+                        x.operation.toLowerCase()
+                    },
+                    separator = ", "
                 )
+                }
+                """.trimIndent()
+            )
     }
 }

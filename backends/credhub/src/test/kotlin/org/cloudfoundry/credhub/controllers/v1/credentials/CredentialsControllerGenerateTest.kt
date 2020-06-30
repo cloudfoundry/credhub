@@ -3,9 +3,6 @@ package org.cloudfoundry.credhub.controllers.v1.credentials
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.PropertyNamingStrategy
-import java.security.Security
-import java.time.Instant
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
@@ -45,6 +42,9 @@ import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.security.Security
+import java.time.Instant
+import java.util.UUID
 
 @RunWith(SpringRunner::class)
 class CredentialsControllerGenerateTest {
@@ -540,17 +540,17 @@ class CredentialsControllerGenerateTest {
     @Test
     fun POST__regenerate_password_returns__password_credential() {
         spyRegenerateHandler.handleRegenerate__returns_credentialView = CredentialView(
-                Instant.ofEpochSecond(1549053472L),
-                uuid,
-                "/some-password-name",
-                "password",
-                metadata,
-                StringCredentialValue("some-password")
+            Instant.ofEpochSecond(1549053472L),
+            uuid,
+            "/some-password-name",
+            "password",
+            metadata,
+            StringCredentialValue("some-password")
         )
 
         // language=json
         val requestBody =
-                """
+            """
                 {
                   "name": "/some-password-name",
                   "regenerate": true,
@@ -559,30 +559,30 @@ class CredentialsControllerGenerateTest {
             """.trimIndent()
 
         val mvcResult = mockMvc.perform(
-                post(CredentialsController.ENDPOINT)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .credHubAuthHeader()
-                        .content(requestBody)
+            post(CredentialsController.ENDPOINT)
+                .contentType(MediaType.APPLICATION_JSON)
+                .credHubAuthHeader()
+                .content(requestBody)
         )
-                .andExpect(status().isOk)
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andDo(
-                        document(
-                                CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                                PayloadDocumentation.requestFields(
-                                        PayloadDocumentation.fieldWithPath("name")
-                                                .description("The credential name to regenerate.")
-                                                .type(JsonFieldType.STRING),
-                                        PayloadDocumentation.fieldWithPath("regenerate")
-                                                .description("The credential name to regenerate.")
-                                                .type(JsonFieldType.BOOLEAN),
-                                        PayloadDocumentation.fieldWithPath("metadata.description")
-                                                .description("The credential metadata to add.")
-                                                .type(JsonFieldType.STRING)
-                                )
-                        )
+            .andExpect(status().isOk)
+            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+            .andDo(
+                document(
+                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                    PayloadDocumentation.requestFields(
+                        PayloadDocumentation.fieldWithPath("name")
+                            .description("The credential name to regenerate.")
+                            .type(JsonFieldType.STRING),
+                        PayloadDocumentation.fieldWithPath("regenerate")
+                            .description("The credential name to regenerate.")
+                            .type(JsonFieldType.BOOLEAN),
+                        PayloadDocumentation.fieldWithPath("metadata.description")
+                            .description("The credential metadata to add.")
+                            .type(JsonFieldType.STRING)
+                    )
                 )
-                .andReturn()
+            )
+            .andReturn()
 
         val actualRegenerateRequestName = spyRegenerateHandler.handleRegenerate__calledWith_credentialName
         val actualRegenerateRequestMetadata = spyRegenerateHandler.handleRegenerate__calledWith_credentialMetadata
@@ -595,7 +595,7 @@ class CredentialsControllerGenerateTest {
         val actualResponseBody = mvcResult.response.contentAsString
         // language=json
         val expectedResponseBody =
-                """
+            """
               {
                   "type": "password",
                   "version_created_at": "2019-02-01T20:37:52Z",

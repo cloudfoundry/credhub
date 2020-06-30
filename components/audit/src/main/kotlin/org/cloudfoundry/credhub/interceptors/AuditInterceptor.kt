@@ -1,7 +1,5 @@
 package org.cloudfoundry.credhub.interceptors
 
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
 import org.apache.logging.log4j.LogManager
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.auth.UserContextFactory
@@ -10,6 +8,8 @@ import org.springframework.lang.Nullable
 import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Component
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
 
 @Component
 class AuditInterceptor @Autowired

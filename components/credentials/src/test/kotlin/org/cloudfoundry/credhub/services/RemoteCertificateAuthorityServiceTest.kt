@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy
 import com.google.protobuf.ByteString
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
-import java.util.UUID
 import org.assertj.core.api.Assertions
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.auth.UserContext
@@ -23,6 +22,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
+import java.util.UUID
 
 @RunWith(JUnit4::class)
 class RemoteCertificateAuthorityServiceTest {
@@ -57,7 +57,8 @@ class RemoteCertificateAuthorityServiceTest {
             true,
             true,
             true,
-            false)
+            false
+        )
 
         val requestParams = CertificateGenerationRequestParameters()
         requestParams.caName = "some-ca"
@@ -96,17 +97,19 @@ class RemoteCertificateAuthorityServiceTest {
     }
 
     private fun createByteStringFromData(data: CertificateCredentialValue): ByteString {
-        val json = objectMapper.writeValueAsString(mapOf(
-            "ca" to data.ca,
-            "ca_name" to data.caName,
-            "certificate" to data.certificate,
-            "private_key" to data.privateKey,
-            "transitional" to data.transitional,
-            "certificate_authority" to data.certificateAuthority,
-            "self_signed" to data.selfSigned,
-            "generated" to data.generated
+        val json = objectMapper.writeValueAsString(
+            mapOf(
+                "ca" to data.ca,
+                "ca_name" to data.caName,
+                "certificate" to data.certificate,
+                "private_key" to data.privateKey,
+                "transitional" to data.transitional,
+                "certificate_authority" to data.certificateAuthority,
+                "self_signed" to data.selfSigned,
+                "generated" to data.generated
 
-        ))
+            )
+        )
         return ByteString.copyFromUtf8(json)
     }
 
@@ -119,23 +122,25 @@ class RemoteCertificateAuthorityServiceTest {
             x500Names[kv[0]] = kv[1]
         }
 
-        val json = objectMapper.writeValueAsString(mapOf(
+        val json = objectMapper.writeValueAsString(
+            mapOf(
 
-            "is_ca" to generationParams.isCa,
-            "organization_unit" to x500Names["OU"],
-            "organization" to x500Names["O"],
-            "state" to x500Names["ST"],
-            "country" to x500Names["C"],
-            "locality" to x500Names["L"],
-            "common_name" to x500Names["CN"],
-            "key_length" to generationParams.keyLength,
-            "duration" to generationParams.duration,
-            "self_signed" to generationParams.isSelfSigned,
-            "ca_name" to generationParams.caName,
-            "alternative_names" to generationParams.alternativeNames,
-            "key_usage" to generationParams.keyUsage,
-            "extended_key_usage" to generationParams.extendedKeyUsage
-        ).filterValues { it != null })
+                "is_ca" to generationParams.isCa,
+                "organization_unit" to x500Names["OU"],
+                "organization" to x500Names["O"],
+                "state" to x500Names["ST"],
+                "country" to x500Names["C"],
+                "locality" to x500Names["L"],
+                "common_name" to x500Names["CN"],
+                "key_length" to generationParams.keyLength,
+                "duration" to generationParams.duration,
+                "self_signed" to generationParams.isSelfSigned,
+                "ca_name" to generationParams.caName,
+                "alternative_names" to generationParams.alternativeNames,
+                "key_usage" to generationParams.keyUsage,
+                "extended_key_usage" to generationParams.extendedKeyUsage
+            ).filterValues { it != null }
+        )
         return ByteString.copyFromUtf8(json)
     }
 }

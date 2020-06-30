@@ -77,8 +77,12 @@ internal constructor(
             .antMatchers("/health").permitAll()
             .antMatchers("/management").permitAll()
             .antMatchers("**")
-            .access(String.format("hasRole('%s') " + "or (#oauth2.hasScope('credhub.read') and #oauth2.hasScope('credhub.write'))",
-                X509AuthenticationProvider.MTLS_USER))
+            .access(
+                String.format(
+                    "hasRole('%s') " + "or (#oauth2.hasScope('credhub.read') and #oauth2.hasScope('credhub.write'))",
+                    X509AuthenticationProvider.MTLS_USER
+                )
+            )
 
         http.httpBasic().disable()
     }

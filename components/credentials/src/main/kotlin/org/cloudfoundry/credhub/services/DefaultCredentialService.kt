@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.services
 
-import java.util.UUID
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.audit.entities.GetCredentialById
@@ -19,6 +18,7 @@ import org.cloudfoundry.credhub.requests.BaseCredentialRequest
 import org.cloudfoundry.credhub.requests.BaseCredentialSetRequest
 import org.cloudfoundry.credhub.views.FindCredentialResult
 import org.springframework.stereotype.Service
+import java.util.UUID
 
 @Service
 class DefaultCredentialService(

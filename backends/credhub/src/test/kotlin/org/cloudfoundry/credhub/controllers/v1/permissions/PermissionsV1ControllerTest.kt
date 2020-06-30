@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.controllers.v1.permissions
 
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.cloudfoundry.credhub.PermissionOperation
 import org.cloudfoundry.credhub.PermissionOperation.READ
@@ -30,6 +29,7 @@ import org.springframework.restdocs.request.RequestDocumentation.requestParamete
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.util.UUID
 
 class PermissionsV1ControllerTest {
     @Rule
@@ -88,7 +88,8 @@ class PermissionsV1ControllerTest {
         val actualResponseBody = mvcResult.response.contentAsString
 
         // language=json
-        val expectedResponseBody = """
+        val expectedResponseBody =
+            """
             {
               "credential_name": "/some-credential-name",
               "permissions": [
@@ -101,7 +102,7 @@ class PermissionsV1ControllerTest {
                 }
               ]
             }
-        """.trimIndent()
+            """.trimIndent()
 
         JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true)
     }
@@ -109,7 +110,8 @@ class PermissionsV1ControllerTest {
     @Test
     fun POST__permissions_v1__returns_201() {
         // language=json
-        val requestBody = """
+        val requestBody =
+            """
             {
               "credential_name": "/some-credential-name",
               "permissions": [
@@ -122,7 +124,7 @@ class PermissionsV1ControllerTest {
                 }
               ]
             }
-        """.trimIndent()
+            """.trimIndent()
 
         mockMvc
             .perform(
@@ -197,13 +199,14 @@ class PermissionsV1ControllerTest {
                 """
                     The list of permissions to be granted.
                     Supported operations are: ${
-                        PermissionOperation.values().joinToString(
-                            transform = {
-                                x -> x.operation.toLowerCase()
-                            },
-                            separator = ", "
-                        )
-                    }
+                PermissionOperation.values().joinToString(
+                    transform = {
+                        x ->
+                        x.operation.toLowerCase()
+                    },
+                    separator = ", "
+                )
+                }
                 """.trimIndent()
             )
     }

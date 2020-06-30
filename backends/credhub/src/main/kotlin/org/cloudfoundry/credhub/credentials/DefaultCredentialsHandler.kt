@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.credentials
 
-import java.util.ArrayList
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.PermissionOperation
 import org.cloudfoundry.credhub.PermissionOperation.DELETE
@@ -30,6 +29,7 @@ import org.cloudfoundry.credhub.views.FindCredentialResult
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import java.util.ArrayList
 
 @Service
 @Profile("!remote")
@@ -77,7 +77,7 @@ class DefaultCredentialsHandler(
                 activeVersionList[1]
             activeVersionList.isNotEmpty() &&
                 (activeVersionList[0] !is CertificateCredentialVersion || !(activeVersionList[0] as CertificateCredentialVersion).isVersionTransitional) ->
-                    activeVersionList[0]
+                activeVersionList[0]
             else -> null
         }
 
@@ -246,10 +246,11 @@ class DefaultCredentialsHandler(
         val credential = credentialService.findVersionByUuid(uuid)
 
         if (!permissionCheckingService.hasPermission(
-                userContextHolder.userContext?.actor!!,
-                credential.name!!,
-                permissionOperation
-            )) {
+            userContextHolder.userContext?.actor!!,
+            credential.name!!,
+            permissionOperation
+        )
+        ) {
             if (permissionOperation == WRITE) {
                 throw PermissionException(ErrorMessages.Credential.INVALID_ACCESS)
             } else {

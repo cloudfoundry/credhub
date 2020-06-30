@@ -4,12 +4,12 @@ import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver
 import com.google.common.collect.Lists.newArrayList
-import java.util.Arrays
-import java.util.Objects
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.constants.CredentialWriteMode
 import org.cloudfoundry.credhub.exceptions.InvalidModeException
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException
+import java.util.Arrays
+import java.util.Objects
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type", visible = true, defaultImpl = DefaultCredentialGenerateRequest::class)
 @JsonTypeIdResolver(GenerateRequestTypeIdResolver::class)

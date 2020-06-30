@@ -1,8 +1,6 @@
 package org.cloudfoundry.credhub.certificates
 
 import com.google.common.collect.Lists
-import java.util.ArrayList
-import java.util.UUID
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.PermissionOperation
 import org.cloudfoundry.credhub.PermissionOperation.DELETE
@@ -32,6 +30,8 @@ import org.cloudfoundry.credhub.views.CredentialView
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import java.util.ArrayList
+import java.util.UUID
 
 @Profile("!remote")
 @Service
@@ -186,11 +186,13 @@ class DefaultCertificatesHandler(
             } else {
                 signedCertificates = certificateService.findSignedCertificates(certificateMetadata.name!!)
             }
-            CertificateCredentialView(certificateMetadata.name,
+            CertificateCredentialView(
+                certificateMetadata.name,
                 certificateMetadata.id,
                 certificateVersionViews,
                 signedBy,
-                signedCertificates)
+                signedCertificates
+            )
         }
     }
 
@@ -198,10 +200,11 @@ class DefaultCertificatesHandler(
         if (!enforcePermissions) return
 
         if (!permissionCheckingService.hasPermission(
-                userContextHolder.userContext?.actor!!,
-                name,
-                permissionOperation
-            )) {
+            userContextHolder.userContext?.actor!!,
+            name,
+            permissionOperation
+        )
+        ) {
             if (permissionOperation == WRITE) {
                 throw PermissionException(ErrorMessages.Credential.INVALID_ACCESS)
             } else {
@@ -216,10 +219,11 @@ class DefaultCertificatesHandler(
         val certificate = certificateService.findByCredentialUuid(uuid)
 
         if (!permissionCheckingService.hasPermission(
-                userContextHolder.userContext?.actor!!,
-                certificate.name!!,
-                permissionOperation
-            )) {
+            userContextHolder.userContext?.actor!!,
+            certificate.name!!,
+            permissionOperation
+        )
+        ) {
             if (permissionOperation == WRITE) {
                 throw PermissionException(ErrorMessages.Credential.INVALID_ACCESS)
             } else {

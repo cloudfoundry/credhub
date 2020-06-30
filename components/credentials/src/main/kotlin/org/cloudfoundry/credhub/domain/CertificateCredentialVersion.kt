@@ -1,12 +1,12 @@
 package org.cloudfoundry.credhub.domain
 
-import java.time.Instant
-import java.util.Objects
 import org.apache.commons.lang3.StringUtils
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue
 import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData
 import org.cloudfoundry.credhub.requests.GenerationParameters
 import org.cloudfoundry.credhub.utils.CertificateReader
+import java.time.Instant
+import java.util.Objects
 
 class CertificateCredentialVersion(delegate: CertificateCredentialVersionData) : CredentialVersion(delegate) {
     lateinit var parsedCertificate: CertificateReader
@@ -129,10 +129,12 @@ class CertificateCredentialVersion(delegate: CertificateCredentialVersionData) :
             return false
         }
         val that = other as CertificateCredentialVersion?
-        return (delegate == that!!.delegate &&
-            name == that.name &&
-            uuid == that.uuid &&
-            versionCreatedAt == that.versionCreatedAt)
+        return (
+            delegate == that!!.delegate &&
+                name == that.name &&
+                uuid == that.uuid &&
+                versionCreatedAt == that.versionCreatedAt
+            )
     }
 
     override fun hashCode(): Int {

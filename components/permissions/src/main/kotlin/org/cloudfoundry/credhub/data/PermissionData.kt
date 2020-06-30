@@ -1,12 +1,5 @@
 package org.cloudfoundry.credhub.data
 
-import java.util.ArrayList
-import java.util.UUID
-import javax.persistence.Column
-import javax.persistence.Entity
-import javax.persistence.GeneratedValue
-import javax.persistence.Id
-import javax.persistence.Table
 import org.cloudfoundry.credhub.PermissionOperation
 import org.cloudfoundry.credhub.PermissionOperation.DELETE
 import org.cloudfoundry.credhub.PermissionOperation.READ
@@ -16,6 +9,13 @@ import org.cloudfoundry.credhub.PermissionOperation.WRITE_ACL
 import org.cloudfoundry.credhub.audit.AuditablePermissionData
 import org.cloudfoundry.credhub.constants.UuidConstants
 import org.hibernate.annotations.GenericGenerator
+import java.util.ArrayList
+import java.util.UUID
+import javax.persistence.Column
+import javax.persistence.Entity
+import javax.persistence.GeneratedValue
+import javax.persistence.Id
+import javax.persistence.Table
 
 @Entity
 @Table(name = "permission")

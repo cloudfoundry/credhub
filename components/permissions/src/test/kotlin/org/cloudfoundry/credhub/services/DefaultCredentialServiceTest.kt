@@ -1,9 +1,6 @@
 package org.cloudfoundry.credhub.services
 
 import com.google.common.collect.Lists.newArrayList
-import java.util.Arrays
-import java.util.UUID
-import java.util.regex.Pattern
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.cloudfoundry.credhub.ErrorMessages
@@ -42,6 +39,9 @@ import org.mockito.Mockito.never
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.MockitoAnnotations.initMocks
+import java.util.Arrays
+import java.util.UUID
+import java.util.regex.Pattern
 
 class DefaultCredentialServiceTest {
 
@@ -200,15 +200,18 @@ class DefaultCredentialServiceTest {
         val passwordCredentialVersion = PasswordCredentialVersion(
             stringCredentialValue,
             request.generationParameters as StringGenerationParameters,
-            encryptor)
+            encryptor
+        )
 
-        `when`<CredentialVersion>(credentialFactory.makeNewCredentialVersion(
-            CredentialType.valueOf(request.type?.toUpperCase().toString()),
-            request.name,
-            stringCredentialValue,
-            null,
-            request.generationParameters,
-            null)
+        `when`<CredentialVersion>(
+            credentialFactory.makeNewCredentialVersion(
+                CredentialType.valueOf(request.type?.toUpperCase().toString()),
+                request.name,
+                stringCredentialValue,
+                null,
+                request.generationParameters,
+                null
+            )
         ).thenReturn(passwordCredentialVersion)
 
         this.subject.save(null, stringCredentialValue, request)
@@ -277,7 +280,8 @@ class DefaultCredentialServiceTest {
         val passwordCredentialVersion = PasswordCredentialVersion(
             stringCredentialValue,
             stringGenerationParameters,
-            encryptor)
+            encryptor
+        )
 
         `when`(generateRequest.type).thenReturn("password")
         `when`(credentialVersionDataService.save(passwordCredentialVersion))
@@ -290,13 +294,16 @@ class DefaultCredentialServiceTest {
         `when`<CredentialVersion>(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(originalCredentialVersion)
         `when`(originalCredentialVersion.getCredentialType()).thenReturn("password")
 
-        `when`(credentialFactory.makeNewCredentialVersion(
-            CredentialType.valueOf("PASSWORD"),
-            CREDENTIAL_NAME,
-            credentialValue,
-            originalCredentialVersion,
-            generationParameters,
-            null)).thenReturn(newVersion)
+        `when`(
+            credentialFactory.makeNewCredentialVersion(
+                CredentialType.valueOf("PASSWORD"),
+                CREDENTIAL_NAME,
+                credentialValue,
+                originalCredentialVersion,
+                generationParameters,
+                null
+            )
+        ).thenReturn(newVersion)
 
         this.subject.save(originalCredentialVersion, credentialValue, generateRequest)
 
@@ -338,7 +345,8 @@ class DefaultCredentialServiceTest {
         val passwordCredentialVersion = PasswordCredentialVersion(
             stringCredentialValue,
             stringGenerationParameters,
-            encryptor)
+            encryptor
+        )
 
         `when`(request.type).thenReturn("password")
         `when`(credentialVersionDataService.save(passwordCredentialVersion))
@@ -351,13 +359,16 @@ class DefaultCredentialServiceTest {
         `when`<CredentialVersion>(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(originalCredentialVersion)
         `when`(originalCredentialVersion.getCredentialType()).thenReturn("password")
 
-        `when`(credentialFactory.makeNewCredentialVersion(
-            CredentialType.valueOf("PASSWORD"),
-            CREDENTIAL_NAME,
-            stringCredentialValue,
-            originalCredentialVersion,
-            stringGenerationParameters,
-            null)).thenReturn(newVersion)
+        `when`(
+            credentialFactory.makeNewCredentialVersion(
+                CredentialType.valueOf("PASSWORD"),
+                CREDENTIAL_NAME,
+                stringCredentialValue,
+                originalCredentialVersion,
+                stringGenerationParameters,
+                null
+            )
+        ).thenReturn(newVersion)
 
         this.subject.save(originalCredentialVersion, stringCredentialValue, request)
 

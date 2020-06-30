@@ -1,9 +1,9 @@
 package org.cloudfoundry.credhub.audit.entities
 
-import java.util.Objects
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.cloudfoundry.credhub.audit.OperationDeviceAction
 import org.cloudfoundry.credhub.audit.RequestDetails
+import java.util.Objects
 
 open class SetCredential : RequestDetails {
     var name: String? = null

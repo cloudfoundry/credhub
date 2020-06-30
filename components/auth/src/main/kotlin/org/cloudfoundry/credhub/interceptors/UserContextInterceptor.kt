@@ -1,13 +1,13 @@
 package org.cloudfoundry.credhub.interceptors
 
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
 import org.cloudfoundry.credhub.auth.UserContextFactory
 import org.cloudfoundry.credhub.auth.UserContextHolder
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Component
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
 
 @Component
 class UserContextInterceptor @Autowired

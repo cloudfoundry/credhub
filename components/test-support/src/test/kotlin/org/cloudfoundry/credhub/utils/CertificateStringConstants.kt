@@ -18,7 +18,8 @@ class CertificateStringConstants {
          * Key Usage: digital_signature
          * Issuer: CN=foo
          */
-        const val BIG_TEST_CERT: String = ("-----BEGIN CERTIFICATE-----\n" +
+        const val BIG_TEST_CERT: String = (
+            "-----BEGIN CERTIFICATE-----\n" +
                 "MIIEbzCCA1egAwIBAgIUYE3pB+BUaAP0YHeofpCmI/xCkmYwDQYJKoZIhvcNAQEL\n" +
                 "BQAwDjEMMAoGA1UEAwwDZm9vMB4XDTE3MDIwMzAxNDMzNloXDTE3MDMwNTAxNDMz\n" +
                 "NlowfDERMA8GA1UECgwIdGVzdC1vcmcxEDAOBgNVBAgMB0p1cGl0ZXIxETAPBgNV\n" +
@@ -43,7 +44,8 @@ class CertificateStringConstants {
                 "Kqu/WgGim6m3lVgZdx4o6cguGry+ceiunCwCFL36CL1AdvYL8ZnUlQDT1hNp3anE\n" +
                 "QTHPRc0mETzHET0uL+9UpaUxglRPzuxVhyIYimXSiPQlk8K43gmXM8QKi85eo8xD\n" +
                 "W5kgC9Eel5YQcs5wUS/1aW72x2D+7DeGxLjFwm0Sy9S8hfI=\n" +
-                "-----END CERTIFICATE-----")
+                "-----END CERTIFICATE-----"
+            )
 
         /**
          * Version: 3 (0x2)
@@ -60,7 +62,8 @@ class CertificateStringConstants {
          * X509v3 Basic Constraints: critical
          * CA:FALSE
          */
-        const val SIMPLE_SELF_SIGNED_TEST_CERT: String = ("-----BEGIN CERTIFICATE-----\n" +
+        const val SIMPLE_SELF_SIGNED_TEST_CERT: String = (
+            "-----BEGIN CERTIFICATE-----\n" +
                 "MIIDZjCCAk6gAwIBAgIUD8qb4pWPNR6dhYtZgf5Cn5DymHowDQYJKoZIhvcNAQEL\n" +
                 "BQAwZDEZMBcGA1UEAwwQdGVzdC5leGFtcGxlLmNvbTExMC8GA1UECwwoYXBwOmI2\n" +
                 "NzQ0NmU1LWIyYjAtNDY0OC1hMGQwLTc3MmQzZDM5OWRjYjEUMBIGA1UEBwwLZXhh\n" +
@@ -80,7 +83,8 @@ class CertificateStringConstants {
                 "fCe0Wu650ipk2gGMZnbnRCi4phxb/bx0rEyq5upuOZw5Ja6/Ulikm4pF3mwW1xuR\n" +
                 "OgN3QbqNnD+GGJnsddnTY2o900nXOki+v4tcnRTlfhnkWIXn3kF+ZgmacUQDdq+G\n" +
                 "zNIcsYa7oxP46A==\n" +
-                "-----END CERTIFICATE-----")
+                "-----END CERTIFICATE-----"
+            )
 
         /**
          * Version: 3 (0x2)
@@ -97,7 +101,8 @@ class CertificateStringConstants {
          * X509v3 Basic Constraints: critical
          * CA:FALSE
          */
-        const val TEST_CERT_WITH_INVALID_UUID_IN_ORGANIZATION_UNIT: String = ("-----BEGIN CERTIFICATE-----\n" +
+        const val TEST_CERT_WITH_INVALID_UUID_IN_ORGANIZATION_UNIT: String = (
+            "-----BEGIN CERTIFICATE-----\n" +
                 "MIIDZjCCAk6gAwIBAgIULvDbv0eGhurO4sQHPGQzw1JZzBswDQYJKoZIhvcNAQEL\n" +
                 "BQAwZDEZMBcGA1UEAwwQdGVzdC5leGFtcGxlLmNvbTExMC8GA1UECwwoYXBwOjdl\n" +
                 "MGZiZDdkLTE0YmQtMTFlNy1hOGIxLTEwZGRiMWFhNjRiMzEUMBIGA1UEBwwLZXhh\n" +
@@ -117,7 +122,8 @@ class CertificateStringConstants {
                 "g8GslKQKmPFVpclGjRjeMOgSOdsN/Dg0OwzKBMSoWuUGLavICh0HwlccW6+cxgUs\n" +
                 "Pswa7CjG14hVnFYnj3ISDrXetgwX3Gw4kbwFdWERzDrYvoNzdguKYkrop+mUGqpy\n" +
                 "OeRYsf1HBP8d0w==\n" +
-                "-----END CERTIFICATE-----")
+                "-----END CERTIFICATE-----"
+            )
 
         /**
          * Version: 3 (0x2)
@@ -134,7 +140,8 @@ class CertificateStringConstants {
          * X509v3 Basic Constraints: critical
          * CA:FALSE
          */
-        const val TEST_CERT_WITH_INVALID_ORGANIZATION_UNIT_PREFIX: String = ("-----BEGIN CERTIFICATE-----\n" +
+        const val TEST_CERT_WITH_INVALID_ORGANIZATION_UNIT_PREFIX: String = (
+            "-----BEGIN CERTIFICATE-----\n" +
                 "MIIDXjCCAkagAwIBAgIUf0A6ygebPHdmubKEJHEelx4e/SMwDQYJKoZIhvcNAQEL\n" +
                 "BQAwYDEZMBcGA1UEAwwQdGVzdC5leGFtcGxlLmNvbTEtMCsGA1UECwwkYjY3NDQ2\n" +
                 "ZTUtYjJiMC00NjQ4LWEwZDAtNzcyZDNkMzk5ZGNiMRQwEgYDVQQHDAtleGFtcGxl\n" +
@@ -154,7 +161,8 @@ class CertificateStringConstants {
                 "jnfmsSqWxhg/t/mIjvCR3EfOfpSHpPE4tCCEKD2TvrRxrZO2UBOZ+Y1mc6L33GGV\n" +
                 "fpgSc+FTem/FObrbCUDruX3hCVTQY3Gn1YiSvblPRay29eeR4JeIyPYnzWW06zN8\n" +
                 "IMg=\n" +
-                "-----END CERTIFICATE-----")
+                "-----END CERTIFICATE-----"
+            )
 
         /**
          * Version: 3 (0x2)
@@ -171,7 +179,8 @@ class CertificateStringConstants {
          * X509v3 Basic Constraints: critical
          * CA:FALSE
          */
-        const val TEST_CERT_WITHOUT_ORGANIZATION_UNIT: String = ("-----BEGIN CERTIFICATE-----\n" +
+        const val TEST_CERT_WITHOUT_ORGANIZATION_UNIT: String = (
+            "-----BEGIN CERTIFICATE-----\n" +
                 "MIIDADCCAeigAwIBAgIUEkUiS0BpLu5eITSbvH3g8HjYplEwDQYJKoZIhvcNAQEL\n" +
                 "BQAwMTEZMBcGA1UEAwwQdGVzdC5leGFtcGxlLmNvbTEUMBIGA1UEBwwLZXhhbXBs\n" +
                 "ZXRvd24wHhcNMTcwMzI4MjMzNjU3WhcNMjcwMzI2MjMzNjU3WjAxMRkwFwYDVQQD\n" +
@@ -189,7 +198,8 @@ class CertificateStringConstants {
                 "P/3asUqyGfS5qkFmvwTytnydR/69RZquVJn9m6ZWeOaEekJ7tTy3AiDKN+OYYpzT\n" +
                 "ZC7Tw5ZqvuWhXUIkFmAqkTW2CFI8zqSbpLjTHvjxP14Ck9zSuV4oojhvtfjA/wOz\n" +
                 "mAeI1w==\n" +
-                "-----END CERTIFICATE-----")
+                "-----END CERTIFICATE-----"
+            )
 
         /**
          * This cert appears to be self-signed (Issuer DN == Subject DN) but is actually
@@ -206,7 +216,8 @@ class CertificateStringConstants {
          * X509v3 Basic Constraints: critical
          * CA:FALSE
          */
-        const val MISLEADING_CERT: String = ("-----BEGIN CERTIFICATE-----\n" +
+        const val MISLEADING_CERT: String = (
+            "-----BEGIN CERTIFICATE-----\n" +
                 "MIICxjCCAa6gAwIBAgIUdYAQkigXgqz1FFN0Qi2T6k2dYJswDQYJKoZIhvcNAQEL\n" +
                 "BQAwFDESMBAGA1UEAwwJdHJpY2tzdGVyMB4XDTE3MDIwNzE5NDEzOFoXDTE4MDIw\n" +
                 "NzE5NDEzOFowFDESMBAGA1UEAwwJdHJpY2tzdGVyMIIBIjANBgkqhkiG9w0BAQEF\n" +
@@ -222,7 +233,8 @@ class CertificateStringConstants {
                 "4yQp0lZ5S1TVNZXn77sr5HXuzy+2r40HDc/4Q/9iQseB6Aypjii1Q6m8eej6rcnC\n" +
                 "snC8luPGbSwo31gKr9wFxv78GJcswIGt6fi4CxV7eGWn0p9EY4NsR8jdatLd/eKD\n" +
                 "qA2eKfjSi415xgI1eOf89HvoYKlBGYuFxXB3YRkJfpS+khFeu7HTsyj2\n" +
-                "-----END CERTIFICATE-----")
+                "-----END CERTIFICATE-----"
+            )
 
         /**
          * Version: 3 (0x2)
@@ -238,7 +250,8 @@ class CertificateStringConstants {
          * X509v3 Basic Constraints: critical
          * CA:TRUE
          */
-        const val SELF_SIGNED_CA_CERT: String = ("-----BEGIN CERTIFICATE-----\n" +
+        const val SELF_SIGNED_CA_CERT: String = (
+            "-----BEGIN CERTIFICATE-----\n" +
                 "MIICxTCCAa2gAwIBAgIUFHtp0VaAmwcm9g4DCh967ZYSvsIwDQYJKoZIhvcNAQEL\n" +
                 "BQAwEjEQMA4GA1UEAwwHZm9vLmNvbTAeFw0xNzAyMTAyMjM4NTlaFw0xODAyMTAy\n" +
                 "MjM4NTlaMBIxEDAOBgNVBAMMB2Zvby5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IB\n" +
@@ -254,7 +267,8 @@ class CertificateStringConstants {
                 "Xj//23SsjYge8IalqnFonYG8u9q0u7N0U0G9C6Rdo5WzCAIuzRBkT8ka0ZAaTgSV\n" +
                 "iSIanWI+olDxF/IRhnRCU1HmvAImyvDd7CEjI0Y+HSXqZfc+c1RvfbtoR9fS4n/v\n" +
                 "6qAlCDS+r+SU+v19UsFW8cC31UyWQwrpaAMYPYhwqK1Z4nPN+AgAGGY=\n" +
-                "-----END CERTIFICATE-----")
+                "-----END CERTIFICATE-----"
+            )
 
         /**
          * //.
@@ -268,7 +282,8 @@ class CertificateStringConstants {
          * Not After : Feb 13 20:21:34 2018 GMT
          * Subject: CN=bar
          */
-        const val V3_CERT_WITHOUT_BASIC_CONSTRAINTS: String = ("-----BEGIN CERTIFICATE-----\n" +
+        const val V3_CERT_WITHOUT_BASIC_CONSTRAINTS: String = (
+            "-----BEGIN CERTIFICATE-----\n" +
                 "MIICqDCCAZCgAwIBAgIUEmVeTHlenKyBuDQdmGjKUtNH5e0wDQYJKoZIhvcNAQEL\n" +
                 "BQAwDjEMMAoGA1UEAwwDYmFyMB4XDTE3MDIxMzIwMjEzNFoXDTE4MDIxMzIwMjEz\n" +
                 "NFowDjEMMAoGA1UEAwwDYmFyMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKC\n" +
@@ -284,7 +299,8 @@ class CertificateStringConstants {
                 "KtCY6DlUwxcFDWrktx1XGFZC5PSedBHWYcx0bsV+lllCfEm48PXqUnIOjpjsbVg1\n" +
                 "+NHBdPGyKlnRkvI4xIodUXfn7FrS3KWL8k9NzL5FGXCvzXoGZKBvcJuu0/2XXl+3\n" +
                 "Jykws+qOGWF351JZ\n" +
-                "-----END CERTIFICATE-----")
+                "-----END CERTIFICATE-----"
+            )
 
         /**
          * Version: 3 (0x2)
@@ -310,7 +326,8 @@ class CertificateStringConstants {
          * X509v3 Extended Key Usage:
          * TLS Web Client Authentication
          */
-        const val SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT: String = ("-----BEGIN CERTIFICATE-----\n" +
+        const val SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT: String = (
+            "-----BEGIN CERTIFICATE-----\n" +
                 "MIIDEjCCAnugAwIBAgIJAMcLU+onbp8mMA0GCSqGSIb3DQEBBQUAMIGXMQswCQYD\n" +
                 "VQQGEwJVUzELMAkGA1UECAwCTlkxETAPBgNVBAoMCFRlc3QgT3JnMTEwLwYDVQQL\n" +
                 "DChhcHA6YTEyMzQ1ZTUtYjJiMC00NjQ4LWEwZDAtNzcyZDNkMzk5ZGNiMRQwEgYD\n" +
@@ -328,7 +345,8 @@ class CertificateStringConstants {
                 "ObbubrWB2pPWo7W6GCsem2M0Qri8RuMUqzHNvatUnaIuD9yatdP+vDuFdGbX3PTF\n" +
                 "wjh44yBrxcRGcYFdzBOIos+i5MMtDWorJY/0IH8mVEd3ckMcfVgMVP25ZvlYjhdY\n" +
                 "dCNw/Rku+LafRQJOlSBZqy7K7qtzbA==\n" +
-                "-----END CERTIFICATE-----")
+                "-----END CERTIFICATE-----"
+            )
 
         /**
          * Version: 3 (0x2)
@@ -348,7 +366,8 @@ class CertificateStringConstants {
          * X509v3 Authority Key Identifier:
          * keyid:2B:77:1B:63:E2:92:6B:29:9D:31:D4:0E:E0:79:0D:5F:61:E9:77:1A
          */
-        const val SELF_SIGNED_CERT_WITH_NO_CLIENT_AUTH_EXT: String = ("-----BEGIN CERTIFICATE-----\n" +
+        const val SELF_SIGNED_CERT_WITH_NO_CLIENT_AUTH_EXT: String = (
+            "-----BEGIN CERTIFICATE-----\n" +
                 "MIIC8DCCAlmgAwIBAgIJAPu9OZtZ1ZhNMA0GCSqGSIb3DQEBBQUAMIGXMQswCQYD\n" +
                 "VQQGEwJVUzELMAkGA1UECAwCTlkxETAPBgNVBAoMCFRlc3QgT3JnMTEwLwYDVQQL\n" +
                 "DChhcHA6YTEyMzQ1ZTUtYjJiMC00NjQ4LWEwZDAtNzcyZDNkMzk5ZGNiMRQwEgYD\n" +
@@ -365,7 +384,8 @@ class CertificateStringConstants {
                 "A4GBAJ9SipBB/J17usRtaDp59iIlTiyF1N14Qw1XuR0ZpVGXCx5r46DQVHQIdno+\n" +
                 "EPa2sOCml5CIOlNko6Edr0GlWOWkhZyTyZTW6oHaDxVQXrhbVemmKOUY0LM9r2l+\n" +
                 "TqtBv192PPCKbrJChCVmrDltpc5F5TeyTAWn/ElIVz6Za+y/\n" +
-                "-----END CERTIFICATE-----")
+                "-----END CERTIFICATE-----"
+            )
 
         /**
          * Version: 3 (0x2)
@@ -386,7 +406,8 @@ class CertificateStringConstants {
          * X509v3 Subject Key Identifier:
          * B2:23:50:C6:8F:7F:B4:5F:62:1A:AD:00:91:35:FA:91:A3:BD:9E:5A
          */
-        const val CERTSTRAP_GENERATED_CA_CERTIFICATE: String = ("-----BEGIN CERTIFICATE-----\n" +
+        const val CERTSTRAP_GENERATED_CA_CERTIFICATE: String = (
+            "-----BEGIN CERTIFICATE-----\n" +
                 "MIIE4jCCAsqgAwIBAgIBATANBgkqhkiG9w0BAQsFADARMQ8wDQYDVQQDEwZ0ZXN0\n" +
                 "Q2EwHhcNMTcwOTIxMTcyNDA5WhcNMjcwOTIxMTcyNDE1WjARMQ8wDQYDVQQDEwZ0\n" +
                 "ZXN0Q2EwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQDYMdo2q+GvAPn2\n" +
@@ -414,9 +435,11 @@ class CertificateStringConstants {
                 "RI+RRCbIKBJrLRLP16fTj1f0bM3+TH2OoS5hPR1LTnYNYyDJxwE2+o1mtmKyccN1\n" +
                 "7vzbwOrOcyPZ5WBEBG1H1vfMTrAefklycBWxRK/ZtpfH5cZDjBxP7x26I2LY5/ws\n" +
                 "fvToHltS\n" +
-                "-----END CERTIFICATE-----\n")
+                "-----END CERTIFICATE-----\n"
+            )
 
-        const val CERTSTRAP_GENERATED_CA_PRIVATE_KEY: String = ("-----BEGIN RSA PRIVATE KEY----- fake\n" +
+        const val CERTSTRAP_GENERATED_CA_PRIVATE_KEY: String = (
+            "-----BEGIN RSA PRIVATE KEY----- fake\n" +
                 "MIIJKgIBAAKCAgEA2DHaNqvhrwD59pFJvNmTCzCYzlaWB79vxu3/YAbkx29WfbiX\n" +
                 "Jx961EyIdCTTQM/vyLrkcQSW+a1hViuA6dbyDURu5bXA0F0JEtZj4oLf+a0h1r9/\n" +
                 "lkmeLWZjMOiVMQ40PpKjvbIw5BpuGDBuEJJpqO4YwCnovq79W3jfJusDUgU3wyrb\n" +
@@ -466,9 +489,11 @@ class CertificateStringConstants {
                 "cpSgQzz1Sd6qmgPNLvy1rCvbzt0mM+UQRdYFnneoI21EY4CG/cLwGC/zrOxsf+mM\n" +
                 "qc70qlTH1TBw1Pe7g+00KRSCYYrKbXQMG9+7uxMYh5RAdlKfqZa3CBqYTgtDUjj0\n" +
                 "Uwkv47QyKWgdbb5sewU15qnoHOELLFYuli3wTx8+7V6WBwme0lwlcjOduKv2ig==\n" +
-                "-----END RSA PRIVATE KEY-----\n")
+                "-----END RSA PRIVATE KEY-----\n"
+            )
 
-        const val PRIVATE_KEY: String = ("-----BEGIN RSA PRIVATE KEY----- fake\n" +
+        const val PRIVATE_KEY: String = (
+            "-----BEGIN RSA PRIVATE KEY----- fake\n" +
                 "MIIEowIBAAKCAQEAweZOJBR+ZPEqUauEw9uLvvjgR1xy4I4VhVfMsVZc34ggFHv5\n" +
                 "1EnjFTppzC16moRRZND2rhNELGZ9Qf5rkXL6A3OTXMSCKaLoAYmg0BP+WQDktVsA\n" +
                 "R+pmx3LSCvHhGWft75SCqi35t7Lrd0ns6s1ZSM3cQzjTivsHrm/vJE1XuRFObFPV\n" +
@@ -495,6 +520,7 @@ class CertificateStringConstants {
                 "i7IftEaabFmh6b62Rkc3EY8SVzCPRQYtzo8VQ2DqzunAzeKKDMB7R4p1qj6CFhCJ\n" +
                 "1Cm0Oc9+PT9H1HUgirR9z04ivyW0H2I1VYBHFhegN4Jqkq6SST7Q\n" +
                 "-----END RSA PRIVATE KEY-----\n" +
-                "\n")
+                "\n"
+            )
     }
 }

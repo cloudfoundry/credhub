@@ -5,9 +5,6 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy
 import com.google.protobuf.ByteString
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
-import java.security.Security
-import java.time.Instant
-import java.util.UUID
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
@@ -55,6 +52,9 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
+import java.security.Security
+import java.time.Instant
+import java.util.UUID
 
 @RunWith(JUnit4::class)
 class RemoteCredentialsHandlerTest {
@@ -81,7 +81,8 @@ class RemoteCredentialsHandlerTest {
             userContextHolder,
             objectMapper,
             client,
-            credentialGenerator)
+            credentialGenerator
+        )
 
         val userContext = mock(UserContext::class.java)
         `when`(userContext.actor).thenReturn(USER)
@@ -320,7 +321,8 @@ class RemoteCredentialsHandlerTest {
             false,
             false,
             false,
-            false)
+            false
+        )
 
         val byteValue = subject.createByteStringFromData(
             type,
@@ -480,14 +482,15 @@ class RemoteCredentialsHandlerTest {
         val type = "certificate"
         val uuid = "00000000-0000-0000-0000-000000000003"
         val certificateCredential = CertificateCredentialValue(
-                TestConstants.TEST_CA,
-                TestConstants.TEST_CERTIFICATE,
-                TestConstants.TEST_PRIVATE_KEY,
-                "/some-ca",
-                false,
-                false,
-                false,
-                false)
+            TestConstants.TEST_CA,
+            TestConstants.TEST_CERTIFICATE,
+            TestConstants.TEST_PRIVATE_KEY,
+            "/some-ca",
+            false,
+            false,
+            false,
+            false
+        )
 
         val byteValue = subject.createByteStringFromData(
             type,
@@ -701,14 +704,15 @@ class RemoteCredentialsHandlerTest {
         val type = "certificate"
         val uuid = UUID.randomUUID().toString()
         val certificateCredential = CertificateCredentialValue(
-                TestConstants.TEST_CA,
-                TestConstants.TEST_CERTIFICATE,
-                TestConstants.TEST_PRIVATE_KEY,
-                "/some-ca",
-                false,
-                false,
-                false,
-                false)
+            TestConstants.TEST_CA,
+            TestConstants.TEST_CERTIFICATE,
+            TestConstants.TEST_PRIVATE_KEY,
+            "/some-ca",
+            false,
+            false,
+            false,
+            false
+        )
 
         val byteValue = subject.createByteStringFromData(
             type,
@@ -850,14 +854,18 @@ class RemoteCredentialsHandlerTest {
         val fiveMinutesAgoVersion = Instant.now().minusSeconds(300).toString()
         val response = FindResponse
             .newBuilder()
-            .addResults(FindResult
-                .newBuilder()
-                .setName("/test/another-credential")
-                .setVersionCreatedAt(fiveMinutesAgoVersion))
-            .addResults(FindResult
-                .newBuilder()
-                .setName("/test/some-other-credential")
-                .setVersionCreatedAt(nowVersionCreatedAt))
+            .addResults(
+                FindResult
+                    .newBuilder()
+                    .setName("/test/another-credential")
+                    .setVersionCreatedAt(fiveMinutesAgoVersion)
+            )
+            .addResults(
+                FindResult
+                    .newBuilder()
+                    .setName("/test/some-other-credential")
+                    .setVersionCreatedAt(nowVersionCreatedAt)
+            )
             .build()
 
         `when`(client.findContainingNameRequest("other", USER)).thenReturn(response)
@@ -877,14 +885,18 @@ class RemoteCredentialsHandlerTest {
         val fiveMinutesAgoVersion = Instant.now().minusSeconds(300).toString()
         val response = FindResponse
             .newBuilder()
-            .addResults(FindResult
-                .newBuilder()
-                .setName("/test/another-credential")
-                .setVersionCreatedAt(fiveMinutesAgoVersion))
-            .addResults(FindResult
-                .newBuilder()
-                .setName("/test/some-other-credential")
-                .setVersionCreatedAt(nowVersionCreatedAt))
+            .addResults(
+                FindResult
+                    .newBuilder()
+                    .setName("/test/another-credential")
+                    .setVersionCreatedAt(fiveMinutesAgoVersion)
+            )
+            .addResults(
+                FindResult
+                    .newBuilder()
+                    .setName("/test/some-other-credential")
+                    .setVersionCreatedAt(nowVersionCreatedAt)
+            )
             .build()
 
         `when`(client.findStartingWithPathRequest("/test", USER)).thenReturn(response)
@@ -950,24 +962,26 @@ class RemoteCredentialsHandlerTest {
         val uuid = UUID.randomUUID().toString()
 
         val shouldntBeReturned = CertificateCredentialValue(
-                TestConstants.TEST_CA,
-                TestConstants.TEST_CERTIFICATE,
-                TestConstants.TEST_PRIVATE_KEY,
-                "/some-ca",
-                false,
-                false,
-                true,
-                false)
+            TestConstants.TEST_CA,
+            TestConstants.TEST_CERTIFICATE,
+            TestConstants.TEST_PRIVATE_KEY,
+            "/some-ca",
+            false,
+            false,
+            true,
+            false
+        )
 
         val shouldBeReturned = CertificateCredentialValue(
-                TestConstants.TEST_CA,
-                TestConstants.OTHER_TEST_CERTIFICATE,
-                TestConstants.OTHER_TEST_PRIVATE_KEY,
-                "/some-ca",
-                false,
-                false,
-                true,
-                false)
+            TestConstants.TEST_CA,
+            TestConstants.OTHER_TEST_CERTIFICATE,
+            TestConstants.OTHER_TEST_PRIVATE_KEY,
+            "/some-ca",
+            false,
+            false,
+            true,
+            false
+        )
 
         val generationRequestParameters = CertificateGenerationRequestParameters()
         generationRequestParameters.caName = "some-ca"

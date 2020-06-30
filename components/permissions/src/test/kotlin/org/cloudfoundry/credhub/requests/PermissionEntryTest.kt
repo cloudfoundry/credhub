@@ -2,8 +2,6 @@ package org.cloudfoundry.credhub.requests
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
-import java.io.IOException
-import javax.validation.ConstraintViolation
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.helpers.JsonTestHelper.Companion.deserializeAndValidate
 import org.cloudfoundry.credhub.helpers.JsonTestHelper.Companion.hasViolationWithMessage
@@ -15,6 +13,8 @@ import org.hamcrest.Matchers.contains
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
+import java.io.IOException
+import javax.validation.ConstraintViolation
 
 @RunWith(JUnit4::class)
 class PermissionEntryTest {

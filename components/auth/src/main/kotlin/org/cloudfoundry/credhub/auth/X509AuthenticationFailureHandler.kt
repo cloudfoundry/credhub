@@ -1,9 +1,6 @@
 package org.cloudfoundry.credhub.auth
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import java.io.IOException
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.auth.X509AuthenticationProvider.Companion.CLIENT_AUTH_EXTENDED_KEY_USAGE
 import org.cloudfoundry.credhub.views.ResponseError
@@ -13,6 +10,9 @@ import org.springframework.security.core.AuthenticationException
 import org.springframework.security.web.authentication.AuthenticationFailureHandler
 import org.springframework.stereotype.Component
 import org.springframework.util.MimeTypeUtils.APPLICATION_JSON
+import java.io.IOException
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
 
 @Component
 class X509AuthenticationFailureHandler @Autowired

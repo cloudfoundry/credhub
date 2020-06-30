@@ -15,8 +15,10 @@ class MultiJsonPathMatcher {
                 while (i < keysAndValues.size) {
                     val jsonPath = keysAndValues[i++] as String
                     val expectedValue = keysAndValues[i++]
-                    MatcherAssert.assertThat("field $jsonPath", JsonPath.compile(jsonPath).read(result.response.contentAsString),
-                        CoreMatchers.equalTo(expectedValue))
+                    MatcherAssert.assertThat(
+                        "field $jsonPath", JsonPath.compile(jsonPath).read(result.response.contentAsString),
+                        CoreMatchers.equalTo(expectedValue)
+                    )
                 }
             }
         }

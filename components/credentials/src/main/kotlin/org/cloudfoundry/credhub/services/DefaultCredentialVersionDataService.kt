@@ -2,13 +2,6 @@ package org.cloudfoundry.credhub.services
 
 import com.google.common.collect.Lists
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
-import java.sql.Timestamp
-import java.time.Duration
-import java.time.Instant
-import java.util.HashMap
-import java.util.UUID
-import java.util.stream.Collectors
-import kotlin.experimental.and
 import org.apache.commons.lang3.StringUtils
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.domain.CredentialFactory
@@ -26,6 +19,13 @@ import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.dao.InvalidDataAccessResourceUsageException
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
+import java.sql.Timestamp
+import java.time.Duration
+import java.time.Instant
+import java.util.HashMap
+import java.util.UUID
+import java.util.stream.Collectors
+import kotlin.experimental.and
 
 @Service
 class DefaultCredentialVersionDataService @Autowired
@@ -70,8 +70,10 @@ constructor(
         if (credential == null) {
             return null
         } else {
-            return credentialFactory.makeCredentialFromEntity(credentialVersionRepository
-                .findFirstByCredentialUuidOrderByVersionCreatedAtDesc(credential.uuid))
+            return credentialFactory.makeCredentialFromEntity(
+                credentialVersionRepository
+                    .findFirstByCredentialUuidOrderByVersionCreatedAtDesc(credential.uuid)
+            )
         }
     }
 
@@ -86,10 +88,12 @@ constructor(
     }
 
     override fun findAllCertificateCredentialsByCaName(caName: String): List<String> {
-        val query = ("""select distinct credential.name from credential,
+        val query = (
+            """select distinct credential.name from credential,
             credential_version, certificate_credential where credential.uuid=credential_version.credential_uuid
             and credential_version.uuid=certificate_credential.uuid and
-            lower(certificate_credential.ca_name) like lower(?)""".trimMargin())
+            lower(certificate_credential.ca_name) like lower(?)""".trimMargin()
+            )
         val results = jdbcTemplate.queryForList<String>(query, String::class.java, caName)
         results.remove(caName)
         return results
@@ -131,7 +135,8 @@ constructor(
 
         return if (credential != null)
             credentialFactory.makeCredentialsFromEntities(
-                credentialVersionRepository.findAllByCredentialUuidOrderByVersionCreatedAtDesc(credential.uuid))
+                credentialVersionRepository.findAllByCredentialUuidOrderByVersionCreatedAtDesc(credential.uuid)
+            )
         else
             Lists.newArrayList<CredentialVersion>()
     }
@@ -154,9 +159,11 @@ constructor(
     override fun countByEncryptionKey(): Map<UUID, Long> {
         val map = HashMap<UUID, Long>()
         jdbcTemplate.query<Long>(
-            (" SELECT count(*) as count, encryption_key_uuid FROM credential_version " +
-                "LEFT JOIN encrypted_value ON credential_version.encrypted_value_uuid = encrypted_value.uuid " +
-                "GROUP BY encrypted_value.encryption_key_uuid")
+            (
+                " SELECT count(*) as count, encryption_key_uuid FROM credential_version " +
+                    "LEFT JOIN encrypted_value ON credential_version.encrypted_value_uuid = encrypted_value.uuid " +
+                    "GROUP BY encrypted_value.encryption_key_uuid"
+                )
         ) { rowSet, _ -> map.put(toUUID(rowSet.getObject("encryption_key_uuid")), rowSet.getLong("count")) }
         return map
     }
@@ -218,25 +225,28 @@ constructor(
 
         val expiresTimestamp = Timestamp.from(Instant.now().plus(Duration.ofDays(java.lang.Long.parseLong(expiresWithinDays))))
 
-        val query = ("SELECT name.name,\n" +
-            "       latest_credential_version.version_created_at,\n" +
-            "       certificate_credential.expiry_date\n" +
-            "FROM (\n" +
-            "         SELECT credential_uuid, max(version_created_at) AS max_version_created_at\n" +
-            "         FROM credential_version\n" +
-            "         GROUP BY credential_uuid) AS credential_uuid_of_max_version_created_at\n" +
-            "         INNER JOIN (SELECT * FROM credential WHERE lower(name) LIKE lower(?)) AS name\n" +
-            "                    ON credential_uuid_of_max_version_created_at.credential_uuid = name.uuid\n" +
-            "         INNER JOIN credential_version AS latest_credential_version\n" +
-            "                    ON latest_credential_version.credential_uuid =\n" +
-            "                       credential_uuid_of_max_version_created_at.credential_uuid\n" +
-            "                        AND latest_credential_version.version_created_at =\n" +
-            "                            credential_uuid_of_max_version_created_at.max_version_created_at\n" +
-            "         INNER JOIN (SELECT * FROM certificate_credential) AS certificate_credential\n" +
-            "                    ON latest_credential_version.uuid = certificate_credential.uuid\n" +
-            "WHERE certificate_credential.expiry_date <= ?;")
+        val query = (
+            "SELECT name.name,\n" +
+                "       latest_credential_version.version_created_at,\n" +
+                "       certificate_credential.expiry_date\n" +
+                "FROM (\n" +
+                "         SELECT credential_uuid, max(version_created_at) AS max_version_created_at\n" +
+                "         FROM credential_version\n" +
+                "         GROUP BY credential_uuid) AS credential_uuid_of_max_version_created_at\n" +
+                "         INNER JOIN (SELECT * FROM credential WHERE lower(name) LIKE lower(?)) AS name\n" +
+                "                    ON credential_uuid_of_max_version_created_at.credential_uuid = name.uuid\n" +
+                "         INNER JOIN credential_version AS latest_credential_version\n" +
+                "                    ON latest_credential_version.credential_uuid =\n" +
+                "                       credential_uuid_of_max_version_created_at.credential_uuid\n" +
+                "                        AND latest_credential_version.version_created_at =\n" +
+                "                            credential_uuid_of_max_version_created_at.max_version_created_at\n" +
+                "         INNER JOIN (SELECT * FROM certificate_credential) AS certificate_credential\n" +
+                "                    ON latest_credential_version.uuid = certificate_credential.uuid\n" +
+                "WHERE certificate_credential.expiry_date <= ?;"
+            )
 
-        val certificateResults = jdbcTemplate.query<FindCredentialResult>(query,
+        val certificateResults = jdbcTemplate.query<FindCredentialResult>(
+            query,
             arrayOf<Any>(escapedPath, expiresTimestamp)
         ) { rowSet, _ ->
             val versionCreatedAt = Instant.ofEpochMilli(rowSet.getLong("version_created_at"))
@@ -251,7 +261,8 @@ constructor(
         val escapedNameLike = nameLike.replace("_", "\\_")
 
         val credentialResults = jdbcTemplate.query<FindCredentialResult>(
-            (""" select name.name, credential_version.version_created_at from
+            (
+                """ select name.name, credential_version.version_created_at from
                  (select max(version_created_at) as version_created_at, credential_uuid from
                     (select version_created_at, credential_uuid from credential_version LEFT OUTER JOIN
                         certificate_credential on credential_version.uuid = certificate_credential.uuid
@@ -260,7 +271,8 @@ constructor(
                  inner join
                     (select * from credential where lower(name) like lower(?) )
                     as name on credential_version.credential_uuid = name.uuid
-                 order by version_created_at desc""".trimMargin()),
+                 order by version_created_at desc""".trimMargin()
+                ),
             arrayOf<Any>(escapedNameLike)
         ) { rowSet, _ ->
             val versionCreatedAt = Instant.ofEpochMilli(rowSet.getLong("version_created_at"))

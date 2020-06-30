@@ -1,8 +1,8 @@
 package org.cloudfoundry.credhub.auth
 
-import java.time.Instant
 import org.bouncycastle.asn1.x500.X500Name
 import org.bouncycastle.asn1.x500.style.BCStyle
+import java.time.Instant
 
 class UserContext {
     class UnsupportedGrantTypeException(message: String) : Exception(message)

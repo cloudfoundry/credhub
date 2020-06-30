@@ -1,12 +1,12 @@
 package db.migration.common
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
-import java.sql.Types
 import org.cloudfoundry.credhub.utils.UuidUtil
 import org.flywaydb.core.api.migration.BaseJavaMigration
 import org.flywaydb.core.api.migration.Context
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.datasource.SingleConnectionDataSource
+import java.sql.Types
 
 class V35_1__migrate_operation_audit_record_table : BaseJavaMigration() {
     @SuppressFBWarnings(value = ["NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"], justification = "The database will definitely exist")
@@ -64,7 +64,9 @@ class V35_1__migrate_operation_audit_record_table : BaseJavaMigration() {
                     "record.auth_method " +
                     "from operation_audit_record " +
                     "as record " +
-                    "where id = ?", arrayOf(requestUuid, id), intArrayOf(Types.VARBINARY, Types.BIGINT))
+                    "where id = ?",
+                arrayOf(requestUuid, id), intArrayOf(Types.VARBINARY, Types.BIGINT)
+            )
             jdbcTemplate.update(
                 "insert into event_audit_record (" +
                     "uuid," +
@@ -84,7 +86,9 @@ class V35_1__migrate_operation_audit_record_table : BaseJavaMigration() {
                     "record.success " +
                     "from operation_audit_record " +
                     "as record " +
-                    "where id = ?", arrayOf(eventUuid, requestUuid, id), intArrayOf(Types.VARBINARY, Types.VARBINARY, Types.BIGINT))
+                    "where id = ?",
+                arrayOf(eventUuid, requestUuid, id), intArrayOf(Types.VARBINARY, Types.VARBINARY, Types.BIGINT)
+            )
         }
     }
 }

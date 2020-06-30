@@ -1,13 +1,13 @@
 package org.cloudfoundry.credhub.requests
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect
-import javax.validation.constraints.NotEmpty
-import javax.validation.constraints.NotNull
-import javax.validation.constraints.Pattern
 import org.apache.commons.lang3.StringUtils
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.PermissionOperation
 import org.springframework.validation.annotation.Validated
+import javax.validation.constraints.NotEmpty
+import javax.validation.constraints.NotNull
+import javax.validation.constraints.Pattern
 
 @JsonAutoDetect
 @Validated
@@ -21,9 +21,10 @@ class PermissionsV2Request {
 
     @NotNull(message = ErrorMessages.Permissions.MISSING_PATH)
     @Pattern.List(
-            Pattern(regexp = HAS_NO_DOUBLE_SLASHES_AND_DOES_NOT_END_WITH_A_SLASH, message = ErrorMessages.Permissions.INVALID_SLASH_IN_PATH),
-            Pattern(regexp = ONLY_VALID_CHARACTERS_IN_PATH, message = ErrorMessages.Permissions.INVALID_CHARACTER_IN_PATH),
-            Pattern(regexp = IS_NOT_EMPTY, message = ErrorMessages.Permissions.MISSING_PATH))
+        Pattern(regexp = HAS_NO_DOUBLE_SLASHES_AND_DOES_NOT_END_WITH_A_SLASH, message = ErrorMessages.Permissions.INVALID_SLASH_IN_PATH),
+        Pattern(regexp = ONLY_VALID_CHARACTERS_IN_PATH, message = ErrorMessages.Permissions.INVALID_CHARACTER_IN_PATH),
+        Pattern(regexp = IS_NOT_EMPTY, message = ErrorMessages.Permissions.MISSING_PATH)
+    )
     private lateinit var path: String
 
     @NotEmpty(message = ErrorMessages.Permissions.MISSING_ACTOR)

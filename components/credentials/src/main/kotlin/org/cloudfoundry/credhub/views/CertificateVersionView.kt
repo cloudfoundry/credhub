@@ -3,9 +3,9 @@ package org.cloudfoundry.credhub.views
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL
 import com.fasterxml.jackson.annotation.JsonProperty
+import org.cloudfoundry.credhub.domain.CertificateVersionMetadata
 import java.time.Instant
 import java.util.UUID
-import org.cloudfoundry.credhub.domain.CertificateVersionMetadata
 
 class CertificateVersionView(
     val id: UUID,

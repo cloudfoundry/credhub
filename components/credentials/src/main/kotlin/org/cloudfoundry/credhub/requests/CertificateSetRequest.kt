@@ -1,11 +1,11 @@
 package org.cloudfoundry.credhub.requests
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import org.cloudfoundry.credhub.ErrorMessages
+import org.cloudfoundry.credhub.credential.CertificateCredentialValue
 import java.util.Objects
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
-import org.cloudfoundry.credhub.ErrorMessages
-import org.cloudfoundry.credhub.credential.CertificateCredentialValue
 
 class CertificateSetRequest : BaseCredentialSetRequest<CertificateCredentialValue>() {
 
@@ -18,7 +18,8 @@ class CertificateSetRequest : BaseCredentialSetRequest<CertificateCredentialValu
         get() = null
 
     override val credentialValue: CertificateCredentialValue
-        get() { return this.certificateValue!!
+        get() {
+            return this.certificateValue!!
         }
 
     override fun equals(other: Any?): Boolean {

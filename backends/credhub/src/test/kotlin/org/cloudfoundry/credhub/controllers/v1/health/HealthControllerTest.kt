@@ -53,11 +53,12 @@ class HealthControllerTest {
             )
             .andReturn()
 
-        val expectedResponseBody = """
+        val expectedResponseBody =
+            """
             {
                 "status": "UP"
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val actualResponseBody = mvcResult.response.contentAsString
 

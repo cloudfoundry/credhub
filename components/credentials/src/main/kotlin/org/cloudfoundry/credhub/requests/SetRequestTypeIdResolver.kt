@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.DatabindContext
 import com.fasterxml.jackson.databind.JavaType
 import com.fasterxml.jackson.databind.exc.InvalidTypeIdException
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver
-import java.io.IOException
 import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData
 import org.cloudfoundry.credhub.entity.JsonCredentialVersionData
 import org.cloudfoundry.credhub.entity.PasswordCredentialVersionData
@@ -13,6 +12,7 @@ import org.cloudfoundry.credhub.entity.RsaCredentialVersionData
 import org.cloudfoundry.credhub.entity.SshCredentialVersionData
 import org.cloudfoundry.credhub.entity.UserCredentialVersionData
 import org.cloudfoundry.credhub.entity.ValueCredentialVersionData
+import java.io.IOException
 
 class SetRequestTypeIdResolver : TypeIdResolver {
     private var baseType: JavaType? = null

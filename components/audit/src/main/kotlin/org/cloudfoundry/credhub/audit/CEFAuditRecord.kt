@@ -1,9 +1,6 @@
 package org.cloudfoundry.credhub.audit
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
-import java.time.Instant
-import java.util.ArrayList
-import javax.servlet.http.HttpServletRequest
 import org.apache.commons.lang3.StringUtils
 import org.cloudfoundry.credhub.utils.VersionProvider
 import org.springframework.beans.factory.annotation.Autowired
@@ -11,6 +8,9 @@ import org.springframework.context.annotation.Scope
 import org.springframework.context.annotation.ScopedProxyMode
 import org.springframework.stereotype.Component
 import org.springframework.web.context.WebApplicationContext
+import java.time.Instant
+import java.util.ArrayList
+import javax.servlet.http.HttpServletRequest
 
 @Component
 @Scope(scopeName = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
@@ -88,35 +88,35 @@ class CEFAuditRecord {
         val deviceProduct = "credhub"
 
         builder
-                .append("CEF:").append(cefVersion).append('|')
-                .append(deviceVendor).append('|')
-                .append(deviceProduct).append('|')
-                .append(credhubServerVersion).append('|')
-                .append(signatureId).append('|')
-                .append(signatureId).append('|')
-                .append(severity).append('|')
-                .append("rt=").append(timestamp).append(' ')
-                .append("suser=").append(username).append(' ')
-                .append("suid=").append(userGuid).append(' ')
-                .append("cs1Label=").append("userAuthenticationMechanism").append(' ')
-                .append("cs1=").append(authMechanism).append(' ')
-                .append("request=").append(requestPath).append(' ')
-                .append("requestMethod=").append(requestMethod).append(' ')
-                .append("cs3Label=").append("versionUuid").append(' ')
-                .append("cs3=").append(versionUUID).append(' ')
-                .append("cs4Label=").append("httpStatusCode").append(' ')
-                .append("cs4=").append(this.httpStatusCode).append(' ')
-                .append("src=").append(sourceAddress).append(' ')
-                .append("dst=").append(destinationAddress).append(' ')
-                .append("cs2Label=").append("resourceName").append(' ')
-                .append("cs2=").append(resourceName).append(' ')
-                .append("cs5Label=").append("resourceUuid").append(' ')
-                .append("cs5=").append(resourceUUID).append(' ')
-                .append("deviceAction=").append(operation).append(' ')
+            .append("CEF:").append(cefVersion).append('|')
+            .append(deviceVendor).append('|')
+            .append(deviceProduct).append('|')
+            .append(credhubServerVersion).append('|')
+            .append(signatureId).append('|')
+            .append(signatureId).append('|')
+            .append(severity).append('|')
+            .append("rt=").append(timestamp).append(' ')
+            .append("suser=").append(username).append(' ')
+            .append("suid=").append(userGuid).append(' ')
+            .append("cs1Label=").append("userAuthenticationMechanism").append(' ')
+            .append("cs1=").append(authMechanism).append(' ')
+            .append("request=").append(requestPath).append(' ')
+            .append("requestMethod=").append(requestMethod).append(' ')
+            .append("cs3Label=").append("versionUuid").append(' ')
+            .append("cs3=").append(versionUUID).append(' ')
+            .append("cs4Label=").append("httpStatusCode").append(' ')
+            .append("cs4=").append(this.httpStatusCode).append(' ')
+            .append("src=").append(sourceAddress).append(' ')
+            .append("dst=").append(destinationAddress).append(' ')
+            .append("cs2Label=").append("resourceName").append(' ')
+            .append("cs2=").append(resourceName).append(' ')
+            .append("cs5Label=").append("resourceUuid").append(' ')
+            .append("cs5=").append(resourceUUID).append(' ')
+            .append("deviceAction=").append(operation).append(' ')
         if (this.requestDetails != null) {
             builder
-                    .append("cs6Label=").append("requestDetails").append(' ')
-                    .append("cs6=").append(this.requestDetails!!.toJSON()).append(' ')
+                .append("cs6Label=").append("requestDetails").append(' ')
+                .append("cs6=").append(this.requestDetails!!.toJSON()).append(' ')
         }
         return builder
     }

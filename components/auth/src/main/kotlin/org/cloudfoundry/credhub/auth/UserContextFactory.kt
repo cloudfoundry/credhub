@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.auth
 
-import java.security.cert.X509Certificate
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.common.OAuth2AccessToken
@@ -9,6 +8,7 @@ import org.springframework.security.oauth2.provider.authentication.OAuth2Authent
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
 import org.springframework.stereotype.Component
+import java.security.cert.X509Certificate
 
 @Component
 class UserContextFactory {

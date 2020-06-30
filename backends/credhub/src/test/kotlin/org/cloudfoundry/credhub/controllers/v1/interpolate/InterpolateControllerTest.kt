@@ -1,7 +1,6 @@
 package org.cloudfoundry.credhub.controllers.v1.interpolate
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import java.security.Security
 import org.assertj.core.api.Assertions.assertThat
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
@@ -20,6 +19,7 @@ import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.pos
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.security.Security
 
 class InterpolateControllerTest {
     @Rule
@@ -48,7 +48,8 @@ class InterpolateControllerTest {
     @Test
     fun POST__interpolate__returns_map() {
         // language=json
-        val responseBody = """
+        val responseBody =
+            """
             {
               "service-name": [
                 {
@@ -61,14 +62,15 @@ class InterpolateControllerTest {
                 }
               ]
             }
-        """.trimIndent()
+            """.trimIndent()
         val objectMapper = ObjectMapper()
 
         val map = objectMapper.readValue(responseBody, Map::class.java) as Map<String, Any>
         spyInterpolationHandler.interpolateCredhubReferences__returns_map = map
 
         // language=json
-        val requestBody = """
+        val requestBody =
+            """
             {
               "service-name": [
                 {
@@ -80,7 +82,7 @@ class InterpolateControllerTest {
                 }
               ]
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val expectedRequest = objectMapper.readValue(requestBody, Map::class.java) as Map<String, Any>
 

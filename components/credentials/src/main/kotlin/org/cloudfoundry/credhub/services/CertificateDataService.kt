@@ -1,8 +1,5 @@
 package org.cloudfoundry.credhub.services
 
-import java.nio.ByteBuffer
-import java.sql.Timestamp
-import java.util.UUID
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.domain.CertificateMetadata
 import org.cloudfoundry.credhub.domain.CertificateVersionMetadata
@@ -13,6 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Service
+import java.nio.ByteBuffer
+import java.sql.Timestamp
+import java.util.UUID
 
 @Service
 class CertificateDataService @Autowired
@@ -42,7 +42,8 @@ constructor(
         if (names.isEmpty()) { return certificateMetadataMap.values.toList() }
 
         @Language("GenericSQL")
-        val query = """
+        val query =
+            """
             select
               certificate_credential.uuid as VERSION_UUID,
               credential.name as NAME,
@@ -58,7 +59,7 @@ constructor(
             inner join credential on credential_version.credential_uuid = credential.uuid
             WHERE credential.name in (:names)
             order by credential_version.version_created_at desc
-        """.trimIndent()
+            """.trimIndent()
 
         val nameParameters = MapSqlParameterSource()
         nameParameters.addValue("names", names)

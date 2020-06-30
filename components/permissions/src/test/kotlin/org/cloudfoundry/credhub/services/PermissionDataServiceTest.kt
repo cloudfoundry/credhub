@@ -2,7 +2,6 @@ package org.cloudfoundry.credhub.services
 
 import com.google.common.collect.Lists.newArrayList
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
-import java.util.ArrayList
 import junit.framework.TestCase.assertFalse
 import org.apache.commons.lang3.RandomStringUtils
 import org.cloudfoundry.credhub.CredhubTestApp
@@ -45,6 +44,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.transaction.annotation.Transactional
+import java.util.ArrayList
 
 @RunWith(SpringRunner::class)
 @ActiveProfiles(value = ["unit-test"], resolver = DatabaseProfileResolver::class)
@@ -76,14 +76,25 @@ class PermissionDataServiceTest {
 
         assertThat<List<PermissionEntry>>(accessControlEntries, hasSize(3))
 
-        assertThat<List<PermissionEntry>>(accessControlEntries, containsInAnyOrder(
-            allOf(hasProperty("actor", equalTo(LUKE)),
-                hasProperty("allowedOperations", hasItems(WRITE))),
-            allOf(hasProperty("actor", equalTo(LEIA)),
-                hasProperty("allowedOperations", hasItems(READ))),
-            allOf(hasProperty("actor", equalTo(HAN_SOLO)),
-                hasProperty("allowedOperations",
-                    hasItems(READ_ACL))))
+        assertThat<List<PermissionEntry>>(
+            accessControlEntries,
+            containsInAnyOrder(
+                allOf(
+                    hasProperty("actor", equalTo(LUKE)),
+                    hasProperty("allowedOperations", hasItems(WRITE))
+                ),
+                allOf(
+                    hasProperty("actor", equalTo(LEIA)),
+                    hasProperty("allowedOperations", hasItems(READ))
+                ),
+                allOf(
+                    hasProperty("actor", equalTo(HAN_SOLO)),
+                    hasProperty(
+                        "allowedOperations",
+                        hasItems(READ_ACL)
+                    )
+                )
+            )
         )
     }
 
@@ -101,10 +112,13 @@ class PermissionDataServiceTest {
 
     @Test
     fun getAllowedOperations_whenTheCredentialExists_andTheActorHasPermissions_returnsListOfActivePermissions() {
-        assertThat(subject!!.getAllowedOperations(CREDENTIAL_NAME, LUKE), containsInAnyOrder(
-            WRITE,
-            DELETE
-        ))
+        assertThat(
+            subject!!.getAllowedOperations(CREDENTIAL_NAME, LUKE),
+            containsInAnyOrder(
+                WRITE,
+                DELETE
+            )
+        )
     }
 
     @Test
@@ -134,15 +148,29 @@ class PermissionDataServiceTest {
 
         val response = subject.getPermissions(credential!!)
 
-        assertThat<List<PermissionEntry>>(response, containsInAnyOrder(
-            allOf(hasProperty("actor", equalTo(LUKE)),
-                hasProperty("allowedOperations",
-                    hasItems(READ, WRITE))),
-            allOf(hasProperty("actor", equalTo(LEIA)),
-                hasProperty("allowedOperations", hasItems(READ))),
-            allOf(hasProperty("actor", equalTo(HAN_SOLO)),
-                hasProperty("allowedOperations",
-                    hasItems(READ_ACL)))))
+        assertThat<List<PermissionEntry>>(
+            response,
+            containsInAnyOrder(
+                allOf(
+                    hasProperty("actor", equalTo(LUKE)),
+                    hasProperty(
+                        "allowedOperations",
+                        hasItems(READ, WRITE)
+                    )
+                ),
+                allOf(
+                    hasProperty("actor", equalTo(LEIA)),
+                    hasProperty("allowedOperations", hasItems(READ))
+                ),
+                allOf(
+                    hasProperty("actor", equalTo(HAN_SOLO)),
+                    hasProperty(
+                        "allowedOperations",
+                        hasItems(READ_ACL)
+                    )
+                )
+            )
+        )
     }
 
     @Test
@@ -174,8 +202,10 @@ class PermissionDataServiceTest {
 
         assertThat<List<PermissionEntry>>(accessControlList, hasSize(2))
 
-        assertThat<List<PermissionEntry>>(accessControlList,
-            not(contains(hasProperty("actor", equalTo(LUKE)))))
+        assertThat<List<PermissionEntry>>(
+            accessControlList,
+            not(contains(hasProperty("actor", equalTo(LUKE))))
+        )
     }
 
     @Test
@@ -330,74 +360,98 @@ class PermissionDataServiceTest {
 
     @Test
     fun hasAclReadPermission_whenActorHasAclRead_returnsTrue() {
-        assertThat(subject!!.hasPermission(HAN_SOLO, CREDENTIAL_NAME, READ_ACL),
-            `is`(true))
+        assertThat(
+            subject!!.hasPermission(HAN_SOLO, CREDENTIAL_NAME, READ_ACL),
+            `is`(true)
+        )
     }
 
     @Test
     fun hasAclReadPermission_whenActorHasReadButNotReadAcl_returnsFalse() {
-        assertThat(subject!!.hasPermission(LUKE, CREDENTIAL_NAME, READ),
-            `is`(false))
+        assertThat(
+            subject!!.hasPermission(LUKE, CREDENTIAL_NAME, READ),
+            `is`(false)
+        )
     }
 
     @Test
     fun hasAclReadPermission_whenActorHasNoPermissions_returnsFalse() {
-        assertThat(subject!!.hasPermission(CHEWIE, CREDENTIAL_NAME, READ),
-            `is`(false))
+        assertThat(
+            subject!!.hasPermission(CHEWIE, CREDENTIAL_NAME, READ),
+            `is`(false)
+        )
     }
 
     @Test
     fun hasAclReadPermission_whenCredentialDoesNotExist_returnsFalse() {
-        assertThat(subject!!.hasPermission(LUKE, CREDENTIAL_NAME_DOES_NOT_EXIST, READ),
-            `is`(false))
+        assertThat(
+            subject!!.hasPermission(LUKE, CREDENTIAL_NAME_DOES_NOT_EXIST, READ),
+            `is`(false)
+        )
     }
 
     @Test
     fun hasAclWritePermission_whenActorHasAclWrite_returnsTrue() {
-        assertThat(subject!!.hasPermission(HAN_SOLO, CREDENTIAL_NAME, WRITE_ACL),
-            `is`(true))
+        assertThat(
+            subject!!.hasPermission(HAN_SOLO, CREDENTIAL_NAME, WRITE_ACL),
+            `is`(true)
+        )
     }
 
     @Test
     fun hasAclWritePermission_whenActorHasWriteButNotWriteAcl_returnsFalse() {
-        assertThat(subject!!.hasPermission(LUKE, CREDENTIAL_NAME, WRITE_ACL),
-            `is`(false))
+        assertThat(
+            subject!!.hasPermission(LUKE, CREDENTIAL_NAME, WRITE_ACL),
+            `is`(false)
+        )
     }
 
     @Test
     fun hasAclWritePermission_whenActorHasNoPermissions_returnsFalse() {
-        assertThat(subject!!.hasPermission(CHEWIE, CREDENTIAL_NAME, WRITE_ACL),
-            `is`(false))
+        assertThat(
+            subject!!.hasPermission(CHEWIE, CREDENTIAL_NAME, WRITE_ACL),
+            `is`(false)
+        )
     }
 
     @Test
     fun hasAclWritePermission_whenCredentialDoesNotExist_returnsFalse() {
-        assertThat(subject!!.hasPermission(LUKE, CREDENTIAL_NAME_DOES_NOT_EXIST, WRITE_ACL),
-            `is`(false))
+        assertThat(
+            subject!!.hasPermission(LUKE, CREDENTIAL_NAME_DOES_NOT_EXIST, WRITE_ACL),
+            `is`(false)
+        )
     }
 
     @Test
     fun hasReadPermission_whenActorHasRead_returnsTrue() {
-        assertThat(subject!!.hasPermission(LEIA, CREDENTIAL_NAME, READ),
-            `is`(true))
+        assertThat(
+            subject!!.hasPermission(LEIA, CREDENTIAL_NAME, READ),
+            `is`(true)
+        )
     }
 
     @Test
     fun hasReadPermission_givenNameWithoutLeadingSlashAndHasRead_returnsTrue() {
-        assertThat(subject!!.hasPermission(LEIA, CREDENTIAL_NAME, READ),
-            `is`(true))
+        assertThat(
+            subject!!.hasPermission(LEIA, CREDENTIAL_NAME, READ),
+            `is`(true)
+        )
     }
 
     @Test
     fun hasReadPermission_whenActorHasWriteButNotRead_returnsFalse() {
-        assertThat(subject!!.hasPermission(LUKE, CREDENTIAL_NAME, READ),
-            `is`(false))
+        assertThat(
+            subject!!.hasPermission(LUKE, CREDENTIAL_NAME, READ),
+            `is`(false)
+        )
     }
 
     @Test
     fun hasReadPermission_whenActorHasNoPermissions_returnsFalse() {
-        assertThat(subject!!.hasPermission(CHEWIE, CREDENTIAL_NAME, READ),
-            `is`(false))
+        assertThat(
+            subject!!.hasPermission(CHEWIE, CREDENTIAL_NAME, READ),
+            `is`(false)
+        )
     }
 
     @Test
@@ -432,8 +486,10 @@ class PermissionDataServiceTest {
 
     @Test
     fun hasReadPermission_whenCredentialDoesNotExist_returnsFalse() {
-        assertThat(subject!!.hasPermission(LUKE, CREDENTIAL_NAME_DOES_NOT_EXIST, READ),
-            `is`(false))
+        assertThat(
+            subject!!.hasPermission(LUKE, CREDENTIAL_NAME_DOES_NOT_EXIST, READ),
+            `is`(false)
+        )
     }
 
     @Test

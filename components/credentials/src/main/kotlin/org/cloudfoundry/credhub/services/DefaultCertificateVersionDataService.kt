@@ -1,7 +1,5 @@
 package org.cloudfoundry.credhub.services
 
-import java.util.ArrayList
-import java.util.UUID
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
 import org.cloudfoundry.credhub.domain.CredentialFactory
 import org.cloudfoundry.credhub.domain.CredentialVersion
@@ -10,6 +8,8 @@ import org.cloudfoundry.credhub.entity.CredentialVersionData
 import org.cloudfoundry.credhub.repositories.CredentialVersionRepository
 import org.cloudfoundry.credhub.utils.CertificateReader
 import org.springframework.stereotype.Service
+import java.util.ArrayList
+import java.util.UUID
 
 @Service
 class DefaultCertificateVersionDataService(
@@ -24,8 +24,10 @@ class DefaultCertificateVersionDataService(
         return if (credential == null) {
             null
         } else {
-            credentialFactory.makeCredentialFromEntity(credentialVersionRepository
-                .findLatestNonTransitionalCertificateVersion(credential.uuid))
+            credentialFactory.makeCredentialFromEntity(
+                credentialVersionRepository
+                    .findLatestNonTransitionalCertificateVersion(credential.uuid)
+            )
         }
     }
 
@@ -62,14 +64,16 @@ class DefaultCertificateVersionDataService(
 
     override fun findAllVersions(uuid: UUID): List<CredentialVersion> {
         val credentialVersionDataList = credentialVersionRepository.findAllByCredentialUuidAndTypeOrderByVersionCreatedAtDesc(
-            uuid, CertificateCredentialVersionData.CREDENTIAL_DATABASE_TYPE)
+            uuid, CertificateCredentialVersionData.CREDENTIAL_DATABASE_TYPE
+        )
 
         return credentialFactory.makeCredentialsFromEntities(credentialVersionDataList)
     }
 
     override fun findAllValidVersions(uuid: UUID): List<CredentialVersion> {
         val credentialVersionDataList = credentialVersionRepository.findAllByCredentialUuidAndTypeOrderByVersionCreatedAtDesc(
-            uuid, CertificateCredentialVersionData.CREDENTIAL_DATABASE_TYPE)
+            uuid, CertificateCredentialVersionData.CREDENTIAL_DATABASE_TYPE
+        )
 
         val validCredentialVersionDataList = ArrayList<CredentialVersionData<*>>()
         for (credentialVersionData in credentialVersionDataList) {

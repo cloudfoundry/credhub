@@ -2,9 +2,6 @@ package org.cloudfoundry.credhub.controllers.v1.credentials
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import java.security.Security
-import java.time.Instant
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
@@ -48,6 +45,9 @@ import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.security.Security
+import java.time.Instant
+import java.util.UUID
 
 @RunWith(SpringRunner::class)
 class CredentialsControllerSetTest {
@@ -93,14 +93,15 @@ class CredentialsControllerSetTest {
         )
 
         // language=json
-        val requestBody = """
+        val requestBody =
+            """
             {
               "name": "/some-value-name",
               "type": "${CredentialType.VALUE.type.toLowerCase()}",
               "metadata": { "description": "example metadata"},
               "value": "some-value"
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val mvcResult = mockMvc.perform(
             put(CredentialsController.ENDPOINT)
@@ -130,7 +131,8 @@ class CredentialsControllerSetTest {
         assertThat(spyCredentialsHandler.setCredential__calledWith_setRequest).isEqualTo(expectedValueSetRequest)
 
         // language=json
-        val expectedResponse = """
+        val expectedResponse =
+            """
             {
               "type": "${CredentialType.VALUE.type.toLowerCase()}",
               "version_created_at": "2019-02-01T20:37:52Z",
@@ -139,7 +141,7 @@ class CredentialsControllerSetTest {
               "metadata": { "description": "example metadata"},
               "value": "some-value"
             }
-        """.trimIndent()
+            """.trimIndent()
 
         JSONAssert.assertEquals(mvcResult.response.contentAsString, expectedResponse, true)
     }
@@ -152,17 +154,21 @@ class CredentialsControllerSetTest {
             "/some-value-name",
             JSON.type.toLowerCase(),
             metadata,
-            JsonCredentialValue(ObjectMapper().readTree(
-                // language=json
-                """
+            JsonCredentialValue(
+                ObjectMapper().readTree(
+                    // language=json
+                    """
                     {
                         "some-json-key": "some-json-value"
                     }
-                """.trimIndent()))
+                    """.trimIndent()
+                )
+            )
         )
 
         // language=json
-        val requestBody = """
+        val requestBody =
+            """
             {
               "name": "/some-value-name",
               "type": "${CredentialType.JSON.type.toLowerCase()}",
@@ -171,7 +177,7 @@ class CredentialsControllerSetTest {
                 "some-json-key": "some-json-value"
               }
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val mvcResult = mockMvc.perform(
             put(CredentialsController.ENDPOINT)
@@ -196,21 +202,24 @@ class CredentialsControllerSetTest {
             .andReturn()
 
         val expectedValueSetRequest = JsonSetRequest()
-        expectedValueSetRequest.value = JsonCredentialValue(ObjectMapper().readTree(
-            // language=json
-            """
+        expectedValueSetRequest.value = JsonCredentialValue(
+            ObjectMapper().readTree(
+                // language=json
+                """
             {
                 "some-json-key": "some-json-value"
             }
-            """.trimIndent()
-        ))
+                """.trimIndent()
+            )
+        )
         expectedValueSetRequest.name = "/some-value-name"
         expectedValueSetRequest.type = CredentialType.JSON.type.toLowerCase()
 
         assertThat(spyCredentialsHandler.setCredential__calledWith_setRequest).isEqualTo(expectedValueSetRequest)
 
         // language=json
-        val expectedResponse = """
+        val expectedResponse =
+            """
             {
               "type": "${CredentialType.JSON.type.toLowerCase()}",
               "version_created_at": "2019-02-01T20:37:52Z",
@@ -221,7 +230,7 @@ class CredentialsControllerSetTest {
                 "some-json-key": "some-json-value"
               }
             }
-        """.trimIndent()
+            """.trimIndent()
 
         JSONAssert.assertEquals(mvcResult.response.contentAsString, expectedResponse, true)
     }
@@ -238,14 +247,15 @@ class CredentialsControllerSetTest {
         )
 
         // language=json
-        val requestBody = """
+        val requestBody =
+            """
             {
               "name": "/some-password-name",
               "type": "${CredentialType.PASSWORD.type.toLowerCase()}",
               "metadata": { "description": "example metadata"},
               "value": "some-password"
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val mvcResult = mockMvc.perform(
             put(CredentialsController.ENDPOINT)
@@ -275,7 +285,8 @@ class CredentialsControllerSetTest {
         assertThat(spyCredentialsHandler.setCredential__calledWith_setRequest).isEqualTo(expectedValueSetRequest)
 
         // language=json
-        val expectedResponse = """
+        val expectedResponse =
+            """
             {
               "type": "${CredentialType.PASSWORD.type.toLowerCase()}",
               "version_created_at": "2019-02-01T20:37:52Z",
@@ -284,7 +295,7 @@ class CredentialsControllerSetTest {
               "metadata": { "description": "example metadata"},
               "value": "some-password"
             }
-        """.trimIndent()
+            """.trimIndent()
 
         JSONAssert.assertEquals(mvcResult.response.contentAsString, expectedResponse, true)
     }
@@ -305,7 +316,8 @@ class CredentialsControllerSetTest {
         )
 
         // language=json
-        val requestBody = """
+        val requestBody =
+            """
             {
               "name": "/some-user-name",
               "type": "${CredentialType.USER.type.toLowerCase()}",
@@ -315,7 +327,7 @@ class CredentialsControllerSetTest {
                 "password": "some-password"
               }
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val mvcResult = mockMvc.perform(
             put(CredentialsController.ENDPOINT)
@@ -350,7 +362,8 @@ class CredentialsControllerSetTest {
         assertThat(expectedValueSetRequest).isEqualTo(spyCredentialsHandler.setCredential__calledWith_setRequest)
 
         // language=json
-        val expectedResponse = """
+        val expectedResponse =
+            """
             {
               "type": "${CredentialType.USER.type.toLowerCase()}",
               "version_created_at": "2019-02-01T20:37:52Z",
@@ -363,7 +376,7 @@ class CredentialsControllerSetTest {
                 "password_hash": "foQzXY.HaydB."
               }
             }
-        """.trimIndent()
+            """.trimIndent()
 
         JSONAssert.assertEquals(mvcResult.response.contentAsString, expectedResponse, true)
     }
@@ -389,7 +402,8 @@ class CredentialsControllerSetTest {
         )
 
         // language=json
-        val requestBody = """
+        val requestBody =
+            """
             {
               "name": "/some-certificate-name",
               "type": "${CredentialType.CERTIFICATE.type.toLowerCase()}",
@@ -400,7 +414,7 @@ class CredentialsControllerSetTest {
                 "private_key": "${escapeNewLinesForJsonSerialization(TestConstants.TEST_PRIVATE_KEY)}"
               }
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val mvcResult = mockMvc.perform(
             put(CredentialsController.ENDPOINT)
@@ -449,7 +463,8 @@ class CredentialsControllerSetTest {
         assertThat(spyCredentialsHandler.setCredential__calledWith_setRequest).isEqualTo(expectedValueSetRequest)
 
         // language=json
-        val expectedResponse = """
+        val expectedResponse =
+            """
             {
               "type": "${CredentialType.CERTIFICATE.type.toLowerCase()}",
               "version_created_at": "2019-02-01T20:37:52Z",
@@ -467,7 +482,7 @@ class CredentialsControllerSetTest {
                 "generated": false
               }
             }
-        """.trimIndent()
+            """.trimIndent()
 
         JSONAssert.assertEquals(mvcResult.response.contentAsString, expectedResponse, true)
     }
@@ -487,7 +502,8 @@ class CredentialsControllerSetTest {
         )
 
         // language=json
-        val requestBody = """
+        val requestBody =
+            """
             {
               "name": "/some-rsa-name",
               "type": "${CredentialType.RSA.type.toLowerCase()}",
@@ -497,7 +513,7 @@ class CredentialsControllerSetTest {
                 "private_key": "${escapeNewLinesForJsonSerialization(TestConstants.PRIVATE_KEY_4096)}"
               }
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val mvcResult = mockMvc.perform(
             put(CredentialsController.ENDPOINT)
@@ -533,7 +549,8 @@ class CredentialsControllerSetTest {
         assertThat(spyCredentialsHandler.setCredential__calledWith_setRequest).isEqualTo(expectedValueSetRequest)
 
         // language=json
-        val expectedResponse = """
+        val expectedResponse =
+            """
             {
               "type": "${CredentialType.RSA.type.toLowerCase()}",
               "version_created_at": "2019-02-01T20:37:52Z",
@@ -545,7 +562,7 @@ class CredentialsControllerSetTest {
                 "private_key": "${TestConstants.PRIVATE_KEY_4096}"
               }
             }
-        """.trimIndent()
+            """.trimIndent()
 
         JSONAssert.assertEquals(mvcResult.response.contentAsString, expectedResponse, true)
     }
@@ -566,7 +583,8 @@ class CredentialsControllerSetTest {
         )
 
         // language=json
-        val requestBody = """
+        val requestBody =
+            """
             {
               "name": "/some-ssh-name",
               "type": "${CredentialType.SSH.type.toLowerCase()}",
@@ -576,7 +594,7 @@ class CredentialsControllerSetTest {
                 "private_key": "${escapeNewLinesForJsonSerialization(TestConstants.PRIVATE_KEY_4096)}"
               }
             }
-        """.trimIndent()
+            """.trimIndent()
 
         val mvcResult = mockMvc.perform(
             put(CredentialsController.ENDPOINT)
@@ -614,7 +632,8 @@ class CredentialsControllerSetTest {
         assertThat(spyCredentialsHandler.setCredential__calledWith_setRequest).isEqualTo(expectedValueSetRequest)
 
         // language=json
-        val expectedResponse = """
+        val expectedResponse =
+            """
             {
               "type": "${CredentialType.SSH.type.toLowerCase()}",
               "version_created_at": "2019-02-01T20:37:52Z",
@@ -627,7 +646,7 @@ class CredentialsControllerSetTest {
                 "public_key_fingerprint": null
               }
             }
-        """.trimIndent()
+            """.trimIndent()
 
         JSONAssert.assertEquals(mvcResult.response.contentAsString, expectedResponse, true)
     }

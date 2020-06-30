@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.integration.v1.credentials
 
-import java.time.Instant
 import org.cloudfoundry.credhub.CredhubTestApp
 import org.cloudfoundry.credhub.TestHelper
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue
@@ -29,6 +28,7 @@ import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.WebApplicationContext
+import java.time.Instant
 
 @RunWith(SpringRunner::class)
 @ActiveProfiles(value = ["unit-test", "unit-test-permissions"], resolver = DatabaseProfileResolver::class)
@@ -93,7 +93,8 @@ class CredentialsPostIntegrationTest {
 
         val request = MockMvcRequestBuilders.post("/api/v1/data")
             .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-            .content("""
+            .content(
+                """
                 {
                   "name": "myCertificate",
                   "type": "certificate",
@@ -102,7 +103,8 @@ class CredentialsPostIntegrationTest {
                     "ca":"myCA"
                   }
                  }
-                """.trimIndent())
+                """.trimIndent()
+            )
             .contentType(MediaType.APPLICATION_JSON)
             .accept(MediaType.APPLICATION_JSON)
 

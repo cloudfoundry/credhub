@@ -11,8 +11,10 @@ class SshView : CredentialView {
         sshCredential.name,
         sshCredential.getCredentialType(),
         sshCredential.metadata,
-        SshCredentialValue(sshCredential.publicKey, sshCredential.privateKey,
-            sshCredential.fingerprint)
+        SshCredentialValue(
+            sshCredential.publicKey, sshCredential.privateKey,
+            sshCredential.fingerprint
+        )
     ) {
     }
 }

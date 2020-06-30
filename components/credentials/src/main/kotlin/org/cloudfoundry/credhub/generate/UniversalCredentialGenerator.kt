@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.generate
 
-import java.util.HashMap
 import org.cloudfoundry.credhub.credential.CredentialValue
 import org.cloudfoundry.credhub.generators.CertificateGenerator
 import org.cloudfoundry.credhub.generators.CredentialGenerator
@@ -11,6 +10,7 @@ import org.cloudfoundry.credhub.generators.UserGenerator
 import org.cloudfoundry.credhub.requests.BaseCredentialGenerateRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import java.util.HashMap
 
 @Component
 class UniversalCredentialGenerator @Autowired constructor(
