@@ -72,7 +72,7 @@ class DefaultCertificateService(
             if (current) {
                 val credential = findCertificateCredential(uuid)
                 name = credential.name
-                list = certificateVersionDataService.findActiveWithTransitional(name!!)
+                list = certificateVersionDataService.findBothActiveCertAndTransitionalCert(name!!)
             } else {
                 list = certificateVersionDataService.findAllVersions(uuid)
                 name = if (!list.isEmpty()) list[0].name else null
@@ -134,7 +134,7 @@ class DefaultCertificateService(
             certificateVersionDataService.setTransitionalVersion(newTransitionalVersionUuid)
         }
 
-        val credentialVersions = certificateVersionDataService.findActiveWithTransitional(name!!)
+        val credentialVersions = certificateVersionDataService.findBothActiveCertAndTransitionalCert(name!!)
         auditRecord.addAllVersions(Lists.newArrayList<AuditableCredentialVersion>(credentialVersions!!))
 
         createNewChildVersions(name)
@@ -202,7 +202,7 @@ class DefaultCertificateService(
 
             val signingCa = credentialVersion?.ca
             var trustedCa: CertificateCredentialVersion? = null
-            val activeWithTransitional = certificateVersionDataService.findActiveWithTransitional(parentCredentialName)
+            val activeWithTransitional = certificateVersionDataService.findBothActiveCertAndTransitionalCert(parentCredentialName)
 
             val caVersion = activeWithTransitional?.get(0) as CertificateCredentialVersion
 

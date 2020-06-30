@@ -55,7 +55,7 @@ public class DefaultCertificateAuthorityService implements CertificateAuthorityS
 
   @Override
   public CertificateCredentialValue findTransitionalVersion(final String caName) {
-    final List<CredentialVersion> credentialVersions = certificateVersionDataService.findActiveWithTransitional(caName);
+    final List<CredentialVersion> credentialVersions = certificateVersionDataService.findBothActiveCertAndTransitionalCert(caName);
 
     if (credentialVersions == null) {
       throw new EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS);

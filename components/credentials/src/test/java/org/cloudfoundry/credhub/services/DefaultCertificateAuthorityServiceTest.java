@@ -59,7 +59,7 @@ public class DefaultCertificateAuthorityServiceTest {
 
   @Test
   public void findTransitionalVersion_whenATransitionalCaDoesNotExist_returnsNull() {
-    when(certificateVersionDataService.findActiveWithTransitional(CREDENTIAL_NAME)).thenReturn(
+    when(certificateVersionDataService.findBothActiveCertAndTransitionalCert(CREDENTIAL_NAME)).thenReturn(
       Collections.singletonList(certificateCredential));
 
     CertificateCredentialValue transitionalVersion = certificateAuthorityService.findTransitionalVersion(CREDENTIAL_NAME);
@@ -71,7 +71,7 @@ public class DefaultCertificateAuthorityServiceTest {
     final CertificateReader certificateReader = mock(CertificateReader.class);
     when(transitionalCertificateCredential.getParsedCertificate()).thenReturn(certificateReader);
     when(certificateReader.isCa()).thenReturn(true);
-    when(certificateVersionDataService.findActiveWithTransitional(CREDENTIAL_NAME)).thenReturn(Arrays.asList(certificateCredential, transitionalCertificateCredential));
+    when(certificateVersionDataService.findBothActiveCertAndTransitionalCert(CREDENTIAL_NAME)).thenReturn(Arrays.asList(certificateCredential, transitionalCertificateCredential));
     when(transitionalCertificateCredential.getCertificate()).thenReturn(SELF_SIGNED_CA_CERT);
 
     assertThat(certificateAuthorityService.findTransitionalVersion(CREDENTIAL_NAME).getCertificate(),

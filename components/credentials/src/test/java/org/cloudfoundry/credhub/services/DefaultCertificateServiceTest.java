@@ -220,7 +220,7 @@ public class DefaultCertificateServiceTest {
 
     when(credentialService.findAllByName(eq("some-ca")))
       .thenReturn(newArrayList(nonTransitionalCa));
-    when(certificateVersionDataService.findActiveWithTransitional("some-ca"))
+    when(certificateVersionDataService.findBothActiveCertAndTransitionalCert("some-ca"))
       .thenReturn(Arrays.asList(nonTransitionalCa, transitionalCa));
     when(credentialService.findAllCertificateCredentialsByCaName("some-ca"))
       .thenReturn(Collections.singletonList("some-cert"));
@@ -251,7 +251,7 @@ public class DefaultCertificateServiceTest {
     when(certificateDataService.findByUuid(caUuid)).thenReturn(credential);
     when(credentialVersionDataService.findActiveByName(childCert.getCaName()))
       .thenReturn(Arrays.asList(nonTransitionalCa, transitionalCa));
-    when(certificateVersionDataService.findActiveWithTransitional("some-ca"))
+    when(certificateVersionDataService.findBothActiveCertAndTransitionalCert("some-ca"))
       .thenReturn(Arrays.asList(nonTransitionalCa, transitionalCa));
     when(credentialService.findAllCertificateCredentialsByCaName("some-ca"))
       .thenReturn(Collections.singletonList("some-cert"));
@@ -284,7 +284,7 @@ public class DefaultCertificateServiceTest {
     when(certificateDataService.findByUuid(caUuid)).thenReturn(credential);
     when(credentialVersionDataService.findActiveByName(childCert.getCaName()))
       .thenReturn(Arrays.asList(nonTransitionalCa, transitionalCa));
-    when(certificateVersionDataService.findActiveWithTransitional("some-ca"))
+    when(certificateVersionDataService.findBothActiveCertAndTransitionalCert("some-ca"))
       .thenReturn(Arrays.asList(nonTransitionalCa, transitionalCa));
     when(credentialService.findAllCertificateCredentialsByCaName("some-ca"))
       .thenReturn(Collections.singletonList("some-cert"));
@@ -320,7 +320,7 @@ public class DefaultCertificateServiceTest {
 
     when(credentialService.findAllByName(eq("some-ca")))
       .thenReturn(newArrayList(nonTransitionalCa));
-    when(certificateVersionDataService.findActiveWithTransitional("some-ca"))
+    when(certificateVersionDataService.findBothActiveCertAndTransitionalCert("some-ca"))
       .thenReturn(Arrays.asList(nonTransitionalCa, transitionalCa));
     when(credentialService.findAllCertificateCredentialsByCaName("some-ca"))
       .thenReturn(Collections.singletonList("some-cert"));
@@ -443,7 +443,7 @@ public class DefaultCertificateServiceTest {
 
     when(certificateDataService.findByUuid(uuid))
       .thenReturn(aCredential);
-    when(certificateVersionDataService.findActiveWithTransitional("my-credential"))
+    when(certificateVersionDataService.findBothActiveCertAndTransitionalCert("my-credential"))
       .thenReturn(versions);
 
     final List<CredentialVersion> certificates = subjectWithoutConcatenateCas.getVersions(uuid, true);
@@ -551,7 +551,7 @@ public class DefaultCertificateServiceTest {
       .thenReturn(transitionalCa);
     when(credentialService.findAllByName(eq("some-ca")))
       .thenReturn(newArrayList(nonTransitionalCa));
-    when(certificateVersionDataService.findActiveWithTransitional("some-ca"))
+    when(certificateVersionDataService.findBothActiveCertAndTransitionalCert("some-ca"))
       .thenReturn(Arrays.asList(nonTransitionalCa, transitionalCa));
     when(credentialService.findAllCertificateCredentialsByCaName("some-ca"))
       .thenReturn(Collections.singletonList("some-cert"));
@@ -722,7 +722,7 @@ public class DefaultCertificateServiceTest {
     when(certificateDataService.findByUuid(caUuid)).thenReturn(credential);
     when(credentialVersionDataService.findActiveByName(childCert.getCaName()))
       .thenReturn(Arrays.asList(nonTransitionalCa, transitionalCa));
-    when(certificateVersionDataService.findActiveWithTransitional("some-ca"))
+    when(certificateVersionDataService.findBothActiveCertAndTransitionalCert("some-ca"))
       .thenReturn(Arrays.asList(nonTransitionalCa, transitionalCa));
     when(credentialService.findAllCertificateCredentialsByCaName("some-ca"))
       .thenReturn(Collections.singletonList("some-cert"));
@@ -743,7 +743,7 @@ public class DefaultCertificateServiceTest {
     when(certificateDataService.findByUuid(caUuid)).thenReturn(credential);
     when(credentialVersionDataService.findActiveByName(childCert.getCaName()))
       .thenReturn(Arrays.asList(nonTransitionalCa, transitionalCa));
-    when(certificateVersionDataService.findActiveWithTransitional("some-ca"))
+    when(certificateVersionDataService.findBothActiveCertAndTransitionalCert("some-ca"))
       .thenReturn(Arrays.asList(nonTransitionalCa, transitionalCa));
     when(credentialService.findAllCertificateCredentialsByCaName("some-ca"))
       .thenReturn(Collections.singletonList("some-cert"));

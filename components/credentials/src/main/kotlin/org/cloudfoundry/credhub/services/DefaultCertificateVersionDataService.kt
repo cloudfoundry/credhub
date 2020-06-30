@@ -40,7 +40,7 @@ class DefaultCertificateVersionDataService(
         return credentialFactory.makeCredentialFromEntity(credentialVersion)
     }
 
-    override fun findActiveWithTransitional(certificateName: String): List<CredentialVersion>? {
+    override fun findBothActiveCertAndTransitionalCert(certificateName: String): List<CredentialVersion>? {
         val result = ArrayList<CredentialVersion>()
         val credential = credentialDataService.find(certificateName)
 

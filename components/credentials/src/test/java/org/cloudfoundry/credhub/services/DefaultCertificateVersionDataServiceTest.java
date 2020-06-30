@@ -123,7 +123,7 @@ public class DefaultCertificateVersionDataServiceTest {
     final CredentialVersion expectedTransitional = mock(CredentialVersion.class);
     when(factory.makeCredentialFromEntity(transitionalCert)).thenReturn(expectedTransitional);
 
-    final List<CredentialVersion> credentialVersions = subject.findActiveWithTransitional("/some-cert-name");
+    final List<CredentialVersion> credentialVersions = subject.findBothActiveCertAndTransitionalCert("/some-cert-name");
     assertThat(credentialVersions, hasSize(2));
     assertThat(credentialVersions, containsInAnyOrder(expectedActive, expectedTransitional));
   }

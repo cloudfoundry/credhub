@@ -15,7 +15,7 @@ class SpyCertificateVersionDataService : CertificateVersionDataService {
 
     lateinit var findActiveWithTransitional__returns_credentialVersionList: List<CredentialVersion>
     lateinit var findActiveWithTransitional__calledWith_certificateName: String
-    override fun findActiveWithTransitional(certificateName: String): List<CredentialVersion>? {
+    override fun findBothActiveCertAndTransitionalCert(certificateName: String): List<CredentialVersion>? {
         findActiveWithTransitional__calledWith_certificateName = certificateName
 
         return findActiveWithTransitional__returns_credentialVersionList

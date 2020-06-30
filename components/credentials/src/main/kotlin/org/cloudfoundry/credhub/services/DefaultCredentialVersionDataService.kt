@@ -177,7 +177,7 @@ constructor(
                 .findFirstByCredentialUuidOrderByVersionCreatedAtDesc(credential.uuid)
 
             if (credentialVersionData?.credentialType == CertificateCredentialVersionData.CREDENTIAL_TYPE) {
-                return certificateVersionDataService.findActiveWithTransitional(name)
+                return certificateVersionDataService.findBothActiveCertAndTransitionalCert(name)
             }
             result.add(credentialFactory.makeCredentialFromEntity(credentialVersionData))
 
