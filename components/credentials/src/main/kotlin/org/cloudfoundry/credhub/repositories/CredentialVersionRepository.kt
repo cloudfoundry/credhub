@@ -6,7 +6,15 @@ import org.springframework.data.jpa.repository.Query
 import java.util.UUID
 
 interface CredentialVersionRepository : JpaRepository<CredentialVersionData<*>?, UUID?> {
+    // These functions are automatically implemented by the JPA framework based on exact function names
+    fun countByEncryptedCredentialValueEncryptionKeyUuidIn(encryptionKeyUuids: Collection<UUID?>?): Long?
+    fun findByEncryptedCredentialValueEncryptionKeyUuidIn(encryptionKeyUuids: List<UUID?>?): List<CredentialVersionData<*>?>
+    fun findAllByCredentialUuidOrderByVersionCreatedAtDesc(uuid: UUID?): List<CredentialVersionData<*>?>
+    fun findAllByCredentialUuidAndTypeOrderByVersionCreatedAtDesc(uuid: UUID?, credentialType: String?): List<CredentialVersionData<*>?>
+    fun findFirstByCredentialUuidOrderByVersionCreatedAtDesc(uuid: UUID?): CredentialVersionData<*>?
     fun findOneByUuid(uuid: UUID?): CredentialVersionData<*>?
+
+    // These functions are explicitly defined via the @Query annotation
     @Query(
         value = "select * from credential_version " +
             "left join certificate_credential on credential_version.uuid = certificate_credential.uuid " +
@@ -29,11 +37,6 @@ interface CredentialVersionRepository : JpaRepository<CredentialVersionData<*>?,
     )
     fun findTransitionalCertificateVersion(credentialUUID: UUID?): CredentialVersionData<*>?
 
-    fun countByEncryptedCredentialValueEncryptionKeyUuidIn(encryptionKeyUuids: Collection<UUID?>?): Long?
-    fun findByEncryptedCredentialValueEncryptionKeyUuidIn(encryptionKeyUuids: List<UUID?>?): List<CredentialVersionData<*>?>
-    fun findAllByCredentialUuidOrderByVersionCreatedAtDesc(uuid: UUID?): List<CredentialVersionData<*>?>
-    fun findAllByCredentialUuidAndTypeOrderByVersionCreatedAtDesc(uuid: UUID?, credentialType: String?): List<CredentialVersionData<*>?>
-    fun findFirstByCredentialUuidOrderByVersionCreatedAtDesc(uuid: UUID?): CredentialVersionData<*>?
     @Query(
         value = "select * from credential_version " +
             "inner join certificate_credential on credential_version.uuid = certificate_credential.uuid " +
