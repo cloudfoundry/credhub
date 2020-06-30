@@ -31,11 +31,11 @@ class DefaultCertificateVersionDataService(
         }
     }
 
-    override fun findByCredentialUUID(uuidString: String): CredentialVersion? {
-        val uuid = UUID.fromString(uuidString)
-        var credentialVersion = credentialVersionRepository.findLatestNonTransitionalCertificateVersion(uuid)
+    override fun findByCredentialUUID(credentialUuidString: String): CredentialVersion? {
+        val credentialUuid = UUID.fromString(credentialUuidString)
+        var credentialVersion = credentialVersionRepository.findLatestNonTransitionalCertificateVersion(credentialUuid)
         if (credentialVersion == null) {
-            credentialVersion = credentialVersionRepository.findTransitionalCertificateVersion(uuid)
+            credentialVersion = credentialVersionRepository.findTransitionalCertificateVersion(credentialUuid)
         }
         return credentialFactory.makeCredentialFromEntity(credentialVersion)
     }

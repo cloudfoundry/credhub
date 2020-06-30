@@ -51,7 +51,7 @@ class DefaultCertificatesHandler(
         request: CertificateRegenerateRequest
     ): CredentialView {
 
-        checkPermissionsByUuid(credentialUuid, WRITE)
+        checkPermissionsByCredentialUuid(credentialUuid, WRITE)
 
         val existingCredentialVersion = certificateService
             .findByCredentialUuid(credentialUuid)
@@ -103,14 +103,14 @@ class DefaultCertificatesHandler(
             throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
         }
 
-        checkPermissionsByUuid(uuid.toString(), READ)
+        checkPermissionsByCredentialUuid(uuid.toString(), READ)
         val credentialList = certificateService.getVersions(uuid, current)
 
         return credentialList.map { credential -> CertificateView(credential as CertificateCredentialVersion, concatenateCas) }
     }
 
     override fun handleDeleteVersionRequest(certificateId: String, versionId: String): CertificateView {
-        checkPermissionsByUuid(certificateId, DELETE)
+        checkPermissionsByCredentialUuid(certificateId, DELETE)
 
         val deletedVersion = certificateService
             .deleteVersion(UUID.fromString(certificateId), UUID.fromString(versionId))
@@ -121,7 +121,7 @@ class DefaultCertificatesHandler(
         certificateId: String,
         requestBody: UpdateTransitionalVersionRequest
     ): List<CertificateView> {
-        checkPermissionsByUuid(certificateId, WRITE)
+        checkPermissionsByCredentialUuid(certificateId, WRITE)
         var versionUUID: UUID? = null
         val certificateUUID: UUID = UUID.fromString(certificateId)
 
@@ -142,7 +142,7 @@ class DefaultCertificatesHandler(
     }
 
     override fun handleCreateVersionsRequest(certificateId: String, requestBody: CreateVersionRequest): CertificateView {
-        checkPermissionsByUuid(certificateId, WRITE)
+        checkPermissionsByCredentialUuid(certificateId, WRITE)
 
         val certificateCredentialValue = requestBody.value
         certificateCredentialValue?.transitional = requestBody.isTransitional
@@ -213,10 +213,10 @@ class DefaultCertificatesHandler(
         }
     }
 
-    private fun checkPermissionsByUuid(uuid: String, permissionOperation: PermissionOperation) {
+    private fun checkPermissionsByCredentialUuid(credentialUuid: String, permissionOperation: PermissionOperation) {
         if (!enforcePermissions) return
 
-        val certificate = certificateService.findByCredentialUuid(uuid)
+        val certificate = certificateService.findByCredentialUuid(credentialUuid)
 
         if (!permissionCheckingService.hasPermission(
             userContextHolder.userContext?.actor!!,

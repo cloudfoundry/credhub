@@ -165,8 +165,8 @@ class DefaultCertificateService(
         return versionToDelete
     }
 
-    fun findByCredentialUuid(uuid: String): CertificateCredentialVersion {
-        return certificateVersionDataService.findByCredentialUUID(uuid)
+    fun findByCredentialUuid(credentialUuid: String): CertificateCredentialVersion {
+        return certificateVersionDataService.findByCredentialUUID(credentialUuid)
             as? CertificateCredentialVersion
             ?: throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
     }
