@@ -52,7 +52,32 @@ class CertificateCredentialValue : CredentialValue {
     val expiryDate: Instant?
         get() = CertificateReader(certificate).notAfter
 
+    @JsonIgnore
+    var versionCreatedAt: Instant? = null
+
     constructor() : super() {}
+
+    constructor(
+        ca: String?,
+        certificate: String?,
+        privateKey: String?,
+        caName: String?,
+        trustedCa: String?,
+        certificateAuthority: Boolean,
+        selfSigned: Boolean,
+        generated: Boolean?,
+        transitional: Boolean
+    ) : super() {
+        this.ca = ca
+        this.trustedCa = trustedCa
+        this.certificate = certificate
+        this.privateKey = privateKey
+        this.transitional = transitional
+        this.certificateAuthority = certificateAuthority
+        this.selfSigned = selfSigned
+        this.generated = generated
+        this.caName = caName
+    }
 
     constructor(
         ca: String?,
@@ -76,26 +101,27 @@ class CertificateCredentialValue : CredentialValue {
     ) {
     }
 
+    // used to create objects whose created at times can be compared
     constructor(
-        ca: String?,
         certificate: String?,
         privateKey: String?,
-        caName: String?,
-        trustedCa: String?,
         certificateAuthority: Boolean,
         selfSigned: Boolean,
         generated: Boolean?,
-        transitional: Boolean
-    ) : super() {
-        this.ca = ca
-        this.trustedCa = trustedCa
-        this.certificate = certificate
-        this.privateKey = privateKey
-        this.transitional = transitional
-        this.certificateAuthority = certificateAuthority
-        this.selfSigned = selfSigned
-        this.generated = generated
-        this.caName = caName
+        transitional: Boolean,
+        versionCreatedAt: Instant?
+    ) : this(
+        null,
+        certificate,
+        privateKey,
+        null,
+        null,
+        certificateAuthority,
+        selfSigned,
+        generated,
+        transitional
+    ) {
+        this.versionCreatedAt = versionCreatedAt
     }
 
     override fun equals(other: Any?): Boolean {

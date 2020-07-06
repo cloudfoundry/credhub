@@ -118,7 +118,7 @@ class CertificatesControllerTest {
         // language=json
         val requestBody =
             """
-            {"set_as_transitional": true, "metadata": {"description": "example metadata"}}
+            {"set_as_transitional": true, "allow_transitional_parent_to_sign": true, "metadata": {"description": "example metadata"}}
             """.trimIndent()
 
         spyCertificatesHandler.handleRegenerate__returns_credentialView = credentialViewResponse
@@ -139,6 +139,10 @@ class CertificatesControllerTest {
                             .description("Set if certificate is transitional")
                             .type(JsonFieldType.BOOLEAN)
                             .optional(),
+                        fieldWithPath("allow_transitional_parent_to_sign")
+                            .description("Allows a transitional version of the parent CA to sign this certificate if the transitional version is the latest version")
+                            .type(JsonFieldType.BOOLEAN)
+                            .optional(),
                         fieldWithPath("metadata")
                             .description("Additional metadata of the credential.")
                             .optional(),
@@ -152,7 +156,7 @@ class CertificatesControllerTest {
 
             ).andReturn()
 
-        val expectedRequestBody = CertificateRegenerateRequest(true, metadata)
+        val expectedRequestBody = CertificateRegenerateRequest(transitional = true, allowTransitionalParentToSign = true, metadata = metadata)
 
         assertThat(spyCertificatesHandler.handleRegenerate__calledWith_request).isEqualTo(expectedRequestBody)
         assertThat(spyCertificatesHandler.handleRegenerate__calledWith_credentialUuid).isEqualTo(certificateId.toString())

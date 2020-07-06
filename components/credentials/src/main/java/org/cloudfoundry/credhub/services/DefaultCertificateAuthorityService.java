@@ -41,16 +41,15 @@ public class DefaultCertificateAuthorityService implements CertificateAuthorityS
     if (!certificateCredential.getParsedCertificate().isCa()) {
       throw new ParameterizedValidationException(ErrorMessages.CERT_NOT_CA);
     }
-
     return new CertificateCredentialValue(
-            null,
             certificateCredential.getCertificate(),
             certificateCredential.getPrivateKey(),
-            null,
             certificateCredential.isCertificateAuthority(),
             certificateCredential.isSelfSigned(),
             certificateCredential.getGenerated(),
-            certificateCredential.isVersionTransitional());
+            certificateCredential.isVersionTransitional(),
+            certificateCredential.getVersionCreatedAt());
+
   }
 
   @Override
@@ -75,13 +74,12 @@ public class DefaultCertificateAuthorityService implements CertificateAuthorityS
     }
 
     return new CertificateCredentialValue(
-      null,
-      transitionalVersion.getCertificate(),
-      transitionalVersion.getPrivateKey(),
-      null,
-      transitionalVersion.isCertificateAuthority(),
-      transitionalVersion.isSelfSigned(),
-      transitionalVersion.getGenerated(),
-      transitionalVersion.isVersionTransitional());
+            transitionalVersion.getCertificate(),
+            transitionalVersion.getPrivateKey(),
+            transitionalVersion.isCertificateAuthority(),
+            transitionalVersion.isSelfSigned(),
+            transitionalVersion.getGenerated(),
+            transitionalVersion.isVersionTransitional(),
+            transitionalVersion.getVersionCreatedAt());
   }
 }

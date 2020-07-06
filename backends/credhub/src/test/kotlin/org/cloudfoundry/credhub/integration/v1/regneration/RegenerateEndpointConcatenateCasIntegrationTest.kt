@@ -4,7 +4,10 @@ import com.jayway.jsonpath.JsonPath
 import org.cloudfoundry.credhub.CredhubTestApp
 import org.cloudfoundry.credhub.helpers.RequestHelper
 import org.cloudfoundry.credhub.utils.AuthConstants.Companion.ALL_PERMISSIONS_TOKEN
+import org.cloudfoundry.credhub.utils.CertificateReader
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver
+import org.hamcrest.core.IsEqual
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -75,5 +78,52 @@ class RegenerateEndpointConcatenateCasIntegrationTest {
             .andDo(print())
             .andExpect(status().is2xxSuccessful)
             .andExpect(jsonPath("$.value.ca").value(generatedCa + regeneratedCa))
+    }
+
+    @Test
+    fun `regeneratingACertificate_whenAllowTransitionalParentToSignIsTrue_returnsTheGeneratedCertificate_signedByTheTransitionalParent`() {
+        val caName = "/test-ca"
+        val certificateName = "leafCertificate"
+
+        val generateCaResponse = RequestHelper.generateCa(mockMvc, caName, ALL_PERMISSIONS_TOKEN)
+        val caCertificateGenerated = JsonPath.parse(generateCaResponse)
+            .read<String>("$.value.certificate")
+        Assert.assertNotNull(caCertificateGenerated)
+
+        val caCredentialUuid = RequestHelper.getCertificateId(mockMvc, caName)
+
+        RequestHelper.generateCertificateCredential(
+            mockMvc,
+            certificateName,
+            true,
+            "leaf-cert",
+            caName,
+            ALL_PERMISSIONS_TOKEN
+        )
+        val regenerateCertificateResponse = RequestHelper.regenerateCertificate(mockMvc, caCredentialUuid, true, ALL_PERMISSIONS_TOKEN)
+        val caCertificateRegenerated = JsonPath.parse(regenerateCertificateResponse)
+            .read<String>("$.value.certificate")
+        Assert.assertNotNull(caCertificateRegenerated)
+        val caCertificateRegeneratedIsTransitional = JsonPath.parse(regenerateCertificateResponse)
+            .read<Boolean>("$.transitional")
+        Assert.assertTrue(caCertificateRegeneratedIsTransitional)
+
+        val certCredentialUuid = RequestHelper.getCertificateId(mockMvc, certificateName)
+        val regenerateLeafRequest = post("/api/v1/certificates/$certCredentialUuid/regenerate")
+            .header("Authorization", "Bearer $ALL_PERMISSIONS_TOKEN")
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{\"set_as_transitional\": false, \"allow_transitional_parent_to_sign\": true }")
+
+        val response = this.mockMvc.perform(regenerateLeafRequest)
+            .andExpect(status().isOk)
+            .andReturn().response
+            .contentAsString
+
+        val leafCA = JsonPath.parse(response).read<String>("$.value.ca")
+        Assert.assertThat<String>(leafCA, IsEqual.equalTo<String>(caCertificateRegenerated + caCertificateGenerated))
+        val leafCert = JsonPath.parse(response).read<String>("$.value.certificate")
+        val reader = CertificateReader(leafCert)
+        Assert.assertTrue(reader.isSignedByCa(caCertificateRegenerated))
     }
 }

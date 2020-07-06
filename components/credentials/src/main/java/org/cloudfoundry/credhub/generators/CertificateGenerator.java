@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.generators;
 
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
+import java.time.Instant;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -56,31 +57,60 @@ public class CertificateGenerator implements CredentialGenerator<CertificateCred
       }
     } else {
       final String caName = params.getCaName();
-      final CertificateCredentialValue ca = certificateAuthorityService.findActiveVersion(caName);
-      if (ca.getPrivateKey() == null) {
+      final CertificateCredentialValue latestNonTransitionalCaVersion = certificateAuthorityService.findActiveVersion(caName);
+      if (latestNonTransitionalCaVersion.getPrivateKey() == null) {
         throw new ParameterizedValidationException(ErrorMessages.CA_MISSING_PRIVATE_KEY);
       }
-      final String caCertificate = ca.getCertificate();
-      final CertificateCredentialValue trustedCa = certificateAuthorityService.findTransitionalVersion(caName);
+      final CertificateCredentialValue transitionalCaVersion = certificateAuthorityService.findTransitionalVersion(caName);
+
+      String signingCaCertificate;
+      String signingCaPrivateKey;
       String trustedCaCertificate = null;
-      if (trustedCa != null) {
-        trustedCaCertificate = trustedCa.getCertificate();
+
+      if (shouldUseTransitionalParentToSign(params.getAllowTransitionalParentToSign(), latestNonTransitionalCaVersion, transitionalCaVersion)) {
+        signingCaCertificate = transitionalCaVersion.getCertificate();
+        signingCaPrivateKey = transitionalCaVersion.getPrivateKey();
+        trustedCaCertificate = latestNonTransitionalCaVersion.getCertificate();
+      } else {
+        signingCaCertificate = latestNonTransitionalCaVersion.getCertificate();
+        signingCaPrivateKey = latestNonTransitionalCaVersion.getPrivateKey();
+        if (transitionalCaVersion != null) {
+          trustedCaCertificate = transitionalCaVersion.getCertificate();
+        }
       }
 
       try {
 
-        final CertificateReader certificateReader = new CertificateReader(caCertificate);
+        final CertificateReader certificateReader = new CertificateReader(signingCaCertificate);
 
         final X509Certificate cert = signedCertificateGenerator.getSignedByIssuer(
           keyPair,
           params,
           certificateReader.getCertificate(),
-          PrivateKeyReader.getPrivateKey(ca.getPrivateKey())
+          PrivateKeyReader.getPrivateKey(signingCaPrivateKey)
         );
-        return new CertificateCredentialValue(caCertificate, CertificateFormatter.pemOf(cert), privatePem, caName, trustedCaCertificate, params.isCa(), params.isSelfSigned(), true, false);
+        return new CertificateCredentialValue(signingCaCertificate, CertificateFormatter.pemOf(cert), privatePem, caName, trustedCaCertificate, params.isCa(), params.isSelfSigned(), true, false);
       } catch (final Exception e) {
         throw new RuntimeException(e);
       }
     }
+  }
+
+  private boolean shouldUseTransitionalParentToSign(final Boolean allowTransitionalParentToSign, final CertificateCredentialValue latestNonTransitionalCaVersion, final CertificateCredentialValue transitionalCaVersion) {
+    if (!allowTransitionalParentToSign) {
+      return false;
+    }
+
+    if (transitionalCaVersion == null) {
+      return false;
+    }
+
+    final Instant transitionalVersionCreatedAt = transitionalCaVersion.getVersionCreatedAt();
+    final Instant latestNonTransitionalVersionCreatedAt = latestNonTransitionalCaVersion.getVersionCreatedAt();
+    if (transitionalVersionCreatedAt == null || latestNonTransitionalVersionCreatedAt == null) {
+      return false;
+    }
+
+    return transitionalVersionCreatedAt.isAfter(latestNonTransitionalVersionCreatedAt);
   }
 }

@@ -50,6 +50,8 @@ class CertificateGenerationParameters : GenerationParameters {
 
     val keyUsage: KeyUsage?
 
+    var allowTransitionalParentToSign: Boolean = false
+
     constructor(generationParameters: CertificateGenerationRequestParameters) : super() {
 
         this.keyUsage = buildKeyUsage(generationParameters)

@@ -92,14 +92,13 @@ public class CertificateGeneratorTest {
     rootCaX509Certificate = new JcaX509CertificateConverter()
       .setProvider(BouncyCastleFipsProvider.PROVIDER_NAME).getCertificate(caX509CertHolder);
     rootCa = new CertificateCredentialValue(
-      null,
-      CertificateFormatter.pemOf(rootCaX509Certificate),
-      CertificateFormatter.pemOf(rootCaKeyPair.getPrivate()),
-      null,
-      true,
-      true,
-      false,
-      false);
+            CertificateFormatter.pemOf(rootCaX509Certificate),
+            CertificateFormatter.pemOf(rootCaKeyPair.getPrivate()),
+            true,
+            true,
+            false,
+            false,
+            Instant.now());
 
     generationParameters = new CertificateGenerationRequestParameters();
     generationParameters.setOrganization("foo");
@@ -245,6 +244,58 @@ public class CertificateGeneratorTest {
 
     assertThat(certificateWithTrustedCa.getTrustedCa(),
       equalTo(transitionalCa.getCertificate()));
+  }
+
+  @Test
+  public void whenCAHasATransitionalVersionAsLatest_andAllowTransitionalParentToSignIsTrue_childCertificateIsSignedByTheTransitionalVersion() throws Exception {
+    final KeyPair childCertificateKeyPair = setupKeyPair();
+    KeyPair transitionalCaKeyPair = fakeKeyPairGenerator.generate();
+
+    final X509CertificateHolder caX509CertHolder = makeCert(transitionalCaKeyPair, transitionalCaKeyPair.getPrivate(),
+            rootCaDn, rootCaDn, true);
+    X509Certificate transitionalCaX509Certificate = new JcaX509CertificateConverter()
+            .setProvider(BouncyCastleFipsProvider.PROVIDER_NAME).getCertificate(caX509CertHolder);
+    CertificateCredentialValue transitionalCa = new CertificateCredentialValue(
+            CertificateFormatter.pemOf(transitionalCaX509Certificate),
+            CertificateFormatter.pemOf(transitionalCaKeyPair.getPrivate()),
+            true,
+            true,
+            false,
+            true,
+            Instant.now());
+
+    when(certificateAuthorityService.findActiveVersion("/my-ca-name")).thenReturn(rootCa);
+    when(keyGenerator.generateKeyPair(anyInt())).thenReturn(childCertificateKeyPair);
+
+    final X509CertificateHolder childCertificateHolder = generateChildCertificateSignedByCa(
+            childCertificateKeyPair,
+            transitionalCaKeyPair.getPrivate(),
+            rootCaDn
+    );
+
+    childX509Certificate = new JcaX509CertificateConverter()
+            .setProvider(BouncyCastleFipsProvider.PROVIDER_NAME)
+            .getCertificate(childCertificateHolder);
+
+    inputParameters.setAllowTransitionalParentToSign(true);
+    when(signedCertificateGenerator
+            .getSignedByIssuer(
+                    childCertificateKeyPair,
+                    inputParameters,
+                    transitionalCaX509Certificate,
+                    transitionalCaKeyPair.getPrivate()
+            )
+    ).thenReturn(childX509Certificate);
+
+    when(certificateAuthorityService.findTransitionalVersion("/my-ca-name")).thenReturn(transitionalCa);
+
+    final CertificateCredentialValue certificateWithTrustedCa = subject.generateCredential(inputParameters);
+
+    assertThat(certificateWithTrustedCa.getCa(),
+            equalTo(transitionalCa.getCertificate()));
+
+    assertThat(certificateWithTrustedCa.getTrustedCa(),
+            equalTo(rootCa.getCertificate()));
   }
 
   @Test

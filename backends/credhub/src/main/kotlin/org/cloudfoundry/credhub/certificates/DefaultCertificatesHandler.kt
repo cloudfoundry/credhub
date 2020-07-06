@@ -17,6 +17,7 @@ import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
 import org.cloudfoundry.credhub.exceptions.PermissionException
 import org.cloudfoundry.credhub.generate.GenerationRequestGenerator
 import org.cloudfoundry.credhub.generate.UniversalCredentialGenerator
+import org.cloudfoundry.credhub.requests.CertificateGenerateRequest
 import org.cloudfoundry.credhub.requests.CertificateRegenerateRequest
 import org.cloudfoundry.credhub.requests.CreateVersionRequest
 import org.cloudfoundry.credhub.requests.UpdateTransitionalVersionRequest
@@ -59,6 +60,11 @@ class DefaultCertificatesHandler(
         val generateRequest = generationRequestGenerator
             .createGenerateRequest(existingCredentialVersion)
         generateRequest.metadata = request.metadata
+
+        if (request.allowTransitionalParentToSign) {
+            (generateRequest as CertificateGenerateRequest).setAllowTransitionalParentToSign(true)
+        }
+
         val credentialValue = credentialGenerator
             .generate(generateRequest) as CertificateCredentialValue
 

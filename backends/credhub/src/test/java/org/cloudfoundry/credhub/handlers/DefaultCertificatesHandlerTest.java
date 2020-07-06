@@ -17,6 +17,7 @@ import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.certificates.DefaultCertificatesHandler;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
+import org.cloudfoundry.credhub.domain.CertificateGenerationParameters;
 import org.cloudfoundry.credhub.domain.CertificateMetadata;
 import org.cloudfoundry.credhub.domain.CertificateVersionMetadata;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
@@ -26,6 +27,8 @@ import org.cloudfoundry.credhub.exceptions.PermissionException;
 import org.cloudfoundry.credhub.generate.GenerationRequestGenerator;
 import org.cloudfoundry.credhub.generate.UniversalCredentialGenerator;
 import org.cloudfoundry.credhub.requests.BaseCredentialGenerateRequest;
+import org.cloudfoundry.credhub.requests.CertificateGenerateRequest;
+import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters;
 import org.cloudfoundry.credhub.requests.CertificateRegenerateRequest;
 import org.cloudfoundry.credhub.requests.CreateVersionRequest;
 import org.cloudfoundry.credhub.requests.UpdateTransitionalVersionRequest;
@@ -721,7 +724,7 @@ public class DefaultCertificatesHandlerTest {
     when(certificateService.save(eq(certificate), any(), any()))
       .thenReturn(mock(CertificateCredentialVersion.class));
 
-    final CertificateRegenerateRequest regenerateRequest = new CertificateRegenerateRequest(true, null);
+    final CertificateRegenerateRequest regenerateRequest = new CertificateRegenerateRequest(true, false, null);
 
     subjectWithAcls.handleRegenerate(UUID_STRING, regenerateRequest);
 
@@ -762,7 +765,7 @@ public class DefaultCertificatesHandlerTest {
     when(certificateService.save(eq(certificate), any(), any()))
       .thenReturn(mock(CertificateCredentialVersion.class));
 
-    final CertificateRegenerateRequest regenerateRequest = new CertificateRegenerateRequest(true, null);
+    final CertificateRegenerateRequest regenerateRequest = new CertificateRegenerateRequest(true, false, null);
 
     subjectWithoutAcls.handleRegenerate(UUID_STRING, regenerateRequest);
 
@@ -788,7 +791,7 @@ public class DefaultCertificatesHandlerTest {
     when(certificateService.save(eq(certificate), any(), any()))
       .thenReturn(credentialVersion);
 
-    final CertificateRegenerateRequest regenerateRequest = new CertificateRegenerateRequest(true, null);
+    final CertificateRegenerateRequest regenerateRequest = new CertificateRegenerateRequest(true, false, null);
 
     CredentialView regeneratedCredential = subjectWithoutConcatenateCas.handleRegenerate(UUID_STRING, regenerateRequest);
 
@@ -814,11 +817,47 @@ public class DefaultCertificatesHandlerTest {
     when(certificateService.save(eq(certificate), any(), any()))
       .thenReturn(credentialVersion);
 
-    final CertificateRegenerateRequest regenerateRequest = new CertificateRegenerateRequest(true, null);
+    final CertificateRegenerateRequest regenerateRequest = new CertificateRegenerateRequest(true, false, null);
 
     CredentialView regeneratedCredential = subjectWithConcatenateCas.handleRegenerate(UUID_STRING, regenerateRequest);
 
     assertEquals(((CertificateValueView) regeneratedCredential.getValue()).getCa(), TEST_CA + "\n" + TEST_TRUSTED_CA + "\n");
+  }
+
+  @Test
+  public void handleRegenerate_whenAllowTransitionalParentToSignIsTrue_passesValueToCertificateService() {
+    final CertificateGenerationRequestParameters requestParameters = new CertificateGenerationRequestParameters();
+    final CertificateGenerationParameters parameters = new CertificateGenerationParameters(requestParameters);
+    final CertificateGenerateRequest generateRequest = new CertificateGenerateRequest();
+    generateRequest.setCertificateGenerationParameters(parameters);
+
+    final CertificateCredentialVersion certificate = mock(CertificateCredentialVersion.class);
+    final CertificateCredentialValue newValue = mock(CertificateCredentialValue.class);
+    final CertificateCredentialVersion credentialVersion = mock(CertificateCredentialVersion.class);
+
+    when(certificate.getName()).thenReturn("test");
+    when(credentialVersion.getCa()).thenReturn(TEST_CA);
+    when(credentialVersion.getTrustedCa()).thenReturn(TEST_TRUSTED_CA);
+
+    when(certificateService.findByCredentialUuid(eq(UUID_STRING))).thenReturn(certificate);
+    when(generationRequestGenerator.createGenerateRequest(eq(certificate)))
+            .thenReturn(generateRequest);
+    when(universalCredentialGenerator.generate(eq(generateRequest))).thenReturn(newValue);
+    when(certificateService.save(eq(certificate), any(), any()))
+            .then(
+                    invocation -> {
+                      Object[] args = invocation.getArguments();
+                      CertificateGenerateRequest req = (CertificateGenerateRequest) args[2];
+                      CertificateGenerationParameters params = (CertificateGenerationParameters) req.getGenerationParameters();
+                      assert params != null;
+                      assertEquals(true, params.getAllowTransitionalParentToSign());
+                      return credentialVersion;
+                    }
+            );
+
+    final CertificateRegenerateRequest regenerateRequest = new CertificateRegenerateRequest(true, true, null);
+    subjectWithConcatenateCas.handleRegenerate(UUID_STRING, regenerateRequest);
+
   }
 
   @Test

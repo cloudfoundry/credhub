@@ -47,4 +47,8 @@ class CertificateGenerateRequest : BaseCredentialGenerateRequest() {
     fun setCertificateGenerationParameters(certificateGenerationParameters: CertificateGenerationParameters) {
         this.certificateGenerationParameters = certificateGenerationParameters
     }
+
+    fun setAllowTransitionalParentToSign(allowTransitionalParentToSign: Boolean) {
+        this.certificateGenerationParameters?.allowTransitionalParentToSign = allowTransitionalParentToSign
+    }
 }
