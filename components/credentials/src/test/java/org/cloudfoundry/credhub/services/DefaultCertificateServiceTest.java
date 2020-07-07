@@ -16,6 +16,7 @@ import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
+import org.cloudfoundry.credhub.credential.CredentialValue;
 import org.cloudfoundry.credhub.domain.CertificateCredentialFactory;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
@@ -27,6 +28,7 @@ import org.cloudfoundry.credhub.requests.BaseCredentialGenerateRequest;
 import org.cloudfoundry.credhub.utils.TestConstants;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -757,6 +759,33 @@ public class DefaultCertificateServiceTest {
     subjectWithoutConcatenateCas.updateTransitionalVersion(caUuid, nonTransitionalVersionId);
 
     verify(credentialVersionDataService, Mockito.times(0)).save(newChildCert);
+  }
+
+  @Test
+  public void updateTransitionalVersion__whenLatestChildVersionIsTransitional__doesNotCopyTransitionalStateToNewChildVersion() {
+    when(certificateDataService.findByUuid(caUuid)).thenReturn(credential);
+    when(credentialVersionDataService.findActiveByName(childCert.getCaName()))
+            .thenReturn(Arrays.asList(nonTransitionalCa, transitionalCa));
+    when(certificateVersionDataService.findBothActiveCertAndTransitionalCert("some-ca"))
+            .thenReturn(Arrays.asList(nonTransitionalCa, transitionalCa));
+    when(credentialService.findAllCertificateCredentialsByCaName("some-ca"))
+            .thenReturn(Collections.singletonList("some-cert"));
+    when(credentialVersionDataService.findMostRecent(childCert.getName()))
+            .thenReturn(childCert);
+    when(certificateCredentialFactory.makeNewCredentialVersion(eq(childCert.getCredential()), any()))
+            .thenReturn(newChildCert);
+    when(certificateVersionDataService.findVersion(nonTransitionalVersionId))
+            .thenReturn(nonTransitionalCa);
+    when(childCert.isVersionTransitional()).thenReturn(true);
+
+    ArgumentCaptor<Credential> certCredCaptor = ArgumentCaptor.forClass(Credential.class);
+    ArgumentCaptor<CertificateCredentialValue> credValueCaptor = ArgumentCaptor.forClass(CertificateCredentialValue.class);
+
+    subjectWithConcatenateCas.updateTransitionalVersion(caUuid, null);
+
+    verify(certificateCredentialFactory).makeNewCredentialVersion(certCredCaptor.capture(), credValueCaptor.capture());
+
+    assertThat(credValueCaptor.getValue().getTransitional(), equalTo(false));
   }
 
   @Test

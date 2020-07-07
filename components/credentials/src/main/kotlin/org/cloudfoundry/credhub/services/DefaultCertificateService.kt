@@ -222,7 +222,7 @@ class DefaultCertificateService(
                 credentialVersion?.isCertificateAuthority ?: false,
                 credentialVersion?.isSelfSigned ?: false,
                 credentialVersion?.generated,
-                credentialVersion?.isVersionTransitional ?: false
+                false
             )
 
             val newCredentialVersion = certificateCredentialFactory
