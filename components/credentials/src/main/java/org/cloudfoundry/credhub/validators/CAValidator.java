@@ -11,26 +11,27 @@ import org.cloudfoundry.credhub.utils.CertificateReader;
 
 public class CAValidator implements ConstraintValidator<RequireValidCA, Object> {
 
-  private String[] fields;
-
   @Override
   public void initialize(final RequireValidCA constraintAnnotation) {
-    fields = constraintAnnotation.fields();
   }
 
   @Override
   public boolean isValid(final Object value, final ConstraintValidatorContext context) {
-    for (final String fieldName : fields) {
       try {
-        final Field field = value.getClass().getDeclaredField(fieldName);
-        field.setAccessible(true);
+        final Field certificateField = value.getClass().getDeclaredField("certificate");
+        final Field caField = value.getClass().getDeclaredField("ca");
 
-        if (StringUtils.isEmpty((String) field.get(value))) {
+        certificateField.setAccessible(true);
+        caField.setAccessible(true);
+
+        final String certificate = (String) certificateField.get(value);
+        final String caCertificate = (String) caField.get(value);
+
+        if (StringUtils.isEmpty(caCertificate) || caCertificate.equals(certificate)) {
           return true;
         }
 
-        final String certificate = (String) field.get(value);
-        final CertificateReader reader = new CertificateReader(certificate);
+        final CertificateReader reader = new CertificateReader(caCertificate);
         return reader.isCa();
       } catch (final MalformedCertificateException e) {
         return false;
@@ -38,6 +39,4 @@ public class CAValidator implements ConstraintValidator<RequireValidCA, Object> 
         throw new RuntimeException(e);
       }
     }
-    return true;
-  }
 }

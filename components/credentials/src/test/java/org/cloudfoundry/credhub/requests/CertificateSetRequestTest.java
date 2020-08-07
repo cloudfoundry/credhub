@@ -366,7 +366,7 @@ public class CertificateSetRequestTest {
   }
 
   @Test
-  public void whenCAValueIsNotACertificateAuthority_isInvalid() {
+  public void whenCertificateWasNoSignedByTheCA_isInvalid() {
     final String setJson = JSONObject.toJSONString(
       ImmutableMap.<String, String>builder()
         .put("ca", TEST_CERTIFICATE)
@@ -385,7 +385,7 @@ public class CertificateSetRequestTest {
       CertificateSetRequest.class
     );
 
-    assertThat(violations, hasItem(hasViolationWithMessage(ErrorMessages.INVALID_CA_VALUE)));
+    assertThat(violations, hasItem(hasViolationWithMessage(ErrorMessages.CERTIFICATE_WAS_NOT_SIGNED_BY_CA)));
   }
 
   @Test
