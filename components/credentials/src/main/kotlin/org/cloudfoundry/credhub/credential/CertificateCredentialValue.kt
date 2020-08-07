@@ -23,9 +23,9 @@ import java.util.Objects
 @MutuallyExclusive(message = ErrorMessages.MIXED_CA_NAME_AND_CA, fields = ["ca", "caName"])
 @ValidCertificateLength(message = ErrorMessages.INVALID_CERTIFICATE_LENGTH, fields = ["certificate", "ca"])
 @RequireValidCertificate(message = ErrorMessages.INVALID_CERTIFICATE_VALUE, fields = ["certificate"])
-@RequireCertificateSignedByCA(message = ErrorMessages.CERTIFICATE_WAS_NOT_SIGNED_BY_CA, fields = ["ca"])
+@RequireCertificateSignedByCA(message = ErrorMessages.CERTIFICATE_WAS_NOT_SIGNED_BY_CA, fields = ["certificate","ca"])
 @RequireCertificateMatchesPrivateKey(message = ErrorMessages.MISMATCHED_CERTIFICATE_AND_PRIVATE_KEY, fields = ["certificate", "privateKey"])
-@RequireValidCA(message = ErrorMessages.INVALID_CA_VALUE, fields = ["ca"])
+@RequireValidCA(message = ErrorMessages.INVALID_CA_VALUE, fields = ["certificate","ca"])
 class CertificateCredentialValue : CredentialValue {
 
     @JsonDeserialize(using = EmptyStringToNull::class)
