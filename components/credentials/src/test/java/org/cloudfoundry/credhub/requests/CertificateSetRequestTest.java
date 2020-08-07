@@ -19,10 +19,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.cloudfoundry.credhub.helpers.JsonTestHelper.deserialize;
 import static org.cloudfoundry.credhub.helpers.JsonTestHelper.deserializeAndValidate;
 import static org.cloudfoundry.credhub.helpers.JsonTestHelper.hasViolationWithMessage;
-import static org.cloudfoundry.credhub.utils.TestConstants.PRIVATE_KEY_4096;
-import static org.cloudfoundry.credhub.utils.TestConstants.TEST_CA;
-import static org.cloudfoundry.credhub.utils.TestConstants.TEST_CERTIFICATE;
-import static org.cloudfoundry.credhub.utils.TestConstants.TEST_PRIVATE_KEY;
+import static org.cloudfoundry.credhub.utils.TestConstants.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -389,6 +386,72 @@ public class CertificateSetRequestTest {
     );
 
     assertThat(violations, hasItem(hasViolationWithMessage(ErrorMessages.INVALID_CA_VALUE)));
+  }
+
+  @Test
+  public void whenCAValueIsNotACertificateAuthorityAndDifferentThanCertificate_isInvalid() {
+    final String setJson = JSONObject.toJSONString(
+            ImmutableMap.<String, String>builder()
+                    .put("ca", OTHER_TEST_CERTIFICATE)
+                    .put("certificate", TEST_CERTIFICATE)
+                    .put("private_key", TEST_PRIVATE_KEY)
+                    .build()
+    );
+
+    final String json = "{\n"
+            + "  \"name\": \"/example/certificate\",\n"
+            + "  \"type\": \"certificate\",\n"
+            + "  \"value\": " + setJson
+            + "}";
+    final Set<ConstraintViolation<CertificateSetRequest>> violations = deserializeAndValidate(
+            json,
+            CertificateSetRequest.class
+    );
+
+    assertThat(violations, hasItem(hasViolationWithMessage(ErrorMessages.INVALID_CA_VALUE)));
+  }
+
+  @Test
+  public void whenNoCaCertificateWasProvided_isValid() {
+    final String setJson = JSONObject.toJSONString(
+            ImmutableMap.<String, String>builder()
+                    .put("certificate", TEST_CERTIFICATE)
+                    .put("private_key", TEST_PRIVATE_KEY)
+                    .build()
+    );
+
+    final String json = "{\n"
+            + "  \"name\": \"/example/certificate\",\n"
+            + "  \"type\": \"certificate\",\n"
+            + "  \"value\": " + setJson
+            + "}";
+    final Set<ConstraintViolation<CertificateSetRequest>> violations = deserializeAndValidate(
+            json,
+            CertificateSetRequest.class
+    );
+
+    assertThat(violations.size(), equalTo(0));
+  }
+
+  @Test
+  public void whenNoCaAndNoCertificateWasProvided_isValid() {
+    final String setJson = JSONObject.toJSONString(
+            ImmutableMap.<String, String>builder()
+                    .put("private_key", TEST_PRIVATE_KEY)
+                    .build()
+    );
+
+    final String json = "{\n"
+            + "  \"name\": \"/example/certificate\",\n"
+            + "  \"type\": \"certificate\",\n"
+            + "  \"value\": " + setJson
+            + "}";
+    final Set<ConstraintViolation<CertificateSetRequest>> violations = deserializeAndValidate(
+            json,
+            CertificateSetRequest.class
+    );
+
+    assertThat(violations.size(), equalTo(0));
   }
 
   @Test
