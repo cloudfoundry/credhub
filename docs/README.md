@@ -8,53 +8,11 @@ The API endpoints and associated CLI commands for interactions with CredHub are 
 
 #### In Progress
 
-* **Authorization via resource access control lists**
-
-    The goal of this initiative is to allow access control lists to be provisioned on credentials and namespaces to allow for granular control of access to credentials.
-
-    **Status**: [Phase 1](authorization-phase1.md) in v1.1.0; In Development
-
-* **Enable secure alternative workflow for delivering service credentials via bind request**
-
-    The goal of this initiative is to provide an alternative workflow for Cloud Foundry service brokers to provide credentials to applications. Additional information can be [found here.](secure-service-credentials.md)
-
-    **Status**: MVP in v1.1.0; In Development
-
-* **CredHub client library for Go**
-
-    The goal of this initiative is to provide a supported golang client library for CredHub.
-
-    **Status**: In Development
-
-* **Cloud Foundry credential rotation**
-
-    The goal of this initiative is to enable automated rotation of credentials for components of Cloud Foundry.
-
-    **Status**: Exploration in Progress
-
-***
+TBD
 
 #### Future
 
-* **Provide pluggable encryption provider interface**
-
-    The goal of this initiative is to provide a pluggable interface for encryption providers to allow the creation and maintenance of encryption providers outside of the core codebase.
-
-    **Status**: Planned
-
-* **Cloud Foundry application credential management**
-
-    The goal of this initiative is to provide a credential management solution for applications of Cloud Foundry.
-
-    **Status**: Planned
-
-* **Encryption-as-a-Service**
-
-    The goal of this initiative is to provide endpoints to allow encryption and decryption of arbitrary data.
-
-    **Status**: Planned
-
-***
+TBD
 
 #### Completed
 
@@ -125,4 +83,3 @@ The API endpoints and associated CLI commands for interactions with CredHub are 
     The goal of this initiative is to allow users of [BBR](https://github.com/cloudfoundry-incubator/bosh-backup-and-restore) to backup and restore the CredHub database using the BBR utility. Additional information can be [found here.](https://github.com/pivotal-cf/credhub-release/blob/master/docs/backup-restore-recommendations.md)
 
     **Status**: Released in v1.3.0
-
