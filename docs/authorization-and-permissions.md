@@ -15,12 +15,12 @@ Ability to perform an operation will be determined based on the identity of the 
 ACLs are expressed as permissions, so if a requester does not have an explicit permission, they will be denied access. 
 For example, if user `dan` requests to read credential `password`, they would be permitted to read if the `password` ACL contains an entry for `actor: dan; operation: read`.
 
-Permissions can be defined for credential paths as well as on explicit credential names. 
+Permissions can be defined for credential paths (in the format of `/some-path/*`) as well as on explicit credential names. 
 Permissions are additive — if any permission exists authorizing a user to take an action, then the action will be permitted.
 
 For example, if: 
 - `/foo/password` ACL contains an entry for `actor: dan; operation: read` 
-- `/foo` ACL contains an entry for `actor: dan; operation: write`
+- `/foo/*` ACL contains an entry for `actor: dan; operation: write`
 
 When user `dan` requests to write credential `/foo/password`, they would be permitted.
 See [CredHub API Docs](https://credhub-api.cfapps.io) for more information on how to manage CredHub credential permissions.
@@ -95,9 +95,9 @@ The folder or path of a credential is not contemplated in this phase. This means
 Permissions can be managed in phase 1 via [requests to the API.][1] New access can be set on credentials [as they are created][2] or [after the fact][3]. Permission modification/deletion is required per ACL entry, without inheritance or the ability to cascade changes.
 For example, if: 
 - `/foo/password` ACL contains an entry for `actor: dan; operation: read` 
-- `/foo` ACL contains an entry for `actor: dan; operation: read`
+- `/foo/*` ACL contains an entry for `actor: dan; operation: read`
 
-After an admin user deletes the second ACL entry (`path: /foo; actor: dan; operation: read`), the first entry would not be automatically deleted in a cascading manner.
+After an admin user deletes the second ACL entry (`path: /foo/*; actor: dan; operation: read`), the first entry would not be automatically deleted in a cascading manner.
 When user `dan` requests to read credential `/foo/password`, they would still be permitted per the first ACL entry.
 
 [1]:https://credhub-api.cfapps.io/#permissions
