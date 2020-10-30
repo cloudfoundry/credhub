@@ -122,3 +122,7 @@ Access control to enable the above features can be enabled by deploying CredHub 
 
 [4]:https://github.com/pivotal-cf/credhub-release/blob/1.2.0/jobs/credhub/spec#L140-L142
 
+Permissions can be pre-configured with the [manifest](https://github.com/pivotal/credhub-release/blob/main/jobs/credhub/spec) under property `credhub.authorization.permissions`.
+Note that redeploying CredHub after modifying this property does not clean up or modify any previously created permissions. 
+For example, removing a permission entry from this property and redeploying CredHub would not result in the removal of this permission entry from CredHub's database. 
+After creating a permission, you must use CredHub API or CLI to deliberately delete the permission.  
