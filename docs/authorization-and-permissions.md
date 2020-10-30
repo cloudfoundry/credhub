@@ -1,24 +1,29 @@
-# Authorization Phase 1 - Secure Service Credentials
+# Authorization & Permissions
 
 ### Description
 
-Authorization is a large and complex body of work. To reduce risk and gain early feedback, we will implement authorization in CredHub in a series of phases. At the end of each phase, we will validate that the solution meets expectations and solves a real problem. During the phased implementation, enforcement of ACLs will be optional to allow users to continue with the existing approach if that is preferred.
-
-The target use-case for phase 1 of CredHub authorization is in controlling access to service broker-provisioned app credentials. This workflow involves a service broker writing credentials to CredHub during a bind request, then passing back the credential name to the application for their retrieval from CredHub. This phase must provide restrictions on the ability to read and change credentials based on users' [authenticated identities.](authentication-identities.md) For example, if SB1 writes a credential for app1, then SB2 and app2 cannot access the credential. More information on this use case is [described here.](secure-service-credentials.md)
-
-### Motivation
-
+The main use-case for CredHub authorization is in controlling access to service broker-provisioned app credentials. This workflow involves a service broker (SB) writing credentials to CredHub during a bind request, then passing back the credential name to the application for their retrieval from CredHub. CredHub's authorization model provides restrictions on the ability to read and change credentials based on users' [authenticated identities.](authentication-identities.md) For example, if SB1 writes a credential for app1, then SB2 and app2 cannot access the credential. More information on this use case is [described here.](secure-service-credentials.md)
 [See here](secure-service-credentials.md#motivation) for motivations for the secure service credential delivery workflow.
 
 ### Implementation
-
-Phase 1 will implement the baseline structure for access control decision making, authenticated identities, logging and minimal convenience functionality to enable the above use case. This use case assumes access controls are set programatically and not exposed to end users. For this reason, the functionality delivered at the end of this phase may not be suitable for use cases that require manual ACL management.
 
 The components of functionality are detailed below.
 
 #### Access control based on credentials ACLs
 
-Ability to perform an operation will be determined based on the identity of the requester, the operation and the ACL of the resource. ACLs are expressed as allowances, so if a requester does not have an explicit allowance, they will be denied access. For example, if user 'dan' requests to read credential 'password', they would be allowed to read if the 'password' ACL contains an entry for 'actor: dan; operation: read'.
+Ability to perform an operation will be determined based on the identity of the requester, the operation and the ACL of the resource. 
+ACLs are expressed as permissions, so if a requester does not have an explicit permission, they will be denied access. 
+For example, if user `dan` requests to read credential `password`, they would be permitted to read if the `password` ACL contains an entry for `actor: dan; operation: read`.
+
+Permissions can be defined for credential paths as well as on explicit credential names. 
+Permissions are additive — if any permission exists authorizing a user to take an action, then the action will be permitted.
+
+For example, if: 
+- `/foo/password` ACL contains an entry for `actor: dan; operation: read` 
+- `/foo` ACL contains an entry for `actor: dan; operation: write`
+
+When user `dan` requests to write credential `/foo/password`, they would be permitted.
+See [CredHub API Docs](https://credhub-api.cfapps.io) for more information on how to manage CredHub credential permissions.
 
 ##### Supported Resources
 
@@ -87,7 +92,13 @@ The folder or path of a credential is not contemplated in this phase. This means
 
 #### Manual ACL management
 
-Permissions can be managed in phase 1 via [requests to the API.][1] New access can be set on credentials [as they are created][2] or [after the fact][3]. Permission modification is required per credential, without inheritance or the ability to cascade changes.
+Permissions can be managed in phase 1 via [requests to the API.][1] New access can be set on credentials [as they are created][2] or [after the fact][3]. Permission modification/deletion is required per ACL entry, without inheritance or the ability to cascade changes.
+For example, if: 
+- `/foo/password` ACL contains an entry for `actor: dan; operation: read` 
+- `/foo` ACL contains an entry for `actor: dan; operation: read`
+
+After an admin user deletes the second ACL entry (`path: /foo; actor: dan; operation: read`), the first entry would not be automatically deleted in a cascading manner.
+When user `dan` requests to read credential `/foo/password`, they would still be permitted per the first ACL entry.
 
 [1]:https://credhub-api.cfapps.io/#permissions
 [2]:https://credhub-api.cfapps.io/#type-value19
@@ -107,7 +118,7 @@ Credentials that exist prior to the ACL feature work (before v1.1.0), and theref
 
 ### Configuration
 
-Access control to enable the above features can be enabled by deploying CredHub v1.1.0+ with the [manifest property][4] `authorization.acls.enabled` set to `true`.
+Access control to enable the above features can be enabled by deploying CredHub v1.1.0+ with the [manifest property][4] `authorization.acls.enabled` set to `true` (which is the default in the latest CredHub version).
 
 [4]:https://github.com/pivotal-cf/credhub-release/blob/1.2.0/jobs/credhub/spec#L140-L142
 

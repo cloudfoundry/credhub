@@ -60,9 +60,9 @@ TBD
 
     **Status**: Released in v1.1.0
 
-* **Authorization phase 1 - Secure Service Credentials**
+* **Authorization - Secure Service Credentials**
 
-    The goal of this initiative is to enable authorization via ACLs to enable the secure service credential workflow. Additional information can be [found here.](authorization-phase1.md)
+    The goal of this initiative is to enable authorization via ACLs to enable the secure service credential workflow. Additional information can be [found here.](authorization-and-permissions.md)
 
     **Status**: Released in v1.1.0
 
