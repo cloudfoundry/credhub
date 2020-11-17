@@ -9,7 +9,7 @@ The main use-case for CredHub authorization is in controlling access to service 
 
 The components of functionality are detailed below.
 
-#### Access control based on credentials ACLs
+#### Access control based on credentials Access Control List (ACLs)
 
 Ability to perform an operation will be determined based on the identity of the requester, the operation and the ACL of the resource. 
 ACLs are expressed as permissions, so if a requester does not have an explicit permission, they will be denied access. 
@@ -104,7 +104,7 @@ When user `dan` requests to read credential `/foo/password`, they would still be
 [2]:https://credhub-api.cfapps.io/#type-value19
 [3]:https://credhub-api.cfapps.io/#add-permissions
 
-#### Logging for all ACE and ACL operations
+#### Logging for all Access Control Entry (ACE) and ACL operations
 
 All operations to get, modify or delete access control lists will be logged in the operation audit logs and CEF security events log file.
 
