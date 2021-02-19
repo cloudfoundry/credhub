@@ -16,7 +16,7 @@
         rspObject.map((version) => {
           const dropdownElement = document.createElement('option');
           dropdownElement.text = 'Version: ' + version;
-          dropdownElement.value = `../../version/${version}`;
+          dropdownElement.value = `../../version/${version}/`;
           dropdownElement.selected = (version === currentVersion) ;
           versionDropdown.appendChild(dropdownElement);
         });
