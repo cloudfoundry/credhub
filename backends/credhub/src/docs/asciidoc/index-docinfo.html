@@ -1,6 +1,6 @@
 <script>
   document.addEventListener("DOMContentLoaded", function () {
-    const currentVersion = window.location.pathname.split('/')[2];
+    const currentVersion = window.location.pathname.split('/')[4];
 
     const versionDropdown = document.createElement("div");
     versionDropdown.innerHTML = "<select id='version-dropdown' class='version-dropdown' onChange='window.location.href=this.value' />\n"
