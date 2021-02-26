@@ -153,7 +153,7 @@ If a service broker has stored credentials in CredHub and returned a CredHub ref
 }
 ```
 
-To be able to connect to the service, the application needs to exchange the CredHub reference for the raw credentials. This can either be done by making a request for each referenced credential or by using the CredHub [interpolation API.](https://credhub-api.cfapps.io/#interpolate-endpoint) The entire VCAP_SERVICES environment variable is passed to the API. CredHub responds with the entire VCAP_SERVICES structure, with any credhub-ref fields in the credentials replaced with the raw credentials stored by the service broker.
+To be able to connect to the service, the application needs to exchange the CredHub reference for the raw credentials. This can either be done by making a request for each referenced credential or by using the CredHub [interpolation API.](https://docs.cloudfoundry.org/api/credhub/version/main/#_interpolation_endpoint) The entire VCAP_SERVICES environment variable is passed to the API. CredHub responds with the entire VCAP_SERVICES structure, with any credhub-ref fields in the credentials replaced with the raw credentials stored by the service broker.
 
 After the bind workflow has completed, the app is able to access the credential values on-demand via a request to CredHub. This process may be automated using client libraries, such as [Spring CredHub.](./spring-java-credhub-integration.md)
 

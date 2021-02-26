@@ -23,7 +23,7 @@ For example, if:
 - `/foo/*` ACL contains an entry for `actor: dan; operation: write`
 
 When user `dan` requests to write credential `/foo/password`, they would be permitted.
-See [CredHub API Docs](https://credhub-api.cfapps.io) for more information on how to manage CredHub credential permissions.
+See [CredHub API Docs](https://docs.cloudfoundry.org/api/credhub/) for more information on how to manage CredHub credential permissions.
 
 ##### Supported Resources
 
@@ -92,7 +92,7 @@ The folder or path of a credential is not contemplated in this phase. This means
 
 #### Manual ACL management
 
-Permissions can be managed in phase 1 via [requests to the API.][1] New access can be set on credentials [as they are created][2] or [after the fact][3]. Permission modification/deletion is required per ACL entry, without inheritance or the ability to cascade changes.
+Permissions can be managed in phase 1 via [requests to the API.][1] Permissions can be [updated][3]. Permission modification/deletion is required per ACL entry, without inheritance or the ability to cascade changes.
 For example, if: 
 - `/foo/password` ACL contains an entry for `actor: dan; operation: read` 
 - `/foo/*` ACL contains an entry for `actor: dan; operation: read`
@@ -100,9 +100,8 @@ For example, if:
 After an admin user deletes the second ACL entry (`path: /foo/*; actor: dan; operation: read`), the first entry would not be automatically deleted in a cascading manner.
 When user `dan` requests to read credential `/foo/password`, they would still be permitted per the first ACL entry.
 
-[1]:https://credhub-api.cfapps.io/#permissions
-[2]:https://credhub-api.cfapps.io/#type-value19
-[3]:https://credhub-api.cfapps.io/#add-permissions
+[1]:https://docs.cloudfoundry.org/api/credhub/version/main/#_create_a_v2_permission
+[2]:https://docs.cloudfoundry.org/api/credhub/version/main/#_update_a_v2_permission
 
 #### Logging for all Access Control Entry (ACE) and ACL operations
 

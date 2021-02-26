@@ -5,7 +5,7 @@
 CredHub manages credentials like passwords, certificates, certificate authorities, ssh keys, rsa keys and arbitrary values (strings and JSON blobs). CredHub provides a CLI and API to get, set, generate and securely store such credentials.
 
 * [Documentation](docs/)
-* [CredHub API Docs](https://credhub-api.cfapps.io/)
+* [CredHub API Docs](https://docs.cloudfoundry.org/api/credhub/)
 * [CredHub Tracker](https://www.pivotaltracker.com/n/projects/1977341)
 
 CredHub is intended to be deployed by [BOSH](https://bosh.io) using the [credhub-release](https://github.com/pivotal/credhub-release) BOSH release. This repository is for development and is **not intended to be directly deployable**.

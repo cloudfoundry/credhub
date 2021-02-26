@@ -2,7 +2,7 @@
 
 This repository contains documentation pertinent to general application operation and features of CredHub. Additional documentation related to configuration and deployment via BOSH can be found in the [release repo.](https://github.com/pivotal-cf/credhub-release/tree/master/docs)
 
-The API endpoints and associated CLI commands for interactions with CredHub are documented on the [CredHub API and CLI reference site.](https://credhub-api.cfapps.io)
+The API endpoints and associated CLI commands for interactions with CredHub are documented on the [CredHub API and CLI reference site.](https://docs.cloudfoundry.org/api/credhub/)
 
 ## Product Initiatives
 
