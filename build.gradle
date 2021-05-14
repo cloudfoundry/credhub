@@ -9,7 +9,7 @@ buildscript {
         bcpkixFipsVersion = '1.0.2'
         bcFipsVersion = '1.0.1'
         commonsCodecVersion = '1.14' // remove this after deleting (now deprecated) spring-security-oauth2
-        flywayVersion = '5.2.4' // pinning to v5 because upgrading to v6+ directly breaks the upgrade of (v4->v5->v6) unless we can work around [this breaking change](https://stackoverflow.com/questions/49063385/flyway-5-0-7-warning-about-using-schema-version-table).
+        flywayVersion = '7.9.0' // pinning to v5 because upgrading to v6+ directly breaks the upgrade of (v4->v5->v6) unless we can work around [this breaking change](https://stackoverflow.com/questions/49063385/flyway-5-0-7-warning-about-using-schema-version-table).
         guavaVersion = '29.0-jre'
         h2Version = '1.4.199'
         jsonPathVersion = '2.4.0'
