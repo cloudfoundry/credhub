@@ -130,6 +130,14 @@ In order to run CredHub against a UAA running on your local machine, do the foll
 1. Start a UAA with Docker: `docker run -d --mount type=bind,source=$PWD/config/uaa.yml,target=/uaa/uaa.yml -p 127.0.0.1:8080:8080 pcfseceng/uaa:latest`
 1. Start CredHub server pointing at the local UAA: `./scripts/start_server.sh -Dspring.profiles.active=dev,dev-h2,dev-local-uaa`
 
+For testing purposes, the local UAA bootstraps a user (username: `credhub`/ password: `password`) and a client (client ID:`credhub_client` / client secret:`secret`), with which you can access the local CredHub. For example:
+```
+# log into CredHub CLI using a UAA client; this client comes with permissions to access all CredHub credential paths (see `application-dev.yml` manifest)
+credhub login -s https://localhost:9000 --client-name=credhub_client --client-secret=secret --skip-tls-validation
+# log into CredHub CLI using a UAA user; this user does not come with permissions to CredHub credential paths (see `application-dev.yml` manifest)
+credhub login -s https://localhost:9000 -u credhub -p password --skip-tls-validation
+```
+
 #### Starting the server with different databases
 
 ##### H2 (the default)
@@ -193,7 +201,7 @@ During development, it is helpful to set up different IntelliJ testing profiles 
 After having pulled the [credhub-cli](https://github.com/cloudfoundry-incubator/credhub-cli) repo, run `make`, and then run the following command to target your locally running CredHub instance:
 
 ```shell
-build/credhub login -s https://localhost:9000 -u credhub -p password --skip-tls-validation
+build/credhub login -s https://localhost:9000 --client-name=credhub_client --client-secret=secret --skip-tls-validation
 ```
 
 #### Running the Acceptance Tests
