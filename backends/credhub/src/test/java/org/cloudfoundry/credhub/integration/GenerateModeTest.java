@@ -221,6 +221,98 @@ public class GenerateModeTest {
     }
 
     @Test
+    public void generatingACredential_whenConvergeIsSet_andTheCredentialParamsAreDifferentFromTheExistingCredential_updatesTheCredential() throws Exception {
+        MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
+                .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+                .accept(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON_UTF8)
+                .content("{" +
+                        "\"type\":\"password\"," +
+                        "\"name\":\"" + CREDENTIAL_NAME + "\"," +
+                        "\"parameters\":{" +
+                        "\"length\":30" +
+                        "}" +
+                        "}");
+
+        DocumentContext response = JsonPath.parse(mockMvc.perform(postRequest).andExpect(status().isOk())
+                .andDo(print())
+                .andReturn()
+                .getResponse()
+                .getContentAsString());
+
+        final String firstVersionId = response.read("$.id").toString();
+
+        postRequest = post("/api/v1/data")
+                .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+                .accept(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON_UTF8)
+                .content("{" +
+                        "\"type\":\"password\"," +
+                        "\"name\":\"" + CREDENTIAL_NAME + "\"," +
+                        "\"mode\": \"converge\"," +
+                        "\"parameters\":{" +
+                        "\"length\":31" +
+                        "}" +
+                        "}");
+
+        response = JsonPath.parse(mockMvc.perform(postRequest).andExpect(status().isOk())
+                .andDo(print())
+                .andReturn()
+                .getResponse()
+                .getContentAsString());
+
+        final String secondVersionId = response.read("$.id").toString();
+
+        assertThat(secondVersionId, is(not(equalTo(firstVersionId))));
+    }
+
+    @Test
+    public void generatingACredential_whenConvergeIsSet_andTheCredentialParamsAreTheSameAsTheExistingCredential_doesNotUpdatesTheCredential() throws Exception {
+        MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
+                .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+                .accept(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON_UTF8)
+                .content("{" +
+                        "\"type\":\"password\"," +
+                        "\"name\":\"" + CREDENTIAL_NAME + "\"," +
+                        "\"parameters\":{" +
+                        "\"length\":30" +
+                        "}" +
+                        "}");
+
+        DocumentContext response = JsonPath.parse(mockMvc.perform(postRequest).andExpect(status().isOk())
+                .andDo(print())
+                .andReturn()
+                .getResponse()
+                .getContentAsString());
+
+        final String firstVersionId = response.read("$.id").toString();
+
+        postRequest = post("/api/v1/data")
+                .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+                .accept(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON_UTF8)
+                .content("{" +
+                        "\"type\":\"password\"," +
+                        "\"name\":\"" + CREDENTIAL_NAME + "\"," +
+                        "\"mode\": \"converge\"," +
+                        "\"parameters\":{" +
+                        "\"length\":30" +
+                        "}" +
+                        "}");
+
+        response = JsonPath.parse(mockMvc.perform(postRequest).andExpect(status().isOk())
+                .andDo(print())
+                .andReturn()
+                .getResponse()
+                .getContentAsString());
+
+        final String secondVersionId = response.read("$.id").toString();
+
+        assertThat(secondVersionId, is(equalTo(firstVersionId)));
+    }
+
+    @Test
     public void generatingACredential_whenBothModeAndOverwriteAreSet_returnsA400() throws Exception {
         final MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
                 .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
