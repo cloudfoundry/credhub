@@ -38,7 +38,7 @@ import javax.security.auth.x500.X500Principal
 class CertificateGenerationParameters : GenerationParameters {
 
     val keyLength: Int
-    val duration: Int
+    var duration: Int
     val isSelfSigned: Boolean
     val caName: String?
     val isCa: Boolean

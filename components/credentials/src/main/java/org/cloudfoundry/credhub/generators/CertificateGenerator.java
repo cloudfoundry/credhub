@@ -5,6 +5,7 @@ import java.security.cert.X509Certificate;
 import java.time.Instant;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import org.cloudfoundry.credhub.ErrorMessages;
@@ -23,17 +24,23 @@ public class CertificateGenerator implements CredentialGenerator<CertificateCred
   private final RsaKeyPairGenerator keyGenerator;
   private final SignedCertificateGenerator signedCertificateGenerator;
   private final CertificateAuthorityService certificateAuthorityService;
+  private final Integer caMinimumDuration;
+  private final Integer leafMinimumDuration;
 
 
   @Autowired
   public CertificateGenerator(
     final RsaKeyPairGenerator keyGenerator,
     final SignedCertificateGenerator signedCertificateGenerator,
-    final CertificateAuthorityService certificateAuthorityService) {
+    final CertificateAuthorityService certificateAuthorityService,
+    @Value("${certificates.ca_minimum_duration:#{null}}") final Integer caMinimumDuration,
+    @Value("${certificates.leaf_minimum_duration:#{null}}") final Integer leafMinimumDuration) {
     super();
     this.keyGenerator = keyGenerator;
     this.signedCertificateGenerator = signedCertificateGenerator;
     this.certificateAuthorityService = certificateAuthorityService;
+    this.caMinimumDuration = caMinimumDuration;
+    this.leafMinimumDuration = leafMinimumDuration;
   }
 
   @Override
@@ -46,6 +53,10 @@ public class CertificateGenerator implements CredentialGenerator<CertificateCred
       privatePem = CertificateFormatter.pemOf(keyPair.getPrivate());
     } catch (final Exception e) {
       throw new RuntimeException(e);
+    }
+
+    if(this.caMinimumDuration != null) {
+      params.setDuration(Math.max(params.getDuration(), this.caMinimumDuration));
     }
 
     if (params.isSelfSigned()) {
