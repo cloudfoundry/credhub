@@ -334,6 +334,55 @@ public class GenerateModeTest {
     }
 
     @Test
+    public void generatingACredential_whenConvergeIsSet_andTheCertificateParamsAreTheSameAsTheExistingCredentialExceptDuration_doesNotUpdatesTheCredential() throws Exception {
+        MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
+                .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+                .accept(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON_UTF8)
+                .content("{" +
+                        "\"type\":\"certificate\"," +
+                        "\"name\":\"" + CREDENTIAL_NAME + "\"," +
+                        "\"parameters\":{" +
+                        "\"common_name\":\"some-certificate\"," +
+                        "\"is_ca\":true," +
+                        "\"duration\":365" +
+                        "}" +
+                        "}");
+
+        DocumentContext response = JsonPath.parse(mockMvc.perform(postRequest).andExpect(status().isOk())
+                .andDo(print())
+                .andReturn()
+                .getResponse()
+                .getContentAsString());
+
+        final String firstVersionId = response.read("$.id").toString();
+
+        postRequest = post("/api/v1/data")
+                .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+                .accept(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON_UTF8)
+                .content("{" +
+                        "\"type\":\"certificate\"," +
+                        "\"name\":\"" + CREDENTIAL_NAME + "\"," +
+                        "\"parameters\":{" +
+                        "\"common_name\":\"some-certificate\"," +
+                        "\"is_ca\":true," +
+                        "\"duration\":730" +
+                        "}" +
+                        "}");
+
+        response = JsonPath.parse(mockMvc.perform(postRequest).andExpect(status().isOk())
+                .andDo(print())
+                .andReturn()
+                .getResponse()
+                .getContentAsString());
+
+        final String secondVersionId = response.read("$.id").toString();
+
+        assertThat(secondVersionId, is(equalTo(firstVersionId)));
+    }
+
+    @Test
     public void generatingACredential_whenModeIsSetAsParameter_returnsA400() throws Exception {
         final MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
                 .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)

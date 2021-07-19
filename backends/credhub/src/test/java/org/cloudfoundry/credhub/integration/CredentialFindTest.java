@@ -378,6 +378,7 @@ public class CredentialFindTest {
             .content("{\n"
                     + "  \"name\" : \"sample-certificate\",\n"
                     + "  \"type\" : \"certificate\",\n"
+                    + "  \"mode\" : \"overwrite\",\n"
                     + "  \"parameters\" : {\n"
                     + "    \"common_name\" : \"some-common-name\",\n"
                     + "    \"is_ca\" : true,\n"

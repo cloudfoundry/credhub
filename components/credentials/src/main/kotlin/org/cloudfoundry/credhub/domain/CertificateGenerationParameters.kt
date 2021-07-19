@@ -90,15 +90,8 @@ class CertificateGenerationParameters : GenerationParameters {
         }
 
         val that = other as CertificateGenerationParameters?
-        return keyLength == that!!.keyLength &&
-            duration == that.duration &&
-            isSelfSigned == that.isSelfSigned &&
-            isCa == that.isCa &&
-            (caName == that.caName || caName == null || that.caName == null) &&
-            X500Name(that.x500Principal!!.name) == X500Name(this.x500Principal!!.name) &&
-            alternativeNames == that.alternativeNames &&
-            extendedKeyUsage == that.extendedKeyUsage &&
-            keyUsage == that.keyUsage
+        return duration == that!!.duration &&
+            equalsIgnoringDuration(that);
     }
 
     fun equalsIgnoringDuration(other: CertificateGenerationParameters?): Boolean {
