@@ -374,7 +374,7 @@ public class CertificateGeneratorTest {
   public void whenSelfSignIsTrueAndNotCA_itGeneratesAValidSelfSignedCertificateUsingTheLeafMinimumDuration() throws Exception {
     final X509Certificate certificate = new JcaX509CertificateConverter().setProvider(BouncyCastleFipsProvider.PROVIDER_NAME)
             .getCertificate(generateX509SelfSignedCert());
-    final CertificateGenerationParameters expectedParameters = setupMinimumDuration(null, 1460, 365, false, true, 1430);
+    final CertificateGenerationParameters expectedParameters = setupMinimumDuration(null, 1460, 365, false, true, 1460);
     when(keyGenerator.generateKeyPair(anyInt())).thenReturn(rootCaKeyPair);
     when(signedCertificateGenerator.getSelfSigned(rootCaKeyPair, expectedParameters))
             .thenReturn(certificate);
@@ -386,7 +386,7 @@ public class CertificateGeneratorTest {
 
   @Test
   public void whenSelfSignIsFalseAndNotCA_itGeneratesAValidCertificateUsingTheLeafMinimumDuration() throws Exception {
-    final CertificateGenerationParameters expectedParameters = setupMinimumDuration(null, 1460, 365, false, false, 1430);
+    final CertificateGenerationParameters expectedParameters = setupMinimumDuration(null, 1460, 365, false, false, 1460);
     final KeyPair childCertificateKeyPair = setupKeyPair();
     setupMocksForRootCA(childCertificateKeyPair, expectedParameters);
 

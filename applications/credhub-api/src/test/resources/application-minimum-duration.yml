@@ -1,0 +1,3 @@
+certificates:
+  ca_minimum_duration: 1825
+  leaf_minimum_duration: 1460
