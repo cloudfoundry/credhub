@@ -93,5 +93,50 @@ public class CertificateGenerationParametersTest {
     assertThat(parameters1.equals(parameters2), equalTo(false));
   }
 
+  @Test
+  public void equals_returnsFalseWhenDurationsAreDifferent() throws Exception {
+    final CertificateGenerationRequestParameters requestParameters1 = new CertificateGenerationRequestParameters();
+    requestParameters1.setDuration(365);
+    requestParameters1.setCommonName("a-common-name");
+    final CertificateGenerationRequestParameters requestParameters2 = new CertificateGenerationRequestParameters();
+    requestParameters2.setDuration(730);
+    requestParameters2.setCommonName("a-common-name");
+
+    final CertificateGenerationParameters parameters1 = new CertificateGenerationParameters(requestParameters1);
+    final CertificateGenerationParameters parameters2 = new CertificateGenerationParameters(requestParameters2);
+
+    assertThat(parameters1.equals(parameters2), equalTo(false));
+  }
+
+  @Test
+  public void equalsIgnoringDuration_returnsTrueWhenDurationsAreDifferent() throws Exception {
+    final CertificateGenerationRequestParameters requestParameters1 = new CertificateGenerationRequestParameters();
+    requestParameters1.setDuration(365);
+    requestParameters1.setCommonName("a-common-name");
+    final CertificateGenerationRequestParameters requestParameters2 = new CertificateGenerationRequestParameters();
+    requestParameters2.setDuration(730);
+    requestParameters2.setCommonName("a-common-name");
+
+    final CertificateGenerationParameters parameters1 = new CertificateGenerationParameters(requestParameters1);
+    final CertificateGenerationParameters parameters2 = new CertificateGenerationParameters(requestParameters2);
+
+    assertThat(parameters1.equalsIgnoringDuration(parameters2), equalTo(true));
+  }
+
+  @Test
+  public void equalsIgnoringDuration_returnsFalseWhenCommonNamesAreDifferent() throws Exception {
+    final CertificateGenerationRequestParameters requestParameters1 = new CertificateGenerationRequestParameters();
+    requestParameters1.setDuration(730);
+    requestParameters1.setCommonName("a-common-name");
+    final CertificateGenerationRequestParameters requestParameters2 = new CertificateGenerationRequestParameters();
+    requestParameters2.setDuration(730);
+    requestParameters2.setCommonName("a-common-name2");
+
+    final CertificateGenerationParameters parameters1 = new CertificateGenerationParameters(requestParameters1);
+    final CertificateGenerationParameters parameters2 = new CertificateGenerationParameters(requestParameters2);
+
+    assertThat(parameters1.equalsIgnoringDuration(parameters2), equalTo(false));
+  }
+
 //ParameterizedValidationExceptionTest.java
 }

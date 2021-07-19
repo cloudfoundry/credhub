@@ -101,6 +101,17 @@ class CertificateGenerationParameters : GenerationParameters {
             keyUsage == that.keyUsage
     }
 
+    fun equalsIgnoringDuration(other: CertificateGenerationParameters?): Boolean {
+        return keyLength == other!!.keyLength &&
+            isSelfSigned == other.isSelfSigned &&
+            isCa == other.isCa &&
+            (caName == other.caName || caName == null || other.caName == null) &&
+            X500Name(other.x500Principal!!.name) == X500Name(this.x500Principal!!.name) &&
+            alternativeNames == other.alternativeNames &&
+            extendedKeyUsage == other.extendedKeyUsage &&
+            keyUsage == other.keyUsage
+    }
+
     override fun hashCode(): Int {
         return Objects.hash(keyLength, duration, isSelfSigned, caName, isCa, x500Principal, alternativeNames, extendedKeyUsage, keyUsage)
     }
