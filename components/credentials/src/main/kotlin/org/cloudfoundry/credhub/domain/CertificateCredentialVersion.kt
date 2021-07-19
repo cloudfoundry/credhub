@@ -110,7 +110,7 @@ class CertificateCredentialVersion(delegate: CertificateCredentialVersionData) :
 
         val parameters = generationParameters as CertificateGenerationParameters?
         val existingGenerationParameters = CertificateGenerationParameters(parsedCertificate, caName)
-        return existingGenerationParameters == parameters
+        return existingGenerationParameters.equalsIgnoringDuration(parameters)
     }
 
     fun setTransitional(transitional: Boolean) {
