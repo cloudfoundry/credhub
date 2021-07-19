@@ -345,22 +345,10 @@ public class CertificateGeneratorTest {
   }
 
   @Test
-  public void whenSelfSignIsTrueAndItIsCA_itGeneratesAValidSelfSignedCertificateUsingTheMinimumDuration() throws Exception {
+  public void whenSelfSignIsTrueAndItIsCA_itGeneratesAValidSelfSignedCertificateUsingTheCaMinimumDuration() throws Exception {
     final X509Certificate certificate = new JcaX509CertificateConverter().setProvider(BouncyCastleFipsProvider.PROVIDER_NAME)
             .getCertificate(generateX509SelfSignedCert());
-    subject = new CertificateGenerator(
-      keyGenerator,
-      signedCertificateGenerator,
-      certificateAuthorityService,
-      3650,
-      null
-    );
-    generationParameters.setCa(true);
-    generationParameters.setSelfSigned(true);
-    generationParameters.setDuration(365);
-    inputParameters = new CertificateGenerationParameters(generationParameters);
-    final CertificateGenerationParameters expectedParameters = new CertificateGenerationParameters(generationParameters);
-    expectedParameters.setDuration(3650);
+    final CertificateGenerationParameters expectedParameters = setupMinimumDuration(3650, null, 365, true, true, 3650);
     when(keyGenerator.generateKeyPair(anyInt())).thenReturn(rootCaKeyPair);
     when(signedCertificateGenerator.getSelfSigned(rootCaKeyPair, expectedParameters))
       .thenReturn(certificate);
@@ -371,23 +359,8 @@ public class CertificateGeneratorTest {
   }
 
   @Test
-  public void whenSelfSignIsFalseAndItIsCA_itGeneratesAValidCertificateUsingTheMinimumDuration() throws Exception {
-    final X509Certificate certificate = new JcaX509CertificateConverter().setProvider(BouncyCastleFipsProvider.PROVIDER_NAME)
-            .getCertificate(generateX509SelfSignedCert());
-    subject = new CertificateGenerator(
-            keyGenerator,
-            signedCertificateGenerator,
-            certificateAuthorityService,
-            3650,
-            null
-    );
-    generationParameters.setCa(true);
-    generationParameters.setSelfSigned(false);
-    generationParameters.setDuration(365);
-    inputParameters = new CertificateGenerationParameters(generationParameters);
-    final CertificateGenerationParameters expectedParameters = new CertificateGenerationParameters(generationParameters);
-    expectedParameters.setDuration(3650);
-
+  public void whenSelfSignIsFalseAndItIsCA_itGeneratesAValidCertificateUsingTheCaMinimumDuration() throws Exception {
+    final CertificateGenerationParameters expectedParameters = setupMinimumDuration(3650, null, 365, true, false, 3650);
     final KeyPair childCertificateKeyPair = setupKeyPair();
     setupMocksForRootCA(childCertificateKeyPair, expectedParameters);
 
@@ -395,6 +368,32 @@ public class CertificateGeneratorTest {
 
     verify(signedCertificateGenerator, times(1)).
       getSignedByIssuer(childCertificateKeyPair, expectedParameters, rootCaX509Certificate, rootCaKeyPair.getPrivate());
+  }
+
+  @Test
+  public void whenSelfSignIsTrueAndNotCA_itGeneratesAValidSelfSignedCertificateUsingTheLeafMinimumDuration() throws Exception {
+    final X509Certificate certificate = new JcaX509CertificateConverter().setProvider(BouncyCastleFipsProvider.PROVIDER_NAME)
+            .getCertificate(generateX509SelfSignedCert());
+    final CertificateGenerationParameters expectedParameters = setupMinimumDuration(null, 1460, 365, false, true, 1430);
+    when(keyGenerator.generateKeyPair(anyInt())).thenReturn(rootCaKeyPair);
+    when(signedCertificateGenerator.getSelfSigned(rootCaKeyPair, expectedParameters))
+            .thenReturn(certificate);
+
+    subject.generateCredential(inputParameters);
+
+    verify(signedCertificateGenerator, times(1)).getSelfSigned(rootCaKeyPair, expectedParameters);
+  }
+
+  @Test
+  public void whenSelfSignIsFalseAndNotCA_itGeneratesAValidCertificateUsingTheLeafMinimumDuration() throws Exception {
+    final CertificateGenerationParameters expectedParameters = setupMinimumDuration(null, 1460, 365, false, false, 1430);
+    final KeyPair childCertificateKeyPair = setupKeyPair();
+    setupMocksForRootCA(childCertificateKeyPair, expectedParameters);
+
+    subject.generateCredential(inputParameters);
+
+    verify(signedCertificateGenerator, times(1)).
+            getSignedByIssuer(childCertificateKeyPair, expectedParameters, rootCaX509Certificate, rootCaKeyPair.getPrivate());
   }
 
   private X509CertificateHolder generateX509SelfSignedCert() throws Exception {
@@ -461,4 +460,27 @@ public class CertificateGeneratorTest {
   private KeyPair setupKeyPair() throws NoSuchProviderException, NoSuchAlgorithmException {
     return fakeKeyPairGenerator.generate();
   }
+
+  private CertificateGenerationParameters setupMinimumDuration(final Integer caMinimumDuration,
+                                                               final Integer leafMinimumDuration,
+                                                               final int defaultDuration,
+                                                               final boolean ca,
+                                                               final boolean selfSigned,
+                                                               final int expectedDuration) {
+    subject = new CertificateGenerator(
+            keyGenerator,
+            signedCertificateGenerator,
+            certificateAuthorityService,
+            caMinimumDuration,
+            leafMinimumDuration
+    );
+    generationParameters.setCa(ca);
+    generationParameters.setSelfSigned(selfSigned);
+    generationParameters.setDuration(defaultDuration);
+    inputParameters = new CertificateGenerationParameters(generationParameters);
+    final CertificateGenerationParameters expectedParameters = new CertificateGenerationParameters(generationParameters);
+    expectedParameters.setDuration(expectedDuration);
+    return expectedParameters;
+  }
+
 }

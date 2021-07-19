@@ -55,8 +55,10 @@ public class CertificateGenerator implements CredentialGenerator<CertificateCred
       throw new RuntimeException(e);
     }
 
-    if(this.caMinimumDuration != null) {
-      params.setDuration(Math.max(params.getDuration(), this.caMinimumDuration));
+    if (params.isCa() && caMinimumDuration != null) {
+      params.setDuration(Math.max(params.getDuration(), caMinimumDuration));
+    } else if (!params.isCa() && leafMinimumDuration != null) {
+      params.setDuration(Math.max(params.getDuration(), leafMinimumDuration));
     }
 
     if (params.isSelfSigned()) {
