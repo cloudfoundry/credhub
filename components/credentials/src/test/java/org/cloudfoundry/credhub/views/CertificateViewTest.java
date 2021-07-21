@@ -101,6 +101,37 @@ public class CertificateViewTest {
   }
 
   @Test
+  public void createsAViewFromEntityIncludesDurationOverriddenWhenSet() throws Exception {
+    entity.setDurationOverridden(true);
+    final CredentialView subject = CertificateView.fromEntity(entity);
+    final String actualJson = serializeToString(subject);
+
+    final Instant expiryDateWithoutMillis = Instant.ofEpochSecond(expiryDate.getEpochSecond());
+    final Instant createdAtWithoutMillis = Instant.ofEpochSecond(createdAt.getEpochSecond());
+
+    final String expectedJson = "{"
+            + "\"type\":\"certificate\","
+            + "\"expiry_date\":\"" + expiryDateWithoutMillis + "\","
+            + "\"transitional\":false,"
+            + "\"certificate_authority\":true,"
+            + "\"self_signed\":false,"
+            + "\"generated\":false,"
+            + "\"version_created_at\":\"" + createdAtWithoutMillis + "\","
+            + "\"id\":\"" + uuid.toString() + "\","
+            + "\"name\":\"" + credentialName + "\","
+            + "\"metadata\":{\"name\":\"test\"},"
+            + "\"duration_overridden\":true,"
+            + "\"value\":{"
+            + "\"ca\":\"" + CertificateStringConstants.SELF_SIGNED_CA_CERT + "\","
+            + "\"certificate\":\"" + CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT + "\","
+            + "\"private_key\":\"" + CertificateStringConstants.PRIVATE_KEY + "\""
+            + "}"
+            + "}";
+
+    JSONAssert.assertEquals(expectedJson, actualJson, true);
+  }
+
+  @Test
   public void setsUpdatedAtTimeOnGeneratedView() {
     final Instant now = Instant.now();
     entity.setVersionCreatedAt(now);

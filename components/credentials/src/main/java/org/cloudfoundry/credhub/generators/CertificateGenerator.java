@@ -48,6 +48,7 @@ public class CertificateGenerator implements CredentialGenerator<CertificateCred
     final CertificateGenerationParameters params = (CertificateGenerationParameters) p;
     final KeyPair keyPair;
     final String privatePem;
+    Boolean durationOverridden = null;
     try {
       keyPair = keyGenerator.generateKeyPair(params.getKeyLength());
       privatePem = CertificateFormatter.pemOf(keyPair.getPrivate());
@@ -57,14 +58,16 @@ public class CertificateGenerator implements CredentialGenerator<CertificateCred
 
     if (params.isCa() && caMinimumDuration != null) {
       params.setDuration(Math.max(params.getDuration(), caMinimumDuration));
+      durationOverridden = true;
     } else if (!params.isCa() && leafMinimumDuration != null) {
       params.setDuration(Math.max(params.getDuration(), leafMinimumDuration));
+      durationOverridden = true;
     }
 
     if (params.isSelfSigned()) {
       try {
         final String cert = CertificateFormatter.pemOf(signedCertificateGenerator.getSelfSigned(keyPair, params));
-        return new CertificateCredentialValue(cert, cert, privatePem, null, params.isCa(), params.isSelfSigned(), true, false);
+        return new CertificateCredentialValue(cert, cert, privatePem, null, null, params.isCa(), params.isSelfSigned(), true, false, durationOverridden);
       } catch (final Exception e) {
         throw new RuntimeException(e);
       }
@@ -102,7 +105,7 @@ public class CertificateGenerator implements CredentialGenerator<CertificateCred
           certificateReader.getCertificate(),
           PrivateKeyReader.getPrivateKey(signingCaPrivateKey)
         );
-        return new CertificateCredentialValue(signingCaCertificate, CertificateFormatter.pemOf(cert), privatePem, caName, trustedCaCertificate, params.isCa(), params.isSelfSigned(), true, false);
+        return new CertificateCredentialValue(signingCaCertificate, CertificateFormatter.pemOf(cert), privatePem, caName, trustedCaCertificate, params.isCa(), params.isSelfSigned(), true, false, durationOverridden);
       } catch (final Exception e) {
         throw new RuntimeException(e);
       }
