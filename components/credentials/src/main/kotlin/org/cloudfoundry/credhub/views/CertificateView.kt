@@ -20,23 +20,14 @@ class CertificateView : CredentialView {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     var generated: Boolean? = null
         private set
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    var durationOverridden: Boolean? = null
 
     internal constructor() : super() /* Jackson */ {}
-    constructor(version: CertificateCredentialVersion) : super(
-        version.versionCreatedAt,
-        version.uuid,
-        version.name,
-        version.getCredentialType(),
-        version.metadata,
-        null
-    ) {
-        this.version = version
-        expiryDate = version.expiryDate
-        certificateAuthority = version.isCertificateAuthority
-        selfSigned = version.isSelfSigned
-        generated = version.generated
-        concatenateCas = false
-    }
+    constructor(version: CertificateCredentialVersion) : this(
+            version,
+            false
+    )
 
     constructor(version: CertificateCredentialVersion, concatenateCas: Boolean) : super(
         version.versionCreatedAt,
@@ -52,6 +43,7 @@ class CertificateView : CredentialView {
         selfSigned = version.isSelfSigned
         generated = version.generated
         this.concatenateCas = concatenateCas
+        durationOverridden = version.durationOverridden
     }
 
     override var value: CredentialValue?

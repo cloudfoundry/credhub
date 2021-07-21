@@ -125,7 +125,11 @@ class DefaultCredentialService(
             request.generationParameters,
             request.metadata
         )
-        return credentialVersionDataService.save(newVersion)
+        val savedVersion = credentialVersionDataService.save(newVersion)
+        if (savedVersion is CertificateCredentialVersion) {
+            savedVersion.durationOverridden = (newVersion as CertificateCredentialVersion).durationOverridden
+        }
+        return savedVersion
     }
 
     private fun shouldWriteNewCredential(

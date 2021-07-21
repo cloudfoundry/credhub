@@ -319,6 +319,8 @@ public class CertificateGeneratorTest {
       equalTo(CertificateFormatter.pemOf(certificate)));
     assertThat(certificateCredential.getCa(), equalTo(CertificateFormatter.pemOf(certificate)));
     verify(signedCertificateGenerator, times(1)).getSelfSigned(rootCaKeyPair, inputParameters);
+    assertThat(certificateCredential.getDurationOverridden(),
+            equalTo(null));
   }
 
   @Test
@@ -353,9 +355,11 @@ public class CertificateGeneratorTest {
     when(signedCertificateGenerator.getSelfSigned(rootCaKeyPair, expectedParameters))
       .thenReturn(certificate);
 
-    subject.generateCredential(inputParameters);
+    final CertificateCredentialValue certificateCA = subject.generateCredential(inputParameters);
 
     verify(signedCertificateGenerator, times(1)).getSelfSigned(rootCaKeyPair, expectedParameters);
+    assertThat(certificateCA.getDurationOverridden(),
+            equalTo(true));
   }
 
   @Test
@@ -364,10 +368,12 @@ public class CertificateGeneratorTest {
     final KeyPair childCertificateKeyPair = setupKeyPair();
     setupMocksForRootCA(childCertificateKeyPair, expectedParameters);
 
-    subject.generateCredential(inputParameters);
+    final CertificateCredentialValue certificateCA = subject.generateCredential(inputParameters);
 
     verify(signedCertificateGenerator, times(1)).
       getSignedByIssuer(childCertificateKeyPair, expectedParameters, rootCaX509Certificate, rootCaKeyPair.getPrivate());
+    assertThat(certificateCA.getDurationOverridden(),
+            equalTo(true));
   }
 
   @Test
@@ -379,9 +385,11 @@ public class CertificateGeneratorTest {
     when(signedCertificateGenerator.getSelfSigned(rootCaKeyPair, expectedParameters))
             .thenReturn(certificate);
 
-    subject.generateCredential(inputParameters);
+    final CertificateCredentialValue certificateLeaf = subject.generateCredential(inputParameters);
 
     verify(signedCertificateGenerator, times(1)).getSelfSigned(rootCaKeyPair, expectedParameters);
+    assertThat(certificateLeaf.getDurationOverridden(),
+            equalTo(true));
   }
 
   @Test
@@ -390,10 +398,12 @@ public class CertificateGeneratorTest {
     final KeyPair childCertificateKeyPair = setupKeyPair();
     setupMocksForRootCA(childCertificateKeyPair, expectedParameters);
 
-    subject.generateCredential(inputParameters);
+    final CertificateCredentialValue certificateLeaf = subject.generateCredential(inputParameters);
 
     verify(signedCertificateGenerator, times(1)).
             getSignedByIssuer(childCertificateKeyPair, expectedParameters, rootCaX509Certificate, rootCaKeyPair.getPrivate());
+    assertThat(certificateLeaf.getDurationOverridden(),
+            equalTo(true));
   }
 
   private X509CertificateHolder generateX509SelfSignedCert() throws Exception {

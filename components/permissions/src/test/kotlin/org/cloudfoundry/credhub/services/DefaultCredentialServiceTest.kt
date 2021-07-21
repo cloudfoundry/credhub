@@ -11,6 +11,7 @@ import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.auth.UserContext
 import org.cloudfoundry.credhub.auth.UserContextHolder
 import org.cloudfoundry.credhub.constants.CredentialType
+import org.cloudfoundry.credhub.credential.CertificateCredentialValue
 import org.cloudfoundry.credhub.credential.CredentialValue
 import org.cloudfoundry.credhub.credential.StringCredentialValue
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
@@ -39,6 +40,7 @@ import org.mockito.Mockito.never
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.MockitoAnnotations.initMocks
+import java.time.Instant
 import java.util.Arrays
 import java.util.UUID
 import java.util.regex.Pattern
@@ -457,6 +459,43 @@ class DefaultCredentialServiceTest {
             allMatches.add(m.group())
         }
         assertThat(allMatches.size).isEqualTo(1)
+    }
+
+    @Test
+    fun save_whenThereIsACertificateOverriddenDurationAndIsSet_ReturnsDurationOverridden() {
+        val generateRequest = mock(BaseCredentialGenerateRequest::class.java)
+        `when`(generateRequest.name).thenReturn(CREDENTIAL_NAME)
+        `when`(generateRequest.type).thenReturn("certificate")
+        `when`(generateRequest.overwrite).thenReturn(true)
+        `when`(generateRequest.isOverwrite).thenReturn(true)
+
+        val certificateCredentialValue = CertificateCredentialValue()
+
+        val certificateCredentialVersion =  CertificateCredentialVersion(CREDENTIAL_NAME)
+        certificateCredentialVersion.durationOverridden = true
+
+        val savedCertificateCredentialVersion = CertificateCredentialVersion(CREDENTIAL_NAME)
+        savedCertificateCredentialVersion.durationOverridden = null
+
+        val originalCredentialVersion = mock(CredentialVersion::class.java)
+        `when`(originalCredentialVersion.matchesGenerationParameters(generateRequest.generationParameters)).thenReturn(false)
+        `when`(
+                credentialFactory.makeNewCredentialVersion(
+                        CredentialType.valueOf("CERTIFICATE"),
+                        CREDENTIAL_NAME,
+                        certificateCredentialValue,
+                        originalCredentialVersion,
+                        generateRequest.generationParameters,
+                        null
+                )
+        ).thenReturn(certificateCredentialVersion)
+        `when`(originalCredentialVersion.getCredentialType()).thenReturn("certificate")
+
+        `when`(credentialVersionDataService.save(certificateCredentialVersion))
+                .thenReturn(savedCertificateCredentialVersion)
+
+        val returnedCertificateCredentialVersion = this.subject.save(originalCredentialVersion, certificateCredentialValue, generateRequest) as CertificateCredentialVersion
+        assertThat(returnedCertificateCredentialVersion.durationOverridden).isEqualTo(true)
     }
 
     companion object {
