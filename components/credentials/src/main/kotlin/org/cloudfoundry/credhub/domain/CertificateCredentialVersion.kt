@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue
 import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData
 import org.cloudfoundry.credhub.requests.GenerationParameters
+import org.cloudfoundry.credhub.services.CredentialVersionDataService
 import org.cloudfoundry.credhub.utils.CertificateReader
 import java.time.Instant
 import java.util.Objects
@@ -11,6 +12,8 @@ import java.util.Objects
 class CertificateCredentialVersion(delegate: CertificateCredentialVersionData) : CredentialVersion(delegate) {
     lateinit var parsedCertificate: CertificateReader
         private set
+
+    var durationOverridden: Boolean? = null
 
     var ca: String?
         get() = (delegate as CertificateCredentialVersionData).ca
@@ -92,6 +95,7 @@ class CertificateCredentialVersion(delegate: CertificateCredentialVersionData) :
         this.trustedCa = certificate.trustedCa
         this.isSelfSigned = certificate.selfSigned
         this.generated = certificate.generated
+        this.durationOverridden = certificate.durationOverridden
     }
 
     override fun getCredentialType(): String {
