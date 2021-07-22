@@ -4,6 +4,8 @@ import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -20,6 +22,8 @@ import org.cloudfoundry.credhub.utils.PrivateKeyReader;
 
 @Component
 public class CertificateGenerator implements CredentialGenerator<CertificateCredentialValue> {
+
+  private static final Logger LOGGER = LogManager.getLogger(CertificateGenerator.class.getName());
 
   private final RsaKeyPairGenerator keyGenerator;
   private final SignedCertificateGenerator signedCertificateGenerator;
@@ -48,6 +52,7 @@ public class CertificateGenerator implements CredentialGenerator<CertificateCred
     final CertificateGenerationParameters params = (CertificateGenerationParameters) p;
     final KeyPair keyPair;
     final String privatePem;
+    final int originalDuration = params.getDuration();
     Boolean durationOverridden = null;
     try {
       keyPair = keyGenerator.generateKeyPair(params.getKeyLength());
@@ -58,10 +63,13 @@ public class CertificateGenerator implements CredentialGenerator<CertificateCred
 
     if (params.isCa() && caMinimumDuration != null) {
       params.setDuration(Math.max(params.getDuration(), caMinimumDuration));
-      durationOverridden = true;
     } else if (!params.isCa() && leafMinimumDuration != null) {
       params.setDuration(Math.max(params.getDuration(), leafMinimumDuration));
+    }
+
+    if (originalDuration != params.getDuration()) {
       durationOverridden = true;
+      LOGGER.info("Certificate duration overridden, original duration: {} - duration used: {}", originalDuration, params.getDuration());
     }
 
     if (params.isSelfSigned()) {

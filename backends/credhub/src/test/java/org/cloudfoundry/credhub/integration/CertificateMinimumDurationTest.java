@@ -1,7 +1,6 @@
 package org.cloudfoundry.credhub.integration;
 
-import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.*;
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.util.CurrentTimeProvider;
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
@@ -26,8 +25,7 @@ import java.util.function.Consumer;
 
 import static org.cloudfoundry.credhub.TestHelper.mockOutCurrentTimeProvider;
 import static org.cloudfoundry.credhub.utils.AuthConstants.ALL_PERMISSIONS_TOKEN;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -79,11 +77,11 @@ public class CertificateMinimumDurationTest {
                         "}" +
                         "}");
 
-        mockMvc.perform(postRequest).andExpect(status().isOk())
+        DocumentContext generateResponse = JsonPath.parse(mockMvc.perform(postRequest).andExpect(status().isOk())
                 .andDo(print())
                 .andReturn()
                 .getResponse()
-                .getContentAsString();
+                .getContentAsString());
 
         MockHttpServletRequestBuilder getRequest = get("/api/v1/certificates?name=" + CREDENTIAL_NAME)
                 .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
@@ -95,12 +93,14 @@ public class CertificateMinimumDurationTest {
                 .andReturn()
                 .getResponse()
                 .getContentAsString());
+
+        assertThat(generateResponse.read("$.duration_overridden").toString(), is("true"));
         Instant expiryDate = Instant.parse(response.read("$.certificates[0].versions[0].expiry_date").toString());
         assertThat(expiryDate, is(equalTo(mockCurrentTimeProvider.getInstant().plus(1825L, ChronoUnit.DAYS))));
     }
 
     @Test
-    public void regeneratingALeafCertificate_usesTheMinimumDuration() throws Exception {
+    public void regeneratingALeafCertificateUsingCredentialsController_usesTheMinimumDuration() throws Exception {
         MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
                 .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
                 .accept(APPLICATION_JSON)
@@ -115,11 +115,11 @@ public class CertificateMinimumDurationTest {
                         "}" +
                         "}");
 
-        mockMvc.perform(postRequest).andExpect(status().isOk())
+        DocumentContext generateResponse = JsonPath.parse(mockMvc.perform(postRequest).andExpect(status().isOk())
                 .andDo(print())
                 .andReturn()
                 .getResponse()
-                .getContentAsString();
+                .getContentAsString());
 
         MockHttpServletRequestBuilder getRequest = get("/api/v1/certificates?name=" + CREDENTIAL_NAME)
                 .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
@@ -138,11 +138,15 @@ public class CertificateMinimumDurationTest {
                 .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON);
-        mockMvc.perform(postRequest).andExpect(status().isOk())
+        Configuration suppressExceptionConfiguration = Configuration
+                .defaultConfiguration()
+                .addOptions(Option.SUPPRESS_EXCEPTIONS);
+        DocumentContext regenerateResponse = JsonPath.using(suppressExceptionConfiguration)
+                .parse(mockMvc.perform(postRequest).andExpect(status().isOk())
                 .andDo(print())
                 .andReturn()
                 .getResponse()
-                .getContentAsString();
+                .getContentAsString());
 
         getRequest = get("/api/v1/certificates?name=" + CREDENTIAL_NAME)
                 .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
@@ -157,7 +161,9 @@ public class CertificateMinimumDurationTest {
         Instant regeneratedExpiryDate = Instant.parse(response.read("$.certificates[0].versions[0].expiry_date").toString());
         List<Object> versions = response.read("$.certificates[0].versions[*]");
 
+        assertThat(generateResponse.read("$.duration_overridden").toString(), is("true"));
         assertThat(regeneratedExpiryDate, is(equalTo(mockCurrentTimeProvider.getInstant().plus(1460L, ChronoUnit.DAYS))));
         assertThat(versions.size(), is(equalTo(2)));
+        assertThat(regenerateResponse.read("$.duration_overridden"), is(nullValue()));
     }
 }
