@@ -23,8 +23,6 @@ import org.cloudfoundry.credhub.utils.PrivateKeyReader;
 @Component
 public class CertificateGenerator implements CredentialGenerator<CertificateCredentialValue> {
 
-  private static final Logger LOGGER = LogManager.getLogger(CertificateGenerator.class.getName());
-
   private final RsaKeyPairGenerator keyGenerator;
   private final SignedCertificateGenerator signedCertificateGenerator;
   private final CertificateAuthorityService certificateAuthorityService;
@@ -69,7 +67,6 @@ public class CertificateGenerator implements CredentialGenerator<CertificateCred
 
     if (originalDuration != params.getDuration()) {
       durationOverridden = true;
-      LOGGER.info("Certificate duration overridden, original duration: {} - duration used: {}", originalDuration, params.getDuration());
     }
 
     if (params.isSelfSigned()) {
