@@ -1,17 +1,10 @@
 package org.cloudfoundry.credhub.integration;
 
-import com.jayway.jsonpath.*;
-import org.cloudfoundry.credhub.CredhubTestApp;
-import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
-import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData;
-import org.cloudfoundry.credhub.entity.Credential;
-import org.cloudfoundry.credhub.repositories.CredentialRepository;
-import org.cloudfoundry.credhub.repositories.CredentialVersionRepository;
-import org.cloudfoundry.credhub.util.CurrentTimeProvider;
-import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.function.Consumer;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -23,14 +16,26 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.function.Consumer;
+import com.jayway.jsonpath.Configuration;
+import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.Option;
+import org.cloudfoundry.credhub.CredhubTestApp;
+import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData;
+import org.cloudfoundry.credhub.entity.Credential;
+import org.cloudfoundry.credhub.repositories.CredentialRepository;
+import org.cloudfoundry.credhub.repositories.CredentialVersionRepository;
+import org.cloudfoundry.credhub.util.CurrentTimeProvider;
+import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import static org.cloudfoundry.credhub.TestHelper.mockOutCurrentTimeProvider;
 import static org.cloudfoundry.credhub.utils.AuthConstants.ALL_PERMISSIONS_TOKEN;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -40,7 +45,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@ActiveProfiles(profiles = { "unit-test", "minimum-duration" }, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(profiles = { "unit-test", "minimum-duration", }, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredhubTestApp.class)
 @Transactional
 public class CertificateMinimumDurationTest {
