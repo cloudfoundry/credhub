@@ -40,7 +40,6 @@ import org.mockito.Mockito.never
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.MockitoAnnotations.initMocks
-import java.time.Instant
 import java.util.Arrays
 import java.util.UUID
 import java.util.regex.Pattern
@@ -471,7 +470,7 @@ class DefaultCredentialServiceTest {
 
         val certificateCredentialValue = CertificateCredentialValue()
 
-        val certificateCredentialVersion =  CertificateCredentialVersion(CREDENTIAL_NAME)
+        val certificateCredentialVersion = CertificateCredentialVersion(CREDENTIAL_NAME)
         certificateCredentialVersion.durationOverridden = true
 
         val savedCertificateCredentialVersion = CertificateCredentialVersion(CREDENTIAL_NAME)
@@ -480,19 +479,19 @@ class DefaultCredentialServiceTest {
         val originalCredentialVersion = mock(CredentialVersion::class.java)
         `when`(originalCredentialVersion.matchesGenerationParameters(generateRequest.generationParameters)).thenReturn(false)
         `when`(
-                credentialFactory.makeNewCredentialVersion(
-                        CredentialType.valueOf("CERTIFICATE"),
-                        CREDENTIAL_NAME,
-                        certificateCredentialValue,
-                        originalCredentialVersion,
-                        generateRequest.generationParameters,
-                        null
-                )
+            credentialFactory.makeNewCredentialVersion(
+                CredentialType.valueOf("CERTIFICATE"),
+                CREDENTIAL_NAME,
+                certificateCredentialValue,
+                originalCredentialVersion,
+                generateRequest.generationParameters,
+                null
+            )
         ).thenReturn(certificateCredentialVersion)
         `when`(originalCredentialVersion.getCredentialType()).thenReturn("certificate")
 
         `when`(credentialVersionDataService.save(certificateCredentialVersion))
-                .thenReturn(savedCertificateCredentialVersion)
+            .thenReturn(savedCertificateCredentialVersion)
 
         val returnedCertificateCredentialVersion = this.subject.save(originalCredentialVersion, certificateCredentialValue, generateRequest) as CertificateCredentialVersion
         assertThat(returnedCertificateCredentialVersion.durationOverridden).isEqualTo(true)

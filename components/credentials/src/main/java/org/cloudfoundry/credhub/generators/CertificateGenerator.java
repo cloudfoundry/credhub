@@ -4,8 +4,6 @@ import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -50,8 +48,6 @@ public class CertificateGenerator implements CredentialGenerator<CertificateCred
     final CertificateGenerationParameters params = (CertificateGenerationParameters) p;
     final KeyPair keyPair;
     final String privatePem;
-    final int originalDuration = params.getDuration();
-    Boolean durationOverridden = null;
     try {
       keyPair = keyGenerator.generateKeyPair(params.getKeyLength());
       privatePem = CertificateFormatter.pemOf(keyPair.getPrivate());
@@ -59,11 +55,10 @@ public class CertificateGenerator implements CredentialGenerator<CertificateCred
       throw new RuntimeException(e);
     }
 
-    if (params.isCa() && caMinimumDuration != null) {
-      params.setDuration(Math.max(params.getDuration(), caMinimumDuration));
-    } else if (!params.isCa() && leafMinimumDuration != null) {
-      params.setDuration(Math.max(params.getDuration(), leafMinimumDuration));
-    }
+    final int originalDuration = params.getDuration();
+    Boolean durationOverridden = null;
+
+    params.setDuration(getCertificateDuration(params));
 
     if (originalDuration != params.getDuration()) {
       durationOverridden = true;
@@ -133,5 +128,14 @@ public class CertificateGenerator implements CredentialGenerator<CertificateCred
     }
 
     return transitionalVersionCreatedAt.isAfter(latestNonTransitionalVersionCreatedAt);
+  }
+
+  private int getCertificateDuration(final CertificateGenerationParameters params) {
+    if (params.isCa() && caMinimumDuration != null) {
+      return Math.max(params.getDuration(), caMinimumDuration);
+    } else if (!params.isCa() && leafMinimumDuration != null) {
+      return Math.max(params.getDuration(), leafMinimumDuration);
+    }
+    return params.getDuration();
   }
 }

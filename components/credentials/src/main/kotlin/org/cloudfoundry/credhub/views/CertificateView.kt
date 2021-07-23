@@ -25,8 +25,8 @@ class CertificateView : CredentialView {
 
     internal constructor() : super() /* Jackson */ {}
     constructor(version: CertificateCredentialVersion) : this(
-            version,
-            false
+        version,
+        false
     )
 
     constructor(version: CertificateCredentialVersion, concatenateCas: Boolean) : super(
