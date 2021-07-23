@@ -4,7 +4,6 @@ import org.apache.commons.lang3.StringUtils
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue
 import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData
 import org.cloudfoundry.credhub.requests.GenerationParameters
-import org.cloudfoundry.credhub.services.CredentialVersionDataService
 import org.cloudfoundry.credhub.utils.CertificateReader
 import java.time.Instant
 import java.util.Objects

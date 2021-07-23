@@ -91,7 +91,7 @@ class CertificateGenerationParameters : GenerationParameters {
 
         val that = other as CertificateGenerationParameters?
         return duration == that!!.duration &&
-            equalsIgnoringDuration(that);
+            equalsIgnoringDuration(that)
     }
 
     fun equalsIgnoringDuration(other: CertificateGenerationParameters?): Boolean {
