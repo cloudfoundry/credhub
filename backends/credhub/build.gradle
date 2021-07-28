@@ -71,7 +71,7 @@ dependencies {
     api("org.bouncycastle:bcpkix-fips:${bcpkixFipsVersion}")
 
     // proto
-    implementation "com.google.api.grpc:proto-google-common-protos:1.18.0"
+    implementation "com.google.api.grpc:proto-google-common-protos:2.3.2"
     implementation "io.grpc:grpc-services:${grpcVersion}"
 
     implementation("com.google.guava:guava:${guavaVersion}")
