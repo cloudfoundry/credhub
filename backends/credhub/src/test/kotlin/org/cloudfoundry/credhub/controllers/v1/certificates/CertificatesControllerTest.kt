@@ -117,7 +117,7 @@ class CertificatesControllerTest {
             .perform(
                 post("${CertificatesController.ENDPOINT}/{certificateId}/regenerate", certificateId.toString())
                     .credHubAuthHeader()
-                    .accept(MediaType.APPLICATION_JSON_UTF8)
+                    .accept(MediaType.APPLICATION_JSON)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(requestBody)
             ).andExpect(status().isOk)
@@ -209,7 +209,7 @@ class CertificatesControllerTest {
             .perform(
                 get(CertificatesController.ENDPOINT)
                     .credHubAuthHeader()
-                    .accept(MediaType.APPLICATION_JSON_UTF8)
+                    .accept(MediaType.APPLICATION_JSON)
             ).andExpect(status().isOk)
             .andDo(
                 document(
@@ -278,7 +278,7 @@ class CertificatesControllerTest {
             .perform(
                 get(CertificatesController.ENDPOINT)
                     .credHubAuthHeader()
-                    .accept(MediaType.APPLICATION_JSON_UTF8)
+                    .accept(MediaType.APPLICATION_JSON)
             ).andExpect(status().isOk)
             .andReturn()
 
@@ -334,7 +334,7 @@ class CertificatesControllerTest {
             .perform(
                 get(CertificatesController.ENDPOINT)
                     .credHubAuthHeader()
-                    .accept(MediaType.APPLICATION_JSON_UTF8)
+                    .accept(MediaType.APPLICATION_JSON)
             ).andExpect(status().isOk)
             .andReturn()
 
@@ -391,7 +391,7 @@ class CertificatesControllerTest {
             .perform(
                 get(CertificatesController.ENDPOINT)
                     .credHubAuthHeader()
-                    .accept(MediaType.APPLICATION_JSON_UTF8)
+                    .accept(MediaType.APPLICATION_JSON)
                     .param("name", name)
             ).andExpect(status().isOk)
             .andDo(
@@ -455,7 +455,7 @@ class CertificatesControllerTest {
             .perform(
                 get(CertificatesController.ENDPOINT)
                     .credHubAuthHeader()
-                    .accept(MediaType.APPLICATION_JSON_UTF8)
+                    .accept(MediaType.APPLICATION_JSON)
                     .param("name", name)
             ).andExpect(status().isOk).andReturn()
 
@@ -503,7 +503,7 @@ class CertificatesControllerTest {
             .perform(
                 put("${CertificatesController.ENDPOINT}/{certificateId}/update_transitional_version", certificateId.toString())
                     .credHubAuthHeader()
-                    .accept(MediaType.APPLICATION_JSON_UTF8)
+                    .accept(MediaType.APPLICATION_JSON)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(requestBody)
             ).andExpect(status().isOk)
@@ -536,7 +536,7 @@ class CertificatesControllerTest {
         val mvcResult = mockMvc.perform(
             get("${CertificatesController.ENDPOINT}/{certificateId}/versions", certificateId.toString())
                 .credHubAuthHeader()
-                .accept(MediaType.APPLICATION_JSON_UTF8)
+                .accept(MediaType.APPLICATION_JSON)
                 .param("current", "true")
         ).andExpect(status().isOk)
             .andDo(
@@ -607,7 +607,7 @@ class CertificatesControllerTest {
         val mvcResult = mockMvc.perform(
             get("${CertificatesController.ENDPOINT}/{certificateId}/versions", certificateId.toString())
                 .credHubAuthHeader()
-                .accept(MediaType.APPLICATION_JSON_UTF8)
+                .accept(MediaType.APPLICATION_JSON)
                 .param("current", "true")
         ).andExpect(status().isOk).andReturn()
 
@@ -678,7 +678,8 @@ class CertificatesControllerTest {
             post("${CertificatesController.ENDPOINT}/{certificateId}/versions", certificateId.toString())
                 .credHubAuthHeader()
                 .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .characterEncoding("utf-8")
+                .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody)
         ).andExpect(status().isOk)
             .andDo(
@@ -727,7 +728,7 @@ class CertificatesControllerTest {
         val mvcResult = mockMvc.perform(
             delete("${CertificatesController.ENDPOINT}/{certificateId}/versions/{versionId}", certificateId.toString(), versionId.toString())
                 .credHubAuthHeader()
-                .accept(MediaType.APPLICATION_JSON_UTF8)
+                .accept(MediaType.APPLICATION_JSON)
         ).andExpect(status().isOk)
             .andDo(
                 document(
