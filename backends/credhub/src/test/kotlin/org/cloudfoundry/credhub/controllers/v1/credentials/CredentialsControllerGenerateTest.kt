@@ -15,6 +15,8 @@ import org.cloudfoundry.credhub.credential.SshCredentialValue
 import org.cloudfoundry.credhub.credential.StringCredentialValue
 import org.cloudfoundry.credhub.credential.UserCredentialValue
 import org.cloudfoundry.credhub.credentials.CredentialsController
+import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
+import org.cloudfoundry.credhub.domain.Encryptor
 import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
 import org.cloudfoundry.credhub.helpers.credHubAuthHeader
@@ -23,11 +25,14 @@ import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters
 import org.cloudfoundry.credhub.requests.CredentialRegenerateRequest
 import org.cloudfoundry.credhub.requests.RsaSshGenerationParameters
 import org.cloudfoundry.credhub.utils.TestConstants
+import org.cloudfoundry.credhub.views.CertificateView
 import org.cloudfoundry.credhub.views.CredentialView
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers
+import org.mockito.Mockito
 import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.http.MediaType
 import org.springframework.restdocs.JUnitRestDocumentation
@@ -251,22 +256,35 @@ class CredentialsControllerGenerateTest {
 
     @Test
     fun POST__generate_certificate_returns__certificate_credential() {
-        spyCredentialsHandler.generateCredential__returns_credentialView = CredentialView(
-            Instant.ofEpochSecond(1549053472L),
-            uuid,
-            "/some-certificate-name",
-            CredentialType.CERTIFICATE.type.toLowerCase(),
-            metadata,
-            CertificateCredentialValue(
-                TestConstants.TEST_CA,
-                TestConstants.TEST_CERTIFICATE,
-                TestConstants.TEST_PRIVATE_KEY,
-                "some-ca",
-                true,
-                false,
-                true,
-                false
-            )
+
+        val certificateCredentialValue = CertificateCredentialValue(
+            TestConstants.TEST_CA,
+            TestConstants.TEST_CERTIFICATE,
+            TestConstants.TEST_PRIVATE_KEY,
+            "some-ca",
+            null,
+            true,
+            false,
+            true,
+            false,
+            true
+        )
+
+        val encryptor = Mockito.mock(Encryptor::class.java)
+        Mockito.doReturn(TestConstants.TEST_PRIVATE_KEY).`when`<Encryptor>(encryptor).decrypt(ArgumentMatchers.any())
+
+        val certificateCredentialVersion = CertificateCredentialVersion(
+                certificateCredentialValue,
+                "/some-certificate-name",
+                encryptor
+        )
+        certificateCredentialVersion.versionCreatedAt = Instant.ofEpochSecond(1549053472L)
+        certificateCredentialVersion.uuid = uuid
+        certificateCredentialVersion.metadata = metadata
+
+        spyCredentialsHandler.generateCredential__returns_credentialView = CertificateView(
+                certificateCredentialVersion,
+                true
         )
 
         // language=json
@@ -278,7 +296,8 @@ class CredentialsControllerGenerateTest {
                   "parameters": {
                     "common_name": "some-common-name",
                     "ca": "some-ca",
-                    "is_ca": true
+                    "is_ca": true,
+                    "duration": 730
                   },
                   "metadata": { "description": "example metadata"}
                 }
@@ -337,7 +356,7 @@ class CredentialsControllerGenerateTest {
                             .type(JsonFieldType.NUMBER)
                             .optional(),
                         fieldWithPath("parameters.duration")
-                            .description("Duration in days of generated credential value (Default: ${CertificateGenerationRequestParameters().duration}).")
+                            .description("Duration in days of generated credential value (Default: ${CertificateGenerationRequestParameters().duration}). If a minimum duration is configured and is greater than this duration, the minimum duration will be used instead.")
                             .type(JsonFieldType.NUMBER)
                             .optional(),
                         fieldWithPath("parameters.ca")
@@ -364,6 +383,8 @@ class CredentialsControllerGenerateTest {
         assertThat(actualGenerateRequest).isEqualTo(expectedGenerateRequest)
 
         val actualResponseBody = mvcResult.response.contentAsString
+
+        print(actualResponseBody)
         // language=json
         val expectedResponseBody =
             """
@@ -373,15 +394,16 @@ class CredentialsControllerGenerateTest {
                   "id": $uuid,
                   "name": "/some-certificate-name",
                   "metadata": { "description": "example metadata"},
+                  "transitional": false,
+                  "expiry_date": "2020-09-03T18:30:11Z",
+                  "certificate_authority": true,
+                  "self_signed": false,
+                  "generated": true,
+                  "duration_overridden": true,
                   "value": {
                     "ca": "${TestConstants.TEST_CA}",
                     "certificate": "${TestConstants.TEST_CERTIFICATE}",
-                    "private_key": "${TestConstants.TEST_PRIVATE_KEY}",
-                    "transitional": false,
-                    "expiry_date": "2020-09-03T18:30:11Z",
-                    "certificate_authority": true,
-                    "self_signed": false,
-                    "generated": true
+                    "private_key": "${TestConstants.TEST_PRIVATE_KEY}"
                   }
               }
             """.trimIndent()
