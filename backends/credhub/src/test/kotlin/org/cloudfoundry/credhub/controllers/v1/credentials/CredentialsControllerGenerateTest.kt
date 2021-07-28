@@ -274,17 +274,17 @@ class CredentialsControllerGenerateTest {
         Mockito.doReturn(TestConstants.TEST_PRIVATE_KEY).`when`<Encryptor>(encryptor).decrypt(ArgumentMatchers.any())
 
         val certificateCredentialVersion = CertificateCredentialVersion(
-                certificateCredentialValue,
-                "/some-certificate-name",
-                encryptor
+            certificateCredentialValue,
+            "/some-certificate-name",
+            encryptor
         )
         certificateCredentialVersion.versionCreatedAt = Instant.ofEpochSecond(1549053472L)
         certificateCredentialVersion.uuid = uuid
         certificateCredentialVersion.metadata = metadata
 
         spyCredentialsHandler.generateCredential__returns_credentialView = CertificateView(
-                certificateCredentialVersion,
-                true
+            certificateCredentialVersion,
+            true
         )
 
         // language=json
