@@ -99,7 +99,7 @@ sourceSets {
 assemble.mustRunAfter("clean")
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:3.12.3"
+        artifact = "com.google.protobuf:protoc:3.17.3"
     }
     plugins {
         grpc {
