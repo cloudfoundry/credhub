@@ -20,7 +20,6 @@ import org.cloudfoundry.credhub.views.CertificateCredentialView
 import org.cloudfoundry.credhub.views.CertificateCredentialsView
 import org.cloudfoundry.credhub.views.CertificateVersionView
 import org.cloudfoundry.credhub.views.CertificateView
-import org.cloudfoundry.credhub.views.CredentialView
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -54,7 +53,6 @@ class CertificatesControllerTest {
     lateinit var mockMvc: MockMvc
     private lateinit var spyCertificatesHandler: SpyCertificatesHandler
     private lateinit var certificateCredentialValue: CertificateCredentialValue
-    private lateinit var credentialViewResponse: CredentialView
 
     private lateinit var certificateId: UUID
     private lateinit var name: String
@@ -95,15 +93,6 @@ class CertificatesControllerTest {
             true
         )
 
-        credentialViewResponse = CredentialView(
-            createdAt,
-            certificateId,
-            name,
-            CredentialType.CERTIFICATE.type.toLowerCase(),
-            metadata,
-            certificateCredentialValue
-        )
-
         certificateCredentialVersion = CertificateCredentialVersion(certificateCredentialValue, name, SpyEncryptor())
         certificateCredentialVersion.versionCreatedAt = createdAt
         certificateCredentialVersion.uuid = certificateId
@@ -121,7 +110,8 @@ class CertificatesControllerTest {
             {"set_as_transitional": true, "allow_transitional_parent_to_sign": true, "metadata": {"description": "example metadata"}}
             """.trimIndent()
 
-        spyCertificatesHandler.handleRegenerate__returns_credentialView = credentialViewResponse
+        certificateView.durationOverridden = true
+        spyCertificatesHandler.handleRegenerate__returns_credentialView = certificateView
 
         val mvcResult = mockMvc
             .perform(
@@ -166,19 +156,20 @@ class CertificatesControllerTest {
             """
             {
               "type": "${CredentialType.CERTIFICATE.type.toLowerCase()}",
-              "version_created_at": "${credentialViewResponse.versionCreatedAt}",
+              "version_created_at": "${certificateView.versionCreatedAt}",
               "id": "$certificateId",
               "name": "$name",
               "metadata": { "description": "example metadata"},
+              "transitional": true,
+              "generated": true,
+              "expiry_date": "${certificateCredentialValue.expiryDate}",
+              "certificate_authority": false,
+              "self_signed": false,
+              "duration_overridden": true,
               "value": {
                 "ca": "${TestConstants.TEST_CA}",
                 "certificate": "${TestConstants.TEST_CERTIFICATE}",
-                "private_key": "${TestConstants.TEST_PRIVATE_KEY}",
-                "transitional": true,
-                "generated": true,
-                "expiry_date": "${certificateCredentialValue.expiryDate}",
-                "certificate_authority": false,
-                "self_signed": false
+                "private_key": "${TestConstants.TEST_PRIVATE_KEY}"
               }
             }
             """.trimIndent()
@@ -569,7 +560,7 @@ class CertificatesControllerTest {
             """
             [{
               "type": "${CredentialType.CERTIFICATE.type.toLowerCase()}",
-              "version_created_at": "${credentialViewResponse.versionCreatedAt}",
+              "version_created_at": "${certificateView.versionCreatedAt}",
               "id": "$certificateId",
               "name": "$name",
               "transitional": true,
@@ -628,7 +619,7 @@ class CertificatesControllerTest {
             """
             [{
               "type": "${CredentialType.CERTIFICATE.type.toLowerCase()}",
-              "version_created_at": "${credentialViewResponse.versionCreatedAt}",
+              "version_created_at": "${certificateView.versionCreatedAt}",
               "id": "$certificateId",
               "name": "$name",
               "transitional": true,
@@ -659,15 +650,6 @@ class CertificatesControllerTest {
             false,
             false,
             true
-        )
-
-        val expectedCredentialViewResponse = CredentialView(
-            createdAt,
-            certificateId,
-            name,
-            CredentialType.CERTIFICATE.type.toLowerCase(),
-            null,
-            expectedCertificateCredentialValue
         )
 
         val expectedCertificateCredentialVersion = CertificateCredentialVersion(expectedCertificateCredentialValue, name, SpyEncryptor())
@@ -716,7 +698,7 @@ class CertificatesControllerTest {
             """
             {
               "type": "${CredentialType.CERTIFICATE.type.toLowerCase()}",
-              "version_created_at": "${expectedCredentialViewResponse.versionCreatedAt}",
+              "version_created_at": "$createdAt",
               "id": "$certificateId",
               "name": "$name",
               "transitional": true,
@@ -765,7 +747,7 @@ class CertificatesControllerTest {
             """
             {
               "type": "${CredentialType.CERTIFICATE.type.toLowerCase()}",
-              "version_created_at": "${credentialViewResponse.versionCreatedAt}",
+              "version_created_at": "${certificateView.versionCreatedAt}",
               "id": "$certificateId",
               "name": "$name",
               "transitional": true,

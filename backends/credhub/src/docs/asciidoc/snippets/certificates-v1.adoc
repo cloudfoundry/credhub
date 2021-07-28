@@ -24,7 +24,10 @@ Note: The certificate versions will be sorted in descending order of their creat
 === Regenerate a Certificate
 operation::POST__certificates_uuid_regenerate__returns_certificate[]
 
-Note: If a certificate credential only has one version and it is marked as transitional the credential cannot be regenerated using this endpoint.
+Note:
+
+* If a certificate credential only has one version and it is marked as transitional the credential cannot be regenerated using this endpoint.
+* If the duration used to generate the currently active version of the certificate is lower than the minimum duration, the regenerated certificate will use the minimum duration instead and the response will contain the duration_overridden flag set to true.
 
 ---
 
