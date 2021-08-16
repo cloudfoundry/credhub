@@ -79,8 +79,8 @@ public class CertificateGeneratorTest {
       keyGenerator,
       signedCertificateGenerator,
       certificateAuthorityService,
-      null,
-      null
+      0,
+      0
     );
 
 
@@ -350,7 +350,7 @@ public class CertificateGeneratorTest {
   public void whenSelfSignIsTrueAndItIsCA_itGeneratesAValidSelfSignedCertificateUsingTheCaMinimumDuration() throws Exception {
     final X509Certificate certificate = new JcaX509CertificateConverter().setProvider(BouncyCastleFipsProvider.PROVIDER_NAME)
             .getCertificate(generateX509SelfSignedCert());
-    final CertificateGenerationParameters expectedParameters = setupMinimumDuration(3650, null, 365, true, true, 3650);
+    final CertificateGenerationParameters expectedParameters = setupMinimumDuration(3650, 0, 365, true, true, 3650);
     when(keyGenerator.generateKeyPair(anyInt())).thenReturn(rootCaKeyPair);
     when(signedCertificateGenerator.getSelfSigned(rootCaKeyPair, expectedParameters))
       .thenReturn(certificate);
@@ -364,7 +364,7 @@ public class CertificateGeneratorTest {
 
   @Test
   public void whenSelfSignIsFalseAndItIsCA_itGeneratesAValidCertificateUsingTheCaMinimumDuration() throws Exception {
-    final CertificateGenerationParameters expectedParameters = setupMinimumDuration(3650, null, 365, true, false, 3650);
+    final CertificateGenerationParameters expectedParameters = setupMinimumDuration(3650, 0, 365, true, false, 3650);
     final KeyPair childCertificateKeyPair = setupKeyPair();
     setupMocksForRootCA(childCertificateKeyPair, expectedParameters);
 
@@ -380,7 +380,7 @@ public class CertificateGeneratorTest {
   public void whenSelfSignIsTrueAndNotCA_itGeneratesAValidSelfSignedCertificateUsingTheLeafMinimumDuration() throws Exception {
     final X509Certificate certificate = new JcaX509CertificateConverter().setProvider(BouncyCastleFipsProvider.PROVIDER_NAME)
             .getCertificate(generateX509SelfSignedCert());
-    final CertificateGenerationParameters expectedParameters = setupMinimumDuration(null, 1460, 365, false, true, 1460);
+    final CertificateGenerationParameters expectedParameters = setupMinimumDuration(0, 1460, 365, false, true, 1460);
     when(keyGenerator.generateKeyPair(anyInt())).thenReturn(rootCaKeyPair);
     when(signedCertificateGenerator.getSelfSigned(rootCaKeyPair, expectedParameters))
             .thenReturn(certificate);
@@ -394,7 +394,7 @@ public class CertificateGeneratorTest {
 
   @Test
   public void whenSelfSignIsFalseAndNotCA_itGeneratesAValidCertificateUsingTheLeafMinimumDuration() throws Exception {
-    final CertificateGenerationParameters expectedParameters = setupMinimumDuration(null, 1460, 365, false, false, 1460);
+    final CertificateGenerationParameters expectedParameters = setupMinimumDuration(0, 1460, 365, false, false, 1460);
     final KeyPair childCertificateKeyPair = setupKeyPair();
     setupMocksForRootCA(childCertificateKeyPair, expectedParameters);
 
@@ -471,8 +471,8 @@ public class CertificateGeneratorTest {
     return fakeKeyPairGenerator.generate();
   }
 
-  private CertificateGenerationParameters setupMinimumDuration(final Integer caMinimumDuration,
-                                                               final Integer leafMinimumDuration,
+  private CertificateGenerationParameters setupMinimumDuration(final int caMinimumDurationInDays,
+                                                               final int leafMinimumDurationInDays,
                                                                final int defaultDuration,
                                                                final boolean ca,
                                                                final boolean selfSigned,
@@ -481,8 +481,8 @@ public class CertificateGeneratorTest {
             keyGenerator,
             signedCertificateGenerator,
             certificateAuthorityService,
-            caMinimumDuration,
-            leafMinimumDuration
+            caMinimumDurationInDays,
+            leafMinimumDurationInDays
     );
     generationParameters.setCa(ca);
     generationParameters.setSelfSigned(selfSigned);
