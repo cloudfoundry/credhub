@@ -1,3 +1,4 @@
 certificates:
-  ca_minimum_duration: 1825
-  leaf_minimum_duration: 1460
+  ca_minimum_duration_in_days: 1825
+  leaf_minimum_duration_in_days: 1460
+
