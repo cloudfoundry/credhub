@@ -24,8 +24,8 @@ public class CertificateGenerator implements CredentialGenerator<CertificateCred
   private final RsaKeyPairGenerator keyGenerator;
   private final SignedCertificateGenerator signedCertificateGenerator;
   private final CertificateAuthorityService certificateAuthorityService;
-  private final Integer caMinimumDuration;
-  private final Integer leafMinimumDuration;
+  private final int caMinimumDurationInDays;
+  private final int leafMinimumDurationInDays;
 
 
   @Autowired
@@ -33,14 +33,14 @@ public class CertificateGenerator implements CredentialGenerator<CertificateCred
     final RsaKeyPairGenerator keyGenerator,
     final SignedCertificateGenerator signedCertificateGenerator,
     final CertificateAuthorityService certificateAuthorityService,
-    @Value("${certificates.ca_minimum_duration:#{null}}") final Integer caMinimumDuration,
-    @Value("${certificates.leaf_minimum_duration:#{null}}") final Integer leafMinimumDuration) {
+    @Value("${certificates.ca_minimum_duration_in_days:#{0}}") final int caMinimumDurationInDays,
+    @Value("${certificates.leaf_minimum_duration_in_days:#{0}}") final int leafMinimumDurationInDays) {
     super();
     this.keyGenerator = keyGenerator;
     this.signedCertificateGenerator = signedCertificateGenerator;
     this.certificateAuthorityService = certificateAuthorityService;
-    this.caMinimumDuration = caMinimumDuration;
-    this.leafMinimumDuration = leafMinimumDuration;
+    this.caMinimumDurationInDays = caMinimumDurationInDays;
+    this.leafMinimumDurationInDays = leafMinimumDurationInDays;
   }
 
   @Override
@@ -131,11 +131,9 @@ public class CertificateGenerator implements CredentialGenerator<CertificateCred
   }
 
   private int getCertificateDuration(final CertificateGenerationParameters params) {
-    if (params.isCa() && caMinimumDuration != null) {
-      return Math.max(params.getDuration(), caMinimumDuration);
-    } else if (!params.isCa() && leafMinimumDuration != null) {
-      return Math.max(params.getDuration(), leafMinimumDuration);
+    if (params.isCa()) {
+      return Math.max(params.getDuration(), caMinimumDurationInDays);
     }
-    return params.getDuration();
+    return Math.max(params.getDuration(), leafMinimumDurationInDays);
   }
 }
