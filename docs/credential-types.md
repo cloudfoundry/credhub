@@ -152,7 +152,10 @@ properties:
         private_key: |
           -----BEGIN RSA PRIVATE KEY-----
           ...
-          -----END RSA PRIVATE KEY-----
+          -----END EXAMPLE RSA PRIVATE KEY-----
+  admin-password:
+    description: "Admin password for the application"
+    example: nZaowPHTl0CQYVyYA0nV7ayHVulCBU3WTmwJKiZm
 ```
 
 **Job Template ERB:**
@@ -161,79 +164,44 @@ properties:
 api-ca=<%= p("demo.tls.ca") %>
 api-certificate=<%= p("demo.tls.certificate") %>
 api-private-key=<%= p("demo.tls.private_key") %>
+admin-password=<%= p("admin-password") %>
 ```
 
 **Deployment manifest:**
+
+CredHub and BOSH are integrated to provide the option of generating the required credential values on deployment. 
+You can define these generation parameters in the deployment manifest under the `variables` section, as shown in the example below.
 
 ```yml
 ---
 name: demo-deploy
 
-instance_groups:
-  properties:
-    demo:
-      tls: ((demo-tls))
-```
-
-Updating a release for other types is similar to the example above, being mindful of the key name for each value you wish to consume. 
-
-## Enabling CredHub Automatic Generation in Releases
-
-CredHub and BOSH are integrated to automatically generate missing credential values on deployment. To enable automatic generation, the release or manifest must include an appropriate configuration. 
-
-The sample below demonstrates how a job release spec can be configured to provide generation parameters. The details that should be provided in a release spec are attributes that do not vary per deployment, e.g. type and password attributes.
-
-**Release job spec:**
-
-```yml
----
-name: demo
-
-properties:
-  demo.admin_password: 
-    description: "Password for admin user"
-    type: password
-    parameters: 
-      length: 40
-  demo.tls:
-    description: "Certificate and private key for TLS connection to API"
-    type: certificate
-    parameters: 
-      key_length: 4096
- ```
-
-You may also define these generation parameters in the deployment itself, as shown below. This is best used for generation parameters that are deployment-specific, e.g. a certificate common name. 
-
-**Deployment manifest:**
-
-```yml
----
-name: demo-deploy
-
-variables: 
-- name: demo-password
-  type: password
-  options: 
-    length: 40
+variables:
 - name: demo-ca
   type: certificate
-  options: 
+  options:
     is_ca: true
     common_name: 'Demo Certificate Authority'
 - name: demo-tls
   type: certificate
-  options: 
+  options:
     ca: demo-ca
     common_name: example.com
-    alternative_names: 
+    alternative_names:
     - example.com
     - www.example.com
-    extended_key_usage: 
+    extended_key_usage:
     - client_auth
+- name: admin-password
+  type: password
+  options:
+    length: 40
 
 instance_groups:
   properties:
     demo:
-      admin-password: ((demo-password))
       tls: ((demo-tls))
+      admin-password: ((demo-password))
 ```
+
+Updating a release for other types is similar to the example above, being mindful of the key name for each value you wish to consume. 
