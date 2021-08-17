@@ -406,6 +406,20 @@ public class CertificateGeneratorTest {
             equalTo(true));
   }
 
+  @Test
+  public void whenRequestedDurationIsGreaterThanMinimumDuration_itGeneratesAValidCertificateUsingTheRequestedDuration() throws Exception {
+    final CertificateGenerationParameters expectedParameters = setupMinimumDuration(0, 365, 1460, false, false, 1460);
+    final KeyPair childCertificateKeyPair = setupKeyPair();
+    setupMocksForRootCA(childCertificateKeyPair, expectedParameters);
+
+    final CertificateCredentialValue certificateLeaf = subject.generateCredential(inputParameters);
+
+    verify(signedCertificateGenerator, times(1)).
+            getSignedByIssuer(childCertificateKeyPair, expectedParameters, rootCaX509Certificate, rootCaKeyPair.getPrivate());
+    assertThat(certificateLeaf.getDurationOverridden(),
+            equalTo(false));
+  }
+
   private X509CertificateHolder generateX509SelfSignedCert() throws Exception {
     return makeCert(rootCaKeyPair, rootCaKeyPair.getPrivate(), rootCaDn, rootCaDn, false);
   }

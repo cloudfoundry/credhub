@@ -156,10 +156,10 @@ public class CertificateMinimumDurationTest {
         Instant regeneratedExpiryDate = Instant.parse(regenerateResponse.read("$.expiry_date").toString());
         List<Object> versions = getVersionsForCertificate(CREDENTIAL_NAME);
 
-        assertThat(generateResponse.read("$.duration_overridden").toString(), is("true"));
+        assertThat(generateResponse.read("$.duration_overridden"), is(true));
         assertThat(regeneratedExpiryDate, is(equalTo(mockCurrentTimeProvider.getInstant().plus(1460L, ChronoUnit.DAYS))));
         assertThat(versions.size(), is(equalTo(2)));
-        assertThat(regenerateResponse.read("$.duration_overridden"), is(nullValue()));
+        assertThat(regenerateResponse.read("$.duration_overridden"), is(false));
     }
 
     @Test
