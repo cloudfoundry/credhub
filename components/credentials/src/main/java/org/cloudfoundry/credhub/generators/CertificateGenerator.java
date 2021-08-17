@@ -58,10 +58,9 @@ public class CertificateGenerator implements CredentialGenerator<CertificateCred
     final int originalDuration = params.getDuration();
     Boolean durationOverridden = null;
 
-    params.setDuration(getCertificateDuration(params));
-
-    if (originalDuration != params.getDuration()) {
-      durationOverridden = true;
+    if (isMinimumDurationEnabled()) {
+      params.setDuration(getCertificateDuration(params));
+      durationOverridden = (originalDuration != params.getDuration());
     }
 
     if (params.isSelfSigned()) {
@@ -135,5 +134,9 @@ public class CertificateGenerator implements CredentialGenerator<CertificateCred
       return Math.max(params.getDuration(), caMinimumDurationInDays);
     }
     return Math.max(params.getDuration(), leafMinimumDurationInDays);
+  }
+
+  private boolean isMinimumDurationEnabled() {
+    return (caMinimumDurationInDays !=0 || leafMinimumDurationInDays != 0);
   }
 }

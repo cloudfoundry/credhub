@@ -128,6 +128,7 @@ public class CertificateGenerateTest {
         assertThat(result.getBoolean("certificate_authority"), equalTo(true));
         assertThat(result.getBoolean("self_signed"), equalTo(true));
         assertThat(result.getBoolean("generated"), equalTo(true));
+        assertThat(result.has("duration_overridden"), equalTo(false));
 
         assertThat(picardCert, notNullValue());
 
