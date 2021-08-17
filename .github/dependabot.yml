@@ -5,3 +5,10 @@ updates:
     schedule:
       interval: "daily"
     open-pull-requests-limit: 100
+
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 100
+    target-branch: "2.5.x"
