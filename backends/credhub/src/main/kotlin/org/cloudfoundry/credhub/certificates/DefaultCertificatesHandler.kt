@@ -25,6 +25,7 @@ import org.cloudfoundry.credhub.services.DefaultCertificateService
 import org.cloudfoundry.credhub.services.PermissionCheckingService
 import org.cloudfoundry.credhub.views.CertificateCredentialView
 import org.cloudfoundry.credhub.views.CertificateCredentialsView
+import org.cloudfoundry.credhub.views.CertificateGenerationView
 import org.cloudfoundry.credhub.views.CertificateVersionView
 import org.cloudfoundry.credhub.views.CertificateView
 import org.cloudfoundry.credhub.views.CredentialView
@@ -79,7 +80,7 @@ class DefaultCertificatesHandler(
 
         auditRecord.setVersion(credentialVersion)
 
-        return CertificateView(credentialVersion, concatenateCas)
+        return CertificateGenerationView(credentialVersion, concatenateCas)
     }
 
     override fun handleGetAllRequest(): CertificateCredentialsView {
