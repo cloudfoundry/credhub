@@ -88,7 +88,7 @@ class DefaultCredentialsHandler(
         auditRecord.setVersion(credentialVersion)
         auditRecord.setResource(credentialVersion.credential)
 
-        return CredentialView.fromEntity(credentialVersion, concatenateCas)
+        return CredentialView.fromEntity(credentialVersion, concatenateCas, true)
     }
 
     override fun setCredential(setRequest: BaseCredentialSetRequest<*>): CredentialView {

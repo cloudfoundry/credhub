@@ -185,7 +185,7 @@ public class DefaultRegenerateHandlerTest {
       .thenReturn(savedCredentialVersion);
 
     CredentialView actualCredentialView = subjectWithAclsEnabled.handleRegenerate(CREDENTIAL_NAME, null);
-    CredentialView expectedCredentialView = CredentialView.fromEntity(savedCredentialVersion);
+    CredentialView expectedCredentialView = CredentialView.fromEntity(savedCredentialVersion, false, true);
 
     verify(permissionCheckingService, times(1)).hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.WRITE);
     assertThat(actualCredentialView).isEqualTo(expectedCredentialView);
@@ -291,7 +291,7 @@ public class DefaultRegenerateHandlerTest {
       .thenReturn(savedCredentialVersion);
 
     CredentialView actualCredentialView = subjectWithAclsDisabled.handleRegenerate(CREDENTIAL_NAME, null);
-    CredentialView expectedCredentialView = CredentialView.fromEntity(savedCredentialVersion);
+    CredentialView expectedCredentialView = CredentialView.fromEntity(savedCredentialVersion, false, true);
 
     verify(permissionCheckingService, times(0)).hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.WRITE);
     assertThat(actualCredentialView).isEqualTo(expectedCredentialView);

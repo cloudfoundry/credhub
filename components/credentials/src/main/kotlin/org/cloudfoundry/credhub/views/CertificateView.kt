@@ -7,7 +7,7 @@ import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
 import java.time.Instant
 import java.util.Objects
 
-class CertificateView : CredentialView {
+open class CertificateView : CredentialView {
     @JsonIgnore
     private var concatenateCas = false
     private var version: CertificateCredentialVersion? = null
@@ -20,8 +20,6 @@ class CertificateView : CredentialView {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     var generated: Boolean? = null
         private set
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    var durationOverridden: Boolean? = null
 
     internal constructor() : super() /* Jackson */ {}
     constructor(version: CertificateCredentialVersion) : this(
@@ -43,7 +41,6 @@ class CertificateView : CredentialView {
         selfSigned = version.isSelfSigned
         generated = version.generated
         this.concatenateCas = concatenateCas
-        durationOverridden = version.durationOverridden
     }
 
     override var value: CredentialValue?

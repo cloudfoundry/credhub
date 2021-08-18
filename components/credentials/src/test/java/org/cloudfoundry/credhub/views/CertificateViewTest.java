@@ -103,7 +103,7 @@ public class CertificateViewTest {
   @Test
   public void createsAViewFromEntityIncludesDurationOverriddenWhenSet() throws Exception {
     entity.setDurationOverridden(true);
-    final CredentialView subject = CertificateView.fromEntity(entity);
+    final CredentialView subject = CertificateView.fromEntity(entity, true, true);
     final String actualJson = serializeToString(subject);
 
     final Instant expiryDateWithoutMillis = Instant.ofEpochSecond(expiryDate.getEpochSecond());

@@ -320,7 +320,7 @@ public class CertificateGeneratorTest {
     assertThat(certificateCredential.getCa(), equalTo(CertificateFormatter.pemOf(certificate)));
     verify(signedCertificateGenerator, times(1)).getSelfSigned(rootCaKeyPair, inputParameters);
     assertThat(certificateCredential.getDurationOverridden(),
-            equalTo(null));
+            equalTo(false));
   }
 
   @Test

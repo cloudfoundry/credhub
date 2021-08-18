@@ -76,7 +76,7 @@ open class CredentialView {
     companion object {
         @JvmOverloads
         @JvmStatic
-        fun fromEntity(credentialVersion: CredentialVersion?, concatenateCas: Boolean = false): CredentialView {
+        fun fromEntity(credentialVersion: CredentialVersion?, concatenateCas: Boolean = false, includeGenerationInfo: Boolean = false): CredentialView {
             return when (credentialVersion) {
                 is ValueCredentialVersion -> {
                     ValueView((credentialVersion as ValueCredentialVersion?)!!)
@@ -85,7 +85,11 @@ open class CredentialView {
                     PasswordView(credentialVersion)
                 }
                 is CertificateCredentialVersion -> {
-                    CertificateView(credentialVersion, concatenateCas)
+                    if (includeGenerationInfo) {
+                        CertificateGenerationView(credentialVersion, concatenateCas)
+                    } else {
+                        CertificateView(credentialVersion, concatenateCas)
+                    }
                 }
                 is SshCredentialVersion -> {
                     SshView(credentialVersion)
