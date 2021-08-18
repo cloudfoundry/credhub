@@ -25,6 +25,7 @@ import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters
 import org.cloudfoundry.credhub.requests.CredentialRegenerateRequest
 import org.cloudfoundry.credhub.requests.RsaSshGenerationParameters
 import org.cloudfoundry.credhub.utils.TestConstants
+import org.cloudfoundry.credhub.views.CertificateGenerationView
 import org.cloudfoundry.credhub.views.CertificateView
 import org.cloudfoundry.credhub.views.CredentialView
 import org.junit.Before
@@ -282,7 +283,7 @@ class CredentialsControllerGenerateTest {
         certificateCredentialVersion.uuid = uuid
         certificateCredentialVersion.metadata = metadata
 
-        spyCredentialsHandler.generateCredential__returns_credentialView = CertificateView(
+        spyCredentialsHandler.generateCredential__returns_credentialView = CertificateGenerationView(
             certificateCredentialVersion,
             true
         )

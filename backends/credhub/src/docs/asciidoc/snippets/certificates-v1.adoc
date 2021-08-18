@@ -11,7 +11,7 @@ See https://github.com/pivotal-cf/credhub-release/blob/master/docs/ca-rotation.m
 
 A minimum duration can be configured for leaf and CA certificates using the `certificates.leaf_minimum_duration_in_days` and `certificates.ca_minimum_duration_in_days` server-level configuration fields. When these fields are configured, if a request to generate or regenerate a certificate has a duration lower than the minimum, then the minimum duration is used instead.
 
-When this feature is configured, the API response will include a `duration_overridden` field that is `true` when the minimum duration was used instead, or `false` if the requested duration was used. When the feature is not configured, this field is not present.
+The API response will include a `duration_overridden` field that is `true` when the minimum duration was used instead, or `false` if the requested duration was used.
 
 ---
 

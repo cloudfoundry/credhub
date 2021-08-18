@@ -12,7 +12,7 @@ class CertificateCredentialVersion(delegate: CertificateCredentialVersionData) :
     lateinit var parsedCertificate: CertificateReader
         private set
 
-    var durationOverridden: Boolean? = null
+    var durationOverridden: Boolean = false
 
     var ca: String?
         get() = (delegate as CertificateCredentialVersionData).ca

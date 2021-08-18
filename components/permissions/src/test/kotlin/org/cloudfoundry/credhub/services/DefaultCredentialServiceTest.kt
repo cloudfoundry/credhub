@@ -474,7 +474,7 @@ class DefaultCredentialServiceTest {
         certificateCredentialVersion.durationOverridden = true
 
         val savedCertificateCredentialVersion = CertificateCredentialVersion(CREDENTIAL_NAME)
-        savedCertificateCredentialVersion.durationOverridden = null
+        savedCertificateCredentialVersion.durationOverridden = false
 
         val originalCredentialVersion = mock(CredentialVersion::class.java)
         `when`(originalCredentialVersion.matchesGenerationParameters(generateRequest.generationParameters)).thenReturn(false)

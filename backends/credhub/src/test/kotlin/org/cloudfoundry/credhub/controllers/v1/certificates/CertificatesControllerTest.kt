@@ -18,6 +18,7 @@ import org.cloudfoundry.credhub.requests.UpdateTransitionalVersionRequest
 import org.cloudfoundry.credhub.utils.TestConstants
 import org.cloudfoundry.credhub.views.CertificateCredentialView
 import org.cloudfoundry.credhub.views.CertificateCredentialsView
+import org.cloudfoundry.credhub.views.CertificateGenerationView
 import org.cloudfoundry.credhub.views.CertificateVersionView
 import org.cloudfoundry.credhub.views.CertificateView
 import org.junit.Before
@@ -109,8 +110,8 @@ class CertificatesControllerTest {
             """
             {"set_as_transitional": true, "allow_transitional_parent_to_sign": true, "metadata": {"description": "example metadata"}}
             """.trimIndent()
-
-        certificateView.durationOverridden = true
+        certificateView = CertificateGenerationView(certificateCredentialVersion, false)
+        (certificateView as CertificateGenerationView).durationOverridden = true
         spyCertificatesHandler.handleRegenerate__returns_credentialView = certificateView
 
         val mvcResult = mockMvc

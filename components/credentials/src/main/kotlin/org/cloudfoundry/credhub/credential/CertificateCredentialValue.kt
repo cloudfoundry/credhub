@@ -55,8 +55,8 @@ class CertificateCredentialValue : CredentialValue {
     @JsonIgnore
     var versionCreatedAt: Instant? = null
 
-    @JsonInclude(Include.NON_NULL)
-    var durationOverridden: Boolean? = null
+    @JsonIgnore
+    var durationOverridden: Boolean = false
 
     constructor() : super() {}
 
@@ -70,7 +70,7 @@ class CertificateCredentialValue : CredentialValue {
         selfSigned: Boolean,
         generated: Boolean?,
         transitional: Boolean,
-        durationOverridden: Boolean?
+        durationOverridden: Boolean
     ) : super() {
         this.ca = ca
         this.trustedCa = trustedCa
@@ -103,7 +103,7 @@ class CertificateCredentialValue : CredentialValue {
         selfSigned,
         generated,
         transitional,
-        null
+        false
     ) {
     }
 
@@ -126,7 +126,7 @@ class CertificateCredentialValue : CredentialValue {
         selfSigned,
         generated,
         transitional,
-        null
+        false
     ) {
         this.versionCreatedAt = versionCreatedAt
     }
