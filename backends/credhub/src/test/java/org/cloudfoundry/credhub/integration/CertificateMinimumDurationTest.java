@@ -100,6 +100,7 @@ public class CertificateMinimumDurationTest {
                 .getContentAsString());
 
         assertThat(generateResponse.read("$.duration_overridden").toString(), is("true"));
+        assertThat(generateResponse.read("$.duration_used"), is(1825));
         Instant expiryDate = Instant.parse(generateResponse.read("$.expiry_date").toString());
         assertThat(expiryDate, is(equalTo(mockCurrentTimeProvider.getInstant().plus(1825L, ChronoUnit.DAYS))));
     }
@@ -157,9 +158,11 @@ public class CertificateMinimumDurationTest {
         List<Object> versions = getVersionsForCertificate(CREDENTIAL_NAME);
 
         assertThat(generateResponse.read("$.duration_overridden"), is(true));
+        assertThat(generateResponse.read("$.duration_used"), is(1460));
         assertThat(regeneratedExpiryDate, is(equalTo(mockCurrentTimeProvider.getInstant().plus(1460L, ChronoUnit.DAYS))));
         assertThat(versions.size(), is(equalTo(2)));
         assertThat(regenerateResponse.read("$.duration_overridden"), is(false));
+        assertThat(regenerateResponse.read("$.duration_used"), is(1460));
     }
 
     @Test
@@ -195,6 +198,7 @@ public class CertificateMinimumDurationTest {
 
         assertThat(regeneratedExpiryDate, is(equalTo(mockCurrentTimeProvider.getInstant().plus(1460L, ChronoUnit.DAYS))));
         assertThat(regenerateResponse.read("$.duration_overridden"), is(equalTo(true)));
+        assertThat(regenerateResponse.read("$.duration_used"), is(equalTo(1460)));
         assertThat(versions.size(), is(equalTo(2)));
     }
 
@@ -223,6 +227,7 @@ public class CertificateMinimumDurationTest {
 
         assertThat(regeneratedExpiryDate, is(equalTo(mockCurrentTimeProvider.getInstant().plus(1460L, ChronoUnit.DAYS))));
         assertThat(regenerateResponse.read("$.duration_overridden"), is(equalTo(true)));
+        assertThat(regenerateResponse.read("$.duration_used"), is(equalTo(1460)));
         assertThat(versions.size(), is(equalTo(2)));
     }
 
@@ -249,6 +254,7 @@ public class CertificateMinimumDurationTest {
 
         assertThat(regeneratedExpiryDate, is(equalTo(mockCurrentTimeProvider.getInstant().plus(1460L, ChronoUnit.DAYS))));
         assertThat(regenerateResponse.read("$.duration_overridden"), is(equalTo(true)));
+        assertThat(regenerateResponse.read("$.duration_used"), is(equalTo(1460)));
         assertThat(versions.size(), is(equalTo(2)));
     }
 

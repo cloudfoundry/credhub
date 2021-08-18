@@ -64,7 +64,7 @@ public class CertificateGenerator implements CredentialGenerator<CertificateCred
     if (params.isSelfSigned()) {
       try {
         final String cert = CertificateFormatter.pemOf(signedCertificateGenerator.getSelfSigned(keyPair, params));
-        return new CertificateCredentialValue(cert, cert, privatePem, null, null, params.isCa(), params.isSelfSigned(), true, false, durationOverridden);
+        return new CertificateCredentialValue(cert, cert, privatePem, null, null, params.isCa(), params.isSelfSigned(), true, false, durationOverridden, params.getDuration());
       } catch (final Exception e) {
         throw new RuntimeException(e);
       }
@@ -102,7 +102,7 @@ public class CertificateGenerator implements CredentialGenerator<CertificateCred
           certificateReader.getCertificate(),
           PrivateKeyReader.getPrivateKey(signingCaPrivateKey)
         );
-        return new CertificateCredentialValue(signingCaCertificate, CertificateFormatter.pemOf(cert), privatePem, caName, trustedCaCertificate, params.isCa(), params.isSelfSigned(), true, false, durationOverridden);
+        return new CertificateCredentialValue(signingCaCertificate, CertificateFormatter.pemOf(cert), privatePem, caName, trustedCaCertificate, params.isCa(), params.isSelfSigned(), true, false, durationOverridden, params.getDuration());
       } catch (final Exception e) {
         throw new RuntimeException(e);
       }

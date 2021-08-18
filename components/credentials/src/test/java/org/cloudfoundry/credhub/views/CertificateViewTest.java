@@ -103,6 +103,7 @@ public class CertificateViewTest {
   @Test
   public void createsAViewFromEntityIncludesDurationOverriddenWhenSet() throws Exception {
     entity.setDurationOverridden(true);
+    entity.setDurationUsed(1234);
     final CredentialView subject = CertificateView.fromEntity(entity, true, true);
     final String actualJson = serializeToString(subject);
 
@@ -121,6 +122,7 @@ public class CertificateViewTest {
             + "\"name\":\"" + credentialName + "\","
             + "\"metadata\":{\"name\":\"test\"},"
             + "\"duration_overridden\":true,"
+            + "\"duration_used\":1234,"
             + "\"value\":{"
             + "\"ca\":\"" + CertificateStringConstants.SELF_SIGNED_CA_CERT + "\","
             + "\"certificate\":\"" + CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT + "\","
