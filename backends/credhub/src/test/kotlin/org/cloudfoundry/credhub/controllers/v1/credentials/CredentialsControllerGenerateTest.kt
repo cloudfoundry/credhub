@@ -268,7 +268,8 @@ class CredentialsControllerGenerateTest {
             false,
             true,
             false,
-            true
+            true,
+            1460
         )
 
         val encryptor = Mockito.mock(Encryptor::class.java)
@@ -385,7 +386,6 @@ class CredentialsControllerGenerateTest {
 
         val actualResponseBody = mvcResult.response.contentAsString
 
-        print(actualResponseBody)
         // language=json
         val expectedResponseBody =
             """
@@ -401,6 +401,7 @@ class CredentialsControllerGenerateTest {
                   "self_signed": false,
                   "generated": true,
                   "duration_overridden": true,
+                  "duration_used": 1460,
                   "value": {
                     "ca": "${TestConstants.TEST_CA}",
                     "certificate": "${TestConstants.TEST_CERTIFICATE}",

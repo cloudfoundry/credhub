@@ -112,6 +112,7 @@ class CertificatesControllerTest {
             """.trimIndent()
         certificateView = CertificateGenerationView(certificateCredentialVersion, false)
         (certificateView as CertificateGenerationView).durationOverridden = true
+        (certificateView as CertificateGenerationView).durationUsed = 1234
         spyCertificatesHandler.handleRegenerate__returns_credentialView = certificateView
 
         val mvcResult = mockMvc
@@ -167,6 +168,7 @@ class CertificatesControllerTest {
               "certificate_authority": false,
               "self_signed": false,
               "duration_overridden": true,
+              "duration_used": 1234,
               "value": {
                 "ca": "${TestConstants.TEST_CA}",
                 "certificate": "${TestConstants.TEST_CERTIFICATE}",

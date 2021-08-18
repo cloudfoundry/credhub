@@ -74,7 +74,8 @@ class CredentialsPostIntegrationTest {
             true,
             true,
             true,
-            false
+            false,
+            730
         )
 
         Mockito.doReturn(caCredentialValue).`when`<CertificateAuthorityService>(certificateAuthorityService).findActiveVersion("/myCA")

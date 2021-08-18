@@ -13,6 +13,7 @@ class CertificateCredentialVersion(delegate: CertificateCredentialVersionData) :
         private set
 
     var durationOverridden: Boolean = false
+    var durationUsed: Int = 0
 
     var ca: String?
         get() = (delegate as CertificateCredentialVersionData).ca
@@ -95,6 +96,7 @@ class CertificateCredentialVersion(delegate: CertificateCredentialVersionData) :
         this.isSelfSigned = certificate.selfSigned
         this.generated = certificate.generated
         this.durationOverridden = certificate.durationOverridden
+        this.durationUsed = certificate.durationUsed
     }
 
     override fun getCredentialType(): String {
