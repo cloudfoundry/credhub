@@ -128,6 +128,7 @@ class DefaultCredentialService(
         val savedVersion = credentialVersionDataService.save(newVersion)
         if (savedVersion is CertificateCredentialVersion) {
             savedVersion.durationOverridden = (newVersion as CertificateCredentialVersion).durationOverridden
+            savedVersion.durationUsed = newVersion.durationUsed
         }
         return savedVersion
     }

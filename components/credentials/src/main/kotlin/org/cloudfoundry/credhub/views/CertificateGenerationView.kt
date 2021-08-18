@@ -4,6 +4,7 @@ import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
 
 class CertificateGenerationView : CertificateView {
     var durationOverridden: Boolean = false
+    var durationUsed: Int = 0
 
     internal constructor() : super() /* Jackson */ {}
 
@@ -12,5 +13,6 @@ class CertificateGenerationView : CertificateView {
         concatenateCas
     ) {
         durationOverridden = version.durationOverridden
+        durationUsed = version.durationUsed
     }
 }

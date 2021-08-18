@@ -461,7 +461,7 @@ class DefaultCredentialServiceTest {
     }
 
     @Test
-    fun save_whenThereIsACertificateOverriddenDurationAndIsSet_ReturnsDurationOverridden() {
+    fun save_whenThereIsACertificateOverriddenDurationAndIsSet_ReturnsDurationOverriddenAndDurationUsed() {
         val generateRequest = mock(BaseCredentialGenerateRequest::class.java)
         `when`(generateRequest.name).thenReturn(CREDENTIAL_NAME)
         `when`(generateRequest.type).thenReturn("certificate")
@@ -472,6 +472,7 @@ class DefaultCredentialServiceTest {
 
         val certificateCredentialVersion = CertificateCredentialVersion(CREDENTIAL_NAME)
         certificateCredentialVersion.durationOverridden = true
+        certificateCredentialVersion.durationUsed = 1234
 
         val savedCertificateCredentialVersion = CertificateCredentialVersion(CREDENTIAL_NAME)
         savedCertificateCredentialVersion.durationOverridden = false
@@ -495,6 +496,7 @@ class DefaultCredentialServiceTest {
 
         val returnedCertificateCredentialVersion = this.subject.save(originalCredentialVersion, certificateCredentialValue, generateRequest) as CertificateCredentialVersion
         assertThat(returnedCertificateCredentialVersion.durationOverridden).isEqualTo(true)
+        assertThat(returnedCertificateCredentialVersion.durationUsed).isEqualTo(1234)
     }
 
     companion object {

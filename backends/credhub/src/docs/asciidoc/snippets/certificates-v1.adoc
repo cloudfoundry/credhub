@@ -11,7 +11,10 @@ See https://github.com/pivotal-cf/credhub-release/blob/master/docs/ca-rotation.m
 
 A minimum duration can be configured for leaf and CA certificates using the `certificates.leaf_minimum_duration_in_days` and `certificates.ca_minimum_duration_in_days` server-level configuration fields. When these fields are configured, if a request to generate or regenerate a certificate has a duration lower than the minimum, then the minimum duration is used instead.
 
-The API response will include a `duration_overridden` field that is `true` when the minimum duration was used instead, or `false` if the requested duration was used.
+The API response will include two fields:
+
+* A `duration_overridden` field that is `true` when the minimum duration was used instead, or `false` if the requested duration was used.
+* A `duration_used` field that is the duration (in days) used when the certificate was generated.
 
 ---
 
@@ -35,7 +38,7 @@ operation::POST__certificates_uuid_regenerate__returns_certificate[]
 Note:
 
 * If a certificate credential only has one version and it is marked as transitional the credential cannot be regenerated using this endpoint.
-* If the duration used to generate the currently active version of the certificate is lower than the minimum duration, the regenerated certificate will use the minimum duration instead and the response will contain the `duration_overridden` flag set to true.
+* If the duration used to generate the currently active version of the certificate is lower than the minimum duration, the regenerated certificate will use the minimum duration instead and the response will contain the `duration_overridden` flag set to true. The duration value used to regenerate the certificate is included in the `duration_used` field of the response.
 
 ---
 
