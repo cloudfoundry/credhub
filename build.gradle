@@ -11,7 +11,7 @@ buildscript {
         commonsCodecVersion = '1.15' // remove this after deleting (now deprecated) spring-security-oauth2
         flywayVersion = '5.2.4' // pinning to v5 because upgrading to v6+ directly breaks the upgrade of (v4->v5->v6) unless we can work around [this breaking change](https://stackoverflow.com/questions/49063385/flyway-5-0-7-warning-about-using-schema-version-table).
         guavaVersion = '30.1.1-jre'
-        h2Version = '1.4.200'
+        h2Version = '1.4.199'
         jsonPathVersion = '2.6.0'
         kotlinVersion = '1.3.72'
         ktlintVersion = '0.37.2'
