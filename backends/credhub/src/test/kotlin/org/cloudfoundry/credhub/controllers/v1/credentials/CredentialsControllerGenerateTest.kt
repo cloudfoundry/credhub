@@ -26,7 +26,6 @@ import org.cloudfoundry.credhub.requests.CredentialRegenerateRequest
 import org.cloudfoundry.credhub.requests.RsaSshGenerationParameters
 import org.cloudfoundry.credhub.utils.TestConstants
 import org.cloudfoundry.credhub.views.CertificateGenerationView
-import org.cloudfoundry.credhub.views.CertificateView
 import org.cloudfoundry.credhub.views.CredentialView
 import org.junit.Before
 import org.junit.Rule
