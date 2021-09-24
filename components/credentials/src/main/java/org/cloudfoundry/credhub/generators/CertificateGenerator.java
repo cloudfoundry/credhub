@@ -59,7 +59,7 @@ public class CertificateGenerator implements CredentialGenerator<CertificateCred
 
     params.setDuration(getCertificateDuration(params));
 
-    final boolean durationOverridden = (originalDuration != params.getDuration());
+    final boolean durationOverridden = originalDuration != params.getDuration();
 
     if (params.isSelfSigned()) {
       try {
