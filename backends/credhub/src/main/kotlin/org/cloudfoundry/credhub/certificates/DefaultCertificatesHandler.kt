@@ -207,10 +207,10 @@ class DefaultCertificatesHandler(
         if (!enforcePermissions) return
 
         if (!permissionCheckingService.hasPermission(
-            userContextHolder.userContext?.actor!!,
-            name,
-            permissionOperation
-        )
+                userContextHolder.userContext?.actor!!,
+                name,
+                permissionOperation
+            )
         ) {
             if (permissionOperation == WRITE) {
                 throw PermissionException(ErrorMessages.Credential.INVALID_ACCESS)
@@ -226,10 +226,10 @@ class DefaultCertificatesHandler(
         val certificate = certificateService.findByCredentialUuid(credentialUuid)
 
         if (!permissionCheckingService.hasPermission(
-            userContextHolder.userContext?.actor!!,
-            certificate.name!!,
-            permissionOperation
-        )
+                userContextHolder.userContext?.actor!!,
+                certificate.name!!,
+                permissionOperation
+            )
         ) {
             if (permissionOperation == WRITE) {
                 throw PermissionException(ErrorMessages.Credential.INVALID_ACCESS)

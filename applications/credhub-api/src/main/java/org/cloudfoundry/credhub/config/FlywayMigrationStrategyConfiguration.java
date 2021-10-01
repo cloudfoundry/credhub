@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Configuration;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 @Configuration
 public class FlywayMigrationStrategyConfiguration {
@@ -28,13 +29,14 @@ public class FlywayMigrationStrategyConfiguration {
     }
 
     private void renameMigrationTableIfNeeded(@NotNull Flyway flyway) {
-        try {
-            Connection connection = flyway.getConfiguration().getDataSource().getConnection();
+        try (Connection connection = flyway.getConfiguration().getDataSource().getConnection()) {
             LOGGER.info("Checking for existence of older 'schema_version' migration table");
             ResultSet tables = connection.getMetaData().getTables(null, null, "schema_version", new String[]{"TABLE"});
             if (tables.next()) {
                 LOGGER.info("Renaming 'schema_version' migration table to 'flyway_schema_history'");
-                connection.createStatement().execute("ALTER TABLE schema_version RENAME TO flyway_schema_history");
+                try (Statement stmt = connection.createStatement()) {
+                    stmt.execute("ALTER TABLE schema_version RENAME TO flyway_schema_history");
+                }
             }
         } catch (SQLException ex) {
             LOGGER.fatal("Error renaming migration table.");

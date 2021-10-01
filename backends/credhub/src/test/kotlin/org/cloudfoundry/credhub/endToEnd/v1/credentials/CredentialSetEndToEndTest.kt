@@ -7,9 +7,9 @@ import org.cloudfoundry.credhub.helpers.RequestHelper.setPassword
 import org.cloudfoundry.credhub.utils.AuthConstants
 import org.cloudfoundry.credhub.utils.AuthConstants.Companion.ALL_PERMISSIONS_TOKEN
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver
-import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.CoreMatchers.containsString
 import org.hamcrest.CoreMatchers.equalTo
+import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.MatcherAssert.assertThat
 import org.json.JSONObject
 import org.junit.Before
