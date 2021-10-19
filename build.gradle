@@ -21,7 +21,7 @@ buildscript {
         spotBugsToolVersion = '3.1.9'
         spotBugsGradlePluginVersion = '1.6.9'
         springBootVersion = '2.2.7.RELEASE'
-        springRestDocsVersion = '2.0.4.RELEASE'
+        springRestDocsVersion = '2.0.5.RELEASE'
         springSecurityOauth2Version = '2.5.0.RELEASE'
         springSecurityOauth2AutoconfigureVersion = '2.3.1.RELEASE'
     }
