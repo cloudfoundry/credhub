@@ -51,7 +51,8 @@ server:
 
 spring:
   profiles:
-    include: dev-remote-uaa
+    group:
+      "dev": "dev-remote-uaa"
   jpa:
     hibernate:
       ddl-auto: validate
