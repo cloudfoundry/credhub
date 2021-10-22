@@ -28,9 +28,4 @@
     <Match>
         <Package name="~.*org\.cloudfoundry\.credhub\.remote\.grpc.*" />
     </Match>
-
-    <Match>
-        <Class name="org.cloudfoundry.credhub.config.FlywayMigrationStrategyConfiguration" />
-        <Bug code="RCN" />
-    </Match>
 </FindBugsFilter>

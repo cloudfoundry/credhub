@@ -73,10 +73,10 @@ class DefaultInterpolationHandler(
         if (!enforcePermissions) return
 
         if (!permissionCheckingService.hasPermission(
-                userContextHolder.userContext?.actor!!,
-                name,
-                permissionOperation
-            )
+            userContextHolder.userContext?.actor!!,
+            name,
+            permissionOperation
+        )
         ) {
             if (permissionOperation == WRITE) {
                 throw PermissionException(ErrorMessages.Credential.INVALID_ACCESS)

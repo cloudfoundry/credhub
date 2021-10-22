@@ -1,8 +1,8 @@
 package org.cloudfoundry.credhub.audit
 
 import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.Matchers.equalTo
 import org.hamcrest.Matchers.`is`
+import org.hamcrest.Matchers.equalTo
 import org.junit.Before
 import org.junit.Test
 import org.springframework.mock.web.MockHttpServletRequest

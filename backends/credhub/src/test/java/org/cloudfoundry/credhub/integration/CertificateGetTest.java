@@ -48,7 +48,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@ActiveProfiles(profiles = { "unit-test", "unit-test-permissions", }, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(value = "unit-test,unit-test-permissions", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredhubTestApp.class)
 @Transactional
 public class CertificateGetTest {

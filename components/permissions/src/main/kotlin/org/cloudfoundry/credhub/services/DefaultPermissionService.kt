@@ -48,9 +48,9 @@ constructor(
                 throw InvalidPermissionOperationException(ErrorMessages.Permissions.INVALID_UPDATE_OPERATION)
             }
             if (permissionCheckingService.hasPermissions(
-                    permissionEntry.actor!!, permissionEntry.path!!,
-                    permissionEntry.allowedOperations!!
-                )
+                permissionEntry.actor!!, permissionEntry.path!!,
+                permissionEntry.allowedOperations!!
+            )
             ) {
                 throw PermissionAlreadyExistsException(ErrorMessages.Permissions.ALREADY_EXISTS)
             }
@@ -72,9 +72,9 @@ constructor(
 
         if (!permissionCheckingService
             .hasPermission(
-                    userContextHolder.userContext?.actor!!, credentialVersion.name!!,
-                    PermissionOperation.READ_ACL
-                )
+                userContextHolder.userContext?.actor!!, credentialVersion.name!!,
+                PermissionOperation.READ_ACL
+            )
         ) {
             throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
         }
