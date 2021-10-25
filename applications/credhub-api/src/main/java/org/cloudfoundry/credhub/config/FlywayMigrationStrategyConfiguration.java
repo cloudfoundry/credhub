@@ -22,7 +22,7 @@ public class FlywayMigrationStrategyConfiguration {
     @Bean
     public FlywayMigrationStrategy repairBeforeMigration() {
         return flyway -> {
-//            renameMigrationTableIfNeeded(flyway);
+            renameMigrationTableIfNeeded(flyway);
             repairIfNecessary(flyway);
             runMigration(flyway);
         };
