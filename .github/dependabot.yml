@@ -13,6 +13,9 @@ updates:
       interval: "daily"
     open-pull-requests-limit: 100
     target-branch: "2.5.x"
+    ignore:
+    - dependency-name: "org.flywaydb:flyway-core"
+      update-types: ["version-update:semver-major"]
 
   - package-ecosystem: "gradle"
     directory: "/"
