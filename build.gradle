@@ -9,7 +9,7 @@ buildscript {
         bcpkixFipsVersion = '1.0.5'
         bcFipsVersion = '1.0.1'
         commonsCodecVersion = '1.15' // remove this after deleting (now deprecated) spring-security-oauth2
-        flywayVersion = '7.7.1'
+        flywayVersion = '7.15.0'
         guavaVersion = '30.1.1-jre'
         h2Version = '1.4.199'
         jsonPathVersion = '2.6.0'
