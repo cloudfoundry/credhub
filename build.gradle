@@ -24,6 +24,7 @@ buildscript {
         springBootVersion = '2.4.11' // Springboot 2.5.5 requires Gradle 6.8.x, 6.9.x, or 7.x
         springSecurityOauth2Version = '2.5.1.RELEASE'
         springSecurityOauth2AutoconfigureVersion = '2.3.1.RELEASE'
+        junitVersion = '4.13'
     }
     repositories {
         mavenCentral()
