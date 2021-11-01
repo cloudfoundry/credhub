@@ -4,12 +4,12 @@ import org.cloudfoundry.credhub.exceptions.InvalidRemoteAddressException
 import org.cloudfoundry.credhub.exceptions.ReadOnlyException
 import org.springframework.stereotype.Component
 import org.springframework.web.bind.annotation.RequestMethod
-import org.springframework.web.servlet.handler.HandlerInterceptorAdapter
+import org.springframework.web.servlet.AsyncHandlerInterceptor
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 @Component
-class ManagementInterceptor(private val managementRegistry: ManagementRegistry) : HandlerInterceptorAdapter() {
+class ManagementInterceptor(private val managementRegistry: ManagementRegistry) : AsyncHandlerInterceptor {
 
     override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {
         if (request.requestURI == MANAGEMENT_API && request.remoteAddr != request.localAddr) {
