@@ -28,20 +28,35 @@ public class FlywayMigrationStrategyConfiguration {
         };
     }
 
-    private void renameMigrationTableIfNeeded(@NotNull Flyway flyway) {
+    void renameMigrationTableIfNeeded(@NotNull Flyway flyway) {
         try (Connection connection = flyway.getConfiguration().getDataSource().getConnection()) {
             LOGGER.info("Checking for existence of older 'schema_version' migration table");
-            ResultSet tables = connection.getMetaData().getTables(null, null, "schema_version", new String[]{"TABLE"});
-            if (tables.next()) {
-                LOGGER.info("Renaming 'schema_version' migration table to 'flyway_schema_history'");
-                try (Statement stmt = connection.createStatement()) {
-                    stmt.execute("ALTER TABLE schema_version RENAME TO flyway_schema_history");
+            if (tableExists("schema_version", connection)) {
+                if (tableExists("flyway_schema_history", connection)) {
+                    if (tableExists("backup_schema_version", connection)) {
+                        LOGGER.info("For unknown reasons, 'schema_version', 'backup_schema_version' and 'flyway_schema_history' all exist, not performing any renaming");
+                    } else {
+                        LOGGER.info("Both 'schema_version' and 'flyway_schema_history' exist, renaming the 'schema_version' to 'backup_schema_version'");
+                        try (Statement stmt = connection.createStatement()) {
+                            stmt.execute("ALTER TABLE schema_version RENAME TO backup_schema_version");
+                        }
+                    }
+                } else {
+                    LOGGER.info("Renaming 'schema_version' migration table to 'flyway_schema_history'");
+                    try (Statement stmt = connection.createStatement()) {
+                        stmt.execute("ALTER TABLE schema_version RENAME TO flyway_schema_history");
+                    }
                 }
             }
         } catch (SQLException ex) {
             LOGGER.fatal("Error renaming migration table.");
             throw new FlywayException("Error renaming migration table", ex);
         }
+    }
+
+    private boolean tableExists(String tableName, Connection connection) throws SQLException {
+        ResultSet resultSet = connection.getMetaData().getTables(null, null, tableName, new String[]{"TABLE"});
+        return resultSet.next();
     }
 
     private void repairIfNecessary(@NotNull Flyway flyway) {
