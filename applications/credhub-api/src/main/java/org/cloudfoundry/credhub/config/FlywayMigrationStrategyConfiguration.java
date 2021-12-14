@@ -33,7 +33,6 @@ public class FlywayMigrationStrategyConfiguration {
     void renameMigrationTableIfNeeded(@NotNull Flyway flyway) {
         try (Connection connection = flyway.getConfiguration().getDataSource().getConnection()) {
             DatabaseLayer databaseLayer = new DatatabaseLayerImpl(connection);
-            LOGGER.info("Checking for existence of older 'schema_version' migration table");
             if (databaseLayer.schemaVersionTableExists()) {
                 if (databaseLayer.flywaySchemaHistoryTableExists()) {
                     if (databaseLayer.backupSchemaVersionTableExists()) {
@@ -43,7 +42,6 @@ public class FlywayMigrationStrategyConfiguration {
                         databaseLayer.renameSchemaVersionAsBackupSchemaVersion();
                     }
                 } else {
-                    LOGGER.info("Renaming 'schema_version' migration table to 'flyway_schema_history'");
                     databaseLayer.renameSchemaVersionAsFlywaySchemaHistory();
                 }
             }
