@@ -58,8 +58,8 @@ public class FlywayMigrationStrategyConfigurationTest {
         verify(mockStatement, times(1)).execute(eq("ALTER TABLE schema_version RENAME TO flyway_schema_history"));
     }
 
-    private void mockTableExistenceInDB(String tableName, boolean tableExists, ResultSet mockResultSetLegacyTable) throws SQLException {
-        when(mockResultSetLegacyTable.next()).thenReturn(tableExists);
-        when(mockDatabaseMetaData.getTables(isNull(), isNull(), eq(tableName), any())).thenReturn(mockResultSetLegacyTable);
+    private void mockTableExistenceInDB(String tableName, boolean tableExists, ResultSet mockResultSet) throws SQLException {
+        when(mockResultSet.next()).thenReturn(tableExists);
+        when(mockDatabaseMetaData.getTables(isNull(), isNull(), eq(tableName), any())).thenReturn(mockResultSet);
     }
 }
