@@ -21,15 +21,15 @@ public class DatatabaseLayerImpl implements DatabaseLayer {
 
     @Override
     public boolean oldFlywayMigrationTableExists() throws SQLException {
-        return tableExists(OLD_HISTORY_TABLE_NAME, connection);
+        return tableExists(OLD_HISTORY_TABLE_NAME);
     }
 
     @Override
     public boolean newFlywayMigrationTableExists() throws SQLException {
-        return tableExists(NEW_HISTORY_TABLE_NAME, connection);
+        return tableExists(NEW_HISTORY_TABLE_NAME);
     }
 
-    private boolean tableExists(String tableName, Connection connection) throws SQLException {
+    private boolean tableExists(String tableName) throws SQLException {
         ResultSet resultSet = connection.getMetaData().getTables(null, null, tableName, new String[]{"TABLE"});
         boolean exists = resultSet.next();
         LOGGER.info(String.format("Checking for existence of '%s' table: %s", tableName, exists));
