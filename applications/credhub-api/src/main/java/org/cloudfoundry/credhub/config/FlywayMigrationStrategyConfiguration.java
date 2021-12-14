@@ -44,9 +44,7 @@ public class FlywayMigrationStrategyConfiguration {
                     }
                 } else {
                     LOGGER.info("Renaming 'schema_version' migration table to 'flyway_schema_history'");
-                    try (Statement stmt = connection.createStatement()) {
-                        stmt.execute("ALTER TABLE schema_version RENAME TO flyway_schema_history");
-                    }
+                    databaseLayer.renameSchemaVersionAsFlywaySchemaHistory();
                 }
             }
         } catch (SQLException ex) {

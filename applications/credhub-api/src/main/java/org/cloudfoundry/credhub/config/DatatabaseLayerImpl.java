@@ -43,8 +43,10 @@ public class DatatabaseLayerImpl implements DatabaseLayer, AutoCloseable {
     }
 
     @Override
-    public void renameSchemaVersionAsFlywaySchemaHistory() {
-
+    public void renameSchemaVersionAsFlywaySchemaHistory() throws SQLException {
+        try (Statement stmt = connection.createStatement()) {
+            stmt.execute("ALTER TABLE " + OLD_HISTORY_TABLE_NAME+ " RENAME TO " + FLYWAY_SCHEMA_HISTORY_TABLE_NAME);
+        }
     }
 
     @Override

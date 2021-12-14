@@ -7,5 +7,5 @@ public interface DatabaseLayer {
     boolean flywaySchemaHistoryTableExists() throws SQLException;
     boolean backupSchemaVersionTableExists() throws SQLException;
     void renameSchemaVersionAsBackupSchemaVersion() throws SQLException;
-    void renameSchemaVersionAsFlywaySchemaHistory();
+    void renameSchemaVersionAsFlywaySchemaHistory() throws SQLException;
 }
