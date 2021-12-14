@@ -43,11 +43,6 @@ public class FlywayMigrationStrategyConfiguration {
         }
     }
 
-    private boolean tableExists(String tableName, Connection connection) throws SQLException {
-        ResultSet resultSet = connection.getMetaData().getTables(null, null, tableName, new String[]{"TABLE"});
-        return resultSet.next();
-    }
-
     private void repairIfNecessary(@NotNull Flyway flyway) {
         try {
             LOGGER.info("Validating database state...");
