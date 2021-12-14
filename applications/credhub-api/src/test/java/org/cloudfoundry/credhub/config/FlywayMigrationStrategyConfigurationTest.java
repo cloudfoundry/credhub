@@ -14,6 +14,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 public class FlywayMigrationStrategyConfigurationTest {
+    FlywayMigrationStrategyConfiguration instanceToTest;
     private Connection mockConnection;
     private Flyway mockFlyway;
     private DatabaseMetaData mockDatabaseMetaData;
@@ -23,6 +24,8 @@ public class FlywayMigrationStrategyConfigurationTest {
 
     @Before
     public void setUp() throws Exception {
+        instanceToTest = spy(FlywayMigrationStrategyConfiguration.class);
+
         mockConnection = mock(Connection.class);
         mockFlyway = mock(Flyway.class);
         mockDatabaseMetaData = mock(DatabaseMetaData.class);
@@ -45,7 +48,7 @@ public class FlywayMigrationStrategyConfigurationTest {
         mockTableExistenceInDB("flyway_schema_history", true, mockResultSetNewTable, mockDatabaseMetaData);
         when(mockConnection.getMetaData()).thenReturn(mockDatabaseMetaData);
 
-        new FlywayMigrationStrategyConfiguration().renameMigrationTableIfNeeded(mockFlyway);
+        instanceToTest.renameMigrationTableIfNeeded(mockFlyway);
 
         verify(mockStatement, times(0)).execute(any());
     }
@@ -56,7 +59,7 @@ public class FlywayMigrationStrategyConfigurationTest {
         mockTableExistenceInDB("flyway_schema_history", false, mockResultSetNewTable, mockDatabaseMetaData);
         when(mockConnection.getMetaData()).thenReturn(mockDatabaseMetaData);
 
-        new FlywayMigrationStrategyConfiguration().renameMigrationTableIfNeeded(mockFlyway);
+        instanceToTest.renameMigrationTableIfNeeded(mockFlyway);
 
         verify(mockStatement, times(1)).execute(eq("ALTER TABLE schema_version RENAME TO flyway_schema_history"));
     }
