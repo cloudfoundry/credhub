@@ -12,7 +12,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 public class FlywayMigrationStrategyConfigurationTest {
-    FlywayMigrationStrategyConfiguration instanceToTest;
+    private FlywayMigrationStrategyConfiguration instanceToTest;
     private Connection mockConnection;
     private Flyway mockFlyway;
     private DatabaseMetaData mockDatabaseMetaData;
@@ -36,8 +36,8 @@ public class FlywayMigrationStrategyConfigurationTest {
 
     @Test
     public void doesNotRenameIfOnlyNewTableExists() throws SQLException {
-        mockTableExistenceInDB(OLD_HISTORY_TABLE_NAME, false, mockResultSetLegacyTable);
-        mockTableExistenceInDB(NEW_HISTORY_TABLE_NAME, true, mockResultSetNewTable);
+        mockOldTableExistenceInDB(false);
+        mockNewTableExistenceInDB(true);
         when(mockConnection.getMetaData()).thenReturn(mockDatabaseMetaData);
         doReturn(mockConnection).when(instanceToTest).getConnection(any());
 
@@ -48,8 +48,8 @@ public class FlywayMigrationStrategyConfigurationTest {
 
     @Test
     public void renameLegacyTableToNewIfOnlyLegacyTableExists() throws SQLException {
-        mockTableExistenceInDB(OLD_HISTORY_TABLE_NAME, true, mockResultSetLegacyTable);
-        mockTableExistenceInDB(NEW_HISTORY_TABLE_NAME, false, mockResultSetNewTable);
+        mockOldTableExistenceInDB(true);
+        mockNewTableExistenceInDB(false);
         when(mockConnection.getMetaData()).thenReturn(mockDatabaseMetaData);
         doReturn(mockConnection).when(instanceToTest).getConnection(any());
 
@@ -58,8 +58,15 @@ public class FlywayMigrationStrategyConfigurationTest {
         verify(mockStatement, times(1)).execute(eq("ALTER TABLE schema_version RENAME TO flyway_schema_history"));
     }
 
-    private void mockTableExistenceInDB(String tableName, boolean tableExists, ResultSet mockResultSet) throws SQLException {
-        when(mockResultSet.next()).thenReturn(tableExists);
-        when(mockDatabaseMetaData.getTables(isNull(), isNull(), eq(tableName), any())).thenReturn(mockResultSet);
+    private void mockNewTableExistenceInDB(boolean tableExists) throws SQLException {
+        when(mockResultSetNewTable.next()).thenReturn(tableExists);
+        when(mockDatabaseMetaData.getTables(isNull(), isNull(), eq(NEW_HISTORY_TABLE_NAME), any()))
+                .thenReturn(mockResultSetNewTable);
+    }
+
+    private void mockOldTableExistenceInDB(boolean tableExists) throws SQLException {
+        when(mockResultSetLegacyTable.next()).thenReturn(tableExists);
+        when(mockDatabaseMetaData.getTables(isNull(), isNull(), eq(OLD_HISTORY_TABLE_NAME), any()))
+                .thenReturn(mockResultSetLegacyTable);
     }
 }
