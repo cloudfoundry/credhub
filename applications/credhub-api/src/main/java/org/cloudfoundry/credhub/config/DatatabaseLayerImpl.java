@@ -18,8 +18,8 @@ public class DatatabaseLayerImpl implements DatabaseLayer, AutoCloseable {
     }
 
     @Override
-    public boolean flywaySchemaHistoryTableExists() {
-        return false;
+    public boolean flywaySchemaHistoryTableExists() throws SQLException {
+        return tableExists("flyway_schema_history", connection);
     }
 
     @Override

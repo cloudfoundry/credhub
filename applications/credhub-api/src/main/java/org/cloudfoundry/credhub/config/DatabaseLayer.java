@@ -4,7 +4,7 @@ import java.sql.SQLException;
 
 public interface DatabaseLayer {
     boolean schemaVersionTableExists() throws SQLException;
-    boolean flywaySchemaHistoryTableExists();
+    boolean flywaySchemaHistoryTableExists() throws SQLException;
     boolean backupSchemaVersionExists();
     void renameSchemaVersionAsBackupSchemaVersion();
     void renameSchemaVersionAsFlywaySchemaHistory();
