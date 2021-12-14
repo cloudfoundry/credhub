@@ -3,7 +3,7 @@ package org.cloudfoundry.credhub.config;
 import java.sql.SQLException;
 
 public interface DatabaseLayer {
-    boolean schemaVersionTableExists() throws SQLException;
-    boolean flywaySchemaHistoryTableExists() throws SQLException;
-    void renameSchemaVersionAsFlywaySchemaHistory() throws SQLException;
+    boolean oldFlywayMigrationTableExists() throws SQLException;
+    boolean newFlywayMigrationTableExists() throws SQLException;
+    void updateOldMigrationTableName() throws SQLException;
 }

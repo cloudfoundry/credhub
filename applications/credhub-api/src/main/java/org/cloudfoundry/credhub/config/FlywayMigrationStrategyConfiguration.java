@@ -11,9 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 @Configuration
 public class FlywayMigrationStrategyConfiguration {
@@ -33,9 +31,9 @@ public class FlywayMigrationStrategyConfiguration {
     void renameMigrationTableIfNeeded(@NotNull Flyway flyway) {
         try (Connection connection = getConnection(flyway)) {
             DatabaseLayer databaseLayer = new DatatabaseLayerImpl(connection);
-            if (databaseLayer.schemaVersionTableExists() &&
-                    !databaseLayer.flywaySchemaHistoryTableExists()) {
-                databaseLayer.renameSchemaVersionAsFlywaySchemaHistory();
+            if (databaseLayer.oldFlywayMigrationTableExists() &&
+                    !databaseLayer.newFlywayMigrationTableExists()) {
+                databaseLayer.updateOldMigrationTableName();
             }
         } catch (SQLException ex) {
             LOGGER.fatal("Error renaming migration table.");

@@ -20,12 +20,12 @@ public class DatatabaseLayerImpl implements DatabaseLayer {
     }
 
     @Override
-    public boolean schemaVersionTableExists() throws SQLException {
+    public boolean oldFlywayMigrationTableExists() throws SQLException {
         return tableExists(OLD_HISTORY_TABLE_NAME, connection);
     }
 
     @Override
-    public boolean flywaySchemaHistoryTableExists() throws SQLException {
+    public boolean newFlywayMigrationTableExists() throws SQLException {
         return tableExists(NEW_HISTORY_TABLE_NAME, connection);
     }
 
@@ -37,7 +37,7 @@ public class DatatabaseLayerImpl implements DatabaseLayer {
     }
 
     @Override
-    public void renameSchemaVersionAsFlywaySchemaHistory() throws SQLException {
+    public void updateOldMigrationTableName() throws SQLException {
         LOGGER.info("Renaming 'schema_version' migration table to 'flyway_schema_history'");
         try (Statement stmt = connection.createStatement()) {
             stmt.execute("ALTER TABLE " + OLD_HISTORY_TABLE_NAME+ " RENAME TO " + NEW_HISTORY_TABLE_NAME);
