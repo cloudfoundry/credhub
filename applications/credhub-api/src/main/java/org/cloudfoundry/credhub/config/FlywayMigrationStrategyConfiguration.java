@@ -32,8 +32,9 @@ public class FlywayMigrationStrategyConfiguration {
     @VisibleForTesting
     void renameMigrationTableIfNeeded(@NotNull Flyway flyway) {
         try (Connection connection = flyway.getConfiguration().getDataSource().getConnection()) {
+            DatabaseLayer databaseLayer = new DatatabaseLayerImpl(connection);
             LOGGER.info("Checking for existence of older 'schema_version' migration table");
-            if (tableExists("schema_version", connection)) {
+            if (databaseLayer.schemaVersionTableExists()) {
                 if (tableExists("flyway_schema_history", connection)) {
                     if (tableExists("backup_schema_version", connection)) {
                         LOGGER.warn("For unknown reasons, 'schema_version', 'backup_schema_version' and 'flyway_schema_history' all exist, not performing any renaming");
