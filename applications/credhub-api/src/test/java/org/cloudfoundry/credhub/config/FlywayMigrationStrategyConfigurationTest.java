@@ -79,6 +79,8 @@ public class FlywayMigrationStrategyConfigurationTest {
 
     @Test
     public void handlesExecuteException() throws SQLException {
+        mockOldTableExistenceInDB(true);
+        mockNewTableExistenceInDB(false);
         when(mockStatement.execute(any())).thenThrow(SQLException.class);
 
         try {
