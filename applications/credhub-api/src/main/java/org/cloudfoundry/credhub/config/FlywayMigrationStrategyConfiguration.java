@@ -40,9 +40,7 @@ public class FlywayMigrationStrategyConfiguration {
                         LOGGER.warn("For unknown reasons, 'schema_version', 'backup_schema_version' and 'flyway_schema_history' all exist, not performing any renaming");
                     } else {
                         LOGGER.warn("Both 'schema_version' and 'flyway_schema_history' exist, renaming the 'schema_version' to 'backup_schema_version'");
-                        try (Statement stmt = connection.createStatement()) {
-                            stmt.execute("ALTER TABLE schema_version RENAME TO backup_schema_version");
-                        }
+                        databaseLayer.renameSchemaVersionAsBackupSchemaVersion();
                     }
                 } else {
                     LOGGER.info("Renaming 'schema_version' migration table to 'flyway_schema_history'");

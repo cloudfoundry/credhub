@@ -3,6 +3,7 @@ package org.cloudfoundry.credhub.config;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 public class DatatabaseLayerImpl implements DatabaseLayer, AutoCloseable {
     public static final String OLD_HISTORY_TABLE_NAME = "schema_version";
@@ -35,8 +36,10 @@ public class DatatabaseLayerImpl implements DatabaseLayer, AutoCloseable {
     }
 
     @Override
-    public void renameSchemaVersionAsBackupSchemaVersion() {
-
+    public void renameSchemaVersionAsBackupSchemaVersion() throws SQLException {
+        try (Statement stmt = connection.createStatement()) {
+            stmt.execute("ALTER TABLE schema_version RENAME TO backup_schema_version");
+        }
     }
 
     @Override
