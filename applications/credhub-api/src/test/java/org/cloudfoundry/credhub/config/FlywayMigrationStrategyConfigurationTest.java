@@ -1,12 +1,8 @@
 package org.cloudfoundry.credhub.config;
 
 import org.flywaydb.core.Flyway;
-import org.flywaydb.core.api.configuration.Configuration;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
-
-import javax.sql.DataSource;
 
 import java.sql.*;
 
@@ -40,8 +36,8 @@ public class FlywayMigrationStrategyConfigurationTest {
 
     @Test
     public void doesNotRenameIfOnlyNewTableExists() throws SQLException {
-        mockTableExistenceInDB(OLD_HISTORY_TABLE_NAME, false, mockResultSetLegacyTable, mockDatabaseMetaData);
-        mockTableExistenceInDB(NEW_HISTORY_TABLE_NAME, true, mockResultSetNewTable, mockDatabaseMetaData);
+        mockTableExistenceInDB(OLD_HISTORY_TABLE_NAME, false, mockResultSetLegacyTable);
+        mockTableExistenceInDB(NEW_HISTORY_TABLE_NAME, true, mockResultSetNewTable);
         when(mockConnection.getMetaData()).thenReturn(mockDatabaseMetaData);
         doReturn(mockConnection).when(instanceToTest).getConnection(any());
 
@@ -52,8 +48,8 @@ public class FlywayMigrationStrategyConfigurationTest {
 
     @Test
     public void renameLegacyTableToNewIfOnlyLegacyTableExists() throws SQLException {
-        mockTableExistenceInDB(OLD_HISTORY_TABLE_NAME, true, mockResultSetLegacyTable, mockDatabaseMetaData);
-        mockTableExistenceInDB(NEW_HISTORY_TABLE_NAME, false, mockResultSetNewTable, mockDatabaseMetaData);
+        mockTableExistenceInDB(OLD_HISTORY_TABLE_NAME, true, mockResultSetLegacyTable);
+        mockTableExistenceInDB(NEW_HISTORY_TABLE_NAME, false, mockResultSetNewTable);
         when(mockConnection.getMetaData()).thenReturn(mockDatabaseMetaData);
         doReturn(mockConnection).when(instanceToTest).getConnection(any());
 
@@ -62,7 +58,7 @@ public class FlywayMigrationStrategyConfigurationTest {
         verify(mockStatement, times(1)).execute(eq("ALTER TABLE schema_version RENAME TO flyway_schema_history"));
     }
 
-    private void mockTableExistenceInDB(String tableName, boolean tableExists, ResultSet mockResultSetLegacyTable, DatabaseMetaData mockDatabaseMetaData) throws SQLException {
+    private void mockTableExistenceInDB(String tableName, boolean tableExists, ResultSet mockResultSetLegacyTable) throws SQLException {
         when(mockResultSetLegacyTable.next()).thenReturn(tableExists);
         when(mockDatabaseMetaData.getTables(isNull(), isNull(), eq(tableName), any())).thenReturn(mockResultSetLegacyTable);
     }
