@@ -40,7 +40,13 @@ public class DatatabaseLayerImpl implements DatabaseLayer {
     public void updateOldMigrationTableName() throws SQLException {
         LOGGER.info("Renaming 'schema_version' migration table to 'flyway_schema_history'");
         try (Statement stmt = connection.createStatement()) {
-            stmt.execute("ALTER TABLE " + OLD_HISTORY_TABLE_NAME + " RENAME TO " + NEW_HISTORY_TABLE_NAME);
+            stmt.execute(
+                    String.format(
+                            "ALTER TABLE %s RENAME TO %s",
+                            OLD_HISTORY_TABLE_NAME,
+                            NEW_HISTORY_TABLE_NAME
+                    )
+            );
         }
     }
 }
