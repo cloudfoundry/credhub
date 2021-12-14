@@ -47,6 +47,16 @@ public class FlywayMigrationStrategyConfigurationTest {
     }
 
     @Test
+    public void doNothingIfBothTablesExist() throws SQLException {
+        mockOldTableExistenceInDB(true);
+        mockNewTableExistenceInDB(true);
+
+        instanceToTest.renameMigrationTableIfNeeded(mockFlyway);
+
+        verify(mockStatement, times(0)).execute(any());
+    }
+
+    @Test
     public void renameLegacyTableToNewIfOnlyLegacyTableExists() throws SQLException {
         mockOldTableExistenceInDB(true);
         mockNewTableExistenceInDB(false);
