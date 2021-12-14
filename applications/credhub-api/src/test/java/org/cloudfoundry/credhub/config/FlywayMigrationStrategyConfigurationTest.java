@@ -85,13 +85,18 @@ public class FlywayMigrationStrategyConfigurationTest {
         fail("Expected FlywayException");
     }
 
-    @Test(expected = FlywayException.class)
+    @Test
     public void handlesExecuteException() throws SQLException {
         when(mockStatement.execute(any())).thenThrow(SQLException.class);
 
-        instanceToTest.renameMigrationTableIfNeeded(mockFlyway);
-
-        verify(mockConnection, times(1)).close();
+        try {
+            instanceToTest.renameMigrationTableIfNeeded(mockFlyway);
+        } catch (FlywayException e) {
+            return;
+        } finally {
+            verify(mockConnection, times(1)).close();
+        }
+        fail("Expected FlywayException");
     }
 
     private void mockNewTableExistenceInDB(boolean tableExists) throws SQLException {
