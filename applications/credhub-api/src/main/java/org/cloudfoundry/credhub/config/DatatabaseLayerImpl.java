@@ -38,7 +38,7 @@ public class DatatabaseLayerImpl implements DatabaseLayer {
 
     @Override
     public void updateOldMigrationTableName() throws SQLException {
-        LOGGER.info("Renaming 'schema_version' migration table to 'flyway_schema_history'");
+        LOGGER.info("Renaming '{}' migration table to '{}'", OLD_HISTORY_TABLE_NAME, NEW_HISTORY_TABLE_NAME);
         try (Statement stmt = connection.createStatement()) {
             stmt.execute(
                     String.format(
