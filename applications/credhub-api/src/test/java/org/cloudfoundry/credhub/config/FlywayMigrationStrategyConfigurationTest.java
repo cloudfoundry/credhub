@@ -20,7 +20,6 @@ public class FlywayMigrationStrategyConfigurationTest {
     private Statement mockStatement;
     private ResultSet mockResultSetLegacyTable;
     private ResultSet mockResultSetNewTable;
-    private ResultSet mockResultSetBackupTable;
 
     @Before
     public void setUp() throws Exception {
@@ -30,8 +29,7 @@ public class FlywayMigrationStrategyConfigurationTest {
         mockStatement = mock(Statement.class);
         mockResultSetLegacyTable = mock(ResultSet.class);
         mockResultSetNewTable = mock(ResultSet.class);
-        mockResultSetBackupTable = mock(ResultSet.class);
-        Configuration mockConfiguration = mock(Configuration.class);
+         Configuration mockConfiguration = mock(Configuration.class);
         DataSource mockDataSource = mock(DataSource.class);
 
         when(mockDataSource.getConnection()).thenReturn(mockConnection);
@@ -45,7 +43,6 @@ public class FlywayMigrationStrategyConfigurationTest {
     public void doesNotRenameIfOnlyNewTableExists() throws SQLException {
         mockTableExistenceInDB("schema_version", false, mockResultSetLegacyTable, mockDatabaseMetaData);
         mockTableExistenceInDB("flyway_schema_history", true, mockResultSetNewTable, mockDatabaseMetaData);
-        mockTableExistenceInDB("backup_schema_version", false, mockResultSetBackupTable, mockDatabaseMetaData);
         when(mockConnection.getMetaData()).thenReturn(mockDatabaseMetaData);
 
         new FlywayMigrationStrategyConfiguration().renameMigrationTableIfNeeded(mockFlyway);
@@ -57,7 +54,6 @@ public class FlywayMigrationStrategyConfigurationTest {
     public void renameLegacyTableToNewIfOnlyLegacyTableExists() throws SQLException {
         mockTableExistenceInDB("schema_version", true, mockResultSetLegacyTable, mockDatabaseMetaData);
         mockTableExistenceInDB("flyway_schema_history", false, mockResultSetNewTable, mockDatabaseMetaData);
-        mockTableExistenceInDB("backup_schema_version", false, mockResultSetBackupTable, mockDatabaseMetaData);
         when(mockConnection.getMetaData()).thenReturn(mockDatabaseMetaData);
 
         new FlywayMigrationStrategyConfiguration().renameMigrationTableIfNeeded(mockFlyway);
