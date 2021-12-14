@@ -27,17 +27,11 @@ public class FlywayMigrationStrategyConfigurationTest {
         instanceToTest = spy(FlywayMigrationStrategyConfiguration.class);
 
         mockConnection = mock(Connection.class);
-        mockFlyway = mock(Flyway.class);
         mockDatabaseMetaData = mock(DatabaseMetaData.class);
         mockStatement = mock(Statement.class);
         mockResultSetLegacyTable = mock(ResultSet.class);
         mockResultSetNewTable = mock(ResultSet.class);
-         Configuration mockConfiguration = mock(Configuration.class);
-        DataSource mockDataSource = mock(DataSource.class);
 
-        when(mockDataSource.getConnection()).thenReturn(mockConnection);
-        when(mockConfiguration.getDataSource()).thenReturn(mockDataSource);
-        when(mockFlyway.getConfiguration()).thenReturn(mockConfiguration);
         when(mockStatement.execute(any())).thenReturn(false);
         when(mockConnection.createStatement()).thenReturn(mockStatement);
     }
@@ -47,6 +41,7 @@ public class FlywayMigrationStrategyConfigurationTest {
         mockTableExistenceInDB("schema_version", false, mockResultSetLegacyTable, mockDatabaseMetaData);
         mockTableExistenceInDB("flyway_schema_history", true, mockResultSetNewTable, mockDatabaseMetaData);
         when(mockConnection.getMetaData()).thenReturn(mockDatabaseMetaData);
+        doReturn(mockConnection).when(instanceToTest).getConnection(any());
 
         instanceToTest.renameMigrationTableIfNeeded(mockFlyway);
 
@@ -58,6 +53,7 @@ public class FlywayMigrationStrategyConfigurationTest {
         mockTableExistenceInDB("schema_version", true, mockResultSetLegacyTable, mockDatabaseMetaData);
         mockTableExistenceInDB("flyway_schema_history", false, mockResultSetNewTable, mockDatabaseMetaData);
         when(mockConnection.getMetaData()).thenReturn(mockDatabaseMetaData);
+        doReturn(mockConnection).when(instanceToTest).getConnection(any());
 
         instanceToTest.renameMigrationTableIfNeeded(mockFlyway);
 
