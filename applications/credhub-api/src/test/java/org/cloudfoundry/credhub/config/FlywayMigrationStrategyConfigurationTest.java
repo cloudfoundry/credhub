@@ -9,13 +9,15 @@ import java.sql.*;
 
 import static org.cloudfoundry.credhub.config.DatatabaseLayerImpl.NEW_HISTORY_TABLE_NAME;
 import static org.cloudfoundry.credhub.config.DatatabaseLayerImpl.OLD_HISTORY_TABLE_NAME;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 public class FlywayMigrationStrategyConfigurationTest {
     private FlywayMigrationStrategyConfiguration instanceToTest;
     private Connection mockConnection;
-    private Flyway mockFlyway;
+    private Flyway mockFlyway = null;
     private DatabaseMetaData mockDatabaseMetaData;
     private Statement mockStatement;
     private ResultSet mockResultSetLegacyTable;
@@ -68,9 +70,24 @@ public class FlywayMigrationStrategyConfigurationTest {
         verify(mockConnection, times(1)).close();
     }
 
-    @Test(expected = FlywayException.class)
+    @Test
     public void handlesGetConnectionException() throws SQLException {
+        boolean caughtException = false;
         doThrow(SQLException.class).when(instanceToTest).getConnection(any());
+
+        try {
+            instanceToTest.renameMigrationTableIfNeeded(mockFlyway);
+        } catch (FlywayException e) {
+            return;
+        } finally {
+            verify(mockConnection, times(1)).close();
+        }
+        fail("Expected FlywayException");
+    }
+
+    @Test(expected = FlywayException.class)
+    public void handlesExecuteException() throws SQLException {
+        when(mockStatement.execute(any())).thenThrow(SQLException.class);
 
         instanceToTest.renameMigrationTableIfNeeded(mockFlyway);
 
