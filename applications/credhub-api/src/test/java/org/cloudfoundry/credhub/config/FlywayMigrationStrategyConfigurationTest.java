@@ -1,6 +1,7 @@
 package org.cloudfoundry.credhub.config;
 
 import org.flywaydb.core.Flyway;
+import org.flywaydb.core.api.FlywayException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -64,6 +65,16 @@ public class FlywayMigrationStrategyConfigurationTest {
         instanceToTest.renameMigrationTableIfNeeded(mockFlyway);
 
         verify(mockStatement, times(1)).execute(eq("ALTER TABLE schema_version RENAME TO flyway_schema_history"));
+        verify(mockConnection, times(1)).close();
+    }
+
+    @Test(expected = FlywayException.class)
+    public void handlesGetConnectionException() throws SQLException {
+        doThrow(SQLException.class).when(instanceToTest).getConnection(any());
+
+        instanceToTest.renameMigrationTableIfNeeded(mockFlyway);
+
+        verify(mockConnection, times(1)).close();
     }
 
     private void mockNewTableExistenceInDB(boolean tableExists) throws SQLException {
