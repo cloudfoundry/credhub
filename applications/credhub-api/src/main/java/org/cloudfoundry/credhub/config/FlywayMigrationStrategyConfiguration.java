@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.config;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.flywaydb.core.Flyway;
@@ -28,15 +29,16 @@ public class FlywayMigrationStrategyConfiguration {
         };
     }
 
+    @VisibleForTesting
     void renameMigrationTableIfNeeded(@NotNull Flyway flyway) {
         try (Connection connection = flyway.getConfiguration().getDataSource().getConnection()) {
             LOGGER.info("Checking for existence of older 'schema_version' migration table");
             if (tableExists("schema_version", connection)) {
                 if (tableExists("flyway_schema_history", connection)) {
                     if (tableExists("backup_schema_version", connection)) {
-                        LOGGER.info("For unknown reasons, 'schema_version', 'backup_schema_version' and 'flyway_schema_history' all exist, not performing any renaming");
+                        LOGGER.warn("For unknown reasons, 'schema_version', 'backup_schema_version' and 'flyway_schema_history' all exist, not performing any renaming");
                     } else {
-                        LOGGER.info("Both 'schema_version' and 'flyway_schema_history' exist, renaming the 'schema_version' to 'backup_schema_version'");
+                        LOGGER.warn("Both 'schema_version' and 'flyway_schema_history' exist, renaming the 'schema_version' to 'backup_schema_version'");
                         try (Statement stmt = connection.createStatement()) {
                             stmt.execute("ALTER TABLE schema_version RENAME TO backup_schema_version");
                         }
