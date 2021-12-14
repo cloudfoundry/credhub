@@ -31,7 +31,7 @@ public class FlywayMigrationStrategyConfiguration {
 
     @VisibleForTesting
     void renameMigrationTableIfNeeded(@NotNull Flyway flyway) {
-        try (Connection connection = flyway.getConfiguration().getDataSource().getConnection()) {
+        try (Connection connection = getConnection(flyway)) {
             DatabaseLayer databaseLayer = new DatatabaseLayerImpl(connection);
             if (databaseLayer.schemaVersionTableExists() &&
                     !databaseLayer.flywaySchemaHistoryTableExists()) {
@@ -41,6 +41,11 @@ public class FlywayMigrationStrategyConfiguration {
             LOGGER.fatal("Error renaming migration table.");
             throw new FlywayException("Error renaming migration table", ex);
         }
+    }
+
+    @VisibleForTesting
+    Connection getConnection(@NotNull Flyway flyway) throws SQLException {
+        return flyway.getConfiguration().getDataSource().getConnection();
     }
 
     private void repairIfNecessary(@NotNull Flyway flyway) {
