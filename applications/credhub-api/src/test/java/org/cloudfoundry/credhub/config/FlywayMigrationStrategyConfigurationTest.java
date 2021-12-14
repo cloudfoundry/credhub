@@ -70,19 +70,11 @@ public class FlywayMigrationStrategyConfigurationTest {
         verify(mockConnection, times(1)).close();
     }
 
-    @Test
+    @Test(expected = FlywayException.class)
     public void handlesGetConnectionException() throws SQLException {
-        boolean caughtException = false;
         doThrow(SQLException.class).when(instanceToTest).getConnection(any());
 
-        try {
-            instanceToTest.renameMigrationTableIfNeeded(mockFlyway);
-        } catch (FlywayException e) {
-            return;
-        } finally {
-            verify(mockConnection, times(1)).close();
-        }
-        fail("Expected FlywayException");
+        instanceToTest.renameMigrationTableIfNeeded(mockFlyway);
     }
 
     @Test
