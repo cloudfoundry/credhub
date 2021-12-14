@@ -38,7 +38,7 @@ public class DatatabaseLayerImpl implements DatabaseLayer, AutoCloseable {
     private boolean tableExists(String tableName, Connection connection) throws SQLException {
         ResultSet resultSet = connection.getMetaData().getTables(null, null, tableName, new String[]{"TABLE"});
         boolean exists = resultSet.next();
-        LOGGER.info("Checking for existence of " + tableName + " table: ", exists);
+        LOGGER.info("Checking for existence of " + tableName + " table: " + exists);
         return exists;
     }
 
