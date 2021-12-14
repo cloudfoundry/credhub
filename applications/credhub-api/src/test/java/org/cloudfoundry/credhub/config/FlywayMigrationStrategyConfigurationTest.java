@@ -65,30 +65,6 @@ public class FlywayMigrationStrategyConfigurationTest {
         verify(mockStatement, times(1)).execute(eq("ALTER TABLE schema_version RENAME TO flyway_schema_history"));
     }
 
-    @Test
-    public void renameLegacyTableToBackupIfBothNewAndLegacyTablesExist() throws SQLException {
-        mockTableExistenceInDB("schema_version", true, mockResultSetLegacyTable, mockDatabaseMetaData);
-        mockTableExistenceInDB("flyway_schema_history", true, mockResultSetNewTable, mockDatabaseMetaData);
-        mockTableExistenceInDB("backup_schema_version", false, mockResultSetBackupTable, mockDatabaseMetaData);
-        when(mockConnection.getMetaData()).thenReturn(mockDatabaseMetaData);
-
-        new FlywayMigrationStrategyConfiguration().renameMigrationTableIfNeeded(mockFlyway);
-
-        verify(mockStatement, times(1)).execute(eq("ALTER TABLE schema_version RENAME TO backup_schema_version"));
-    }
-
-    @Test
-    public void doesNotRenameIfNewOldBackUpTableAllExist() throws SQLException {
-        mockTableExistenceInDB("schema_version", true, mockResultSetLegacyTable, mockDatabaseMetaData);
-        mockTableExistenceInDB("flyway_schema_history", true, mockResultSetNewTable, mockDatabaseMetaData);
-        mockTableExistenceInDB("backup_schema_version", true, mockResultSetBackupTable, mockDatabaseMetaData);
-        when(mockConnection.getMetaData()).thenReturn(mockDatabaseMetaData);
-
-        new FlywayMigrationStrategyConfiguration().renameMigrationTableIfNeeded(mockFlyway);
-
-        verify(mockStatement, times(0)).execute(any());
-    }
-
     private void mockTableExistenceInDB(String tableName, boolean tableExists, ResultSet mockResultSetLegacyTable, DatabaseMetaData mockDatabaseMetaData) throws SQLException {
         when(mockResultSetLegacyTable.next()).thenReturn(tableExists);
         when(mockDatabaseMetaData.getTables(isNull(), isNull(), eq(tableName), any())).thenReturn(mockResultSetLegacyTable);

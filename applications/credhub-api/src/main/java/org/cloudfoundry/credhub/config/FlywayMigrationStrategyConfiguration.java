@@ -33,17 +33,9 @@ public class FlywayMigrationStrategyConfiguration {
     void renameMigrationTableIfNeeded(@NotNull Flyway flyway) {
         try (Connection connection = flyway.getConfiguration().getDataSource().getConnection()) {
             DatabaseLayer databaseLayer = new DatatabaseLayerImpl(connection);
-            if (databaseLayer.schemaVersionTableExists()) {
-                if (databaseLayer.flywaySchemaHistoryTableExists()) {
-                    if (databaseLayer.backupSchemaVersionTableExists()) {
-                        LOGGER.warn("For unknown reasons, 'schema_version', 'backup_schema_version' and 'flyway_schema_history' all exist, not performing any renaming");
-                    } else {
-                        LOGGER.warn("Both 'schema_version' and 'flyway_schema_history' exist, renaming the 'schema_version' to 'backup_schema_version'");
-                        databaseLayer.renameSchemaVersionAsBackupSchemaVersion();
-                    }
-                } else {
-                    databaseLayer.renameSchemaVersionAsFlywaySchemaHistory();
-                }
+            if (databaseLayer.schemaVersionTableExists() &&
+                    !databaseLayer.flywaySchemaHistoryTableExists()) {
+                databaseLayer.renameSchemaVersionAsFlywaySchemaHistory();
             }
         } catch (SQLException ex) {
             LOGGER.fatal("Error renaming migration table.");
