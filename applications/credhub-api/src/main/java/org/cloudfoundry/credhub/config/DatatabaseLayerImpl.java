@@ -8,7 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class DatatabaseLayerImpl implements DatabaseLayer, AutoCloseable {
+public class DatatabaseLayerImpl implements DatabaseLayer {
     public static final String OLD_HISTORY_TABLE_NAME = "schema_version";
     public static final String NEW_HISTORY_TABLE_NAME = "flyway_schema_history";
     private final Connection connection;
@@ -42,10 +42,5 @@ public class DatatabaseLayerImpl implements DatabaseLayer, AutoCloseable {
         try (Statement stmt = connection.createStatement()) {
             stmt.execute("ALTER TABLE " + OLD_HISTORY_TABLE_NAME+ " RENAME TO " + NEW_HISTORY_TABLE_NAME);
         }
-    }
-
-    @Override
-    public void close() throws Exception {
-        connection.close();
     }
 }
