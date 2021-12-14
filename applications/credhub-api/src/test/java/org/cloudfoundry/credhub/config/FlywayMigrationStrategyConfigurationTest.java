@@ -32,14 +32,14 @@ public class FlywayMigrationStrategyConfigurationTest {
 
         when(mockStatement.execute(any())).thenReturn(false);
         when(mockConnection.createStatement()).thenReturn(mockStatement);
+        when(mockConnection.getMetaData()).thenReturn(mockDatabaseMetaData);
+        doReturn(mockConnection).when(instanceToTest).getConnection(any());
     }
 
     @Test
     public void doesNotRenameIfOnlyNewTableExists() throws SQLException {
         mockOldTableExistenceInDB(false);
         mockNewTableExistenceInDB(true);
-        when(mockConnection.getMetaData()).thenReturn(mockDatabaseMetaData);
-        doReturn(mockConnection).when(instanceToTest).getConnection(any());
 
         instanceToTest.renameMigrationTableIfNeeded(mockFlyway);
 
@@ -50,8 +50,6 @@ public class FlywayMigrationStrategyConfigurationTest {
     public void renameLegacyTableToNewIfOnlyLegacyTableExists() throws SQLException {
         mockOldTableExistenceInDB(true);
         mockNewTableExistenceInDB(false);
-        when(mockConnection.getMetaData()).thenReturn(mockDatabaseMetaData);
-        doReturn(mockConnection).when(instanceToTest).getConnection(any());
 
         instanceToTest.renameMigrationTableIfNeeded(mockFlyway);
 
