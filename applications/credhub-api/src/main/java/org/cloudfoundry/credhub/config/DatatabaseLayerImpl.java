@@ -7,6 +7,7 @@ import java.sql.SQLException;
 public class DatatabaseLayerImpl implements DatabaseLayer, AutoCloseable {
     public static final String OLD_HISTORY_TABLE_NAME = "schema_version";
     public static final String FLYWAY_SCHEMA_HISTORY_TABLE_NAME = "flyway_schema_history";
+    public static final String BACKUP_SCHEMA_VERSION_TABLE_NAME = "backup_schema_version";
     private final Connection connection;
 
     public DatatabaseLayerImpl(Connection connection) {
@@ -24,8 +25,8 @@ public class DatatabaseLayerImpl implements DatabaseLayer, AutoCloseable {
     }
 
     @Override
-    public boolean backupSchemaVersionExists() {
-        return false;
+    public boolean backupSchemaVersionTableExists() throws SQLException {
+        return tableExists(BACKUP_SCHEMA_VERSION_TABLE_NAME, connection);
     }
 
     private boolean tableExists(String tableName, Connection connection) throws SQLException {

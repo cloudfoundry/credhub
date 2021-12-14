@@ -36,7 +36,7 @@ public class FlywayMigrationStrategyConfiguration {
             LOGGER.info("Checking for existence of older 'schema_version' migration table");
             if (databaseLayer.schemaVersionTableExists()) {
                 if (databaseLayer.flywaySchemaHistoryTableExists()) {
-                    if (tableExists("backup_schema_version", connection)) {
+                    if (databaseLayer.backupSchemaVersionTableExists()) {
                         LOGGER.warn("For unknown reasons, 'schema_version', 'backup_schema_version' and 'flyway_schema_history' all exist, not performing any renaming");
                     } else {
                         LOGGER.warn("Both 'schema_version' and 'flyway_schema_history' exist, renaming the 'schema_version' to 'backup_schema_version'");
