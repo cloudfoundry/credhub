@@ -9,7 +9,7 @@ buildscript {
         bcpkixFipsVersion = '1.0.2'
         bcFipsVersion = '1.0.1'
         commonsCodecVersion = '1.14' // remove this after deleting (now deprecated) spring-security-oauth2
-        flywayVersion = '5.2.4' // pinning to v5 because upgrading to v6+ directly breaks the upgrade of (v4->v5->v6) unless we can work around [this breaking change](https://stackoverflow.com/questions/49063385/flyway-5-0-7-warning-about-using-schema-version-table).
+        flywayVersion = '8.2.2' // pinning to v5 because upgrading to v6+ directly breaks the upgrade of (v4->v5->v6) unless we can work around [this breaking change](https://stackoverflow.com/questions/49063385/flyway-5-0-7-warning-about-using-schema-version-table).
         guavaVersion = '29.0-jre'
         h2Version = '1.4.199'
         jsonPathVersion = '2.4.0'
@@ -24,7 +24,7 @@ buildscript {
         springRestDocsVersion = '2.0.4.RELEASE'
         springSecurityOauth2Version = '2.5.0.RELEASE'
         springSecurityOauth2AutoconfigureVersion = '2.3.1.RELEASE'
-        log4jVersion = '2.15.0' // this pinning can be removed when we bump to a spring boot starter version that has 2.15.0+ (due to CVE https://github.com/advisories/GHSA-jfh8-c2jp-5v3q in log4j < 2.15.0)
+        log4jVersion = '2.16.0' // this pinning can be removed when we bump to a spring boot starter version that has 2.16.0+ (due to CVE https://github.com/advisories/GHSA-jfh8-c2jp-5v3q in log4j <= 2.15.0)
     }
     repositories {
         mavenCentral()
