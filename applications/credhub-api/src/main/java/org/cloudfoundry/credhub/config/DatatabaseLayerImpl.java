@@ -32,7 +32,7 @@ public class DatatabaseLayerImpl implements DatabaseLayer {
     private boolean tableExists(String tableName) throws SQLException {
         ResultSet resultSet = connection.getMetaData().getTables(null, null, tableName, new String[]{"TABLE"});
         boolean exists = resultSet.next();
-        LOGGER.info(String.format("Checking for existence of '%s' table: %s", tableName, exists));
+        LOGGER.info("Checking for existence of '{}' table: {}", tableName, exists);
         return exists;
     }
 
