@@ -6,6 +6,7 @@ import java.sql.SQLException;
 
 public class DatatabaseLayerImpl implements DatabaseLayer, AutoCloseable {
     public static final String OLD_HISTORY_TABLE_NAME = "schema_version";
+    public static final String FLYWAY_SCHEMA_HISTORY_TABLE_NAME = "flyway_schema_history";
     private final Connection connection;
 
     public DatatabaseLayerImpl(Connection connection) {
@@ -19,7 +20,7 @@ public class DatatabaseLayerImpl implements DatabaseLayer, AutoCloseable {
 
     @Override
     public boolean flywaySchemaHistoryTableExists() throws SQLException {
-        return tableExists("flyway_schema_history", connection);
+        return tableExists(FLYWAY_SCHEMA_HISTORY_TABLE_NAME, connection);
     }
 
     @Override
