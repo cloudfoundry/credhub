@@ -10,6 +10,8 @@ import javax.sql.DataSource;
 
 import java.sql.*;
 
+import static org.cloudfoundry.credhub.config.DatatabaseLayerImpl.NEW_HISTORY_TABLE_NAME;
+import static org.cloudfoundry.credhub.config.DatatabaseLayerImpl.OLD_HISTORY_TABLE_NAME;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -38,8 +40,8 @@ public class FlywayMigrationStrategyConfigurationTest {
 
     @Test
     public void doesNotRenameIfOnlyNewTableExists() throws SQLException {
-        mockTableExistenceInDB("schema_version", false, mockResultSetLegacyTable, mockDatabaseMetaData);
-        mockTableExistenceInDB("flyway_schema_history", true, mockResultSetNewTable, mockDatabaseMetaData);
+        mockTableExistenceInDB(OLD_HISTORY_TABLE_NAME, false, mockResultSetLegacyTable, mockDatabaseMetaData);
+        mockTableExistenceInDB(NEW_HISTORY_TABLE_NAME, true, mockResultSetNewTable, mockDatabaseMetaData);
         when(mockConnection.getMetaData()).thenReturn(mockDatabaseMetaData);
         doReturn(mockConnection).when(instanceToTest).getConnection(any());
 
@@ -50,8 +52,8 @@ public class FlywayMigrationStrategyConfigurationTest {
 
     @Test
     public void renameLegacyTableToNewIfOnlyLegacyTableExists() throws SQLException {
-        mockTableExistenceInDB("schema_version", true, mockResultSetLegacyTable, mockDatabaseMetaData);
-        mockTableExistenceInDB("flyway_schema_history", false, mockResultSetNewTable, mockDatabaseMetaData);
+        mockTableExistenceInDB(OLD_HISTORY_TABLE_NAME, true, mockResultSetLegacyTable, mockDatabaseMetaData);
+        mockTableExistenceInDB(NEW_HISTORY_TABLE_NAME, false, mockResultSetNewTable, mockDatabaseMetaData);
         when(mockConnection.getMetaData()).thenReturn(mockDatabaseMetaData);
         doReturn(mockConnection).when(instanceToTest).getConnection(any());
 

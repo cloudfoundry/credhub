@@ -9,8 +9,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 public class DatatabaseLayerImpl implements DatabaseLayer {
-    public static final String OLD_HISTORY_TABLE_NAME = "schema_version";
-    public static final String NEW_HISTORY_TABLE_NAME = "flyway_schema_history";
+    static final String OLD_HISTORY_TABLE_NAME = "schema_version";
+    static final String NEW_HISTORY_TABLE_NAME = "flyway_schema_history";
     private final Connection connection;
 
     private static final Logger LOGGER = LogManager.getLogger(DatatabaseLayerImpl.class.getName());
