@@ -10,7 +10,6 @@ import java.sql.*;
 
 import static org.cloudfoundry.credhub.config.DatatabaseLayerImpl.NEW_HISTORY_TABLE_NAME;
 import static org.cloudfoundry.credhub.config.DatatabaseLayerImpl.OLD_HISTORY_TABLE_NAME;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
