@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.config;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.FlywayException;
 import org.junit.Before;
@@ -17,16 +18,18 @@ import static org.mockito.Mockito.*;
 public class FlywayMigrationStrategyConfigurationTest {
     private FlywayMigrationStrategyConfiguration instanceToTest;
     private Connection mockConnection;
-    private Flyway mockFlyway = null;
+    private Flyway mockFlyway;
     private DatabaseMetaData mockDatabaseMetaData;
     private Statement mockStatement;
     private ResultSet mockResultSetLegacyTable;
     private ResultSet mockResultSetNewTable;
 
+    @SuppressFBWarnings(value = {"OBL_UNSATISFIED_OBLIGATION"}, justification = "Ignore that database objects/resources might fail to be cleaned up as they are just mocks")
     @Before
     public void setUp() throws Exception {
         instanceToTest = spy(FlywayMigrationStrategyConfiguration.class);
 
+        mockFlyway = mock(Flyway.class);
         mockConnection = mock(Connection.class);
         mockDatabaseMetaData = mock(DatabaseMetaData.class);
         mockStatement = mock(Statement.class);
