@@ -50,9 +50,6 @@ server:
     enabled-protocols: TLSv1.2
 
 spring:
-  profiles:
-    group:
-      "dev": "dev-remote-uaa"
   jpa:
     hibernate:
       ddl-auto: validate

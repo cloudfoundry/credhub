@@ -1,6 +1,9 @@
 spring:
   main:
     allow-bean-definition-overriding: true
+  profiles:
+    group:
+      "dev": "dev-remote-uaa"
 
 management:
   endpoints:
