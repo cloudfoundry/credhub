@@ -20,6 +20,10 @@ setup_tls_key_store() {
     cat > server.cnf <<EOF
 [v3_ca]
 subjectKeyIdentifier=hash
+subjectAltName = @alt_names
+
+[alt_names]
+DNS.1 = localhost
 EOF
 
     echo "Generating a key store for the certificate the server presents during TLS"
@@ -97,6 +101,10 @@ subjectKeyIdentifier=hash
 authorityKeyIdentifier=keyid,issuer
 basicConstraints = critical,CA:FALSE
 extendedKeyUsage = clientAuth
+subjectAltName = @alt_names
+
+[alt_names]
+DNS.1 = localhost
 EOF
 
   openssl genrsa -out client_key.pem 2048
