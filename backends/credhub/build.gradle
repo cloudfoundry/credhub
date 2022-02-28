@@ -52,8 +52,10 @@ dependencies {
 
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation('org.springframework.boot:spring-boot-starter-validation')
     testImplementation("org.springframework.security:spring-security-test")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("junit:junit:${junitVersion}")
 
     implementation('com.fasterxml.jackson.module:jackson-module-kotlin')
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
@@ -71,7 +73,7 @@ dependencies {
     api("org.bouncycastle:bcpkix-fips:${bcpkixFipsVersion}")
 
     // proto
-    implementation "com.google.api.grpc:proto-google-common-protos:1.18.0"
+    implementation "com.google.api.grpc:proto-google-common-protos:2.3.2"
     implementation "io.grpc:grpc-services:${grpcVersion}"
 
     implementation("com.google.guava:guava:${guavaVersion}")
@@ -122,6 +124,6 @@ asciidoctor.finalizedBy(buildAndCopyRestDocsIntoSpringStaticAssetLocation)
 
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:3.12.3"
+        artifact = "com.google.protobuf:protoc:3.17.3"
     }
 }

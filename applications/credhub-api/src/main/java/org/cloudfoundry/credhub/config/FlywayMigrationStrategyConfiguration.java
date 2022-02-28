@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.config;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.flywaydb.core.Flyway;
@@ -9,6 +10,9 @@ import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+
 @Configuration
 public class FlywayMigrationStrategyConfiguration {
 
@@ -17,9 +21,29 @@ public class FlywayMigrationStrategyConfiguration {
     @Bean
     public FlywayMigrationStrategy repairBeforeMigration() {
         return flyway -> {
+            renameMigrationTableIfNeeded(flyway);
             repairIfNecessary(flyway);
             runMigration(flyway);
         };
+    }
+
+    @VisibleForTesting
+    void renameMigrationTableIfNeeded(@NotNull Flyway flyway) {
+        try (Connection connection = getConnection(flyway)) {
+            DatabaseLayer databaseLayer = new DatatabaseLayerImpl(connection);
+            if (databaseLayer.oldFlywayMigrationTableExists() &&
+                    !databaseLayer.newFlywayMigrationTableExists()) {
+                databaseLayer.updateOldMigrationTableName();
+            }
+        } catch (SQLException ex) {
+            LOGGER.fatal("Error renaming migration table.");
+            throw new FlywayException("Error renaming migration table", ex);
+        }
+    }
+
+    @VisibleForTesting
+    Connection getConnection(@NotNull Flyway flyway) throws SQLException {
+        return flyway.getConfiguration().getDataSource().getConnection();
     }
 
     private void repairIfNecessary(@NotNull Flyway flyway) {

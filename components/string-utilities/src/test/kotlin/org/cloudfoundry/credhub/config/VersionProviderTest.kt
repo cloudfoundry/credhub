@@ -3,12 +3,12 @@ package org.cloudfoundry.credhub.config
 import org.cloudfoundry.credhub.utils.ResourceReader
 import org.cloudfoundry.credhub.utils.VersionProvider
 import org.hamcrest.CoreMatchers.equalTo
-import org.junit.Assert.assertThat
+import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
-import org.mockito.Mockito.`when`
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.`when`
 
 @RunWith(JUnit4::class)
 class VersionProviderTest {

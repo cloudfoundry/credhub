@@ -33,6 +33,7 @@ dependencies {
     implementation("org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:${springSecurityOauth2AutoconfigureVersion}")
     implementation("org.springframework.security.oauth:spring-security-oauth2:${springSecurityOauth2Version}")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("junit:junit:${junitVersion}")
     testImplementation project(path: ":components:test-support", configuration: "testOutput")
 
     implementation('com.fasterxml.jackson.module:jackson-module-kotlin')

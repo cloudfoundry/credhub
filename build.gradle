@@ -4,26 +4,27 @@ buildscript {
     ext {
         apacheCommonsLang3Version = '3.10'
         apacheCommonsIoVersion = '1.3.2'
-        apacheHttpClientVersion = '4.5.12'
+        apacheHttpClientVersion = '4.5.13'
         asciiDoctorPluginVersion = '1.6.1'
-        bcpkixFipsVersion = '1.0.2'
+        bcpkixFipsVersion = '1.0.5'
         bcFipsVersion = '1.0.1'
-        commonsCodecVersion = '1.14' // remove this after deleting (now deprecated) spring-security-oauth2
-        flywayVersion = '5.2.4' // pinning to v5 because upgrading to v6+ directly breaks the upgrade of (v4->v5->v6) unless we can work around [this breaking change](https://stackoverflow.com/questions/49063385/flyway-5-0-7-warning-about-using-schema-version-table).
-        guavaVersion = '29.0-jre'
+        commonsCodecVersion = '1.15' // remove this after deleting (now deprecated) spring-security-oauth2
+        flywayVersion = '7.15.0'
+        guavaVersion = '30.1.1-jre'
         h2Version = '1.4.199'
-        jsonPathVersion = '2.4.0'
-        kotlinVersion = '1.3.72'
-        ktlintVersion = '0.37.2'
-        mariadbJdbcVersion = '2.3.0' // When using a MariaDB with a driver of version 2.4.0 or greater, FlyWay 5 does not know how to handle the driver reporting itself as "MariaDB" and will throw an exception causing CredHub to be unable to start. Do not upgrade until this issue is resolved.
+        jsonPathVersion = '2.6.0'
+        kotlinVersion = '1.4.32'
+        ktlintVersion = '0.42.1'
+        mariadbJdbcVersion = '2.7.4' // When using a MariaDB with a driver of version 2.4.0 or greater, FlyWay 5 does not know how to handle the driver reporting itself as "MariaDB" and will throw an exception causing CredHub to be unable to start. Do not upgrade until this issue is resolved. See #174776586.
         passayVersion = '1.6.1'
         postgresqlJdbcVersion = '42.2.14'
         spotBugsToolVersion = '3.1.9'
         spotBugsGradlePluginVersion = '1.6.9'
-        springBootVersion = '2.2.7.RELEASE'
-        springRestDocsVersion = '2.0.4.RELEASE'
-        springSecurityOauth2Version = '2.5.0.RELEASE'
+        springRestDocsVersion = '2.0.5.RELEASE'
+        springBootVersion = '2.4.11' // Springboot 2.5.5 requires Gradle 6.8.x, 6.9.x, or 7.x
+        springSecurityOauth2Version = '2.5.1.RELEASE'
         springSecurityOauth2AutoconfigureVersion = '2.3.1.RELEASE'
+        junitVersion = '4.13'
         log4jVersion = '2.17.1' // this pinning can be removed when we bump to a spring boot starter version that has 2.17.1+ (due to CVE https://github.com/advisories/GHSA-jfh8-c2jp-5v3q in log4j <= 2.15.0)
     }
     repositories {
@@ -42,7 +43,7 @@ buildscript {
 }
 
 plugins {
-    id 'com.github.ben-manes.versions' version '0.28.0'
+    id 'com.github.ben-manes.versions' version '0.39.0'
 }
 
 apply plugin: DependenciesGraphPlugin
@@ -64,7 +65,7 @@ dependencyUpdates.resolutionStrategy = {
 subprojects {
     plugins.withType(JavaPlugin) {
         dependencies {
-            testImplementation("org.mockito:mockito-inline:3.3.3")
+            testImplementation("org.mockito:mockito-inline:3.11.2")
         }
     }
 }

@@ -18,12 +18,12 @@ function clean_test_databases_mysql() {
 
     for credhub_test_database in $credhub_test_databases; do
         echo "Removing test database: $credhub_test_database"
-        mysql --protocol=tcp --user=root --execute "DROP DATABASE IF EXISTS $credhub_test_database;"
+        mysql --protocol=tcp --user=root --protocol=tcp --execute "DROP DATABASE IF EXISTS $credhub_test_database;"
         echo ""
     done
 
-    echo "🏗️  Creatingmysql test database: credhub_test"
-    mysql --protocol=tcp --user=root --execute "CREATE DATABASE credhub_test;"
+    echo "🏗️  Creating mysql test database: credhub_test"
+    mysql --user=root --protocol=tcp --execute "CREATE DATABASE credhub_test;"
     echo ""
 }
 
@@ -33,7 +33,7 @@ function run_tests_mysql() {
     echo "🚀 Running mysql tests"
     echo ""
 
-    mysql --protocol=tcp --user=root --execute "SET GLOBAL max_connections = 1000;"
+    mysql --protocol=tcp --user=root --protocol=tcp --execute "SET GLOBAL max_connections = 1000;"
     ./gradlew clean $gradle_test_command -Dspring.profiles.active=unit-test-mysql
 }
 

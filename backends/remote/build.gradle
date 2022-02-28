@@ -1,7 +1,7 @@
 buildscript {
     ext {
         grpcVersion = '1.30.2'
-        nettyVersion = '4.1.50.Final'
+        nettyVersion = '4.1.73.Final'
     }
     repositories {
         mavenCentral()
@@ -55,7 +55,7 @@ dependencies {
     implementation("commons-codec:commons-codec:${commonsCodecVersion}")
 
     //gRPC
-    implementation "com.google.api.grpc:proto-google-common-protos:1.18.0"
+    implementation "com.google.api.grpc:proto-google-common-protos:2.3.2"
     implementation "io.grpc:grpc-services:${grpcVersion}"
 
     //gRPC - Netty
@@ -99,7 +99,7 @@ sourceSets {
 assemble.mustRunAfter("clean")
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:3.12.3"
+        artifact = "com.google.protobuf:protoc:3.17.3"
     }
     plugins {
         grpc {
