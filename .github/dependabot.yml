@@ -6,6 +6,7 @@ updates:
     interval: daily
     time: "11:00"
   target-branch: main
+  open-pull-requests-limit: 100
   ignore:
   - dependency-name: org.flywaydb:flyway-core
     versions:
