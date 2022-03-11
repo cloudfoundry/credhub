@@ -1,9 +1,9 @@
 package org.cloudfoundry.credhub.exceptions
 
+import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.array
 import org.hamcrest.core.IsEqual.equalTo
 import org.hamcrest.core.IsInstanceOf.instanceOf
-import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
