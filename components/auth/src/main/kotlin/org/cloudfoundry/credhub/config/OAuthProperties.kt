@@ -35,8 +35,14 @@ class OAuthProperties {
     private fun getResolvedUri(extension: String): URI {
         val authServer = if (internalUrl != null) internalUrl else url
         val base = URI(authServer!!)
-        val path = Paths.get(base.path, extension).toString()
+        val path = concatPath(base.path, extension).toString()
         return base.resolve(path)
+    }
+
+    private fun concatPath(p1: String, p2: String): String {
+        val subPath = if (p2.startsWith("/")) p2.substring(1) else p2
+        val path = (if (p1.endsWith("/")) p1 else p1 + "/") + subPath
+        return path
     }
 
     companion object {
