@@ -12,7 +12,7 @@ buildscript {
         flywayVersion = '7.15.0'
         guavaVersion = '30.1.1-jre'
         h2Version = '1.4.199'
-        jsonPathVersion = '2.6.0'
+        jsonPathVersion = '2.7.0'
         kotlinVersion = '1.4.32'
         ktlintVersion = '0.42.1'
         mariadbJdbcVersion = '2.7.4' // When using a MariaDB with a driver of version 2.4.0 or greater, FlyWay 5 does not know how to handle the driver reporting itself as "MariaDB" and will throw an exception causing CredHub to be unable to start. Do not upgrade until this issue is resolved. See #174776586.
