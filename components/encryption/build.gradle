@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        grpcVersion = '1.30.2'
+        grpcVersion = '1.45.0'
         nettyVersion = '4.1.75.Final'
     }
     repositories {
