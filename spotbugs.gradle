@@ -1,5 +1,3 @@
-apply plugin: "com.github.spotbugs"
-
 spotbugs {
     toolVersion = "$spotBugsToolVersion"
     excludeFilter = file("$rootProject.projectDir/config/findbugs/exclude-filter.xml")
