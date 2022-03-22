@@ -20,7 +20,7 @@ buildscript {
         postgresqlJdbcVersion = '42.3.3'
         spotBugsToolVersion = '4.6.0'
         springRestDocsVersion = '2.0.6.RELEASE'
-        springBootVersion = '2.5.10'
+        springBootVersion = '2.6.4'
         springSecurityOauth2Version = '2.5.1.RELEASE'
         springSecurityOauth2AutoconfigureVersion = '2.6.3'
         junitVersion = '4.13.2'
