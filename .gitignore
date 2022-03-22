@@ -169,6 +169,7 @@ gradle-app.setting
 *.csr
 *.p12
 *.pem
+!src/test/resources/ca/dev_uaa.pem
 *.srl
 
 # Ignore any key stores
