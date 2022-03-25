@@ -178,6 +178,17 @@ create database credhub_dev;
 
 If you're on a Mac using Homebrew and you run into a problem where you install MySQL and it isn't running (i.e., `mysql -u root` errors with a socket error), you may need to uninstall mysql, delete the `/usr/local/var/mysql` directory (*Warning: this will delete all local MySQL data!*), and then reinstall MySQL.
 
+Alternatively, you can also start a local MySQL server with docker:
+```
+docker run \
+  --name mysql-server \
+  --env MYSQL_ALLOW_EMPTY_PASSWORD='yes' \
+  --env MYSQL_ROOT_HOST='%' \
+  --publish 3306:3306 \
+  --detach \
+  "mysql:8.0"
+```    
+
 Then to run in development mode with MySQL:
 
 ```sh
