@@ -22,7 +22,7 @@ buildscript {
         springRestDocsVersion = '2.0.6.RELEASE'
         springBootVersion = '2.5.10'
         springSecurityOauth2Version = '2.5.1.RELEASE'
-        springSecurityOauth2AutoconfigureVersion = '2.6.3'
+        springSecurityOauth2AutoconfigureVersion = '2.6.5'
         junitVersion = '4.13.2'
         log4jVersion = '2.17.2' // this pinning can be removed when we bump to a spring boot starter version that has 2.17.1+ (due to CVE https://github.com/advisories/GHSA-jfh8-c2jp-5v3q in log4j <= 2.15.0)
     }
