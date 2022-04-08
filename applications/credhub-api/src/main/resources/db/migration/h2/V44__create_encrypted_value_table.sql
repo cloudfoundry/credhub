@@ -3,7 +3,7 @@ CREATE CACHED TABLE encrypted_value (
   encryption_key_uuid BINARY(16) NOT NULL,
   encrypted_value BINARY(7016) NOT NULL,
   nonce BINARY(16) NOT NULL,
-  updated_at BIGINT NOT NULL,
+  updated_at BIGINT NOT NULL
 );
 
 ALTER TABLE encrypted_value
