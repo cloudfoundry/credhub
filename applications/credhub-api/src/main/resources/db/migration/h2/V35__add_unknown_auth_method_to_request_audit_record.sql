@@ -6,5 +6,5 @@ ALTER TABLE request_audit_record
   CHECK (auth_method IN ('uaa', 'mutual_tls', 'unknown'));
 
 ALTER TABLE `request_audit_record`
-  MODIFY `auth_method`
+  ALTER COLUMN `auth_method`
   VARCHAR(10) DEFAULT 'unknown' NOT NULL;
