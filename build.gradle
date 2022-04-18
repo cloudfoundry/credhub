@@ -17,7 +17,7 @@ buildscript {
         ktlintVersion = '0.42.1'
         mariadbJdbcVersion = '2.7.5' // When using a MariaDB with a driver of version 2.4.0 or greater, FlyWay 5 does not know how to handle the driver reporting itself as "MariaDB" and will throw an exception causing CredHub to be unable to start. Do not upgrade until this issue is resolved. See #174776586.
         passayVersion = '1.6.1'
-        postgresqlJdbcVersion = '42.3.3'
+        postgresqlJdbcVersion = '42.3.4'
         spotBugsToolVersion = '4.6.0'
         springRestDocsVersion = '2.0.6.RELEASE'
         springBootVersion = '2.5.12'
