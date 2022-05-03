@@ -15,7 +15,6 @@ buildscript {
         jsonPathVersion = '2.7.0'
         kotlinVersion = '1.5.32'
         ktlintVersion = '0.42.1'
-        mariadbJdbcVersion = '2.7.5'
         passayVersion = '1.6.1'
         postgresqlJdbcVersion = '42.3.4'
         spotBugsToolVersion = '4.6.0'
@@ -34,7 +33,7 @@ buildscript {
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}")
         classpath("org.jetbrains.kotlin:kotlin-allopen:${kotlinVersion}")
-        classpath("org.owasp:dependency-check-gradle:7.0.4.1")
+        classpath("org.owasp:dependency-check-gradle:7.1.0.1")
         classpath("org.bouncycastle:bc-fips:${bcFipsVersion}")
         classpath("org.bouncycastle:bcpkix-fips:${bcpkixFipsVersion}")
     }

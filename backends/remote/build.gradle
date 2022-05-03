@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        grpcVersion = '1.45.1'
+        grpcVersion = '1.46.0'
         nettyVersion = '4.1.76.Final'
     }
     repositories {
@@ -99,7 +99,7 @@ sourceSets {
 assemble.mustRunAfter("clean")
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:3.20.0"
+        artifact = "com.google.protobuf:protoc:3.20.1"
     }
     plugins {
         grpc {
