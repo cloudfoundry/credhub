@@ -47,7 +47,7 @@ dependencies {
     implementation("org.postgresql:postgresql:${postgresqlJdbcVersion}")
 
     implementation("com.h2database:h2:${h2Version}")
-    implementation("org.mariadb.jdbc:mariadb-java-client:${mariadbJdbcVersion}")
+    implementation("org.mariadb.jdbc:mariadb-java-client")
 
 
     // Other
