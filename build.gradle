@@ -63,7 +63,7 @@ dependencyUpdates.resolutionStrategy = {
 subprojects {
     plugins.withType(JavaPlugin) {
         dependencies {
-            testImplementation("org.mockito:mockito-inline:4.5.1")
+            testImplementation("org.mockito:mockito-inline")
         }
     }
 }
