@@ -23,3 +23,9 @@ updates:
   - dependency-name: "org.mariadb.jdbc:mariadb-java-client" ## 2.x is stable and will be supported until about September 2025
     update-types: ["version-update:semver-major"]           ## https://mariadb.com/kb/en/about-mariadb-connector-j/ (have fun)
                                                             ## version 3.x isn't described as "stable" (like 2.7) as of March 2022
+- package-ecosystem: "github-actions"
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "11:00"
+  open-pull-requests-limit: 10
