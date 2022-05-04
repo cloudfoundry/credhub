@@ -6,7 +6,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Configuration
 import java.net.URI
 import java.net.URISyntaxException
-import java.nio.file.Paths
 
 @Configuration
 @ConfigurationProperties("auth-server")
@@ -35,7 +34,7 @@ class OAuthProperties {
     private fun getResolvedUri(extension: String): URI {
         val authServer = if (internalUrl != null) internalUrl else url
         val base = URI(authServer!!)
-        val path = Paths.get(base.path, extension).toString()
+        val path = base.path.plus(extension)
         return base.resolve(path)
     }
 
