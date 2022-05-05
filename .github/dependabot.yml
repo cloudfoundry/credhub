@@ -8,12 +8,12 @@ updates:
   target-branch: main
   open-pull-requests-limit: 100
   ignore:
-  - dependency-name: "org.flywaydb:flyway-core"             ## the next major (v8)'s community edition drops support with MySQL 5.7, which CredHub stills need to support. Can bump to v8 once we solve this issue.
+  - dependency-name: "org.flywaydb:flyway-core"             ## the next major (v8)'s community edition drops support with MySQL 5.7, which CredHub still needs to support. Can bump to v8 once we solve this issue.
     update-types: [ "version-update:semver-major" ]
   - dependency-name: "com.h2database:h2"                    ## can only bump to the next major (v2) after flyway is bumped to v8, see context: https://github.com/cloudfoundry/credhub/pull/259#issuecomment-1093414459
     update-types: [ "version-update:semver-major" ]
-  - dependency-name: "org.mariadb.jdbc:mariadb-java-client" ## 2.x is stable and will be supported until about September 2025; version 3.x isn't described as "stable" (like 2.7) as of March 2022.
-    update-types: ["version-update:semver-major"]           ## https://mariadb.com/kb/en/about-mariadb-connector-j/ (have fun)
+  - dependency-name: "org.mariadb.jdbc:mariadb-java-client" ## 2.x (current version) is stable and will be supported until about September 2025; version 3.x isn't described as "stable" (like 2.7) as of March 2022. https://mariadb.com/kb/en/about-mariadb-connector-j/ (have fun)
+    update-types: ["version-update:semver-major"]
 
 - package-ecosystem: "github-actions"
   directory: "/"
