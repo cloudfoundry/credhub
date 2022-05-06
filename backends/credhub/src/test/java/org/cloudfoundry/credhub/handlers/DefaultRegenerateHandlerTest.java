@@ -33,6 +33,7 @@ import org.cloudfoundry.credhub.requests.CertificateGenerateRequest;
 import org.cloudfoundry.credhub.requests.PasswordGenerateRequest;
 import org.cloudfoundry.credhub.services.DefaultCredentialService;
 import org.cloudfoundry.credhub.services.PermissionCheckingService;
+import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer;
 import org.cloudfoundry.credhub.utils.TestConstants;
 import org.cloudfoundry.credhub.views.BulkRegenerateResults;
 import org.cloudfoundry.credhub.views.CertificateValueView;
@@ -40,6 +41,7 @@ import org.cloudfoundry.credhub.views.CredentialView;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.core.IsEqual;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -82,6 +84,10 @@ public class DefaultRegenerateHandlerTest {
   private CredentialValue credValue;
   private PermissionCheckingService permissionCheckingService;
 
+  @BeforeClass
+  public static void setUpAll() {
+    BouncyCastleFipsConfigurer.configure();
+  }
   @Before
   public void beforeEach() {
     if (Security.getProvider(BouncyCastleFipsProvider.PROVIDER_NAME) == null) {

@@ -15,6 +15,7 @@ import org.cloudfoundry.credhub.helpers.MockMvcFactory
 import org.cloudfoundry.credhub.helpers.credHubAuthHeader
 import org.cloudfoundry.credhub.requests.CertificateRegenerateRequest
 import org.cloudfoundry.credhub.requests.UpdateTransitionalVersionRequest
+import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer
 import org.cloudfoundry.credhub.utils.TestConstants
 import org.cloudfoundry.credhub.views.CertificateCredentialView
 import org.cloudfoundry.credhub.views.CertificateCredentialsView
@@ -22,6 +23,7 @@ import org.cloudfoundry.credhub.views.CertificateGenerationView
 import org.cloudfoundry.credhub.views.CertificateVersionView
 import org.cloudfoundry.credhub.views.CertificateView
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 import org.skyscreamer.jsonassert.JSONAssert
@@ -62,6 +64,14 @@ class CertificatesControllerTest {
     private lateinit var certificateView: CertificateView
     private val objectMapper: ObjectMapper = ObjectMapper()
     private lateinit var metadata: JsonNode
+
+    companion object {
+        @BeforeClass
+        @JvmStatic
+        fun setUpAll() {
+            BouncyCastleFipsConfigurer.configure()
+        }
+    }
 
     @Before
     fun setUp() {
