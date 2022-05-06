@@ -37,9 +37,11 @@ import org.cloudfoundry.credhub.config.BouncyCastleProviderConfiguration;
 import org.cloudfoundry.credhub.domain.CertificateGenerationParameters;
 import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters;
 import org.cloudfoundry.credhub.util.CurrentTimeProvider;
+import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer;
 import org.cloudfoundry.credhub.utils.CertificateReader;
 import org.cloudfoundry.credhub.utils.PrivateKeyReader;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -100,6 +102,11 @@ public class SignedCertificateGeneratorTest {
   private X509Certificate certificateAuthorityWithSubjectKeyId;
   private BigInteger caSerialNumber;
 
+  @BeforeClass
+  public static void beforeAll() {
+    BouncyCastleFipsConfigurer.configure();
+  }
+
   @Before
   public void beforeEach() throws Exception {
     timeProvider = mock(CurrentTimeProvider.class);
@@ -112,7 +119,7 @@ public class SignedCertificateGeneratorTest {
 
     generator = KeyPairGenerator
       .getInstance("RSA", BouncyCastleFipsProvider.PROVIDER_NAME);
-    generator.initialize(1024); // doesn't matter for testing
+    generator.initialize(2048); // doesn't matter for testing
     issuerKey = generator.generateKeyPair();
 
     issuerDn = new X500Principal(caName);
@@ -145,7 +152,7 @@ public class SignedCertificateGeneratorTest {
     expectedSubjectKeyIdentifier = certificateAuthorityWithSubjectKeyId.getExtensionValue(Extension.subjectKeyIdentifier.getId());
   }
 
-  private X509Certificate createCertificateAuthority(final X509v3CertificateBuilder x509v3CertificateBuilder) throws OperatorCreationException, CertificateException, IOException {
+  private X509Certificate createCertificateAuthority(final X509v3CertificateBuilder x509v3CertificateBuilder) throws OperatorCreationException, CertificateException {
     final X509CertificateHolder certificateHolder = x509v3CertificateBuilder.build(jcaContentSignerBuilder.build(issuerKey.getPrivate()));
     final X509Certificate x509CertificateAuthority = jcaX509CertificateConverter.getCertificate(certificateHolder);
     return x509CertificateAuthority;

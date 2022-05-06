@@ -23,9 +23,11 @@ import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.helpers.RequestHelper;
+import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer;
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.json.JSONArray;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -69,6 +71,11 @@ public class CertificateSetAndRegenerateTest {
     private MockMvc mockMvc;
     private String caCertificate;
     private String caCredentialUuid;
+
+    @BeforeClass
+    public static void setUpAll() {
+        BouncyCastleFipsConfigurer.configure();
+    }
 
     @Before
     public void beforeEach() throws Exception {

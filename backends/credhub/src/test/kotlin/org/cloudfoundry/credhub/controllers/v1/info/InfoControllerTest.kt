@@ -5,7 +5,9 @@ import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
 import org.cloudfoundry.credhub.helpers.credHubAuthHeader
 import org.cloudfoundry.credhub.info.InfoController
+import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -29,6 +31,14 @@ class InfoControllerTest {
 
     lateinit var mockMvc: MockMvc
     lateinit var uaaUrl: String
+
+    companion object {
+        @BeforeClass
+        @JvmStatic
+        fun setUpAll() {
+            BouncyCastleFipsConfigurer.configure()
+        }
+    }
 
     @Before
     fun setUp() {

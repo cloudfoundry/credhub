@@ -8,7 +8,9 @@ import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
 import org.cloudfoundry.credhub.helpers.credHubAuthHeader
 import org.cloudfoundry.credhub.interpolation.InterpolationController
+import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 import org.skyscreamer.jsonassert.JSONAssert
@@ -28,6 +30,14 @@ class InterpolateControllerTest {
 
     lateinit var mockMvc: MockMvc
     lateinit var spyInterpolationHandler: SpyInterpolationHandler
+
+    companion object {
+        @BeforeClass
+        @JvmStatic
+        fun setUpAll() {
+            BouncyCastleFipsConfigurer.configure()
+        }
+    }
 
     @Before
     fun setUp() {

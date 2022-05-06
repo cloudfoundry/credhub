@@ -10,7 +10,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -27,11 +29,16 @@ public class BouncyCastleProviderConfigurationTest {
 
   private KeyPairGenerator generator;
 
+  @BeforeClass
+  public static void beforeAll() {
+    BouncyCastleFipsConfigurer.configure();
+  }
+
   @Before
   public void beforeEach() throws Exception {
     generator = KeyPairGenerator
       .getInstance("RSA", BouncyCastleFipsProvider.PROVIDER_NAME);
-    generator.initialize(1024);
+    generator.initialize(2048);
   }
 
   @Test

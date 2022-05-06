@@ -24,10 +24,12 @@ import org.cloudfoundry.credhub.requests.BaseCredentialGenerateRequest
 import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters
 import org.cloudfoundry.credhub.requests.CredentialRegenerateRequest
 import org.cloudfoundry.credhub.requests.RsaSshGenerationParameters
+import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer
 import org.cloudfoundry.credhub.utils.TestConstants
 import org.cloudfoundry.credhub.views.CertificateGenerationView
 import org.cloudfoundry.credhub.views.CredentialView
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -65,6 +67,14 @@ class CredentialsControllerGenerateTest {
 
     private val objectMapper: ObjectMapper = ObjectMapper()
     lateinit var metadata: JsonNode
+
+    companion object {
+        @BeforeClass
+        @JvmStatic
+        fun setUpAll() {
+            BouncyCastleFipsConfigurer.configure()
+        }
+    }
 
     @Before
     fun setUp() {

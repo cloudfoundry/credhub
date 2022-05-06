@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub;
 
+import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
@@ -8,7 +9,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 import org.apache.coyote.http11.AbstractHttp11Protocol;
-import org.bouncycastle.crypto.CryptoServicesRegistrar;
 import org.cloudfoundry.credhub.config.CurrentTimeProviderConfig;
 
 @SpringBootApplication
@@ -16,7 +16,7 @@ import org.cloudfoundry.credhub.config.CurrentTimeProviderConfig;
 public class CredHubApp {
 
   public static void main(final String[] args) {
-    CryptoServicesRegistrar.setApprovedOnlyMode(true);
+    BouncyCastleFipsConfigurer.configure();
     SpringApplication.run(CredHubApp.class, args);
   }
 
