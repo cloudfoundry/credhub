@@ -11,10 +11,8 @@ import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
-import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer;
 import org.cloudfoundry.credhub.utils.CertificateReader;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -40,11 +38,6 @@ public class DefaultCertificateAuthorityServiceTest {
   private CertificateCredentialValue certificate;
   private CertificateCredentialVersion certificateCredential;
   private CertificateCredentialVersion transitionalCertificateCredential;
-
-  @BeforeClass
-  public static void setUpAll() {
-    BouncyCastleFipsConfigurer.configure();
-  }
 
   @Before
   public void beforeEach() {

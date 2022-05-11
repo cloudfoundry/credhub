@@ -9,13 +9,11 @@ import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
 import org.cloudfoundry.credhub.helpers.credHubAuthHeader
 import org.cloudfoundry.credhub.regenerate.RegenerateController
-import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer
 import org.cloudfoundry.credhub.views.BulkRegenerateResults
 import org.cloudfoundry.credhub.views.CredentialView
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.equalTo
 import org.junit.Before
-import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -45,14 +43,6 @@ class RegenerateControllerTest {
 
     private val objectMapper: ObjectMapper = ObjectMapper()
     lateinit var metadata: JsonNode
-
-    companion object {
-        @BeforeClass
-        @JvmStatic
-        fun setUpAll() {
-            BouncyCastleFipsConfigurer.configure()
-        }
-    }
 
     @Before
     fun beforeEach() {

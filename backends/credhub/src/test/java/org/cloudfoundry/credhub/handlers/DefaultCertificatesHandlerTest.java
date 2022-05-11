@@ -34,7 +34,6 @@ import org.cloudfoundry.credhub.requests.CreateVersionRequest;
 import org.cloudfoundry.credhub.requests.UpdateTransitionalVersionRequest;
 import org.cloudfoundry.credhub.services.DefaultCertificateService;
 import org.cloudfoundry.credhub.services.PermissionCheckingService;
-import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer;
 import org.cloudfoundry.credhub.utils.TestConstants;
 import org.cloudfoundry.credhub.views.CertificateCredentialView;
 import org.cloudfoundry.credhub.views.CertificateCredentialsView;
@@ -44,7 +43,6 @@ import org.cloudfoundry.credhub.views.CertificateView;
 import org.cloudfoundry.credhub.views.CredentialView;
 import org.hamcrest.core.IsEqual;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static java.util.Arrays.asList;
@@ -82,12 +80,6 @@ public class DefaultCertificatesHandlerTest {
   private DefaultCertificateService certificateService;
   private PermissionCheckingService permissionCheckingService;
   private UserContextHolder userContextHolder;
-
-  @BeforeClass
-  public static void setUpAll() {
-    BouncyCastleFipsConfigurer.configure();
-  }
-
   @Before
   public void beforeEach() {
     if (Security.getProvider(BouncyCastleFipsProvider.PROVIDER_NAME) == null) {

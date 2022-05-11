@@ -13,10 +13,8 @@ import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.entity.CredentialVersionData;
 import org.cloudfoundry.credhub.repositories.CredentialVersionRepository;
-import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer;
 import org.cloudfoundry.credhub.utils.TestConstants;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -41,11 +39,6 @@ public class DefaultCertificateVersionDataServiceTest {
   private CredentialVersionRepository versionRepository;
   private CredentialFactory factory;
   private CredentialDataService dataService;
-
-  @BeforeClass
-  public static void setUpAll() {
-    BouncyCastleFipsConfigurer.configure();
-  }
 
   @Before
   public void beforeEach() {

@@ -16,11 +16,9 @@ import org.cloudfoundry.credhub.credential.StringCredentialValue;
 import org.cloudfoundry.credhub.credential.UserCredentialValue;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.requests.StringGenerationParameters;
-import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer;
 import org.cloudfoundry.credhub.utils.JsonObjectMapper;
 import org.hamcrest.MatcherAssert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -55,11 +53,6 @@ public class CredentialFactoryTest {
   private CredentialFactory subject;
   private JsonObjectMapper objectMapper;
   private StringGenerationParameters generationParameters;
-
-  @BeforeClass
-  public static void setUpAll() {
-    BouncyCastleFipsConfigurer.configure();
-  }
 
   @Before
   public void setup() throws JsonProcessingException {

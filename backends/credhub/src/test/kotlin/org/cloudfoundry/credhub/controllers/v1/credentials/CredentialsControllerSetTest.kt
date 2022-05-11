@@ -26,11 +26,9 @@ import org.cloudfoundry.credhub.requests.RsaSetRequest
 import org.cloudfoundry.credhub.requests.SshSetRequest
 import org.cloudfoundry.credhub.requests.UserSetRequest
 import org.cloudfoundry.credhub.requests.ValueSetRequest
-import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer
 import org.cloudfoundry.credhub.utils.TestConstants
 import org.cloudfoundry.credhub.views.CredentialView
 import org.junit.Before
-import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -64,14 +62,6 @@ class CredentialsControllerSetTest {
     private var spyRegenerateHandler: SpyRegenerateHandler = SpyRegenerateHandler()
     private val objectMapper: ObjectMapper = ObjectMapper()
     lateinit var metadata: JsonNode
-
-    companion object {
-        @BeforeClass
-        @JvmStatic
-        fun setUpAll() {
-            BouncyCastleFipsConfigurer.configure()
-        }
-    }
 
     @Before
     fun setUp() {

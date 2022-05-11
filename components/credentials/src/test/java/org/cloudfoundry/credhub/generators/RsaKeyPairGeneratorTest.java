@@ -4,7 +4,6 @@ import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 
-import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,7 +18,7 @@ public class RsaKeyPairGeneratorTest {
 
   @Before
   public void beforeEach() throws Exception {
-    BouncyCastleFipsConfigurer.configure();
+
     subject = new RsaKeyPairGenerator();
   }
 

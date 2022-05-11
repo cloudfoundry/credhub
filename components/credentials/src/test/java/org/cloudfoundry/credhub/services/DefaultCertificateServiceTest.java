@@ -24,10 +24,8 @@ import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.requests.BaseCredentialGenerateRequest;
-import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer;
 import org.cloudfoundry.credhub.utils.TestConstants;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -70,11 +68,6 @@ public class DefaultCertificateServiceTest {
   private CertificateCredentialValue value;
   private Credential credential;
   private Credential childCredential;
-
-  @BeforeClass
-  public static void setUpAll() {
-    BouncyCastleFipsConfigurer.configure();
-  }
 
   @Before
   public void beforeEach() {

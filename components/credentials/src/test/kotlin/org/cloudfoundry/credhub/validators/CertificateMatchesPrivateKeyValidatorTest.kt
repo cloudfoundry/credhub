@@ -5,21 +5,12 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue
 import org.cloudfoundry.credhub.exceptions.MalformedPrivateKeyException
-import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer
 import org.cloudfoundry.credhub.utils.TestConstants
 import org.junit.Before
-import org.junit.BeforeClass
 import org.junit.Test
 import java.security.Security
 
 class CertificateMatchesPrivateKeyValidatorTest {
-    companion object {
-        @BeforeClass
-        @JvmStatic
-        fun setUp() {
-            BouncyCastleFipsConfigurer.configure()
-        }
-    }
 
     @Before
     fun beforeEach() {
