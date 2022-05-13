@@ -4,6 +4,7 @@ import com.jayway.jsonpath.JsonPath
 import org.cloudfoundry.credhub.CredhubTestApp
 import org.cloudfoundry.credhub.helpers.RequestHelper
 import org.cloudfoundry.credhub.utils.AuthConstants.Companion.ALL_PERMISSIONS_TOKEN
+import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver
 import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.MatcherAssert.assertThat
@@ -36,6 +37,7 @@ class ConcatenateCasDisabledEndToEndTest {
 
     @Before
     fun setUp() {
+        BouncyCastleFipsConfigurer.configure()
         mockMvc = MockMvcBuilders
             .webAppContextSetup(webApplicationContext)
             .apply<DefaultMockMvcBuilder>(SecurityMockMvcConfigurers.springSecurity())

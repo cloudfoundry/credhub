@@ -9,7 +9,9 @@ import org.cloudfoundry.credhub.credentials.CredentialsController
 import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
 import org.cloudfoundry.credhub.helpers.credHubAuthHeader
+import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 import org.springframework.http.MediaType
@@ -32,6 +34,14 @@ class CredentialsControllerDeleteTest {
     var spyCredentialsHandler: SpyCredentialsHandler = SpyCredentialsHandler()
     var spyRegenerateHandler: SpyRegenerateHandler = SpyRegenerateHandler()
     private val objectMapper: ObjectMapper = ObjectMapper()
+
+    companion object {
+        @BeforeClass
+        @JvmStatic
+        fun setUpAll() {
+            BouncyCastleFipsConfigurer.configure()
+        }
+    }
 
     @Before
     fun setUp() {

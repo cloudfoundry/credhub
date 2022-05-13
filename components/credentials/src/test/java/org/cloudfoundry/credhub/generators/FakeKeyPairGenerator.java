@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class FakeKeyPairGenerator {
 
-  private static final int KEY_LENGTH_FOR_TESTING = 1024;
+  private static final int KEY_LENGTH_FOR_TESTING = 2048;
 
   public KeyPair generate() throws NoSuchProviderException, NoSuchAlgorithmException {
     final KeyPairGenerator generator = KeyPairGenerator

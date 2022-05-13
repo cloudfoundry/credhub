@@ -6,7 +6,9 @@ import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
 import org.cloudfoundry.credhub.helpers.credHubAuthHeader
 import org.cloudfoundry.credhub.keyusage.KeyUsageController
+import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 import org.skyscreamer.jsonassert.JSONAssert
@@ -27,6 +29,14 @@ class KeyUsageControllerTest {
 
     lateinit var mockMvc: MockMvc
     lateinit var keyUsageHandler: SpyKeyUsageHandler
+
+    companion object {
+        @BeforeClass
+        @JvmStatic
+        fun setUpAll() {
+            BouncyCastleFipsConfigurer.configure()
+        }
+    }
 
     @Before
     fun setUp() {

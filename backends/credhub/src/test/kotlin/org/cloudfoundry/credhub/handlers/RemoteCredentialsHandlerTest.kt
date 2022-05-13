@@ -44,9 +44,11 @@ import org.cloudfoundry.credhub.requests.StringGenerationParameters
 import org.cloudfoundry.credhub.requests.UserGenerateRequest
 import org.cloudfoundry.credhub.requests.UserSetRequest
 import org.cloudfoundry.credhub.requests.ValueSetRequest
+import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer
 import org.cloudfoundry.credhub.utils.TestConstants
 import org.junit.Assert.assertEquals
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -68,6 +70,14 @@ class RemoteCredentialsHandlerTest {
     private val credentialGenerator = mock(UniversalCredentialGenerator::class.java)!!
     private lateinit var subject: RemoteCredentialsHandler
     private lateinit var versionCreatedAt: String
+
+    companion object {
+        @BeforeClass
+        @JvmStatic
+        fun setUpAll() {
+            BouncyCastleFipsConfigurer.configure()
+        }
+    }
 
     @Before
     fun beforeEach() {

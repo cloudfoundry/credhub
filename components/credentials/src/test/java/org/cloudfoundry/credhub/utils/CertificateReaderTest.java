@@ -9,6 +9,7 @@ import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
 import org.cloudfoundry.credhub.exceptions.MalformedCertificateException;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -26,6 +27,11 @@ import static org.hamcrest.core.IsEqual.equalTo;
 
 @RunWith(JUnit4.class)
 public class CertificateReaderTest {
+  @BeforeClass
+  public static void setUpAll() {
+    BouncyCastleFipsConfigurer.configure();
+  }
+
   @Before
   public void beforeEach() {
     if (Security.getProvider(BouncyCastleFipsProvider.PROVIDER_NAME) == null) {

@@ -18,11 +18,13 @@ import org.cloudfoundry.credhub.credentials.CredentialsController
 import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
 import org.cloudfoundry.credhub.helpers.credHubAuthHeader
+import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer
 import org.cloudfoundry.credhub.utils.TestConstants
 import org.cloudfoundry.credhub.views.CredentialView
 import org.cloudfoundry.credhub.views.DataResponse
 import org.cloudfoundry.credhub.views.FindCredentialResult
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -55,6 +57,14 @@ class CredentialsControllerGetTest {
     lateinit var spyRegenerateHandler: SpyRegenerateHandler
     private val objectMapper: ObjectMapper = ObjectMapper()
     lateinit var metadata: JsonNode
+
+    companion object {
+        @BeforeClass
+        @JvmStatic
+        fun setUpAll() {
+            BouncyCastleFipsConfigurer.configure()
+        }
+    }
 
     @Before
     fun setUp() {

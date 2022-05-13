@@ -31,8 +31,10 @@ import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters;
 import org.cloudfoundry.credhub.services.CertificateAuthorityService;
 import org.cloudfoundry.credhub.services.DefaultCertificateAuthorityService;
 import org.cloudfoundry.credhub.util.CurrentTimeProvider;
+import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer;
 import org.cloudfoundry.credhub.utils.CertificateFormatter;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -67,6 +69,11 @@ public class CertificateGeneratorTest {
   private CertificateGenerationParameters inputParameters;
   private CertificateGenerationRequestParameters generationParameters;
   private X509Certificate childX509Certificate;
+
+  @BeforeClass
+  public static void beforeAll() {
+    BouncyCastleFipsConfigurer.configure();
+  }
 
   @Before
   public void beforeEach() throws Exception {
@@ -434,7 +441,7 @@ public class CertificateGeneratorTest {
                                          final PrivateKey caPrivateKey,
                                          final X500Name caDn,
                                          final X500Name subjectDn,
-                                         final boolean isCa) throws OperatorCreationException, NoSuchAlgorithmException, CertIOException {
+                                         final boolean isCa) throws OperatorCreationException, CertIOException {
     final SubjectPublicKeyInfo publicKeyInfo = SubjectPublicKeyInfo.getInstance(certKeyPair.getPublic()
       .getEncoded());
     final ContentSigner contentSigner = new JcaContentSignerBuilder("SHA256withRSA")
