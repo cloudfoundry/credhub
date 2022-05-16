@@ -1,6 +1,7 @@
 package org.cloudfoundry.credhub.generators;
 
 import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 
@@ -12,22 +13,42 @@ import org.junit.runners.JUnit4;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.*;
 
 @RunWith(JUnit4.class)
 public class RsaKeyPairGeneratorTest {
   private RsaKeyPairGenerator subject;
-
-  @Before
-  public void beforeEach() throws Exception {
-    BouncyCastleFipsConfigurer.configure();
-    subject = new RsaKeyPairGenerator();
-  }
+  boolean initializeCalled;
 
   @Test
-  public void generateKeyPair_generatesKeyPair() throws NoSuchProviderException, NoSuchAlgorithmException {
+  public void generateKeyPair_integratesWithBouncyCastle() throws NoSuchProviderException, NoSuchAlgorithmException {
+    BouncyCastleFipsConfigurer.configure();
+    subject = new RsaKeyPairGenerator();
     final KeyPair keyPair = subject.generateKeyPair(2048);
 
     assertThat(keyPair.getPublic(), notNullValue());
     assertThat(keyPair.getPrivate(), notNullValue());
+  }
+
+  @Test
+  public void generatesAKeyPair() {
+    KeyPairGenerator generator = mock(KeyPairGenerator.class);
+    final KeyPair keyPair = mock(KeyPair.class);
+    initializeCalled = false;
+    doAnswer(invocation -> {
+      initializeCalled = true;
+      return null;
+    }).when(generator).initialize(2048);
+    when(generator.generateKeyPair()).thenAnswer(invocation -> {
+      assertTrue("must call initialize with the right key length first", initializeCalled);
+      return keyPair;
+    });
+
+    KeyPair result =
+            RsaKeyPairGenerator.constructRsiKeyPairGeneratorForTesting(generator).generateKeyPair(2048);
+
+    assertSame(keyPair, result);
   }
 }
