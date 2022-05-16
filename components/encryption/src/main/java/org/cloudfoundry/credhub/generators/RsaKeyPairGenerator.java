@@ -15,17 +15,17 @@ import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
 @Component
 public class RsaKeyPairGenerator {
 
-  @Autowired
-  public RsaKeyPairGenerator() {
-    super();
-  }
+  private final KeyPairGenerator generator;
 
-  public synchronized KeyPair generateKeyPair(final int keyLength)
-    throws NoSuchProviderException, NoSuchAlgorithmException {
+  @Autowired
+  public RsaKeyPairGenerator() throws NoSuchAlgorithmException, NoSuchProviderException {
+    super();
     final BouncyCastleFipsProvider bouncyCastleProvider = new BouncyCastleFipsProvider();
     Security.addProvider(bouncyCastleProvider);
+    generator = KeyPairGenerator.getInstance("RSA", BouncyCastleFipsProvider.PROVIDER_NAME);
+  }
 
-    final KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", BouncyCastleFipsProvider.PROVIDER_NAME);
+  public synchronized KeyPair generateKeyPair(final int keyLength) {
     generator.initialize(keyLength);
     return generator.generateKeyPair();
   }
