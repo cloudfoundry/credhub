@@ -195,6 +195,16 @@ Then to run in development mode with MySQL:
 ./scripts/start_server.sh -Dspring.profiles.active=dev,dev-mysql
 ```
 
+#### Debugging the server
+
+To load JDWP agent for credhub jvm debugging, start the server as follows:
+```sh
+./scripts/start_server.sh -Pdebug=true
+```
+
+You can then attach your debugger to port 5005 of the jvm process.
+
+
 #### Running tests with different databases
 
 Testing with different databases requires you to set a system property with the profile corresponding to your desired database. For example, to test with H2, you'll need to run the tests with the `-Dspring.profiles.active=unit-test-h2` profile.
