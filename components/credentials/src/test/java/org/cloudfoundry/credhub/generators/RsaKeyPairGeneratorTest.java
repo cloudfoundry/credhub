@@ -36,19 +36,12 @@ public class RsaKeyPairGeneratorTest {
   public void generatesAKeyPair() {
     KeyPairGenerator generator = mock(KeyPairGenerator.class);
     final KeyPair keyPair = mock(KeyPair.class);
-    initializeCalled = false;
-    doAnswer(invocation -> {
-      initializeCalled = true;
-      return null;
-    }).when(generator).initialize(2048);
-    when(generator.generateKeyPair()).thenAnswer(invocation -> {
-      assertTrue("must call initialize with the right key length first", initializeCalled);
-      return keyPair;
-    });
+    when(generator.generateKeyPair()).thenReturn(keyPair);
 
     KeyPair result =
             RsaKeyPairGenerator.constructRsiKeyPairGeneratorForTesting(generator).generateKeyPair(2048);
 
+    verify(generator).initialize(2048);
     assertSame(keyPair, result);
   }
 }
