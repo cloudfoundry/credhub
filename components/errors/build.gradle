@@ -30,7 +30,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation('org.springframework.boot:spring-boot-starter-validation')
     implementation("org.springframework.security.oauth:spring-security-oauth2:${springSecurityOauth2Version}")
-    implementation 'junit:junit:4.13.1'
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("junit:junit:${junitVersion}")
 
