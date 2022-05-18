@@ -52,7 +52,7 @@ class ExceptionHandlers {
     @ExceptionHandler(EntryNotFoundException::class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     fun handleNotFoundException(e: EntryNotFoundException): ResponseError {
-        return constructError(e.message)
+        return constructClientError(e.message)
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException::class)
@@ -286,9 +286,8 @@ class ExceptionHandlers {
     }
 
     private fun constructError(error: String?): ResponseError {
-        val message = MessageFormat.format(error, *arrayOfNulls(0))
         LOGGER.error(error)
-        return ResponseError(message)
+        return constructResponseError(error)
     }
 
     private fun constructError(error: String?, vararg args: String): ResponseError {
@@ -302,6 +301,16 @@ class ExceptionHandlers {
         val messageFormat = MessageFormat(error)
         val message = messageFormat.format(args)
         LOGGER.error(message)
+        return ResponseError(message)
+    }
+
+    private fun constructClientError(error: String?): ResponseError {
+        LOGGER.info(error)
+        return constructResponseError(error)
+    }
+
+    private fun constructResponseError(error: String?): ResponseError {
+        val message = MessageFormat.format(error)
         return ResponseError(message)
     }
 }
