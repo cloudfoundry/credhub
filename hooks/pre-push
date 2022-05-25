@@ -13,13 +13,6 @@ function go_to_project_root_directory() {
     cd "$hook_dir/.."
 }
 
-function check_ssh_key() {
-    if ! ssh-add -l >/dev/null; then
-        echo "No SSH key loaded! Please run vkl."
-        exit 1
-    fi
-}
-
 function run_linters() {
     ./scripts/lint.sh
 }
@@ -73,7 +66,6 @@ function main() {
     PID=
     set_bash_error_handling
     go_to_project_root_directory
-    check_ssh_key
 
     run_linters
     check_for_local_server
