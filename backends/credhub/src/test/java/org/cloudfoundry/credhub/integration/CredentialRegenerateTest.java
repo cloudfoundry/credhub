@@ -6,6 +6,7 @@ import java.util.function.Consumer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -65,6 +66,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
   resolver = DatabaseProfileResolver.class
 )
 @SpringBootTest(classes = CredhubTestApp.class)
+@DirtiesContext
 @Transactional
 @SuppressFBWarnings(
   value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE",
