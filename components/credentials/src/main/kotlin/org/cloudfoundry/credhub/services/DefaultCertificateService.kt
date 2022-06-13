@@ -111,7 +111,15 @@ class DefaultCertificateService(
     }
 
     fun findAllValidMetadata(names: List<String>): List<CertificateMetadata> {
-        return certificateDataService.findAllValidMetadata(names)
+        // This is a workaround for Postgres's limit of 32768 bind variables per query.
+        // It would be preferable to retrieve available certs and metadata in a single DB query.
+        val batchSize = 16384
+        return names
+                .chunked(batchSize)
+                .flatMap { namesChunk ->
+                    certificateDataService.findAllValidMetadata(namesChunk)
+                }
+                .toCollection(mutableListOf())
     }
 
     fun findSignedCertificates(caName: String): List<String> {

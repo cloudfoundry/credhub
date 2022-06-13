@@ -18,6 +18,7 @@ import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
 import org.cloudfoundry.credhub.domain.CertificateCredentialFactory;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
+import org.cloudfoundry.credhub.domain.CertificateMetadata;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
@@ -40,9 +41,7 @@ import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
 public class DefaultCertificateServiceTest {
@@ -61,6 +60,8 @@ public class DefaultCertificateServiceTest {
   private CertificateCredentialVersion nonTransitionalCa;
   private CertificateCredentialVersion transitionalCa;
   private CertificateCredentialVersion newChildCert;
+  private CertificateMetadata cert1Metadata;
+  private CertificateMetadata cert2Metadata;
   private UUID certVersionUuid;
   private UUID newCertVersionUuid;
   private UUID caUuid;
@@ -164,6 +165,9 @@ public class DefaultCertificateServiceTest {
     when(newChildCert.getName()).thenReturn("some-cert");
     when(newChildCert.getUuid()).thenReturn(newCertVersionUuid);
     when(newChildCert.getValue()).thenReturn(value);
+
+    cert1Metadata = new CertificateMetadata(UUID.randomUUID(), "cert-1", "ca-1", Collections.emptyList());
+    cert2Metadata = new CertificateMetadata(UUID.randomUUID(), "cert-2", "ca-2", Collections.emptyList());
   }
 
   @Test
@@ -858,4 +862,40 @@ public class DefaultCertificateServiceTest {
     subjectWithoutConcatenateCas.findByCredentialUuid("rsaUuid");
   }
 
+  @Test
+  public void findAllValidMetadata_lessThan2e14Names_callsDataServiceOnce() {
+    List<CertificateMetadata> expectedMetadata = Arrays.asList(cert1Metadata, cert2Metadata);
+    when(certificateDataService.findAllValidMetadata(any())).thenReturn(expectedMetadata);
+
+    List<String> names = new ArrayList<>();
+    for (int i=0; i<16383; i++) {
+      names.add("name-" + i);
+    }
+
+    List<CertificateMetadata> metadata = subjectWithoutConcatenateCas.findAllValidMetadata(names);
+
+    verify(certificateDataService).findAllValidMetadata(names);
+    verifyNoMoreInteractions(certificateDataService);
+    assertThat(metadata, equalTo(expectedMetadata));
+  }
+
+  @Test
+  public void findAllValidMetadata_MoreThan2e14Names_callsDataServiceMultipleTimes() {
+    List<CertificateMetadata> allMetadata = Arrays.asList(cert1Metadata, cert2Metadata);
+    when(certificateDataService.findAllValidMetadata(any()))
+            .thenReturn(Arrays.asList(cert1Metadata))
+            .thenReturn(Arrays.asList(cert2Metadata));
+
+    List<String> names = new ArrayList<>();
+    for (int i=0; i<16385; i++) {
+      names.add("name-" + i);
+    }
+
+    List<CertificateMetadata> metadata = subjectWithoutConcatenateCas.findAllValidMetadata(names);
+
+    verify(certificateDataService).findAllValidMetadata(names.subList(0, 16384));
+    verify(certificateDataService).findAllValidMetadata(names.subList(16384, 16385));
+    verifyNoMoreInteractions(certificateDataService);
+    assertThat(metadata, equalTo(allMetadata));
+  }
 }
