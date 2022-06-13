@@ -15,6 +15,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 @RunWith(SpringRunner::class)
 @ActiveProfiles(value = ["unit-test"], resolver = DatabaseProfileResolver::class)
@@ -36,7 +37,7 @@ class CertificateDataServiceTest {
         val caName = "/some-ca"
         val otherName = "some-other-credential"
         val otherCaName = "/some-other-ca"
-        val expectedExpiryDate = Instant.now()
+        val expectedExpiryDate = Instant.now().truncatedTo(ChronoUnit.MILLIS)
         val certificateCredentialVersionData = CertificateCredentialVersionData(name)
         val otherCertificateCredentialVersionData = CertificateCredentialVersionData(otherName)
         certificateCredentialVersionData.caName = caName
