@@ -13,7 +13,7 @@ buildscript {
         guavaVersion = '31.1-jre'
         h2Version = '1.4.200'
         jsonPathVersion = '2.7.0'
-        kotlinVersion = '1.6.21'
+        kotlinVersion = '1.7.0'
         ktlintVersion = '0.43.2'
         passayVersion = '1.6.1'
         postgresqlJdbcVersion = '42.3.5'
