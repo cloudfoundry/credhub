@@ -177,18 +177,18 @@ object RequestHelper {
     @Throws(Exception::class)
     @JvmStatic
     fun getCertificateCredentialsByName(mockMvc: MockMvc, token: String, name: String): String {
-        System.err.println("RequestHelper: Begin getCertificateCredentialsByName()");
+        System.err.println("RequestHelper: Begin getCertificateCredentialsByName()")
         val get = MockMvcRequestBuilders.get("/api/v1/certificates?name=$name")
             .header("Authorization", "Bearer $token")
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
         try {
             return mockMvc.perform(get)
-                    .andDo(MockMvcResultHandlers.print())
-                    .andExpect(MockMvcResultMatchers.status().isOk)
-                    .andReturn().response.contentAsString
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isOk)
+                .andReturn().response.contentAsString
         } finally {
-            System.err.println("RequestHelper: End getCertificateCredentialsByName()");
+            System.err.println("RequestHelper: End getCertificateCredentialsByName()")
         }
     }
 
@@ -203,7 +203,7 @@ object RequestHelper {
     @Throws(Exception::class)
     @JvmStatic
     fun generateCertificateCredential(mockMvc: MockMvc, credentialName: String?, overwrite: Boolean, commonName: String?, caName: String?, token: String): String {
-        System.err.println("RequestHelper: Begin generateCertificateCredential()");
+        System.err.println("RequestHelper: Begin generateCertificateCredential()")
         val certRequestBody: MutableMap<String, Any?> = HashMap()
         certRequestBody["name"] = credentialName
         certRequestBody["type"] = "certificate"
@@ -228,10 +228,10 @@ object RequestHelper {
             .content(content)
         try {
             return mockMvc.perform(post)
-                    .andExpect(MockMvcResultMatchers.status().isOk)
-                    .andReturn().response.contentAsString
+                .andExpect(MockMvcResultMatchers.status().isOk)
+                .andReturn().response.contentAsString
         } finally {
-            System.err.println("RequestHelper: End generateCertificateCredential()");
+            System.err.println("RequestHelper: End generateCertificateCredential()")
         }
     }
 
@@ -542,7 +542,7 @@ object RequestHelper {
         transitional: Boolean,
         token: String
     ): String {
-        System.err.println("RequestHelper: Begin regenerateCertificate()");
+        System.err.println("RequestHelper: Begin regenerateCertificate()")
         val regenerateRequest = MockMvcRequestBuilders.post("/api/v1/certificates/$uuid/regenerate")
             .header("Authorization", "Bearer $token")
             .accept(MediaType.APPLICATION_JSON)
@@ -550,10 +550,10 @@ object RequestHelper {
             .content("{\"set_as_transitional\" : $transitional}")
         try {
             return mockMvc.perform(regenerateRequest)
-                    .andExpect(MockMvcResultMatchers.status().is2xxSuccessful)
-                    .andReturn().response.contentAsString
+                .andExpect(MockMvcResultMatchers.status().is2xxSuccessful)
+                .andReturn().response.contentAsString
         } finally {
-            System.err.println("RequestHelper: End regenerateCertificate()");
+            System.err.println("RequestHelper: End regenerateCertificate()")
         }
     }
 
