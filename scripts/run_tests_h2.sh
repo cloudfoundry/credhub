@@ -11,7 +11,7 @@ function go_to_project_root_directory() {
 }
 
 function run_tests_h2() {
-    local gradle_test_command="test"
+    local gradle_test_command=":backends:credhub:test"
     echo "✨ Parallel test mode enabled"
     echo "🚀 Running h2 tests"
     echo ""
