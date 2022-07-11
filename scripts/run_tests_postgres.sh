@@ -28,7 +28,7 @@ function clean_test_databases_postgres() {
 }
 
 function run_tests_postgres() {
-    local gradle_test_command="test"
+    local gradle_test_command="test --no-parallel"
     echo "✨ Parallel test mode enabled"
     echo "🚀 Running postgres tests"
     echo ""

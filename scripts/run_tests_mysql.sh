@@ -28,7 +28,7 @@ function clean_test_databases_mysql() {
 }
 
 function run_tests_mysql() {
-    local gradle_test_command="test"
+    local gradle_test_command="test --no-parallel"
     echo "✨ Parallel test mode enabled"
     echo "🚀 Running mysql tests"
     echo ""
