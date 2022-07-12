@@ -28,12 +28,12 @@ function clean_test_databases_postgres() {
 }
 
 function run_tests_postgres() {
-    local gradle_test_command=":backends:credhub:test"
+    local gradle_test_command="test"
     echo "✨ Parallel test mode enabled"
     echo "🚀 Running postgres tests"
     echo ""
 
-    ./gradlew clean $gradle_test_command --tests org.cloudfoundry.credhub.integration.CredentialGetTest --no-parallel -Dspring.profiles.active=unit-test-postgres
+    ./gradlew clean $gradle_test_command -Dspring.profiles.active=unit-test-postgres
 }
 
 function main() {
