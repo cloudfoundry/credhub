@@ -4,8 +4,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.List;
 
-import org.junit.Rule;
-import org.junit.rules.Timeout;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -22,7 +20,9 @@ import org.cloudfoundry.credhub.helpers.RequestHelper;
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.json.JSONObject;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 
 import static org.cloudfoundry.credhub.helpers.RequestHelper.generateCertificateCredential;

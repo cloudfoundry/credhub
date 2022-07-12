@@ -38,7 +38,7 @@ class ConcatenateCasDisabledEndToEndTest {
     private lateinit var mockMvc: MockMvc
 
     @get:Rule
-    val globalTimeout: Timeout = Timeout.seconds(10);
+    val globalTimeout: Timeout = Timeout.seconds(10)
 
     @Before
     fun setUp() {
