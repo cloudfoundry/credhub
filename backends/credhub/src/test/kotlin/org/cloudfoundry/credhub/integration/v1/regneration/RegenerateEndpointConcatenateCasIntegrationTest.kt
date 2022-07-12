@@ -9,7 +9,9 @@ import org.cloudfoundry.credhub.utils.DatabaseProfileResolver
 import org.hamcrest.core.IsEqual
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.Timeout
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -40,6 +42,9 @@ class RegenerateEndpointConcatenateCasIntegrationTest {
     private val API_V1_REGENERATE_ENDPOINT = "/api/v1/regenerate"
 
     private lateinit var mockMvc: MockMvc
+
+    @get:Rule
+    val globalTimeout: Timeout = Timeout.seconds(10);
 
     @Before
     fun beforeEach() {

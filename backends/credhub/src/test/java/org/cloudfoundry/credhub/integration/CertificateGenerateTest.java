@@ -8,6 +8,8 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.Rule;
+import org.junit.rules.Timeout;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
@@ -78,6 +80,9 @@ public class CertificateGenerateTest {
     @Autowired
     private WebApplicationContext webApplicationContext;
     private MockMvc mockMvc;
+
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(10);
 
     @Before
     public void beforeEach() {

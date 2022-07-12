@@ -4,6 +4,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.List;
 
+import org.junit.Rule;
+import org.junit.rules.Timeout;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -50,6 +52,9 @@ public class CredentialGetTest {
 
   @Autowired
   private WebApplicationContext webApplicationContext;
+
+  @Rule
+  public Timeout globalTimeout = Timeout.seconds(10);
 
   @Before
   public void beforeEach() throws Exception {

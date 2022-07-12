@@ -1,6 +1,8 @@
 package org.cloudfoundry.credhub.integration;
 
 
+import org.junit.Rule;
+import org.junit.rules.Timeout;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -48,6 +50,9 @@ public class CertificateUpdateTransitionalVersionTest {
   private MockMvc mockMvc;
   private Object caCertificate;
   private String caCredentialUuid;
+
+  @Rule
+  public Timeout globalTimeout = Timeout.seconds(10);
 
   @Before
   public void beforeEach() throws Exception {

@@ -9,7 +9,9 @@ import org.cloudfoundry.credhub.utils.DatabaseProfileResolver
 import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.Timeout
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -34,6 +36,9 @@ class ConcatenateCasEnabledEndToEndTest {
     private lateinit var webApplicationContext: WebApplicationContext
 
     private lateinit var mockMvc: MockMvc
+
+    @get:Rule
+    val globalTimeout: Timeout = Timeout.seconds(10);
 
     @Before
     fun setUp() {

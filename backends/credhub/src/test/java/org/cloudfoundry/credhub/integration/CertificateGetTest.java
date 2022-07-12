@@ -4,6 +4,8 @@ package org.cloudfoundry.credhub.integration;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Rule;
+import org.junit.rules.Timeout;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -57,6 +59,9 @@ public class CertificateGetTest {
   private WebApplicationContext webApplicationContext;
 
   private MockMvc mockMvc;
+
+  @Rule
+  public Timeout globalTimeout = Timeout.seconds(10);
 
   @Before
   public void beforeEach() throws Exception {

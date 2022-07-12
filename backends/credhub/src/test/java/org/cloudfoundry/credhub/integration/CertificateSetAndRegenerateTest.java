@@ -4,6 +4,8 @@ import java.io.ByteArrayInputStream;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 
+import org.junit.Rule;
+import org.junit.rules.Timeout;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -71,6 +73,9 @@ public class CertificateSetAndRegenerateTest {
     private MockMvc mockMvc;
     private String caCertificate;
     private String caCredentialUuid;
+
+    @Rule
+    public Timeout globalTimeout = Timeout.seconds(10);
 
     @BeforeClass
     public static void setUpAll() {

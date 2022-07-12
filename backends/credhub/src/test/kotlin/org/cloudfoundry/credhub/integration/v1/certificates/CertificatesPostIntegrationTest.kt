@@ -14,7 +14,9 @@ import org.junit.Assert
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertThat
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.Timeout
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -37,6 +39,8 @@ import org.springframework.web.context.WebApplicationContext
 @Transactional
 @TestPropertySource(properties = ["certificates.concatenate_cas=false"])
 class CertificatesPostIntegrationTest {
+    @get:Rule
+    val globalTimeout: Timeout = Timeout.seconds(10);
 
     private val CA_NAME = "/test-ca"
 
