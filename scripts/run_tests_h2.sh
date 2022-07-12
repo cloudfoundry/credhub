@@ -16,7 +16,7 @@ function run_tests_h2() {
     echo "🚀 Running h2 tests"
     echo ""
 
-    ./gradlew clean $gradle_test_command --no-parallel -Dspring.profiles.active=unit-test-h2
+    ./gradlew clean $gradle_test_command --tests org.cloudfoundry.credhub.integration.CredentialGetTest --no-parallel -Dspring.profiles.active=unit-test-h2
 }
 
 function main() {
