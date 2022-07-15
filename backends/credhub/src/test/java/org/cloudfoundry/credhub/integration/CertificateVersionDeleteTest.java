@@ -52,7 +52,7 @@ public class CertificateVersionDeleteTest {
   private MockMvc mockMvc;
 
   @Rule
-  public Timeout globalTimeout = Timeout.seconds(10);
+  public Timeout globalTimeout = Timeout.seconds(900);
 
   @Before
   public void beforeEach() throws Exception {
