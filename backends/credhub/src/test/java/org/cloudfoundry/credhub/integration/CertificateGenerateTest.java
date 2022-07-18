@@ -29,11 +29,13 @@ import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.helpers.JsonTestHelper;
+import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer;
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.utils.TestConstants;
 import org.hamcrest.Matchers;
 import org.json.JSONObject;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
@@ -83,6 +85,11 @@ public class CertificateGenerateTest {
 
     @Rule
     public Timeout globalTimeout = Timeout.seconds(900);
+
+    @BeforeClass
+    public static void beforeAll() {
+        BouncyCastleFipsConfigurer.configure();
+    }
 
     @Before
     public void beforeEach() {

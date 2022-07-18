@@ -7,6 +7,7 @@ import org.cloudfoundry.credhub.helpers.RequestHelper.generateCertificateCredent
 import org.cloudfoundry.credhub.helpers.RequestHelper.getCertificateId
 import org.cloudfoundry.credhub.helpers.RequestHelper.regenerateCertificate
 import org.cloudfoundry.credhub.utils.AuthConstants.Companion.ALL_PERMISSIONS_TOKEN
+import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer
 import org.cloudfoundry.credhub.utils.CertificateReader
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver
 import org.hamcrest.core.IsEqual.equalTo
@@ -14,6 +15,7 @@ import org.junit.Assert
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertThat
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.Timeout
@@ -50,6 +52,14 @@ class CertificatesPostIntegrationTest {
     private lateinit var mockMvc: MockMvc
     private var caCertificate: String? = null
     private var caCredentialUuid: String = ""
+
+    companion object {
+        @BeforeClass
+        @JvmStatic
+        fun setUpAll() {
+            BouncyCastleFipsConfigurer.configure()
+        }
+    }
 
     @Before
     @Throws(Exception::class)
