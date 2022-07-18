@@ -4,6 +4,8 @@ package org.cloudfoundry.credhub.integration;
 import java.util.List;
 import java.util.Map;
 
+import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer;
+import org.junit.BeforeClass;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -62,6 +64,11 @@ public class CertificateGetTest {
 
   @Rule
   public Timeout globalTimeout = Timeout.seconds(900);
+
+  @BeforeClass
+  public static void beforeAll() {
+    BouncyCastleFipsConfigurer.configure();
+  }
 
   @Before
   public void beforeEach() throws Exception {
