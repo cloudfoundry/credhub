@@ -4,11 +4,13 @@ import com.jayway.jsonpath.JsonPath
 import org.cloudfoundry.credhub.CredhubTestApp
 import org.cloudfoundry.credhub.helpers.RequestHelper
 import org.cloudfoundry.credhub.utils.AuthConstants.Companion.ALL_PERMISSIONS_TOKEN
+import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer
 import org.cloudfoundry.credhub.utils.CertificateReader
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver
 import org.hamcrest.core.IsEqual
 import org.junit.Assert
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.Timeout
@@ -45,6 +47,14 @@ class RegenerateEndpointConcatenateCasIntegrationTest {
 
     @get:Rule
     val globalTimeout: Timeout = Timeout.seconds(900)
+
+    companion object {
+        @BeforeClass
+        @JvmStatic
+        fun setUpAll() {
+            BouncyCastleFipsConfigurer.configure()
+        }
+    }
 
     @Before
     fun beforeEach() {
