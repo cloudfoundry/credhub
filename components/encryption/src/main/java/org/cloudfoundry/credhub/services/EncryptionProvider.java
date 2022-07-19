@@ -18,7 +18,7 @@ public interface EncryptionProvider {
     SecureRandom secureRandom = null;
 
     try {
-      secureRandom = SecureRandom.getInstance("NativePRNGNonBlocking");
+      secureRandom = SecureRandom.getInstance("SHA1PRNG");
     } catch (final NoSuchAlgorithmException e) {
       LogManager.getLogger().log(Level.ALL, e.getMessage());
     }
