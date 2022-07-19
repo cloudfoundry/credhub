@@ -51,7 +51,7 @@ public class CertificateUpdateTransitionalVersionTest {
   private String caCredentialUuid;
 
   @Rule
-  public Timeout globalTimeout = Timeout.seconds(900);
+  public Timeout globalTimeout = Timeout.seconds(60);
 
   @Before
   public void beforeEach() throws Exception {

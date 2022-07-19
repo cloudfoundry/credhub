@@ -75,7 +75,7 @@ public class CertificateSetAndRegenerateTest {
     private String caCredentialUuid;
 
     @Rule
-    public Timeout globalTimeout = Timeout.seconds(900);
+    public Timeout globalTimeout = Timeout.seconds(60);
 
     @BeforeClass
     public static void setUpAll() {
