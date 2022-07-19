@@ -17,11 +17,13 @@ import com.jayway.jsonpath.JsonPath;
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.repositories.CredentialVersionRepository;
 import org.cloudfoundry.credhub.services.CredentialVersionDataService;
+import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer;
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -70,6 +72,11 @@ public class BulkRegenerateTest {
     private String caName;
     private String cert1Name;
     private String cert2Name;
+
+    @BeforeClass
+    public static void beforeAll() {
+        BouncyCastleFipsConfigurer.configure();
+    }
 
     @Before
     public void beforeEach() throws Exception {

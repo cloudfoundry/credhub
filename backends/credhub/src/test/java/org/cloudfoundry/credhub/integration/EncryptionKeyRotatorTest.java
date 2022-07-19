@@ -45,9 +45,11 @@ import org.cloudfoundry.credhub.services.InternalEncryptionService;
 import org.cloudfoundry.credhub.services.PasswordBasedKeyProxy;
 import org.cloudfoundry.credhub.services.PasswordEncryptionService;
 import org.cloudfoundry.credhub.services.PasswordKeyProxyFactory;
+import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer;
 import org.cloudfoundry.credhub.utils.CertificateStringConstants;
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -112,6 +114,11 @@ public class EncryptionKeyRotatorTest {
   private MockMvc mockMvc;
   private EncryptionKeyCanary unknownCanary;
   private EncryptionKeyCanary oldCanary;
+
+  @BeforeClass
+  public static void beforeAll() {
+    BouncyCastleFipsConfigurer.configure();
+  }
 
   @Before
   public void beforeEach() throws Exception {

@@ -19,9 +19,11 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.PermissionOperation;
 import org.cloudfoundry.credhub.helpers.JsonTestHelper;
+import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer;
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.views.PermissionsV2View;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -63,6 +65,11 @@ public class CredentialFindTest {
   @Autowired
   private WebApplicationContext webApplicationContext;
   private MockMvc mockMvc;
+
+  @BeforeClass
+  public static void beforeAll() {
+    BouncyCastleFipsConfigurer.configure();
+  }
 
   @Before
   public void beforeEach() {

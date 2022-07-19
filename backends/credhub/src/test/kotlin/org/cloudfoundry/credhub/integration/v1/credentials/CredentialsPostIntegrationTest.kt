@@ -6,9 +6,11 @@ import org.cloudfoundry.credhub.credential.CertificateCredentialValue
 import org.cloudfoundry.credhub.services.CertificateAuthorityService
 import org.cloudfoundry.credhub.util.CurrentTimeProvider
 import org.cloudfoundry.credhub.utils.AuthConstants
+import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver
 import org.cloudfoundry.credhub.utils.TestConstants
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito
@@ -48,6 +50,14 @@ class CredentialsPostIntegrationTest {
     private val mockCurrentTimeProvider: CurrentTimeProvider? = null
 
     private var mockMvc: MockMvc? = null
+
+    companion object {
+        @BeforeClass
+        @JvmStatic
+        fun setUpAll() {
+            BouncyCastleFipsConfigurer.configure()
+        }
+    }
 
     @Before
     fun beforeEach() {

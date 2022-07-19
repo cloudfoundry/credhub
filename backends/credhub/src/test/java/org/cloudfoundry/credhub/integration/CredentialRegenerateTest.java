@@ -29,8 +29,10 @@ import org.cloudfoundry.credhub.entity.PasswordCredentialVersionData;
 import org.cloudfoundry.credhub.requests.StringGenerationParameters;
 import org.cloudfoundry.credhub.services.CredentialVersionDataService;
 import org.cloudfoundry.credhub.util.CurrentTimeProvider;
+import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer;
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -90,6 +92,11 @@ public class CredentialRegenerateTest {
 
   private MockMvc mockMvc;
   private Consumer<Long> fakeTimeSetter;
+
+  @BeforeClass
+  public static void beforeAll() {
+    BouncyCastleFipsConfigurer.configure();
+  }
 
   @Before
   public void beforeEach() {

@@ -50,9 +50,11 @@ import org.cloudfoundry.credhub.requests.GenerationParameters;
 import org.cloudfoundry.credhub.requests.StringGenerationParameters;
 import org.cloudfoundry.credhub.services.CredentialVersionDataService;
 import org.cloudfoundry.credhub.util.CurrentTimeProvider;
+import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer;
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.utils.MultiJsonPathMatcher;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -396,6 +398,11 @@ public class CredentialsTypeSpecificGenerateIntegrationTest {
     params.add(rsaParameterizer);
 
     return params;
+  }
+
+  @BeforeClass
+  public static void beforeAll() {
+    BouncyCastleFipsConfigurer.configure();
   }
 
   @Before

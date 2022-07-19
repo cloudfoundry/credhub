@@ -26,8 +26,10 @@ import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.repositories.CredentialRepository;
 import org.cloudfoundry.credhub.repositories.CredentialVersionRepository;
 import org.cloudfoundry.credhub.util.CurrentTimeProvider;
+import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer;
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -64,6 +66,11 @@ public class CertificateMinimumDurationTest {
 
     @Autowired
     private CredentialRepository credentialRepository;
+
+    @BeforeClass
+    public static void beforeAll() {
+        BouncyCastleFipsConfigurer.configure();
+    }
 
     @Before
     public void beforeEach() {
