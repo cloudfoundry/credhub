@@ -180,19 +180,14 @@ object RequestHelper {
     @Throws(Exception::class)
     @JvmStatic
     fun getCertificateCredentialsByName(mockMvc: MockMvc, token: String, name: String): String {
-        System.err.println("RequestHelper: Begin getCertificateCredentialsByName()")
         val get = MockMvcRequestBuilders.get("/api/v1/certificates?name=$name")
             .header("Authorization", "Bearer $token")
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
-        try {
-            return mockMvc.perform(get)
-                .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.status().isOk)
-                .andReturn().response.contentAsString
-        } finally {
-            System.err.println("RequestHelper: End getCertificateCredentialsByName()")
-        }
+        return mockMvc.perform(get)
+            .andDo(MockMvcResultHandlers.print())
+            .andExpect(MockMvcResultMatchers.status().isOk)
+            .andReturn().response.contentAsString
     }
 
     @Throws(Exception::class)
@@ -206,7 +201,6 @@ object RequestHelper {
     @Throws(Exception::class)
     @JvmStatic
     fun generateCertificateCredential(mockMvc: MockMvc, credentialName: String?, overwrite: Boolean, commonName: String?, caName: String?, token: String): String {
-        System.err.println("RequestHelper: Begin generateCertificateCredential()")
         BouncyCastleFipsConfigurer.configure()
 
         val certRequestBody: MutableMap<String, Any?> = HashMap()
@@ -231,13 +225,9 @@ object RequestHelper {
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
             .content(content)
-        try {
-            return mockMvc.perform(post)
-                .andExpect(MockMvcResultMatchers.status().isOk)
-                .andReturn().response.contentAsString
-        } finally {
-            System.err.println("RequestHelper: End generateCertificateCredential()")
-        }
+        return mockMvc.perform(post)
+            .andExpect(MockMvcResultMatchers.status().isOk)
+            .andReturn().response.contentAsString
     }
 
     @Throws(Exception::class)
@@ -553,7 +543,6 @@ object RequestHelper {
         transitional: Boolean,
         token: String
     ): String {
-        System.err.println("RequestHelper: Begin regenerateCertificate()")
         BouncyCastleFipsConfigurer.configure()
 
         val regenerateRequest = MockMvcRequestBuilders.post("/api/v1/certificates/$uuid/regenerate")
@@ -561,13 +550,9 @@ object RequestHelper {
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON) //language=JSON
             .content("{\"set_as_transitional\" : $transitional}")
-        try {
-            return mockMvc.perform(regenerateRequest)
-                .andExpect(MockMvcResultMatchers.status().is2xxSuccessful)
-                .andReturn().response.contentAsString
-        } finally {
-            System.err.println("RequestHelper: End regenerateCertificate()")
-        }
+        return mockMvc.perform(regenerateRequest)
+            .andExpect(MockMvcResultMatchers.status().is2xxSuccessful)
+            .andReturn().response.contentAsString
     }
 
     @Throws(Exception::class)

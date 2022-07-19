@@ -65,18 +65,14 @@ public class CredentialGetTest {
 
   @Before
   public void beforeEach() throws Exception {
-    System.err.println("CredentialGetTest: Begin beforeEach()");
     mockMvc = MockMvcBuilders
       .webAppContextSetup(webApplicationContext)
       .apply(springSecurity())
       .build();
-    System.err.println("CredentialGetTest: End beforeEach()");
   }
 
   @Test
   public void getCertificateCredentials_whenCurrentFalseReturnsAllCertificateCredentials() throws Exception {
-    System.err.println(
-            "CredentialGetTest: Begin getCertificateCredentials_whenCurrentFalseReturnsAllCertificateCredentials()");
     final String credentialName = "/first-certificate";
 
     generateCertificateCredential(mockMvc, credentialName, true, "test", null, ALL_PERMISSIONS_TOKEN);
@@ -88,12 +84,10 @@ public class CredentialGetTest {
     RequestHelper.regenerateCertificate(mockMvc, uuid, true, ALL_PERMISSIONS_TOKEN);
     RequestHelper.regenerateCertificate(mockMvc, uuid, false, ALL_PERMISSIONS_TOKEN);
 
-    System.err.println("CredentialGetTest: Before request is set");
     final MockHttpServletRequestBuilder request = get("/api/v1/data?name=" + credentialName + "&current=false")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON);
 
-    System.err.println("CredentialGetTest: Before response is set");
     response = mockMvc.perform(request)
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
@@ -101,14 +95,11 @@ public class CredentialGetTest {
     final JSONObject responseObject = new JSONObject(response);
 
     assertThat(responseObject.getJSONArray("data").length(), equalTo(3));
-    System.err.println(
-            "CredentialGetTest: End getCertificateCredentials_whenCurrentFalseReturnsAllCertificateCredentials()");
   }
+
 
   @Test
   public void getCertificateCredentials_whenCurrentTrueReturnsOnlyTransitionalAndLatest() throws Exception {
-    System.err.println(
-            "CredentialGetTest: Begin getCertificateCredentials_whenCurrentTrueReturnsOnlyTransitionalAndLatest()");
     final String credentialName = "/second-certificate";
 
     generateCertificateCredential(mockMvc, credentialName, true, "test", null, ALL_PERMISSIONS_TOKEN);
@@ -123,12 +114,10 @@ public class CredentialGetTest {
     final String nonTransitionalCertificate = JsonPath.parse(RequestHelper.regenerateCertificate(mockMvc, uuid, false, ALL_PERMISSIONS_TOKEN))
       .read("$.value.certificate");
 
-    System.err.println("CredentialGetTest: Before request is set");
     final MockHttpServletRequestBuilder request = get("/api/v1/data?name=" + credentialName + "&current=true")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON);
 
-    System.err.println("CredentialGetTest: Before response is set");
     response = mockMvc.perform(request)
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
@@ -139,24 +128,20 @@ public class CredentialGetTest {
     final List<String> certificates = JsonPath.parse(response)
       .read("$.data[*].value.certificate");
     assertThat(certificates, containsInAnyOrder(transitionalCertificate, nonTransitionalCertificate));
-    System.err.println(
-            "CredentialGetTest: End getCertificateCredentials_whenCurrentTrueReturnsOnlyTransitionalAndLatest()");
   }
 
   @Test
   public void getCertificate_withNonNullExpiryDate_andExpectExpiryDate() throws Exception {
-    System.err.println(
-            "CredentialGetTest: Begin getCertificate_withNonNullExpiryDate_andExpectExpiryDate()");
+
     final String credentialName = "/test-certificate";
 
     generateCertificateCredential(mockMvc, credentialName, true, "test", null, ALL_PERMISSIONS_TOKEN);
 
-    System.err.println("CredentialGetTest: Before request is set");
+
     final MockHttpServletRequestBuilder request = get("/api/v1/data?name=" + credentialName + "&current=true")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON);
 
-    System.err.println("CredentialGetTest: Before response is set");
     final String response = mockMvc.perform(request)
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
@@ -169,7 +154,6 @@ public class CredentialGetTest {
     final String expectedTime = calendar.getTime().toInstant().truncatedTo(ChronoUnit.SECONDS).toString();
     final String truncatedExpected = expectedTime.substring(0, expectedTime.indexOf('T'));
     assertThat(truncatedExpiryDate, equalTo(truncatedExpected));
-    System.err.println(
-            "CredentialGetTest: End getCertificate_withNonNullExpiryDate_andExpectExpiryDate()");
+
   }
 }
