@@ -231,15 +231,10 @@ object RequestHelper {
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
             .content(content)
-        System.err.println("RequestHelper: Before try")
         try {
-            val action = mockMvc.perform(post)
-            System.err.println("RequestHelper: Done action")
-            val action2 = action.andExpect(MockMvcResultMatchers.status().isOk)
-            System.err.println("RequestHelper: Done action2")
-            val result = action2.andReturn().response.contentAsString
-            System.err.println("RequestHelper: Done result")
-            return result
+            return mockMvc.perform(post)
+                .andExpect(MockMvcResultMatchers.status().isOk)
+                .andReturn().response.contentAsString
         } finally {
             System.err.println("RequestHelper: End generateCertificateCredential()")
         }
