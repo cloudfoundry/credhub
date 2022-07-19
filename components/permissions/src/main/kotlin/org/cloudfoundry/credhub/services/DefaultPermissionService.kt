@@ -128,6 +128,10 @@ constructor(
 
     override fun saveV2Permissions(permissionsRequest: PermissionsV2Request): PermissionData {
         val userContext = userContextHolder.userContext
+        System.err.println("PETER: userContext?.actor" + userContext?.actor)
+        System.err.println("PETER: userContext?.clientId" + userContext?.clientId)
+        System.err.println("PETER: userContext?.scope" + userContext?.scope)
+
         if (!permissionCheckingService
             .hasPermission(userContext?.actor!!, permissionsRequest.getPath(), PermissionOperation.WRITE_ACL)
         ) {

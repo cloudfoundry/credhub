@@ -116,7 +116,9 @@ constructor(
     }
 
     fun hasPermission(user: String, path: String, requiredPermission: PermissionOperation): Boolean {
+        System.err.println("PETER: dataservice.hasPermission + requiredPermission$requiredPermission + user$user + path$path")
         for (permissionData in permissionRepository.findByPathsAndActor(findAllPaths(path), user)) {
+            System.err.println("PETER: dataservice.permissionData$permissionData")
             if (permissionData.hasPermission(requiredPermission)) {
                 return true
             }

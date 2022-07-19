@@ -22,6 +22,7 @@ constructor(
     private val enforcePermissions: Boolean = false
 
     override fun hasPermission(user: String, credentialName: String, permission: PermissionOperation): Boolean {
+        System.err.println("PETER: enforcePermissions$enforcePermissions")
         if (enforcePermissions) {
             val name = StringUtils.prependIfMissing(credentialName, "/")
             return permissionDataService.hasPermission(user, name, permission)
