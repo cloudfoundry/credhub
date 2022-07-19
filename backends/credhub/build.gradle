@@ -104,7 +104,7 @@ sourceSets {
 
 test {
     testLogging {
-        events "started", "passed", "failed", "skipped"
+        events "started", "passed", "failed", "skipped", "standard_error"
         exceptionFormat "full"
     }
 

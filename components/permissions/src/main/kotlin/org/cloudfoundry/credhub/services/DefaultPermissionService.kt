@@ -131,11 +131,14 @@ constructor(
         if (!permissionCheckingService
             .hasPermission(userContext?.actor!!, permissionsRequest.getPath(), PermissionOperation.WRITE_ACL)
         ) {
+            System.err.println("PETER: EntryNotFoundException")
             throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
         }
         if (!permissionCheckingService.userAllowedToOperateOnActor(permissionsRequest.actor)) {
+            System.err.println("PETER: InvalidPermissionOperationException")
             throw InvalidPermissionOperationException(ErrorMessages.Permissions.INVALID_UPDATE_OPERATION)
         }
+        System.err.println("PETER: permissionDataService.saveV2Permissions")
         return permissionDataService.saveV2Permissions(permissionsRequest)
     }
 

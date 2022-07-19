@@ -33,6 +33,7 @@ class PermissionsV2Controller(private val permissionsHandler: PermissionsV2Handl
     )
     @ResponseStatus(HttpStatus.CREATED)
     fun postPermissions(@Validated @RequestBody permissionsRequest: PermissionsV2Request): PermissionsV2View {
+        System.err.println("PETER: postPermissions")
         return permissionsHandler.writeV2Permissions(permissionsRequest)
     }
 

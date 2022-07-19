@@ -30,6 +30,7 @@ final class PermissionsV2EndToEndTestHelper {
   }
 
   static UUID setPermissions(final MockMvc mockMvc, final String credentialName, final PermissionOperation operation) throws Exception {
+    System.err.println("PETER: setPermissions ALL_PERMISSIONS_TOKEN: " + ALL_PERMISSIONS_TOKEN);
     final MockHttpServletRequestBuilder addPermissionRequest = post("/api/v2/permissions")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)

@@ -257,6 +257,7 @@ constructor(
     }
 
     fun saveV2Permissions(permissionsRequest: PermissionsV2Request): PermissionData {
+        System.err.println("PETER: service.saveV2Permissions")
         val existingPermissionData = permissionRepository.findByPathAndActor(
             permissionsRequest.getPath(),
             permissionsRequest.actor
