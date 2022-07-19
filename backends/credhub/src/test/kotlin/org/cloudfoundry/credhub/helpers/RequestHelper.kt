@@ -5,6 +5,7 @@ import com.jayway.jsonpath.JsonPath
 import org.cloudfoundry.credhub.helpers.JsonTestHelper.Companion.deserialize
 import org.cloudfoundry.credhub.helpers.JsonTestHelper.Companion.serializeToString
 import org.cloudfoundry.credhub.utils.AuthConstants
+import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer
 import org.cloudfoundry.credhub.views.PermissionsView
 import org.hamcrest.core.IsEqual
 import org.springframework.http.MediaType
@@ -134,6 +135,8 @@ object RequestHelper {
         length: Int?,
         sshComment: String?
     ): String {
+        BouncyCastleFipsConfigurer.configure()
+
         val sshRequestBody: MutableMap<String, Any?> = mutableMapOf(
             "name" to credentialName,
             "type" to "ssh"
@@ -204,6 +207,8 @@ object RequestHelper {
     @JvmStatic
     fun generateCertificateCredential(mockMvc: MockMvc, credentialName: String?, overwrite: Boolean, commonName: String?, caName: String?, token: String): String {
         System.err.println("RequestHelper: Begin generateCertificateCredential()")
+        BouncyCastleFipsConfigurer.configure()
+
         val certRequestBody: MutableMap<String, Any?> = HashMap()
         certRequestBody["name"] = credentialName
         certRequestBody["type"] = "certificate"
@@ -248,6 +253,8 @@ object RequestHelper {
         overwrite: Boolean,
         length: Int?
     ): String {
+        BouncyCastleFipsConfigurer.configure()
+
         val rsaRequestBody: MutableMap<String, Any?> = HashMap()
         rsaRequestBody["name"] = credentialName
         rsaRequestBody["type"] = "rsa"
@@ -272,6 +279,8 @@ object RequestHelper {
     @Throws(Exception::class)
     @JvmStatic
     fun generateCa(mockMvc: MockMvc, caName: String, token: String): String {
+        BouncyCastleFipsConfigurer.configure()
+
         val caPost = MockMvcRequestBuilders.post("/api/v1/data")
             .header("Authorization", "Bearer $token")
             .accept(MediaType.APPLICATION_JSON)
@@ -330,6 +339,8 @@ object RequestHelper {
         caName: String,
         token: String
     ) {
+        BouncyCastleFipsConfigurer.configure()
+
         val certPost = createRequestForGenerateCertificate(certName, caName, token)
         mockMvc.perform(certPost)
             .andDo(MockMvcResultHandlers.print())
@@ -548,6 +559,8 @@ object RequestHelper {
         token: String
     ): String {
         System.err.println("RequestHelper: Begin regenerateCertificate()")
+        BouncyCastleFipsConfigurer.configure()
+
         val regenerateRequest = MockMvcRequestBuilders.post("/api/v1/certificates/$uuid/regenerate")
             .header("Authorization", "Bearer $token")
             .accept(MediaType.APPLICATION_JSON)
