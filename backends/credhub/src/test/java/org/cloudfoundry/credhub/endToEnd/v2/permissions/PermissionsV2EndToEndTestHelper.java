@@ -41,7 +41,6 @@ final class PermissionsV2EndToEndTestHelper {
         + "  \"operations\": [\"" + operation.getOperation() + "\"]\n"
         + "}");
 
-    Thread.sleep(10 * 1000);
     final String content = mockMvc.perform(addPermissionRequest).andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
     final PermissionsV2View returnValue = JsonTestHelper.deserialize(content, PermissionsV2View.class);
     assertThat(returnValue.getActor(), equalTo(USER_A_ACTOR_ID));
