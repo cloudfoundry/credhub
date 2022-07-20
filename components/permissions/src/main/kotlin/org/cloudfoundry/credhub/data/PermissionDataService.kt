@@ -116,13 +116,18 @@ constructor(
     }
 
     fun hasPermission(user: String, path: String, requiredPermission: PermissionOperation): Boolean {
-        System.err.println("PETER: dataservice.hasPermission + requiredPermission$requiredPermission + user$user + path$path")
+        System.err.println("PETER: dataservice.hasPermission + requiredPermission: $requiredPermission + user: $user + path: $path")
         for (permissionData in permissionRepository.findByPathsAndActor(findAllPaths(path), user)) {
-            System.err.println("PETER: dataservice.permissionData$permissionData")
+            System.err.println("PETER: dataservice.permissionData: ${permissionData.hasReadPermission()}")
+            System.err.println("PETER: dataservice.permissionData: ${permissionData.hasWriteAclPermission()}")
+            System.err.println("PETER: dataservice.permissionData: ${permissionData.hasDeletePermission()}")
+            System.err.println("PETER: dataservice.permissionData: ${permissionData.hasWritePermission()}")
+            System.err.println("PETER: dataservice.permissionData: ${permissionData.hasReadAclPermission()}")
             if (permissionData.hasPermission(requiredPermission)) {
                 return true
             }
         }
+        System.err.println("PETER: dataservice.hasPermission returning false")
         return false
     }
 
