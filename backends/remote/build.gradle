@@ -67,7 +67,7 @@ dependencies {
     implementation "io.netty:netty-codec-http2:${nettyVersion}"
 
     //tcnative
-    implementation "io.netty:netty-tcnative-boringssl-static:2.0.53.Final"
+    implementation "io.netty:netty-tcnative-boringssl-static:2.0.54.Final"
 }
 
 dependencyManagement {
