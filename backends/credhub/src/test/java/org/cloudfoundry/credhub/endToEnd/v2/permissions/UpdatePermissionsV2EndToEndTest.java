@@ -127,6 +127,8 @@ public class UpdatePermissionsV2EndToEndTest {
 
   @Test
   public void PUT_whenUserDoesNotHavePermissionOnPath_theyCannotAddAPermission() throws Exception {
+    System.err.println("Sleeping for 600,000ms");
+    Thread.sleep(600000);
     final String credentialName = "/test";
 
     final UUID permissionUUID = PermissionsV2EndToEndTestHelper.setPermissions(mockMvc, credentialName, PermissionOperation.READ);
