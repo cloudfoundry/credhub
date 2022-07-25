@@ -127,8 +127,9 @@ public class UpdatePermissionsV2EndToEndTest {
 
   @Test
   public void PUT_whenUserDoesNotHavePermissionOnPath_theyCannotAddAPermission() throws Exception {
-    final String credentialName = "/test";
+    final String credentialName = "/testx";
 
+    // delete the permission
     final UUID permissionUUID = PermissionsV2EndToEndTestHelper.setPermissions(mockMvc, credentialName, PermissionOperation.READ);
 
     final MockHttpServletRequestBuilder putPermissionRequest = put("/api/v2/permissions/" + permissionUUID)
@@ -147,7 +148,7 @@ public class UpdatePermissionsV2EndToEndTest {
 
   @Test
   public void PUT_whenWriteIsEnabledOnExistingPermissionForUserA_UserACanCreateCredentials() throws Exception {
-    final String credentialName = "/test";
+    final String credentialName = "/testy";
     final String passwordValue = "passwordValue";
 
     final UUID credUUID = PermissionsV2EndToEndTestHelper.setPermissions(mockMvc, credentialName, PermissionOperation.READ);
