@@ -117,7 +117,12 @@ constructor(
 
     fun hasPermission(user: String, path: String, requiredPermission: PermissionOperation): Boolean {
         System.err.println("PETER: dataservice.hasPermission + requiredPermission: $requiredPermission + user: $user + path: $path")
-        for (permissionData in permissionRepository.findByPathsAndActor(findAllPaths(path), user)) {
+        val allPaths = buildTheListOfAllPermissionNodesThatWeNeedToCheckInOrderToKnowIfTheUserHasPermissionToReadTheCredentialAtThisPath(path)
+        System.err.println("PETER: dataservice paths: ${allPaths}")
+        val permissions = permissionRepository.findByPathsAndActor(allPaths, user)
+        System.err.println("PETER: permissions: ${permissions}")
+        for (permissionData in permissions) {
+            System.err.println("PETER: PATH ${permissionData.path}")
             System.err.println("PETER: dataservice.permissionData.hasReadPermission: ${permissionData.hasReadPermission()}")
             System.err.println("PETER: dataservice.permissionData.hasWriteAclPermission: ${permissionData.hasWriteAclPermission()}")
             System.err.println("PETER: dataservice.permissionData.hasDeletePermission: ${permissionData.hasDeletePermission()}")
@@ -149,7 +154,7 @@ constructor(
         return entry
     }
 
-    private fun findAllPaths(path: String): List<String> {
+    private fun buildTheListOfAllPermissionNodesThatWeNeedToCheckInOrderToKnowIfTheUserHasPermissionToReadTheCredentialAtThisPath(path: String): List<String> {
         val result = ArrayList<String>()
         result.add(path)
 
