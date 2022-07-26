@@ -57,9 +57,6 @@ public class RegenerationEndpointTest {
   private MockMvc mockMvc;
   private String originalPassword;
 
-  @Rule
-  public Timeout globalTimeout = Timeout.seconds(60);
-
   @Before
   public void beforeEach() throws Exception {
     mockMvc = MockMvcBuilders

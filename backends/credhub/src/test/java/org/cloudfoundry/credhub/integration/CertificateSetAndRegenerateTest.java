@@ -74,9 +74,6 @@ public class CertificateSetAndRegenerateTest {
     private String caCertificate;
     private String caCredentialUuid;
 
-    @Rule
-    public Timeout globalTimeout = Timeout.seconds(60);
-
     @BeforeClass
     public static void setUpAll() {
         BouncyCastleFipsConfigurer.configure();
