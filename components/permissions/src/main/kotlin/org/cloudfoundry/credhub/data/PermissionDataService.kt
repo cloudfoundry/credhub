@@ -135,6 +135,7 @@ constructor(
         System.err.println("PETER: dataservice.hasPermission returning false")
         if (user == "uaa-client:all-permissions") {
             System.err.println("PETER: uaa-client:all-permissions has no permissions, unexpectedly; sleeping 20 mins to debug.")
+            System.err.println("Gradle worker ID (which goes into the DB name: credhub_test_GRADLE_WORKER_ID): " + System.getProperty("org.gradle.test.worker"))
             Thread.sleep(1200000)
         }
         return false
