@@ -35,7 +35,10 @@ class ParallelMysqlTestDataSourceConfiguration {
         ).size == 1
 
         if (!doesDatabaseExist) {
+            System.err.println("PETER: ParallelMysqlTestDataSourceConfiguration: creating, DB does not exist: " +  workerDatabaseName)
             jdbcTemplate.execute("CREATE DATABASE $workerDatabaseName")
+        } else {
+            System.err.println("PETER: ParallelMysqlTestDataSourceConfiguration: skipping, as DB already exists: " +  workerDatabaseName)
         }
 
         tempDataSource.connection.close()
