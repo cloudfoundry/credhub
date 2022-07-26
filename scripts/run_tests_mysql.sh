@@ -28,13 +28,13 @@ function clean_test_databases_mysql() {
 }
 
 function run_tests_mysql() {
-    local gradle_test_command="test"
+    local gradle_test_command=":backends:credhub:test"
     echo "✨ Parallel test mode enabled"
     echo "🚀 Running mysql tests"
     echo ""
 
     mysql --protocol=tcp --user=root --protocol=tcp --execute "SET GLOBAL max_connections = 1000;"
-    ./gradlew clean $gradle_test_command -Dspring.profiles.active=unit-test-mysql
+    ./gradlew clean $gradle_test_command -Dspring.profiles.active=unit-test-mysql --tests "org.cloudfoundry.credhub.endToEnd.v2.permissions.UpdatePermissionsV2EndToEndTest"
 }
 
 function main() {
