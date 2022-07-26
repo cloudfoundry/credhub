@@ -121,10 +121,6 @@ constructor(
         System.err.println("PETER: dataservice paths: ${allPaths}")
         val permissions = permissionRepository.findByPathsAndActor(allPaths, user)
         System.err.println("PETER: permissions: ${permissions}")
-        if (user == "uaa-client:all-permissions" && permissions.isEmpty()) {
-            System.err.println("PETER: uaa-client:all-permissions has empty permission list, unexpectedly; sleeping 20 mins to debug.")
-            Thread.sleep(1200000)
-        }
         for (permissionData in permissions) {
             System.err.println("PETER: PATH ${permissionData.path}")
             System.err.println("PETER: dataservice.permissionData.hasReadPermission: ${permissionData.hasReadPermission()}")
@@ -137,6 +133,10 @@ constructor(
             }
         }
         System.err.println("PETER: dataservice.hasPermission returning false")
+        if (user == "uaa-client:all-permissions") {
+            System.err.println("PETER: uaa-client:all-permissions has no permissions, unexpectedly; sleeping 20 mins to debug.")
+            Thread.sleep(1200000)
+        }
         return false
     }
 
