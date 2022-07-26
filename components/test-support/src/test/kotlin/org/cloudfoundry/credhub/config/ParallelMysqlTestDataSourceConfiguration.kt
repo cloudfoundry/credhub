@@ -48,6 +48,11 @@ class ParallelMysqlTestDataSourceConfiguration {
         val workerId = getGradleWorkerId()
 
         createTestDatabaseForWorker(workerId)
+        System.err.println("PETER: ParallelMysqlTestDataSourceConfiguration: done createTestDatabaseForWorker for gradle worker id: " + workerId)
+        for (trace in Thread.currentThread().stackTrace) {
+            System.err.println(trace.toString())
+        }
+        System.err.println("PETER: ParallelMysqlTestDataSourceConfiguration: stacktrace done")
 
         val dataSource = DataSourceBuilder.create()
             .url("jdbc:mariadb://localhost:3306/credhub_test_$workerId?user=root")
