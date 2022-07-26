@@ -34,11 +34,7 @@ function run_tests_mysql() {
     echo ""
 
     mysql --protocol=tcp --user=root --protocol=tcp --execute "SET GLOBAL max_connections = 1000;"
-    ./gradlew clean $gradle_test_command -Dspring.profiles.active=unit-test-mysql \
-    --tests "org.cloudfoundry.credhub.endToEnd.v2.permissions.UpdatePermissionsV2EndToEndTest" \
-    --tests "org.cloudfoundry.credhub.endToEnd.v2.permissions.AddPermissionsV2EndToEndTest" \
-    --tests "org.cloudfoundry.credhub.endToEnd.v2.permissions.DeletePermissionsV2EndToEndTest" \
-    --tests "org.cloudfoundry.credhub.endToEnd.v2.permissions.GetPermissionsV2EndToEndTest"
+    ./gradlew clean $gradle_test_command -Dspring.profiles.active=unit-test-mysql --tests "org.cloudfoundry.credhub.endToEnd.v2.permissions.UpdatePermissionsV2EndToEndTest"
 }
 
 function main() {
