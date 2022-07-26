@@ -60,6 +60,7 @@ public class PermissionInitializationTest {
 
   @Before
   public void beforeEach() throws Exception {
+    // Does this before each need to happen before our end to end tests?
     final List<AuthorizationConfig.Permission> permissions = new ArrayList<>();
     final AuthorizationConfig.Permission permission = new AuthorizationConfig.Permission();
     permission.setPath(credentialPath);
