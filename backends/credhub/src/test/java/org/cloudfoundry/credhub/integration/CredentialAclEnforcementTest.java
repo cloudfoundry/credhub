@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.integration;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.context.ActiveProfiles;
@@ -11,6 +12,8 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEventPublisher;
 
 import com.jayway.jsonpath.JsonPath;
 import org.cloudfoundry.credhub.CredhubTestApp;
@@ -55,7 +58,10 @@ public class CredentialAclEnforcementTest {
 
   @Autowired
   WebApplicationContext webApplicationContext;
-
+  @Autowired
+  private ApplicationContext applicationContext;
+  @Autowired
+  private ApplicationEventPublisher applicationEventPublisher;
   private MockMvc mockMvc;
   private String uuid;
 
@@ -66,6 +72,7 @@ public class CredentialAclEnforcementTest {
 
   @Before
   public void setup() throws Exception {
+    applicationEventPublisher.publishEvent(new ContextRefreshedEvent(applicationContext));
     mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
       .apply(springSecurity())
       .build();
