@@ -4,6 +4,9 @@ package org.cloudfoundry.credhub.integration;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -59,6 +62,10 @@ public class CertificateGetTest {
 
   @Autowired
   private WebApplicationContext webApplicationContext;
+  @Autowired
+  private ApplicationContext applicationContext;
+  @Autowired
+  private ApplicationEventPublisher applicationEventPublisher;
 
   private MockMvc mockMvc;
 
@@ -73,6 +80,7 @@ public class CertificateGetTest {
       .webAppContextSetup(webApplicationContext)
       .apply(springSecurity())
       .build();
+    applicationEventPublisher.publishEvent(new ContextRefreshedEvent(applicationContext));
   }
 
   @Test
