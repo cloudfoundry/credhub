@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
-import java.util.ArrayList
 
 @Component
 class PermissionInitializer @Autowired
@@ -28,6 +27,9 @@ constructor(
                 permissionEntries.add(PermissionEntry(actor, permission.path!!, permission.operations!!))
             }
 
+            System.err.println("PETER: PermissionInitializer, gradle worker id: " + System.getProperty("org.gradle.test.worker"))
+            System.err.println("PETER: PermissionInitializer about to save the active profile's seed data, the first entry being: " + permissionEntries.get(0).actor)
+            System.err.println("PETER: PermissionInitializer about to save the active profile's seed data: " + permissionEntries.toString())
             permissionService?.savePermissions(permissionEntries)
         }
     }

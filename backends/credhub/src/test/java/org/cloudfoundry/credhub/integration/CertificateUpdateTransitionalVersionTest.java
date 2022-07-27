@@ -50,9 +50,6 @@ public class CertificateUpdateTransitionalVersionTest {
   private Object caCertificate;
   private String caCredentialUuid;
 
-  @Rule
-  public Timeout globalTimeout = Timeout.seconds(60);
-
   @Before
   public void beforeEach() throws Exception {
     mockMvc = MockMvcBuilders

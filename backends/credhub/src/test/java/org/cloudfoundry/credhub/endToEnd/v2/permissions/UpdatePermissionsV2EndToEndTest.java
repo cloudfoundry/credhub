@@ -3,8 +3,12 @@ package org.cloudfoundry.credhub.endToEnd.v2.permissions;
 import java.util.Collections;
 import java.util.UUID;
 
+import org.junit.BeforeClass;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -51,11 +55,16 @@ public class UpdatePermissionsV2EndToEndTest {
 
   @Autowired
   private WebApplicationContext webApplicationContext;
+  @Autowired
+  private ApplicationContext applicationContext;
+  @Autowired
+  private ApplicationEventPublisher applicationEventPublisher;
 
   private MockMvc mockMvc;
 
   @Before
   public void beforeEach() throws Exception {
+    applicationEventPublisher.publishEvent(new ContextRefreshedEvent(applicationContext));
     mockMvc = MockMvcBuilders
       .webAppContextSetup(webApplicationContext)
       .apply(springSecurity())

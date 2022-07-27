@@ -129,10 +129,19 @@ constructor(
             System.err.println("PETER: dataservice.permissionData.hasWritePermission: ${permissionData.hasWritePermission()}")
             System.err.println("PETER: dataservice.permissionData.hasReadAclPermission: ${permissionData.hasReadAclPermission()}")
             if (permissionData.hasPermission(requiredPermission)) {
+                if (user == "uaa-client:all-permissions") {
+                    System.err.println("PETER: uaa-client:all-permissions has the requiredPermission: " + requiredPermission)
+                    System.err.println("PETER: when the actor has permissions, Gradle worker ID (which goes into the DB name: credhub_test_GRADLE_WORKER_ID): " + System.getProperty("org.gradle.test.worker"))
+                }
                 return true
             }
         }
         System.err.println("PETER: dataservice.hasPermission returning false")
+        if (user == "uaa-client:all-permissions") {
+            System.err.println("PETER: uaa-client:all-permissions has no permissions, unexpectedly; sleeping 20 mins to debug.")
+            System.err.println("PETER: no permission: Gradle worker ID (which goes into the DB name: credhub_test_GRADLE_WORKER_ID): " + System.getProperty("org.gradle.test.worker"))
+            Thread.sleep(2400000)
+        }
         return false
     }
 

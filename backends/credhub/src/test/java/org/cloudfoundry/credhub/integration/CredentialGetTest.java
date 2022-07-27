@@ -55,9 +55,6 @@ public class CredentialGetTest {
   @Autowired
   private WebApplicationContext webApplicationContext;
 
-  @Rule
-  public Timeout globalTimeout = Timeout.seconds(60);
-
   @BeforeClass
   public static void beforeAll() {
     BouncyCastleFipsConfigurer.configure();

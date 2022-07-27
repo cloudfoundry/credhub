@@ -41,9 +41,6 @@ import org.springframework.web.context.WebApplicationContext
 @Transactional
 @TestPropertySource(properties = ["certificates.concatenate_cas=false"])
 class CertificatesPostIntegrationTest {
-    @get:Rule
-    val globalTimeout: Timeout = Timeout.seconds(60)
-
     private val CA_NAME = "/test-ca"
 
     @Autowired

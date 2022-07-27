@@ -40,9 +40,6 @@ public class CertificateGenerateWithoutAclEnforcementTest {
   private WebApplicationContext webApplicationContext;
   private MockMvc mockMvc;
 
-  @Rule
-  public Timeout globalTimeout = Timeout.seconds(60);
-
   @BeforeClass
   public static void beforeAll() {
     BouncyCastleFipsConfigurer.configure();
