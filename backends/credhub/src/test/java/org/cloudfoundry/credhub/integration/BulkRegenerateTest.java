@@ -6,12 +6,15 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEventPublisher;
 
 import com.jayway.jsonpath.JsonPath;
 import org.cloudfoundry.credhub.CredhubTestApp;
@@ -61,10 +64,12 @@ public class BulkRegenerateTest {
 
     @Autowired
     private WebApplicationContext webApplicationContext;
-
+    @Autowired
+    private ApplicationContext applicationContext;
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
     @Autowired
     private CredentialVersionDataService credentialVersionDataService;
-
     @Autowired
     private CredentialVersionRepository credentialVersionRepository;
 
@@ -80,6 +85,7 @@ public class BulkRegenerateTest {
 
     @Before
     public void beforeEach() throws Exception {
+        applicationEventPublisher.publishEvent(new ContextRefreshedEvent(applicationContext));
         mockMvc = MockMvcBuilders
                 .webAppContextSetup(webApplicationContext)
                 .apply(springSecurity())
