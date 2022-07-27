@@ -17,6 +17,9 @@ import org.junit.rules.Timeout
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.ApplicationContext
+import org.springframework.context.ApplicationEventPublisher
+import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers
 import org.springframework.test.context.ActiveProfiles
@@ -41,6 +44,12 @@ class RegenerateEndpointConcatenateCasIntegrationTest {
     @Autowired
     private val webApplicationContext: WebApplicationContext? = null
 
+    @Autowired
+    private val applicationContext: ApplicationContext? = null
+
+    @Autowired
+    private val applicationEventPublisher: ApplicationEventPublisher? = null
+
     private val API_V1_REGENERATE_ENDPOINT = "/api/v1/regenerate"
 
     private lateinit var mockMvc: MockMvc
@@ -59,6 +68,7 @@ class RegenerateEndpointConcatenateCasIntegrationTest {
             .webAppContextSetup(webApplicationContext!!)
             .apply<DefaultMockMvcBuilder>(SecurityMockMvcConfigurers.springSecurity())
             .build()
+        applicationContext?.let { ContextRefreshedEvent(it) }?.let { applicationEventPublisher?.publishEvent(it) }
     }
 
     @Test
