@@ -6,6 +6,9 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -54,6 +57,10 @@ public class CredentialGetTest {
 
   @Autowired
   private WebApplicationContext webApplicationContext;
+  @Autowired
+  private ApplicationContext applicationContext;
+  @Autowired
+  private ApplicationEventPublisher applicationEventPublisher;
 
   @Rule
   public Timeout globalTimeout = Timeout.seconds(60);
@@ -69,6 +76,7 @@ public class CredentialGetTest {
       .webAppContextSetup(webApplicationContext)
       .apply(springSecurity())
       .build();
+    applicationEventPublisher.publishEvent(new ContextRefreshedEvent(applicationContext));
   }
 
   @Test
