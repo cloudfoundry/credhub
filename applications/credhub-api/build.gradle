@@ -100,7 +100,9 @@ dependencyManagement {
 
 bootRun {
     sourceResources sourceSets.main
-    if (project.hasProperty("debug") && project.debug) {
+    if (project.hasProperty("debugs") && project.debugs) {
+        jvmArgs = ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005"]
+    } else if (project.hasProperty("debug") && project.debug) {
         jvmArgs = ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005"]
     }
     systemProperties = System.properties

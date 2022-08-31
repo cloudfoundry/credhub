@@ -204,6 +204,11 @@ To load JDWP agent for credhub jvm debugging, start the server as follows:
 
 You can then attach your debugger to port 5005 of the jvm process.
 
+To suspend the server start-up until the debugger is attached (useful for
+debugging start-up code), start the server as follows:
+```sh
+./scripts/start_server.sh -Pdebugs=true
+```
 
 #### Running tests with different databases
 
