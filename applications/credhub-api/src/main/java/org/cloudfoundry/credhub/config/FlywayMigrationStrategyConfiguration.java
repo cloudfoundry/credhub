@@ -1,6 +1,7 @@
 package org.cloudfoundry.credhub.config;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.zaxxer.hikari.HikariDataSource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.flywaydb.core.Flyway;
@@ -10,6 +11,7 @@ import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -43,7 +45,13 @@ public class FlywayMigrationStrategyConfiguration {
 
     @VisibleForTesting
     Connection getConnection(@NotNull Flyway flyway) throws SQLException {
-        return flyway.getConfiguration().getDataSource().getConnection();
+        DataSource ds = flyway.getConfiguration().getDataSource();
+        if (LOGGER.isInfoEnabled()) {
+            if (ds instanceof HikariDataSource) {
+                LOGGER.info("jdbcUrl=" + ((HikariDataSource) ds).getJdbcUrl());
+            }
+        }
+        return ds.getConnection();
     }
 
     private void repairIfNecessary(@NotNull Flyway flyway) {

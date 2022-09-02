@@ -1,0 +1,7 @@
+spring:
+  datasource:
+    username: admin
+    password:
+    url: jdbc:mariadb:aurora://localhost:3306/credhub_dev?usePipelineAuth=false&useBatchMultiSend=false
+  flyway:
+    locations: classpath:/db/migration/common,classpath:/db/migration/mysql
