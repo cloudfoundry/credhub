@@ -60,7 +60,7 @@ dependencies {
     // DB
     implementation("org.postgresql:postgresql:${postgresqlJdbcVersion}")
 
-    implementation("org.mariadb.jdbc:mariadb-java-client")
+    implementation("org.mariadb.jdbc:mariadb-java-client:${mariadbJdbcVersion}")
     implementation("org.flywaydb:flyway-core:${flywayVersion}")
     implementation("com.h2database:h2:${h2Version}")
 
