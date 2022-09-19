@@ -185,3 +185,4 @@ applications/credhub-api/src/test/resources/server.cnf
 applications/credhub-api/src/main/resources/application-dev-external-provider.yml
 application-*-generated.yml
 libs/
+jmeter.log
