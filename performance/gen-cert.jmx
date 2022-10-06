@@ -269,7 +269,7 @@
           <collectionProp name="HeaderManager.headers">
             <elementProp name="" elementType="Header">
               <stringProp name="Header.name">Authorization</stringProp>
-              <stringProp name="Header.value">Bearer eyJhbGciOiJSUzI1NiIsImprdSI6Imh0dHBzOi8vMzUuMTk2LjMyLjY0Ojg0NDMvdG9rZW5fa2V5cyIsImtpZCI6ImxlZ2FjeS10b2tlbi1rZXkiLCJ0eXAiOiJKV1QifQ.eyJqdGkiOiJiMmNkZWRhNTE1ODc0OWM1ODMyYjIwOTQyNzUxOWQ5YiIsInN1YiI6ImNyZWRodWJfY2xpZW50IiwiYXV0aG9yaXRpZXMiOlsiY3JlZGh1Yi53cml0ZSIsImNyZWRodWIucmVhZCJdLCJzY29wZSI6WyJjcmVkaHViLndyaXRlIiwiY3JlZGh1Yi5yZWFkIl0sImNsaWVudF9pZCI6ImNyZWRodWJfY2xpZW50IiwiY2lkIjoiY3JlZGh1Yl9jbGllbnQiLCJhenAiOiJjcmVkaHViX2NsaWVudCIsInJldm9jYWJsZSI6dHJ1ZSwiZ3JhbnRfdHlwZSI6ImNsaWVudF9jcmVkZW50aWFscyIsInJldl9zaWciOiIyMGNhZjNlZSIsImlhdCI6MTY1MzY5MjY4NiwiZXhwIjoxNjUzNzc5MDg2LCJpc3MiOiJodHRwczovLzM1LjE5Ni4zMi42NDo4NDQzL29hdXRoL3Rva2VuIiwiemlkIjoidWFhIiwiYXVkIjpbImNyZWRodWIiLCJjcmVkaHViX2NsaWVudCJdfQ.fnx5GNKW_Ju9_FAsMnDgR3sEDcncA2-YGuaiR2P9Ayxn44wsqbrhcrIEPIlKW5b_txMD4fx17JO0eWVPD3BgtfIiZMIOT3HbQ1EHwI8Rt3KXdAh3HiBxet3JOeLHgcWswPsu17gyh67aPKAmgtqLMrVQmx65kyO6hGhs0f6hG0dat3yAefiyhMl3ixWeB-FJugajN-mHUog9AvQ12B4lkPCugHioOm5928Wd2cSvVjTEh2u0GhinZvtrX9yx6sxaksoNF1v0OwUeF4pky3W9XL2w7FRpqjXMESWdLQRn8Op40shAwNMjKEK3KPYVWIa5N0Zv07MX6e1BblhNmNwPBQ</stringProp>
+              <stringProp name="Header.value">Bearer ${access_token}</stringProp>
             </elementProp>
           </collectionProp>
         </HeaderManager>
