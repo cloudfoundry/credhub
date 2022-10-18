@@ -863,14 +863,14 @@ public class DefaultCertificateServiceTest {
   }
 
   @Test
-  public void findAllValidMetadata_lessThan2e14Names_callsDataServiceOnce() {
+  public void findAllValidMetadata_NoMoreThanPostgresBatchSize_callsDataServiceOnce() {
+    subjectWithoutConcatenateCas.setPostgresBatchSize(1);
+
     List<CertificateMetadata> expectedMetadata = Arrays.asList(cert1Metadata, cert2Metadata);
     when(certificateDataService.findAllValidMetadata(any())).thenReturn(expectedMetadata);
 
     List<String> names = new ArrayList<>();
-    for (int i=0; i<16383; i++) {
-      names.add("name-" + i);
-    }
+    names.add("name-0");
 
     List<CertificateMetadata> metadata = subjectWithoutConcatenateCas.findAllValidMetadata(names);
 
@@ -880,21 +880,22 @@ public class DefaultCertificateServiceTest {
   }
 
   @Test
-  public void findAllValidMetadata_MoreThan2e14Names_callsDataServiceMultipleTimes() {
+  public void findAllValidMetadata_MoreThanPostgresBatchSize_callsDataServiceMultipleTimes() {
+    subjectWithoutConcatenateCas.setPostgresBatchSize(1);
+
     List<CertificateMetadata> allMetadata = Arrays.asList(cert1Metadata, cert2Metadata);
     when(certificateDataService.findAllValidMetadata(any()))
             .thenReturn(Arrays.asList(cert1Metadata))
             .thenReturn(Arrays.asList(cert2Metadata));
 
     List<String> names = new ArrayList<>();
-    for (int i=0; i<16385; i++) {
-      names.add("name-" + i);
-    }
+    names.add("name-0");
+    names.add("name-1");
 
     List<CertificateMetadata> metadata = subjectWithoutConcatenateCas.findAllValidMetadata(names);
 
-    verify(certificateDataService).findAllValidMetadata(names.subList(0, 16384));
-    verify(certificateDataService).findAllValidMetadata(names.subList(16384, 16385));
+    verify(certificateDataService).findAllValidMetadata(names.subList(0, 1));
+    verify(certificateDataService).findAllValidMetadata(names.subList(1, 2));
     verifyNoMoreInteractions(certificateDataService);
     assertThat(metadata, equalTo(allMetadata));
   }
