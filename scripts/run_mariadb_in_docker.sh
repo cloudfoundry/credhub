@@ -27,7 +27,7 @@ setup() {
   sleep 1
   try_connect
   echo -n "Configuring dev-database... "
-  docker exec -it "${container_name}" bash -c "echo create database ${db_name}\; | mysql"
+  docker exec "${container_name}" bash -c "echo create database ${db_name}\; | mysql"
   echo "done"
 }
 
