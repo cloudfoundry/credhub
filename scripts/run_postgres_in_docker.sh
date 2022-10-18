@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e -o pipefail
+set -eu -o pipefail
 container_name="credhub-postgres-dev"
 db_names="credhub_test pivotal"
 username="pivotal"
@@ -28,10 +28,10 @@ setup() {
   sleep 1
   try_connect
   echo -n "Configuring dev-user and database... "
-  docker exec -it "${container_name}" createuser -U postgres --createdb "${username}"
+  docker exec "${container_name}" createuser -U postgres --createdb "${username}"
   for db_name in ${db_names}
   do
-    docker exec -it "${container_name}" createdb -U "${username}" "${db_name}"
+    docker exec "${container_name}" createdb -U "${username}" "${db_name}"
   done
 
   echo "done"
