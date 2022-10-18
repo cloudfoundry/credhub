@@ -30,9 +30,10 @@ class DefaultCertificateService(
     private val auditRecord: CEFAuditRecord,
     @Value("\${certificates.concatenate_cas:false}") var concatenateCas: Boolean
 ) {
-    // Postgres has a limit of 32767 bind variables per query,
+    // As of Postgres JDBC Driver 42.4.0, the driver supports up to 65535 (inclusive) parameters
+    // See: https://jdbc.postgresql.org/changelogs/2022-06-09-42.4.0-release/
     // so setting the batch size to roughly half of the limit to be safe.
-    var postgresBatchSize: Int = 16384
+    var postgresBatchSize: Int = 32768
 
     fun save(
         existingCredentialVersion: CredentialVersion,
@@ -114,7 +115,7 @@ class DefaultCertificateService(
     }
 
     fun findAllValidMetadata(names: List<String>): List<CertificateMetadata> {
-        // This is a workaround for Postgres's limit of 32768 bind variables per query.
+        // This is a workaround for Postgres's limit on bind variables per query.
         // It would be preferable to retrieve available certs and metadata in a single DB query.
         return names
                 .chunked(postgresBatchSize)
