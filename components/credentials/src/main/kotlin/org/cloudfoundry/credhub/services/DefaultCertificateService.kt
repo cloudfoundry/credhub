@@ -119,7 +119,6 @@ class DefaultCertificateService(
                 .flatMap { namesChunk ->
                     certificateDataService.findAllValidMetadata(namesChunk)
                 }
-                .toCollection(mutableListOf())
     }
 
     fun findSignedCertificates(caName: String): List<String> {
