@@ -30,6 +30,9 @@ class DefaultCertificateService(
     private val auditRecord: CEFAuditRecord,
     @Value("\${certificates.concatenate_cas:false}") var concatenateCas: Boolean
 ) {
+    // Postgres has a limit of 32767 bind variables per query,
+    // so setting the batch size to roughly half of the limit to be safe.
+    var postgresBatchSize: Int = 16384
 
     fun save(
         existingCredentialVersion: CredentialVersion,
@@ -113,9 +116,8 @@ class DefaultCertificateService(
     fun findAllValidMetadata(names: List<String>): List<CertificateMetadata> {
         // This is a workaround for Postgres's limit of 32768 bind variables per query.
         // It would be preferable to retrieve available certs and metadata in a single DB query.
-        val batchSize = 16384
         return names
-                .chunked(batchSize)
+                .chunked(postgresBatchSize)
                 .flatMap { namesChunk ->
                     certificateDataService.findAllValidMetadata(namesChunk)
                 }
