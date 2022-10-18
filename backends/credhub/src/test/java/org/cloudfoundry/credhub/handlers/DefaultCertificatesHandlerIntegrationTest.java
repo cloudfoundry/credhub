@@ -38,11 +38,13 @@ public class DefaultCertificatesHandlerIntegrationTest {
         Assume.assumeTrue(
                 "Test is for Postgres only",
                 environment.acceptsProfiles(Profiles.of("unit-test-postgres")));
-        insertTestCredentialsIntoPostgres(32768);
+        insertTestCredentialsIntoPostgres(65535 + 1);
     }
 
+    // As of Postgres JDBC Driver 42.4.0, the driver supports up to 65535 (inclusive) parameters
+    // See: https://jdbc.postgresql.org/changelogs/2022-06-09-42.4.0-release/
     @Test
-    public void handleGetAllRequest_32768Certs_doesNotCrash() {
+    public void handleGetAllRequest_65536Certs_doesNotCrash() {
         CertificateCredentialsView certificateCredentialsView = defaultCertificatesHandler.handleGetAllRequest();
         assertThat(certificateCredentialsView, is(notNullValue()));
     }
