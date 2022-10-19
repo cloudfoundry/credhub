@@ -118,10 +118,10 @@ class DefaultCertificateService(
         // This is a workaround for Postgres's limit on bind variables per query.
         // It would be preferable to retrieve available certs and metadata in a single DB query.
         return names
-                .chunked(postgresBatchSize)
-                .flatMap { namesChunk ->
-                    certificateDataService.findAllValidMetadata(namesChunk)
-                }
+            .chunked(postgresBatchSize)
+            .flatMap { namesChunk ->
+                certificateDataService.findAllValidMetadata(namesChunk)
+            }
     }
 
     fun findSignedCertificates(caName: String): List<String> {

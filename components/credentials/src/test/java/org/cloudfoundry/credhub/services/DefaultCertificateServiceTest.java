@@ -41,7 +41,10 @@ import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
 public class DefaultCertificateServiceTest {
@@ -185,8 +188,8 @@ public class DefaultCertificateServiceTest {
       generateRequest
     );
 
-    Mockito.verify(generateRequest).setType(eq("certificate"));
-    Mockito.verify(credentialService).save(any(),
+    verify(generateRequest).setType(eq("certificate"));
+    verify(credentialService).save(any(),
       eq(value),
       eq(generateRequest)
     );
@@ -213,8 +216,8 @@ public class DefaultCertificateServiceTest {
       generateRequest
     );
 
-    Mockito.verify(generateRequest).setType(eq("certificate"));
-    Mockito.verify(credentialService).save(any(),
+    verify(generateRequest).setType(eq("certificate"));
+    verify(credentialService).save(any(),
       eq(value),
       eq(generateRequest)
     );
