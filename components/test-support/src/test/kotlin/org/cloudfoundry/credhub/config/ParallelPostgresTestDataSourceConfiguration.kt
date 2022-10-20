@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.config
 
-import com.zaxxer.hikari.HikariDataSource
 import org.springframework.boot.jdbc.DataSourceBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -39,7 +38,7 @@ class ParallelPostgresTestDataSourceConfiguration {
             jdbcTemplate.execute("CREATE DATABASE $workerDatabaseName")
         }
 
-        (tempDataSource as HikariDataSource).close()
+        tempDataSource.connection.close()
     }
 
     @Primary
@@ -53,14 +52,7 @@ class ParallelPostgresTestDataSourceConfiguration {
         val dataSource = DataSourceBuilder.create()
             .url("jdbc:postgresql://localhost:5432/credhub_test_$workerId?user=pivotal")
             .build()
-        configureConnectionPool(dataSource)
 
         return dataSource
-    }
-
-    private fun configureConnectionPool(dataSource: DataSource) {
-        (dataSource as HikariDataSource).idleTimeout = 5000
-        dataSource.maximumPoolSize = 10
-        dataSource.minimumIdle = 0
     }
 }
