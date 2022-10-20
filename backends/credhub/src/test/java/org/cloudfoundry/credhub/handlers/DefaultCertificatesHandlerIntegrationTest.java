@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.handlers;
 
-import org.junit.Ignore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
@@ -15,6 +14,7 @@ import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.views.CertificateCredentialsView;
 import org.junit.Assume;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
