@@ -1,10 +1,14 @@
 package org.cloudfoundry.credhub.handlers;
 
+import java.sql.SQLException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.Profiles;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.JdbcUtils;
+import org.springframework.jdbc.support.MetaDataAccessException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -14,7 +18,6 @@ import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.views.CertificateCredentialsView;
 import org.junit.Assume;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -40,13 +43,25 @@ public class DefaultCertificatesHandlerIntegrationTest {
         Assume.assumeTrue(
                 "Test is for Postgres only",
                 environment.acceptsProfiles(Profiles.of("unit-test-postgres")));
+        Assume.assumeTrue("Test is for Postgres version higher than 10 because the SQL in this test is incompatible with postgres 10",
+                getDatabaseMajorVersion(jdbcTemplate) > 10);
+
+
         insertTestCredentialsIntoPostgres(65535 + 1);
+    }
+
+    private int getDatabaseMajorVersion(JdbcTemplate jdbcTemplate)
+            throws SQLException, MetaDataAccessException {
+        try {
+            return JdbcUtils.extractDatabaseMetaData(
+                    jdbcTemplate.getDataSource(), dbmd -> dbmd).getDatabaseMajorVersion();
+        } catch (MetaDataAccessException ex) {
+            throw ex;
+        }
     }
 
     // As of Postgres JDBC Driver 42.4.0, the driver supports up to 65535 (inclusive) parameters
     // See: https://jdbc.postgresql.org/changelogs/2022-06-09-42.4.0-release/
-    // TODO: Unignore this
-    @Ignore("gen_random_uuid() does not work in postgres-10")
     @Test
     public void handleGetAllRequest_65536Certs_doesNotCrash() {
         CertificateCredentialsView certificateCredentialsView = defaultCertificatesHandler.handleGetAllRequest();
