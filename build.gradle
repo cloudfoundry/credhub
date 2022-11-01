@@ -6,7 +6,7 @@ buildscript {
         apacheCommonsIoVersion = '2.11.0'
         apacheHttpClientVersion = '4.5.13'
         asciiDoctorPluginVersion = '1.6.1'
-        bcpkixFipsVersion = '1.0.5'
+        bcpkixFipsVersion = '1.0.7'
         bcFipsVersion = '1.0.2.3'
         commonsCodecVersion = '1.15' // remove this after deleting (now deprecated) spring-security-oauth2
         flywayVersion = '7.15.0'
