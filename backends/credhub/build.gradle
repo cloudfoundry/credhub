@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        grpcVersion = '1.50.2'
+        grpcVersion = '1.51.0'
     }
     repositories {
         mavenCentral()
