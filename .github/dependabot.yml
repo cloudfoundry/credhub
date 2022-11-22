@@ -14,6 +14,10 @@ updates:
     update-types: [ "version-update:semver-major" ]
   - dependency-name: "org.mariadb.jdbc:mariadb-java-client" ## 2.x (current version) is stable and will be supported until about September 2025; version 3.x isn't described as "stable" (like 2.7) as of March 2022. https://mariadb.com/kb/en/about-mariadb-connector-j/ (have fun)
     update-types: ["version-update:semver-major"]
+  - dependency-name: "org.springframework.restdocs:spring-restdocs-mockmvc"  ## 3.0.0 bumps to Spring Framework 6.0.0 which requires Java 17. Bumps this after we take a Spring Boot version for the rest of the project that bumps to Spring Framework 6.0.0.
+    update-types: ["version-update:semver-major"]
+  - dependency-name: "org.springframework.restdocs:spring-restdocs-asciidoctor"  ## 3.0.0 bumps to Spring Framework 6.0.0 which requires Java 17. Bumps this after we take a Spring Boot version for the rest of the project that bumps to Spring Framework 6.0.0.
+    update-types: ["version-update:semver-major"]
 
 - package-ecosystem: "github-actions"
   directory: "/"
