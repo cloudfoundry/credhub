@@ -31,7 +31,7 @@ dependencies {
     implementation('org.springframework.boot:spring-boot-starter-validation')
     implementation("org.springframework.security.oauth:spring-security-oauth2:${springSecurityOauth2Version}")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("junit:junit:${junitVersion}")
+    testImplementation("junit:junit")
 
     implementation('com.fasterxml.jackson.module:jackson-module-kotlin')
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
