@@ -1,12 +1,12 @@
 compileKotlin {
     kotlinOptions {
         freeCompilerArgs = ["-Xjsr305=strict", "-Xjvm-default=all-compatibility"]
-        jvmTarget = "1.8"
+        jvmTarget = "11"
     }
 }
 compileTestKotlin {
     kotlinOptions {
         freeCompilerArgs = ["-Xjsr305=strict", "-Xjvm-default=all-compatibility"]
-        jvmTarget = "1.8"
+        jvmTarget = "11"
     }
 }
