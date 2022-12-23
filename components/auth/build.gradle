@@ -52,6 +52,7 @@ dependencies {
 
     implementation("org.mariadb.jdbc:mariadb-java-client:${mariadbJdbcVersion}")
     implementation("com.h2database:h2:${h2Version}")
+    implementation("com.zaxxer:HikariCP:${hikariCpVersion}")
 
     // Other
     api("org.bouncycastle:bc-fips:${bcFipsVersion}")

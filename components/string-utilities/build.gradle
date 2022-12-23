@@ -40,6 +40,7 @@ dependencies {
 
     implementation("com.google.guava:guava:${guavaVersion}")
     implementation("commons-codec:commons-codec:${commonsCodecVersion}")
+    implementation("com.zaxxer:HikariCP:${hikariCpVersion}")
 }
 
 dependencyManagement {

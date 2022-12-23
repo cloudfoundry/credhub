@@ -12,6 +12,7 @@ buildscript {
         flywayVersion = '7.15.0'
         guavaVersion = '31.1-jre'
         h2Version = '1.4.200'
+        hikariCpVersion = '5.0.1'
         jsonPathVersion = '2.7.0'
         kotlinVersion = '1.6.21'
         ktlintVersion = '0.43.2'
@@ -36,6 +37,7 @@ buildscript {
         classpath("org.owasp:dependency-check-gradle:7.4.1")
         classpath("org.bouncycastle:bc-fips:${bcFipsVersion}")
         classpath("org.bouncycastle:bcpkix-fips:${bcpkixFipsVersion}")
+        classpath('com.zaxxer:HikariCP:5.0.1')
     }
 }
 

@@ -51,6 +51,7 @@ dependencies {
     implementation("org.apache.commons:commons-lang3:${apacheCommonsLang3Version}")
     implementation("commons-codec:commons-codec:${commonsCodecVersion}")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
+    implementation("com.zaxxer:HikariCP:${hikariCpVersion}")
 }
 
 dependencyManagement {

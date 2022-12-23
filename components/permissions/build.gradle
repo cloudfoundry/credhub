@@ -52,7 +52,7 @@ dependencies {
 
     implementation("com.h2database:h2:${h2Version}")
     implementation("org.mariadb.jdbc:mariadb-java-client:${mariadbJdbcVersion}")
-
+    implementation("com.zaxxer:HikariCP:${hikariCpVersion}")
 
     // Other
     implementation("com.google.guava:guava:${guavaVersion}")

@@ -38,6 +38,7 @@ dependencies {
     implementation("com.jayway.jsonpath:json-path:${jsonPathVersion}")
     implementation("org.apache.httpcomponents:httpclient:${apacheHttpClientVersion}")
     implementation("commons-codec:commons-codec:${commonsCodecVersion}")
+    implementation("com.zaxxer:HikariCP:${hikariCpVersion}")
 }
 
 dependencyManagement {

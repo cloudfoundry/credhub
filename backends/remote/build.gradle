@@ -68,6 +68,8 @@ dependencies {
 
     //tcnative
     implementation "io.netty:netty-tcnative-boringssl-static:2.0.54.Final"
+
+    implementation("com.zaxxer:HikariCP:${hikariCpVersion}")
 }
 
 dependencyManagement {
