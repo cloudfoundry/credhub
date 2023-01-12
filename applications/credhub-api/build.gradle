@@ -72,7 +72,6 @@ dependencies {
     implementation("commons-codec:commons-codec:${commonsCodecVersion}")
 
     implementation('com.fasterxml.jackson.module:jackson-module-kotlin')
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 
     testImplementation("org.springframework.security:spring-security-test")
