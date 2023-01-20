@@ -1,9 +1,9 @@
-FROM openjdk:11 as build
+FROM openjdk:8 as build
 WORKDIR /app
 COPY . /app
 RUN ./gradlew bootJar -x test -x check
 
-FROM openjdk:11-jre as run
+FROM openjdk:8-jre as run
 WORKDIR /app
 COPY \
   --from=build \
