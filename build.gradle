@@ -12,6 +12,7 @@ buildscript {
         flywayVersion = '7.15.0'
         guavaVersion = '31.1-jre'
         h2Version = '1.4.200'
+        hikariCpVersion = '4.0.3-vmware-cred-42-1'
         jsonPathVersion = '2.7.0'
         kotlinVersion = '1.6.21'
         ktlintVersion = '0.43.2'
@@ -25,6 +26,7 @@ buildscript {
         junitVersion = '4.13.2'
     }
     repositories {
+        mavenLocal()
         mavenCentral()
         jcenter()
         maven { url("https://repo.spring.io/plugins-release") }
@@ -36,6 +38,7 @@ buildscript {
         classpath("org.owasp:dependency-check-gradle:7.1.1")
         classpath("org.bouncycastle:bc-fips:${bcFipsVersion}")
         classpath("org.bouncycastle:bcpkix-fips:${bcpkixFipsVersion}")
+        classpath("com.zaxxer:HikariCP:${hikariCpVersion}")
     }
 }
 

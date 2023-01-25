@@ -28,6 +28,7 @@ apply from: "${rootDir.toPath()}/pmd-config.gradle"
 apply from: "${rootDir.toPath()}/spotbugs.gradle"
 
 repositories {
+    mavenLocal()
     mavenCentral()
     jcenter()
 }
@@ -68,6 +69,8 @@ dependencies {
 
     //tcnative
     implementation "io.netty:netty-tcnative-boringssl-static:2.0.53.Final"
+
+    implementation("com.zaxxer:HikariCP:${hikariCpVersion}")
 }
 
 dependencyManagement {

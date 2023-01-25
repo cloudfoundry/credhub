@@ -22,6 +22,7 @@ apply from: "${rootDir.toPath()}/pmd-config.gradle"
 apply from: "${rootDir.toPath()}/spotbugs.gradle"
 
 repositories {
+    mavenLocal()
     mavenCentral()
     jcenter()
 }
@@ -40,6 +41,7 @@ dependencies {
 
     implementation("com.google.guava:guava:${guavaVersion}")
     implementation("commons-codec:commons-codec:${commonsCodecVersion}")
+    implementation("com.zaxxer:HikariCP:${hikariCpVersion}")
 }
 
 dependencyManagement {

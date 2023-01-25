@@ -22,6 +22,7 @@ apply from: "${rootDir.toPath()}/pmd-config.gradle"
 apply from: "${rootDir.toPath()}/spotbugs.gradle"
 
 repositories {
+    mavenLocal()
     mavenCentral()
     jcenter()
 }
@@ -38,6 +39,7 @@ dependencies {
     implementation("com.jayway.jsonpath:json-path:${jsonPathVersion}")
     implementation("org.apache.httpcomponents:httpclient:${apacheHttpClientVersion}")
     implementation("commons-codec:commons-codec:${commonsCodecVersion}")
+    implementation("com.zaxxer:HikariCP:${hikariCpVersion}")
 }
 
 dependencyManagement {

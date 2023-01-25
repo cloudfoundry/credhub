@@ -28,6 +28,7 @@ apply from: "${rootDir.toPath()}/pmd-config.gradle"
 apply from: "${rootDir.toPath()}/spotbugs.gradle"
 
 repositories {
+    mavenLocal()
     mavenCentral()
     jcenter()
 }
@@ -56,6 +57,7 @@ dependencies {
 
     implementation("org.mariadb.jdbc:mariadb-java-client")
     implementation("com.h2database:h2:${h2Version}")
+    implementation("com.zaxxer:HikariCP:${hikariCpVersion}")
 
     // Other
     implementation("org.passay:passay:${passayVersion}")
