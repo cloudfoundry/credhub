@@ -22,7 +22,7 @@ buildscript {
         springBootVersion = '2.7.8'
         springSecurityOauth2Version = '2.5.2.RELEASE'
         springSecurityOauth2AutoconfigureVersion = '2.6.8'
-        mariadbJdbcVersion = '2.7.7' // Bumping to v3 breaks some pipeline jobs, so pinning to v2 for now. v2 (current version) is stable and will be supported until about September 2025 (https://mariadb.com/kb/en/about-mariadb-connector-j/).
+        mariadbJdbcVersion = '2.7.8' // Bumping to v3 breaks some pipeline jobs, so pinning to v2 for now. v2 (current version) is stable and will be supported until about September 2025 (https://mariadb.com/kb/en/about-mariadb-connector-j/).
     }
     repositories {
         mavenCentral()
