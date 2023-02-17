@@ -16,7 +16,7 @@ buildscript {
         kotlinVersion = '1.6.21'
         ktlintVersion = '0.43.2'
         passayVersion = '1.6.2'
-        postgresqlJdbcVersion = '42.5.2'
+        postgresqlJdbcVersion = '42.5.4'
         spotBugsToolVersion = '4.6.0'
         springRestDocsVersion = '2.0.7.RELEASE'
         springBootVersion = '2.7.8'
