@@ -24,11 +24,11 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
-import net.minidev.json.JSONObject;
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.TestHelper;
@@ -93,29 +93,71 @@ public class CredentialsTypeSpecificSetIntegrationTest {
     .build();
   private static final String VALUE_VALUE = "test-value";
   private static final String PASSWORD_VALUE = "test-password";
-  private static final String CERTIFICATE_VALUE_JSON_STRING = JSONObject.toJSONString(
-    ImmutableMap.<String, String>builder()
-      .put("ca", TestConstants.TEST_CA)
-      .put("certificate", TestConstants.TEST_CERTIFICATE)
-      .put("private_key", TestConstants.TEST_PRIVATE_KEY)
-      .build());
-  private static final String SSH_VALUE_JSON_STRING = JSONObject.toJSONString(
-    ImmutableMap.<String, String>builder()
-      .put("public_key", TestConstants.SSH_PUBLIC_KEY_4096_WITH_COMMENT)
-      .put("private_key", TestConstants.PRIVATE_KEY_4096)
-      .build());
-  private static final String RSA_VALUE_JSON_STRING = JSONObject.toJSONString(
-    ImmutableMap.<String, String>builder()
-      .put("public_key", TestConstants.RSA_PUBLIC_KEY_4096)
-      .put("private_key", TestConstants.PRIVATE_KEY_4096)
-      .build());
-  private static final String JSON_VALUE_JSON_STRING = JSONObject.toJSONString(jsonValueMap);
+
+  private static final String CERTIFICATE_VALUE_JSON_STRING;
+  static {
+    try {
+      CERTIFICATE_VALUE_JSON_STRING = new ObjectMapper().writeValueAsString(
+              ImmutableMap.<String, String>builder()
+                      .put("ca", TestConstants.TEST_CA)
+                      .put("certificate", TestConstants.TEST_CERTIFICATE)
+                      .put("private_key", TestConstants.TEST_PRIVATE_KEY)
+                      .build()
+      );
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private static final String SSH_VALUE_JSON_STRING;
+  static {
+    try {
+      SSH_VALUE_JSON_STRING = new ObjectMapper().writeValueAsString(
+        ImmutableMap.<String, String>builder()
+          .put("public_key", TestConstants.SSH_PUBLIC_KEY_4096_WITH_COMMENT)
+          .put("private_key", TestConstants.PRIVATE_KEY_4096)
+          .build());
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private static final String RSA_VALUE_JSON_STRING;
+  static {
+    try {
+      RSA_VALUE_JSON_STRING = new ObjectMapper().writeValueAsString(
+        ImmutableMap.<String, String>builder()
+          .put("public_key", TestConstants.RSA_PUBLIC_KEY_4096)
+          .put("private_key", TestConstants.PRIVATE_KEY_4096)
+          .build());
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private static final String JSON_VALUE_JSON_STRING;
+  static {
+    try {
+      JSON_VALUE_JSON_STRING = new ObjectMapper().writeValueAsString(jsonValueMap);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   private static final String USERNAME_VALUE = "test-username";
-  private static final String USER_VALUE_JSON_STRING = JSONObject.toJSONString(
-    ImmutableMap.<String, String>builder()
-      .put("username", USERNAME_VALUE)
-      .put("password", PASSWORD_VALUE)
-      .build());
+  private static final String USER_VALUE_JSON_STRING;
+  static {
+    try {
+      USER_VALUE_JSON_STRING = new ObjectMapper().writeValueAsString(
+        ImmutableMap.<String, String>builder()
+          .put("username", USERNAME_VALUE)
+          .put("password", PASSWORD_VALUE)
+          .build());
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   private static final JsonNode jsonNode;
 
   static {

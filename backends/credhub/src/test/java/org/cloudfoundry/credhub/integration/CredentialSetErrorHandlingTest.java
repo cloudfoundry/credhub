@@ -12,9 +12,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import net.minidev.json.JSONObject;
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
@@ -314,7 +314,7 @@ public class CredentialSetErrorHandlingTest {
 
   @Test
   public void givenACertificateRequest_whenAnInvalidCaNameIsProvided_returns404() throws Exception {
-    final String setJson = JSONObject.toJSONString(
+    final String setJson = new ObjectMapper().writeValueAsString(
       ImmutableMap.<String, String>builder()
         .put("ca_name", "does not exist")
         .put("certificate", TestConstants.TEST_CERTIFICATE)
@@ -339,7 +339,7 @@ public class CredentialSetErrorHandlingTest {
 
   @Test
   public void givenACertificateRequest_whenBothCaNameAndCaAreBothProvided_returns400() throws Exception {
-    final String setJson = JSONObject.toJSONString(
+    final String setJson = new ObjectMapper().writeValueAsString(
       ImmutableMap.<String, String>builder()
         .put("ca_name", "CA_NAME")
         .put("ca", TestConstants.TEST_CA)

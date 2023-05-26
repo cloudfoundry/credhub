@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.jayway.jsonpath.JsonPath;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
@@ -342,7 +343,7 @@ public class CertificateGenerateTest {
 
     @Test
     public void certificateGeneratedReferencingACAWithoutAPrivateKeyReturnsBadRequest() throws Exception {
-        final String setJson = net.minidev.json.JSONObject.toJSONString(
+        final String setJson = new ObjectMapper().writeValueAsString(
                 ImmutableMap.<String, String>builder()
                         .put("certificate", TestConstants.TEST_CA)
                         .build());

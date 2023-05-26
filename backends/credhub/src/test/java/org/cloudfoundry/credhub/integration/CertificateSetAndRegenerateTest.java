@@ -15,9 +15,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.jayway.jsonpath.JsonPath;
-import net.minidev.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
 import org.cloudfoundry.credhub.CredhubTestApp;
@@ -175,7 +175,7 @@ public class CertificateSetAndRegenerateTest {
         final String privateKeyValue = JsonPath.parse(generatedCertificate)
                 .read("$.value.private_key");
 
-        final String setJson = JSONObject.toJSONString(
+        final String setJson = new ObjectMapper().writeValueAsString(
                 ImmutableMap.<String, String>builder()
                         .put("ca_name", CA_NAME)
                         .put("certificate", certificateValue)
@@ -375,7 +375,7 @@ public class CertificateSetAndRegenerateTest {
 
     @Test
     public void certificateSetRequest_whenProvidedANonCertificateValue_returnsAValidationError() throws Exception {
-        final String setJson = JSONObject.toJSONString(
+        final String setJson = new ObjectMapper().writeValueAsString(
                 ImmutableMap.<String, String>builder()
                         .put("ca_name", "")
                         .put("certificate", "This is definitely not a certificate. Or is it?")
@@ -399,7 +399,7 @@ public class CertificateSetAndRegenerateTest {
 
     @Test
     public void certificateSetRequest_whenProvidedAMalformedCertificate_returnsAValidationError() throws Exception {
-        final String setJson = JSONObject.toJSONString(
+        final String setJson = new ObjectMapper().writeValueAsString(
                 ImmutableMap.<String, String>builder()
                         .put("certificate", "-----BEGIN CERTIFICATE-----") // missing END CERTIFICATE tag
                         .build());
@@ -420,7 +420,7 @@ public class CertificateSetAndRegenerateTest {
 
     @Test
     public void certificateSetRequest_whenOmittingACertificate_returnsAValidationError() throws Exception {
-        final String setJson = JSONObject.toJSONString(
+        final String setJson = new ObjectMapper().writeValueAsString(
                 ImmutableMap.<String, String>builder()
                         .put("private_key", TEST_PRIVATE_KEY)
                         .build());
@@ -441,7 +441,7 @@ public class CertificateSetAndRegenerateTest {
 
     @Test
     public void certificateSetRequest_whenSettingAMalformedCertificateAndMalformedKey_returnsAValidationError() throws Exception {
-        final String setJson = JSONObject.toJSONString(
+        final String setJson = new ObjectMapper().writeValueAsString(
                 ImmutableMap.<String, String>builder()
                         .put("certificate", "-----BEGIN CERTIFICATE-----") // missing END CERTIFICATE tag
                         .put("private_key", "not a key")
@@ -463,7 +463,7 @@ public class CertificateSetAndRegenerateTest {
 
     @Test
     public void certificateSetRequest_whenSettingAMalformedKey_returnsAValidationError() throws Exception {
-        final String setJson = JSONObject.toJSONString(
+        final String setJson = new ObjectMapper().writeValueAsString(
                 ImmutableMap.<String, String>builder()
                         .put("certificate", "-----BEGIN CERTIFICATE-----\\\n...\\\n-----END CERTIFICATE-----") // missing END CERTIFICATE tag
                         .put("private_key", "not a key")
@@ -487,7 +487,7 @@ public class CertificateSetAndRegenerateTest {
     public void certificateSetRequest_whenProvidedACertificateValueThatIsTooLong_returnsAValidationError()
             throws Exception {
         final int repetitionCount = 7001 - TEST_CERTIFICATE.length();
-        final String setJson = JSONObject.toJSONString(
+        final String setJson = new ObjectMapper().writeValueAsString(
                 ImmutableMap.<String, String>builder()
                         .put("ca_name", "")
                         .put("certificate", TEST_CERTIFICATE + StringUtils.repeat("a", repetitionCount))
@@ -513,7 +513,7 @@ public class CertificateSetAndRegenerateTest {
     @Test
     public void certificateSetRequest_whenProvidedACAValueThatIsTooLong_returnsAValidationError() throws Exception {
         final int repetitionCount = 7001 - TEST_CA.length();
-        final String setJson = JSONObject.toJSONString(
+        final String setJson = new ObjectMapper().writeValueAsString(
                 ImmutableMap.<String, String>builder()
                         .put("ca", TEST_CA + StringUtils.repeat("a", repetitionCount))
                         .put("certificate", TEST_CERTIFICATE)
@@ -541,7 +541,7 @@ public class CertificateSetAndRegenerateTest {
             throws Exception {
         RequestHelper.generateCa(mockMvc, "otherCa", ALL_PERMISSIONS_TOKEN);
 
-        final String setJson = JSONObject.toJSONString(
+        final String setJson = new ObjectMapper().writeValueAsString(
                 ImmutableMap.<String, String>builder()
                         .put("ca_name", CA_NAME)
                         .put("certificate", TEST_CERTIFICATE)
@@ -569,7 +569,7 @@ public class CertificateSetAndRegenerateTest {
             throws Exception {
         RequestHelper.generateCa(mockMvc, "otherCa", ALL_PERMISSIONS_TOKEN);
 
-        final String setJson = JSONObject.toJSONString(
+        final String setJson = new ObjectMapper().writeValueAsString(
                 ImmutableMap.<String, String>builder()
                         .put("ca", TEST_CA)
                         .put("certificate", OTHER_TEST_CERTIFICATE)
@@ -604,7 +604,7 @@ public class CertificateSetAndRegenerateTest {
         final String otherCaCertificateValue = JsonPath.parse(otherCaCertificate)
                 .read("$.value.certificate");
 
-        final String setJson = JSONObject.toJSONString(
+        final String setJson = new ObjectMapper().writeValueAsString(
                 ImmutableMap.<String, String>builder()
                         .put("ca_name", "otherCa")
                         .put("certificate", otherCaCertificateValue)
@@ -628,7 +628,7 @@ public class CertificateSetAndRegenerateTest {
 
     @Test
     public void certificateSetRequest_whenCaDoesNotExist_shouldReturnCorrectError() throws Exception {
-        final String setJson = JSONObject.toJSONString(
+        final String setJson = new ObjectMapper().writeValueAsString(
                 ImmutableMap.<String, String>builder()
                         .put("ca_name", "invalid-ca")
                         .put("certificate", TEST_CERTIFICATE)
@@ -658,7 +658,7 @@ public class CertificateSetAndRegenerateTest {
         generateCa(mockMvc, UNAUTHORIZED_CA_NAME, ALL_PERMISSIONS_TOKEN);
         grantPermissions(mockMvc, "*", ALL_PERMISSIONS_TOKEN, NO_PERMISSIONS_ACTOR_ID, "write");
 
-        final String setJson = JSONObject.toJSONString(
+        final String setJson = new ObjectMapper().writeValueAsString(
                 ImmutableMap.<String, String>builder()
                         .put("ca_name", UNAUTHORIZED_CA_NAME)
                         .put("certificate", TEST_CERTIFICATE)
@@ -687,7 +687,7 @@ public class CertificateSetAndRegenerateTest {
         final String UNAUTHORIZED_CA_NAME = "/unauthorized-ca";
         generateCa(mockMvc, UNAUTHORIZED_CA_NAME, ALL_PERMISSIONS_TOKEN);
 
-        final String setJson = JSONObject.toJSONString(
+        final String setJson = new ObjectMapper().writeValueAsString(
                 ImmutableMap.<String, String>builder()
                         .put("ca_name", UNAUTHORIZED_CA_NAME)
                         .put("certificate", TEST_CERTIFICATE)
@@ -713,7 +713,7 @@ public class CertificateSetAndRegenerateTest {
 
     @Test
     public void certificateSetRequest_withoutTransitionalProvided_shouldGenerateAVersionWithTransitionalFalse() throws Exception {
-        final String setJson = JSONObject.toJSONString(
+        final String setJson = new ObjectMapper().writeValueAsString(
                 ImmutableMap.<String, String>builder()
                         .put("ca", TEST_CA)
                         .put("certificate", TEST_CERTIFICATE)
@@ -750,7 +750,7 @@ public class CertificateSetAndRegenerateTest {
 
     @Test
     public void certificateSetRequest_withTransitionalTrue_shouldGenerateAVersionWithTransitionalTrue() throws Exception {
-        final String setJson = JSONObject.toJSONString(
+        final String setJson = new ObjectMapper().writeValueAsString(
                 ImmutableMap.<String, String>builder()
                         .put("ca", TEST_CA)
                         .put("certificate", TEST_CERTIFICATE)
@@ -770,7 +770,7 @@ public class CertificateSetAndRegenerateTest {
 
     @Test
     public void certificateSetRequest_withTransitionalTrue_whenThereIsAlreadyATransitionalVersion_shouldReturnAnError() throws Exception {
-        final String setJson = JSONObject.toJSONString(
+        final String setJson = new ObjectMapper().writeValueAsString(
                 ImmutableMap.<String, String>builder()
                         .put("ca", TEST_CA)
                         .put("certificate", TEST_CERTIFICATE)
@@ -792,7 +792,7 @@ public class CertificateSetAndRegenerateTest {
 
     @Test
     public void certificateSetRequest_withInvalidParams_shouldReturnBadRequest() throws Exception {
-        final String setJson = JSONObject.toJSONString(
+        final String setJson = new ObjectMapper().writeValueAsString(
                 ImmutableMap.<String, String>builder()
                         .put("certificate", "fake-certificate")
                         .put("private_key", TEST_PRIVATE_KEY)
@@ -810,7 +810,7 @@ public class CertificateSetAndRegenerateTest {
 
     @Test
     public void certificateSetRequest_withInvalidKey_shouldReturnBadRequest() throws Exception {
-        final String setJson = JSONObject.toJSONString(
+        final String setJson = new ObjectMapper().writeValueAsString(
                 ImmutableMap.<String, String>builder()
                         .put("certificate", TEST_CERTIFICATE)
                         .put("private_key", INVALID_PRIVATE_KEY_NO_HEADERS)
@@ -828,7 +828,7 @@ public class CertificateSetAndRegenerateTest {
 
     @Test
     public void certificateSetRequest_returnsWithExpiryDate() throws Exception {
-        final String setJson = JSONObject.toJSONString(
+        final String setJson = new ObjectMapper().writeValueAsString(
                 ImmutableMap.<String, String>builder()
                         .put("ca_name", "")
                         .put("certificate", TEST_CERTIFICATE)
@@ -857,7 +857,7 @@ public class CertificateSetAndRegenerateTest {
 
     @Test
     public void certificateSetRequest_returnsWithGenerated() throws Exception {
-        final String setJson = JSONObject.toJSONString(
+        final String setJson = new ObjectMapper().writeValueAsString(
                 ImmutableMap.<String, String>builder()
                         .put("ca_name", "")
                         .put("certificate", TEST_CERTIFICATE)
