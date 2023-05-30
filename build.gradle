@@ -23,6 +23,7 @@ buildscript {
         springSecurityOauth2Version = '2.5.2.RELEASE'
         springSecurityOauth2AutoconfigureVersion = '2.6.8'
         mariadbJdbcVersion = '2.7.9' // Bumping to v3 breaks some pipeline jobs, so pinning to v2 for now. v2 (current version) is stable and will be supported until about September 2025 (https://mariadb.com/kb/en/about-mariadb-connector-j/).
+        snakeyamlVersion = '2.0'
     }
     repositories {
         mavenCentral()
@@ -63,6 +64,9 @@ dependencyUpdates.resolutionStrategy = {
 subprojects {
     plugins.withType(JavaPlugin) {
         dependencies {
+            implementation("org.yaml:snakeyaml:${snakeyamlVersion}")
+            implementation("com.h2database:h2:${h2Version}")
+            implementation("com.google.guava:guava:${guavaVersion}")
             testImplementation("org.mockito:mockito-inline")
         }
     }
