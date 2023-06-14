@@ -179,7 +179,7 @@ constructor(
             if (credentialVersionData?.credentialType == CertificateCredentialVersionData.CREDENTIAL_TYPE) {
                 return certificateVersionDataService.findBothActiveCertAndTransitionalCert(name)
             }
-            result.add(credentialFactory.makeCredentialFromEntity(credentialVersionData))
+            credentialFactory.makeCredentialFromEntity(credentialVersionData)?.let { result.add(it) }
 
             return result
         } else {
