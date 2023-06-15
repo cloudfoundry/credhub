@@ -60,8 +60,6 @@ dependencyManagement {
         mavenBom("org.springframework.boot:spring-boot-dependencies:${springBootVersion}")
     }
 }
-// Override spring boot's kotllin version dependency
-ext['kotlin.version'] = '${kotlinVersion}'
 
 sourceSets {
     test {
