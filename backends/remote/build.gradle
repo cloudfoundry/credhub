@@ -1,7 +1,7 @@
 buildscript {
     ext {
         grpcVersion = '1.56.0'
-        nettyVersion = '4.1.93.Final'
+        nettyVersion = '4.1.94.Final'
     }
     repositories {
         mavenCentral()
