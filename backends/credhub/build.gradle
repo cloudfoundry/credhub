@@ -11,6 +11,7 @@ buildscript {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:$springBootVersion")
         classpath("org.asciidoctor:asciidoctor-gradle-plugin:${asciiDoctorPluginVersion}")
         classpath("com.google.protobuf:protobuf-gradle-plugin:0.9.3")
+        classpath("org.ysb33r.gradle:grolifant:0.16.1")
     }
 }
 
