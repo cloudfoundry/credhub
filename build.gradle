@@ -5,7 +5,7 @@ buildscript {
         apacheCommonsLang3Version = '3.12.0'
         apacheCommonsIoVersion = '2.13.0'
         apacheHttpClientVersion = '4.5.14'
-        asciiDoctorPluginVersion = '1.6.1'
+        asciiDoctorConvertPluginVersion = '2.4.0'
         bcpkixFipsVersion = '1.0.7'
         bcFipsVersion = '1.0.2.3'
         commonsCodecVersion = '1.16.0' // remove this after deleting (now deprecated) spring-security-oauth2
