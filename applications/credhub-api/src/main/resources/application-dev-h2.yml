@@ -1,5 +1,0 @@
-spring:
-  datasource:
-    username: pivotal
-  flyway:
-    locations: classpath:/db/migration/common,classpath:/db/migration/h2
