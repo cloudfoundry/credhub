@@ -1,5 +1,6 @@
 spring:
   datasource:
     username: pivotal
+    url: jdbc:hsqldb:mem:credhub_dev
   flyway:
     locations: classpath:/db/migration/common,classpath:/db/migration/hsqldb

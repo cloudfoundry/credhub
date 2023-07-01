@@ -101,7 +101,7 @@ bootRun {
         jvmArgs = ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005"]
     }
     systemProperties = System.properties
-    systemProperties["spring.profiles.active"] = System.getProperty("spring.profiles.active", "dev, dev-h2")
+    systemProperties["spring.profiles.active"] = System.getProperty("spring.profiles.active", "dev, dev-hsqldb")
 }
 
 bootJar {
@@ -116,7 +116,7 @@ test {
     }
 
     systemProperties = System.properties
-    systemProperties["spring.profiles.active"] = System.getProperty("spring.profiles.active", "unit-test-h2")
+    systemProperties["spring.profiles.active"] = System.getProperty("spring.profiles.active", "unit-test-hsqldb")
     systemProperties["java.security.egd"] = System.getProperty("java.security.egd", "file:/dev/urandom")
     outputs.upToDateWhen { false }
 }
