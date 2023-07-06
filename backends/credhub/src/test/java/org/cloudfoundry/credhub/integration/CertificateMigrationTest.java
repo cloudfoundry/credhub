@@ -48,7 +48,7 @@ public class CertificateMigrationTest {
   private CertificateMigration subject;
 
   @Test
-  public void getCertificate_withNullExpiryDateInTheDatabase_andExpectExpiryDateAfterMigration() throws Exception {
+  public void getCertificate_withNullExpiryDateInTheDatabase_andExpectExpiryDateAfterMigration() {
     final String certificate = "-----BEGIN CERTIFICATE-----\n"
       + "MIIDODCCAiCgAwIBAgIJAJHJbZB6doRCMA0GCSqGSIb3DQEBCwUAMBwxGjAYBgNV\n"
       + "BAMUEWNyZWRodWJfY2xpZW50X2NhMB4XDTE4MDgxNjE5MDMxMloXDTE5MDgxNjE5\n"
@@ -85,7 +85,7 @@ public class CertificateMigrationTest {
 
     assertThat(originalVersion.getExpiryDate(), is(equalTo(null)));
 
-    subject.migrate();
+    migrateSubject();
 
     final CertificateCredentialVersionData migratedVersion =
       (CertificateCredentialVersionData) credentialVersionRepository.findOneByUuid(originalVersion.getUuid());
@@ -94,8 +94,7 @@ public class CertificateMigrationTest {
   }
 
   @Test
-  public void getCertificate_withNullCertificateAuthorityOrSelfSigned_andExpectCertificateAuthorityAndSelfSignedAfterMigration()
-    throws Exception {
+  public void getCertificate_withNullCertificateAuthorityOrSelfSigned_andExpectCertificateAuthorityAndSelfSignedAfterMigration() {
     final String certificate = TestConstants.TEST_CA;
 
     final Credential credential = new Credential("test_credential");
@@ -113,7 +112,7 @@ public class CertificateMigrationTest {
     assertThat(originalVersion.isCertificateAuthority(), is(equalTo(false)));
     assertThat(originalVersion.isSelfSigned(), is(equalTo(false)));
 
-    subject.migrate();
+    migrateSubject();
 
     final CertificateCredentialVersionData migratedVersion =
       (CertificateCredentialVersionData) credentialVersionRepository.findOneByUuid(originalVersion.getUuid());
@@ -123,7 +122,7 @@ public class CertificateMigrationTest {
   }
 
   @Test
-  public void getCertificate_WithInvalidCertFieldAndPrintsWarning() throws Exception {
+  public void getCertificate_WithInvalidCertFieldAndPrintsWarning() {
     final String certificate = "-----BEGIN";
 
     final Credential credential = new Credential("test_malformed_credential");
@@ -138,7 +137,7 @@ public class CertificateMigrationTest {
 
     credentialVersionRepository.save(versionData);
 
-    subject.migrate();
+    migrateSubject();
   }
 
   @Test
@@ -155,6 +154,19 @@ public class CertificateMigrationTest {
 
     credentialVersionRepository.save(versionData);
 
-    subject.migrate();
+    migrateSubject();
+  }
+
+  private void migrateSubject() {
+    try {
+      subject.migrate();
+    } catch(RuntimeException ex) {
+      // Print the cause's stacktrace here to see fuller stacktrace messages
+      // as they are often chopped off in the test result output due the large
+      // stack trace size
+      Throwable cause = ex.getCause();
+      if (cause != null) {cause.printStackTrace();}
+      throw ex;
+    }
   }
 }
