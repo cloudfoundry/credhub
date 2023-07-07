@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.SerializationFeature.FAIL_ON_EMPTY_BEANS
 import java.io.IOException
 
 interface RequestDetails {
-    @JvmDefault
     fun toJSON(): String {
         val result: String
         try {
