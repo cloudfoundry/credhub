@@ -17,7 +17,7 @@ buildscript {
         ktlintVersion = '0.43.2'
         passayVersion = '1.6.3'
         postgresqlJdbcVersion = '42.6.0'
-        spotBugsToolVersion = '4.6.0'
+        spotBugsToolVersion = '4.7.3'
         springRestDocsVersion = '2.0.7.RELEASE'
         springBootVersion = '2.7.14'
         springSecurityOauth2Version = '2.5.2.RELEASE'
@@ -27,7 +27,7 @@ buildscript {
     }
     repositories {
         mavenCentral()
-        jcenter()
+//        jcenter()
         maven { url("https://repo.spring.io/plugins-release") }
         maven { url("https://plugins.gradle.org/m2/") }
     }
@@ -42,7 +42,7 @@ buildscript {
 
 plugins {
     id 'com.github.ben-manes.versions' version '0.47.0'
-    id 'com.github.spotbugs'
+    id 'com.github.spotbugs' version '5.1.0'
 }
 
 apply plugin: DependenciesGraphPlugin

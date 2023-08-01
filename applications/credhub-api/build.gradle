@@ -105,7 +105,7 @@ bootRun {
 }
 
 bootJar {
-    archiveName = "credhub.jar"
+    archiveFileName = "credhub.jar"
     def versionFile = new File("$projectDir/src/main/resources/version")
 }
 
