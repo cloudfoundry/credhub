@@ -31,7 +31,6 @@ apply plugin: "com.google.protobuf"
 repositories {
     mavenCentral()
     maven { url("https://plugins.gradle.org/m2/") }
-    jcenter()
 }
 
 dependencies {
