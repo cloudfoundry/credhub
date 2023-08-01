@@ -27,7 +27,6 @@ buildscript {
     }
     repositories {
         mavenCentral()
-        jcenter()
         maven { url("https://repo.spring.io/plugins-release") }
         maven { url("https://plugins.gradle.org/m2/") }
     }

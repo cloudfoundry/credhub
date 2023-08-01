@@ -22,7 +22,6 @@ apply from: "${rootDir.toPath()}/spotbugs.gradle"
 
 repositories {
     mavenCentral()
-    jcenter()
 }
 
 dependencies {
