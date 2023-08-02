@@ -3,13 +3,6 @@ spotbugs {
     excludeFilter = file("$rootProject.projectDir/config/findbugs/exclude-filter.xml")
 }
 
-tasks.withType(com.github.spotbugs.SpotBugsTask) {
-    reports {
-        xml.enabled = false
-        html.enabled = true
-    }
-}
-
 dependencies {
     compileOnly("com.github.spotbugs:spotbugs-annotations:$spotBugsToolVersion")
     testCompileOnly("com.github.spotbugs:spotbugs-annotations:$spotBugsToolVersion")
