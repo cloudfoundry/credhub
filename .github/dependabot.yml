@@ -12,7 +12,7 @@ updates:
     update-types: [ "version-update:semver-major" ]
   - dependency-name: "com.h2database:h2"                    ## can only bump to the next major (v2) after flyway is bumped to v8, see context: https://github.com/cloudfoundry/credhub/pull/259#issuecomment-1093414459
     update-types: [ "version-update:semver-major" ]
-  - dependency-name: "org.mariadb.jdbc:mariadb-java-client" ## 2.x (current version) is stable and will be supported until about September 2025; version 3.x isn't described as "stable" (like 2.7) as of March 2022. https://mariadb.com/kb/en/about-mariadb-connector-j/ (have fun)
+  - dependency-name: "org.mariadb.jdbc:mariadb-java-client" ## version 3.0.3 of the driver drops support for Aurora - https://www.pivotaltracker.com/n/projects/2482247/stories/183282618
     update-types: ["version-update:semver-major"]
   - dependency-name: "org.springframework.restdocs:spring-restdocs-mockmvc"  ## 3.0.0 bumps to Spring Framework 6.0.0 which requires Java 17. Bumps this after we take a Spring Boot version for the rest of the project that bumps to Spring Framework 6.0.0.
     update-types: ["version-update:semver-major"]
