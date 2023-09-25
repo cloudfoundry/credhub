@@ -15,7 +15,7 @@ buildscript {
         jsonPathVersion = '2.8.0'
         kotlinVersion = '1.9.10'
         ktlintVersion = '0.43.2'
-        passayVersion = '1.6.3'
+        passayVersion = '1.6.4'
         postgresqlJdbcVersion = '42.6.0'
         spotBugsToolVersion = '4.7.3'
         springRestDocsVersion = '2.0.7.RELEASE'
