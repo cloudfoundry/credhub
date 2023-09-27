@@ -59,8 +59,9 @@ public class EncryptionKeyRotator {
     if (rotatedRecordCount == 0) {
       LOGGER.info("Found no records in need of encryption key rotation.");
     } else {
-      LOGGER.info("Finished encryption key rotation in " + duration + " milliseconds. Details:");
-      LOGGER.info("  Successfully rotated " + rotatedRecordCount + " item(s)");
+      LOGGER.info("Finished encryption key rotation in " + duration +
+              " milliseconds. Details: Successfully rotated " +
+              rotatedRecordCount + " item(s)");
     }
 
     encryptionKeyCanaryMapper.delete(inactiveCanaries);
