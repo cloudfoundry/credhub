@@ -38,9 +38,6 @@ public class EncryptionKeyRotator {
     LOGGER.info("Starting encryption key rotation.");
     int rotatedRecordCount = 0;
 
-    final long startingNotRotatedRecordCount = encryptedValueDataService
-      .countAllByCanaryUuid(keySet.getActive().getUuid());
-
     final List<UUID> inactiveCanaries = keySet.getInactiveUuids();
     Slice<EncryptedValue> valuesEncryptedByOldKey = encryptedValueDataService
       .findByCanaryUuids(inactiveCanaries);
@@ -58,15 +55,12 @@ public class EncryptionKeyRotator {
 
     final long finish = System.currentTimeMillis();
     final long duration = finish - start;
-    final long endingNotRotatedRecordCount = startingNotRotatedRecordCount - rotatedRecordCount;
 
-    if (rotatedRecordCount == 0 && endingNotRotatedRecordCount == 0) {
+    if (rotatedRecordCount == 0) {
       LOGGER.info("Found no records in need of encryption key rotation.");
     } else {
       LOGGER.info("Finished encryption key rotation in " + duration + " milliseconds. Details:");
       LOGGER.info("  Successfully rotated " + rotatedRecordCount + " item(s)");
-      LOGGER.info("  Skipped " + endingNotRotatedRecordCount
-        + " item(s) due to missing master encryption key(s).");
     }
 
     encryptionKeyCanaryMapper.delete(inactiveCanaries);
