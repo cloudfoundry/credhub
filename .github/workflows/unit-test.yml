@@ -1,9 +1,6 @@
 name: unit-test
 
-on:
-  push:
-    branches-ignore:
-      - '**java11'
+on: [push]
 
 permissions:
   contents: read
@@ -13,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup JDK 8
+      - name: Setup JDK
         uses: actions/setup-java@v3
         with:
           distribution: 'liberica'
-          java-version: '8'
+          java-version: '11'
       - name: Build and test with Gradle
         run: ./gradlew clean build
