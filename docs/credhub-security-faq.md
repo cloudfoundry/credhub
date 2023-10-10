@@ -4,12 +4,10 @@
 CredHub is a component designed for centralized credential management in Cloud Foundry. It handles the following operations for credentials: generation, storage, lifecycle management, and access.  Pivotal Cloud Foundry Compliance and Security Guild can be found online at  https://docs.pivotal.io/pivotalcf/2-6/security/index.html
 
 ## What cryptographic libraries are in place?
-* Java JCA/JCE. 
-* Java 1.8 javax.crypto
+* Java JCA/JCE
+* Java 11 javax.crypto
 * bouncycastle FIPS 1.0
-* OpenSSL on the stemcell.
-* Java Cryptography Architecture 
-* Java Cryptography Extension
+* OpenSSL on the stemcell
 
 ## What reliability and availability characteristics exist?
 It is a credential management service that is centralized and encrypted.  It may be deployed in an HA fashion. When Credhub is BOSH deployed, a health check is used to ensure availability.
