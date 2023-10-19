@@ -3,5 +3,5 @@ repositories {
 }
 
 dependencies {
-    compileOnly "com.github.spotbugs.snom:spotbugs-gradle-plugin:5.2.0"
+    compileOnly "com.github.spotbugs.snom:spotbugs-gradle-plugin:5.2.1"
 }
