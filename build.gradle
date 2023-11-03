@@ -74,4 +74,4 @@ subprojects {
 // Override spring boot's kotllin version dependency
 ext['kotlin.version'] = '${kotlinVersion}'
 
-assert JavaVersion.current().isJava11Compatible()
+assert JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_17)
