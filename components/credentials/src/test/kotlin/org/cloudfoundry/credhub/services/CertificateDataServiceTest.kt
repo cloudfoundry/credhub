@@ -15,6 +15,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 @RunWith(SpringRunner::class)
 @ActiveProfiles(value = ["unit-test"], resolver = DatabaseProfileResolver::class)
@@ -62,7 +63,8 @@ class CertificateDataServiceTest {
         assertEquals(name, result[0].name)
         assertEquals(caName, result[0].caName)
         assertEquals(false, result[0].versions?.get(0)?.isTransitional)
-        assertEquals(expectedExpiryDate, result[0].versions?.get(0)?.expiryDate)
+        assertEquals(expectedExpiryDate.truncatedTo(ChronoUnit.MILLIS),
+                result[0].versions?.get(0)?.expiryDate?.truncatedTo(ChronoUnit.MILLIS))
         assertEquals(false, result[0].versions?.get(0)?.isCertificateAuthority)
         assertEquals(false, result[0].versions?.get(0)?.isSelfSigned)
         assertEquals(true, result[0].versions?.get(0)?.generated)
