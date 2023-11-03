@@ -63,8 +63,10 @@ class CertificateDataServiceTest {
         assertEquals(name, result[0].name)
         assertEquals(caName, result[0].caName)
         assertEquals(false, result[0].versions?.get(0)?.isTransitional)
-        assertEquals(expectedExpiryDate.truncatedTo(ChronoUnit.MILLIS),
-                result[0].versions?.get(0)?.expiryDate?.truncatedTo(ChronoUnit.MILLIS))
+        assertEquals(
+            expectedExpiryDate.truncatedTo(ChronoUnit.MILLIS),
+            result[0].versions?.get(0)?.expiryDate?.truncatedTo(ChronoUnit.MILLIS)
+        )
         assertEquals(false, result[0].versions?.get(0)?.isCertificateAuthority)
         assertEquals(false, result[0].versions?.get(0)?.isSelfSigned)
         assertEquals(true, result[0].versions?.get(0)?.generated)
