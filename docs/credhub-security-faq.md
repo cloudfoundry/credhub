@@ -5,7 +5,7 @@ CredHub is a component designed for centralized credential management in Cloud F
 
 ## What cryptographic libraries are in place?
 * Java JCA/JCE
-* Java 11 javax.crypto
+* Java 17 javax.crypto
 * bouncycastle FIPS 1.0
 * OpenSSL on the stemcell
 
