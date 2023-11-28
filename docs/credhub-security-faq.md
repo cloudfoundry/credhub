@@ -52,12 +52,12 @@ TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
 
 If CredHub's third-party integration with a Luna SafeNet HSM is
 enabled, then CredHub has no knowledge of key values. If CredHub is
-started in internal encryption mode, CredHub deterministically
-generates a site-specific AES256 key on startup. CredHub concatenates
-a user-defined password from its configuration file with a
+started in internal encryption mode, CredHub recalculates
+the AES256 key on startup. To do this, CredHub concatenates
+the user-provided encryption password from its configuration file with a
 randomly-generated salt stored in its database and hashes the
-resulting string to deterministically generate an AES256 key, which it
-holds in memory for the lifetime of the server.
+resulting string. This hash is then used as the AES key, which CredHub
+will hold in memory.
 
 ## How are privileged users prevented from compromising cryptographic
    keys?
