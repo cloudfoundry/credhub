@@ -69,6 +69,12 @@ AES key, which CredHub will hold in memory.
 This design allows CredHub to have access to the AES key at all times,
 without ever having to store it on disk.
 
+Passwords and salts cannot be rotated individually, and they are never
+automatically rotated. If you want to rotate either or both of them,
+you need to add a new key to CredHub's configuration, and CredHub will
+start using that new password and a newly generated salt to create a
+fresh AES key.
+
 ## How are privileged users prevented from compromising cryptographic
    keys?
 
