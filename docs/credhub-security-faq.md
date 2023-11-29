@@ -55,15 +55,19 @@ enabled, then CredHub has no knowledge of key values.
 
 If CredHub is started in internal encryption mode:
 
-* If a new encryption key is provided, CredHub will generate a new random salt string, and will store it in its database for the future.
-* If the encryption key had already been used before, CredHub will fetch the associated salt from its database to reuse it.
+* If a new encryption key is provided, CredHub will generate a new
+  random salt string, and will store it in its database for the
+  future.
+* If the encryption key had already been used before, CredHub will
+  fetch the associated salt from its database to reuse it.
 
-CredHub then calculates the AES256 key by concatenating
-the user-provided encryption password from its configuration file with the salt, and hashes the
-resulting string. This hash is then used as the AES key, which CredHub
-will hold in memory.
+CredHub then calculates the AES256 key by concatenating the
+user-provided encryption password from its configuration file with the
+salt, and hashes the resulting string. This hash is then used as the
+AES key, which CredHub will hold in memory.
 
-This design allows CredHub to have access to the AES key at all times, without ever having to store it on disk.
+This design allows CredHub to have access to the AES key at all times,
+without ever having to store it on disk.
 
 ## How are privileged users prevented from compromising cryptographic
    keys?
