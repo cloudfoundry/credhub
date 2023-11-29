@@ -51,7 +51,9 @@ TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
 ## How are Keys internally managed?
 
 If CredHub's third-party integration with a Luna SafeNet HSM is
-enabled, then CredHub has no knowledge of key values. If CredHub is
+enabled, then CredHub has no knowledge of key values.
+
+If CredHub is
 started in internal encryption mode, CredHub recalculates
 the AES256 key on startup. To do this, CredHub concatenates
 the user-provided encryption password from its configuration file with a
