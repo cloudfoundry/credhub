@@ -19,7 +19,7 @@ buildscript {
         postgresqlJdbcVersion = '42.7.0'
         spotBugsToolVersion = '4.7.3'
         springRestDocsVersion = '2.0.8.RELEASE'
-        springBootVersion = '2.7.18'
+        springBootVersion = '2.7.17'
         springSecurityOauth2Version = '2.5.2.RELEASE'
         springSecurityOauth2AutoconfigureVersion = '2.6.8'
         mariadbJdbcVersion = '2.7.11' // Bumping to v3 breaks some pipeline jobs, so pinning to v2 for now. v2 (current version) is stable and will be supported until about September 2025 (https://mariadb.com/kb/en/about-mariadb-connector-j/).
