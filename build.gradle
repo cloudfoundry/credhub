@@ -3,7 +3,7 @@ import org.cloudfoundry.credhub.gradlebuild.DependenciesGraphPlugin
 buildscript {
     ext {
         apacheCommonsLang3Version = '3.14.0'
-        apacheCommonsIoVersion = '2.15.0'
+        apacheCommonsIoVersion = '2.15.1'
         apacheHttpClientVersion = '4.5.14'
         asciiDoctorConvertPluginVersion = '2.4.0'
         bcpkixFipsVersion = '1.0.7'
