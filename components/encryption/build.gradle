@@ -1,7 +1,6 @@
 buildscript {
     ext {
         grpcVersion = '1.60.1'
-        nettyVersion = '4.1.101.Final'
     }
     repositories {
         mavenCentral()
@@ -74,8 +73,8 @@ dependencies {
     implementation "io.grpc:grpc-netty:${grpcVersion}"
 
     //Netty
-    implementation "io.netty:netty-transport-native-unix-common:${nettyVersion}"
-    implementation "io.netty:netty-all:${nettyVersion}"
+    implementation "io.netty:netty-transport-native-unix-common"
+    implementation "io.netty:netty-all"
 }
 
 dependencyManagement {
