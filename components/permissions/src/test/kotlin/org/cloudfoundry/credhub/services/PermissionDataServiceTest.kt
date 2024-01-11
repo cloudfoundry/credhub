@@ -1,7 +1,6 @@
 package org.cloudfoundry.credhub.services
 
 import com.google.common.collect.Lists.newArrayList
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import junit.framework.TestCase.assertFalse
 import org.apache.commons.lang3.RandomStringUtils
 import org.cloudfoundry.credhub.CredhubTestApp
@@ -50,7 +49,6 @@ import java.util.ArrayList
 @ActiveProfiles(value = ["unit-test"], resolver = DatabaseProfileResolver::class)
 @SpringBootTest(classes = [CredhubTestApp::class])
 @Transactional
-@SuppressFBWarnings(value = ["NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"], justification = "Let's refactor this class into kotlin")
 class PermissionDataServiceTest {
 
     @Autowired

@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.PermissionOperation;
 import org.cloudfoundry.credhub.TestHelper;
@@ -72,7 +71,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
-@SuppressFBWarnings
 public class DefaultCredentialsHandlerTest {
   private static final String CREDENTIAL_NAME = "/test/credential";
   private static final Instant VERSION1_CREATED_AT = Instant.ofEpochMilli(555555555);

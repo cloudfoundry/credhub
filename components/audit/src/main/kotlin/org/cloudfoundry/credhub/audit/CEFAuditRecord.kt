@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.audit
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import org.apache.commons.lang3.StringUtils
 import org.cloudfoundry.credhub.utils.VersionProvider
 import org.springframework.beans.factory.annotation.Autowired
@@ -14,7 +13,6 @@ import javax.servlet.http.HttpServletRequest
 
 @Component
 @Scope(scopeName = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
-@SuppressFBWarnings(value = ["NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"], justification = "This will be refactored into safer non-nullable types")
 class CEFAuditRecord {
 
     // CEF Spec

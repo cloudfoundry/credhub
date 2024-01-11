@@ -1,6 +1,5 @@
 package db.migration.common
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import org.cloudfoundry.credhub.CryptSaltFactory
 import org.cloudfoundry.credhub.utils.UuidUtil
 import org.flywaydb.core.api.migration.BaseJavaMigration
@@ -13,7 +12,6 @@ import java.sql.ResultSet
 import java.util.UUID
 
 class V41_1__set_salt_in_existing_user_credentials : BaseJavaMigration() {
-    @SuppressFBWarnings(value = ["NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"], justification = "The database will definitely exist")
     @Throws(Exception::class)
     override fun migrate(context: Context) {
         val jdbcTemplate = JdbcTemplate(SingleConnectionDataSource(context.connection, true))

@@ -1,7 +1,6 @@
 package org.cloudfoundry.credhub.domain
 
 import com.fasterxml.jackson.databind.JsonNode
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import org.cloudfoundry.credhub.audit.AuditableCredentialVersion
 import org.cloudfoundry.credhub.entity.Credential
 import org.cloudfoundry.credhub.entity.CredentialVersionData
@@ -19,7 +18,6 @@ abstract class CredentialVersion(protected var delegate: CredentialVersionData<*
             delegate.uuid = uuid
         }
     val name: String?
-        @SuppressFBWarnings
         get() = delegate.credential!!.name
 
     var versionCreatedAt: Instant

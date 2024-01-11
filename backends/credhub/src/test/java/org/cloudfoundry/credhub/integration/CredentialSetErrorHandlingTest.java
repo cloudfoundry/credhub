@@ -14,7 +14,6 @@ import org.springframework.web.context.WebApplicationContext;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
@@ -40,10 +39,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredhubTestApp.class)
 @Transactional
-@SuppressFBWarnings(
-  value = "SS_SHOULD_BE_STATIC",
-  justification = "Test files generally don't need static fields."
-)
 public class CredentialSetErrorHandlingTest {
 
   private final String CREDENTIAL_NAME = "/my-namespace/secretForErrorHandlingSetTest/credential-name";

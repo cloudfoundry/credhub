@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.auth
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import org.cloudfoundry.credhub.CredhubTestApp
 import org.cloudfoundry.credhub.utils.AuthConstants.Companion.EMPTY_ISSUER_JWT
 import org.cloudfoundry.credhub.utils.AuthConstants.Companion.EXPIRED_TOKEN
@@ -39,7 +38,6 @@ import org.springframework.web.bind.annotation.RestController
 @ActiveProfiles(value = ["unit-test"], resolver = DatabaseProfileResolver::class)
 @SpringBootTest(classes = [CredhubTestApp::class])
 @Transactional
-@SuppressFBWarnings(value = ["SIC_INNER_SHOULD_BE_STATIC"], justification = "It's better to create a new SpyController for every test")
 class OAuth2ExtraValidationFilterTest {
     @SpyBean
     private val oAuth2IssuerService: OAuth2IssuerService? = null

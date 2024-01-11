@@ -8,7 +8,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.data.CertificateMigration;
 import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData;
@@ -35,7 +34,6 @@ import static org.hamcrest.core.IsEqual.equalTo;
 )
 @SpringBootTest(classes = CredhubTestApp.class)
 @Transactional
-@SuppressFBWarnings
 public class CertificateMigrationTest {
 
   @Autowired

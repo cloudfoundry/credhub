@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.auth
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import org.cloudfoundry.credhub.RestTemplateFactory
 import org.cloudfoundry.credhub.config.OAuthProperties
 import org.springframework.beans.factory.annotation.Autowired
@@ -37,7 +36,6 @@ internal constructor(
         return if (issuer != null) issuer else fetchIssuer()
     }
 
-    @SuppressFBWarnings(value = ["NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"], justification = "Let this return null if necessary")
     fun fetchIssuer(): String? {
         issuer = restTemplate
             .getForEntity(

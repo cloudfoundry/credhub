@@ -12,7 +12,6 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.entities.EncryptionKeyCanary;
 import org.cloudfoundry.credhub.repositories.EncryptionKeyCanaryRepository;
@@ -82,10 +81,6 @@ public class EarlyCredentialMigrationTest {
         storeValueSecret("/deploy123/test");
     }
 
-    @SuppressFBWarnings(
-            value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE",
-            justification = "Ignore that JDBCTemplate might return a null"
-    )
     private void storeValueSecret(final String credentialName) {
         final MapSqlParameterSource paramSource = new MapSqlParameterSource();
         final String uuid = UUID.randomUUID().toString().replace("-", "");

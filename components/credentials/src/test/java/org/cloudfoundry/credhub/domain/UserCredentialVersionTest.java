@@ -3,7 +3,6 @@ package org.cloudfoundry.credhub.domain;
 import java.util.UUID;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.entity.UserCredentialVersionData;
 import org.cloudfoundry.credhub.requests.StringGenerationParameters;
@@ -25,10 +24,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
-@SuppressFBWarnings(
-  value = "SS_SHOULD_BE_STATIC",
-  justification = "Test files generally don't need static fields."
-)
 public class UserCredentialVersionTest {
   private final String CREDENTIAL_NAME = "/test/user";
   private final String USER_PASSWORD = "test-user-password";

@@ -22,7 +22,6 @@ apply plugin: 'spring-cloud-contract'
 apply from: "${rootDir.toPath()}/spring-cloud-contract-config.gradle"
 apply from: "${rootDir.toPath()}/kotlin.gradle"
 apply from: "${rootDir.toPath()}/ktlint.gradle"
-apply from: "${rootDir.toPath()}/spotbugs.gradle"
 
 repositories {
     mavenCentral()

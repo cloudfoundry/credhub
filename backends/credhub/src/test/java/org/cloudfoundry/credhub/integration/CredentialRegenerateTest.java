@@ -16,7 +16,6 @@ import org.springframework.web.context.WebApplicationContext;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.data.EncryptionKeyCanaryDataService;
 import org.cloudfoundry.credhub.domain.Encryptor;
@@ -68,10 +67,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 )
 @SpringBootTest(classes = CredhubTestApp.class)
 @Transactional
-@SuppressFBWarnings(
-  value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE",
-  justification = "Let's refactor this class into kotlin"
-)
 public class CredentialRegenerateTest {
   private static final Instant FROZEN_TIME = Instant.ofEpochSecond(1400011001L);
 
