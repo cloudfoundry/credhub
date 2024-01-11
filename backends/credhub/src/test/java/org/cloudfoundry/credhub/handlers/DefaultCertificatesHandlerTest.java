@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
 import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.PermissionOperation;
@@ -66,7 +65,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SuppressFBWarnings
 public class DefaultCertificatesHandlerTest {
 
   private static final String CREDENTIAL_NAME = "/test/credential";

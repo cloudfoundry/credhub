@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.services
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import org.apache.commons.lang3.StringUtils
 import org.cloudfoundry.credhub.PermissionOperation
 import org.cloudfoundry.credhub.auth.UserContextHolder
@@ -11,7 +10,6 @@ import org.springframework.stereotype.Service
 import java.util.UUID
 
 @Service
-@SuppressFBWarnings(value = ["NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"], justification = "Let's refactor this class into kotlin")
 class DefaultPermissionCheckingService @Autowired
 constructor(
     private val permissionDataService: PermissionDataService,

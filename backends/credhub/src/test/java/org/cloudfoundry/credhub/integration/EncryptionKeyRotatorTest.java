@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
 import org.cloudfoundry.credhub.config.EncryptionKeyProvider;
@@ -75,13 +74,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = CredhubTestApp.class)
 @RunWith(SpringRunner.class)
 @Transactional
-@SuppressFBWarnings(
-  value = {
-    "SS_SHOULD_BE_STATIC",
-    "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE",
-  },
-  justification = "Test files generally don't need static fields."
-)
 public class EncryptionKeyRotatorTest {
 
   private final String passwordName = "/test-password";
@@ -389,10 +381,6 @@ public class EncryptionKeyRotatorTest {
     credentialVersionDataService.save(credentialWithCurrentKey);
   }
 
-  @SuppressFBWarnings(
-    value = "RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT",
-    justification = "False positive - leave mockito settings alone"
-  )
   private void setActiveKey(final int index) throws Exception {
     final List<EncryptionKeyMetadata> keys = new ArrayList<>();
 

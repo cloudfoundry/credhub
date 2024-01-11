@@ -16,7 +16,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.cloudfoundry.credhub.utils.AuthConstants;
 import org.cloudfoundry.credhub.CertificateStringConstants;
 import org.cloudfoundry.credhub.CredHubApp;
@@ -44,10 +43,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredHubApp.class)
 @Transactional
-@SuppressFBWarnings(
-  value = "SS_SHOULD_BE_STATIC",
-  justification = "Test files generally don't need static fields."
-)
 public class AuthConfigurationTest {
 
   private final String dataApiPath = "/api/v1/data";

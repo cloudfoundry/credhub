@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.Extension;
@@ -63,13 +62,6 @@ import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = BouncyCastleProviderConfiguration.class)
-@SuppressFBWarnings(
-  value = {
-    "SS_SHOULD_BE_STATIC",
-    "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE",
-  },
-  justification = "Test files generally don't need static fields."
-)
 public class SignedCertificateGeneratorTest {
 
   private final int expectedDurationInDays = 10;

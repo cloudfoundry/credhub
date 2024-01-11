@@ -1,9 +1,0 @@
-spotbugs {
-    toolVersion = "$spotBugsToolVersion"
-    excludeFilter = file("$rootProject.projectDir/config/findbugs/exclude-filter.xml")
-}
-
-dependencies {
-    compileOnly("com.github.spotbugs:spotbugs-annotations:$spotBugsToolVersion")
-    testCompileOnly("com.github.spotbugs:spotbugs-annotations:$spotBugsToolVersion")
-}

@@ -6,7 +6,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.crypto.IllegalBlockSizeException;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.exceptions.KeyNotFoundException;
 import org.junit.Before;
@@ -417,10 +416,6 @@ public class RetryingEncryptionServiceTest {
   public void usingTwoThread_wontRetryTwice() throws Exception {
     final Object lock = new Object();
     final Thread firstThread = new Thread("first") {
-      @SuppressFBWarnings(
-        value = "DE_MIGHT_IGNORE",
-        justification = "Exception is a no-op in this test"
-      )
       @Override
       public void run() {
         try {
@@ -431,10 +426,6 @@ public class RetryingEncryptionServiceTest {
       }
     };
     final Thread secondThread = new Thread("second") {
-      @SuppressFBWarnings(
-        value = "DE_MIGHT_IGNORE",
-        justification = "Exception is a no-op in this test"
-      )
       @Override
       public void run() {
         try {
@@ -481,14 +472,6 @@ public class RetryingEncryptionServiceTest {
       this.lock = lock;
     }
 
-    @SuppressFBWarnings(
-      value = {
-        "UW_UNCOND_WAIT",
-        "WA_NOT_IN_LOOP",
-        "REC_CATCH_EXCEPTION",
-      },
-      justification = "We want to force the first thread to wait, and we don't care about exceptions."
-    )
     @Override
     public void setNeedsReconnectFlag() {
       try {

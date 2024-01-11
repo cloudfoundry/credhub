@@ -17,7 +17,6 @@ buildscript {
         ktlintVersion = '0.43.2'
         passayVersion = '1.6.4'
         postgresqlJdbcVersion = '42.7.1'
-        spotBugsToolVersion = '4.7.3'
         springRestDocsVersion = '2.0.8.RELEASE'
         springBootVersion = '2.7.18'
         springSecurityOauth2Version = '2.5.2.RELEASE'
@@ -41,7 +40,6 @@ buildscript {
 
 plugins {
     id 'com.github.ben-manes.versions' version '0.50.0'
-    id 'com.github.spotbugs' version '6.0.6'
 }
 
 apply plugin: DependenciesGraphPlugin

@@ -21,7 +21,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.PermissionOperation;
@@ -68,7 +67,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @TestPropertySource(properties = {"certificates.concatenate_cas=false", })
 @SpringBootTest(classes = CredhubTestApp.class)
 @Transactional
-@SuppressFBWarnings
 public class CredentialsGetIntegrationTest {
 
   private static final Instant FROZEN_TIME = Instant.ofEpochSecond(1400011001L);

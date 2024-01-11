@@ -1,6 +1,5 @@
 package db.migration.common
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import org.cloudfoundry.credhub.utils.UuidUtil
 import org.flywaydb.core.api.migration.BaseJavaMigration
 import org.flywaydb.core.api.migration.Context
@@ -9,7 +8,6 @@ import org.springframework.jdbc.datasource.SingleConnectionDataSource
 import java.sql.Types
 
 class V35_1__migrate_operation_audit_record_table : BaseJavaMigration() {
-    @SuppressFBWarnings(value = ["NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"], justification = "The database will definitely exist")
     @Throws(Exception::class)
     override fun migrate(context: Context) {
         val jdbcTemplate = JdbcTemplate(SingleConnectionDataSource(context.connection, true))

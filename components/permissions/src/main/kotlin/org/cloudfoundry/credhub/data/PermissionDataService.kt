@@ -1,7 +1,6 @@
 package org.cloudfoundry.credhub.data
 
 import com.google.common.collect.Lists
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.PermissionOperation
 import org.cloudfoundry.credhub.audit.AuditablePermissionData
@@ -24,7 +23,6 @@ import java.util.UUID
 import kotlin.streams.toList
 
 @Component
-@SuppressFBWarnings(value = ["NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"], justification = "Let's refactor this class into kotlin")
 class PermissionDataService @Autowired
 constructor(
     private val permissionRepository: PermissionRepository,

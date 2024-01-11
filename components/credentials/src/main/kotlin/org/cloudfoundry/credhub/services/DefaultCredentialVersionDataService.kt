@@ -1,7 +1,6 @@
 package org.cloudfoundry.credhub.services
 
 import com.google.common.collect.Lists
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import org.apache.commons.lang3.StringUtils
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.domain.CredentialFactory
@@ -41,7 +40,6 @@ constructor(
         return credentialVersion.save<CredentialVersion>(this)
     }
 
-    @SuppressFBWarnings(value = ["NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"], justification = "Let's refactor this class into kotlin")
     override fun save(credentialVersionData: CredentialVersionData<*>): CredentialVersion {
         val credential = credentialVersionData.credential
 

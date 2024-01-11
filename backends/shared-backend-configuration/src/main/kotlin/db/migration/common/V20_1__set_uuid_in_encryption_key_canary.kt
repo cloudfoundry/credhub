@@ -1,6 +1,5 @@
 package db.migration.common
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import org.cloudfoundry.credhub.utils.UuidUtil
 import org.flywaydb.core.api.migration.BaseJavaMigration
 import org.flywaydb.core.api.migration.Context
@@ -10,7 +9,6 @@ import java.sql.Types
 import java.util.UUID
 
 class V20_1__set_uuid_in_encryption_key_canary : BaseJavaMigration() {
-    @SuppressFBWarnings(value = ["NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"], justification = "The database will definitely exist")
     @Throws(Exception::class)
     override fun migrate(context: Context) {
         val jdbcTemplate = JdbcTemplate(SingleConnectionDataSource(context.connection, true))
