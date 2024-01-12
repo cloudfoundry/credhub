@@ -21,7 +21,6 @@ import org.junit.runners.JUnit4
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.springframework.test.util.ReflectionTestUtils
-import java.util.HashSet
 import java.util.UUID
 
 @RunWith(JUnit4::class)

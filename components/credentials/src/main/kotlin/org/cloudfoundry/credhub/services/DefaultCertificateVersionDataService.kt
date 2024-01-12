@@ -8,7 +8,6 @@ import org.cloudfoundry.credhub.entity.CredentialVersionData
 import org.cloudfoundry.credhub.repositories.CredentialVersionRepository
 import org.cloudfoundry.credhub.utils.CertificateReader
 import org.springframework.stereotype.Service
-import java.util.ArrayList
 import java.util.UUID
 
 @Service
