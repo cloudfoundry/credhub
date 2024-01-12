@@ -6,9 +6,9 @@ import org.cloudfoundry.credhub.ManagementRegistry
 import org.cloudfoundry.credhub.exceptions.InvalidRemoteAddressException
 import org.cloudfoundry.credhub.exceptions.ReadOnlyException
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver
+import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.core.Is.`is`
 import org.junit.After
-import org.junit.Assert.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith

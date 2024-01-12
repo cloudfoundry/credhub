@@ -7,8 +7,10 @@ import org.cloudfoundry.credhub.utils.AuthConstants.Companion.ALL_PERMISSIONS_TO
 import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer
 import org.cloudfoundry.credhub.utils.CertificateReader
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver
+import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.core.IsEqual
-import org.junit.Assert
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Rule
@@ -113,7 +115,7 @@ class RegenerateEndpointConcatenateCasIntegrationTest {
         val generateCaResponse = RequestHelper.generateCa(mockMvc, caName, ALL_PERMISSIONS_TOKEN)
         val caCertificateGenerated = JsonPath.parse(generateCaResponse)
             .read<String>("$.value.certificate")
-        Assert.assertNotNull(caCertificateGenerated)
+        assertNotNull(caCertificateGenerated)
 
         val caCredentialUuid = RequestHelper.getCertificateId(mockMvc, caName)
 
@@ -128,10 +130,10 @@ class RegenerateEndpointConcatenateCasIntegrationTest {
         val regenerateCertificateResponse = RequestHelper.regenerateCertificate(mockMvc, caCredentialUuid, true, ALL_PERMISSIONS_TOKEN)
         val caCertificateRegenerated = JsonPath.parse(regenerateCertificateResponse)
             .read<String>("$.value.certificate")
-        Assert.assertNotNull(caCertificateRegenerated)
+        assertNotNull(caCertificateRegenerated)
         val caCertificateRegeneratedIsTransitional = JsonPath.parse(regenerateCertificateResponse)
             .read<Boolean>("$.transitional")
-        Assert.assertTrue(caCertificateRegeneratedIsTransitional)
+        assertTrue(caCertificateRegeneratedIsTransitional)
 
         val certCredentialUuid = RequestHelper.getCertificateId(mockMvc, certificateName)
         val regenerateLeafRequest = post("/api/v1/certificates/$certCredentialUuid/regenerate")
@@ -146,9 +148,9 @@ class RegenerateEndpointConcatenateCasIntegrationTest {
             .contentAsString
 
         val leafCA = JsonPath.parse(response).read<String>("$.value.ca")
-        Assert.assertThat<String>(leafCA, IsEqual.equalTo<String>(caCertificateRegenerated + caCertificateGenerated))
+        assertThat<String>(leafCA, IsEqual.equalTo<String>(caCertificateRegenerated + caCertificateGenerated))
         val leafCert = JsonPath.parse(response).read<String>("$.value.certificate")
         val reader = CertificateReader(leafCert)
-        Assert.assertTrue(reader.isSignedByCa(caCertificateRegenerated))
+        assertTrue(reader.isSignedByCa(caCertificateRegenerated))
     }
 }
