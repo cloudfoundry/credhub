@@ -26,7 +26,7 @@ class JsonTestHelper private constructor() {
         }
 
         @JvmStatic
-        fun serialize(dataObject: Any): kotlin.ByteArray? {
+        fun serialize(dataObject: Any): ByteArray? {
             try {
                 return OBJECT_MAPPER.writeValueAsBytes(dataObject)
             } catch (e: JsonProcessingException) {
@@ -44,7 +44,7 @@ class JsonTestHelper private constructor() {
         }
 
         @JvmStatic
-        fun <T> deserialize(json: kotlin.ByteArray, klass: Class<T>): T {
+        fun <T> deserialize(json: ByteArray, klass: Class<T>): T {
             try {
                 return OBJECT_MAPPER.readValue(json, klass)
             } catch (e: IOException) {
@@ -83,7 +83,7 @@ class JsonTestHelper private constructor() {
         }
 
         @JvmStatic
-        fun <T> deserializeAndValidate(json: kotlin.ByteArray, klass: Class<T>): Set<ConstraintViolation<T>> {
+        fun <T> deserializeAndValidate(json: ByteArray, klass: Class<T>): Set<ConstraintViolation<T>> {
             try {
                 val dataObject = OBJECT_MAPPER.readValue(json, klass)
                 return VALIDATOR.validate(dataObject)
