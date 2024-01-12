@@ -6,7 +6,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.constants.CredentialType
-import org.cloudfoundry.credhub.constants.CredentialType.JSON
 import org.cloudfoundry.credhub.controllers.v1.regenerate.SpyRegenerateHandler
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue
 import org.cloudfoundry.credhub.credential.JsonCredentialValue
@@ -139,7 +138,7 @@ class CredentialsControllerGetTest {
             Instant.ofEpochSecond(1549053472L),
             uuid,
             "/some-value-path",
-            JSON.type.lowercase(),
+            CredentialType.JSON.type.lowercase(),
             metadata,
             JsonCredentialValue(
                 ObjectMapper().readTree(
