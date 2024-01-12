@@ -37,8 +37,7 @@ text password. Reviewers may inspect bosh manifest to confirm.
 Actually being able to fetch credentials and have a successful
 deployment of vm’s in the foundation.
 
-## What cryptographic key management techniques and standards does the
-   product support?
+## What cryptographic key management techniques and standards does the product support?
 
 AES 256 GCM is supported for encryption.  NIST Special Publication
 800-90A Revision 1, section 10.1 is used during HSM-based key
@@ -75,8 +74,7 @@ you need to add a new key to CredHub's configuration, and CredHub will
 start using that new password and a newly generated salt to create a
 fresh AES key.
 
-## How are privileged users prevented from compromising cryptographic
-   keys?
+## How are privileged users prevented from compromising cryptographic keys?
 
 Key material is handled by the platform operator. The CredHub service
 and the bosh director both provide accountability of operator actions
@@ -90,8 +88,7 @@ Java JCA/JCE on top of Linux OS, /dev/urandom.  We use HSM random for
 generation if available SHA1PRNG. For entropy source, Java JCA/JCE
 provider is used, but ultimately Linux OS /dev/urandom, or HSM.
 
-## What are the symmetric cipher algorithms and modes of operation
-   supported?
+## What are the symmetric cipher algorithms and modes of operation supported?
 
 CredHub internal provider implements: AES 256 GCM.
 
@@ -103,8 +100,7 @@ RSA.  2048 as default modulus
 
 SHA256
 
-## What external key management hardware vendor products are
-   supported?
+## What external key management hardware vendor products are supported?
 
 Luna Safenet HSM (AWS CloudHSM Classic)
 
