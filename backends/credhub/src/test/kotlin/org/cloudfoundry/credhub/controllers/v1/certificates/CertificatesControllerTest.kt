@@ -167,7 +167,7 @@ class CertificatesControllerTest {
         val expectedResponseBody =
             """
             {
-              "type": "${CredentialType.CERTIFICATE.type.toLowerCase()}",
+              "type": "${CredentialType.CERTIFICATE.type.lowercase()}",
               "version_created_at": "${certificateView.versionCreatedAt}",
               "id": "$certificateId",
               "name": "$name",
@@ -572,7 +572,7 @@ class CertificatesControllerTest {
         val expectedResponseBody =
             """
             [{
-              "type": "${CredentialType.CERTIFICATE.type.toLowerCase()}",
+              "type": "${CredentialType.CERTIFICATE.type.lowercase()}",
               "version_created_at": "${certificateView.versionCreatedAt}",
               "id": "$certificateId",
               "name": "$name",
@@ -631,7 +631,7 @@ class CertificatesControllerTest {
         val expectedResponseBody =
             """
             [{
-              "type": "${CredentialType.CERTIFICATE.type.toLowerCase()}",
+              "type": "${CredentialType.CERTIFICATE.type.lowercase()}",
               "version_created_at": "${certificateView.versionCreatedAt}",
               "id": "$certificateId",
               "name": "$name",
@@ -711,7 +711,7 @@ class CertificatesControllerTest {
         val expectedResponseBody =
             """
             {
-              "type": "${CredentialType.CERTIFICATE.type.toLowerCase()}",
+              "type": "${CredentialType.CERTIFICATE.type.lowercase()}",
               "version_created_at": "$createdAt",
               "id": "$certificateId",
               "name": "$name",
@@ -760,7 +760,7 @@ class CertificatesControllerTest {
         val expectedResponseBody =
             """
             {
-              "type": "${CredentialType.CERTIFICATE.type.toLowerCase()}",
+              "type": "${CredentialType.CERTIFICATE.type.lowercase()}",
               "version_created_at": "${certificateView.versionCreatedAt}",
               "id": "$certificateId",
               "name": "$name",

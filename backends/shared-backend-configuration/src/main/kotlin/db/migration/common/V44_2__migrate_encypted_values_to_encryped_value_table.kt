@@ -16,7 +16,7 @@ class V44_2__migrate_encypted_values_to_encryped_value_table : BaseJavaMigration
             ?.getConnection()
             ?.metaData
             ?.databaseProductName
-            ?.toLowerCase()
+            ?.lowercase()
         val credentialsWithEncryptedValues = jdbcTemplate
             .queryForList(
                 "select uuid from credential_version where encrypted_value is not null",

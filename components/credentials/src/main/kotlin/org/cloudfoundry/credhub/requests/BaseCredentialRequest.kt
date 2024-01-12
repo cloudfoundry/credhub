@@ -18,7 +18,7 @@ abstract class BaseCredentialRequest {
         }
     var type: String? = null
         set(type) {
-            field = type?.toLowerCase()
+            field = type?.lowercase()
         }
     var metadata: JsonNode? = null
 

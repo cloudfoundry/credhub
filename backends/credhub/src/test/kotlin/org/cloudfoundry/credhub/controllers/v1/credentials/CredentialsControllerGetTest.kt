@@ -94,7 +94,7 @@ class CredentialsControllerGetTest {
             Instant.ofEpochSecond(1549053472L),
             uuid,
             "/some-value-path",
-            CredentialType.VALUE.type.toLowerCase(),
+            CredentialType.VALUE.type.lowercase(),
             metadata,
             StringCredentialValue("some-value")
         )
@@ -139,7 +139,7 @@ class CredentialsControllerGetTest {
             Instant.ofEpochSecond(1549053472L),
             uuid,
             "/some-value-path",
-            JSON.type.toLowerCase(),
+            JSON.type.lowercase(),
             metadata,
             JsonCredentialValue(
                 ObjectMapper().readTree(
@@ -174,7 +174,7 @@ class CredentialsControllerGetTest {
         val expectedResponseBody =
             """
             {
-              "type": "${CredentialType.JSON.type.toLowerCase()}",
+              "type": "${CredentialType.JSON.type.lowercase()}",
               "version_created_at": "2019-02-01T20:37:52Z",
               "id": "$uuid",
               "name": "/some-value-path",
@@ -195,7 +195,7 @@ class CredentialsControllerGetTest {
             Instant.ofEpochSecond(1549053472L),
             uuid,
             "/some-value-path",
-            CredentialType.PASSWORD.type.toLowerCase(),
+            CredentialType.PASSWORD.type.lowercase(),
             metadata,
             StringCredentialValue("some-password")
         )
@@ -221,7 +221,7 @@ class CredentialsControllerGetTest {
         val expectedResponseBody =
             """
             {
-              "type": "${CredentialType.PASSWORD.type.toLowerCase()}",
+              "type": "${CredentialType.PASSWORD.type.lowercase()}",
               "version_created_at": "2019-02-01T20:37:52Z",
               "id": "$uuid",
               "name": "/some-value-path",
@@ -241,7 +241,7 @@ class CredentialsControllerGetTest {
             Instant.ofEpochSecond(1549053472L),
             uuid,
             "/some-value-path",
-            CredentialType.USER.type.toLowerCase(),
+            CredentialType.USER.type.lowercase(),
             metadata,
             UserCredentialValue(
                 "some-username",
@@ -271,7 +271,7 @@ class CredentialsControllerGetTest {
         val expectedResponseBody =
             """
             {
-              "type": "${CredentialType.USER.type.toLowerCase()}",
+              "type": "${CredentialType.USER.type.lowercase()}",
               "version_created_at": "2019-02-01T20:37:52Z",
               "id": "$uuid",
               "name": "/some-value-path",
@@ -295,7 +295,7 @@ class CredentialsControllerGetTest {
             Instant.ofEpochSecond(1549053472L),
             uuid,
             "/some-value-path",
-            CredentialType.CERTIFICATE.type.toLowerCase(),
+            CredentialType.CERTIFICATE.type.lowercase(),
             metadata,
             CertificateCredentialValue(
                 TestConstants.TEST_CA,
@@ -330,7 +330,7 @@ class CredentialsControllerGetTest {
         val expectedResponseBody =
             """
             {
-              "type": "${CredentialType.CERTIFICATE.type.toLowerCase()}",
+              "type": "${CredentialType.CERTIFICATE.type.lowercase()}",
               "version_created_at": "2019-02-01T20:37:52Z",
               "id": "$uuid",
               "name": "/some-value-path",
@@ -359,7 +359,7 @@ class CredentialsControllerGetTest {
             Instant.ofEpochSecond(1549053472L),
             uuid,
             "/some-value-path",
-            CredentialType.CERTIFICATE.type.toLowerCase(),
+            CredentialType.CERTIFICATE.type.lowercase(),
             metadata,
             CertificateCredentialValue(
                 TestConstants.TEST_CA,
@@ -386,7 +386,7 @@ class CredentialsControllerGetTest {
         val expectedResponseBody =
             """
             {
-              "type": "${CredentialType.CERTIFICATE.type.toLowerCase()}",
+              "type": "${CredentialType.CERTIFICATE.type.lowercase()}",
               "version_created_at": "2019-02-01T20:37:52Z",
               "id": "$uuid",
               "name": "/some-value-path",
@@ -414,7 +414,7 @@ class CredentialsControllerGetTest {
             Instant.ofEpochSecond(1549053472L),
             uuid,
             "/some-value-path",
-            CredentialType.RSA.type.toLowerCase(),
+            CredentialType.RSA.type.lowercase(),
             metadata,
             RsaCredentialValue(
                 TestConstants.RSA_PUBLIC_KEY_4096,
@@ -443,7 +443,7 @@ class CredentialsControllerGetTest {
         val expectedResponseBody =
             """
             {
-              "type": "${CredentialType.RSA.type.toLowerCase()}",
+              "type": "${CredentialType.RSA.type.lowercase()}",
               "version_created_at": "2019-02-01T20:37:52Z",
               "id": "$uuid",
               "name": "/some-value-path",
@@ -466,7 +466,7 @@ class CredentialsControllerGetTest {
             Instant.ofEpochSecond(1549053472L),
             uuid,
             "/some-value-path",
-            CredentialType.SSH.type.toLowerCase(),
+            CredentialType.SSH.type.lowercase(),
             metadata,
             SshCredentialValue(
                 TestConstants.SSH_PUBLIC_KEY_4096,
@@ -496,7 +496,7 @@ class CredentialsControllerGetTest {
         val expectedResponseBody =
             """
             {
-              "type": "${CredentialType.SSH.type.toLowerCase()}",
+              "type": "${CredentialType.SSH.type.lowercase()}",
               "version_created_at": "2019-02-01T20:37:52Z",
               "id": "$uuid",
               "name": "/some-value-path",
@@ -623,7 +623,7 @@ class CredentialsControllerGetTest {
                     Instant.ofEpochSecond(1549053472L),
                     uuid,
                     "/some-name",
-                    CredentialType.VALUE.type.toLowerCase(),
+                    CredentialType.VALUE.type.lowercase(),
                     metadata,
                     StringCredentialValue("some-value")
                 )

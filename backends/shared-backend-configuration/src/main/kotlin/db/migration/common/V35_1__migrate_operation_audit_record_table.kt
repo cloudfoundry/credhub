@@ -16,7 +16,7 @@ class V35_1__migrate_operation_audit_record_table : BaseJavaMigration() {
             ?.getConnection()
             ?.metaData
             ?.databaseProductName
-            ?.toLowerCase()
+            ?.lowercase()
         val operationAuditRecordIds = jdbcTemplate.queryForList("select id from operation_audit_record", Long::class.java)
         for (id in operationAuditRecordIds) {
             val requestUuid = UuidUtil.makeUuid(databaseName)

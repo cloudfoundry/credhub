@@ -20,7 +20,7 @@ class V41_1__set_salt_in_existing_user_credentials : BaseJavaMigration() {
             ?.getConnection()
             ?.metaData
             ?.databaseProductName
-            ?.toLowerCase()
+            ?.lowercase()
         val saltFactory = CryptSaltFactory()
         val uuids = jdbcTemplate.query("select uuid from user_credential") { rowSet: ResultSet, _: Int ->
             val uuidBytes = rowSet.getBytes("uuid")
