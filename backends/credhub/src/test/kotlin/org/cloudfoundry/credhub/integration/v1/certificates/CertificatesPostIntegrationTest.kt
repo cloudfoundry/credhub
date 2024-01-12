@@ -10,10 +10,10 @@ import org.cloudfoundry.credhub.utils.AuthConstants.Companion.ALL_PERMISSIONS_TO
 import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer
 import org.cloudfoundry.credhub.utils.CertificateReader
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver
+import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.core.IsEqual.equalTo
 import org.junit.Assert
 import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertThat
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Rule
