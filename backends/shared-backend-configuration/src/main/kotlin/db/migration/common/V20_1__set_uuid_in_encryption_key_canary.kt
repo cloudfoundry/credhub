@@ -17,7 +17,7 @@ class V20_1__set_uuid_in_encryption_key_canary : BaseJavaMigration() {
             ?.getConnection()
             ?.metaData
             ?.databaseProductName
-            ?.toLowerCase()
+            ?.lowercase()
         val types = intArrayOf(Types.VARBINARY, Types.BIGINT)
         val canaryIds = jdbcTemplate.queryForList(
             "select id from encryption_key_canary",

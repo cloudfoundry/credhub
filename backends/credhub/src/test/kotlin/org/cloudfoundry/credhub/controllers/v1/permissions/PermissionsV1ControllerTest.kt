@@ -202,7 +202,7 @@ class PermissionsV1ControllerTest {
                 PermissionOperation.values().joinToString(
                     transform = {
                         x ->
-                        x.operation.toLowerCase()
+                        x.operation.lowercase()
                     },
                     separator = ", "
                 )

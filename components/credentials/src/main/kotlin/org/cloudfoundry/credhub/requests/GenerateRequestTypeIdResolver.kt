@@ -34,7 +34,7 @@ class GenerateRequestTypeIdResolver : TypeIdResolver {
     override fun typeFromId(context: DatabindContext, id: String): JavaType {
         var subType: Class<*> = DefaultCredentialGenerateRequest::class.java
 
-        when (id.toLowerCase()) {
+        when (id.lowercase()) {
             CertificateCredentialVersionData.CREDENTIAL_TYPE -> subType = CertificateGenerateRequest::class.java
             PasswordCredentialVersionData.CREDENTIAL_TYPE -> subType = PasswordGenerateRequest::class.java
             RsaCredentialVersionData.CREDENTIAL_TYPE -> subType = RsaGenerateRequest::class.java

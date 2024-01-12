@@ -16,7 +16,7 @@ class V25_1__add_secret_name_relation : BaseJavaMigration() {
             ?.getConnection()
             ?.metaData
             ?.databaseProductName
-            ?.toLowerCase()
+            ?.lowercase()
         val names = jdbcTemplate
             .queryForList("select distinct(name) from named_secret", String::class.java)
         for (name in names) {

@@ -181,7 +181,7 @@ class CredentialsControllerGenerateTest {
             Instant.ofEpochSecond(1549053472L),
             uuid,
             "/some-user-name",
-            CredentialType.USER.type.toLowerCase(),
+            CredentialType.USER.type.lowercase(),
             metadata,
             UserCredentialValue("some-username", "some-password", "foo")
         )
@@ -191,7 +191,7 @@ class CredentialsControllerGenerateTest {
             """
                 {
                   "name": "/some-user-name",
-                  "type": "${CredentialType.USER.type.toLowerCase()}",
+                  "type": "${CredentialType.USER.type.lowercase()}",
                   "metadata": { "description": "example metadata"}
                 }
             """.trimIndent()
@@ -248,7 +248,7 @@ class CredentialsControllerGenerateTest {
         val expectedResponseBody =
             """
               {
-                  "type": "${CredentialType.USER.type.toLowerCase()}",
+                  "type": "${CredentialType.USER.type.lowercase()}",
                   "version_created_at": "2019-02-01T20:37:52Z",
                   "id": $uuid,
                   "name": "/some-user-name",
@@ -303,7 +303,7 @@ class CredentialsControllerGenerateTest {
             """
                 {
                   "name": "/some-certificate-name",
-                  "type": "${CredentialType.CERTIFICATE.type.toLowerCase()}",
+                  "type": "${CredentialType.CERTIFICATE.type.lowercase()}",
                   "parameters": {
                     "common_name": "some-common-name",
                     "ca": "some-ca",
@@ -399,7 +399,7 @@ class CredentialsControllerGenerateTest {
         val expectedResponseBody =
             """
               {
-                  "type": "${CredentialType.CERTIFICATE.type.toLowerCase()}",
+                  "type": "${CredentialType.CERTIFICATE.type.lowercase()}",
                   "version_created_at": "2019-02-01T20:37:52Z",
                   "id": $uuid,
                   "name": "/some-certificate-name",
@@ -428,7 +428,7 @@ class CredentialsControllerGenerateTest {
             Instant.ofEpochSecond(1549053472L),
             uuid,
             "/some-rsa-name",
-            CredentialType.RSA.type.toLowerCase(),
+            CredentialType.RSA.type.lowercase(),
             metadata,
             RsaCredentialValue(
                 TestConstants.RSA_PUBLIC_KEY_4096,
@@ -441,7 +441,7 @@ class CredentialsControllerGenerateTest {
             """
                 {
                   "name": "/some-rsa-name",
-                  "type": "${CredentialType.RSA.type.toLowerCase()}",
+                  "type": "${CredentialType.RSA.type.lowercase()}",
                   "metadata": { "description": "example metadata"}
                 }
             """.trimIndent()
@@ -478,7 +478,7 @@ class CredentialsControllerGenerateTest {
         val expectedResponseBody =
             """
               {
-                  "type": "${CredentialType.RSA.type.toLowerCase()}",
+                  "type": "${CredentialType.RSA.type.lowercase()}",
                   "version_created_at": "2019-02-01T20:37:52Z",
                   "id": $uuid,
                   "name": "/some-rsa-name",
@@ -499,7 +499,7 @@ class CredentialsControllerGenerateTest {
             Instant.ofEpochSecond(1549053472L),
             uuid,
             "/some-ssh-name",
-            CredentialType.SSH.type.toLowerCase(),
+            CredentialType.SSH.type.lowercase(),
             metadata,
             SshCredentialValue(
                 TestConstants.SSH_PUBLIC_KEY_4096,
@@ -513,7 +513,7 @@ class CredentialsControllerGenerateTest {
             """
                 {
                   "name": "/some-ssh-name",
-                  "type": "${CredentialType.SSH.type.toLowerCase()}",
+                  "type": "${CredentialType.SSH.type.lowercase()}",
                   "metadata": { "description": "example metadata"}
                 }
             """.trimIndent()
@@ -554,7 +554,7 @@ class CredentialsControllerGenerateTest {
         val expectedResponseBody =
             """
               {
-                  "type": "${CredentialType.SSH.type.toLowerCase()}",
+                  "type": "${CredentialType.SSH.type.lowercase()}",
                   "version_created_at": "2019-02-01T20:37:52Z",
                   "id": $uuid,
                   "name": "/some-ssh-name",

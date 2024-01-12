@@ -74,7 +74,7 @@ class RegenerateControllerTest {
             Instant.ofEpochSecond(1549053472L),
             randomUUID,
             "/some-name",
-            CredentialType.VALUE.type.toLowerCase(),
+            CredentialType.VALUE.type.lowercase(),
             metadata,
             StringCredentialValue("some-value")
         )

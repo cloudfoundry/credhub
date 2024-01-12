@@ -36,7 +36,7 @@ class SetRequestTypeIdResolver : TypeIdResolver {
     @Throws(IOException::class)
     override fun typeFromId(context: DatabindContext, id: String): JavaType {
         val subType: Class<*>
-        val lowerCaseId = id.toLowerCase()
+        val lowerCaseId = id.lowercase()
 
         when (lowerCaseId) {
             CertificateCredentialVersionData.CREDENTIAL_TYPE -> subType = CertificateSetRequest::class.java
