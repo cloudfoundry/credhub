@@ -1,7 +1,7 @@
 package org.cloudfoundry.credhub.handlers
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.PropertyNamingStrategy
+import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.google.protobuf.ByteString
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
@@ -85,7 +85,7 @@ class RemoteCredentialsHandlerTest {
             Security.addProvider(BouncyCastleFipsProvider())
         }
 
-        objectMapper.propertyNamingStrategy = PropertyNamingStrategy.SNAKE_CASE
+        objectMapper.propertyNamingStrategy = PropertyNamingStrategies.SNAKE_CASE
 
         subject = RemoteCredentialsHandler(
             userContextHolder,
