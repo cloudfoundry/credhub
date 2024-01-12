@@ -2,7 +2,7 @@ package org.cloudfoundry.credhub.controllers.v1.credentials
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.PropertyNamingStrategy
+import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import org.assertj.core.api.Assertions.assertThat
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
@@ -78,7 +78,7 @@ class CredentialsControllerGenerateTest {
 
     @Before
     fun setUp() {
-        objectMapper.propertyNamingStrategy = PropertyNamingStrategy.SNAKE_CASE
+        objectMapper.propertyNamingStrategy = PropertyNamingStrategies.SNAKE_CASE
 
         val credentialController = CredentialsController(
             spyCredentialsHandler,

@@ -1,7 +1,7 @@
 package org.cloudfoundry.credhub.services
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.PropertyNamingStrategy
+import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.google.protobuf.ByteString
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
@@ -37,7 +37,7 @@ class RemoteCertificateAuthorityServiceTest {
 
     @Before
     fun beforeEach() {
-        objectMapper.propertyNamingStrategy = PropertyNamingStrategy.SNAKE_CASE
+        objectMapper.propertyNamingStrategy = PropertyNamingStrategies.SNAKE_CASE
 
         subject = RemoteCertificateAuthorityService(userContextHolder, objectMapper, client)
 

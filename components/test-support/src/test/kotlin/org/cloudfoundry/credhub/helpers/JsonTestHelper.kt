@@ -3,7 +3,7 @@ package org.cloudfoundry.credhub.helpers
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.PropertyNamingStrategy.SNAKE_CASE
+import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import org.cloudfoundry.credhub.util.TimeModuleFactory
 import org.hamcrest.BaseMatcher
 import org.hamcrest.Description
@@ -22,7 +22,7 @@ class JsonTestHelper private constructor() {
         fun createObjectMapper(): ObjectMapper {
             return ObjectMapper()
                 .registerModule(TimeModuleFactory.createTimeModule())
-                .setPropertyNamingStrategy(SNAKE_CASE)
+                .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
         }
 
         @JvmStatic
