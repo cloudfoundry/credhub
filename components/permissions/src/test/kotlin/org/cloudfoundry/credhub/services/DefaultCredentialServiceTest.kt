@@ -206,7 +206,7 @@ class DefaultCredentialServiceTest {
 
         `when`<CredentialVersion>(
             credentialFactory.makeNewCredentialVersion(
-                CredentialType.valueOf(request.type?.toUpperCase().toString()),
+                CredentialType.valueOf(request.type?. uppercase().toString()),
                 request.name,
                 stringCredentialValue,
                 null,

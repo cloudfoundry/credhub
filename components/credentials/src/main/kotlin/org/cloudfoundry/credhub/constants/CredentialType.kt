@@ -12,7 +12,7 @@ enum class CredentialType private constructor(type: String) {
     val type: String
 
     init {
-        this.type = type.toUpperCase()
+        this.type = type.uppercase()
     }
 
     companion object {

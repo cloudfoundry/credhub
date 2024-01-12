@@ -118,7 +118,7 @@ class DefaultCredentialService(
         request: BaseCredentialRequest
     ): CredentialVersion {
         val newVersion = credentialFactory.makeNewCredentialVersion(
-            CredentialType.valueOf(request.type?.toUpperCase()!!),
+            CredentialType.valueOf(request.type?. uppercase()!!),
             request.name,
             credentialValue,
             existingCredentialVersion,
