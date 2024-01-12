@@ -8,7 +8,6 @@ import org.springframework.context.annotation.ScopedProxyMode
 import org.springframework.stereotype.Component
 import org.springframework.web.context.WebApplicationContext
 import java.time.Instant
-import java.util.ArrayList
 import javax.servlet.http.HttpServletRequest
 
 @Component

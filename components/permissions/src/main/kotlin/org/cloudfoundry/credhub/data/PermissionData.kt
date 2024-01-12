@@ -9,7 +9,6 @@ import org.cloudfoundry.credhub.PermissionOperation.WRITE_ACL
 import org.cloudfoundry.credhub.audit.AuditablePermissionData
 import org.cloudfoundry.credhub.constants.UuidConstants
 import org.hibernate.annotations.GenericGenerator
-import java.util.ArrayList
 import java.util.UUID
 import javax.persistence.Column
 import javax.persistence.Entity

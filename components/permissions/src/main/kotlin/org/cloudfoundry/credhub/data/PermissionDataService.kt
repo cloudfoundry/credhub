@@ -17,10 +17,7 @@ import org.cloudfoundry.credhub.requests.PermissionsV2Request
 import org.cloudfoundry.credhub.services.CredentialDataService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
-import java.util.ArrayList
-import java.util.HashSet
 import java.util.UUID
-import kotlin.streams.toList
 
 @Component
 class PermissionDataService @Autowired

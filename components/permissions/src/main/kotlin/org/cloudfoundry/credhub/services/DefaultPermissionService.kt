@@ -16,7 +16,6 @@ import org.cloudfoundry.credhub.requests.PermissionEntry
 import org.cloudfoundry.credhub.requests.PermissionsV2Request
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import java.util.ArrayList
 import java.util.UUID
 
 @Service

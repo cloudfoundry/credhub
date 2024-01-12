@@ -12,7 +12,6 @@ import org.cloudfoundry.credhub.service.regeneratables.RsaCredentialRegeneratabl
 import org.cloudfoundry.credhub.service.regeneratables.SshCredentialRegeneratable
 import org.cloudfoundry.credhub.service.regeneratables.UserCredentialRegeneratable
 import org.springframework.stereotype.Component
-import java.util.HashMap
 import java.util.function.Supplier
 
 @Component

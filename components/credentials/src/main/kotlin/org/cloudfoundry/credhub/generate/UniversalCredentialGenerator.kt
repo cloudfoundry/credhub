@@ -10,7 +10,6 @@ import org.cloudfoundry.credhub.generators.UserGenerator
 import org.cloudfoundry.credhub.requests.BaseCredentialGenerateRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
-import java.util.HashMap
 
 @Component
 class UniversalCredentialGenerator @Autowired constructor(
