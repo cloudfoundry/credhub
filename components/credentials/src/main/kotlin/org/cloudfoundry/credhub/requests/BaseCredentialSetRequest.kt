@@ -35,6 +35,6 @@ abstract class BaseCredentialSetRequest<T : CredentialValue?> : BaseCredentialRe
     }
 
     private fun isInvalidTypeForSet(type: String): Boolean {
-        return !Arrays.asList(*CredentialType.values()).contains(CredentialType.valueOf(type.toUpperCase()))
+        return !Arrays.asList(*CredentialType.values()).contains(CredentialType.valueOf(type.uppercase()))
     }
 }

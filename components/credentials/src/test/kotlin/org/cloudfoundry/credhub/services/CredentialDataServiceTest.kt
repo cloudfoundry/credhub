@@ -59,7 +59,7 @@ class CredentialDataServiceTest {
     fun find_isCaseInsensitive() {
         val credential = Credential(CREDENTIAL_NAME.lowercase())
         credentialRepository!!.save(credential)
-        MatcherAssert.assertThat(subject!!.find(CREDENTIAL_NAME.toUpperCase()), IsEqual.equalTo(credential))
+        MatcherAssert.assertThat(subject!!.find(CREDENTIAL_NAME.uppercase()), IsEqual.equalTo(credential))
     }
 
     @Test
@@ -95,7 +95,7 @@ class CredentialDataServiceTest {
 
     @Test
     fun delete_isCaseInsensitive() {
-        credentialRepository!!.save(Credential(CREDENTIAL_NAME.toUpperCase()))
+        credentialRepository!!.save(Credential(CREDENTIAL_NAME.uppercase()))
         MatcherAssert.assertThat(subject!!.delete(CREDENTIAL_NAME.lowercase()), IsEqual.equalTo(true))
         MatcherAssert.assertThat(credentialRepository.count(), IsEqual.equalTo(0L))
     }
