@@ -9,7 +9,7 @@ function go_to_project_root_directory() {
 }
 
 function lint_scripts() {
-    shellcheck scripts/*.sh
+    shellcheck -- */*.sh
 }
 
 function lint_jvm_language_code() {

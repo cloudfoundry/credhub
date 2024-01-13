@@ -1,7 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-declare -r application_configs="$(ls -d /etc/config/* 2>/dev/null | paste -sd ',' -)"
+application_configs="$(find /tmp/config -mindepth 1 -maxdepth 1 2>/dev/null | paste -sd ',' -)"
+declare -r application_configs
 
 "java" \
   "-Djava.security.egd=file:/dev/urandom" \
