@@ -35,6 +35,6 @@ For UAA, you can target CredHub's hosted **DEVELOPMENT** UAA.
 
 `credhub login -s https://localhost:9000 -u credhub -p password --ca-cert /tmp/certs/server_ca_cert.pem --ca-cert /tmp/certs/dev_uaa.pem`
 
-However, we recommend you bring yor own UAA!  To specify your own UAA pem just change out the path.
+However, we recommend you bring your own UAA! To specify your own UAA pem just change out the path.
 
 `credhub login -s https://localhost:9000 -u credhub -p password --ca-cert /tmp/certs/server_ca_cert.pem --ca-cert /PATH/TO/YOUR/uaa.pem`
