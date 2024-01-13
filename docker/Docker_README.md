@@ -8,7 +8,7 @@ docker run -p 9000:9000 \
     -e KEY_STORE_PASSWORD=<some-password> \
     -e ENCRYPTION_PASSWORD=<some-password> \
     -v /tmp/certs:/etc/server_certs \
-    pcfseceng/credhub:latest`
+    pcfseceng/credhub:latest
 ```
 
 To run with UAA:
@@ -22,7 +22,7 @@ docker run -p 9000:9000 \
     [ -e UAA_URL=<uaa-url> \
     -e UAA_CA_PATH=<some-path> \
     -v <local-uaa-ca-dir>:<some-path-dir> \ ]
-    pcfseceng/credhub:latest`
+    pcfseceng/credhub:latest
 ```
 
 This command specifies CredHub to run on port 9000 and mounts the certs to your local machine. 
