@@ -1,9 +1,9 @@
-FROM bellsoft/liberica-openjdk-debian:17 as build
+FROM bellsoft/liberica-openjdk-debian:17 AS build
 WORKDIR /app
 COPY . /app
 RUN ./gradlew bootJar -x test -x check
 
-FROM bellsoft/liberica-openjre-debian:17 as run
+FROM bellsoft/liberica-openjre-debian:17 AS run
 WORKDIR /app
 COPY \
   --from=build \
