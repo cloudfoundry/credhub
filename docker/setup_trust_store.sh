@@ -19,11 +19,11 @@ generate_server_ca() {
 }
 
 setup_tls_key_store() {
-    if [ -f "$SERVER_CA_CERT_PATH" ] && [ -f "$SERVER_CA_PRIVATE_KEY_PATH" ]
+    if [[ -f "${SERVER_CA_CERT_PATH}" && -f "${SERVER_CA_PRIVATE_KEY_PATH}" ]]
     then
       echo "Using provided server CA"
-      cp "$SERVER_CA_CERT_PATH" server_ca_cert.pem
-      cp "$SERVER_CA_PRIVATE_KEY_PATH" server_ca_private.pem
+      cp "${SERVER_CA_CERT_PATH}" server_ca_cert.pem
+      cp "${SERVER_CA_PRIVATE_KEY_PATH}" server_ca_private.pem
     else
       generate_server_ca
     fi
@@ -31,7 +31,7 @@ setup_tls_key_store() {
     cat > server.cnf <<EOF
 [v3_ca]
 subjectKeyIdentifier=hash
-subjectAltName=$SUBJECT_ALTERNATIVE_NAMES
+subjectAltName="${SUBJECT_ALTERNATIVE_NAMES}"
 EOF
 
     echo "Generating a key store for the certificate the server presents during TLS"
