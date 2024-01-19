@@ -321,7 +321,7 @@ public class DefaultCertificatesHandlerTest {
       .thenReturn(emptySet());
 
     CertificateCredentialsView certificateCredentialsView = subjectWithAcls.handleGetAllRequest();
-    assertEquals(certificateCredentialsView.getCertificates().size(), 0);
+    assertEquals(0, certificateCredentialsView.getCertificates().size());
 
   }
 
