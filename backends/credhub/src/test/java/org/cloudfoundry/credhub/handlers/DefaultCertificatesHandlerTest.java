@@ -723,10 +723,10 @@ public class DefaultCertificatesHandlerTest {
     when(certificate.getName()).thenReturn("test");
     when(permissionCheckingService.hasPermission(USER, "test", PermissionOperation.WRITE))
       .thenReturn(true);
-    when(certificateService.findByCredentialUuid(eq(UUID_STRING))).thenReturn(certificate);
-    when(generationRequestGenerator.createGenerateRequest(eq(certificate)))
+    when(certificateService.findByCredentialUuid(UUID_STRING)).thenReturn(certificate);
+    when(generationRequestGenerator.createGenerateRequest(certificate))
       .thenReturn(generateRequest);
-    when(universalCredentialGenerator.generate(eq(generateRequest))).thenReturn(newValue);
+    when(universalCredentialGenerator.generate(generateRequest)).thenReturn(newValue);
     when(certificateService.save(eq(certificate), any(), any()))
       .thenReturn(mock(CertificateCredentialVersion.class));
 
@@ -764,10 +764,10 @@ public class DefaultCertificatesHandlerTest {
 
     when(certificate.getName()).thenReturn("test");
 
-    when(certificateService.findByCredentialUuid(eq(UUID_STRING))).thenReturn(certificate);
-    when(generationRequestGenerator.createGenerateRequest(eq(certificate)))
+    when(certificateService.findByCredentialUuid(UUID_STRING)).thenReturn(certificate);
+    when(generationRequestGenerator.createGenerateRequest(certificate))
       .thenReturn(generateRequest);
-    when(universalCredentialGenerator.generate(eq(generateRequest))).thenReturn(newValue);
+    when(universalCredentialGenerator.generate(generateRequest)).thenReturn(newValue);
     when(certificateService.save(eq(certificate), any(), any()))
       .thenReturn(mock(CertificateCredentialVersion.class));
 
@@ -790,10 +790,10 @@ public class DefaultCertificatesHandlerTest {
     when(credentialVersion.getCa()).thenReturn(TEST_CA);
     when(credentialVersion.getTrustedCa()).thenReturn(TEST_TRUSTED_CA);
 
-    when(certificateService.findByCredentialUuid(eq(UUID_STRING))).thenReturn(certificate);
-    when(generationRequestGenerator.createGenerateRequest(eq(certificate)))
+    when(certificateService.findByCredentialUuid(UUID_STRING)).thenReturn(certificate);
+    when(generationRequestGenerator.createGenerateRequest(certificate))
       .thenReturn(generateRequest);
-    when(universalCredentialGenerator.generate(eq(generateRequest))).thenReturn(newValue);
+    when(universalCredentialGenerator.generate(generateRequest)).thenReturn(newValue);
     when(certificateService.save(eq(certificate), any(), any()))
       .thenReturn(credentialVersion);
 
@@ -816,10 +816,10 @@ public class DefaultCertificatesHandlerTest {
     when(credentialVersion.getCa()).thenReturn(TEST_CA);
     when(credentialVersion.getTrustedCa()).thenReturn(TEST_TRUSTED_CA);
 
-    when(certificateService.findByCredentialUuid(eq(UUID_STRING))).thenReturn(certificate);
-    when(generationRequestGenerator.createGenerateRequest(eq(certificate)))
+    when(certificateService.findByCredentialUuid(UUID_STRING)).thenReturn(certificate);
+    when(generationRequestGenerator.createGenerateRequest(certificate))
       .thenReturn(generateRequest);
-    when(universalCredentialGenerator.generate(eq(generateRequest))).thenReturn(newValue);
+    when(universalCredentialGenerator.generate(generateRequest)).thenReturn(newValue);
     when(certificateService.save(eq(certificate), any(), any()))
       .thenReturn(credentialVersion);
 
@@ -845,10 +845,10 @@ public class DefaultCertificatesHandlerTest {
     when(credentialVersion.getCa()).thenReturn(TEST_CA);
     when(credentialVersion.getTrustedCa()).thenReturn(TEST_TRUSTED_CA);
 
-    when(certificateService.findByCredentialUuid(eq(UUID_STRING))).thenReturn(certificate);
-    when(generationRequestGenerator.createGenerateRequest(eq(certificate)))
+    when(certificateService.findByCredentialUuid(UUID_STRING)).thenReturn(certificate);
+    when(generationRequestGenerator.createGenerateRequest(certificate))
             .thenReturn(generateRequest);
-    when(universalCredentialGenerator.generate(eq(generateRequest))).thenReturn(newValue);
+    when(universalCredentialGenerator.generate(generateRequest)).thenReturn(newValue);
     when(certificateService.save(eq(certificate), any(), any()))
             .then(
                     invocation -> {

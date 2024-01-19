@@ -17,7 +17,6 @@ import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -103,7 +102,7 @@ public class UserCredentialVersionTest {
 
   @Test
   public void setPassword_encryptedProvidedPasswordOnce_andSetsCorrectValuesOnDelegate() {
-    when(encryptor.encrypt(eq(USER_PASSWORD)))
+    when(encryptor.encrypt(USER_PASSWORD))
       .thenReturn(new EncryptedValue(ENCRYPTION_KEY_UUID, ENCRYPTED_PASSWORD, NONCE));
     userCredentialData = new UserCredentialVersionData(CREDENTIAL_NAME);
     subject = new UserCredentialVersion(userCredentialData);
@@ -111,7 +110,7 @@ public class UserCredentialVersionTest {
 
     subject.setPassword(USER_PASSWORD);
 
-    verify(encryptor, times(1)).encrypt(eq(USER_PASSWORD));
+    verify(encryptor, times(1)).encrypt(USER_PASSWORD);
 
     assertThat(userCredentialData.getEncryptionKeyUuid(), equalTo(ENCRYPTION_KEY_UUID));
     assertThat(userCredentialData.getEncryptedValueData().getEncryptedValue(), equalTo(ENCRYPTED_PASSWORD));
@@ -145,9 +144,9 @@ public class UserCredentialVersionTest {
     when(encryptor.decrypt(new EncryptedValue(oldEncryptionKeyUuid, oldEncryptedGenerationParams, oldParametersNonce)))
       .thenReturn(userGenerationParametersString);
 
-    when(encryptor.encrypt(eq(USER_PASSWORD)))
+    when(encryptor.encrypt(USER_PASSWORD))
       .thenReturn(new EncryptedValue(ENCRYPTION_KEY_UUID, ENCRYPTED_PASSWORD, NONCE));
-    when(encryptor.encrypt(eq(userGenerationParametersString)))
+    when(encryptor.encrypt(userGenerationParametersString))
       .thenReturn(new EncryptedValue(ENCRYPTION_KEY_UUID, ENCRYPTED_GENERATION_PARAMS, PARAMETERS_NONCE));
 
     subject.rotate();
@@ -165,7 +164,7 @@ public class UserCredentialVersionTest {
 
   @Test
   public void setGenerationParameters_setsEncryptedGenerationParametersAndNonce() {
-    when(encryptor.encrypt(eq(userGenerationParametersString)))
+    when(encryptor.encrypt(userGenerationParametersString))
       .thenReturn(new EncryptedValue(ENCRYPTION_KEY_UUID, ENCRYPTED_GENERATION_PARAMS, PARAMETERS_NONCE));
     userCredentialData = new UserCredentialVersionData(CREDENTIAL_NAME);
     subject = new UserCredentialVersion(userCredentialData);
@@ -173,7 +172,7 @@ public class UserCredentialVersionTest {
 
     subject.setGenerationParameters(stringGenerationParameters);
 
-    verify(encryptor, times(1)).encrypt(eq(userGenerationParametersString));
+    verify(encryptor, times(1)).encrypt(userGenerationParametersString);
 
     assertThat(userCredentialData.getEncryptedGenerationParameters().getEncryptionKeyUuid(), equalTo(ENCRYPTION_KEY_UUID));
     assertThat(userCredentialData.getEncryptedGenerationParameters().getEncryptedValue(), equalTo(ENCRYPTED_GENERATION_PARAMS));

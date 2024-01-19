@@ -147,13 +147,13 @@ public class EncryptionKeyCanaryMapperTest {
     when(encryptionKeysConfiguration.getProviders()).thenReturn(providers);
     when(providerFactory.getEncryptionService(activeProvider)).thenReturn(encryptionService);
 
-    when(encryptionService.createKeyProxy(eq(activeKeyData))).thenReturn(activeKeyProxy);
-    when(encryptionService.createKeyProxy(eq(existingKey1Data))).thenReturn(existingKey1Proxy);
-    when(encryptionService.createKeyProxy(eq(existingKey2Data))).thenReturn(existingKey2Proxy);
+    when(encryptionService.createKeyProxy(activeKeyData)).thenReturn(activeKeyProxy);
+    when(encryptionService.createKeyProxy(existingKey1Data)).thenReturn(existingKey1Proxy);
+    when(encryptionService.createKeyProxy(existingKey2Data)).thenReturn(existingKey2Proxy);
 
-    when(activeKeyProxy.matchesCanary(eq(activeKeyCanary))).thenReturn(true);
-    when(existingKey1Proxy.matchesCanary(eq(existingKeyCanary1))).thenReturn(true);
-    when(existingKey2Proxy.matchesCanary(eq(existingKeyCanary2))).thenReturn(true);
+    when(activeKeyProxy.matchesCanary(activeKeyCanary)).thenReturn(true);
+    when(existingKey1Proxy.matchesCanary(existingKeyCanary1)).thenReturn(true);
+    when(existingKey2Proxy.matchesCanary(existingKeyCanary2)).thenReturn(true);
     when(activeKeyProxy.getKey()).thenReturn(activeKey);
     when(existingKey1Proxy.getKey()).thenReturn(existingKey1);
     when(existingKey2Proxy.getKey()).thenReturn(existingKey2);

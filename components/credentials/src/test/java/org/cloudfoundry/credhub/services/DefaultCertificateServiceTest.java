@@ -186,7 +186,7 @@ public class DefaultCertificateServiceTest {
       generateRequest
     );
 
-    verify(generateRequest).setType(eq("certificate"));
+    verify(generateRequest).setType("certificate");
     verify(credentialService).save(any(),
       eq(value),
       eq(generateRequest)
@@ -202,7 +202,7 @@ public class DefaultCertificateServiceTest {
     final BaseCredentialGenerateRequest generateRequest = mock(BaseCredentialGenerateRequest.class);
     when(generateRequest.getName()).thenReturn("some-ca");
 
-    when(credentialService.findAllByName(eq("/some-ca")))
+    when(credentialService.findAllByName("/some-ca"))
       .thenReturn(newArrayList(nonTransitionalCa));
 
     when(credentialService.save(transitionalCa, value, generateRequest))
@@ -214,7 +214,7 @@ public class DefaultCertificateServiceTest {
       generateRequest
     );
 
-    verify(generateRequest).setType(eq("certificate"));
+    verify(generateRequest).setType("certificate");
     verify(credentialService).save(any(),
       eq(value),
       eq(generateRequest)
@@ -231,7 +231,7 @@ public class DefaultCertificateServiceTest {
     final CertificateCredentialVersion previousVersion = mock(CertificateCredentialVersion.class);
     when(previousVersion.isVersionTransitional()).thenReturn(false);
 
-    when(credentialService.findAllByName(eq("some-ca")))
+    when(credentialService.findAllByName("some-ca"))
       .thenReturn(newArrayList(nonTransitionalCa));
     when(certificateVersionDataService.findBothActiveCertAndTransitionalCert("some-ca"))
       .thenReturn(Arrays.asList(nonTransitionalCa, transitionalCa));
@@ -331,7 +331,7 @@ public class DefaultCertificateServiceTest {
     final CertificateCredentialVersion previousVersion = mock(CertificateCredentialVersion.class);
     when(previousVersion.isVersionTransitional()).thenReturn(false);
 
-    when(credentialService.findAllByName(eq("some-ca")))
+    when(credentialService.findAllByName("some-ca"))
       .thenReturn(newArrayList(nonTransitionalCa));
     when(certificateVersionDataService.findBothActiveCertAndTransitionalCert("some-ca"))
       .thenReturn(Arrays.asList(nonTransitionalCa, transitionalCa));
@@ -365,7 +365,7 @@ public class DefaultCertificateServiceTest {
     final CertificateCredentialVersion previousVersion = mock(CertificateCredentialVersion.class);
     when(previousVersion.isVersionTransitional()).thenReturn(true);
 
-    when(credentialService.findAllByName(eq("/some-name")))
+    when(credentialService.findAllByName("/some-name"))
       .thenReturn(newArrayList(previousVersion));
 
     try {
@@ -562,7 +562,7 @@ public class DefaultCertificateServiceTest {
     when(certificateDataService.findByUuid(caUuid)).thenReturn(credential);
     when(certificateVersionDataService.findVersion(transitionalVersionId))
       .thenReturn(transitionalCa);
-    when(credentialService.findAllByName(eq("some-ca")))
+    when(credentialService.findAllByName("some-ca"))
       .thenReturn(newArrayList(nonTransitionalCa));
     when(certificateVersionDataService.findBothActiveCertAndTransitionalCert("some-ca"))
       .thenReturn(Arrays.asList(nonTransitionalCa, transitionalCa));
