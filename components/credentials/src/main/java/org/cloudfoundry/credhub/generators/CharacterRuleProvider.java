@@ -7,7 +7,7 @@ import org.cloudfoundry.credhub.requests.StringGenerationParameters;
 import org.passay.CharacterRule;
 import org.passay.EnglishCharacterData;
 
-final public class CharacterRuleProvider {
+public final class CharacterRuleProvider {
 
   private CharacterRuleProvider() {
     super();

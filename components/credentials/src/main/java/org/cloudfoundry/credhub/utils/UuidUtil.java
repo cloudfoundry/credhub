@@ -3,7 +3,7 @@ package org.cloudfoundry.credhub.utils;
 import java.nio.ByteBuffer;
 import java.util.UUID;
 
-final public class UuidUtil {
+public final class UuidUtil {
 
   private UuidUtil() {
     super();

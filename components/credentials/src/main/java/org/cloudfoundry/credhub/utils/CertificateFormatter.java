@@ -11,7 +11,7 @@ import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-final public class CertificateFormatter {
+public final class CertificateFormatter {
   public static final String SSH_RSA = "ssh-rsa";
 
   private CertificateFormatter() {
