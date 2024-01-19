@@ -33,7 +33,6 @@ import org.cloudfoundry.credhub.services.grpc.EncryptRequest;
 import org.cloudfoundry.credhub.services.grpc.EncryptResponse;
 import org.cloudfoundry.credhub.services.grpc.KeyManagementServiceGrpc;
 
-import static io.grpc.internal.GrpcUtil.DEFAULT_KEEPALIVE_TIMEOUT_NANOS;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class KMSEncryptionProvider implements EncryptionProvider {
@@ -57,11 +56,12 @@ public class KMSEncryptionProvider implements EncryptionProvider {
       throw new RuntimeException(e);
     }
 
+    final long KEEPALIVE_TIMEOUT_NANOS = TimeUnit.SECONDS.toNanos(20L);
     blockingStub = KeyManagementServiceGrpc.newBlockingStub(
       NettyChannelBuilder.forAddress(new DomainSocketAddress(configuration.getEndpoint()))
         .eventLoopGroup(group)
         .channelType(channelType)
-        .keepAliveTime(DEFAULT_KEEPALIVE_TIMEOUT_NANOS, TimeUnit.NANOSECONDS)
+        .keepAliveTime(KEEPALIVE_TIMEOUT_NANOS, TimeUnit.NANOSECONDS)
         .useTransportSecurity()
         .sslContext(sslContext)
         .overrideAuthority(configuration.getHost())
@@ -80,7 +80,6 @@ public class KMSEncryptionProvider implements EncryptionProvider {
     }
     return new EncryptedValue(key.getUuid(), response.getCipher().toByteArray(), new byte[]{});
   }
-
 
   @Override
   public String decrypt(final EncryptionKey key, final byte[] encryptedValue, final byte[] nonce) throws Exception {

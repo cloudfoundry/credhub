@@ -1,7 +1,6 @@
 package org.cloudfoundry.credhub.remote
 
 import com.google.protobuf.ByteString
-import io.grpc.internal.GrpcUtil.DEFAULT_KEEPALIVE_TIMEOUT_NANOS
 import io.grpc.netty.GrpcSslContexts
 import io.grpc.netty.NegotiationType
 import io.grpc.netty.NettyChannelBuilder
@@ -73,12 +72,13 @@ class RemoteBackendClient(
             throw RuntimeException(e)
         }
 
+        val KEEPALIVE_TIMEOUT_NANOS: Long = TimeUnit.SECONDS.toNanos(20L)
         blockingStub = CredentialServiceGrpc.newBlockingStub(
             NettyChannelBuilder.forAddress(DomainSocketAddress(socketFile))
                 .eventLoopGroup(group)
                 .channelType(channelType)
                 .negotiationType(NegotiationType.PLAINTEXT)
-                .keepAliveTime(DEFAULT_KEEPALIVE_TIMEOUT_NANOS, TimeUnit.NANOSECONDS)
+                .keepAliveTime(KEEPALIVE_TIMEOUT_NANOS, TimeUnit.NANOSECONDS)
                 .useTransportSecurity()
                 .sslContext(sslContext)
                 .overrideAuthority(host)
