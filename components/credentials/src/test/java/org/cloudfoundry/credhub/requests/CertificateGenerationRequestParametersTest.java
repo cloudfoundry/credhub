@@ -57,12 +57,10 @@ public class CertificateGenerationRequestParametersTest {
     subject.setSelfSigned(false);
     subject.setCommonName("foo");
 
-    try {
-      subject.validate();
-      fail("should throw");
-    } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo(ErrorMessages.MISSING_SIGNING_CA));
-    }
+    thrown.expect(ParameterizedValidationException.class);
+    thrown.expectMessage(ErrorMessages.MISSING_SIGNING_CA);
+
+    subject.validate();
   }
 
   @Test
@@ -91,12 +89,10 @@ public class CertificateGenerationRequestParametersTest {
   public void validate_requiresDurationToBeLessThan3650Days() {
     subject.setDuration(3651);
 
-    try {
-      subject.validate();
-      fail("should throw");
-    } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo(ErrorMessages.INVALID_DURATION));
-    }
+    thrown.expect(ParameterizedValidationException.class);
+    thrown.expectMessage(ErrorMessages.INVALID_DURATION);
+
+    subject.validate();
   }
 
   @Test
@@ -108,12 +104,10 @@ public class CertificateGenerationRequestParametersTest {
     subject.setOrganizationUnit("");
     subject.setLocality("");
 
-    try {
-      subject.validate();
-      fail("should throw");
-    } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo(ErrorMessages.MISSING_CERTIFICATE_PARAMETERS));
-    }
+    thrown.expect(ParameterizedValidationException.class);
+    thrown.expectMessage(ErrorMessages.MISSING_CERTIFICATE_PARAMETERS);
+
+    subject.validate();
   }
 
   @Test
@@ -134,49 +128,40 @@ public class CertificateGenerationRequestParametersTest {
   public void validate_rejectsKeyLengthLessThan2048() {
     subject.setKeyLength(2047);
 
-    try {
-      subject.validate();
-      fail("should throw");
-    } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo(ErrorMessages.INVALID_KEY_LENGTH));
-    }
+    thrown.expect(ParameterizedValidationException.class);
+    thrown.expectMessage(ErrorMessages.INVALID_KEY_LENGTH);
+
+    subject.validate();
   }
 
   @Test
   public void validate_rejectsKeyLengthBetween2048And3072() {
     subject.setKeyLength(2222);
 
-    try {
-      subject.validate();
-      fail("should throw");
-    } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo(ErrorMessages.INVALID_KEY_LENGTH));
-    }
+    thrown.expect(ParameterizedValidationException.class);
+    thrown.expectMessage(ErrorMessages.INVALID_KEY_LENGTH);
+
+    subject.validate();
   }
 
   @Test
   public void validate_rejectsKeyLengthBetween3072And4096() {
     subject.setKeyLength(4000);
 
-    try {
-      subject.validate();
-      fail("should throw");
-    } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo(ErrorMessages.INVALID_KEY_LENGTH));
-    }
-  }
+    thrown.expect(ParameterizedValidationException.class);
+    thrown.expectMessage(ErrorMessages.INVALID_KEY_LENGTH);
 
+    subject.validate();
+  }
 
   @Test
   public void validate_rejectsKeyLengthGreaterThan4096() {
     subject.setKeyLength(4097);
 
-    try {
-      subject.validate();
-      fail("should throw");
-    } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo(ErrorMessages.INVALID_KEY_LENGTH));
-    }
+    thrown.expect(ParameterizedValidationException.class);
+    thrown.expectMessage(ErrorMessages.INVALID_KEY_LENGTH);
+
+    subject.validate();
   }
 
   @Test
@@ -190,59 +175,54 @@ public class CertificateGenerationRequestParametersTest {
 
   @Test
   public void validate_rejectsInvalidDNSCharactersInAlternativeNames() {
-    try {
-      subject.setAlternativeNames(new String[]{"foo!@#$%^&*()_-+=.com"});
-      subject.validate();
-      fail("should throw");
-    } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo(ErrorMessages.INVALID_ALTERNATE_NAME));
-    }
+    subject.setAlternativeNames(new String[]{"foo!@#$%^&*()_-+=.com"});
+
+    thrown.expect(ParameterizedValidationException.class);
+    thrown.expectMessage(ErrorMessages.INVALID_ALTERNATE_NAME);
+
+    subject.validate();
   }
 
   @Test
   public void validate_rejectsSpaceCharacterInAlternativeNames() {
-    try {
-      subject.setAlternativeNames(new String[]{"foo pivotal.io"});
-      subject.validate();
-      fail("should throw");
-    } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo(ErrorMessages.INVALID_ALTERNATE_NAME));
-    }
+    subject.setAlternativeNames(new String[]{"foo pivotal.io"});
+
+    thrown.expect(ParameterizedValidationException.class);
+    thrown.expectMessage(ErrorMessages.INVALID_ALTERNATE_NAME);
+
+    subject.validate();
   }
 
   @Test
   public void validate_rejectsInvalidIpAddressInAlternativeNames() {
-    try {
-      subject.setAlternativeNames(new String[]{"1.2.3.999"});
-      subject.validate();
-      fail("should throw");
-    } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo(ErrorMessages.INVALID_ALTERNATE_NAME));
-    }
+    subject.setAlternativeNames(new String[]{"1.2.3.999"});
+
+    thrown.expect(ParameterizedValidationException.class);
+    thrown.expectMessage(ErrorMessages.INVALID_ALTERNATE_NAME);
+
+    subject.validate();
   }
 
   @Test
   public void validate_rejectsEmailAddressesInAlternativeNames() {
     // email addresses are allowed in certificate spec,
     // but we do not allow them per PM requirements
-    try {
-      subject.setAlternativeNames(new String[]{"x@y.com"});
-      subject.validate();
-      fail("should throw");
-    } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo(ErrorMessages.INVALID_ALTERNATE_NAME));
-    }
+    subject.setAlternativeNames(new String[]{"x@y.com"});
+
+    thrown.expect(ParameterizedValidationException.class);
+    thrown.expectMessage(ErrorMessages.INVALID_ALTERNATE_NAME);
+
+    subject.validate();
   }
 
   @Test
   public void validate_rejectsUrlsInAlternativeNames() {
-    try {
-      subject.setAlternativeNames(new String[]{"https://foo.com"});
-      subject.validate();
-      fail("should throw");
-    } catch (final ParameterizedValidationException e) {
-      assertThat(e.getMessage(), equalTo(ErrorMessages.INVALID_ALTERNATE_NAME));
-    }
+    subject.setAlternativeNames(new String[]{"https://foo.com"});
+
+    thrown.expect(ParameterizedValidationException.class);
+    thrown.expectMessage(ErrorMessages.INVALID_ALTERNATE_NAME);
+
+    subject.validate();
   }
 
   @Test
