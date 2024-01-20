@@ -4,7 +4,9 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -16,6 +18,9 @@ import static org.junit.Assert.assertThat;
 public class CertificateGenerationRequestParametersTest {
 
   private CertificateGenerationRequestParameters subject;
+
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
 
   @Before
   public void beforeEach() {
@@ -58,6 +63,18 @@ public class CertificateGenerationRequestParametersTest {
     } catch (final ParameterizedValidationException e) {
       assertThat(e.getMessage(), equalTo(ErrorMessages.MISSING_SIGNING_CA));
     }
+  }
+
+  @Test
+  public void validate_withCaName_requiresSelfSignedFalse() {
+    subject.setCaName("test");
+    subject.setSelfSigned(true);
+    subject.setCommonName("foo");
+
+    thrown.expect(ParameterizedValidationException.class);
+    thrown.expectMessage(ErrorMessages.CA_AND_SELF_SIGN);
+
+    subject.validate();
   }
 
   @Test
