@@ -84,9 +84,13 @@ class CertificateGenerationRequestParameters {
             isEmpty(country)
         ) {
             throw ParameterizedValidationException(ErrorMessages.MISSING_CERTIFICATE_PARAMETERS)
-        } else if (isEmpty(caName) && !selfSigned && !isCa) {
+        }
+
+        if (isEmpty(caName) && !selfSigned && !isCa) {
             throw ParameterizedValidationException(ErrorMessages.MISSING_SIGNING_CA)
-        } else if (!isEmpty(caName) && selfSigned) {
+        }
+
+        if (!isEmpty(caName) && selfSigned) {
             throw ParameterizedValidationException(ErrorMessages.CA_AND_SELF_SIGN)
         }
 
