@@ -12,7 +12,7 @@ buildscript {
         flywayVersion = '7.15.0'
         guavaVersion = '33.0.0-jre'
         h2Version = '1.4.200'
-        jsonPathVersion = '2.8.0'
+        jsonPathVersion = '2.9.0'
         kotlinVersion = '1.9.22'
         ktlintVersion = '0.43.2'
         passayVersion = '1.6.4'
