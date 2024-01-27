@@ -53,12 +53,13 @@ public class CertificateGenerationRequestParametersTest {
     }
   }
 
-    subject.setCa(false);
-    subject.setSelfSigned(false);
   @Test(expected = MissingSigningCACertificateException.class)
   public void validate_notSelfSigned_andNotCa_requiresCaName() {
     subject.setCommonName("foo");
 
+    subject.setCa(false);
+    subject.setSelfSigned(false);
+    subject.setCaName(null);
 
     subject.validate();
   }
