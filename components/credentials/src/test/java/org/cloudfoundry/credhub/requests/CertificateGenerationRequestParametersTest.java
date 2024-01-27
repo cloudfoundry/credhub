@@ -53,10 +53,10 @@ public class CertificateGenerationRequestParametersTest {
     }
   }
 
-  public void validate_withoutSelfSigned_orIsCa_requiresCaName() {
     subject.setCa(false);
     subject.setSelfSigned(false);
   @Test(expected = MissingSigningCACertificateException.class)
+  public void validate_notSelfSigned_andNotCa_requiresCaName() {
     subject.setCommonName("foo");
 
 
@@ -92,8 +92,8 @@ public class CertificateGenerationRequestParametersTest {
     subject.validate();
   }
 
-  public void validate_requiresADNParameter() {
   @Test(expected = NoSubjectCertificateException.class)
+  public void validate_requiresSubject() {
     subject.setOrganization("");
     subject.setState("");
     subject.setCountry("");
