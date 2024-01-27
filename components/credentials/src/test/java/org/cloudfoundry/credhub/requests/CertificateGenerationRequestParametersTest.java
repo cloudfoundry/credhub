@@ -2,7 +2,12 @@ package org.cloudfoundry.credhub.requests;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.cloudfoundry.credhub.ErrorMessages;
+import org.cloudfoundry.credhub.exceptions.InvalidAlternateNameCertificateException;
+import org.cloudfoundry.credhub.exceptions.InvalidKeyLengthCertificateException;
+import org.cloudfoundry.credhub.exceptions.MissingSigningCACertificateException;
+import org.cloudfoundry.credhub.exceptions.NoSubjectCertificateException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
+import org.cloudfoundry.credhub.exceptions.SelfSignedCACertificateException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -18,9 +23,6 @@ import static org.junit.Assert.assertThat;
 public class CertificateGenerationRequestParametersTest {
 
   private CertificateGenerationRequestParameters subject;
-
-  @Rule
-  public ExpectedException thrown = ExpectedException.none();
 
   @Before
   public void beforeEach() {
@@ -51,26 +53,21 @@ public class CertificateGenerationRequestParametersTest {
     }
   }
 
-  @Test
   public void validate_withoutSelfSigned_orIsCa_requiresCaName() {
     subject.setCa(false);
     subject.setSelfSigned(false);
+  @Test(expected = MissingSigningCACertificateException.class)
     subject.setCommonName("foo");
 
-    thrown.expect(ParameterizedValidationException.class);
-    thrown.expectMessage(ErrorMessages.MISSING_SIGNING_CA);
 
     subject.validate();
   }
 
-  @Test
+  @Test(expected = SelfSignedCACertificateException.class)
   public void validate_withCaName_requiresSelfSignedFalse() {
     subject.setCaName("test");
     subject.setSelfSigned(true);
     subject.setCommonName("foo");
-
-    thrown.expect(ParameterizedValidationException.class);
-    thrown.expectMessage(ErrorMessages.CA_AND_SELF_SIGN);
 
     subject.validate();
   }
@@ -95,17 +92,14 @@ public class CertificateGenerationRequestParametersTest {
     subject.validate();
   }
 
-  @Test
   public void validate_requiresADNParameter() {
+  @Test(expected = NoSubjectCertificateException.class)
     subject.setOrganization("");
     subject.setState("");
     subject.setCountry("");
     subject.setCommonName("");
     subject.setOrganizationUnit("");
     subject.setLocality("");
-
-    thrown.expect(ParameterizedValidationException.class);
-    thrown.expectMessage(ErrorMessages.MISSING_CERTIFICATE_PARAMETERS);
 
     subject.validate();
   }
@@ -124,42 +118,30 @@ public class CertificateGenerationRequestParametersTest {
     // pass
   }
 
-  @Test
+  @Test(expected = InvalidKeyLengthCertificateException.class)
   public void validate_rejectsKeyLengthLessThan2048() {
     subject.setKeyLength(2047);
 
-    thrown.expect(ParameterizedValidationException.class);
-    thrown.expectMessage(ErrorMessages.INVALID_KEY_LENGTH);
-
     subject.validate();
   }
 
-  @Test
+  @Test(expected = InvalidKeyLengthCertificateException.class)
   public void validate_rejectsKeyLengthBetween2048And3072() {
     subject.setKeyLength(2222);
 
-    thrown.expect(ParameterizedValidationException.class);
-    thrown.expectMessage(ErrorMessages.INVALID_KEY_LENGTH);
-
     subject.validate();
   }
 
-  @Test
+  @Test(expected = InvalidKeyLengthCertificateException.class)
   public void validate_rejectsKeyLengthBetween3072And4096() {
     subject.setKeyLength(4000);
 
-    thrown.expect(ParameterizedValidationException.class);
-    thrown.expectMessage(ErrorMessages.INVALID_KEY_LENGTH);
-
     subject.validate();
   }
 
-  @Test
+  @Test(expected = InvalidKeyLengthCertificateException.class)
   public void validate_rejectsKeyLengthGreaterThan4096() {
     subject.setKeyLength(4097);
-
-    thrown.expect(ParameterizedValidationException.class);
-    thrown.expectMessage(ErrorMessages.INVALID_KEY_LENGTH);
 
     subject.validate();
   }
@@ -173,54 +155,39 @@ public class CertificateGenerationRequestParametersTest {
     // pass
   }
 
-  @Test
+  @Test(expected = InvalidAlternateNameCertificateException.class)
   public void validate_rejectsInvalidDNSCharactersInAlternativeNames() {
     subject.setAlternativeNames(new String[]{"foo!@#$%^&*()_-+=.com"});
 
-    thrown.expect(ParameterizedValidationException.class);
-    thrown.expectMessage(ErrorMessages.INVALID_ALTERNATE_NAME);
-
     subject.validate();
   }
 
-  @Test
+  @Test(expected = InvalidAlternateNameCertificateException.class)
   public void validate_rejectsSpaceCharacterInAlternativeNames() {
     subject.setAlternativeNames(new String[]{"foo pivotal.io"});
 
-    thrown.expect(ParameterizedValidationException.class);
-    thrown.expectMessage(ErrorMessages.INVALID_ALTERNATE_NAME);
-
     subject.validate();
   }
 
-  @Test
+  @Test(expected = InvalidAlternateNameCertificateException.class)
   public void validate_rejectsInvalidIpAddressInAlternativeNames() {
     subject.setAlternativeNames(new String[]{"1.2.3.999"});
 
-    thrown.expect(ParameterizedValidationException.class);
-    thrown.expectMessage(ErrorMessages.INVALID_ALTERNATE_NAME);
-
     subject.validate();
   }
 
-  @Test
+  @Test(expected = InvalidAlternateNameCertificateException.class)
   public void validate_rejectsEmailAddressesInAlternativeNames() {
     // email addresses are allowed in certificate spec,
     // but we do not allow them per PM requirements
     subject.setAlternativeNames(new String[]{"x@y.com"});
 
-    thrown.expect(ParameterizedValidationException.class);
-    thrown.expectMessage(ErrorMessages.INVALID_ALTERNATE_NAME);
-
     subject.validate();
   }
 
-  @Test
+  @Test(expected = InvalidAlternateNameCertificateException.class)
   public void validate_rejectsUrlsInAlternativeNames() {
     subject.setAlternativeNames(new String[]{"https://foo.com"});
-
-    thrown.expect(ParameterizedValidationException.class);
-    thrown.expectMessage(ErrorMessages.INVALID_ALTERNATE_NAME);
 
     subject.validate();
   }
