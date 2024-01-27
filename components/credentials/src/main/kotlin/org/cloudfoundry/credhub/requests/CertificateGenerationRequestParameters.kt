@@ -7,7 +7,13 @@ import com.google.common.net.InetAddresses
 import com.google.common.net.InternetDomainName
 import org.apache.commons.lang3.StringUtils.isEmpty
 import org.cloudfoundry.credhub.ErrorMessages
+import org.cloudfoundry.credhub.exceptions.InvalidAlternateNameCertificateException
+import org.cloudfoundry.credhub.exceptions.InvalidDurationCertificateException
+import org.cloudfoundry.credhub.exceptions.InvalidKeyLengthCertificateException
+import org.cloudfoundry.credhub.exceptions.MissingSigningCACertificateException
+import org.cloudfoundry.credhub.exceptions.NoSubjectCertificateException
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException
+import org.cloudfoundry.credhub.exceptions.SelfSignedCACertificateException
 import java.util.Arrays
 import java.util.regex.Pattern
 
@@ -83,25 +89,25 @@ class CertificateGenerationRequestParameters {
             isEmpty(commonName) &&
             isEmpty(country)
         ) {
-            throw ParameterizedValidationException(ErrorMessages.MISSING_CERTIFICATE_PARAMETERS)
+            throw NoSubjectCertificateException()
         }
 
         if (isEmpty(caName) && !selfSigned && !isCa) {
-            throw ParameterizedValidationException(ErrorMessages.MISSING_SIGNING_CA)
+            throw MissingSigningCACertificateException()
         }
 
         if (!isEmpty(caName) && selfSigned) {
-            throw ParameterizedValidationException(ErrorMessages.CA_AND_SELF_SIGN)
+            throw SelfSignedCACertificateException()
         }
 
         if (!validKeyLengths.contains(keyLength)) {
-            throw ParameterizedValidationException(ErrorMessages.INVALID_KEY_LENGTH)
+            throw InvalidKeyLengthCertificateException()
         }
 
         if (alternativeNames != null) {
             for (name in alternativeNames!!) {
                 if (!InetAddresses.isInetAddress(name) && !(InternetDomainName.isValid(name) || DNS_WILDCARD_PATTERN.matcher(name).matches())) {
-                    throw ParameterizedValidationException(ErrorMessages.INVALID_ALTERNATE_NAME)
+                    throw InvalidAlternateNameCertificateException()
                 }
             }
         }
@@ -129,7 +135,7 @@ class CertificateGenerationRequestParameters {
         }
 
         if (duration < ONE_DAY || duration > TEN_YEARS) {
-            throw ParameterizedValidationException(ErrorMessages.INVALID_DURATION)
+            throw InvalidDurationCertificateException()
         }
 
         validateParameterLength(commonName, "common name", 64)

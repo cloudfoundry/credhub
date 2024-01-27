@@ -4,7 +4,7 @@ import com.google.common.collect.Lists
 import java.util.stream.Collectors
 import javax.validation.ValidationException
 
-class ParameterizedValidationException @JvmOverloads constructor(messageCode: String, parameters: Array<Any> = arrayOf()) : ValidationException(messageCode) {
+open class ParameterizedValidationException @JvmOverloads constructor(messageCode: String, parameters: Array<Any> = arrayOf()) : ValidationException(messageCode) {
 
     private val parameters: List<Any>
 
