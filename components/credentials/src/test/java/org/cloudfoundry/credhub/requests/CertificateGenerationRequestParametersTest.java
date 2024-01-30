@@ -9,9 +9,7 @@ import org.cloudfoundry.credhub.exceptions.NoSubjectCertificateException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.exceptions.SelfSignedCACertificateException;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
@@ -83,12 +81,9 @@ public class CertificateGenerationRequestParametersTest {
     // pass
   }
 
-  @Test
+  @Test(expected = ParameterizedValidationException.class)
   public void validate_requiresDurationToBeLessThan3650Days() {
     subject.setDuration(3651);
-
-    thrown.expect(ParameterizedValidationException.class);
-    thrown.expectMessage(ErrorMessages.INVALID_DURATION);
 
     subject.validate();
   }
