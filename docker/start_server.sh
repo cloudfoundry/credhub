@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-application_configs="$(find /tmp/config -mindepth 1 -maxdepth 1 2>/dev/null | paste -sd ',' -)"
+application_configs="$(find /etc/config -mindepth 1 -maxdepth 1 2>/dev/null | paste -sd ',' -)"
 declare -r application_configs
 
 "java" \
