@@ -56,7 +56,7 @@ public class LunaEncryptionService extends InternalEncryptionService {
   }
 
   @Override
-  public EncryptedValue encrypt(final UUID canaryUuid, final Key key, final String value) throws Exception {
+  public EncryptedValue encrypt(final UUID canaryUuid, final Key key, final String value, UUID credentialVersionUUID) throws Exception {
     final AlgorithmParameterSpec parameterSpec = generateParameterSpec(null);
     final CipherWrapper encryptionCipher = getCipher();
 
@@ -64,7 +64,7 @@ public class LunaEncryptionService extends InternalEncryptionService {
 
     final byte[] encrypted = encryptionCipher.doFinal(value.getBytes(CHARSET));
 
-    return new EncryptedValue(canaryUuid, encrypted, encryptionCipher.getIV());
+    return new EncryptedValue(canaryUuid, encrypted, encryptionCipher.getIV(), credentialVersionUUID);
   }
 
   @Override

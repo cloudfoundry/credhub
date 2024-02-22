@@ -1,6 +1,7 @@
 package org.cloudfoundry.credhub.services;
 
 import java.security.ProviderException;
+import java.util.UUID;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.crypto.IllegalBlockSizeException;
@@ -32,10 +33,10 @@ public class RetryingEncryptionService {
     readWriteLock = new ReentrantReadWriteLock();
   }
 
-  public EncryptedValue encrypt(final String value) throws Exception {
+  public EncryptedValue encrypt(final String value, UUID credentialVersionUUID) throws Exception {
 
     LOGGER.info("Attempting encrypt");
-    return retryOnErrorWithRemappedKey(() -> keySet.getActive().encrypt(value));
+    return retryOnErrorWithRemappedKey(() -> keySet.getActive().encrypt(value, credentialVersionUUID));
   }
 
   public String decrypt(final EncryptedValue encryptedValue)

@@ -36,8 +36,8 @@ public class EncryptionKey implements RandomNumberGenerator {
     return provider.decrypt(this, encryptedValue, nonce);
   }
 
-  public EncryptedValue encrypt(final String value) throws Exception {
-    return provider.encrypt(this, value);
+  public EncryptedValue encrypt(final String value, UUID credentialVersionUUID) throws Exception {
+    return provider.encrypt(this, value, credentialVersionUUID);
   }
 
   public EncryptionProvider getProvider() {

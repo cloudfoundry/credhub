@@ -53,7 +53,7 @@ abstract class CredentialVersion(protected var delegate: CredentialVersionData<*
     }
 
     open fun setValue(value: String) {
-        val encryption = encryptor.encrypt(value)
+        val encryption = encryptor.encrypt(value, this.uuid) // TODO PHC is this null at this point
         delegate.setEncryptedValueData(encryption)
     }
 

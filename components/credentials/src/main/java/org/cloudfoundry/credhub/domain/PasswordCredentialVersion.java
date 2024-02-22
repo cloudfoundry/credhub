@@ -58,11 +58,11 @@ public class PasswordCredentialVersion extends CredentialVersion {
       final String generationParameterJson = generationParameters != null ? jsonObjectMapper.writeValueAsString(generationParameters) : null;
 
       if (generationParameterJson != null) {
-        final EncryptedValue encryptedParameters = getEncryptor().encrypt(generationParameterJson);
+        final EncryptedValue encryptedParameters = getEncryptor().encrypt(generationParameterJson, null);
         delegate.setEncryptedGenerationParameters(encryptedParameters);
       }
 
-      final EncryptedValue encryptedPassword = getEncryptor().encrypt(password);
+      final EncryptedValue encryptedPassword = getEncryptor().encrypt(password, null); // TODO PHC this is wrong
       delegate.setEncryptedValueData(encryptedPassword);
     } catch (final Exception e) {
       throw new RuntimeException(e);

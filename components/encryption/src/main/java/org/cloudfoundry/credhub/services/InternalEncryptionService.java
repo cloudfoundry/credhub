@@ -27,11 +27,11 @@ public abstract class InternalEncryptionService implements EncryptionProvider {
   public abstract AlgorithmParameterSpec generateParameterSpec(byte[] nonce);
 
   @Override
-  public EncryptedValue encrypt(final EncryptionKey key, final String value) throws Exception {
-    return encrypt(key.getUuid(), key.getKey(), value);
+  public EncryptedValue encrypt(final EncryptionKey key, final String value, UUID credentialVersionUUID) throws Exception {
+    return encrypt(key.getUuid(), key.getKey(), value, credentialVersionUUID);
   }
 
-  public EncryptedValue encrypt(final UUID canaryUuid, final Key key, final String value) throws Exception {
+  private EncryptedValue encrypt(final UUID canaryUuid, final Key key, final String value, UUID credentialVersionUUID) throws Exception {
     final byte[] nonce = generateNonce();
     final AlgorithmParameterSpec parameterSpec = generateParameterSpec(nonce);
     final CipherWrapper encryptionCipher = getCipher();
@@ -40,7 +40,7 @@ public abstract class InternalEncryptionService implements EncryptionProvider {
 
     final byte[] encrypted = encryptionCipher.doFinal(value.getBytes(CHARSET));
 
-    return new EncryptedValue(canaryUuid, encrypted, nonce);
+    return new EncryptedValue(canaryUuid, encrypted, nonce, credentialVersionUUID);
   }
 
   @Override

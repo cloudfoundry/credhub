@@ -1,10 +1,14 @@
 package org.cloudfoundry.credhub.domain;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.services.RetryingEncryptionService;
+
+import java.util.UUID;
 
 @Component
 public class DefaultEncryptor implements Encryptor {
@@ -18,12 +22,12 @@ public class DefaultEncryptor implements Encryptor {
   }
 
   @Override
-  public EncryptedValue encrypt(final String clearTextValue) {
+  public EncryptedValue encrypt(final String clearTextValue, UUID credentialVersionUUID) {
     if (clearTextValue == null) {
       return new EncryptedValue();
     }
     try {
-      return encryptionService.encrypt(clearTextValue);
+      return encryptionService.encrypt(clearTextValue, credentialVersionUUID);
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
