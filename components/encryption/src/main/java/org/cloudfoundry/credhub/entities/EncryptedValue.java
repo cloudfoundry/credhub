@@ -10,11 +10,8 @@ import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import org.cloudfoundry.credhub.entity.CredentialVersionData;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -57,24 +54,19 @@ public class EncryptedValue {
   @Column(length = EncryptionConstants.NONCE_SIZE, nullable = false)
   private byte[] nonce;
 
-  @ManyToOne
-  @JoinColumn(name = "credential_version_uuid")
-  private CredentialVersionData credentialVersionData;
-
   public EncryptedValue() {
     super();
   }
 
-  public EncryptedValue(final UUID encryptionKeyUuid, final String encryptedValueString, final String nonceString, CredentialVersionData credentialVersionData) {
-    this(encryptionKeyUuid, encryptedValueString.getBytes(UTF_8), nonceString.getBytes(UTF_8), credentialVersionData);
+  public EncryptedValue(final UUID encryptionKeyUuid, final String encryptedValueString, final String nonceString) {
+    this(encryptionKeyUuid, encryptedValueString.getBytes(UTF_8), nonceString.getBytes(UTF_8));
   }
 
-  public EncryptedValue(final UUID encryptionKeyUuid, final byte[] encryptedValue, final byte[] nonce, CredentialVersionData credentialVersionData) {
+  public EncryptedValue(final UUID encryptionKeyUuid, final byte[] encryptedValue, final byte[] nonce) {
     super();
     this.encryptionKeyUuid = encryptionKeyUuid;
     this.nonce = nonce == null ? null : nonce.clone();
     this.encryptedValue = encryptedValue == null ? null : encryptedValue.clone();
-    this.credentialVersionData = credentialVersionData;
   }
 
   public UUID getUuid() {

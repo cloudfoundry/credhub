@@ -34,7 +34,6 @@ dependencies {
     implementation project(":components:errors")
     implementation project(":components:string-utilities")
     implementation project(":components:time-support")
-    implementation project(":components:credentials") // circular dependency?
 
     testImplementation project(path: ":components:test-support", configuration: "testOutput")
 
