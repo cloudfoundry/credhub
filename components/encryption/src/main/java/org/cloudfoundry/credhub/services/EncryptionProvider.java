@@ -2,7 +2,6 @@ package org.cloudfoundry.credhub.services;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.util.UUID;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -11,9 +10,7 @@ import org.cloudfoundry.credhub.entities.EncryptedValue;
 
 public interface EncryptionProvider {
 
-//  EncryptedValue encrypt(EncryptionKey key, String value) throws Exception;
-
-  EncryptedValue encrypt(EncryptionKey key, String value, UUID credentialVersionUUID) throws Exception;
+  EncryptedValue encrypt(EncryptionKey key, String value) throws Exception;
 
   String decrypt(EncryptionKey key, byte[] encryptedValue, byte[] nonce) throws Exception;
 

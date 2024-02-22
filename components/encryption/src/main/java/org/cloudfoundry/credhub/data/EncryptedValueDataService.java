@@ -40,7 +40,7 @@ public class EncryptedValueDataService {
 
   public void rotate(final EncryptedValue encryptedValue) {
     final String decryptedValue = encryptor.decrypt(encryptedValue);
-    final EncryptedValue newEncryptedValue = encryptor.encrypt(decryptedValue, null);
+    final EncryptedValue newEncryptedValue = encryptor.encrypt(decryptedValue);
     newEncryptedValue.setUuid(encryptedValue.getUuid());
     encryptedValueRepository.saveAndFlush(newEncryptedValue);
   }

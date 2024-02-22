@@ -101,7 +101,7 @@ public class EncryptionKeyCanaryMapper {
 
       try {
         final EncryptedValue encryptionData = encryptionProvider
-          .encrypt(encryptionKey, CANARY_VALUE, null);
+          .encrypt(encryptionKey, CANARY_VALUE);
         canary.setEncryptedCanaryValue(encryptionData.getEncryptedValue());
         canary.setNonce(encryptionData.getNonce());
         final List<Byte> salt = keyProxy.getSalt();

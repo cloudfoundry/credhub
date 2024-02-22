@@ -54,27 +54,19 @@ public class EncryptedValue {
   @Column(length = EncryptionConstants.NONCE_SIZE, nullable = false)
   private byte[] nonce;
 
-  public void setCredentialVersionUUID(UUID credentialVersionUUID) {
-    this.credentialVersionUUID = credentialVersionUUID;
-  }
-
-  @Column(length = UuidConstants.UUID_BYTES, columnDefinition = "VARBINARY", name = "credential_version_uuid")
-  private UUID credentialVersionUUID;
-
   public EncryptedValue() {
     super();
   }
 
-  public EncryptedValue(final UUID encryptionKeyUuid, final String encryptedValueString, final String nonceString, UUID credentialVersionUUID) {
-    this(encryptionKeyUuid, encryptedValueString.getBytes(UTF_8), nonceString.getBytes(UTF_8), credentialVersionUUID);
+  public EncryptedValue(final UUID encryptionKeyUuid, final String encryptedValueString, final String nonceString) {
+    this(encryptionKeyUuid, encryptedValueString.getBytes(UTF_8), nonceString.getBytes(UTF_8));
   }
 
-  public EncryptedValue(final UUID encryptionKeyUuid, final byte[] encryptedValue, final byte[] nonce, UUID credentialVersionUUID) {
+  public EncryptedValue(final UUID encryptionKeyUuid, final byte[] encryptedValue, final byte[] nonce) {
     super();
     this.encryptionKeyUuid = encryptionKeyUuid;
     this.nonce = nonce == null ? null : nonce.clone();
     this.encryptedValue = encryptedValue == null ? null : encryptedValue.clone();
-    this.credentialVersionUUID = credentialVersionUUID;
   }
 
   public UUID getUuid() {

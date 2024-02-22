@@ -2,7 +2,6 @@ package org.cloudfoundry.credhub.services;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.Charset;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import javax.crypto.AEADBadTagException;
@@ -70,7 +69,7 @@ public class KMSEncryptionProvider implements EncryptionProvider {
   }
 
   @Override
-  public EncryptedValue encrypt(final EncryptionKey key, final String value, UUID credentialVersionUUID) {
+  public EncryptedValue encrypt(final EncryptionKey key, final String value) {
     final EncryptRequest request = EncryptRequest.newBuilder().setPlain(ByteString.copyFrom(value, Charset.forName(CHARSET))).build();
     final EncryptResponse response;
     try {
@@ -79,7 +78,7 @@ public class KMSEncryptionProvider implements EncryptionProvider {
       LOGGER.error("Error for request: " + request.getPlain(), e);
       throw e;
     }
-    return new EncryptedValue(key.getUuid(), response.getCipher().toByteArray(), new byte[]{}, credentialVersionUUID);
+    return new EncryptedValue(key.getUuid(), response.getCipher().toByteArray(), new byte[]{});
   }
 
   @Override

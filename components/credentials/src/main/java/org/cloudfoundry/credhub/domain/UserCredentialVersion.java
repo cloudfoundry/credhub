@@ -108,7 +108,7 @@ public class UserCredentialVersion extends CredentialVersion {
         generationParameters != null ? jsonObjectMapper.writeValueAsString(generationParameters)
           : null;
       if (generationParameterJson != null) {
-        encryptedParameters = getEncryptor().encrypt(generationParameterJson, null);
+        encryptedParameters = getEncryptor().encrypt(generationParameterJson);
         delegate.setEncryptedGenerationParameters(encryptedParameters);
       }
 
