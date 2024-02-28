@@ -16,3 +16,4 @@ include "components:permissions"
 include "components:string-utilities"
 include "components:test-support"
 include "components:time-support"
+include 'components:database-entities'
