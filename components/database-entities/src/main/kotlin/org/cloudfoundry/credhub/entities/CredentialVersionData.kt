@@ -1,8 +1,7 @@
-package org.cloudfoundry.credhub.entity
+package org.cloudfoundry.credhub.entities
 
 import com.fasterxml.jackson.databind.JsonNode
 import org.cloudfoundry.credhub.constants.UuidConstants
-import org.cloudfoundry.credhub.entities.EncryptedValue
 import org.cloudfoundry.credhub.util.InstantMillisecondsConverter
 import org.cloudfoundry.credhub.utils.JsonNodeConverter
 import org.hibernate.annotations.GenericGenerator

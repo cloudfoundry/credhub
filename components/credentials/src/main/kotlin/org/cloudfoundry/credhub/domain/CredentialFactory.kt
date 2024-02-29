@@ -9,8 +9,8 @@ import org.cloudfoundry.credhub.credential.RsaCredentialValue
 import org.cloudfoundry.credhub.credential.SshCredentialValue
 import org.cloudfoundry.credhub.credential.StringCredentialValue
 import org.cloudfoundry.credhub.credential.UserCredentialValue
+import org.cloudfoundry.credhub.entities.CredentialVersionData
 import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData
-import org.cloudfoundry.credhub.entity.CredentialVersionData
 import org.cloudfoundry.credhub.entity.JsonCredentialVersionData
 import org.cloudfoundry.credhub.entity.PasswordCredentialVersionData
 import org.cloudfoundry.credhub.entity.RsaCredentialVersionData

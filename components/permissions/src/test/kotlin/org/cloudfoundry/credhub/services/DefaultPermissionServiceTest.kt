@@ -11,7 +11,7 @@ import org.cloudfoundry.credhub.data.PermissionData
 import org.cloudfoundry.credhub.data.PermissionDataService
 import org.cloudfoundry.credhub.domain.CredentialVersion
 import org.cloudfoundry.credhub.domain.PasswordCredentialVersion
-import org.cloudfoundry.credhub.entity.Credential
+import org.cloudfoundry.credhub.entities.Credential
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
 import org.cloudfoundry.credhub.exceptions.InvalidPermissionOperationException
 import org.cloudfoundry.credhub.requests.PermissionEntry

@@ -1,4 +1,4 @@
-package org.cloudfoundry.credhub.entity
+package org.cloudfoundry.credhub.entities
 
 import org.apache.commons.codec.digest.DigestUtils
 import org.cloudfoundry.credhub.audit.AuditableCredential

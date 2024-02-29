@@ -1,6 +1,6 @@
 package org.cloudfoundry.credhub.repositories
 
-import org.cloudfoundry.credhub.entity.CredentialVersionData
+import org.cloudfoundry.credhub.entities.CredentialVersionData
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import java.util.UUID

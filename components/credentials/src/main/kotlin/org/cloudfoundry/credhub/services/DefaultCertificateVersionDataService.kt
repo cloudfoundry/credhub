@@ -3,8 +3,8 @@ package org.cloudfoundry.credhub.services
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
 import org.cloudfoundry.credhub.domain.CredentialFactory
 import org.cloudfoundry.credhub.domain.CredentialVersion
+import org.cloudfoundry.credhub.entities.CredentialVersionData
 import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData
-import org.cloudfoundry.credhub.entity.CredentialVersionData
 import org.cloudfoundry.credhub.repositories.CredentialVersionRepository
 import org.cloudfoundry.credhub.utils.CertificateReader
 import org.springframework.stereotype.Service

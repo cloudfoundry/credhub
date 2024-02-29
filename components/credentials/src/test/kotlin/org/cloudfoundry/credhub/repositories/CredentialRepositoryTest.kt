@@ -1,7 +1,7 @@
 package org.cloudfoundry.credhub.repositories
 
 import org.cloudfoundry.credhub.CredhubTestApp
-import org.cloudfoundry.credhub.entity.Credential
+import org.cloudfoundry.credhub.entities.Credential
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver
 import org.junit.Assert.assertEquals
 import org.junit.Test

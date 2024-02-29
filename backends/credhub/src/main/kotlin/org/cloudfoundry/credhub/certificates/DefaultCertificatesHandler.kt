@@ -12,7 +12,7 @@ import org.cloudfoundry.credhub.auth.UserContextHolder
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
 import org.cloudfoundry.credhub.domain.CredentialVersion
-import org.cloudfoundry.credhub.entity.Credential
+import org.cloudfoundry.credhub.entities.Credential
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
 import org.cloudfoundry.credhub.exceptions.PermissionException
 import org.cloudfoundry.credhub.generate.GenerationRequestGenerator

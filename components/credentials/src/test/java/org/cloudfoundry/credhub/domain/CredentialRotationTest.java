@@ -3,9 +3,9 @@ package org.cloudfoundry.credhub.domain;
 import java.util.UUID;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.cloudfoundry.credhub.entities.CredentialVersionData;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData;
-import org.cloudfoundry.credhub.entity.CredentialVersionData;
 import org.cloudfoundry.credhub.entity.PasswordCredentialVersionData;
 import org.cloudfoundry.credhub.entity.RsaCredentialVersionData;
 import org.cloudfoundry.credhub.entity.SshCredentialVersionData;

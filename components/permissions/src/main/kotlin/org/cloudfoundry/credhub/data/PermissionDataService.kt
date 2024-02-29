@@ -7,7 +7,7 @@ import org.cloudfoundry.credhub.audit.AuditablePermissionData
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.audit.OperationDeviceAction
 import org.cloudfoundry.credhub.audit.entities.V2Permission
-import org.cloudfoundry.credhub.entity.Credential
+import org.cloudfoundry.credhub.entities.Credential
 import org.cloudfoundry.credhub.exceptions.PermissionAlreadyExistsException
 import org.cloudfoundry.credhub.exceptions.PermissionDoesNotExistException
 import org.cloudfoundry.credhub.exceptions.PermissionInvalidPathAndActorException

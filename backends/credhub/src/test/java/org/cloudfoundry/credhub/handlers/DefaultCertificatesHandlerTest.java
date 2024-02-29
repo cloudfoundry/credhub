@@ -20,7 +20,7 @@ import org.cloudfoundry.credhub.domain.CertificateGenerationParameters;
 import org.cloudfoundry.credhub.domain.CertificateMetadata;
 import org.cloudfoundry.credhub.domain.CertificateVersionMetadata;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
-import org.cloudfoundry.credhub.entity.Credential;
+import org.cloudfoundry.credhub.entities.Credential;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.exceptions.PermissionException;
 import org.cloudfoundry.credhub.generate.GenerationRequestGenerator;

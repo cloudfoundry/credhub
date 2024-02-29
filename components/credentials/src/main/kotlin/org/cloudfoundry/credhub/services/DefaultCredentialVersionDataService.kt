@@ -5,8 +5,8 @@ import org.apache.commons.lang3.StringUtils
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.domain.CredentialFactory
 import org.cloudfoundry.credhub.domain.CredentialVersion
+import org.cloudfoundry.credhub.entities.CredentialVersionData
 import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData
-import org.cloudfoundry.credhub.entity.CredentialVersionData
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
 import org.cloudfoundry.credhub.exceptions.MaximumSizeException
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException

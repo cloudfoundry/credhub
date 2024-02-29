@@ -1,6 +1,6 @@
 package org.cloudfoundry.credhub.repositories
 
-import org.cloudfoundry.credhub.entity.Credential
+import org.cloudfoundry.credhub.entities.Credential
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.transaction.annotation.Transactional

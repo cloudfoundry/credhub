@@ -9,7 +9,7 @@ import org.cloudfoundry.credhub.credential.CredentialValue
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
 import org.cloudfoundry.credhub.domain.CredentialFactory
 import org.cloudfoundry.credhub.domain.CredentialVersion
-import org.cloudfoundry.credhub.entity.Credential
+import org.cloudfoundry.credhub.entities.Credential
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
 import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException

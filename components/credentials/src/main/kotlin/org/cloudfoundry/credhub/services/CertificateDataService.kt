@@ -3,7 +3,7 @@ package org.cloudfoundry.credhub.services
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.domain.CertificateMetadata
 import org.cloudfoundry.credhub.domain.CertificateVersionMetadata
-import org.cloudfoundry.credhub.entity.Credential
+import org.cloudfoundry.credhub.entities.Credential
 import org.cloudfoundry.credhub.repositories.CredentialRepository
 import org.intellij.lang.annotations.Language
 import org.springframework.beans.factory.annotation.Autowired

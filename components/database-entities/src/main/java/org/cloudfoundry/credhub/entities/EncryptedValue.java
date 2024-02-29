@@ -114,12 +114,12 @@ public class EncryptedValue {
     final EncryptedValue that = (EncryptedValue) o;
 
     return new EqualsBuilder()
-      .append(uuid, that.uuid)
-      .append(updatedAt, that.updatedAt)
-      .append(encryptionKeyUuid, that.encryptionKeyUuid)
-      .append(encryptedValue, that.encryptedValue)
-      .append(nonce, that.nonce)
-      .isEquals();
+            .append(uuid, that.uuid)
+            .append(updatedAt, that.updatedAt)
+            .append(encryptionKeyUuid, that.encryptionKeyUuid)
+            .append(encryptedValue, that.encryptedValue)
+            .append(nonce, that.nonce)
+            .isEquals();
   }
 
   @Override

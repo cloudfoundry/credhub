@@ -2,8 +2,8 @@ package org.cloudfoundry.credhub.domain
 
 import com.fasterxml.jackson.databind.JsonNode
 import org.cloudfoundry.credhub.audit.AuditableCredentialVersion
-import org.cloudfoundry.credhub.entity.Credential
-import org.cloudfoundry.credhub.entity.CredentialVersionData
+import org.cloudfoundry.credhub.entities.Credential
+import org.cloudfoundry.credhub.entities.CredentialVersionData
 import org.cloudfoundry.credhub.requests.GenerationParameters
 import org.cloudfoundry.credhub.services.CredentialVersionDataService
 import java.time.Instant

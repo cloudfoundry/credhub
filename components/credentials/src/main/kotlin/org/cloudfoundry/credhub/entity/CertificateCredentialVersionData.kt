@@ -1,6 +1,7 @@
 package org.cloudfoundry.credhub.entity
 
 import org.apache.commons.lang3.StringUtils
+import org.cloudfoundry.credhub.entities.CredentialVersionData
 import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData.Companion.CREDENTIAL_DATABASE_TYPE
 import java.time.Instant
 import java.util.Objects

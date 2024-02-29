@@ -16,7 +16,7 @@ import org.cloudfoundry.credhub.audit.OperationDeviceAction
 import org.cloudfoundry.credhub.audit.entities.V2Permission
 import org.cloudfoundry.credhub.data.PermissionData
 import org.cloudfoundry.credhub.data.PermissionDataService
-import org.cloudfoundry.credhub.entity.Credential
+import org.cloudfoundry.credhub.entities.Credential
 import org.cloudfoundry.credhub.entity.ValueCredentialVersionData
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
 import org.cloudfoundry.credhub.requests.PermissionEntry

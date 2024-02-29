@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.entity
 
+import org.cloudfoundry.credhub.entities.CredentialVersionData
 import org.cloudfoundry.credhub.utils.RsaCredentialHelper
 import javax.persistence.Column
 import javax.persistence.DiscriminatorValue

@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.entity
 
+import org.cloudfoundry.credhub.entities.CredentialVersionData
 import org.cloudfoundry.credhub.entities.EncryptedValue
 import org.hibernate.annotations.NotFound
 import org.hibernate.annotations.NotFoundAction

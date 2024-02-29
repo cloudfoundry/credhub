@@ -2,7 +2,7 @@ package org.cloudfoundry.credhub.handlers
 
 import org.cloudfoundry.credhub.credential.CredentialValue
 import org.cloudfoundry.credhub.domain.CredentialVersion
-import org.cloudfoundry.credhub.entity.Credential
+import org.cloudfoundry.credhub.entities.Credential
 import org.cloudfoundry.credhub.requests.BaseCredentialRequest
 import org.cloudfoundry.credhub.services.CredentialService
 import org.cloudfoundry.credhub.views.FindCredentialResult

@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
-import org.cloudfoundry.credhub.entity.Credential;
+import org.cloudfoundry.credhub.entities.Credential;
 import org.cloudfoundry.credhub.repositories.CredentialRepository;
 
 @Service

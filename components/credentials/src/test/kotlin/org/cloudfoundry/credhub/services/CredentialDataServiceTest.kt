@@ -2,7 +2,7 @@ package org.cloudfoundry.credhub.services
 
 import org.cloudfoundry.credhub.CredhubTestApp
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
-import org.cloudfoundry.credhub.entity.Credential
+import org.cloudfoundry.credhub.entities.Credential
 import org.cloudfoundry.credhub.repositories.CredentialRepository
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver
 import org.hamcrest.CoreMatchers

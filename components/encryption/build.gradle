@@ -34,6 +34,7 @@ dependencies {
     implementation project(":components:errors")
     implementation project(":components:string-utilities")
     implementation project(":components:time-support")
+    implementation project(":components:database-entities")
 
     testImplementation project(path: ":components:test-support", configuration: "testOutput")
 

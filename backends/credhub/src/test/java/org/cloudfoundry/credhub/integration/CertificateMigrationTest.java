@@ -10,8 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.data.CertificateMigration;
+import org.cloudfoundry.credhub.entities.Credential;
 import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData;
-import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.repositories.CredentialRepository;
 import org.cloudfoundry.credhub.repositories.CredentialVersionRepository;
 import org.cloudfoundry.credhub.utils.CertificateReader;
