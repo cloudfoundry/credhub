@@ -36,6 +36,7 @@ dependencies {
     implementation project(":components:time-support")
     implementation project(":components:database-entities")
 
+    testImplementation project(":components:auth")
     testImplementation project(path: ":components:test-support", configuration: "testOutput")
 
     implementation("org.springframework.boot:spring-boot-starter-web")
