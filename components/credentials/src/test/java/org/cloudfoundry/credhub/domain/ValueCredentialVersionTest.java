@@ -4,19 +4,17 @@ import java.util.UUID;
 
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.entity.ValueCredentialVersionData;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@RunWith(JUnit4.class)
 public class ValueCredentialVersionTest {
 
   private ValueCredentialVersion subject;
@@ -24,7 +22,7 @@ public class ValueCredentialVersionTest {
   private UUID canaryUuid;
   private ValueCredentialVersionData valueCredentialData;
 
-  @Before
+  @BeforeEach
   public void beforeEach() {
     canaryUuid = UUID.randomUUID();
     encryptor = mock(Encryptor.class);
@@ -67,12 +65,14 @@ public class ValueCredentialVersionTest {
     assertThat(subject.getValue(), equalTo("my-value"));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void setValue_whenValueIsNull_throwsException() {
     valueCredentialData = new ValueCredentialVersionData("foo");
     subject = new ValueCredentialVersion(valueCredentialData);
 
     subject.setEncryptor(encryptor);
-    subject.setValue(null);
+    assertThrows(IllegalArgumentException.class, () ->
+            subject.setValue(null)
+    );
   }
 }

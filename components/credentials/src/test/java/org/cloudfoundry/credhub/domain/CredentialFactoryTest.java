@@ -19,11 +19,9 @@ import org.cloudfoundry.credhub.requests.StringGenerationParameters;
 import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer;
 import org.cloudfoundry.credhub.utils.JsonObjectMapper;
 import org.hamcrest.MatcherAssert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.cloudfoundry.credhub.utils.CertificateStringConstants.SELF_SIGNED_CA_CERT;
@@ -34,7 +32,6 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@RunWith(JUnit4.class)
 public class CredentialFactoryTest {
 
   private static final String CREDENTIAL_NAME = "/test";
@@ -56,12 +53,12 @@ public class CredentialFactoryTest {
   private JsonObjectMapper objectMapper;
   private StringGenerationParameters generationParameters;
 
-  @BeforeClass
+  @BeforeAll
   public static void setUpAll() {
     BouncyCastleFipsConfigurer.configure();
   }
 
-  @Before
+  @BeforeEach
   public void setup() throws JsonProcessingException {
 
     if (Security.getProvider(BouncyCastleFipsProvider.PROVIDER_NAME) == null) {

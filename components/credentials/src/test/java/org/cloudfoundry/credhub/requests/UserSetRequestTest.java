@@ -8,10 +8,8 @@ import javax.validation.ConstraintViolation;
 import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.credential.UserCredentialValue;
 import org.cloudfoundry.credhub.helpers.JsonTestHelper;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.cloudfoundry.credhub.helpers.JsonTestHelper.deserialize;
 import static org.cloudfoundry.credhub.helpers.JsonTestHelper.deserializeAndValidate;
@@ -22,11 +20,10 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.core.IsEqual.equalTo;
 
-@RunWith(JUnit4.class)
 public class UserSetRequestTest {
   private String validSetRequestJson;
 
-  @Before
+  @BeforeEach
   public void beforeEach() {
     // language=JSON
     validSetRequestJson = "{\n" +

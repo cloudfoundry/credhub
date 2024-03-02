@@ -2,27 +2,24 @@ package org.cloudfoundry.credhub.generators;
 
 import org.cloudfoundry.credhub.credential.StringCredentialValue;
 import org.cloudfoundry.credhub.requests.StringGenerationParameters;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.passay.PasswordGenerator;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 
-@RunWith(JUnit4.class)
 public class PassayStringCredentialValueGeneratorTest {
 
   private PasswordGenerator passwordGenerator;
   private PassayStringCredentialGenerator subject;
 
-  @Before
+  @BeforeEach
   public void beforeEach() {
     passwordGenerator = mock(PasswordGenerator.class);
     subject = new PassayStringCredentialGenerator(passwordGenerator);

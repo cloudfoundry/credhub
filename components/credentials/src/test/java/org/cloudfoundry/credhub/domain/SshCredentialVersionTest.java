@@ -3,23 +3,20 @@ package org.cloudfoundry.credhub.domain;
 import org.cloudfoundry.credhub.entity.SshCredentialVersionData;
 import org.cloudfoundry.credhub.requests.SshGenerationParameters;
 import org.cloudfoundry.credhub.utils.SshPublicKeyParser;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@RunWith(JUnit4.class)
 public class SshCredentialVersionTest {
 
   private SshCredentialVersion subject;
   private SshPublicKeyParser sshPublicKeyParser;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     sshPublicKeyParser = mock(SshPublicKeyParser.class);
     final SshCredentialVersionData credentialVersionData = mock(SshCredentialVersionData.class);

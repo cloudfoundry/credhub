@@ -3,10 +3,10 @@ package org.cloudfoundry.credhub.utils;
 import java.nio.ByteBuffer;
 import java.util.UUID;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 
 public class UuidUtilTest {
 

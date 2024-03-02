@@ -7,39 +7,40 @@ import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.helpers.JsonTestHelper;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 import static org.cloudfoundry.credhub.helpers.JsonTestHelper.deserializeChecked;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@RunWith(JUnit4.class)
 public class BaseCredentialSetRequestTest {
-  @Test(expected = JsonMappingException.class)
+  @Test
   public void whenTypeIsNotSet_throwsException() throws IOException {
     final String json = "{" +
-                        "\"name\":\"some-name\"," +
-                        "\"value\":\"some-value\"," +
-                        "\"overwrite\":true" +
-                        "}";
+            "\"name\":\"some-name\"," +
+            "\"value\":\"some-value\"," +
+            "\"overwrite\":true" +
+            "}";
 
-    JsonTestHelper.deserializeChecked(json, BaseCredentialSetRequest.class);
+    assertThrows(JsonMappingException.class, () ->
+            JsonTestHelper.deserializeChecked(json, BaseCredentialSetRequest.class)
+    );
   }
 
-
-  @Test(expected = InvalidTypeIdException.class)
+  @Test
   public void whenTypeIsEmptyString_throwsException() throws IOException {
     final String json = "{" +
-                        "\"name\":\"some-name\"," +
-                        "\"type\":\"\"," +
-                        "\"value\":\"some-value\"," +
-                        "\"overwrite\":true" +
-                        "}";
+            "\"name\":\"some-name\"," +
+            "\"type\":\"\"," +
+            "\"value\":\"some-value\"," +
+            "\"overwrite\":true" +
+            "}";
 
-    JsonTestHelper.deserializeChecked(json, BaseCredentialSetRequest.class);
+    assertThrows(InvalidTypeIdException.class, () ->
+            JsonTestHelper.deserializeChecked(json, BaseCredentialSetRequest.class)
+    );
   }
 
-  @Test(expected = InvalidTypeIdException.class)
+  @Test
   public void whenTypeIsUnknown_throwsException() throws IOException {
     final String json = "{" +
                         "\"name\":\"some-name\"," +
@@ -48,10 +49,12 @@ public class BaseCredentialSetRequestTest {
                         "\"overwrite\":true" +
                         "}";
 
-    JsonTestHelper.deserializeChecked(json, BaseCredentialSetRequest.class);
+    assertThrows(InvalidTypeIdException.class, () ->
+            JsonTestHelper.deserializeChecked(json, BaseCredentialSetRequest.class)
+    );
   }
 
-  @Test(expected = UnrecognizedPropertyException.class)
+  @Test
   public void whenValueHasUnknownField_throwsException() throws IOException {
     final String json = "{\n"
                         + "  \"name\": \"/example/certificate\",\n"
@@ -61,10 +64,13 @@ public class BaseCredentialSetRequestTest {
                         + "    \"foo\": \"\""
                         + "  }"
                         + "}";
-    deserializeChecked(json, BaseCredentialSetRequest.class);
+    assertThrows(UnrecognizedPropertyException.class, () ->
+            deserializeChecked(json, BaseCredentialSetRequest.class)
+    );
   }
 
-  @Test(expected = ParameterizedValidationException.class)
+//  @Test(expected = ParameterizedValidationException.class)
+  @Test
   public void whenMetadataExceeds7000Characters_throwsException() throws IOException {
     final String json = "{\n" +
                         "  \"name\": \"test\",\n" +
@@ -436,6 +442,8 @@ public class BaseCredentialSetRequestTest {
                         "  }\n" +
                         "}";
     BaseCredentialRequest baseCredentialSetRequest = deserializeChecked(json, BaseCredentialSetRequest.class);
-    baseCredentialSetRequest.validate();
+    assertThrows(ParameterizedValidationException.class, () ->
+            baseCredentialSetRequest.validate()
+    );
   }
 }

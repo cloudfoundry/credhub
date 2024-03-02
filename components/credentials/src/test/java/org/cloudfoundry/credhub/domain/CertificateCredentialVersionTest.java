@@ -5,10 +5,8 @@ import java.util.UUID;
 import org.cloudfoundry.credhub.TestHelper;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.cloudfoundry.credhub.utils.CertificateStringConstants.PRIVATE_KEY;
@@ -20,7 +18,6 @@ import static org.hamcrest.core.IsNull.notNullValue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@RunWith(JUnit4.class)
 public class CertificateCredentialVersionTest {
 
   private CertificateCredentialVersion subject;
@@ -32,7 +29,7 @@ public class CertificateCredentialVersionTest {
   private byte[] encryptedValue;
   private byte[] nonce;
 
-  @Before
+  @BeforeEach
   public void setup() {
     TestHelper.getBouncyCastleFipsProvider();
     encryptor = mock(Encryptor.class);

@@ -2,10 +2,8 @@ package org.cloudfoundry.credhub.generators;
 
 import org.cloudfoundry.credhub.credential.StringCredentialValue;
 import org.cloudfoundry.credhub.requests.StringGenerationParameters;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -16,12 +14,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(JUnit4.class)
 public class UsernameGeneratorTest {
   private UsernameGenerator subject;
   private PassayStringCredentialGenerator passayStringCredentialGenerator;
 
-  @Before
+  @BeforeEach
   public void beforeEach() {
     passayStringCredentialGenerator = mock(PassayStringCredentialGenerator.class);
     subject = new UsernameGenerator(passayStringCredentialGenerator);

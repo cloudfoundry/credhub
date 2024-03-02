@@ -2,23 +2,20 @@ package org.cloudfoundry.credhub.domain;
 
 import org.cloudfoundry.credhub.entity.RsaCredentialVersionData;
 import org.cloudfoundry.credhub.requests.RsaGenerationParameters;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@RunWith(JUnit4.class)
 public class RsaCredentialVersionTest {
 
   private RsaCredentialVersion subject;
   private RsaCredentialVersionData credentialVersionData;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     credentialVersionData = mock(RsaCredentialVersionData.class);
     subject = new RsaCredentialVersion(credentialVersionData);

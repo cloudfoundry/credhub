@@ -26,9 +26,9 @@ import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.requests.BaseCredentialGenerateRequest;
 import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer;
 import org.cloudfoundry.credhub.utils.TestConstants;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
@@ -38,6 +38,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.nullValue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -73,12 +74,12 @@ public class DefaultCertificateServiceTest {
   private Credential credential;
   private Credential childCredential;
 
-  @BeforeClass
+  @BeforeAll
   public static void setUpAll() {
     BouncyCastleFipsConfigurer.configure();
   }
 
-  @Before
+  @BeforeEach
   public void beforeEach() {
     if (Security.getProvider(BouncyCastleFipsProvider.PROVIDER_NAME) == null) {
       Security.addProvider(new BouncyCastleFipsProvider());
@@ -463,22 +464,28 @@ public class DefaultCertificateServiceTest {
     assertThat(certificates, equalTo(versions));
   }
 
-  @Test(expected = InvalidQueryParameterException.class)
+  @Test
   public void getVersions_returnsAnError_whenUUIDisInvalid() {
     when(certificateVersionDataService.findAllVersions(uuid)).thenThrow(new IllegalArgumentException());
-    subjectWithoutConcatenateCas.getVersions(uuid, false);
+    assertThrows(InvalidQueryParameterException.class, () ->
+            subjectWithoutConcatenateCas.getVersions(uuid, false)
+    );
   }
 
-  @Test(expected = EntryNotFoundException.class)
+  @Test
   public void getVersions_returnsAnError_whenCredentialDoesNotExist() {
     when(certificateDataService.findByUuid(uuid)).thenReturn(null);
-    subjectWithoutConcatenateCas.getVersions(uuid, true);
+    assertThrows(EntryNotFoundException.class, () ->
+            subjectWithoutConcatenateCas.getVersions(uuid, true)
+    );
   }
 
-  @Test(expected = EntryNotFoundException.class)
+  @Test
   public void getVersions_returnsAnError_whenCredentialListisEmpty() {
     when(certificateVersionDataService.findAllVersions(uuid)).thenReturn(Collections.emptyList());
-    subjectWithoutConcatenateCas.getVersions(uuid, false);
+    assertThrows(EntryNotFoundException.class, () ->
+            subjectWithoutConcatenateCas.getVersions(uuid, false)
+    );
   }
 
   @Test
@@ -504,10 +511,12 @@ public class DefaultCertificateServiceTest {
     assertThat(certificates, equalTo(versions));
   }
 
-  @Test(expected = InvalidQueryParameterException.class)
+  @Test
   public void getAllValidVersions_returnsAnError_whenUUIDisInvalid() {
     when(certificateVersionDataService.findAllValidVersions(uuid)).thenThrow(new IllegalArgumentException());
-    subjectWithoutConcatenateCas.getAllValidVersions(uuid);
+    assertThrows(InvalidQueryParameterException.class, () ->
+            subjectWithoutConcatenateCas.getAllValidVersions(uuid)
+    );
   }
 
   @Test
@@ -516,7 +525,7 @@ public class DefaultCertificateServiceTest {
     assertThat(subjectWithoutConcatenateCas.getAllValidVersions(uuid).size(), equalTo(0));
   }
 
-  @Test(expected = EntryNotFoundException.class)
+  @Test
   public void getAllValidVersions_returnsAnError_whenCredentialNameIsNull() {
     final CredentialVersion versionWithNoName = mock(CredentialVersion.class);
     when(versionWithNoName.getName()).thenReturn(null);
@@ -526,7 +535,9 @@ public class DefaultCertificateServiceTest {
     when(certificateVersionDataService.findAllValidVersions(uuid))
       .thenReturn(versions);
 
-    subjectWithoutConcatenateCas.getAllValidVersions(uuid);
+    assertThrows(EntryNotFoundException.class, () ->
+            subjectWithoutConcatenateCas.getAllValidVersions(uuid)
+    );
   }
 
   @Test
@@ -593,7 +604,7 @@ public class DefaultCertificateServiceTest {
   }
 
 
-  @Test(expected = EntryNotFoundException.class)
+  @Test
   public void deleteVersion_whenTheProvidedVersionDoesNotExistForTheSpecifiedCredential_returnsAnError() {
     final UUID versionUuid = UUID.randomUUID();
     final UUID certificateUuid = UUID.randomUUID();
@@ -615,10 +626,12 @@ public class DefaultCertificateServiceTest {
     when(certificateVersionDataService.findVersion(versionUuid)).thenReturn(versionToDelete);
     when(versionToDelete.getCredential()).thenReturn(someOtherCredential);
 
-    subjectWithoutConcatenateCas.deleteVersion(certificateUuid, versionUuid);
+    assertThrows(EntryNotFoundException.class, () ->
+            subjectWithoutConcatenateCas.deleteVersion(certificateUuid, versionUuid)
+    );
   }
 
-  @Test(expected = EntryNotFoundException.class)
+  @Test
   public void deleteVersion_whenTheProvidedVersionDoesNotExist_returnsAnError() {
     final UUID versionUuid = UUID.randomUUID();
     final UUID certificateUuid = UUID.randomUUID();
@@ -637,10 +650,12 @@ public class DefaultCertificateServiceTest {
     when(certificate.getUuid()).thenReturn(UUID.randomUUID());
     when(certificateVersionDataService.findVersion(versionUuid)).thenReturn(null);
 
-    subjectWithoutConcatenateCas.deleteVersion(certificateUuid, versionUuid);
+    assertThrows(EntryNotFoundException.class, () ->
+            subjectWithoutConcatenateCas.deleteVersion(certificateUuid, versionUuid)
+    );
   }
 
-  @Test(expected = EntryNotFoundException.class)
+  @Test
   public void deleteVersion_whenTheProvidedCredentialDoesNotExist_returnsAnError() {
     final UUID versionUuid = UUID.randomUUID();
     final UUID certificateUuid = UUID.randomUUID();
@@ -656,10 +671,12 @@ public class DefaultCertificateServiceTest {
     final CertificateCredentialVersion versionToDelete = mock(CertificateCredentialVersion.class);
     when(certificateVersionDataService.findVersion(versionUuid)).thenReturn(versionToDelete);
 
-    subjectWithoutConcatenateCas.deleteVersion(certificateUuid, versionUuid);
+    assertThrows(EntryNotFoundException.class, () ->
+            subjectWithoutConcatenateCas.deleteVersion(certificateUuid, versionUuid)
+    );
   }
 
-  @Test(expected = EntryNotFoundException.class)
+  @Test
   public void updateTransitionalVersion_whenTheCertificateIsNotFound_returnsAnError() {
     final UUID certificateUuid = UUID.randomUUID();
     final UUID transitionalVersionUuid = UUID.randomUUID();
@@ -669,10 +686,12 @@ public class DefaultCertificateServiceTest {
 
     when(certificateDataService.findByUuid(certificateUuid)).thenReturn(null);
 
-    subjectWithoutConcatenateCas.updateTransitionalVersion(certificateUuid, transitionalVersionUuid);
+    assertThrows(EntryNotFoundException.class, () ->
+      subjectWithoutConcatenateCas.updateTransitionalVersion(certificateUuid, transitionalVersionUuid)
+    );
   }
 
-  @Test(expected = ParameterizedValidationException.class)
+  @Test
   public void updateTransitionalVersion_whenVersionDoesNotExist_returnsAnError() {
     final UUID certificateUuid = UUID.randomUUID();
     final UUID transitionalVersionUuid = UUID.randomUUID();
@@ -691,10 +710,12 @@ public class DefaultCertificateServiceTest {
 
     when(certificateVersionDataService.findVersion(transitionalVersionUuid)).thenReturn(null);
 
-    subjectWithoutConcatenateCas.updateTransitionalVersion(certificateUuid, transitionalVersionUuid);
+    assertThrows(ParameterizedValidationException.class, () ->
+      subjectWithoutConcatenateCas.updateTransitionalVersion(certificateUuid, transitionalVersionUuid)
+    );
   }
 
-  @Test(expected = ParameterizedValidationException.class)
+  @Test
   public void updateTransitionalVersion_whenVersionDoesNotBelongToCertificate_returnsAnError() {
     final UUID certificateUuid = UUID.randomUUID();
     final UUID transitionalVersionUuid = UUID.randomUUID();
@@ -719,15 +740,19 @@ public class DefaultCertificateServiceTest {
     when(certificateVersionDataService.findVersion(transitionalVersionUuid)).thenReturn(version);
     when(version.getCredential()).thenReturn(otherCertificate);
 
-    subjectWithoutConcatenateCas.updateTransitionalVersion(certificateUuid, transitionalVersionUuid);
+    assertThrows(ParameterizedValidationException.class, () ->
+      subjectWithoutConcatenateCas.updateTransitionalVersion(certificateUuid, transitionalVersionUuid)
+    );
   }
 
-  @Test(expected = EntryNotFoundException.class)
+  @Test
   public void set_whenTheCredentialDoesNotExist_throwsAnException() {
     final UUID certificateUuid = UUID.randomUUID();
 
     when(certificateDataService.findByUuid(certificateUuid)).thenReturn(null);
-    subjectWithoutConcatenateCas.set(certificateUuid, mock(CertificateCredentialValue.class));
+    assertThrows(EntryNotFoundException.class, () ->
+      subjectWithoutConcatenateCas.set(certificateUuid, mock(CertificateCredentialValue.class))
+    );
   }
 
   @Test
@@ -849,18 +874,22 @@ public class DefaultCertificateServiceTest {
     assertThat(certificate, not(nullValue()));
   }
 
-  @Test(expected = EntryNotFoundException.class)
+  @Test
   public void findByUuid_ThrowsEntryNotFoundIfUuidNotFound() {
     when(certificateVersionDataService.findByCredentialUUID("UnknownUuid")).thenReturn(null);
 
-    subjectWithoutConcatenateCas.findByCredentialUuid("UnknownUuid");
+    assertThrows(EntryNotFoundException.class, () ->
+      subjectWithoutConcatenateCas.findByCredentialUuid("UnknownUuid")
+    );
   }
 
-  @Test(expected = EntryNotFoundException.class)
+  @Test
   public void findByUuid_ThrowsEntryNotFoundIfUuidMatchesNonCertificateCredential() {
     when(certificateVersionDataService.findByCredentialUUID("rsaUuid")).thenReturn(null);
 
-    subjectWithoutConcatenateCas.findByCredentialUuid("rsaUuid");
+    assertThrows(EntryNotFoundException.class, () ->
+      subjectWithoutConcatenateCas.findByCredentialUuid("rsaUuid")
+    );
   }
 
   @Test

@@ -4,10 +4,8 @@ import org.cloudfoundry.credhub.CryptSaltFactory;
 import org.cloudfoundry.credhub.credential.StringCredentialValue;
 import org.cloudfoundry.credhub.credential.UserCredentialValue;
 import org.cloudfoundry.credhub.requests.StringGenerationParameters;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -15,14 +13,13 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@RunWith(JUnit4.class)
 public class UserGeneratorTest {
 
   private UserGenerator subject;
 
   private StringGenerationParameters passwordParameters;
 
-  @Before
+  @BeforeEach
   public void beforeEach() {
     final UsernameGenerator usernameGenerator = mock(UsernameGenerator.class);
     final PasswordCredentialGenerator passwordGenerator = mock(PasswordCredentialGenerator.class);

@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -42,9 +41,8 @@ import org.cloudfoundry.credhub.utils.DatabaseUtilities;
 import org.cloudfoundry.credhub.utils.JsonObjectMapper;
 import org.cloudfoundry.credhub.views.FindCredentialResult;
 import org.hamcrest.collection.IsIterableContainingInOrder;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -53,6 +51,7 @@ import static org.cloudfoundry.credhub.utils.SpringUtilities.unitTestPostgresPro
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
@@ -60,11 +59,10 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsCollectionContaining.hasItem;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@RunWith(SpringRunner.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredhubTestApp.class)
 @Transactional
@@ -105,7 +103,7 @@ public class DefaultCredentialVersionDataServiceTest {
   private PasswordCredentialVersionData namedPasswordCredential1;
   private ValueCredentialVersionData valueCredentialData;
 
-  @Before
+  @BeforeEach
   public void beforeEach() {
     fakeTimeSetter = TestHelper.mockOutCurrentTimeProvider(mockCurrentTimeProvider);
     fakeTimeSetter.accept(345345L);
@@ -168,7 +166,7 @@ public class DefaultCredentialVersionDataServiceTest {
     assertThat(credentialVersionData.getUuid(), equalTo(credential.getUuid()));
   }
 
-  @Test(expected = ParameterizedValidationException.class)
+  @Test
   public void save_givenAnExistingCredential_throwsExceptionIfTypeMismatch() {
 
     final EncryptedValue encryptedValueA = new EncryptedValue();
@@ -191,7 +189,9 @@ public class DefaultCredentialVersionDataServiceTest {
     newCredentialData.setCredential(passwordCredentialData.getCredential());
     final ValueCredentialVersion newCredential = new ValueCredentialVersion(newCredentialData);
 
-    subject.save(newCredential);
+    assertThrows(ParameterizedValidationException.class, () ->
+            subject.save(newCredential)
+    );
   }
 
   @Test
@@ -580,13 +580,13 @@ public class DefaultCredentialVersionDataServiceTest {
     assertThat(credentialVersions.get(0).getUuid(), equalTo(credential1.getUuid()));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void findNByName_whenAskedForANegativeNumberOfVersions_throws() {
     savePassword(2000000000123L, "/secret1");
 
-    final List<CredentialVersion> credentialVersions = subject.findNByName("/Secret1", -2);
-
-    assertThat(credentialVersions.size(), equalTo(0));
+    assertThrows(IllegalArgumentException.class, () ->
+      subject.findNByName("/Secret1", -2)
+    );
   }
 
   @Test

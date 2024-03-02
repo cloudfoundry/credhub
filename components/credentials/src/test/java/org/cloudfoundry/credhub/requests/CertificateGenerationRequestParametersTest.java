@@ -8,21 +8,19 @@ import org.cloudfoundry.credhub.exceptions.MissingSigningCACertificateException;
 import org.cloudfoundry.credhub.exceptions.NoSubjectCertificateException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.exceptions.SelfSignedCACertificateException;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static junit.framework.TestCase.fail;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 
-@RunWith(JUnit4.class)
 public class CertificateGenerationRequestParametersTest {
 
   private CertificateGenerationRequestParameters subject;
 
-  @Before
+  @BeforeEach
   public void beforeEach() {
     subject = new CertificateGenerationRequestParameters();
     subject.setCommonName("test");
@@ -51,7 +49,7 @@ public class CertificateGenerationRequestParametersTest {
     }
   }
 
-  @Test(expected = MissingSigningCACertificateException.class)
+  @Test
   public void validate_notSelfSigned_andNotCa_requiresCaName() {
     subject.setCommonName("foo");
 
@@ -59,16 +57,18 @@ public class CertificateGenerationRequestParametersTest {
     subject.setSelfSigned(false);
     subject.setCaName(null);
 
-    subject.validate();
+    assertThrows(MissingSigningCACertificateException.class, () -> subject.validate());
   }
 
-  @Test(expected = SelfSignedCACertificateException.class)
+  @Test
   public void validate_withCaName_requiresSelfSignedFalse() {
     subject.setCaName("test");
     subject.setSelfSigned(true);
     subject.setCommonName("foo");
 
-    subject.validate();
+    assertThrows(SelfSignedCACertificateException.class, () ->
+      subject.validate()
+    );
   }
 
   @Test
@@ -81,14 +81,16 @@ public class CertificateGenerationRequestParametersTest {
     // pass
   }
 
-  @Test(expected = ParameterizedValidationException.class)
+  @Test
   public void validate_requiresDurationToBeLessThan3650Days() {
     subject.setDuration(3651);
 
-    subject.validate();
+    assertThrows(ParameterizedValidationException.class, () ->
+      subject.validate()
+    );
   }
 
-  @Test(expected = NoSubjectCertificateException.class)
+  @Test
   public void validate_requiresSubject() {
     subject.setOrganization("");
     subject.setState("");
@@ -97,7 +99,9 @@ public class CertificateGenerationRequestParametersTest {
     subject.setOrganizationUnit("");
     subject.setLocality("");
 
-    subject.validate();
+    assertThrows(NoSubjectCertificateException.class, () ->
+      subject.validate()
+    );
   }
 
   @Test
@@ -114,32 +118,40 @@ public class CertificateGenerationRequestParametersTest {
     // pass
   }
 
-  @Test(expected = InvalidKeyLengthCertificateException.class)
+  @Test
   public void validate_rejectsKeyLengthLessThan2048() {
     subject.setKeyLength(2047);
 
-    subject.validate();
+    assertThrows(InvalidKeyLengthCertificateException.class, () ->
+      subject.validate()
+    );
   }
 
-  @Test(expected = InvalidKeyLengthCertificateException.class)
+  @Test
   public void validate_rejectsKeyLengthBetween2048And3072() {
     subject.setKeyLength(2222);
 
-    subject.validate();
+    assertThrows(InvalidKeyLengthCertificateException.class, () ->
+      subject.validate()
+    );
   }
 
-  @Test(expected = InvalidKeyLengthCertificateException.class)
+  @Test
   public void validate_rejectsKeyLengthBetween3072And4096() {
     subject.setKeyLength(4000);
 
-    subject.validate();
+    assertThrows(InvalidKeyLengthCertificateException.class, () ->
+      subject.validate()
+    );
   }
 
-  @Test(expected = InvalidKeyLengthCertificateException.class)
+  @Test
   public void validate_rejectsKeyLengthGreaterThan4096() {
     subject.setKeyLength(4097);
 
-    subject.validate();
+    assertThrows(InvalidKeyLengthCertificateException.class, () ->
+      subject.validate()
+    );
   }
 
   @Test
@@ -151,41 +163,51 @@ public class CertificateGenerationRequestParametersTest {
     // pass
   }
 
-  @Test(expected = InvalidAlternateNameCertificateException.class)
+  @Test
   public void validate_rejectsInvalidDNSCharactersInAlternativeNames() {
     subject.setAlternativeNames(new String[]{"foo!@#$%^&*()_-+=.com"});
 
-    subject.validate();
+    assertThrows(InvalidAlternateNameCertificateException.class, () ->
+      subject.validate()
+    );
   }
 
-  @Test(expected = InvalidAlternateNameCertificateException.class)
+  @Test
   public void validate_rejectsSpaceCharacterInAlternativeNames() {
     subject.setAlternativeNames(new String[]{"foo pivotal.io"});
 
-    subject.validate();
+    assertThrows(InvalidAlternateNameCertificateException.class, () ->
+      subject.validate()
+    );
   }
 
-  @Test(expected = InvalidAlternateNameCertificateException.class)
+  @Test
   public void validate_rejectsInvalidIpAddressInAlternativeNames() {
     subject.setAlternativeNames(new String[]{"1.2.3.999"});
 
-    subject.validate();
+    assertThrows(InvalidAlternateNameCertificateException.class, () ->
+      subject.validate()
+    );
   }
 
-  @Test(expected = InvalidAlternateNameCertificateException.class)
+  @Test
   public void validate_rejectsEmailAddressesInAlternativeNames() {
     // email addresses are allowed in certificate spec,
     // but we do not allow them per PM requirements
     subject.setAlternativeNames(new String[]{"x@y.com"});
 
-    subject.validate();
+    assertThrows(InvalidAlternateNameCertificateException.class, () ->
+      subject.validate()
+    );
   }
 
-  @Test(expected = InvalidAlternateNameCertificateException.class)
+  @Test
   public void validate_rejectsUrlsInAlternativeNames() {
     subject.setAlternativeNames(new String[]{"https://foo.com"});
 
-    subject.validate();
+    assertThrows(InvalidAlternateNameCertificateException.class, () ->
+      subject.validate()
+    );
   }
 
   @Test

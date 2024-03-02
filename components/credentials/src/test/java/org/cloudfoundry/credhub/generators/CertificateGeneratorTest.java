@@ -33,11 +33,9 @@ import org.cloudfoundry.credhub.services.DefaultCertificateAuthorityService;
 import org.cloudfoundry.credhub.util.CurrentTimeProvider;
 import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer;
 import org.cloudfoundry.credhub.utils.CertificateFormatter;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.fail;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -49,7 +47,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(JUnit4.class)
 public class CertificateGeneratorTest {
 
   private CertificateGenerator subject;
@@ -70,12 +67,12 @@ public class CertificateGeneratorTest {
   private CertificateGenerationRequestParameters generationParameters;
   private X509Certificate childX509Certificate;
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeAll() {
     BouncyCastleFipsConfigurer.configure();
   }
 
-  @Before
+  @BeforeEach
   public void beforeEach() throws Exception {
     TestHelper.getBouncyCastleFipsProvider();
     keyGenerator = mock(RsaKeyPairGenerator.class);

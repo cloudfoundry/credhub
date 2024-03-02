@@ -1,22 +1,19 @@
 package org.cloudfoundry.credhub.entities;
 
 import org.cloudfoundry.credhub.entity.PasswordCredentialVersionData;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsEqual.equalTo;
 
-@RunWith(JUnit4.class)
 public class CredentialVersionDataTest {
 
   private PasswordCredentialVersionData passwordCredentialData;
 
-  @Before
+  @BeforeEach
   public void beforeEach() {
     passwordCredentialData = new PasswordCredentialVersionData("/Picard");
   }
