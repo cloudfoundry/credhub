@@ -4,9 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import org.cloudfoundry.credhub.constants.UuidConstants
 import org.cloudfoundry.credhub.util.InstantMillisecondsConverter
 import org.cloudfoundry.credhub.utils.JsonNodeConverter
-import org.hibernate.annotations.GenericGenerator
-import org.hibernate.annotations.NotFound
-import org.hibernate.annotations.NotFoundAction
+import org.hibernate.annotations.*
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.time.Instant
@@ -45,6 +43,7 @@ abstract class CredentialVersionData<Z : CredentialVersionData<Z>>(credential: C
     var uuid: UUID? = null
 
     @OneToOne(cascade = [CascadeType.ALL])
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @NotFound(action = NotFoundAction.IGNORE)
     @JoinColumn(name = "encrypted_value_uuid")
     var encryptedCredentialValue: EncryptedValue? = null
