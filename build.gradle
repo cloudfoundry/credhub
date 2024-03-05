@@ -38,7 +38,11 @@ buildscript {
     }
 
     // Versions we're overriding from the Spring Boot Bom
-    ext["spring-framework.version"] = "5.3.32" // Bumping to latest version 5 patch for CVE-2024-22243
+
+    // spring-boot 2.7.18 has dependency to spring-framework 5.3.31, which has
+    // CVE-2024-22243. So, override that with spring-framework 5 latest patch
+    // version. This should be removed once spring-boot version is bumped.
+    ext["spring-framework.version"] = "5.3.32"
 }
 
 plugins {
