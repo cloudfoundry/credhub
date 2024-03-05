@@ -36,6 +36,9 @@ buildscript {
         classpath("org.bouncycastle:bc-fips:${bcFipsVersion}")
         classpath("org.bouncycastle:bcpkix-fips:${bcpkixFipsVersion}")
     }
+
+    // Versions we're overriding from the Spring Boot Bom
+    ext["spring-framework.version"] = "5.3.32" // Bumping to latest version 5 patch for CVE-2024-22243
 }
 
 plugins {
