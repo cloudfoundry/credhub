@@ -7,44 +7,53 @@ DELIMITER |
 CREATE TRIGGER tr_credential_deleted BEFORE DELETE ON credential
 FOR EACH ROW
 BEGIN
-  DROP TEMPORARY TABLE IF EXISTS
-    tmp_credential_version_uuids, tmp_encrypted_value_uuids;
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE cred_ver_id, enc_val_id BINARY(16);
+    DECLARE cred_ver_type VARCHAR(31);
+    DECLARE cur CURSOR FOR
+        SELECT type, uuid FROM credential_version
+            WHERE credential_uuid = OLD.uuid;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
 
-  -- Remember the uuids of the credential_version records being deleted
-  CREATE TEMPORARY TABLE tmp_credential_version_uuids
-    SELECT uuid FROM credential_version
-      WHERE credential_uuid = OLD.uuid;
+    OPEN cur;
+    read_loop: LOOP
+        FETCH cur into cred_ver_type, cred_ver_id;
+        IF done THEN
+          LEAVE read_loop;
+        END IF;
 
-  -- Remember the uuids of the encrypted_value records to delete
-  CREATE TEMPORARY TABLE tmp_encrypted_value_uuids
-    SELECT encrypted_value_uuid FROM credential_version
-      WHERE credential_uuid = OLD.uuid;
-  INSERT INTO tmp_encrypted_value_uuids (encrypted_value_uuid)
-    SELECT password_parameters_uuid from password_credential
-      WHERE password_credential.uuid IN
-        (SELECT uuid FROM tmp_credential_version_uuids);
-  INSERT INTO tmp_encrypted_value_uuids (encrypted_value_uuid)
-    SELECT password_parameters_uuid from user_credential
-      WHERE user_credential.uuid IN
-        (SELECT uuid FROM tmp_credential_version_uuids);
+        -- For each talbe record that is referencing encrypted_value record,
+        -- set FKs to encrypted_value to null before deleting the encrypted_value
+        -- record. Otherwise, the referencing record cannot be deleted because of
+        -- the FK constraint.
 
-  -- Set FKs to encrypted_value to null so the encrypted_value
-  -- record can be deleted without violating the FK constraint
-  UPDATE credential_version SET encrypted_value_uuid = NULL
-    WHERE credential_uuid = OLD.uuid;
-  UPDATE password_credential SET password_parameters_uuid = NULL
-    WHERE password_credential.uuid IN
-      (SELECT uuid FROM tmp_credential_version_uuids);
-  UPDATE user_credential SET password_parameters_uuid = NULL
-    WHERE user_credential.uuid IN
-      (SELECT uuid FROM tmp_credential_version_uuids);
+        -- Delete the encrypted_value record that is associated with the
+        -- credential_version record.
+        SELECT encrypted_value_uuid FROM credential_version
+            WHERE uuid = cred_ver_id INTO enc_val_id;
+        UPDATE credential_version SET encrypted_value_uuid = NULL
+            WHERE uuid = cred_ver_id;
+        DELETE FROM encrypted_value WHERE uuid = enc_val_id;
+        SET enc_val_id = NULL;
 
-  -- Delete the encrypted_value records
-  DELETE FROM encrypted_value WHERE encrypted_value.uuid IN
-    (SELECT encrypted_value_uuid from tmp_encrypted_value_uuids);
-
-  DROP TEMPORARY TABLE IF EXISTS
-    tmp_credential_version_uuids, tmp_encrypted_value_uuids;
+        -- For password or user type credential, the password_credential
+        -- or user_credential record also has associated encrypted_value record.
+        -- Delete them, too.
+        IF cred_ver_type = 'password' THEN
+            SELECT password_parameters_uuid from password_credential
+                WHERE uuid = cred_ver_id INTO enc_val_id;
+            UPDATE password_credential SET password_parameters_uuid = NULL
+                WHERE uuid = cred_ver_id;
+            DELETE FROM encrypted_value WHERE uuid = enc_val_id;
+        ELSEIF cred_ver_type = 'user' THEN
+            SELECT password_parameters_uuid from user_credential
+                WHERE uuid = cred_ver_id INTO enc_val_id;
+            UPDATE user_credential SET password_parameters_uuid = NULL
+                WHERE uuid = cred_ver_id;
+            DELETE FROM encrypted_value WHERE uuid = enc_val_id;
+        END IF;
+    END LOOP read_loop;
+    CLOSE cur;
 END;
 |
 DELIMITER ;
