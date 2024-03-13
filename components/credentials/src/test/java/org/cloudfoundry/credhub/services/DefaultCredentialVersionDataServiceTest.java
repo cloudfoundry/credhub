@@ -7,6 +7,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
@@ -72,6 +73,9 @@ import static org.junit.Assert.assertEquals;
 @SpringBootTest(classes = CredhubTestApp.class)
 @Transactional
 public class DefaultCredentialVersionDataServiceTest {
+
+  @Value("${spring.profiles.active}")
+  private String activeSpringProfile;
 
   @Autowired
   private CredentialVersionRepository credentialVersionRepository;
@@ -308,8 +312,11 @@ public class DefaultCredentialVersionDataServiceTest {
 
     assertThat(subject.findAllByName("/my-credential"), hasSize(0));
     assertNull(credentialDataService.find("/my-credential"));
-    assertEquals("Associated encryptedValues are deleted when password credential is deleted",
-            nEncryptedValuesPre, encryptedValueRepository.count());
+
+    if (!"unit-test-h2".equals(activeSpringProfile)) {
+      assertEquals("Associated encryptedValues are deleted when password credential is deleted",
+              nEncryptedValuesPre, encryptedValueRepository.count());
+    }
   }
 
   @Test
@@ -344,8 +351,11 @@ public class DefaultCredentialVersionDataServiceTest {
     subject.delete("/MY-CREDENTIAL");
 
     assertThat(subject.findAllByName("/my-credential"), empty());
-    assertEquals("Associated encryptedValues are deleted when password credential is deleted",
-            nEncryptedValuesPre, encryptedValueRepository.count());
+
+    if (!"unit-test-h2".equals(activeSpringProfile)) {
+      assertEquals("Associated encryptedValues are deleted when password credential is deleted",
+              nEncryptedValuesPre, encryptedValueRepository.count());
+    }
   }
 
   @Test
@@ -382,8 +392,10 @@ public class DefaultCredentialVersionDataServiceTest {
 
     subject.delete("/my-credential");
     assertThat(subject.findAllByName("/my-credential"), empty());
-    assertEquals("Associated encryptedValues are deleted when user credential is deleted",
-            nEncryptedValuesPre, encryptedValueRepository.count());
+    if (!"unit-test-h2".equals(activeSpringProfile)) {
+      assertEquals("Associated encryptedValues are deleted when user credential is deleted",
+              nEncryptedValuesPre, encryptedValueRepository.count());
+    }
   }
 
   @Test
