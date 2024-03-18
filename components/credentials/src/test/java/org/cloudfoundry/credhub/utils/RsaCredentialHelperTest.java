@@ -1,14 +1,12 @@
 package org.cloudfoundry.credhub.utils;
 
 import org.cloudfoundry.credhub.entity.RsaCredentialVersionData;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@RunWith(JUnit4.class)
 public class RsaCredentialHelperTest {
   @Test
   public void getKeyLength_returnsLengthOfPublicKey() {
@@ -41,13 +39,15 @@ public class RsaCredentialHelperTest {
     assertThat(rsaHelper.getKeyLength(), equalTo(0));
   }
 
-  @Test(expected = RuntimeException.class)
+  @Test
   public void getKeyLength_whenPublicKeyIsInvalid_throwsException() {
     final RsaCredentialVersionData rsaCredentialData = new RsaCredentialVersionData("testRsa");
     final String publicKey = "This is a key that is obviously incorrect. Is it not?";
     rsaCredentialData.setPublicKey(publicKey);
     final RsaCredentialHelper rsaHelper = new RsaCredentialHelper(rsaCredentialData);
 
-    rsaHelper.getKeyLength();
+    assertThrows(RuntimeException.class, () ->
+      rsaHelper.getKeyLength()
+    );
   }
 }

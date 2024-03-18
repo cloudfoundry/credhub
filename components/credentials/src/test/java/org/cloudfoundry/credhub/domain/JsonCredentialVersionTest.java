@@ -10,20 +10,17 @@ import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.entity.JsonCredentialVersionData;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static junit.framework.TestCase.fail;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@RunWith(JUnit4.class)
 public class JsonCredentialVersionTest {
 
   private JsonCredentialVersion subject;
@@ -31,7 +28,7 @@ public class JsonCredentialVersionTest {
 
   private JsonCredentialVersionData jsonCredentialData;
 
-  @Before
+  @BeforeEach
   public void beforeEach() throws JsonProcessingException {
     final String jsonString = "{\"simple\":\"just-a-string\",\"complex\":{\"key\":\"value\"}}";
     final ObjectMapper objectMapper = new ObjectMapper();

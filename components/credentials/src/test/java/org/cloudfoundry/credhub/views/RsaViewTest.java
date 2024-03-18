@@ -10,20 +10,17 @@ import org.cloudfoundry.credhub.domain.Encryptor;
 import org.cloudfoundry.credhub.domain.RsaCredentialVersion;
 import org.cloudfoundry.credhub.utils.JsonObjectMapper;
 import org.cloudfoundry.credhub.utils.TestConstants;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.cloudfoundry.credhub.helpers.JsonTestHelper.serializeToString;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 
-@RunWith(JUnit4.class)
 public class RsaViewTest {
 
   private RsaCredentialVersion entity;
@@ -32,7 +29,7 @@ public class RsaViewTest {
   private Instant createdAt;
   private JsonNode metadata;
 
-  @Before
+  @BeforeEach
   public void beforeEach() {
     encryptor = mock(Encryptor.class);
     uuid = UUID.randomUUID();

@@ -13,24 +13,21 @@ import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer;
 import org.cloudfoundry.credhub.utils.CertificateReader;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.cloudfoundry.credhub.utils.CertificateStringConstants.SELF_SIGNED_CA_CERT;
 import static org.cloudfoundry.credhub.utils.CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@RunWith(JUnit4.class)
 public class DefaultCertificateAuthorityServiceTest {
 
   private static final String CREDENTIAL_NAME = "/expectedCredential";
@@ -41,12 +38,12 @@ public class DefaultCertificateAuthorityServiceTest {
   private CertificateCredentialVersion certificateCredential;
   private CertificateCredentialVersion transitionalCertificateCredential;
 
-  @BeforeClass
+  @BeforeAll
   public static void setUpAll() {
     BouncyCastleFipsConfigurer.configure();
   }
 
-  @Before
+  @BeforeEach
   public void beforeEach() {
     if (Security.getProvider(BouncyCastleFipsProvider.PROVIDER_NAME) == null) {
       Security.addProvider(new BouncyCastleFipsProvider());

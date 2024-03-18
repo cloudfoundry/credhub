@@ -2,15 +2,12 @@ package org.cloudfoundry.credhub.requests;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cloudfoundry.credhub.helpers.JsonTestHelper;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 
-@RunWith(JUnit4.class)
 public class StringGenerationParametersTest {
 
   private final ObjectMapper objectMapper = JsonTestHelper.createObjectMapper();

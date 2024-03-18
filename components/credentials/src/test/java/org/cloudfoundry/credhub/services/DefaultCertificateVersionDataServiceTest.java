@@ -15,11 +15,9 @@ import org.cloudfoundry.credhub.entity.CredentialVersionData;
 import org.cloudfoundry.credhub.repositories.CredentialVersionRepository;
 import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer;
 import org.cloudfoundry.credhub.utils.TestConstants;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -34,7 +32,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(JUnit4.class)
 public class DefaultCertificateVersionDataServiceTest {
 
   private DefaultCertificateVersionDataService subject;
@@ -42,12 +39,12 @@ public class DefaultCertificateVersionDataServiceTest {
   private CredentialFactory factory;
   private CredentialDataService dataService;
 
-  @BeforeClass
+  @BeforeAll
   public static void setUpAll() {
     BouncyCastleFipsConfigurer.configure();
   }
 
-  @Before
+  @BeforeEach
   public void beforeEach() {
     if (Security.getProvider(BouncyCastleFipsProvider.PROVIDER_NAME) == null) {
       Security.addProvider(new BouncyCastleFipsProvider());

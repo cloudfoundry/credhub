@@ -5,19 +5,16 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 
 import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-@RunWith(JUnit4.class)
 public class RsaKeyPairGeneratorTest {
   private RsaKeyPairGenerator subject;
 
-  @Before
+  @BeforeEach
   public void beforeEach() throws Exception {
     BouncyCastleFipsConfigurer.configure();
     subject = new RsaKeyPairGenerator();

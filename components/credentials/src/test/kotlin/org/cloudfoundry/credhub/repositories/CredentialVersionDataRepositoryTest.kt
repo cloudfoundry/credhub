@@ -9,21 +9,18 @@ import org.cloudfoundry.credhub.entity.ValueCredentialVersionData
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver
 import org.hamcrest.MatcherAssert
 import org.hamcrest.core.IsEqual
-import org.junit.After
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.junit4.SpringRunner
 import java.nio.charset.StandardCharsets
 import java.util.Arrays
 import java.util.UUID
 import java.util.stream.Stream
 
-@RunWith(SpringRunner::class)
 @ActiveProfiles(value = ["unit-test"], resolver = DatabaseProfileResolver::class)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @SpringBootTest(classes = [CredhubTestApp::class])
@@ -36,14 +33,14 @@ class CredentialVersionDataRepositoryTest {
     private val canaryRepository: EncryptionKeyCanaryRepository? = null
     private var name: String? = null
     private var canaryUuid: UUID? = null
-    @Before
+    @BeforeEach
     fun beforeEach() {
         name = "my-credential"
         val canary = canaryRepository!!.save(EncryptionKeyCanary())
         canaryUuid = canary.uuid
     }
 
-    @After
+    @AfterEach
     fun tearDown() {
         credentialRepository!!.deleteAll()
     }

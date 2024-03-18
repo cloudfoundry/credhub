@@ -8,11 +8,9 @@ import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
 import org.cloudfoundry.credhub.exceptions.MalformedCertificateException;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -25,14 +23,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.core.IsEqual.equalTo;
 
-@RunWith(JUnit4.class)
 public class CertificateReaderTest {
-  @BeforeClass
+  @BeforeAll
   public static void setUpAll() {
     BouncyCastleFipsConfigurer.configure();
   }
 
-  @Before
+  @BeforeEach
   public void beforeEach() {
     if (Security.getProvider(BouncyCastleFipsProvider.PROVIDER_NAME) == null) {
       Security.addProvider(new BouncyCastleFipsProvider());

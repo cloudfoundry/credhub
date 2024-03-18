@@ -7,21 +7,21 @@ import org.cloudfoundry.credhub.credential.CertificateCredentialValue
 import org.cloudfoundry.credhub.exceptions.MalformedPrivateKeyException
 import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer
 import org.cloudfoundry.credhub.utils.TestConstants
-import org.junit.Before
-import org.junit.BeforeClass
-import org.junit.Test
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import java.security.Security
 
 class CertificateMatchesPrivateKeyValidatorTest {
     companion object {
-        @BeforeClass
+        @BeforeAll
         @JvmStatic
         fun setUp() {
             BouncyCastleFipsConfigurer.configure()
         }
     }
 
-    @Before
+    @BeforeEach
     fun beforeEach() {
         if (Security.getProvider(BouncyCastleFipsProvider.PROVIDER_NAME) == null) {
             Security.addProvider(BouncyCastleFipsProvider())

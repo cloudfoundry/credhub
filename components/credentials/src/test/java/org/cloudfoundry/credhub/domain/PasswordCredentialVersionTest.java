@@ -7,16 +7,15 @@ import org.cloudfoundry.credhub.entity.PasswordCredentialVersionData;
 import org.cloudfoundry.credhub.requests.StringGenerationParameters;
 import org.cloudfoundry.credhub.utils.JsonObjectMapper;
 import org.hamcrest.MatcherAssert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -24,7 +23,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(JUnit4.class)
 public class PasswordCredentialVersionTest {
 
   private static final String PASSWORD = "my-password";
@@ -40,7 +38,7 @@ public class PasswordCredentialVersionTest {
   private byte[] encryptedParametersValue;
   private byte[] parametersNonce;
 
-  @Before
+  @BeforeEach
   public void beforeEach() throws Exception {
     canaryUuid = UUID.randomUUID();
     encryptor = mock(Encryptor.class);
@@ -122,9 +120,11 @@ public class PasswordCredentialVersionTest {
     MatcherAssert.assertThat(subject.getGenerationParameters().isExcludeUpper(), equalTo(false));
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void setPasswordAndGenerationParameters_throwsAnExceptionWhenSettingANullValue() {
-    subject.setPasswordAndGenerationParameters(null, null);
+    assertThrows(IllegalArgumentException.class, () ->
+            subject.setPasswordAndGenerationParameters(null, null)
+    );
   }
 
   @Test

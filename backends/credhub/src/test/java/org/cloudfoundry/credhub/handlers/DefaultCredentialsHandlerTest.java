@@ -166,20 +166,20 @@ public class DefaultCredentialsHandlerTest {
 
   @Test
   public void deleteCredential_whenTheDeletionSucceeds_deletesTheCredential() {
-    when(credentialService.delete(eq(CREDENTIAL_NAME))).thenReturn(true);
+    when(credentialService.delete(CREDENTIAL_NAME)).thenReturn(true);
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.DELETE))
       .thenReturn(true);
 
     subjectWithAcls.deleteCredential(CREDENTIAL_NAME);
 
-    verify(credentialService, times(1)).delete(eq(CREDENTIAL_NAME));
+    verify(credentialService, times(1)).delete(CREDENTIAL_NAME);
   }
 
   @Test
   public void deleteCredential_whenTheCredentialIsNotDeleted_throwsAnException() {
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.DELETE))
       .thenReturn(true);
-    when(credentialService.delete(eq(CREDENTIAL_NAME))).thenReturn(false);
+    when(credentialService.delete(CREDENTIAL_NAME)).thenReturn(false);
 
     try {
       subjectWithAcls.deleteCredential(CREDENTIAL_NAME);
@@ -207,18 +207,18 @@ public class DefaultCredentialsHandlerTest {
 
   @Test
   public void deleteCredential_whenAclsDisabled_doesNotCheckPermission_andDeletesTheCredential() {
-    when(credentialService.delete(eq(CREDENTIAL_NAME))).thenReturn(true);
+    when(credentialService.delete(CREDENTIAL_NAME)).thenReturn(true);
 
     subjectWithoutAcls.deleteCredential(CREDENTIAL_NAME);
 
-    verify(credentialService, times(1)).delete(eq(CREDENTIAL_NAME));
+    verify(credentialService, times(1)).delete(CREDENTIAL_NAME);
     verify(permissionCheckingService, times(0)).hasPermission(any(), anyString(), any());
   }
 
   @Test
   public void getAllCredentialVersions_whenTheCredentialExists_returnsADataResponse() {
     final List<CredentialVersion> credentials = newArrayList(version1, version2);
-    when(credentialService.findAllByName(eq(CREDENTIAL_NAME)))
+    when(credentialService.findAllByName(CREDENTIAL_NAME))
       .thenReturn(credentials);
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.READ))
       .thenReturn(true);
@@ -235,7 +235,7 @@ public class DefaultCredentialsHandlerTest {
 
   @Test
   public void getAllCredentialVersions_whenTheCredentialDoesNotExist_throwsException() {
-    when(credentialService.findAllByName(eq(CREDENTIAL_NAME)))
+    when(credentialService.findAllByName(CREDENTIAL_NAME))
       .thenReturn(emptyList());
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.READ))
       .thenReturn(true);
@@ -266,7 +266,7 @@ public class DefaultCredentialsHandlerTest {
   @Test
   public void getAllCredentialVersions_whenAclsDisabled_doesNotCheckPermission_andReturnsADataResponse() {
     final List<CredentialVersion> credentials = newArrayList(version1, version2);
-    when(credentialService.findAllByName(eq(CREDENTIAL_NAME)))
+    when(credentialService.findAllByName(CREDENTIAL_NAME))
       .thenReturn(credentials);
 
     final DataResponse credentialVersions = subjectWithoutAcls.getAllCredentialVersions(CREDENTIAL_NAME);
@@ -282,7 +282,7 @@ public class DefaultCredentialsHandlerTest {
 
   @Test
   public void getCurrentCredentialVersion_whenTheCredentialExists_returnsDataResponse() {
-    when(credentialService.findActiveByName(eq(CREDENTIAL_NAME)))
+    when(credentialService.findActiveByName(CREDENTIAL_NAME))
       .thenReturn(Collections.singletonList(version1));
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.READ))
       .thenReturn(true);
@@ -322,7 +322,7 @@ public class DefaultCredentialsHandlerTest {
 
   @Test
   public void getCurrentCredentialVersion_whenAclsDisabled_andWhenTheCredentialExists_doesNotCheckPermission_returnsDataResponse() {
-    when(credentialService.findActiveByName(eq(CREDENTIAL_NAME)))
+    when(credentialService.findActiveByName(CREDENTIAL_NAME))
       .thenReturn(Collections.singletonList(version1));
 
 
@@ -338,7 +338,7 @@ public class DefaultCredentialsHandlerTest {
 
   @Test
   public void getCurrentCredentialVersions_whenTheCredentialExists_addsToAuditRecord() {
-    when(credentialService.findActiveByName(eq(CREDENTIAL_NAME)))
+    when(credentialService.findActiveByName(CREDENTIAL_NAME))
       .thenReturn(Collections.singletonList(version1));
 
     subjectWithoutAcls.getCurrentCredentialVersions(CREDENTIAL_NAME);
