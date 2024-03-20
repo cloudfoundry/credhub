@@ -45,7 +45,12 @@ abstract class CredentialVersionData<Z : CredentialVersionData<Z>>(credential: C
     @GenericGenerator(name = "uuid2", strategy = "uuid2")
     var uuid: UUID? = null
 
-    @OneToOne(cascade = [CascadeType.ALL])
+    @OneToOne(
+        cascade = [
+            CascadeType.PERSIST, CascadeType.MERGE,
+            CascadeType.REFRESH, CascadeType.DETACH
+        ]
+    )
     @NotFound(action = NotFoundAction.IGNORE)
     @JoinColumn(name = "encrypted_value_uuid")
     var encryptedCredentialValue: EncryptedValue? = null
