@@ -6,7 +6,7 @@ records were not deleted when the associated credentials were deleted.
 To clean up the orphaned `encrypted_value` records that accumulated
 on these older CredHub versions, run the SQL script below for your database type.
 
-### For postgresql database
+### For PostgreSQL
 ``` sql
 -- Step 1: Create indexes on the 3 related tables
 CREATE INDEX CONCURRENTLY IF NOT EXISTS credential_version_encrypted_value_uuid_idx ON credential_version USING btree (encrypted_value_uuid);
