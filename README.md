@@ -221,5 +221,5 @@ Assuming it works, that will generate some test client certificates for testing 
 
 ### Cleaning up orphaned encrypted_value records
 To clean up orphaned `encrypted_value` records from CredHub version 2.12.66 and
-ealier (https://github.com/cloudfoundry/credhub/issues/231), follow the steps decribed in
+earlier (https://github.com/cloudfoundry/credhub/issues/231), follow the steps decribed in
 [Cleaning up orphaned encrypted_value records](docs/orphaned-encryption-value-cleanup.md).
