@@ -37,12 +37,16 @@ buildscript {
         classpath("org.bouncycastle:bcpkix-fips:${bcpkixFipsVersion}")
     }
 
-    // Versions we're overriding from the Spring Boot Bom
+    // Versions we're overriding from the Spring Boot Bom (Dependabot does not issue PRs to bump these versions, so we need to manually bump them)
 
     // spring-boot 2.7.18 has dependency to spring-framework 5.3.31, which has
     // CVE-2024-22243. So, override that with spring-framework 5 latest patch
     // version. This should be removed once spring-boot version is bumped.
     ext["spring-framework.version"] = "5.3.32"
+    // spring-boot 2.7.18 provides spring-security 5.7.11, which has
+    // CVE-2024-22257. So, override that with spring-security 5.7 latest patch
+    // version. This should be removed once spring-boot version is bumped.
+    ext['spring-security.version'] = '5.7.12'
 }
 
 plugins {
