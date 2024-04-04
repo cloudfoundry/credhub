@@ -23,6 +23,15 @@ buildscript {
         springSecurityOauth2AutoconfigureVersion = '2.6.8'
         mariadbJdbcVersion = '2.7.12' // Bumping to v3 breaks some pipeline jobs, so pinning to v2 for now. v2 (current version) is stable and will be supported until about September 2025 (https://mariadb.com/kb/en/about-mariadb-connector-j/).
         snakeyamlVersion = '2.2'
+        grpcVersion = '1.62.2'
+        // We need to stay with protobuf-java & protoc 3.25.x as the latest
+        // grpc 1.62.2 still depends on protobuf-java & protoc 3.25.x. Once we
+        // bump grpc to version that depnds on protobuf-java & protoc to 4.x.x,
+        // it is likely that we are going to get conflicts because we also have
+        // direct dependency to protobuf 3.25.x. We will need to bump protobuf
+        // version to 4.x.x then.
+        protoBufJavaVersion = '3.25.3'
+        protoCVersion = '3.25.3'
     }
     repositories {
         mavenCentral()
