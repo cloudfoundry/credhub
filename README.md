@@ -129,6 +129,16 @@ Postgres datasource configuration is in `application-dev-postgres.yml`.
 
 Before development, you'll need to create the target database.
 
+A local Postgres server with docker can be started as follows:
+```
+docker run --name postgres-server \
+   --env POSTGRES_USER=pivotal \
+   --env POSTGRES_HOST_AUTH_METHOD=trust \
+   --detach \
+   --publish 5432:5432 \
+   postgres:15
+```
+
 ```sh
 createdb credhub_dev
 ```
