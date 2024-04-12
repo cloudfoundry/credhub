@@ -78,7 +78,7 @@ public class CertificateVersionDeleteTest {
   @Test
   public void deleteCertificateVersion_whenThereAreOtherVersionsOfTheCertificate_deletesTheSpecifiedVersion() throws Exception {
     UUID aUuid = UUID.randomUUID();
-    var nEncrypredValuesPre = encryptedValueDataService.countAllByCanaryUuid(aUuid);
+    var nEncryptedValuesPre = encryptedValueDataService.countAllByCanaryUuid(aUuid);
 
     final String credentialName = "/test-certificate";
 
@@ -91,7 +91,7 @@ public class CertificateVersionDeleteTest {
 
     final String version = RequestHelper.regenerateCertificate(mockMvc, uuid, false, ALL_PERMISSIONS_TOKEN);
     assertThat("One associated encrypted value exist for each certificate vesion",
-            encryptedValueDataService.countAllByCanaryUuid(aUuid), equalTo(nEncrypredValuesPre + 2));
+            encryptedValueDataService.countAllByCanaryUuid(aUuid), equalTo(nEncryptedValuesPre + 2));
 
     final String versionUuid = JsonPath.parse(version).read("$.id");
     final String versionValue = JsonPath.parse(version).read("$.value.certificate");
@@ -114,7 +114,7 @@ public class CertificateVersionDeleteTest {
     assertThat(jsonArray.length(), equalTo(1));
     assertThat(JsonPath.parse(jsonArray.get(0).toString()).read("$.value.certificate"), equalTo(nonDeletedVersion));
     assertThat("Associated encrypted value is deleted when the certificate version is deleted",
-            encryptedValueDataService.countAllByCanaryUuid(aUuid), equalTo(nEncrypredValuesPre + 1));
+            encryptedValueDataService.countAllByCanaryUuid(aUuid), equalTo(nEncryptedValuesPre + 1));
   }
 
   @Test

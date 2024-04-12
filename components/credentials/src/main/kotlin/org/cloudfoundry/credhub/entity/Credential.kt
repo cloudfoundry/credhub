@@ -5,10 +5,13 @@ import org.cloudfoundry.credhub.audit.AuditableCredential
 import org.cloudfoundry.credhub.constants.UuidConstants.Companion.UUID_BYTES
 import org.hibernate.annotations.GenericGenerator
 import java.util.UUID
+import javax.persistence.CascadeType
 import javax.persistence.Column
 import javax.persistence.Entity
+import javax.persistence.FetchType
 import javax.persistence.GeneratedValue
 import javax.persistence.Id
+import javax.persistence.OneToMany
 import javax.persistence.Table
 
 @Entity
@@ -20,6 +23,11 @@ class Credential : AuditableCredential {
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "uuid2")
     override var uuid: UUID? = null
+
+    @OneToMany(cascade = [CascadeType.REMOVE],
+        mappedBy = "credential", fetch = FetchType.EAGER)
+    var credentialVersions: MutableList<CredentialVersionData<*>> =
+        mutableListOf();
 
     @Column(nullable = false)
     override var name: String? = null
