@@ -24,10 +24,12 @@ class Credential : AuditableCredential {
     @GenericGenerator(name = "uuid2", strategy = "uuid2")
     override var uuid: UUID? = null
 
-    @OneToMany(cascade = [CascadeType.REMOVE],
-        mappedBy = "credential", fetch = FetchType.EAGER)
+    @OneToMany(
+        cascade = [CascadeType.REMOVE],
+        mappedBy = "credential", fetch = FetchType.EAGER
+    )
     var credentialVersions: MutableList<CredentialVersionData<*>> =
-        mutableListOf();
+        mutableListOf()
 
     @Column(nullable = false)
     override var name: String? = null
