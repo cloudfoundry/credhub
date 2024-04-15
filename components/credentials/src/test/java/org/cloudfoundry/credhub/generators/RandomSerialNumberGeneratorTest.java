@@ -3,15 +3,12 @@ package org.cloudfoundry.credhub.generators;
 import java.security.SecureRandom;
 
 import org.cloudfoundry.credhub.services.RandomNumberGenerator;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(JUnit4.class)
 public class RandomSerialNumberGeneratorTest {
   @Test
   public void generate_usesEncryptionServiceRandomNumber() throws Exception {

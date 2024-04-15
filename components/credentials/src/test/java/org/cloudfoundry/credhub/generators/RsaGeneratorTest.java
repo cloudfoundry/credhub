@@ -5,19 +5,16 @@ import java.security.KeyPair;
 import org.cloudfoundry.credhub.credential.RsaCredentialValue;
 import org.cloudfoundry.credhub.requests.RsaGenerationParameters;
 import org.cloudfoundry.credhub.utils.CertificateFormatter;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(JUnit4.class)
 public class RsaGeneratorTest {
 
   private RsaKeyPairGenerator keyPairGenerator;
@@ -26,7 +23,7 @@ public class RsaGeneratorTest {
 
   private KeyPair keyPair;
 
-  @Before
+  @BeforeEach
   public void beforeEach() throws Exception {
     keyPairGenerator = mock(RsaKeyPairGenerator.class);
     fakeKeyPairGenerator = new FakeKeyPairGenerator();

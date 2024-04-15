@@ -10,10 +10,8 @@ import net.minidev.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.TestHelper;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.cloudfoundry.credhub.helpers.JsonTestHelper.deserialize;
@@ -28,9 +26,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-@RunWith(JUnit4.class)
 public class CertificateSetRequestTest {
 
   final String setJson = JSONObject.toJSONString(
@@ -40,7 +37,7 @@ public class CertificateSetRequestTest {
       .put("private_key", TEST_PRIVATE_KEY)
       .build());
 
-  @Before
+  @BeforeEach
   public void beforeEach() {
     TestHelper.getBouncyCastleFipsProvider();
   }

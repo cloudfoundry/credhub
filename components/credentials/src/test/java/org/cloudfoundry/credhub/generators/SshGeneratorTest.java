@@ -6,19 +6,16 @@ import java.security.interfaces.RSAPublicKey;
 import org.cloudfoundry.credhub.credential.SshCredentialValue;
 import org.cloudfoundry.credhub.requests.SshGenerationParameters;
 import org.cloudfoundry.credhub.utils.CertificateFormatter;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(JUnit4.class)
 public class SshGeneratorTest {
 
   private SshGenerator subject;
@@ -26,7 +23,7 @@ public class SshGeneratorTest {
 
   private KeyPair keyPair;
 
-  @Before
+  @BeforeEach
   public void beforeEach() throws Exception {
     keyPairGeneratorMock = mock(RsaKeyPairGenerator.class);
     subject = new SshGenerator(keyPairGeneratorMock);

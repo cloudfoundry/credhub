@@ -12,10 +12,8 @@ import org.cloudfoundry.credhub.entity.SshCredentialVersionData;
 import org.cloudfoundry.credhub.entity.ValueCredentialVersionData;
 import org.cloudfoundry.credhub.requests.StringGenerationParameters;
 import org.cloudfoundry.credhub.services.RetryingEncryptionService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -23,7 +21,6 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@RunWith(JUnit4.class)
 public class CredentialRotationTest {
 
   private UUID activeEncryptionKeyUuid;
@@ -34,7 +31,7 @@ public class CredentialRotationTest {
   private RetryingEncryptionService encryptionService;
   private Encryptor encryptor;
 
-  @Before
+  @BeforeEach
   public void beforeEach() throws Exception {
     encryptionService = mock(RetryingEncryptionService.class);
     encryptor = new DefaultEncryptor(encryptionService);

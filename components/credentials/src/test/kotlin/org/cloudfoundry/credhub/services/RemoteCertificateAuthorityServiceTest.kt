@@ -15,16 +15,13 @@ import org.cloudfoundry.credhub.remote.RemoteBackendClient
 import org.cloudfoundry.credhub.remote.grpc.GetResponse
 import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters
 import org.cloudfoundry.credhub.utils.TestConstants
-import org.junit.Assert.assertEquals
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import java.util.UUID
 
-@RunWith(JUnit4::class)
 class RemoteCertificateAuthorityServiceTest {
 
     private val CA_NAME = "/test/ca"
@@ -35,7 +32,7 @@ class RemoteCertificateAuthorityServiceTest {
     private val objectMapper = ObjectMapper()
     private var client = mock(RemoteBackendClient::class.java)!!
 
-    @Before
+    @BeforeEach
     fun beforeEach() {
         objectMapper.propertyNamingStrategy = PropertyNamingStrategies.SNAKE_CASE
 

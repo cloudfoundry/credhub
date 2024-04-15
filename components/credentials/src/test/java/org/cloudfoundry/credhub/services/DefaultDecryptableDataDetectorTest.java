@@ -1,9 +1,7 @@
 package org.cloudfoundry.credhub.services;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -11,15 +9,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@RunWith(JUnit4.class)
 public class DefaultDecryptableDataDetectorTest {
 
-  private CredentialVersionDataService credentialVersionDataService;
-  private EncryptionKeySet keySet;
+  private static CredentialVersionDataService credentialVersionDataService;
+  private static EncryptionKeySet keySet;
   private DecryptableDataDetector decryptableDataDetector;
 
-  @Before
-  public void beforeEach() {
+  @BeforeAll
+  public static void beforeEach() {
     credentialVersionDataService = mock(CredentialVersionDataService.class);
     keySet = new EncryptionKeySet();
   }

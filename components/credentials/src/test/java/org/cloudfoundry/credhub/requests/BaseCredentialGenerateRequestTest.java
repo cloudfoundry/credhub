@@ -5,15 +5,13 @@ import java.io.IOException;
 import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.helpers.JsonTestHelper;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 import static org.cloudfoundry.credhub.helpers.JsonTestHelper.deserializeChecked;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@RunWith(JUnit4.class)
 public class BaseCredentialGenerateRequestTest {
 
   @Test
@@ -97,7 +95,7 @@ public class BaseCredentialGenerateRequestTest {
     }
   }
 
-  @Test(expected = ParameterizedValidationException.class)
+  @Test
   public void whenMetadataExceeds7000Characters_throwsException() throws IOException {
     final String json = "{\n" +
       "  \"name\": \"test\",\n" +
@@ -468,6 +466,6 @@ public class BaseCredentialGenerateRequestTest {
       "  }\n" +
       "}";
     BaseCredentialRequest baseCredentialGenerateRequest = deserializeChecked(json, BaseCredentialGenerateRequest.class);
-    baseCredentialGenerateRequest.validate();
+    assertThrows(ParameterizedValidationException.class, () -> baseCredentialGenerateRequest.validate());
   }
 }

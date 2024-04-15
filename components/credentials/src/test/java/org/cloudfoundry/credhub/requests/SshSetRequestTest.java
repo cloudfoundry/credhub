@@ -8,16 +8,13 @@ import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.helpers.JsonTestHelper;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-@RunWith(JUnit4.class)
 public class SshSetRequestTest {
   @Test
   public void deserializesToSshSetRequest() {
