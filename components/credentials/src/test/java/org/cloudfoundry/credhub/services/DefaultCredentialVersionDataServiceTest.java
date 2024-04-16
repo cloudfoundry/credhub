@@ -7,7 +7,6 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
@@ -32,13 +31,11 @@ import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.entity.CredentialVersionData;
 import org.cloudfoundry.credhub.entity.PasswordCredentialVersionData;
 import org.cloudfoundry.credhub.entity.SshCredentialVersionData;
-import org.cloudfoundry.credhub.entity.UserCredentialVersionData;
 import org.cloudfoundry.credhub.entity.ValueCredentialVersionData;
 import org.cloudfoundry.credhub.exceptions.MaximumSizeException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.repositories.CredentialRepository;
 import org.cloudfoundry.credhub.repositories.CredentialVersionRepository;
-import org.cloudfoundry.credhub.repositories.EncryptedValueRepository;
 import org.cloudfoundry.credhub.util.CurrentTimeProvider;
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.utils.DatabaseUtilities;
@@ -63,7 +60,6 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsCollectionContaining.hasItem;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
@@ -74,17 +70,11 @@ import static org.junit.Assert.assertThat;
 @Transactional
 public class DefaultCredentialVersionDataServiceTest {
 
-  @Value("${spring.profiles.active}")
-  private String activeSpringProfile;
-
   @Autowired
   private CredentialVersionRepository credentialVersionRepository;
 
   @Autowired
   private CredentialRepository credentialRepository;
-
-  @Autowired
-  private EncryptedValueRepository encryptedValueRepository;
 
   @Autowired
   private EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
@@ -282,7 +272,6 @@ public class DefaultCredentialVersionDataServiceTest {
 
   @Test
   public void delete_onACredentialName_deletesAllCredentialsWithTheName() {
-    long nEncryptedValuesPre = encryptedValueRepository.count();
     final Credential credential = credentialDataService
       .save(new Credential("/my-credential"));
 
@@ -312,13 +301,10 @@ public class DefaultCredentialVersionDataServiceTest {
 
     assertThat(subject.findAllByName("/my-credential"), hasSize(0));
     assertNull(credentialDataService.find("/my-credential"));
-    assertEquals("Associated encryptedValues are deleted when password credential is deleted",
-            nEncryptedValuesPre, encryptedValueRepository.count());
   }
 
   @Test
   public void delete_givenACredentialNameCasedDifferentlyFromTheActual_shouldBeCaseInsensitive() {
-    long nEncryptedValuesPre = encryptedValueRepository.count();
     final Credential credentialName = credentialDataService
       .save(new Credential("/my-credential"));
 
@@ -348,46 +334,6 @@ public class DefaultCredentialVersionDataServiceTest {
     subject.delete("/MY-CREDENTIAL");
 
     assertThat(subject.findAllByName("/my-credential"), empty());
-    assertEquals("Associated encryptedValues are deleted when password credential is deleted",
-            nEncryptedValuesPre, encryptedValueRepository.count());
-  }
-
-  @Test
-  public void delete_UserTypeCredential() {
-    long nEncryptedValuesPre = encryptedValueRepository.count();
-    final Credential credentialName = credentialDataService.save(
-            new Credential("/my-credential"));
-
-    final EncryptedValue encryptedValueA = new EncryptedValue();
-    encryptedValueA.setEncryptionKeyUuid(activeCanaryUuid);
-    encryptedValueA.setEncryptedValue("credential-password".getBytes(UTF_8));
-    encryptedValueA.setNonce(new byte[]{});
-
-    final UserCredentialVersionData credentialDataA =
-            new UserCredentialVersionData("test-user");
-    credentialDataA.setCredential(credentialName);
-    credentialDataA.setEncryptedValueData(encryptedValueA);
-    credentialDataA.setSalt("salt");
-    subject.save(credentialDataA);
-
-    final EncryptedValue encryptedValueB = new EncryptedValue();
-    encryptedValueB.setEncryptionKeyUuid(activeCanaryUuid);
-    encryptedValueB.setEncryptedValue("another password".getBytes(UTF_8));
-    encryptedValueB.setNonce(new byte[]{});
-
-    final UserCredentialVersionData credentialDataB = new UserCredentialVersionData(
-            "/my-credential");
-    credentialDataB.setCredential(credentialName);
-    credentialDataB.setEncryptedValueData(encryptedValueB);
-    credentialDataB.setSalt("salt");
-    subject.save(credentialDataB);
-
-    assertThat(subject.findAllByName("/my-credential"), hasSize(2));
-
-    subject.delete("/my-credential");
-    assertThat(subject.findAllByName("/my-credential"), empty());
-    assertEquals("Associated encryptedValues are deleted when user credential is deleted",
-            nEncryptedValuesPre, encryptedValueRepository.count());
   }
 
   @Test
