@@ -12,7 +12,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -282,7 +281,6 @@ public class DefaultCredentialVersionDataServiceTest {
   }
 
   @Test
-  @Transactional(propagation = Propagation.NEVER)
   public void delete_onACredentialName_deletesAllCredentialsWithTheName() {
     long nEncryptedValuesPre = encryptedValueRepository.count();
     final Credential credential = credentialDataService
@@ -319,7 +317,6 @@ public class DefaultCredentialVersionDataServiceTest {
   }
 
   @Test
-  @Transactional(propagation = Propagation.NEVER)
   public void delete_givenACredentialNameCasedDifferentlyFromTheActual_shouldBeCaseInsensitive() {
     long nEncryptedValuesPre = encryptedValueRepository.count();
     final Credential credentialName = credentialDataService
@@ -356,7 +353,6 @@ public class DefaultCredentialVersionDataServiceTest {
   }
 
   @Test
-  @Transactional(propagation = Propagation.NEVER)
   public void delete_UserTypeCredential() {
     long nEncryptedValuesPre = encryptedValueRepository.count();
     final Credential credentialName = credentialDataService.save(
