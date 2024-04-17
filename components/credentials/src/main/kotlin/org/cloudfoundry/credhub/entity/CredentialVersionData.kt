@@ -43,21 +43,21 @@ abstract class CredentialVersionData<Z : CredentialVersionData<Z>>(credential: C
     @Column(length = UuidConstants.UUID_BYTES, columnDefinition = "VARBINARY")
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "uuid2")
-    var uuid: UUID? = null
+    open var uuid: UUID? = null
 
     @OneToOne(cascade = [CascadeType.ALL])
     @NotFound(action = NotFoundAction.IGNORE)
     @JoinColumn(name = "encrypted_value_uuid")
-    var encryptedCredentialValue: EncryptedValue? = null
+    open var encryptedCredentialValue: EncryptedValue? = null
 
     @Convert(converter = InstantMillisecondsConverter::class)
     @Column(nullable = false, columnDefinition = "BIGINT NOT NULL")
     @CreatedDate
-    lateinit var versionCreatedAt: Instant
+    open lateinit var versionCreatedAt: Instant
 
     @ManyToOne
     @JoinColumn(name = "credential_uuid", nullable = false)
-    var credential: Credential? = credential
+    open var credential: Credential? = credential
 
     // this is mapped with updatable and insertable false since it's managed by the DiscriminatorColumn annotation
     // surfacing property here lets us use it in JPA queries
@@ -66,7 +66,7 @@ abstract class CredentialVersionData<Z : CredentialVersionData<Z>>(credential: C
 
     @Convert(converter = JsonNodeConverter::class)
     @Column(name = "metadata")
-    var metadata: JsonNode? = null
+    open var metadata: JsonNode? = null
 
     val nonce: ByteArray?
         get() = if (encryptedCredentialValue != null) this.encryptedCredentialValue!!.nonce else null
