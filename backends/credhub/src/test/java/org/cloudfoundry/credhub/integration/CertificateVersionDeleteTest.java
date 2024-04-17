@@ -1,5 +1,7 @@
 package org.cloudfoundry.credhub.integration;
 
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -13,6 +15,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import com.jayway.jsonpath.JsonPath;
 import org.cloudfoundry.credhub.CredhubTestApp;
+import org.cloudfoundry.credhub.data.EncryptedValueDataService;
 import org.cloudfoundry.credhub.helpers.RequestHelper;
 import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer;
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
@@ -51,6 +54,9 @@ public class CertificateVersionDeleteTest {
   @Autowired
   private WebApplicationContext webApplicationContext;
 
+  @Autowired
+  EncryptedValueDataService encryptedValueDataService;
+
   private MockMvc mockMvc;
 
   @Rule
@@ -71,6 +77,9 @@ public class CertificateVersionDeleteTest {
 
   @Test
   public void deleteCertificateVersion_whenThereAreOtherVersionsOfTheCertificate_deletesTheSpecifiedVersion() throws Exception {
+    UUID aUuid = UUID.randomUUID();
+    var nEncryptedValuesPre = encryptedValueDataService.countAllByCanaryUuid(aUuid);
+
     final String credentialName = "/test-certificate";
 
     String response = generateCertificateCredential(mockMvc, credentialName, true, "test", null, ALL_PERMISSIONS_TOKEN);
@@ -81,13 +90,14 @@ public class CertificateVersionDeleteTest {
       .read("$.certificates[0].id");
 
     final String version = RequestHelper.regenerateCertificate(mockMvc, uuid, false, ALL_PERMISSIONS_TOKEN);
+    assertThat("One associated encrypted value exist for each certificate vesion",
+            encryptedValueDataService.countAllByCanaryUuid(aUuid), equalTo(nEncryptedValuesPre + 2));
+
     final String versionUuid = JsonPath.parse(version).read("$.id");
     final String versionValue = JsonPath.parse(version).read("$.value.certificate");
-
     final MockHttpServletRequestBuilder request = delete("/api/v1/certificates/" + uuid + "/versions/" + versionUuid)
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON);
-
     response = mockMvc.perform(request)
       .andExpect(status().isOk())
       .andReturn().getResponse().getContentAsString();
@@ -103,6 +113,8 @@ public class CertificateVersionDeleteTest {
     final JSONArray jsonArray = new JSONArray(response);
     assertThat(jsonArray.length(), equalTo(1));
     assertThat(JsonPath.parse(jsonArray.get(0).toString()).read("$.value.certificate"), equalTo(nonDeletedVersion));
+    assertThat("Associated encrypted value is deleted when the certificate version is deleted",
+            encryptedValueDataService.countAllByCanaryUuid(aUuid), equalTo(nEncryptedValuesPre + 1));
   }
 
   @Test
