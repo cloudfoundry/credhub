@@ -1,5 +1,5 @@
 ## Cleaning up orphaned encrypted_value records
-CredHub version 2.12.66 and earlier had a bug where `encrypted_value`
+CredHub version 2.12.70 and earlier had a bug where `encrypted_value`
 records were not deleted when the associated credentials were deleted.
 (See https://github.com/cloudfoundry/credhub/issues/231.)
 

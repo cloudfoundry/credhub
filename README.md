@@ -230,6 +230,6 @@ CREDENTIAL_ROOT=/path/to/credhub/repo/plus/src/test/resources ./scripts/run_test
 Assuming it works, that will generate some test client certificates for testing mutual TLS (in `certs/` in the acceptance test directory) and run the acceptance test suite against your locally running credhub server.
 
 ### Cleaning up orphaned encrypted_value records
-To clean up orphaned `encrypted_value` records from CredHub version 2.12.66 and
+To clean up orphaned `encrypted_value` records from CredHub version 2.12.70 and
 earlier (https://github.com/cloudfoundry/credhub/issues/231), follow the steps decribed in
 [Cleaning up orphaned encrypted_value records](docs/orphaned-encryption-value-cleanup.md).
