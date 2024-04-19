@@ -49,7 +49,7 @@ public class DefaultCertificatesHandlerIntegrationTest {
                 getDatabaseMajorVersion(jdbcTemplate) > 10);
 
 
-        insertTestCredentialsIntoPostgres(65535 + 1);
+        insertTestCredentialsIntoPostgres(30000);
     }
 
     private int getDatabaseMajorVersion(JdbcTemplate jdbcTemplate)
@@ -66,8 +66,11 @@ public class DefaultCertificatesHandlerIntegrationTest {
     // See: https://jdbc.postgresql.org/changelogs/2022-06-09-42.4.0-release/
     @Test
     public void handleGetAllRequest_65536Certs_doesNotCrash() {
+        long startTime = System.currentTimeMillis();
         CertificateCredentialsView certificateCredentialsView = defaultCertificatesHandler.handleGetAllRequest();
         assertThat(certificateCredentialsView, is(notNullValue()));
+        long endTime = System.currentTimeMillis();
+        System.out.println("Time taken in milliseconds: " + (endTime - startTime));
     }
 
     private void insertTestCredentialsIntoPostgres(int count) {

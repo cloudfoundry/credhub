@@ -26,7 +26,7 @@ class Credential : AuditableCredential {
 
     @OneToMany(
         cascade = [CascadeType.REMOVE],
-        mappedBy = "credential", fetch = FetchType.LAZY
+        mappedBy = "credential", fetch = FetchType.EAGER
     )
     var credentialVersions: MutableList<CredentialVersionData<*>> =
         mutableListOf()
