@@ -13,8 +13,8 @@ class X509Config {
     fun x509ExtensionUtils(): X509ExtensionUtils {
         return X509ExtensionUtils(
             JcaDigestCalculatorProviderBuilder().build().get(
-                AlgorithmIdentifier(OIWObjectIdentifiers.idSHA1)
-            )
+                AlgorithmIdentifier(OIWObjectIdentifiers.idSHA1),
+            ),
         )
     }
 }

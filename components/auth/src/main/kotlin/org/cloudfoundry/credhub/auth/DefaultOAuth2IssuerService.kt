@@ -19,11 +19,12 @@ import java.util.HashMap
 @Service
 @ConditionalOnProperty("security.oauth2.enabled")
 @Profile("prod", "dev", "!unit-test")
-class DefaultOAuth2IssuerService @Autowired
+class DefaultOAuth2IssuerService
+@Autowired
 @Throws(URISyntaxException::class, CertificateException::class, NoSuchAlgorithmException::class, KeyStoreException::class, KeyManagementException::class, IOException::class)
 internal constructor(
     restTemplateFactory: RestTemplateFactory,
-    oAuthProperties: OAuthProperties
+    oAuthProperties: OAuthProperties,
 ) : OAuth2IssuerService {
 
     private val authServerUri: URI = oAuthProperties.issuerPath
@@ -40,7 +41,7 @@ internal constructor(
         issuer = restTemplate
             .getForEntity(
                 authServerUri,
-                HashMap::class.java
+                HashMap::class.java,
             )
             .body!!["issuer"] as String
 

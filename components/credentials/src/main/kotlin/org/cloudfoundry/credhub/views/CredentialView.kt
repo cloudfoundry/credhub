@@ -20,25 +20,29 @@ open class CredentialView {
     var versionCreatedAt: Instant? = null
         private set
     private var uuid: UUID? = null
+
     @get:JsonProperty("name")
     var name: String? = null
         private set
+
     @get:JsonProperty
     var type: String? = null
         private set
+
     @get:JsonProperty("metadata")
     open var metadata: JsonNode? = null
+
     @get:JsonProperty("value")
     open var value: CredentialValue? = null
 
-    constructor() : super() /* Jackson */ {}
+    constructor() : super() {}
     constructor(
         versionCreatedAt: Instant?,
         uuid: UUID?,
         name: String?,
         type: String?,
         metadata: JsonNode?,
-        value: CredentialValue?
+        value: CredentialValue?,
     ) : super() {
         this.versionCreatedAt = versionCreatedAt
         this.uuid = uuid

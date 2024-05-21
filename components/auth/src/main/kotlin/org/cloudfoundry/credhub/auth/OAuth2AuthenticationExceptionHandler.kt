@@ -27,7 +27,7 @@ import javax.servlet.http.HttpServletResponse
 @ConditionalOnProperty("security.oauth2.enabled")
 class OAuth2AuthenticationExceptionHandler @Autowired
 internal constructor(
-    private val currentTimeProvider: CurrentTimeProvider
+    private val currentTimeProvider: CurrentTimeProvider,
 ) : OAuth2AuthenticationEntryPoint() {
     private val objectMapper: JsonParser = JsonParserFactory.create()
 
@@ -35,7 +35,7 @@ internal constructor(
     override fun commence(
         request: HttpServletRequest,
         response: HttpServletResponse,
-        authException: AuthenticationException
+        authException: AuthenticationException,
     ) {
         handleException(request, response, authException)
     }
@@ -44,9 +44,8 @@ internal constructor(
     fun handleException(
         request: HttpServletRequest,
         response: HttpServletResponse,
-        runtimeException: RuntimeException
+        runtimeException: RuntimeException,
     ) {
-
         val token = request.getAttribute(OAuth2AuthenticationDetails.ACCESS_TOKEN_VALUE) as String?
 
         val tokenInformation = extractTokenInformation(token)
@@ -57,18 +56,19 @@ internal constructor(
         exception = when {
             tokenIsExpired(tokenInformation) -> AccessTokenExpiredException("Access token expired", cause!!)
             cause is InvalidSignatureException -> OAuthSignatureException(
-                removeTokenFromMessage(ErrorMessages.INVALID_TOKEN_SIGNATURE, token)
+                removeTokenFromMessage(ErrorMessages.INVALID_TOKEN_SIGNATURE, token),
             )
             cause is SignatureException -> OAuthSignatureException(
-                removeTokenFromMessage(ErrorMessages.MALFORMED_TOKEN, token)
+                removeTokenFromMessage(ErrorMessages.MALFORMED_TOKEN, token),
             )
             cause is CertPathValidatorException ->
                 InvalidUAACertificateException(
                     "Server unable to communicate with backend UAA due to untrusted CA: " + runtimeException.message,
-                    cause
+                    cause,
                 )
             else -> InvalidTokenException(
-                removeTokenFromMessage(runtimeException.message.toString(), token), cause
+                removeTokenFromMessage(runtimeException.message.toString(), token),
+                cause,
             )
         }
 

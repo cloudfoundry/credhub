@@ -19,7 +19,7 @@ class CertificateDataService @Autowired
 constructor(
     private val credentialRepository: CredentialRepository,
     private val auditRecord: CEFAuditRecord,
-    private val jdbcTemplate: NamedParameterJdbcTemplate
+    private val jdbcTemplate: NamedParameterJdbcTemplate,
 ) {
 
     fun findAll(): List<Credential> {
@@ -81,7 +81,7 @@ constructor(
                 rowSet.getBoolean("TRANSITIONAL"),
                 isCertificateAuthority,
                 isSelfSigned,
-                isGenerated
+                isGenerated,
             )
 
             val credentialUUID: UUID = toUUID(rowSet.getObject("CREDENTIAL_UUID")!!)
@@ -95,7 +95,7 @@ constructor(
                     credentialUUID,
                     name,
                     caName,
-                    mutableListOf(certificateVersionMetadata)
+                    mutableListOf(certificateVersionMetadata),
                 )
                 certificateMetadataMap[credentialUUID] = certificateMetadata
             }

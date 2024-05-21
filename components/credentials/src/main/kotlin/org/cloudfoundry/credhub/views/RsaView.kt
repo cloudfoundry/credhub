@@ -4,14 +4,14 @@ import org.cloudfoundry.credhub.credential.RsaCredentialValue
 import org.cloudfoundry.credhub.domain.RsaCredentialVersion
 
 class RsaView : CredentialView {
-    internal constructor() : super() /* Jackson */ {}
+    internal constructor() : super() {}
     internal constructor(rsaCredential: RsaCredentialVersion) : super(
         rsaCredential.versionCreatedAt,
         rsaCredential.uuid,
         rsaCredential.name,
         rsaCredential.getCredentialType(),
         rsaCredential.metadata,
-        RsaCredentialValue(rsaCredential.publicKey, rsaCredential.privateKey)
+        RsaCredentialValue(rsaCredential.publicKey, rsaCredential.privateKey),
     ) {
     }
 }

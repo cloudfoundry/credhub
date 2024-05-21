@@ -95,7 +95,7 @@ class DefaultCredentialServiceTest {
             credentialFactory,
             certificateAuthorityService,
             credentialDataService,
-            auditRecord
+            auditRecord,
         )
 
         generationParameters = mock<StringGenerationParameters>(StringGenerationParameters::class.java)
@@ -201,7 +201,7 @@ class DefaultCredentialServiceTest {
         val passwordCredentialVersion = PasswordCredentialVersion(
             stringCredentialValue,
             request.generationParameters as StringGenerationParameters,
-            encryptor
+            encryptor,
         )
 
         `when`<CredentialVersion>(
@@ -211,8 +211,8 @@ class DefaultCredentialServiceTest {
                 stringCredentialValue,
                 null,
                 request.generationParameters,
-                null
-            )
+                null,
+            ),
         ).thenReturn(passwordCredentialVersion)
 
         this.subject.save(null, stringCredentialValue, request)
@@ -281,7 +281,7 @@ class DefaultCredentialServiceTest {
         val passwordCredentialVersion = PasswordCredentialVersion(
             stringCredentialValue,
             stringGenerationParameters,
-            encryptor
+            encryptor,
         )
 
         `when`(generateRequest.type).thenReturn("password")
@@ -302,8 +302,8 @@ class DefaultCredentialServiceTest {
                 credentialValue,
                 originalCredentialVersion,
                 generationParameters,
-                null
-            )
+                null,
+            ),
         ).thenReturn(newVersion)
 
         this.subject.save(originalCredentialVersion, credentialValue, generateRequest)
@@ -346,7 +346,7 @@ class DefaultCredentialServiceTest {
         val passwordCredentialVersion = PasswordCredentialVersion(
             stringCredentialValue,
             stringGenerationParameters,
-            encryptor
+            encryptor,
         )
 
         `when`(request.type).thenReturn("password")
@@ -367,8 +367,8 @@ class DefaultCredentialServiceTest {
                 stringCredentialValue,
                 originalCredentialVersion,
                 stringGenerationParameters,
-                null
-            )
+                null,
+            ),
         ).thenReturn(newVersion)
 
         this.subject.save(originalCredentialVersion, stringCredentialValue, request)
@@ -486,8 +486,8 @@ class DefaultCredentialServiceTest {
                 certificateCredentialValue,
                 originalCredentialVersion,
                 generateRequest.generationParameters,
-                null
-            )
+                null,
+            ),
         ).thenReturn(certificateCredentialVersion)
         `when`(originalCredentialVersion.getCredentialType()).thenReturn("certificate")
 

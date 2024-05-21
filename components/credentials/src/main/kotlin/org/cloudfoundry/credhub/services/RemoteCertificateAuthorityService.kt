@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component
 class RemoteCertificateAuthorityService(
     private val userContextHolder: UserContextHolder,
     private val objectMapper: ObjectMapper,
-    private val client: RemoteBackendClient
+    private val client: RemoteBackendClient,
 ) : CertificateAuthorityService {
 
     override fun findActiveVersion(caName: String): CertificateCredentialValue? {
@@ -55,7 +55,7 @@ class RemoteCertificateAuthorityService(
             jsonNode["certificate_authority"]?.booleanValue() ?: false,
             jsonNode["self_signed"]?.booleanValue() ?: false,
             jsonNode["generated"]?.booleanValue() ?: false,
-            jsonNode["transitional"]?.booleanValue() ?: false
+            jsonNode["transitional"]?.booleanValue() ?: false,
         )
     }
 }

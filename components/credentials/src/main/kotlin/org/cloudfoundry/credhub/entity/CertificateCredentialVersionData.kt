@@ -54,7 +54,9 @@ class CertificateCredentialVersionData : CredentialVersionData<CertificateCreden
     var isSelfSigned: Boolean
         get() = if (selfSigned == null) {
             false
-        } else selfSigned!!
+        } else {
+            selfSigned!!
+        }
         set(selfSigned) {
             this.selfSigned = selfSigned
         }
@@ -62,7 +64,9 @@ class CertificateCredentialVersionData : CredentialVersionData<CertificateCreden
     var isCertificateAuthority: Boolean
         get() = if (certificateAuthority == null) {
             false
-        } else certificateAuthority!!
+        } else {
+            certificateAuthority!!
+        }
         set(certificateAuthority) {
             this.certificateAuthority = certificateAuthority
         }

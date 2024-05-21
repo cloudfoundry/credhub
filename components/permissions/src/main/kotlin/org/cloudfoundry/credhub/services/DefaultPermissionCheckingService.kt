@@ -13,7 +13,7 @@ import java.util.UUID
 class DefaultPermissionCheckingService @Autowired
 constructor(
     private val permissionDataService: PermissionDataService,
-    private val userContextHolder: UserContextHolder
+    private val userContextHolder: UserContextHolder,
 ) : PermissionCheckingService {
 
     @Value("\${security.authorization.acls.enabled}")

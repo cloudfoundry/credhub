@@ -9,5 +9,5 @@ class CertificateVersionMetadata(
     var isTransitional: Boolean,
     var isCertificateAuthority: Boolean,
     var isSelfSigned: Boolean,
-    var generated: Boolean?
+    var generated: Boolean?,
 )

@@ -17,14 +17,14 @@ import javax.servlet.http.HttpServletResponse
 @Component
 class X509AuthenticationFailureHandler @Autowired
 internal constructor(
-    private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
 ) : AuthenticationFailureHandler {
 
     @Throws(IOException::class)
     override fun onAuthenticationFailure(
         request: HttpServletRequest,
         response: HttpServletResponse,
-        exception: AuthenticationException
+        exception: AuthenticationException,
     ) {
         if (exception.message.toString().contains(INVALID_DN_MESSAGE)) {
             writeUnauthorizedResponse(response, INVALID_MTLS_ID_RESPONSE)

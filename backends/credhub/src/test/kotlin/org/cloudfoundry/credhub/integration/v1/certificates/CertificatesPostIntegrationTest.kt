@@ -86,7 +86,7 @@ class CertificatesPostIntegrationTest {
             true,
             "leaf-cert",
             CA_NAME,
-            ALL_PERMISSIONS_TOKEN
+            ALL_PERMISSIONS_TOKEN,
         )
 
         val certCredentialUuid = getCertificateId(mockMvc, certificateName)
@@ -120,7 +120,7 @@ class CertificatesPostIntegrationTest {
             true,
             "leaf-cert",
             CA_NAME,
-            ALL_PERMISSIONS_TOKEN
+            ALL_PERMISSIONS_TOKEN,
         )
         val regenerateCertificateResponse = regenerateCertificate(mockMvc, caCredentialUuid, true, ALL_PERMISSIONS_TOKEN)
         caCertificate = JsonPath.parse(regenerateCertificateResponse)

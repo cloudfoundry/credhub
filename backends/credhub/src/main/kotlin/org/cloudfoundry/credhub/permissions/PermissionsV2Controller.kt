@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping(
     path = [PermissionsV2Controller.ENDPOINT],
-    produces = [MediaType.APPLICATION_JSON_UTF8_VALUE]
+    produces = [MediaType.APPLICATION_JSON_UTF8_VALUE],
 )
 class PermissionsV2Controller(private val permissionsHandler: PermissionsV2Handler) {
 
@@ -29,7 +29,7 @@ class PermissionsV2Controller(private val permissionsHandler: PermissionsV2Handl
     @RequestMapping(
         method = [RequestMethod.POST],
         path = [""],
-        consumes = [MediaType.APPLICATION_JSON_UTF8_VALUE]
+        consumes = [MediaType.APPLICATION_JSON_UTF8_VALUE],
     )
     @ResponseStatus(HttpStatus.CREATED)
     fun postPermissions(@Validated @RequestBody permissionsRequest: PermissionsV2Request): PermissionsV2View {
@@ -46,7 +46,7 @@ class PermissionsV2Controller(private val permissionsHandler: PermissionsV2Handl
     @ResponseStatus(HttpStatus.OK)
     fun findByPathAndActor(
         @RequestParam path: String,
-        @RequestParam actor: String
+        @RequestParam actor: String,
     ): PermissionsV2View {
         val pathWithPrependedSlash = StringUtils.prependIfMissing(path, "/")
 
@@ -57,7 +57,7 @@ class PermissionsV2Controller(private val permissionsHandler: PermissionsV2Handl
     @ResponseStatus(HttpStatus.OK)
     fun putPermissions(
         @Validated @RequestBody permissionsRequest: PermissionsV2Request,
-        @PathVariable("uuid") uuid: String
+        @PathVariable("uuid") uuid: String,
     ): PermissionsV2View {
         return permissionsHandler.putPermissions(uuid, permissionsRequest)
     }
@@ -66,7 +66,7 @@ class PermissionsV2Controller(private val permissionsHandler: PermissionsV2Handl
     @ResponseStatus(HttpStatus.OK)
     fun patchPermissions(
         @Validated @RequestBody request: PermissionsV2PatchRequest,
-        @PathVariable("uuid") uuid: String
+        @PathVariable("uuid") uuid: String,
     ): PermissionsV2View {
         return permissionsHandler.patchPermissions(uuid, request.operations)
     }

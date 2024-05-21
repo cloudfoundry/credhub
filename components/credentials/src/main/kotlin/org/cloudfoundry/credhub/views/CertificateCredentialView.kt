@@ -8,26 +8,30 @@ class CertificateCredentialView {
     @get:JsonProperty("name")
     var name: String? = null
         private set
+
     @get:JsonProperty("id")
     var uUID: UUID? = null
         private set
+
     @get:JsonProperty("versions")
     var certificateVersionViews: List<CertificateVersionView>? = null
         private set
+
     @get:JsonProperty("signed_by")
     var signedBy: String? = null
         private set
+
     @get:JsonProperty("signs")
     var signs: List<String>? = null
         private set
 
-    constructor() : super() /* Jackson */ {}
+    constructor() : super() {}
     constructor(
         name: String?,
         uuid: UUID?,
         certificateVersionViews: @NotNull MutableList<CertificateVersionView>?,
         signedBy: String?,
-        signs: List<String>?
+        signs: List<String>?,
     ) : super() {
         this.name = name
         uUID = uuid

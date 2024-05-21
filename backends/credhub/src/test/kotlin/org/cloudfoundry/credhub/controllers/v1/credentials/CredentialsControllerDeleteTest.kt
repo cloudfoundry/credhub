@@ -49,7 +49,7 @@ class CredentialsControllerDeleteTest {
             spyCredentialsHandler,
             CEFAuditRecord(),
             spyRegenerateHandler,
-            objectMapper
+            objectMapper,
         )
         mockMvc = MockMvcFactory.newSpringRestDocMockMvc(credentialController, restDocumentation)
 
@@ -64,7 +64,7 @@ class CredentialsControllerDeleteTest {
             delete("${CredentialsController.ENDPOINT}?name=/some-credential-name")
                 .credHubAuthHeader()
                 .contentType(MediaType.APPLICATION_JSON)
-                .param("name", "/some-credential-name")
+                .param("name", "/some-credential-name"),
         )
             .andExpect(status().isNoContent())
             .andDo(
@@ -72,9 +72,9 @@ class CredentialsControllerDeleteTest {
                     CredHubRestDocs.DOCUMENT_IDENTIFIER,
                     requestParameters(
                         parameterWithName("name")
-                            .description("The credential name")
-                    )
-                )
+                            .description("The credential name"),
+                    ),
+                ),
             )
             .andReturn()
 

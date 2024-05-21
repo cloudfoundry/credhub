@@ -40,7 +40,6 @@ class KeyUsageControllerTest {
 
     @Before
     fun setUp() {
-
         keyUsageHandler = SpyKeyUsageHandler()
         val keyUsageController = KeyUsageController(keyUsageHandler)
 
@@ -70,13 +69,13 @@ class KeyUsageControllerTest {
         val mvcResult = mockMvc.perform(
             get(KeyUsageController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
-                .credHubAuthHeader()
+                .credHubAuthHeader(),
         ).andExpect(status().isOk)
             .andExpect(MockMvcResultMatchers.content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
             .andDo(
                 document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER
-                )
+                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                ),
             ).andReturn()
 
         JSONAssert.assertEquals(mvcResult.response.contentAsString, responseBody, true)

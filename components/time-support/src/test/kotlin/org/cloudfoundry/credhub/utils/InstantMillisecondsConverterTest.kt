@@ -23,7 +23,7 @@ class InstantMillisecondsConverterTest {
     fun canConvertADBRepresentationIntoAnInstant() {
         assertThat(
             subject.convertToEntityAttribute(234234321L),
-            equalTo(Instant.ofEpochMilli(234234321L))
+            equalTo(Instant.ofEpochMilli(234234321L)),
         )
     }
 }

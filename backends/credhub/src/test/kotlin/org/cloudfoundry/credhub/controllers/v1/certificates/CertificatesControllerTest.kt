@@ -79,7 +79,7 @@ class CertificatesControllerTest {
 
         val certificateController = CertificatesController(
             spyCertificatesHandler,
-            CEFAuditRecord()
+            CEFAuditRecord(),
         )
 
         mockMvc = MockMvcFactory.newSpringRestDocMockMvc(certificateController, restDocumentation)
@@ -101,7 +101,7 @@ class CertificatesControllerTest {
             false,
             false,
             true,
-            true
+            true,
         )
 
         certificateCredentialVersion = CertificateCredentialVersion(certificateCredentialValue, name, SpyEncryptor())
@@ -131,7 +131,7 @@ class CertificatesControllerTest {
                     .credHubAuthHeader()
                     .accept(MediaType.APPLICATION_JSON)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(requestBody)
+                    .content(requestBody),
             ).andExpect(status().isOk)
             .andDo(
                 document(
@@ -149,12 +149,12 @@ class CertificatesControllerTest {
                             .description("Additional metadata of the credential.")
                             .optional(),
                         fieldWithPath("metadata.*")
-                            .ignored()
+                            .ignored(),
                     ),
                     pathParameters(
-                        getCertificateIdPathParameter()
-                    )
-                )
+                        getCertificateIdPathParameter(),
+                    ),
+                ),
 
             ).andReturn()
 
@@ -199,7 +199,7 @@ class CertificatesControllerTest {
                 expiryDate = Instant.ofEpochSecond(1549053472L).plus(365, ChronoUnit.DAYS),
                 certificateAuthority = false,
                 selfSigned = false,
-                generated = false
+                generated = false,
             ),
             CertificateVersionView(
                 id = UUID.randomUUID(),
@@ -207,14 +207,14 @@ class CertificatesControllerTest {
                 expiryDate = Instant.ofEpochSecond(1549053472L),
                 certificateAuthority = false,
                 selfSigned = false,
-                generated = false
-            )
+                generated = false,
+            ),
         )
         var cert1Name = "/cert1"
         var cert2Name = "/cert2"
 
         val certificateCredentialsView = CertificateCredentialsView(
-            listOf(CertificateCredentialView(name, certificateId, certificateVersions, caName, listOf(cert1Name, cert2Name)))
+            listOf(CertificateCredentialView(name, certificateId, certificateVersions, caName, listOf(cert1Name, cert2Name))),
         )
         spyCertificatesHandler.handleGetAllRequest__returns_certificateCredentialsView = certificateCredentialsView
 
@@ -222,12 +222,12 @@ class CertificatesControllerTest {
             .perform(
                 get(CertificatesController.ENDPOINT)
                     .credHubAuthHeader()
-                    .accept(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON),
             ).andExpect(status().isOk)
             .andDo(
                 document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER
-                )
+                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                ),
             ).andReturn()
 
         // language=json
@@ -276,14 +276,14 @@ class CertificatesControllerTest {
                 expiryDate = Instant.ofEpochSecond(1549053472L).plus(365, ChronoUnit.DAYS),
                 certificateAuthority = false,
                 selfSigned = false,
-                generated = null
-            )
+                generated = null,
+            ),
         )
         var cert1Name = "/cert1"
         var cert2Name = "/cert2"
 
         val certificateCredentialsView = CertificateCredentialsView(
-            listOf(CertificateCredentialView(name, certificateId, certificateVersions, caName, listOf(cert1Name, cert2Name)))
+            listOf(CertificateCredentialView(name, certificateId, certificateVersions, caName, listOf(cert1Name, cert2Name))),
         )
         spyCertificatesHandler.handleGetAllRequest__returns_certificateCredentialsView = certificateCredentialsView
 
@@ -291,7 +291,7 @@ class CertificatesControllerTest {
             .perform(
                 get(CertificatesController.ENDPOINT)
                     .credHubAuthHeader()
-                    .accept(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON),
             ).andExpect(status().isOk)
             .andReturn()
 
@@ -332,14 +332,14 @@ class CertificatesControllerTest {
                 expiryDate = null,
                 certificateAuthority = false,
                 selfSigned = false,
-                generated = true
-            )
+                generated = true,
+            ),
         )
         var cert1Name = "/cert1"
         var cert2Name = "/cert2"
 
         val certificateCredentialsView = CertificateCredentialsView(
-            listOf(CertificateCredentialView(name, certificateId, certificateVersions, caName, listOf(cert1Name, cert2Name)))
+            listOf(CertificateCredentialView(name, certificateId, certificateVersions, caName, listOf(cert1Name, cert2Name))),
         )
         spyCertificatesHandler.handleGetAllRequest__returns_certificateCredentialsView = certificateCredentialsView
 
@@ -347,7 +347,7 @@ class CertificatesControllerTest {
             .perform(
                 get(CertificatesController.ENDPOINT)
                     .credHubAuthHeader()
-                    .accept(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON),
             ).andExpect(status().isOk)
             .andReturn()
 
@@ -389,14 +389,14 @@ class CertificatesControllerTest {
                 expiryDate = Instant.ofEpochSecond(1549053472L),
                 certificateAuthority = false,
                 selfSigned = false,
-                generated = false
-            )
+                generated = false,
+            ),
         )
         var cert1Name = "/cert1"
         var cert2Name = "/cert2"
 
         val certificateCredentialsView = CertificateCredentialsView(
-            listOf(CertificateCredentialView(name, certificateId, certificateVersions, caName, listOf(cert1Name, cert2Name)))
+            listOf(CertificateCredentialView(name, certificateId, certificateVersions, caName, listOf(cert1Name, cert2Name))),
         )
         spyCertificatesHandler.handleGetByNameRequest__returns_certificateCredentialsView = certificateCredentialsView
 
@@ -405,13 +405,13 @@ class CertificatesControllerTest {
                 get(CertificatesController.ENDPOINT)
                     .credHubAuthHeader()
                     .accept(MediaType.APPLICATION_JSON)
-                    .param("name", name)
+                    .param("name", name),
             ).andExpect(status().isOk)
             .andDo(
                 document(
                     CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    requestParameters(parameterWithName("name").description("The name of the certificate."))
-                )
+                    requestParameters(parameterWithName("name").description("The name of the certificate.")),
+                ),
             ).andReturn()
 
         // language=json
@@ -453,14 +453,14 @@ class CertificatesControllerTest {
                 expiryDate = Instant.ofEpochSecond(1549053472L),
                 certificateAuthority = false,
                 selfSigned = false,
-                generated = null
-            )
+                generated = null,
+            ),
         )
         var cert1Name = "/cert1"
         var cert2Name = "/cert2"
 
         val certificateCredentialsView = CertificateCredentialsView(
-            listOf(CertificateCredentialView(name, certificateId, certificateVersions, caName, listOf(cert1Name, cert2Name)))
+            listOf(CertificateCredentialView(name, certificateId, certificateVersions, caName, listOf(cert1Name, cert2Name))),
         )
         spyCertificatesHandler.handleGetByNameRequest__returns_certificateCredentialsView = certificateCredentialsView
 
@@ -469,7 +469,7 @@ class CertificatesControllerTest {
                 get(CertificatesController.ENDPOINT)
                     .credHubAuthHeader()
                     .accept(MediaType.APPLICATION_JSON)
-                    .param("name", name)
+                    .param("name", name),
             ).andExpect(status().isOk).andReturn()
 
         // language=json
@@ -518,7 +518,7 @@ class CertificatesControllerTest {
                     .credHubAuthHeader()
                     .accept(MediaType.APPLICATION_JSON)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(requestBody)
+                    .content(requestBody),
             ).andExpect(status().isOk)
             .andDo(
                 document(
@@ -526,12 +526,12 @@ class CertificatesControllerTest {
                     requestFields(
                         fieldWithPath("version")
                             .description("Version UUID of certificate to set as transitional. Set version to null to ensure no versions are transitional.")
-                            .type(JsonFieldType.STRING)
+                            .type(JsonFieldType.STRING),
                     ),
                     pathParameters(
-                        getCertificateIdPathParameter()
-                    )
-                )
+                        getCertificateIdPathParameter(),
+                    ),
+                ),
 
             ).andReturn()
 
@@ -550,19 +550,19 @@ class CertificatesControllerTest {
             get("${CertificatesController.ENDPOINT}/{certificateId}/versions", certificateId.toString())
                 .credHubAuthHeader()
                 .accept(MediaType.APPLICATION_JSON)
-                .param("current", "true")
+                .param("current", "true"),
         ).andExpect(status().isOk)
             .andDo(
                 document(
                     CredHubRestDocs.DOCUMENT_IDENTIFIER,
                     requestParameters(
                         parameterWithName("current").description("Return current active version")
-                            .optional()
+                            .optional(),
                     ),
                     pathParameters(
-                        getCertificateIdPathParameter()
-                    )
-                )
+                        getCertificateIdPathParameter(),
+                    ),
+                ),
             ).andReturn()
 
         assertThat(spyCertificatesHandler.handleGetAllVersionsRequest__calledWith_current).isTrue()
@@ -596,7 +596,6 @@ class CertificatesControllerTest {
 
     @Test
     fun GET__certificateVersions__WhenGeneratedIsNull_returns_certificatesWithoutGeneratedField() {
-
         val value = CertificateCredentialValue(
             TestConstants.TEST_CA,
             TestConstants.TEST_CERTIFICATE,
@@ -605,7 +604,7 @@ class CertificatesControllerTest {
             false,
             false,
             null,
-            true
+            true,
         )
 
         val credentialVersion = CertificateCredentialVersion(value, name, SpyEncryptor())
@@ -621,7 +620,7 @@ class CertificatesControllerTest {
             get("${CertificatesController.ENDPOINT}/{certificateId}/versions", certificateId.toString())
                 .credHubAuthHeader()
                 .accept(MediaType.APPLICATION_JSON)
-                .param("current", "true")
+                .param("current", "true"),
         ).andExpect(status().isOk).andReturn()
 
         assertThat(spyCertificatesHandler.handleGetAllVersionsRequest__calledWith_current).isTrue()
@@ -662,7 +661,7 @@ class CertificatesControllerTest {
             false,
             false,
             false,
-            true
+            true,
         )
 
         val expectedCertificateCredentialVersion = CertificateCredentialVersion(expectedCertificateCredentialValue, name, SpyEncryptor())
@@ -693,15 +692,15 @@ class CertificatesControllerTest {
                 .accept(MediaType.APPLICATION_JSON)
                 .characterEncoding("utf-8")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody)
+                .content(requestBody),
         ).andExpect(status().isOk)
             .andDo(
                 document(
                     CredHubRestDocs.DOCUMENT_IDENTIFIER,
                     pathParameters(
-                        getCertificateIdPathParameter()
-                    )
-                )
+                        getCertificateIdPathParameter(),
+                    ),
+                ),
             ).andReturn()
 
         JSONAssert.assertEquals(mvcResult.request.contentAsString, requestBody, true)
@@ -741,16 +740,16 @@ class CertificatesControllerTest {
         val mvcResult = mockMvc.perform(
             delete("${CertificatesController.ENDPOINT}/{certificateId}/versions/{versionId}", certificateId.toString(), versionId.toString())
                 .credHubAuthHeader()
-                .accept(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON),
         ).andExpect(status().isOk)
             .andDo(
                 document(
                     CredHubRestDocs.DOCUMENT_IDENTIFIER,
                     pathParameters(
                         getCertificateIdPathParameter(),
-                        parameterWithName("versionId").description("Version Id")
-                    )
-                )
+                        parameterWithName("versionId").description("Version Id"),
+                    ),
+                ),
             ).andReturn()
 
         assertThat(spyCertificatesHandler.handleDeleteVersionRequest__calledWith_certificateId).isEqualTo(certificateId.toString())

@@ -74,7 +74,7 @@ class CredentialsControllerGetTest {
             spyCredentialsHandler,
             CEFAuditRecord(),
             spyRegenerateHandler,
-            objectMapper
+            objectMapper,
         )
 
         metadata = objectMapper.readTree("{\"description\":\"example metadata\"}")
@@ -95,13 +95,13 @@ class CredentialsControllerGetTest {
             "/some-value-path",
             CredentialType.VALUE.type.lowercase(),
             metadata,
-            StringCredentialValue("some-value")
+            StringCredentialValue("some-value"),
         )
 
         val mvcResult = mockMvc.perform(
             get("${CredentialsController.ENDPOINT}/{uuid}", uuid.toString())
                 .contentType(MediaType.APPLICATION_JSON)
-                .credHubAuthHeader()
+                .credHubAuthHeader(),
         )
             .andExpect(status().isOk)
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -109,9 +109,9 @@ class CredentialsControllerGetTest {
                 document(
                     CredHubRestDocs.DOCUMENT_IDENTIFIER,
                     pathParameters(
-                        parameterWithName("uuid").description("The credential uuid")
-                    )
-                )
+                        parameterWithName("uuid").description("The credential uuid"),
+                    ),
+                ),
             ).andReturn()
 
         assertThat(spyCredentialsHandler.getCredentialVersionByUUID__calledWith_credentialUUID).isEqualTo(uuid.toString())
@@ -126,7 +126,7 @@ class CredentialsControllerGetTest {
               "metadata": { "description": "example metadata"},
               "value": "some-value"
             }
-        """.trimMargin()
+            """.trimMargin()
         val actualResponseBody = mvcResult.response.contentAsString
         JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true)
     }
@@ -147,15 +147,15 @@ class CredentialsControllerGetTest {
                     {
                         "some-json-key": "some-json-value"
                     }
-                    """.trimIndent()
-                )
-            )
+                    """.trimIndent(),
+                ),
+            ),
         )
 
         val mvcResult = mockMvc.perform(
             get("${CredentialsController.ENDPOINT}/{uuid}", uuid.toString())
                 .contentType(MediaType.APPLICATION_JSON)
-                .credHubAuthHeader()
+                .credHubAuthHeader(),
         )
             .andExpect(status().isOk)
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -163,9 +163,9 @@ class CredentialsControllerGetTest {
                 document(
                     CredHubRestDocs.DOCUMENT_IDENTIFIER,
                     pathParameters(
-                        parameterWithName("uuid").description("The credential uuid")
-                    )
-                )
+                        parameterWithName("uuid").description("The credential uuid"),
+                    ),
+                ),
             ).andReturn()
 
         assertThat(spyCredentialsHandler.getCredentialVersionByUUID__calledWith_credentialUUID).isEqualTo(uuid.toString())
@@ -182,7 +182,7 @@ class CredentialsControllerGetTest {
                 "some-json-key": "some-json-value"
               }
             }
-        """.trimMargin()
+            """.trimMargin()
         val actualResponseBody = mvcResult.response.contentAsString
         JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true)
     }
@@ -196,13 +196,13 @@ class CredentialsControllerGetTest {
             "/some-value-path",
             CredentialType.PASSWORD.type.lowercase(),
             metadata,
-            StringCredentialValue("some-password")
+            StringCredentialValue("some-password"),
         )
 
         val mvcResult = mockMvc.perform(
             get("${CredentialsController.ENDPOINT}/{uuid}", uuid.toString())
                 .contentType(MediaType.APPLICATION_JSON)
-                .credHubAuthHeader()
+                .credHubAuthHeader(),
         )
             .andExpect(status().isOk)
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -210,9 +210,9 @@ class CredentialsControllerGetTest {
                 document(
                     CredHubRestDocs.DOCUMENT_IDENTIFIER,
                     pathParameters(
-                        parameterWithName("uuid").description("The credential uuid")
-                    )
-                )
+                        parameterWithName("uuid").description("The credential uuid"),
+                    ),
+                ),
             ).andReturn()
 
         assertThat(spyCredentialsHandler.getCredentialVersionByUUID__calledWith_credentialUUID).isEqualTo(uuid.toString())
@@ -227,7 +227,7 @@ class CredentialsControllerGetTest {
               "metadata": { "description": "example metadata"},
               "value": "some-password"
             }
-        """.trimMargin()
+            """.trimMargin()
 
         val actualResponseBody = mvcResult.response.contentAsString
         JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true)
@@ -245,14 +245,14 @@ class CredentialsControllerGetTest {
             UserCredentialValue(
                 "some-username",
                 "some-password",
-                "foo"
-            )
+                "foo",
+            ),
         )
 
         val mvcResult = mockMvc.perform(
             get("${CredentialsController.ENDPOINT}/{uuid}", uuid.toString())
                 .contentType(MediaType.APPLICATION_JSON)
-                .credHubAuthHeader()
+                .credHubAuthHeader(),
         )
             .andExpect(status().isOk)
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -260,9 +260,9 @@ class CredentialsControllerGetTest {
                 document(
                     CredHubRestDocs.DOCUMENT_IDENTIFIER,
                     pathParameters(
-                        parameterWithName("uuid").description("The credential uuid")
-                    )
-                )
+                        parameterWithName("uuid").description("The credential uuid"),
+                    ),
+                ),
             ).andReturn()
 
         assertThat(spyCredentialsHandler.getCredentialVersionByUUID__calledWith_credentialUUID).isEqualTo(uuid.toString())
@@ -281,7 +281,7 @@ class CredentialsControllerGetTest {
                 "password_hash": "foQzXY.HaydB."
               }
             }
-        """.trimMargin()
+            """.trimMargin()
 
         val actualResponseBody = mvcResult.response.contentAsString
         JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true)
@@ -304,14 +304,14 @@ class CredentialsControllerGetTest {
                 true,
                 false,
                 true,
-                false
-            )
+                false,
+            ),
         )
 
         val mvcResult = mockMvc.perform(
             get("${CredentialsController.ENDPOINT}/{uuid}", uuid.toString())
                 .contentType(MediaType.APPLICATION_JSON)
-                .credHubAuthHeader()
+                .credHubAuthHeader(),
         )
             .andExpect(status().isOk)
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -319,9 +319,9 @@ class CredentialsControllerGetTest {
                 document(
                     CredHubRestDocs.DOCUMENT_IDENTIFIER,
                     pathParameters(
-                        parameterWithName("uuid").description("The credential uuid")
-                    )
-                )
+                        parameterWithName("uuid").description("The credential uuid"),
+                    ),
+                ),
             ).andReturn()
 
         assertThat(spyCredentialsHandler.getCredentialVersionByUUID__calledWith_credentialUUID).isEqualTo(uuid.toString())
@@ -345,7 +345,7 @@ class CredentialsControllerGetTest {
                 "generated": true
               }
             }
-        """.trimMargin()
+            """.trimMargin()
 
         val actualResponseBody = mvcResult.response.contentAsString
         JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true)
@@ -368,14 +368,14 @@ class CredentialsControllerGetTest {
                 true,
                 false,
                 null,
-                false
-            )
+                false,
+            ),
         )
 
         val mvcResult = mockMvc.perform(
             get("${CredentialsController.ENDPOINT}/{uuid}", uuid.toString())
                 .contentType(MediaType.APPLICATION_JSON)
-                .credHubAuthHeader()
+                .credHubAuthHeader(),
         )
             .andExpect(status().isOk)
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)).andReturn()
@@ -400,7 +400,7 @@ class CredentialsControllerGetTest {
                 "self_signed": false
               }
             }
-        """.trimMargin()
+            """.trimMargin()
 
         val actualResponseBody = mvcResult.response.contentAsString
         JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true)
@@ -417,14 +417,14 @@ class CredentialsControllerGetTest {
             metadata,
             RsaCredentialValue(
                 TestConstants.RSA_PUBLIC_KEY_4096,
-                TestConstants.PRIVATE_KEY_4096
-            )
+                TestConstants.PRIVATE_KEY_4096,
+            ),
         )
 
         val mvcResult = mockMvc.perform(
             get("${CredentialsController.ENDPOINT}/{uuid}", uuid.toString())
                 .contentType(MediaType.APPLICATION_JSON)
-                .credHubAuthHeader()
+                .credHubAuthHeader(),
         )
             .andExpect(status().isOk)
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -432,9 +432,9 @@ class CredentialsControllerGetTest {
                 document(
                     CredHubRestDocs.DOCUMENT_IDENTIFIER,
                     pathParameters(
-                        parameterWithName("uuid").description("The credential uuid")
-                    )
-                )
+                        parameterWithName("uuid").description("The credential uuid"),
+                    ),
+                ),
             ).andReturn()
 
         assertThat(spyCredentialsHandler.getCredentialVersionByUUID__calledWith_credentialUUID).isEqualTo(uuid.toString())
@@ -452,7 +452,7 @@ class CredentialsControllerGetTest {
                 "private_key": "${TestConstants.PRIVATE_KEY_4096}"
               }
             }
-        """.trimMargin()
+            """.trimMargin()
 
         val actualResponseBody = mvcResult.response.contentAsString
         JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true)
@@ -470,14 +470,14 @@ class CredentialsControllerGetTest {
             SshCredentialValue(
                 TestConstants.SSH_PUBLIC_KEY_4096,
                 TestConstants.PRIVATE_KEY_4096,
-                null
-            )
+                null,
+            ),
         )
 
         val mvcResult = mockMvc.perform(
             get("${CredentialsController.ENDPOINT}/{uuid}", uuid.toString())
                 .contentType(MediaType.APPLICATION_JSON)
-                .credHubAuthHeader()
+                .credHubAuthHeader(),
         )
             .andExpect(status().isOk)
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -485,9 +485,9 @@ class CredentialsControllerGetTest {
                 document(
                     CredHubRestDocs.DOCUMENT_IDENTIFIER,
                     pathParameters(
-                        parameterWithName("uuid").description("The credential uuid")
-                    )
-                )
+                        parameterWithName("uuid").description("The credential uuid"),
+                    ),
+                ),
             ).andReturn()
 
         assertThat(spyCredentialsHandler.getCredentialVersionByUUID__calledWith_credentialUUID).isEqualTo(uuid.toString())
@@ -506,7 +506,7 @@ class CredentialsControllerGetTest {
                 "public_key_fingerprint": null
               }
             }
-        """.trimMargin()
+            """.trimMargin()
 
         val actualResponseBody = mvcResult.response.contentAsString
         JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true)
@@ -517,8 +517,8 @@ class CredentialsControllerGetTest {
         spyCredentialsHandler.findContainingName__returns_findCredentialResultList = listOf(
             FindCredentialResult(
                 Instant.ofEpochSecond(1549053472L),
-                "some-credential-name"
-            )
+                "some-credential-name",
+            ),
         )
 
         val mvcResult = mockMvc.perform(
@@ -526,7 +526,7 @@ class CredentialsControllerGetTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .credHubAuthHeader()
                 .param("name-like", "some-credential")
-                .param("expires-within-days", "1")
+                .param("expires-within-days", "1"),
         )
             .andExpect(status().isOk)
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -538,9 +538,9 @@ class CredentialsControllerGetTest {
                             .description("The credential name substring"),
                         parameterWithName("expires-within-days")
                             .description("The number of days the credential should expire within")
-                            .optional()
-                    )
-                )
+                            .optional(),
+                    ),
+                ),
             )
             .andReturn()
 
@@ -558,7 +558,7 @@ class CredentialsControllerGetTest {
                     }
                 ]
             }
-        """.trimMargin()
+            """.trimMargin()
 
         JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true)
     }
@@ -568,8 +568,8 @@ class CredentialsControllerGetTest {
         spyCredentialsHandler.findStartingWithPath__returns_findCredentialResultList = listOf(
             FindCredentialResult(
                 Instant.ofEpochSecond(1549053472L),
-                "some-credential-name"
-            )
+                "some-credential-name",
+            ),
         )
 
         val mvcResult = mockMvc.perform(
@@ -577,7 +577,7 @@ class CredentialsControllerGetTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .credHubAuthHeader()
                 .param("path", "some-credential-path")
-                .param("expires-within-days", "1")
+                .param("expires-within-days", "1"),
         )
             .andExpect(status().isOk)
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -589,9 +589,9 @@ class CredentialsControllerGetTest {
                             .description("The credential path"),
                         parameterWithName("expires-within-days")
                             .description("The number of days the credential should expire within")
-                            .optional()
-                    )
-                )
+                            .optional(),
+                    ),
+                ),
             )
             .andReturn()
 
@@ -609,7 +609,7 @@ class CredentialsControllerGetTest {
                     }
                 ]
             }
-        """.trimMargin()
+            """.trimMargin()
 
         JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true)
     }
@@ -624,9 +624,9 @@ class CredentialsControllerGetTest {
                     "/some-name",
                     CredentialType.VALUE.type.lowercase(),
                     metadata,
-                    StringCredentialValue("some-value")
-                )
-            )
+                    StringCredentialValue("some-value"),
+                ),
+            ),
         )
 
         val mvcResult = mockMvc.perform(
@@ -634,7 +634,7 @@ class CredentialsControllerGetTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .credHubAuthHeader()
                 .param("name", "/some-name")
-                .param("current", "true")
+                .param("current", "true"),
         )
             .andExpect(status().isOk)
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -649,9 +649,9 @@ class CredentialsControllerGetTest {
                             .description("The number of versions to return. Note: this cannot be combined with 'current'. Defaults to all versions if not provided."),
                         parameterWithName("current")
                             .optional()
-                            .description("Only return the latest version of a credential. Note: this cannot be combined with 'versions'.")
-                    )
-                )
+                            .description("Only return the latest version of a credential. Note: this cannot be combined with 'versions'."),
+                    ),
+                ),
             ).andReturn()
 
         assertThat(spyCredentialsHandler.getCurrentCredentialVersions__calledWith_credentialName).isEqualTo("/some-name")
@@ -672,7 +672,7 @@ class CredentialsControllerGetTest {
                   }
               ]
             }
-        """.trimMargin()
+            """.trimMargin()
 
         JSONAssert.assertEquals(actualResponse, expectedResponseBody, true)
     }

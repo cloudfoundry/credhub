@@ -91,7 +91,7 @@ class RemoteCredentialsHandlerTest {
             userContextHolder,
             objectMapper,
             client,
-            credentialGenerator
+            credentialGenerator,
         )
 
         val userContext = mock(UserContext::class.java)
@@ -113,12 +113,12 @@ class RemoteCredentialsHandlerTest {
 
         val byteValue1 = subject.createByteStringFromData(
             type,
-            value1
+            value1,
         )
 
         val byteValue2 = subject.createByteStringFromData(
             type,
-            value2
+            value2,
         )
 
         val response1 = GetResponse.newBuilder()
@@ -174,12 +174,12 @@ class RemoteCredentialsHandlerTest {
 
         val byteValue1 = subject.createByteStringFromData(
             type,
-            value1
+            value1,
         )
 
         val byteValue2 = subject.createByteStringFromData(
             type,
-            value2
+            value2,
         )
 
         val response1 = GetResponse.newBuilder()
@@ -223,12 +223,12 @@ class RemoteCredentialsHandlerTest {
 
         val byteValue1 = subject.createByteStringFromData(
             type,
-            value1
+            value1,
         )
 
         val byteValue2 = subject.createByteStringFromData(
             type,
-            value2
+            value2,
         )
 
         val response1 = GetResponse.newBuilder()
@@ -280,7 +280,7 @@ class RemoteCredentialsHandlerTest {
 
         val byteValue = subject.createByteStringFromData(
             type,
-            stringCredential
+            stringCredential,
         )
         val response = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
             .setType(type).setData(byteValue)
@@ -304,7 +304,7 @@ class RemoteCredentialsHandlerTest {
 
         val byteValue = subject.createByteStringFromData(
             type,
-            jsonCredential
+            jsonCredential,
         )
 
         val response = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
@@ -331,12 +331,12 @@ class RemoteCredentialsHandlerTest {
             false,
             false,
             false,
-            false
+            false,
         )
 
         val byteValue = subject.createByteStringFromData(
             type,
-            certificateCredential
+            certificateCredential,
         )
         val response = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
             .setType(type).setData(byteValue)
@@ -359,7 +359,7 @@ class RemoteCredentialsHandlerTest {
 
         val byteValue = subject.createByteStringFromData(
             type,
-            stringCredential
+            stringCredential,
         )
         val response = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
             .setType(type).setData(byteValue)
@@ -384,7 +384,7 @@ class RemoteCredentialsHandlerTest {
 
         val byteValue = subject.createByteStringFromData(
             type,
-            userCredential
+            userCredential,
         )
 
         val response = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
@@ -407,7 +407,7 @@ class RemoteCredentialsHandlerTest {
 
         val byteValue = subject.createByteStringFromData(
             type,
-            rsaCredential
+            rsaCredential,
         )
         val response = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
             .setType(type).setData(byteValue)
@@ -429,7 +429,7 @@ class RemoteCredentialsHandlerTest {
 
         val byteValue = subject.createByteStringFromData(
             type,
-            sshCredential
+            sshCredential,
         )
         val response = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
             .setType(type).setData(byteValue)
@@ -451,7 +451,7 @@ class RemoteCredentialsHandlerTest {
 
         val byteValue = subject.createByteStringFromData(
             type,
-            stringCredential
+            stringCredential,
         )
         val response = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
             .setType(type).setData(byteValue)
@@ -473,7 +473,7 @@ class RemoteCredentialsHandlerTest {
 
         val byteValue = subject.createByteStringFromData(
             type,
-            jsonCredential
+            jsonCredential,
         )
 
         val response = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
@@ -499,12 +499,12 @@ class RemoteCredentialsHandlerTest {
             false,
             false,
             false,
-            false
+            false,
         )
 
         val byteValue = subject.createByteStringFromData(
             type,
-            certificateCredential
+            certificateCredential,
         )
 
         val response = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
@@ -527,7 +527,7 @@ class RemoteCredentialsHandlerTest {
 
         val byteValue = subject.createByteStringFromData(
             type,
-            stringCredential
+            stringCredential,
         )
 
         val response = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
@@ -552,7 +552,7 @@ class RemoteCredentialsHandlerTest {
 
         val byteValue = subject.createByteStringFromData(
             type,
-            userCredential
+            userCredential,
         )
         val response = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
             .setType(type).setData(byteValue)
@@ -573,7 +573,7 @@ class RemoteCredentialsHandlerTest {
 
         val byteValue = subject.createByteStringFromData(
             type,
-            rsaCredential
+            rsaCredential,
         )
 
         val response = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
@@ -595,7 +595,7 @@ class RemoteCredentialsHandlerTest {
 
         val byteValue = subject.createByteStringFromData(
             type,
-            sshCredential
+            sshCredential,
         )
 
         val response = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
@@ -617,7 +617,7 @@ class RemoteCredentialsHandlerTest {
 
         val byteValue = subject.createByteStringFromData(
             type,
-            stringCredential
+            stringCredential,
         )
 
         val response = SetResponse.newBuilder()
@@ -650,7 +650,7 @@ class RemoteCredentialsHandlerTest {
 
         val byteValue = subject.createByteStringFromData(
             type,
-            stringCredential
+            stringCredential,
         )
 
         val response = SetResponse.newBuilder()
@@ -684,7 +684,7 @@ class RemoteCredentialsHandlerTest {
 
         val byteValue = subject.createByteStringFromData(
             type,
-            jsonCredential
+            jsonCredential,
         )
 
         val response = SetResponse.newBuilder()
@@ -721,12 +721,12 @@ class RemoteCredentialsHandlerTest {
             false,
             false,
             false,
-            false
+            false,
         )
 
         val byteValue = subject.createByteStringFromData(
             type,
-            certificateCredential
+            certificateCredential,
         )
 
         val response = SetResponse.newBuilder()
@@ -762,7 +762,7 @@ class RemoteCredentialsHandlerTest {
 
         val byteValue = subject.createByteStringFromData(
             type,
-            userCredential
+            userCredential,
         )
 
         val response = SetResponse.newBuilder()
@@ -795,7 +795,7 @@ class RemoteCredentialsHandlerTest {
 
         val byteValue = subject.createByteStringFromData(
             type,
-            rsaCredential
+            rsaCredential,
         )
 
         val response = SetResponse.newBuilder()
@@ -828,7 +828,7 @@ class RemoteCredentialsHandlerTest {
 
         val byteValue = subject.createByteStringFromData(
             type,
-            sshCredential
+            sshCredential,
         )
 
         val response = SetResponse.newBuilder()
@@ -868,13 +868,13 @@ class RemoteCredentialsHandlerTest {
                 FindResult
                     .newBuilder()
                     .setName("/test/another-credential")
-                    .setVersionCreatedAt(fiveMinutesAgoVersion)
+                    .setVersionCreatedAt(fiveMinutesAgoVersion),
             )
             .addResults(
                 FindResult
                     .newBuilder()
                     .setName("/test/some-other-credential")
-                    .setVersionCreatedAt(nowVersionCreatedAt)
+                    .setVersionCreatedAt(nowVersionCreatedAt),
             )
             .build()
 
@@ -899,13 +899,13 @@ class RemoteCredentialsHandlerTest {
                 FindResult
                     .newBuilder()
                     .setName("/test/another-credential")
-                    .setVersionCreatedAt(fiveMinutesAgoVersion)
+                    .setVersionCreatedAt(fiveMinutesAgoVersion),
             )
             .addResults(
                 FindResult
                     .newBuilder()
                     .setName("/test/some-other-credential")
-                    .setVersionCreatedAt(nowVersionCreatedAt)
+                    .setVersionCreatedAt(nowVersionCreatedAt),
             )
             .build()
 
@@ -979,7 +979,7 @@ class RemoteCredentialsHandlerTest {
             false,
             false,
             true,
-            false
+            false,
         )
 
         val shouldBeReturned = CertificateCredentialValue(
@@ -990,7 +990,7 @@ class RemoteCredentialsHandlerTest {
             false,
             false,
             true,
-            false
+            false,
         )
 
         val generationRequestParameters = CertificateGenerationRequestParameters()
@@ -1344,7 +1344,7 @@ class RemoteCredentialsHandlerTest {
         val stringCredential = StringCredentialValue("test-value")
         val byteValue = subject.createByteStringFromData(
             type,
-            stringCredential
+            stringCredential,
         )
         val exception = StatusRuntimeException(Status.NOT_FOUND)
         `when`(client.setRequest(CREDENTIAL_NAME, type, byteValue, USER, ByteString.EMPTY)).thenThrow(exception)

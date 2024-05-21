@@ -25,7 +25,7 @@ class TimeModuleFactory private constructor() {
                     override fun serialize(value: Instant, gen: JsonGenerator, serializers: SerializerProvider) {
                         gen.writeString(ZonedDateTime.ofInstant(value, ZoneId.of("UTC")).format(TIMESTAMP_FORMAT))
                     }
-                }
+                },
             )
 
             return javaTimeModule

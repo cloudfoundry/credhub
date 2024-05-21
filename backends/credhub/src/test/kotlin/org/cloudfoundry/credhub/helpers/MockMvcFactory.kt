@@ -47,11 +47,11 @@ class MockMvcFactory {
                         .withDefaults(
                             curlRequest(),
                             httpRequest(),
-                            httpResponse()
+                            httpResponse(),
                         )
                         .and()
                         .operationPreprocessors()
-                        .withResponseDefaults(prettyPrint())
+                        .withResponseDefaults(prettyPrint()),
                 )
 
             if (!disableAuth) {

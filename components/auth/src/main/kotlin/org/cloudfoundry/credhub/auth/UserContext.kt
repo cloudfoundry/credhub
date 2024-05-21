@@ -57,7 +57,7 @@ class UserContext {
         clientId: String,
         scope: String,
         grantType: String,
-        authMethod: String
+        authMethod: String,
     ) : super() {
         this.userId = userId
         this.userName = userName
@@ -74,7 +74,7 @@ class UserContext {
         validFrom: Long,
         validUntil: Long,
         clientId: String,
-        authMethod: String
+        authMethod: String,
     ) : super() {
         this.validFrom = validFrom
         this.validUntil = validUntil

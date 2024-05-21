@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletResponse
 class UserContextInterceptor @Autowired
 internal constructor(
     private val userContextFactory: UserContextFactory,
-    private val userContextHolder: UserContextHolder
+    private val userContextHolder: UserContextHolder,
 ) : HandlerInterceptorAdapter() {
 
     override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {

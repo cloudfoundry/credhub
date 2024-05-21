@@ -30,22 +30,27 @@ class CertificateCredentialValue : CredentialValue {
 
     @JsonDeserialize(using = EmptyStringToNull::class)
     var ca: String? = null
+
     @JsonDeserialize(using = EmptyStringToNull::class)
     var certificate: String? = null
+
     @JsonDeserialize(using = EmptyStringToNull::class)
     var privateKey: String? = null
+
     @JsonDeserialize(using = EmptyStringToNull::class)
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     var caName: String? = null
         set(caName) {
             field = StringUtils.prependIfMissing(caName, "/")
         }
+
     @JsonIgnore
     var trustedCa: String? = null
 
     var transitional: Boolean = false
     var certificateAuthority: Boolean = false
     var selfSigned: Boolean = false
+
     @JsonInclude(Include.NON_NULL)
     var generated: Boolean? = null
 
@@ -74,7 +79,7 @@ class CertificateCredentialValue : CredentialValue {
         generated: Boolean?,
         transitional: Boolean,
         durationOverridden: Boolean,
-        durationUsed: Int
+        durationUsed: Int,
     ) : super() {
         this.ca = ca
         this.trustedCa = trustedCa
@@ -97,7 +102,7 @@ class CertificateCredentialValue : CredentialValue {
         certificateAuthority: Boolean,
         selfSigned: Boolean,
         generated: Boolean?,
-        transitional: Boolean
+        transitional: Boolean,
     ) : this(
         ca,
         certificate,
@@ -109,7 +114,7 @@ class CertificateCredentialValue : CredentialValue {
         generated,
         transitional,
         false,
-        0
+        0,
     ) {
     }
 
@@ -121,7 +126,7 @@ class CertificateCredentialValue : CredentialValue {
         selfSigned: Boolean,
         generated: Boolean?,
         transitional: Boolean,
-        versionCreatedAt: Instant?
+        versionCreatedAt: Instant?,
     ) : this(
         null,
         certificate,
@@ -133,7 +138,7 @@ class CertificateCredentialValue : CredentialValue {
         generated,
         transitional,
         false,
-        0
+        0,
     ) {
         this.versionCreatedAt = versionCreatedAt
     }

@@ -11,22 +11,24 @@ interface CredentialRepository : JpaRepository<Credential?, UUID?> {
     fun deleteByNameIgnoreCase(name: String?): Long
 
     fun findOneByUuid(uuid: UUID?): Credential?
+
     @Query(
         value = "select credential.uuid, credential.name, credential.checksum from certificate_credential " +
             "left join credential_version on certificate_credential.uuid = credential_version.uuid " +
             "join credential on credential.uuid = credential_version.credential_uuid " +
             "where credential.uuid = ?1",
-        nativeQuery = true
+        nativeQuery = true,
     )
     fun findCertificateByUuid(uuid: UUID?): Credential?
 
     fun findOneByNameIgnoreCase(name: String?): Credential?
+
     @Query(
         value = "select credential.uuid, credential.name, credential.checksum from certificate_credential " +
             "left join credential_version on certificate_credential.uuid = credential_version.uuid " +
             "join credential on credential.uuid = credential_version.credential_uuid " +
             "group by credential.uuid",
-        nativeQuery = true
+        nativeQuery = true,
     )
     fun findAllCertificates(): List<Credential>
 
@@ -35,7 +37,7 @@ interface CredentialRepository : JpaRepository<Credential?, UUID?> {
             "left join credential_version on certificate_credential.uuid = credential_version.uuid " +
             "join credential on credential.uuid = credential_version.credential_uuid " +
             "where credential.name = ?1 limit 1 ",
-        nativeQuery = true
+        nativeQuery = true,
     )
     fun findCertificateByName(name: String?): Credential?
 }

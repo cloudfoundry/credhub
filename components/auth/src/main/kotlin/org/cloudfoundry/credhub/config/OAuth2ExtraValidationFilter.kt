@@ -31,7 +31,7 @@ internal constructor(
     private val oAuth2IssuerService: OAuth2IssuerService,
     private val tokenStore: TokenStore,
     private val oAuth2AuthenticationExceptionHandler: OAuth2AuthenticationExceptionHandler,
-    private val eventPublisher: AuthenticationEventPublisher
+    private val eventPublisher: AuthenticationEventPublisher,
 ) : OncePerRequestFilter() {
     private val tokenExtractor: TokenExtractor
 
@@ -43,7 +43,7 @@ internal constructor(
     override fun doFilterInternal(
         request: HttpServletRequest,
         response: HttpServletResponse,
-        filterChain: FilterChain
+        filterChain: FilterChain,
     ) {
         val authentication = tokenExtractor.extract(request)
 
@@ -66,16 +66,17 @@ internal constructor(
         } catch (exception: OAuth2Exception) {
             SecurityContextHolder.clearContext()
             val authException = InsufficientAuthenticationException(
-                exception.message, exception
+                exception.message,
+                exception,
             )
             eventPublisher.publishAuthenticationFailure(
                 BadCredentialsException(exception.message, exception),
-                PreAuthenticatedAuthenticationToken("access-token", "N/A")
+                PreAuthenticatedAuthenticationToken("access-token", "N/A"),
             )
             oAuth2AuthenticationExceptionHandler.handleException(request, response, authException)
         } catch (exception: RuntimeException) {
             if (exception.cause is SignatureException || exception
-                .cause is InvalidSignatureException
+                    .cause is InvalidSignatureException
             ) {
                 oAuth2AuthenticationExceptionHandler.handleException(request, response, exception)
             } else {

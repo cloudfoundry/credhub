@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletResponse
 class AuditInterceptor @Autowired
 internal constructor(
     private val userContextFactory: UserContextFactory,
-    private val auditRecord: CEFAuditRecord
+    private val auditRecord: CEFAuditRecord,
 ) : HandlerInterceptorAdapter() {
 
     override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {

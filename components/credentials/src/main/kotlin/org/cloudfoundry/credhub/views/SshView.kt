@@ -4,7 +4,7 @@ import org.cloudfoundry.credhub.credential.SshCredentialValue
 import org.cloudfoundry.credhub.domain.SshCredentialVersion
 
 class SshView : CredentialView {
-    internal constructor() : super() /* Jackson */ {}
+    internal constructor() : super() {}
     internal constructor(sshCredential: SshCredentialVersion) : super(
         sshCredential.versionCreatedAt,
         sshCredential.uuid,
@@ -12,9 +12,10 @@ class SshView : CredentialView {
         sshCredential.getCredentialType(),
         sshCredential.metadata,
         SshCredentialValue(
-            sshCredential.publicKey, sshCredential.privateKey,
-            sshCredential.fingerprint
-        )
+            sshCredential.publicKey,
+            sshCredential.privateKey,
+            sshCredential.fingerprint,
+        ),
     ) {
     }
 }

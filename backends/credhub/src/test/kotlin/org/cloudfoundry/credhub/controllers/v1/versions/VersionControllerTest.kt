@@ -56,13 +56,13 @@ class VersionControllerTest {
         val mvcResult = mockMvc.perform(
             RestDocumentationRequestBuilders.get(VersionController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
-                .credHubAuthHeader()
+                .credHubAuthHeader(),
         ).andExpect(MockMvcResultMatchers.status().isOk)
             .andExpect(MockMvcResultMatchers.content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
             .andDo(
                 MockMvcRestDocumentation.document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER
-                )
+                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                ),
             ).andReturn()
 
         // language=json

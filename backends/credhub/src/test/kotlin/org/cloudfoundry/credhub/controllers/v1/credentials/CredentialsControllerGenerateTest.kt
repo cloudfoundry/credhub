@@ -84,7 +84,7 @@ class CredentialsControllerGenerateTest {
             spyCredentialsHandler,
             CEFAuditRecord(),
             spyRegenerateHandler,
-            objectMapper
+            objectMapper,
         )
         metadata = objectMapper.readTree("{\"description\":\"example metadata\"}")
 
@@ -103,7 +103,7 @@ class CredentialsControllerGenerateTest {
             "/some-password-name",
             "password",
             metadata,
-            StringCredentialValue("some-password")
+            StringCredentialValue("some-password"),
         )
 
         // language=json
@@ -120,7 +120,7 @@ class CredentialsControllerGenerateTest {
             post(CredentialsController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
                 .credHubAuthHeader()
-                .content(requestBody)
+                .content(requestBody),
         )
             .andExpect(status().isOk)
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -147,9 +147,9 @@ class CredentialsControllerGenerateTest {
                         fieldWithPath("parameters.include_special")
                             .description("Include special characters from generated credential value")
                             .type(JsonFieldType.BOOLEAN)
-                            .optional()
-                    )
-                )
+                            .optional(),
+                    ),
+                ),
             )
             .andReturn()
 
@@ -183,7 +183,7 @@ class CredentialsControllerGenerateTest {
             "/some-user-name",
             CredentialType.USER.type.lowercase(),
             metadata,
-            UserCredentialValue("some-username", "some-password", "foo")
+            UserCredentialValue("some-username", "some-password", "foo"),
         )
 
         // language=json
@@ -200,7 +200,7 @@ class CredentialsControllerGenerateTest {
             post(CredentialsController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
                 .credHubAuthHeader()
-                .content(requestBody)
+                .content(requestBody),
         )
             .andExpect(status().isOk)
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -231,9 +231,9 @@ class CredentialsControllerGenerateTest {
                         fieldWithPath("parameters.include_special")
                             .description("Include special characters from generated credential value")
                             .type(JsonFieldType.BOOLEAN)
-                            .optional()
-                    )
-                )
+                            .optional(),
+                    ),
+                ),
             )
             .andReturn()
 
@@ -266,7 +266,6 @@ class CredentialsControllerGenerateTest {
 
     @Test
     fun POST__generate_certificate_returns__certificate_credential() {
-
         val certificateCredentialValue = CertificateCredentialValue(
             TestConstants.TEST_CA,
             TestConstants.TEST_CERTIFICATE,
@@ -278,7 +277,7 @@ class CredentialsControllerGenerateTest {
             true,
             false,
             true,
-            1460
+            1460,
         )
 
         val encryptor = Mockito.mock(Encryptor::class.java)
@@ -287,7 +286,7 @@ class CredentialsControllerGenerateTest {
         val certificateCredentialVersion = CertificateCredentialVersion(
             certificateCredentialValue,
             "/some-certificate-name",
-            encryptor
+            encryptor,
         )
         certificateCredentialVersion.versionCreatedAt = Instant.ofEpochSecond(1549053472L)
         certificateCredentialVersion.uuid = uuid
@@ -295,7 +294,7 @@ class CredentialsControllerGenerateTest {
 
         spyCredentialsHandler.generateCredential__returns_credentialView = CertificateGenerationView(
             certificateCredentialVersion,
-            true
+            true,
         )
 
         // language=json
@@ -318,7 +317,7 @@ class CredentialsControllerGenerateTest {
             post(CredentialsController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
                 .credHubAuthHeader()
-                .content(requestBody)
+                .content(requestBody),
         )
             .andExpect(status().isOk)
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -381,9 +380,9 @@ class CredentialsControllerGenerateTest {
                         fieldWithPath("parameters.self_sign")
                             .description("Whether to self-sign generated credential value.")
                             .type(JsonFieldType.BOOLEAN)
-                            .optional()
-                    )
-                )
+                            .optional(),
+                    ),
+                ),
             )
             .andReturn()
 
@@ -432,8 +431,8 @@ class CredentialsControllerGenerateTest {
             metadata,
             RsaCredentialValue(
                 TestConstants.RSA_PUBLIC_KEY_4096,
-                TestConstants.PRIVATE_KEY_4096
-            )
+                TestConstants.PRIVATE_KEY_4096,
+            ),
         )
 
         // language=json
@@ -450,7 +449,7 @@ class CredentialsControllerGenerateTest {
             post(CredentialsController.ENDPOINT)
                 .credHubAuthHeader()
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody)
+                .content(requestBody),
         )
             .andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -461,9 +460,9 @@ class CredentialsControllerGenerateTest {
                         fieldWithPath("parameters.key_length")
                             .description("Key length of generated credential value (Default: ${RsaSshGenerationParameters().keyLength}). Valid key lengths are: ${RsaSshGenerationParameters().validKeyLengths.joinToString(", ")}")
                             .type(JsonFieldType.NUMBER)
-                            .optional()
-                    )
-                )
+                            .optional(),
+                    ),
+                ),
             )
             .andReturn()
 
@@ -504,8 +503,8 @@ class CredentialsControllerGenerateTest {
             SshCredentialValue(
                 TestConstants.SSH_PUBLIC_KEY_4096,
                 TestConstants.PRIVATE_KEY_4096,
-                "EvI0/GIUgDjcoCzUQM+EtwnVTryNsKRd6TrHAGKJJSI"
-            )
+                "EvI0/GIUgDjcoCzUQM+EtwnVTryNsKRd6TrHAGKJJSI",
+            ),
         )
 
         // language=json
@@ -522,7 +521,7 @@ class CredentialsControllerGenerateTest {
             post(CredentialsController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
                 .credHubAuthHeader()
-                .content(requestBody)
+                .content(requestBody),
         )
             .andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -537,9 +536,9 @@ class CredentialsControllerGenerateTest {
                         fieldWithPath("parameters.ssh_comment")
                             .description("SSH comment of generated credential value")
                             .type(JsonFieldType.STRING)
-                            .optional()
-                    )
-                )
+                            .optional(),
+                    ),
+                ),
             )
             .andReturn()
 
@@ -578,7 +577,7 @@ class CredentialsControllerGenerateTest {
             "/some-password-name",
             "password",
             metadata,
-            StringCredentialValue("some-password")
+            StringCredentialValue("some-password"),
         )
 
         // language=json
@@ -595,7 +594,7 @@ class CredentialsControllerGenerateTest {
             post(CredentialsController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
                 .credHubAuthHeader()
-                .content(requestBody)
+                .content(requestBody),
         )
             .andExpect(status().isOk)
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -611,9 +610,9 @@ class CredentialsControllerGenerateTest {
                             .type(JsonFieldType.BOOLEAN),
                         PayloadDocumentation.fieldWithPath("metadata.description")
                             .description("The credential metadata to add.")
-                            .type(JsonFieldType.STRING)
-                    )
-                )
+                            .type(JsonFieldType.STRING),
+                    ),
+                ),
             )
             .andReturn()
 
@@ -657,7 +656,7 @@ class CredentialsControllerGenerateTest {
                 .description("Additional metadata of the credential.")
                 .optional(),
             fieldWithPath("metadata.*")
-                .ignored()
+                .ignored(),
         )
     }
 }

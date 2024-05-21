@@ -17,7 +17,6 @@ class KeyUsageController(val keyUsageHandler: KeyUsageHandler) {
 
     @RequestMapping(method = [RequestMethod.GET], path = [""])
     fun getKeyUsage(): ResponseEntity<Map<String, Long>> {
-
         val keyUsage = keyUsageHandler.getKeyUsage()
 
         return ResponseEntity(keyUsage, OK)

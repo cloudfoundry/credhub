@@ -21,7 +21,7 @@ interface CertificatesHandler {
 
     fun handleUpdateTransitionalVersion(
         certificateId: String,
-        requestBody: UpdateTransitionalVersionRequest
+        requestBody: UpdateTransitionalVersionRequest,
     ): List<CertificateView>
 
     fun handleCreateVersionsRequest(certificateId: String, requestBody: CreateVersionRequest): CertificateView

@@ -11,7 +11,7 @@ class PasswordView : CredentialView {
         passwordCredential.name,
         passwordCredential.getCredentialType(),
         passwordCredential.metadata,
-        StringCredentialValue(passwordCredential.password)
+        StringCredentialValue(passwordCredential.password),
     ) {
     }
 }

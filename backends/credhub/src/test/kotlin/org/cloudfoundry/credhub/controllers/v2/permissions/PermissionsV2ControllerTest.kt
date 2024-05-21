@@ -58,7 +58,7 @@ class PermissionsV2ControllerTest {
             "/some-path/*",
             listOf(READ, WRITE),
             "some-actor",
-            uuid
+            uuid,
         )
         spyPermissionsV2Handler.findByPathAndActor__returns = permissionsV2View
 
@@ -68,7 +68,7 @@ class PermissionsV2ControllerTest {
                     .credHubAuthHeader()
                     .contentType(MediaType.APPLICATION_JSON)
                     .param("path", "/some-path/*")
-                    .param("actor", "some-actor")
+                    .param("actor", "some-actor"),
             )
             .andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -79,9 +79,9 @@ class PermissionsV2ControllerTest {
                         parameterWithName("path")
                             .description("The credential path. Can be either a path with an asterisk (*) at the end, or the full name of a credential."),
                         parameterWithName("actor")
-                            .description("The credential actor")
-                    )
-                )
+                            .description("The credential actor"),
+                    ),
+                ),
 
             )
             .andReturn()
@@ -113,7 +113,7 @@ class PermissionsV2ControllerTest {
             "/some-path/*",
             listOf(READ, WRITE),
             "some-actor",
-            uuid
+            uuid,
         )
         spyPermissionsV2Handler.getPermissionByGuid__returns = permissionsV2View
 
@@ -121,7 +121,7 @@ class PermissionsV2ControllerTest {
             .perform(
                 get("${PermissionsV2Controller.ENDPOINT}/{uuid}", uuid.toString())
                     .credHubAuthHeader()
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON),
             )
             .andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -130,9 +130,9 @@ class PermissionsV2ControllerTest {
                     CredHubRestDocs.DOCUMENT_IDENTIFIER,
                     pathParameters(
                         parameterWithName("uuid")
-                            .description("The permission uuid")
-                    )
-                )
+                            .description("The permission uuid"),
+                    ),
+                ),
             )
             .andReturn()
 
@@ -161,13 +161,13 @@ class PermissionsV2ControllerTest {
             "some-path/*",
             listOf(READ, WRITE),
             "some-actor",
-            uuid
+            uuid,
         )
 
         val expectedPermissionsV2Request = PermissionsV2Request(
             "/some-path/*",
             "some-actor",
-            mutableListOf(READ, WRITE)
+            mutableListOf(READ, WRITE),
         )
 
         spyPermissionsV2Handler.writeV2Permissions__returns = permissionsV2View
@@ -188,8 +188,8 @@ class PermissionsV2ControllerTest {
                                 "write"
                               ]
                             }
-                        """.trimIndent()
-                    )
+                        """.trimIndent(),
+                    ),
             )
             .andExpect(status().isCreated())
             .andReturn()
@@ -223,7 +223,7 @@ class PermissionsV2ControllerTest {
             "/some-path/*",
             listOf(READ, WRITE),
             "some-actor",
-            uuid
+            uuid,
         )
         spyPermissionsV2Handler.deletePermissions__returns = permissionsV2View
 
@@ -231,7 +231,7 @@ class PermissionsV2ControllerTest {
             .perform(
                 delete("${PermissionsV2Controller.ENDPOINT}/{uuid}", uuid.toString())
                     .credHubAuthHeader()
-                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON),
             )
             .andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -240,9 +240,9 @@ class PermissionsV2ControllerTest {
                     CredHubRestDocs.DOCUMENT_IDENTIFIER,
                     pathParameters(
                         parameterWithName("uuid")
-                            .description("The permission uuid")
-                    )
-                )
+                            .description("The permission uuid"),
+                    ),
+                ),
             )
             .andReturn()
 
@@ -271,7 +271,7 @@ class PermissionsV2ControllerTest {
             "/some-path/*",
             listOf(READ, WRITE),
             "some-actor",
-            uuid
+            uuid,
         )
         spyPermissionsV2Handler.putPermissions__returns = permissionsV2View
 
@@ -291,8 +291,8 @@ class PermissionsV2ControllerTest {
                             "write"
                           ]
                         }
-                        """.trimIndent()
-                    )
+                        """.trimIndent(),
+                    ),
             )
             .andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -301,16 +301,16 @@ class PermissionsV2ControllerTest {
                     CredHubRestDocs.DOCUMENT_IDENTIFIER,
                     pathParameters(
                         parameterWithName("uuid")
-                            .description("The permission uuid")
+                            .description("The permission uuid"),
                     ),
                     requestFields(
                         fieldWithPath("path")
                             .description("The credential path. Can be either a path with an asterisk (*) at the end, or the full name of a credential."),
                         fieldWithPath("actor")
                             .description("The credential actor"),
-                        getPermissionOperationsRequestField()
-                    )
-                )
+                        getPermissionOperationsRequestField(),
+                    ),
+                ),
             )
             .andReturn()
 
@@ -335,12 +335,11 @@ class PermissionsV2ControllerTest {
 
     @Test
     fun PATCH__permissions_v2__returns_a_permission() {
-
         val permissionsV2View = PermissionsV2View(
             "/some-path/*",
             listOf(READ, WRITE),
             "some-actor",
-            uuid
+            uuid,
         )
 
         spyPermissionsV2Handler.patchPermissions__returns = permissionsV2View
@@ -359,8 +358,8 @@ class PermissionsV2ControllerTest {
                             "write"
                           ]
                         }
-                        """.trimIndent()
-                    )
+                        """.trimIndent(),
+                    ),
             )
             .andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -369,12 +368,12 @@ class PermissionsV2ControllerTest {
                     CredHubRestDocs.DOCUMENT_IDENTIFIER,
                     pathParameters(
                         parameterWithName("uuid")
-                            .description("The permission uuid")
+                            .description("The permission uuid"),
                     ),
                     requestFields(
-                        getPermissionOperationsRequestField()
-                    )
-                )
+                        getPermissionOperationsRequestField(),
+                    ),
+                ),
             )
             .andReturn()
 
@@ -403,7 +402,7 @@ class PermissionsV2ControllerTest {
             "/some-path/*",
             listOf(READ, WRITE),
             "some-actor",
-            uuid
+            uuid,
         )
 
         spyPermissionsV2Handler.writeV2Permissions__returns = permissionsV2View
@@ -424,8 +423,8 @@ class PermissionsV2ControllerTest {
                             "write"
                           ]
                         }
-                        """.trimIndent()
-                    )
+                        """.trimIndent(),
+                    ),
             )
             .andExpect(status().isCreated())
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -437,9 +436,9 @@ class PermissionsV2ControllerTest {
                             .description("The credential path. Can be either a path with an asterisk (*) at the end, or the full name of a credential."),
                         fieldWithPath("actor")
                             .description("The credential actor"),
-                        getPermissionOperationsRequestField()
-                    )
-                )
+                        getPermissionOperationsRequestField(),
+                    ),
+                ),
             )
             .andReturn()
 
@@ -468,15 +467,15 @@ class PermissionsV2ControllerTest {
                 """
                         The list of permissions to be granted.
                         Supported operations are: ${
-                PermissionOperation.values().joinToString(
-                    transform = {
-                        x ->
-                        x.operation.lowercase()
-                    },
-                    separator = ", "
-                )
+                    PermissionOperation.values().joinToString(
+                        transform = {
+                                x ->
+                            x.operation.lowercase()
+                        },
+                        separator = ", ",
+                    )
                 }
-                """.trimIndent()
+                """.trimIndent(),
             )
     }
 }

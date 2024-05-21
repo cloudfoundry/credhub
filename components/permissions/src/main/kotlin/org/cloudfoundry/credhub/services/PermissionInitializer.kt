@@ -11,12 +11,11 @@ import org.springframework.stereotype.Component
 class PermissionInitializer @Autowired
 constructor(
     private val permissionService: DefaultPermissionService?,
-    private val authorizationConfig: AuthorizationConfig?
+    private val authorizationConfig: AuthorizationConfig?,
 ) {
 
     @EventListener(ContextRefreshedEvent::class)
     fun seed() {
-
         if (authorizationConfig?.permissions == null) {
             return
         }

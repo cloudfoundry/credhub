@@ -11,7 +11,7 @@ class ValueView : CredentialView {
         valueCredential.name,
         valueCredential.getCredentialType(),
         valueCredential.metadata,
-        StringCredentialValue((valueCredential.getValue() as String?)!!)
+        StringCredentialValue((valueCredential.getValue() as String?)!!),
     ) {
     }
 }

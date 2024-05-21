@@ -24,7 +24,7 @@ class PermissionDataService @Autowired
 constructor(
     private val permissionRepository: PermissionRepository,
     private val credentialDataService: CredentialDataService,
-    private val auditRecord: CEFAuditRecord
+    private val auditRecord: CEFAuditRecord,
 ) {
 
     fun getPermissions(credential: Credential): MutableList<PermissionEntry> {
@@ -44,8 +44,9 @@ constructor(
 
         val requestDetails = V2Permission(
             permissionDatas[0].path!!,
-            permissionDatas[0].actor!!, permissionDatas[0].generateAccessControlOperations(),
-            OperationDeviceAction.ADD_PERMISSIONS
+            permissionDatas[0].actor!!,
+            permissionDatas[0].generateAccessControlOperations(),
+            OperationDeviceAction.ADD_PERMISSIONS,
         )
         auditRecord.requestDetails = requestDetails
         return permissionDatas
@@ -58,9 +59,11 @@ constructor(
             val existingPermissions = permissionRepository.findAllByPath(path)
             result.add(
                 upsertPermissions(
-                    path, existingPermissions, permission.actor,
-                    permission.allowedOperations
-                )
+                    path,
+                    existingPermissions,
+                    permission.actor,
+                    permission.allowedOperations,
+                ),
             )
         }
 
@@ -123,7 +126,7 @@ constructor(
         path: String?,
         accessEntries: List<PermissionData>,
         actor: String?,
-        operations: List<PermissionOperation>?
+        operations: List<PermissionOperation>?,
     ): PermissionData {
         var entry: PermissionData? = findAccessEntryForActor(accessEntries, actor)
 
@@ -173,7 +176,7 @@ constructor(
 
     private fun findAccessEntryForActor(
         accessEntries: List<PermissionData>,
-        actor: String?
+        actor: String?,
     ): PermissionData? {
         val temp = accessEntries.stream()
             .filter { permissionData -> permissionData.actor == actor }
@@ -206,7 +209,8 @@ constructor(
 
         val permissionData = PermissionData(
             permissionsRequest.getPath(),
-            permissionsRequest.actor, permissionsRequest.operations
+            permissionsRequest.actor,
+            permissionsRequest.operations,
         )
 
         permissionData.uuid = existingPermissionData.uuid
@@ -215,8 +219,9 @@ constructor(
 
         val requestDetails = V2Permission(
             permissionData.path!!,
-            permissionData.actor!!, permissionData.generateAccessControlOperations(),
-            OperationDeviceAction.PUT_PERMISSIONS
+            permissionData.actor!!,
+            permissionData.generateAccessControlOperations(),
+            OperationDeviceAction.PUT_PERMISSIONS,
         )
         auditRecord.requestDetails = requestDetails
 
@@ -234,7 +239,8 @@ constructor(
 
         val patchedRecord = PermissionData(
             existingPermissionData.path,
-            existingPermissionData.actor, operations
+            existingPermissionData.actor,
+            operations,
         )
         patchedRecord.uuid = existingPermissionData.uuid
 
@@ -243,8 +249,9 @@ constructor(
 
         val requestDetails = V2Permission(
             patchedRecord.path!!,
-            patchedRecord.actor!!, patchedRecord.generateAccessControlOperations(),
-            OperationDeviceAction.PATCH_PERMISSIONS
+            patchedRecord.actor!!,
+            patchedRecord.generateAccessControlOperations(),
+            OperationDeviceAction.PATCH_PERMISSIONS,
         )
         auditRecord.requestDetails = requestDetails
 
@@ -254,7 +261,7 @@ constructor(
     fun saveV2Permissions(permissionsRequest: PermissionsV2Request): PermissionData {
         val existingPermissionData = permissionRepository.findByPathAndActor(
             permissionsRequest.getPath(),
-            permissionsRequest.actor
+            permissionsRequest.actor,
         )
 
         if (existingPermissionData != null) {
@@ -271,8 +278,10 @@ constructor(
         auditRecord.setResource(record)
 
         val requestDetails = V2Permission(
-            record.path!!, record.actor!!,
-            record.generateAccessControlOperations(), OperationDeviceAction.ADD_PERMISSIONS
+            record.path!!,
+            record.actor!!,
+            record.generateAccessControlOperations(),
+            OperationDeviceAction.ADD_PERMISSIONS,
         )
         auditRecord.requestDetails = requestDetails
 
@@ -285,8 +294,9 @@ constructor(
 
         val requestDetails = V2Permission(
             existingPermission.path!!,
-            existingPermission.actor!!, existingPermission.generateAccessControlOperations(),
-            OperationDeviceAction.DELETE_PERMISSIONS
+            existingPermission.actor!!,
+            existingPermission.generateAccessControlOperations(),
+            OperationDeviceAction.DELETE_PERMISSIONS,
         )
         auditRecord.requestDetails = requestDetails
         auditRecord.setResource(existingPermission)

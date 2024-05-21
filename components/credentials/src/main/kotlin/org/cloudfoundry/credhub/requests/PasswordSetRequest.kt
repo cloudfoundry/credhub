@@ -14,6 +14,7 @@ class PasswordSetRequest : BaseCredentialSetRequest<StringCredentialValue?>() {
     @Valid
     @JsonProperty("value")
     var password: StringCredentialValue? = null
+
     @JsonIgnore
     override var generationParameters: StringGenerationParameters? = null
 

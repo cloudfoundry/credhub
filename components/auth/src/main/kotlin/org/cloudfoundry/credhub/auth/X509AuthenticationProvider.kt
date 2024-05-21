@@ -35,7 +35,7 @@ class X509AuthenticationProvider : PreAuthenticatedAuthenticationProvider() {
         org.springframework.security.authentication.ProviderManager
         from allowing another provider an
         attempt after this failure.
-       */
+             */
 
             try {
                 val extKeyUsage = certificate.extendedKeyUsage
@@ -56,6 +56,7 @@ class X509AuthenticationProvider : PreAuthenticatedAuthenticationProvider() {
     companion object {
 
         val CLIENT_AUTH_EXTENDED_KEY_USAGE = KeyPurposeId.id_kp_clientAuth.id
+
         // Spring's access assertion language's hasRole() takes
         // {@link ROLE_MTLS_USER} without "ROLE_" prefix
         val MTLS_USER = "MTLS_USER"

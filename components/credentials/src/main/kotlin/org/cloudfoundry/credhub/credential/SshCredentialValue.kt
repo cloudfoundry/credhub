@@ -15,8 +15,10 @@ class SshCredentialValue : CredentialValue {
 
     @JsonDeserialize(using = EmptyStringToNull::class)
     var publicKey: String? = null
+
     @JsonDeserialize(using = EmptyStringToNull::class)
     var privateKey: String? = null
+
     @get:JsonProperty(access = READ_ONLY)
     var publicKeyFingerprint: String? = null
 

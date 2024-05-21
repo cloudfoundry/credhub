@@ -49,7 +49,7 @@ import javax.net.ssl.SSLException
 class RemoteBackendClient(
     @Value("\${backend.socket_file}") private val socketFile: String,
     @Value("\${backend.host}") private val host: String,
-    @Value("\${backend.ca_cert}") private val caCert: String
+    @Value("\${backend.ca_cert}") private val caCert: String,
 ) {
 
     companion object {
@@ -82,7 +82,7 @@ class RemoteBackendClient(
                 .useTransportSecurity()
                 .sslContext(sslContext)
                 .overrideAuthority(host)
-                .build()
+                .build(),
         )
 
         LOGGER.info("using socket file $socketFile")

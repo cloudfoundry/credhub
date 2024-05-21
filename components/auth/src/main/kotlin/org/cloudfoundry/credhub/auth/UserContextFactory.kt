@@ -16,12 +16,12 @@ class UserContextFactory {
     private val resourceServerTokenServices: ResourceServerTokenServices? = null
 
     /*
-   * The "iat" and "exp" claims are parsed by Jackson as integers,
-   * because JWT defines these as seconds since Epoch
-   * (https://tools.ietf.org/html/rfc7519#section-2). That means it has a
-   * Year-2038 bug. To adapt to our local model, hoping JWT will some day be improved,
-   * this function returns a numeric value as long.
-   */
+     * The "iat" and "exp" claims are parsed by Jackson as integers,
+     * because JWT defines these as seconds since Epoch
+     * (https://tools.ietf.org/html/rfc7519#section-2). That means it has a
+     * Year-2038 bug. To adapt to our local model, hoping JWT will some day be improved,
+     * this function returns a numeric value as long.
+     */
     private fun claimValueAsLong(additionalInformation: Map<String, Any>): Long {
         return (additionalInformation["iat"] as Number).toLong()
     }
@@ -77,7 +77,7 @@ class UserContextFactory {
             clientId,
             scope,
             grantType,
-            UserContext.AUTH_METHOD_UAA
+            UserContext.AUTH_METHOD_UAA,
         )
     }
 
@@ -88,7 +88,7 @@ class UserContextFactory {
             certificate.notBefore.toInstant().epochSecond,
             certificate.notAfter.toInstant().epochSecond,
             certificate.subjectDN.name,
-            UserContext.AUTH_METHOD_MUTUAL_TLS
+            UserContext.AUTH_METHOD_MUTUAL_TLS,
         )
     }
 }

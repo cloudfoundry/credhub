@@ -11,7 +11,7 @@ internal constructor(private val encryptor: Encryptor) {
 
     fun makeNewCredentialVersion(
         certificateCredential: Credential,
-        credentialValue: CertificateCredentialValue
+        credentialValue: CertificateCredentialValue,
     ): CertificateCredentialVersion {
         val version = CertificateCredentialVersion(credentialValue, certificateCredential.name!!, encryptor)
         version.credential = certificateCredential

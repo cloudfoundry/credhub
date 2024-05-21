@@ -14,7 +14,7 @@ class BulkRegenerateRequestTest {
     fun whenSignedByValueIsMissing__isInvalid() {
         val violations = JsonTestHelper.deserializeAndValidate(
             "{}",
-            BulkRegenerateRequest::class.java
+            BulkRegenerateRequest::class.java,
         )
 
         MatcherAssert.assertThat(violations, Matchers.contains(JsonTestHelper.hasViolationWithMessage(ErrorMessages.MISSING_SIGNED_BY)))

@@ -35,7 +35,7 @@ class DefaultRegenerateHandler(
     private val permissionCheckingService: PermissionCheckingService,
     private val userContextHolder: UserContextHolder,
     @Value("\${security.authorization.acls.enabled}") private val enforcePermissions: Boolean,
-    @Value("\${certificates.concatenate_cas:false}") private val concatenateCas: Boolean
+    @Value("\${certificates.concatenate_cas:false}") private val concatenateCas: Boolean,
 ) : RegenerateHandler {
 
     override fun handleRegenerate(credentialName: String, credentialMetadata: JsonNode?): CredentialView {
@@ -57,7 +57,7 @@ class DefaultRegenerateHandler(
         val credentialVersion = credentialService.save(
             existingCredentialVersion,
             credentialValue,
-            generateRequest
+            generateRequest,
         )
 
         auditRecord.setVersion(credentialVersion)
@@ -119,7 +119,7 @@ class DefaultRegenerateHandler(
         val credentialVersion = credentialService.save(
             existingCredentialVersion,
             newCredentialValue,
-            generateRequest
+            generateRequest,
         )
         results.add(credentialVersion.name)
 
@@ -137,7 +137,7 @@ class DefaultRegenerateHandler(
         if (!permissionCheckingService.hasPermission(
                 userContextHolder.userContext?.actor!!,
                 name,
-                permissionOperation
+                permissionOperation,
             )
         ) {
             if (permissionOperation == WRITE) {
