@@ -5,7 +5,8 @@ import com.fasterxml.jackson.annotation.JsonValue
 enum class CredentialWriteMode private constructor(val mode: String) {
     OVERWRITE("overwrite"),
     NO_OVERWRITE("no-overwrite"),
-    CONVERGE("converge");
+    CONVERGE("converge"),
+    ;
 
     @JsonValue
     fun forJackson(): String {

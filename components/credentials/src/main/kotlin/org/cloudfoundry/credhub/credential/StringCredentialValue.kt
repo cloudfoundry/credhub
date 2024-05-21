@@ -8,7 +8,7 @@ import javax.validation.constraints.NotEmpty
 class StringCredentialValue(
     @field:NotEmpty(message = ErrorMessages.MISSING_VALUE)
     @get:JsonValue
-    val stringCredential: String
+    val stringCredential: String,
 ) : CredentialValue {
 
     override fun equals(other: Any?): Boolean {

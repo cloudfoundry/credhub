@@ -30,12 +30,15 @@ import java.util.stream.Stream
 class CredentialVersionDataRepositoryTest {
     @Autowired
     private val subject: CredentialVersionRepository? = null
+
     @Autowired
     private val credentialRepository: CredentialRepository? = null
+
     @Autowired
     private val canaryRepository: EncryptionKeyCanaryRepository? = null
     private var name: String? = null
     private var canaryUuid: UUID? = null
+
     @Before
     fun beforeEach() {
         name = "my-credential"

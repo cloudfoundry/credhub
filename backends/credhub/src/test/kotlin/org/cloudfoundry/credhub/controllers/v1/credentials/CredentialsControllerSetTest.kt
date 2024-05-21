@@ -78,7 +78,7 @@ class CredentialsControllerSetTest {
             spyCredentialsHandler,
             CEFAuditRecord(),
             spyRegenerateHandler,
-            objectMapper
+            objectMapper,
         )
 
         metadata = objectMapper.readTree("{\"description\":\"example metadata\"}")
@@ -98,7 +98,7 @@ class CredentialsControllerSetTest {
             "/some-value-name",
             CredentialType.VALUE.type.lowercase(),
             metadata,
-            StringCredentialValue("some-value")
+            StringCredentialValue("some-value"),
         )
 
         // language=json
@@ -116,7 +116,7 @@ class CredentialsControllerSetTest {
             put(CredentialsController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
                 .credHubAuthHeader()
-                .content(requestBody)
+                .content(requestBody),
         )
             .andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -126,9 +126,9 @@ class CredentialsControllerSetTest {
                     getCommonSetRequestFields().and(
                         fieldWithPath("value")
                             .description(SetRequestFieldDescription.VALUE_DESCRIPTION)
-                            .type(JsonFieldType.STRING)
-                    )
-                )
+                            .type(JsonFieldType.STRING),
+                    ),
+                ),
             )
             .andReturn()
 
@@ -170,9 +170,9 @@ class CredentialsControllerSetTest {
                     {
                         "some-json-key": "some-json-value"
                     }
-                    """.trimIndent()
-                )
-            )
+                    """.trimIndent(),
+                ),
+            ),
         )
 
         // language=json
@@ -192,7 +192,7 @@ class CredentialsControllerSetTest {
             put(CredentialsController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
                 .credHubAuthHeader()
-                .content(requestBody)
+                .content(requestBody),
         )
             .andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -204,9 +204,9 @@ class CredentialsControllerSetTest {
                             .description(SetRequestFieldDescription.VALUE_DESCRIPTION)
                             .type(JsonFieldType.OBJECT),
                         fieldWithPath("value.some-json-key")
-                            .ignored()
-                    )
-                )
+                            .ignored(),
+                    ),
+                ),
             )
             .andReturn()
 
@@ -218,8 +218,8 @@ class CredentialsControllerSetTest {
             {
                 "some-json-key": "some-json-value"
             }
-                """.trimIndent()
-            )
+                """.trimIndent(),
+            ),
         )
         expectedValueSetRequest.name = "/some-value-name"
         expectedValueSetRequest.type = CredentialType.JSON.type.lowercase()
@@ -252,7 +252,7 @@ class CredentialsControllerSetTest {
             "/some-password-name",
             CredentialType.PASSWORD.type.lowercase(),
             metadata,
-            StringCredentialValue("some-password")
+            StringCredentialValue("some-password"),
         )
 
         // language=json
@@ -270,7 +270,7 @@ class CredentialsControllerSetTest {
             put(CredentialsController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
                 .credHubAuthHeader()
-                .content(requestBody)
+                .content(requestBody),
         )
             .andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -280,9 +280,9 @@ class CredentialsControllerSetTest {
                     getCommonSetRequestFields().and(
                         fieldWithPath("value")
                             .description(SetRequestFieldDescription.VALUE_DESCRIPTION)
-                            .type(JsonFieldType.STRING)
-                    )
-                )
+                            .type(JsonFieldType.STRING),
+                    ),
+                ),
             )
             .andReturn()
 
@@ -320,8 +320,8 @@ class CredentialsControllerSetTest {
             UserCredentialValue(
                 "some-username",
                 "some-password",
-                "foo"
-            )
+                "foo",
+            ),
         )
 
         // language=json
@@ -342,7 +342,7 @@ class CredentialsControllerSetTest {
             put(CredentialsController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
                 .credHubAuthHeader()
-                .content(requestBody)
+                .content(requestBody),
         )
             .andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -353,9 +353,9 @@ class CredentialsControllerSetTest {
                         fieldWithPath("value.username")
                             .description("The username to set."),
                         fieldWithPath("value.password")
-                            .description("The password to set.")
-                    )
-                )
+                            .description("The password to set."),
+                    ),
+                ),
             )
             .andReturn()
 
@@ -363,7 +363,7 @@ class CredentialsControllerSetTest {
         expectedValueSetRequest.userValue = UserCredentialValue(
             "some-username",
             "some-password",
-            null
+            null,
         )
         expectedValueSetRequest.name = "/some-user-name"
         expectedValueSetRequest.type = CredentialType.USER.type.lowercase()
@@ -406,8 +406,8 @@ class CredentialsControllerSetTest {
                 true,
                 false,
                 false,
-                false
-            )
+                false,
+            ),
         )
 
         // language=json
@@ -429,7 +429,7 @@ class CredentialsControllerSetTest {
             put(CredentialsController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
                 .credHubAuthHeader()
-                .content(requestBody)
+                .content(requestBody),
         )
             .andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -449,9 +449,9 @@ class CredentialsControllerSetTest {
                             .type(JsonFieldType.STRING),
                         fieldWithPath("value.private_key")
                             .description("Private key value of credential to set.")
-                            .type(JsonFieldType.STRING)
-                    )
-                )
+                            .type(JsonFieldType.STRING),
+                    ),
+                ),
             )
             .andReturn()
 
@@ -464,7 +464,7 @@ class CredentialsControllerSetTest {
             false,
             false,
             false,
-            false
+            false,
         )
         expectedValueSetRequest.name = "/some-certificate-name"
         expectedValueSetRequest.type = CredentialType.CERTIFICATE.type.lowercase()
@@ -506,8 +506,8 @@ class CredentialsControllerSetTest {
             metadata,
             RsaCredentialValue(
                 TestConstants.RSA_PUBLIC_KEY_4096,
-                TestConstants.PRIVATE_KEY_4096
-            )
+                TestConstants.PRIVATE_KEY_4096,
+            ),
         )
 
         // language=json
@@ -528,7 +528,7 @@ class CredentialsControllerSetTest {
             put(CredentialsController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
                 .credHubAuthHeader()
-                .content(requestBody)
+                .content(requestBody),
         )
             .andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -541,16 +541,16 @@ class CredentialsControllerSetTest {
                             .type(JsonFieldType.STRING),
                         fieldWithPath("value.private_key")
                             .description("Private key value of credential to set.")
-                            .type(JsonFieldType.STRING)
-                    )
-                )
+                            .type(JsonFieldType.STRING),
+                    ),
+                ),
             )
             .andReturn()
 
         val expectedValueSetRequest = RsaSetRequest()
         expectedValueSetRequest.rsaKeyValue = RsaCredentialValue(
             TestConstants.RSA_PUBLIC_KEY_4096,
-            TestConstants.PRIVATE_KEY_4096
+            TestConstants.PRIVATE_KEY_4096,
         )
         expectedValueSetRequest.name = "/some-rsa-name"
         expectedValueSetRequest.type = CredentialType.RSA.type.lowercase()
@@ -587,8 +587,8 @@ class CredentialsControllerSetTest {
             SshCredentialValue(
                 TestConstants.SSH_PUBLIC_KEY_4096,
                 TestConstants.PRIVATE_KEY_4096,
-                null
-            )
+                null,
+            ),
         )
 
         // language=json
@@ -609,7 +609,7 @@ class CredentialsControllerSetTest {
             put(CredentialsController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
                 .credHubAuthHeader()
-                .content(requestBody)
+                .content(requestBody),
         )
             .andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -622,10 +622,10 @@ class CredentialsControllerSetTest {
                             .type(JsonFieldType.STRING),
                         fieldWithPath("value.private_key")
                             .description("Private key value of credential to set.")
-                            .type(JsonFieldType.STRING)
+                            .type(JsonFieldType.STRING),
 
-                    )
-                )
+                    ),
+                ),
             )
             .andReturn()
 
@@ -633,7 +633,7 @@ class CredentialsControllerSetTest {
         expectedValueSetRequest.sshKeyValue = SshCredentialValue(
             TestConstants.SSH_PUBLIC_KEY_4096,
             TestConstants.PRIVATE_KEY_4096,
-            null
+            null,
         )
         expectedValueSetRequest.name = "/some-ssh-name"
         expectedValueSetRequest.type = CredentialType.SSH.type.lowercase()
@@ -672,7 +672,7 @@ class CredentialsControllerSetTest {
                 .description("Additional metadata for credential to set.")
                 .optional(),
             fieldWithPath("metadata.*")
-                .ignored()
+                .ignored(),
         )
     }
 

@@ -16,7 +16,7 @@ class PreAuthenticationFailureFilter internal constructor(private val authentica
     override fun doFilterInternal(
         request: HttpServletRequest,
         response: HttpServletResponse,
-        filterChain: FilterChain
+        filterChain: FilterChain,
     ) {
         try {
             filterChain.doFilter(request, response)

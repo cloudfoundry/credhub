@@ -36,13 +36,13 @@ import java.io.IOException
 @RestController
 @RequestMapping(
     path = [CredentialsController.ENDPOINT],
-    produces = [MediaType.APPLICATION_JSON_UTF8_VALUE]
+    produces = [MediaType.APPLICATION_JSON_UTF8_VALUE],
 )
 class CredentialsController(
     private val credentialsHandler: CredentialsHandler,
     private val auditRecord: CEFAuditRecord,
     val regenerateHandler: RegenerateHandler,
-    private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
 ) {
     companion object {
         const val ENDPOINT = "/api/v1/data"
@@ -59,7 +59,7 @@ class CredentialsController(
     fun getByName(
         @RequestParam("name") credentialName: String,
         @RequestParam(value = "versions", required = false) numberOfVersions: Int?,
-        @RequestParam(value = "current", required = false, defaultValue = "false") current: Boolean
+        @RequestParam(value = "current", required = false, defaultValue = "false") current: Boolean,
     ): DataResponse {
         if (StringUtils.isEmpty(credentialName)) {
             throw InvalidQueryParameterException(ErrorMessages.MISSING_QUERY_PARAMETER, "name")
@@ -84,7 +84,7 @@ class CredentialsController(
     @ResponseStatus(HttpStatus.OK)
     fun findByPath(
         @RequestParam("path") path: String,
-        @RequestParam(value = "expires-within-days", required = false, defaultValue = "") expiresWithinDays: String
+        @RequestParam(value = "expires-within-days", required = false, defaultValue = "") expiresWithinDays: String,
     ): FindCredentialResults {
         val findCredential = FindCredential()
         findCredential.path = path
@@ -98,7 +98,7 @@ class CredentialsController(
     @ResponseStatus(HttpStatus.OK)
     fun findByNameLike(
         @RequestParam("name-like") nameLike: String,
-        @RequestParam(value = "expires-within-days", required = false, defaultValue = "") expiresWithinDays: String
+        @RequestParam(value = "expires-within-days", required = false, defaultValue = "") expiresWithinDays: String,
     ): FindCredentialResults {
         val findCredential = FindCredential()
         findCredential.nameLike = nameLike

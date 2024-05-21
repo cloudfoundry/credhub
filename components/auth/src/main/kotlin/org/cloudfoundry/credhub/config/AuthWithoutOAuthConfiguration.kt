@@ -26,7 +26,7 @@ import org.springframework.security.web.authentication.preauth.x509.X509Authenti
 class AuthWithoutOAuthConfiguration @Autowired
 internal constructor(
     private val resourceServerProperties: ResourceServerProperties,
-    private val preAuthenticationFailureFilter: PreAuthenticationFailureFilter
+    private val preAuthenticationFailureFilter: PreAuthenticationFailureFilter,
 ) : ResourceServerConfigurerAdapter() {
 
     val preAuthenticatedAuthenticationProvider: PreAuthenticatedAuthenticationProvider
@@ -48,7 +48,7 @@ internal constructor(
       the "NO_AUTHORITIES", leaving it to the x509v3 checker to set the final authority.
 
       The aggregate of all this is consumed in the final .access() method.
-     */
+         */
 
         http.x509()
             .subjectPrincipalRegex(VALID_MTLS_ID)
@@ -73,8 +73,8 @@ internal constructor(
             .access(
                 String.format(
                     "hasRole('%s')",
-                    X509AuthenticationProvider.MTLS_USER
-                )
+                    X509AuthenticationProvider.MTLS_USER,
+                ),
             )
 
         http.httpBasic().disable()

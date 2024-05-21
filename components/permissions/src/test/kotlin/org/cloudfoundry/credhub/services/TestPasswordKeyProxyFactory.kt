@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service
 class TestPasswordKeyProxyFactory : PasswordKeyProxyFactory {
     override fun createPasswordKeyProxy(
         encryptionKeyMetadata: EncryptionKeyMetadata,
-        encryptionService: InternalEncryptionService
+        encryptionService: InternalEncryptionService,
     ): KeyProxy {
         return PasswordBasedKeyProxy(encryptionKeyMetadata.encryptionPassword, 1, encryptionService)
     }

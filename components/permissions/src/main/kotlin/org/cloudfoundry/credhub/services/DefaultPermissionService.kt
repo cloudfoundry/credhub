@@ -23,7 +23,7 @@ class DefaultPermissionService @Autowired
 constructor(
     private val permissionDataService: PermissionDataService,
     private val permissionCheckingService: PermissionCheckingService,
-    private val userContextHolder: UserContextHolder
+    private val userContextHolder: UserContextHolder,
 ) : PermissionService {
 
     override fun getAllowedOperationsForLogging(credentialName: String, actor: String): List<PermissionOperation> {
@@ -31,7 +31,6 @@ constructor(
     }
 
     override fun savePermissionsForUser(permissionEntryList: MutableList<PermissionEntry>?): List<PermissionData> {
-
         if (permissionEntryList?.isEmpty() as Boolean) {
             return ArrayList()
         }
@@ -39,7 +38,7 @@ constructor(
         val userContext = userContextHolder.userContext
         permissionEntryList.forEach { permissionEntry ->
             if (!permissionCheckingService
-                .hasPermission(userContext?.actor!!, permissionEntry.path!!, PermissionOperation.WRITE_ACL)
+                    .hasPermission(userContext?.actor!!, permissionEntry.path!!, PermissionOperation.WRITE_ACL)
             ) {
                 throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
             }
@@ -47,8 +46,9 @@ constructor(
                 throw InvalidPermissionOperationException(ErrorMessages.Permissions.INVALID_UPDATE_OPERATION)
             }
             if (permissionCheckingService.hasPermissions(
-                    permissionEntry.actor!!, permissionEntry.path!!,
-                    permissionEntry.allowedOperations!!
+                    permissionEntry.actor!!,
+                    permissionEntry.path!!,
+                    permissionEntry.allowedOperations!!,
                 )
             ) {
                 throw PermissionAlreadyExistsException(ErrorMessages.Permissions.ALREADY_EXISTS)
@@ -70,9 +70,10 @@ constructor(
         }
 
         if (!permissionCheckingService
-            .hasPermission(
-                    userContextHolder.userContext?.actor!!, credentialVersion.name!!,
-                    PermissionOperation.READ_ACL
+                .hasPermission(
+                    userContextHolder.userContext?.actor!!,
+                    credentialVersion.name!!,
+                    PermissionOperation.READ_ACL,
                 )
         ) {
             throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
@@ -87,7 +88,7 @@ constructor(
         }
 
         if (!permissionCheckingService
-            .hasPermission(userContextHolder.userContext?.actor!!, guid, PermissionOperation.READ_ACL)
+                .hasPermission(userContextHolder.userContext?.actor!!, guid, PermissionOperation.READ_ACL)
         ) {
             throw InvalidPermissionException(ErrorMessages.Credential.INVALID_ACCESS)
         }
@@ -97,7 +98,7 @@ constructor(
 
     override fun deletePermissions(credentialName: String, actor: String): Boolean {
         if (!permissionCheckingService
-            .hasPermission(userContextHolder.userContext?.actor!!, credentialName, PermissionOperation.WRITE_ACL)
+                .hasPermission(userContextHolder.userContext?.actor!!, credentialName, PermissionOperation.WRITE_ACL)
         ) {
             throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
         }
@@ -128,7 +129,7 @@ constructor(
     override fun saveV2Permissions(permissionsRequest: PermissionsV2Request): PermissionData {
         val userContext = userContextHolder.userContext
         if (!permissionCheckingService
-            .hasPermission(userContext?.actor!!, permissionsRequest.getPath(), PermissionOperation.WRITE_ACL)
+                .hasPermission(userContext?.actor!!, permissionsRequest.getPath(), PermissionOperation.WRITE_ACL)
         ) {
             throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
         }

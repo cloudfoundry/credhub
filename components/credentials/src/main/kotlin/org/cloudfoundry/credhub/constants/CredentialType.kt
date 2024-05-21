@@ -7,7 +7,8 @@ enum class CredentialType private constructor(type: String) {
     RSA("rsa"),
     SSH("ssh"),
     JSON("json"),
-    USER("user");
+    USER("user"),
+    ;
 
     val type: String
 
@@ -22,7 +23,7 @@ enum class CredentialType private constructor(type: String) {
                 CERTIFICATE,
                 USER,
                 RSA,
-                SSH
+                SSH,
             )
         }
     }

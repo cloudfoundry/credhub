@@ -13,7 +13,7 @@ class JsonCredentialValue @JsonCreator
 constructor(
     @field:NotNull(message = ErrorMessages.MISSING_VALUE)
     @get:JsonValue
-    val value: JsonNode
+    val value: JsonNode,
 ) : CredentialValue {
 
     override fun equals(other: Any?): Boolean {

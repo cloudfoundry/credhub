@@ -16,7 +16,7 @@ class CertificateVersionView(
     @JsonProperty("self_signed")
     val selfSigned: Boolean,
     @JsonInclude(NON_NULL)
-    val generated: Boolean?
+    val generated: Boolean?,
 ) {
     constructor(certificateVersion: CertificateVersionMetadata) : this(
         certificateVersion.id!!,
@@ -24,7 +24,7 @@ class CertificateVersionView(
         certificateVersion.isTransitional,
         certificateVersion.isCertificateAuthority,
         certificateVersion.isSelfSigned,
-        certificateVersion.generated
+        certificateVersion.generated,
     )
 
     @JsonProperty("expiry_date")

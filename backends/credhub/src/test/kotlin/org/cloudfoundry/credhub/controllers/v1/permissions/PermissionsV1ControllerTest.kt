@@ -58,17 +58,17 @@ class PermissionsV1ControllerTest {
                     "some-actor",
                     "some-path",
                     listOf(
-                        READ
-                    )
-                )
-            )
+                        READ,
+                    ),
+                ),
+            ),
         )
 
         val mvcResult = mockMvc
             .perform(
                 get(PermissionsV1Controller.ENDPOINT)
                     .credHubAuthHeader()
-                    .param("credential_name", "some-credential-name")
+                    .param("credential_name", "some-credential-name"),
             )
             .andExpect(status().isOk)
             .andExpect(MockMvcResultMatchers.content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -77,9 +77,9 @@ class PermissionsV1ControllerTest {
                     CredHubRestDocs.DOCUMENT_IDENTIFIER,
                     requestParameters(
                         parameterWithName("credential_name")
-                            .description("The name of the credential to get permissions for.")
-                    )
-                )
+                            .description("The name of the credential to get permissions for."),
+                    ),
+                ),
             )
             .andReturn()
 
@@ -131,7 +131,7 @@ class PermissionsV1ControllerTest {
                 post(PermissionsV1Controller.ENDPOINT)
                     .credHubAuthHeader()
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(requestBody)
+                    .content(requestBody),
             )
             .andExpect(status().isCreated)
             .andDo(
@@ -144,9 +144,9 @@ class PermissionsV1ControllerTest {
                             .description("The credential path"),
                         fieldWithPath("permissions[].actor")
                             .description("The credential actor"),
-                        getPermissionOperationsRequestField()
-                    )
-                )
+                        getPermissionOperationsRequestField(),
+                    ),
+                ),
             )
             .andReturn()
 
@@ -157,10 +157,10 @@ class PermissionsV1ControllerTest {
                     "some-actor",
                     "some-path",
                     listOf(
-                        PermissionOperation.READ
-                    )
-                )
-            )
+                        PermissionOperation.READ,
+                    ),
+                ),
+            ),
 
         )
         assertThat(spyPermissionsV1Handler.writePermissions__calledWith_request)
@@ -174,7 +174,7 @@ class PermissionsV1ControllerTest {
                 delete(PermissionsV1Controller.ENDPOINT)
                     .credHubAuthHeader()
                     .param("credential_name", "some-credential-name")
-                    .param("actor", "some-actor")
+                    .param("actor", "some-actor"),
             )
             .andExpect(status().isNoContent)
             .andDo(
@@ -184,9 +184,9 @@ class PermissionsV1ControllerTest {
                         parameterWithName("credential_name")
                             .description("The name of the credential to delete permissions for."),
                         parameterWithName("actor")
-                            .description("The actor to delete permissions for.")
-                    )
-                )
+                            .description("The actor to delete permissions for."),
+                    ),
+                ),
             )
 
         assertThat(spyPermissionsV1Handler.deletePermissionEntry__calledWith_credentialName).isEqualTo("/some-credential-name")
@@ -199,15 +199,15 @@ class PermissionsV1ControllerTest {
                 """
                     The list of permissions to be granted.
                     Supported operations are: ${
-                PermissionOperation.values().joinToString(
-                    transform = {
-                        x ->
-                        x.operation.lowercase()
-                    },
-                    separator = ", "
-                )
+                    PermissionOperation.values().joinToString(
+                        transform = {
+                                x ->
+                            x.operation.lowercase()
+                        },
+                        separator = ", ",
+                    )
                 }
-                """.trimIndent()
+                """.trimIndent(),
             )
     }
 }

@@ -85,7 +85,7 @@ class DefaultPermissionCheckingServiceTest {
         initializeEnforcement(false)
 
         assertTrue(
-            subject!!.userAllowedToOperateOnActor("test-actor")
+            subject!!.userAllowedToOperateOnActor("test-actor"),
         )
     }
 
@@ -94,7 +94,7 @@ class DefaultPermissionCheckingServiceTest {
         initializeEnforcement(true)
 
         assertTrue(
-            subject!!.userAllowedToOperateOnActor("random-actor")
+            subject!!.userAllowedToOperateOnActor("random-actor"),
         )
     }
 
@@ -103,7 +103,7 @@ class DefaultPermissionCheckingServiceTest {
         initializeEnforcement(true)
 
         assertFalse(
-            subject!!.userAllowedToOperateOnActor("test-actor")
+            subject!!.userAllowedToOperateOnActor("test-actor"),
         )
     }
 
@@ -113,7 +113,7 @@ class DefaultPermissionCheckingServiceTest {
         `when`(userContext!!.actor).thenReturn(null)
 
         assertFalse(
-            subject!!.userAllowedToOperateOnActor("test-actor")
+            subject!!.userAllowedToOperateOnActor("test-actor"),
         )
     }
 
@@ -153,11 +153,11 @@ class DefaultPermissionCheckingServiceTest {
         user: String,
         credentialName: String,
         permission: PermissionOperation,
-        isGranted: Boolean
+        isGranted: Boolean,
     ) {
         `when`(
             permissionDataService!!
-                .hasPermission(user, credentialName, permission)
+                .hasPermission(user, credentialName, permission),
         )
             .thenReturn(isGranted)
 
@@ -168,11 +168,11 @@ class DefaultPermissionCheckingServiceTest {
         user: String,
         credentialName: String,
         permission: PermissionOperation,
-        isGranted: Boolean
+        isGranted: Boolean,
     ) {
         `when`(
             permissionDataService!!
-                .hasPermission(user, credentialName, permission)
+                .hasPermission(user, credentialName, permission),
         )
             .thenReturn(isGranted)
 

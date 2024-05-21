@@ -40,11 +40,11 @@ internal class OAuth2AuthenticationExceptionHandlerTest {
 
         assertThat(
             JsonPath.compile("error").read(response.contentAsString),
-            equalTo("server_error")
+            equalTo("server_error"),
         )
         assertThat(
             JsonPath.compile("error_description").read(response.contentAsString),
-            equalTo("Server unable to communicate with backend UAA due to untrusted CA: this is our error")
+            equalTo("Server unable to communicate with backend UAA due to untrusted CA: this is our error"),
         )
         assertThat(response.status, equalTo(500))
     }

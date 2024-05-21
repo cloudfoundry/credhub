@@ -34,7 +34,6 @@ class ManagementControllerTest {
 
     @Before
     fun setUp() {
-
         spyManagementService = SpyManagementService()
 
         val managementController = ManagementController(spyManagementService)
@@ -48,14 +47,14 @@ class ManagementControllerTest {
         val mvcResult = mockMvc.perform(
             get(ManagementController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
-                .credHubAuthHeader()
+                .credHubAuthHeader(),
         )
             .andExpect(MockMvcResultMatchers.status().isOk)
             .andExpect(MockMvcResultMatchers.content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
             .andDo(
                 MockMvcRestDocumentation.document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER
-                )
+                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                ),
             ).andReturn()
 
         val expectedResponseBody =
@@ -79,8 +78,8 @@ class ManagementControllerTest {
                         {
                             "read_only_mode": true
                         }
-                    """.trimIndent()
-                )
+                    """.trimIndent(),
+                ),
         )
             .andExpect(MockMvcResultMatchers.status().isOk)
             .andExpect(MockMvcResultMatchers.content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -90,9 +89,9 @@ class ManagementControllerTest {
                     requestFields(
                         PayloadDocumentation.fieldWithPath("read_only_mode")
                             .description("Enables / disables read only mode for the entire API.")
-                            .type(JsonFieldType.BOOLEAN)
-                    )
-                )
+                            .type(JsonFieldType.BOOLEAN),
+                    ),
+                ),
             ).andReturn()
 
         assertThat(spyManagementService.toggleReadOnlyMode__calledWith_shouldUseReadOnlyMode).isEqualTo(true)

@@ -31,14 +31,14 @@ class DefaultPermissionsV1HandlerTest {
     @Before
     fun beforeEach() {
         credentialVersion = ValueCredentialVersion(
-            ValueCredentialVersionData(CREDENTIAL_NAME)
+            ValueCredentialVersionData(CREDENTIAL_NAME),
         )
 
         spyPermissionService = SpyPermissionService()
         spyPermissionedCredentialService = SpyCredentialService()
         subject = DefaultPermissionsV1Handler(
             spyPermissionService,
-            spyPermissionedCredentialService
+            spyPermissionedCredentialService,
         )
     }
 
@@ -50,7 +50,7 @@ class DefaultPermissionsV1HandlerTest {
         val actual = subject.getPermissions(CREDENTIAL_NAME)
         val expected = PermissionsView(
             CREDENTIAL_NAME,
-            listOf(PermissionEntry())
+            listOf(PermissionEntry()),
         )
 
         assertThat(actual).isEqualTo(expected)
@@ -64,16 +64,16 @@ class DefaultPermissionsV1HandlerTest {
             CREDENTIAL_NAME,
             mutableListOf(
                 PermissionEntry(ACTOR_NAME, "", mutableListOf(PermissionOperation.DELETE)),
-                PermissionEntry(OTHER_ACTOR_NAME, "", mutableListOf(PermissionOperation.READ))
-            )
+                PermissionEntry(OTHER_ACTOR_NAME, "", mutableListOf(PermissionOperation.READ)),
+            ),
         )
 
         val expected = PermissionsRequest(
             CREDENTIAL_NAME,
             mutableListOf(
                 PermissionEntry(ACTOR_NAME, CREDENTIAL_NAME, mutableListOf(PermissionOperation.DELETE)),
-                PermissionEntry(OTHER_ACTOR_NAME, CREDENTIAL_NAME, mutableListOf(PermissionOperation.READ))
-            )
+                PermissionEntry(OTHER_ACTOR_NAME, CREDENTIAL_NAME, mutableListOf(PermissionOperation.READ)),
+            ),
         )
         spyPermissionService.savePermissionsForUser__returns_permissionDataList = emptyList<PermissionData>().toMutableList()
 

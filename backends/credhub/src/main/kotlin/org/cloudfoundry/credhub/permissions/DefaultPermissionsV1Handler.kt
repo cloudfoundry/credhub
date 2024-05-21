@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component
 @Component
 class DefaultPermissionsV1Handler(
     private val permissionService: PermissionService,
-    private val credentialService: CredentialService
+    private val credentialService: CredentialService,
 ) : PermissionsV1Handler {
 
     override fun getPermissions(name: String): PermissionsView {

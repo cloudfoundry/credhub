@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service
 @Profile("!remote")
 class DefaultKeyUsageHandler(
     val credentialVersionDataService: CredentialVersionDataService,
-    val keySet: EncryptionKeySet
+    val keySet: EncryptionKeySet,
 ) : KeyUsageHandler {
 
     override fun getKeyUsage(): Map<String, Long> {

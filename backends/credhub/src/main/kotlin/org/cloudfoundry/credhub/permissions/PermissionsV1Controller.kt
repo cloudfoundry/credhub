@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping(path = [PermissionsV1Controller.ENDPOINT], produces = [MediaType.APPLICATION_JSON_UTF8_VALUE])
 class PermissionsV1Controller(
     private val permissionsHandler: PermissionsV1Handler,
-    private val auditRecord: CEFAuditRecord
+    private val auditRecord: CEFAuditRecord,
 ) {
     companion object {
         const val ENDPOINT = "/api/v1/permissions"
@@ -43,7 +43,7 @@ class PermissionsV1Controller(
     fun setAccessControlEntries(@Validated @RequestBody accessEntriesRequest: PermissionsRequest) {
         val addPermission = AddPermission(
             accessEntriesRequest.credentialName,
-            accessEntriesRequest.permissions
+            accessEntriesRequest.permissions,
         )
         auditRecord.requestDetails = addPermission
         permissionsHandler.writePermissions(accessEntriesRequest)
@@ -53,7 +53,7 @@ class PermissionsV1Controller(
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun deleteAccessControlEntry(
         @RequestParam("credential_name") credentialName: String,
-        @RequestParam("actor") actor: String
+        @RequestParam("actor") actor: String,
     ) {
         val credentialNameWithPrependedSlash = StringUtils.prependIfMissing(credentialName, "/")
 

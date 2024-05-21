@@ -26,21 +26,23 @@ class DefaultCredentialService(
     private val credentialFactory: CredentialFactory,
     private val certificateAuthorityService: CertificateAuthorityService,
     private val credentialDataService: CredentialDataService,
-    private val auditRecord: CEFAuditRecord
+    private val auditRecord: CEFAuditRecord,
 ) :
     CredentialService {
 
     override fun save(
         existingCredentialVersion: CredentialVersion?,
         credentialValue: CredentialValue?,
-        credentialRequest: BaseCredentialRequest
+        credentialRequest: BaseCredentialRequest,
     ): CredentialVersion {
         validateCredentialSave(credentialRequest.type!!, existingCredentialVersion)
         val shouldWriteNewCredential = shouldWriteNewCredential(existingCredentialVersion, credentialRequest)
 
         return if (!shouldWriteNewCredential) {
             existingCredentialVersion!!
-        } else makeAndSaveNewCredential(existingCredentialVersion, credentialValue, credentialRequest)
+        } else {
+            makeAndSaveNewCredential(existingCredentialVersion, credentialValue, credentialRequest)
+        }
     }
 
     override fun delete(credentialName: String): Boolean {
@@ -71,7 +73,6 @@ class DefaultCredentialService(
     }
 
     override fun findByUuid(credentialUUID: UUID): Credential {
-
         return credentialDataService.findByUUID(credentialUUID)
             ?: throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
     }
@@ -92,7 +93,6 @@ class DefaultCredentialService(
     }
 
     override fun findAllCertificateCredentialsByCaName(caName: String): List<String> {
-
         return credentialVersionDataService.findAllCertificateCredentialsByCaName(caName)
     }
 
@@ -115,7 +115,7 @@ class DefaultCredentialService(
     private fun makeAndSaveNewCredential(
         existingCredentialVersion: CredentialVersion?,
         credentialValue: CredentialValue?,
-        request: BaseCredentialRequest
+        request: BaseCredentialRequest,
     ): CredentialVersion {
         val newVersion = credentialFactory.makeNewCredentialVersion(
             CredentialType.valueOf(request.type?. uppercase()!!),
@@ -123,7 +123,7 @@ class DefaultCredentialService(
             credentialValue,
             existingCredentialVersion,
             request.generationParameters,
-            request.metadata
+            request.metadata,
         )
         val savedVersion = credentialVersionDataService.save(newVersion)
         if (savedVersion is CertificateCredentialVersion) {
@@ -135,7 +135,7 @@ class DefaultCredentialService(
 
     private fun shouldWriteNewCredential(
         existingCredentialVersion: CredentialVersion?,
-        request: BaseCredentialRequest
+        request: BaseCredentialRequest,
     ): Boolean {
         if (request is BaseCredentialSetRequest<*>) {
             return true
@@ -146,7 +146,6 @@ class DefaultCredentialService(
         }
 
         if (request is BaseCredentialGenerateRequest) {
-
             if (request.mode != null && request.mode == CredentialWriteMode.NO_OVERWRITE) {
                 return false
             }
@@ -179,7 +178,6 @@ class DefaultCredentialService(
     }
 
     private fun validateCredentialSave(type: String, existingCredentialVersion: CredentialVersion?) {
-
         if (existingCredentialVersion != null && existingCredentialVersion.getCredentialType() != type) {
             throw ParameterizedValidationException(ErrorMessages.TYPE_MISMATCH)
         }

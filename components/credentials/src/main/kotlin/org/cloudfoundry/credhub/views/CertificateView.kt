@@ -17,14 +17,15 @@ open class CertificateView : CredentialView {
         private set
     var selfSigned = false
         private set
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     var generated: Boolean? = null
         private set
 
-    internal constructor() : super() /* Jackson */ {}
+    internal constructor() : super() {}
     constructor(version: CertificateCredentialVersion) : this(
         version,
-        false
+        false,
     )
 
     constructor(version: CertificateCredentialVersion, concatenateCas: Boolean) : super(
@@ -33,7 +34,7 @@ open class CertificateView : CredentialView {
         version.name,
         version.getCredentialType(),
         version.metadata,
-        null
+        null,
     ) {
         this.version = version
         expiryDate = version.expiryDate

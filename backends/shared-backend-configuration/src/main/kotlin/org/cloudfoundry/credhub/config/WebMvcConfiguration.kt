@@ -14,7 +14,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 class WebMvcConfiguration @Autowired constructor(
     private val auditInterceptor: AuditInterceptor,
     private val userContextInterceptor: UserContextInterceptor,
-    private val managementInterceptor: ManagementInterceptor
+    private val managementInterceptor: ManagementInterceptor,
 ) : WebMvcConfigurer {
     override fun configureContentNegotiation(configurer: ContentNegotiationConfigurer) {
         configurer.favorPathExtension(false)
@@ -30,7 +30,7 @@ class WebMvcConfiguration @Autowired constructor(
             "/health",
             "/**/key-usage",
             "/version",
-            "/docs/index.html"
+            "/docs/index.html",
         )
         registry.addInterceptor(managementInterceptor)
         registry.addInterceptor(userContextInterceptor).excludePathPatterns(
@@ -38,7 +38,7 @@ class WebMvcConfiguration @Autowired constructor(
             "/health",
             "/**/key-usage",
             "/management",
-            "/docs/index.html"
+            "/docs/index.html",
         )
     }
 }

@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping(path = [InterpolationController.ENDPOINT], produces = [MediaType.APPLICATION_JSON_UTF8_VALUE])
 class InterpolationController(
     private val jsonInterpolationHandler: InterpolationHandler,
-    private val auditRecord: CEFAuditRecord
+    private val auditRecord: CEFAuditRecord,
 ) {
 
     companion object {

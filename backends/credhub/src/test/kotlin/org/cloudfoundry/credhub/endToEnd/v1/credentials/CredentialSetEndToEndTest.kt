@@ -48,7 +48,7 @@ class CredentialSetEndToEndTest {
         private val CREDENTIAL_NAME_1024_CHARACTERS = StringUtils.rightPad(
             "/",
             1024,
-            'a'
+            'a',
         )
     }
 
@@ -77,7 +77,7 @@ class CredentialSetEndToEndTest {
                       "private_key": ""
                     }
                 }
-                """.trimIndent()
+                """.trimIndent(),
             )
 
         this.mockMvc
@@ -105,7 +105,7 @@ class CredentialSetEndToEndTest {
                   "password": "some_silly_password"
                 }
               }
-                """.trimIndent()
+                """.trimIndent(),
             )
 
         val response = this.mockMvc
@@ -124,14 +124,14 @@ class CredentialSetEndToEndTest {
             mockMvc,
             CREDENTIAL_NAME,
             "original-password",
-            ALL_PERMISSIONS_TOKEN
+            ALL_PERMISSIONS_TOKEN,
         )
 
         val secondResponse = setPassword(
             mockMvc,
             CREDENTIAL_NAME,
             "new-password",
-            ALL_PERMISSIONS_TOKEN
+            ALL_PERMISSIONS_TOKEN,
         )
         val updatedPassword = JSONObject(secondResponse).getString("value")
 
@@ -146,7 +146,7 @@ class CredentialSetEndToEndTest {
             mockMvc,
             CREDENTIAL_NAME_1024_CHARACTERS,
             "foobar",
-            ALL_PERMISSIONS_TOKEN
+            ALL_PERMISSIONS_TOKEN,
         )
         val setPassword = JSONObject(setResponse).getString("value")
 
@@ -157,7 +157,7 @@ class CredentialSetEndToEndTest {
             CREDENTIAL_NAME_1024_CHARACTERS,
             true,
             14,
-            ALL_PERMISSIONS_TOKEN
+            ALL_PERMISSIONS_TOKEN,
         )
         val getPassword = JSONObject(getResponse).getString("value")
         assertThat(getPassword.length, equalTo(14))
@@ -172,20 +172,19 @@ class CredentialSetEndToEndTest {
             mockMvc,
             name1025,
             "foobar",
-            ALL_PERMISSIONS_TOKEN
+            ALL_PERMISSIONS_TOKEN,
         )
         generatePassword(
             mockMvc,
             name1025,
             false,
             10,
-            ALL_PERMISSIONS_TOKEN
+            ALL_PERMISSIONS_TOKEN,
         )
     }
 
     @Test
     fun `malformed private key should result in 400`() {
-
         val certificate =
             """
             -----BEGIN CERTIFICATE----- fake
@@ -257,7 +256,7 @@ class CredentialSetEndToEndTest {
                       "private_key": "$invalidPrivateKey"
                     }
                   }
-                """.trimIndent()
+                """.trimIndent(),
             )
 
         val responseBody = this.mockMvc
@@ -274,7 +273,7 @@ class CredentialSetEndToEndTest {
                   "error": "Private key is malformed. Keys must be PEM-encoded PKCS#1 or unencrypted PKCS#8 keys."
                 }
             """.trimIndent(),
-            true
+            true,
         )
     }
 
@@ -296,7 +295,7 @@ class CredentialSetEndToEndTest {
                   "password": "some_silly_password"
                 }
               }
-                """.trimIndent()
+                """.trimIndent(),
             )
 
         val setResponse = this.mockMvc

@@ -28,7 +28,7 @@ class DefaultCertificateService(
     private val certificateCredentialFactory: CertificateCredentialFactory,
     private val credentialVersionDataService: CredentialVersionDataService,
     private val auditRecord: CEFAuditRecord,
-    @Value("\${certificates.concatenate_cas:false}") var concatenateCas: Boolean
+    @Value("\${certificates.concatenate_cas:false}") var concatenateCas: Boolean,
 ) {
     // As of Postgres JDBC Driver 42.4.0, the driver supports up to 65535 (inclusive) parameters
     // See: https://jdbc.postgresql.org/changelogs/2022-06-09-42.4.0-release/
@@ -38,7 +38,7 @@ class DefaultCertificateService(
     fun save(
         existingCredentialVersion: CredentialVersion,
         credentialValue: CertificateCredentialValue,
-        generateRequest: BaseCredentialGenerateRequest
+        generateRequest: BaseCredentialGenerateRequest,
     ): CredentialVersion {
         generateRequest.type = "certificate"
         if (credentialValue.transitional) {
@@ -48,7 +48,7 @@ class DefaultCertificateService(
             .save(
                 existingCredentialVersion,
                 credentialValue,
-                generateRequest
+                generateRequest,
             ) as CertificateCredentialVersion
 
         if (version.isVersionTransitional) {
@@ -232,7 +232,7 @@ class DefaultCertificateService(
                 credentialVersion?.isCertificateAuthority ?: false,
                 credentialVersion?.isSelfSigned ?: false,
                 credentialVersion?.generated,
-                false
+                false,
             )
 
             val newCredentialVersion = certificateCredentialFactory

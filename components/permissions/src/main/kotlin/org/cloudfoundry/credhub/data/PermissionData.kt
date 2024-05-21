@@ -22,7 +22,7 @@ class PermissionData(
     @field:Column(nullable = false)
     override var path: String?,
     @field:Column(nullable = false)
-    var actor: String?
+    var actor: String?,
 ) : AuditablePermissionData {
 
     @Id
@@ -51,7 +51,7 @@ class PermissionData(
     constructor(
         path: String?,
         actor: String?,
-        operations: MutableList<PermissionOperation>?
+        operations: MutableList<PermissionOperation>?,
     ) : this(path, actor) {
         enableOperations(operations)
     }

@@ -23,12 +23,12 @@ object RequestHelper {
         mockMvc: MockMvc,
         credentialName: String,
         passwordValue: String?,
-        token: String
+        token: String,
     ): String {
         val passwordRequestBody: HashMap<String, Any?> = hashMapOf(
             "name" to credentialName,
             "type" to "password",
-            "value" to passwordValue
+            "value" to passwordValue,
         )
 
         val content = serializeToString(passwordRequestBody)
@@ -57,7 +57,7 @@ object RequestHelper {
     fun generatePassword(mockMvc: MockMvc, credentialName: String, overwrite: Boolean, length: Int?, token: String): String {
         val passwordRequestBody: MutableMap<String, Any> = mutableMapOf(
             "name" to credentialName,
-            "type" to "password"
+            "type" to "password",
         )
 
         if (overwrite) {
@@ -93,11 +93,11 @@ object RequestHelper {
         overwrite: Boolean,
         length: Int?,
         username: String?,
-        excludeUpper: Boolean
+        excludeUpper: Boolean,
     ): String {
         val userRequestBody: MutableMap<String, Any?> = mutableMapOf(
             "name" to credentialName,
-            "type" to "user"
+            "type" to "user",
         )
 
         if (overwrite) {
@@ -133,13 +133,13 @@ object RequestHelper {
         credentialName: String?,
         overwrite: Boolean,
         length: Int?,
-        sshComment: String?
+        sshComment: String?,
     ): String {
         BouncyCastleFipsConfigurer.configure()
 
         val sshRequestBody: MutableMap<String, Any?> = mutableMapOf(
             "name" to credentialName,
-            "type" to "ssh"
+            "type" to "ssh",
         )
 
         if (overwrite) {
@@ -236,7 +236,7 @@ object RequestHelper {
         mockMvc: MockMvc,
         credentialName: String?,
         overwrite: Boolean,
-        length: Int?
+        length: Int?,
     ): String {
         BouncyCastleFipsConfigurer.configure()
 
@@ -283,7 +283,7 @@ object RequestHelper {
                     "self_sign": true
                   }
               }
-                """.trimIndent()
+                """.trimIndent(),
             )
 
         return mockMvc.perform(caPost)
@@ -295,7 +295,7 @@ object RequestHelper {
     private fun createRequestForGenerateCertificate(
         certName: String,
         caName: String,
-        token: String
+        token: String,
     ): MockHttpServletRequestBuilder {
         return MockMvcRequestBuilders.post("/api/v1/data")
             .header("Authorization", "Bearer $token")
@@ -312,7 +312,7 @@ object RequestHelper {
                     "ca" : "$caName"
                   }
               }
-                """.trimIndent()
+                """.trimIndent(),
             )
     }
 
@@ -322,7 +322,7 @@ object RequestHelper {
         mockMvc: MockMvc,
         certName: String,
         caName: String,
-        token: String
+        token: String,
     ) {
         BouncyCastleFipsConfigurer.configure()
 
@@ -339,7 +339,7 @@ object RequestHelper {
         certName: String,
         token: String,
         expectedMessage: String,
-        errCode: ResultMatcher?
+        errCode: ResultMatcher?,
     ) {
         val certPost = MockMvcRequestBuilders.post("/api/v1/data")
             .header("Authorization", "Bearer $token")
@@ -356,7 +356,7 @@ object RequestHelper {
                     "ca" : "picard"
                   }
               }
-                """.trimIndent()
+                """.trimIndent(),
             )
         mockMvc.perform(certPost)
             .andDo(MockMvcResultHandlers.print())
@@ -370,7 +370,7 @@ object RequestHelper {
         mockMvc: MockMvc,
         certName: String,
         token: String,
-        message: String
+        message: String,
     ) {
         val certPost = MockMvcRequestBuilders.post("/api/v1/data")
             .header("Authorization", "Bearer $token")
@@ -390,11 +390,13 @@ object RequestHelper {
         credentialName: String,
         grantorToken: String,
         granteeName: String,
-        vararg permissions: String?
+        vararg permissions: String?,
     ) {
         val post = createAddPermissionsRequest(
-            grantorToken, credentialName, granteeName,
-            *permissions
+            grantorToken,
+            credentialName,
+            granteeName,
+            *permissions,
         )
         mockMvc.perform(post)
             .andExpect(MockMvcResultMatchers.status().isCreated)
@@ -409,11 +411,13 @@ object RequestHelper {
         credentialName: String,
         grantorToken: String,
         grantee: String,
-        vararg permissions: String?
+        vararg permissions: String?,
     ) {
         val post = createAddPermissionsRequest(
-            grantorToken, credentialName, grantee,
-            *permissions
+            grantorToken,
+            credentialName,
+            grantee,
+            *permissions,
         )
         mockMvc.perform(post)
             .andExpect(MockMvcResultMatchers.status().`is`(status))
@@ -426,11 +430,11 @@ object RequestHelper {
     fun getPermissions(
         mockMvc: MockMvc,
         credentialName: String,
-        requesterToken: String
+        requesterToken: String,
     ): PermissionsView {
         val content = mockMvc.perform(
             MockMvcRequestBuilders.get("/api/v1/permissions?credential_name=$credentialName")
-                .header("Authorization", "Bearer $requesterToken")
+                .header("Authorization", "Bearer $requesterToken"),
         )
             .andExpect(MockMvcResultMatchers.status().isOk)
             .andExpect(MockMvcResultMatchers.content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -447,14 +451,14 @@ object RequestHelper {
         status: Int,
         expectedErrorMessage: String,
         credentialName: String?,
-        requesterToken: String
+        requesterToken: String,
     ) {
         mockMvc.perform(
             MockMvcRequestBuilders.get(
                 "/api/v1/permissions" +
-                    if (credentialName == null) "" else "?credential_name=$credentialName"
+                    if (credentialName == null) "" else "?credential_name=$credentialName",
             )
-                .header("Authorization", "Bearer $requesterToken")
+                .header("Authorization", "Bearer $requesterToken"),
         )
             .andExpect(MockMvcResultMatchers.status().`is`(status))
             .andExpect(MockMvcResultMatchers.jsonPath("$.error", IsEqual.equalTo(expectedErrorMessage)))
@@ -466,11 +470,14 @@ object RequestHelper {
         mockMvc: MockMvc,
         credentialName: String?,
         grantorToken: String,
-        grantee: String?
+        grantee: String?,
     ) {
         expectStatusWhenDeletingPermissions(
-            mockMvc, 204, credentialName, grantee,
-            grantorToken
+            mockMvc,
+            204,
+            credentialName,
+            grantee,
+            grantorToken,
         )
     }
 
@@ -481,10 +488,15 @@ object RequestHelper {
         status: Int,
         credentialName: String?,
         grantee: String?,
-        grantorToken: String
+        grantorToken: String,
     ) {
         expectErrorWhenDeletingPermissions(
-            mockMvc, status, null, credentialName, grantorToken, grantee
+            mockMvc,
+            status,
+            null,
+            credentialName,
+            grantorToken,
+            grantee,
         )
     }
 
@@ -496,14 +508,14 @@ object RequestHelper {
         expectedErrorMessage: String?,
         credentialName: String?,
         grantorToken: String,
-        grantee: String?
+        grantee: String?,
     ) {
         val result = mockMvc.perform(
             MockMvcRequestBuilders.delete(
                 "/api/v1/permissions?" +
                     (if (credentialName == null) "" else "credential_name=$credentialName") +
-                    if (grantee == null) "" else "&actor=$grantee"
-            ).header("Authorization", "Bearer $grantorToken")
+                    if (grantee == null) "" else "&actor=$grantee",
+            ).header("Authorization", "Bearer $grantorToken"),
         )
         result.andExpect(MockMvcResultMatchers.status().`is`(status))
         if (expectedErrorMessage != null) {
@@ -516,7 +528,7 @@ object RequestHelper {
         grantorToken: String,
         credentialName: String,
         grantee: String,
-        vararg permissions: String?
+        vararg permissions: String?,
     ): MockHttpServletRequestBuilder {
         return MockMvcRequestBuilders.post("/api/v1/permissions")
             .header("Authorization", "Bearer $grantorToken")
@@ -531,7 +543,7 @@ object RequestHelper {
                     "       \"path\": \"" + credentialName + "\",\n" +
                     "       \"operations\": [\"" + java.lang.String.join("\", \"", *permissions) + "\"]\n" +
                     "     }]" +
-                    "}"
+                    "}",
             )
     }
 
@@ -541,7 +553,7 @@ object RequestHelper {
         mockMvc: MockMvc,
         uuid: String,
         transitional: Boolean,
-        token: String
+        token: String,
     ): String {
         BouncyCastleFipsConfigurer.configure()
 

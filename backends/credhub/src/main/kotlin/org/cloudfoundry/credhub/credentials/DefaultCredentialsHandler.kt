@@ -41,7 +41,7 @@ class DefaultCredentialsHandler(
     private val certificateAuthorityService: CertificateAuthorityService,
     private val credentialGenerator: UniversalCredentialGenerator,
     @Value("\${security.authorization.acls.enabled}") private val enforcePermissions: Boolean,
-    @Value("\${certificates.concatenate_cas:false}") var concatenateCas: Boolean
+    @Value("\${certificates.concatenate_cas:false}") var concatenateCas: Boolean,
 ) : CredentialsHandler {
     override fun findStartingWithPath(path: String, expiresWithinDays: String): List<FindCredentialResult> {
         val unfilteredResults = credentialService.findStartingWithPath(path, expiresWithinDays)
@@ -117,7 +117,7 @@ class DefaultCredentialsHandler(
         val credentialVersion = credentialService.save(
             existingCredentialVersion,
             setRequest.credentialValue,
-            setRequest
+            setRequest,
         )
 
         auditRecord.setVersion(credentialVersion)
@@ -248,7 +248,7 @@ class DefaultCredentialsHandler(
         if (!permissionCheckingService.hasPermission(
                 userContextHolder.userContext?.actor!!,
                 credential.name!!,
-                permissionOperation
+                permissionOperation,
             )
         ) {
             if (permissionOperation == WRITE) {

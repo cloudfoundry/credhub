@@ -22,7 +22,7 @@ interface CredentialVersionRepository : JpaRepository<CredentialVersionData<*>?,
             "and certificate_credential.transitional = false " +
             "order by version_created_at desc " +
             "limit 1",
-        nativeQuery = true
+        nativeQuery = true,
     )
     fun findLatestNonTransitionalCertificateVersion(credentialUUID: UUID?): CredentialVersionData<*>?
 
@@ -33,7 +33,7 @@ interface CredentialVersionRepository : JpaRepository<CredentialVersionData<*>?,
             "and certificate_credential.transitional = true " +
             "order by version_created_at desc " +
             "limit 1",
-        nativeQuery = true
+        nativeQuery = true,
     )
     fun findTransitionalCertificateVersion(credentialUUID: UUID?): CredentialVersionData<*>?
 
@@ -44,7 +44,7 @@ interface CredentialVersionRepository : JpaRepository<CredentialVersionData<*>?,
             "or certificate_authority IS NULL " +
             "or self_signed IS NULL " +
             "order by version_created_at limit 1000 offset ?1",
-        nativeQuery = true
+        nativeQuery = true,
     )
     fun findUpTo1000VersionsWithNullCertificateMetadata(offset: Int): List<CredentialVersionData<*>?>
 
@@ -54,7 +54,7 @@ interface CredentialVersionRepository : JpaRepository<CredentialVersionData<*>?,
             "where expiry_date IS NULL " +
             "or certificate_authority IS NULL " +
             "or self_signed IS NULL",
-        nativeQuery = true
+        nativeQuery = true,
     )
     fun countVersionsWithNullCertificateMetadata(): Int
 }

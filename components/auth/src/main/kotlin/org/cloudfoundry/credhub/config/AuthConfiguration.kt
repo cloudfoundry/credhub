@@ -31,7 +31,7 @@ internal constructor(
     private val oAuth2AuthenticationExceptionHandler: OAuth2AuthenticationExceptionHandler,
     private val preAuthenticationFailureFilter: PreAuthenticationFailureFilter,
     private val oAuth2ExtraValidationFilter: OAuth2ExtraValidationFilter,
-    private val actuatorPortFilter: ActuatorPortFilter
+    private val actuatorPortFilter: ActuatorPortFilter,
 ) : ResourceServerConfigurerAdapter() {
 
     val preAuthenticatedAuthenticationProvider: PreAuthenticatedAuthenticationProvider
@@ -53,7 +53,7 @@ internal constructor(
       the "NO_AUTHORITIES", leaving it to the x509v3 checker to set the final authority.
 
       The aggregate of all this is consumed in the final .access() method.
-     */
+         */
 
         http.x509()
             .subjectPrincipalRegex(VALID_MTLS_ID)
@@ -80,8 +80,8 @@ internal constructor(
             .access(
                 String.format(
                     "hasRole('%s') " + "or (#oauth2.hasScope('credhub.read') and #oauth2.hasScope('credhub.write'))",
-                    X509AuthenticationProvider.MTLS_USER
-                )
+                    X509AuthenticationProvider.MTLS_USER,
+                ),
             )
 
         http.httpBasic().disable()

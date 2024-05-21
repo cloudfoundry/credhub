@@ -98,7 +98,7 @@ class RegenerateEndpointConcatenateCasIntegrationTest {
                 """{
                 "name": "$certName"
             }
-                """.trimIndent()
+                """.trimIndent(),
             )
 
         this.mockMvc.perform(regenerateCertificateRequest)
@@ -125,7 +125,7 @@ class RegenerateEndpointConcatenateCasIntegrationTest {
             true,
             "leaf-cert",
             caName,
-            ALL_PERMISSIONS_TOKEN
+            ALL_PERMISSIONS_TOKEN,
         )
         val regenerateCertificateResponse = RequestHelper.regenerateCertificate(mockMvc, caCredentialUuid, true, ALL_PERMISSIONS_TOKEN)
         val caCertificateRegenerated = JsonPath.parse(regenerateCertificateResponse)

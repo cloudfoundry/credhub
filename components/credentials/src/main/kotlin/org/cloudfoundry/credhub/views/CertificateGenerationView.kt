@@ -6,11 +6,11 @@ class CertificateGenerationView : CertificateView {
     var durationOverridden: Boolean = false
     var durationUsed: Int = 0
 
-    internal constructor() : super() /* Jackson */ {}
+    internal constructor() : super() {}
 
     constructor(version: CertificateCredentialVersion, concatenateCas: Boolean) : super(
         version,
-        concatenateCas
+        concatenateCas,
     ) {
         durationOverridden = version.durationOverridden
         durationUsed = version.durationUsed
