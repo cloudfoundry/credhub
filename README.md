@@ -61,7 +61,7 @@ The CredHub API can generate API documentation by running its test suite (via Sp
 ./scripts/generate_documentation_snippets.sh
 ```
 
-CredHub API documentation will be built as an html file in the CredHub backend gradle subproject build directory: `backends/credhub/build/asciidoc/html5`.
+CredHub API documentation will be built as an html file in the CredHub backend gradle subproject build directory: `backends/credhub/build/docs/asciidoc/index.html`.
 
 ### Development Configuration
 
