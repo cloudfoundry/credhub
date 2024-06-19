@@ -20,6 +20,11 @@ updates:
     update-types: ["version-update:semver-major"]
   - dependency-name: "org.springframework.boot:*"
     update-types: [ "version-update:semver-major" ] # Bump this after we bump to Java 17, which v3 requires (and the current v2 will be supported until November 2023: https://spring.io/blog/2022/05/24/preparing-for-spring-boot-3-0)
+  - dependency-name: "com.google.protobuf:protoc"
+    update-types: [ "version-update:semver-major" ] # We need to stay with protobuf-java & protoc 3.25.x as the latest grpc 1.62.2 still depends on protobuf-java & protoc 3.25.x
+  - dependency-name: "com.google.protobuf:protobuf-java"
+    update-types: [ "version-update:semver-major" ] # We need to stay with protobuf-java & protoc 3.25.x as the latest grpc 1.62.2 still depends on protobuf-java & protoc 3.25.x
+
 
 - package-ecosystem: "github-actions"
   directory: "/"
