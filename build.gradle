@@ -8,7 +8,7 @@ buildscript {
         asciiDoctorConvertPluginVersion = '4.0.2'
         bcpkixFipsVersion = '1.0.7'
         bcFipsVersion = '1.0.2.5'
-        commonsCodecVersion = '1.17.0' // remove this after deleting (now deprecated) spring-security-oauth2
+        commonsCodecVersion = '1.17.1' // remove this after deleting (now deprecated) spring-security-oauth2
         flywayVersion = '7.15.0'
         guavaVersion = '33.2.1-jre'
         h2Version = '1.4.200'
