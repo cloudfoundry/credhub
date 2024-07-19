@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        springCloudContractVersion = '3.1.9'
+        springCloudContractVersion = '3.1.10'
     }
     repositories {
         mavenCentral()
@@ -82,7 +82,6 @@ dependencies {
 
 configurations.all {
     exclude module: "spring-boot-starter-logging"
-    exclude module: "logback-classic"
 }
 
 dependencyManagement {

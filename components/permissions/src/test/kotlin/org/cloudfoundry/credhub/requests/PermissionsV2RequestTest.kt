@@ -32,8 +32,8 @@ class PermissionsV2RequestTest {
         MatcherAssert.assertThat(
             violations,
             IsIterableContainingInOrder.contains(
-                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.INVALID_SLASH_IN_PATH)
-            )
+                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.INVALID_SLASH_IN_PATH),
+            ),
         )
     }
 
@@ -56,8 +56,8 @@ class PermissionsV2RequestTest {
         MatcherAssert.assertThat(
             violations,
             IsIterableContainingInOrder.contains(
-                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.INVALID_SLASH_IN_PATH)
-            )
+                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.INVALID_SLASH_IN_PATH),
+            ),
         )
     }
 
@@ -79,8 +79,8 @@ class PermissionsV2RequestTest {
         MatcherAssert.assertThat(
             violations,
             IsIterableContainingInOrder.contains(
-                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_PATH)
-            )
+                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_PATH),
+            ),
         )
     }
 
@@ -102,8 +102,8 @@ class PermissionsV2RequestTest {
         MatcherAssert.assertThat(
             violations,
             IsIterableContainingInOrder.contains(
-                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_ACTOR)
-            )
+                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_ACTOR),
+            ),
         )
     }
 
@@ -125,8 +125,8 @@ class PermissionsV2RequestTest {
         MatcherAssert.assertThat(
             violations,
             IsIterableContainingInOrder.contains(
-                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_OPERATIONS)
-            )
+                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_OPERATIONS),
+            ),
         )
     }
 
@@ -149,8 +149,8 @@ class PermissionsV2RequestTest {
         MatcherAssert.assertThat(
             violations,
             IsIterableContainingInOrder.contains(
-                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_PATH)
-            )
+                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_PATH),
+            ),
         )
     }
 
@@ -173,8 +173,8 @@ class PermissionsV2RequestTest {
         MatcherAssert.assertThat(
             violations,
             IsIterableContainingInOrder.contains(
-                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_ACTOR)
-            )
+                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_ACTOR),
+            ),
         )
     }
 
@@ -197,8 +197,8 @@ class PermissionsV2RequestTest {
         MatcherAssert.assertThat(
             violations,
             IsIterableContainingInOrder.contains(
-                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_OPERATIONS)
-            )
+                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_OPERATIONS),
+            ),
         )
     }
 
@@ -221,8 +221,8 @@ class PermissionsV2RequestTest {
         MatcherAssert.assertThat(
             violations,
             IsIterableContainingInOrder.contains(
-                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_PATH)
-            )
+                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_PATH),
+            ),
         )
     }
 
@@ -246,15 +246,14 @@ class PermissionsV2RequestTest {
             MatcherAssert.assertThat(
                 violations,
                 IsIterableContainingInOrder.contains(
-                    JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.INVALID_CHARACTER_IN_PATH)
-                )
+                    JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.INVALID_CHARACTER_IN_PATH),
+                ),
             )
         }
     }
 
     @Test
     fun whenPathContainsSpecialCharacters_shouldBeValid() {
-
         for (specialCharacter in charArrayOf('.', ':', '(', ')', '[', ']', '+')) {
             // language=JSON
             val json =

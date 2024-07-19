@@ -32,7 +32,7 @@ constructor(
     private val credentialDataService: CredentialDataService,
     private val jdbcTemplate: JdbcTemplate,
     private val credentialFactory: CredentialFactory,
-    private val certificateVersionDataService: CertificateVersionDataService
+    private val certificateVersionDataService: CertificateVersionDataService,
 ) : CredentialVersionDataService {
 
     override fun save(credentialVersion: CredentialVersion): CredentialVersion {
@@ -69,7 +69,7 @@ constructor(
         } else {
             return credentialFactory.makeCredentialFromEntity(
                 credentialVersionRepository
-                    .findFirstByCredentialUuidOrderByVersionCreatedAtDesc(credential.uuid)
+                    .findFirstByCredentialUuidOrderByVersionCreatedAtDesc(credential.uuid),
             )
         }
     }
@@ -89,7 +89,8 @@ constructor(
             """select distinct credential.name from credential,
             credential_version, certificate_credential where credential.uuid=credential_version.credential_uuid
             and credential_version.uuid=certificate_credential.uuid and
-            lower(certificate_credential.ca_name) like lower(?)""".trimMargin()
+            lower(certificate_credential.ca_name) like lower(?)
+            """.trimMargin()
             )
         val results = jdbcTemplate.queryForList<String>(query, String::class.java, caName)
         results.remove(caName)
@@ -112,7 +113,6 @@ constructor(
     }
 
     override fun findStartingWithPath(path: String, expiresWithinDays: String): List<FindCredentialResult> {
-
         var adjustedPath = StringUtils.prependIfMissing(path, "/")
         adjustedPath = StringUtils.appendIfMissing(adjustedPath, "/")
 
@@ -130,11 +130,11 @@ constructor(
     override fun findAllByName(name: String): List<CredentialVersion> {
         val credential = credentialDataService.find(name)
 
-        return if (credential != null)
+        return if (credential != null) {
             credentialFactory.makeCredentialsFromEntities(
-                credentialVersionRepository.findAllByCredentialUuidOrderByVersionCreatedAtDesc(credential.uuid)
+                credentialVersionRepository.findAllByCredentialUuidOrderByVersionCreatedAtDesc(credential.uuid),
             )
-        else
+        } else
             Lists.newArrayList<CredentialVersion>()
     }
 
@@ -160,7 +160,7 @@ constructor(
                 " SELECT count(*) as count, encryption_key_uuid FROM credential_version " +
                     "LEFT JOIN encrypted_value ON credential_version.encrypted_value_uuid = encrypted_value.uuid " +
                     "GROUP BY encrypted_value.encryption_key_uuid"
-                )
+                ),
         ) { rowSet, _ -> map.put(toUUID(rowSet.getObject("encryption_key_uuid")), rowSet.getLong("count")) }
         return map
     }
@@ -244,7 +244,7 @@ constructor(
 
         val certificateResults = jdbcTemplate.query<FindCredentialResult>(
             query,
-            arrayOf<Any>(escapedPath, expiresTimestamp)
+            arrayOf<Any>(escapedPath, expiresTimestamp),
         ) { rowSet, _ ->
             val versionCreatedAt = Instant.ofEpochMilli(rowSet.getLong("version_created_at"))
             val name = rowSet.getString("name")
@@ -270,9 +270,10 @@ constructor(
                  inner join
                     (select * from credential where lower(name) like ? )
                     as name on credential_version.credential_uuid = name.uuid
-                 order by version_created_at desc""".trimMargin()
+                 order by version_created_at desc
+                """.trimMargin()
                 ),
-            arrayOf<Any>(escapedNameLike, escapedNameLike)
+            arrayOf<Any>(escapedNameLike, escapedNameLike),
         ) { rowSet, _ ->
             val versionCreatedAt = Instant.ofEpochMilli(rowSet.getLong("version_created_at"))
             val name = rowSet.getString("name")

@@ -33,8 +33,10 @@ class CertificateGenerationRequestParameters {
     var keyLength = 2048
     var duration = 365
     private var selfSigned: Boolean = false
+
     @set:JsonProperty("ca")
     var caName: String? = null
+
     @set:JsonProperty("is_ca")
     var isCa: Boolean = false
     var alternativeNames: Array<String>? = null
@@ -65,7 +67,7 @@ class CertificateGenerationRequestParameters {
     private val validKeyUsages = Arrays
         .asList(
             DIGITAL_SIGNATURE, NON_REPUDIATION, KEY_ENCIPHERMENT, DATA_ENCIPHERMENT,
-            KEY_AGREEMENT, KEY_CERT_SIGN, CRL_SIGN, ENCIPHER_ONLY, DECIPHER_ONLY
+            KEY_AGREEMENT, KEY_CERT_SIGN, CRL_SIGN, ENCIPHER_ONLY, DECIPHER_ONLY,
         )
 
     var isSelfSigned: Boolean
@@ -76,6 +78,7 @@ class CertificateGenerationRequestParameters {
 
             return selfSigned
         }
+
         @JsonProperty("self_sign")
         set(selfSigned) {
             this.selfSigned = selfSigned
@@ -117,7 +120,7 @@ class CertificateGenerationRequestParameters {
                 if (!validExtendedKeyUsages.contains(extendedKey)) {
                     throw ParameterizedValidationException(
                         ErrorMessages.INVALID_EXTENDED_KEY_USAGE,
-                        extendedKey
+                        extendedKey,
                     )
                 }
             }
@@ -128,7 +131,7 @@ class CertificateGenerationRequestParameters {
                 if (!validKeyUsages.contains(keyUse)) {
                     throw ParameterizedValidationException(
                         ErrorMessages.INVALID_KEY_USAGE,
-                        keyUse
+                        keyUse,
                     )
                 }
             }
@@ -179,7 +182,8 @@ class CertificateGenerationRequestParameters {
         private fun validateParameterLength(parameter: String?, parameterName: String, parameterLength: Int) {
             if (!isEmpty(parameter) && parameter!!.length > parameterLength) {
                 throw ParameterizedValidationException(
-                    ErrorMessages.Credential.INVALID_CERTIFICATE_PARAMETER, arrayOf(parameterName, parameterLength)
+                    ErrorMessages.Credential.INVALID_CERTIFICATE_PARAMETER,
+                    arrayOf(parameterName, parameterLength),
                 )
             }
         }

@@ -13,6 +13,7 @@ class RsaCredentialValue : CredentialValue {
 
     @JsonDeserialize(using = EmptyStringToNull::class)
     var publicKey: String? = null
+
     @JsonDeserialize(using = EmptyStringToNull::class)
     var privateKey: String? = null
 

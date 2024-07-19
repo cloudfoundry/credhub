@@ -18,7 +18,6 @@ class ParallelPostgresTestDataSourceConfiguration {
     }
 
     private fun createTestDatabaseForWorker(workerId: String) {
-
         val workerDatabaseName = "credhub_test_$workerId"
 
         val tempDataSource = DataSourceBuilder
@@ -31,7 +30,7 @@ class ParallelPostgresTestDataSourceConfiguration {
         val doesDatabaseExist = jdbcTemplate.query(
             "SELECT 1 FROM pg_database WHERE datname = ?;",
             arrayOf(workerDatabaseName),
-            { rs: ResultSet, _: Int -> rs.getBoolean(1) }
+            { rs: ResultSet, _: Int -> rs.getBoolean(1) },
         ).size == 1
 
         if (!doesDatabaseExist) {
@@ -44,7 +43,6 @@ class ParallelPostgresTestDataSourceConfiguration {
     @Primary
     @Bean(name = ["dataSource"])
     fun getParallelTestDataSource(): DataSource {
-
         val workerId = getGradleWorkerId()
 
         createTestDatabaseForWorker(workerId)

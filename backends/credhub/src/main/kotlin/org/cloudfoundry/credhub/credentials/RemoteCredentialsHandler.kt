@@ -47,7 +47,7 @@ class RemoteCredentialsHandler(
     private val userContextHolder: UserContextHolder,
     private val objectMapper: ObjectMapper,
     private val client: RemoteBackendClient,
-    private val credentialGenerator: UniversalCredentialGenerator
+    private val credentialGenerator: UniversalCredentialGenerator,
 ) : CredentialsHandler {
 
     override fun getNCredentialVersions(credentialName: String, numberOfVersions: Int?): DataResponse {
@@ -71,8 +71,8 @@ class RemoteCredentialsHandler(
                     credentialName,
                     v.type,
                     null,
-                    credentialValue
-                )
+                    credentialValue,
+                ),
             )
         }
 
@@ -97,8 +97,8 @@ class RemoteCredentialsHandler(
                     credentialName,
                     v.type,
                     null,
-                    credentialValue
-                )
+                    credentialValue,
+                ),
             )
         }
 
@@ -124,9 +124,9 @@ class RemoteCredentialsHandler(
                     credentialName,
                     response.type,
                     null,
-                    credentialValue
-                )
-            )
+                    credentialValue,
+                ),
+            ),
         )
     }
 
@@ -147,7 +147,7 @@ class RemoteCredentialsHandler(
             response.name,
             response.type,
             null,
-            credentialValue
+            credentialValue,
         )
     }
 
@@ -208,7 +208,7 @@ class RemoteCredentialsHandler(
             name,
             type,
             null,
-            credentialValue
+            credentialValue,
         )
     }
 
@@ -231,7 +231,7 @@ class RemoteCredentialsHandler(
             response.name,
             response.type,
             null,
-            credentialValue
+            credentialValue,
         )
     }
 
@@ -267,7 +267,7 @@ class RemoteCredentialsHandler(
                     jsonNode["certificate_authority"]?.booleanValue() ?: false,
                     jsonNode["self_signed"]?.booleanValue() ?: false,
                     jsonNode["generated"]?.booleanValue() ?: false,
-                    jsonNode["transitional"]?.booleanValue() ?: false
+                    jsonNode["transitional"]?.booleanValue() ?: false,
                 )
             }
             "json" -> {
@@ -281,7 +281,7 @@ class RemoteCredentialsHandler(
                 UserCredentialValue(
                     jsonNode["username"]?.textValue()!!,
                     jsonNode["password"]?.textValue()!!,
-                    jsonNode["salt"]?.textValue()!!
+                    jsonNode["salt"]?.textValue()!!,
                 )
             }
             "rsa" -> {
@@ -289,7 +289,7 @@ class RemoteCredentialsHandler(
                 val jsonNode = objectMapper.readTree(jsonString)
                 RsaCredentialValue(
                     jsonNode["public_key"]?.textValue()!!,
-                    jsonNode["private_key"]?.textValue()!!
+                    jsonNode["private_key"]?.textValue()!!,
                 )
             }
             "ssh" -> {
@@ -298,7 +298,7 @@ class RemoteCredentialsHandler(
                 SshCredentialValue(
                     jsonNode["public_key"]?.textValue(),
                     jsonNode["private_key"]?.textValue(),
-                    jsonNode["public_key_fingerprint"]?.textValue()
+                    jsonNode["public_key_fingerprint"]?.textValue(),
 
                 )
             }
@@ -332,9 +332,9 @@ class RemoteCredentialsHandler(
                         "transitional" to certificateCredentialValue.transitional,
                         "certificate_authority" to certificateCredentialValue.certificateAuthority,
                         "self_signed" to certificateCredentialValue.selfSigned,
-                        "generated" to certificateCredentialValue.generated
+                        "generated" to certificateCredentialValue.generated,
 
-                    )
+                    ),
                 )
                 ByteString.copyFromUtf8(json)
             }
@@ -351,8 +351,8 @@ class RemoteCredentialsHandler(
                     mapOf(
                         "username" to userCredentialValue.username,
                         "password" to userCredentialValue.password,
-                        "salt" to userCredentialValue.getOrGenerateSalt()
-                    )
+                        "salt" to userCredentialValue.getOrGenerateSalt(),
+                    ),
                 )
                 ByteString.copyFromUtf8(json)
             }
@@ -362,8 +362,8 @@ class RemoteCredentialsHandler(
                 val json = objectMapper.writeValueAsString(
                     mapOf(
                         "public_key" to rsaCredentialValue.publicKey,
-                        "private_key" to rsaCredentialValue.privateKey
-                    )
+                        "private_key" to rsaCredentialValue.privateKey,
+                    ),
                 )
                 ByteString.copyFromUtf8(json)
             }
@@ -374,8 +374,8 @@ class RemoteCredentialsHandler(
                     mapOf(
                         "public_key" to sshCredentialValue.publicKey,
                         "private_key" to sshCredentialValue.privateKey,
-                        "public_key_fingerprint" to sshCredentialValue.publicKeyFingerprint
-                    )
+                        "public_key_fingerprint" to sshCredentialValue.publicKeyFingerprint,
+                    ),
                 )
                 ByteString.copyFromUtf8(json)
             }
@@ -394,8 +394,8 @@ class RemoteCredentialsHandler(
                         "exclude_upper" to stringGenerationParameters.excludeUpper,
                         "exclude_lower" to stringGenerationParameters.excludeLower,
                         "username" to stringGenerationParameters.username,
-                        "length" to stringGenerationParameters.length
-                    )
+                        "length" to stringGenerationParameters.length,
+                    ),
                 )
 
                 ByteString.copyFromUtf8(json)
@@ -406,8 +406,8 @@ class RemoteCredentialsHandler(
                 val json = objectMapper.writeValueAsString(
                     mapOf(
                         "key_length" to sshGenerationParameters.keyLength,
-                        "ssh_comment" to sshGenerationParameters.sshComment
-                    )
+                        "ssh_comment" to sshGenerationParameters.sshComment,
+                    ),
                 )
 
                 ByteString.copyFromUtf8(json)
@@ -417,8 +417,8 @@ class RemoteCredentialsHandler(
                 val rsaGenerationParameters = generationParams as RsaGenerationParameters
                 val json = objectMapper.writeValueAsString(
                     mapOf(
-                        "key_length" to rsaGenerationParameters.keyLength
-                    )
+                        "key_length" to rsaGenerationParameters.keyLength,
+                    ),
                 )
 
                 ByteString.copyFromUtf8(json)
@@ -433,9 +433,9 @@ class RemoteCredentialsHandler(
                         "exclude_upper" to userGenerationParameters.excludeUpper,
                         "exclude_lower" to userGenerationParameters.excludeLower,
                         "username" to userGenerationParameters.username,
-                        "length" to userGenerationParameters.length
+                        "length" to userGenerationParameters.length,
 
-                    )
+                    ),
                 )
 
                 ByteString.copyFromUtf8(json)
@@ -467,8 +467,8 @@ class RemoteCredentialsHandler(
                         "ca_name" to certGenerationParams.caName,
                         "alternative_names" to certGenerationParams.alternativeNames,
                         "key_usage" to certGenerationParams.keyUsage,
-                        "extended_key_usage" to certGenerationParams.extendedKeyUsage
-                    ).filterValues { it != null }
+                        "extended_key_usage" to certGenerationParams.extendedKeyUsage,
+                    ).filterValues { it != null },
                 )
                 ByteString.copyFromUtf8(json)
             }

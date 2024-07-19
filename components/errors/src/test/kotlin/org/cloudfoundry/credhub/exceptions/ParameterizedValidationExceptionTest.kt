@@ -14,7 +14,8 @@ class ParameterizedValidationExceptionTest {
     @Test
     fun exception_extendValidationException() {
         val subject = ParameterizedValidationException(
-            "message.code", "foo"
+            "message.code",
+            "foo",
         )
         assertThat(subject, instanceOf(ParameterizedValidationException::class.java))
     }
@@ -22,7 +23,7 @@ class ParameterizedValidationExceptionTest {
     @Test
     fun exception_canTakeAMessageCodeWithoutAParamater() {
         val subject = ParameterizedValidationException(
-            "message.code"
+            "message.code",
         )
         assertThat<String>(subject.message, equalTo("message.code"))
         assertThat(subject.getParameters(), equalTo(arrayOf()))
@@ -31,7 +32,8 @@ class ParameterizedValidationExceptionTest {
     @Test
     fun exception_canTakeAMessageCodeAndParameterInTheConstructor() {
         val subject = ParameterizedValidationException(
-            "message.code", "foo"
+            "message.code",
+            "foo",
         )
         assertThat<String>(subject.message, equalTo("message.code"))
         assertThat(subject.getParameters(), equalTo(arrayOf<Any>("foo")))
@@ -40,7 +42,8 @@ class ParameterizedValidationExceptionTest {
     @Test
     fun exception_formatsTheOutputOfJsonPathKeysAndRemovesSpecialCharacters() {
         val subject = ParameterizedValidationException(
-            "message.code", "$['iasjdoiasd']"
+            "message.code",
+            "$['iasjdoiasd']",
         )
         assertThat(subject.getParameters(), equalTo(arrayOf<Any>("iasjdoiasd")))
     }
@@ -48,13 +51,14 @@ class ParameterizedValidationExceptionTest {
     @Test
     fun exception_formatsTheOutputOfJsonPathKeysToPutDotsBetweenNestedKeys() {
         var subject = ParameterizedValidationException(
-            "message.code", "$['parameters']['alternative_names']"
+            "message.code",
+            "$['parameters']['alternative_names']",
         )
         assertThat(subject.getParameters(), equalTo(arrayOf<Any>("parameters.alternative_names")))
 
         subject = ParameterizedValidationException(
             "message.code",
-            "$['parameters']['alternative_names'][*]"
+            "$['parameters']['alternative_names'][*]",
         )
         assertThat(subject.getParameters(), equalTo(arrayOf<Any>("parameters.alternative_names.*")))
     }
@@ -62,13 +66,14 @@ class ParameterizedValidationExceptionTest {
     @Test
     fun exception_formatsTheKeysCorrectlyWhenThereAreMultipleParameters() {
         var subject = ParameterizedValidationException(
-            "message.code", arrayOf<Any>("$['parameters']['alternative_names']", "$['iasjdoiasd']")
+            "message.code",
+            arrayOf<Any>("$['parameters']['alternative_names']", "$['iasjdoiasd']"),
         )
         assertThat(subject.getParameters(), equalTo(arrayOf<Any>("parameters.alternative_names", "iasjdoiasd")))
 
         subject = ParameterizedValidationException(
             "message.code",
-            arrayOf<Any>("$['parameters']['alternative_names'][*]", "$['iasjdoiasd']")
+            arrayOf<Any>("$['parameters']['alternative_names'][*]", "$['iasjdoiasd']"),
         )
         assertThat(subject.getParameters(), equalTo(arrayOf<Any>("parameters.alternative_names.*", "iasjdoiasd")))
     }
@@ -76,7 +81,8 @@ class ParameterizedValidationExceptionTest {
     @Test
     fun getParameter_returnsAnArrayWithOneParamWhenPresentOrNullWhenNot() {
         var subject = ParameterizedValidationException(
-            "message.code", "foo"
+            "message.code",
+            "foo",
         )
         assertThat(subject.getParameters(), array(equalTo<Any>("foo")))
 

@@ -51,7 +51,6 @@ class OAuth2ExtraValidationFilterTest {
     @Before
     @Throws(Exception::class)
     fun beforeEach() {
-
         spyController = SpyController()
 
         mockMvc = MockMvcBuilders
@@ -70,7 +69,7 @@ class OAuth2ExtraValidationFilterTest {
             get("/api/v1/data")
                 .header("Authorization", "Bearer $VALID_ISSUER_JWT")
                 .accept(APPLICATION_JSON)
-                .contentType(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON),
         )
             .andExpect(status().isOk)
     }
@@ -161,7 +160,7 @@ class OAuth2ExtraValidationFilterTest {
             get("/api/v1/data?name=/picard")
                 .header("Authorization", "Bearer $NULL_ISSUER_JWT")
                 .accept(APPLICATION_JSON)
-                .contentType(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON),
         )
             .andExpect(status().isUnauthorized)
             .andExpect(jsonPath("$.error_description").value(ERROR_MESSAGE))
@@ -174,7 +173,7 @@ class OAuth2ExtraValidationFilterTest {
             get("/api/v1/data?name=/picard")
                 .header("Authorization", "Bearer $EMPTY_ISSUER_JWT")
                 .accept(APPLICATION_JSON)
-                .contentType(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON),
         )
             .andExpect(status().isUnauthorized)
             .andExpect(jsonPath("$.error_description").value(ERROR_MESSAGE))
@@ -188,7 +187,7 @@ class OAuth2ExtraValidationFilterTest {
             get("/api/v1/data?name=/sample-credential")
                 .header("Authorization", "Bearer $EXPIRED_TOKEN")
                 .accept(APPLICATION_JSON)
-                .contentType(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON),
         )
             .andExpect(status().isUnauthorized)
             .andExpect(jsonPath("$.error_description").value(EXPIRED_TOKEN_MESSAGE))

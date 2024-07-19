@@ -14,8 +14,10 @@ import javax.validation.constraints.NotEmpty
 class UserCredentialValue : CredentialValue {
     @JsonDeserialize(using = EmptyStringToNull::class)
     var username: String? = null
+
     @NotEmpty(message = ErrorMessages.MISSING_PASSWORD)
     var password: String? = null
+
     @get:JsonIgnore
     var salt: String? = null
 

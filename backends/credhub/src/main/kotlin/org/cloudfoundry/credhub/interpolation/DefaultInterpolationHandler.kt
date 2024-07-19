@@ -24,7 +24,7 @@ class DefaultInterpolationHandler(
     val auditRecord: CEFAuditRecord,
     private val permissionCheckingService: PermissionCheckingService,
     private val userContextHolder: UserContextHolder,
-    @Value("\${security.authorization.acls.enabled}") private val enforcePermissions: Boolean
+    @Value("\${security.authorization.acls.enabled}") private val enforcePermissions: Boolean,
 ) : InterpolationHandler {
 
     override fun interpolateCredHubReferences(servicesMap: Map<String, Any>): Map<String, Any> {
@@ -54,7 +54,7 @@ class DefaultInterpolationHandler(
 
                 val jsonCredentialVersion = credentialVersion as? JsonCredentialVersion ?: throw ParameterizedValidationException(
                     ErrorMessages.Interpolation.INVALID_TYPE,
-                    credentialName
+                    credentialName,
                 )
 
                 val updatedPropertiesMap = (updatedServicesMap[entry.key] as ArrayList<*>)[index] as MutableMap<String, Any>
@@ -75,7 +75,7 @@ class DefaultInterpolationHandler(
         if (!permissionCheckingService.hasPermission(
                 userContextHolder.userContext?.actor!!,
                 name,
-                permissionOperation
+                permissionOperation,
             )
         ) {
             if (permissionOperation == WRITE) {

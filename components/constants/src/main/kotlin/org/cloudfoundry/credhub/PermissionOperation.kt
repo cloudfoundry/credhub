@@ -6,13 +6,13 @@ import java.util.stream.Collectors
 
 enum class PermissionOperation private constructor(
     @get:JsonValue
-    val operation: String
+    val operation: String,
 ) {
     READ("read"),
     WRITE("write"),
     DELETE("delete"),
     READ_ACL("read_acl"),
-    WRITE_ACL("write_acl");
+    WRITE_ACL("write_acl"), ;
 
     companion object {
 

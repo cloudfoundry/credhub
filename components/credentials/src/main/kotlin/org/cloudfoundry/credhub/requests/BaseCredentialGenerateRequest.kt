@@ -26,7 +26,9 @@ abstract class BaseCredentialGenerateRequest : BaseCredentialRequest() {
     val isOverwrite: Boolean
         get() = if (this.overwrite == null) {
             false
-        } else this.overwrite!!
+        } else {
+            this.overwrite!!
+        }
 
     override fun validate() {
         super.validate()

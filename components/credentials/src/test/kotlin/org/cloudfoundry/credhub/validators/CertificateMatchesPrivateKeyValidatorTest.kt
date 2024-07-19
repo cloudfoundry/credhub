@@ -39,7 +39,7 @@ class CertificateMatchesPrivateKeyValidatorTest {
             false,
             false,
             false,
-            false
+            false,
         )
 
         val valid = certificateMatchesPrivateKeyValidator.isValid(certificateCredentialValue, null)
@@ -57,7 +57,7 @@ class CertificateMatchesPrivateKeyValidatorTest {
             false,
             false,
             false,
-            false
+            false,
         )
 
         val valid = certificateMatchesPrivateKeyValidator.isValid(certificateCredentialValue, null)
@@ -75,7 +75,7 @@ class CertificateMatchesPrivateKeyValidatorTest {
             false,
             false,
             false,
-            false
+            false,
         )
 
         val valid = certificateMatchesPrivateKeyValidator.isValid(certificateCredentialValue, null)
@@ -93,7 +93,7 @@ class CertificateMatchesPrivateKeyValidatorTest {
             false,
             false,
             false,
-            false
+            false,
         )
 
         val valid = certificateMatchesPrivateKeyValidator.isValid(certificateCredentialValue, null)
@@ -112,7 +112,7 @@ class CertificateMatchesPrivateKeyValidatorTest {
             false,
             false,
             false,
-            false
+            false,
         )
 
         assertThatThrownBy {
@@ -132,7 +132,7 @@ class CertificateMatchesPrivateKeyValidatorTest {
             false,
             false,
             false,
-            false
+            false,
         )
 
         val valid = certificateMatchesPrivateKeyValidator.isValid(certificateCredentialValue, null)
@@ -151,7 +151,7 @@ class CertificateMatchesPrivateKeyValidatorTest {
             false,
             false,
             false,
-            false
+            false,
         )
 
         val valid = certificateMatchesPrivateKeyValidator.isValid(certificateCredentialValue, null)

@@ -16,7 +16,7 @@ class RegenerateRequestTest {
     fun whenNameIsMissing__isInvalid() {
         val violations = deserializeAndValidate<RegenerateRequest>(
             "{}",
-            RegenerateRequest::class.java
+            RegenerateRequest::class.java,
         )
 
         MatcherAssert.assertThat<Set<ConstraintViolation<RegenerateRequest>>>(violations, Matchers.contains(hasViolationWithMessage(ErrorMessages.MISSING_NAME)))

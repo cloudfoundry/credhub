@@ -23,7 +23,7 @@ class PermissionsV2Request {
     @Pattern.List(
         Pattern(regexp = HAS_NO_DOUBLE_SLASHES_AND_DOES_NOT_END_WITH_A_SLASH, message = ErrorMessages.Permissions.INVALID_SLASH_IN_PATH),
         Pattern(regexp = ONLY_VALID_CHARACTERS_IN_PATH, message = ErrorMessages.Permissions.INVALID_CHARACTER_IN_PATH),
-        Pattern(regexp = IS_NOT_EMPTY, message = ErrorMessages.Permissions.MISSING_PATH)
+        Pattern(regexp = IS_NOT_EMPTY, message = ErrorMessages.Permissions.MISSING_PATH),
     )
     private lateinit var path: String
 

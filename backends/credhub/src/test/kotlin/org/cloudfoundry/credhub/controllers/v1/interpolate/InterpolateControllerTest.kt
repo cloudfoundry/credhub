@@ -45,7 +45,7 @@ class InterpolateControllerTest {
 
         val interpolationController = InterpolationController(
             spyInterpolationHandler,
-            CEFAuditRecord()
+            CEFAuditRecord(),
         )
 
         mockMvc = MockMvcFactory.newSpringRestDocMockMvc(interpolationController, restDocumentation)
@@ -100,14 +100,14 @@ class InterpolateControllerTest {
             post(InterpolationController.ENDPOINT)
                 .contentType(MediaType.APPLICATION_JSON)
                 .credHubAuthHeader()
-                .content(requestBody)
+                .content(requestBody),
         )
             .andExpect(status().isOk)
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
             .andDo(
                 document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER
-                )
+                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                ),
             ).andReturn()
 
         assertThat(spyInterpolationHandler.interpolateCredhubReferences__calledWith_servicesMap).isEqualTo(expectedRequest)

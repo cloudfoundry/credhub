@@ -61,7 +61,7 @@ The CredHub API can generate API documentation by running its test suite (via Sp
 ./scripts/generate_documentation_snippets.sh
 ```
 
-CredHub API documentation will be built as an html file in the CredHub backend gradle subproject build directory: `backends/credhub/build/asciidoc/html5`.
+CredHub API documentation will be built as an html file in the CredHub backend gradle subproject build directory: `backends/credhub/build/docs/asciidoc/index.html`.
 
 ### Development Configuration
 
@@ -128,6 +128,16 @@ H2 datasource configuration is in `application-dev-h2.yml`.
 Postgres datasource configuration is in `application-dev-postgres.yml`.
 
 Before development, you'll need to create the target database.
+
+A local Postgres server with docker can be started as follows:
+```
+docker run --name postgres-server \
+   --env POSTGRES_USER=pivotal \
+   --env POSTGRES_HOST_AUTH_METHOD=trust \
+   --detach \
+   --publish 5432:5432 \
+   postgres:15
+```
 
 ```sh
 createdb credhub_dev
@@ -219,3 +229,7 @@ CREDENTIAL_ROOT=/path/to/credhub/repo/plus/src/test/resources ./scripts/run_test
 
 Assuming it works, that will generate some test client certificates for testing mutual TLS (in `certs/` in the acceptance test directory) and run the acceptance test suite against your locally running credhub server.
 
+### Cleaning up orphaned encrypted_value records
+To clean up orphaned `encrypted_value` records from CredHub version 2.12.70 and
+earlier (https://github.com/cloudfoundry/credhub/issues/231), follow the steps decribed in
+[Cleaning up orphaned encrypted_value records](docs/orphaned-encryption-value-cleanup.md).

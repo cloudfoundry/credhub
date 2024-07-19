@@ -6,5 +6,5 @@ class CertificateMetadata(
     var id: UUID?,
     var name: String?,
     var caName: String?,
-    var versions: MutableList<CertificateVersionMetadata>?
+    var versions: MutableList<CertificateVersionMetadata>?,
 )

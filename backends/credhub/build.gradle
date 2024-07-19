@@ -1,7 +1,4 @@
 buildscript {
-    ext {
-        grpcVersion = '1.60.1'
-    }
     repositories {
         mavenCentral()
         maven { url("https://repo.spring.io/plugins-release") }
@@ -9,7 +6,7 @@ buildscript {
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:$springBootVersion")
-        classpath("org.asciidoctor.convert:org.asciidoctor.convert.gradle.plugin:${asciiDoctorConvertPluginVersion}")
+        classpath("org.asciidoctor.jvm.convert:org.asciidoctor.jvm.convert.gradle.plugin:${asciiDoctorConvertPluginVersion}")
         classpath("com.google.protobuf:protobuf-gradle-plugin:0.9.4")
     }
 }
@@ -19,7 +16,7 @@ apply plugin: "idea"
 apply plugin: 'kotlin'
 apply plugin: 'kotlin-spring'
 apply plugin: 'io.spring.dependency-management'
-apply plugin: 'org.asciidoctor.convert'
+apply plugin: 'org.asciidoctor.jvm.convert'
 apply from: "${rootDir.toPath()}/spring-rest-docs-config.gradle"
 apply from: "${rootDir.toPath()}/kotlin.gradle"
 apply from: "${rootDir.toPath()}/ktlint.gradle"
@@ -30,6 +27,10 @@ apply plugin: "com.google.protobuf"
 repositories {
     mavenCentral()
     maven { url("https://plugins.gradle.org/m2/") }
+}
+
+configurations {
+    asciidoctorExtensions
 }
 
 dependencies {
@@ -72,7 +73,7 @@ dependencies {
     api("org.bouncycastle:bcpkix-fips:${bcpkixFipsVersion}")
 
     // proto
-    implementation "com.google.api.grpc:proto-google-common-protos:2.30.0"
+    implementation "com.google.api.grpc:proto-google-common-protos:2.41.0"
     implementation "io.grpc:grpc-services:${grpcVersion}"
 
     implementation("com.google.guava:guava:${guavaVersion}")
@@ -81,7 +82,7 @@ dependencies {
     implementation("com.jayway.jsonpath:json-path:${jsonPathVersion}")
 
     testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc:$springRestDocsVersion")
-    asciidoctor("org.springframework.restdocs:spring-restdocs-asciidoctor:$springRestDocsVersion")
+    asciidoctorExtensions("org.springframework.restdocs:spring-restdocs-asciidoctor:$springRestDocsVersion")
 }
 
 dependencyManagement {
@@ -121,13 +122,13 @@ test {
 task buildAndCopyRestDocsIntoSpringStaticAssetLocation(type: Copy) {
     dependsOn asciidoctor
 
-    from file("build/asciidoc/html5/index.html")
+    from file("build/docs/asciidoc/index.html")
     into project(":applications:credhub-api").file("src/main/resources/static/docs/")
 }
 asciidoctor.finalizedBy(buildAndCopyRestDocsIntoSpringStaticAssetLocation)
 
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:3.25.2"
+        artifact = "com.google.protobuf:protoc:${protoCVersion}"
     }
 }

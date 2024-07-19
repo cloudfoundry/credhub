@@ -76,7 +76,7 @@ class RegenerateControllerTest {
             "/some-name",
             CredentialType.VALUE.type.lowercase(),
             metadata,
-            StringCredentialValue("some-value")
+            StringCredentialValue("some-value"),
         )
 
         val actualResponse = mockMvc
@@ -91,8 +91,8 @@ class RegenerateControllerTest {
                             "name": "/some-name",
                             "metadata": { "some": "example metadata"}
                         }
-                        """.trimIndent()
-                    )
+                        """.trimIndent(),
+                    ),
             )
             .andExpect(status().isOk)
             .andDo(
@@ -106,9 +106,9 @@ class RegenerateControllerTest {
                             .description("Additional metadata of the credential.")
                             .optional(),
                         PayloadDocumentation.fieldWithPath("metadata.*")
-                            .ignored()
-                    )
-                )
+                            .ignored(),
+                    ),
+                ),
             ).andReturn().response
 
         // language=json
@@ -136,8 +136,8 @@ class RegenerateControllerTest {
             bulkRegenerateResults.setRegeneratedCredentials(
                 mutableSetOf(
                     "/some-credential-name",
-                    "/some-other-credential-name"
-                )
+                    "/some-other-credential-name",
+                ),
             )
 
             bulkRegenerateResults
@@ -154,8 +154,8 @@ class RegenerateControllerTest {
                         {
                             "signed_by": "/some-ca"
                         }
-                        """.trimIndent()
-                    )
+                        """.trimIndent(),
+                    ),
             )
             .andExpect(status().isOk)
             .andDo(
@@ -164,9 +164,9 @@ class RegenerateControllerTest {
                     PayloadDocumentation.requestFields(
                         PayloadDocumentation.fieldWithPath("signed_by")
                             .description("The name of the CA that signs regenerated certificates.")
-                            .type(JsonFieldType.STRING)
-                    )
-                )
+                            .type(JsonFieldType.STRING),
+                    ),
+                ),
             ).andReturn().response
 
         // language=json

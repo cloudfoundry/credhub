@@ -17,7 +17,7 @@ class HealthController {
 
     @RequestMapping(
         method = [RequestMethod.GET],
-        path = [""]
+        path = [""],
     )
     fun getHealthStatus(): ResponseEntity<Map<String, String>> {
         try {

@@ -62,13 +62,13 @@ class CredentialFactory @Autowired internal constructor(private val encryptor: E
         credentialValue: CredentialValue?,
         existingCredentialVersion: CredentialVersion?,
         passwordGenerationParameters: GenerationParameters?,
-        metadata: JsonNode?
+        metadata: JsonNode?,
     ): CredentialVersion {
         val credentialVersion = when (type) {
             CredentialType.PASSWORD -> PasswordCredentialVersion(
                 credentialValue as StringCredentialValue?,
                 passwordGenerationParameters as StringGenerationParameters?,
-                encryptor
+                encryptor,
             )
             CredentialType.CERTIFICATE -> CertificateCredentialVersion((credentialValue as CertificateCredentialValue?)!!, name!!, encryptor)
             CredentialType.VALUE -> ValueCredentialVersion(credentialValue as StringCredentialValue?, encryptor)
@@ -79,7 +79,7 @@ class CredentialFactory @Autowired internal constructor(private val encryptor: E
                 credentialValue as UserCredentialValue?,
                 name!!,
                 passwordGenerationParameters as StringGenerationParameters?,
-                encryptor
+                encryptor,
             )
             else -> throw RuntimeException("Unrecognized type: $type")
         }

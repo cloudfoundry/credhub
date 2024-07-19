@@ -47,7 +47,7 @@ class AuditInterceptorTest {
 
         subject = AuditInterceptor(
             userContextFactory!!,
-            auditRecord!!
+            auditRecord!!,
         )
         request = MockHttpServletRequest()
         response = MockHttpServletResponse()

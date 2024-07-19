@@ -7,53 +7,52 @@
 :docinfo:
 
 = CredHub API
-
-include::snippets/introduction.adoc[]
-
----
-
-include::snippets/authentication.adoc[]
+include::src/docs/asciidoc/snippets/introduction.adoc[]
 
 ---
 
-include::snippets/credentials-v1.adoc[]
+include::src/docs/asciidoc/snippets/authentication.adoc[]
 
 ---
 
-include::snippets/certificates-v1.adoc[]
+include::src/docs/asciidoc/snippets/credentials-v1.adoc[]
 
 ---
 
-include::snippets/permissions-v2.adoc[]
+include::src/docs/asciidoc/snippets/certificates-v1.adoc[]
 
 ---
 
-include::snippets/permissions-v1.adoc[]
+include::src/docs/asciidoc/snippets/permissions-v2.adoc[]
 
 ---
 
-include::snippets/regenerate-v1.adoc[]
+include::src/docs/asciidoc/snippets/permissions-v1.adoc[]
 
 ---
 
-include::snippets/interpolate-v1.adoc[]
+include::src/docs/asciidoc/snippets/regenerate-v1.adoc[]
 
 ---
 
-include::snippets/encryption-key-usage-v1.adoc[]
+include::src/docs/asciidoc/snippets/interpolate-v1.adoc[]
 
 ---
 
-include::snippets/management-v1.adoc[]
+include::src/docs/asciidoc/snippets/encryption-key-usage-v1.adoc[]
 
 ---
 
-include::snippets/info-v1.adoc[]
+include::src/docs/asciidoc/snippets/management-v1.adoc[]
 
 ---
 
-include::snippets/version-v1.adoc[]
+include::src/docs/asciidoc/snippets/info-v1.adoc[]
 
 ---
 
-include::snippets/health-v1.adoc[]
+include::src/docs/asciidoc/snippets/version-v1.adoc[]
+
+---
+
+include::src/docs/asciidoc/snippets/health-v1.adoc[]

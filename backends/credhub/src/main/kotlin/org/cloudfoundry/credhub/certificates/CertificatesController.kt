@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping(path = [CertificatesController.ENDPOINT], produces = [MediaType.APPLICATION_JSON_UTF8_VALUE])
 class CertificatesController(
     val certificatesHandler: CertificatesHandler,
-    val auditRecord: CEFAuditRecord
+    val auditRecord: CEFAuditRecord,
 ) {
 
     companion object {
@@ -57,7 +57,7 @@ class CertificatesController(
     @ResponseStatus(HttpStatus.OK)
     fun regenerateCertificate(
         @PathVariable("certificateId") certificateId: String,
-        @RequestBody(required = false) requestBody: CertificateRegenerateRequest?
+        @RequestBody(required = false) requestBody: CertificateRegenerateRequest?,
     ): CredentialView {
         val finalRequestBody = requestBody ?: CertificateRegenerateRequest()
         val certificate = RegenerateCertificate()
@@ -71,7 +71,7 @@ class CertificatesController(
     @ResponseStatus(HttpStatus.OK)
     fun updateTransitionalVersion(
         @PathVariable("certificateId") certificateId: String,
-        @RequestBody requestBody: UpdateTransitionalVersionRequest
+        @RequestBody requestBody: UpdateTransitionalVersionRequest,
     ): List<CertificateView> {
         val details = UpdateTransitionalVersion()
         details.version = requestBody.versionUuid
@@ -84,7 +84,7 @@ class CertificatesController(
     @ResponseStatus(HttpStatus.OK)
     fun getAllCertificateVersions(
         @PathVariable("certificateId") certificateId: String,
-        @RequestParam(value = "current", required = false, defaultValue = "false") current: Boolean
+        @RequestParam(value = "current", required = false, defaultValue = "false") current: Boolean,
     ): List<CertificateView> {
         return certificatesHandler.handleGetAllVersionsRequest(certificateId, current)
     }
@@ -93,7 +93,7 @@ class CertificatesController(
     @ResponseStatus(HttpStatus.OK)
     fun createVersion(
         @RequestBody @Validated requestBody: CreateVersionRequest,
-        @PathVariable("certificateId") certificateId: String
+        @PathVariable("certificateId") certificateId: String,
     ): CertificateView {
         return certificatesHandler.handleCreateVersionsRequest(certificateId, requestBody)
     }
@@ -102,7 +102,7 @@ class CertificatesController(
     @ResponseStatus(HttpStatus.OK)
     fun deleteVersion(
         @PathVariable("certificateId") certificateId: String,
-        @PathVariable("versionId") versionId: String
+        @PathVariable("versionId") versionId: String,
     ): CertificateView {
         return certificatesHandler.handleDeleteVersionRequest(certificateId, versionId)
     }

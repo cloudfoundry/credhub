@@ -22,8 +22,10 @@ import java.util.UUID
 class CredentialDataServiceTest {
     @Autowired
     private val subject: CredentialDataService? = null
+
     @Autowired
     private val credentialRepository: CredentialRepository? = null
+
     @Autowired
     private val auditRecord: CEFAuditRecord? = null
 
@@ -35,7 +37,7 @@ class CredentialDataServiceTest {
         MatcherAssert.assertThat(credentialRepository.count(), IsEqual.equalTo(1L))
         MatcherAssert.assertThat(
             credentialRepository.findOneByNameIgnoreCase(CREDENTIAL_NAME)!!.name,
-            IsEqual.equalTo(CREDENTIAL_NAME)
+            IsEqual.equalTo(CREDENTIAL_NAME),
         )
     }
 

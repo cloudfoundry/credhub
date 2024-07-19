@@ -2,27 +2,36 @@ import org.cloudfoundry.credhub.gradlebuild.DependenciesGraphPlugin
 
 buildscript {
     ext {
-        apacheCommonsLang3Version = '3.14.0'
-        apacheCommonsIoVersion = '2.15.1'
+        apacheCommonsLang3Version = '3.15.0'
+        apacheCommonsIoVersion = '2.16.1'
         apacheHttpClientVersion = '4.5.14'
-        asciiDoctorConvertPluginVersion = '2.4.0'
+        asciiDoctorConvertPluginVersion = '4.0.2'
         bcpkixFipsVersion = '1.0.7'
-        bcFipsVersion = '1.0.2.4'
-        commonsCodecVersion = '1.16.0' // remove this after deleting (now deprecated) spring-security-oauth2
+        bcFipsVersion = '1.0.2.5'
+        commonsCodecVersion = '1.17.1' // remove this after deleting (now deprecated) spring-security-oauth2
         flywayVersion = '7.15.0'
-        guavaVersion = '33.0.0-jre'
+        guavaVersion = '33.2.1-jre'
         h2Version = '1.4.200'
-        jsonPathVersion = '2.8.0'
-        kotlinVersion = '1.9.22'
-        ktlintVersion = '0.43.2'
+        jsonPathVersion = '2.9.0'
+        kotlinVersion = '2.0.0'
+        ktlintVersion = '0.49.1'
         passayVersion = '1.6.4'
-        postgresqlJdbcVersion = '42.7.1'
+        postgresqlJdbcVersion = '42.7.3'
         springRestDocsVersion = '2.0.8.RELEASE'
         springBootVersion = '2.7.18'
         springSecurityOauth2Version = '2.5.2.RELEASE'
         springSecurityOauth2AutoconfigureVersion = '2.6.8'
-        mariadbJdbcVersion = '2.7.11' // Bumping to v3 breaks some pipeline jobs, so pinning to v2 for now. v2 (current version) is stable and will be supported until about September 2025 (https://mariadb.com/kb/en/about-mariadb-connector-j/).
+        mariadbJdbcVersion = '2.7.12' // Bumping to v3 breaks some pipeline jobs, so pinning to v2 for now. v2 (current version) is stable and will be supported until about September 2025 (https://mariadb.com/kb/en/about-mariadb-connector-j/).
         snakeyamlVersion = '2.2'
+        grpcVersion = '1.65.1'
+        // We need to stay with protobuf-java & protoc 3.25.x as the latest
+        // grpc 1.62.2 still depends on protobuf-java & protoc 3.25.x. Once we
+        // bump grpc to version that depnds on protobuf-java & protoc to 4.x.x,
+        // it is likely that we are going to get conflicts because we also have
+        // direct dependency to protobuf 3.25.x. We will need to bump protobuf
+        // version to 4.x.x then.
+        protoBufJavaVersion = '3.25.3'
+        protoCVersion = '3.25.3'
     }
     repositories {
         mavenCentral()
@@ -32,14 +41,29 @@ buildscript {
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}")
         classpath("org.jetbrains.kotlin:kotlin-allopen:${kotlinVersion}")
-        classpath("org.owasp:dependency-check-gradle:9.0.9")
+        classpath("org.owasp:dependency-check-gradle:10.0.3")
         classpath("org.bouncycastle:bc-fips:${bcFipsVersion}")
         classpath("org.bouncycastle:bcpkix-fips:${bcpkixFipsVersion}")
     }
+
+    // Versions we're overriding from the Spring Boot Bom (Dependabot does not issue PRs to bump these versions, so we need to manually bump them)
+
+    // spring-boot 2.7.18 has dependency to spring-framework 5.3.31, which has
+    // CVE-2024-22243. So, override that with spring-framework 5 latest patch
+    // version. This should be removed once spring-boot version is bumped.
+    ext["spring-framework.version"] = "5.3.34"
+    // spring-boot 2.7.18 provides spring-security 5.7.11, which has
+    // CVE-2024-22257. So, override that with spring-security 5.7 latest patch
+    // version. This should be removed once spring-boot version is bumped.
+    ext['spring-security.version'] = '5.7.12'
+
+    // spring-boot 2.7.18 has dependency to io.netty 4.1.101 which has
+    // CVE-2024-29025. So override it with the latest patch.
+    ext['netty.version'] = '4.1.108.Final'
 }
 
 plugins {
-    id 'com.github.ben-manes.versions' version '0.50.0'
+    id 'com.github.ben-manes.versions' version '0.51.0'
 }
 
 apply plugin: DependenciesGraphPlugin

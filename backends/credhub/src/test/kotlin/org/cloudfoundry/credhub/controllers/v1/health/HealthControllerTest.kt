@@ -16,7 +16,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 @Deprecated(
-    message = "No longer needed after CredHub 2.2 because we have Spring Actuator"
+    message = "No longer needed after CredHub 2.2 because we have Spring Actuator",
 )
 @RunWith(SpringRunner::class)
 class HealthControllerTest {
@@ -35,7 +35,7 @@ class HealthControllerTest {
         mockMvc = MockMvcFactory.newSpringRestDocMockMvc(
             healthController,
             restDocumentation,
-            disableAuth = true
+            disableAuth = true,
         )
     }
 
@@ -43,13 +43,13 @@ class HealthControllerTest {
     fun GET__health__returns_status() {
         val mvcResult = mockMvc
             .perform(
-                get(HealthController.ENDPOINT)
+                get(HealthController.ENDPOINT),
             )
             .andExpect(status().isOk)
             .andDo(
                 document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER
-                )
+                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                ),
             )
             .andReturn()
 

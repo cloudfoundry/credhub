@@ -11,6 +11,7 @@ import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.jdbc.support.MetaDataAccessException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.certificates.DefaultCertificatesHandler;
@@ -28,6 +29,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 @RunWith(SpringRunner.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredhubTestApp.class)
+@Transactional
 public class DefaultCertificatesHandlerIntegrationTest {
     @Autowired
     private DefaultCertificatesHandler defaultCertificatesHandler;
@@ -77,7 +79,7 @@ public class DefaultCertificatesHandlerIntegrationTest {
 
         jdbcTemplate.update(
                 "INSERT INTO credential_version (type, uuid, version_created_at, credential_uuid) " +
-                        "SELECT 'foo', uuid, 0, uuid from credential");
+                        "SELECT 'cert', uuid, 0, uuid from credential");
 
         jdbcTemplate.update(
                 "INSERT INTO certificate_credential (uuid, transitional) " +

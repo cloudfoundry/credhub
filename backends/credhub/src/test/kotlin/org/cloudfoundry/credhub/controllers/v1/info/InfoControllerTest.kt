@@ -42,7 +42,6 @@ class InfoControllerTest {
 
     @Before
     fun setUp() {
-
         uaaUrl = "https://uaa.url.example.com"
 
         val infoController = InfoController(uaaUrl)
@@ -59,14 +58,14 @@ class InfoControllerTest {
         val mvcResult = mockMvc.perform(
             get(InfoController.ENDPOINT)
                 .credHubAuthHeader()
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON),
         )
             .andExpect(status().isOk)
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
             .andDo(
                 document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER
-                )
+                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                ),
             ).andReturn()
 
         // language=json

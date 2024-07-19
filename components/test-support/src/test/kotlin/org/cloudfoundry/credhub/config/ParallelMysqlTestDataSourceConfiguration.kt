@@ -18,7 +18,6 @@ class ParallelMysqlTestDataSourceConfiguration {
     }
 
     private fun createTestDatabaseForWorker(workerId: String) {
-
         val workerDatabaseName = "credhub_test_$workerId"
 
         val tempDataSource = DataSourceBuilder
@@ -31,7 +30,7 @@ class ParallelMysqlTestDataSourceConfiguration {
         val doesDatabaseExist = jdbcTemplate.query(
             "SELECT 1 from INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = ?;",
             arrayOf(workerDatabaseName),
-            { rs: ResultSet, _: Int -> rs.getBoolean(1) }
+            { rs: ResultSet, _: Int -> rs.getBoolean(1) },
         ).size == 1
 
         if (!doesDatabaseExist) {
@@ -44,7 +43,6 @@ class ParallelMysqlTestDataSourceConfiguration {
     @Primary
     @Bean(name = ["dataSource"])
     fun getParallelTestDataSource(): DataSource {
-
         val workerId = getGradleWorkerId()
 
         createTestDatabaseForWorker(workerId)

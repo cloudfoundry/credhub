@@ -17,7 +17,7 @@ class UniversalCredentialGenerator @Autowired constructor(
     userGenerator: UserGenerator,
     sshGenerator: SshGenerator,
     rsaGenerator: RsaGenerator,
-    certificateGenerator: CertificateGenerator
+    certificateGenerator: CertificateGenerator,
 ) {
     private val credentialGenerators: MutableMap<String, CredentialGenerator<*>>
     fun generate(generateRequest: BaseCredentialGenerateRequest): CredentialValue {

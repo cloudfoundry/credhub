@@ -65,8 +65,7 @@ class TestConstants {
                 "BOQ80pPbFtvUPN1pAdgc14w== dan@foo"
             )
 
-        const
-        val RSA_PUBLIC_KEY_4096: String = (
+        const val RSA_PUBLIC_KEY_4096: String = (
             "-----BEGIN PUBLIC KEY-----\n" +
                 "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA7PJUCHSfrZ3PY7n1/cC8\n" +
                 "wj1UtbraEycM0DtjUuRdOzhFl50feF7WGNyrQS7tdCx42cx+ZmsXVmJMm+BoGEsF\n" +

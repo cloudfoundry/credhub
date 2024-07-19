@@ -12,6 +12,7 @@ class CreateVersionRequest {
     @Valid
     @JsonProperty("value")
     var value: CertificateCredentialValue? = null
+
     @JsonProperty("transitional")
     var isTransitional: Boolean = false
 

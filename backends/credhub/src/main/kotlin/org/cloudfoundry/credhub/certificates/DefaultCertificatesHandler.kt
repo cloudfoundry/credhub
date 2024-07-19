@@ -45,14 +45,13 @@ class DefaultCertificatesHandler(
     private val permissionCheckingService: PermissionCheckingService,
     private val userContextHolder: UserContextHolder,
     @Value("\${security.authorization.acls.enabled}") private val enforcePermissions: Boolean,
-    @Value("\${certificates.concatenate_cas:false}") var concatenateCas: Boolean
+    @Value("\${certificates.concatenate_cas:false}") var concatenateCas: Boolean,
 ) : CertificatesHandler {
 
     override fun handleRegenerate(
         credentialUuid: String,
-        request: CertificateRegenerateRequest
+        request: CertificateRegenerateRequest,
     ): CredentialView {
-
         checkPermissionsByCredentialUuid(credentialUuid, WRITE)
 
         val existingCredentialVersion = certificateService
@@ -75,7 +74,7 @@ class DefaultCertificatesHandler(
             .save(
                 existingCredentialVersion,
                 credentialValue,
-                generateRequest
+                generateRequest,
             ) as CertificateCredentialVersion
 
         auditRecord.setVersion(credentialVersion)
@@ -102,7 +101,6 @@ class DefaultCertificatesHandler(
     }
 
     override fun handleGetAllVersionsRequest(certificateId: String, current: Boolean): List<CertificateView> {
-
         val uuid: UUID
         try {
             uuid = UUID.fromString(certificateId)
@@ -126,7 +124,7 @@ class DefaultCertificatesHandler(
 
     override fun handleUpdateTransitionalVersion(
         certificateId: String,
-        requestBody: UpdateTransitionalVersionRequest
+        requestBody: UpdateTransitionalVersionRequest,
     ): List<CertificateView> {
         checkPermissionsByCredentialUuid(certificateId, WRITE)
         var versionUUID: UUID? = null
@@ -155,7 +153,7 @@ class DefaultCertificatesHandler(
         certificateCredentialValue?.transitional = requestBody.isTransitional
         val credentialVersion = certificateService.set(
             UUID.fromString(certificateId),
-            certificateCredentialValue
+            certificateCredentialValue,
         )
 
         return CertificateView(credentialVersion)
@@ -198,7 +196,7 @@ class DefaultCertificatesHandler(
                 certificateMetadata.id,
                 certificateVersionViews,
                 signedBy,
-                signedCertificates
+                signedCertificates,
             )
         }
     }
@@ -209,7 +207,7 @@ class DefaultCertificatesHandler(
         if (!permissionCheckingService.hasPermission(
                 userContextHolder.userContext?.actor!!,
                 name,
-                permissionOperation
+                permissionOperation,
             )
         ) {
             if (permissionOperation == WRITE) {
@@ -228,7 +226,7 @@ class DefaultCertificatesHandler(
         if (!permissionCheckingService.hasPermission(
                 userContextHolder.userContext?.actor!!,
                 certificate.name!!,
-                permissionOperation
+                permissionOperation,
             )
         ) {
             if (permissionOperation == WRITE) {

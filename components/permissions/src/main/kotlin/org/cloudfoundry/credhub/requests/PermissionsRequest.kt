@@ -17,6 +17,7 @@ class PermissionsRequest {
                 field = prependIfMissing(credentialName, "/")
             }
         }
+
     @NotEmpty(message = ErrorMessages.Permissions.MISSING_ACES)
     var permissions: MutableList<PermissionEntry>? = null
 

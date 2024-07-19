@@ -1,7 +1,6 @@
 package org.cloudfoundry.credhub.remote
 
 import com.google.protobuf.ByteString
-import io.grpc.internal.GrpcUtil.DEFAULT_KEEPALIVE_TIMEOUT_NANOS
 import io.grpc.netty.GrpcSslContexts
 import io.grpc.netty.NegotiationType
 import io.grpc.netty.NettyChannelBuilder
@@ -50,7 +49,7 @@ import javax.net.ssl.SSLException
 class RemoteBackendClient(
     @Value("\${backend.socket_file}") private val socketFile: String,
     @Value("\${backend.host}") private val host: String,
-    @Value("\${backend.ca_cert}") private val caCert: String
+    @Value("\${backend.ca_cert}") private val caCert: String,
 ) {
 
     companion object {
@@ -73,16 +72,17 @@ class RemoteBackendClient(
             throw RuntimeException(e)
         }
 
+        val KEEPALIVE_TIMEOUT_NANOS: Long = TimeUnit.SECONDS.toNanos(20L)
         blockingStub = CredentialServiceGrpc.newBlockingStub(
             NettyChannelBuilder.forAddress(DomainSocketAddress(socketFile))
                 .eventLoopGroup(group)
                 .channelType(channelType)
                 .negotiationType(NegotiationType.PLAINTEXT)
-                .keepAliveTime(DEFAULT_KEEPALIVE_TIMEOUT_NANOS, TimeUnit.NANOSECONDS)
+                .keepAliveTime(KEEPALIVE_TIMEOUT_NANOS, TimeUnit.NANOSECONDS)
                 .useTransportSecurity()
                 .sslContext(sslContext)
                 .overrideAuthority(host)
-                .build()
+                .build(),
         )
 
         LOGGER.info("using socket file $socketFile")

@@ -85,7 +85,7 @@ class CredentialsPostIntegrationTest {
             true,
             true,
             false,
-            730
+            730,
         )
 
         Mockito.doReturn(caCredentialValue).`when`<CertificateAuthorityService>(certificateAuthorityService).findActiveVersion("/myCA")
@@ -98,7 +98,7 @@ class CredentialsPostIntegrationTest {
             true,
             true,
             true,
-            true
+            true,
         )
 
         Mockito.doReturn(trustedCaCredentialValue).`when`<CertificateAuthorityService>(certificateAuthorityService).findTransitionalVersion("/myCA")
@@ -115,7 +115,7 @@ class CredentialsPostIntegrationTest {
                     "ca":"myCA"
                   }
                  }
-                """.trimIndent()
+                """.trimIndent(),
             )
             .contentType(MediaType.APPLICATION_JSON)
             .accept(MediaType.APPLICATION_JSON)

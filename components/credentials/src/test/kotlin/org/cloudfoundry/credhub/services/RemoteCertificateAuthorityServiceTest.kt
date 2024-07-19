@@ -54,7 +54,7 @@ class RemoteCertificateAuthorityServiceTest {
             true,
             true,
             true,
-            false
+            false,
         )
 
         val requestParams = CertificateGenerationRequestParameters()
@@ -103,9 +103,9 @@ class RemoteCertificateAuthorityServiceTest {
                 "transitional" to data.transitional,
                 "certificate_authority" to data.certificateAuthority,
                 "self_signed" to data.selfSigned,
-                "generated" to data.generated
+                "generated" to data.generated,
 
-            )
+            ),
         )
         return ByteString.copyFromUtf8(json)
     }
@@ -135,8 +135,8 @@ class RemoteCertificateAuthorityServiceTest {
                 "ca_name" to generationParams.caName,
                 "alternative_names" to generationParams.alternativeNames,
                 "key_usage" to generationParams.keyUsage,
-                "extended_key_usage" to generationParams.extendedKeyUsage
-            ).filterValues { it != null }
+                "extended_key_usage" to generationParams.extendedKeyUsage,
+            ).filterValues { it != null },
         )
         return ByteString.copyFromUtf8(json)
     }

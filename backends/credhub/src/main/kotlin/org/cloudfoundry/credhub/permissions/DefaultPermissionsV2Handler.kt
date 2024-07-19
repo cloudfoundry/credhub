@@ -14,7 +14,7 @@ import java.util.UUID
 @Profile("!remote")
 @Component
 class DefaultPermissionsV2Handler(
-    private val permissionService: PermissionService
+    private val permissionService: PermissionService,
 ) : PermissionsV2Handler {
 
     companion object {
@@ -31,7 +31,7 @@ class DefaultPermissionsV2Handler(
                 perm.path,
                 perm.generateAccessControlOperations(),
                 perm.actor,
-                perm.uuid
+                perm.uuid,
             )
         } else {
             throw IllegalArgumentException(INVALID_NUMBER_OF_PERMISSIONS)
@@ -46,16 +46,20 @@ class DefaultPermissionsV2Handler(
         }
         val permission = permissionService.getPermissions(uuid)
         return PermissionsV2View(
-            permission?.path, permission?.generateAccessControlOperations(),
-            permission?.actor, uuid
+            permission?.path,
+            permission?.generateAccessControlOperations(),
+            permission?.actor,
+            uuid,
         )
     }
 
     override fun putPermissions(guid: String, permissionsRequest: PermissionsV2Request): PermissionsV2View {
         val permission = permissionService.putPermissions(guid, permissionsRequest)
         return PermissionsV2View(
-            permission.path, permission.generateAccessControlOperations(),
-            permission.actor, permission.uuid
+            permission.path,
+            permission.generateAccessControlOperations(),
+            permission.actor,
+            permission.uuid,
         )
     }
 
@@ -65,23 +69,27 @@ class DefaultPermissionsV2Handler(
             permission.path,
             permission.generateAccessControlOperations(),
             permission.actor,
-            permission.uuid
+            permission.uuid,
         )
     }
 
     override fun writeV2Permissions(permissionsRequest: PermissionsV2Request): PermissionsV2View {
         val permission = permissionService.saveV2Permissions(permissionsRequest)
         return PermissionsV2View(
-            permission.path, permission.generateAccessControlOperations(),
-            permission.actor, permission.uuid
+            permission.path,
+            permission.generateAccessControlOperations(),
+            permission.actor,
+            permission.uuid,
         )
     }
 
     override fun deletePermissions(guid: String): PermissionsV2View {
         val permission = permissionService.deletePermissions(guid)
         return PermissionsV2View(
-            permission.path, permission.generateAccessControlOperations(),
-            permission.actor, permission.uuid
+            permission.path,
+            permission.generateAccessControlOperations(),
+            permission.actor,
+            permission.uuid,
         )
     }
 
@@ -90,8 +98,10 @@ class DefaultPermissionsV2Handler(
             ?: throw EntryNotFoundException(ErrorMessages.Permissions.INVALID_ACCESS)
 
         return PermissionsV2View(
-            permissionData.path, permissionData.generateAccessControlOperations(),
-            permissionData.actor, permissionData.uuid
+            permissionData.path,
+            permissionData.generateAccessControlOperations(),
+            permissionData.actor,
+            permissionData.uuid,
         )
     }
 }

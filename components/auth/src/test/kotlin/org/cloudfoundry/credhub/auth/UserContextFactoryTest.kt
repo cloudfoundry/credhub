@@ -60,7 +60,6 @@ class UserContextFactoryTest {
     @Test
     @Throws(Exception::class)
     fun fromAuthentication_handlesSuppliedToken() {
-
         val oauth2Authentication = setupOAuthMock("TEST_GRANT_TYPE")
 
         val context = subject!!.createUserContext(oauth2Authentication, "tokenValue")
@@ -74,15 +73,14 @@ class UserContextFactoryTest {
     @Test
     @Throws(Exception::class)
     fun fromAuthentication_handlesMtlsAuth() {
-
         val mtlsAuth = setupMtlsMock()
         val context = subject!!.createUserContext(mtlsAuth)
 
         assertThat<String>(
             context.userName,
             equalTo<String>(
-                null
-            )
+                null,
+            ),
         )
         assertThat<String>(context.userId, equalTo<String>(null))
         assertThat<String>(context.issuer, equalTo<String>(null))
@@ -101,7 +99,7 @@ class UserContextFactoryTest {
 
         assertThat<String>(
             context.actor,
-            equalTo("uaa-user:TEST_USER_ID")
+            equalTo("uaa-user:TEST_USER_ID"),
         )
     }
 
@@ -113,7 +111,7 @@ class UserContextFactoryTest {
 
         assertThat<String>(
             context.actor,
-            equalTo("uaa-client:TEST_CLIENT_ID")
+            equalTo("uaa-client:TEST_CLIENT_ID"),
         )
     }
 
@@ -125,7 +123,7 @@ class UserContextFactoryTest {
 
         assertThat<String>(
             context.actor,
-            equalTo("mtls-app:e054393e-c9c3-478b-9047-e6d05c307bf2")
+            equalTo("mtls-app:e054393e-c9c3-478b-9047-e6d05c307bf2"),
         )
     }
 
@@ -152,7 +150,7 @@ class UserContextFactoryTest {
             "some-client-id",
             "some-scope",
             "some-grant-type",
-            invalidAuthMethod
+            invalidAuthMethod,
         )
 
         Assertions.assertThrows(UserContext.UnsupportedAuthMethodException::class.java) {
@@ -172,8 +170,8 @@ class UserContextFactoryTest {
                 null,
                 null,
                 null,
-                null
-            )
+                null,
+            ),
         )
         val token = mock(OAuth2AccessToken::class.java)
         val authDetails = mock(OAuth2AuthenticationDetails::class.java)

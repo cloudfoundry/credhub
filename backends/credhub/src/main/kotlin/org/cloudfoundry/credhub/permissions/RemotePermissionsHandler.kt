@@ -21,7 +21,7 @@ import java.util.UUID
 @Component
 class RemotePermissionsHandler(
     private val userContextHolder: UserContextHolder,
-    private val client: RemoteBackendClient
+    private val client: RemoteBackendClient,
 ) : PermissionsV2Handler {
 
     override fun getPermissions(guid: String): PermissionsV2View {

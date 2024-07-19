@@ -14,7 +14,7 @@ import java.util.UUID
 class DefaultCertificateVersionDataService(
     private val credentialVersionRepository: CredentialVersionRepository,
     private val credentialFactory: CredentialFactory,
-    private val credentialDataService: CredentialDataService
+    private val credentialDataService: CredentialDataService,
 ) : CertificateVersionDataService {
 
     override fun findActive(caName: String): CredentialVersion? {
@@ -25,7 +25,7 @@ class DefaultCertificateVersionDataService(
         } else {
             credentialFactory.makeCredentialFromEntity(
                 credentialVersionRepository
-                    .findLatestNonTransitionalCertificateVersion(credential.uuid)
+                    .findLatestNonTransitionalCertificateVersion(credential.uuid),
             )
         }
     }
@@ -63,7 +63,8 @@ class DefaultCertificateVersionDataService(
 
     override fun findAllVersions(uuid: UUID): List<CredentialVersion> {
         val credentialVersionDataList = credentialVersionRepository.findAllByCredentialUuidAndTypeOrderByVersionCreatedAtDesc(
-            uuid, CertificateCredentialVersionData.CREDENTIAL_DATABASE_TYPE
+            uuid,
+            CertificateCredentialVersionData.CREDENTIAL_DATABASE_TYPE,
         )
 
         return credentialFactory.makeCredentialsFromEntities(credentialVersionDataList)
@@ -71,7 +72,8 @@ class DefaultCertificateVersionDataService(
 
     override fun findAllValidVersions(uuid: UUID): List<CredentialVersion> {
         val credentialVersionDataList = credentialVersionRepository.findAllByCredentialUuidAndTypeOrderByVersionCreatedAtDesc(
-            uuid, CertificateCredentialVersionData.CREDENTIAL_DATABASE_TYPE
+            uuid,
+            CertificateCredentialVersionData.CREDENTIAL_DATABASE_TYPE,
         )
 
         val validCredentialVersionDataList = ArrayList<CredentialVersionData<*>>()

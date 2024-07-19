@@ -1,7 +1,4 @@
 buildscript {
-    ext {
-        grpcVersion = '1.60.1'
-    }
     repositories {
         mavenCentral()
         maven { url("https://repo.spring.io/plugins-release") }
@@ -54,8 +51,9 @@ dependencies {
     implementation("commons-codec:commons-codec:${commonsCodecVersion}")
 
     //gRPC
-    implementation "com.google.api.grpc:proto-google-common-protos:2.30.0"
+    implementation "com.google.api.grpc:proto-google-common-protos:2.41.0"
     implementation "io.grpc:grpc-services:${grpcVersion}"
+    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
 
     //gRPC - Netty
     implementation "io.grpc:grpc-netty:${grpcVersion}"
@@ -66,7 +64,7 @@ dependencies {
     implementation "io.netty:netty-codec-http2"
 
     //tcnative
-    implementation "io.netty:netty-tcnative-boringssl-static:2.0.62.Final"
+    implementation "io.netty:netty-tcnative-boringssl-static:2.0.65.Final"
 }
 
 dependencyManagement {
@@ -98,7 +96,7 @@ sourceSets {
 assemble.mustRunAfter("clean")
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:3.25.2"
+        artifact = "com.google.protobuf:protoc:${protoCVersion}"
     }
     plugins {
         grpc {

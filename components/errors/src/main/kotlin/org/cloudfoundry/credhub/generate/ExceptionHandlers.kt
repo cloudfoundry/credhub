@@ -93,7 +93,6 @@ class ExceptionHandlers {
     @ExceptionHandler(HttpMediaTypeNotSupportedException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     fun handleHttpMediaTypeNotSupportedException(e: HttpMediaTypeNotSupportedException): ResponseError {
-
         var errorMessage = ""
 
         val contentType = e.contentType
@@ -113,7 +112,7 @@ class ExceptionHandlers {
     @ExceptionHandler(ParameterizedValidationException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     fun handleParameterizedValidationException(
-        exception: ParameterizedValidationException
+        exception: ParameterizedValidationException,
     ): ResponseError {
         return constructError(exception.message, exception.getParameters())
     }
@@ -127,12 +126,13 @@ class ExceptionHandlers {
     @ExceptionHandler(MethodArgumentNotValidException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     fun handleMethodArgumentNotValidException(exception: MethodArgumentNotValidException): ResponseError {
-
         val message = exception.bindingResult.allErrors[0].defaultMessage
 
         return if (message != null) {
             constructError(message)
-        } else constructError(exception.message)
+        } else {
+            constructError(exception.message)
+        }
     }
 
     @ExceptionHandler(InvalidRemoteAddressException::class)
@@ -168,7 +168,6 @@ class ExceptionHandlers {
     @ExceptionHandler(InvalidJsonException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     fun handleInputNotReadableException(exception: Exception): ResponseError {
-
         val cause = if (exception.cause == null) exception else exception.cause
 
         if (cause is UnrecognizedPropertyException) {
@@ -269,8 +268,8 @@ class ExceptionHandlers {
             }
         } else if (cause is InvalidFormatException) {
             for (
-                reference in cause
-                    .path
+            reference in cause
+                .path
             ) {
                 if ("operations" == reference.fieldName) {
                     return constructError(ErrorMessages.Permissions.INVALID_OPERATION)
