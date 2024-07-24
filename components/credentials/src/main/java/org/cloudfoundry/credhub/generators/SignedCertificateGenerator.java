@@ -93,11 +93,24 @@ public class SignedCertificateGenerator {
 
     final BigInteger certificateSerialNumber = serialNumberGenerator.generate();
 
+    Date nvb = Date.from(now);
+    Data nva = Date.from(now.plus(Duration.ofDays(params.getDuration())));
+    if (issuerCertificate != null) {
+      // don't allow a child certificate to be valid before the signing certificate
+      if (nvb.isBefore(issuerCertificate.getNotBefore())) {
+        nvb = issuerCertificate.getNotBefore();
+      }
+      // don't allow a child certificate to be valid after the signing certificate
+      if (nva.isAfter(issuerCertificate.getNotAfter())) {
+        nva = issuerCertificate.getNotAfter();
+      }
+    }
+
     final JcaX509v3CertificateBuilder certificateBuilder = new JcaX509v3CertificateBuilder(
       issuerDn,
       certificateSerialNumber,
-      Date.from(now),
-      Date.from(now.plus(Duration.ofDays(params.getDuration()))),
+      nvb,
+      nva,
       params.getX500Principal(),
       keyPair.getPublic()
     );
