@@ -1,6 +1,7 @@
 package org.cloudfoundry.credhub.utils
 
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo
+import org.bouncycastle.openssl.PEMException
 import org.bouncycastle.openssl.PEMKeyPair
 import org.bouncycastle.openssl.PEMParser
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter
@@ -24,8 +25,13 @@ class PrivateKeyReader private constructor() {
                 pemParser = PEMParser(StringReader(privateKeyPem!!))
                 parsed = pemParser.readObject()
                 pemParser.close()
-            } catch (e: DecoderException) {
-                throw MalformedPrivateKeyException("Keys must be PEM-encoded PKCS#1 or unencrypted PKCS#8 keys.")
+            } catch (ex: Exception) {
+                when (ex) {
+                    is DecoderException, is PEMException -> {
+                        throw MalformedPrivateKeyException("Keys must be PEM-encoded PKCS#1 or unencrypted PKCS#8 keys.")
+                    }
+                    else -> throw ex
+                }
             }
 
             return when (parsed) {
