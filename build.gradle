@@ -51,15 +51,21 @@ buildscript {
     // spring-boot 2.7.18 has dependency to spring-framework 5.3.31, which has
     // CVE-2024-22243. So, override that with spring-framework 5 latest patch
     // version. This should be removed once spring-boot version is bumped.
-    ext["spring-framework.version"] = "5.3.37"
+    ext["spring-framework.version"] = "5.3.39"
     // spring-boot 2.7.18 provides spring-security 5.7.11, which has
     // CVE-2024-22257. So, override that with spring-security 5.7 latest patch
     // version. This should be removed once spring-boot version is bumped.
-    ext['spring-security.version'] = '5.8.13'
+    ext['spring-security.version'] = '5.8.14'
 
-    // spring-boot 2.7.18 has dependency to io.netty 4.1.101 which has
+    // spring-boot 2.7.18 has dependency to io.netty 4.1.101, which has
     // CVE-2024-29025. So override it with the latest patch.
     ext['netty.version'] = '4.1.112.Final'
+
+    // spring-boot 2.7.18 has dependency to tomcat-embed-core 9.0.83, which
+    // has multipe CVEs including CVE-2024-34750. Setting it to 9.0.01 instead
+    // of 9.0.93 because the later had issues with uaa cf deployment. In UAA,
+    // we are skipping 9.0.93 and waiting for 9.0.94.
+    ext["tomcat.version"] = '9.0.91'
 }
 
 plugins {
