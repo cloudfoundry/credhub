@@ -25,7 +25,7 @@ buildscript {
         snakeyamlVersion = '2.3'
         grpcVersion = '1.66.0'
         // We need to stay with protobuf-java & protoc 3.25.x as the latest
-        // grpc 1.62.2 still depends on protobuf-java & protoc 3.25.x. Once we
+        // grpc still depends on protobuf-java & protoc 3.25.x. Once we
         // bump grpc to version that depnds on protobuf-java & protoc to 4.x.x,
         // it is likely that we are going to get conflicts because we also have
         // direct dependency to protobuf 3.25.x. We will need to bump protobuf
