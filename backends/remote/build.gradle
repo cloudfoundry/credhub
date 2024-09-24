@@ -51,7 +51,7 @@ dependencies {
     implementation("commons-codec:commons-codec:${commonsCodecVersion}")
 
     //gRPC
-    implementation "com.google.api.grpc:proto-google-common-protos:2.44.0"
+    implementation "com.google.api.grpc:proto-google-common-protos:2.45.0"
     implementation "io.grpc:grpc-services:${grpcVersion}"
     implementation "io.grpc:grpc-protobuf:${grpcVersion}"
 
