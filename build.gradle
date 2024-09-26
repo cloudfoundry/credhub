@@ -62,10 +62,8 @@ buildscript {
     ext['netty.version'] = '4.1.112.Final'
 
     // spring-boot 2.7.18 has dependency to tomcat-embed-core 9.0.83, which
-    // has multipe CVEs including CVE-2024-34750. Setting it to 9.0.01 instead
-    // of 9.0.93 because the later had issues with uaa cf deployment. In UAA,
-    // we are skipping 9.0.93 and waiting for 9.0.94.
-    ext["tomcat.version"] = '9.0.91'
+    // has multipe CVEs including CVE-2024-34750. Setting it to 9.0.95
+    ext["tomcat.version"] = '9.0.95'
 }
 
 plugins {
