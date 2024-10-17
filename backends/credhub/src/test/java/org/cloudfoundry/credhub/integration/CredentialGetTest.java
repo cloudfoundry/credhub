@@ -31,10 +31,13 @@ import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 
 import static org.cloudfoundry.credhub.helpers.RequestHelper.generateCertificateCredential;
+import static org.cloudfoundry.credhub.helpers.RequestHelper.generatePassword;
 import static org.cloudfoundry.credhub.helpers.RequestHelper.getCertificateCredentialsByName;
+import static org.cloudfoundry.credhub.helpers.RequestHelper.getCredential;
 import static org.cloudfoundry.credhub.utils.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -54,6 +57,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class CredentialGetTest {
 
   private MockMvc mockMvc;
+
+  private final String credentialName = "/my-namespace/subTree/credential-name";
 
   @Autowired
   private WebApplicationContext webApplicationContext;
@@ -103,6 +108,14 @@ public class CredentialGetTest {
     final JSONObject responseObject = new JSONObject(response);
 
     assertThat(responseObject.getJSONArray("data").length(), equalTo(3));
+  }
+
+  @Test
+  public void getCredentialByName_shouldBeCaseInsensitive() throws Exception {
+    generatePassword(mockMvc, credentialName, true, 20, ALL_PERMISSIONS_TOKEN);
+
+    final String response = getCredential(mockMvc, credentialName.toUpperCase(), ALL_PERMISSIONS_TOKEN);
+    assertThat(response, containsString(credentialName));
   }
 
 
