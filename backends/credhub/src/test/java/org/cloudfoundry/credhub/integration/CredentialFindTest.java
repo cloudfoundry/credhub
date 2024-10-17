@@ -83,7 +83,7 @@ public class CredentialFindTest {
   }
 
   @Test
-  public void findCredentials_byNameLike_whenSearchTermContainsNoSlash_returnsCredentialMetadata() throws Exception {
+  public void findCredentials_byNameLike_caseInsensitively_whenSearchTermContainsNoSlash_returnsCredentialMetadata() throws Exception {
     generatePassword(mockMvc, credentialName, true, 20, ALL_PERMISSIONS_TOKEN);
     final ResultActions response = findCredentialsByNameLike(credentialName.substring(4).toUpperCase(),
             ALL_PERMISSIONS_TOKEN);
