@@ -21,7 +21,7 @@ interface CredentialRepository : JpaRepository<Credential?, UUID?> {
     )
     fun findCertificateByUuid(uuid: UUID?): Credential?
 
-    fun findOneByNameIgnoreCase(name: String?): Credential?
+    fun findOneByName(name: String?): Credential?
 
     @Query(
         value = "select credential.uuid, credential.name, credential.checksum from certificate_credential " +

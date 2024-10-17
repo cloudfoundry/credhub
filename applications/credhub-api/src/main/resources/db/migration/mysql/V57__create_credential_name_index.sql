@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX credential_name_unique ON credential(name);

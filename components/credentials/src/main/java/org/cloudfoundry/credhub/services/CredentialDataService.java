@@ -23,7 +23,7 @@ public class CredentialDataService {
   }
 
   public Credential find(final String name) {
-    return credentialRepository.findOneByNameIgnoreCase(name);
+    return credentialRepository.findOneByName(name);
   }
 
   public Credential findByUUID(final UUID uuid) {
