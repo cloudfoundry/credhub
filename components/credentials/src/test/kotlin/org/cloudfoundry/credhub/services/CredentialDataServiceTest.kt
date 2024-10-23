@@ -36,7 +36,7 @@ class CredentialDataServiceTest {
         credentialRepository.save(credential)
         MatcherAssert.assertThat(credentialRepository.count(), IsEqual.equalTo(1L))
         MatcherAssert.assertThat(
-            credentialRepository.findOneByNameIgnoreCase(CREDENTIAL_NAME)!!.name,
+            credentialRepository.findOneByNameLowercase(CREDENTIAL_NAME.lowercase())!!.name,
             IsEqual.equalTo(CREDENTIAL_NAME),
         )
     }
