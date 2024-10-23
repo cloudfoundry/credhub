@@ -8,12 +8,12 @@ import java.util.UUID
 
 interface CredentialRepository : JpaRepository<Credential?, UUID?> {
     @Transactional
-    fun deleteByNameIgnoreCase(name: String?): Long
+    fun deleteByNameLowercase(name: String?): Long
 
     fun findOneByUuid(uuid: UUID?): Credential?
 
     @Query(
-        value = "select credential.uuid, credential.name, credential.checksum from certificate_credential " +
+        value = "select credential.uuid, credential.name, credential.name_lowercase, credential.checksum from certificate_credential " +
             "left join credential_version on certificate_credential.uuid = credential_version.uuid " +
             "join credential on credential.uuid = credential_version.credential_uuid " +
             "where credential.uuid = ?1",
@@ -21,10 +21,10 @@ interface CredentialRepository : JpaRepository<Credential?, UUID?> {
     )
     fun findCertificateByUuid(uuid: UUID?): Credential?
 
-    fun findOneByNameIgnoreCase(name: String?): Credential?
+    fun findOneByNameLowercase(name: String?): Credential?
 
     @Query(
-        value = "select credential.uuid, credential.name, credential.checksum from certificate_credential " +
+        value = "select credential.uuid, credential.name, credential.name_lowercase, credential.checksum from certificate_credential " +
             "left join credential_version on certificate_credential.uuid = credential_version.uuid " +
             "join credential on credential.uuid = credential_version.credential_uuid " +
             "group by credential.uuid",
@@ -33,7 +33,7 @@ interface CredentialRepository : JpaRepository<Credential?, UUID?> {
     fun findAllCertificates(): List<Credential>
 
     @Query(
-        value = "select credential.uuid, credential.name, credential.checksum from certificate_credential " +
+        value = "select credential.uuid, credential.name, credential.name_lowercase, credential.checksum from certificate_credential " +
             "left join credential_version on certificate_credential.uuid = credential_version.uuid " +
             "join credential on credential.uuid = credential_version.credential_uuid " +
             "where credential.name = ?1 limit 1 ",

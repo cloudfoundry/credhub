@@ -41,6 +41,9 @@ class Credential : AuditableCredential {
             }
         }
 
+    @Column(name = "name_lowercase", nullable = false, insertable = false)
+    var nameLowercase: String? = null
+
     @Column(unique = true, nullable = false)
     var checksum: String? = null
 
