@@ -1,0 +1,1 @@
+DROP INDEX CONCURRENTLY IF EXISTS secret_name_unique;
