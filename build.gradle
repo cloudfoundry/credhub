@@ -55,7 +55,7 @@ buildscript {
     // spring-boot 2.7.18 provides spring-security 5.7.11, which has
     // CVE-2024-22257. So, override that with spring-security 5.7 latest patch
     // version. This should be removed once spring-boot version is bumped.
-    ext['spring-security.version'] = '5.8.14'
+    ext['spring-security.version'] = '5.8.15'
 
     // spring-boot 2.7.18 has dependency to io.netty 4.1.101, which has
     // CVE-2024-29025. So override it with the latest patch.
