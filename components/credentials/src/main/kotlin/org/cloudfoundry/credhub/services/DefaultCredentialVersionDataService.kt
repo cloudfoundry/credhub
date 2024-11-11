@@ -264,11 +264,11 @@ constructor(
                     (select version_created_at, credential_uuid from credential_version LEFT OUTER JOIN
                         certificate_credential on credential_version.uuid = certificate_credential.uuid
                         WHERE (transitional is false or transitional IS NULL)
-                        and credential_uuid in (select uuid from credential where name_lowercase like ?))
+                        and credential_uuid in (select uuid from credential where lower(name) like ?))
                         as credential_version
                     group by credential_uuid ) as credential_version
                  inner join
-                    (select * from credential where name_lowercase like ? )
+                    (select * from credential where lower(name) like ? )
                     as name on credential_version.credential_uuid = name.uuid
                  order by version_created_at desc
                 """.trimMargin()

@@ -23,7 +23,7 @@ public class CredentialDataService {
   }
 
   public Credential find(final String name) {
-    return credentialRepository.findOneByNameLowercase(name.toLowerCase());
+    return credentialRepository.findOneByNameIgnoreCase(name);
   }
 
   public Credential findByUUID(final UUID uuid) {
@@ -37,7 +37,7 @@ public class CredentialDataService {
   public boolean delete(final String credentialName) {
     final Credential cred = this.find(credentialName);
     auditRecord.setResource(cred);
-    return credentialRepository.deleteByNameLowercase(credentialName.toLowerCase()) > 0;
+    return credentialRepository.deleteByNameIgnoreCase(credentialName) > 0;
   }
 
 }
