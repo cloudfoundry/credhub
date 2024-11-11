@@ -230,7 +230,7 @@ constructor(
                 "         SELECT credential_uuid, max(version_created_at) AS max_version_created_at\n" +
                 "         FROM credential_version\n" +
                 "         GROUP BY credential_uuid) AS credential_uuid_of_max_version_created_at\n" +
-                "         INNER JOIN (SELECT * FROM credential WHERE name_lowercase LIKE lower(?)) AS name\n" +
+                "         INNER JOIN (SELECT * FROM credential WHERE lower(name) LIKE lower(?)) AS name\n" +
                 "                    ON credential_uuid_of_max_version_created_at.credential_uuid = name.uuid\n" +
                 "         INNER JOIN credential_version AS latest_credential_version\n" +
                 "                    ON latest_credential_version.credential_uuid =\n" +
