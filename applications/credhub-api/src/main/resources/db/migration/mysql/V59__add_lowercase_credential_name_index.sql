@@ -1,0 +1,1 @@
+CREATE INDEX credential_name_lowercase_index ON credential(name_lowercase);
