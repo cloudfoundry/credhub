@@ -55,15 +55,15 @@ buildscript {
     // spring-boot 2.7.18 provides spring-security 5.7.11, which has
     // CVE-2024-22257. So, override that with spring-security 5.7 latest patch
     // version. This should be removed once spring-boot version is bumped.
-    ext['spring-security.version'] = '5.8.15'
+    ext['spring-security.version'] = '5.8.16'
 
     // spring-boot 2.7.18 has dependency to io.netty 4.1.101, which has
     // CVE-2024-29025. So override it with the latest patch.
-    ext['netty.version'] = '4.1.112.Final'
+    ext['netty.version'] = '4.1.115.Final'
 
     // spring-boot 2.7.18 has dependency to tomcat-embed-core 9.0.83, which
-    // has multipe CVEs including CVE-2024-34750. Setting it to 9.0.95
-    ext["tomcat.version"] = '9.0.95'
+    // has multipe CVEs including CVE-2024-34750. Setting it to 9.0.97
+    ext["tomcat.version"] = '9.0.97'
 }
 
 plugins {
