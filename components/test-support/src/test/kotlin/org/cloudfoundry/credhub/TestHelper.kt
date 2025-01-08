@@ -11,19 +11,16 @@ import java.util.function.Consumer
 
 class TestHelper private constructor() {
     companion object {
-
         @JvmStatic
-        fun mockOutCurrentTimeProvider(mockCurrentTimeProvider: CurrentTimeProvider): Consumer<Long> {
-            return Consumer<Long> { epochMillis ->
+        fun mockOutCurrentTimeProvider(mockCurrentTimeProvider: CurrentTimeProvider): Consumer<Long> =
+            Consumer<Long> { epochMillis ->
                 `when`<Optional<TemporalAccessor>>(mockCurrentTimeProvider.now).thenReturn(Optional.of(Instant.ofEpochMilli(epochMillis)))
                 `when`<Instant>(mockCurrentTimeProvider.instant).thenReturn(Instant.ofEpochMilli(epochMillis))
             }
-        }
 
         @JvmStatic
-        fun getBouncyCastleFipsProvider(): BouncyCastleFipsProvider {
-            return Security.getProvider(BouncyCastleFipsProvider.PROVIDER_NAME) as? BouncyCastleFipsProvider
+        fun getBouncyCastleFipsProvider(): BouncyCastleFipsProvider =
+            Security.getProvider(BouncyCastleFipsProvider.PROVIDER_NAME) as? BouncyCastleFipsProvider
                 ?: BouncyCastleFipsProvider().apply { Security.addProvider(this) }
-        }
     }
 }

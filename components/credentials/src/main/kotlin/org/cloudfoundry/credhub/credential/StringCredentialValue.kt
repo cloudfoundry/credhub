@@ -10,7 +10,6 @@ class StringCredentialValue(
     @get:JsonValue
     val stringCredential: String,
 ) : CredentialValue {
-
     override fun equals(other: Any?): Boolean {
         if (this === other) {
             return true
@@ -22,7 +21,5 @@ class StringCredentialValue(
         return stringCredential == that!!.stringCredential
     }
 
-    override fun hashCode(): Int {
-        return Objects.hash(stringCredential)
-    }
+    override fun hashCode(): Int = Objects.hash(stringCredential)
 }

@@ -25,7 +25,12 @@ class PermissionEntry {
 
     constructor() : super() {}
 
-    constructor(actor: String, path: String, vararg operations: PermissionOperation) : this(actor, path, Lists.newArrayList<PermissionOperation>(*operations)) {}
+    constructor(actor: String, path: String, vararg operations: PermissionOperation) : this(
+        actor,
+        path,
+        Lists.newArrayList<PermissionOperation>(*operations),
+    ) {
+    }
 
     constructor(actor: String, path: String?, operations: List<PermissionOperation>) : super() {
         this.actor = actor
@@ -51,11 +56,10 @@ class PermissionEntry {
             .isEquals
     }
 
-    override fun hashCode(): Int {
-        return HashCodeBuilder(17, 37)
+    override fun hashCode(): Int =
+        HashCodeBuilder(17, 37)
             .append(actor)
             .append(path)
             .append(allowedOperations)
             .toHashCode()
-    }
 }

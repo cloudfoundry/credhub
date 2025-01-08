@@ -8,7 +8,6 @@ import javax.validation.Valid
 import javax.validation.constraints.NotNull
 
 class JsonSetRequest : BaseCredentialSetRequest<JsonCredentialValue>() {
-
     @NotNull(message = ErrorMessages.MISSING_VALUE)
     @Valid
     @JsonProperty("value")
@@ -33,7 +32,5 @@ class JsonSetRequest : BaseCredentialSetRequest<JsonCredentialValue>() {
         return value == that!!.value
     }
 
-    override fun hashCode(): Int {
-        return Objects.hash(value)
-    }
+    override fun hashCode(): Int = Objects.hash(value)
 }

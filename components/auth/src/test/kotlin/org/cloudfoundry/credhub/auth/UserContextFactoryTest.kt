@@ -141,17 +141,18 @@ class UserContextFactoryTest {
     @Test
     fun getAclUser_withInvalidAuthMethod_throwsException() {
         val invalidAuthMethod = "not a valid auth method"
-        val context = UserContext(
-            "some-user-id",
-            "some-user-name",
-            "some-issuer",
-            11223344,
-            22334455,
-            "some-client-id",
-            "some-scope",
-            "some-grant-type",
-            invalidAuthMethod,
-        )
+        val context =
+            UserContext(
+                "some-user-id",
+                "some-user-name",
+                "some-issuer",
+                11223344,
+                22334455,
+                "some-client-id",
+                "some-scope",
+                "some-grant-type",
+                invalidAuthMethod,
+            )
 
         Assertions.assertThrows(UserContext.UnsupportedAuthMethodException::class.java) {
             context.actor
@@ -160,19 +161,20 @@ class UserContextFactoryTest {
 
     private fun setupOAuthMock(grantType: String): OAuth2Authentication {
         val authentication = mock(OAuth2Authentication::class.java)
-        val oauth2Request = spy(
-            OAuth2Request(
-                null,
-                "TEST_CLIENT_ID",
-                null,
-                false,
-                null,
-                null,
-                null,
-                null,
-                null,
-            ),
-        )
+        val oauth2Request =
+            spy(
+                OAuth2Request(
+                    null,
+                    "TEST_CLIENT_ID",
+                    null,
+                    false,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                ),
+            )
         val token = mock(OAuth2AccessToken::class.java)
         val authDetails = mock(OAuth2AuthenticationDetails::class.java)
 

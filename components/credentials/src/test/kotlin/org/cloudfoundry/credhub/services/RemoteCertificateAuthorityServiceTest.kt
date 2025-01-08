@@ -22,11 +22,10 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import java.util.UUID
 
+private const val CA_NAME = "/test/ca"
+private const val USER = "test-user"
+
 class RemoteCertificateAuthorityServiceTest {
-
-    private val CA_NAME = "/test/ca"
-    private val USER = "test-user"
-
     private lateinit var subject: RemoteCertificateAuthorityService
     private val userContextHolder = mock(UserContextHolder::class.java)!!
     private val objectMapper = ObjectMapper()
@@ -46,29 +45,32 @@ class RemoteCertificateAuthorityServiceTest {
     @Test
     fun findActiveVersion_whenCaExists_returnsCorrectCredentialValue() {
         val id = UUID.randomUUID()
-        val shouldBeReturned = CertificateCredentialValue(
-            TestConstants.TEST_CA,
-            TestConstants.OTHER_TEST_CERTIFICATE,
-            TestConstants.OTHER_TEST_PRIVATE_KEY,
-            "/some-ca",
-            true,
-            true,
-            true,
-            false,
-        )
+        val shouldBeReturned =
+            CertificateCredentialValue(
+                TestConstants.TEST_CA,
+                TestConstants.OTHER_TEST_CERTIFICATE,
+                TestConstants.OTHER_TEST_PRIVATE_KEY,
+                "/some-ca",
+                true,
+                true,
+                true,
+                false,
+            )
 
         val requestParams = CertificateGenerationRequestParameters()
         requestParams.caName = "some-ca"
         requestParams.commonName = "some-common-name"
         val generationParameters = CertificateGenerationParameters(requestParams)
 
-        val response = GetResponse.newBuilder()
-            .setName(CA_NAME)
-            .setId(id.toString())
-            .setType("certificate")
-            .setGenerationParameters(createByteStringFromGenerationParameters(generationParameters))
-            .setData(createByteStringFromData(shouldBeReturned))
-            .build()
+        val response =
+            GetResponse
+                .newBuilder()
+                .setName(CA_NAME)
+                .setId(id.toString())
+                .setType("certificate")
+                .setGenerationParameters(createByteStringFromGenerationParameters(generationParameters))
+                .setData(createByteStringFromData(shouldBeReturned))
+                .build()
 
         `when`(client.getByNameRequest(CA_NAME, USER)).thenReturn(response)
 
@@ -88,25 +90,26 @@ class RemoteCertificateAuthorityServiceTest {
         val exception = StatusRuntimeException(Status.NOT_FOUND)
         `when`(client.getByNameRequest(CA_NAME, USER)).thenThrow(exception)
 
-        Assertions.assertThatThrownBy {
-            subject.findActiveVersion(CA_NAME)
-        }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
+        Assertions
+            .assertThatThrownBy {
+                subject.findActiveVersion(CA_NAME)
+            }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
     }
 
     private fun createByteStringFromData(data: CertificateCredentialValue): ByteString {
-        val json = objectMapper.writeValueAsString(
-            mapOf(
-                "ca" to data.ca,
-                "ca_name" to data.caName,
-                "certificate" to data.certificate,
-                "private_key" to data.privateKey,
-                "transitional" to data.transitional,
-                "certificate_authority" to data.certificateAuthority,
-                "self_signed" to data.selfSigned,
-                "generated" to data.generated,
-
-            ),
-        )
+        val json =
+            objectMapper.writeValueAsString(
+                mapOf(
+                    "ca" to data.ca,
+                    "ca_name" to data.caName,
+                    "certificate" to data.certificate,
+                    "private_key" to data.privateKey,
+                    "transitional" to data.transitional,
+                    "certificate_authority" to data.certificateAuthority,
+                    "self_signed" to data.selfSigned,
+                    "generated" to data.generated,
+                ),
+            )
         return ByteString.copyFromUtf8(json)
     }
 
@@ -119,25 +122,25 @@ class RemoteCertificateAuthorityServiceTest {
             x500Names[kv[0]] = kv[1]
         }
 
-        val json = objectMapper.writeValueAsString(
-            mapOf(
-
-                "is_ca" to generationParams.isCa,
-                "organization_unit" to x500Names["OU"],
-                "organization" to x500Names["O"],
-                "state" to x500Names["ST"],
-                "country" to x500Names["C"],
-                "locality" to x500Names["L"],
-                "common_name" to x500Names["CN"],
-                "key_length" to generationParams.keyLength,
-                "duration" to generationParams.duration,
-                "self_signed" to generationParams.isSelfSigned,
-                "ca_name" to generationParams.caName,
-                "alternative_names" to generationParams.alternativeNames,
-                "key_usage" to generationParams.keyUsage,
-                "extended_key_usage" to generationParams.extendedKeyUsage,
-            ).filterValues { it != null },
-        )
+        val json =
+            objectMapper.writeValueAsString(
+                mapOf(
+                    "is_ca" to generationParams.isCa,
+                    "organization_unit" to x500Names["OU"],
+                    "organization" to x500Names["O"],
+                    "state" to x500Names["ST"],
+                    "country" to x500Names["C"],
+                    "locality" to x500Names["L"],
+                    "common_name" to x500Names["CN"],
+                    "key_length" to generationParams.keyLength,
+                    "duration" to generationParams.duration,
+                    "self_signed" to generationParams.isSelfSigned,
+                    "ca_name" to generationParams.caName,
+                    "alternative_names" to generationParams.alternativeNames,
+                    "key_usage" to generationParams.keyUsage,
+                    "extended_key_usage" to generationParams.extendedKeyUsage,
+                ).filterValues { it != null },
+            )
         return ByteString.copyFromUtf8(json)
     }
 }

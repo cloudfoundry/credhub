@@ -15,38 +15,41 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 @Component
-class X509AuthenticationFailureHandler @Autowired
-internal constructor(
-    private val objectMapper: ObjectMapper,
-) : AuthenticationFailureHandler {
+class X509AuthenticationFailureHandler
+    @Autowired
+    internal constructor(
+        private val objectMapper: ObjectMapper,
+    ) : AuthenticationFailureHandler {
+        @Throws(IOException::class)
+        override fun onAuthenticationFailure(
+            request: HttpServletRequest,
+            response: HttpServletResponse,
+            exception: AuthenticationException,
+        ) {
+            if (exception.message.toString().contains(INVALID_DN_MESSAGE)) {
+                writeUnauthorizedResponse(response, INVALID_MTLS_ID_RESPONSE)
+            }
 
-    @Throws(IOException::class)
-    override fun onAuthenticationFailure(
-        request: HttpServletRequest,
-        response: HttpServletResponse,
-        exception: AuthenticationException,
-    ) {
-        if (exception.message.toString().contains(INVALID_DN_MESSAGE)) {
-            writeUnauthorizedResponse(response, INVALID_MTLS_ID_RESPONSE)
+            if (exception.message.toString().contains("Certificate does not contain: $CLIENT_AUTH_EXTENDED_KEY_USAGE")) {
+                writeUnauthorizedResponse(response, INVALID_CLIENT_AUTH_RESPONSE)
+            }
         }
 
-        if (exception.message.toString().contains("Certificate does not contain: $CLIENT_AUTH_EXTENDED_KEY_USAGE")) {
-            writeUnauthorizedResponse(response, INVALID_CLIENT_AUTH_RESPONSE)
+        @Throws(IOException::class)
+        private fun writeUnauthorizedResponse(
+            response: HttpServletResponse,
+            message: String,
+        ) {
+            val responseError = ResponseError(message)
+
+            response.status = HttpStatus.UNAUTHORIZED.value()
+            response.contentType = APPLICATION_JSON.type
+            response.writer.write(objectMapper.writeValueAsString(responseError))
+        }
+
+        companion object {
+            private const val INVALID_DN_MESSAGE = "No matching pattern was found in subjectDN"
+            private const val INVALID_MTLS_ID_RESPONSE = ErrorMessages.Auth.INVALID_MTLS_IDENTITY
+            private const val INVALID_CLIENT_AUTH_RESPONSE = ErrorMessages.Auth.MTLS_NOT_CLIENT_AUTH
         }
     }
-
-    @Throws(IOException::class)
-    private fun writeUnauthorizedResponse(response: HttpServletResponse, message: String) {
-        val responseError = ResponseError(message)
-
-        response.status = HttpStatus.UNAUTHORIZED.value()
-        response.contentType = APPLICATION_JSON.type
-        response.writer.write(objectMapper.writeValueAsString(responseError))
-    }
-
-    companion object {
-        private const val INVALID_DN_MESSAGE = "No matching pattern was found in subjectDN"
-        private const val INVALID_MTLS_ID_RESPONSE = ErrorMessages.Auth.INVALID_MTLS_IDENTITY
-        private const val INVALID_CLIENT_AUTH_RESPONSE = ErrorMessages.Auth.MTLS_NOT_CLIENT_AUTH
-    }
-}

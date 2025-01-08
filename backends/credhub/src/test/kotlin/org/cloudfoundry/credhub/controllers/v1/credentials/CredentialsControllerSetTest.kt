@@ -52,7 +52,6 @@ import java.util.UUID
 
 @RunWith(SpringRunner::class)
 class CredentialsControllerSetTest {
-
     @Rule
     @JvmField
     val restDocumentation = JUnitRestDocumentation()
@@ -74,12 +73,13 @@ class CredentialsControllerSetTest {
 
     @Before
     fun setUp() {
-        val credentialController = CredentialsController(
-            spyCredentialsHandler,
-            CEFAuditRecord(),
-            spyRegenerateHandler,
-            objectMapper,
-        )
+        val credentialController =
+            CredentialsController(
+                spyCredentialsHandler,
+                CEFAuditRecord(),
+                spyRegenerateHandler,
+                objectMapper,
+            )
 
         metadata = objectMapper.readTree("{\"description\":\"example metadata\"}")
 
@@ -91,15 +91,16 @@ class CredentialsControllerSetTest {
     }
 
     @Test
-    fun PUT__set_value_credential_returns__value_credential() {
-        spyCredentialsHandler.setCredential__returns_credentialView = CredentialView(
-            Instant.ofEpochSecond(1549053472L),
-            uuid,
-            "/some-value-name",
-            CredentialType.VALUE.type.lowercase(),
-            metadata,
-            StringCredentialValue("some-value"),
-        )
+    fun putSetValueCredentialReturnsValueCredential() {
+        spyCredentialsHandler.credentialReturnsCredentialview =
+            CredentialView(
+                Instant.ofEpochSecond(1549053472L),
+                uuid,
+                "/some-value-name",
+                CredentialType.VALUE.type.lowercase(),
+                metadata,
+                StringCredentialValue("some-value"),
+            )
 
         // language=json
         val requestBody =
@@ -112,32 +113,32 @@ class CredentialsControllerSetTest {
             }
             """.trimIndent()
 
-        val mvcResult = mockMvc.perform(
-            put(CredentialsController.ENDPOINT)
-                .contentType(MediaType.APPLICATION_JSON)
-                .credHubAuthHeader()
-                .content(requestBody),
-        )
-            .andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andDo(
-                document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    getCommonSetRequestFields().and(
-                        fieldWithPath("value")
-                            .description(SetRequestFieldDescription.VALUE_DESCRIPTION)
-                            .type(JsonFieldType.STRING),
+        val mvcResult =
+            mockMvc
+                .perform(
+                    put(CredentialsController.ENDPOINT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .credHubAuthHeader()
+                        .content(requestBody),
+                ).andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andDo(
+                    document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                        getCommonSetRequestFields().and(
+                            fieldWithPath("value")
+                                .description(SetRequestFieldDescription.VALUE_DESCRIPTION)
+                                .type(JsonFieldType.STRING),
+                        ),
                     ),
-                ),
-            )
-            .andReturn()
+                ).andReturn()
 
         val expectedValueSetRequest = ValueSetRequest()
         expectedValueSetRequest.value = StringCredentialValue("some-value")
         expectedValueSetRequest.name = "/some-value-name"
         expectedValueSetRequest.type = CredentialType.VALUE.type.lowercase()
 
-        assertThat(spyCredentialsHandler.setCredential__calledWith_setRequest).isEqualTo(expectedValueSetRequest)
+        assertThat(spyCredentialsHandler.credentialCalledwithSetrequest).isEqualTo(expectedValueSetRequest)
 
         // language=json
         val expectedResponse =
@@ -156,13 +157,63 @@ class CredentialsControllerSetTest {
     }
 
     @Test
-    fun PUT__set_json_credential_returns__json_credential() {
-        spyCredentialsHandler.setCredential__returns_credentialView = CredentialView(
-            Instant.ofEpochSecond(1549053472L),
-            uuid,
-            "/some-value-name",
-            CredentialType.JSON.type.lowercase(),
-            metadata,
+    fun putSetJsonCredentialReturnsJsonCredential() {
+        spyCredentialsHandler.credentialReturnsCredentialview =
+            CredentialView(
+                Instant.ofEpochSecond(1549053472L),
+                uuid,
+                "/some-value-name",
+                CredentialType.JSON.type.lowercase(),
+                metadata,
+                JsonCredentialValue(
+                    ObjectMapper().readTree(
+                        // language=json
+                        """
+                        {
+                            "some-json-key": "some-json-value"
+                        }
+                        """.trimIndent(),
+                    ),
+                ),
+            )
+
+        // language=json
+        val requestBody =
+            """
+            {
+              "name": "/some-value-name",
+              "type": "${CredentialType.JSON.type.lowercase()}",
+              "metadata": { "description": "example metadata"},
+              "value": {
+                "some-json-key": "some-json-value"
+              }
+            }
+            """.trimIndent()
+
+        val mvcResult =
+            mockMvc
+                .perform(
+                    put(CredentialsController.ENDPOINT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .credHubAuthHeader()
+                        .content(requestBody),
+                ).andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andDo(
+                    document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                        getCommonSetRequestFields().and(
+                            fieldWithPath("value")
+                                .description(SetRequestFieldDescription.VALUE_DESCRIPTION)
+                                .type(JsonFieldType.OBJECT),
+                            fieldWithPath("value.some-json-key")
+                                .ignored(),
+                        ),
+                    ),
+                ).andReturn()
+
+        val expectedValueSetRequest = JsonSetRequest()
+        expectedValueSetRequest.value =
             JsonCredentialValue(
                 ObjectMapper().readTree(
                     // language=json
@@ -172,59 +223,11 @@ class CredentialsControllerSetTest {
                     }
                     """.trimIndent(),
                 ),
-            ),
-        )
-
-        // language=json
-        val requestBody =
-            """
-            {
-              "name": "/some-value-name",
-              "type": "${CredentialType.JSON.type.lowercase()}",
-              "metadata": { "description": "example metadata"},
-              "value": {
-                "some-json-key": "some-json-value"
-              }
-            }
-            """.trimIndent()
-
-        val mvcResult = mockMvc.perform(
-            put(CredentialsController.ENDPOINT)
-                .contentType(MediaType.APPLICATION_JSON)
-                .credHubAuthHeader()
-                .content(requestBody),
-        )
-            .andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andDo(
-                document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    getCommonSetRequestFields().and(
-                        fieldWithPath("value")
-                            .description(SetRequestFieldDescription.VALUE_DESCRIPTION)
-                            .type(JsonFieldType.OBJECT),
-                        fieldWithPath("value.some-json-key")
-                            .ignored(),
-                    ),
-                ),
             )
-            .andReturn()
-
-        val expectedValueSetRequest = JsonSetRequest()
-        expectedValueSetRequest.value = JsonCredentialValue(
-            ObjectMapper().readTree(
-                // language=json
-                """
-            {
-                "some-json-key": "some-json-value"
-            }
-                """.trimIndent(),
-            ),
-        )
         expectedValueSetRequest.name = "/some-value-name"
         expectedValueSetRequest.type = CredentialType.JSON.type.lowercase()
 
-        assertThat(spyCredentialsHandler.setCredential__calledWith_setRequest).isEqualTo(expectedValueSetRequest)
+        assertThat(spyCredentialsHandler.credentialCalledwithSetrequest).isEqualTo(expectedValueSetRequest)
 
         // language=json
         val expectedResponse =
@@ -245,15 +248,16 @@ class CredentialsControllerSetTest {
     }
 
     @Test
-    fun PUT__set_password_credential_returns__password_credential() {
-        spyCredentialsHandler.setCredential__returns_credentialView = CredentialView(
-            Instant.ofEpochSecond(1549053472L),
-            uuid,
-            "/some-password-name",
-            CredentialType.PASSWORD.type.lowercase(),
-            metadata,
-            StringCredentialValue("some-password"),
-        )
+    fun putSetPasswordCredentialReturnsPasswordCredential() {
+        spyCredentialsHandler.credentialReturnsCredentialview =
+            CredentialView(
+                Instant.ofEpochSecond(1549053472L),
+                uuid,
+                "/some-password-name",
+                CredentialType.PASSWORD.type.lowercase(),
+                metadata,
+                StringCredentialValue("some-password"),
+            )
 
         // language=json
         val requestBody =
@@ -266,32 +270,32 @@ class CredentialsControllerSetTest {
             }
             """.trimIndent()
 
-        val mvcResult = mockMvc.perform(
-            put(CredentialsController.ENDPOINT)
-                .contentType(MediaType.APPLICATION_JSON)
-                .credHubAuthHeader()
-                .content(requestBody),
-        )
-            .andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andDo(
-                document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    getCommonSetRequestFields().and(
-                        fieldWithPath("value")
-                            .description(SetRequestFieldDescription.VALUE_DESCRIPTION)
-                            .type(JsonFieldType.STRING),
+        val mvcResult =
+            mockMvc
+                .perform(
+                    put(CredentialsController.ENDPOINT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .credHubAuthHeader()
+                        .content(requestBody),
+                ).andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andDo(
+                    document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                        getCommonSetRequestFields().and(
+                            fieldWithPath("value")
+                                .description(SetRequestFieldDescription.VALUE_DESCRIPTION)
+                                .type(JsonFieldType.STRING),
+                        ),
                     ),
-                ),
-            )
-            .andReturn()
+                ).andReturn()
 
         val expectedValueSetRequest = PasswordSetRequest()
         expectedValueSetRequest.password = StringCredentialValue("some-password")
         expectedValueSetRequest.name = "/some-password-name"
         expectedValueSetRequest.type = CredentialType.PASSWORD.type.lowercase()
 
-        assertThat(spyCredentialsHandler.setCredential__calledWith_setRequest).isEqualTo(expectedValueSetRequest)
+        assertThat(spyCredentialsHandler.credentialCalledwithSetrequest).isEqualTo(expectedValueSetRequest)
 
         // language=json
         val expectedResponse =
@@ -310,19 +314,20 @@ class CredentialsControllerSetTest {
     }
 
     @Test
-    fun PUT__set_user_credential_returns__user_credential() {
-        spyCredentialsHandler.setCredential__returns_credentialView = CredentialView(
-            Instant.ofEpochSecond(1549053472L),
-            uuid,
-            "/some-user-name",
-            CredentialType.USER.type.lowercase(),
-            metadata,
-            UserCredentialValue(
-                "some-username",
-                "some-password",
-                "foo",
-            ),
-        )
+    fun putSet_user_credential_returns__user_credential() {
+        spyCredentialsHandler.credentialReturnsCredentialview =
+            CredentialView(
+                Instant.ofEpochSecond(1549053472L),
+                uuid,
+                "/some-user-name",
+                CredentialType.USER.type.lowercase(),
+                metadata,
+                UserCredentialValue(
+                    "some-username",
+                    "some-password",
+                    "foo",
+                ),
+            )
 
         // language=json
         val requestBody =
@@ -338,37 +343,38 @@ class CredentialsControllerSetTest {
             }
             """.trimIndent()
 
-        val mvcResult = mockMvc.perform(
-            put(CredentialsController.ENDPOINT)
-                .contentType(MediaType.APPLICATION_JSON)
-                .credHubAuthHeader()
-                .content(requestBody),
-        )
-            .andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andDo(
-                document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    getCommonSetRequestFields().and(
-                        fieldWithPath("value.username")
-                            .description("The username to set."),
-                        fieldWithPath("value.password")
-                            .description("The password to set."),
+        val mvcResult =
+            mockMvc
+                .perform(
+                    put(CredentialsController.ENDPOINT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .credHubAuthHeader()
+                        .content(requestBody),
+                ).andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andDo(
+                    document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                        getCommonSetRequestFields().and(
+                            fieldWithPath("value.username")
+                                .description("The username to set."),
+                            fieldWithPath("value.password")
+                                .description("The password to set."),
+                        ),
                     ),
-                ),
-            )
-            .andReturn()
+                ).andReturn()
 
         val expectedValueSetRequest = UserSetRequest()
-        expectedValueSetRequest.userValue = UserCredentialValue(
-            "some-username",
-            "some-password",
-            null,
-        )
+        expectedValueSetRequest.userValue =
+            UserCredentialValue(
+                "some-username",
+                "some-password",
+                null,
+            )
         expectedValueSetRequest.name = "/some-user-name"
         expectedValueSetRequest.type = CredentialType.USER.type.lowercase()
 
-        assertThat(expectedValueSetRequest).isEqualTo(spyCredentialsHandler.setCredential__calledWith_setRequest)
+        assertThat(expectedValueSetRequest).isEqualTo(spyCredentialsHandler.credentialCalledwithSetrequest)
 
         // language=json
         val expectedResponse =
@@ -391,24 +397,25 @@ class CredentialsControllerSetTest {
     }
 
     @Test
-    fun PUT__set_certificate_credential_returns__certificate_credential() {
-        spyCredentialsHandler.setCredential__returns_credentialView = CredentialView(
-            Instant.ofEpochSecond(1549053472L),
-            uuid,
-            "/some-certificate-name",
-            CredentialType.CERTIFICATE.type.lowercase(),
-            metadata,
-            CertificateCredentialValue(
-                TestConstants.TEST_CA,
-                TestConstants.TEST_CERTIFICATE,
-                TestConstants.TEST_PRIVATE_KEY,
-                null,
-                true,
-                false,
-                false,
-                false,
-            ),
-        )
+    fun putSet_certificate_credential_returns__certificate_credential() {
+        spyCredentialsHandler.credentialReturnsCredentialview =
+            CredentialView(
+                Instant.ofEpochSecond(1549053472L),
+                uuid,
+                "/some-certificate-name",
+                CredentialType.CERTIFICATE.type.lowercase(),
+                metadata,
+                CertificateCredentialValue(
+                    TestConstants.TEST_CA,
+                    TestConstants.TEST_CERTIFICATE,
+                    TestConstants.TEST_PRIVATE_KEY,
+                    null,
+                    true,
+                    false,
+                    false,
+                    false,
+                ),
+            )
 
         // language=json
         val requestBody =
@@ -425,51 +432,54 @@ class CredentialsControllerSetTest {
             }
             """.trimIndent()
 
-        val mvcResult = mockMvc.perform(
-            put(CredentialsController.ENDPOINT)
-                .contentType(MediaType.APPLICATION_JSON)
-                .credHubAuthHeader()
-                .content(requestBody),
-        )
-            .andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andDo(
-                document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    getCommonSetRequestFields().and(
-                        fieldWithPath("value.ca")
-                            .description("Certificate authority value of credential to set. Note: 'ca' and 'ca_name' are mutually exclusive values.")
-                            .type(JsonFieldType.STRING),
-                        fieldWithPath("value.ca_name")
-                            .description("Name of CA credential in credhub that has signed this certificate. Note: 'ca' and 'ca_name' are mutually exclusive values.")
-                            .type(JsonFieldType.STRING)
-                            .optional(),
-                        fieldWithPath("value.certificate")
-                            .description("Certificate value of credential to set.")
-                            .type(JsonFieldType.STRING),
-                        fieldWithPath("value.private_key")
-                            .description("Private key value of credential to set.")
-                            .type(JsonFieldType.STRING),
+        val mvcResult =
+            mockMvc
+                .perform(
+                    put(CredentialsController.ENDPOINT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .credHubAuthHeader()
+                        .content(requestBody),
+                ).andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andDo(
+                    document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                        getCommonSetRequestFields().and(
+                            fieldWithPath("value.ca")
+                                .description(
+                                    "Certificate authority value of credential to set. Note: 'ca' and 'ca_name' are mutually exclusive values.",
+                                ).type(JsonFieldType.STRING),
+                            fieldWithPath("value.ca_name")
+                                .description(
+                                    "Name of CA credential in credhub that has signed this certificate. Note: 'ca' and 'ca_name' are mutually exclusive values.",
+                                ).type(JsonFieldType.STRING)
+                                .optional(),
+                            fieldWithPath("value.certificate")
+                                .description("Certificate value of credential to set.")
+                                .type(JsonFieldType.STRING),
+                            fieldWithPath("value.private_key")
+                                .description("Private key value of credential to set.")
+                                .type(JsonFieldType.STRING),
+                        ),
                     ),
-                ),
-            )
-            .andReturn()
+                ).andReturn()
 
         val expectedValueSetRequest = CertificateSetRequest()
-        expectedValueSetRequest.certificateValue = CertificateCredentialValue(
-            TestConstants.TEST_CA,
-            TestConstants.TEST_CERTIFICATE,
-            TestConstants.TEST_PRIVATE_KEY,
-            null,
-            false,
-            false,
-            false,
-            false,
-        )
+        expectedValueSetRequest.certificateValue =
+            CertificateCredentialValue(
+                TestConstants.TEST_CA,
+                TestConstants.TEST_CERTIFICATE,
+                TestConstants.TEST_PRIVATE_KEY,
+                null,
+                false,
+                false,
+                false,
+                false,
+            )
         expectedValueSetRequest.name = "/some-certificate-name"
         expectedValueSetRequest.type = CredentialType.CERTIFICATE.type.lowercase()
 
-        assertThat(spyCredentialsHandler.setCredential__calledWith_setRequest).isEqualTo(expectedValueSetRequest)
+        assertThat(spyCredentialsHandler.credentialCalledwithSetrequest).isEqualTo(expectedValueSetRequest)
 
         // language=json
         val expectedResponse =
@@ -497,18 +507,19 @@ class CredentialsControllerSetTest {
     }
 
     @Test
-    fun PUT__set_rsa_credential_returns__rsa_credential() {
-        spyCredentialsHandler.setCredential__returns_credentialView = CredentialView(
-            Instant.ofEpochSecond(1549053472L),
-            uuid,
-            "/some-rsa-name",
-            CredentialType.RSA.type.lowercase(),
-            metadata,
-            RsaCredentialValue(
-                TestConstants.RSA_PUBLIC_KEY_4096,
-                TestConstants.PRIVATE_KEY_4096,
-            ),
-        )
+    fun putSet_rsa_credential_returns__rsa_credential() {
+        spyCredentialsHandler.credentialReturnsCredentialview =
+            CredentialView(
+                Instant.ofEpochSecond(1549053472L),
+                uuid,
+                "/some-rsa-name",
+                CredentialType.RSA.type.lowercase(),
+                metadata,
+                RsaCredentialValue(
+                    TestConstants.RSA_PUBLIC_KEY_4096,
+                    TestConstants.PRIVATE_KEY_4096,
+                ),
+            )
 
         // language=json
         val requestBody =
@@ -524,38 +535,39 @@ class CredentialsControllerSetTest {
             }
             """.trimIndent()
 
-        val mvcResult = mockMvc.perform(
-            put(CredentialsController.ENDPOINT)
-                .contentType(MediaType.APPLICATION_JSON)
-                .credHubAuthHeader()
-                .content(requestBody),
-        )
-            .andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andDo(
-                document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    getCommonSetRequestFields().and(
-                        fieldWithPath("value.public_key")
-                            .description("Public key value of credential to set.")
-                            .type(JsonFieldType.STRING),
-                        fieldWithPath("value.private_key")
-                            .description("Private key value of credential to set.")
-                            .type(JsonFieldType.STRING),
+        val mvcResult =
+            mockMvc
+                .perform(
+                    put(CredentialsController.ENDPOINT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .credHubAuthHeader()
+                        .content(requestBody),
+                ).andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andDo(
+                    document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                        getCommonSetRequestFields().and(
+                            fieldWithPath("value.public_key")
+                                .description("Public key value of credential to set.")
+                                .type(JsonFieldType.STRING),
+                            fieldWithPath("value.private_key")
+                                .description("Private key value of credential to set.")
+                                .type(JsonFieldType.STRING),
+                        ),
                     ),
-                ),
-            )
-            .andReturn()
+                ).andReturn()
 
         val expectedValueSetRequest = RsaSetRequest()
-        expectedValueSetRequest.rsaKeyValue = RsaCredentialValue(
-            TestConstants.RSA_PUBLIC_KEY_4096,
-            TestConstants.PRIVATE_KEY_4096,
-        )
+        expectedValueSetRequest.rsaKeyValue =
+            RsaCredentialValue(
+                TestConstants.RSA_PUBLIC_KEY_4096,
+                TestConstants.PRIVATE_KEY_4096,
+            )
         expectedValueSetRequest.name = "/some-rsa-name"
         expectedValueSetRequest.type = CredentialType.RSA.type.lowercase()
 
-        assertThat(spyCredentialsHandler.setCredential__calledWith_setRequest).isEqualTo(expectedValueSetRequest)
+        assertThat(spyCredentialsHandler.credentialCalledwithSetrequest).isEqualTo(expectedValueSetRequest)
 
         // language=json
         val expectedResponse =
@@ -577,19 +589,20 @@ class CredentialsControllerSetTest {
     }
 
     @Test
-    fun PUT__set_ssh_credential_returns__ssh_credential() {
-        spyCredentialsHandler.setCredential__returns_credentialView = CredentialView(
-            Instant.ofEpochSecond(1549053472L),
-            uuid,
-            "/some-ssh-name",
-            CredentialType.SSH.type.lowercase(),
-            metadata,
-            SshCredentialValue(
-                TestConstants.SSH_PUBLIC_KEY_4096,
-                TestConstants.PRIVATE_KEY_4096,
-                null,
-            ),
-        )
+    fun putSet_ssh_credential_returns__ssh_credential() {
+        spyCredentialsHandler.credentialReturnsCredentialview =
+            CredentialView(
+                Instant.ofEpochSecond(1549053472L),
+                uuid,
+                "/some-ssh-name",
+                CredentialType.SSH.type.lowercase(),
+                metadata,
+                SshCredentialValue(
+                    TestConstants.SSH_PUBLIC_KEY_4096,
+                    TestConstants.PRIVATE_KEY_4096,
+                    null,
+                ),
+            )
 
         // language=json
         val requestBody =
@@ -605,40 +618,40 @@ class CredentialsControllerSetTest {
             }
             """.trimIndent()
 
-        val mvcResult = mockMvc.perform(
-            put(CredentialsController.ENDPOINT)
-                .contentType(MediaType.APPLICATION_JSON)
-                .credHubAuthHeader()
-                .content(requestBody),
-        )
-            .andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andDo(
-                document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    getCommonSetRequestFields().and(
-                        fieldWithPath("value.public_key")
-                            .description("Public key value of credential to set.")
-                            .type(JsonFieldType.STRING),
-                        fieldWithPath("value.private_key")
-                            .description("Private key value of credential to set.")
-                            .type(JsonFieldType.STRING),
-
+        val mvcResult =
+            mockMvc
+                .perform(
+                    put(CredentialsController.ENDPOINT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .credHubAuthHeader()
+                        .content(requestBody),
+                ).andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andDo(
+                    document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                        getCommonSetRequestFields().and(
+                            fieldWithPath("value.public_key")
+                                .description("Public key value of credential to set.")
+                                .type(JsonFieldType.STRING),
+                            fieldWithPath("value.private_key")
+                                .description("Private key value of credential to set.")
+                                .type(JsonFieldType.STRING),
+                        ),
                     ),
-                ),
-            )
-            .andReturn()
+                ).andReturn()
 
         val expectedValueSetRequest = SshSetRequest()
-        expectedValueSetRequest.sshKeyValue = SshCredentialValue(
-            TestConstants.SSH_PUBLIC_KEY_4096,
-            TestConstants.PRIVATE_KEY_4096,
-            null,
-        )
+        expectedValueSetRequest.sshKeyValue =
+            SshCredentialValue(
+                TestConstants.SSH_PUBLIC_KEY_4096,
+                TestConstants.PRIVATE_KEY_4096,
+                null,
+            )
         expectedValueSetRequest.name = "/some-ssh-name"
         expectedValueSetRequest.type = CredentialType.SSH.type.lowercase()
 
-        assertThat(spyCredentialsHandler.setCredential__calledWith_setRequest).isEqualTo(expectedValueSetRequest)
+        assertThat(spyCredentialsHandler.credentialCalledwithSetrequest).isEqualTo(expectedValueSetRequest)
 
         // language=json
         val expectedResponse =
@@ -660,8 +673,8 @@ class CredentialsControllerSetTest {
         JSONAssert.assertEquals(mvcResult.response.contentAsString, expectedResponse, true)
     }
 
-    private fun getCommonSetRequestFields(): RequestFieldsSnippet {
-        return requestFields(
+    private fun getCommonSetRequestFields(): RequestFieldsSnippet =
+        requestFields(
             fieldWithPath("name")
                 .type(JsonFieldType.STRING)
                 .description("The name of the credential."),
@@ -674,7 +687,6 @@ class CredentialsControllerSetTest {
             fieldWithPath("metadata.*")
                 .ignored(),
         )
-    }
 
     private object SetRequestFieldDescription {
         val VALUE_DESCRIPTION = "Value of credential to set"

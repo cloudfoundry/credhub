@@ -20,8 +20,9 @@ import org.springframework.web.bind.annotation.RestController
     path = [PermissionsV2Controller.ENDPOINT],
     produces = [MediaType.APPLICATION_JSON_UTF8_VALUE],
 )
-class PermissionsV2Controller(private val permissionsHandler: PermissionsV2Handler) {
-
+class PermissionsV2Controller(
+    private val permissionsHandler: PermissionsV2Handler,
+) {
     companion object {
         const val ENDPOINT = "/api/v2/permissions"
     }
@@ -32,15 +33,15 @@ class PermissionsV2Controller(private val permissionsHandler: PermissionsV2Handl
         consumes = [MediaType.APPLICATION_JSON_UTF8_VALUE],
     )
     @ResponseStatus(HttpStatus.CREATED)
-    fun postPermissions(@Validated @RequestBody permissionsRequest: PermissionsV2Request): PermissionsV2View {
-        return permissionsHandler.writeV2Permissions(permissionsRequest)
-    }
+    fun postPermissions(
+        @Validated @RequestBody permissionsRequest: PermissionsV2Request,
+    ): PermissionsV2View = permissionsHandler.writeV2Permissions(permissionsRequest)
 
     @RequestMapping(method = [RequestMethod.GET], path = ["/{uuid}"])
     @ResponseStatus(HttpStatus.OK)
-    fun getPermissions(@PathVariable("uuid") uuid: String): PermissionsV2View {
-        return permissionsHandler.getPermissions(uuid)
-    }
+    fun getPermissions(
+        @PathVariable("uuid") uuid: String,
+    ): PermissionsV2View = permissionsHandler.getPermissions(uuid)
 
     @RequestMapping(method = [RequestMethod.GET])
     @ResponseStatus(HttpStatus.OK)
@@ -58,22 +59,18 @@ class PermissionsV2Controller(private val permissionsHandler: PermissionsV2Handl
     fun putPermissions(
         @Validated @RequestBody permissionsRequest: PermissionsV2Request,
         @PathVariable("uuid") uuid: String,
-    ): PermissionsV2View {
-        return permissionsHandler.putPermissions(uuid, permissionsRequest)
-    }
+    ): PermissionsV2View = permissionsHandler.putPermissions(uuid, permissionsRequest)
 
     @RequestMapping(method = [RequestMethod.PATCH], path = ["/{uuid}"])
     @ResponseStatus(HttpStatus.OK)
     fun patchPermissions(
         @Validated @RequestBody request: PermissionsV2PatchRequest,
         @PathVariable("uuid") uuid: String,
-    ): PermissionsV2View {
-        return permissionsHandler.patchPermissions(uuid, request.operations)
-    }
+    ): PermissionsV2View = permissionsHandler.patchPermissions(uuid, request.operations)
 
     @RequestMapping(method = [RequestMethod.DELETE], path = ["/{uuid}"])
     @ResponseStatus(HttpStatus.OK)
-    fun deletePermissions(@PathVariable("uuid") uuid: String): PermissionsV2View {
-        return permissionsHandler.deletePermissions(uuid)
-    }
+    fun deletePermissions(
+        @PathVariable("uuid") uuid: String,
+    ): PermissionsV2View = permissionsHandler.deletePermissions(uuid)
 }

@@ -9,91 +9,115 @@ import org.cloudfoundry.credhub.services.PermissionService
 import java.util.UUID
 
 class SpyPermissionService : PermissionService {
-    override fun getAllowedOperationsForLogging(credentialName: String, actor: String): List<PermissionOperation> {
+    override fun getAllowedOperationsForLogging(
+        credentialName: String,
+        actor: String,
+    ): List<PermissionOperation> {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
-    lateinit var savePermissionsForUser__calledWith_permissionEntryList: MutableList<PermissionEntry>
-    lateinit var savePermissionsForUser__returns_permissionDataList: MutableList<PermissionData>
+    lateinit var savepermissionsforuserCalledwithPermissionentrylist: MutableList<PermissionEntry>
+    lateinit var savepermissionsforuserReturnsPermissiondatalist: MutableList<PermissionData>
+
     override fun savePermissionsForUser(permissionEntryList: MutableList<PermissionEntry>?): MutableList<PermissionData> {
         if (permissionEntryList != null) {
-            savePermissionsForUser__calledWith_permissionEntryList = permissionEntryList
+            savepermissionsforuserCalledwithPermissionentrylist = permissionEntryList
         }
-        return savePermissionsForUser__returns_permissionDataList
+        return savepermissionsforuserReturnsPermissiondatalist
     }
 
     override fun savePermissions(permissionEntryList: MutableList<PermissionEntry>) {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
-    lateinit var getPermissions__calledWith_credentialVersion: CredentialVersion
-    lateinit var getPermissions__returns_permissionEntries: List<PermissionEntry>
+    lateinit var permissionsCalledwithCredentialversion: CredentialVersion
+    lateinit var permissionsReturnsPermissionentries: List<PermissionEntry>
+
     override fun getPermissions(credentialVersion: CredentialVersion?): List<PermissionEntry> {
-        getPermissions__calledWith_credentialVersion = credentialVersion!!
-        return getPermissions__returns_permissionEntries
+        permissionsCalledwithCredentialversion = credentialVersion!!
+        return permissionsReturnsPermissionentries
     }
 
-    var getPermissions__calledWith_uuid: UUID? = null
-    lateinit var getPermissions__returns_permissionData: PermissionData
+    var permissionsCalledwithUuid: UUID? = null
+    lateinit var permissionsReturnsPermissiondata: PermissionData
+
     override fun getPermissions(guid: UUID?): PermissionData {
-        getPermissions__calledWith_uuid = guid
+        permissionsCalledwithUuid = guid
 
-        return getPermissions__returns_permissionData
+        return permissionsReturnsPermissiondata
     }
 
-    lateinit var deletePermissions__calledWith_credentialName: String
-    lateinit var deletePermissions__calledWith_actor: String
-    var deletePermissions__returns = false
-    override fun deletePermissions(credentialName: String, actor: String): Boolean {
-        deletePermissions__calledWith_credentialName = credentialName
-        deletePermissions__calledWith_actor = actor
+    lateinit var deletepermissionsCalledwithCredentialname: String
+    lateinit var deletepermissionsCalledwithActor: String
+    var deletepermissionsReturns = false
 
-        return deletePermissions__returns
+    override fun deletePermissions(
+        credentialName: String,
+        actor: String,
+    ): Boolean {
+        deletepermissionsCalledwithCredentialname = credentialName
+        deletepermissionsCalledwithActor = actor
+
+        return deletepermissionsReturns
     }
 
-    lateinit var putPermissions__calledWith_guid: String
-    lateinit var putPermissions__calledWith_permissionsRequest: PermissionsV2Request
-    lateinit var putPermissions__returns_permissionData: PermissionData
-    override fun putPermissions(guid: String, permissionsRequest: PermissionsV2Request): PermissionData {
-        putPermissions__calledWith_guid = guid
-        putPermissions__calledWith_permissionsRequest = permissionsRequest
+    lateinit var putpermissionsCalledwithGuid: String
+    lateinit var putpermissionsCalledwithPermissionsrequest: PermissionsV2Request
+    lateinit var putpermissionsReturnsPermissiondata: PermissionData
 
-        return putPermissions__returns_permissionData
+    override fun putPermissions(
+        guid: String,
+        permissionsRequest: PermissionsV2Request,
+    ): PermissionData {
+        putpermissionsCalledwithGuid = guid
+        putpermissionsCalledwithPermissionsrequest = permissionsRequest
+
+        return putpermissionsReturnsPermissiondata
     }
 
-    lateinit var patchPermissions__calledWith_guid: String
-    lateinit var patchPermissions__calledWith_operations: MutableList<PermissionOperation>
-    lateinit var patchPermissions__returns_permissionData: PermissionData
-    override fun patchPermissions(guid: String, operations: MutableList<PermissionOperation>?): PermissionData {
-        patchPermissions__calledWith_guid = guid
+    lateinit var patchpermissionsCalledwithGuid: String
+    lateinit var patchpermissionsCalledwithOperations: MutableList<PermissionOperation>
+    lateinit var patchpermissionsReturnsPermissiondata: PermissionData
+
+    override fun patchPermissions(
+        guid: String,
+        operations: MutableList<PermissionOperation>?,
+    ): PermissionData {
+        patchpermissionsCalledwithGuid = guid
         if (operations != null) {
-            patchPermissions__calledWith_operations = operations
+            patchpermissionsCalledwithOperations = operations
         }
 
-        return patchPermissions__returns_permissionData
+        return patchpermissionsReturnsPermissiondata
     }
 
-    lateinit var saveV2Permissions__calledWith_permissionsRequest: PermissionsV2Request
-    lateinit var saveV2Permissions__returns_permissionData: PermissionData
+    lateinit var savev2permissionsCalledwithPermissionsrequest: PermissionsV2Request
+    lateinit var savev2permissionsReturnsPermissiondata: PermissionData
+
     override fun saveV2Permissions(permissionsRequest: PermissionsV2Request): PermissionData {
-        saveV2Permissions__calledWith_permissionsRequest = permissionsRequest
-        return saveV2Permissions__returns_permissionData
+        savev2permissionsCalledwithPermissionsrequest = permissionsRequest
+        return savev2permissionsReturnsPermissiondata
     }
 
-    lateinit var deletePermissions__calledWith_guid: String
-    lateinit var deletePermissions__returns_permissionData: PermissionData
+    lateinit var deletepermissionsCalledwithGuid: String
+    lateinit var deletepermissionsReturnsPermissiondata: PermissionData
+
     override fun deletePermissions(guid: String): PermissionData {
-        deletePermissions__calledWith_guid = guid
-        return deletePermissions__returns_permissionData
+        deletepermissionsCalledwithGuid = guid
+        return deletepermissionsReturnsPermissiondata
     }
 
-    lateinit var findByPathAndActor__calledWith_path: String
-    lateinit var findByPathAndActor__calledWith_actor: String
-    var findByPathAndActor__returns_permissionData: PermissionData? = null
-    override fun findByPathAndActor(path: String, actor: String): PermissionData? {
-        findByPathAndActor__calledWith_path = path
-        findByPathAndActor__calledWith_actor = actor
+    lateinit var findbypathandactorCalledwithPath: String
+    lateinit var findbypathandactorCalledwithActor: String
+    var findbypathandactorReturnsPermissiondata: PermissionData? = null
 
-        return findByPathAndActor__returns_permissionData
+    override fun findByPathAndActor(
+        path: String,
+        actor: String,
+    ): PermissionData? {
+        findbypathandactorCalledwithPath = path
+        findbypathandactorCalledwithActor = actor
+
+        return findbypathandactorReturnsPermissiondata
     }
 }

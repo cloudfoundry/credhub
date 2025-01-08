@@ -1,3 +1,5 @@
 package org.cloudfoundry.credhub.exceptions
 
-class PermissionInvalidPathAndActorException(messageCode: String) : RuntimeException(messageCode)
+class PermissionInvalidPathAndActorException(
+    messageCode: String,
+) : RuntimeException(messageCode)

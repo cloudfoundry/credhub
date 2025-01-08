@@ -18,20 +18,24 @@ class BouncyCastleFipsConfigurer {
         fun configure() {
             CryptoServicesRegistrar.setApprovedOnlyMode(true)
 
-            val nonBlockingSecureRandom = SecureRandom.getInstance(
-                "NativePRNGNonBlocking",
-            )
-            val entSource: EntropySourceProvider = BasicEntropySourceProvider(
-                nonBlockingSecureRandom,
-                true,
-            )
-
-            val drgbBldr = FipsDRBG.SHA512.fromEntropySource(entSource)
-                .setSecurityStrength(256)
-                .setEntropyBitsRequired(256)
-                .setPersonalizationString(
-                    "Credhub FIPS default padder".toByteArray(),
+            val nonBlockingSecureRandom =
+                SecureRandom.getInstance(
+                    "NativePRNGNonBlocking",
                 )
+            val entSource: EntropySourceProvider =
+                BasicEntropySourceProvider(
+                    nonBlockingSecureRandom,
+                    true,
+                )
+
+            val drgbBldr =
+                FipsDRBG.SHA512
+                    .fromEntropySource(entSource)
+                    .setSecurityStrength(256)
+                    .setEntropyBitsRequired(256)
+                    .setPersonalizationString(
+                        "Credhub FIPS default padder".toByteArray(),
+                    )
 
             CryptoServicesRegistrar.setSecureRandom(
                 drgbBldr.build(

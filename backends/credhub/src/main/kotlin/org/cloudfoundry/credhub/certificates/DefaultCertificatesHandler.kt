@@ -47,35 +47,38 @@ class DefaultCertificatesHandler(
     @Value("\${security.authorization.acls.enabled}") private val enforcePermissions: Boolean,
     @Value("\${certificates.concatenate_cas:false}") var concatenateCas: Boolean,
 ) : CertificatesHandler {
-
     override fun handleRegenerate(
         credentialUuid: String,
         request: CertificateRegenerateRequest,
     ): CredentialView {
         checkPermissionsByCredentialUuid(credentialUuid, WRITE)
 
-        val existingCredentialVersion = certificateService
-            .findByCredentialUuid(credentialUuid)
+        val existingCredentialVersion =
+            certificateService
+                .findByCredentialUuid(credentialUuid)
 
-        val generateRequest = generationRequestGenerator
-            .createGenerateRequest(existingCredentialVersion)
+        val generateRequest =
+            generationRequestGenerator
+                .createGenerateRequest(existingCredentialVersion)
         generateRequest.metadata = request.metadata
 
         if (request.allowTransitionalParentToSign) {
             (generateRequest as CertificateGenerateRequest).setAllowTransitionalParentToSign(true)
         }
 
-        val credentialValue = credentialGenerator
-            .generate(generateRequest) as CertificateCredentialValue
+        val credentialValue =
+            credentialGenerator
+                .generate(generateRequest) as CertificateCredentialValue
 
         credentialValue.transitional = request.isTransitional
 
-        val credentialVersion = certificateService
-            .save(
-                existingCredentialVersion,
-                credentialValue,
-                generateRequest,
-            ) as CertificateCredentialVersion
+        val credentialVersion =
+            certificateService
+                .save(
+                    existingCredentialVersion,
+                    credentialValue,
+                    generateRequest,
+                ) as CertificateCredentialVersion
 
         auditRecord.setVersion(credentialVersion)
 
@@ -100,7 +103,10 @@ class DefaultCertificatesHandler(
         return CertificateCredentialsView(list)
     }
 
-    override fun handleGetAllVersionsRequest(certificateId: String, current: Boolean): List<CertificateView> {
+    override fun handleGetAllVersionsRequest(
+        certificateId: String,
+        current: Boolean,
+    ): List<CertificateView> {
         val uuid: UUID
         try {
             uuid = UUID.fromString(certificateId)
@@ -114,11 +120,15 @@ class DefaultCertificatesHandler(
         return credentialList.map { credential -> CertificateView(credential as CertificateCredentialVersion, concatenateCas) }
     }
 
-    override fun handleDeleteVersionRequest(certificateId: String, versionId: String): CertificateView {
+    override fun handleDeleteVersionRequest(
+        certificateId: String,
+        versionId: String,
+    ): CertificateView {
         checkPermissionsByCredentialUuid(certificateId, DELETE)
 
-        val deletedVersion = certificateService
-            .deleteVersion(UUID.fromString(certificateId), UUID.fromString(versionId))
+        val deletedVersion =
+            certificateService
+                .deleteVersion(UUID.fromString(certificateId), UUID.fromString(versionId))
         return CertificateView(deletedVersion)
     }
 
@@ -131,35 +141,44 @@ class DefaultCertificatesHandler(
         val certificateUUID: UUID = UUID.fromString(certificateId)
 
         if (requestBody.versionUuid != null) {
-            versionUUID = if (requestBody.versionUuid == "latest") {
-                certificateService.getAllValidVersions(certificateUUID).getOrNull(0)?.uuid
-            } else {
-                UUID.fromString(requestBody.versionUuid)
-            }
+            versionUUID =
+                if (requestBody.versionUuid == "latest") {
+                    certificateService.getAllValidVersions(certificateUUID).getOrNull(0)?.uuid
+                } else {
+                    UUID.fromString(requestBody.versionUuid)
+                }
         }
 
         val credentialList: List<CredentialVersion>
-        credentialList = certificateService
-            .updateTransitionalVersion(certificateUUID, versionUUID)
+        credentialList =
+            certificateService
+                .updateTransitionalVersion(certificateUUID, versionUUID)
 
         return credentialList
             .map { credential -> CertificateView(credential as CertificateCredentialVersion) }
     }
 
-    override fun handleCreateVersionsRequest(certificateId: String, requestBody: CreateVersionRequest): CertificateView {
+    override fun handleCreateVersionsRequest(
+        certificateId: String,
+        requestBody: CreateVersionRequest,
+    ): CertificateView {
         checkPermissionsByCredentialUuid(certificateId, WRITE)
 
         val certificateCredentialValue = requestBody.value
         certificateCredentialValue?.transitional = requestBody.isTransitional
-        val credentialVersion = certificateService.set(
-            UUID.fromString(certificateId),
-            certificateCredentialValue,
-        )
+        val credentialVersion =
+            certificateService.set(
+                UUID.fromString(certificateId),
+                certificateCredentialValue,
+            )
 
         return CertificateView(credentialVersion)
     }
 
-    private fun convertCertificateCredentialsToCertificateCredentialViews(certificateCredentialList: List<Credential>, getAllRequest: Boolean): List<CertificateCredentialView> {
+    private fun convertCertificateCredentialsToCertificateCredentialViews(
+        certificateCredentialList: List<Credential>,
+        getAllRequest: Boolean,
+    ): List<CertificateCredentialView> {
         val names = certificateCredentialList.map { it.name!! }
         val certificates = certificateService.findAllValidMetadata(names)
         val caMapping = mutableMapOf<String, MutableList<String>>()
@@ -181,9 +200,11 @@ class DefaultCertificatesHandler(
         }
 
         return certificates.map { certificateMetadata ->
-            val certificateVersionViews = certificateMetadata.versions?.map { certificateVersion ->
-                CertificateVersionView(certificateVersion)
-            }?.toMutableList()
+            val certificateVersionViews =
+                certificateMetadata.versions
+                    ?.map { certificateVersion ->
+                        CertificateVersionView(certificateVersion)
+                    }?.toMutableList()
             val signedBy = certificateMetadata.caName ?: ""
             val signedCertificates: List<String>
             if (getAllRequest) {
@@ -201,7 +222,10 @@ class DefaultCertificatesHandler(
         }
     }
 
-    private fun checkPermissionsByName(name: String, permissionOperation: PermissionOperation) {
+    private fun checkPermissionsByName(
+        name: String,
+        permissionOperation: PermissionOperation,
+    ) {
         if (!enforcePermissions) return
 
         if (!permissionCheckingService.hasPermission(
@@ -218,7 +242,10 @@ class DefaultCertificatesHandler(
         }
     }
 
-    private fun checkPermissionsByCredentialUuid(credentialUuid: String, permissionOperation: PermissionOperation) {
+    private fun checkPermissionsByCredentialUuid(
+        credentialUuid: String,
+        permissionOperation: PermissionOperation,
+    ) {
         if (!enforcePermissions) return
 
         val certificate = certificateService.findByCredentialUuid(credentialUuid)

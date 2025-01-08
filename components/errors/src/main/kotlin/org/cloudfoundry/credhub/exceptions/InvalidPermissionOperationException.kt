@@ -1,3 +1,5 @@
 package org.cloudfoundry.credhub.exceptions
 
-class InvalidPermissionOperationException(messageCode: String) : RuntimeException(messageCode)
+class InvalidPermissionOperationException(
+    messageCode: String,
+) : RuntimeException(messageCode)

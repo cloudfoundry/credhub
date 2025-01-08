@@ -8,5 +8,8 @@ interface PermissionsV1Handler {
 
     fun writePermissions(request: PermissionsRequest)
 
-    fun deletePermissionEntry(credentialName: String, actor: String)
+    fun deletePermissionEntry(
+        credentialName: String,
+        actor: String,
+    )
 }

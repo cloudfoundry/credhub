@@ -20,9 +20,12 @@ class UserGenerateRequest : BaseCredentialGenerateRequest() {
         }
 
     val userName: String?
-        get() = if (passwordGenerationParameters != null && passwordGenerationParameters!!.username != null) {
-            passwordGenerationParameters!!.username
-        } else value.username
+        get() =
+            if (passwordGenerationParameters != null && passwordGenerationParameters!!.username != null) {
+                passwordGenerationParameters!!.username
+            } else {
+                value.username
+            }
 
     fun setGenerationParameters(generationParameters: StringGenerationParameters) {
         passwordGenerationParameters = generationParameters

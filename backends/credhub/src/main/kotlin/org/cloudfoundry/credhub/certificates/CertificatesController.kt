@@ -29,7 +29,6 @@ class CertificatesController(
     val certificatesHandler: CertificatesHandler,
     val auditRecord: CEFAuditRecord,
 ) {
-
     companion object {
         const val ENDPOINT = "/api/v1/certificates"
     }
@@ -44,7 +43,9 @@ class CertificatesController(
 
     @RequestMapping(method = [RequestMethod.GET], path = [""], params = ["name"])
     @ResponseStatus(HttpStatus.OK)
-    fun getCertificateByName(@RequestParam("name") name: String): CertificateCredentialsView {
+    fun getCertificateByName(
+        @RequestParam("name") name: String,
+    ): CertificateCredentialsView {
         val credentialName = StringUtils.prependIfMissing(name, "/")
         val details = GetCertificateByName()
         details.name = name
@@ -85,25 +86,19 @@ class CertificatesController(
     fun getAllCertificateVersions(
         @PathVariable("certificateId") certificateId: String,
         @RequestParam(value = "current", required = false, defaultValue = "false") current: Boolean,
-    ): List<CertificateView> {
-        return certificatesHandler.handleGetAllVersionsRequest(certificateId, current)
-    }
+    ): List<CertificateView> = certificatesHandler.handleGetAllVersionsRequest(certificateId, current)
 
     @RequestMapping(method = [RequestMethod.POST], path = ["{certificateId}/versions"])
     @ResponseStatus(HttpStatus.OK)
     fun createVersion(
         @RequestBody @Validated requestBody: CreateVersionRequest,
         @PathVariable("certificateId") certificateId: String,
-    ): CertificateView {
-        return certificatesHandler.handleCreateVersionsRequest(certificateId, requestBody)
-    }
+    ): CertificateView = certificatesHandler.handleCreateVersionsRequest(certificateId, requestBody)
 
     @RequestMapping(method = [RequestMethod.DELETE], path = ["{certificateId}/versions/{versionId}"])
     @ResponseStatus(HttpStatus.OK)
     fun deleteVersion(
         @PathVariable("certificateId") certificateId: String,
         @PathVariable("versionId") versionId: String,
-    ): CertificateView {
-        return certificatesHandler.handleDeleteVersionRequest(certificateId, versionId)
-    }
+    ): CertificateView = certificatesHandler.handleDeleteVersionRequest(certificateId, versionId)
 }

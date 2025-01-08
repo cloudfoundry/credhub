@@ -9,7 +9,6 @@ import org.springframework.mock.web.MockHttpServletRequest
 import java.nio.charset.StandardCharsets.UTF_8
 
 class CEFAuditRecordTest {
-
     private var auditRecord: CEFAuditRecord? = null
     private var httpRequest: MockHttpServletRequest? = null
 

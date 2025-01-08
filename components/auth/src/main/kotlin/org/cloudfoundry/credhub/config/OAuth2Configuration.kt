@@ -20,11 +20,8 @@ import org.springframework.security.oauth2.provider.token.store.jwk.JwkTokenStor
 @Profile("prod", "dev")
 @ConditionalOnProperty("security.oauth2.enabled")
 class OAuth2Configuration {
-
     @Bean
-    fun resourceServerProperties(): ResourceServerProperties {
-        return ResourceServerProperties()
-    }
+    fun resourceServerProperties(): ResourceServerProperties = ResourceServerProperties()
 
     @Bean
     @Throws(Exception::class)
@@ -39,9 +36,8 @@ class OAuth2Configuration {
 
     @Bean
     @Throws(Exception::class)
-    fun jwkTokenStore(oAuthProperties: OAuthProperties): JwkTokenStore {
-        return JwkTokenStore(oAuthProperties.jwkKeysPath, jwtAccessTokenConverter())
-    }
+    fun jwkTokenStore(oAuthProperties: OAuthProperties): JwkTokenStore =
+        JwkTokenStore(oAuthProperties.jwkKeysPath, jwtAccessTokenConverter())
 
     @Bean
     fun resourceServerTokenServices(tokenStore: JwkTokenStore): ResourceServerTokenServices {
@@ -52,23 +48,18 @@ class OAuth2Configuration {
 
     @Bean
     fun authenticationManagerBuilder(): AuthenticationManagerBuilder {
-        val objectPostProcessor = object : ObjectPostProcessor<Any> {
-            override fun <O : Any> postProcess(`object`: O): O {
-                return `object`
+        val objectPostProcessor =
+            object : ObjectPostProcessor<Any> {
+                override fun <O : Any> postProcess(`object`: O): O = `object`
             }
-        }
         val authenticationManagerBuilder = AuthenticationManagerBuilder(objectPostProcessor)
         authenticationManagerBuilder.parentAuthenticationManager(authenticationManager())
         return authenticationManagerBuilder
     }
 
     @Bean
-    fun authenticationManager(): AuthenticationManager {
-        return AuthenticationManager { it }
-    }
+    fun authenticationManager(): AuthenticationManager = AuthenticationManager { it }
 
     @Bean
-    fun webResponseExceptionTranslator(): WebResponseExceptionTranslator<*> {
-        return DefaultWebResponseExceptionTranslator()
-    }
+    fun webResponseExceptionTranslator(): WebResponseExceptionTranslator<*> = DefaultWebResponseExceptionTranslator()
 }

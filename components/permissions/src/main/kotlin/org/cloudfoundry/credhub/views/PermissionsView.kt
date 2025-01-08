@@ -7,7 +7,6 @@ import org.cloudfoundry.credhub.requests.PermissionEntry
 
 @JsonAutoDetect
 class PermissionsView {
-
     var credentialName: String? = null
     var permissions: List<PermissionEntry>? = null
 
@@ -35,10 +34,9 @@ class PermissionsView {
             .isEquals
     }
 
-    override fun hashCode(): Int {
-        return HashCodeBuilder(17, 37)
+    override fun hashCode(): Int =
+        HashCodeBuilder(17, 37)
             .append(credentialName)
             .append(permissions)
             .toHashCode()
-    }
 }

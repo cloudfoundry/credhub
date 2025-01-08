@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping(path = [HealthController.ENDPOINT])
 class HealthController {
-
     companion object {
         const val ENDPOINT = "/health"
     }

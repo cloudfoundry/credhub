@@ -23,9 +23,10 @@ import org.junit.runners.JUnit4
 class PermissionsRequestTest {
     @Test
     fun validation_allowsGoodJson() {
-        val entryList = newArrayList(
-            PermissionEntry("someone", "test-path", newArrayList(PermissionOperation.READ)),
-        )
+        val entryList =
+            newArrayList(
+                PermissionEntry("someone", "test-path", newArrayList(PermissionOperation.READ)),
+            )
         val original = PermissionsRequest("test-name", entryList)
         val json = serialize(original)!!
         val actual = deserialize<PermissionsRequest>(json, PermissionsRequest::class.java)
@@ -44,9 +45,10 @@ class PermissionsRequestTest {
 
     @Test
     fun validation_ensuresCredentialNameIsNotNull() {
-        val entryList = newArrayList(
-            PermissionEntry("someone", "test-path", newArrayList(PermissionOperation.READ)),
-        )
+        val entryList =
+            newArrayList(
+                PermissionEntry("someone", "test-path", newArrayList(PermissionOperation.READ)),
+            )
         val original = PermissionsRequest(null, entryList)
         val violations = validate(original)
 
@@ -56,9 +58,10 @@ class PermissionsRequestTest {
 
     @Test
     fun validation_ensuresCredentialNameIsNotEmpty() {
-        val entryList = newArrayList(
-            PermissionEntry("someone", "test-path", newArrayList(PermissionOperation.READ)),
-        )
+        val entryList =
+            newArrayList(
+                PermissionEntry("someone", "test-path", newArrayList(PermissionOperation.READ)),
+            )
         val original = PermissionsRequest("", entryList)
         val violations = validate(original)
 

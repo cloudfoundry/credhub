@@ -13,12 +13,13 @@ class SpyCertificateVersionDataService : CertificateVersionDataService {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
-    lateinit var findActiveWithTransitional__returns_credentialVersionList: List<CredentialVersion>
-    lateinit var findActiveWithTransitional__calledWith_certificateName: String
-    override fun findBothActiveCertAndTransitionalCert(certificateName: String): List<CredentialVersion>? {
-        findActiveWithTransitional__calledWith_certificateName = certificateName
+    lateinit var findactivewithtransitionalReturnsCredentialversionlist: List<CredentialVersion>
+    lateinit var findactivewithtransitionalCalledwithCertificatename: String
 
-        return findActiveWithTransitional__returns_credentialVersionList
+    override fun findBothActiveCertAndTransitionalCert(certificateName: String): List<CredentialVersion>? {
+        findactivewithtransitionalCalledwithCertificatename = certificateName
+
+        return findactivewithtransitionalReturnsCredentialversionlist
     }
 
     override fun findAllVersions(uuid: UUID): List<CredentialVersion> {

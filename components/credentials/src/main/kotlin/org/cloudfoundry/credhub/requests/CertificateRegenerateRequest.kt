@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.JsonNode
 
 @JsonAutoDetect
 class CertificateRegenerateRequest {
-
     @JsonProperty("set_as_transitional")
     @set:JsonProperty("set_as_transitional")
     var isTransitional: Boolean = false
@@ -20,7 +19,7 @@ class CertificateRegenerateRequest {
     var metadata: JsonNode? = null
 
     constructor() : super() {
-        /* this needs to be there for jackson to be happy */
+        // this needs to be there for jackson to be happy
     }
 
     constructor(transitional: Boolean, allowTransitionalParentToSign: Boolean, metadata: JsonNode?) : super() {

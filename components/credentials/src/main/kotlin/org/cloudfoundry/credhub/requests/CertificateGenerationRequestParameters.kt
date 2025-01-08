@@ -19,7 +19,6 @@ import java.util.regex.Pattern
 
 @JsonInclude(NON_DEFAULT)
 class CertificateGenerationRequestParameters {
-
     // Parameters used in RDN; at least one must be set
     val validKeyLengths = Arrays.asList(2048, 3072, 4096)
     var organization: String? = null
@@ -61,14 +60,23 @@ class CertificateGenerationRequestParameters {
         set(keyUsage) {
             field = keyUsage?.clone()
         }
-    private val validExtendedKeyUsages = Arrays
-        .asList(SERVER_AUTH, CLIENT_AUTH, CODE_SIGNING, EMAIL_PROTECTION, TIMESTAMPING)
+    private val validExtendedKeyUsages =
+        Arrays
+            .asList(SERVER_AUTH, CLIENT_AUTH, CODE_SIGNING, EMAIL_PROTECTION, TIMESTAMPING)
 
-    private val validKeyUsages = Arrays
-        .asList(
-            DIGITAL_SIGNATURE, NON_REPUDIATION, KEY_ENCIPHERMENT, DATA_ENCIPHERMENT,
-            KEY_AGREEMENT, KEY_CERT_SIGN, CRL_SIGN, ENCIPHER_ONLY, DECIPHER_ONLY,
-        )
+    private val validKeyUsages =
+        Arrays
+            .asList(
+                DIGITAL_SIGNATURE,
+                NON_REPUDIATION,
+                KEY_ENCIPHERMENT,
+                DATA_ENCIPHERMENT,
+                KEY_AGREEMENT,
+                KEY_CERT_SIGN,
+                CRL_SIGN,
+                ENCIPHER_ONLY,
+                DECIPHER_ONLY,
+            )
 
     var isSelfSigned: Boolean
         get() {
@@ -109,7 +117,9 @@ class CertificateGenerationRequestParameters {
 
         if (alternativeNames != null) {
             for (name in alternativeNames!!) {
-                if (!InetAddresses.isInetAddress(name) && !(InternetDomainName.isValid(name) || DNS_WILDCARD_PATTERN.matcher(name).matches())) {
+                if (!InetAddresses.isInetAddress(name) &&
+                    !(InternetDomainName.isValid(name) || DNS_WILDCARD_PATTERN.matcher(name).matches())
+                ) {
                     throw InvalidAlternateNameCertificateException()
                 }
             }
@@ -165,13 +175,18 @@ class CertificateGenerationRequestParameters {
         const val CRL_SIGN = "crl_sign"
         const val ENCIPHER_ONLY = "encipher_only"
         const val DECIPHER_ONLY = "decipher_only"
-        private val DNS_WILDCARD_PATTERN = Pattern
-            .compile("^\\*?(?>(?:\\.[a-zA-Z0-9\\-]+))*$")
+        private val DNS_WILDCARD_PATTERN =
+            Pattern
+                .compile("^\\*?(?>(?:\\.[a-zA-Z0-9\\-]+))*$")
 
         private val TEN_YEARS = 3650
         private val ONE_DAY = 1
 
-        private fun validateParameterLength(parameterArray: Array<String>?, parameterName: String, parameterLength: Int) {
+        private fun validateParameterLength(
+            parameterArray: Array<String>?,
+            parameterName: String,
+            parameterLength: Int,
+        ) {
             if (parameterArray != null) {
                 for (parameter in parameterArray) {
                     validateParameterLength(parameter, parameterName, parameterLength)
@@ -179,7 +194,11 @@ class CertificateGenerationRequestParameters {
             }
         }
 
-        private fun validateParameterLength(parameter: String?, parameterName: String, parameterLength: Int) {
+        private fun validateParameterLength(
+            parameter: String?,
+            parameterName: String,
+            parameterLength: Int,
+        ) {
             if (!isEmpty(parameter) && parameter!!.length > parameterLength) {
                 throw ParameterizedValidationException(
                     ErrorMessages.Credential.INVALID_CERTIFICATE_PARAMETER,

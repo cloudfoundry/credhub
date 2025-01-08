@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 
 @RestControllerAdvice
 class DefaultExceptionHandler {
-
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(Exception::class)
     fun handleGeneralException(e: Exception): ResponseError {
@@ -21,7 +20,6 @@ class DefaultExceptionHandler {
     }
 
     companion object {
-
         private val LOGGER = LogManager.getLogger(DefaultExceptionHandler::class.java)
     }
 }

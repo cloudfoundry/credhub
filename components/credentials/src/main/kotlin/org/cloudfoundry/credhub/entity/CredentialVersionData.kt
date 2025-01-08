@@ -33,8 +33,9 @@ import javax.persistence.Table
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @EntityListeners(AuditingEntityListener::class)
 @DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
-abstract class CredentialVersionData<Z : CredentialVersionData<Z>>(credential: Credential?) {
-
+abstract class CredentialVersionData<Z : CredentialVersionData<Z>>(
+    credential: Credential?,
+) {
     // Use VARBINARY to make all 3 DB types happy.
     // H2 doesn't distinguish between "binary" and "varbinary" - see
     // https://hibernate.atlassian.net/browse/HHH-9835 and
@@ -76,9 +77,7 @@ abstract class CredentialVersionData<Z : CredentialVersionData<Z>>(credential: C
     val encryptionKeyUuid: UUID?
         get() = if (encryptedCredentialValue != null) encryptedCredentialValue!!.encryptionKeyUuid else null
 
-    fun getEncryptedValueData(): EncryptedValue? {
-        return this.encryptedCredentialValue
-    }
+    fun getEncryptedValueData(): EncryptedValue? = this.encryptedCredentialValue
 
     fun setEncryptedValueData(encryptedValue: EncryptedValue?) {
         this.encryptedCredentialValue = encryptedValue

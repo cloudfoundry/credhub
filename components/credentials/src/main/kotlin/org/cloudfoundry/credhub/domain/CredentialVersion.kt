@@ -9,7 +9,9 @@ import org.cloudfoundry.credhub.services.CredentialVersionDataService
 import java.time.Instant
 import java.util.UUID
 
-abstract class CredentialVersion(protected var delegate: CredentialVersionData<*>) : AuditableCredentialVersion {
+abstract class CredentialVersion(
+    protected var delegate: CredentialVersionData<*>,
+) : AuditableCredentialVersion {
     private lateinit var encryptor: Encryptor
 
     override var uuid: UUID?
@@ -40,26 +42,21 @@ abstract class CredentialVersion(protected var delegate: CredentialVersionData<*
 
     abstract fun rotate()
 
-    protected fun getEncryptor(): Encryptor {
-        return this.encryptor
-    }
+    protected fun getEncryptor(): Encryptor = this.encryptor
 
     fun setEncryptor(encryptor: Encryptor) {
         this.encryptor = encryptor
     }
 
-    open fun getValue(): Any? {
-        return encryptor.decrypt(delegate.getEncryptedValueData())
-    }
+    open fun getValue(): Any? = encryptor.decrypt(delegate.getEncryptedValueData())
 
     open fun setValue(value: String) {
         val encryption = encryptor.encrypt(value)
         delegate.setEncryptedValueData(encryption)
     }
 
-    fun <Z : CredentialVersion> save(credentialVersionDataService: CredentialVersionDataService): Z {
-        return credentialVersionDataService.save(delegate) as Z
-    }
+    fun <Z : CredentialVersion> save(credentialVersionDataService: CredentialVersionDataService): Z =
+        credentialVersionDataService.save(delegate) as Z
 
     fun copyNameReferenceFrom(credentialVersion: CredentialVersion) {
         this.delegate.credential = credentialVersion.delegate.credential

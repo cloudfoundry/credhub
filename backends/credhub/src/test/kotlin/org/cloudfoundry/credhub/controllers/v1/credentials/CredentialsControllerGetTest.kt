@@ -45,7 +45,6 @@ import java.util.UUID
 
 @RunWith(SpringRunner::class)
 class CredentialsControllerGetTest {
-
     @Rule
     @JvmField
     val restDocumentation = JUnitRestDocumentation()
@@ -70,12 +69,13 @@ class CredentialsControllerGetTest {
         spyCredentialsHandler = SpyCredentialsHandler()
         spyRegenerateHandler = SpyRegenerateHandler()
 
-        val credentialController = CredentialsController(
-            spyCredentialsHandler,
-            CEFAuditRecord(),
-            spyRegenerateHandler,
-            objectMapper,
-        )
+        val credentialController =
+            CredentialsController(
+                spyCredentialsHandler,
+                CEFAuditRecord(),
+                spyRegenerateHandler,
+                objectMapper,
+            )
 
         metadata = objectMapper.readTree("{\"description\":\"example metadata\"}")
 
@@ -87,34 +87,36 @@ class CredentialsControllerGetTest {
     }
 
     @Test
-    fun GET__find_by_id__returns_value_results() {
+    fun getFind_by_id__returns_value_results() {
         val uuid = UUID.randomUUID()
-        spyCredentialsHandler.getCredentialVersionByUUID__returns_credentialView = CredentialView(
-            Instant.ofEpochSecond(1549053472L),
-            uuid,
-            "/some-value-path",
-            CredentialType.VALUE.type.lowercase(),
-            metadata,
-            StringCredentialValue("some-value"),
-        )
+        spyCredentialsHandler.credentialversionbyuuidReturnsCredentialview =
+            CredentialView(
+                Instant.ofEpochSecond(1549053472L),
+                uuid,
+                "/some-value-path",
+                CredentialType.VALUE.type.lowercase(),
+                metadata,
+                StringCredentialValue("some-value"),
+            )
 
-        val mvcResult = mockMvc.perform(
-            get("${CredentialsController.ENDPOINT}/{uuid}", uuid.toString())
-                .contentType(MediaType.APPLICATION_JSON)
-                .credHubAuthHeader(),
-        )
-            .andExpect(status().isOk)
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andDo(
-                document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    pathParameters(
-                        parameterWithName("uuid").description("The credential uuid"),
+        val mvcResult =
+            mockMvc
+                .perform(
+                    get("${CredentialsController.ENDPOINT}/{uuid}", uuid.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .credHubAuthHeader(),
+                ).andExpect(status().isOk)
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andDo(
+                    document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                        pathParameters(
+                            parameterWithName("uuid").description("The credential uuid"),
+                        ),
                     ),
-                ),
-            ).andReturn()
+                ).andReturn()
 
-        assertThat(spyCredentialsHandler.getCredentialVersionByUUID__calledWith_credentialUUID).isEqualTo(uuid.toString())
+        assertThat(spyCredentialsHandler.credentialversionbyuuidCalledwithCredentialuuid).isEqualTo(uuid.toString())
         // language=json
         val expectedResponseBody =
             """
@@ -132,43 +134,45 @@ class CredentialsControllerGetTest {
     }
 
     @Test
-    fun GET__find_by_id__returns_json_results() {
+    fun getFind_by_id__returns_json_results() {
         val uuid = UUID.randomUUID()
-        spyCredentialsHandler.getCredentialVersionByUUID__returns_credentialView = CredentialView(
-            Instant.ofEpochSecond(1549053472L),
-            uuid,
-            "/some-value-path",
-            CredentialType.JSON.type.lowercase(),
-            metadata,
-            JsonCredentialValue(
-                ObjectMapper().readTree(
-                    // language=json
-                    """
-                    {
-                        "some-json-key": "some-json-value"
-                    }
-                    """.trimIndent(),
-                ),
-            ),
-        )
-
-        val mvcResult = mockMvc.perform(
-            get("${CredentialsController.ENDPOINT}/{uuid}", uuid.toString())
-                .contentType(MediaType.APPLICATION_JSON)
-                .credHubAuthHeader(),
-        )
-            .andExpect(status().isOk)
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andDo(
-                document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    pathParameters(
-                        parameterWithName("uuid").description("The credential uuid"),
+        spyCredentialsHandler.credentialversionbyuuidReturnsCredentialview =
+            CredentialView(
+                Instant.ofEpochSecond(1549053472L),
+                uuid,
+                "/some-value-path",
+                CredentialType.JSON.type.lowercase(),
+                metadata,
+                JsonCredentialValue(
+                    ObjectMapper().readTree(
+                        // language=json
+                        """
+                        {
+                            "some-json-key": "some-json-value"
+                        }
+                        """.trimIndent(),
                     ),
                 ),
-            ).andReturn()
+            )
 
-        assertThat(spyCredentialsHandler.getCredentialVersionByUUID__calledWith_credentialUUID).isEqualTo(uuid.toString())
+        val mvcResult =
+            mockMvc
+                .perform(
+                    get("${CredentialsController.ENDPOINT}/{uuid}", uuid.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .credHubAuthHeader(),
+                ).andExpect(status().isOk)
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andDo(
+                    document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                        pathParameters(
+                            parameterWithName("uuid").description("The credential uuid"),
+                        ),
+                    ),
+                ).andReturn()
+
+        assertThat(spyCredentialsHandler.credentialversionbyuuidCalledwithCredentialuuid).isEqualTo(uuid.toString())
         // language=json
         val expectedResponseBody =
             """
@@ -188,34 +192,36 @@ class CredentialsControllerGetTest {
     }
 
     @Test
-    fun GET__find_by_id__returns_password_results() {
+    fun getFind_by_id__returns_password_results() {
         val uuid = UUID.randomUUID()
-        spyCredentialsHandler.getCredentialVersionByUUID__returns_credentialView = CredentialView(
-            Instant.ofEpochSecond(1549053472L),
-            uuid,
-            "/some-value-path",
-            CredentialType.PASSWORD.type.lowercase(),
-            metadata,
-            StringCredentialValue("some-password"),
-        )
+        spyCredentialsHandler.credentialversionbyuuidReturnsCredentialview =
+            CredentialView(
+                Instant.ofEpochSecond(1549053472L),
+                uuid,
+                "/some-value-path",
+                CredentialType.PASSWORD.type.lowercase(),
+                metadata,
+                StringCredentialValue("some-password"),
+            )
 
-        val mvcResult = mockMvc.perform(
-            get("${CredentialsController.ENDPOINT}/{uuid}", uuid.toString())
-                .contentType(MediaType.APPLICATION_JSON)
-                .credHubAuthHeader(),
-        )
-            .andExpect(status().isOk)
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andDo(
-                document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    pathParameters(
-                        parameterWithName("uuid").description("The credential uuid"),
+        val mvcResult =
+            mockMvc
+                .perform(
+                    get("${CredentialsController.ENDPOINT}/{uuid}", uuid.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .credHubAuthHeader(),
+                ).andExpect(status().isOk)
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andDo(
+                    document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                        pathParameters(
+                            parameterWithName("uuid").description("The credential uuid"),
+                        ),
                     ),
-                ),
-            ).andReturn()
+                ).andReturn()
 
-        assertThat(spyCredentialsHandler.getCredentialVersionByUUID__calledWith_credentialUUID).isEqualTo(uuid.toString())
+        assertThat(spyCredentialsHandler.credentialversionbyuuidCalledwithCredentialuuid).isEqualTo(uuid.toString())
         // language=json
         val expectedResponseBody =
             """
@@ -234,38 +240,40 @@ class CredentialsControllerGetTest {
     }
 
     @Test
-    fun GET__find_by_id__returns_user_results() {
+    fun getFind_by_id__returns_user_results() {
         val uuid = UUID.randomUUID()
-        spyCredentialsHandler.getCredentialVersionByUUID__returns_credentialView = CredentialView(
-            Instant.ofEpochSecond(1549053472L),
-            uuid,
-            "/some-value-path",
-            CredentialType.USER.type.lowercase(),
-            metadata,
-            UserCredentialValue(
-                "some-username",
-                "some-password",
-                "foo",
-            ),
-        )
-
-        val mvcResult = mockMvc.perform(
-            get("${CredentialsController.ENDPOINT}/{uuid}", uuid.toString())
-                .contentType(MediaType.APPLICATION_JSON)
-                .credHubAuthHeader(),
-        )
-            .andExpect(status().isOk)
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andDo(
-                document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    pathParameters(
-                        parameterWithName("uuid").description("The credential uuid"),
-                    ),
+        spyCredentialsHandler.credentialversionbyuuidReturnsCredentialview =
+            CredentialView(
+                Instant.ofEpochSecond(1549053472L),
+                uuid,
+                "/some-value-path",
+                CredentialType.USER.type.lowercase(),
+                metadata,
+                UserCredentialValue(
+                    "some-username",
+                    "some-password",
+                    "foo",
                 ),
-            ).andReturn()
+            )
 
-        assertThat(spyCredentialsHandler.getCredentialVersionByUUID__calledWith_credentialUUID).isEqualTo(uuid.toString())
+        val mvcResult =
+            mockMvc
+                .perform(
+                    get("${CredentialsController.ENDPOINT}/{uuid}", uuid.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .credHubAuthHeader(),
+                ).andExpect(status().isOk)
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andDo(
+                    document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                        pathParameters(
+                            parameterWithName("uuid").description("The credential uuid"),
+                        ),
+                    ),
+                ).andReturn()
+
+        assertThat(spyCredentialsHandler.credentialversionbyuuidCalledwithCredentialuuid).isEqualTo(uuid.toString())
         // language=json
         val expectedResponseBody =
             """
@@ -288,43 +296,45 @@ class CredentialsControllerGetTest {
     }
 
     @Test
-    fun GET__find_by_id__returns_certificate_results() {
+    fun getFind_by_id__returns_certificate_results() {
         val uuid = UUID.randomUUID()
-        spyCredentialsHandler.getCredentialVersionByUUID__returns_credentialView = CredentialView(
-            Instant.ofEpochSecond(1549053472L),
-            uuid,
-            "/some-value-path",
-            CredentialType.CERTIFICATE.type.lowercase(),
-            metadata,
-            CertificateCredentialValue(
-                TestConstants.TEST_CA,
-                TestConstants.TEST_CERTIFICATE,
-                TestConstants.TEST_PRIVATE_KEY,
-                null,
-                true,
-                false,
-                true,
-                false,
-            ),
-        )
-
-        val mvcResult = mockMvc.perform(
-            get("${CredentialsController.ENDPOINT}/{uuid}", uuid.toString())
-                .contentType(MediaType.APPLICATION_JSON)
-                .credHubAuthHeader(),
-        )
-            .andExpect(status().isOk)
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andDo(
-                document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    pathParameters(
-                        parameterWithName("uuid").description("The credential uuid"),
-                    ),
+        spyCredentialsHandler.credentialversionbyuuidReturnsCredentialview =
+            CredentialView(
+                Instant.ofEpochSecond(1549053472L),
+                uuid,
+                "/some-value-path",
+                CredentialType.CERTIFICATE.type.lowercase(),
+                metadata,
+                CertificateCredentialValue(
+                    TestConstants.TEST_CA,
+                    TestConstants.TEST_CERTIFICATE,
+                    TestConstants.TEST_PRIVATE_KEY,
+                    null,
+                    true,
+                    false,
+                    true,
+                    false,
                 ),
-            ).andReturn()
+            )
 
-        assertThat(spyCredentialsHandler.getCredentialVersionByUUID__calledWith_credentialUUID).isEqualTo(uuid.toString())
+        val mvcResult =
+            mockMvc
+                .perform(
+                    get("${CredentialsController.ENDPOINT}/{uuid}", uuid.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .credHubAuthHeader(),
+                ).andExpect(status().isOk)
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andDo(
+                    document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                        pathParameters(
+                            parameterWithName("uuid").description("The credential uuid"),
+                        ),
+                    ),
+                ).andReturn()
+
+        assertThat(spyCredentialsHandler.credentialversionbyuuidCalledwithCredentialuuid).isEqualTo(uuid.toString())
         // language=json
         val expectedResponseBody =
             """
@@ -352,35 +362,38 @@ class CredentialsControllerGetTest {
     }
 
     @Test
-    fun GET__find_by_id__WhenGeneratedIsNull_returns_certificate_results() {
+    fun getFind_by_id__WhenGeneratedIsNull_returns_certificate_results() {
         val uuid = UUID.randomUUID()
-        spyCredentialsHandler.getCredentialVersionByUUID__returns_credentialView = CredentialView(
-            Instant.ofEpochSecond(1549053472L),
-            uuid,
-            "/some-value-path",
-            CredentialType.CERTIFICATE.type.lowercase(),
-            metadata,
-            CertificateCredentialValue(
-                TestConstants.TEST_CA,
-                TestConstants.TEST_CERTIFICATE,
-                TestConstants.TEST_PRIVATE_KEY,
-                null,
-                true,
-                false,
-                null,
-                false,
-            ),
-        )
+        spyCredentialsHandler.credentialversionbyuuidReturnsCredentialview =
+            CredentialView(
+                Instant.ofEpochSecond(1549053472L),
+                uuid,
+                "/some-value-path",
+                CredentialType.CERTIFICATE.type.lowercase(),
+                metadata,
+                CertificateCredentialValue(
+                    TestConstants.TEST_CA,
+                    TestConstants.TEST_CERTIFICATE,
+                    TestConstants.TEST_PRIVATE_KEY,
+                    null,
+                    true,
+                    false,
+                    null,
+                    false,
+                ),
+            )
 
-        val mvcResult = mockMvc.perform(
-            get("${CredentialsController.ENDPOINT}/{uuid}", uuid.toString())
-                .contentType(MediaType.APPLICATION_JSON)
-                .credHubAuthHeader(),
-        )
-            .andExpect(status().isOk)
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON)).andReturn()
+        val mvcResult =
+            mockMvc
+                .perform(
+                    get("${CredentialsController.ENDPOINT}/{uuid}", uuid.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .credHubAuthHeader(),
+                ).andExpect(status().isOk)
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn()
 
-        assertThat(spyCredentialsHandler.getCredentialVersionByUUID__calledWith_credentialUUID).isEqualTo(uuid.toString())
+        assertThat(spyCredentialsHandler.credentialversionbyuuidCalledwithCredentialuuid).isEqualTo(uuid.toString())
         // language=json
         val expectedResponseBody =
             """
@@ -407,37 +420,39 @@ class CredentialsControllerGetTest {
     }
 
     @Test
-    fun GET__find_by_id__returns_rsa_results() {
+    fun getFind_by_id__returns_rsa_results() {
         val uuid = UUID.randomUUID()
-        spyCredentialsHandler.getCredentialVersionByUUID__returns_credentialView = CredentialView(
-            Instant.ofEpochSecond(1549053472L),
-            uuid,
-            "/some-value-path",
-            CredentialType.RSA.type.lowercase(),
-            metadata,
-            RsaCredentialValue(
-                TestConstants.RSA_PUBLIC_KEY_4096,
-                TestConstants.PRIVATE_KEY_4096,
-            ),
-        )
-
-        val mvcResult = mockMvc.perform(
-            get("${CredentialsController.ENDPOINT}/{uuid}", uuid.toString())
-                .contentType(MediaType.APPLICATION_JSON)
-                .credHubAuthHeader(),
-        )
-            .andExpect(status().isOk)
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andDo(
-                document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    pathParameters(
-                        parameterWithName("uuid").description("The credential uuid"),
-                    ),
+        spyCredentialsHandler.credentialversionbyuuidReturnsCredentialview =
+            CredentialView(
+                Instant.ofEpochSecond(1549053472L),
+                uuid,
+                "/some-value-path",
+                CredentialType.RSA.type.lowercase(),
+                metadata,
+                RsaCredentialValue(
+                    TestConstants.RSA_PUBLIC_KEY_4096,
+                    TestConstants.PRIVATE_KEY_4096,
                 ),
-            ).andReturn()
+            )
 
-        assertThat(spyCredentialsHandler.getCredentialVersionByUUID__calledWith_credentialUUID).isEqualTo(uuid.toString())
+        val mvcResult =
+            mockMvc
+                .perform(
+                    get("${CredentialsController.ENDPOINT}/{uuid}", uuid.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .credHubAuthHeader(),
+                ).andExpect(status().isOk)
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andDo(
+                    document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                        pathParameters(
+                            parameterWithName("uuid").description("The credential uuid"),
+                        ),
+                    ),
+                ).andReturn()
+
+        assertThat(spyCredentialsHandler.credentialversionbyuuidCalledwithCredentialuuid).isEqualTo(uuid.toString())
         // language=json
         val expectedResponseBody =
             """
@@ -459,38 +474,40 @@ class CredentialsControllerGetTest {
     }
 
     @Test
-    fun GET__find_by_id__returns_ssh_results() {
+    fun getFind_by_id__returns_ssh_results() {
         val uuid = UUID.randomUUID()
-        spyCredentialsHandler.getCredentialVersionByUUID__returns_credentialView = CredentialView(
-            Instant.ofEpochSecond(1549053472L),
-            uuid,
-            "/some-value-path",
-            CredentialType.SSH.type.lowercase(),
-            metadata,
-            SshCredentialValue(
-                TestConstants.SSH_PUBLIC_KEY_4096,
-                TestConstants.PRIVATE_KEY_4096,
-                null,
-            ),
-        )
-
-        val mvcResult = mockMvc.perform(
-            get("${CredentialsController.ENDPOINT}/{uuid}", uuid.toString())
-                .contentType(MediaType.APPLICATION_JSON)
-                .credHubAuthHeader(),
-        )
-            .andExpect(status().isOk)
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andDo(
-                document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    pathParameters(
-                        parameterWithName("uuid").description("The credential uuid"),
-                    ),
+        spyCredentialsHandler.credentialversionbyuuidReturnsCredentialview =
+            CredentialView(
+                Instant.ofEpochSecond(1549053472L),
+                uuid,
+                "/some-value-path",
+                CredentialType.SSH.type.lowercase(),
+                metadata,
+                SshCredentialValue(
+                    TestConstants.SSH_PUBLIC_KEY_4096,
+                    TestConstants.PRIVATE_KEY_4096,
+                    null,
                 ),
-            ).andReturn()
+            )
 
-        assertThat(spyCredentialsHandler.getCredentialVersionByUUID__calledWith_credentialUUID).isEqualTo(uuid.toString())
+        val mvcResult =
+            mockMvc
+                .perform(
+                    get("${CredentialsController.ENDPOINT}/{uuid}", uuid.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .credHubAuthHeader(),
+                ).andExpect(status().isOk)
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andDo(
+                    document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                        pathParameters(
+                            parameterWithName("uuid").description("The credential uuid"),
+                        ),
+                    ),
+                ).andReturn()
+
+        assertThat(spyCredentialsHandler.credentialversionbyuuidCalledwithCredentialuuid).isEqualTo(uuid.toString())
         // language=json
         val expectedResponseBody =
             """
@@ -513,148 +530,156 @@ class CredentialsControllerGetTest {
     }
 
     @Test
-    fun GET__find_by_name_like__returns_results() {
-        spyCredentialsHandler.findContainingName__returns_findCredentialResultList = listOf(
-            FindCredentialResult(
-                Instant.ofEpochSecond(1549053472L),
-                "some-credential-name",
-            ),
-        )
-
-        val mvcResult = mockMvc.perform(
-            get(CredentialsController.ENDPOINT)
-                .contentType(MediaType.APPLICATION_JSON)
-                .credHubAuthHeader()
-                .param("name-like", "some-credential")
-                .param("expires-within-days", "1"),
-        )
-            .andExpect(status().isOk)
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andDo(
-                document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    requestParameters(
-                        parameterWithName("name-like")
-                            .description("The credential name substring"),
-                        parameterWithName("expires-within-days")
-                            .description("The number of days the credential should expire within")
-                            .optional(),
-                    ),
-                ),
-            )
-            .andReturn()
-
-        assertThat(spyCredentialsHandler.findContainingName__calledWith_name).isEqualTo("some-credential")
-        assertThat(spyCredentialsHandler.findContainingName__calledWith_expiresWithinDays).isEqualTo("1")
-        val actualResponseBody = mvcResult.response.contentAsString
-        // language=json
-        val expectedResponseBody =
-            """
-            {
-                "credentials": [
-                    {
-                        "version_created_at": "2019-02-01T20:37:52Z",
-                        "name": "some-credential-name"
-                    }
-                ]
-            }
-            """.trimMargin()
-
-        JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true)
-    }
-
-    @Test
-    fun GET__find_by_path__returns_results() {
-        spyCredentialsHandler.findStartingWithPath__returns_findCredentialResultList = listOf(
-            FindCredentialResult(
-                Instant.ofEpochSecond(1549053472L),
-                "some-credential-name",
-            ),
-        )
-
-        val mvcResult = mockMvc.perform(
-            get(CredentialsController.ENDPOINT)
-                .contentType(MediaType.APPLICATION_JSON)
-                .credHubAuthHeader()
-                .param("path", "some-credential-path")
-                .param("expires-within-days", "1"),
-        )
-            .andExpect(status().isOk)
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andDo(
-                document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    requestParameters(
-                        parameterWithName("path")
-                            .description("The credential path"),
-                        parameterWithName("expires-within-days")
-                            .description("The number of days the credential should expire within")
-                            .optional(),
-                    ),
-                ),
-            )
-            .andReturn()
-
-        assertThat(spyCredentialsHandler.findStartingWithPath__calledWith_path).isEqualTo("some-credential-path")
-        assertThat(spyCredentialsHandler.findStartingWithPath__calledWith_expiresWithinDays).isEqualTo("1")
-        val actualResponseBody = mvcResult.response.contentAsString
-        // language=json
-        val expectedResponseBody =
-            """
-            {
-                "credentials": [
-                    {
-                        "version_created_at": "2019-02-01T20:37:52Z",
-                        "name": "some-credential-name"
-                    }
-                ]
-            }
-            """.trimMargin()
-
-        JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true)
-    }
-
-    @Test
-    fun GET__get_by_name__returns_results() {
-        spyCredentialsHandler.getCurrentCredentialVersions__returns_dataResponse = DataResponse(
+    fun getFind_by_name_like__returns_results() {
+        spyCredentialsHandler.findcontainingnameReturnsFindcredentialresultlist =
             listOf(
-                CredentialView(
+                FindCredentialResult(
                     Instant.ofEpochSecond(1549053472L),
-                    uuid,
-                    "/some-name",
-                    CredentialType.VALUE.type.lowercase(),
-                    metadata,
-                    StringCredentialValue("some-value"),
+                    "some-credential-name",
                 ),
-            ),
-        )
+            )
 
-        val mvcResult = mockMvc.perform(
-            get(CredentialsController.ENDPOINT)
-                .contentType(MediaType.APPLICATION_JSON)
-                .credHubAuthHeader()
-                .param("name", "/some-name")
-                .param("current", "true"),
-        )
-            .andExpect(status().isOk)
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andDo(
-                document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    requestParameters(
-                        parameterWithName("name")
-                            .description("The name of the credential."),
-                        parameterWithName("versions")
-                            .optional()
-                            .description("The number of versions to return. Note: this cannot be combined with 'current'. Defaults to all versions if not provided."),
-                        parameterWithName("current")
-                            .optional()
-                            .description("Only return the latest version of a credential. Note: this cannot be combined with 'versions'."),
+        val mvcResult =
+            mockMvc
+                .perform(
+                    get(CredentialsController.ENDPOINT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .credHubAuthHeader()
+                        .param("name-like", "some-credential")
+                        .param("expires-within-days", "1"),
+                ).andExpect(status().isOk)
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andDo(
+                    document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                        requestParameters(
+                            parameterWithName("name-like")
+                                .description("The credential name substring"),
+                            parameterWithName("expires-within-days")
+                                .description("The number of days the credential should expire within")
+                                .optional(),
+                        ),
+                    ),
+                ).andReturn()
+
+        assertThat(spyCredentialsHandler.findcontainingnameCalledwithName).isEqualTo("some-credential")
+        assertThat(spyCredentialsHandler.findcontainingnameCalledwithExpireswithindays).isEqualTo("1")
+        val actualResponseBody = mvcResult.response.contentAsString
+        // language=json
+        val expectedResponseBody =
+            """
+            {
+                "credentials": [
+                    {
+                        "version_created_at": "2019-02-01T20:37:52Z",
+                        "name": "some-credential-name"
+                    }
+                ]
+            }
+            """.trimMargin()
+
+        JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true)
+    }
+
+    @Test
+    fun getFind_by_path__returns_results() {
+        spyCredentialsHandler.findstartingwithpathReturnsFindcredentialresultlist =
+            listOf(
+                FindCredentialResult(
+                    Instant.ofEpochSecond(1549053472L),
+                    "some-credential-name",
+                ),
+            )
+
+        val mvcResult =
+            mockMvc
+                .perform(
+                    get(CredentialsController.ENDPOINT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .credHubAuthHeader()
+                        .param("path", "some-credential-path")
+                        .param("expires-within-days", "1"),
+                ).andExpect(status().isOk)
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andDo(
+                    document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                        requestParameters(
+                            parameterWithName("path")
+                                .description("The credential path"),
+                            parameterWithName("expires-within-days")
+                                .description("The number of days the credential should expire within")
+                                .optional(),
+                        ),
+                    ),
+                ).andReturn()
+
+        assertThat(spyCredentialsHandler.findstartingwithpathCalledwithPath).isEqualTo("some-credential-path")
+        assertThat(spyCredentialsHandler.findstartingwithpathCalledwithExpireswithindays).isEqualTo("1")
+        val actualResponseBody = mvcResult.response.contentAsString
+        // language=json
+        val expectedResponseBody =
+            """
+            {
+                "credentials": [
+                    {
+                        "version_created_at": "2019-02-01T20:37:52Z",
+                        "name": "some-credential-name"
+                    }
+                ]
+            }
+            """.trimMargin()
+
+        JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true)
+    }
+
+    @Test
+    fun getGet_by_name__returns_results() {
+        spyCredentialsHandler.currentcredentialversionsReturnsDataresponse =
+            DataResponse(
+                listOf(
+                    CredentialView(
+                        Instant.ofEpochSecond(1549053472L),
+                        uuid,
+                        "/some-name",
+                        CredentialType.VALUE.type.lowercase(),
+                        metadata,
+                        StringCredentialValue("some-value"),
                     ),
                 ),
-            ).andReturn()
+            )
 
-        assertThat(spyCredentialsHandler.getCurrentCredentialVersions__calledWith_credentialName).isEqualTo("/some-name")
+        val mvcResult =
+            mockMvc
+                .perform(
+                    get(CredentialsController.ENDPOINT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .credHubAuthHeader()
+                        .param("name", "/some-name")
+                        .param("current", "true"),
+                ).andExpect(status().isOk)
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andDo(
+                    document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                        requestParameters(
+                            parameterWithName("name")
+                                .description("The name of the credential."),
+                            parameterWithName("versions")
+                                .optional()
+                                .description(
+                                    "The number of versions to return. Note: this cannot be combined with 'current'. Defaults to all versions if not provided.",
+                                ),
+                            parameterWithName("current")
+                                .optional()
+                                .description(
+                                    "Only return the latest version of a credential. Note: this cannot be combined with 'versions'.",
+                                ),
+                        ),
+                    ),
+                ).andReturn()
+
+        assertThat(spyCredentialsHandler.currentcredentialversionsCalledwithCredentialname).isEqualTo("/some-name")
 
         val actualResponse = mvcResult.response.contentAsString
         // language=json

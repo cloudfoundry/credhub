@@ -2,18 +2,16 @@ package org.cloudfoundry.credhub.constants
 
 import com.fasterxml.jackson.annotation.JsonValue
 
-enum class CredentialWriteMode private constructor(val mode: String) {
+enum class CredentialWriteMode private constructor(
+    val mode: String,
+) {
     OVERWRITE("overwrite"),
     NO_OVERWRITE("no-overwrite"),
     CONVERGE("converge"),
     ;
 
     @JsonValue
-    fun forJackson(): String {
-        return mode
-    }
+    fun forJackson(): String = mode
 
-    override fun toString(): String {
-        return mode
-    }
+    override fun toString(): String = mode
 }

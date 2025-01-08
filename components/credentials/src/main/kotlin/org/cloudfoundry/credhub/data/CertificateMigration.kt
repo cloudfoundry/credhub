@@ -10,42 +10,48 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
 @Component
-class CertificateMigration @Autowired
-constructor(private val credentialVersionRepository: CredentialVersionRepository) {
-    fun migrate() {
-        var numberOfInvalidCertsFound = 0
-        while (credentialVersionRepository.countVersionsWithNullCertificateMetadata() != numberOfInvalidCertsFound) {
-            val data = credentialVersionRepository.findUpTo1000VersionsWithNullCertificateMetadata(numberOfInvalidCertsFound)
-            for (version in data) {
-                if (version is CertificateCredentialVersionData) {
-                    val certificate = version.certificate
-                    try {
-                        val reader = CertificateReader(certificate)
-                        version.expiryDate = reader.notAfter
-                        version.isCertificateAuthority = reader.isCa
-                        version.isSelfSigned = reader.isSelfSigned
-                    } catch (e: RuntimeException) {
-                        printErrorMessage(e, version)
-                        numberOfInvalidCertsFound++
+class CertificateMigration
+    @Autowired
+    constructor(
+        private val credentialVersionRepository: CredentialVersionRepository,
+    ) {
+        fun migrate() {
+            var numberOfInvalidCertsFound = 0
+            while (credentialVersionRepository.countVersionsWithNullCertificateMetadata() != numberOfInvalidCertsFound) {
+                val data = credentialVersionRepository.findUpTo1000VersionsWithNullCertificateMetadata(numberOfInvalidCertsFound)
+                for (version in data) {
+                    if (version is CertificateCredentialVersionData) {
+                        val certificate = version.certificate
+                        try {
+                            val reader = CertificateReader(certificate)
+                            version.expiryDate = reader.notAfter
+                            version.isCertificateAuthority = reader.isCa
+                            version.isSelfSigned = reader.isSelfSigned
+                        } catch (e: RuntimeException) {
+                            printErrorMessage(e, version)
+                            numberOfInvalidCertsFound++
+                        }
                     }
                 }
+                credentialVersionRepository.saveAll(data)
             }
-            credentialVersionRepository.saveAll(data)
+        }
+
+        fun printErrorMessage(
+            e: RuntimeException,
+            version: CertificateCredentialVersionData,
+        ) {
+            var message = String.format("Unexpected exception reading certificate with name %s: %s", version.name, e.toString())
+            when (e) {
+                is MalformedCertificateException ->
+                    message = String.format("can't read certificate with name %s", version.name)
+                is MissingCertificateException ->
+                    message = String.format("missing certificate with name %s", version.name)
+            }
+            LOGGER.warn(message)
+        }
+
+        companion object {
+            private val LOGGER = LogManager.getLogger(CertificateMigration::class.java)
         }
     }
-
-    fun printErrorMessage(e: RuntimeException, version: CertificateCredentialVersionData) {
-        var message = String.format("Unexpected exception reading certificate with name %s: %s", version.name, e.toString())
-        when (e) {
-            is MalformedCertificateException ->
-                message = String.format("can't read certificate with name %s", version.name)
-            is MissingCertificateException ->
-                message = String.format("missing certificate with name %s", version.name)
-        }
-        LOGGER.warn(message)
-    }
-
-    companion object {
-        private val LOGGER = LogManager.getLogger(CertificateMigration::class.java)
-    }
-}

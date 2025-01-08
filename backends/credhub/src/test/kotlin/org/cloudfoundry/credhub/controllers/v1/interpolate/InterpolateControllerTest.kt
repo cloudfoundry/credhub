@@ -43,10 +43,11 @@ class InterpolateControllerTest {
     fun setUp() {
         spyInterpolationHandler = SpyInterpolationHandler()
 
-        val interpolationController = InterpolationController(
-            spyInterpolationHandler,
-            CEFAuditRecord(),
-        )
+        val interpolationController =
+            InterpolationController(
+                spyInterpolationHandler,
+                CEFAuditRecord(),
+            )
 
         mockMvc = MockMvcFactory.newSpringRestDocMockMvc(interpolationController, restDocumentation)
 
@@ -56,7 +57,7 @@ class InterpolateControllerTest {
     }
 
     @Test
-    fun POST__interpolate__returns_map() {
+    fun postInterpolateReturnsMap() {
         // language=json
         val responseBody =
             """
@@ -76,7 +77,7 @@ class InterpolateControllerTest {
         val objectMapper = ObjectMapper()
 
         val map = objectMapper.readValue(responseBody, Map::class.java) as Map<String, Any>
-        spyInterpolationHandler.interpolateCredhubReferences__returns_map = map
+        spyInterpolationHandler.interpolatecredhubreferencesReturnsMap = map
 
         // language=json
         val requestBody =
@@ -96,21 +97,22 @@ class InterpolateControllerTest {
 
         val expectedRequest = objectMapper.readValue(requestBody, Map::class.java) as Map<String, Any>
 
-        val mvcResult = mockMvc.perform(
-            post(InterpolationController.ENDPOINT)
-                .contentType(MediaType.APPLICATION_JSON)
-                .credHubAuthHeader()
-                .content(requestBody),
-        )
-            .andExpect(status().isOk)
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andDo(
-                document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                ),
-            ).andReturn()
+        val mvcResult =
+            mockMvc
+                .perform(
+                    post(InterpolationController.ENDPOINT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .credHubAuthHeader()
+                        .content(requestBody),
+                ).andExpect(status().isOk)
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andDo(
+                    document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                    ),
+                ).andReturn()
 
-        assertThat(spyInterpolationHandler.interpolateCredhubReferences__calledWith_servicesMap).isEqualTo(expectedRequest)
+        assertThat(spyInterpolationHandler.interpolatecredhubreferencesCalledwithServicesmap).isEqualTo(expectedRequest)
         JSONAssert.assertEquals(mvcResult.response.contentAsString, responseBody, true)
     }
 }

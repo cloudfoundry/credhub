@@ -1,3 +1,5 @@
 package org.cloudfoundry.credhub.exceptions
 
-class EntryNotFoundException(messageCode: String) : RuntimeException(messageCode)
+class EntryNotFoundException(
+    messageCode: String,
+) : RuntimeException(messageCode)

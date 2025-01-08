@@ -8,46 +8,60 @@ import org.cloudfoundry.credhub.views.DataResponse
 import org.cloudfoundry.credhub.views.FindCredentialResult
 
 class SpyCredentialsHandler : CredentialsHandler {
-    lateinit var findStartingWithPath__returns_findCredentialResultList: List<FindCredentialResult>
-    lateinit var findStartingWithPath__calledWith_path: String
-    lateinit var findStartingWithPath__calledWith_expiresWithinDays: String
-    override fun findStartingWithPath(path: String, expiresWithinDays: String): List<FindCredentialResult> {
-        findStartingWithPath__calledWith_path = path
-        findStartingWithPath__calledWith_expiresWithinDays = expiresWithinDays
+    lateinit var findstartingwithpathReturnsFindcredentialresultlist: List<FindCredentialResult>
+    lateinit var findstartingwithpathCalledwithPath: String
+    lateinit var findstartingwithpathCalledwithExpireswithindays: String
 
-        return findStartingWithPath__returns_findCredentialResultList
+    override fun findStartingWithPath(
+        path: String,
+        expiresWithinDays: String,
+    ): List<FindCredentialResult> {
+        findstartingwithpathCalledwithPath = path
+        findstartingwithpathCalledwithExpireswithindays = expiresWithinDays
+
+        return findstartingwithpathReturnsFindcredentialresultlist
     }
 
-    lateinit var findContainingName__calledWith_name: String
-    lateinit var findContainingName__calledWith_expiresWithinDays: String
-    lateinit var findContainingName__returns_findCredentialResultList: List<FindCredentialResult>
-    override fun findContainingName(name: String, expiresWithinDays: String): List<FindCredentialResult> {
-        findContainingName__calledWith_name = name
-        findContainingName__calledWith_expiresWithinDays = expiresWithinDays
+    lateinit var findcontainingnameCalledwithName: String
+    lateinit var findcontainingnameCalledwithExpireswithindays: String
+    lateinit var findcontainingnameReturnsFindcredentialresultlist: List<FindCredentialResult>
 
-        return findContainingName__returns_findCredentialResultList
+    override fun findContainingName(
+        name: String,
+        expiresWithinDays: String,
+    ): List<FindCredentialResult> {
+        findcontainingnameCalledwithName = name
+        findcontainingnameCalledwithExpireswithindays = expiresWithinDays
+
+        return findcontainingnameReturnsFindcredentialresultlist
     }
 
-    lateinit var generateCredential__calledWith_generateRequest: BaseCredentialGenerateRequest
-    lateinit var generateCredential__returns_credentialView: CredentialView
+    lateinit var generatecredentialCalledwithGeneraterequest: BaseCredentialGenerateRequest
+    lateinit var generatecredentialReturnsCredentialview: CredentialView
+
     override fun generateCredential(generateRequest: BaseCredentialGenerateRequest): CredentialView {
-        generateCredential__calledWith_generateRequest = generateRequest
-        return generateCredential__returns_credentialView
+        generatecredentialCalledwithGeneraterequest = generateRequest
+        return generatecredentialReturnsCredentialview
     }
 
-    lateinit var setCredential__calledWith_setRequest: BaseCredentialSetRequest<*>
-    lateinit var setCredential__returns_credentialView: CredentialView
+    lateinit var credentialCalledwithSetrequest: BaseCredentialSetRequest<*>
+    lateinit var credentialReturnsCredentialview: CredentialView
+
     override fun setCredential(setRequest: BaseCredentialSetRequest<*>): CredentialView {
-        setCredential__calledWith_setRequest = setRequest
-        return setCredential__returns_credentialView
+        credentialCalledwithSetrequest = setRequest
+        return credentialReturnsCredentialview
     }
 
-    lateinit var deleteCredential__calledWith_credentialName: String
+    lateinit var deletecredentialCalledwithCredentialname: String
+
     override fun deleteCredential(credentialName: String) {
-        deleteCredential__calledWith_credentialName = credentialName
+        deletecredentialCalledwithCredentialname = credentialName
     }
 
-    override fun getNCredentialVersions(credentialName: String, numberOfVersions: Int?): DataResponse {
+    override fun getNCredentialVersions(
+        credentialName: String,
+        numberOfVersions: Int?,
+    ): DataResponse {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
@@ -55,18 +69,20 @@ class SpyCredentialsHandler : CredentialsHandler {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
-    lateinit var getCurrentCredentialVersions__calledWith_credentialName: String
-    lateinit var getCurrentCredentialVersions__returns_dataResponse: DataResponse
-    override fun getCurrentCredentialVersions(credentialName: String): DataResponse {
-        getCurrentCredentialVersions__calledWith_credentialName = credentialName
+    lateinit var currentcredentialversionsCalledwithCredentialname: String
+    lateinit var currentcredentialversionsReturnsDataresponse: DataResponse
 
-        return getCurrentCredentialVersions__returns_dataResponse
+    override fun getCurrentCredentialVersions(credentialName: String): DataResponse {
+        currentcredentialversionsCalledwithCredentialname = credentialName
+
+        return currentcredentialversionsReturnsDataresponse
     }
 
-    lateinit var getCredentialVersionByUUID__calledWith_credentialUUID: String
-    lateinit var getCredentialVersionByUUID__returns_credentialView: CredentialView
+    lateinit var credentialversionbyuuidCalledwithCredentialuuid: String
+    lateinit var credentialversionbyuuidReturnsCredentialview: CredentialView
+
     override fun getCredentialVersionByUUID(credentialUUID: String): CredentialView {
-        getCredentialVersionByUUID__calledWith_credentialUUID = credentialUUID
-        return getCredentialVersionByUUID__returns_credentialView
+        credentialversionbyuuidCalledwithCredentialuuid = credentialUUID
+        return credentialversionbyuuidReturnsCredentialview
     }
 }

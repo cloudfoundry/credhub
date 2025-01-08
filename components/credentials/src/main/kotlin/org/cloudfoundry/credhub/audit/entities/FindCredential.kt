@@ -10,7 +10,5 @@ class FindCredential : RequestDetails {
 
     var expiresWithinDays: String? = null
 
-    override fun operation(): OperationDeviceAction {
-        return OperationDeviceAction.FIND
-    }
+    override fun operation(): OperationDeviceAction = OperationDeviceAction.FIND
 }

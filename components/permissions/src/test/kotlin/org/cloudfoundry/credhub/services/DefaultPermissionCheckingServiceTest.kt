@@ -25,7 +25,6 @@ import java.util.UUID
 
 @RunWith(JUnit4::class)
 class DefaultPermissionCheckingServiceTest {
-
     private var subject: DefaultPermissionCheckingService? = null
 
     private var userContext: UserContext? = null
@@ -146,7 +145,13 @@ class DefaultPermissionCheckingServiceTest {
 
     private fun initializeEnforcement(enabled: Boolean) {
         ReflectionTestUtils
-            .setField(subject, DefaultPermissionCheckingService::class.java, "enforcePermissions", enabled, Boolean::class.javaPrimitiveType)
+            .setField(
+                subject,
+                DefaultPermissionCheckingService::class.java,
+                "enforcePermissions",
+                enabled,
+                Boolean::class.javaPrimitiveType,
+            )
     }
 
     private fun assertConditionallyHasPermission(
@@ -158,8 +163,7 @@ class DefaultPermissionCheckingServiceTest {
         `when`(
             permissionDataService!!
                 .hasPermission(user, credentialName, permission),
-        )
-            .thenReturn(isGranted)
+        ).thenReturn(isGranted)
 
         assertThat(subject!!.hasPermission(user, credentialName, permission), equalTo(isGranted))
     }
@@ -173,14 +177,12 @@ class DefaultPermissionCheckingServiceTest {
         `when`(
             permissionDataService!!
                 .hasPermission(user, credentialName, permission),
-        )
-            .thenReturn(isGranted)
+        ).thenReturn(isGranted)
 
         assertThat(subject!!.hasPermission(user, credentialName, permission), equalTo(true))
     }
 
     companion object {
-
         private val CREDENTIAL_NAME = "/test/credential"
     }
 }

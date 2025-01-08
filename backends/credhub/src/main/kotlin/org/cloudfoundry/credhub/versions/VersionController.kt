@@ -8,13 +8,13 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping(path = [VersionController.ENDPOINT], produces = [MediaType.APPLICATION_JSON_UTF8_VALUE])
-class VersionController(val versionProvider: VersionProvider) {
+class VersionController(
+    val versionProvider: VersionProvider,
+) {
     companion object {
         const val ENDPOINT = "/version"
     }
 
     @RequestMapping(method = [RequestMethod.GET], path = [""])
-    fun version(): Map<String, String> {
-        return mapOf("version" to versionProvider.currentVersion())
-    }
+    fun version(): Map<String, String> = mapOf("version" to versionProvider.currentVersion())
 }

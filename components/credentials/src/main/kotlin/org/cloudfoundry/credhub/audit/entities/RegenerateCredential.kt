@@ -6,7 +6,5 @@ import org.cloudfoundry.credhub.audit.RequestDetails
 class RegenerateCredential : RequestDetails {
     var name: String? = null
 
-    override fun operation(): OperationDeviceAction {
-        return OperationDeviceAction.REGENERATE
-    }
+    override fun operation(): OperationDeviceAction = OperationDeviceAction.REGENERATE
 }

@@ -17,13 +17,15 @@ import java.util.function.Supplier
 @Component
 class GenerationRequestGenerator {
     private val regeneratableTypeProducers: MutableMap<String, Supplier<Regeneratable>>
+
     fun createGenerateRequest(credentialVersion: CredentialVersion?): BaseCredentialGenerateRequest {
         if (credentialVersion == null) {
             throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
         }
-        val regeneratable = regeneratableTypeProducers
-            .getOrDefault(credentialVersion.getCredentialType(), Supplier<Regeneratable> { NotRegeneratable() })
-            .get()
+        val regeneratable =
+            regeneratableTypeProducers
+                .getOrDefault(credentialVersion.getCredentialType(), Supplier<Regeneratable> { NotRegeneratable() })
+                .get()
         return regeneratable.createGenerateRequest(credentialVersion)
     }
 

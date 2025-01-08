@@ -15,12 +15,22 @@ import java.security.cert.CertificateException
 
 @Component
 class RestTemplateFactory {
-    @Throws(CertificateException::class, NoSuchAlgorithmException::class, KeyStoreException::class, IOException::class, KeyManagementException::class)
-    fun createRestTemplate(trustStorePath: String, trustStorePassword: String): RestTemplate {
+    @Throws(
+        CertificateException::class,
+        NoSuchAlgorithmException::class,
+        KeyStoreException::class,
+        IOException::class,
+        KeyManagementException::class,
+    )
+    fun createRestTemplate(
+        trustStorePath: String,
+        trustStorePassword: String,
+    ): RestTemplate {
         val trustStore = File(trustStorePath)
-        val sslContext = SSLContextBuilder()
-            .loadTrustMaterial(trustStore, trustStorePassword.toCharArray())
-            .build()
+        val sslContext =
+            SSLContextBuilder()
+                .loadTrustMaterial(trustStore, trustStorePassword.toCharArray())
+                .build()
         val socketFactory = SSLConnectionSocketFactory(sslContext)
         val httpClient = HttpClients.custom().setSSLSocketFactory(socketFactory).build()
         val requestFactory = HttpComponentsClientHttpRequestFactory(httpClient)

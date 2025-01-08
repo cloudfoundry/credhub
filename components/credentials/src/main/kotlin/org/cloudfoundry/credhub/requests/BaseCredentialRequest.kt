@@ -9,9 +9,12 @@ import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.Pattern
 
 abstract class BaseCredentialRequest {
-
     @NotEmpty(message = ErrorMessages.MISSING_NAME)
-    @Pattern.List(Pattern(regexp = HAS_NO_DOUBLE_SLASHES_AND_DOES_NOT_END_WITH_A_SLASH, message = ErrorMessages.Credential.INVALID_SLASH_IN_NAME), Pattern(regexp = ONLY_VALID_CHARACTERS_IN_NAME, message = ErrorMessages.Credential.INVALID_CHARACTER_IN_NAME), Pattern(regexp = IS_NOT_EMPTY, message = ErrorMessages.MISSING_NAME))
+    @Pattern.List(
+        Pattern(regexp = HAS_NO_DOUBLE_SLASHES_AND_DOES_NOT_END_WITH_A_SLASH, message = ErrorMessages.Credential.INVALID_SLASH_IN_NAME),
+        Pattern(regexp = ONLY_VALID_CHARACTERS_IN_NAME, message = ErrorMessages.Credential.INVALID_CHARACTER_IN_NAME),
+        Pattern(regexp = IS_NOT_EMPTY, message = ErrorMessages.MISSING_NAME),
+    )
     var name: String? = null
         set(name) {
             field = StringUtils.prependIfMissing(name, "/")
@@ -29,8 +32,11 @@ abstract class BaseCredentialRequest {
     }
 
     private fun enforceJsr303AnnotationValidations() {
-        val constraintViolations = Validation
-            .buildDefaultValidatorFactory().validator.validate(this)
+        val constraintViolations =
+            Validation
+                .buildDefaultValidatorFactory()
+                .validator
+                .validate(this)
         for (constraintViolation in constraintViolations) {
             throw ParameterizedValidationException(constraintViolation.message)
         }

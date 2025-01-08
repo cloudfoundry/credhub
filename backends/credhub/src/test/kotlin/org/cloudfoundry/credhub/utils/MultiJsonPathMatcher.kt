@@ -9,8 +9,8 @@ import org.springframework.test.web.servlet.ResultMatcher
 class MultiJsonPathMatcher {
     companion object {
         @JvmStatic
-        fun multiJsonPath(vararg keysAndValues: Any): ResultMatcher {
-            return ResultMatcher { result: MvcResult ->
+        fun multiJsonPath(vararg keysAndValues: Any): ResultMatcher =
+            ResultMatcher { result: MvcResult ->
                 var i = 0
                 while (i < keysAndValues.size) {
                     val jsonPath = keysAndValues[i++] as String
@@ -22,6 +22,5 @@ class MultiJsonPathMatcher {
                     )
                 }
             }
-        }
     }
 }

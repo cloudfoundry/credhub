@@ -9,65 +9,84 @@ import org.cloudfoundry.credhub.views.CertificateView
 import org.cloudfoundry.credhub.views.CredentialView
 
 class SpyCertificatesHandler : CertificatesHandler {
+    lateinit var handleregenerateCalledwithCredentialuuid: String
+    lateinit var handleregenerateCalledwithRequest: CertificateRegenerateRequest
+    lateinit var handleregenerateReturnsCredentialview: CredentialView
 
-    lateinit var handleRegenerate__calledWith_credentialUuid: String
-    lateinit var handleRegenerate__calledWith_request: CertificateRegenerateRequest
-    lateinit var handleRegenerate__returns_credentialView: CredentialView
-    override fun handleRegenerate(credentialUuid: String, request: CertificateRegenerateRequest): CredentialView {
-        handleRegenerate__calledWith_credentialUuid = credentialUuid
-        handleRegenerate__calledWith_request = request
+    override fun handleRegenerate(
+        credentialUuid: String,
+        request: CertificateRegenerateRequest,
+    ): CredentialView {
+        handleregenerateCalledwithCredentialuuid = credentialUuid
+        handleregenerateCalledwithRequest = request
 
-        return handleRegenerate__returns_credentialView
+        return handleregenerateReturnsCredentialview
     }
 
-    lateinit var handleGetAllRequest__returns_certificateCredentialsView: CertificateCredentialsView
-    override fun handleGetAllRequest(): CertificateCredentialsView {
-        return handleGetAllRequest__returns_certificateCredentialsView
-    }
+    lateinit var handlegetallrequestReturnsCertificatecredentialsview: CertificateCredentialsView
 
-    lateinit var handleGetByNameRequest__calledWith_name: String
-    lateinit var handleGetByNameRequest__returns_certificateCredentialsView: CertificateCredentialsView
+    override fun handleGetAllRequest(): CertificateCredentialsView = handlegetallrequestReturnsCertificatecredentialsview
+
+    lateinit var handlegetbynamerequestCalledwithName: String
+    lateinit var handlegetbynamerequestReturnsCertificatecredentialsview: CertificateCredentialsView
+
     override fun handleGetByNameRequest(name: String): CertificateCredentialsView {
-        handleGetByNameRequest__calledWith_name = name
-        return handleGetByNameRequest__returns_certificateCredentialsView
+        handlegetbynamerequestCalledwithName = name
+        return handlegetbynamerequestReturnsCertificatecredentialsview
     }
 
-    lateinit var handleGetAllVersionsRequest__calledWith_uuid: String
-    var handleGetAllVersionsRequest__calledWith_current = false
-    lateinit var handleGetAllVersionsRequest__returns_certificateViews: List<CertificateView>
-    override fun handleGetAllVersionsRequest(certificateId: String, current: Boolean): List<CertificateView> {
-        handleGetAllVersionsRequest__calledWith_uuid = certificateId
-        handleGetAllVersionsRequest__calledWith_current = current
+    lateinit var handlegetallversionsrequestCalledwithUuid: String
+    var handlegetallversionsrequestCalledwithCurrent = false
+    lateinit var handlegetallversionsrequestReturnsCertificateviews: List<CertificateView>
 
-        return handleGetAllVersionsRequest__returns_certificateViews
+    override fun handleGetAllVersionsRequest(
+        certificateId: String,
+        current: Boolean,
+    ): List<CertificateView> {
+        handlegetallversionsrequestCalledwithUuid = certificateId
+        handlegetallversionsrequestCalledwithCurrent = current
+
+        return handlegetallversionsrequestReturnsCertificateviews
     }
 
-    lateinit var handleDeleteVersionRequest__calledWith_certificateId: String
-    lateinit var handleDeleteVersionRequest__calledWith_versionId: String
-    lateinit var handleDeleteVersionRequest__returns_certificateView: CertificateView
-    override fun handleDeleteVersionRequest(certificateId: String, versionId: String): CertificateView {
-        handleDeleteVersionRequest__calledWith_certificateId = certificateId
-        handleDeleteVersionRequest__calledWith_versionId = versionId
+    lateinit var handledeleteversionrequestCalledwithCertificateid: String
+    lateinit var handledeleteversionrequestCalledwithVersionid: String
+    lateinit var handledeleteversionrequestReturnsCertificateview: CertificateView
 
-        return handleDeleteVersionRequest__returns_certificateView
+    override fun handleDeleteVersionRequest(
+        certificateId: String,
+        versionId: String,
+    ): CertificateView {
+        handledeleteversionrequestCalledwithCertificateid = certificateId
+        handledeleteversionrequestCalledwithVersionid = versionId
+
+        return handledeleteversionrequestReturnsCertificateview
     }
 
-    lateinit var handleUpdateTransitionalVersion__calledWith_certificateId: String
-    lateinit var handleUpdateTransitionalVersion__calledWith_requestBody: UpdateTransitionalVersionRequest
-    lateinit var handleUpdateTransitionalVersion__returns_certificateViewList: List<CertificateView>
-    override fun handleUpdateTransitionalVersion(certificateId: String, requestBody: UpdateTransitionalVersionRequest): List<CertificateView> {
-        handleUpdateTransitionalVersion__calledWith_certificateId = certificateId
-        handleUpdateTransitionalVersion__calledWith_requestBody = requestBody
-        return handleUpdateTransitionalVersion__returns_certificateViewList
+    lateinit var handleupdatetransitionalversionCalledwithCertificateid: String
+    lateinit var handleupdatetransitionalversionCalledwithRequestbody: UpdateTransitionalVersionRequest
+    lateinit var handleupdatetransitionalversionReturnsCertificateviewlist: List<CertificateView>
+
+    override fun handleUpdateTransitionalVersion(
+        certificateId: String,
+        requestBody: UpdateTransitionalVersionRequest,
+    ): List<CertificateView> {
+        handleupdatetransitionalversionCalledwithCertificateid = certificateId
+        handleupdatetransitionalversionCalledwithRequestbody = requestBody
+        return handleupdatetransitionalversionReturnsCertificateviewlist
     }
 
-    lateinit var handleCreateVersionRequest__calledWith_certificateId: String
-    lateinit var handleCreateVersionRequest__calledWith_requestBody: CreateVersionRequest
-    lateinit var handleCreateVersionRequest__returns_certificateView: CertificateView
-    override fun handleCreateVersionsRequest(certificateId: String, requestBody: CreateVersionRequest): CertificateView {
-        handleCreateVersionRequest__calledWith_certificateId = certificateId
-        handleCreateVersionRequest__calledWith_requestBody = requestBody
+    lateinit var handlecreateversionrequestCalledwithCertificateid: String
+    lateinit var handlecreateversionrequestCalledwithRequestbody: CreateVersionRequest
+    lateinit var handlecreateversionrequestReturnsCertificateview: CertificateView
 
-        return handleCreateVersionRequest__returns_certificateView
+    override fun handleCreateVersionsRequest(
+        certificateId: String,
+        requestBody: CreateVersionRequest,
+    ): CertificateView {
+        handlecreateversionrequestCalledwithCertificateid = certificateId
+        handlecreateversionrequestCalledwithRequestbody = requestBody
+
+        return handlecreateversionrequestReturnsCertificateview
     }
 }

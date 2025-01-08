@@ -37,6 +37,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.WebApplicationContext
 
+private const val API_V1_REGENERATE_ENDPOINT = "/api/v1/regenerate"
+
 @RunWith(SpringRunner::class)
 @ActiveProfiles(value = ["unit-test", "unit-test-permissions"], resolver = DatabaseProfileResolver::class)
 @SpringBootTest(classes = [CredhubTestApp::class])
@@ -51,8 +53,6 @@ class RegenerateEndpointConcatenateCasIntegrationTest {
 
     @Autowired
     private val applicationEventPublisher: ApplicationEventPublisher? = null
-
-    private val API_V1_REGENERATE_ENDPOINT = "/api/v1/regenerate"
 
     private lateinit var mockMvc: MockMvc
 
@@ -69,10 +69,11 @@ class RegenerateEndpointConcatenateCasIntegrationTest {
 
     @Before
     fun beforeEach() {
-        mockMvc = MockMvcBuilders
-            .webAppContextSetup(webApplicationContext!!)
-            .apply<DefaultMockMvcBuilder>(SecurityMockMvcConfigurers.springSecurity())
-            .build()
+        mockMvc =
+            MockMvcBuilders
+                .webAppContextSetup(webApplicationContext!!)
+                .apply<DefaultMockMvcBuilder>(SecurityMockMvcConfigurers.springSecurity())
+                .build()
         applicationContext?.let { ContextRefreshedEvent(it) }?.let { applicationEventPublisher?.publishEvent(it) }
     }
 
@@ -82,26 +83,33 @@ class RegenerateEndpointConcatenateCasIntegrationTest {
         val caName = "/test-ca"
         val certName = "/testCert"
 
-        val generatedCa = JsonPath.parse(RequestHelper.generateCa(mockMvc, caName, ALL_PERMISSIONS_TOKEN))
-            .read<String>("$.value.ca")
+        val generatedCa =
+            JsonPath
+                .parse(RequestHelper.generateCa(mockMvc, caName, ALL_PERMISSIONS_TOKEN))
+                .read<String>("$.value.ca")
         RequestHelper.generateCertificate(mockMvc, certName, caName, ALL_PERMISSIONS_TOKEN)
         val generatedCaUUID = RequestHelper.getCertificateId(mockMvc, caName)
-        val regeneratedCa = JsonPath.parse(RequestHelper.regenerateCertificate(mockMvc, generatedCaUUID, true, ALL_PERMISSIONS_TOKEN))
-            .read<String>("$.value.ca")
+        val regeneratedCa =
+            JsonPath
+                .parse(RequestHelper.regenerateCertificate(mockMvc, generatedCaUUID, true, ALL_PERMISSIONS_TOKEN))
+                .read<String>("$.value.ca")
 
-        val regenerateCertificateRequest = post(API_V1_REGENERATE_ENDPOINT)
-            .header("Authorization", "Bearer $ALL_PERMISSIONS_TOKEN")
-            .accept(APPLICATION_JSON)
-            .contentType(APPLICATION_JSON)
-            // language=JSON
-            .content(
-                """{
-                "name": "$certName"
-            }
-                """.trimIndent(),
-            )
+        val regenerateCertificateRequest =
+            post(API_V1_REGENERATE_ENDPOINT)
+                .header("Authorization", "Bearer $ALL_PERMISSIONS_TOKEN")
+                .accept(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
+                // language=JSON
+                .content(
+                    """
+                    {
+                        "name": "$certName"
+                    }
+                    """.trimIndent(),
+                )
 
-        this.mockMvc.perform(regenerateCertificateRequest)
+        this.mockMvc
+            .perform(regenerateCertificateRequest)
             .andDo(print())
             .andExpect(status().is2xxSuccessful)
             .andExpect(jsonPath("$.value.ca").value(generatedCa + regeneratedCa))
@@ -113,8 +121,10 @@ class RegenerateEndpointConcatenateCasIntegrationTest {
         val certificateName = "leafCertificate"
 
         val generateCaResponse = RequestHelper.generateCa(mockMvc, caName, ALL_PERMISSIONS_TOKEN)
-        val caCertificateGenerated = JsonPath.parse(generateCaResponse)
-            .read<String>("$.value.certificate")
+        val caCertificateGenerated =
+            JsonPath
+                .parse(generateCaResponse)
+                .read<String>("$.value.certificate")
         assertNotNull(caCertificateGenerated)
 
         val caCredentialUuid = RequestHelper.getCertificateId(mockMvc, caName)
@@ -128,24 +138,32 @@ class RegenerateEndpointConcatenateCasIntegrationTest {
             ALL_PERMISSIONS_TOKEN,
         )
         val regenerateCertificateResponse = RequestHelper.regenerateCertificate(mockMvc, caCredentialUuid, true, ALL_PERMISSIONS_TOKEN)
-        val caCertificateRegenerated = JsonPath.parse(regenerateCertificateResponse)
-            .read<String>("$.value.certificate")
+        val caCertificateRegenerated =
+            JsonPath
+                .parse(regenerateCertificateResponse)
+                .read<String>("$.value.certificate")
         assertNotNull(caCertificateRegenerated)
-        val caCertificateRegeneratedIsTransitional = JsonPath.parse(regenerateCertificateResponse)
-            .read<Boolean>("$.transitional")
+        val caCertificateRegeneratedIsTransitional =
+            JsonPath
+                .parse(regenerateCertificateResponse)
+                .read<Boolean>("$.transitional")
         assertTrue(caCertificateRegeneratedIsTransitional)
 
         val certCredentialUuid = RequestHelper.getCertificateId(mockMvc, certificateName)
-        val regenerateLeafRequest = post("/api/v1/certificates/$certCredentialUuid/regenerate")
-            .header("Authorization", "Bearer $ALL_PERMISSIONS_TOKEN")
-            .accept(APPLICATION_JSON)
-            .contentType(APPLICATION_JSON)
-            .content("{\"set_as_transitional\": false, \"allow_transitional_parent_to_sign\": true }")
+        val regenerateLeafRequest =
+            post("/api/v1/certificates/$certCredentialUuid/regenerate")
+                .header("Authorization", "Bearer $ALL_PERMISSIONS_TOKEN")
+                .accept(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
+                .content("{\"set_as_transitional\": false, \"allow_transitional_parent_to_sign\": true }")
 
-        val response = this.mockMvc.perform(regenerateLeafRequest)
-            .andExpect(status().isOk)
-            .andReturn().response
-            .contentAsString
+        val response =
+            this.mockMvc
+                .perform(regenerateLeafRequest)
+                .andExpect(status().isOk)
+                .andReturn()
+                .response
+                .contentAsString
 
         val leafCA = JsonPath.parse(response).read<String>("$.value.ca")
         assertThat<String>(leafCA, IsEqual.equalTo<String>(caCertificateRegenerated + caCertificateGenerated))

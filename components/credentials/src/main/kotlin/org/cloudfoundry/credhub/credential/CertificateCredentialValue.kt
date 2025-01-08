@@ -27,7 +27,6 @@ import java.util.Objects
 @RequireCertificateMatchesPrivateKey(message = ErrorMessages.MISMATCHED_CERTIFICATE_AND_PRIVATE_KEY, fields = ["certificate", "privateKey"])
 @RequireValidCA(message = ErrorMessages.INVALID_CA_VALUE, fields = ["certificate", "ca"])
 class CertificateCredentialValue : CredentialValue {
-
     @JsonDeserialize(using = EmptyStringToNull::class)
     var ca: String? = null
 
@@ -160,7 +159,5 @@ class CertificateCredentialValue : CredentialValue {
             this.caName == that.caName
     }
 
-    override fun hashCode(): Int {
-        return Objects.hash(ca, certificate, privateKey, this.caName, transitional, certificateAuthority, selfSigned)
-    }
+    override fun hashCode(): Int = Objects.hash(ca, certificate, privateKey, this.caName, transitional, certificateAuthority, selfSigned)
 }

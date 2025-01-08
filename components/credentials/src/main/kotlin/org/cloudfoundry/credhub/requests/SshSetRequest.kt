@@ -32,7 +32,5 @@ class SshSetRequest : BaseCredentialSetRequest<SshCredentialValue?>() {
         return sshKeyValue == that!!.sshKeyValue
     }
 
-    override fun hashCode(): Int {
-        return Objects.hash(sshKeyValue)
-    }
+    override fun hashCode(): Int = Objects.hash(sshKeyValue)
 }

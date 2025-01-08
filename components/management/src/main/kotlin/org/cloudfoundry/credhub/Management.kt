@@ -11,7 +11,5 @@ class Management {
         this.readOnlyMode = readOnlyMode!!
     }
 
-    override fun toString(): String {
-        return "isReadOnly: $readOnlyMode"
-    }
+    override fun toString(): String = "isReadOnly: $readOnlyMode"
 }

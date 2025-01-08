@@ -16,7 +16,5 @@ class RsaGenerationParameters : RsaSshGenerationParameters() {
         return keyLength == that!!.keyLength
     }
 
-    override fun hashCode(): Int {
-        return Objects.hash(keyLength)
-    }
+    override fun hashCode(): Int = Objects.hash(keyLength)
 }

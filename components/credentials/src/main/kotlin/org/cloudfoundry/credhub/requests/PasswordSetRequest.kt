@@ -9,7 +9,6 @@ import javax.validation.Valid
 import javax.validation.constraints.NotNull
 
 class PasswordSetRequest : BaseCredentialSetRequest<StringCredentialValue?>() {
-
     @NotNull(message = ErrorMessages.MISSING_VALUE)
     @Valid
     @JsonProperty("value")
@@ -34,7 +33,5 @@ class PasswordSetRequest : BaseCredentialSetRequest<StringCredentialValue?>() {
         return password == that!!.password && generationParameters == that.generationParameters
     }
 
-    override fun hashCode(): Int {
-        return Objects.hash(password, generationParameters)
-    }
+    override fun hashCode(): Int = Objects.hash(password, generationParameters)
 }

@@ -7,7 +7,6 @@ import org.cloudfoundry.credhub.domain.CertificateGenerationParameters
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException
 
 class CertificateGenerateRequest : BaseCredentialGenerateRequest() {
-
     @JsonProperty("parameters")
     private var requestGenerationParameters: CertificateGenerationRequestParameters? = null
 

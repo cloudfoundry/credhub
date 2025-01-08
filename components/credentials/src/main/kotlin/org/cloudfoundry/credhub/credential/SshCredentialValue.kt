@@ -12,7 +12,6 @@ import java.util.Objects
 @RequireAnyOf(message = ErrorMessages.MISSING_RSA_SSH_PARAMETERS, fields = ["publicKey", "privateKey"])
 @JsonAutoDetect
 class SshCredentialValue : CredentialValue {
-
     @JsonDeserialize(using = EmptyStringToNull::class)
     var publicKey: String? = null
 
@@ -43,7 +42,5 @@ class SshCredentialValue : CredentialValue {
             publicKeyFingerprint == that.publicKeyFingerprint
     }
 
-    override fun hashCode(): Int {
-        return Objects.hash(publicKey, privateKey, publicKeyFingerprint)
-    }
+    override fun hashCode(): Int = Objects.hash(publicKey, privateKey, publicKeyFingerprint)
 }

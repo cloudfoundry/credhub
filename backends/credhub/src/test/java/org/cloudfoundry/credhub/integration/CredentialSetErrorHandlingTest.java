@@ -25,8 +25,8 @@ import org.junit.runner.RunWith;
 
 import static org.cloudfoundry.credhub.helpers.RequestHelper.setPassword;
 import static org.cloudfoundry.credhub.utils.AuthConstants.ALL_PERMISSIONS_TOKEN;
-import static org.cloudfoundry.credhub.utils.SpringUtilities.activeProfilesString;
-import static org.cloudfoundry.credhub.utils.SpringUtilities.unitTestPostgresProfile;
+import static org.cloudfoundry.credhub.utils.SpringUtilities.ACTIVE_PROFILE_STRING;
+import static org.cloudfoundry.credhub.utils.SpringUtilities.UNIT_TEST_POSTGRES_PROFILE;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -361,7 +361,7 @@ public class CredentialSetErrorHandlingTest {
 
   @Test
   public void givenAPayloadThatExceedsTheMaximumSize_returnsA413() throws Exception {
-    if (System.getProperty(activeProfilesString).contains(unitTestPostgresProfile)) {
+    if (System.getProperty(ACTIVE_PROFILE_STRING).contains(UNIT_TEST_POSTGRES_PROFILE)) {
       return;
     }
 

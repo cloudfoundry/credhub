@@ -5,14 +5,12 @@ import org.cloudfoundry.credhub.entities.EncryptedValue
 import java.util.UUID
 
 class SpyEncryptor : Encryptor {
+    lateinit var encryptCalledwithString: String
 
-    lateinit var encrypt__calledWith_string: String
     override fun encrypt(clearTextValue: String?): EncryptedValue {
-        encrypt__calledWith_string = clearTextValue ?: "some-value"
+        encryptCalledwithString = clearTextValue ?: "some-value"
         return EncryptedValue(UUID.randomUUID(), "some-value", "some-nonce")
     }
 
-    override fun decrypt(encryption: EncryptedValue?): String? {
-        return encrypt__calledWith_string
-    }
+    override fun decrypt(encryption: EncryptedValue?): String? = encryptCalledwithString
 }

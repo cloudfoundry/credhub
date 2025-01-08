@@ -6,9 +6,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect
 class BulkRegenerateResults {
     private lateinit var regeneratedCredentials: Set<String>
 
-    fun getRegeneratedCredentials(): Set<String> {
-        return this.regeneratedCredentials
-    }
+    fun getRegeneratedCredentials(): Set<String> = this.regeneratedCredentials
 
     fun setRegeneratedCredentials(regeneratedCredentials: Set<String>) {
         this.regeneratedCredentials = regeneratedCredentials

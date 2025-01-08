@@ -9,7 +9,10 @@ import org.springframework.stereotype.Service
 @Service
 @Profile("remote")
 class RemoteRegenerateHandler : RegenerateHandler {
-    override fun handleRegenerate(credentialName: String, credentialMetadata: JsonNode?): CredentialView {
+    override fun handleRegenerate(
+        credentialName: String,
+        credentialMetadata: JsonNode?,
+    ): CredentialView {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 

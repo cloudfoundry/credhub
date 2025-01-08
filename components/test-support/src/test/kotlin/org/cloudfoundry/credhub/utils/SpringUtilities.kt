@@ -4,7 +4,7 @@ class SpringUtilities {
     private constructor()
 
     companion object {
-        const val activeProfilesString = "spring.profiles.active"
-        const val unitTestPostgresProfile = "unit-test-postgres"
+        const val ACTIVE_PROFILE_STRING = "spring.profiles.active"
+        const val UNIT_TEST_POSTGRES_PROFILE = "unit-test-postgres"
     }
 }

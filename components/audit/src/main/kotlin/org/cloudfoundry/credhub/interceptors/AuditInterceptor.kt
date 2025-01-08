@@ -12,32 +12,40 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 @Component
-class AuditInterceptor @Autowired
-internal constructor(
-    private val userContextFactory: UserContextFactory,
-    private val auditRecord: CEFAuditRecord,
-) : HandlerInterceptorAdapter() {
+class AuditInterceptor
+    @Autowired
+    internal constructor(
+        private val userContextFactory: UserContextFactory,
+        private val auditRecord: CEFAuditRecord,
+    ) : HandlerInterceptorAdapter() {
+        override fun preHandle(
+            request: HttpServletRequest,
+            response: HttpServletResponse,
+            handler: Any,
+        ): Boolean {
+            auditRecord.initCredentials()
+            auditRecord.setHttpRequest(request)
+            return true
+        }
 
-    override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {
-        auditRecord.initCredentials()
-        auditRecord.setHttpRequest(request)
-        return true
+        override fun afterCompletion(
+            request: HttpServletRequest,
+            response: HttpServletResponse,
+            handler: Any,
+            @Nullable exception: Exception?,
+        ) {
+            val userAuth = request.userPrincipal ?: return
+            val userContext = userContextFactory.createUserContext(userAuth as Authentication)
+
+            auditRecord.username = userAuth.name
+            auditRecord.httpStatusCode = response.status
+            auditRecord.setUserGuid(userContext.actor!!)
+            auditRecord.authMechanism = userContext.authMethod!!
+
+            LOGGER.info(auditRecord.toString())
+        }
+
+        companion object {
+            private val LOGGER = LogManager.getLogger("CEFAudit")
+        }
     }
-
-    override fun afterCompletion(request: HttpServletRequest, response: HttpServletResponse, handler: Any, @Nullable exception: Exception?) {
-        val userAuth = request.userPrincipal ?: return
-        val userContext = userContextFactory.createUserContext(userAuth as Authentication)
-
-        auditRecord.username = userAuth.name
-        auditRecord.httpStatusCode = response.status
-        auditRecord.setUserGuid(userContext.actor!!)
-        auditRecord.authMechanism = userContext.authMethod!!
-
-        LOGGER.info(auditRecord.toString())
-    }
-
-    companion object {
-
-        private val LOGGER = LogManager.getLogger("CEFAudit")
-    }
-}

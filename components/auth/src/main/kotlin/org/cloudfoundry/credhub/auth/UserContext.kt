@@ -5,8 +5,13 @@ import org.bouncycastle.asn1.x500.style.BCStyle
 import java.time.Instant
 
 class UserContext {
-    class UnsupportedGrantTypeException(message: String) : Exception(message)
-    class UnsupportedAuthMethodException(message: String) : Exception(message)
+    class UnsupportedGrantTypeException(
+        message: String,
+    ) : Exception(message)
+
+    class UnsupportedAuthMethodException(
+        message: String,
+    ) : Exception(message)
 
     var userId = VALUE_MISSING_OR_IRRELEVANT_TO_AUTH_TYPE
     var userName = VALUE_MISSING_OR_IRRELEVANT_TO_AUTH_TYPE
@@ -88,8 +93,8 @@ class UserContext {
         return rdNs[0].first.value.toString()
     }
 
-    override fun toString(): String {
-        return "UserContext{" +
+    override fun toString(): String =
+        "UserContext{" +
             "userId='" + userId + '\''.toString() +
             ", userName='" + userName + '\''.toString() +
             ", issuer='" + issuer + '\''.toString() +
@@ -100,10 +105,8 @@ class UserContext {
             ", grantType='" + grantType + '\''.toString() +
             ", authMethod='" + authMethod + '\''.toString() +
             '}'.toString()
-    }
 
     companion object {
-
         val VALUE_MISSING_OR_IRRELEVANT_TO_AUTH_TYPE: String? = null
         const val AUTH_METHOD_UAA = "uaa"
         const val AUTH_METHOD_MUTUAL_TLS = "mutual_tls"

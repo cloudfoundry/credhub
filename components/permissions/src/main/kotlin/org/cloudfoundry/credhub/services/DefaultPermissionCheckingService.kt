@@ -10,64 +10,74 @@ import org.springframework.stereotype.Service
 import java.util.UUID
 
 @Service
-class DefaultPermissionCheckingService @Autowired
-constructor(
-    private val permissionDataService: PermissionDataService,
-    private val userContextHolder: UserContextHolder,
-) : PermissionCheckingService {
+class DefaultPermissionCheckingService
+    @Autowired
+    constructor(
+        private val permissionDataService: PermissionDataService,
+        private val userContextHolder: UserContextHolder,
+    ) : PermissionCheckingService {
+        @Value("\${security.authorization.acls.enabled}")
+        private val enforcePermissions: Boolean = false
 
-    @Value("\${security.authorization.acls.enabled}")
-    private val enforcePermissions: Boolean = false
-
-    override fun hasPermission(user: String, credentialName: String, permission: PermissionOperation): Boolean {
-        if (enforcePermissions) {
-            val name = StringUtils.prependIfMissing(credentialName, "/")
-            return permissionDataService.hasPermission(user, name, permission)
+        override fun hasPermission(
+            user: String,
+            credentialName: String,
+            permission: PermissionOperation,
+        ): Boolean {
+            if (enforcePermissions) {
+                val name = StringUtils.prependIfMissing(credentialName, "/")
+                return permissionDataService.hasPermission(user, name, permission)
+            }
+            return true
         }
-        return true
-    }
 
-    override fun hasPermission(user: String, permissionGuid: UUID, permission: PermissionOperation): Boolean {
-        if (enforcePermissions) {
-            val permissionData = permissionDataService.getPermission(permissionGuid) ?: return false
-            return permissionDataService.hasPermission(user, permissionData.path!!, permission)
+        override fun hasPermission(
+            user: String,
+            permissionGuid: UUID,
+            permission: PermissionOperation,
+        ): Boolean {
+            if (enforcePermissions) {
+                val permissionData = permissionDataService.getPermission(permissionGuid) ?: return false
+                return permissionDataService.hasPermission(user, permissionData.path!!, permission)
+            }
+            return true
         }
-        return true
-    }
 
-    override fun hasPermissions(user: String, path: String, permissions: List<PermissionOperation>): Boolean {
-        for (permission in permissions) {
-            if (!permissionDataService.hasPermission(user, path, permission)) {
-                return false
+        override fun hasPermissions(
+            user: String,
+            path: String,
+            permissions: List<PermissionOperation>,
+        ): Boolean {
+            for (permission in permissions) {
+                if (!permissionDataService.hasPermission(user, path, permission)) {
+                    return false
+                }
+            }
+            return true
+        }
+
+        override fun userAllowedToOperateOnActor(actor: String?): Boolean {
+            if (enforcePermissions) {
+                val userContext = userContextHolder.userContext
+                return actor != null &&
+                    userContext?.actor != null &&
+                    !StringUtils.equals(userContext.actor, actor)
+            } else {
+                return true
             }
         }
-        return true
-    }
 
-    override fun userAllowedToOperateOnActor(actor: String?): Boolean {
-        if (enforcePermissions) {
-            val userContext = userContextHolder.userContext
-            return actor != null &&
-                userContext?.actor != null &&
-                !StringUtils.equals(userContext.actor, actor)
-        } else {
-            return true
+        override fun userAllowedToOperateOnActor(guid: UUID): Boolean {
+            if (enforcePermissions) {
+                val userContext = userContextHolder.userContext
+                val actor = permissionDataService.getPermission(guid)!!.actor
+                return actor != null &&
+                    userContext?.actor != null &&
+                    !StringUtils.equals(userContext.actor, actor)
+            } else {
+                return true
+            }
         }
-    }
 
-    override fun userAllowedToOperateOnActor(guid: UUID): Boolean {
-        if (enforcePermissions) {
-            val userContext = userContextHolder.userContext
-            val actor = permissionDataService.getPermission(guid)!!.actor
-            return actor != null &&
-                userContext?.actor != null &&
-                !StringUtils.equals(userContext.actor, actor)
-        } else {
-            return true
-        }
+        override fun findAllPathsByActor(actor: String): Set<String> = permissionDataService.findAllPathsByActor(actor)
     }
-
-    override fun findAllPathsByActor(actor: String): Set<String> {
-        return permissionDataService.findAllPathsByActor(actor)
-    }
-}

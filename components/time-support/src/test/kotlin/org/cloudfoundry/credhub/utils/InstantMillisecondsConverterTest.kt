@@ -10,7 +10,6 @@ import java.time.Instant
 
 @RunWith(JUnit4::class)
 class InstantMillisecondsConverterTest {
-
     private var subject = InstantMillisecondsConverter()
 
     @Test

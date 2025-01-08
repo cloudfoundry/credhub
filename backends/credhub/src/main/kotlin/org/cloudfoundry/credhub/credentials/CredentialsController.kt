@@ -50,9 +50,9 @@ class CredentialsController(
 
     @RequestMapping(method = [GET], path = ["/{id}"])
     @ResponseStatus(HttpStatus.OK)
-    fun getById(@PathVariable id: String): CredentialView {
-        return credentialsHandler.getCredentialVersionByUUID(id)
-    }
+    fun getById(
+        @PathVariable id: String,
+    ): CredentialView = credentialsHandler.getCredentialVersionByUUID(id)
 
     @RequestMapping(method = [GET], path = [""])
     @ResponseStatus(HttpStatus.OK)
@@ -112,7 +112,9 @@ class CredentialsController(
     @RequestMapping(method = [POST], path = [""])
     @ResponseStatus(HttpStatus.OK)
     @Throws(IOException::class)
-    fun generate(@RequestBody request: JsonNode): CredentialView {
+    fun generate(
+        @RequestBody request: JsonNode,
+    ): CredentialView {
         val isRegenerate = request["regenerate"]?.asBoolean() ?: false
         try {
             if (isRegenerate) {
@@ -142,7 +144,9 @@ class CredentialsController(
     @RequestMapping(method = [PUT], path = [""])
     @ResponseStatus(HttpStatus.OK)
     @Synchronized
-    fun set(@RequestBody requestBody: BaseCredentialSetRequest<*>): CredentialView {
+    fun set(
+        @RequestBody requestBody: BaseCredentialSetRequest<*>,
+    ): CredentialView {
         requestBody.validate()
         auditRecord.requestDetails = SetCredential(requestBody.name!!, requestBody.type!!)
 
@@ -151,7 +155,9 @@ class CredentialsController(
 
     @RequestMapping(method = [DELETE], path = [""])
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    fun delete(@RequestParam("name") credentialName: String) {
+    fun delete(
+        @RequestParam("name") credentialName: String,
+    ) {
         if (StringUtils.isEmpty(credentialName)) {
             throw InvalidQueryParameterException(ErrorMessages.MISSING_QUERY_PARAMETER, "name")
         }

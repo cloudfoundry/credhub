@@ -30,80 +30,84 @@ class DefaultPermissionsV1HandlerTest {
 
     @Before
     fun beforeEach() {
-        credentialVersion = ValueCredentialVersion(
-            ValueCredentialVersionData(CREDENTIAL_NAME),
-        )
+        credentialVersion =
+            ValueCredentialVersion(
+                ValueCredentialVersionData(CREDENTIAL_NAME),
+            )
 
         spyPermissionService = SpyPermissionService()
         spyPermissionedCredentialService = SpyCredentialService()
-        subject = DefaultPermissionsV1Handler(
-            spyPermissionService,
-            spyPermissionedCredentialService,
-        )
+        subject =
+            DefaultPermissionsV1Handler(
+                spyPermissionService,
+                spyPermissionedCredentialService,
+            )
     }
 
     @Test
     fun `getPermissions returns a permissionsView`() {
-        spyPermissionedCredentialService.findMostRecent__returns_credentialVersion = credentialVersion
-        spyPermissionService.getPermissions__returns_permissionEntries = listOf(PermissionEntry())
+        spyPermissionedCredentialService.findmostrecentReturnsCredentialversion = credentialVersion
+        spyPermissionService.permissionsReturnsPermissionentries = listOf(PermissionEntry())
 
         val actual = subject.getPermissions(CREDENTIAL_NAME)
-        val expected = PermissionsView(
-            CREDENTIAL_NAME,
-            listOf(PermissionEntry()),
-        )
+        val expected =
+            PermissionsView(
+                CREDENTIAL_NAME,
+                listOf(PermissionEntry()),
+            )
 
         assertThat(actual).isEqualTo(expected)
-        assertThat(spyPermissionedCredentialService.findMostRecent__calledWith_credentialName).isEqualTo(CREDENTIAL_NAME)
-        assertThat(spyPermissionService.getPermissions__calledWith_credentialVersion).isEqualTo(credentialVersion)
+        assertThat(spyPermissionedCredentialService.findmostrecentCalledwithCredentialname).isEqualTo(CREDENTIAL_NAME)
+        assertThat(spyPermissionService.permissionsCalledwithCredentialversion).isEqualTo(credentialVersion)
     }
 
     @Test
     fun `writePermissions returns void`() {
-        val permissionsRequest = PermissionsRequest(
-            CREDENTIAL_NAME,
-            mutableListOf(
-                PermissionEntry(ACTOR_NAME, "", mutableListOf(PermissionOperation.DELETE)),
-                PermissionEntry(OTHER_ACTOR_NAME, "", mutableListOf(PermissionOperation.READ)),
-            ),
-        )
+        val permissionsRequest =
+            PermissionsRequest(
+                CREDENTIAL_NAME,
+                mutableListOf(
+                    PermissionEntry(ACTOR_NAME, "", mutableListOf(PermissionOperation.DELETE)),
+                    PermissionEntry(OTHER_ACTOR_NAME, "", mutableListOf(PermissionOperation.READ)),
+                ),
+            )
 
-        val expected = PermissionsRequest(
-            CREDENTIAL_NAME,
-            mutableListOf(
-                PermissionEntry(ACTOR_NAME, CREDENTIAL_NAME, mutableListOf(PermissionOperation.DELETE)),
-                PermissionEntry(OTHER_ACTOR_NAME, CREDENTIAL_NAME, mutableListOf(PermissionOperation.READ)),
-            ),
-        )
-        spyPermissionService.savePermissionsForUser__returns_permissionDataList = emptyList<PermissionData>().toMutableList()
+        val expected =
+            PermissionsRequest(
+                CREDENTIAL_NAME,
+                mutableListOf(
+                    PermissionEntry(ACTOR_NAME, CREDENTIAL_NAME, mutableListOf(PermissionOperation.DELETE)),
+                    PermissionEntry(OTHER_ACTOR_NAME, CREDENTIAL_NAME, mutableListOf(PermissionOperation.READ)),
+                ),
+            )
+        spyPermissionService.savepermissionsforuserReturnsPermissiondatalist = emptyList<PermissionData>().toMutableList()
 
         subject.writePermissions(permissionsRequest)
 
-        assertThat(spyPermissionService.savePermissionsForUser__calledWith_permissionEntryList)
+        assertThat(spyPermissionService.savepermissionsforuserCalledwithPermissionentrylist)
             .isEqualTo(expected.permissions)
     }
 
     @Test
     fun `deletePermissionEntry returns void for successful delete`() {
-        spyPermissionService.deletePermissions__returns = true
+        spyPermissionService.deletepermissionsReturns = true
 
         subject.deletePermissionEntry(CREDENTIAL_NAME, ACTOR_NAME)
 
-        assertThat(spyPermissionService.deletePermissions__calledWith_credentialName).isEqualTo(CREDENTIAL_NAME)
-        assertThat(spyPermissionService.deletePermissions__calledWith_actor).isEqualTo(ACTOR_NAME)
+        assertThat(spyPermissionService.deletepermissionsCalledwithCredentialname).isEqualTo(CREDENTIAL_NAME)
+        assertThat(spyPermissionService.deletepermissionsCalledwithActor).isEqualTo(ACTOR_NAME)
     }
 
     @Test
     fun `deletePermissionEntry throws exception for delete failure`() {
-        spyPermissionService.deletePermissions__returns = false
+        spyPermissionService.deletepermissionsReturns = false
 
         assertThatThrownBy {
             subject.deletePermissionEntry(CREDENTIAL_NAME, ACTOR_NAME)
-        }
-            .isInstanceOf(EntryNotFoundException::class.java)
+        }.isInstanceOf(EntryNotFoundException::class.java)
             .hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
 
-        assertThat(spyPermissionService.deletePermissions__calledWith_credentialName).isEqualTo(CREDENTIAL_NAME)
-        assertThat(spyPermissionService.deletePermissions__calledWith_actor).isEqualTo(ACTOR_NAME)
+        assertThat(spyPermissionService.deletepermissionsCalledwithCredentialname).isEqualTo(CREDENTIAL_NAME)
+        assertThat(spyPermissionService.deletepermissionsCalledwithActor).isEqualTo(ACTOR_NAME)
     }
 }

@@ -66,8 +66,9 @@ class CredentialVersionDataRepositoryTest {
         entity.certificate = longString
         entity.setEncryptedValueData(entityEncryptedValue)
         subject!!.save(entity)
-        val credentialData = subject
-            .findFirstByCredentialUuidOrderByVersionCreatedAtDesc(credential.uuid) as CertificateCredentialVersionData?
+        val credentialData =
+            subject
+                .findFirstByCredentialUuidOrderByVersionCreatedAtDesc(credential.uuid) as CertificateCredentialVersionData?
         MatcherAssert.assertThat(credentialData!!.ca!!.length, IsEqual.equalTo(7000))
         MatcherAssert.assertThat(credentialData.certificate!!.length, IsEqual.equalTo(7000))
         MatcherAssert.assertThat(credentialData.getEncryptedValueData()!!.encryptedValue, IsEqual.equalTo(encryptedValue))

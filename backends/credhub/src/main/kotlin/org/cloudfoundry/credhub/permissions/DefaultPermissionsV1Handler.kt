@@ -15,7 +15,6 @@ class DefaultPermissionsV1Handler(
     private val permissionService: PermissionService,
     private val credentialService: CredentialService,
 ) : PermissionsV1Handler {
-
     override fun getPermissions(name: String): PermissionsView {
         val credentialVersion = credentialService.findMostRecent(name)
         val permissions = permissionService.getPermissions(credentialVersion)
@@ -29,7 +28,10 @@ class DefaultPermissionsV1Handler(
         permissionService.savePermissionsForUser(request.permissions)
     }
 
-    override fun deletePermissionEntry(credentialName: String, actor: String) {
+    override fun deletePermissionEntry(
+        credentialName: String,
+        actor: String,
+    ) {
         val successfullyDeleted = permissionService.deletePermissions(credentialName, actor)
         if (!successfullyDeleted) {
             throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)

@@ -16,7 +16,6 @@ class DefaultCertificateVersionDataService(
     private val credentialFactory: CredentialFactory,
     private val credentialDataService: CredentialDataService,
 ) : CertificateVersionDataService {
-
     override fun findActive(caName: String): CredentialVersion? {
         val credential = credentialDataService.find(caName)
 
@@ -62,19 +61,21 @@ class DefaultCertificateVersionDataService(
     }
 
     override fun findAllVersions(uuid: UUID): List<CredentialVersion> {
-        val credentialVersionDataList = credentialVersionRepository.findAllByCredentialUuidAndTypeOrderByVersionCreatedAtDesc(
-            uuid,
-            CertificateCredentialVersionData.CREDENTIAL_DATABASE_TYPE,
-        )
+        val credentialVersionDataList =
+            credentialVersionRepository.findAllByCredentialUuidAndTypeOrderByVersionCreatedAtDesc(
+                uuid,
+                CertificateCredentialVersionData.CREDENTIAL_DATABASE_TYPE,
+            )
 
         return credentialFactory.makeCredentialsFromEntities(credentialVersionDataList)
     }
 
     override fun findAllValidVersions(uuid: UUID): List<CredentialVersion> {
-        val credentialVersionDataList = credentialVersionRepository.findAllByCredentialUuidAndTypeOrderByVersionCreatedAtDesc(
-            uuid,
-            CertificateCredentialVersionData.CREDENTIAL_DATABASE_TYPE,
-        )
+        val credentialVersionDataList =
+            credentialVersionRepository.findAllByCredentialUuidAndTypeOrderByVersionCreatedAtDesc(
+                uuid,
+                CertificateCredentialVersionData.CREDENTIAL_DATABASE_TYPE,
+            )
 
         val validCredentialVersionDataList = ArrayList<CredentialVersionData<*>>()
         for (credentialVersionData in credentialVersionDataList) {
@@ -96,13 +97,19 @@ class DefaultCertificateVersionDataService(
     }
 
     override fun setTransitionalVersion(newTransitionalVersionUuid: UUID) {
-        val newTransitionalCertificate = credentialVersionRepository.findOneByUuid(newTransitionalVersionUuid) as CertificateCredentialVersionData
+        val newTransitionalCertificate =
+            credentialVersionRepository.findOneByUuid(
+                newTransitionalVersionUuid,
+            ) as CertificateCredentialVersionData
         newTransitionalCertificate.transitional = true
         credentialVersionRepository.save(newTransitionalCertificate)
     }
 
     override fun unsetTransitionalVersion(certificateUuid: UUID) {
-        val transitionalCertificate = credentialVersionRepository.findTransitionalCertificateVersion(certificateUuid) as? CertificateCredentialVersionData
+        val transitionalCertificate =
+            credentialVersionRepository.findTransitionalCertificateVersion(
+                certificateUuid,
+            ) as? CertificateCredentialVersionData
         if (transitionalCertificate != null) {
             transitionalCertificate.transitional = false
             credentialVersionRepository.save(transitionalCertificate)

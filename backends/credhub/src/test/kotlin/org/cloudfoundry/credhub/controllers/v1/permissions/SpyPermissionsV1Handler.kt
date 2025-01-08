@@ -5,23 +5,28 @@ import org.cloudfoundry.credhub.requests.PermissionsRequest
 import org.cloudfoundry.credhub.views.PermissionsView
 
 class SpyPermissionsV1Handler : PermissionsV1Handler {
+    lateinit var permissionsCalledwithName: String
+    lateinit var permissionsReturnsPermissionsview: PermissionsView
 
-    lateinit var getPermissions__calledWith_name: String
-    lateinit var getPermissions__returns_permissionsView: PermissionsView
     override fun getPermissions(name: String): PermissionsView {
-        getPermissions__calledWith_name = name
-        return getPermissions__returns_permissionsView
+        permissionsCalledwithName = name
+        return permissionsReturnsPermissionsview
     }
 
-    lateinit var writePermissions__calledWith_request: PermissionsRequest
+    lateinit var writepermissionsCalledwithRequest: PermissionsRequest
+
     override fun writePermissions(request: PermissionsRequest) {
-        writePermissions__calledWith_request = request
+        writepermissionsCalledwithRequest = request
     }
 
-    lateinit var deletePermissionEntry__calledWith_credentialName: String
-    lateinit var deletePermissionEntry__calledWith_actor: String
-    override fun deletePermissionEntry(credentialName: String, actor: String) {
-        deletePermissionEntry__calledWith_credentialName = credentialName
-        deletePermissionEntry__calledWith_actor = actor
+    lateinit var deletepermissionentryCalledwithCredentialname: String
+    lateinit var deletepermissionentryCalledwithActor: String
+
+    override fun deletePermissionEntry(
+        credentialName: String,
+        actor: String,
+    ) {
+        deletepermissionentryCalledwithCredentialname = credentialName
+        deletepermissionentryCalledwithActor = actor
     }
 }

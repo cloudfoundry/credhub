@@ -4,29 +4,36 @@ import com.google.common.collect.Lists
 import java.util.stream.Collectors
 import javax.validation.ValidationException
 
-open class ParameterizedValidationException @JvmOverloads constructor(messageCode: String, parameters: Array<Any> = arrayOf()) : ValidationException(messageCode) {
+open class ParameterizedValidationException
+    @JvmOverloads
+    constructor(
+        messageCode: String,
+        parameters: Array<Any> = arrayOf(),
+    ) : ValidationException(messageCode) {
+        private val parameters: List<Any>
 
-    private val parameters: List<Any>
+        constructor(messageCode: String, parameter: String) : this(messageCode, arrayOf<Any>(parameter))
 
-    constructor(messageCode: String, parameter: String) : this(messageCode, arrayOf<Any>(parameter))
+        init {
 
-    init {
-
-        this.parameters = Lists.newArrayList(*parameters)
-            .stream()
-            .map<Any> { scrubSpecialCharacter(it) }
-            .collect(Collectors.toList())
-    }
-
-    private fun scrubSpecialCharacter(raw: Any): Any {
-        return if (raw is String) {
-            raw.replace("$[", "").replace("][", ".").replace("]", "").replace("'", "")
-        } else {
-            raw
+            this.parameters =
+                Lists
+                    .newArrayList(*parameters)
+                    .stream()
+                    .map<Any> { scrubSpecialCharacter(it) }
+                    .collect(Collectors.toList())
         }
-    }
 
-    fun getParameters(): Array<Any> {
-        return parameters.toTypedArray()
+        private fun scrubSpecialCharacter(raw: Any): Any =
+            if (raw is String) {
+                raw
+                    .replace("$[", "")
+                    .replace("][", ".")
+                    .replace("]", "")
+                    .replace("'", "")
+            } else {
+                raw
+            }
+
+        fun getParameters(): Array<Any> = parameters.toTypedArray()
     }
-}

@@ -11,34 +11,36 @@ import org.springframework.web.servlet.config.annotation.PathMatchConfigurer
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
 @Configuration
-class WebMvcConfiguration @Autowired constructor(
-    private val auditInterceptor: AuditInterceptor,
-    private val userContextInterceptor: UserContextInterceptor,
-    private val managementInterceptor: ManagementInterceptor,
-) : WebMvcConfigurer {
-    override fun configureContentNegotiation(configurer: ContentNegotiationConfigurer) {
-        configurer.favorPathExtension(false)
-    }
+class WebMvcConfiguration
+    @Autowired
+    constructor(
+        private val auditInterceptor: AuditInterceptor,
+        private val userContextInterceptor: UserContextInterceptor,
+        private val managementInterceptor: ManagementInterceptor,
+    ) : WebMvcConfigurer {
+        override fun configureContentNegotiation(configurer: ContentNegotiationConfigurer) {
+            configurer.favorPathExtension(false)
+        }
 
-    override fun configurePathMatch(configurer: PathMatchConfigurer) {
-        configurer.setUseSuffixPatternMatch(false)
-    }
+        override fun configurePathMatch(configurer: PathMatchConfigurer) {
+            configurer.setUseSuffixPatternMatch(false)
+        }
 
-    override fun addInterceptors(registry: InterceptorRegistry) {
-        registry.addInterceptor(auditInterceptor).excludePathPatterns(
-            "/info",
-            "/health",
-            "/**/key-usage",
-            "/version",
-            "/docs/index.html",
-        )
-        registry.addInterceptor(managementInterceptor)
-        registry.addInterceptor(userContextInterceptor).excludePathPatterns(
-            "/info",
-            "/health",
-            "/**/key-usage",
-            "/management",
-            "/docs/index.html",
-        )
+        override fun addInterceptors(registry: InterceptorRegistry) {
+            registry.addInterceptor(auditInterceptor).excludePathPatterns(
+                "/info",
+                "/health",
+                "/**/key-usage",
+                "/version",
+                "/docs/index.html",
+            )
+            registry.addInterceptor(managementInterceptor)
+            registry.addInterceptor(userContextInterceptor).excludePathPatterns(
+                "/info",
+                "/health",
+                "/**/key-usage",
+                "/management",
+                "/docs/index.html",
+            )
+        }
     }
-}

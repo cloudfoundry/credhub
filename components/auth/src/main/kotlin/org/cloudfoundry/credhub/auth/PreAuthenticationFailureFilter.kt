@@ -10,8 +10,9 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 @Component
-class PreAuthenticationFailureFilter internal constructor(private val authenticationFailureHandler: X509AuthenticationFailureHandler) : OncePerRequestFilter() {
-
+class PreAuthenticationFailureFilter internal constructor(
+    private val authenticationFailureHandler: X509AuthenticationFailureHandler,
+) : OncePerRequestFilter() {
     @Throws(ServletException::class, IOException::class)
     override fun doFilterInternal(
         request: HttpServletRequest,

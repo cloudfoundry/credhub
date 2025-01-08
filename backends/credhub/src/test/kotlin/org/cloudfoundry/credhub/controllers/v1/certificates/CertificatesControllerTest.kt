@@ -77,10 +77,11 @@ class CertificatesControllerTest {
     fun setUp() {
         spyCertificatesHandler = SpyCertificatesHandler()
 
-        val certificateController = CertificatesController(
-            spyCertificatesHandler,
-            CEFAuditRecord(),
-        )
+        val certificateController =
+            CertificatesController(
+                spyCertificatesHandler,
+                CEFAuditRecord(),
+            )
 
         mockMvc = MockMvcFactory.newSpringRestDocMockMvc(certificateController, restDocumentation)
         metadata = objectMapper.readTree("{\"description\":\"example metadata\"}")
@@ -93,16 +94,17 @@ class CertificatesControllerTest {
         name = "/some-name"
         createdAt = Instant.ofEpochSecond(1549053472L)
 
-        certificateCredentialValue = CertificateCredentialValue(
-            TestConstants.TEST_CA,
-            TestConstants.TEST_CERTIFICATE,
-            TestConstants.TEST_PRIVATE_KEY,
-            name,
-            false,
-            false,
-            true,
-            true,
-        )
+        certificateCredentialValue =
+            CertificateCredentialValue(
+                TestConstants.TEST_CA,
+                TestConstants.TEST_CERTIFICATE,
+                TestConstants.TEST_PRIVATE_KEY,
+                name,
+                false,
+                false,
+                true,
+                true,
+            )
 
         certificateCredentialVersion = CertificateCredentialVersion(certificateCredentialValue, name, SpyEncryptor())
         certificateCredentialVersion.versionCreatedAt = createdAt
@@ -114,7 +116,7 @@ class CertificatesControllerTest {
     }
 
     @Test
-    fun POST__certificates_uuid_regenerate__returns_certificate() {
+    fun postCertificatesUuidRegenerateReturnsCertificate() {
         // language=json
         val requestBody =
             """
@@ -123,45 +125,47 @@ class CertificatesControllerTest {
         certificateView = CertificateGenerationView(certificateCredentialVersion, false)
         (certificateView as CertificateGenerationView).durationOverridden = true
         (certificateView as CertificateGenerationView).durationUsed = 1234
-        spyCertificatesHandler.handleRegenerate__returns_credentialView = certificateView
+        spyCertificatesHandler.handleregenerateReturnsCredentialview = certificateView
 
-        val mvcResult = mockMvc
-            .perform(
-                post("${CertificatesController.ENDPOINT}/{certificateId}/regenerate", certificateId.toString())
-                    .credHubAuthHeader()
-                    .accept(MediaType.APPLICATION_JSON)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(requestBody),
-            ).andExpect(status().isOk)
-            .andDo(
-                document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    requestFields(
-                        fieldWithPath("set_as_transitional")
-                            .description("Set if certificate is transitional")
-                            .type(JsonFieldType.BOOLEAN)
-                            .optional(),
-                        fieldWithPath("allow_transitional_parent_to_sign")
-                            .description("Allows a transitional version of the parent CA to sign this certificate if the transitional version is the latest version")
-                            .type(JsonFieldType.BOOLEAN)
-                            .optional(),
-                        fieldWithPath("metadata")
-                            .description("Additional metadata of the credential.")
-                            .optional(),
-                        fieldWithPath("metadata.*")
-                            .ignored(),
+        val mvcResult =
+            mockMvc
+                .perform(
+                    post("${CertificatesController.ENDPOINT}/{certificateId}/regenerate", certificateId.toString())
+                        .credHubAuthHeader()
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody),
+                ).andExpect(status().isOk)
+                .andDo(
+                    document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                        requestFields(
+                            fieldWithPath("set_as_transitional")
+                                .description("Set if certificate is transitional")
+                                .type(JsonFieldType.BOOLEAN)
+                                .optional(),
+                            fieldWithPath("allow_transitional_parent_to_sign")
+                                .description(
+                                    "Allows a transitional version of the parent CA to sign this certificate if the transitional version is the latest version",
+                                ).type(JsonFieldType.BOOLEAN)
+                                .optional(),
+                            fieldWithPath("metadata")
+                                .description("Additional metadata of the credential.")
+                                .optional(),
+                            fieldWithPath("metadata.*")
+                                .ignored(),
+                        ),
+                        pathParameters(
+                            getCertificateIdPathParameter(),
+                        ),
                     ),
-                    pathParameters(
-                        getCertificateIdPathParameter(),
-                    ),
-                ),
+                ).andReturn()
 
-            ).andReturn()
+        val expectedRequestBody =
+            CertificateRegenerateRequest(transitional = true, allowTransitionalParentToSign = true, metadata = metadata)
 
-        val expectedRequestBody = CertificateRegenerateRequest(transitional = true, allowTransitionalParentToSign = true, metadata = metadata)
-
-        assertThat(spyCertificatesHandler.handleRegenerate__calledWith_request).isEqualTo(expectedRequestBody)
-        assertThat(spyCertificatesHandler.handleRegenerate__calledWith_credentialUuid).isEqualTo(certificateId.toString())
+        assertThat(spyCertificatesHandler.handleregenerateCalledwithRequest).isEqualTo(expectedRequestBody)
+        assertThat(spyCertificatesHandler.handleregenerateCalledwithCredentialuuid).isEqualTo(certificateId.toString())
 
         // language=json
         val expectedResponseBody =
@@ -190,318 +194,334 @@ class CertificatesControllerTest {
     }
 
     @Test
-    fun GET__certificates__returns_certificates() {
+    fun getCertificatesReturnsCertificates() {
         var caName = "/testCa"
-        val certificateVersions = mutableListOf(
-            CertificateVersionView(
-                id = UUID.randomUUID(),
-                transitional = true,
-                expiryDate = Instant.ofEpochSecond(1549053472L).plus(365, ChronoUnit.DAYS),
-                certificateAuthority = false,
-                selfSigned = false,
-                generated = false,
-            ),
-            CertificateVersionView(
-                id = UUID.randomUUID(),
-                transitional = false,
-                expiryDate = Instant.ofEpochSecond(1549053472L),
-                certificateAuthority = false,
-                selfSigned = false,
-                generated = false,
-            ),
-        )
+        val certificateVersions =
+            mutableListOf(
+                CertificateVersionView(
+                    id = UUID.randomUUID(),
+                    transitional = true,
+                    expiryDate = Instant.ofEpochSecond(1549053472L).plus(365, ChronoUnit.DAYS),
+                    certificateAuthority = false,
+                    selfSigned = false,
+                    generated = false,
+                ),
+                CertificateVersionView(
+                    id = UUID.randomUUID(),
+                    transitional = false,
+                    expiryDate = Instant.ofEpochSecond(1549053472L),
+                    certificateAuthority = false,
+                    selfSigned = false,
+                    generated = false,
+                ),
+            )
         var cert1Name = "/cert1"
         var cert2Name = "/cert2"
 
-        val certificateCredentialsView = CertificateCredentialsView(
-            listOf(CertificateCredentialView(name, certificateId, certificateVersions, caName, listOf(cert1Name, cert2Name))),
-        )
-        spyCertificatesHandler.handleGetAllRequest__returns_certificateCredentialsView = certificateCredentialsView
+        val certificateCredentialsView =
+            CertificateCredentialsView(
+                listOf(CertificateCredentialView(name, certificateId, certificateVersions, caName, listOf(cert1Name, cert2Name))),
+            )
+        spyCertificatesHandler.handlegetallrequestReturnsCertificatecredentialsview = certificateCredentialsView
 
-        val mvcResult = mockMvc
-            .perform(
-                get(CertificatesController.ENDPOINT)
-                    .credHubAuthHeader()
-                    .accept(MediaType.APPLICATION_JSON),
-            ).andExpect(status().isOk)
-            .andDo(
-                document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                ),
-            ).andReturn()
+        val mvcResult =
+            mockMvc
+                .perform(
+                    get(CertificatesController.ENDPOINT)
+                        .credHubAuthHeader()
+                        .accept(MediaType.APPLICATION_JSON),
+                ).andExpect(status().isOk)
+                .andDo(
+                    document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                    ),
+                ).andReturn()
 
         // language=json
         val expectedResponse =
             """
-        {
-          "certificates": [
             {
-              "name": "$name",
-              "id": "$certificateId",
-              "signed_by": "$caName",
-              "signs": ["$cert1Name", "$cert2Name"],
-              "versions": [
+              "certificates": [
                 {
-                  "id": "${certificateVersions[0].id}",
-                  "expiry_date": "2020-02-01T20:37:52Z",
-                  "transitional": true,
-                  "certificate_authority": false,
-                  "self_signed": false,
-                  "generated": false
-                },
-                {
-                  "id": "${certificateVersions[1].id}",
-                  "expiry_date": "2019-02-01T20:37:52Z",
-                  "transitional": false,
-                  "certificate_authority": false,
-                  "self_signed": false,
-                  "generated": false
+                  "name": "$name",
+                  "id": "$certificateId",
+                  "signed_by": "$caName",
+                  "signs": ["$cert1Name", "$cert2Name"],
+                  "versions": [
+                    {
+                      "id": "${certificateVersions[0].id}",
+                      "expiry_date": "2020-02-01T20:37:52Z",
+                      "transitional": true,
+                      "certificate_authority": false,
+                      "self_signed": false,
+                      "generated": false
+                    },
+                    {
+                      "id": "${certificateVersions[1].id}",
+                      "expiry_date": "2019-02-01T20:37:52Z",
+                      "transitional": false,
+                      "certificate_authority": false,
+                      "self_signed": false,
+                      "generated": false
+                    }
+                  ]
                 }
               ]
             }
-          ]
-        }
             """.trimIndent()
 
         JSONAssert.assertEquals(mvcResult.response.contentAsString, expectedResponse, true)
     }
 
     @Test
-    fun GET__certificates_whenGeneratedisNull_returns_certificates_certificateWithoutGeneratedField() {
+    fun getCertificatesWhenGeneratedisNullReturnsCertificatesCertificateWithoutGeneratedField() {
         var caName = "/testCa"
-        val certificateVersions = mutableListOf(
-            CertificateVersionView(
-                id = UUID.randomUUID(),
-                transitional = true,
-                expiryDate = Instant.ofEpochSecond(1549053472L).plus(365, ChronoUnit.DAYS),
-                certificateAuthority = false,
-                selfSigned = false,
-                generated = null,
-            ),
-        )
+        val certificateVersions =
+            mutableListOf(
+                CertificateVersionView(
+                    id = UUID.randomUUID(),
+                    transitional = true,
+                    expiryDate = Instant.ofEpochSecond(1549053472L).plus(365, ChronoUnit.DAYS),
+                    certificateAuthority = false,
+                    selfSigned = false,
+                    generated = null,
+                ),
+            )
         var cert1Name = "/cert1"
         var cert2Name = "/cert2"
 
-        val certificateCredentialsView = CertificateCredentialsView(
-            listOf(CertificateCredentialView(name, certificateId, certificateVersions, caName, listOf(cert1Name, cert2Name))),
-        )
-        spyCertificatesHandler.handleGetAllRequest__returns_certificateCredentialsView = certificateCredentialsView
+        val certificateCredentialsView =
+            CertificateCredentialsView(
+                listOf(CertificateCredentialView(name, certificateId, certificateVersions, caName, listOf(cert1Name, cert2Name))),
+            )
+        spyCertificatesHandler.handlegetallrequestReturnsCertificatecredentialsview = certificateCredentialsView
 
-        val mvcResult = mockMvc
-            .perform(
-                get(CertificatesController.ENDPOINT)
-                    .credHubAuthHeader()
-                    .accept(MediaType.APPLICATION_JSON),
-            ).andExpect(status().isOk)
-            .andReturn()
+        val mvcResult =
+            mockMvc
+                .perform(
+                    get(CertificatesController.ENDPOINT)
+                        .credHubAuthHeader()
+                        .accept(MediaType.APPLICATION_JSON),
+                ).andExpect(status().isOk)
+                .andReturn()
 
         // language=json
         val expectedResponse =
             """
-        {
-          "certificates": [
             {
-              "name": "$name",
-              "id": "$certificateId",
-              "signed_by": "$caName",
-              "signs": ["$cert1Name", "$cert2Name"],
-              "versions": [
+              "certificates": [
                 {
-                  "id": "${certificateVersions[0].id}",
-                  "expiry_date": "2020-02-01T20:37:52Z",
-                  "transitional": true,
-                  "certificate_authority": false,
-                  "self_signed": false
+                  "name": "$name",
+                  "id": "$certificateId",
+                  "signed_by": "$caName",
+                  "signs": ["$cert1Name", "$cert2Name"],
+                  "versions": [
+                    {
+                      "id": "${certificateVersions[0].id}",
+                      "expiry_date": "2020-02-01T20:37:52Z",
+                      "transitional": true,
+                      "certificate_authority": false,
+                      "self_signed": false
+                    }
+                  ]
                 }
               ]
             }
-          ]
-        }
             """.trimIndent()
 
         JSONAssert.assertEquals(expectedResponse, mvcResult.response.contentAsString, true)
     }
 
     @Test
-    fun GET__certificates_whenExpiryDateisNull_returns_certificates_certificateWithEmptyExpiryDateField() {
+    fun getCertificatesWhenExpiryDateisNullReturnsCertificatesCertificateWithEmptyExpiryDateField() {
         var caName = "/testCa"
-        val certificateVersions = mutableListOf(
-            CertificateVersionView(
-                id = UUID.randomUUID(),
-                transitional = true,
-                expiryDate = null,
-                certificateAuthority = false,
-                selfSigned = false,
-                generated = true,
-            ),
-        )
+        val certificateVersions =
+            mutableListOf(
+                CertificateVersionView(
+                    id = UUID.randomUUID(),
+                    transitional = true,
+                    expiryDate = null,
+                    certificateAuthority = false,
+                    selfSigned = false,
+                    generated = true,
+                ),
+            )
         var cert1Name = "/cert1"
         var cert2Name = "/cert2"
 
-        val certificateCredentialsView = CertificateCredentialsView(
-            listOf(CertificateCredentialView(name, certificateId, certificateVersions, caName, listOf(cert1Name, cert2Name))),
-        )
-        spyCertificatesHandler.handleGetAllRequest__returns_certificateCredentialsView = certificateCredentialsView
+        val certificateCredentialsView =
+            CertificateCredentialsView(
+                listOf(CertificateCredentialView(name, certificateId, certificateVersions, caName, listOf(cert1Name, cert2Name))),
+            )
+        spyCertificatesHandler.handlegetallrequestReturnsCertificatecredentialsview = certificateCredentialsView
 
-        val mvcResult = mockMvc
-            .perform(
-                get(CertificatesController.ENDPOINT)
-                    .credHubAuthHeader()
-                    .accept(MediaType.APPLICATION_JSON),
-            ).andExpect(status().isOk)
-            .andReturn()
+        val mvcResult =
+            mockMvc
+                .perform(
+                    get(CertificatesController.ENDPOINT)
+                        .credHubAuthHeader()
+                        .accept(MediaType.APPLICATION_JSON),
+                ).andExpect(status().isOk)
+                .andReturn()
 
         // language=json
         val expectedResponse =
             """
-        {
-          "certificates": [
             {
-              "name": "$name",
-              "id": "$certificateId",
-              "signed_by": "$caName",
-              "signs": ["$cert1Name", "$cert2Name"],
-              "versions": [
+              "certificates": [
                 {
-                  "id": "${certificateVersions[0].id}",
-                  "expiry_date": "",
-                  "transitional": true,
-                  "certificate_authority": false,
-                  "self_signed": false,
-                  "generated": true
+                  "name": "$name",
+                  "id": "$certificateId",
+                  "signed_by": "$caName",
+                  "signs": ["$cert1Name", "$cert2Name"],
+                  "versions": [
+                    {
+                      "id": "${certificateVersions[0].id}",
+                      "expiry_date": "",
+                      "transitional": true,
+                      "certificate_authority": false,
+                      "self_signed": false,
+                      "generated": true
+                    }
+                  ]
                 }
               ]
             }
-          ]
-        }
             """.trimIndent()
 
         JSONAssert.assertEquals(expectedResponse, mvcResult.response.contentAsString, true)
     }
 
     @Test
-    fun GET__certificates_byName__returns_certificate() {
+    fun getCertificatesByNameReturnsCertificate() {
         var caName = "/testCa"
-        val certificateVersions = mutableListOf(
-            CertificateVersionView(
-                id = UUID.randomUUID(),
-                transitional = false,
-                expiryDate = Instant.ofEpochSecond(1549053472L),
-                certificateAuthority = false,
-                selfSigned = false,
-                generated = false,
-            ),
-        )
-        var cert1Name = "/cert1"
-        var cert2Name = "/cert2"
-
-        val certificateCredentialsView = CertificateCredentialsView(
-            listOf(CertificateCredentialView(name, certificateId, certificateVersions, caName, listOf(cert1Name, cert2Name))),
-        )
-        spyCertificatesHandler.handleGetByNameRequest__returns_certificateCredentialsView = certificateCredentialsView
-
-        val mvcResult = mockMvc
-            .perform(
-                get(CertificatesController.ENDPOINT)
-                    .credHubAuthHeader()
-                    .accept(MediaType.APPLICATION_JSON)
-                    .param("name", name),
-            ).andExpect(status().isOk)
-            .andDo(
-                document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    requestParameters(parameterWithName("name").description("The name of the certificate.")),
+        val certificateVersions =
+            mutableListOf(
+                CertificateVersionView(
+                    id = UUID.randomUUID(),
+                    transitional = false,
+                    expiryDate = Instant.ofEpochSecond(1549053472L),
+                    certificateAuthority = false,
+                    selfSigned = false,
+                    generated = false,
                 ),
-            ).andReturn()
-
-        // language=json
-        val expectedResponse =
-            """
-        {
-          "certificates":
-          [
-            {
-              "name":"$name",
-              "id":"$certificateId",
-              "signed_by": "$caName",
-              "signs": ["$cert1Name", "$cert2Name"],
-              "versions": [
-                {
-                  "id": "${certificateVersions[0].id}",
-                  "expiry_date": "2019-02-01T20:37:52Z",
-                  "transitional": false,
-                  "generated": false,
-                  "certificate_authority": false,
-                  "self_signed": false
-                }
-              ]
-            }
-          ]
-        }
-            """.trimIndent()
-
-        JSONAssert.assertEquals(mvcResult.response.contentAsString, expectedResponse, true)
-    }
-
-    @Test
-    fun GET__certificates_byName__WhenGeneratedIsNull_returns_certificateWithoutGeneratedField() {
-        var caName = "/testCa"
-        val certificateVersions = mutableListOf(
-            CertificateVersionView(
-                id = UUID.randomUUID(),
-                transitional = false,
-                expiryDate = Instant.ofEpochSecond(1549053472L),
-                certificateAuthority = false,
-                selfSigned = false,
-                generated = null,
-            ),
-        )
+            )
         var cert1Name = "/cert1"
         var cert2Name = "/cert2"
 
-        val certificateCredentialsView = CertificateCredentialsView(
-            listOf(CertificateCredentialView(name, certificateId, certificateVersions, caName, listOf(cert1Name, cert2Name))),
-        )
-        spyCertificatesHandler.handleGetByNameRequest__returns_certificateCredentialsView = certificateCredentialsView
+        val certificateCredentialsView =
+            CertificateCredentialsView(
+                listOf(CertificateCredentialView(name, certificateId, certificateVersions, caName, listOf(cert1Name, cert2Name))),
+            )
+        spyCertificatesHandler.handlegetbynamerequestReturnsCertificatecredentialsview = certificateCredentialsView
 
-        val mvcResult = mockMvc
-            .perform(
-                get(CertificatesController.ENDPOINT)
-                    .credHubAuthHeader()
-                    .accept(MediaType.APPLICATION_JSON)
-                    .param("name", name),
-            ).andExpect(status().isOk).andReturn()
+        val mvcResult =
+            mockMvc
+                .perform(
+                    get(CertificatesController.ENDPOINT)
+                        .credHubAuthHeader()
+                        .accept(MediaType.APPLICATION_JSON)
+                        .param("name", name),
+                ).andExpect(status().isOk)
+                .andDo(
+                    document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                        requestParameters(parameterWithName("name").description("The name of the certificate.")),
+                    ),
+                ).andReturn()
 
         // language=json
         val expectedResponse =
             """
-        {
-          "certificates":
-          [
             {
-              "name":"$name",
-              "id":"$certificateId",
-              "signed_by": "$caName",
-              "signs": ["$cert1Name", "$cert2Name"],
-              "versions": [
+              "certificates":
+              [
                 {
-                  "id": "${certificateVersions[0].id}",
-                  "expiry_date": "2019-02-01T20:37:52Z",
-                  "transitional": false,
-                  "certificate_authority": false,
-                  "self_signed": false
+                  "name":"$name",
+                  "id":"$certificateId",
+                  "signed_by": "$caName",
+                  "signs": ["$cert1Name", "$cert2Name"],
+                  "versions": [
+                    {
+                      "id": "${certificateVersions[0].id}",
+                      "expiry_date": "2019-02-01T20:37:52Z",
+                      "transitional": false,
+                      "generated": false,
+                      "certificate_authority": false,
+                      "self_signed": false
+                    }
+                  ]
                 }
               ]
             }
-          ]
-        }
             """.trimIndent()
 
         JSONAssert.assertEquals(mvcResult.response.contentAsString, expectedResponse, true)
     }
 
     @Test
-    fun PUT__updateTransitionalVersion__returns_certificate() {
+    fun getCertificatesByNameWhenGeneratedIsNullReturnsCcertificateWithoutGeneratedField() {
+        var caName = "/testCa"
+        val certificateVersions =
+            mutableListOf(
+                CertificateVersionView(
+                    id = UUID.randomUUID(),
+                    transitional = false,
+                    expiryDate = Instant.ofEpochSecond(1549053472L),
+                    certificateAuthority = false,
+                    selfSigned = false,
+                    generated = null,
+                ),
+            )
+        var cert1Name = "/cert1"
+        var cert2Name = "/cert2"
+
+        val certificateCredentialsView =
+            CertificateCredentialsView(
+                listOf(CertificateCredentialView(name, certificateId, certificateVersions, caName, listOf(cert1Name, cert2Name))),
+            )
+        spyCertificatesHandler.handlegetbynamerequestReturnsCertificatecredentialsview = certificateCredentialsView
+
+        val mvcResult =
+            mockMvc
+                .perform(
+                    get(CertificatesController.ENDPOINT)
+                        .credHubAuthHeader()
+                        .accept(MediaType.APPLICATION_JSON)
+                        .param("name", name),
+                ).andExpect(status().isOk)
+                .andReturn()
+
+        // language=json
+        val expectedResponse =
+            """
+            {
+              "certificates":
+              [
+                {
+                  "name":"$name",
+                  "id":"$certificateId",
+                  "signed_by": "$caName",
+                  "signs": ["$cert1Name", "$cert2Name"],
+                  "versions": [
+                    {
+                      "id": "${certificateVersions[0].id}",
+                      "expiry_date": "2019-02-01T20:37:52Z",
+                      "transitional": false,
+                      "certificate_authority": false,
+                      "self_signed": false
+                    }
+                  ]
+                }
+              ]
+            }
+            """.trimIndent()
+
+        JSONAssert.assertEquals(mvcResult.response.contentAsString, expectedResponse, true)
+    }
+
+    @Test
+    fun putUpdateTransitionalVersionReturnsCertificate() {
         val versionId = UUID.randomUUID()
 
         // language=json
@@ -510,7 +530,7 @@ class CertificatesControllerTest {
             {"version": "$versionId"}
             """.trimIndent()
 
-        spyCertificatesHandler.handleUpdateTransitionalVersion__returns_certificateViewList = listOf(certificateView)
+        spyCertificatesHandler.handleupdatetransitionalversionReturnsCertificateviewlist = listOf(certificateView)
 
         mockMvc
             .perform(
@@ -525,48 +545,51 @@ class CertificatesControllerTest {
                     CredHubRestDocs.DOCUMENT_IDENTIFIER,
                     requestFields(
                         fieldWithPath("version")
-                            .description("Version UUID of certificate to set as transitional. Set version to null to ensure no versions are transitional.")
-                            .type(JsonFieldType.STRING),
+                            .description(
+                                "Version UUID of certificate to set as transitional. Set version to null to ensure no versions are transitional.",
+                            ).type(JsonFieldType.STRING),
                     ),
                     pathParameters(
                         getCertificateIdPathParameter(),
                     ),
                 ),
-
             ).andReturn()
 
-        val actualRequestBody = spyCertificatesHandler.handleUpdateTransitionalVersion__calledWith_requestBody
+        val actualRequestBody = spyCertificatesHandler.handleupdatetransitionalversionCalledwithRequestbody
         val expectedRequestBody = UpdateTransitionalVersionRequest(versionId.toString())
 
-        assertThat(spyCertificatesHandler.handleUpdateTransitionalVersion__calledWith_certificateId).isEqualTo(certificateId.toString())
+        assertThat(spyCertificatesHandler.handleupdatetransitionalversionCalledwithCertificateid).isEqualTo(certificateId.toString())
         assertThat(expectedRequestBody).isEqualTo(actualRequestBody)
     }
 
     @Test
-    fun GET__certificateVersions__returns_certificates() {
-        spyCertificatesHandler.handleGetAllVersionsRequest__returns_certificateViews = listOf(certificateView)
+    fun getCertificateVersionsReturnsCertificates() {
+        spyCertificatesHandler.handlegetallversionsrequestReturnsCertificateviews = listOf(certificateView)
 
-        val mvcResult = mockMvc.perform(
-            get("${CertificatesController.ENDPOINT}/{certificateId}/versions", certificateId.toString())
-                .credHubAuthHeader()
-                .accept(MediaType.APPLICATION_JSON)
-                .param("current", "true"),
-        ).andExpect(status().isOk)
-            .andDo(
-                document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    requestParameters(
-                        parameterWithName("current").description("Return current active version")
-                            .optional(),
+        val mvcResult =
+            mockMvc
+                .perform(
+                    get("${CertificatesController.ENDPOINT}/{certificateId}/versions", certificateId.toString())
+                        .credHubAuthHeader()
+                        .accept(MediaType.APPLICATION_JSON)
+                        .param("current", "true"),
+                ).andExpect(status().isOk)
+                .andDo(
+                    document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                        requestParameters(
+                            parameterWithName("current")
+                                .description("Return current active version")
+                                .optional(),
+                        ),
+                        pathParameters(
+                            getCertificateIdPathParameter(),
+                        ),
                     ),
-                    pathParameters(
-                        getCertificateIdPathParameter(),
-                    ),
-                ),
-            ).andReturn()
+                ).andReturn()
 
-        assertThat(spyCertificatesHandler.handleGetAllVersionsRequest__calledWith_current).isTrue()
-        assertThat(spyCertificatesHandler.handleGetAllVersionsRequest__calledWith_uuid).isEqualTo(certificateId.toString())
+        assertThat(spyCertificatesHandler.handlegetallversionsrequestCalledwithCurrent).isTrue()
+        assertThat(spyCertificatesHandler.handlegetallversionsrequestCalledwithUuid).isEqualTo(certificateId.toString())
 
         // language=json
         val expectedResponseBody =
@@ -595,17 +618,18 @@ class CertificatesControllerTest {
     }
 
     @Test
-    fun GET__certificateVersions__WhenGeneratedIsNull_returns_certificatesWithoutGeneratedField() {
-        val value = CertificateCredentialValue(
-            TestConstants.TEST_CA,
-            TestConstants.TEST_CERTIFICATE,
-            TestConstants.TEST_PRIVATE_KEY,
-            name,
-            false,
-            false,
-            null,
-            true,
-        )
+    fun getCertificateVersionsWhenGeneratedIsNullReturnsCertificatesWithoutGeneratedField() {
+        val value =
+            CertificateCredentialValue(
+                TestConstants.TEST_CA,
+                TestConstants.TEST_CERTIFICATE,
+                TestConstants.TEST_PRIVATE_KEY,
+                name,
+                false,
+                false,
+                null,
+                true,
+            )
 
         val credentialVersion = CertificateCredentialVersion(value, name, SpyEncryptor())
         credentialVersion.expiryDate = certificateCredentialValue.expiryDate
@@ -614,17 +638,20 @@ class CertificatesControllerTest {
         credentialVersion.metadata = metadata
         val nullGeneratedView = CertificateView(credentialVersion)
 
-        spyCertificatesHandler.handleGetAllVersionsRequest__returns_certificateViews = listOf(nullGeneratedView)
+        spyCertificatesHandler.handlegetallversionsrequestReturnsCertificateviews = listOf(nullGeneratedView)
 
-        val mvcResult = mockMvc.perform(
-            get("${CertificatesController.ENDPOINT}/{certificateId}/versions", certificateId.toString())
-                .credHubAuthHeader()
-                .accept(MediaType.APPLICATION_JSON)
-                .param("current", "true"),
-        ).andExpect(status().isOk).andReturn()
+        val mvcResult =
+            mockMvc
+                .perform(
+                    get("${CertificatesController.ENDPOINT}/{certificateId}/versions", certificateId.toString())
+                        .credHubAuthHeader()
+                        .accept(MediaType.APPLICATION_JSON)
+                        .param("current", "true"),
+                ).andExpect(status().isOk)
+                .andReturn()
 
-        assertThat(spyCertificatesHandler.handleGetAllVersionsRequest__calledWith_current).isTrue()
-        assertThat(spyCertificatesHandler.handleGetAllVersionsRequest__calledWith_uuid).isEqualTo(certificateId.toString())
+        assertThat(spyCertificatesHandler.handlegetallversionsrequestCalledwithCurrent).isTrue()
+        assertThat(spyCertificatesHandler.handlegetallversionsrequestCalledwithUuid).isEqualTo(certificateId.toString())
 
         // language=json
         val expectedResponseBody =
@@ -652,17 +679,18 @@ class CertificatesControllerTest {
     }
 
     @Test
-    fun POST__certificateVersions__returns_certificate() {
-        val expectedCertificateCredentialValue = CertificateCredentialValue(
-            TestConstants.TEST_CA,
-            TestConstants.TEST_CERTIFICATE,
-            TestConstants.TEST_PRIVATE_KEY,
-            name,
-            false,
-            false,
-            false,
-            true,
-        )
+    fun getCertificateVersionsReturnsCertificate() {
+        val expectedCertificateCredentialValue =
+            CertificateCredentialValue(
+                TestConstants.TEST_CA,
+                TestConstants.TEST_CERTIFICATE,
+                TestConstants.TEST_PRIVATE_KEY,
+                name,
+                false,
+                false,
+                false,
+                true,
+            )
 
         val expectedCertificateCredentialVersion = CertificateCredentialVersion(expectedCertificateCredentialValue, name, SpyEncryptor())
         expectedCertificateCredentialVersion.versionCreatedAt = createdAt
@@ -671,7 +699,7 @@ class CertificatesControllerTest {
         expectedCertificateCredentialVersion.expiryDate = expectedCertificateCredentialValue.expiryDate
 
         val expectedCertificateView = CertificateView(expectedCertificateCredentialVersion)
-        spyCertificatesHandler.handleCreateVersionRequest__returns_certificateView = expectedCertificateView
+        spyCertificatesHandler.handlecreateversionrequestReturnsCertificateview = expectedCertificateView
 
         // language=json
         val requestBody =
@@ -686,25 +714,27 @@ class CertificatesControllerTest {
             }
             """.trimIndent()
 
-        val mvcResult = mockMvc.perform(
-            post("${CertificatesController.ENDPOINT}/{certificateId}/versions", certificateId.toString())
-                .credHubAuthHeader()
-                .accept(MediaType.APPLICATION_JSON)
-                .characterEncoding("utf-8")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBody),
-        ).andExpect(status().isOk)
-            .andDo(
-                document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    pathParameters(
-                        getCertificateIdPathParameter(),
+        val mvcResult =
+            mockMvc
+                .perform(
+                    post("${CertificatesController.ENDPOINT}/{certificateId}/versions", certificateId.toString())
+                        .credHubAuthHeader()
+                        .accept(MediaType.APPLICATION_JSON)
+                        .characterEncoding("utf-8")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody),
+                ).andExpect(status().isOk)
+                .andDo(
+                    document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                        pathParameters(
+                            getCertificateIdPathParameter(),
+                        ),
                     ),
-                ),
-            ).andReturn()
+                ).andReturn()
 
         JSONAssert.assertEquals(mvcResult.request.contentAsString, requestBody, true)
-        assertThat(spyCertificatesHandler.handleCreateVersionRequest__calledWith_certificateId).isEqualTo(certificateId.toString())
+        assertThat(spyCertificatesHandler.handlecreateversionrequestCalledwithCertificateid).isEqualTo(certificateId.toString())
 
         // language=json
         val expectedResponseBody =
@@ -733,27 +763,32 @@ class CertificatesControllerTest {
     }
 
     @Test
-    fun DELETE__certificateVersion__returns_certificate() {
+    fun deleteRertificateVersionReturnsCertificate() {
         val versionId = UUID.randomUUID()
-        spyCertificatesHandler.handleDeleteVersionRequest__returns_certificateView = certificateView
+        spyCertificatesHandler.handledeleteversionrequestReturnsCertificateview = certificateView
 
-        val mvcResult = mockMvc.perform(
-            delete("${CertificatesController.ENDPOINT}/{certificateId}/versions/{versionId}", certificateId.toString(), versionId.toString())
-                .credHubAuthHeader()
-                .accept(MediaType.APPLICATION_JSON),
-        ).andExpect(status().isOk)
-            .andDo(
-                document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    pathParameters(
-                        getCertificateIdPathParameter(),
-                        parameterWithName("versionId").description("Version Id"),
+        val mvcResult =
+            mockMvc
+                .perform(
+                    delete(
+                        "${CertificatesController.ENDPOINT}/{certificateId}/versions/{versionId}",
+                        certificateId.toString(),
+                        versionId.toString(),
+                    ).credHubAuthHeader()
+                        .accept(MediaType.APPLICATION_JSON),
+                ).andExpect(status().isOk)
+                .andDo(
+                    document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                        pathParameters(
+                            getCertificateIdPathParameter(),
+                            parameterWithName("versionId").description("Version Id"),
+                        ),
                     ),
-                ),
-            ).andReturn()
+                ).andReturn()
 
-        assertThat(spyCertificatesHandler.handleDeleteVersionRequest__calledWith_certificateId).isEqualTo(certificateId.toString())
-        assertThat(spyCertificatesHandler.handleDeleteVersionRequest__calledWith_versionId).isEqualTo(versionId.toString())
+        assertThat(spyCertificatesHandler.handledeleteversionrequestCalledwithCertificateid).isEqualTo(certificateId.toString())
+        assertThat(spyCertificatesHandler.handledeleteversionrequestCalledwithVersionid).isEqualTo(versionId.toString())
 
         // language=json
         val expectedResponseBody =
@@ -781,7 +816,6 @@ class CertificatesControllerTest {
         JSONAssert.assertEquals(expectedResponseBody, contentAsString, true)
     }
 
-    private fun getCertificateIdPathParameter(): ParameterDescriptor {
-        return parameterWithName("certificateId").description("The certificate identifier.")
-    }
+    private fun getCertificateIdPathParameter(): ParameterDescriptor =
+        parameterWithName("certificateId").description("The certificate identifier.")
 }

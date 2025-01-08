@@ -8,7 +8,9 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping(path = [InfoController.ENDPOINT], produces = [MediaType.APPLICATION_JSON_UTF8_VALUE])
-class InfoController(@Value("\${auth-server.url:}") val uaaUrl: String) {
+class InfoController(
+    @Value("\${auth-server.url:}") val uaaUrl: String,
+) {
     companion object {
         const val ENDPOINT = "/info"
         const val CREHUB_NAME = "CredHub"

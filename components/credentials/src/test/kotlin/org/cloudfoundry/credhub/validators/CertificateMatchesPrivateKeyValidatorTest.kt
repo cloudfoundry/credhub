@@ -31,16 +31,17 @@ class CertificateMatchesPrivateKeyValidatorTest {
     @Test
     fun `isValid should return false when PKCS1 key does not match cert`() {
         val certificateMatchesPrivateKeyValidator = CertificateMatchesPrivateKeyValidator()
-        val certificateCredentialValue = CertificateCredentialValue(
-            TestConstants.TEST_CA,
-            TestConstants.TEST_CERTIFICATE,
-            TestConstants.OTHER_TEST_PRIVATE_KEY,
-            "some ca name",
-            false,
-            false,
-            false,
-            false,
-        )
+        val certificateCredentialValue =
+            CertificateCredentialValue(
+                TestConstants.TEST_CA,
+                TestConstants.TEST_CERTIFICATE,
+                TestConstants.OTHER_TEST_PRIVATE_KEY,
+                "some ca name",
+                false,
+                false,
+                false,
+                false,
+            )
 
         val valid = certificateMatchesPrivateKeyValidator.isValid(certificateCredentialValue, null)
         assertThat(valid).isFalse()
@@ -49,16 +50,17 @@ class CertificateMatchesPrivateKeyValidatorTest {
     @Test
     fun `isValid should return true when PKCS1 key matches cert`() {
         val certificateMatchesPrivateKeyValidator = CertificateMatchesPrivateKeyValidator()
-        val certificateCredentialValue = CertificateCredentialValue(
-            TestConstants.TEST_CA,
-            TestConstants.TEST_CERTIFICATE,
-            TestConstants.TEST_PRIVATE_KEY,
-            "some ca name",
-            false,
-            false,
-            false,
-            false,
-        )
+        val certificateCredentialValue =
+            CertificateCredentialValue(
+                TestConstants.TEST_CA,
+                TestConstants.TEST_CERTIFICATE,
+                TestConstants.TEST_PRIVATE_KEY,
+                "some ca name",
+                false,
+                false,
+                false,
+                false,
+            )
 
         val valid = certificateMatchesPrivateKeyValidator.isValid(certificateCredentialValue, null)
         assertThat(valid).isTrue()
@@ -67,16 +69,17 @@ class CertificateMatchesPrivateKeyValidatorTest {
     @Test
     fun `isValid should return false when PKCS8 key does not match cert`() {
         val certificateMatchesPrivateKeyValidator = CertificateMatchesPrivateKeyValidator()
-        val certificateCredentialValue = CertificateCredentialValue(
-            TestConstants.TEST_CA,
-            TestConstants.TEST_CERTIFICATE,
-            TestConstants.OTHER_TEST_PRIVATE_KEY_PKCS8,
-            "some ca name",
-            false,
-            false,
-            false,
-            false,
-        )
+        val certificateCredentialValue =
+            CertificateCredentialValue(
+                TestConstants.TEST_CA,
+                TestConstants.TEST_CERTIFICATE,
+                TestConstants.OTHER_TEST_PRIVATE_KEY_PKCS8,
+                "some ca name",
+                false,
+                false,
+                false,
+                false,
+            )
 
         val valid = certificateMatchesPrivateKeyValidator.isValid(certificateCredentialValue, null)
         assertThat(valid).isFalse()
@@ -85,16 +88,17 @@ class CertificateMatchesPrivateKeyValidatorTest {
     @Test
     fun `isValid should return true when PKCS8 key matches cert`() {
         val certificateMatchesPrivateKeyValidator = CertificateMatchesPrivateKeyValidator()
-        val certificateCredentialValue = CertificateCredentialValue(
-            TestConstants.TEST_CA,
-            TestConstants.TEST_CERTIFICATE,
-            TestConstants.TEST_PRIVATE_KEY_PKCS8,
-            "some ca name",
-            false,
-            false,
-            false,
-            false,
-        )
+        val certificateCredentialValue =
+            CertificateCredentialValue(
+                TestConstants.TEST_CA,
+                TestConstants.TEST_CERTIFICATE,
+                TestConstants.TEST_PRIVATE_KEY_PKCS8,
+                "some ca name",
+                false,
+                false,
+                false,
+                false,
+            )
 
         val valid = certificateMatchesPrivateKeyValidator.isValid(certificateCredentialValue, null)
         assertThat(valid).isTrue()
@@ -104,16 +108,17 @@ class CertificateMatchesPrivateKeyValidatorTest {
     fun `isValid should throw a MalformedPrivateKeyException when PrivateKey is malformed`() {
         val certificateMatchesPrivateKeyValidator = CertificateMatchesPrivateKeyValidator()
 
-        val certificateCredentialValue = CertificateCredentialValue(
-            TestConstants.TEST_CA,
-            TestConstants.TEST_CERTIFICATE,
-            TestConstants.INVALID_PRIVATE_KEY_NO_HEADERS,
-            "some ca name",
-            false,
-            false,
-            false,
-            false,
-        )
+        val certificateCredentialValue =
+            CertificateCredentialValue(
+                TestConstants.TEST_CA,
+                TestConstants.TEST_CERTIFICATE,
+                TestConstants.INVALID_PRIVATE_KEY_NO_HEADERS,
+                "some ca name",
+                false,
+                false,
+                false,
+                false,
+            )
 
         assertThatThrownBy {
             certificateMatchesPrivateKeyValidator.isValid(certificateCredentialValue, null)
@@ -124,16 +129,17 @@ class CertificateMatchesPrivateKeyValidatorTest {
     fun `isValid should return true when certificate or ca is null or empty`() {
         val certificateMatchesPrivateKeyValidator = CertificateMatchesPrivateKeyValidator()
 
-        val certificateCredentialValue = CertificateCredentialValue(
-            null,
-            "",
-            TestConstants.TEST_PRIVATE_KEY,
-            "some ca name",
-            false,
-            false,
-            false,
-            false,
-        )
+        val certificateCredentialValue =
+            CertificateCredentialValue(
+                null,
+                "",
+                TestConstants.TEST_PRIVATE_KEY,
+                "some ca name",
+                false,
+                false,
+                false,
+                false,
+            )
 
         val valid = certificateMatchesPrivateKeyValidator.isValid(certificateCredentialValue, null)
         assertThat(valid).isTrue()
@@ -143,16 +149,17 @@ class CertificateMatchesPrivateKeyValidatorTest {
     fun `isValid should return true when private key is null or empty`() {
         val certificateMatchesPrivateKeyValidator = CertificateMatchesPrivateKeyValidator()
 
-        val certificateCredentialValue = CertificateCredentialValue(
-            TestConstants.TEST_CA,
-            TestConstants.TEST_CERTIFICATE,
-            "",
-            "some ca name",
-            false,
-            false,
-            false,
-            false,
-        )
+        val certificateCredentialValue =
+            CertificateCredentialValue(
+                TestConstants.TEST_CA,
+                TestConstants.TEST_CERTIFICATE,
+                "",
+                "some ca name",
+                false,
+                false,
+                false,
+                false,
+            )
 
         val valid = certificateMatchesPrivateKeyValidator.isValid(certificateCredentialValue, null)
         assertThat(valid).isTrue()

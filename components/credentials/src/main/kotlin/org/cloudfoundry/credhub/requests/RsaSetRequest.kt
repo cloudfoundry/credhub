@@ -32,7 +32,5 @@ class RsaSetRequest : BaseCredentialSetRequest<RsaCredentialValue?>() {
         return rsaKeyValue == that!!.rsaKeyValue
     }
 
-    override fun hashCode(): Int {
-        return Objects.hash(rsaKeyValue)
-    }
+    override fun hashCode(): Int = Objects.hash(rsaKeyValue)
 }

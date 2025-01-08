@@ -31,7 +31,5 @@ class UserSetRequest : BaseCredentialSetRequest<UserCredentialValue?>() {
         return Objects.equals(userValue, that!!.userValue)
     }
 
-    override fun hashCode(): Int {
-        return Objects.hash(userValue)
-    }
+    override fun hashCode(): Int = Objects.hash(userValue)
 }

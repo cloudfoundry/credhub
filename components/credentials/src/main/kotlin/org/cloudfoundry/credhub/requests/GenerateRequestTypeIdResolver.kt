@@ -18,20 +18,20 @@ class GenerateRequestTypeIdResolver : TypeIdResolver {
         this.baseType = baseType
     }
 
-    override fun idFromValue(value: Any): String? {
-        return null
-    }
+    override fun idFromValue(value: Any): String? = null
 
-    override fun idFromValueAndType(value: Any, suggestedType: Class<*>): String? {
-        return null
-    }
+    override fun idFromValueAndType(
+        value: Any,
+        suggestedType: Class<*>,
+    ): String? = null
 
-    override fun idFromBaseType(): String? {
-        return null
-    }
+    override fun idFromBaseType(): String? = null
 
     @Throws(IOException::class)
-    override fun typeFromId(context: DatabindContext, id: String): JavaType {
+    override fun typeFromId(
+        context: DatabindContext,
+        id: String,
+    ): JavaType {
         var subType: Class<*> = DefaultCredentialGenerateRequest::class.java
 
         when (id.lowercase()) {
@@ -47,11 +47,7 @@ class GenerateRequestTypeIdResolver : TypeIdResolver {
         return context.constructSpecializedType(baseType!!, subType)
     }
 
-    override fun getDescForKnownTypeIds(): String? {
-        return null
-    }
+    override fun getDescForKnownTypeIds(): String? = null
 
-    override fun getMechanism(): JsonTypeInfo.Id {
-        return JsonTypeInfo.Id.CUSTOM
-    }
+    override fun getMechanism(): JsonTypeInfo.Id = JsonTypeInfo.Id.CUSTOM
 }

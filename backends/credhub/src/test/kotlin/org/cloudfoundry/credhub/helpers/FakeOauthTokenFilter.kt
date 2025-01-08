@@ -16,7 +16,11 @@ class FakeOauthTokenFilter : Filter {
     }
 
     @Throws(IOException::class, ServletException::class)
-    override fun doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
+    override fun doFilter(
+        request: ServletRequest,
+        response: ServletResponse,
+        chain: FilterChain,
+    ) {
         val servletRequest = request as HttpServletRequest
         val header = servletRequest.getHeader("Authorization") ?: throw ServletException("Missing Authorization header")
         val p = Pattern.compile("Bearer .+")

@@ -6,13 +6,10 @@ import org.springframework.context.annotation.Configuration
 
 @Configuration
 class CurrentTimeProviderConfig {
-
     companion object {
         const val CURRENT_TIME_PROVIDER = "currentTimeProvider"
     }
 
     @Bean(name = [CurrentTimeProviderConfig.CURRENT_TIME_PROVIDER])
-    fun currentTimeProvider(): CurrentTimeProvider {
-        return CurrentTimeProvider()
-    }
+    fun currentTimeProvider(): CurrentTimeProvider = CurrentTimeProvider()
 }

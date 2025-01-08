@@ -16,7 +16,9 @@ import org.springframework.web.bind.annotation.RestController
 import javax.validation.Valid
 
 @RestController
-class RegenerateController(val regenerateHandler: RegenerateHandler) {
+class RegenerateController(
+    val regenerateHandler: RegenerateHandler,
+) {
     companion object {
         const val REGENERATE_ENDPOINT = "api/v1/regenerate"
         const val BULK_REGENERATE_ENDPOINT = "api/v1/bulk-regenerate"
@@ -24,14 +26,14 @@ class RegenerateController(val regenerateHandler: RegenerateHandler) {
 
     @PostMapping(path = [REGENERATE_ENDPOINT], produces = [MediaType.APPLICATION_JSON_UTF8_VALUE])
     @ResponseStatus(HttpStatus.OK)
-    fun regenerate(@RequestBody @Validated requestBody: RegenerateRequest): CredentialView {
-        return regenerateHandler.handleRegenerate(requestBody.getName(), requestBody.getMetadata())
-    }
+    fun regenerate(
+        @RequestBody @Validated requestBody: RegenerateRequest,
+    ): CredentialView = regenerateHandler.handleRegenerate(requestBody.getName(), requestBody.getMetadata())
 
     @PostMapping(path = [BULK_REGENERATE_ENDPOINT], produces = [MediaType.APPLICATION_JSON_UTF8_VALUE])
     @ResponseStatus(HttpStatus.OK)
     @Transactional(rollbackFor = [PermissionException::class])
-    fun bulkRegenerate(@RequestBody @Valid requestBody: BulkRegenerateRequest): BulkRegenerateResults {
-        return regenerateHandler.handleBulkRegenerate(requestBody.getSignedBy())
-    }
+    fun bulkRegenerate(
+        @RequestBody @Valid requestBody: BulkRegenerateRequest,
+    ): BulkRegenerateResults = regenerateHandler.handleBulkRegenerate(requestBody.getSignedBy())
 }

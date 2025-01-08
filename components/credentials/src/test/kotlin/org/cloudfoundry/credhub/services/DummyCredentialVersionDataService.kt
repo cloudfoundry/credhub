@@ -26,7 +26,10 @@ class DummyCredentialVersionDataService : CredentialVersionDataService {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun findContainingName(name: String, expiresWithinDays: String): List<FindCredentialResult> {
+    override fun findContainingName(
+        name: String,
+        expiresWithinDays: String,
+    ): List<FindCredentialResult> {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
@@ -34,7 +37,10 @@ class DummyCredentialVersionDataService : CredentialVersionDataService {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun findStartingWithPath(path: String, expiresWithinDays: String): List<FindCredentialResult> {
+    override fun findStartingWithPath(
+        path: String,
+        expiresWithinDays: String,
+    ): List<FindCredentialResult> {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
@@ -50,7 +56,10 @@ class DummyCredentialVersionDataService : CredentialVersionDataService {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun findNByName(name: String, numberOfVersions: Int): List<CredentialVersion> {
+    override fun findNByName(
+        name: String,
+        numberOfVersions: Int,
+    ): List<CredentialVersion> {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 

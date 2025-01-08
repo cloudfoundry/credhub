@@ -35,7 +35,6 @@ import java.util.Objects
 import javax.security.auth.x500.X500Principal
 
 class CertificateGenerationParameters : GenerationParameters {
-
     val keyLength: Int
     var duration: Int
     val isSelfSigned: Boolean
@@ -93,8 +92,8 @@ class CertificateGenerationParameters : GenerationParameters {
             equalsIgnoringDuration(that)
     }
 
-    fun equalsIgnoringDuration(other: CertificateGenerationParameters?): Boolean {
-        return keyLength == other!!.keyLength &&
+    fun equalsIgnoringDuration(other: CertificateGenerationParameters?): Boolean =
+        keyLength == other!!.keyLength &&
             isSelfSigned == other.isSelfSigned &&
             isCa == other.isCa &&
             (caName == other.caName || caName == null || other.caName == null) &&
@@ -102,11 +101,9 @@ class CertificateGenerationParameters : GenerationParameters {
             alternativeNames == other.alternativeNames &&
             extendedKeyUsage == other.extendedKeyUsage &&
             keyUsage == other.keyUsage
-    }
 
-    override fun hashCode(): Int {
-        return Objects.hash(keyLength, duration, isSelfSigned, caName, isCa, x500Principal, alternativeNames, extendedKeyUsage, keyUsage)
-    }
+    override fun hashCode(): Int =
+        Objects.hash(keyLength, duration, isSelfSigned, caName, isCa, x500Principal, alternativeNames, extendedKeyUsage, keyUsage)
 
     private fun buildKeyUsage(keyUsageList: CertificateGenerationRequestParameters): KeyUsage? {
         if (keyUsageList.keyUsage == null) {

@@ -15,9 +15,7 @@ class BulkRegenerateCredential : RequestDetails {
         this.signedBy = signedBy
     }
 
-    override fun operation(): OperationDeviceAction {
-        return OperationDeviceAction.BULK_REGENERATE
-    }
+    override fun operation(): OperationDeviceAction = OperationDeviceAction.BULK_REGENERATE
 
     override fun equals(other: Any?): Boolean {
         if (this === other) {
@@ -35,9 +33,8 @@ class BulkRegenerateCredential : RequestDetails {
             .isEquals
     }
 
-    override fun hashCode(): Int {
-        return HashCodeBuilder(17, 37)
+    override fun hashCode(): Int =
+        HashCodeBuilder(17, 37)
             .append(signedBy)
             .toHashCode()
-    }
 }

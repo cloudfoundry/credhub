@@ -13,7 +13,5 @@ class DeleteCredential : RequestDetails {
         this.name = name
     }
 
-    override fun operation(): OperationDeviceAction {
-        return OperationDeviceAction.DELETE
-    }
+    override fun operation(): OperationDeviceAction = OperationDeviceAction.DELETE
 }
