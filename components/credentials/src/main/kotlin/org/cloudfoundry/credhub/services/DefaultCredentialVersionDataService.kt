@@ -26,240 +26,251 @@ import java.util.stream.Collectors
 import kotlin.experimental.and
 
 @Service
-class DefaultCredentialVersionDataService @Autowired
-constructor(
-    private val credentialVersionRepository: CredentialVersionRepository,
-    private val credentialDataService: CredentialDataService,
-    private val jdbcTemplate: JdbcTemplate,
-    private val credentialFactory: CredentialFactory,
-    private val certificateVersionDataService: CertificateVersionDataService,
-) : CredentialVersionDataService {
+class DefaultCredentialVersionDataService
+    @Autowired
+    constructor(
+        private val credentialVersionRepository: CredentialVersionRepository,
+        private val credentialDataService: CredentialDataService,
+        private val jdbcTemplate: JdbcTemplate,
+        private val credentialFactory: CredentialFactory,
+        private val certificateVersionDataService: CertificateVersionDataService,
+    ) : CredentialVersionDataService {
+        override fun save(credentialVersion: CredentialVersion): CredentialVersion = credentialVersion.save<CredentialVersion>(this)
 
-    override fun save(credentialVersion: CredentialVersion): CredentialVersion {
-        return credentialVersion.save<CredentialVersion>(this)
-    }
+        override fun save(credentialVersionData: CredentialVersionData<*>): CredentialVersion {
+            val credential = credentialVersionData.credential
 
-    override fun save(credentialVersionData: CredentialVersionData<*>): CredentialVersion {
-        val credential = credentialVersionData.credential
+            if (credential?.uuid == null) {
+                credentialVersionData.credential = credentialDataService.save(credential)
+            } else {
+                val existingCredentialVersion = findMostRecent(credential.name!!)
+                if ((
+                        existingCredentialVersion != null &&
+                            existingCredentialVersion.getCredentialType() != credentialVersionData.credentialType
+                    )
+                ) {
+                    throw ParameterizedValidationException(ErrorMessages.TYPE_MISMATCH)
+                }
+            }
 
-        if (credential?.uuid == null) {
-            credentialVersionData.credential = credentialDataService.save(credential)
-        } else {
-            val existingCredentialVersion = findMostRecent(credential.name!!)
-            if ((existingCredentialVersion != null && existingCredentialVersion.getCredentialType() != credentialVersionData.credentialType)) {
-                throw ParameterizedValidationException(ErrorMessages.TYPE_MISMATCH)
+            return try {
+                credentialFactory
+                    .makeCredentialFromEntity(credentialVersionRepository.saveAndFlush(credentialVersionData))!!
+            } catch (e: InvalidDataAccessResourceUsageException) {
+                throw MaximumSizeException(e.message!!)
+            } catch (e: DataIntegrityViolationException) {
+                throw MaximumSizeException(e.message!!)
             }
         }
 
-        return try {
-            credentialFactory
-                .makeCredentialFromEntity(credentialVersionRepository.saveAndFlush(credentialVersionData))!!
-        } catch (e: InvalidDataAccessResourceUsageException) {
-            throw MaximumSizeException(e.message!!)
-        } catch (e: DataIntegrityViolationException) {
-            throw MaximumSizeException(e.message!!)
+        override fun findMostRecent(name: String): CredentialVersion? {
+            val credential = credentialDataService.find(name)
+
+            if (credential == null) {
+                return null
+            } else {
+                return credentialFactory.makeCredentialFromEntity(
+                    credentialVersionRepository
+                        .findFirstByCredentialUuidOrderByVersionCreatedAtDesc(credential.uuid),
+                )
+            }
         }
-    }
 
-    override fun findMostRecent(name: String): CredentialVersion? {
-        val credential = credentialDataService.find(name)
-
-        if (credential == null) {
-            return null
-        } else {
-            return credentialFactory.makeCredentialFromEntity(
-                credentialVersionRepository
-                    .findFirstByCredentialUuidOrderByVersionCreatedAtDesc(credential.uuid),
-            )
+        override fun findByUuid(uuidString: String): CredentialVersion? {
+            val uuid =
+                try {
+                    UUID.fromString(uuidString)
+                } catch (e: IllegalArgumentException) {
+                    throw EntryNotFoundException(ErrorMessages.RESOURCE_NOT_FOUND)
+                }
+            return credentialFactory
+                .makeCredentialFromEntity(credentialVersionRepository.findOneByUuid(uuid))
         }
-    }
 
-    override fun findByUuid(uuidString: String): CredentialVersion? {
-        val uuid = try {
-            UUID.fromString(uuidString)
-        } catch (e: IllegalArgumentException) {
-            throw EntryNotFoundException(ErrorMessages.RESOURCE_NOT_FOUND)
-        }
-        return credentialFactory
-            .makeCredentialFromEntity(credentialVersionRepository.findOneByUuid(uuid))
-    }
-
-    override fun findAllCertificateCredentialsByCaName(caName: String): List<String> {
-        val query = (
-            """select distinct credential.name from credential,
+        override fun findAllCertificateCredentialsByCaName(caName: String): List<String> {
+            val query = (
+                """select distinct credential.name from credential,
             credential_version, certificate_credential where credential.uuid=credential_version.credential_uuid
             and credential_version.uuid=certificate_credential.uuid and
             lower(certificate_credential.ca_name) like lower(?)
-            """.trimMargin()
+                """.trimMargin()
             )
-        val results = jdbcTemplate.queryForList<String>(query, String::class.java, caName)
-        results.remove(caName)
-        return results
-    }
-
-    override fun findContainingName(name: String): List<FindCredentialResult> {
-        return findContainingName(name, "")
-    }
-
-    override fun findContainingName(name: String, expiresWithinDays: String): List<FindCredentialResult> {
-        if ("" != expiresWithinDays) {
-            return filterCertificates("%$name%", expiresWithinDays)
-        }
-        return findMatchingName("%$name%")
-    }
-
-    override fun findStartingWithPath(path: String): List<FindCredentialResult> {
-        return findStartingWithPath(path, "")
-    }
-
-    override fun findStartingWithPath(path: String, expiresWithinDays: String): List<FindCredentialResult> {
-        var adjustedPath = StringUtils.prependIfMissing(path, "/")
-        adjustedPath = StringUtils.appendIfMissing(adjustedPath, "/")
-
-        if ("" != expiresWithinDays) {
-            return filterCertificates(adjustedPath + "%", expiresWithinDays)
+            val results = jdbcTemplate.queryForList<String>(query, String::class.java, caName)
+            results.remove(caName)
+            return results
         }
 
-        return findMatchingName(adjustedPath + "%")
-    }
+        override fun findContainingName(name: String): List<FindCredentialResult> = findContainingName(name, "")
 
-    override fun delete(name: String): Boolean {
-        return credentialDataService.delete(name)
-    }
-
-    override fun findAllByName(name: String): List<CredentialVersion> {
-        val credential = credentialDataService.find(name)
-
-        return if (credential != null) {
-            credentialFactory.makeCredentialsFromEntities(
-                credentialVersionRepository.findAllByCredentialUuidOrderByVersionCreatedAtDesc(credential.uuid),
-            )
-        } else
-            Lists.newArrayList<CredentialVersion>()
-    }
-
-    override fun findNByName(name: String, numberOfVersions: Int): List<CredentialVersion> {
-        val credential = credentialDataService.find(name)
-
-        if (credential != null) {
-            val credentialVersionData = credentialVersionRepository
-                .findAllByCredentialUuidOrderByVersionCreatedAtDesc(credential.uuid)
-                .stream()
-                .limit(numberOfVersions.toLong())
-                .collect(Collectors.toList())
-            return credentialFactory.makeCredentialsFromEntities(credentialVersionData)
-        } else {
-            return Lists.newArrayList<CredentialVersion>()
+        override fun findContainingName(
+            name: String,
+            expiresWithinDays: String,
+        ): List<FindCredentialResult> {
+            if ("" != expiresWithinDays) {
+                return filterCertificates("%$name%", expiresWithinDays)
+            }
+            return findMatchingName("%$name%")
         }
-    }
 
-    override fun countByEncryptionKey(): Map<UUID, Long> {
-        val map = HashMap<UUID, Long>()
-        jdbcTemplate.query<Long>(
-            (
-                " SELECT count(*) as count, encryption_key_uuid FROM credential_version " +
-                    "LEFT JOIN encrypted_value ON credential_version.encrypted_value_uuid = encrypted_value.uuid " +
-                    "GROUP BY encrypted_value.encryption_key_uuid"
+        override fun findStartingWithPath(path: String): List<FindCredentialResult> = findStartingWithPath(path, "")
+
+        override fun findStartingWithPath(
+            path: String,
+            expiresWithinDays: String,
+        ): List<FindCredentialResult> {
+            var adjustedPath = StringUtils.prependIfMissing(path, "/")
+            adjustedPath = StringUtils.appendIfMissing(adjustedPath, "/")
+
+            if ("" != expiresWithinDays) {
+                return filterCertificates(adjustedPath + "%", expiresWithinDays)
+            }
+
+            return findMatchingName(adjustedPath + "%")
+        }
+
+        override fun delete(name: String): Boolean = credentialDataService.delete(name)
+
+        override fun findAllByName(name: String): List<CredentialVersion> {
+            val credential = credentialDataService.find(name)
+
+            return if (credential != null) {
+                credentialFactory.makeCredentialsFromEntities(
+                    credentialVersionRepository.findAllByCredentialUuidOrderByVersionCreatedAtDesc(credential.uuid),
+                )
+            } else {
+                Lists.newArrayList<CredentialVersion>()
+            }
+        }
+
+        override fun findNByName(
+            name: String,
+            numberOfVersions: Int,
+        ): List<CredentialVersion> {
+            val credential = credentialDataService.find(name)
+
+            if (credential != null) {
+                val credentialVersionData =
+                    credentialVersionRepository
+                        .findAllByCredentialUuidOrderByVersionCreatedAtDesc(credential.uuid)
+                        .stream()
+                        .limit(numberOfVersions.toLong())
+                        .collect(Collectors.toList())
+                return credentialFactory.makeCredentialsFromEntities(credentialVersionData)
+            } else {
+                return Lists.newArrayList<CredentialVersion>()
+            }
+        }
+
+        override fun countByEncryptionKey(): Map<UUID, Long> {
+            val map = HashMap<UUID, Long>()
+            jdbcTemplate.query<Long>(
+                (
+                    " SELECT count(*) as count, encryption_key_uuid FROM credential_version " +
+                        "LEFT JOIN encrypted_value ON credential_version.encrypted_value_uuid = encrypted_value.uuid " +
+                        "GROUP BY encrypted_value.encryption_key_uuid"
                 ),
-        ) { rowSet, _ -> map.put(toUUID(rowSet.getObject("encryption_key_uuid")), rowSet.getLong("count")) }
-        return map
-    }
-
-    override fun findActiveByName(name: String): List<CredentialVersion>? {
-        val credential = credentialDataService.find(name)
-        val credentialVersionData: CredentialVersionData<*>?
-        val result = Lists.newArrayList<CredentialVersion>()
-        if (credential != null) {
-            credentialVersionData = credentialVersionRepository
-                .findFirstByCredentialUuidOrderByVersionCreatedAtDesc(credential.uuid)
-
-            if (credentialVersionData?.credentialType == CertificateCredentialVersionData.CREDENTIAL_TYPE) {
-                return certificateVersionDataService.findBothActiveCertAndTransitionalCert(name)
-            }
-            credentialFactory.makeCredentialFromEntity(credentialVersionData)?.let { result.add(it) }
-
-            return result
-        } else {
-            return Lists.newArrayList<CredentialVersion>()
+            ) { rowSet, _ -> map.put(toUUID(rowSet.getObject("encryption_key_uuid")), rowSet.getLong("count")) }
+            return map
         }
-    }
 
-    override fun count(): Long? {
-        return credentialVersionRepository.count()
-    }
+        override fun findActiveByName(name: String): List<CredentialVersion>? {
+            val credential = credentialDataService.find(name)
+            val credentialVersionData: CredentialVersionData<*>?
+            val result = Lists.newArrayList<CredentialVersion>()
+            if (credential != null) {
+                credentialVersionData =
+                    credentialVersionRepository
+                        .findFirstByCredentialUuidOrderByVersionCreatedAtDesc(credential.uuid)
 
-    override fun countEncryptedWithKeyUuidIn(uuids: Collection<UUID>): Long? {
-        return credentialVersionRepository.countByEncryptedCredentialValueEncryptionKeyUuidIn(uuids)
-    }
+                if (credentialVersionData?.credentialType == CertificateCredentialVersionData.CREDENTIAL_TYPE) {
+                    return certificateVersionDataService.findBothActiveCertAndTransitionalCert(name)
+                }
+                credentialFactory.makeCredentialFromEntity(credentialVersionData)?.let { result.add(it) }
 
-    private fun toUUID(`object`: Any): UUID {
-        if (`object`.javaClass == ByteArray::class.java) {
-            val bytes = `object` as ByteArray
-            if (bytes.size != 16) {
-                throw IllegalArgumentException("Expected byte[] of length 16. Received length " + bytes.size)
+                return result
+            } else {
+                return Lists.newArrayList<CredentialVersion>()
             }
-            var i = 0
-            var msl: Long = 0
-            while (i < 8) {
-                msl = (msl shl 8) or ((bytes[i] and 0xFF.toByte()).toLong())
-                i++
-            }
-            var lsl: Long = 0
-            while (i < 16) {
-                lsl = (lsl shl 8) or ((bytes[i] and 0xFF.toByte()).toLong())
-                i++
-            }
-            return UUID(msl, lsl)
-        } else if (`object`.javaClass == UUID::class.java) {
-            return `object` as UUID
-        } else {
-            throw IllegalArgumentException("Expected byte[] or UUID type. Received " + `object`.javaClass.toString())
         }
-    }
 
-    private fun filterCertificates(path: String, expiresWithinDays: String): List<FindCredentialResult> {
-        val escapedPath = path.replace("_", "\\_")
+        override fun count(): Long? = credentialVersionRepository.count()
 
-        val expiresTimestamp = Timestamp.from(Instant.now().plus(Duration.ofDays(java.lang.Long.parseLong(expiresWithinDays))))
+        override fun countEncryptedWithKeyUuidIn(uuids: Collection<UUID>): Long? =
+            credentialVersionRepository.countByEncryptedCredentialValueEncryptionKeyUuidIn(uuids)
 
-        val query = (
-            "SELECT name.name,\n" +
-                "       latest_credential_version.version_created_at,\n" +
-                "       certificate_credential.expiry_date\n" +
-                "FROM (\n" +
-                "         SELECT credential_uuid, max(version_created_at) AS max_version_created_at\n" +
-                "         FROM credential_version\n" +
-                "         GROUP BY credential_uuid) AS credential_uuid_of_max_version_created_at\n" +
-                "         INNER JOIN (SELECT * FROM credential WHERE name_lowercase LIKE lower(?)) AS name\n" +
-                "                    ON credential_uuid_of_max_version_created_at.credential_uuid = name.uuid\n" +
-                "         INNER JOIN credential_version AS latest_credential_version\n" +
-                "                    ON latest_credential_version.credential_uuid =\n" +
-                "                       credential_uuid_of_max_version_created_at.credential_uuid\n" +
-                "                        AND latest_credential_version.version_created_at =\n" +
-                "                            credential_uuid_of_max_version_created_at.max_version_created_at\n" +
-                "         INNER JOIN (SELECT * FROM certificate_credential) AS certificate_credential\n" +
-                "                    ON latest_credential_version.uuid = certificate_credential.uuid\n" +
-                "WHERE certificate_credential.expiry_date <= ?;"
+        private fun toUUID(`object`: Any): UUID {
+            if (`object`.javaClass == ByteArray::class.java) {
+                val bytes = `object` as ByteArray
+                if (bytes.size != 16) {
+                    throw IllegalArgumentException("Expected byte[] of length 16. Received length " + bytes.size)
+                }
+                var i = 0
+                var msl: Long = 0
+                while (i < 8) {
+                    msl = (msl shl 8) or ((bytes[i] and 0xFF.toByte()).toLong())
+                    i++
+                }
+                var lsl: Long = 0
+                while (i < 16) {
+                    lsl = (lsl shl 8) or ((bytes[i] and 0xFF.toByte()).toLong())
+                    i++
+                }
+                return UUID(msl, lsl)
+            } else if (`object`.javaClass == UUID::class.java) {
+                return `object` as UUID
+            } else {
+                throw IllegalArgumentException("Expected byte[] or UUID type. Received " + `object`.javaClass.toString())
+            }
+        }
+
+        private fun filterCertificates(
+            path: String,
+            expiresWithinDays: String,
+        ): List<FindCredentialResult> {
+            val escapedPath = path.replace("_", "\\_")
+
+            val expiresTimestamp = Timestamp.from(Instant.now().plus(Duration.ofDays(java.lang.Long.parseLong(expiresWithinDays))))
+
+            val query = (
+                "SELECT name.name,\n" +
+                    "       latest_credential_version.version_created_at,\n" +
+                    "       certificate_credential.expiry_date\n" +
+                    "FROM (\n" +
+                    "         SELECT credential_uuid, max(version_created_at) AS max_version_created_at\n" +
+                    "         FROM credential_version\n" +
+                    "         GROUP BY credential_uuid) AS credential_uuid_of_max_version_created_at\n" +
+                    "         INNER JOIN (SELECT * FROM credential WHERE name_lowercase LIKE lower(?)) AS name\n" +
+                    "                    ON credential_uuid_of_max_version_created_at.credential_uuid = name.uuid\n" +
+                    "         INNER JOIN credential_version AS latest_credential_version\n" +
+                    "                    ON latest_credential_version.credential_uuid =\n" +
+                    "                       credential_uuid_of_max_version_created_at.credential_uuid\n" +
+                    "                        AND latest_credential_version.version_created_at =\n" +
+                    "                            credential_uuid_of_max_version_created_at.max_version_created_at\n" +
+                    "         INNER JOIN (SELECT * FROM certificate_credential) AS certificate_credential\n" +
+                    "                    ON latest_credential_version.uuid = certificate_credential.uuid\n" +
+                    "WHERE certificate_credential.expiry_date <= ?;"
             )
 
-        val certificateResults = jdbcTemplate.query<FindCredentialResult>(
-            query,
-            arrayOf<Any>(escapedPath, expiresTimestamp),
-        ) { rowSet, _ ->
-            val versionCreatedAt = Instant.ofEpochMilli(rowSet.getLong("version_created_at"))
-            val name = rowSet.getString("name")
-            val expiryDate = rowSet.getTimestamp("expiry_date").toInstant()
-            FindCertificateResult(versionCreatedAt, name, expiryDate)
+            val certificateResults =
+                jdbcTemplate.query<FindCredentialResult>(
+                    query,
+                    arrayOf<Any>(escapedPath, expiresTimestamp),
+                ) { rowSet, _ ->
+                    val versionCreatedAt = Instant.ofEpochMilli(rowSet.getLong("version_created_at"))
+                    val name = rowSet.getString("name")
+                    val expiryDate = rowSet.getTimestamp("expiry_date").toInstant()
+                    FindCertificateResult(versionCreatedAt, name, expiryDate)
+                }
+            return certificateResults
         }
-        return certificateResults
-    }
 
-    private fun findMatchingName(nameLike: String): List<FindCredentialResult> {
-        val escapedNameLike = nameLike.replace("_", "\\_").lowercase()
+        private fun findMatchingName(nameLike: String): List<FindCredentialResult> {
+            val escapedNameLike = nameLike.replace("_", "\\_").lowercase()
 
-        val credentialResults = jdbcTemplate.query<FindCredentialResult>(
-            (
-                """ select name.name, credential_version.version_created_at from
+            val credentialResults =
+                jdbcTemplate.query<FindCredentialResult>(
+                    (
+                        """ select name.name, credential_version.version_created_at from
                  (select max(version_created_at) as version_created_at, credential_uuid from
                     (select version_created_at, credential_uuid from credential_version LEFT OUTER JOIN
                         certificate_credential on credential_version.uuid = certificate_credential.uuid
@@ -271,14 +282,14 @@ constructor(
                     (select * from credential where name_lowercase like ? )
                     as name on credential_version.credential_uuid = name.uuid
                  order by version_created_at desc
-                """.trimMargin()
-                ),
-            arrayOf<Any>(escapedNameLike, escapedNameLike),
-        ) { rowSet, _ ->
-            val versionCreatedAt = Instant.ofEpochMilli(rowSet.getLong("version_created_at"))
-            val name = rowSet.getString("name")
-            FindCredentialResult(versionCreatedAt, name)
+                        """.trimMargin()
+                    ),
+                    arrayOf<Any>(escapedNameLike, escapedNameLike),
+                ) { rowSet, _ ->
+                    val versionCreatedAt = Instant.ofEpochMilli(rowSet.getLong("version_created_at"))
+                    val name = rowSet.getString("name")
+                    FindCredentialResult(versionCreatedAt, name)
+                }
+            return credentialResults
         }
-        return credentialResults
     }
-}

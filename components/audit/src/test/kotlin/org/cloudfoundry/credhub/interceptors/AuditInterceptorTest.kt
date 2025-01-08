@@ -45,10 +45,7 @@ class AuditInterceptorTest {
         userContext = mock(UserContext::class.java)
         auditRecord = CEFAuditRecord(versionProvider!!)
 
-        subject = AuditInterceptor(
-            userContextFactory!!,
-            auditRecord!!,
-        )
+        subject = AuditInterceptor(userContextFactory!!, auditRecord!!)
         request = MockHttpServletRequest()
         response = MockHttpServletResponse()
         val authentication = mock(Authentication::class.java)

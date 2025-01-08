@@ -26,62 +26,65 @@ import javax.servlet.http.HttpServletResponse
 
 @Service
 @ConditionalOnProperty("security.oauth2.enabled")
-class OAuth2ExtraValidationFilter @Autowired
-internal constructor(
-    private val oAuth2IssuerService: OAuth2IssuerService,
-    private val tokenStore: TokenStore,
-    private val oAuth2AuthenticationExceptionHandler: OAuth2AuthenticationExceptionHandler,
-    private val eventPublisher: AuthenticationEventPublisher,
-) : OncePerRequestFilter() {
-    private val tokenExtractor: TokenExtractor
+class OAuth2ExtraValidationFilter
+    @Autowired
+    internal constructor(
+        private val oAuth2IssuerService: OAuth2IssuerService,
+        private val tokenStore: TokenStore,
+        private val oAuth2AuthenticationExceptionHandler: OAuth2AuthenticationExceptionHandler,
+        private val eventPublisher: AuthenticationEventPublisher,
+    ) : OncePerRequestFilter() {
+        private val tokenExtractor: TokenExtractor
 
-    init {
-        this.tokenExtractor = BearerTokenExtractor()
-    }
+        init {
+            this.tokenExtractor = BearerTokenExtractor()
+        }
 
-    @Throws(ServletException::class, IOException::class)
-    override fun doFilterInternal(
-        request: HttpServletRequest,
-        response: HttpServletResponse,
-        filterChain: FilterChain,
-    ) {
-        val authentication = tokenExtractor.extract(request)
+        @Throws(ServletException::class, IOException::class)
+        override fun doFilterInternal(
+            request: HttpServletRequest,
+            response: HttpServletResponse,
+            filterChain: FilterChain,
+        ) {
+            val authentication = tokenExtractor.extract(request)
 
-        try {
-            if (authentication != null) {
-                val token = authentication.principal as String
-                val accessToken = tokenStore.readAccessToken(token)
-                val additionalInformation = accessToken.additionalInformation
-                val issuer = (additionalInformation as java.util.Map<String, Any>).getOrDefault("iss", "") as String
+            try {
+                if (authentication != null) {
+                    val token = authentication.principal as String
+                    val accessToken = tokenStore.readAccessToken(token)
+                    val additionalInformation = accessToken.additionalInformation
+                    val issuer = (additionalInformation as java.util.Map<String, Any>).getOrDefault("iss", "") as String
 
-                if (issuer != oAuth2IssuerService.getIssuer()) {
-                    tokenStore.removeAccessToken(accessToken)
+                    if (issuer != oAuth2IssuerService.getIssuer()) {
+                        tokenStore.removeAccessToken(accessToken)
 
-                    val errorMessage = ErrorMessages.Oauth.INVALID_ISSUER
-                    throw OAuth2Exception(errorMessage)
+                        val errorMessage = ErrorMessages.Oauth.INVALID_ISSUER
+                        throw OAuth2Exception(errorMessage)
+                    }
                 }
-            }
 
-            filterChain.doFilter(request, response)
-        } catch (exception: OAuth2Exception) {
-            SecurityContextHolder.clearContext()
-            val authException = InsufficientAuthenticationException(
-                exception.message,
-                exception,
-            )
-            eventPublisher.publishAuthenticationFailure(
-                BadCredentialsException(exception.message, exception),
-                PreAuthenticatedAuthenticationToken("access-token", "N/A"),
-            )
-            oAuth2AuthenticationExceptionHandler.handleException(request, response, authException)
-        } catch (exception: RuntimeException) {
-            if (exception.cause is SignatureException || exception
-                    .cause is InvalidSignatureException
-            ) {
-                oAuth2AuthenticationExceptionHandler.handleException(request, response, exception)
-            } else {
-                throw exception
+                filterChain.doFilter(request, response)
+            } catch (exception: OAuth2Exception) {
+                SecurityContextHolder.clearContext()
+                val authException =
+                    InsufficientAuthenticationException(
+                        exception.message,
+                        exception,
+                    )
+                eventPublisher.publishAuthenticationFailure(
+                    BadCredentialsException(exception.message, exception),
+                    PreAuthenticatedAuthenticationToken("access-token", "N/A"),
+                )
+                oAuth2AuthenticationExceptionHandler.handleException(request, response, authException)
+            } catch (exception: RuntimeException) {
+                if (exception.cause is SignatureException ||
+                    exception
+                        .cause is InvalidSignatureException
+                ) {
+                    oAuth2AuthenticationExceptionHandler.handleException(request, response, exception)
+                } else {
+                    throw exception
+                }
             }
         }
     }
-}

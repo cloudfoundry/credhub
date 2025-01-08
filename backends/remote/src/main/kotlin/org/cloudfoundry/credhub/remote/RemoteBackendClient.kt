@@ -51,7 +51,6 @@ class RemoteBackendClient(
     @Value("\${backend.host}") private val host: String,
     @Value("\${backend.ca_cert}") private val caCert: String,
 ) {
-
     companion object {
         private val LOGGER = LogManager.getLogger(RemoteBackendClient::class.java)
     }
@@ -65,179 +64,250 @@ class RemoteBackendClient(
 
         val sslContext: SslContext
         try {
-            sslContext = GrpcSslContexts.forClient()
-                .trustManager(ByteArrayInputStream(caCert.toByteArray(UTF_8)))
-                .build()
+            sslContext =
+                GrpcSslContexts
+                    .forClient()
+                    .trustManager(ByteArrayInputStream(caCert.toByteArray(UTF_8)))
+                    .build()
         } catch (e: SSLException) {
             throw RuntimeException(e)
         }
 
-        val KEEPALIVE_TIMEOUT_NANOS: Long = TimeUnit.SECONDS.toNanos(20L)
-        blockingStub = CredentialServiceGrpc.newBlockingStub(
-            NettyChannelBuilder.forAddress(DomainSocketAddress(socketFile))
-                .eventLoopGroup(group)
-                .channelType(channelType)
-                .negotiationType(NegotiationType.PLAINTEXT)
-                .keepAliveTime(KEEPALIVE_TIMEOUT_NANOS, TimeUnit.NANOSECONDS)
-                .useTransportSecurity()
-                .sslContext(sslContext)
-                .overrideAuthority(host)
-                .build(),
-        )
+        val keepAliveTimeNanos: Long = TimeUnit.SECONDS.toNanos(20L)
+        blockingStub =
+            CredentialServiceGrpc.newBlockingStub(
+                NettyChannelBuilder
+                    .forAddress(DomainSocketAddress(socketFile))
+                    .eventLoopGroup(group)
+                    .channelType(channelType)
+                    .negotiationType(NegotiationType.PLAINTEXT)
+                    .keepAliveTime(keepAliveTimeNanos, TimeUnit.NANOSECONDS)
+                    .useTransportSecurity()
+                    .sslContext(sslContext)
+                    .overrideAuthority(host)
+                    .build(),
+            )
 
         LOGGER.info("using socket file $socketFile")
     }
 
-    fun getNVersionsRequest(credentialName: String, user: String, numberOfVersions: Int): GetNVersionsResponse {
-        val request = GetNVersionsRequest
-            .newBuilder()
-            .setName(credentialName)
-            .setRequester(user)
-            .setNumberOfVersions(numberOfVersions)
-            .build()
+    fun getNVersionsRequest(
+        credentialName: String,
+        user: String,
+        numberOfVersions: Int,
+    ): GetNVersionsResponse {
+        val request =
+            GetNVersionsRequest
+                .newBuilder()
+                .setName(credentialName)
+                .setRequester(user)
+                .setNumberOfVersions(numberOfVersions)
+                .build()
 
         return blockingStub.getNVersions(request)
     }
 
-    fun getAllVersionsRequest(credentialName: String, user: String): GetNVersionsResponse {
-        val request = GetAllVersionsRequest
-            .newBuilder()
-            .setName(credentialName)
-            .setRequester(user)
-            .build()
+    fun getAllVersionsRequest(
+        credentialName: String,
+        user: String,
+    ): GetNVersionsResponse {
+        val request =
+            GetAllVersionsRequest
+                .newBuilder()
+                .setName(credentialName)
+                .setRequester(user)
+                .build()
 
         return blockingStub.getAllVersions(request)
     }
 
-    fun getByNameRequest(credentialName: String, user: String): GetResponse {
-        val request = GetByNameRequest
-            .newBuilder()
-            .setName(credentialName)
-            .setRequester(user)
-            .build()
+    fun getByNameRequest(
+        credentialName: String,
+        user: String,
+    ): GetResponse {
+        val request =
+            GetByNameRequest
+                .newBuilder()
+                .setName(credentialName)
+                .setRequester(user)
+                .build()
 
         return blockingStub.getByName(request)
     }
 
-    fun getByIdRequest(credentialUuid: String, user: String): GetResponse {
-        val request = GetByIdRequest
-            .newBuilder()
-            .setId(credentialUuid)
-            .setRequester(user)
-            .build()
+    fun getByIdRequest(
+        credentialUuid: String,
+        user: String,
+    ): GetResponse {
+        val request =
+            GetByIdRequest
+                .newBuilder()
+                .setId(credentialUuid)
+                .setRequester(user)
+                .build()
 
         return blockingStub.getById(request)
     }
 
-    fun findContainingNameRequest(name: String, user: String): FindResponse {
-        val request = FindContainingNameRequest
-            .newBuilder()
-            .setName(name)
-            .setRequester(user)
-            .build()
+    fun findContainingNameRequest(
+        name: String,
+        user: String,
+    ): FindResponse {
+        val request =
+            FindContainingNameRequest
+                .newBuilder()
+                .setName(name)
+                .setRequester(user)
+                .build()
 
         return blockingStub.findContainingName(request)
     }
 
-    fun findStartingWithPathRequest(path: String, user: String): FindResponse {
+    fun findStartingWithPathRequest(
+        path: String,
+        user: String,
+    ): FindResponse {
         var adjustedPath = StringUtils.prependIfMissing(path, "/")
         adjustedPath = StringUtils.appendIfMissing(adjustedPath, "/")
 
-        val request = FindStartingWithPathRequest
-            .newBuilder()
-            .setPath(adjustedPath)
-            .setRequester(user)
-            .build()
+        val request =
+            FindStartingWithPathRequest
+                .newBuilder()
+                .setPath(adjustedPath)
+                .setRequester(user)
+                .build()
 
         return blockingStub.findStartingWithPath(request)
     }
 
-    fun setRequest(name: String, type: String, data: ByteString, user: String, generationParameters: ByteString): SetResponse {
-        val request = SetRequest
-            .newBuilder()
-            .setName(name)
-            .setRequester(user)
-            .setType(type)
-            .setData(data)
-            .setGenerationParameters(generationParameters)
-            .build()
+    fun setRequest(
+        name: String,
+        type: String,
+        data: ByteString,
+        user: String,
+        generationParameters: ByteString,
+    ): SetResponse {
+        val request =
+            SetRequest
+                .newBuilder()
+                .setName(name)
+                .setRequester(user)
+                .setType(type)
+                .setData(data)
+                .setGenerationParameters(generationParameters)
+                .build()
 
         return blockingStub.set(request)
     }
 
-    fun deleteRequest(name: String, user: String) {
-        val request = DeleteByNameRequest
-            .newBuilder()
-            .setName(name)
-            .setRequester(user)
-            .build()
+    fun deleteRequest(
+        name: String,
+        user: String,
+    ) {
+        val request =
+            DeleteByNameRequest
+                .newBuilder()
+                .setName(name)
+                .setRequester(user)
+                .build()
 
         blockingStub.delete(request)
     }
 
-    fun findPermissionByPathAndActor(path: String, actor: String, requester: String): PermissionsResponse {
-        val request = FindPermissionByPathAndActorRequest
-            .newBuilder()
-            .setPath(path)
-            .setActor(actor)
-            .setRequester(requester)
-            .build()
+    fun findPermissionByPathAndActor(
+        path: String,
+        actor: String,
+        requester: String,
+    ): PermissionsResponse {
+        val request =
+            FindPermissionByPathAndActorRequest
+                .newBuilder()
+                .setPath(path)
+                .setActor(actor)
+                .setRequester(requester)
+                .build()
 
         return blockingStub.findPermissionByPathAndActor(request)
     }
 
-    fun getPermissionByUUID(uuid: String, requester: String): PermissionsResponse {
-        val request = GetPermissionRequest
-            .newBuilder()
-            .setUuid(uuid)
-            .setRequester(requester)
-            .build()
+    fun getPermissionByUUID(
+        uuid: String,
+        requester: String,
+    ): PermissionsResponse {
+        val request =
+            GetPermissionRequest
+                .newBuilder()
+                .setUuid(uuid)
+                .setRequester(requester)
+                .build()
 
         return blockingStub.getPermission(request)
     }
 
-    fun writePermissionRequest(path: String, actor: String, operations: MutableIterable<String>, requester: String): PermissionsResponse {
-        val request = WritePermissionsRequest
-            .newBuilder()
-            .setPath(path)
-            .setActor(actor)
-            .addAllOperations(operations)
-            .setRequester(requester)
-            .build()
+    fun writePermissionRequest(
+        path: String,
+        actor: String,
+        operations: MutableIterable<String>,
+        requester: String,
+    ): PermissionsResponse {
+        val request =
+            WritePermissionsRequest
+                .newBuilder()
+                .setPath(path)
+                .setActor(actor)
+                .addAllOperations(operations)
+                .setRequester(requester)
+                .build()
 
         return blockingStub.savePermissions(request)
     }
 
-    fun deletePermissionByUUID(uuid: String, requester: String): PermissionsResponse {
-        val request = DeletePermissionRequest
-            .newBuilder()
-            .setUuid(uuid)
-            .setRequester(requester)
-            .build()
+    fun deletePermissionByUUID(
+        uuid: String,
+        requester: String,
+    ): PermissionsResponse {
+        val request =
+            DeletePermissionRequest
+                .newBuilder()
+                .setUuid(uuid)
+                .setRequester(requester)
+                .build()
 
         return blockingStub.deletePermission(request)
     }
 
-    fun putPermissionRequest(uuid: String, path: String, actor: String, operations: MutableIterable<String>, requester: String): PermissionsResponse {
-        val request = PutPermissionsRequest
-            .newBuilder()
-            .setUuid(uuid)
-            .setActor(actor)
-            .setPath(path)
-            .addAllOperations(operations)
-            .setRequester(requester)
-            .build()
+    fun putPermissionRequest(
+        uuid: String,
+        path: String,
+        actor: String,
+        operations: MutableIterable<String>,
+        requester: String,
+    ): PermissionsResponse {
+        val request =
+            PutPermissionsRequest
+                .newBuilder()
+                .setUuid(uuid)
+                .setActor(actor)
+                .setPath(path)
+                .addAllOperations(operations)
+                .setRequester(requester)
+                .build()
 
         return blockingStub.putPermissions(request)
     }
 
-    fun patchPermissionRequest(uuid: String, operations: MutableList<String>?, requester: String): PermissionsResponse {
-        val request = PatchPermissionsRequest
-            .newBuilder()
-            .setUuid(uuid)
-            .addAllOperations(operations)
-            .setRequester(requester)
-            .build()
+    fun patchPermissionRequest(
+        uuid: String,
+        operations: MutableList<String>?,
+        requester: String,
+    ): PermissionsResponse {
+        val request =
+            PatchPermissionsRequest
+                .newBuilder()
+                .setUuid(uuid)
+                .addAllOperations(operations)
+                .setRequester(requester)
+                .build()
 
         return blockingStub.patchPermissions(request)
     }

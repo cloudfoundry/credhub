@@ -14,7 +14,7 @@ buildscript {
         h2Version = '1.4.200'
         jsonPathVersion = '2.9.0'
         kotlinVersion = '2.1.0'
-        ktlintVersion = '0.49.1'
+        ktlintVersion = '1.5.0'
         passayVersion = '1.6.6'
         postgresqlJdbcVersion = '42.7.4'
         springRestDocsVersion = '2.0.8.RELEASE'

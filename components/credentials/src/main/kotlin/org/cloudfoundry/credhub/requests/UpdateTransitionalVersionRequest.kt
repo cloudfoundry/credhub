@@ -30,9 +30,8 @@ class UpdateTransitionalVersionRequest {
             .isEquals
     }
 
-    override fun hashCode(): Int {
-        return HashCodeBuilder(17, 37)
+    override fun hashCode(): Int =
+        HashCodeBuilder(17, 37)
             .append(versionUuid)
             .toHashCode()
-    }
 }

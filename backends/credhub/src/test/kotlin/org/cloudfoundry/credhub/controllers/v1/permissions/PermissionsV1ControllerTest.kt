@@ -50,40 +50,40 @@ class PermissionsV1ControllerTest {
     }
 
     @Test
-    fun GET__permissions_v1__returns_permissions() {
-        spyPermissionsV1Handler.getPermissions__returns_permissionsView = PermissionsView(
-            "/some-credential-name",
-            listOf(
-                PermissionEntry(
-                    "some-actor",
-                    "some-path",
-                    listOf(
-                        READ,
-                    ),
-                ),
-            ),
-        )
-
-        val mvcResult = mockMvc
-            .perform(
-                get(PermissionsV1Controller.ENDPOINT)
-                    .credHubAuthHeader()
-                    .param("credential_name", "some-credential-name"),
-            )
-            .andExpect(status().isOk)
-            .andExpect(MockMvcResultMatchers.content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andDo(
-                document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    requestParameters(
-                        parameterWithName("credential_name")
-                            .description("The name of the credential to get permissions for."),
+    fun getPermissionsV1ReturnsPermissions() {
+        spyPermissionsV1Handler.permissionsReturnsPermissionsview =
+            PermissionsView(
+                "/some-credential-name",
+                listOf(
+                    PermissionEntry(
+                        "some-actor",
+                        "some-path",
+                        listOf(
+                            READ,
+                        ),
                     ),
                 ),
             )
-            .andReturn()
 
-        assertThat(spyPermissionsV1Handler.getPermissions__calledWith_name).isEqualTo("/some-credential-name")
+        val mvcResult =
+            mockMvc
+                .perform(
+                    get(PermissionsV1Controller.ENDPOINT)
+                        .credHubAuthHeader()
+                        .param("credential_name", "some-credential-name"),
+                ).andExpect(status().isOk)
+                .andExpect(MockMvcResultMatchers.content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andDo(
+                    document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                        requestParameters(
+                            parameterWithName("credential_name")
+                                .description("The name of the credential to get permissions for."),
+                        ),
+                    ),
+                ).andReturn()
+
+        assertThat(spyPermissionsV1Handler.permissionsCalledwithName).isEqualTo("/some-credential-name")
 
         val actualResponseBody = mvcResult.response.contentAsString
 
@@ -108,7 +108,7 @@ class PermissionsV1ControllerTest {
     }
 
     @Test
-    fun POST__permissions_v1__returns_201() {
+    fun postPermissionsV1Returns201() {
         // language=json
         val requestBody =
             """
@@ -132,8 +132,7 @@ class PermissionsV1ControllerTest {
                     .credHubAuthHeader()
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(requestBody),
-            )
-            .andExpect(status().isCreated)
+            ).andExpect(status().isCreated)
             .andDo(
                 document(
                     CredHubRestDocs.DOCUMENT_IDENTIFIER,
@@ -147,36 +146,34 @@ class PermissionsV1ControllerTest {
                         getPermissionOperationsRequestField(),
                     ),
                 ),
-            )
-            .andReturn()
+            ).andReturn()
 
-        val expectedPermissionsRequest = PermissionsRequest(
-            "/some-credential-name",
-            mutableListOf(
-                PermissionEntry(
-                    "some-actor",
-                    "some-path",
-                    listOf(
-                        PermissionOperation.READ,
+        val expectedPermissionsRequest =
+            PermissionsRequest(
+                "/some-credential-name",
+                mutableListOf(
+                    PermissionEntry(
+                        "some-actor",
+                        "some-path",
+                        listOf(
+                            PermissionOperation.READ,
+                        ),
                     ),
                 ),
-            ),
-
-        )
-        assertThat(spyPermissionsV1Handler.writePermissions__calledWith_request)
+            )
+        assertThat(spyPermissionsV1Handler.writepermissionsCalledwithRequest)
             .isEqualTo(expectedPermissionsRequest)
     }
 
     @Test
-    fun DELETE__permission_v1__returns_204() {
+    fun deletePermissionV1Returns204() {
         mockMvc
             .perform(
                 delete(PermissionsV1Controller.ENDPOINT)
                     .credHubAuthHeader()
                     .param("credential_name", "some-credential-name")
                     .param("actor", "some-actor"),
-            )
-            .andExpect(status().isNoContent)
+            ).andExpect(status().isNoContent)
             .andDo(
                 document(
                     CredHubRestDocs.DOCUMENT_IDENTIFIER,
@@ -189,19 +186,18 @@ class PermissionsV1ControllerTest {
                 ),
             )
 
-        assertThat(spyPermissionsV1Handler.deletePermissionEntry__calledWith_credentialName).isEqualTo("/some-credential-name")
-        assertThat(spyPermissionsV1Handler.deletePermissionEntry__calledWith_actor).isEqualTo("some-actor")
+        assertThat(spyPermissionsV1Handler.deletepermissionentryCalledwithCredentialname).isEqualTo("/some-credential-name")
+        assertThat(spyPermissionsV1Handler.deletepermissionentryCalledwithActor).isEqualTo("some-actor")
     }
 
-    private fun getPermissionOperationsRequestField(): FieldDescriptor {
-        return fieldWithPath("permissions[].operations")
+    private fun getPermissionOperationsRequestField(): FieldDescriptor =
+        fieldWithPath("permissions[].operations")
             .description(
                 """
                     The list of permissions to be granted.
                     Supported operations are: ${
                     PermissionOperation.values().joinToString(
-                        transform = {
-                                x ->
+                        transform = { x ->
                             x.operation.lowercase()
                         },
                         separator = ", ",
@@ -209,5 +205,4 @@ class PermissionsV1ControllerTest {
                 }
                 """.trimIndent(),
             )
-    }
 }

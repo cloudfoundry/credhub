@@ -33,9 +33,10 @@ class DefaultPermissionsV2HandlerTest {
 
     @Before
     fun beforeEach() {
-        credentialVersion = ValueCredentialVersion(
-            ValueCredentialVersionData(CREDENTIAL_NAME),
-        )
+        credentialVersion =
+            ValueCredentialVersion(
+                ValueCredentialVersionData(CREDENTIAL_NAME),
+            )
 
         spyPermissionService = SpyPermissionService()
         subject = DefaultPermissionsV2Handler(spyPermissionService)
@@ -43,13 +44,14 @@ class DefaultPermissionsV2HandlerTest {
 
     @Test
     fun `writePermissions returns PermissionsV2View when successful`() {
-        val permissionsRequest = PermissionsV2Request(
-            CREDENTIAL_NAME,
-            ACTOR_NAME,
-            mutableListOf(PermissionOperation.DELETE),
-        )
+        val permissionsRequest =
+            PermissionsV2Request(
+                CREDENTIAL_NAME,
+                ACTOR_NAME,
+                mutableListOf(PermissionOperation.DELETE),
+            )
 
-        spyPermissionService.savePermissionsForUser__returns_permissionDataList =
+        spyPermissionService.savepermissionsforuserReturnsPermissiondatalist =
             mutableListOf(
                 PermissionData(
                     CREDENTIAL_NAME,
@@ -60,7 +62,7 @@ class DefaultPermissionsV2HandlerTest {
 
         subject.writePermissions(permissionsRequest)
 
-        assertThat(spyPermissionService.savePermissionsForUser__calledWith_permissionEntryList)
+        assertThat(spyPermissionService.savepermissionsforuserCalledwithPermissionentrylist)
             .isEqualTo(
                 mutableListOf(
                     PermissionEntry(
@@ -74,21 +76,21 @@ class DefaultPermissionsV2HandlerTest {
 
     @Test
     fun `writePermissions throws exception for too many permissions`() {
-        val permissionsRequest = PermissionsV2Request(
-            CREDENTIAL_NAME,
-            ACTOR_NAME,
-            mutableListOf(PermissionOperation.DELETE),
-        )
+        val permissionsRequest =
+            PermissionsV2Request(
+                CREDENTIAL_NAME,
+                ACTOR_NAME,
+                mutableListOf(PermissionOperation.DELETE),
+            )
 
-        spyPermissionService.savePermissionsForUser__returns_permissionDataList = emptyList<PermissionData>().toMutableList()
+        spyPermissionService.savepermissionsforuserReturnsPermissiondatalist = emptyList<PermissionData>().toMutableList()
 
         assertThatThrownBy {
             subject.writePermissions(permissionsRequest)
-        }
-            .isInstanceOf(IllegalArgumentException::class.java)
+        }.isInstanceOf(IllegalArgumentException::class.java)
             .hasMessage(INVALID_NUMBER_OF_PERMISSIONS)
 
-        assertThat(spyPermissionService.savePermissionsForUser__calledWith_permissionEntryList)
+        assertThat(spyPermissionService.savepermissionsforuserCalledwithPermissionentrylist)
             .isEqualTo(
                 mutableListOf(
                     PermissionEntry(
@@ -104,26 +106,28 @@ class DefaultPermissionsV2HandlerTest {
     fun `getPermissions returns PermissionsV2View`() {
         val uuid = UUID.randomUUID()
 
-        spyPermissionService.getPermissions__returns_permissionData = PermissionData(
-            CREDENTIAL_NAME,
-            ACTOR_NAME,
-            mutableListOf(
-                PermissionOperation.READ,
-            ),
-        )
+        spyPermissionService.permissionsReturnsPermissiondata =
+            PermissionData(
+                CREDENTIAL_NAME,
+                ACTOR_NAME,
+                mutableListOf(
+                    PermissionOperation.READ,
+                ),
+            )
 
         val actual = subject.getPermissions(uuid.toString())
 
-        val expected = PermissionsV2View(
-            CREDENTIAL_NAME,
-            mutableListOf(
-                READ,
-            ),
-            ACTOR_NAME,
-            uuid,
-        )
+        val expected =
+            PermissionsV2View(
+                CREDENTIAL_NAME,
+                mutableListOf(
+                    READ,
+                ),
+                ACTOR_NAME,
+                uuid,
+            )
 
-        assertThat(spyPermissionService.getPermissions__calledWith_uuid).isEqualTo(uuid)
+        assertThat(spyPermissionService.permissionsCalledwithUuid).isEqualTo(uuid)
         assertThat(actual).isEqualTo(expected)
     }
 
@@ -138,13 +142,14 @@ class DefaultPermissionsV2HandlerTest {
     fun `putPermissions returns PermissionsV2View`() {
         val uuid = UUID.randomUUID()
 
-        val permissionsRequest = PermissionsV2Request(
-            CREDENTIAL_NAME,
-            ACTOR_NAME,
-            mutableListOf(PermissionOperation.DELETE),
-        )
+        val permissionsRequest =
+            PermissionsV2Request(
+                CREDENTIAL_NAME,
+                ACTOR_NAME,
+                mutableListOf(PermissionOperation.DELETE),
+            )
 
-        spyPermissionService.putPermissions__returns_permissionData =
+        spyPermissionService.putpermissionsReturnsPermissiondata =
             PermissionData(
                 CREDENTIAL_NAME,
                 ACTOR_NAME,
@@ -153,17 +158,18 @@ class DefaultPermissionsV2HandlerTest {
 
         val actual = subject.putPermissions(uuid.toString(), permissionsRequest)
 
-        val expected = PermissionsV2View(
-            CREDENTIAL_NAME,
-            mutableListOf(
-                DELETE,
-            ),
-            ACTOR_NAME,
-            null,
-        )
+        val expected =
+            PermissionsV2View(
+                CREDENTIAL_NAME,
+                mutableListOf(
+                    DELETE,
+                ),
+                ACTOR_NAME,
+                null,
+            )
 
-        assertThat(spyPermissionService.putPermissions__calledWith_guid).isEqualTo(uuid.toString())
-        assertThat(spyPermissionService.putPermissions__calledWith_permissionsRequest).isEqualTo(permissionsRequest)
+        assertThat(spyPermissionService.putpermissionsCalledwithGuid).isEqualTo(uuid.toString())
+        assertThat(spyPermissionService.putpermissionsCalledwithPermissionsrequest).isEqualTo(permissionsRequest)
         assertThat(actual).isEqualTo(expected)
     }
 
@@ -172,38 +178,41 @@ class DefaultPermissionsV2HandlerTest {
         val uuid = UUID.randomUUID()
         val operations = mutableListOf(PermissionOperation.READ)
 
-        spyPermissionService.patchPermissions__returns_permissionData = PermissionData(
-            CREDENTIAL_NAME,
-            ACTOR_NAME,
-            mutableListOf(
-                PermissionOperation.READ,
-            ),
-        )
+        spyPermissionService.patchpermissionsReturnsPermissiondata =
+            PermissionData(
+                CREDENTIAL_NAME,
+                ACTOR_NAME,
+                mutableListOf(
+                    PermissionOperation.READ,
+                ),
+            )
 
         val actual = subject.patchPermissions(uuid.toString(), operations)
-        val expected = PermissionsV2View(
-            CREDENTIAL_NAME,
-            mutableListOf(
-                READ,
-            ),
-            ACTOR_NAME,
-            null,
-        )
+        val expected =
+            PermissionsV2View(
+                CREDENTIAL_NAME,
+                mutableListOf(
+                    READ,
+                ),
+                ACTOR_NAME,
+                null,
+            )
 
         assertThat(actual).isEqualTo(expected)
-        assertThat(spyPermissionService.patchPermissions__calledWith_guid).isEqualTo(uuid.toString())
-        assertThat(spyPermissionService.patchPermissions__calledWith_operations).isEqualTo(operations)
+        assertThat(spyPermissionService.patchpermissionsCalledwithGuid).isEqualTo(uuid.toString())
+        assertThat(spyPermissionService.patchpermissionsCalledwithOperations).isEqualTo(operations)
     }
 
     @Test
     fun `writeV2Permissions returns PermissionsV2View`() {
-        val permissionsRequest = PermissionsV2Request(
-            CREDENTIAL_NAME,
-            ACTOR_NAME,
-            mutableListOf(PermissionOperation.DELETE),
-        )
+        val permissionsRequest =
+            PermissionsV2Request(
+                CREDENTIAL_NAME,
+                ACTOR_NAME,
+                mutableListOf(PermissionOperation.DELETE),
+            )
 
-        spyPermissionService.saveV2Permissions__returns_permissionData =
+        spyPermissionService.savev2permissionsReturnsPermissiondata =
             PermissionData(
                 CREDENTIAL_NAME,
                 ACTOR_NAME,
@@ -212,16 +221,17 @@ class DefaultPermissionsV2HandlerTest {
 
         val actual = subject.writeV2Permissions(permissionsRequest)
 
-        val expected = PermissionsV2View(
-            CREDENTIAL_NAME,
-            mutableListOf(
-                DELETE,
-            ),
-            ACTOR_NAME,
-            null,
-        )
+        val expected =
+            PermissionsV2View(
+                CREDENTIAL_NAME,
+                mutableListOf(
+                    DELETE,
+                ),
+                ACTOR_NAME,
+                null,
+            )
 
-        assertThat(spyPermissionService.saveV2Permissions__calledWith_permissionsRequest)
+        assertThat(spyPermissionService.savev2permissionsCalledwithPermissionsrequest)
             .isEqualTo(permissionsRequest)
         assertThat(actual).isEqualTo(expected)
     }
@@ -230,60 +240,63 @@ class DefaultPermissionsV2HandlerTest {
     fun `deletePermissions returns PermissionsV2View`() {
         val uuid = UUID.randomUUID()
 
-        spyPermissionService.deletePermissions__returns_permissionData = PermissionData(
-            CREDENTIAL_NAME,
-            ACTOR_NAME,
-            mutableListOf(PermissionOperation.DELETE),
-        )
+        spyPermissionService.deletepermissionsReturnsPermissiondata =
+            PermissionData(
+                CREDENTIAL_NAME,
+                ACTOR_NAME,
+                mutableListOf(PermissionOperation.DELETE),
+            )
 
         val actual = subject.deletePermissions(uuid.toString())
-        val expected = PermissionsV2View(
-            CREDENTIAL_NAME,
-            mutableListOf(
-                DELETE,
-            ),
-            ACTOR_NAME,
-            null,
-        )
+        val expected =
+            PermissionsV2View(
+                CREDENTIAL_NAME,
+                mutableListOf(
+                    DELETE,
+                ),
+                ACTOR_NAME,
+                null,
+            )
 
         assertThat(actual).isEqualTo(expected)
-        assertThat(spyPermissionService.deletePermissions__calledWith_guid).isEqualTo(uuid.toString())
+        assertThat(spyPermissionService.deletepermissionsCalledwithGuid).isEqualTo(uuid.toString())
     }
 
     @Test
     fun `findByPathAndActor returns PermissionsV2View`() {
-        spyPermissionService.findByPathAndActor__returns_permissionData = PermissionData(
-            CREDENTIAL_NAME,
-            ACTOR_NAME,
-            mutableListOf(PermissionOperation.DELETE),
-        )
+        spyPermissionService.findbypathandactorReturnsPermissiondata =
+            PermissionData(
+                CREDENTIAL_NAME,
+                ACTOR_NAME,
+                mutableListOf(PermissionOperation.DELETE),
+            )
 
         val actual = subject.findByPathAndActor(CREDENTIAL_NAME, ACTOR_NAME)
-        val expected = PermissionsV2View(
-            CREDENTIAL_NAME,
-            mutableListOf(
-                DELETE,
-            ),
-            ACTOR_NAME,
-            null,
-        )
+        val expected =
+            PermissionsV2View(
+                CREDENTIAL_NAME,
+                mutableListOf(
+                    DELETE,
+                ),
+                ACTOR_NAME,
+                null,
+            )
 
-        assertThat(spyPermissionService.findByPathAndActor__calledWith_path).isEqualTo(CREDENTIAL_NAME)
-        assertThat(spyPermissionService.findByPathAndActor__calledWith_actor).isEqualTo(ACTOR_NAME)
+        assertThat(spyPermissionService.findbypathandactorCalledwithPath).isEqualTo(CREDENTIAL_NAME)
+        assertThat(spyPermissionService.findbypathandactorCalledwithActor).isEqualTo(ACTOR_NAME)
         assertThat(actual).isEqualTo(expected)
     }
 
     @Test
     fun `findByPathAndActor throws exception when path and actor combination does not exist`() {
-        spyPermissionService.findByPathAndActor__returns_permissionData = null
+        spyPermissionService.findbypathandactorReturnsPermissiondata = null
 
         assertThatThrownBy {
             subject.findByPathAndActor(CREDENTIAL_NAME, ACTOR_NAME)
-        }
-            .isInstanceOf(EntryNotFoundException::class.java)
+        }.isInstanceOf(EntryNotFoundException::class.java)
             .hasMessage(ErrorMessages.Permissions.INVALID_ACCESS)
 
-        assertThat(spyPermissionService.findByPathAndActor__calledWith_path).isEqualTo(CREDENTIAL_NAME)
-        assertThat(spyPermissionService.findByPathAndActor__calledWith_actor).isEqualTo(ACTOR_NAME)
+        assertThat(spyPermissionService.findbypathandactorCalledwithPath).isEqualTo(CREDENTIAL_NAME)
+        assertThat(spyPermissionService.findbypathandactorCalledwithActor).isEqualTo(ACTOR_NAME)
     }
 }

@@ -6,7 +6,6 @@ import javax.persistence.Entity
 @Entity
 @DiscriminatorValue(JsonCredentialVersionData.CREDENTIAL_TYPE)
 class JsonCredentialVersionData : CredentialVersionData<JsonCredentialVersionData> {
-
     override val credentialType: String
         get() = CREDENTIAL_TYPE
 

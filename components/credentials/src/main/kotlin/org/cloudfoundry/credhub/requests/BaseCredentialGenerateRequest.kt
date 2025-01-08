@@ -13,7 +13,13 @@ import java.util.Objects
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type", visible = true, defaultImpl = DefaultCredentialGenerateRequest::class)
 @JsonTypeIdResolver(GenerateRequestTypeIdResolver::class)
-@JsonSubTypes(JsonSubTypes.Type(name = "password", value = PasswordGenerateRequest::class), JsonSubTypes.Type(name = "ssh", value = SshGenerateRequest::class), JsonSubTypes.Type(name = "rsa", value = RsaGenerateRequest::class), JsonSubTypes.Type(name = "certificate", value = CertificateGenerateRequest::class), JsonSubTypes.Type(name = "user", value = UserGenerateRequest::class))
+@JsonSubTypes(
+    JsonSubTypes.Type(name = "password", value = PasswordGenerateRequest::class),
+    JsonSubTypes.Type(name = "ssh", value = SshGenerateRequest::class),
+    JsonSubTypes.Type(name = "rsa", value = RsaGenerateRequest::class),
+    JsonSubTypes.Type(name = "certificate", value = CertificateGenerateRequest::class),
+    JsonSubTypes.Type(name = "user", value = UserGenerateRequest::class),
+)
 abstract class BaseCredentialGenerateRequest : BaseCredentialRequest() {
     var overwrite: Boolean? = null
         set(overwrite) {
@@ -24,11 +30,12 @@ abstract class BaseCredentialGenerateRequest : BaseCredentialRequest() {
     var mode: CredentialWriteMode? = null
 
     val isOverwrite: Boolean
-        get() = if (this.overwrite == null) {
-            false
-        } else {
-            this.overwrite!!
-        }
+        get() =
+            if (this.overwrite == null) {
+                false
+            } else {
+                this.overwrite!!
+            }
 
     override fun validate() {
         super.validate()
@@ -77,13 +84,11 @@ abstract class BaseCredentialGenerateRequest : BaseCredentialRequest() {
         return false
     }
 
-    private fun isInvalidCredentialType(type: String?): Boolean {
-        return !newArrayList("password", "certificate", "rsa", "ssh", "value", "json", "user").contains(type)
-    }
+    private fun isInvalidCredentialType(type: String?): Boolean =
+        !newArrayList("password", "certificate", "rsa", "ssh", "value", "json", "user").contains(type)
 
-    private fun isInvalidTypeForGeneration(type: String?): Boolean {
-        return !newArrayList("password", "certificate", "rsa", "ssh", "user").contains(type)
-    }
+    private fun isInvalidTypeForGeneration(type: String?): Boolean =
+        !newArrayList("password", "certificate", "rsa", "ssh", "user").contains(type)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) {
@@ -98,7 +103,5 @@ abstract class BaseCredentialGenerateRequest : BaseCredentialRequest() {
             mode === that.mode
     }
 
-    override fun hashCode(): Int {
-        return Objects.hash(this.overwrite, rawOverwriteValue, mode)
-    }
+    override fun hashCode(): Int = Objects.hash(this.overwrite, rawOverwriteValue, mode)
 }

@@ -53,10 +53,11 @@ class OAuth2ExtraValidationFilterTest {
     fun beforeEach() {
         spyController = SpyController()
 
-        mockMvc = MockMvcBuilders
-            .standaloneSetup(spyController!!)
-            .apply<StandaloneMockMvcBuilder>(SecurityMockMvcConfigurers.springSecurity(springSecurityFilterChain!!))
-            .build()
+        mockMvc =
+            MockMvcBuilders
+                .standaloneSetup(spyController!!)
+                .apply<StandaloneMockMvcBuilder>(SecurityMockMvcConfigurers.springSecurity(springSecurityFilterChain!!))
+                .build()
         `when`<String>(oAuth2IssuerService!!.getIssuer()).thenReturn("https://example.com:8443/uaa/oauth/token")
     }
 
@@ -65,24 +66,26 @@ class OAuth2ExtraValidationFilterTest {
     fun whenGivenValidIssuer_returns200() {
         `when`<String>(oAuth2IssuerService!!.getIssuer()).thenReturn("https://valid-uaa:8443/uaa/oauth/token")
 
-        this.mockMvc!!.perform(
-            get("/api/v1/data")
-                .header("Authorization", "Bearer $VALID_ISSUER_JWT")
-                .accept(APPLICATION_JSON)
-                .contentType(APPLICATION_JSON),
-        )
-            .andExpect(status().isOk)
+        this.mockMvc!!
+            .perform(
+                get("/api/v1/data")
+                    .header("Authorization", "Bearer $VALID_ISSUER_JWT")
+                    .accept(APPLICATION_JSON)
+                    .contentType(APPLICATION_JSON),
+            ).andExpect(status().isOk)
     }
 
     @Test
     @Throws(Exception::class)
     fun whenGivenInvalidIssuer_returns401() {
-        val request = get("/api/v1/data?name=/picard")
-            .header("Authorization", "Bearer $INVALID_ISSUER_JWT")
-            .accept(APPLICATION_JSON)
-            .contentType(APPLICATION_JSON)
+        val request =
+            get("/api/v1/data?name=/picard")
+                .header("Authorization", "Bearer $INVALID_ISSUER_JWT")
+                .accept(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
 
-        this.mockMvc!!.perform(request)
+        this.mockMvc!!
+            .perform(request)
             .andExpect(status().isUnauthorized)
             .andExpect(jsonPath("$.error_description").value(ERROR_MESSAGE))
     }
@@ -90,20 +93,28 @@ class OAuth2ExtraValidationFilterTest {
     @Test
     @Throws(Exception::class)
     fun whenGivenInvalidIssuer_onlyReturnsIntendedResponse() {
-        val request = get("/api/v1/data?name=/picard")
-            .header("Authorization", "Bearer $INVALID_ISSUER_JWT")
-            .accept(APPLICATION_JSON)
-            .contentType(APPLICATION_JSON)
+        val request =
+            get("/api/v1/data?name=/picard")
+                .header("Authorization", "Bearer $INVALID_ISSUER_JWT")
+                .accept(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
 
-        val response = this.mockMvc!!.perform(request)
-            .andExpect(status().isUnauthorized)
-            .andExpect(jsonPath("$.error_description").value(ERROR_MESSAGE))
-            .andReturn()
-            .response
-            .contentAsString
+        val response =
+            this.mockMvc!!
+                .perform(request)
+                .andExpect(status().isUnauthorized)
+                .andExpect(jsonPath("$.error_description").value(ERROR_MESSAGE))
+                .andReturn()
+                .response
+                .contentAsString
 
         // The response originally concatenated the error and the credential.
-        val expectedResponse = "{\"error\":\"invalid_token\",\"error_description\":\"The request token identity zone does not match the UAA server authorized by CredHub. Please validate that your request token was issued by the UAA server authorized by CredHub and retry your request.\"}"
+        val expectedResponse =
+            "{\"error\":\"invalid_token\"," +
+                "\"error_description\":\"The request token identity zone does" +
+                " not match the UAA server authorized by CredHub. Please " +
+                "validate that your request token was issued by the UAA server" +
+                " authorized by CredHub and retry your request.\"}"
 
         assertThat(response, equalTo(expectedResponse))
         assertThat(spyController!!.getDataCount, equalTo(0))
@@ -112,20 +123,32 @@ class OAuth2ExtraValidationFilterTest {
     @Test
     @Throws(Exception::class)
     fun whenGivenMalformedToken_onlyReturnsIntendedResponse() {
-        val request = get("/api/v1/data?name=/picard")
-            .header("Authorization", "Bearer $MALFORMED_TOKEN")
-            .accept(APPLICATION_JSON)
-            .contentType(APPLICATION_JSON)
+        val request =
+            get("/api/v1/data?name=/picard")
+                .header("Authorization", "Bearer $MALFORMED_TOKEN")
+                .accept(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
 
-        val response = this.mockMvc!!.perform(request)
-            .andExpect(status().isUnauthorized)
-            .andExpect(jsonPath("$.error_description").value("The request token is malformed. Please validate that your request token was issued by the UAA server authorized by CredHub."))
-            .andReturn()
-            .response
-            .contentAsString
+        val response =
+            this.mockMvc!!
+                .perform(request)
+                .andExpect(status().isUnauthorized)
+                .andExpect(
+                    jsonPath(
+                        "$.error_description",
+                    ).value(
+                        "The request token is malformed. Please validate that your request token was issued by the UAA server authorized by CredHub.",
+                    ),
+                ).andReturn()
+                .response
+                .contentAsString
 
         // The response originally concatenated the error and the credential.
-        val expectedResponse = "{\"error\":\"invalid_token\",\"error_description\":\"The request token is malformed. Please validate that your request token was issued by the UAA server authorized by CredHub.\"}"
+        val expectedResponse =
+            "{\"error\":\"invalid_token\"," +
+                "\"error_description\":\"The request token is malformed. " +
+                "Please validate that your request token was issued by the" +
+                " UAA server authorized by CredHub.\"}"
 
         assertThat(response, equalTo(expectedResponse))
         assertThat(spyController!!.getDataCount, equalTo(0))
@@ -134,20 +157,32 @@ class OAuth2ExtraValidationFilterTest {
     @Test
     @Throws(Exception::class)
     fun whenGivenValidTokenDoesNotMatchJWTSignature_onlyReturnsIntendedResponse() {
-        val request = get("/api/v1/data?name=/picard")
-            .header("Authorization", "Bearer $INVALID_SIGNATURE_JWT")
-            .accept(APPLICATION_JSON)
-            .contentType(APPLICATION_JSON)
+        val request =
+            get("/api/v1/data?name=/picard")
+                .header("Authorization", "Bearer $INVALID_SIGNATURE_JWT")
+                .accept(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
 
-        val response = this.mockMvc!!.perform(request)
-            .andExpect(status().isUnauthorized)
-            .andExpect(jsonPath("$.error_description").value("The request token signature could not be verified. Please validate that your request token was issued by the UAA server authorized by CredHub."))
-            .andReturn()
-            .response
-            .contentAsString
+        val response =
+            this.mockMvc!!
+                .perform(request)
+                .andExpect(status().isUnauthorized)
+                .andExpect(
+                    jsonPath(
+                        "$.error_description",
+                    ).value(
+                        "The request token signature could not be verified. Please validate that your request token was issued by the UAA server authorized by CredHub.",
+                    ),
+                ).andReturn()
+                .response
+                .contentAsString
 
         // The response originally concatenated the error and the credential.
-        val expectedResponse = "{\"error\":\"invalid_token\",\"error_description\":\"The request token signature could not be verified. Please validate that your request token was issued by the UAA server authorized by CredHub.\"}"
+        val expectedResponse =
+            "{\"error\":\"invalid_token\",\"" +
+                "error_description\":\"The request token signature could not be" +
+                " verified. Please validate that your request token was issued" +
+                " by the UAA server authorized by CredHub.\"}"
 
         assertThat(response, equalTo(expectedResponse))
         assertThat(spyController!!.getDataCount, equalTo(0))
@@ -156,26 +191,26 @@ class OAuth2ExtraValidationFilterTest {
     @Test
     @Throws(Exception::class)
     fun whenGivenNullIssuer_returns401() {
-        this.mockMvc!!.perform(
-            get("/api/v1/data?name=/picard")
-                .header("Authorization", "Bearer $NULL_ISSUER_JWT")
-                .accept(APPLICATION_JSON)
-                .contentType(APPLICATION_JSON),
-        )
-            .andExpect(status().isUnauthorized)
+        this.mockMvc!!
+            .perform(
+                get("/api/v1/data?name=/picard")
+                    .header("Authorization", "Bearer $NULL_ISSUER_JWT")
+                    .accept(APPLICATION_JSON)
+                    .contentType(APPLICATION_JSON),
+            ).andExpect(status().isUnauthorized)
             .andExpect(jsonPath("$.error_description").value(ERROR_MESSAGE))
     }
 
     @Test
     @Throws(Exception::class)
     fun whenEmptyIssuerSpecified_returns401() {
-        this.mockMvc!!.perform(
-            get("/api/v1/data?name=/picard")
-                .header("Authorization", "Bearer $EMPTY_ISSUER_JWT")
-                .accept(APPLICATION_JSON)
-                .contentType(APPLICATION_JSON),
-        )
-            .andExpect(status().isUnauthorized)
+        this.mockMvc!!
+            .perform(
+                get("/api/v1/data?name=/picard")
+                    .header("Authorization", "Bearer $EMPTY_ISSUER_JWT")
+                    .accept(APPLICATION_JSON)
+                    .contentType(APPLICATION_JSON),
+            ).andExpect(status().isUnauthorized)
             .andExpect(jsonPath("$.error_description").value(ERROR_MESSAGE))
     }
 
@@ -183,19 +218,18 @@ class OAuth2ExtraValidationFilterTest {
     @Throws(Exception::class)
     fun whenTokenIsHasExpired_returns401() {
         `when`<String>(oAuth2IssuerService!!.getIssuer()).thenReturn("https://valid-uaa:8443/uaa/oauth/token")
-        this.mockMvc!!.perform(
-            get("/api/v1/data?name=/sample-credential")
-                .header("Authorization", "Bearer $EXPIRED_TOKEN")
-                .accept(APPLICATION_JSON)
-                .contentType(APPLICATION_JSON),
-        )
-            .andExpect(status().isUnauthorized)
+        this.mockMvc!!
+            .perform(
+                get("/api/v1/data?name=/sample-credential")
+                    .header("Authorization", "Bearer $EXPIRED_TOKEN")
+                    .accept(APPLICATION_JSON)
+                    .contentType(APPLICATION_JSON),
+            ).andExpect(status().isUnauthorized)
             .andExpect(jsonPath("$.error_description").value(EXPIRED_TOKEN_MESSAGE))
     }
 
     @RestController
     inner class SpyController {
-
         var getDataCount: Int = 0
 
         val data: String
@@ -207,8 +241,11 @@ class OAuth2ExtraValidationFilterTest {
     }
 
     companion object {
-
-        private const val ERROR_MESSAGE = "The request token identity zone does not match the UAA server authorized by CredHub. Please validate that your request token was issued by the UAA server authorized by CredHub and retry your request."
+        private const val ERROR_MESSAGE =
+            "The request token identity zone does not match the UAA server" +
+                " authorized by CredHub. Please validate that your request" +
+                " token was issued by the UAA server authorized by CredHub" +
+                " and retry your request."
 
         private const val EXPIRED_TOKEN_MESSAGE = "Access token expired"
     }

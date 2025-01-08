@@ -31,7 +31,9 @@ class PermissionsV1Controller(
 
     @RequestMapping(method = [RequestMethod.GET], path = [""])
     @ResponseStatus(HttpStatus.OK)
-    fun getAccessControlList(@RequestParam("credential_name") credentialName: String): PermissionsView {
+    fun getAccessControlList(
+        @RequestParam("credential_name") credentialName: String,
+    ): PermissionsView {
         val credentialNameWithLeadingSlash = StringUtils.prependIfMissing(credentialName, "/")
         auditRecord.requestDetails = GetPermissions(credentialName)
 
@@ -40,11 +42,14 @@ class PermissionsV1Controller(
 
     @RequestMapping(method = [RequestMethod.POST], path = [""], consumes = [MediaType.APPLICATION_JSON_UTF8_VALUE])
     @ResponseStatus(HttpStatus.CREATED)
-    fun setAccessControlEntries(@Validated @RequestBody accessEntriesRequest: PermissionsRequest) {
-        val addPermission = AddPermission(
-            accessEntriesRequest.credentialName,
-            accessEntriesRequest.permissions,
-        )
+    fun setAccessControlEntries(
+        @Validated @RequestBody accessEntriesRequest: PermissionsRequest,
+    ) {
+        val addPermission =
+            AddPermission(
+                accessEntriesRequest.credentialName,
+                accessEntriesRequest.permissions,
+            )
         auditRecord.requestDetails = addPermission
         permissionsHandler.writePermissions(accessEntriesRequest)
     }

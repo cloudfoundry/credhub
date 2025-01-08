@@ -8,7 +8,5 @@ import org.springframework.context.support.MessageSourceAccessor
 @Configuration
 class DefaultExceptionHandlerConfig {
     @Bean
-    fun messageSourceAccessor(messageSource: MessageSource): MessageSourceAccessor {
-        return MessageSourceAccessor(messageSource)
-    }
+    fun messageSourceAccessor(messageSource: MessageSource): MessageSourceAccessor = MessageSourceAccessor(messageSource)
 }

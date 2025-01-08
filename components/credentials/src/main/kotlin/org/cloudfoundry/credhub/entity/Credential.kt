@@ -17,7 +17,6 @@ import javax.persistence.Table
 @Entity
 @Table(name = "credential")
 class Credential : AuditableCredential {
-
     @Id
     @Column(length = UUID_BYTES, columnDefinition = "VARBINARY")
     @GeneratedValue(generator = "uuid2")

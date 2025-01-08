@@ -16,14 +16,15 @@ class InterpolationController(
     private val jsonInterpolationHandler: InterpolationHandler,
     private val auditRecord: CEFAuditRecord,
 ) {
-
     companion object {
         const val ENDPOINT = "/api/v1/interpolate"
     }
 
     @RequestMapping(method = [RequestMethod.POST], path = [""])
     @ResponseStatus(HttpStatus.OK)
-    fun interpolate(@RequestBody requestBody: Map<String, Any>): Map<String, Any> {
+    fun interpolate(
+        @RequestBody requestBody: Map<String, Any>,
+    ): Map<String, Any> {
         auditRecord.requestDetails = InterpolateCredentials()
         return jsonInterpolationHandler.interpolateCredHubReferences(requestBody)
     }

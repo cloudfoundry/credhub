@@ -22,19 +22,19 @@ class UserContextFactory {
      * Year-2038 bug. To adapt to our local model, hoping JWT will some day be improved,
      * this function returns a numeric value as long.
      */
-    private fun claimValueAsLong(additionalInformation: Map<String, Any>): Long {
-        return (additionalInformation["iat"] as Number).toLong()
-    }
+    private fun claimValueAsLong(additionalInformation: Map<String, Any>): Long = (additionalInformation["iat"] as Number).toLong()
 
-    fun createUserContext(authentication: Authentication?): UserContext {
-        return if (authentication is PreAuthenticatedAuthenticationToken) {
+    fun createUserContext(authentication: Authentication?): UserContext =
+        if (authentication is PreAuthenticatedAuthenticationToken) {
             createUserContext(authentication)
         } else {
             createUserContext(authentication as OAuth2Authentication, null)
         }
-    }
 
-    fun createUserContext(authentication: OAuth2Authentication, maybeToken: String?): UserContext {
+    fun createUserContext(
+        authentication: OAuth2Authentication,
+        maybeToken: String?,
+    ): UserContext {
         val oauth2Request = authentication.oAuth2Request
         val clientId = oauth2Request.clientId
         val grantType = oauth2Request.grantType
@@ -48,8 +48,9 @@ class UserContextFactory {
         var token = maybeToken
 
         if (maybeToken == null) {
-            val authDetails = authentication
-                .details as OAuth2AuthenticationDetails
+            val authDetails =
+                authentication
+                    .details as OAuth2AuthenticationDetails
             token = authDetails.tokenValue
         }
 

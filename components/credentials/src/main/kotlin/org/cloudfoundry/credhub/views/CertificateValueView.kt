@@ -3,7 +3,10 @@ package org.cloudfoundry.credhub.views
 import org.cloudfoundry.credhub.credential.CredentialValue
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
 
-class CertificateValueView(value: CertificateCredentialVersion, concatenateCas: Boolean) : CredentialValue {
+class CertificateValueView(
+    value: CertificateCredentialVersion,
+    concatenateCas: Boolean,
+) : CredentialValue {
     val ca: String?
     val certificate: String?
     val privateKey: String?

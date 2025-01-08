@@ -12,7 +12,6 @@ import java.util.Objects
 
 @JsonInclude(NON_DEFAULT)
 class StringGenerationParameters : GenerationParameters() {
-
     // Value Parameters
     @JsonProperty(access = Access.WRITE_ONLY)
     var length: Int = PassayStringCredentialGenerator.DEFAULT_LENGTH
@@ -25,30 +24,21 @@ class StringGenerationParameters : GenerationParameters() {
     var includeSpecial: Boolean = false
 
     @JsonIgnore
-    fun isValid(): Boolean {
-        return !(
+    fun isValid(): Boolean =
+        !(
             !includeSpecial &&
                 excludeNumber &&
                 excludeUpper &&
                 excludeLower
-            )
-    }
+        )
 
-    fun isExcludeLower(): Boolean {
-        return excludeLower
-    }
+    fun isExcludeLower(): Boolean = excludeLower
 
-    fun isExcludeNumber(): Boolean {
-        return excludeNumber
-    }
+    fun isExcludeNumber(): Boolean = excludeNumber
 
-    fun isExcludeUpper(): Boolean {
-        return excludeUpper
-    }
+    fun isExcludeUpper(): Boolean = excludeUpper
 
-    fun isIncludeSpecial(): Boolean {
-        return includeSpecial
-    }
+    fun isIncludeSpecial(): Boolean = includeSpecial
 
     override fun validate() {
         if (!isValid()) {
@@ -74,7 +64,5 @@ class StringGenerationParameters : GenerationParameters() {
             username == that.username
     }
 
-    override fun hashCode(): Int {
-        return Objects.hash(length, username, excludeLower, excludeNumber, excludeUpper, includeSpecial)
-    }
+    override fun hashCode(): Int = Objects.hash(length, username, excludeLower, excludeNumber, excludeUpper, includeSpecial)
 }

@@ -50,8 +50,8 @@ import org.junit.jupiter.api.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.cloudfoundry.credhub.utils.SpringUtilities.activeProfilesString;
-import static org.cloudfoundry.credhub.utils.SpringUtilities.unitTestPostgresProfile;
+import static org.cloudfoundry.credhub.utils.SpringUtilities.ACTIVE_PROFILE_STRING;
+import static org.cloudfoundry.credhub.utils.SpringUtilities.UNIT_TEST_POSTGRES_PROFILE;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -882,7 +882,7 @@ public class DefaultCredentialVersionDataServiceTest {
 
   @Test
   public void shouldThrowAnMaximumSizeException_whenDataExceedsMaximumSize() {
-    if (System.getProperty(activeProfilesString).contains(unitTestPostgresProfile)) {
+    if (System.getProperty(ACTIVE_PROFILE_STRING).contains(UNIT_TEST_POSTGRES_PROFILE)) {
       return;
     }
 

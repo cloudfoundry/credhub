@@ -8,7 +8,9 @@ import org.cloudfoundry.credhub.utils.CertificateReader
 import java.time.Instant
 import java.util.Objects
 
-class CertificateCredentialVersion(delegate: CertificateCredentialVersionData) : CredentialVersion(delegate) {
+class CertificateCredentialVersion(
+    delegate: CertificateCredentialVersionData,
+) : CredentialVersion(delegate) {
     lateinit var parsedCertificate: CertificateReader
         private set
 
@@ -99,9 +101,7 @@ class CertificateCredentialVersion(delegate: CertificateCredentialVersionData) :
         this.durationUsed = certificate.durationUsed
     }
 
-    override fun getCredentialType(): String {
-        return delegate.credentialType
-    }
+    override fun getCredentialType(): String = delegate.credentialType
 
     override fun rotate() {
         val decryptedPrivateKey = this.privateKey
@@ -122,9 +122,7 @@ class CertificateCredentialVersion(delegate: CertificateCredentialVersionData) :
         (delegate as CertificateCredentialVersionData).transitional = transitional
     }
 
-    override fun getGenerationParameters(): GenerationParameters? {
-        return null
-    }
+    override fun getGenerationParameters(): GenerationParameters? = null
 
     override fun equals(other: Any?): Boolean {
         if (this === other) {
@@ -139,10 +137,8 @@ class CertificateCredentialVersion(delegate: CertificateCredentialVersionData) :
                 name == that.name &&
                 uuid == that.uuid &&
                 versionCreatedAt == that.versionCreatedAt
-            )
+        )
     }
 
-    override fun hashCode(): Int {
-        return Objects.hash(delegate)
-    }
+    override fun hashCode(): Int = Objects.hash(delegate)
 }

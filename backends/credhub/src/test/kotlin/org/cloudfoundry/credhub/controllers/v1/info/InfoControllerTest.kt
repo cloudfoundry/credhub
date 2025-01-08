@@ -24,7 +24,6 @@ import java.security.Security
 
 @RunWith(SpringRunner::class)
 class InfoControllerTest {
-
     @Rule
     @JvmField
     val restDocumentation = JUnitRestDocumentation()
@@ -54,19 +53,20 @@ class InfoControllerTest {
     }
 
     @Test
-    fun GET__info__returns_info() {
-        val mvcResult = mockMvc.perform(
-            get(InfoController.ENDPOINT)
-                .credHubAuthHeader()
-                .contentType(MediaType.APPLICATION_JSON),
-        )
-            .andExpect(status().isOk)
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andDo(
-                document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                ),
-            ).andReturn()
+    fun getInfoReturnsInfo() {
+        val mvcResult =
+            mockMvc
+                .perform(
+                    get(InfoController.ENDPOINT)
+                        .credHubAuthHeader()
+                        .contentType(MediaType.APPLICATION_JSON),
+                ).andExpect(status().isOk)
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andDo(
+                    document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                    ),
+                ).andReturn()
 
         // language=json
         val expectedResponseBody =

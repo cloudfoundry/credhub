@@ -6,7 +6,6 @@ import org.cloudfoundry.credhub.views.FindCredentialResult
 import java.util.UUID
 
 interface CredentialVersionDataService {
-
     fun save(credentialVersion: CredentialVersion): CredentialVersion
 
     fun save(credentialVersionData: CredentialVersionData<*>): CredentialVersion
@@ -17,17 +16,28 @@ interface CredentialVersionDataService {
 
     fun findAllCertificateCredentialsByCaName(caName: String): List<String>
 
-    fun findContainingName(name: String, expiresWithinDays: String = ""): List<FindCredentialResult>
+    fun findContainingName(
+        name: String,
+        expiresWithinDays: String = "",
+    ): List<FindCredentialResult>
+
     fun findContainingName(name: String): List<FindCredentialResult>
 
-    fun findStartingWithPath(path: String, expiresWithinDays: String = ""): List<FindCredentialResult>
+    fun findStartingWithPath(
+        path: String,
+        expiresWithinDays: String = "",
+    ): List<FindCredentialResult>
+
     fun findStartingWithPath(path: String): List<FindCredentialResult>
 
     fun delete(name: String): Boolean
 
     fun findAllByName(name: String): List<CredentialVersion>
 
-    fun findNByName(name: String, numberOfVersions: Int): List<CredentialVersion>
+    fun findNByName(
+        name: String,
+        numberOfVersions: Int,
+    ): List<CredentialVersion>
 
     fun countByEncryptionKey(): Map<UUID, Long>
 

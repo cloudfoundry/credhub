@@ -37,15 +37,16 @@ import java.time.Instant
 import java.util.Arrays
 import java.util.UUID
 
+private const val CREDENTIAL_NAME = "/my-namespace/controllerGetTest/credential-name"
+private const val CREDENTIAL_VALUE = "test value"
+
 @RunWith(SpringRunner::class)
 @ActiveProfiles(value = ["unit-test", "unit-test-permissions"], resolver = DatabaseProfileResolver::class)
 @SpringBootTest(classes = [CredhubTestApp::class])
 @Transactional
 @TestPropertySource(properties = ["certificates.concatenate_cas=true"])
 class CredentialsGetConcatenateCasIntegrationTest {
-    private val FROZEN_TIME = Instant.ofEpochSecond(1400011001L)
-    private val CREDENTIAL_NAME = "/my-namespace/controllerGetTest/credential-name"
-    private val CREDENTIAL_VALUE = "test value"
+    private val frozenTime = Instant.ofEpochSecond(1400011001L)
 
     @Autowired
     private val webApplicationContext: WebApplicationContext? = null
@@ -65,12 +66,13 @@ class CredentialsGetConcatenateCasIntegrationTest {
     fun beforeEach() {
         val fakeTimeSetter = TestHelper.mockOutCurrentTimeProvider(mockCurrentTimeProvider!!)
 
-        fakeTimeSetter.accept(FROZEN_TIME.toEpochMilli())
+        fakeTimeSetter.accept(frozenTime.toEpochMilli())
 
-        mockMvc = MockMvcBuilders
-            .webAppContextSetup(webApplicationContext!!)
-            .apply<DefaultMockMvcBuilder>(springSecurity())
-            .build()
+        mockMvc =
+            MockMvcBuilders
+                .webAppContextSetup(webApplicationContext!!)
+                .apply<DefaultMockMvcBuilder>(springSecurity())
+                .build()
     }
 
     @Test
@@ -80,7 +82,7 @@ class CredentialsGetConcatenateCasIntegrationTest {
         val certificate = CertificateCredentialVersion(CREDENTIAL_NAME)
         certificate.setEncryptor(encryptor!!)
         certificate.uuid = uuid
-        certificate.versionCreatedAt = FROZEN_TIME
+        certificate.versionCreatedAt = frozenTime
         certificate.ca = TestConstants.TEST_CERTIFICATE
         certificate.caName = "/some-ca"
         certificate.certificate = TestConstants.TEST_CERTIFICATE
@@ -91,18 +93,24 @@ class CredentialsGetConcatenateCasIntegrationTest {
 
         doReturn(listOf(certificate)).`when`<CredentialVersionDataService>(credentialVersionDataService).findActiveByName(CREDENTIAL_NAME)
 
-        val request = get("/api/v1/data?name=$CREDENTIAL_NAME&current=true")
-            .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-            .accept(APPLICATION_JSON)
+        val request =
+            get("/api/v1/data?name=$CREDENTIAL_NAME&current=true")
+                .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+                .accept(APPLICATION_JSON)
 
-        mockMvc!!.perform(request)
+        mockMvc!!
+            .perform(request)
             .andExpect(status().isOk)
             .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
             .andExpect(jsonPath("$.data[0].type").value("certificate"))
             .andExpect(jsonPath("$.data[0].value.certificate").value(TestConstants.TEST_CERTIFICATE))
             .andExpect(jsonPath("$.data[0].id").value(uuid.toString()))
-            .andExpect(jsonPath("$.data[0].version_created_at").value(FROZEN_TIME.toString()))
-            .andExpect(jsonPath("$.data[0].value.ca").value(TestConstants.TEST_CERTIFICATE + "\n" + TestConstants.OTHER_TEST_CERTIFICATE + "\n"))
+            .andExpect(jsonPath("$.data[0].version_created_at").value(frozenTime.toString()))
+            .andExpect(
+                jsonPath("$.data[0].value.ca").value(
+                    TestConstants.TEST_CERTIFICATE + "\n" + TestConstants.OTHER_TEST_CERTIFICATE + "\n",
+                ),
+            )
     }
 
     @Test
@@ -113,7 +121,7 @@ class CredentialsGetConcatenateCasIntegrationTest {
         val certificateVersion1 = CertificateCredentialVersion(CREDENTIAL_NAME)
         certificateVersion1.setEncryptor(encryptor!!)
         certificateVersion1.uuid = uuid
-        certificateVersion1.versionCreatedAt = FROZEN_TIME
+        certificateVersion1.versionCreatedAt = frozenTime
         certificateVersion1.ca = TestConstants.TEST_CERTIFICATE
         certificateVersion1.caName = "/some-ca"
         certificateVersion1.certificate = TestConstants.TEST_CERTIFICATE
@@ -128,24 +136,29 @@ class CredentialsGetConcatenateCasIntegrationTest {
         certificateVersion2.setEncryptor(encryptor)
         certificateVersion2.uuid = uuid2
         certificateVersion2.credential?.uuid = uuid2
-        certificateVersion2.versionCreatedAt = FROZEN_TIME
+        certificateVersion2.versionCreatedAt = frozenTime
         val credentialVersionList = Arrays.asList<CredentialVersion>(certificateVersion1, certificateVersion2)
 
         doReturn(credentialVersionList).`when`<CredentialVersionDataService>(credentialVersionDataService).findNByName(CREDENTIAL_NAME, 2)
 
-        val request = get("/api/v1/data?name=$CREDENTIAL_NAME&versions=2")
-            .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-            .accept(APPLICATION_JSON)
+        val request =
+            get("/api/v1/data?name=$CREDENTIAL_NAME&versions=2")
+                .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+                .accept(APPLICATION_JSON)
 
-        mockMvc!!.perform(request)
+        mockMvc!!
+            .perform(request)
             .andExpect(status().isOk)
             .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
             .andExpect(jsonPath("$.data[0].type").value("certificate"))
             .andExpect(jsonPath("$.data[0].value.certificate").value(TestConstants.TEST_CERTIFICATE))
             .andExpect(jsonPath("$.data[0].id").value(uuid.toString()))
-            .andExpect(jsonPath("$.data[0].version_created_at").value(FROZEN_TIME.toString()))
-            .andExpect(jsonPath("$.data[0].value.ca").value(TestConstants.TEST_CERTIFICATE + "\n" + TestConstants.OTHER_TEST_CERTIFICATE + "\n"))
-            .andExpect(jsonPath("$.data[1].type").value("certificate"))
+            .andExpect(jsonPath("$.data[0].version_created_at").value(frozenTime.toString()))
+            .andExpect(
+                jsonPath("$.data[0].value.ca").value(
+                    TestConstants.TEST_CERTIFICATE + "\n" + TestConstants.OTHER_TEST_CERTIFICATE + "\n",
+                ),
+            ).andExpect(jsonPath("$.data[1].type").value("certificate"))
             .andExpect(jsonPath("$.data[1].value.certificate").value(TestConstants.TEST_CA))
             .andExpect(jsonPath("$.data[1].value.ca").value(TestConstants.TEST_CA))
     }
@@ -158,7 +171,7 @@ class CredentialsGetConcatenateCasIntegrationTest {
         val certificateVersion1 = CertificateCredentialVersion(CREDENTIAL_NAME)
         certificateVersion1.setEncryptor(encryptor!!)
         certificateVersion1.uuid = uuid
-        certificateVersion1.versionCreatedAt = FROZEN_TIME
+        certificateVersion1.versionCreatedAt = frozenTime
         certificateVersion1.ca = TestConstants.TEST_CERTIFICATE
         certificateVersion1.caName = "/some-ca"
         certificateVersion1.certificate = TestConstants.TEST_CERTIFICATE
@@ -173,24 +186,29 @@ class CredentialsGetConcatenateCasIntegrationTest {
         certificateVersion2.setEncryptor(encryptor)
         certificateVersion2.uuid = uuid2
         certificateVersion2.credential?.uuid = uuid2
-        certificateVersion2.versionCreatedAt = FROZEN_TIME
+        certificateVersion2.versionCreatedAt = frozenTime
         val credentialVersionList = Arrays.asList<CredentialVersion>(certificateVersion1, certificateVersion2)
 
         doReturn(credentialVersionList).`when`<CredentialVersionDataService>(credentialVersionDataService).findAllByName(CREDENTIAL_NAME)
 
-        val request = get("/api/v1/data?name=$CREDENTIAL_NAME")
-            .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-            .accept(APPLICATION_JSON)
+        val request =
+            get("/api/v1/data?name=$CREDENTIAL_NAME")
+                .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+                .accept(APPLICATION_JSON)
 
-        mockMvc!!.perform(request)
+        mockMvc!!
+            .perform(request)
             .andExpect(status().isOk)
             .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
             .andExpect(jsonPath("$.data[0].type").value("certificate"))
             .andExpect(jsonPath("$.data[0].value.certificate").value(TestConstants.TEST_CERTIFICATE))
             .andExpect(jsonPath("$.data[0].id").value(uuid.toString()))
-            .andExpect(jsonPath("$.data[0].version_created_at").value(FROZEN_TIME.toString()))
-            .andExpect(jsonPath("$.data[0].value.ca").value(TestConstants.TEST_CERTIFICATE + "\n" + TestConstants.OTHER_TEST_CERTIFICATE + "\n"))
-            .andExpect(jsonPath("$.data[1].type").value("certificate"))
+            .andExpect(jsonPath("$.data[0].version_created_at").value(frozenTime.toString()))
+            .andExpect(
+                jsonPath("$.data[0].value.ca").value(
+                    TestConstants.TEST_CERTIFICATE + "\n" + TestConstants.OTHER_TEST_CERTIFICATE + "\n",
+                ),
+            ).andExpect(jsonPath("$.data[1].type").value("certificate"))
             .andExpect(jsonPath("$.data[1].value.certificate").value(TestConstants.OTHER_TEST_CERTIFICATE))
             .andExpect(jsonPath("$.data[1].value.ca").value(TestConstants.TEST_CA))
     }

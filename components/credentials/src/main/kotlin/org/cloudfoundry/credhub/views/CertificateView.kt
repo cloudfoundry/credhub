@@ -64,13 +64,12 @@ open class CertificateView : CredentialView {
             return false
         }
         val that = other as CertificateView
-        return certificateAuthority == that.certificateAuthority && selfSigned == that.selfSigned &&
+        return certificateAuthority == that.certificateAuthority &&
+            selfSigned == that.selfSigned &&
             generated == that.generated &&
             version == that.version &&
             expiryDate == that.expiryDate
     }
 
-    override fun hashCode(): Int {
-        return Objects.hash(super.hashCode(), version, expiryDate, certificateAuthority, selfSigned, generated)
-    }
+    override fun hashCode(): Int = Objects.hash(super.hashCode(), version, expiryDate, certificateAuthority, selfSigned, generated)
 }

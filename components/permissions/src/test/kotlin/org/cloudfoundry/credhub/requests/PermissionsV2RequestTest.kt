@@ -12,7 +12,6 @@ import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
 class PermissionsV2RequestTest {
-
     @Test
     fun whenPathEndsWithSlash_shouldBeInvalid() {
         // language=JSON
@@ -25,8 +24,9 @@ class PermissionsV2RequestTest {
             }
             """.trimIndent()
 
-        val violations = JsonTestHelper
-            .deserializeAndValidate(json, PermissionsV2Request::class.java)
+        val violations =
+            JsonTestHelper
+                .deserializeAndValidate(json, PermissionsV2Request::class.java)
 
         assertThat(violations.size, equalTo(1))
         MatcherAssert.assertThat(
@@ -49,8 +49,9 @@ class PermissionsV2RequestTest {
             }
             """.trimIndent()
 
-        val violations = JsonTestHelper
-            .deserializeAndValidate(json, PermissionsV2Request::class.java)
+        val violations =
+            JsonTestHelper
+                .deserializeAndValidate(json, PermissionsV2Request::class.java)
 
         assertThat(violations.size, equalTo(1))
         MatcherAssert.assertThat(
@@ -72,8 +73,9 @@ class PermissionsV2RequestTest {
             }
             """.trimIndent()
 
-        val violations = JsonTestHelper
-            .deserializeAndValidate(json, PermissionsV2Request::class.java)
+        val violations =
+            JsonTestHelper
+                .deserializeAndValidate(json, PermissionsV2Request::class.java)
 
         assertThat(violations.size, equalTo(1))
         MatcherAssert.assertThat(
@@ -95,8 +97,9 @@ class PermissionsV2RequestTest {
             }
             """.trimIndent()
 
-        val violations = JsonTestHelper
-            .deserializeAndValidate(json, PermissionsV2Request::class.java)
+        val violations =
+            JsonTestHelper
+                .deserializeAndValidate(json, PermissionsV2Request::class.java)
 
         assertThat(violations.size, equalTo(1))
         MatcherAssert.assertThat(
@@ -118,8 +121,9 @@ class PermissionsV2RequestTest {
             }
             """.trimIndent()
 
-        val violations = JsonTestHelper
-            .deserializeAndValidate(json, PermissionsV2Request::class.java)
+        val violations =
+            JsonTestHelper
+                .deserializeAndValidate(json, PermissionsV2Request::class.java)
 
         assertThat(violations.size, equalTo(1))
         MatcherAssert.assertThat(
@@ -142,8 +146,9 @@ class PermissionsV2RequestTest {
             }
             """.trimIndent()
 
-        val violations = JsonTestHelper
-            .deserializeAndValidate(json, PermissionsV2Request::class.java)
+        val violations =
+            JsonTestHelper
+                .deserializeAndValidate(json, PermissionsV2Request::class.java)
 
         assertThat(violations.size, equalTo(1))
         MatcherAssert.assertThat(
@@ -166,8 +171,9 @@ class PermissionsV2RequestTest {
             }
             """.trimIndent()
 
-        val violations = JsonTestHelper
-            .deserializeAndValidate(json, PermissionsV2Request::class.java)
+        val violations =
+            JsonTestHelper
+                .deserializeAndValidate(json, PermissionsV2Request::class.java)
 
         assertThat(violations.size, equalTo(1))
         MatcherAssert.assertThat(
@@ -190,8 +196,9 @@ class PermissionsV2RequestTest {
             }
             """.trimIndent()
 
-        val violations = JsonTestHelper
-            .deserializeAndValidate(json, PermissionsV2Request::class.java)
+        val violations =
+            JsonTestHelper
+                .deserializeAndValidate(json, PermissionsV2Request::class.java)
 
         assertThat(violations.size, equalTo(1))
         MatcherAssert.assertThat(
@@ -214,8 +221,9 @@ class PermissionsV2RequestTest {
             }
             """.trimIndent()
 
-        val violations = JsonTestHelper
-            .deserializeAndValidate(json, PermissionsV2Request::class.java)
+        val violations =
+            JsonTestHelper
+                .deserializeAndValidate(json, PermissionsV2Request::class.java)
 
         assertThat(violations.size, equalTo(1))
         MatcherAssert.assertThat(
@@ -232,15 +240,16 @@ class PermissionsV2RequestTest {
             // language=JSON
             val json =
                 """
-            {
-              "actor": "some-actor",
-              "path": "test${invalidCharacter}test",
-              "operations": ["read", "write"]
-            }
+                {
+                  "actor": "some-actor",
+                  "path": "test${invalidCharacter}test",
+                  "operations": ["read", "write"]
+                }
                 """.trimIndent()
 
-            val violations = JsonTestHelper
-                .deserializeAndValidate(json, PermissionsV2Request::class.java)
+            val violations =
+                JsonTestHelper
+                    .deserializeAndValidate(json, PermissionsV2Request::class.java)
 
             assertThat(violations.size, equalTo(1))
             MatcherAssert.assertThat(
@@ -258,15 +267,16 @@ class PermissionsV2RequestTest {
             // language=JSON
             val json =
                 """
-            {
-              "actor": "some-actor",
-              "path": "some${specialCharacter}path",
-              "operations": ["read", "write"]
-            }
+                {
+                  "actor": "some-actor",
+                  "path": "some${specialCharacter}path",
+                  "operations": ["read", "write"]
+                }
                 """.trimIndent()
 
-            val violations = JsonTestHelper
-                .deserializeAndValidate(json, PermissionsV2Request::class.java)
+            val violations =
+                JsonTestHelper
+                    .deserializeAndValidate(json, PermissionsV2Request::class.java)
 
             MatcherAssert.assertThat(violations.size, equalTo(0))
         }
@@ -277,15 +287,16 @@ class PermissionsV2RequestTest {
         // language=JSON
         val json =
             """
-        {
-          "actor": "some-actor",
-          "path": "some-path/*",
-          "operations": ["read", "write"]
-        }
+            {
+              "actor": "some-actor",
+              "path": "some-path/*",
+              "operations": ["read", "write"]
+            }
             """.trimIndent()
 
-        val violations = JsonTestHelper
-            .deserializeAndValidate(json, PermissionsV2Request::class.java)
+        val violations =
+            JsonTestHelper
+                .deserializeAndValidate(json, PermissionsV2Request::class.java)
 
         MatcherAssert.assertThat(violations.size, equalTo(0))
     }

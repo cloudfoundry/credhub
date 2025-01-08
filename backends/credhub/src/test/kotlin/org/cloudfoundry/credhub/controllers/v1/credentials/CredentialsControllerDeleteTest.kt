@@ -25,7 +25,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.security.Security
 
 class CredentialsControllerDeleteTest {
-
     @Rule
     @JvmField
     val restDocumentation = JUnitRestDocumentation()
@@ -45,12 +44,13 @@ class CredentialsControllerDeleteTest {
 
     @Before
     fun setUp() {
-        val credentialController = CredentialsController(
-            spyCredentialsHandler,
-            CEFAuditRecord(),
-            spyRegenerateHandler,
-            objectMapper,
-        )
+        val credentialController =
+            CredentialsController(
+                spyCredentialsHandler,
+                CEFAuditRecord(),
+                spyRegenerateHandler,
+                objectMapper,
+            )
         mockMvc = MockMvcFactory.newSpringRestDocMockMvc(credentialController, restDocumentation)
 
         if (Security.getProvider(BouncyCastleFipsProvider.PROVIDER_NAME) == null) {
@@ -59,26 +59,26 @@ class CredentialsControllerDeleteTest {
     }
 
     @Test
-    fun DELETE__credential_returns__void() {
-        val mvcResult = mockMvc.perform(
-            delete("${CredentialsController.ENDPOINT}?name=/some-credential-name")
-                .credHubAuthHeader()
-                .contentType(MediaType.APPLICATION_JSON)
-                .param("name", "/some-credential-name"),
-        )
-            .andExpect(status().isNoContent())
-            .andDo(
-                document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    requestParameters(
-                        parameterWithName("name")
-                            .description("The credential name"),
+    fun deleteCredential_returns__void() {
+        val mvcResult =
+            mockMvc
+                .perform(
+                    delete("${CredentialsController.ENDPOINT}?name=/some-credential-name")
+                        .credHubAuthHeader()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .param("name", "/some-credential-name"),
+                ).andExpect(status().isNoContent())
+                .andDo(
+                    document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                        requestParameters(
+                            parameterWithName("name")
+                                .description("The credential name"),
+                        ),
                     ),
-                ),
-            )
-            .andReturn()
+                ).andReturn()
 
-        assertThat(spyCredentialsHandler.deleteCredential__calledWith_credentialName).contains("/some-credential-name")
+        assertThat(spyCredentialsHandler.deletecredentialCalledwithCredentialname).contains("/some-credential-name")
         val actualResponseBody = mvcResult.response.contentAsString
 
         assertThat(actualResponseBody).isEqualTo("")

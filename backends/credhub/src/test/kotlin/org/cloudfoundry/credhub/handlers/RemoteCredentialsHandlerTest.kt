@@ -58,12 +58,11 @@ import java.security.Security
 import java.time.Instant
 import java.util.UUID
 
+private const val CREDENTIAL_NAME = "/test/credential"
+private const val USER = "test-user"
+
 @RunWith(JUnit4::class)
 class RemoteCredentialsHandlerTest {
-
-    private val CREDENTIAL_NAME = "/test/credential"
-    private val USER = "test-user"
-
     private val userContextHolder = mock(UserContextHolder::class.java)!!
     private val objectMapper = ObjectMapper()
     private var client = mock(RemoteBackendClient::class.java)!!
@@ -87,12 +86,13 @@ class RemoteCredentialsHandlerTest {
 
         objectMapper.propertyNamingStrategy = PropertyNamingStrategies.SNAKE_CASE
 
-        subject = RemoteCredentialsHandler(
-            userContextHolder,
-            objectMapper,
-            client,
-            credentialGenerator,
-        )
+        subject =
+            RemoteCredentialsHandler(
+                userContextHolder,
+                objectMapper,
+                client,
+                credentialGenerator,
+            )
 
         val userContext = mock(UserContext::class.java)
         `when`(userContext.actor).thenReturn(USER)
@@ -111,33 +111,43 @@ class RemoteCredentialsHandlerTest {
         val nowVersionCreatedAt = Instant.now().toString()
         val fiveMinutesAgoVersion = Instant.now().minusSeconds(300).toString()
 
-        val byteValue1 = subject.createByteStringFromData(
-            type,
-            value1,
-        )
+        val byteValue1 =
+            subject.createByteStringFromData(
+                type,
+                value1,
+            )
 
-        val byteValue2 = subject.createByteStringFromData(
-            type,
-            value2,
-        )
+        val byteValue2 =
+            subject.createByteStringFromData(
+                type,
+                value2,
+            )
 
-        val response1 = GetResponse.newBuilder()
-            .setName(CREDENTIAL_NAME)
-            .setType(type).setData(byteValue1)
-            .setId(uuid1)
-            .setVersionCreatedAt(nowVersionCreatedAt)
-            .build()
+        val response1 =
+            GetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setType(type)
+                .setData(byteValue1)
+                .setId(uuid1)
+                .setVersionCreatedAt(nowVersionCreatedAt)
+                .build()
 
-        val response2 = GetResponse.newBuilder()
-            .setName(CREDENTIAL_NAME)
-            .setType(type).setData(byteValue2)
-            .setId(uuid2)
-            .setVersionCreatedAt(fiveMinutesAgoVersion)
-            .build()
+        val response2 =
+            GetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setType(type)
+                .setData(byteValue2)
+                .setId(uuid2)
+                .setVersionCreatedAt(fiveMinutesAgoVersion)
+                .build()
 
-        val multiVersionResponse = GetNVersionsResponse.newBuilder()
-            .addAllVersions(mutableListOf(response2, response1))
-            .build()
+        val multiVersionResponse =
+            GetNVersionsResponse
+                .newBuilder()
+                .addAllVersions(mutableListOf(response2, response1))
+                .build()
 
         `when`(client.getAllVersionsRequest(CREDENTIAL_NAME, USER)).thenReturn(multiVersionResponse)
 
@@ -157,9 +167,10 @@ class RemoteCredentialsHandlerTest {
         val exception = StatusRuntimeException(Status.NOT_FOUND)
         `when`(client.getAllVersionsRequest(CREDENTIAL_NAME, USER)).thenThrow(exception)
 
-        Assertions.assertThatThrownBy {
-            subject.getAllCredentialVersions(CREDENTIAL_NAME)
-        }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
+        Assertions
+            .assertThatThrownBy {
+                subject.getAllCredentialVersions(CREDENTIAL_NAME)
+            }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
     }
 
     @Test
@@ -172,33 +183,43 @@ class RemoteCredentialsHandlerTest {
         val nowVersionCreatedAt = Instant.now().toString()
         val fiveMinutesAgoVersion = Instant.now().minusSeconds(300).toString()
 
-        val byteValue1 = subject.createByteStringFromData(
-            type,
-            value1,
-        )
+        val byteValue1 =
+            subject.createByteStringFromData(
+                type,
+                value1,
+            )
 
-        val byteValue2 = subject.createByteStringFromData(
-            type,
-            value2,
-        )
+        val byteValue2 =
+            subject.createByteStringFromData(
+                type,
+                value2,
+            )
 
-        val response1 = GetResponse.newBuilder()
-            .setName(CREDENTIAL_NAME)
-            .setType(type).setData(byteValue1)
-            .setId(uuid1)
-            .setVersionCreatedAt(nowVersionCreatedAt)
-            .build()
+        val response1 =
+            GetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setType(type)
+                .setData(byteValue1)
+                .setId(uuid1)
+                .setVersionCreatedAt(nowVersionCreatedAt)
+                .build()
 
-        val response2 = GetResponse.newBuilder()
-            .setName(CREDENTIAL_NAME)
-            .setType(type).setData(byteValue2)
-            .setId(uuid2)
-            .setVersionCreatedAt(fiveMinutesAgoVersion)
-            .build()
+        val response2 =
+            GetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setType(type)
+                .setData(byteValue2)
+                .setId(uuid2)
+                .setVersionCreatedAt(fiveMinutesAgoVersion)
+                .build()
 
-        val multiVersionResponse = GetNVersionsResponse.newBuilder()
-            .addAllVersions(mutableListOf(response2, response1))
-            .build()
+        val multiVersionResponse =
+            GetNVersionsResponse
+                .newBuilder()
+                .addAllVersions(mutableListOf(response2, response1))
+                .build()
 
         `when`(client.getNVersionsRequest(CREDENTIAL_NAME, USER, 2)).thenReturn(multiVersionResponse)
 
@@ -221,33 +242,43 @@ class RemoteCredentialsHandlerTest {
         val value1 = StringCredentialValue("value1")
         val value2 = StringCredentialValue("value2")
 
-        val byteValue1 = subject.createByteStringFromData(
-            type,
-            value1,
-        )
+        val byteValue1 =
+            subject.createByteStringFromData(
+                type,
+                value1,
+            )
 
-        val byteValue2 = subject.createByteStringFromData(
-            type,
-            value2,
-        )
+        val byteValue2 =
+            subject.createByteStringFromData(
+                type,
+                value2,
+            )
 
-        val response1 = GetResponse.newBuilder()
-            .setName(CREDENTIAL_NAME)
-            .setType(type).setData(byteValue1)
-            .setId(uuid1)
-            .setVersionCreatedAt(versionCreatedAt)
-            .build()
+        val response1 =
+            GetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setType(type)
+                .setData(byteValue1)
+                .setId(uuid1)
+                .setVersionCreatedAt(versionCreatedAt)
+                .build()
 
-        val response2 = GetResponse.newBuilder()
-            .setName(CREDENTIAL_NAME)
-            .setType(type).setData(byteValue2)
-            .setId(uuid2)
-            .setVersionCreatedAt(versionCreatedAt)
-            .build()
+        val response2 =
+            GetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setType(type)
+                .setData(byteValue2)
+                .setId(uuid2)
+                .setVersionCreatedAt(versionCreatedAt)
+                .build()
 
-        val multiVersionResponse = GetNVersionsResponse.newBuilder()
-            .addAllVersions(mutableListOf(response1, response2))
-            .build()
+        val multiVersionResponse =
+            GetNVersionsResponse
+                .newBuilder()
+                .addAllVersions(mutableListOf(response1, response2))
+                .build()
 
         `when`(client.getAllVersionsRequest(CREDENTIAL_NAME, USER)).thenReturn(multiVersionResponse)
 
@@ -267,9 +298,10 @@ class RemoteCredentialsHandlerTest {
         val exception = StatusRuntimeException(Status.NOT_FOUND)
         `when`(client.getNVersionsRequest(CREDENTIAL_NAME, USER, 3)).thenThrow(exception)
 
-        Assertions.assertThatThrownBy {
-            subject.getNCredentialVersions(CREDENTIAL_NAME, 3)
-        }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
+        Assertions
+            .assertThatThrownBy {
+                subject.getNCredentialVersions(CREDENTIAL_NAME, 3)
+            }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
     }
 
     @Test
@@ -278,13 +310,20 @@ class RemoteCredentialsHandlerTest {
         val uuid = "00000000-0000-0000-0000-000000000001"
         val stringCredential = StringCredentialValue("test-value")
 
-        val byteValue = subject.createByteStringFromData(
-            type,
-            stringCredential,
-        )
-        val response = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
-            .setType(type).setData(byteValue)
-            .setId(uuid).setVersionCreatedAt(versionCreatedAt).build()
+        val byteValue =
+            subject.createByteStringFromData(
+                type,
+                stringCredential,
+            )
+        val response =
+            GetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setType(type)
+                .setData(byteValue)
+                .setId(uuid)
+                .setVersionCreatedAt(versionCreatedAt)
+                .build()
         `when`(client.getByNameRequest(CREDENTIAL_NAME, USER)).thenReturn(response)
 
         val result = subject.getCurrentCredentialVersions(CREDENTIAL_NAME)
@@ -302,14 +341,21 @@ class RemoteCredentialsHandlerTest {
         val jsonNode = objectMapper.readTree("""{"some-key": "some-value"} """.trimIndent())
         val jsonCredential = JsonCredentialValue(jsonNode)
 
-        val byteValue = subject.createByteStringFromData(
-            type,
-            jsonCredential,
-        )
+        val byteValue =
+            subject.createByteStringFromData(
+                type,
+                jsonCredential,
+            )
 
-        val response = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
-            .setType(type).setData(byteValue)
-            .setId(uuid).setVersionCreatedAt(versionCreatedAt).build()
+        val response =
+            GetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setType(type)
+                .setData(byteValue)
+                .setId(uuid)
+                .setVersionCreatedAt(versionCreatedAt)
+                .build()
         `when`(client.getByNameRequest(CREDENTIAL_NAME, USER)).thenReturn(response)
 
         val result = subject.getCurrentCredentialVersions(CREDENTIAL_NAME)
@@ -323,25 +369,34 @@ class RemoteCredentialsHandlerTest {
     fun getCurrentCredentialVersion_withCertificateCredential_returnsCorrectDataResponse() {
         val type = "certificate"
         val uuid = "00000000-0000-0000-0000-000000000003"
-        val certificateCredential = CertificateCredentialValue(
-            TestConstants.TEST_CA,
-            TestConstants.TEST_CERTIFICATE,
-            TestConstants.TEST_PRIVATE_KEY,
-            "/some-ca",
-            false,
-            false,
-            false,
-            false,
-        )
+        val certificateCredential =
+            CertificateCredentialValue(
+                TestConstants.TEST_CA,
+                TestConstants.TEST_CERTIFICATE,
+                TestConstants.TEST_PRIVATE_KEY,
+                "/some-ca",
+                false,
+                false,
+                false,
+                false,
+            )
 
-        val byteValue = subject.createByteStringFromData(
-            type,
-            certificateCredential,
-        )
-        val response = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
-            .setType(type).setData(byteValue)
-            .setId(uuid).setVersionCreatedAt(versionCreatedAt)
-            .setId(uuid).setVersionCreatedAt(versionCreatedAt).build()
+        val byteValue =
+            subject.createByteStringFromData(
+                type,
+                certificateCredential,
+            )
+        val response =
+            GetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setType(type)
+                .setData(byteValue)
+                .setId(uuid)
+                .setVersionCreatedAt(versionCreatedAt)
+                .setId(uuid)
+                .setVersionCreatedAt(versionCreatedAt)
+                .build()
         `when`(client.getByNameRequest(CREDENTIAL_NAME, USER)).thenReturn(response)
 
         val result = subject.getCurrentCredentialVersions(CREDENTIAL_NAME)
@@ -357,13 +412,20 @@ class RemoteCredentialsHandlerTest {
         val uuid = "00000000-0000-0000-0000-000000000004"
         val stringCredential = StringCredentialValue("test-password")
 
-        val byteValue = subject.createByteStringFromData(
-            type,
-            stringCredential,
-        )
-        val response = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
-            .setType(type).setData(byteValue)
-            .setId(uuid).setVersionCreatedAt(versionCreatedAt).build()
+        val byteValue =
+            subject.createByteStringFromData(
+                type,
+                stringCredential,
+            )
+        val response =
+            GetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setType(type)
+                .setData(byteValue)
+                .setId(uuid)
+                .setVersionCreatedAt(versionCreatedAt)
+                .build()
         `when`(client.getByNameRequest(CREDENTIAL_NAME, USER)).thenReturn(response)
 
         val result = subject.getCurrentCredentialVersions(CREDENTIAL_NAME)
@@ -382,14 +444,21 @@ class RemoteCredentialsHandlerTest {
         val salt = "salt"
         val userCredential = UserCredentialValue(username, password, salt)
 
-        val byteValue = subject.createByteStringFromData(
-            type,
-            userCredential,
-        )
+        val byteValue =
+            subject.createByteStringFromData(
+                type,
+                userCredential,
+            )
 
-        val response = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
-            .setType(type).setData(byteValue)
-            .setId(uuid).setVersionCreatedAt(versionCreatedAt).build()
+        val response =
+            GetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setType(type)
+                .setData(byteValue)
+                .setId(uuid)
+                .setVersionCreatedAt(versionCreatedAt)
+                .build()
         `when`(client.getByNameRequest(CREDENTIAL_NAME, USER)).thenReturn(response)
 
         val result = subject.getCurrentCredentialVersions(CREDENTIAL_NAME)
@@ -405,13 +474,20 @@ class RemoteCredentialsHandlerTest {
         val uuid = "00000000-0000-0000-0000-000000000006"
         val rsaCredential = RsaCredentialValue(TestConstants.RSA_PUBLIC_KEY_4096, TestConstants.PRIVATE_KEY_4096)
 
-        val byteValue = subject.createByteStringFromData(
-            type,
-            rsaCredential,
-        )
-        val response = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
-            .setType(type).setData(byteValue)
-            .setId(uuid).setVersionCreatedAt(versionCreatedAt).build()
+        val byteValue =
+            subject.createByteStringFromData(
+                type,
+                rsaCredential,
+            )
+        val response =
+            GetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setType(type)
+                .setData(byteValue)
+                .setId(uuid)
+                .setVersionCreatedAt(versionCreatedAt)
+                .build()
         `when`(client.getByNameRequest(CREDENTIAL_NAME, USER)).thenReturn(response)
 
         val result = subject.getCurrentCredentialVersions(CREDENTIAL_NAME)
@@ -427,13 +503,20 @@ class RemoteCredentialsHandlerTest {
         val uuid = "00000000-0000-0000-0000-000000000007"
         val sshCredential = SshCredentialValue(TestConstants.SSH_PUBLIC_KEY_4096, TestConstants.PRIVATE_KEY_4096, "fingerprint")
 
-        val byteValue = subject.createByteStringFromData(
-            type,
-            sshCredential,
-        )
-        val response = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
-            .setType(type).setData(byteValue)
-            .setId(uuid).setVersionCreatedAt(versionCreatedAt).build()
+        val byteValue =
+            subject.createByteStringFromData(
+                type,
+                sshCredential,
+            )
+        val response =
+            GetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setType(type)
+                .setData(byteValue)
+                .setId(uuid)
+                .setVersionCreatedAt(versionCreatedAt)
+                .build()
         `when`(client.getByNameRequest(CREDENTIAL_NAME, USER)).thenReturn(response)
 
         val result = subject.getCurrentCredentialVersions(CREDENTIAL_NAME)
@@ -449,13 +532,20 @@ class RemoteCredentialsHandlerTest {
         val uuid = "00000000-0000-0000-0000-000000000001"
         val stringCredential = StringCredentialValue("test-value")
 
-        val byteValue = subject.createByteStringFromData(
-            type,
-            stringCredential,
-        )
-        val response = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
-            .setType(type).setData(byteValue)
-            .setId(uuid).setVersionCreatedAt(versionCreatedAt).build()
+        val byteValue =
+            subject.createByteStringFromData(
+                type,
+                stringCredential,
+            )
+        val response =
+            GetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setType(type)
+                .setData(byteValue)
+                .setId(uuid)
+                .setVersionCreatedAt(versionCreatedAt)
+                .build()
         `when`(client.getByIdRequest(uuid, USER)).thenReturn(response)
 
         val result = subject.getCredentialVersionByUUID(uuid)
@@ -471,14 +561,21 @@ class RemoteCredentialsHandlerTest {
         val jsonNode = objectMapper.readTree("""{"some-key": "some-value"} """.trimIndent())
         val jsonCredential = JsonCredentialValue(jsonNode)
 
-        val byteValue = subject.createByteStringFromData(
-            type,
-            jsonCredential,
-        )
+        val byteValue =
+            subject.createByteStringFromData(
+                type,
+                jsonCredential,
+            )
 
-        val response = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
-            .setType(type).setData(byteValue)
-            .setId(uuid).setVersionCreatedAt(versionCreatedAt).build()
+        val response =
+            GetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setType(type)
+                .setData(byteValue)
+                .setId(uuid)
+                .setVersionCreatedAt(versionCreatedAt)
+                .build()
         `when`(client.getByIdRequest(uuid, USER)).thenReturn(response)
 
         val result = subject.getCredentialVersionByUUID(uuid)
@@ -491,26 +588,35 @@ class RemoteCredentialsHandlerTest {
     fun getCredentialVersionByUUID_withCertificateCredential_returnsCorrectDataResponse() {
         val type = "certificate"
         val uuid = "00000000-0000-0000-0000-000000000003"
-        val certificateCredential = CertificateCredentialValue(
-            TestConstants.TEST_CA,
-            TestConstants.TEST_CERTIFICATE,
-            TestConstants.TEST_PRIVATE_KEY,
-            "/some-ca",
-            false,
-            false,
-            false,
-            false,
-        )
+        val certificateCredential =
+            CertificateCredentialValue(
+                TestConstants.TEST_CA,
+                TestConstants.TEST_CERTIFICATE,
+                TestConstants.TEST_PRIVATE_KEY,
+                "/some-ca",
+                false,
+                false,
+                false,
+                false,
+            )
 
-        val byteValue = subject.createByteStringFromData(
-            type,
-            certificateCredential,
-        )
+        val byteValue =
+            subject.createByteStringFromData(
+                type,
+                certificateCredential,
+            )
 
-        val response = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
-            .setType(type).setData(byteValue)
-            .setId(uuid).setVersionCreatedAt(versionCreatedAt)
-            .setId(uuid).setVersionCreatedAt(versionCreatedAt).build()
+        val response =
+            GetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setType(type)
+                .setData(byteValue)
+                .setId(uuid)
+                .setVersionCreatedAt(versionCreatedAt)
+                .setId(uuid)
+                .setVersionCreatedAt(versionCreatedAt)
+                .build()
         `when`(client.getByIdRequest(uuid, USER)).thenReturn(response)
 
         val result = subject.getCredentialVersionByUUID(uuid)
@@ -525,14 +631,21 @@ class RemoteCredentialsHandlerTest {
         val uuid = "00000000-0000-0000-0000-000000000004"
         val stringCredential = StringCredentialValue("test-password")
 
-        val byteValue = subject.createByteStringFromData(
-            type,
-            stringCredential,
-        )
+        val byteValue =
+            subject.createByteStringFromData(
+                type,
+                stringCredential,
+            )
 
-        val response = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
-            .setType(type).setData(byteValue)
-            .setId(uuid).setVersionCreatedAt(versionCreatedAt).build()
+        val response =
+            GetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setType(type)
+                .setData(byteValue)
+                .setId(uuid)
+                .setVersionCreatedAt(versionCreatedAt)
+                .build()
         `when`(client.getByIdRequest(uuid, USER)).thenReturn(response)
 
         val result = subject.getCredentialVersionByUUID(uuid)
@@ -550,13 +663,20 @@ class RemoteCredentialsHandlerTest {
         val salt = "salt"
         val userCredential = UserCredentialValue(username, password, salt)
 
-        val byteValue = subject.createByteStringFromData(
-            type,
-            userCredential,
-        )
-        val response = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
-            .setType(type).setData(byteValue)
-            .setId(uuid).setVersionCreatedAt(versionCreatedAt).build()
+        val byteValue =
+            subject.createByteStringFromData(
+                type,
+                userCredential,
+            )
+        val response =
+            GetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setType(type)
+                .setData(byteValue)
+                .setId(uuid)
+                .setVersionCreatedAt(versionCreatedAt)
+                .build()
         `when`(client.getByIdRequest(uuid, USER)).thenReturn(response)
 
         val result = subject.getCredentialVersionByUUID(uuid)
@@ -571,14 +691,21 @@ class RemoteCredentialsHandlerTest {
         val uuid = "00000000-0000-0000-0000-000000000006"
         val rsaCredential = RsaCredentialValue(TestConstants.RSA_PUBLIC_KEY_4096, TestConstants.PRIVATE_KEY_4096)
 
-        val byteValue = subject.createByteStringFromData(
-            type,
-            rsaCredential,
-        )
+        val byteValue =
+            subject.createByteStringFromData(
+                type,
+                rsaCredential,
+            )
 
-        val response = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
-            .setType(type).setData(byteValue)
-            .setId(uuid).setVersionCreatedAt(versionCreatedAt).build()
+        val response =
+            GetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setType(type)
+                .setData(byteValue)
+                .setId(uuid)
+                .setVersionCreatedAt(versionCreatedAt)
+                .build()
         `when`(client.getByIdRequest(uuid, USER)).thenReturn(response)
 
         val result = subject.getCredentialVersionByUUID(uuid)
@@ -593,14 +720,21 @@ class RemoteCredentialsHandlerTest {
         val uuid = "00000000-0000-0000-0000-000000000006"
         val sshCredential = SshCredentialValue(TestConstants.SSH_PUBLIC_KEY_4096, TestConstants.PRIVATE_KEY_4096, "fingerprint")
 
-        val byteValue = subject.createByteStringFromData(
-            type,
-            sshCredential,
-        )
+        val byteValue =
+            subject.createByteStringFromData(
+                type,
+                sshCredential,
+            )
 
-        val response = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
-            .setType(type).setData(byteValue)
-            .setId(uuid).setVersionCreatedAt(versionCreatedAt).build()
+        val response =
+            GetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setType(type)
+                .setData(byteValue)
+                .setId(uuid)
+                .setVersionCreatedAt(versionCreatedAt)
+                .build()
         `when`(client.getByIdRequest(uuid, USER)).thenReturn(response)
 
         val result = subject.getCredentialVersionByUUID(uuid)
@@ -615,18 +749,21 @@ class RemoteCredentialsHandlerTest {
         val uuid = UUID.randomUUID().toString()
         val stringCredential = StringCredentialValue("test-value")
 
-        val byteValue = subject.createByteStringFromData(
-            type,
-            stringCredential,
-        )
+        val byteValue =
+            subject.createByteStringFromData(
+                type,
+                stringCredential,
+            )
 
-        val response = SetResponse.newBuilder()
-            .setName(CREDENTIAL_NAME)
-            .setVersionCreatedAt(versionCreatedAt)
-            .setType(type)
-            .setData(byteValue)
-            .setId(uuid)
-            .build()
+        val response =
+            SetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setVersionCreatedAt(versionCreatedAt)
+                .setType(type)
+                .setData(byteValue)
+                .setId(uuid)
+                .build()
         `when`(client.setRequest(CREDENTIAL_NAME, type, byteValue, USER, ByteString.EMPTY)).thenReturn(response)
 
         val request = ValueSetRequest()
@@ -648,18 +785,21 @@ class RemoteCredentialsHandlerTest {
         val uuid = UUID.randomUUID().toString()
         val stringCredential = StringCredentialValue("test-password")
 
-        val byteValue = subject.createByteStringFromData(
-            type,
-            stringCredential,
-        )
+        val byteValue =
+            subject.createByteStringFromData(
+                type,
+                stringCredential,
+            )
 
-        val response = SetResponse.newBuilder()
-            .setName(CREDENTIAL_NAME)
-            .setVersionCreatedAt(versionCreatedAt)
-            .setType(type)
-            .setData(byteValue)
-            .setId(uuid)
-            .build()
+        val response =
+            SetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setVersionCreatedAt(versionCreatedAt)
+                .setType(type)
+                .setData(byteValue)
+                .setId(uuid)
+                .build()
         `when`(client.setRequest(CREDENTIAL_NAME, type, byteValue, USER, ByteString.EMPTY)).thenReturn(response)
 
         val request = PasswordSetRequest()
@@ -682,18 +822,21 @@ class RemoteCredentialsHandlerTest {
         val uuid = UUID.randomUUID().toString()
         val jsonCredential = JsonCredentialValue(jsonNode)
 
-        val byteValue = subject.createByteStringFromData(
-            type,
-            jsonCredential,
-        )
+        val byteValue =
+            subject.createByteStringFromData(
+                type,
+                jsonCredential,
+            )
 
-        val response = SetResponse.newBuilder()
-            .setName(CREDENTIAL_NAME)
-            .setVersionCreatedAt(versionCreatedAt)
-            .setType(type)
-            .setData(byteValue)
-            .setId(uuid)
-            .build()
+        val response =
+            SetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setVersionCreatedAt(versionCreatedAt)
+                .setType(type)
+                .setData(byteValue)
+                .setId(uuid)
+                .build()
         `when`(client.setRequest(CREDENTIAL_NAME, type, byteValue, USER, ByteString.EMPTY)).thenReturn(response)
 
         val request = JsonSetRequest()
@@ -713,29 +856,33 @@ class RemoteCredentialsHandlerTest {
     fun setCredential_withCertificateCredential_returnsCorrectDataResponse() {
         val type = "certificate"
         val uuid = UUID.randomUUID().toString()
-        val certificateCredential = CertificateCredentialValue(
-            TestConstants.TEST_CA,
-            TestConstants.TEST_CERTIFICATE,
-            TestConstants.TEST_PRIVATE_KEY,
-            "/some-ca",
-            false,
-            false,
-            false,
-            false,
-        )
+        val certificateCredential =
+            CertificateCredentialValue(
+                TestConstants.TEST_CA,
+                TestConstants.TEST_CERTIFICATE,
+                TestConstants.TEST_PRIVATE_KEY,
+                "/some-ca",
+                false,
+                false,
+                false,
+                false,
+            )
 
-        val byteValue = subject.createByteStringFromData(
-            type,
-            certificateCredential,
-        )
+        val byteValue =
+            subject.createByteStringFromData(
+                type,
+                certificateCredential,
+            )
 
-        val response = SetResponse.newBuilder()
-            .setName(CREDENTIAL_NAME)
-            .setVersionCreatedAt(versionCreatedAt)
-            .setType(type)
-            .setData(byteValue)
-            .setId(uuid)
-            .build()
+        val response =
+            SetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setVersionCreatedAt(versionCreatedAt)
+                .setType(type)
+                .setData(byteValue)
+                .setId(uuid)
+                .build()
         `when`(client.setRequest(CREDENTIAL_NAME, type, byteValue, USER, ByteString.EMPTY)).thenReturn(response)
 
         val request = CertificateSetRequest()
@@ -760,18 +907,21 @@ class RemoteCredentialsHandlerTest {
         val salt = "salt"
         val userCredential = UserCredentialValue(username, password, salt)
 
-        val byteValue = subject.createByteStringFromData(
-            type,
-            userCredential,
-        )
+        val byteValue =
+            subject.createByteStringFromData(
+                type,
+                userCredential,
+            )
 
-        val response = SetResponse.newBuilder()
-            .setName(CREDENTIAL_NAME)
-            .setVersionCreatedAt(versionCreatedAt)
-            .setType(type)
-            .setData(byteValue)
-            .setId(uuid)
-            .build()
+        val response =
+            SetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setVersionCreatedAt(versionCreatedAt)
+                .setType(type)
+                .setData(byteValue)
+                .setId(uuid)
+                .build()
         `when`(client.setRequest(CREDENTIAL_NAME, type, byteValue, USER, ByteString.EMPTY)).thenReturn(response)
 
         val request = UserSetRequest()
@@ -793,18 +943,21 @@ class RemoteCredentialsHandlerTest {
         val uuid = UUID.randomUUID().toString()
         val rsaCredential = RsaCredentialValue(TestConstants.RSA_PUBLIC_KEY_4096, TestConstants.PRIVATE_KEY_4096)
 
-        val byteValue = subject.createByteStringFromData(
-            type,
-            rsaCredential,
-        )
+        val byteValue =
+            subject.createByteStringFromData(
+                type,
+                rsaCredential,
+            )
 
-        val response = SetResponse.newBuilder()
-            .setName(CREDENTIAL_NAME)
-            .setVersionCreatedAt(versionCreatedAt)
-            .setType(type)
-            .setData(byteValue)
-            .setId(uuid)
-            .build()
+        val response =
+            SetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setVersionCreatedAt(versionCreatedAt)
+                .setType(type)
+                .setData(byteValue)
+                .setId(uuid)
+                .build()
         `when`(client.setRequest(CREDENTIAL_NAME, type, byteValue, USER, ByteString.EMPTY)).thenReturn(response)
 
         val request = RsaSetRequest()
@@ -826,18 +979,21 @@ class RemoteCredentialsHandlerTest {
         val uuid = UUID.randomUUID().toString()
         val sshCredential = SshCredentialValue(TestConstants.SSH_PUBLIC_KEY_4096, TestConstants.PRIVATE_KEY_4096, "fingerprint")
 
-        val byteValue = subject.createByteStringFromData(
-            type,
-            sshCredential,
-        )
+        val byteValue =
+            subject.createByteStringFromData(
+                type,
+                sshCredential,
+            )
 
-        val response = SetResponse.newBuilder()
-            .setName(CREDENTIAL_NAME)
-            .setVersionCreatedAt(versionCreatedAt)
-            .setType(type)
-            .setData(byteValue)
-            .setId(uuid)
-            .build()
+        val response =
+            SetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setVersionCreatedAt(versionCreatedAt)
+                .setType(type)
+                .setData(byteValue)
+                .setId(uuid)
+                .build()
         `when`(client.setRequest(CREDENTIAL_NAME, type, byteValue, USER, ByteString.EMPTY)).thenReturn(response)
 
         val request = SshSetRequest()
@@ -862,21 +1018,20 @@ class RemoteCredentialsHandlerTest {
     fun findCredential_withName_returnsCorrectDataResponse() {
         val nowVersionCreatedAt = Instant.now().toString()
         val fiveMinutesAgoVersion = Instant.now().minusSeconds(300).toString()
-        val response = FindResponse
-            .newBuilder()
-            .addResults(
-                FindResult
-                    .newBuilder()
-                    .setName("/test/another-credential")
-                    .setVersionCreatedAt(fiveMinutesAgoVersion),
-            )
-            .addResults(
-                FindResult
-                    .newBuilder()
-                    .setName("/test/some-other-credential")
-                    .setVersionCreatedAt(nowVersionCreatedAt),
-            )
-            .build()
+        val response =
+            FindResponse
+                .newBuilder()
+                .addResults(
+                    FindResult
+                        .newBuilder()
+                        .setName("/test/another-credential")
+                        .setVersionCreatedAt(fiveMinutesAgoVersion),
+                ).addResults(
+                    FindResult
+                        .newBuilder()
+                        .setName("/test/some-other-credential")
+                        .setVersionCreatedAt(nowVersionCreatedAt),
+                ).build()
 
         `when`(client.findContainingNameRequest("other", USER)).thenReturn(response)
 
@@ -893,21 +1048,20 @@ class RemoteCredentialsHandlerTest {
     fun findStarting_withPath_returnsCorrectDataResponse() {
         val nowVersionCreatedAt = Instant.now().toString()
         val fiveMinutesAgoVersion = Instant.now().minusSeconds(300).toString()
-        val response = FindResponse
-            .newBuilder()
-            .addResults(
-                FindResult
-                    .newBuilder()
-                    .setName("/test/another-credential")
-                    .setVersionCreatedAt(fiveMinutesAgoVersion),
-            )
-            .addResults(
-                FindResult
-                    .newBuilder()
-                    .setName("/test/some-other-credential")
-                    .setVersionCreatedAt(nowVersionCreatedAt),
-            )
-            .build()
+        val response =
+            FindResponse
+                .newBuilder()
+                .addResults(
+                    FindResult
+                        .newBuilder()
+                        .setName("/test/another-credential")
+                        .setVersionCreatedAt(fiveMinutesAgoVersion),
+                ).addResults(
+                    FindResult
+                        .newBuilder()
+                        .setName("/test/some-other-credential")
+                        .setVersionCreatedAt(nowVersionCreatedAt),
+                ).build()
 
         `when`(client.findStartingWithPathRequest("/test", USER)).thenReturn(response)
 
@@ -935,22 +1089,29 @@ class RemoteCredentialsHandlerTest {
         generationParameters.includeSpecial = false
 
         val oldByteValue = subject.createByteStringFromData(type, shouldBeReturned)
-        val getResponse = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
-            .setType(type).setData(oldByteValue)
-            .setId(uuid).setVersionCreatedAt(versionCreatedAt)
-            .setGenerationParameters(subject.createByteStringFromGenerationParameters(type, generationParameters))
-            .build()
+        val getResponse =
+            GetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setType(type)
+                .setData(oldByteValue)
+                .setId(uuid)
+                .setVersionCreatedAt(versionCreatedAt)
+                .setGenerationParameters(subject.createByteStringFromGenerationParameters(type, generationParameters))
+                .build()
         `when`(client.getByNameRequest(CREDENTIAL_NAME, USER)).thenReturn(getResponse)
 
         val newByteValue = subject.createByteStringFromData(type, shouldntBeReturned)
         val byteGenerationParameters = subject.createByteStringFromGenerationParameters(type, generationParameters)
-        val setResponse = SetResponse.newBuilder()
-            .setName(CREDENTIAL_NAME)
-            .setVersionCreatedAt(versionCreatedAt)
-            .setType(type)
-            .setData(newByteValue)
-            .setId(uuid)
-            .build()
+        val setResponse =
+            SetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setVersionCreatedAt(versionCreatedAt)
+                .setType(type)
+                .setData(newByteValue)
+                .setId(uuid)
+                .build()
         `when`(client.setRequest(CREDENTIAL_NAME, type, newByteValue, USER, byteGenerationParameters)).thenReturn(setResponse)
 
         val passwordGenerateRequest = PasswordGenerateRequest()
@@ -971,27 +1132,29 @@ class RemoteCredentialsHandlerTest {
         val type = "certificate"
         val uuid = UUID.randomUUID().toString()
 
-        val shouldntBeReturned = CertificateCredentialValue(
-            TestConstants.TEST_CA,
-            TestConstants.TEST_CERTIFICATE,
-            TestConstants.TEST_PRIVATE_KEY,
-            "/some-ca",
-            false,
-            false,
-            true,
-            false,
-        )
+        val shouldntBeReturned =
+            CertificateCredentialValue(
+                TestConstants.TEST_CA,
+                TestConstants.TEST_CERTIFICATE,
+                TestConstants.TEST_PRIVATE_KEY,
+                "/some-ca",
+                false,
+                false,
+                true,
+                false,
+            )
 
-        val shouldBeReturned = CertificateCredentialValue(
-            TestConstants.TEST_CA,
-            TestConstants.OTHER_TEST_CERTIFICATE,
-            TestConstants.OTHER_TEST_PRIVATE_KEY,
-            "/some-ca",
-            false,
-            false,
-            true,
-            false,
-        )
+        val shouldBeReturned =
+            CertificateCredentialValue(
+                TestConstants.TEST_CA,
+                TestConstants.OTHER_TEST_CERTIFICATE,
+                TestConstants.OTHER_TEST_PRIVATE_KEY,
+                "/some-ca",
+                false,
+                false,
+                true,
+                false,
+            )
 
         val generationRequestParameters = CertificateGenerationRequestParameters()
         generationRequestParameters.caName = "some-ca"
@@ -1000,22 +1163,29 @@ class RemoteCredentialsHandlerTest {
         val generationParameters = CertificateGenerationParameters(generationRequestParameters)
 
         val oldByteValue = subject.createByteStringFromData(type, shouldBeReturned)
-        val getResponse = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
-            .setType(type).setData(oldByteValue)
-            .setId(uuid).setVersionCreatedAt(versionCreatedAt)
-            .setGenerationParameters(subject.createByteStringFromGenerationParameters(type, generationParameters))
-            .build()
+        val getResponse =
+            GetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setType(type)
+                .setData(oldByteValue)
+                .setId(uuid)
+                .setVersionCreatedAt(versionCreatedAt)
+                .setGenerationParameters(subject.createByteStringFromGenerationParameters(type, generationParameters))
+                .build()
         `when`(client.getByNameRequest(CREDENTIAL_NAME, USER)).thenReturn(getResponse)
 
         val newByteValue = subject.createByteStringFromData(type, shouldntBeReturned)
         val byteGenerationParameters = subject.createByteStringFromGenerationParameters(type, generationParameters)
-        val setResponse = SetResponse.newBuilder()
-            .setName(CREDENTIAL_NAME)
-            .setVersionCreatedAt(versionCreatedAt)
-            .setType(type)
-            .setData(newByteValue)
-            .setId(uuid)
-            .build()
+        val setResponse =
+            SetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setVersionCreatedAt(versionCreatedAt)
+                .setType(type)
+                .setData(newByteValue)
+                .setId(uuid)
+                .build()
         `when`(client.setRequest(CREDENTIAL_NAME, type, newByteValue, USER, byteGenerationParameters)).thenReturn(setResponse)
 
         val certificateGenerateRequest = CertificateGenerateRequest()
@@ -1036,29 +1206,37 @@ class RemoteCredentialsHandlerTest {
     fun generateSsh_whenExistingSshMatchesGenerationParameters_doesNotRegenerate() {
         val type = "ssh"
         val uuid = UUID.randomUUID().toString()
-        val shouldntBeReturned = SshCredentialValue(TestConstants.SSH_PUBLIC_KEY_4096_WITH_COMMENT, TestConstants.PRIVATE_KEY_4096, "fingerprint")
+        val shouldntBeReturned =
+            SshCredentialValue(TestConstants.SSH_PUBLIC_KEY_4096_WITH_COMMENT, TestConstants.PRIVATE_KEY_4096, "fingerprint")
         val shouldBeReturned = SshCredentialValue(TestConstants.SSH_PUBLIC_KEY_4096, TestConstants.PRIVATE_KEY_4096, "fingerprint")
 
         val generationParameters = SshGenerationParameters()
         generationParameters.keyLength = 4096
 
         val oldByteValue = subject.createByteStringFromData(type, shouldBeReturned)
-        val getResponse = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
-            .setType(type).setData(oldByteValue)
-            .setId(uuid).setVersionCreatedAt(versionCreatedAt)
-            .setGenerationParameters(subject.createByteStringFromGenerationParameters(type, generationParameters))
-            .build()
+        val getResponse =
+            GetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setType(type)
+                .setData(oldByteValue)
+                .setId(uuid)
+                .setVersionCreatedAt(versionCreatedAt)
+                .setGenerationParameters(subject.createByteStringFromGenerationParameters(type, generationParameters))
+                .build()
         `when`(client.getByNameRequest(CREDENTIAL_NAME, USER)).thenReturn(getResponse)
 
         val newByteValue = subject.createByteStringFromData(type, shouldntBeReturned)
         val byteGenerationParameters = subject.createByteStringFromGenerationParameters(type, generationParameters)
-        val setResponse = SetResponse.newBuilder()
-            .setName(CREDENTIAL_NAME)
-            .setVersionCreatedAt(versionCreatedAt)
-            .setType(type)
-            .setData(newByteValue)
-            .setId(uuid)
-            .build()
+        val setResponse =
+            SetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setVersionCreatedAt(versionCreatedAt)
+                .setType(type)
+                .setData(newByteValue)
+                .setId(uuid)
+                .build()
         `when`(client.setRequest(CREDENTIAL_NAME, type, newByteValue, USER, byteGenerationParameters)).thenReturn(setResponse)
 
         val sshGenerateRequest = SshGenerateRequest()
@@ -1086,22 +1264,29 @@ class RemoteCredentialsHandlerTest {
         generationParameters.keyLength = 4096
 
         val oldByteValue = subject.createByteStringFromData(type, shouldBeReturned)
-        val getResponse = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
-            .setType(type).setData(oldByteValue)
-            .setId(uuid).setVersionCreatedAt(versionCreatedAt)
-            .setGenerationParameters(subject.createByteStringFromGenerationParameters(type, generationParameters))
-            .build()
+        val getResponse =
+            GetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setType(type)
+                .setData(oldByteValue)
+                .setId(uuid)
+                .setVersionCreatedAt(versionCreatedAt)
+                .setGenerationParameters(subject.createByteStringFromGenerationParameters(type, generationParameters))
+                .build()
         `when`(client.getByNameRequest(CREDENTIAL_NAME, USER)).thenReturn(getResponse)
 
         val newByteValue = subject.createByteStringFromData(type, shouldntBeReturned)
         val byteGenerationParameters = subject.createByteStringFromGenerationParameters(type, generationParameters)
-        val setResponse = SetResponse.newBuilder()
-            .setName(CREDENTIAL_NAME)
-            .setVersionCreatedAt(versionCreatedAt)
-            .setType(type)
-            .setData(newByteValue)
-            .setId(uuid)
-            .build()
+        val setResponse =
+            SetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setVersionCreatedAt(versionCreatedAt)
+                .setType(type)
+                .setData(newByteValue)
+                .setId(uuid)
+                .build()
         `when`(client.setRequest(CREDENTIAL_NAME, type, newByteValue, USER, byteGenerationParameters)).thenReturn(setResponse)
 
         val rsaGenerateRequest = RsaGenerateRequest()
@@ -1132,22 +1317,29 @@ class RemoteCredentialsHandlerTest {
         generationParameters.includeSpecial = false
 
         val oldByteValue = subject.createByteStringFromData(type, shouldBeReturned)
-        val getResponse = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
-            .setType(type).setData(oldByteValue)
-            .setId(uuid).setVersionCreatedAt(versionCreatedAt)
-            .setGenerationParameters(subject.createByteStringFromGenerationParameters(type, generationParameters))
-            .build()
+        val getResponse =
+            GetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setType(type)
+                .setData(oldByteValue)
+                .setId(uuid)
+                .setVersionCreatedAt(versionCreatedAt)
+                .setGenerationParameters(subject.createByteStringFromGenerationParameters(type, generationParameters))
+                .build()
         `when`(client.getByNameRequest(CREDENTIAL_NAME, USER)).thenReturn(getResponse)
 
         val newByteValue = subject.createByteStringFromData(type, shouldntBeReturned)
         val byteGenerationParameters = subject.createByteStringFromGenerationParameters(type, generationParameters)
-        val setResponse = SetResponse.newBuilder()
-            .setName(CREDENTIAL_NAME)
-            .setVersionCreatedAt(versionCreatedAt)
-            .setType(type)
-            .setData(newByteValue)
-            .setId(uuid)
-            .build()
+        val setResponse =
+            SetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setVersionCreatedAt(versionCreatedAt)
+                .setType(type)
+                .setData(newByteValue)
+                .setId(uuid)
+                .build()
         `when`(client.setRequest(CREDENTIAL_NAME, type, newByteValue, USER, byteGenerationParameters)).thenReturn(setResponse)
 
         val userGenerateRequest = UserGenerateRequest()
@@ -1185,22 +1377,29 @@ class RemoteCredentialsHandlerTest {
         generationParameters.includeSpecial = false
 
         val oldByteValue = subject.createByteStringFromData(type, password)
-        val getResponse = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
-            .setType(type).setData(oldByteValue)
-            .setId(uuid).setVersionCreatedAt(versionCreatedAt)
-            .setGenerationParameters(subject.createByteStringFromGenerationParameters(type, generationParameters))
-            .build()
+        val getResponse =
+            GetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setType(type)
+                .setData(oldByteValue)
+                .setId(uuid)
+                .setVersionCreatedAt(versionCreatedAt)
+                .setGenerationParameters(subject.createByteStringFromGenerationParameters(type, generationParameters))
+                .build()
         `when`(client.getByNameRequest(CREDENTIAL_NAME, USER)).thenReturn(getResponse)
 
         val newByteValue = subject.createByteStringFromData(type, newPassword)
         val byteGenerationParameters = subject.createByteStringFromGenerationParameters(type, newGenerationParameters)
-        val setResponse = SetResponse.newBuilder()
-            .setName(CREDENTIAL_NAME)
-            .setVersionCreatedAt(versionCreatedAt)
-            .setType(type)
-            .setData(newByteValue)
-            .setId(uuid)
-            .build()
+        val setResponse =
+            SetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setVersionCreatedAt(versionCreatedAt)
+                .setType(type)
+                .setData(newByteValue)
+                .setId(uuid)
+                .build()
         `when`(client.setRequest(CREDENTIAL_NAME, type, newByteValue, USER, byteGenerationParameters)).thenReturn(setResponse)
 
         val passwordGenerateRequest = PasswordGenerateRequest()
@@ -1231,22 +1430,29 @@ class RemoteCredentialsHandlerTest {
         generationParameters.includeSpecial = false
 
         val oldByteValue = subject.createByteStringFromData(type, originalPassword)
-        val getResponse = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
-            .setType(type).setData(oldByteValue)
-            .setId(uuid).setVersionCreatedAt(versionCreatedAt)
-            .setGenerationParameters(subject.createByteStringFromGenerationParameters(type, generationParameters))
-            .build()
+        val getResponse =
+            GetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setType(type)
+                .setData(oldByteValue)
+                .setId(uuid)
+                .setVersionCreatedAt(versionCreatedAt)
+                .setGenerationParameters(subject.createByteStringFromGenerationParameters(type, generationParameters))
+                .build()
         `when`(client.getByNameRequest(CREDENTIAL_NAME, USER)).thenReturn(getResponse)
 
         val newByteValue = subject.createByteStringFromData(type, newPassword)
         val byteGenerationParameters = subject.createByteStringFromGenerationParameters(type, generationParameters)
-        val setResponse = SetResponse.newBuilder()
-            .setName(CREDENTIAL_NAME)
-            .setVersionCreatedAt(versionCreatedAt)
-            .setType(type)
-            .setData(newByteValue)
-            .setId(uuid)
-            .build()
+        val setResponse =
+            SetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setVersionCreatedAt(versionCreatedAt)
+                .setType(type)
+                .setData(newByteValue)
+                .setId(uuid)
+                .build()
         `when`(client.setRequest(CREDENTIAL_NAME, type, newByteValue, USER, byteGenerationParameters)).thenReturn(setResponse)
 
         val passwordGenerateRequest = PasswordGenerateRequest()
@@ -1278,11 +1484,16 @@ class RemoteCredentialsHandlerTest {
         generationParameters.includeSpecial = false
 
         val oldByteValue = subject.createByteStringFromData(type, originalPassword)
-        val getResponse = GetResponse.newBuilder().setName(CREDENTIAL_NAME)
-            .setType(type).setData(oldByteValue)
-            .setId(uuid).setVersionCreatedAt(versionCreatedAt)
-            .setGenerationParameters(subject.createByteStringFromGenerationParameters(type, generationParameters))
-            .build()
+        val getResponse =
+            GetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setType(type)
+                .setData(oldByteValue)
+                .setId(uuid)
+                .setVersionCreatedAt(versionCreatedAt)
+                .setGenerationParameters(subject.createByteStringFromGenerationParameters(type, generationParameters))
+                .build()
         `when`(client.getByNameRequest(CREDENTIAL_NAME, USER)).thenReturn(getResponse)
 
         val newGenerationParameters = StringGenerationParameters()
@@ -1294,13 +1505,15 @@ class RemoteCredentialsHandlerTest {
 
         val newByteValue = subject.createByteStringFromData(type, newPassword)
         val byteGenerationParameters = subject.createByteStringFromGenerationParameters(type, newGenerationParameters)
-        val setResponse = SetResponse.newBuilder()
-            .setName(CREDENTIAL_NAME)
-            .setVersionCreatedAt(versionCreatedAt)
-            .setType(type)
-            .setData(newByteValue)
-            .setId(uuid)
-            .build()
+        val setResponse =
+            SetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setVersionCreatedAt(versionCreatedAt)
+                .setType(type)
+                .setData(newByteValue)
+                .setId(uuid)
+                .build()
         `when`(client.setRequest(CREDENTIAL_NAME, type, newByteValue, USER, byteGenerationParameters)).thenReturn(setResponse)
 
         val passwordGenerateRequest = PasswordGenerateRequest()
@@ -1322,9 +1535,10 @@ class RemoteCredentialsHandlerTest {
         val exception = StatusRuntimeException(Status.NOT_FOUND)
         `when`(client.getByNameRequest(CREDENTIAL_NAME, USER)).thenThrow(exception)
 
-        Assertions.assertThatThrownBy {
-            subject.getCurrentCredentialVersions(CREDENTIAL_NAME)
-        }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
+        Assertions
+            .assertThatThrownBy {
+                subject.getCurrentCredentialVersions(CREDENTIAL_NAME)
+            }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
     }
 
     @Test
@@ -1333,19 +1547,21 @@ class RemoteCredentialsHandlerTest {
         val exception = StatusRuntimeException(Status.NOT_FOUND)
         `when`(client.getByIdRequest(uuid, USER)).thenThrow(exception)
 
-        Assertions.assertThatThrownBy {
-            subject.getCredentialVersionByUUID(uuid)
-        }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
+        Assertions
+            .assertThatThrownBy {
+                subject.getCredentialVersionByUUID(uuid)
+            }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
     }
 
     @Test
     fun setCredential_whenUserDoesNotHavePermission_throwsCorrectError() {
         val type = "value"
         val stringCredential = StringCredentialValue("test-value")
-        val byteValue = subject.createByteStringFromData(
-            type,
-            stringCredential,
-        )
+        val byteValue =
+            subject.createByteStringFromData(
+                type,
+                stringCredential,
+            )
         val exception = StatusRuntimeException(Status.NOT_FOUND)
         `when`(client.setRequest(CREDENTIAL_NAME, type, byteValue, USER, ByteString.EMPTY)).thenThrow(exception)
 
@@ -1354,9 +1570,10 @@ class RemoteCredentialsHandlerTest {
         request.name = CREDENTIAL_NAME
         request.type = type
 
-        Assertions.assertThatThrownBy {
-            subject.setCredential(request)
-        }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
+        Assertions
+            .assertThatThrownBy {
+                subject.setCredential(request)
+            }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
     }
 
     @Test
@@ -1364,9 +1581,10 @@ class RemoteCredentialsHandlerTest {
         val exception = StatusRuntimeException(Status.NOT_FOUND)
         `when`(client.findContainingNameRequest(CREDENTIAL_NAME, USER)).thenThrow(exception)
 
-        Assertions.assertThatThrownBy {
-            subject.findContainingName(CREDENTIAL_NAME, "365")
-        }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
+        Assertions
+            .assertThatThrownBy {
+                subject.findContainingName(CREDENTIAL_NAME, "365")
+            }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
     }
 
     @Test
@@ -1374,9 +1592,10 @@ class RemoteCredentialsHandlerTest {
         val exception = StatusRuntimeException(Status.NOT_FOUND)
         `when`(client.findStartingWithPathRequest("/", USER)).thenThrow(exception)
 
-        Assertions.assertThatThrownBy {
-            subject.findStartingWithPath("/", "365")
-        }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
+        Assertions
+            .assertThatThrownBy {
+                subject.findStartingWithPath("/", "365")
+            }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
     }
 
     @Test
@@ -1384,8 +1603,9 @@ class RemoteCredentialsHandlerTest {
         val exception = StatusRuntimeException(Status.NOT_FOUND)
         `when`(client.deleteRequest(CREDENTIAL_NAME, USER)).thenThrow(exception)
 
-        Assertions.assertThatThrownBy {
-            subject.deleteCredential(CREDENTIAL_NAME)
-        }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
+        Assertions
+            .assertThatThrownBy {
+                subject.deleteCredential(CREDENTIAL_NAME)
+            }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
     }
 }

@@ -44,12 +44,13 @@ class DefaultCertificateService(
         if (credentialValue.transitional) {
             validateNoTransitionalVersionsAlreadyExist(generateRequest.name)
         }
-        val version = credentialService
-            .save(
-                existingCredentialVersion,
-                credentialValue,
-                generateRequest,
-            ) as CertificateCredentialVersion
+        val version =
+            credentialService
+                .save(
+                    existingCredentialVersion,
+                    credentialValue,
+                    generateRequest,
+                ) as CertificateCredentialVersion
 
         if (version.isVersionTransitional) {
             createNewChildVersions(version.name!!)
@@ -57,18 +58,20 @@ class DefaultCertificateService(
         return version
     }
 
-    fun getAll(): List<Credential> {
-        return certificateDataService.findAll()
-    }
+    fun getAll(): List<Credential> = certificateDataService.findAll()
 
     fun getByName(name: String): List<Credential> {
-        val certificate = certificateDataService.findByName(name)
-            ?: throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
+        val certificate =
+            certificateDataService.findByName(name)
+                ?: throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
 
         return listOf(certificate)
     }
 
-    fun getVersions(uuid: UUID, current: Boolean): List<CredentialVersion> {
+    fun getVersions(
+        uuid: UUID,
+        current: Boolean,
+    ): List<CredentialVersion> {
         val list: List<CredentialVersion>?
         val name: String?
 
@@ -124,11 +127,12 @@ class DefaultCertificateService(
             }
     }
 
-    fun findSignedCertificates(caName: String): List<String> {
-        return credentialService.findAllCertificateCredentialsByCaName(caName)
-    }
+    fun findSignedCertificates(caName: String): List<String> = credentialService.findAllCertificateCredentialsByCaName(caName)
 
-    fun updateTransitionalVersion(certificateUuid: UUID, newTransitionalVersionUuid: UUID?): List<CredentialVersion> {
+    fun updateTransitionalVersion(
+        certificateUuid: UUID,
+        newTransitionalVersionUuid: UUID?,
+    ): List<CredentialVersion> {
         val credential = findCertificateCredential(certificateUuid)
 
         val name = credential.name
@@ -152,9 +156,13 @@ class DefaultCertificateService(
         return credentialVersions
     }
 
-    fun deleteVersion(certificateUuid: UUID, versionUuid: UUID): CertificateCredentialVersion {
-        val certificate = certificateDataService.findByUuid(certificateUuid)
-            ?: throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
+    fun deleteVersion(
+        certificateUuid: UUID,
+        versionUuid: UUID,
+    ): CertificateCredentialVersion {
+        val certificate =
+            certificateDataService.findByUuid(certificateUuid)
+                ?: throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
 
         val versionToDelete = certificateVersionDataService.findVersion(versionUuid)
 
@@ -175,21 +183,24 @@ class DefaultCertificateService(
         return versionToDelete
     }
 
-    fun findByCredentialUuid(credentialUuid: String): CertificateCredentialVersion {
-        return certificateVersionDataService.findByCredentialUUID(credentialUuid)
+    fun findByCredentialUuid(credentialUuid: String): CertificateCredentialVersion =
+        certificateVersionDataService.findByCredentialUUID(credentialUuid)
             as? CertificateCredentialVersion
             ?: throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
-    }
 
-    operator fun set(certificateUuid: UUID, value: CertificateCredentialValue?): CertificateCredentialVersion {
+    operator fun set(
+        certificateUuid: UUID,
+        value: CertificateCredentialValue?,
+    ): CertificateCredentialVersion {
         val credential = findCertificateCredential(certificateUuid)
 
         if (value?.transitional!!) {
             validateNoTransitionalVersionsAlreadyExist(credential.name)
         }
 
-        val certificateCredentialVersion = certificateCredentialFactory
-            .makeNewCredentialVersion(credential, value)
+        val certificateCredentialVersion =
+            certificateCredentialFactory
+                .makeNewCredentialVersion(credential, value)
 
         val version = credentialVersionDataService.save(certificateCredentialVersion) as CertificateCredentialVersion
 
@@ -224,19 +235,21 @@ class DefaultCertificateService(
                 trustedCa = activeWithTransitional[1] as CertificateCredentialVersion
             }
 
-            val value = CertificateCredentialValue(
-                signingCa,
-                credentialVersion?.certificate,
-                credentialVersion?.privateKey,
-                credentialVersion?.caName,
-                credentialVersion?.isCertificateAuthority ?: false,
-                credentialVersion?.isSelfSigned ?: false,
-                credentialVersion?.generated,
-                false,
-            )
+            val value =
+                CertificateCredentialValue(
+                    signingCa,
+                    credentialVersion?.certificate,
+                    credentialVersion?.privateKey,
+                    credentialVersion?.caName,
+                    credentialVersion?.isCertificateAuthority ?: false,
+                    credentialVersion?.isSelfSigned ?: false,
+                    credentialVersion?.generated,
+                    false,
+                )
 
-            val newCredentialVersion = certificateCredentialFactory
-                .makeNewCredentialVersion(credential!!, value)
+            val newCredentialVersion =
+                certificateCredentialFactory
+                    .makeNewCredentialVersion(credential!!, value)
 
             newCredentialVersion.trustedCa = trustedCa?.certificate
 
@@ -244,26 +257,28 @@ class DefaultCertificateService(
         }
     }
 
-    private fun versionDoesNotBelongToCertificate(certificate: Credential, version: CertificateCredentialVersion?): Boolean {
-        return version == null || certificate.uuid != version.credential?.uuid
-    }
+    private fun versionDoesNotBelongToCertificate(
+        certificate: Credential,
+        version: CertificateCredentialVersion?,
+    ): Boolean = version == null || certificate.uuid != version.credential?.uuid
 
-    private fun certificateHasOnlyOneVersion(certificateUuid: UUID): Boolean {
-        return certificateVersionDataService.findAllVersions(certificateUuid).size == 1
-    }
+    private fun certificateHasOnlyOneVersion(certificateUuid: UUID): Boolean =
+        certificateVersionDataService.findAllVersions(certificateUuid).size == 1
 
-    private fun findCertificateCredential(certificateUuid: UUID): Credential {
-        return certificateDataService.findByUuid(certificateUuid)
+    private fun findCertificateCredential(certificateUuid: UUID): Credential =
+        certificateDataService.findByUuid(certificateUuid)
             ?: throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
-    }
 
     private fun validateNoTransitionalVersionsAlreadyExist(name: String?) {
-        val credentialVersions = credentialService
-            .findAllByName(name!!)
+        val credentialVersions =
+            credentialService
+                .findAllByName(name!!)
 
-        val transitionalVersionsAlreadyExist = credentialVersions.stream()
-            .map { version -> version as CertificateCredentialVersion }
-            .anyMatch { version -> version.isVersionTransitional }
+        val transitionalVersionsAlreadyExist =
+            credentialVersions
+                .stream()
+                .map { version -> version as CertificateCredentialVersion }
+                .anyMatch { version -> version.isVersionTransitional }
 
         if (transitionalVersionsAlreadyExist) {
             throw ParameterizedValidationException(ErrorMessages.TOO_MANY_TRANSITIONAL_VERSIONS)

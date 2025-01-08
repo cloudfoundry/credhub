@@ -51,19 +51,22 @@ class VersionControllerTest {
     }
 
     @Test
-    fun GET__version__returns_version() {
+    fun getVersionReturnsVersion() {
         Mockito.`when`(versionProvider.currentVersion()).thenReturn("x.x.x")
-        val mvcResult = mockMvc.perform(
-            RestDocumentationRequestBuilders.get(VersionController.ENDPOINT)
-                .contentType(MediaType.APPLICATION_JSON)
-                .credHubAuthHeader(),
-        ).andExpect(MockMvcResultMatchers.status().isOk)
-            .andExpect(MockMvcResultMatchers.content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andDo(
-                MockMvcRestDocumentation.document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                ),
-            ).andReturn()
+        val mvcResult =
+            mockMvc
+                .perform(
+                    RestDocumentationRequestBuilders
+                        .get(VersionController.ENDPOINT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .credHubAuthHeader(),
+                ).andExpect(MockMvcResultMatchers.status().isOk)
+                .andExpect(MockMvcResultMatchers.content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andDo(
+                    MockMvcRestDocumentation.document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                    ),
+                ).andReturn()
 
         // language=json
         val expectedResponse =

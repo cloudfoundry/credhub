@@ -9,8 +9,9 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping(path = [KeyUsageController.ENDPOINT], produces = [MediaType.APPLICATION_JSON_UTF8_VALUE])
-class KeyUsageController(val keyUsageHandler: KeyUsageHandler) {
-
+class KeyUsageController(
+    val keyUsageHandler: KeyUsageHandler,
+) {
     companion object {
         const val ENDPOINT = "/api/v1/key-usage"
     }

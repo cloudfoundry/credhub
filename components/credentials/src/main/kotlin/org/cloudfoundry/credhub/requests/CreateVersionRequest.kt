@@ -7,7 +7,6 @@ import javax.validation.Valid
 import javax.validation.constraints.NotNull
 
 class CreateVersionRequest {
-
     @NotNull(message = ErrorMessages.MISSING_VALUE)
     @Valid
     @JsonProperty("value")
@@ -17,7 +16,7 @@ class CreateVersionRequest {
     var isTransitional: Boolean = false
 
     constructor() : super() {
-        /* this needs to be there for jackson to be happy */
+        // this needs to be there for jackson to be happy
     }
 
     constructor(value: CertificateCredentialValue, transitional: Boolean) : super() {

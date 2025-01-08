@@ -7,10 +7,12 @@ import javax.validation.ConstraintValidator
 import javax.validation.ConstraintValidatorContext
 
 class CertificateMatchesPrivateKeyValidator : ConstraintValidator<RequireCertificateMatchesPrivateKey, Any> {
-
     override fun initialize(constraintAnnotation: RequireCertificateMatchesPrivateKey?) {}
 
-    override fun isValid(value: Any, context: ConstraintValidatorContext?): Boolean {
+    override fun isValid(
+        value: Any,
+        context: ConstraintValidatorContext?,
+    ): Boolean {
         val certificateCredentialValue = value as CertificateCredentialValue
 
         if (certificateCredentialValue.certificate.isNullOrEmpty() ||

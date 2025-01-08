@@ -16,8 +16,9 @@ import org.springframework.web.bind.annotation.RestController
     path = [ManagementController.ENDPOINT],
     produces = [MediaType.APPLICATION_JSON_UTF8_VALUE],
 )
-class ManagementController(private val managementService: ManagementService) {
-
+class ManagementController(
+    private val managementService: ManagementService,
+) {
     companion object {
         const val ENDPOINT = "/management"
         private val LOGGER = LogManager.getLogger(ManagementController::class.java)
@@ -36,7 +37,9 @@ class ManagementController(private val managementService: ManagementService) {
         produces = [MediaType.APPLICATION_JSON_UTF8_VALUE],
     )
     @ResponseStatus(HttpStatus.OK)
-    fun updateManagementRegistry(@RequestBody management: Management): Management {
+    fun updateManagementRegistry(
+        @RequestBody management: Management,
+    ): Management {
         managementService.toggleReadOnlyMode(management.readOnlyMode)
 
         LOGGER.info("Setting read only mode to " + management.readOnlyMode)

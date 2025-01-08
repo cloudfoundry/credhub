@@ -7,7 +7,6 @@ import java.util.UUID
 
 @JsonAutoDetect
 class PermissionsV2View {
-
     var path: String? = null
     var operations: List<PermissionOperation>? = null
     var actor: String? = null
@@ -38,7 +37,5 @@ class PermissionsV2View {
             uuid == that.uuid
     }
 
-    override fun hashCode(): Int {
-        return Objects.hash(path, operations, actor, uuid)
-    }
+    override fun hashCode(): Int = Objects.hash(path, operations, actor, uuid)
 }

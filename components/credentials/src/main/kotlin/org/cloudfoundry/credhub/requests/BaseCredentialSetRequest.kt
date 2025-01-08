@@ -12,9 +12,16 @@ import java.util.Arrays
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type", visible = true)
 @JsonTypeIdResolver(SetRequestTypeIdResolver::class)
-@JsonSubTypes(JsonSubTypes.Type(name = "password", value = PasswordSetRequest::class), JsonSubTypes.Type(name = "value", value = ValueSetRequest::class), JsonSubTypes.Type(name = "certificate", value = CertificateSetRequest::class), JsonSubTypes.Type(name = "json", value = JsonSetRequest::class), JsonSubTypes.Type(name = "ssh", value = SshSetRequest::class), JsonSubTypes.Type(name = "rsa", value = RsaSetRequest::class), JsonSubTypes.Type(name = "user", value = UserSetRequest::class))
+@JsonSubTypes(
+    JsonSubTypes.Type(name = "password", value = PasswordSetRequest::class),
+    JsonSubTypes.Type(name = "value", value = ValueSetRequest::class),
+    JsonSubTypes.Type(name = "certificate", value = CertificateSetRequest::class),
+    JsonSubTypes.Type(name = "json", value = JsonSetRequest::class),
+    JsonSubTypes.Type(name = "ssh", value = SshSetRequest::class),
+    JsonSubTypes.Type(name = "rsa", value = RsaSetRequest::class),
+    JsonSubTypes.Type(name = "user", value = UserSetRequest::class),
+)
 abstract class BaseCredentialSetRequest<T : CredentialValue?> : BaseCredentialRequest() {
-
     @get:JsonIgnore
     abstract val credentialValue: T
 
@@ -34,7 +41,6 @@ abstract class BaseCredentialSetRequest<T : CredentialValue?> : BaseCredentialRe
         }
     }
 
-    private fun isInvalidTypeForSet(type: String): Boolean {
-        return !Arrays.asList(*CredentialType.values()).contains(CredentialType.valueOf(type.uppercase()))
-    }
+    private fun isInvalidTypeForSet(type: String): Boolean =
+        !Arrays.asList(*CredentialType.values()).contains(CredentialType.valueOf(type.uppercase()))
 }

@@ -37,28 +37,33 @@ class DefaultRegenerateHandler(
     @Value("\${security.authorization.acls.enabled}") private val enforcePermissions: Boolean,
     @Value("\${certificates.concatenate_cas:false}") private val concatenateCas: Boolean,
 ) : RegenerateHandler {
-
-    override fun handleRegenerate(credentialName: String, credentialMetadata: JsonNode?): CredentialView {
+    override fun handleRegenerate(
+        credentialName: String,
+        credentialMetadata: JsonNode?,
+    ): CredentialView {
         checkPermissionsByName(credentialName, WRITE)
 
-        val existingCredentialVersion = credentialService.findMostRecent(credentialName)
-            ?: throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
+        val existingCredentialVersion =
+            credentialService.findMostRecent(credentialName)
+                ?: throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
         if (existingCredentialVersion.getCredentialType() == "certificate") {
             val caName = (existingCredentialVersion as CertificateCredentialVersion).caName
             if (caName != null) {
                 checkPermissionsByName(caName, READ)
             }
         }
-        val generateRequest = generationRequestGenerator
-            .createGenerateRequest(existingCredentialVersion)
+        val generateRequest =
+            generationRequestGenerator
+                .createGenerateRequest(existingCredentialVersion)
         generateRequest.metadata = credentialMetadata
         val credentialValue = credentialGenerator.generate(generateRequest)
 
-        val credentialVersion = credentialService.save(
-            existingCredentialVersion,
-            credentialValue,
-            generateRequest,
-        )
+        val credentialVersion =
+            credentialService.save(
+                existingCredentialVersion,
+                credentialValue,
+                generateRequest,
+            )
 
         auditRecord.setVersion(credentialVersion)
         auditRecord.setResource(credentialVersion.credential)
@@ -83,11 +88,13 @@ class DefaultRegenerateHandler(
         if (!enforcePermissions) return
 
         checkPermissionsByName(signerName, READ)
-        credentialService.findAllCertificateCredentialsByCaName(signerName)
+        credentialService
+            .findAllCertificateCredentialsByCaName(signerName)
             .forEach {
                 checkPermissionsByName(it, WRITE)
-                val mostRecent = credentialService.findMostRecent(it)
-                    as CertificateCredentialVersion
+                val mostRecent =
+                    credentialService.findMostRecent(it)
+                        as CertificateCredentialVersion
                 val certificate = CertificateReader(mostRecent.certificate)
                 if (certificate.isCa) {
                     verifyRegeneratePermissions(it)
@@ -100,7 +107,9 @@ class DefaultRegenerateHandler(
         val certificateNames = TreeSet(String.CASE_INSENSITIVE_ORDER)
 
         certificateNames.addAll(credentialService.findAllCertificateCredentialsByCaName(signerName))
-        certificateNames.stream().map { name -> this.regenerateCertificateAndDirectChildren(name) }
+        certificateNames
+            .stream()
+            .map { name -> this.regenerateCertificateAndDirectChildren(name) }
             .forEach { results.addAll(it) }
 
         return results
@@ -109,29 +118,35 @@ class DefaultRegenerateHandler(
     private fun regenerateCertificateAndDirectChildren(credentialName: String): Set<String> {
         val results = TreeSet(String.CASE_INSENSITIVE_ORDER)
         val existingCredentialVersion = credentialService.findMostRecent(credentialName)
-        val generateRequest = generationRequestGenerator
-            .createGenerateRequest(existingCredentialVersion) as CertificateGenerateRequest
+        val generateRequest =
+            generationRequestGenerator
+                .createGenerateRequest(existingCredentialVersion) as CertificateGenerateRequest
         val newCredentialValue = credentialGenerator.generate(generateRequest)
 
         auditRecord.addVersion(existingCredentialVersion)
         auditRecord.addResource(existingCredentialVersion!!.credential)
 
-        val credentialVersion = credentialService.save(
-            existingCredentialVersion,
-            newCredentialValue,
-            generateRequest,
-        )
+        val credentialVersion =
+            credentialService.save(
+                existingCredentialVersion,
+                newCredentialValue,
+                generateRequest,
+            )
         results.add(credentialVersion.name)
 
-        val generationParameters = generateRequest
-            .generationParameters as CertificateGenerationParameters
+        val generationParameters =
+            generateRequest
+                .generationParameters as CertificateGenerationParameters
         if (generationParameters.isCa) {
             results.addAll(this.regenerateCertificatesSignedByCA(generateRequest.name!!))
         }
         return results
     }
 
-    private fun checkPermissionsByName(name: String, permissionOperation: PermissionOperation) {
+    private fun checkPermissionsByName(
+        name: String,
+        permissionOperation: PermissionOperation,
+    ) {
         if (!enforcePermissions) return
 
         if (!permissionCheckingService.hasPermission(

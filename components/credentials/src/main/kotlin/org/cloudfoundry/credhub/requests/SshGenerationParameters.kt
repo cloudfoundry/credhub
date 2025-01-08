@@ -6,7 +6,6 @@ import java.util.Objects
 
 @JsonInclude(NON_DEFAULT)
 class SshGenerationParameters : RsaSshGenerationParameters() {
-
     var sshComment: String? = ""
 
     override fun equals(other: Any?): Boolean {
@@ -22,7 +21,5 @@ class SshGenerationParameters : RsaSshGenerationParameters() {
         return sshComment == that!!.sshComment && keyLength == that.keyLength
     }
 
-    override fun hashCode(): Int {
-        return Objects.hash(sshComment, keyLength)
-    }
+    override fun hashCode(): Int = Objects.hash(sshComment, keyLength)
 }

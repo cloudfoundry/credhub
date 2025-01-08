@@ -5,9 +5,6 @@ import org.springframework.context.annotation.Configuration
 
 @Configuration
 class ManagementServiceConfiguration {
-
     @Bean
-    fun getManagementService(managementRegistry: ManagementRegistry): ManagementService {
-        return DefaultManagementService(managementRegistry)
-    }
+    fun getManagementService(managementRegistry: ManagementRegistry): ManagementService = DefaultManagementService(managementRegistry)
 }

@@ -6,7 +6,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class ExceptionHandlersTest {
-
     @Test
     fun handleNotFoundExceptionWorks() {
         val handler = ExceptionHandlers()

@@ -24,7 +24,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 
 @RunWith(SpringRunner::class)
 class ManagementControllerTest {
-
     @Rule
     @JvmField
     val restDocumentation = JUnitRestDocumentation()
@@ -41,21 +40,22 @@ class ManagementControllerTest {
     }
 
     @Test
-    fun GET__management_mode__returns_result() {
-        spyManagementService.isReadOnlyMode__returns_boolean = false
+    fun getManagementModeReturnsResult() {
+        spyManagementService.readonlymodeReturnsBoolean = false
 
-        val mvcResult = mockMvc.perform(
-            get(ManagementController.ENDPOINT)
-                .contentType(MediaType.APPLICATION_JSON)
-                .credHubAuthHeader(),
-        )
-            .andExpect(MockMvcResultMatchers.status().isOk)
-            .andExpect(MockMvcResultMatchers.content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andDo(
-                MockMvcRestDocumentation.document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                ),
-            ).andReturn()
+        val mvcResult =
+            mockMvc
+                .perform(
+                    get(ManagementController.ENDPOINT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .credHubAuthHeader(),
+                ).andExpect(MockMvcResultMatchers.status().isOk)
+                .andExpect(MockMvcResultMatchers.content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andDo(
+                    MockMvcRestDocumentation.document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                    ),
+                ).andReturn()
 
         val expectedResponseBody =
             """
@@ -68,33 +68,35 @@ class ManagementControllerTest {
     }
 
     @Test
-    fun POST__management_mode__returns_result() {
-        val mvcResult = mockMvc.perform(
-            post(ManagementController.ENDPOINT)
-                .contentType(MediaType.APPLICATION_JSON)
-                .credHubAuthHeader()
-                .content(
-                    """
-                        {
-                            "read_only_mode": true
-                        }
-                    """.trimIndent(),
-                ),
-        )
-            .andExpect(MockMvcResultMatchers.status().isOk)
-            .andExpect(MockMvcResultMatchers.content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andDo(
-                MockMvcRestDocumentation.document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    requestFields(
-                        PayloadDocumentation.fieldWithPath("read_only_mode")
-                            .description("Enables / disables read only mode for the entire API.")
-                            .type(JsonFieldType.BOOLEAN),
+    fun postManagementModeReturnsResult() {
+        val mvcResult =
+            mockMvc
+                .perform(
+                    post(ManagementController.ENDPOINT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .credHubAuthHeader()
+                        .content(
+                            """
+                            {
+                                "read_only_mode": true
+                            }
+                            """.trimIndent(),
+                        ),
+                ).andExpect(MockMvcResultMatchers.status().isOk)
+                .andExpect(MockMvcResultMatchers.content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andDo(
+                    MockMvcRestDocumentation.document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                        requestFields(
+                            PayloadDocumentation
+                                .fieldWithPath("read_only_mode")
+                                .description("Enables / disables read only mode for the entire API.")
+                                .type(JsonFieldType.BOOLEAN),
+                        ),
                     ),
-                ),
-            ).andReturn()
+                ).andReturn()
 
-        assertThat(spyManagementService.toggleReadOnlyMode__calledWith_shouldUseReadOnlyMode).isEqualTo(true)
+        assertThat(spyManagementService.togglereadonlymodeCalledwithShouldusereadonlymode).isEqualTo(true)
 
         val expectedResponseBody =
             """

@@ -21,38 +21,43 @@ class MockMvcFactory {
     companion object {
         private fun getPreconfiguredJacksonConverter(): MappingJackson2HttpMessageConverter {
             val converter = MappingJackson2HttpMessageConverter()
-            val objectMapper = ObjectMapper()
-                .registerModule(TimeModuleFactory.createTimeModule())
-                .registerKotlinModule()
-                .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+            val objectMapper =
+                ObjectMapper()
+                    .registerModule(TimeModuleFactory.createTimeModule())
+                    .registerKotlinModule()
+                    .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
 
             converter.objectMapper = objectMapper
             return converter
         }
 
         @JvmStatic
-        fun newSpringRestDocMockMvc(controller: Any, restDocumentation: JUnitRestDocumentation, disableAuth: Boolean = false): MockMvc {
-            val mockMvcBuilder = MockMvcBuilders
-                .standaloneSetup(controller)
-                .setMessageConverters(getPreconfiguredJacksonConverter())
-                .alwaysDo<StandaloneMockMvcBuilder>(print())
-                .apply<StandaloneMockMvcBuilder>(
-                    documentationConfiguration(restDocumentation)
-                        .uris()
-                        .withScheme("https")
-                        .withHost("example.com")
-                        .withPort(443)
-                        .and()
-                        .snippets()
-                        .withDefaults(
-                            curlRequest(),
-                            httpRequest(),
-                            httpResponse(),
-                        )
-                        .and()
-                        .operationPreprocessors()
-                        .withResponseDefaults(prettyPrint()),
-                )
+        fun newSpringRestDocMockMvc(
+            controller: Any,
+            restDocumentation: JUnitRestDocumentation,
+            disableAuth: Boolean = false,
+        ): MockMvc {
+            val mockMvcBuilder =
+                MockMvcBuilders
+                    .standaloneSetup(controller)
+                    .setMessageConverters(getPreconfiguredJacksonConverter())
+                    .alwaysDo<StandaloneMockMvcBuilder>(print())
+                    .apply<StandaloneMockMvcBuilder>(
+                        documentationConfiguration(restDocumentation)
+                            .uris()
+                            .withScheme("https")
+                            .withHost("example.com")
+                            .withPort(443)
+                            .and()
+                            .snippets()
+                            .withDefaults(
+                                curlRequest(),
+                                httpRequest(),
+                                httpResponse(),
+                            ).and()
+                            .operationPreprocessors()
+                            .withResponseDefaults(prettyPrint()),
+                    )
 
             if (!disableAuth) {
                 mockMvcBuilder.apply<StandaloneMockMvcBuilder>(springSecurity(FakeOauthTokenFilter()))

@@ -25,27 +25,27 @@ import org.springframework.security.web.authentication.preauth.x509.X509Authenti
 @Configuration
 @EnableResourceServer
 @EnableWebSecurity
-class AuthConfiguration @Autowired
-internal constructor(
-    private val resourceServerProperties: ResourceServerProperties,
-    private val oAuth2AuthenticationExceptionHandler: OAuth2AuthenticationExceptionHandler,
-    private val preAuthenticationFailureFilter: PreAuthenticationFailureFilter,
-    private val oAuth2ExtraValidationFilter: OAuth2ExtraValidationFilter,
-    private val actuatorPortFilter: ActuatorPortFilter,
-) : ResourceServerConfigurerAdapter() {
+class AuthConfiguration
+    @Autowired
+    internal constructor(
+        private val resourceServerProperties: ResourceServerProperties,
+        private val oAuth2AuthenticationExceptionHandler: OAuth2AuthenticationExceptionHandler,
+        private val preAuthenticationFailureFilter: PreAuthenticationFailureFilter,
+        private val oAuth2ExtraValidationFilter: OAuth2ExtraValidationFilter,
+        private val actuatorPortFilter: ActuatorPortFilter,
+    ) : ResourceServerConfigurerAdapter() {
+        val preAuthenticatedAuthenticationProvider: PreAuthenticatedAuthenticationProvider
+            @Bean
+            get() = X509AuthenticationProvider()
 
-    val preAuthenticatedAuthenticationProvider: PreAuthenticatedAuthenticationProvider
-        @Bean
-        get() = X509AuthenticationProvider()
+        override fun configure(resources: ResourceServerSecurityConfigurer) {
+            resources.resourceId(resourceServerProperties.resourceId)
+            resources.authenticationEntryPoint(oAuth2AuthenticationExceptionHandler)
+            resources.stateless(false)
+        }
 
-    override fun configure(resources: ResourceServerSecurityConfigurer) {
-        resources.resourceId(resourceServerProperties.resourceId)
-        resources.authenticationEntryPoint(oAuth2AuthenticationExceptionHandler)
-        resources.stateless(false)
-    }
-
-    @Throws(Exception::class)
-    override fun configure(http: HttpSecurity) {
+        @Throws(Exception::class)
+        override fun configure(http: HttpSecurity) {
         /*
       Even though the configuration is non order specific, it's ordered here so one can understand
       the flow of operations. Before the Authenticate Override can be called in the http filter
@@ -55,44 +55,51 @@ internal constructor(
       The aggregate of all this is consumed in the final .access() method.
          */
 
-        http.x509()
-            .subjectPrincipalRegex(VALID_MTLS_ID)
-            .userDetailsService(mtlsSUserDetailsService())
-            .withObjectPostProcessor(object : ObjectPostProcessor<X509AuthenticationFilter> {
-                override fun <O : X509AuthenticationFilter> postProcess(filter: O): O {
-                    filter.setContinueFilterChainOnUnsuccessfulAuthentication(false)
-                    return filter
-                }
-            })
+            http
+                .x509()
+                .subjectPrincipalRegex(VALID_MTLS_ID)
+                .userDetailsService(mtlsSUserDetailsService())
+                .withObjectPostProcessor(
+                    object : ObjectPostProcessor<X509AuthenticationFilter> {
+                        override fun <O : X509AuthenticationFilter> postProcess(filter: O): O {
+                            filter.setContinueFilterChainOnUnsuccessfulAuthentication(false)
+                            return filter
+                        }
+                    },
+                )
 
-        http.addFilterBefore(actuatorPortFilter, X509AuthenticationFilter::class.java)
-            .addFilterAfter(preAuthenticationFailureFilter, actuatorPortFilter.javaClass)
-            .addFilterAfter(oAuth2ExtraValidationFilter, preAuthenticationFailureFilter.javaClass)
-            .authenticationProvider(preAuthenticatedAuthenticationProvider)
+            http
+                .addFilterBefore(actuatorPortFilter, X509AuthenticationFilter::class.java)
+                .addFilterAfter(preAuthenticationFailureFilter, actuatorPortFilter.javaClass)
+                .addFilterAfter(oAuth2ExtraValidationFilter, preAuthenticationFailureFilter.javaClass)
+                .authenticationProvider(preAuthenticatedAuthenticationProvider)
 
-        http
-            .authorizeRequests()
-            .antMatchers("/info").permitAll()
-            .antMatchers("/docs/index.html").permitAll()
-            .antMatchers("/health").permitAll()
-            .antMatchers("/management").permitAll()
-            .antMatchers("**")
-            .access(
-                String.format(
-                    "hasRole('%s') " + "or (#oauth2.hasScope('credhub.read') and #oauth2.hasScope('credhub.write'))",
-                    X509AuthenticationProvider.MTLS_USER,
-                ),
-            )
+            http
+                .authorizeRequests()
+                .antMatchers("/info")
+                .permitAll()
+                .antMatchers("/docs/index.html")
+                .permitAll()
+                .antMatchers("/health")
+                .permitAll()
+                .antMatchers("/management")
+                .permitAll()
+                .antMatchers("**")
+                .access(
+                    String.format(
+                        "hasRole('%s') " + "or (#oauth2.hasScope('credhub.read') and #oauth2.hasScope('credhub.write'))",
+                        X509AuthenticationProvider.MTLS_USER,
+                    ),
+                )
 
-        http.httpBasic().disable()
+            http.httpBasic().disable()
+        }
+
+        private fun mtlsSUserDetailsService(): UserDetailsService =
+            UserDetailsService { username -> User(username, "", AuthorityUtils.NO_AUTHORITIES) }
+
+        companion object {
+            // Only valid for v4 UUID by design.
+            private val VALID_MTLS_ID = "\\bOU=(app:[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[a-f0-9]{4}-[a-f0-9]{12})\\b"
+        }
     }
-
-    private fun mtlsSUserDetailsService(): UserDetailsService {
-        return UserDetailsService { username -> User(username, "", AuthorityUtils.NO_AUTHORITIES) }
-    }
-
-    companion object {
-        // Only valid for v4 UUID by design.
-        private val VALID_MTLS_ID = "\\bOU=(app:[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[a-f0-9]{4}-[a-f0-9]{12})\\b"
-    }
-}

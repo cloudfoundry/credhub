@@ -4,12 +4,23 @@ import org.cloudfoundry.credhub.PermissionOperation
 import java.util.UUID
 
 interface PermissionCheckingService {
+    fun hasPermission(
+        user: String,
+        credentialName: String,
+        permission: PermissionOperation,
+    ): Boolean
 
-    fun hasPermission(user: String, credentialName: String, permission: PermissionOperation): Boolean
+    fun hasPermission(
+        user: String,
+        permissionGuid: UUID,
+        permission: PermissionOperation,
+    ): Boolean
 
-    fun hasPermission(user: String, permissionGuid: UUID, permission: PermissionOperation): Boolean
-
-    fun hasPermissions(user: String, path: String, permissions: List<PermissionOperation>): Boolean
+    fun hasPermissions(
+        user: String,
+        path: String,
+        permissions: List<PermissionOperation>,
+    ): Boolean
 
     fun userAllowedToOperateOnActor(actor: String?): Boolean
 

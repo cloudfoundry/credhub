@@ -8,7 +8,10 @@ import java.io.IOException
 
 class EmptyStringToNull : JsonDeserializer<String>() {
     @Throws(IOException::class)
-    override fun deserialize(jsonParser: JsonParser, context: DeserializationContext): String? {
+    override fun deserialize(
+        jsonParser: JsonParser,
+        context: DeserializationContext,
+    ): String? {
         val node = jsonParser.readValueAsTree<JsonNode>()
         if (node.asText().isEmpty()) {
             return null

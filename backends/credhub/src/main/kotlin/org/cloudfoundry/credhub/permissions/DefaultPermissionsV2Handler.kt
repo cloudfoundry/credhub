@@ -16,7 +16,6 @@ import java.util.UUID
 class DefaultPermissionsV2Handler(
     private val permissionService: PermissionService,
 ) : PermissionsV2Handler {
-
     companion object {
         const val INVALID_NUMBER_OF_PERMISSIONS = "Can set one permission per call"
     }
@@ -39,11 +38,12 @@ class DefaultPermissionsV2Handler(
     }
 
     override fun getPermissions(guid: String): PermissionsV2View {
-        val uuid = try {
-            UUID.fromString(guid)
-        } catch (e: IllegalArgumentException) {
-            throw EntryNotFoundException(ErrorMessages.Permissions.INVALID_ACCESS)
-        }
+        val uuid =
+            try {
+                UUID.fromString(guid)
+            } catch (e: IllegalArgumentException) {
+                throw EntryNotFoundException(ErrorMessages.Permissions.INVALID_ACCESS)
+            }
         val permission = permissionService.getPermissions(uuid)
         return PermissionsV2View(
             permission?.path,
@@ -53,7 +53,10 @@ class DefaultPermissionsV2Handler(
         )
     }
 
-    override fun putPermissions(guid: String, permissionsRequest: PermissionsV2Request): PermissionsV2View {
+    override fun putPermissions(
+        guid: String,
+        permissionsRequest: PermissionsV2Request,
+    ): PermissionsV2View {
         val permission = permissionService.putPermissions(guid, permissionsRequest)
         return PermissionsV2View(
             permission.path,
@@ -63,7 +66,10 @@ class DefaultPermissionsV2Handler(
         )
     }
 
-    override fun patchPermissions(guid: String, operations: MutableList<PermissionOperation>?): PermissionsV2View {
+    override fun patchPermissions(
+        guid: String,
+        operations: MutableList<PermissionOperation>?,
+    ): PermissionsV2View {
         val permission = permissionService.patchPermissions(guid, operations)
         return PermissionsV2View(
             permission.path,
@@ -93,9 +99,13 @@ class DefaultPermissionsV2Handler(
         )
     }
 
-    override fun findByPathAndActor(path: String, actor: String): PermissionsV2View {
-        val permissionData = permissionService.findByPathAndActor(path, actor)
-            ?: throw EntryNotFoundException(ErrorMessages.Permissions.INVALID_ACCESS)
+    override fun findByPathAndActor(
+        path: String,
+        actor: String,
+    ): PermissionsV2View {
+        val permissionData =
+            permissionService.findByPathAndActor(path, actor)
+                ?: throw EntryNotFoundException(ErrorMessages.Permissions.INVALID_ACCESS)
 
         return PermissionsV2View(
             permissionData.path,

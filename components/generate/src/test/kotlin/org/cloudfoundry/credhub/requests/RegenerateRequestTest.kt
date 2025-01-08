@@ -14,11 +14,15 @@ import javax.validation.ConstraintViolation
 class RegenerateRequestTest {
     @Test
     fun whenNameIsMissing__isInvalid() {
-        val violations = deserializeAndValidate<RegenerateRequest>(
-            "{}",
-            RegenerateRequest::class.java,
-        )
+        val violations =
+            deserializeAndValidate<RegenerateRequest>(
+                "{}",
+                RegenerateRequest::class.java,
+            )
 
-        MatcherAssert.assertThat<Set<ConstraintViolation<RegenerateRequest>>>(violations, Matchers.contains(hasViolationWithMessage(ErrorMessages.MISSING_NAME)))
+        MatcherAssert.assertThat<Set<ConstraintViolation<RegenerateRequest>>>(
+            violations,
+            Matchers.contains(hasViolationWithMessage(ErrorMessages.MISSING_NAME)),
+        )
     }
 }

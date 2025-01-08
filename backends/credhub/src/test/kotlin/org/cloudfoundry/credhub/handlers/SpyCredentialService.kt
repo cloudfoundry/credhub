@@ -9,8 +9,11 @@ import org.cloudfoundry.credhub.views.FindCredentialResult
 import java.util.UUID
 
 class SpyCredentialService : CredentialService {
-
-    override fun save(existingCredentialVersion: CredentialVersion?, credentialValue: CredentialValue?, credentialRequest: BaseCredentialRequest): CredentialVersion {
+    override fun save(
+        existingCredentialVersion: CredentialVersion?,
+        credentialValue: CredentialValue?,
+        credentialRequest: BaseCredentialRequest,
+    ): CredentialVersion {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
@@ -22,7 +25,10 @@ class SpyCredentialService : CredentialService {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun findNByName(credentialName: String, numberOfVersions: Int): List<CredentialVersion> {
+    override fun findNByName(
+        credentialName: String,
+        numberOfVersions: Int,
+    ): List<CredentialVersion> {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
@@ -42,18 +48,25 @@ class SpyCredentialService : CredentialService {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun findStartingWithPath(path: String, expiresWithinDays: String): List<FindCredentialResult> {
+    override fun findStartingWithPath(
+        path: String,
+        expiresWithinDays: String,
+    ): List<FindCredentialResult> {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun findContainingName(name: String, expiresWithinDays: String): List<FindCredentialResult> {
+    override fun findContainingName(
+        name: String,
+        expiresWithinDays: String,
+    ): List<FindCredentialResult> {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
-    lateinit var findMostRecent__calledWith_credentialName: String
-    var findMostRecent__returns_credentialVersion: CredentialVersion? = null
+    lateinit var findmostrecentCalledwithCredentialname: String
+    var findmostrecentReturnsCredentialversion: CredentialVersion? = null
+
     override fun findMostRecent(credentialName: String): CredentialVersion? {
-        findMostRecent__calledWith_credentialName = credentialName
-        return findMostRecent__returns_credentialVersion
+        findmostrecentCalledwithCredentialname = credentialName
+        return findmostrecentReturnsCredentialversion
     }
 }

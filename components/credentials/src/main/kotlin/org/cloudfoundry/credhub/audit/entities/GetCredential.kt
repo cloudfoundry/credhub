@@ -37,11 +37,7 @@ class GetCredential : RequestDetails {
             .isEquals
     }
 
-    override fun hashCode(): Int {
-        return Objects.hash(name, versions, current)
-    }
+    override fun hashCode(): Int = Objects.hash(name, versions, current)
 
-    override fun operation(): OperationDeviceAction {
-        return OperationDeviceAction.GET
-    }
+    override fun operation(): OperationDeviceAction = OperationDeviceAction.GET
 }

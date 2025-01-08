@@ -12,7 +12,6 @@ import java.util.Arrays
 
 @RunWith(JUnit4::class)
 class PermissionDataTest {
-
     private var permissionData: PermissionData? = null
 
     @Before
@@ -28,7 +27,15 @@ class PermissionDataTest {
         assertFalse(permissionData!!.hasPermission(PermissionOperation.DELETE))
         assertFalse(permissionData!!.hasPermission(PermissionOperation.READ_ACL))
         assertFalse(permissionData!!.hasPermission(PermissionOperation.WRITE_ACL))
-        permissionData!!.enableOperations(Arrays.asList(PermissionOperation.READ, PermissionOperation.WRITE, PermissionOperation.DELETE, PermissionOperation.READ_ACL, PermissionOperation.WRITE_ACL))
+        permissionData!!.enableOperations(
+            Arrays.asList(
+                PermissionOperation.READ,
+                PermissionOperation.WRITE,
+                PermissionOperation.DELETE,
+                PermissionOperation.READ_ACL,
+                PermissionOperation.WRITE_ACL,
+            ),
+        )
         assertTrue(permissionData!!.hasPermission(PermissionOperation.READ))
         assertTrue(permissionData!!.hasPermission(PermissionOperation.WRITE))
         assertTrue(permissionData!!.hasPermission(PermissionOperation.DELETE))

@@ -1,6 +1,8 @@
 package org.cloudfoundry.credhub.constants
 
-enum class CredentialType private constructor(type: String) {
+enum class CredentialType private constructor(
+    type: String,
+) {
     PASSWORD("password"),
     CERTIFICATE("certificate"),
     VALUE("value"),
@@ -17,14 +19,13 @@ enum class CredentialType private constructor(type: String) {
     }
 
     companion object {
-        fun generatableCredentialTypes(): List<CredentialType> {
-            return listOf(
+        fun generatableCredentialTypes(): List<CredentialType> =
+            listOf(
                 PASSWORD,
                 CERTIFICATE,
                 USER,
                 RSA,
                 SSH,
             )
-        }
     }
 }

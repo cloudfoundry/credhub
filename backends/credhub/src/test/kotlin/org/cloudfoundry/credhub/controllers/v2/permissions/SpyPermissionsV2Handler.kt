@@ -10,53 +10,68 @@ class SpyPermissionsV2Handler : PermissionsV2Handler {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
-    lateinit var getPermissions__calledWith_Guid: String
-    lateinit var getPermissionByGuid__returns: PermissionsV2View
+    lateinit var permissionsCalledwithGuid: String
+    lateinit var permissionbyguidReturns: PermissionsV2View
+
     override fun getPermissions(guid: String): PermissionsV2View {
-        getPermissions__calledWith_Guid = guid
-        return getPermissionByGuid__returns
+        permissionsCalledwithGuid = guid
+        return permissionbyguidReturns
     }
 
-    lateinit var putPermissions__calledWith_Guid: String
-    lateinit var putPermissions__calledWith_PermissionsRequest: PermissionsV2Request
-    lateinit var putPermissions__returns: PermissionsV2View
-    override fun putPermissions(guid: String, permissionsRequest: PermissionsV2Request): PermissionsV2View {
-        putPermissions__calledWith_Guid = guid
-        putPermissions__calledWith_PermissionsRequest = permissionsRequest
-        return putPermissions__returns
+    lateinit var putpermissionsCalledwithGuid: String
+    lateinit var putpermissionsCalledwithPermissionsrequest: PermissionsV2Request
+    lateinit var putpermissionsReturns: PermissionsV2View
+
+    override fun putPermissions(
+        guid: String,
+        permissionsRequest: PermissionsV2Request,
+    ): PermissionsV2View {
+        putpermissionsCalledwithGuid = guid
+        putpermissionsCalledwithPermissionsrequest = permissionsRequest
+        return putpermissionsReturns
     }
 
-    lateinit var patchPermissions__calledWith_Guid: String
-    lateinit var patchPermissions__calledWith_Operations: List<PermissionOperation>
-    lateinit var patchPermissions__returns: PermissionsV2View
-    override fun patchPermissions(guid: String, operations: MutableList<PermissionOperation>?): PermissionsV2View {
-        patchPermissions__calledWith_Guid = guid
+    lateinit var patchpermissionsCalledwithGuid: String
+    lateinit var patchpermissionsCalledwithOperations: List<PermissionOperation>
+    lateinit var patchpermissionsReturns: PermissionsV2View
+
+    override fun patchPermissions(
+        guid: String,
+        operations: MutableList<PermissionOperation>?,
+    ): PermissionsV2View {
+        patchpermissionsCalledwithGuid = guid
         if (operations != null) {
-            patchPermissions__calledWith_Operations = operations
+            patchpermissionsCalledwithOperations = operations
         }
-        return patchPermissions__returns
+        return patchpermissionsReturns
     }
 
-    lateinit var writeV2Permissions__calledWith_PermissionRequest: PermissionsV2Request
-    lateinit var writeV2Permissions__returns: PermissionsV2View
+    lateinit var writev2permissionsCalledwithPermissionrequest: PermissionsV2Request
+    lateinit var writev2permissionsReturns: PermissionsV2View
+
     override fun writeV2Permissions(permissionsRequest: PermissionsV2Request): PermissionsV2View {
-        writeV2Permissions__calledWith_PermissionRequest = permissionsRequest
-        return writeV2Permissions__returns
+        writev2permissionsCalledwithPermissionrequest = permissionsRequest
+        return writev2permissionsReturns
     }
 
-    lateinit var deletePermissions__calledWith_Guid: String
-    lateinit var deletePermissions__returns: PermissionsV2View
+    lateinit var deletepermissionsCalledwithGuid: String
+    lateinit var deletepermissionsReturns: PermissionsV2View
+
     override fun deletePermissions(guid: String): PermissionsV2View {
-        deletePermissions__calledWith_Guid = guid
-        return deletePermissions__returns
+        deletepermissionsCalledwithGuid = guid
+        return deletepermissionsReturns
     }
 
-    lateinit var findByPathAndActor__calledWith_Path: String
-    lateinit var findByPathAndActor__calledWith_Actor: String
-    lateinit var findByPathAndActor__returns: PermissionsV2View
-    override fun findByPathAndActor(path: String, actor: String): PermissionsV2View {
-        findByPathAndActor__calledWith_Path = path
-        findByPathAndActor__calledWith_Actor = actor
-        return findByPathAndActor__returns
+    lateinit var findbypathandactorCalledwithPath: String
+    lateinit var findbypathandactorCalledwithActor: String
+    lateinit var findbypathandactorReturns: PermissionsV2View
+
+    override fun findByPathAndActor(
+        path: String,
+        actor: String,
+    ): PermissionsV2View {
+        findbypathandactorCalledwithPath = path
+        findbypathandactorCalledwithActor = actor
+        return findbypathandactorReturns
     }
 }

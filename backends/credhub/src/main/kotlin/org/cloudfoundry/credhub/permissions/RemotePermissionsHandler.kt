@@ -23,7 +23,6 @@ class RemotePermissionsHandler(
     private val userContextHolder: UserContextHolder,
     private val client: RemoteBackendClient,
 ) : PermissionsV2Handler {
-
     override fun getPermissions(guid: String): PermissionsV2View {
         val response: PermissionsResponse
 
@@ -37,13 +36,17 @@ class RemotePermissionsHandler(
         return PermissionsV2View(response.path, responseOperations, response.actor, UUID.fromString(response.uuid))
     }
 
-    override fun putPermissions(guid: String, permissionsRequest: PermissionsV2Request): PermissionsV2View {
+    override fun putPermissions(
+        guid: String,
+        permissionsRequest: PermissionsV2Request,
+    ): PermissionsV2View {
         val requester = userContextHolder.userContext?.actor
         val operationStrings = permissionsRequest.operations.map { o -> o.operation }.toMutableList()
 
         val response: PermissionsResponse
         try {
-            response = client.putPermissionRequest(guid, permissionsRequest.getPath(), permissionsRequest.actor, operationStrings, requester!!)
+            response =
+                client.putPermissionRequest(guid, permissionsRequest.getPath(), permissionsRequest.actor, operationStrings, requester!!)
         } catch (e: StatusRuntimeException) {
             throw handleException(e)
         }
@@ -52,7 +55,10 @@ class RemotePermissionsHandler(
         return PermissionsV2View(response.path, responseOperations, response.actor, UUID.fromString(response.uuid))
     }
 
-    override fun patchPermissions(guid: String, operations: MutableList<PermissionOperation>?): PermissionsV2View {
+    override fun patchPermissions(
+        guid: String,
+        operations: MutableList<PermissionOperation>?,
+    ): PermissionsV2View {
         val requester = userContextHolder.userContext?.actor!!
         val operationStrings = operations?.map { o -> o.operation }?.toMutableList()
 
@@ -99,7 +105,10 @@ class RemotePermissionsHandler(
         return PermissionsV2View(response.path, responseOperations, response.actor, UUID.fromString(response.uuid))
     }
 
-    override fun findByPathAndActor(path: String, actor: String): PermissionsV2View {
+    override fun findByPathAndActor(
+        path: String,
+        actor: String,
+    ): PermissionsV2View {
         val response: PermissionsResponse
 
         try {

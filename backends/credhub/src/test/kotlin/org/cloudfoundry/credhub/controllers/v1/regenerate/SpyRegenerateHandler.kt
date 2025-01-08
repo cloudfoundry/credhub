@@ -6,22 +6,26 @@ import org.cloudfoundry.credhub.views.BulkRegenerateResults
 import org.cloudfoundry.credhub.views.CredentialView
 
 class SpyRegenerateHandler : RegenerateHandler {
+    var handleRegenerateCalledWithCredentialName: String? = null
+    var handleRegenerateCalledWithCredentialMetadata: JsonNode? = null
+    lateinit var handleregenerateReturnsCredentialview: CredentialView
 
-    var handleRegenerate__calledWith_credentialName: String? = null
-    var handleRegenerate__calledWith_credentialMetadata: JsonNode? = null
-    lateinit var handleRegenerate__returns_credentialView: CredentialView
-    override fun handleRegenerate(credentialName: String, credentialMetadata: JsonNode?): CredentialView {
-        handleRegenerate__calledWith_credentialName = credentialName
-        handleRegenerate__calledWith_credentialMetadata = credentialMetadata
+    override fun handleRegenerate(
+        credentialName: String,
+        credentialMetadata: JsonNode?,
+    ): CredentialView {
+        handleRegenerateCalledWithCredentialName = credentialName
+        handleRegenerateCalledWithCredentialMetadata = credentialMetadata
 
-        return handleRegenerate__returns_credentialView
+        return handleregenerateReturnsCredentialview
     }
 
-    var handleBulkRegenerate__calledWith_signerName: String? = null
-    lateinit var handleBulkRegenerate__returns_bulkRegenerateResults: BulkRegenerateResults
-    override fun handleBulkRegenerate(signerName: String): BulkRegenerateResults {
-        handleBulkRegenerate__calledWith_signerName = signerName
+    var handleBulkRegenerateCalledWithSignerName: String? = null
+    lateinit var handleBulkRegenerateReturnsBulkRegenerateResults: BulkRegenerateResults
 
-        return handleBulkRegenerate__returns_bulkRegenerateResults
+    override fun handleBulkRegenerate(signerName: String): BulkRegenerateResults {
+        handleBulkRegenerateCalledWithSignerName = signerName
+
+        return handleBulkRegenerateReturnsBulkRegenerateResults
     }
 }

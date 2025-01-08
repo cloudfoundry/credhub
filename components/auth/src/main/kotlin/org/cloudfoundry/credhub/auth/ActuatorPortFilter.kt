@@ -12,12 +12,15 @@ import javax.servlet.http.HttpServletResponse
 
 @Component
 class ActuatorPortFilter : OncePerRequestFilter() {
-
     @Value("\${management.server.port}")
     private val port: Int? = null
 
     @Throws(ServletException::class, IOException::class)
-    override fun doFilterInternal(request: HttpServletRequest, response: HttpServletResponse, filterChain: FilterChain) {
+    override fun doFilterInternal(
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+        filterChain: FilterChain,
+    ) {
         if (request.localPort == port && request.requestURI != "/health") {
             response.status = HttpStatus.NOT_FOUND.value()
         } else {

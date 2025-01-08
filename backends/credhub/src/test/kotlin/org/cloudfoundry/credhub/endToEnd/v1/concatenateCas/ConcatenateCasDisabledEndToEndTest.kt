@@ -31,7 +31,6 @@ import org.springframework.web.context.WebApplicationContext
 @Transactional
 @TestPropertySource(properties = ["certificates.concatenate_cas=false"])
 class ConcatenateCasDisabledEndToEndTest {
-
     @Autowired
     private lateinit var webApplicationContext: WebApplicationContext
 
@@ -43,10 +42,11 @@ class ConcatenateCasDisabledEndToEndTest {
     @Before
     fun setUp() {
         BouncyCastleFipsConfigurer.configure()
-        mockMvc = MockMvcBuilders
-            .webAppContextSetup(webApplicationContext)
-            .apply<DefaultMockMvcBuilder>(SecurityMockMvcConfigurers.springSecurity())
-            .build()
+        mockMvc =
+            MockMvcBuilders
+                .webAppContextSetup(webApplicationContext)
+                .apply<DefaultMockMvcBuilder>(SecurityMockMvcConfigurers.springSecurity())
+                .build()
     }
 
     @Test

@@ -4,7 +4,6 @@ class CertificateStringConstants {
     private constructor()
 
     companion object {
-
         /**
          * .
          * openssl x509 -in <(pbpaste) -text -noout
@@ -45,7 +44,7 @@ class CertificateStringConstants {
                 "QTHPRc0mETzHET0uL+9UpaUxglRPzuxVhyIYimXSiPQlk8K43gmXM8QKi85eo8xD\n" +
                 "W5kgC9Eel5YQcs5wUS/1aW72x2D+7DeGxLjFwm0Sy9S8hfI=\n" +
                 "-----END CERTIFICATE-----"
-            )
+        )
 
         /**
          * Version: 3 (0x2)
@@ -84,7 +83,7 @@ class CertificateStringConstants {
                 "OgN3QbqNnD+GGJnsddnTY2o900nXOki+v4tcnRTlfhnkWIXn3kF+ZgmacUQDdq+G\n" +
                 "zNIcsYa7oxP46A==\n" +
                 "-----END CERTIFICATE-----"
-            )
+        )
 
         /**
          * Version: 3 (0x2)
@@ -123,7 +122,7 @@ class CertificateStringConstants {
                 "Pswa7CjG14hVnFYnj3ISDrXetgwX3Gw4kbwFdWERzDrYvoNzdguKYkrop+mUGqpy\n" +
                 "OeRYsf1HBP8d0w==\n" +
                 "-----END CERTIFICATE-----"
-            )
+        )
 
         /**
          * Version: 3 (0x2)
@@ -162,7 +161,7 @@ class CertificateStringConstants {
                 "fpgSc+FTem/FObrbCUDruX3hCVTQY3Gn1YiSvblPRay29eeR4JeIyPYnzWW06zN8\n" +
                 "IMg=\n" +
                 "-----END CERTIFICATE-----"
-            )
+        )
 
         /**
          * Version: 3 (0x2)
@@ -199,7 +198,7 @@ class CertificateStringConstants {
                 "ZC7Tw5ZqvuWhXUIkFmAqkTW2CFI8zqSbpLjTHvjxP14Ck9zSuV4oojhvtfjA/wOz\n" +
                 "mAeI1w==\n" +
                 "-----END CERTIFICATE-----"
-            )
+        )
 
         /**
          * This cert appears to be self-signed (Issuer DN == Subject DN) but is actually
@@ -234,7 +233,7 @@ class CertificateStringConstants {
                 "snC8luPGbSwo31gKr9wFxv78GJcswIGt6fi4CxV7eGWn0p9EY4NsR8jdatLd/eKD\n" +
                 "qA2eKfjSi415xgI1eOf89HvoYKlBGYuFxXB3YRkJfpS+khFeu7HTsyj2\n" +
                 "-----END CERTIFICATE-----"
-            )
+        )
 
         /**
          * Version: 3 (0x2)
@@ -268,7 +267,7 @@ class CertificateStringConstants {
                 "iSIanWI+olDxF/IRhnRCU1HmvAImyvDd7CEjI0Y+HSXqZfc+c1RvfbtoR9fS4n/v\n" +
                 "6qAlCDS+r+SU+v19UsFW8cC31UyWQwrpaAMYPYhwqK1Z4nPN+AgAGGY=\n" +
                 "-----END CERTIFICATE-----"
-            )
+        )
 
         /**
          * //.
@@ -300,7 +299,7 @@ class CertificateStringConstants {
                 "+NHBdPGyKlnRkvI4xIodUXfn7FrS3KWL8k9NzL5FGXCvzXoGZKBvcJuu0/2XXl+3\n" +
                 "Jykws+qOGWF351JZ\n" +
                 "-----END CERTIFICATE-----"
-            )
+        )
 
         /**
          * Version: 3 (0x2)
@@ -346,7 +345,7 @@ class CertificateStringConstants {
                 "wjh44yBrxcRGcYFdzBOIos+i5MMtDWorJY/0IH8mVEd3ckMcfVgMVP25ZvlYjhdY\n" +
                 "dCNw/Rku+LafRQJOlSBZqy7K7qtzbA==\n" +
                 "-----END CERTIFICATE-----"
-            )
+        )
 
         /**
          * Version: 3 (0x2)
@@ -385,7 +384,7 @@ class CertificateStringConstants {
                 "EPa2sOCml5CIOlNko6Edr0GlWOWkhZyTyZTW6oHaDxVQXrhbVemmKOUY0LM9r2l+\n" +
                 "TqtBv192PPCKbrJChCVmrDltpc5F5TeyTAWn/ElIVz6Za+y/\n" +
                 "-----END CERTIFICATE-----"
-            )
+        )
 
         /**
          * Version: 3 (0x2)
@@ -436,7 +435,7 @@ class CertificateStringConstants {
                 "7vzbwOrOcyPZ5WBEBG1H1vfMTrAefklycBWxRK/ZtpfH5cZDjBxP7x26I2LY5/ws\n" +
                 "fvToHltS\n" +
                 "-----END CERTIFICATE-----\n"
-            )
+        )
 
         const val CERTSTRAP_GENERATED_CA_PRIVATE_KEY: String = (
             "-----BEGIN RSA PRIVATE KEY----- fake\n" +
@@ -490,7 +489,7 @@ class CertificateStringConstants {
                 "qc70qlTH1TBw1Pe7g+00KRSCYYrKbXQMG9+7uxMYh5RAdlKfqZa3CBqYTgtDUjj0\n" +
                 "Uwkv47QyKWgdbb5sewU15qnoHOELLFYuli3wTx8+7V6WBwme0lwlcjOduKv2ig==\n" +
                 "-----END RSA PRIVATE KEY-----\n"
-            )
+        )
 
         const val PRIVATE_KEY: String = (
             "-----BEGIN RSA PRIVATE KEY----- fake\n" +
@@ -521,6 +520,6 @@ class CertificateStringConstants {
                 "1Cm0Oc9+PT9H1HUgirR9z04ivyW0H2I1VYBHFhegN4Jqkq6SST7Q\n" +
                 "-----END RSA PRIVATE KEY-----\n" +
                 "\n"
-            )
+        )
     }
 }

@@ -37,7 +37,6 @@ import org.springframework.web.context.WebApplicationContext
 @SpringBootTest(classes = [CredhubTestApp::class])
 @Transactional
 class CredentialSetEndToEndTest {
-
     @Autowired
     private lateinit var webApplicationContext: WebApplicationContext
 
@@ -45,75 +44,82 @@ class CredentialSetEndToEndTest {
 
     companion object {
         private const val CREDENTIAL_NAME = "/set_credential"
-        private val CREDENTIAL_NAME_1024_CHARACTERS = StringUtils.rightPad(
-            "/",
-            1024,
-            'a',
-        )
+        private val CREDENTIAL_NAME_1024_CHARACTERS =
+            StringUtils.rightPad(
+                "/",
+                1024,
+                'a',
+            )
     }
 
     @Before
     fun setUp() {
-        mockMvc = MockMvcBuilders
-            .webAppContextSetup(webApplicationContext)
-            .apply<DefaultMockMvcBuilder>(springSecurity())
-            .build()
+        mockMvc =
+            MockMvcBuilders
+                .webAppContextSetup(webApplicationContext)
+                .apply<DefaultMockMvcBuilder>(springSecurity())
+                .build()
     }
 
     @Test
     fun `rsa credential can be set without private key`() {
-        val setRsaRequest = put("/api/v1/data")
-            .header("Authorization", "Bearer ${AuthConstants.ALL_PERMISSIONS_TOKEN}")
-            .accept(APPLICATION_JSON)
-            .contentType(APPLICATION_JSON)
-            // language=JSON
-            .content(
-                """
-                {
-                    "name": "$CREDENTIAL_NAME",
-                    "type": "rsa",
-                    "value": {
-                      "public_key": "a_certain_public_key",
-                      "private_key": ""
+        val setRsaRequest =
+            put("/api/v1/data")
+                .header("Authorization", "Bearer ${AuthConstants.ALL_PERMISSIONS_TOKEN}")
+                .accept(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
+                // language=JSON
+                .content(
+                    """
+                    {
+                        "name": "$CREDENTIAL_NAME",
+                        "type": "rsa",
+                        "value": {
+                          "public_key": "a_certain_public_key",
+                          "private_key": ""
+                        }
                     }
-                }
-                """.trimIndent(),
-            )
+                    """.trimIndent(),
+                )
 
         this.mockMvc
             .perform(setRsaRequest)
             .andDo(print())
             .andExpect(status().isOk)
-            .andReturn().response
+            .andReturn()
+            .response
             .contentAsString
     }
 
     @Test
     fun `user credential returns null username when set with blank string as username`() {
-        val setUserRequest = put("/api/v1/data")
-            .header("Authorization", "Bearer ${AuthConstants.ALL_PERMISSIONS_TOKEN}")
-            .accept(APPLICATION_JSON)
-            .contentType(APPLICATION_JSON)
-            // language=JSON
-            .content(
-                """
-              {
-                "name": "$CREDENTIAL_NAME",
-                "type": "user",
-                "value": {
-                  "username": "",
-                  "password": "some_silly_password"
-                }
-              }
-                """.trimIndent(),
-            )
+        val setUserRequest =
+            put("/api/v1/data")
+                .header("Authorization", "Bearer ${AuthConstants.ALL_PERMISSIONS_TOKEN}")
+                .accept(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
+                // language=JSON
+                .content(
+                    """
+                    {
+                      "name": "$CREDENTIAL_NAME",
+                      "type": "user",
+                      "value": {
+                        "username": "",
+                        "password": "some_silly_password"
+                      }
+                    }
+                    """.trimIndent(),
+                )
 
-        val response = this.mockMvc
-            .perform(setUserRequest)
-            .andDo(print())
-            .andExpect(status().isOk)
-            .andReturn().response
-            .contentAsString
+        val response =
+            this.mockMvc
+                .perform(setUserRequest)
+                .andDo(print())
+                .andExpect(status().isOk)
+                .andReturn()
+                .response
+                .contentAsString
 
         assertThat(response, containsString("\"username\":null"))
     }
@@ -127,12 +133,13 @@ class CredentialSetEndToEndTest {
             ALL_PERMISSIONS_TOKEN,
         )
 
-        val secondResponse = setPassword(
-            mockMvc,
-            CREDENTIAL_NAME,
-            "new-password",
-            ALL_PERMISSIONS_TOKEN,
-        )
+        val secondResponse =
+            setPassword(
+                mockMvc,
+                CREDENTIAL_NAME,
+                "new-password",
+                ALL_PERMISSIONS_TOKEN,
+            )
         val updatedPassword = JSONObject(secondResponse).getString("value")
 
         assertThat(updatedPassword, equalTo("new-password"))
@@ -142,23 +149,25 @@ class CredentialSetEndToEndTest {
     fun `credential names can have a length of 1024 characters`() {
         assertThat(CREDENTIAL_NAME_1024_CHARACTERS.length, `is`(equalTo(1024)))
 
-        val setResponse = setPassword(
-            mockMvc,
-            CREDENTIAL_NAME_1024_CHARACTERS,
-            "foobar",
-            ALL_PERMISSIONS_TOKEN,
-        )
+        val setResponse =
+            setPassword(
+                mockMvc,
+                CREDENTIAL_NAME_1024_CHARACTERS,
+                "foobar",
+                ALL_PERMISSIONS_TOKEN,
+            )
         val setPassword = JSONObject(setResponse).getString("value")
 
         assertThat(setPassword, equalTo("foobar"))
 
-        val getResponse = generatePassword(
-            mockMvc,
-            CREDENTIAL_NAME_1024_CHARACTERS,
-            true,
-            14,
-            ALL_PERMISSIONS_TOKEN,
-        )
+        val getResponse =
+            generatePassword(
+                mockMvc,
+                CREDENTIAL_NAME_1024_CHARACTERS,
+                true,
+                14,
+                ALL_PERMISSIONS_TOKEN,
+            )
         val getPassword = JSONObject(getResponse).getString("value")
         assertThat(getPassword.length, equalTo(14))
     }
@@ -240,38 +249,41 @@ class CredentialSetEndToEndTest {
             -----END RSA PRIVATE KEY-----
             """.trimIndent().replace("\n", "\\n")
 
-        val request = put("/api/v1/data")
-            .header("Authorization", "Bearer ${AuthConstants.ALL_PERMISSIONS_TOKEN}")
-            .accept(APPLICATION_JSON)
-            .contentType(APPLICATION_JSON)
-            // language=json
-            .content(
-                """
-                  {
-                    "name": "some-cert",
-                    "type": "certificate",
-                    "value": {
-                      "ca": "$certificate",
-                      "certificate": "$certificate",
-                      "private_key": "$invalidPrivateKey"
+        val request =
+            put("/api/v1/data")
+                .header("Authorization", "Bearer ${AuthConstants.ALL_PERMISSIONS_TOKEN}")
+                .accept(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
+                // language=json
+                .content(
+                    """
+                    {
+                      "name": "some-cert",
+                      "type": "certificate",
+                      "value": {
+                        "ca": "$certificate",
+                        "certificate": "$certificate",
+                        "private_key": "$invalidPrivateKey"
+                      }
                     }
-                  }
-                """.trimIndent(),
-            )
+                    """.trimIndent(),
+                )
 
-        val responseBody = this.mockMvc
-            .perform(request)
-            .andDo(print())
-            .andExpect(status().isBadRequest)
-            .andReturn().response
-            .contentAsString
+        val responseBody =
+            this.mockMvc
+                .perform(request)
+                .andDo(print())
+                .andExpect(status().isBadRequest)
+                .andReturn()
+                .response
+                .contentAsString
 
         JSONAssert.assertEquals(
             responseBody,
             """
-                {
-                  "error": "Private key is malformed. Keys must be PEM-encoded PKCS#1 or unencrypted PKCS#8 keys."
-                }
+            {
+              "error": "Private key is malformed. Keys must be PEM-encoded PKCS#1 or unencrypted PKCS#8 keys."
+            }
             """.trimIndent(),
             true,
         )
@@ -279,44 +291,50 @@ class CredentialSetEndToEndTest {
 
     @Test
     fun `credential contains metadata`() {
-        val setUserRequest = put("/api/v1/data")
-            .header("Authorization", "Bearer ${AuthConstants.ALL_PERMISSIONS_TOKEN}")
-            .accept(APPLICATION_JSON)
-            .contentType(APPLICATION_JSON)
-            // language=JSON
-            .content(
-                """
-              {
-                "name": "$CREDENTIAL_NAME",
-                "type": "user",
-                "metadata": { "description": "example metadata" },
-                "value": {
-                  "username": "some_silly_username",
-                  "password": "some_silly_password"
-                }
-              }
-                """.trimIndent(),
-            )
+        val setUserRequest =
+            put("/api/v1/data")
+                .header("Authorization", "Bearer ${AuthConstants.ALL_PERMISSIONS_TOKEN}")
+                .accept(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
+                // language=JSON
+                .content(
+                    """
+                    {
+                      "name": "$CREDENTIAL_NAME",
+                      "type": "user",
+                      "metadata": { "description": "example metadata" },
+                      "value": {
+                        "username": "some_silly_username",
+                        "password": "some_silly_password"
+                      }
+                    }
+                    """.trimIndent(),
+                )
 
-        val setResponse = this.mockMvc
-            .perform(setUserRequest)
-            .andDo(print())
-            .andExpect(status().isOk)
-            .andReturn().response
-            .contentAsString
+        val setResponse =
+            this.mockMvc
+                .perform(setUserRequest)
+                .andDo(print())
+                .andExpect(status().isOk)
+                .andReturn()
+                .response
+                .contentAsString
 
         assertThat(setResponse, containsString("\"metadata\":{\"description\":\"example metadata\"}"))
 
-        val getUserRequest = get("/api/v1/data?name=$CREDENTIAL_NAME")
-            .header("Authorization", "Bearer ${AuthConstants.ALL_PERMISSIONS_TOKEN}")
-            .accept(APPLICATION_JSON)
+        val getUserRequest =
+            get("/api/v1/data?name=$CREDENTIAL_NAME")
+                .header("Authorization", "Bearer ${AuthConstants.ALL_PERMISSIONS_TOKEN}")
+                .accept(APPLICATION_JSON)
 
-        val getResponse = this.mockMvc
-            .perform(getUserRequest)
-            .andDo(print())
-            .andExpect(status().isOk)
-            .andReturn().response
-            .contentAsString
+        val getResponse =
+            this.mockMvc
+                .perform(getUserRequest)
+                .andDo(print())
+                .andExpect(status().isOk)
+                .andReturn()
+                .response
+                .contentAsString
 
         assertThat(getResponse, containsString("\"metadata\":{\"description\":\"example metadata\"}"))
     }

@@ -6,7 +6,6 @@ import java.time.temporal.TemporalAccessor
 import java.util.Optional
 
 class FakeCurrentTimeProvider : CurrentTimeProvider() {
-
     private var timeMillis: Long = 0
 
     override val instant: Instant
@@ -16,13 +15,9 @@ class FakeCurrentTimeProvider : CurrentTimeProvider() {
         this.timeMillis = timeMillis
     }
 
-    override fun getNow(): Optional<TemporalAccessor> {
-        throw UnsupportedOperationException("not yet implemented")
-    }
+    override fun getNow(): Optional<TemporalAccessor> = throw UnsupportedOperationException("not yet implemented")
 
-    override fun currentTimeMillis(): Long {
-        return timeMillis
-    }
+    override fun currentTimeMillis(): Long = timeMillis
 
     @Throws(InterruptedException::class)
     override fun sleep(sleepTimeInMillis: Long) {

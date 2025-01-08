@@ -34,7 +34,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.util.UUID
 
 class PermissionsV2ControllerTest {
-
     @Rule
     @JvmField
     val restDocumentation = JUnitRestDocumentation()
@@ -53,41 +52,42 @@ class PermissionsV2ControllerTest {
     }
 
     @Test
-    fun GET__permissions_v2_by_actor_and_path__returns_a_permission() {
-        val permissionsV2View = PermissionsV2View(
-            "/some-path/*",
-            listOf(READ, WRITE),
-            "some-actor",
-            uuid,
-        )
-        spyPermissionsV2Handler.findByPathAndActor__returns = permissionsV2View
-
-        val mvcResult = mockMvc
-            .perform(
-                get(PermissionsV2Controller.ENDPOINT)
-                    .credHubAuthHeader()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .param("path", "/some-path/*")
-                    .param("actor", "some-actor"),
+    fun getPermissions_v2_by_actor_and_path__returns_a_permission() {
+        val permissionsV2View =
+            PermissionsV2View(
+                "/some-path/*",
+                listOf(READ, WRITE),
+                "some-actor",
+                uuid,
             )
-            .andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andDo(
-                document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    requestParameters(
-                        parameterWithName("path")
-                            .description("The credential path. Can be either a path with an asterisk (*) at the end, or the full name of a credential."),
-                        parameterWithName("actor")
-                            .description("The credential actor"),
+        spyPermissionsV2Handler.findbypathandactorReturns = permissionsV2View
+
+        val mvcResult =
+            mockMvc
+                .perform(
+                    get(PermissionsV2Controller.ENDPOINT)
+                        .credHubAuthHeader()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .param("path", "/some-path/*")
+                        .param("actor", "some-actor"),
+                ).andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andDo(
+                    document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                        requestParameters(
+                            parameterWithName("path")
+                                .description(
+                                    "The credential path. Can be either a path with an asterisk (*) at the end, or the full name of a credential.",
+                                ),
+                            parameterWithName("actor")
+                                .description("The credential actor"),
+                        ),
                     ),
-                ),
+                ).andReturn()
 
-            )
-            .andReturn()
-
-        assertThat(spyPermissionsV2Handler.findByPathAndActor__calledWith_Actor).isEqualTo("some-actor")
-        assertThat(spyPermissionsV2Handler.findByPathAndActor__calledWith_Path).isEqualTo("/some-path/*")
+        assertThat(spyPermissionsV2Handler.findbypathandactorCalledwithActor).isEqualTo("some-actor")
+        assertThat(spyPermissionsV2Handler.findbypathandactorCalledwithPath).isEqualTo("/some-path/*")
         val actualResponseBody = mvcResult.response.contentAsString
 
         // language=json
@@ -108,35 +108,35 @@ class PermissionsV2ControllerTest {
     }
 
     @Test
-    fun GET__permissions_v2_by_uuid__returns_a_permission() {
-        val permissionsV2View = PermissionsV2View(
-            "/some-path/*",
-            listOf(READ, WRITE),
-            "some-actor",
-            uuid,
-        )
-        spyPermissionsV2Handler.getPermissionByGuid__returns = permissionsV2View
-
-        val mvcResult = mockMvc
-            .perform(
-                get("${PermissionsV2Controller.ENDPOINT}/{uuid}", uuid.toString())
-                    .credHubAuthHeader()
-                    .contentType(MediaType.APPLICATION_JSON),
+    fun getPermissions_v2_by_uuid__returns_a_permission() {
+        val permissionsV2View =
+            PermissionsV2View(
+                "/some-path/*",
+                listOf(READ, WRITE),
+                "some-actor",
+                uuid,
             )
-            .andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andDo(
-                document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    pathParameters(
-                        parameterWithName("uuid")
-                            .description("The permission uuid"),
+        spyPermissionsV2Handler.permissionbyguidReturns = permissionsV2View
+
+        val mvcResult =
+            mockMvc
+                .perform(
+                    get("${PermissionsV2Controller.ENDPOINT}/{uuid}", uuid.toString())
+                        .credHubAuthHeader()
+                        .contentType(MediaType.APPLICATION_JSON),
+                ).andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andDo(
+                    document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                        pathParameters(
+                            parameterWithName("uuid")
+                                .description("The permission uuid"),
+                        ),
                     ),
-                ),
-            )
-            .andReturn()
+                ).andReturn()
 
-        assertThat(spyPermissionsV2Handler.getPermissions__calledWith_Guid).isEqualTo(uuid.toString())
+        assertThat(spyPermissionsV2Handler.permissionsCalledwithGuid).isEqualTo(uuid.toString())
         val actualResponseBody = mvcResult.response.contentAsString
 
         // language=json
@@ -156,30 +156,33 @@ class PermissionsV2ControllerTest {
     }
 
     @Test
-    fun POST__permissions__adds_a_leading_slash() {
-        val permissionsV2View = PermissionsV2View(
-            "some-path/*",
-            listOf(READ, WRITE),
-            "some-actor",
-            uuid,
-        )
+    fun postPermissions__adds_a_leading_slash() {
+        val permissionsV2View =
+            PermissionsV2View(
+                "some-path/*",
+                listOf(READ, WRITE),
+                "some-actor",
+                uuid,
+            )
 
-        val expectedPermissionsV2Request = PermissionsV2Request(
-            "/some-path/*",
-            "some-actor",
-            mutableListOf(READ, WRITE),
-        )
+        val expectedPermissionsV2Request =
+            PermissionsV2Request(
+                "/some-path/*",
+                "some-actor",
+                mutableListOf(READ, WRITE),
+            )
 
-        spyPermissionsV2Handler.writeV2Permissions__returns = permissionsV2View
+        spyPermissionsV2Handler.writev2permissionsReturns = permissionsV2View
 
-        val mvcResult = mockMvc
-            .perform(
-                post(PermissionsV2Controller.ENDPOINT)
-                    .credHubAuthHeader()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    // language=json
-                    .content(
-                        """
+        val mvcResult =
+            mockMvc
+                .perform(
+                    post(PermissionsV2Controller.ENDPOINT)
+                        .credHubAuthHeader()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        // language=json
+                        .content(
+                            """
                             {
                               "path": "some-path/*",
                               "actor": "some-actor",
@@ -188,13 +191,12 @@ class PermissionsV2ControllerTest {
                                 "write"
                               ]
                             }
-                        """.trimIndent(),
-                    ),
-            )
-            .andExpect(status().isCreated())
-            .andReturn()
+                            """.trimIndent(),
+                        ),
+                ).andExpect(status().isCreated())
+                .andReturn()
 
-        val actualPermissionsV2Request = spyPermissionsV2Handler.writeV2Permissions__calledWith_PermissionRequest
+        val actualPermissionsV2Request = spyPermissionsV2Handler.writev2permissionsCalledwithPermissionrequest
         assertThat(actualPermissionsV2Request.actor).isEqualTo(expectedPermissionsV2Request.actor)
         assertThat(actualPermissionsV2Request.getPath()).isEqualTo(expectedPermissionsV2Request.getPath())
 
@@ -218,35 +220,35 @@ class PermissionsV2ControllerTest {
     }
 
     @Test
-    fun DELETE__permissions_v2_by_uuid__returns_a_permission() {
-        val permissionsV2View = PermissionsV2View(
-            "/some-path/*",
-            listOf(READ, WRITE),
-            "some-actor",
-            uuid,
-        )
-        spyPermissionsV2Handler.deletePermissions__returns = permissionsV2View
-
-        val mvcResult = mockMvc
-            .perform(
-                delete("${PermissionsV2Controller.ENDPOINT}/{uuid}", uuid.toString())
-                    .credHubAuthHeader()
-                    .contentType(MediaType.APPLICATION_JSON),
+    fun deletePermissions_v2_by_uuid__returns_a_permission() {
+        val permissionsV2View =
+            PermissionsV2View(
+                "/some-path/*",
+                listOf(READ, WRITE),
+                "some-actor",
+                uuid,
             )
-            .andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andDo(
-                document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    pathParameters(
-                        parameterWithName("uuid")
-                            .description("The permission uuid"),
+        spyPermissionsV2Handler.deletepermissionsReturns = permissionsV2View
+
+        val mvcResult =
+            mockMvc
+                .perform(
+                    delete("${PermissionsV2Controller.ENDPOINT}/{uuid}", uuid.toString())
+                        .credHubAuthHeader()
+                        .contentType(MediaType.APPLICATION_JSON),
+                ).andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andDo(
+                    document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                        pathParameters(
+                            parameterWithName("uuid")
+                                .description("The permission uuid"),
+                        ),
                     ),
-                ),
-            )
-            .andReturn()
+                ).andReturn()
 
-        assertThat(spyPermissionsV2Handler.deletePermissions__calledWith_Guid).isEqualTo(uuid.toString())
+        assertThat(spyPermissionsV2Handler.deletepermissionsCalledwithGuid).isEqualTo(uuid.toString())
         val actualResponseBody = mvcResult.response.contentAsString
 
         // language=json
@@ -266,55 +268,57 @@ class PermissionsV2ControllerTest {
     }
 
     @Test
-    fun PUT__permissions_v2__returns_a_permission() {
-        val permissionsV2View = PermissionsV2View(
-            "/some-path/*",
-            listOf(READ, WRITE),
-            "some-actor",
-            uuid,
-        )
-        spyPermissionsV2Handler.putPermissions__returns = permissionsV2View
-
-        val mvcResult = mockMvc
-            .perform(
-                put("${PermissionsV2Controller.ENDPOINT}/{uuid}", uuid.toString())
-                    .credHubAuthHeader()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    // language=json
-                    .content(
-                        """
-                        {
-                          "path": "/some-path/*",
-                          "actor": "some-actor",
-                          "operations": [
-                            "read",
-                            "write"
-                          ]
-                        }
-                        """.trimIndent(),
-                    ),
+    fun putPermissions_v2__returns_a_permission() {
+        val permissionsV2View =
+            PermissionsV2View(
+                "/some-path/*",
+                listOf(READ, WRITE),
+                "some-actor",
+                uuid,
             )
-            .andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andDo(
-                document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    pathParameters(
-                        parameterWithName("uuid")
-                            .description("The permission uuid"),
-                    ),
-                    requestFields(
-                        fieldWithPath("path")
-                            .description("The credential path. Can be either a path with an asterisk (*) at the end, or the full name of a credential."),
-                        fieldWithPath("actor")
-                            .description("The credential actor"),
-                        getPermissionOperationsRequestField(),
-                    ),
-                ),
-            )
-            .andReturn()
+        spyPermissionsV2Handler.putpermissionsReturns = permissionsV2View
 
-        assertThat(spyPermissionsV2Handler.putPermissions__calledWith_Guid).isEqualTo(uuid.toString())
+        val mvcResult =
+            mockMvc
+                .perform(
+                    put("${PermissionsV2Controller.ENDPOINT}/{uuid}", uuid.toString())
+                        .credHubAuthHeader()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        // language=json
+                        .content(
+                            """
+                            {
+                              "path": "/some-path/*",
+                              "actor": "some-actor",
+                              "operations": [
+                                "read",
+                                "write"
+                              ]
+                            }
+                            """.trimIndent(),
+                        ),
+                ).andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andDo(
+                    document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                        pathParameters(
+                            parameterWithName("uuid")
+                                .description("The permission uuid"),
+                        ),
+                        requestFields(
+                            fieldWithPath("path")
+                                .description(
+                                    "The credential path. Can be either a path with an asterisk (*) at the end, or the full name of a credential.",
+                                ),
+                            fieldWithPath("actor")
+                                .description("The credential actor"),
+                            getPermissionOperationsRequestField(),
+                        ),
+                    ),
+                ).andReturn()
+
+        assertThat(spyPermissionsV2Handler.putpermissionsCalledwithGuid).isEqualTo(uuid.toString())
         val actualResponseBody = mvcResult.response.contentAsString
 
         // language=json
@@ -334,50 +338,50 @@ class PermissionsV2ControllerTest {
     }
 
     @Test
-    fun PATCH__permissions_v2__returns_a_permission() {
-        val permissionsV2View = PermissionsV2View(
-            "/some-path/*",
-            listOf(READ, WRITE),
-            "some-actor",
-            uuid,
-        )
-
-        spyPermissionsV2Handler.patchPermissions__returns = permissionsV2View
-
-        val mvcResult = mockMvc
-            .perform(
-                patch("${PermissionsV2Controller.ENDPOINT}/{uuid}", uuid.toString())
-                    .credHubAuthHeader()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    // language=json
-                    .content(
-                        """
-                        {
-                          "operations": [
-                            "read",
-                            "write"
-                          ]
-                        }
-                        """.trimIndent(),
-                    ),
+    fun patchPermissions_v2__returns_a_permission() {
+        val permissionsV2View =
+            PermissionsV2View(
+                "/some-path/*",
+                listOf(READ, WRITE),
+                "some-actor",
+                uuid,
             )
-            .andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andDo(
-                document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    pathParameters(
-                        parameterWithName("uuid")
-                            .description("The permission uuid"),
-                    ),
-                    requestFields(
-                        getPermissionOperationsRequestField(),
-                    ),
-                ),
-            )
-            .andReturn()
 
-        assertThat(spyPermissionsV2Handler.patchPermissions__calledWith_Guid).isEqualTo(uuid.toString())
+        spyPermissionsV2Handler.patchpermissionsReturns = permissionsV2View
+
+        val mvcResult =
+            mockMvc
+                .perform(
+                    patch("${PermissionsV2Controller.ENDPOINT}/{uuid}", uuid.toString())
+                        .credHubAuthHeader()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        // language=json
+                        .content(
+                            """
+                            {
+                              "operations": [
+                                "read",
+                                "write"
+                              ]
+                            }
+                            """.trimIndent(),
+                        ),
+                ).andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andDo(
+                    document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                        pathParameters(
+                            parameterWithName("uuid")
+                                .description("The permission uuid"),
+                        ),
+                        requestFields(
+                            getPermissionOperationsRequestField(),
+                        ),
+                    ),
+                ).andReturn()
+
+        assertThat(spyPermissionsV2Handler.patchpermissionsCalledwithGuid).isEqualTo(uuid.toString())
         val actualResponseBody = mvcResult.response.contentAsString
 
         // language=json
@@ -397,50 +401,52 @@ class PermissionsV2ControllerTest {
     }
 
     @Test
-    fun POST__permissions_v2__returns_a_permission() {
-        val permissionsV2View = PermissionsV2View(
-            "/some-path/*",
-            listOf(READ, WRITE),
-            "some-actor",
-            uuid,
-        )
-
-        spyPermissionsV2Handler.writeV2Permissions__returns = permissionsV2View
-
-        val mvcResult = mockMvc
-            .perform(
-                post(PermissionsV2Controller.ENDPOINT)
-                    .credHubAuthHeader()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    // language=json
-                    .content(
-                        """
-                        {
-                          "path": "/some-path/*",
-                          "actor": "some-actor",
-                          "operations": [
-                            "read",
-                            "write"
-                          ]
-                        }
-                        """.trimIndent(),
-                    ),
+    fun postPermissions_v2__returns_a_permission() {
+        val permissionsV2View =
+            PermissionsV2View(
+                "/some-path/*",
+                listOf(READ, WRITE),
+                "some-actor",
+                uuid,
             )
-            .andExpect(status().isCreated())
-            .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andDo(
-                document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    requestFields(
-                        fieldWithPath("path")
-                            .description("The credential path. Can be either a path with an asterisk (*) at the end, or the full name of a credential."),
-                        fieldWithPath("actor")
-                            .description("The credential actor"),
-                        getPermissionOperationsRequestField(),
+
+        spyPermissionsV2Handler.writev2permissionsReturns = permissionsV2View
+
+        val mvcResult =
+            mockMvc
+                .perform(
+                    post(PermissionsV2Controller.ENDPOINT)
+                        .credHubAuthHeader()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        // language=json
+                        .content(
+                            """
+                            {
+                              "path": "/some-path/*",
+                              "actor": "some-actor",
+                              "operations": [
+                                "read",
+                                "write"
+                              ]
+                            }
+                            """.trimIndent(),
+                        ),
+                ).andExpect(status().isCreated())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andDo(
+                    document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                        requestFields(
+                            fieldWithPath("path")
+                                .description(
+                                    "The credential path. Can be either a path with an asterisk (*) at the end, or the full name of a credential.",
+                                ),
+                            fieldWithPath("actor")
+                                .description("The credential actor"),
+                            getPermissionOperationsRequestField(),
+                        ),
                     ),
-                ),
-            )
-            .andReturn()
+                ).andReturn()
 
         val actualResponseBody = mvcResult.response.contentAsString
 
@@ -461,15 +467,14 @@ class PermissionsV2ControllerTest {
         JSONAssert.assertEquals(expectedResponseBody, actualResponseBody, true)
     }
 
-    private fun getPermissionOperationsRequestField(): FieldDescriptor {
-        return fieldWithPath("operations")
+    private fun getPermissionOperationsRequestField(): FieldDescriptor =
+        fieldWithPath("operations")
             .description(
                 """
                         The list of permissions to be granted.
                         Supported operations are: ${
                     PermissionOperation.values().joinToString(
-                        transform = {
-                                x ->
+                        transform = { x ->
                             x.operation.lowercase()
                         },
                         separator = ", ",
@@ -477,5 +482,4 @@ class PermissionsV2ControllerTest {
                 }
                 """.trimIndent(),
             )
-    }
 }

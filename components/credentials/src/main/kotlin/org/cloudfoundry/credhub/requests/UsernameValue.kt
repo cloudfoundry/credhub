@@ -22,9 +22,8 @@ class UsernameValue {
             .isEquals
     }
 
-    override fun hashCode(): Int {
-        return HashCodeBuilder(17, 37)
+    override fun hashCode(): Int =
+        HashCodeBuilder(17, 37)
             .append(username)
             .toHashCode()
-    }
 }

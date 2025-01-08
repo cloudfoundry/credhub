@@ -26,7 +26,6 @@ class DefaultInterpolationHandler(
     private val userContextHolder: UserContextHolder,
     @Value("\${security.authorization.acls.enabled}") private val enforcePermissions: Boolean,
 ) : InterpolationHandler {
-
     override fun interpolateCredHubReferences(servicesMap: Map<String, Any>): Map<String, Any> {
         val updatedServicesMap = servicesMap.toMutableMap()
         for (entry in servicesMap) {
@@ -52,10 +51,11 @@ class DefaultInterpolationHandler(
                 auditRecord.addResource(credentialVersion.credential)
                 auditRecord.addVersion(credentialVersion)
 
-                val jsonCredentialVersion = credentialVersion as? JsonCredentialVersion ?: throw ParameterizedValidationException(
-                    ErrorMessages.Interpolation.INVALID_TYPE,
-                    credentialName,
-                )
+                val jsonCredentialVersion =
+                    credentialVersion as? JsonCredentialVersion ?: throw ParameterizedValidationException(
+                        ErrorMessages.Interpolation.INVALID_TYPE,
+                        credentialName,
+                    )
 
                 val updatedPropertiesMap = (updatedServicesMap[entry.key] as ArrayList<*>)[index] as MutableMap<String, Any>
 
@@ -65,11 +65,13 @@ class DefaultInterpolationHandler(
         return updatedServicesMap
     }
 
-    private fun getCredentialNameFromRef(credhubRef: String): String {
-        return credhubRef.replaceFirst("^\\(\\(".toRegex(), "").replaceFirst("\\)\\)$".toRegex(), "")
-    }
+    private fun getCredentialNameFromRef(credhubRef: String): String =
+        credhubRef.replaceFirst("^\\(\\(".toRegex(), "").replaceFirst("\\)\\)$".toRegex(), "")
 
-    private fun checkPermissionsByName(name: String, permissionOperation: PermissionOperation) {
+    private fun checkPermissionsByName(
+        name: String,
+        permissionOperation: PermissionOperation,
+    ) {
         if (!enforcePermissions) return
 
         if (!permissionCheckingService.hasPermission(

@@ -38,7 +38,7 @@ import java.time.Instant
 @Transactional
 @TestPropertySource(properties = ["certificates.concatenate_cas=false"])
 class CredentialsPostIntegrationTest {
-    private val FROZEN_TIME = Instant.ofEpochSecond(1400011001L)
+    private val frozenTime = Instant.ofEpochSecond(1400011001L)
 
     @Autowired
     private val webApplicationContext: WebApplicationContext? = null
@@ -63,64 +63,73 @@ class CredentialsPostIntegrationTest {
     fun beforeEach() {
         val fakeTimeSetter = TestHelper.mockOutCurrentTimeProvider(mockCurrentTimeProvider!!)
 
-        fakeTimeSetter.accept(FROZEN_TIME.toEpochMilli())
+        fakeTimeSetter.accept(frozenTime.toEpochMilli())
 
-        mockMvc = MockMvcBuilders
-            .webAppContextSetup(webApplicationContext!!)
-            .apply<DefaultMockMvcBuilder>(SecurityMockMvcConfigurers.springSecurity())
-            .build()
+        mockMvc =
+            MockMvcBuilders
+                .webAppContextSetup(webApplicationContext!!)
+                .apply<DefaultMockMvcBuilder>(SecurityMockMvcConfigurers.springSecurity())
+                .build()
     }
 
     @Test
     @Throws(Exception::class)
     fun generate_whenConcatenateCasIsFalse_DoesNOTReturnConcatenatedCas() {
-        val caCredentialValue = CertificateCredentialValue(
-            TestConstants.TEST_CA,
-            TestConstants.TEST_CA,
-            TestConstants.TEST_PRIVATE_KEY,
-            "caName",
-            TestConstants.TEST_TRUSTED_CA,
-            true,
-            true,
-            true,
-            true,
-            false,
-            730,
-        )
+        val caCredentialValue =
+            CertificateCredentialValue(
+                TestConstants.TEST_CA,
+                TestConstants.TEST_CA,
+                TestConstants.TEST_PRIVATE_KEY,
+                "caName",
+                TestConstants.TEST_TRUSTED_CA,
+                true,
+                true,
+                true,
+                true,
+                false,
+                730,
+            )
 
         Mockito.doReturn(caCredentialValue).`when`<CertificateAuthorityService>(certificateAuthorityService).findActiveVersion("/myCA")
 
-        val trustedCaCredentialValue = CertificateCredentialValue(
-            TestConstants.TEST_TRUSTED_CA,
-            TestConstants.TEST_TRUSTED_CA,
-            TestConstants.TEST_PRIVATE_KEY,
-            "caName",
-            true,
-            true,
-            true,
-            true,
-        )
-
-        Mockito.doReturn(trustedCaCredentialValue).`when`<CertificateAuthorityService>(certificateAuthorityService).findTransitionalVersion("/myCA")
-
-        val request = MockMvcRequestBuilders.post("/api/v1/data")
-            .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-            .content(
-                """
-                {
-                  "name": "myCertificate",
-                  "type": "certificate",
-                  "parameters": {
-                    "common_name": "myCertificate",
-                    "ca":"myCA"
-                  }
-                 }
-                """.trimIndent(),
+        val trustedCaCredentialValue =
+            CertificateCredentialValue(
+                TestConstants.TEST_TRUSTED_CA,
+                TestConstants.TEST_TRUSTED_CA,
+                TestConstants.TEST_PRIVATE_KEY,
+                "caName",
+                true,
+                true,
+                true,
+                true,
             )
-            .contentType(MediaType.APPLICATION_JSON)
-            .accept(MediaType.APPLICATION_JSON)
 
-        mockMvc!!.perform(request)
+        Mockito
+            .doReturn(
+                trustedCaCredentialValue,
+            ).`when`<CertificateAuthorityService>(certificateAuthorityService)
+            .findTransitionalVersion("/myCA")
+
+        val request =
+            MockMvcRequestBuilders
+                .post("/api/v1/data")
+                .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+                .content(
+                    """
+                    {
+                      "name": "myCertificate",
+                      "type": "certificate",
+                      "parameters": {
+                        "common_name": "myCertificate",
+                        "ca":"myCA"
+                      }
+                     }
+                    """.trimIndent(),
+                ).contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+
+        mockMvc!!
+            .perform(request)
             .andExpect(MockMvcResultMatchers.status().isOk)
             .andExpect(MockMvcResultMatchers.jsonPath("$.value.ca").value(TestConstants.TEST_CA))
     }

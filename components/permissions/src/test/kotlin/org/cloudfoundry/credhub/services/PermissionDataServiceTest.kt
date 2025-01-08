@@ -49,7 +49,6 @@ import org.springframework.transaction.annotation.Transactional
 @SpringBootTest(classes = [CredhubTestApp::class])
 @Transactional
 class PermissionDataServiceTest {
-
     @Autowired
     private val subject: PermissionDataService? = null
 
@@ -194,8 +193,9 @@ class PermissionDataServiceTest {
     fun deleteAccessControlEntry_whenGivenExistingCredentialAndActor_deletesTheAce() {
         subject!!.deletePermissions(CREDENTIAL_NAME, LUKE)
 
-        val accessControlList = subject
-            .getPermissions(credential!!)
+        val accessControlList =
+            subject
+                .getPermissions(credential!!)
 
         assertThat<List<PermissionEntry>>(accessControlList, hasSize(2))
 
@@ -518,9 +518,7 @@ class PermissionDataServiceTest {
         subject.savePermissionsWithLogging(listOf(PermissionEntry(HAN_SOLO, CREDENTIAL_NAME, newArrayList(READ_ACL, WRITE_ACL))))
     }
 
-    private fun randomCredentialPath(): String {
-        return "/" + RandomStringUtils.randomAlphanumeric(50)
-    }
+    private fun randomCredentialPath(): String = "/" + RandomStringUtils.randomAlphanumeric(50)
 
     companion object {
         private val CREDENTIAL_NAME = "/lightsaber"

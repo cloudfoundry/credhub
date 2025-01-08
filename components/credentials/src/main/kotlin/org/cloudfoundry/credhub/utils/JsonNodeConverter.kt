@@ -5,10 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import javax.persistence.AttributeConverter
 
 class JsonNodeConverter : AttributeConverter<JsonNode, String> {
-
-    override fun convertToDatabaseColumn(attribute: JsonNode?): String {
-        return attribute.toString()
-    }
+    override fun convertToDatabaseColumn(attribute: JsonNode?): String = attribute.toString()
 
     override fun convertToEntityAttribute(dbData: String?): JsonNode {
         val objectMapper = ObjectMapper()

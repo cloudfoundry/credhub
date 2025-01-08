@@ -13,9 +13,11 @@ import javax.persistence.SecondaryTable
 
 @Entity
 @DiscriminatorValue(PasswordCredentialVersionData.CREDENTIAL_TYPE)
-@SecondaryTable(name = PasswordCredentialVersionData.TABLE_NAME, pkJoinColumns = [PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")])
+@SecondaryTable(
+    name = PasswordCredentialVersionData.TABLE_NAME,
+    pkJoinColumns = [PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")],
+)
 class PasswordCredentialVersionData : CredentialVersionData<PasswordCredentialVersionData> {
-
     @OneToOne(cascade = [CascadeType.ALL])
     @NotFound(action = NotFoundAction.IGNORE)
     @JoinColumn(table = TABLE_NAME, name = "password_parameters_uuid")
@@ -29,7 +31,6 @@ class PasswordCredentialVersionData : CredentialVersionData<PasswordCredentialVe
     constructor(name: String) : super(name)
 
     companion object {
-
         const val CREDENTIAL_TYPE = "password"
         const val TABLE_NAME = "password_credential"
     }

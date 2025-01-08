@@ -11,16 +11,18 @@ class DefaultKeyUsageHandler(
     val credentialVersionDataService: CredentialVersionDataService,
     val keySet: EncryptionKeySet,
 ) : KeyUsageHandler {
-
     override fun getKeyUsage(): Map<String, Long> {
         val countByEncryptionKey = credentialVersionDataService.countByEncryptionKey()
         val totalCredCount = countByEncryptionKey.values.sum()
 
         val activeKeyCreds = countByEncryptionKey.getOrDefault(keySet.active.uuid, 0L)
 
-        val credsEncryptedByKnownKeys = countByEncryptionKey.filter {
-            keySet.uuids.contains(it.key)
-        }.values.sum()
+        val credsEncryptedByKnownKeys =
+            countByEncryptionKey
+                .filter {
+                    keySet.uuids.contains(it.key)
+                }.values
+                .sum()
 
         val unknownKeyCreds = totalCredCount - credsEncryptedByKnownKeys
         val inactiveKeyCreds = totalCredCount - (activeKeyCreds + unknownKeyCreds)

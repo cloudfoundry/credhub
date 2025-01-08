@@ -6,7 +6,5 @@ import org.cloudfoundry.credhub.audit.RequestDetails
 class UpdateTransitionalVersion : RequestDetails {
     var version: String? = null
 
-    override fun operation(): OperationDeviceAction {
-        return OperationDeviceAction.UPDATE_TRANSITIONAL_VERSION
-    }
+    override fun operation(): OperationDeviceAction = OperationDeviceAction.UPDATE_TRANSITIONAL_VERSION
 }

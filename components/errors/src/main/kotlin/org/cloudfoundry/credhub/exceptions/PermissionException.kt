@@ -1,3 +1,5 @@
 package org.cloudfoundry.credhub.exceptions
 
-class PermissionException(message: String) : RuntimeException(message)
+class PermissionException(
+    message: String,
+) : RuntimeException(message)

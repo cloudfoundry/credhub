@@ -10,11 +10,10 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder
 @Configuration
 class ObjectMapperConfig {
     @Bean
-    fun jacksonBuilder(javaTimeModule: Module): Jackson2ObjectMapperBuilder {
-        return Jackson2ObjectMapperBuilder().apply {
+    fun jacksonBuilder(javaTimeModule: Module): Jackson2ObjectMapperBuilder =
+        Jackson2ObjectMapperBuilder().apply {
             modules(javaTimeModule, KotlinModule() as Module?)
             failOnUnknownProperties(true)
             propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
         }
-    }
 }

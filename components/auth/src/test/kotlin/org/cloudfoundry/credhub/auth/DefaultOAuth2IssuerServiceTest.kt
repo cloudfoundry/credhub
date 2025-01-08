@@ -24,13 +24,19 @@ import java.util.HashMap
 
 @RunWith(JUnit4::class)
 class DefaultOAuth2IssuerServiceTest {
-
     private var subject: DefaultOAuth2IssuerService? = null
 
     private var restTemplate: RestTemplate? = null
 
     @Before
-    @Throws(URISyntaxException::class, CertificateException::class, NoSuchAlgorithmException::class, KeyStoreException::class, IOException::class, KeyManagementException::class)
+    @Throws(
+        URISyntaxException::class,
+        CertificateException::class,
+        NoSuchAlgorithmException::class,
+        KeyStoreException::class,
+        IOException::class,
+        KeyManagementException::class,
+    )
     fun setUp() {
         val trustStore = "test-trust-store"
         val trustStorePassword = "test-trust-store-password"

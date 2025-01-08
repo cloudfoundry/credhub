@@ -19,9 +19,8 @@ class X509AuthenticationProvider : PreAuthenticatedAuthenticationProvider() {
         setPreAuthenticatedUserDetailsService(x509v3ExtService())
     }
 
-    private fun x509v3ExtService(): AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> {
-        return AuthenticationUserDetailsService { token -> User(token.name, "", AuthorityUtils.createAuthorityList(ROLE_MTLS_USER)) }
-    }
+    private fun x509v3ExtService(): AuthenticationUserDetailsService<PreAuthenticatedAuthenticationToken> =
+        AuthenticationUserDetailsService { token -> User(token.name, "", AuthorityUtils.createAuthorityList(ROLE_MTLS_USER)) }
 
     override fun authenticate(authentication: Authentication): Authentication? {
         val result = super.authenticate(authentication)
@@ -54,7 +53,6 @@ class X509AuthenticationProvider : PreAuthenticatedAuthenticationProvider() {
     }
 
     companion object {
-
         val CLIENT_AUTH_EXTENDED_KEY_USAGE = KeyPurposeId.id_kp_clientAuth.id
 
         // Spring's access assertion language's hasRole() takes

@@ -15,10 +15,11 @@ enum class PermissionOperation private constructor(
     WRITE_ACL("write_acl"), ;
 
     companion object {
-
         val commaSeparatedPermissionOperations: String
-            get() = Arrays.stream(values())
-                .map<String> { it.operation }
-                .collect(Collectors.joining(", "))
+            get() =
+                Arrays
+                    .stream(values())
+                    .map<String> { it.operation }
+                    .collect(Collectors.joining(", "))
     }
 }

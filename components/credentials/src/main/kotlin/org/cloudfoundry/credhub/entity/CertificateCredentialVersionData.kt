@@ -12,9 +12,11 @@ import javax.persistence.SecondaryTable
 
 @Entity
 @DiscriminatorValue(CREDENTIAL_DATABASE_TYPE)
-@SecondaryTable(name = CertificateCredentialVersionData.TABLE_NAME, pkJoinColumns = [PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")])
+@SecondaryTable(
+    name = CertificateCredentialVersionData.TABLE_NAME,
+    pkJoinColumns = [PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")],
+)
 class CertificateCredentialVersionData : CredentialVersionData<CertificateCredentialVersionData> {
-
     @Column(table = CertificateCredentialVersionData.TABLE_NAME, length = 7000)
     var ca: String? = null
 
@@ -52,21 +54,23 @@ class CertificateCredentialVersionData : CredentialVersionData<CertificateCreden
         get() = CREDENTIAL_TYPE
 
     var isSelfSigned: Boolean
-        get() = if (selfSigned == null) {
-            false
-        } else {
-            selfSigned!!
-        }
+        get() =
+            if (selfSigned == null) {
+                false
+            } else {
+                selfSigned!!
+            }
         set(selfSigned) {
             this.selfSigned = selfSigned
         }
 
     var isCertificateAuthority: Boolean
-        get() = if (certificateAuthority == null) {
-            false
-        } else {
-            certificateAuthority!!
-        }
+        get() =
+            if (certificateAuthority == null) {
+                false
+            } else {
+                certificateAuthority!!
+            }
         set(certificateAuthority) {
             this.certificateAuthority = certificateAuthority
         }
@@ -93,16 +97,13 @@ class CertificateCredentialVersionData : CredentialVersionData<CertificateCreden
             expiryDate == that.expiryDate
     }
 
-    fun isTransitional(): Boolean {
-        return this.transitional
-    }
+    fun isTransitional(): Boolean = this.transitional
 
-    override fun hashCode(): Int {
-        return Objects.hash(ca, certificate, this.caName, isTransitional(), expiryDate, certificateAuthority, selfSigned)
-    }
+    override fun hashCode(): Int =
+        Objects.hash(ca, certificate, this.caName, isTransitional(), expiryDate, certificateAuthority, selfSigned)
 
-    override fun toString(): String {
-        return "CertificateCredentialVersionData{" +
+    override fun toString(): String =
+        "CertificateCredentialVersionData{" +
             "ca='" + ca + '\''.toString() +
             ", certificate='" + certificate + '\''.toString() +
             ", caName='" + this.caName + '\''.toString() +
@@ -111,7 +112,6 @@ class CertificateCredentialVersionData : CredentialVersionData<CertificateCreden
             ", certificateAuthority=" + certificateAuthority +
             ", selfSigned=" + selfSigned +
             '}'.toString()
-    }
 
     companion object {
         const val CREDENTIAL_DATABASE_TYPE = "cert"

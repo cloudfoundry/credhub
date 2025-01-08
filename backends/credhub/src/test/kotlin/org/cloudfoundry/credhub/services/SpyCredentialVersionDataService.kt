@@ -6,7 +6,6 @@ import org.cloudfoundry.credhub.views.FindCredentialResult
 import java.util.UUID
 
 class SpyCredentialVersionDataService : CredentialVersionDataService {
-
     override fun save(credentialVersion: CredentialVersion): CredentialVersion {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
@@ -27,7 +26,10 @@ class SpyCredentialVersionDataService : CredentialVersionDataService {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun findContainingName(name: String, expiresWithinDays: String): List<FindCredentialResult> {
+    override fun findContainingName(
+        name: String,
+        expiresWithinDays: String,
+    ): List<FindCredentialResult> {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
@@ -35,7 +37,10 @@ class SpyCredentialVersionDataService : CredentialVersionDataService {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun findStartingWithPath(path: String, expiresWithinDays: String): List<FindCredentialResult> {
+    override fun findStartingWithPath(
+        path: String,
+        expiresWithinDays: String,
+    ): List<FindCredentialResult> {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
@@ -51,14 +56,16 @@ class SpyCredentialVersionDataService : CredentialVersionDataService {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun findNByName(name: String, numberOfVersions: Int): List<CredentialVersion> {
+    override fun findNByName(
+        name: String,
+        numberOfVersions: Int,
+    ): List<CredentialVersion> {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
-    lateinit var countByEncryptionKey__returns_map: Map<UUID, Long>
-    override fun countByEncryptionKey(): Map<UUID, Long> {
-        return countByEncryptionKey__returns_map
-    }
+    lateinit var countbyencryptionkeyReturnsMap: Map<UUID, Long>
+
+    override fun countByEncryptionKey(): Map<UUID, Long> = countbyencryptionkeyReturnsMap
 
     override fun findActiveByName(name: String): List<CredentialVersion>? {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.

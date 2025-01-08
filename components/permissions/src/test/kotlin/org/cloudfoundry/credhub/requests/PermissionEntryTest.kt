@@ -32,28 +32,40 @@ class PermissionEntryTest {
     fun validation_ensuresPresenceOfActor() {
         val json = ("{ \n\"operations\": [\"read\"],\n\"path\": \"$USER_A_PATH\"}")
         val constraintViolations = deserializeAndValidate<PermissionEntry>(json, PermissionEntry::class.java)
-        assertThat(constraintViolations, contains<ConstraintViolation<PermissionEntry>>(hasViolationWithMessage(ErrorMessages.Permissions.MISSING_ACTOR)))
+        assertThat(
+            constraintViolations,
+            contains<ConstraintViolation<PermissionEntry>>(hasViolationWithMessage(ErrorMessages.Permissions.MISSING_ACTOR)),
+        )
     }
 
     @Test
     fun validation_ensuresActorIsNotEmpty() {
         val json = ("{ \n\"actor\":\"\",\"operations\": [\"read\"],\n\"path\": \"$USER_A_PATH\"}")
         val constraintViolations = deserializeAndValidate<PermissionEntry>(json, PermissionEntry::class.java)
-        assertThat(constraintViolations, contains<ConstraintViolation<PermissionEntry>>(hasViolationWithMessage(ErrorMessages.Permissions.MISSING_ACTOR)))
+        assertThat(
+            constraintViolations,
+            contains<ConstraintViolation<PermissionEntry>>(hasViolationWithMessage(ErrorMessages.Permissions.MISSING_ACTOR)),
+        )
     }
 
     @Test
     fun validation_ensuresOperationsIsNotNull() {
         val json = ("{\"actor\": \"$USER_A_ACTOR_ID\",\"path\": \"$USER_A_PATH\"}")
         val constraintViolations = deserializeAndValidate<PermissionEntry>(json, PermissionEntry::class.java)
-        assertThat(constraintViolations, contains<ConstraintViolation<PermissionEntry>>(hasViolationWithMessage(ErrorMessages.Permissions.MISSING_OPERATIONS)))
+        assertThat(
+            constraintViolations,
+            contains<ConstraintViolation<PermissionEntry>>(hasViolationWithMessage(ErrorMessages.Permissions.MISSING_OPERATIONS)),
+        )
     }
 
     @Test
     fun validation_ensuresOperationsIsNotEmpty() {
         val json = ("{\"actor\": \"$USER_A_ACTOR_ID\",\"operations\": [],\"path\": \"$USER_A_PATH\"}")
         val constraintViolations = deserializeAndValidate<PermissionEntry>(json, PermissionEntry::class.java)
-        assertThat(constraintViolations, contains<ConstraintViolation<PermissionEntry>>(hasViolationWithMessage(ErrorMessages.Permissions.MISSING_OPERATIONS)))
+        assertThat(
+            constraintViolations,
+            contains<ConstraintViolation<PermissionEntry>>(hasViolationWithMessage(ErrorMessages.Permissions.MISSING_OPERATIONS)),
+        )
     }
 
     @Test(expected = InvalidFormatException::class)
@@ -71,6 +83,9 @@ class PermissionEntryTest {
     fun validation_ensuresPathIsNotEmpty() {
         val json = ("{\"actor\": \"$USER_A_ACTOR_ID\",\"operations\": [\"read\"]}")
         val constraintViolations = deserializeAndValidate<PermissionEntry>(json, PermissionEntry::class.java)
-        assertThat(constraintViolations, contains<ConstraintViolation<PermissionEntry>>(hasViolationWithMessage(ErrorMessages.Permissions.MISSING_PATH)))
+        assertThat(
+            constraintViolations,
+            contains<ConstraintViolation<PermissionEntry>>(hasViolationWithMessage(ErrorMessages.Permissions.MISSING_PATH)),
+        )
     }
 }

@@ -10,7 +10,6 @@ import java.util.Objects
 @RequireAnyOf(message = ErrorMessages.MISSING_RSA_SSH_PARAMETERS, fields = ["publicKey", "privateKey"])
 @JsonAutoDetect
 class RsaCredentialValue : CredentialValue {
-
     @JsonDeserialize(using = EmptyStringToNull::class)
     var publicKey: String? = null
 
@@ -35,7 +34,5 @@ class RsaCredentialValue : CredentialValue {
         return Objects.equals(publicKey, that!!.publicKey) && Objects.equals(privateKey, that.privateKey)
     }
 
-    override fun hashCode(): Int {
-        return Objects.hash(publicKey, privateKey)
-    }
+    override fun hashCode(): Int = Objects.hash(publicKey, privateKey)
 }

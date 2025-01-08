@@ -8,7 +8,5 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class TimeModuleFactoryConfig {
     @Bean
-    fun javaTimeModule(): Module {
-        return TimeModuleFactory.createTimeModule()
-    }
+    fun javaTimeModule(): Module = TimeModuleFactory.createTimeModule()
 }

@@ -12,7 +12,6 @@ import java.time.format.DateTimeFormatter.ofPattern
 
 class TimeModuleFactory private constructor() {
     companion object {
-
         private val TIMESTAMP_FORMAT = ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
 
         fun createTimeModule(): JavaTimeModule {
@@ -22,7 +21,11 @@ class TimeModuleFactory private constructor() {
                 Instant::class.java,
                 object : JsonSerializer<Instant>() {
                     @Throws(IOException::class)
-                    override fun serialize(value: Instant, gen: JsonGenerator, serializers: SerializerProvider) {
+                    override fun serialize(
+                        value: Instant,
+                        gen: JsonGenerator,
+                        serializers: SerializerProvider,
+                    ) {
                         gen.writeString(ZonedDateTime.ofInstant(value, ZoneId.of("UTC")).format(TIMESTAMP_FORMAT))
                     }
                 },

@@ -20,7 +20,6 @@ class RemoteCertificateAuthorityService(
     private val objectMapper: ObjectMapper,
     private val client: RemoteBackendClient,
 ) : CertificateAuthorityService {
-
     override fun findActiveVersion(caName: String): CertificateCredentialValue? {
         val response: GetResponse
         try {

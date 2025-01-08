@@ -43,12 +43,18 @@ class DefaultCredentialsHandler(
     @Value("\${security.authorization.acls.enabled}") private val enforcePermissions: Boolean,
     @Value("\${certificates.concatenate_cas:false}") var concatenateCas: Boolean,
 ) : CredentialsHandler {
-    override fun findStartingWithPath(path: String, expiresWithinDays: String): List<FindCredentialResult> {
+    override fun findStartingWithPath(
+        path: String,
+        expiresWithinDays: String,
+    ): List<FindCredentialResult> {
         val unfilteredResults = credentialService.findStartingWithPath(path, expiresWithinDays)
         return filterPermissions(unfilteredResults)
     }
 
-    override fun findContainingName(name: String, expiresWithinDays: String): List<FindCredentialResult> {
+    override fun findContainingName(
+        name: String,
+        expiresWithinDays: String,
+    ): List<FindCredentialResult> {
         val unfilteredResults = credentialService.findContainingName(name, expiresWithinDays)
         return filterPermissions(unfilteredResults)
     }
@@ -72,14 +78,18 @@ class DefaultCredentialsHandler(
 
         val activeVersionList = credentialService.findActiveByName(generateRequest.name!!)
 
-        val existingCredentialVersion = when {
-            activeVersionList.size > 1 && (activeVersionList[0] as CertificateCredentialVersion).isVersionTransitional ->
-                activeVersionList[1]
-            activeVersionList.isNotEmpty() &&
-                (activeVersionList[0] !is CertificateCredentialVersion || !(activeVersionList[0] as CertificateCredentialVersion).isVersionTransitional) ->
-                activeVersionList[0]
-            else -> null
-        }
+        val existingCredentialVersion =
+            when {
+                activeVersionList.size > 1 && (activeVersionList[0] as CertificateCredentialVersion).isVersionTransitional ->
+                    activeVersionList[1]
+                activeVersionList.isNotEmpty() &&
+                    (
+                        activeVersionList[0] !is CertificateCredentialVersion ||
+                            !(activeVersionList[0] as CertificateCredentialVersion).isVersionTransitional
+                    ) ->
+                    activeVersionList[0]
+                else -> null
+            }
 
         val value = credentialGenerator.generate(generateRequest)
 
@@ -114,11 +124,12 @@ class DefaultCredentialsHandler(
 
         val existingCredentialVersion = credentialService.findMostRecent(setRequest.name!!)
 
-        val credentialVersion = credentialService.save(
-            existingCredentialVersion,
-            setRequest.credentialValue,
-            setRequest,
-        )
+        val credentialVersion =
+            credentialService.save(
+                existingCredentialVersion,
+                setRequest.credentialValue,
+                setRequest,
+            )
 
         auditRecord.setVersion(credentialVersion)
         auditRecord.setResource(credentialVersion.credential)
@@ -133,7 +144,10 @@ class DefaultCredentialsHandler(
         }
     }
 
-    override fun getNCredentialVersions(credentialName: String, numberOfVersions: Int?): DataResponse {
+    override fun getNCredentialVersions(
+        credentialName: String,
+        numberOfVersions: Int?,
+    ): DataResponse {
         checkPermissionsByName(credentialName, READ)
         val credentialVersions: List<CredentialVersion>
         if (numberOfVersions == null) {
@@ -178,7 +192,10 @@ class DefaultCredentialsHandler(
         return CredentialView.fromEntity(credentialService.findVersionByUuid(credentialUUID), concatenateCas)
     }
 
-    private fun validateCertificateValueIsSignedByCa(certificateValue: CertificateCredentialValue, caName: String) {
+    private fun validateCertificateValueIsSignedByCa(
+        certificateValue: CertificateCredentialValue,
+        caName: String,
+    ) {
         checkPermissionsByName(caName, READ, true)
         val caValue = certificateAuthorityService.findActiveVersion(caName).certificate
         certificateValue.ca = caValue
@@ -226,7 +243,11 @@ class DefaultCredentialsHandler(
         return filteredResult
     }
 
-    private fun checkPermissionsByName(name: String?, permissionOperation: PermissionOperation, isCa: Boolean = false) {
+    private fun checkPermissionsByName(
+        name: String?,
+        permissionOperation: PermissionOperation,
+        isCa: Boolean = false,
+    ) {
         if (!enforcePermissions) return
 
         if (!permissionCheckingService.hasPermission(userContextHolder.userContext?.actor!!, name!!, permissionOperation)) {
@@ -240,7 +261,10 @@ class DefaultCredentialsHandler(
         }
     }
 
-    private fun checkPermissionsByUuid(uuid: String, permissionOperation: PermissionOperation) {
+    private fun checkPermissionsByUuid(
+        uuid: String,
+        permissionOperation: PermissionOperation,
+    ) {
         if (!enforcePermissions) return
 
         val credential = credentialService.findVersionByUuid(uuid)

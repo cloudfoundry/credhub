@@ -8,21 +8,32 @@ import org.cloudfoundry.credhub.views.CertificateView
 import org.cloudfoundry.credhub.views.CredentialView
 
 interface CertificatesHandler {
-
-    fun handleRegenerate(credentialUuid: String, request: CertificateRegenerateRequest): CredentialView
+    fun handleRegenerate(
+        credentialUuid: String,
+        request: CertificateRegenerateRequest,
+    ): CredentialView
 
     fun handleGetAllRequest(): CertificateCredentialsView
 
     fun handleGetByNameRequest(name: String): CertificateCredentialsView
 
-    fun handleGetAllVersionsRequest(certificateId: String, current: Boolean): List<CertificateView>
+    fun handleGetAllVersionsRequest(
+        certificateId: String,
+        current: Boolean,
+    ): List<CertificateView>
 
-    fun handleDeleteVersionRequest(certificateId: String, versionId: String): CertificateView
+    fun handleDeleteVersionRequest(
+        certificateId: String,
+        versionId: String,
+    ): CertificateView
 
     fun handleUpdateTransitionalVersion(
         certificateId: String,
         requestBody: UpdateTransitionalVersionRequest,
     ): List<CertificateView>
 
-    fun handleCreateVersionsRequest(certificateId: String, requestBody: CreateVersionRequest): CertificateView
+    fun handleCreateVersionsRequest(
+        certificateId: String,
+        requestBody: CreateVersionRequest,
+    ): CertificateView
 }

@@ -12,10 +12,11 @@ import org.junit.runners.JUnit4
 class BulkRegenerateRequestTest {
     @Test
     fun whenSignedByValueIsMissing__isInvalid() {
-        val violations = JsonTestHelper.deserializeAndValidate(
-            "{}",
-            BulkRegenerateRequest::class.java,
-        )
+        val violations =
+            JsonTestHelper.deserializeAndValidate(
+                "{}",
+                BulkRegenerateRequest::class.java,
+            )
 
         MatcherAssert.assertThat(violations, Matchers.contains(JsonTestHelper.hasViolationWithMessage(ErrorMessages.MISSING_SIGNED_BY)))
     }

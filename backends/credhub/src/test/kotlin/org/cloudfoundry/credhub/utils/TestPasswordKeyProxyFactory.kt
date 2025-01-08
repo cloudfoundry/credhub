@@ -14,7 +14,5 @@ class TestPasswordKeyProxyFactory : PasswordKeyProxyFactory {
     override fun createPasswordKeyProxy(
         encryptionKeyMetadata: EncryptionKeyMetadata,
         encryptionService: InternalEncryptionService,
-    ): KeyProxy {
-        return PasswordBasedKeyProxy(encryptionKeyMetadata.encryptionPassword, 1, encryptionService)
-    }
+    ): KeyProxy = PasswordBasedKeyProxy(encryptionKeyMetadata.encryptionPassword, 1, encryptionService)
 }

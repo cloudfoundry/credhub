@@ -8,7 +8,6 @@ import org.cloudfoundry.credhub.views.FindCredentialResult
 import java.util.UUID
 
 interface CredentialService {
-
     fun save(
         existingCredentialVersion: CredentialVersion?,
         credentialValue: CredentialValue?,
@@ -19,7 +18,10 @@ interface CredentialService {
 
     fun findAllByName(credentialName: String): List<CredentialVersion>
 
-    fun findNByName(credentialName: String, numberOfVersions: Int): List<CredentialVersion>
+    fun findNByName(
+        credentialName: String,
+        numberOfVersions: Int,
+    ): List<CredentialVersion>
 
     fun findActiveByName(credentialName: String): List<CredentialVersion>
 
@@ -29,9 +31,15 @@ interface CredentialService {
 
     fun findAllCertificateCredentialsByCaName(caName: String): List<String>
 
-    fun findStartingWithPath(path: String, expiresWithinDays: String = ""): List<FindCredentialResult>
+    fun findStartingWithPath(
+        path: String,
+        expiresWithinDays: String = "",
+    ): List<FindCredentialResult>
 
-    fun findContainingName(name: String, expiresWithinDays: String): List<FindCredentialResult>
+    fun findContainingName(
+        name: String,
+        expiresWithinDays: String,
+    ): List<FindCredentialResult>
 
     fun findMostRecent(credentialName: String): CredentialVersion?
 }

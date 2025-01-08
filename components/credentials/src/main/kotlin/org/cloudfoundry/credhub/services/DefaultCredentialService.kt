@@ -27,9 +27,7 @@ class DefaultCredentialService(
     private val certificateAuthorityService: CertificateAuthorityService,
     private val credentialDataService: CredentialDataService,
     private val auditRecord: CEFAuditRecord,
-) :
-    CredentialService {
-
+) : CredentialService {
     override fun save(
         existingCredentialVersion: CredentialVersion?,
         credentialValue: CredentialValue?,
@@ -45,9 +43,7 @@ class DefaultCredentialService(
         }
     }
 
-    override fun delete(credentialName: String): Boolean {
-        return credentialVersionDataService.delete(credentialName)
-    }
+    override fun delete(credentialName: String): Boolean = credentialVersionDataService.delete(credentialName)
 
     override fun findAllByName(credentialName: String): List<CredentialVersion> {
         val credentialList = credentialVersionDataService.findAllByName(credentialName)
@@ -60,7 +56,10 @@ class DefaultCredentialService(
         return credentialList
     }
 
-    override fun findNByName(credentialName: String, numberOfVersions: Int): List<CredentialVersion> {
+    override fun findNByName(
+        credentialName: String,
+        numberOfVersions: Int,
+    ): List<CredentialVersion> {
         if (numberOfVersions < 0) {
             throw InvalidQueryParameterException(ErrorMessages.INVALID_QUERY_PARAMETER, "versions")
         }
@@ -68,14 +67,12 @@ class DefaultCredentialService(
         return credentialVersionDataService.findNByName(credentialName, numberOfVersions)
     }
 
-    override fun findActiveByName(credentialName: String): List<CredentialVersion> {
-        return credentialVersionDataService.findActiveByName(credentialName)!!
-    }
+    override fun findActiveByName(credentialName: String): List<CredentialVersion> =
+        credentialVersionDataService.findActiveByName(credentialName)!!
 
-    override fun findByUuid(credentialUUID: UUID): Credential {
-        return credentialDataService.findByUUID(credentialUUID)
+    override fun findByUuid(credentialUUID: UUID): Credential =
+        credentialDataService.findByUUID(credentialUUID)
             ?: throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
-    }
 
     override fun findVersionByUuid(credentialUUID: String): CredentialVersion {
         val credentialVersion = credentialVersionDataService.findByUuid(credentialUUID)
@@ -92,39 +89,37 @@ class DefaultCredentialService(
         return listOf(credentialVersion)[0]
     }
 
-    override fun findAllCertificateCredentialsByCaName(caName: String): List<String> {
-        return credentialVersionDataService.findAllCertificateCredentialsByCaName(caName)
-    }
+    override fun findAllCertificateCredentialsByCaName(caName: String): List<String> =
+        credentialVersionDataService.findAllCertificateCredentialsByCaName(caName)
 
-    fun findStartingWithPath(path: String): List<FindCredentialResult> {
-        return findStartingWithPath(path, "")
-    }
+    fun findStartingWithPath(path: String): List<FindCredentialResult> = findStartingWithPath(path, "")
 
-    override fun findStartingWithPath(path: String, expiresWithinDays: String): List<FindCredentialResult> {
-        return credentialVersionDataService.findStartingWithPath(path, expiresWithinDays)
-    }
+    override fun findStartingWithPath(
+        path: String,
+        expiresWithinDays: String,
+    ): List<FindCredentialResult> = credentialVersionDataService.findStartingWithPath(path, expiresWithinDays)
 
-    override fun findContainingName(name: String, expiresWithinDays: String): List<FindCredentialResult> {
-        return credentialVersionDataService.findContainingName(name, expiresWithinDays)
-    }
+    override fun findContainingName(
+        name: String,
+        expiresWithinDays: String,
+    ): List<FindCredentialResult> = credentialVersionDataService.findContainingName(name, expiresWithinDays)
 
-    override fun findMostRecent(credentialName: String): CredentialVersion? {
-        return credentialVersionDataService.findMostRecent(credentialName)
-    }
+    override fun findMostRecent(credentialName: String): CredentialVersion? = credentialVersionDataService.findMostRecent(credentialName)
 
     private fun makeAndSaveNewCredential(
         existingCredentialVersion: CredentialVersion?,
         credentialValue: CredentialValue?,
         request: BaseCredentialRequest,
     ): CredentialVersion {
-        val newVersion = credentialFactory.makeNewCredentialVersion(
-            CredentialType.valueOf(request.type?. uppercase()!!),
-            request.name,
-            credentialValue,
-            existingCredentialVersion,
-            request.generationParameters,
-            request.metadata,
-        )
+        val newVersion =
+            credentialFactory.makeNewCredentialVersion(
+                CredentialType.valueOf(request.type?. uppercase()!!),
+                request.name,
+                credentialValue,
+                existingCredentialVersion,
+                request.generationParameters,
+                request.metadata,
+            )
         val savedVersion = credentialVersionDataService.save(newVersion)
         if (savedVersion is CertificateCredentialVersion) {
             savedVersion.durationOverridden = (newVersion as CertificateCredentialVersion).durationOverridden
@@ -162,7 +157,9 @@ class DefaultCredentialService(
         if (existingCredentialVersion is CertificateCredentialVersion) {
             val certificateCredentialVersion = existingCredentialVersion as CertificateCredentialVersion?
             if (certificateCredentialVersion!!.caName != null) {
-                val updatedCA = certificateCredentialVersion.ca != certificateAuthorityService.findActiveVersion(certificateCredentialVersion.caName).certificate
+                val updatedCA =
+                    certificateCredentialVersion.ca !=
+                        certificateAuthorityService.findActiveVersion(certificateCredentialVersion.caName).certificate
                 if (updatedCA) {
                     return true
                 }
@@ -177,7 +174,10 @@ class DefaultCredentialService(
         return generateRequest.isOverwrite
     }
 
-    private fun validateCredentialSave(type: String, existingCredentialVersion: CredentialVersion?) {
+    private fun validateCredentialSave(
+        type: String,
+        existingCredentialVersion: CredentialVersion?,
+    ) {
         if (existingCredentialVersion != null && existingCredentialVersion.getCredentialType() != type) {
             throw ParameterizedValidationException(ErrorMessages.TYPE_MISMATCH)
         }

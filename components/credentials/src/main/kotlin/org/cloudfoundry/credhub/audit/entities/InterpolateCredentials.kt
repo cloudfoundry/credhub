@@ -6,8 +6,5 @@ import org.cloudfoundry.credhub.audit.RequestDetails
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 class InterpolateCredentials : RequestDetails {
-
-    override fun operation(): OperationDeviceAction {
-        return OperationDeviceAction.INTERPOLATE
-    }
+    override fun operation(): OperationDeviceAction = OperationDeviceAction.INTERPOLATE
 }

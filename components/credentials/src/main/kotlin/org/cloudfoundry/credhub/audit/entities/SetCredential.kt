@@ -34,11 +34,7 @@ open class SetCredential : RequestDetails {
             .isEquals
     }
 
-    override fun hashCode(): Int {
-        return Objects.hash(name, type)
-    }
+    override fun hashCode(): Int = Objects.hash(name, type)
 
-    override fun operation(): OperationDeviceAction {
-        return OperationDeviceAction.SET
-    }
+    override fun operation(): OperationDeviceAction = OperationDeviceAction.SET
 }

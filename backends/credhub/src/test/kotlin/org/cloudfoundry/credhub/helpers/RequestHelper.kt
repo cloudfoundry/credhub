@@ -25,40 +25,55 @@ object RequestHelper {
         passwordValue: String?,
         token: String,
     ): String {
-        val passwordRequestBody: HashMap<String, Any?> = hashMapOf(
-            "name" to credentialName,
-            "type" to "password",
-            "value" to passwordValue,
-        )
+        val passwordRequestBody: HashMap<String, Any?> =
+            hashMapOf(
+                "name" to credentialName,
+                "type" to "password",
+                "value" to passwordValue,
+            )
 
         val content = serializeToString(passwordRequestBody)
-        val put = MockMvcRequestBuilders.put("/api/v1/data")
-            .header("Authorization", "Bearer $token")
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(content)
+        val put =
+            MockMvcRequestBuilders
+                .put("/api/v1/data")
+                .header("Authorization", "Bearer $token")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content)
         val response: String
-        response = if (credentialName.length <= 1024) {
-            mockMvc.perform(put)
-                .andExpect(MockMvcResultMatchers.status().isOk)
-                .andDo(MockMvcResultHandlers.print())
-                .andReturn().response.contentAsString
-        } else {
-            mockMvc.perform(put)
-                .andExpect(MockMvcResultMatchers.status().isBadRequest)
-                .andDo(MockMvcResultHandlers.print())
-                .andReturn().response.contentAsString
-        }
+        response =
+            if (credentialName.length <= 1024) {
+                mockMvc
+                    .perform(put)
+                    .andExpect(MockMvcResultMatchers.status().isOk)
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+                    .response.contentAsString
+            } else {
+                mockMvc
+                    .perform(put)
+                    .andExpect(MockMvcResultMatchers.status().isBadRequest)
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+                    .response.contentAsString
+            }
         return response
     }
 
     @Throws(Exception::class)
     @JvmStatic
-    fun generatePassword(mockMvc: MockMvc, credentialName: String, overwrite: Boolean, length: Int?, token: String): String {
-        val passwordRequestBody: MutableMap<String, Any> = mutableMapOf(
-            "name" to credentialName,
-            "type" to "password",
-        )
+    fun generatePassword(
+        mockMvc: MockMvc,
+        credentialName: String,
+        overwrite: Boolean,
+        length: Int?,
+        token: String,
+    ): String {
+        val passwordRequestBody: MutableMap<String, Any> =
+            mutableMapOf(
+                "name" to credentialName,
+                "type" to "password",
+            )
 
         if (overwrite) {
             passwordRequestBody["overwrite"] = true
@@ -67,21 +82,28 @@ object RequestHelper {
             passwordRequestBody["parameters"] = ImmutableMap.of("length", length)
         }
         val content = serializeToString(passwordRequestBody)
-        val post = MockMvcRequestBuilders.post("/api/v1/data")
-            .header("Authorization", "Bearer $token")
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(content)
+        val post =
+            MockMvcRequestBuilders
+                .post("/api/v1/data")
+                .header("Authorization", "Bearer $token")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content)
         val response: String
-        response = if (credentialName.length <= 1024) {
-            mockMvc.perform(post)
-                .andExpect(MockMvcResultMatchers.status().isOk)
-                .andReturn().response.contentAsString
-        } else {
-            mockMvc.perform(post)
-                .andExpect(MockMvcResultMatchers.status().isBadRequest)
-                .andReturn().response.contentAsString
-        }
+        response =
+            if (credentialName.length <= 1024) {
+                mockMvc
+                    .perform(post)
+                    .andExpect(MockMvcResultMatchers.status().isOk)
+                    .andReturn()
+                    .response.contentAsString
+            } else {
+                mockMvc
+                    .perform(post)
+                    .andExpect(MockMvcResultMatchers.status().isBadRequest)
+                    .andReturn()
+                    .response.contentAsString
+            }
         return response
     }
 
@@ -95,10 +117,11 @@ object RequestHelper {
         username: String?,
         excludeUpper: Boolean,
     ): String {
-        val userRequestBody: MutableMap<String, Any?> = mutableMapOf(
-            "name" to credentialName,
-            "type" to "user",
-        )
+        val userRequestBody: MutableMap<String, Any?> =
+            mutableMapOf(
+                "name" to credentialName,
+                "type" to "user",
+            )
 
         if (overwrite) {
             userRequestBody["overwrite"] = true
@@ -116,14 +139,18 @@ object RequestHelper {
         }
         userRequestBody["parameters"] = parameters
         val content = serializeToString(userRequestBody)
-        val post = MockMvcRequestBuilders.post("/api/v1/data")
-            .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(content)
-        return mockMvc.perform(post)
+        val post =
+            MockMvcRequestBuilders
+                .post("/api/v1/data")
+                .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content)
+        return mockMvc
+            .perform(post)
             .andExpect(MockMvcResultMatchers.status().isOk)
-            .andReturn().response.contentAsString
+            .andReturn()
+            .response.contentAsString
     }
 
     @Throws(Exception::class)
@@ -137,10 +164,11 @@ object RequestHelper {
     ): String {
         BouncyCastleFipsConfigurer.configure()
 
-        val sshRequestBody: MutableMap<String, Any?> = mutableMapOf(
-            "name" to credentialName,
-            "type" to "ssh",
-        )
+        val sshRequestBody: MutableMap<String, Any?> =
+            mutableMapOf(
+                "name" to credentialName,
+                "type" to "ssh",
+            )
 
         if (overwrite) {
             sshRequestBody["overwrite"] = true
@@ -154,53 +182,83 @@ object RequestHelper {
         }
         sshRequestBody["parameters"] = parameters
         val content = serializeToString(sshRequestBody)
-        val post = MockMvcRequestBuilders.post("/api/v1/data")
-            .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(content)
-        return mockMvc.perform(post)
+        val post =
+            MockMvcRequestBuilders
+                .post("/api/v1/data")
+                .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content)
+        return mockMvc
+            .perform(post)
             .andExpect(MockMvcResultMatchers.status().isOk)
-            .andReturn().response.contentAsString
+            .andReturn()
+            .response.contentAsString
     }
 
     @Throws(Exception::class)
     @JvmStatic
-    fun getCertificateCredentials(mockMvc: MockMvc, token: String): String {
-        val get = MockMvcRequestBuilders.get("/api/v1/certificates")
-            .header("Authorization", "Bearer $token")
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-        return mockMvc.perform(get)
+    fun getCertificateCredentials(
+        mockMvc: MockMvc,
+        token: String,
+    ): String {
+        val get =
+            MockMvcRequestBuilders
+                .get("/api/v1/certificates")
+                .header("Authorization", "Bearer $token")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+        return mockMvc
+            .perform(get)
             .andDo(MockMvcResultHandlers.print())
             .andExpect(MockMvcResultMatchers.status().isOk)
-            .andReturn().response.contentAsString
+            .andReturn()
+            .response.contentAsString
     }
 
     @Throws(Exception::class)
     @JvmStatic
-    fun getCertificateCredentialsByName(mockMvc: MockMvc, token: String, name: String): String {
-        val get = MockMvcRequestBuilders.get("/api/v1/certificates?name=$name")
-            .header("Authorization", "Bearer $token")
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-        return mockMvc.perform(get)
+    fun getCertificateCredentialsByName(
+        mockMvc: MockMvc,
+        token: String,
+        name: String,
+    ): String {
+        val get =
+            MockMvcRequestBuilders
+                .get("/api/v1/certificates?name=$name")
+                .header("Authorization", "Bearer $token")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+        return mockMvc
+            .perform(get)
             .andDo(MockMvcResultHandlers.print())
             .andExpect(MockMvcResultMatchers.status().isOk)
-            .andReturn().response.contentAsString
+            .andReturn()
+            .response.contentAsString
     }
 
     @Throws(Exception::class)
     @JvmStatic
-    fun getCertificateId(mockMvc: MockMvc, certificateName: String): String {
+    fun getCertificateId(
+        mockMvc: MockMvc,
+        certificateName: String,
+    ): String {
         val response = getCertificateCredentialsByName(mockMvc, AuthConstants.ALL_PERMISSIONS_TOKEN, certificateName)
-        return JsonPath.parse(response)
+        return JsonPath
+            .parse(response)
             .read("$.certificates[0].id")
     }
 
     @Throws(Exception::class)
     @JvmStatic
-    fun generateCertificateCredential(mockMvc: MockMvc, credentialName: String?, overwrite: Boolean, commonName: String?, caName: String?, token: String): String {
+    fun generateCertificateCredential(
+        mockMvc: MockMvc,
+        credentialName: String?,
+        overwrite: Boolean,
+        commonName: String?,
+        caName: String?,
+        token: String,
+    ): String {
         BouncyCastleFipsConfigurer.configure()
 
         val certRequestBody: MutableMap<String, Any?> = HashMap()
@@ -220,14 +278,18 @@ object RequestHelper {
         parameters["common_name"] = commonName
         certRequestBody["parameters"] = parameters
         val content = serializeToString(certRequestBody)
-        val post = MockMvcRequestBuilders.post("/api/v1/data")
-            .header("Authorization", "Bearer $token")
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(content)
-        return mockMvc.perform(post)
+        val post =
+            MockMvcRequestBuilders
+                .post("/api/v1/data")
+                .header("Authorization", "Bearer $token")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content)
+        return mockMvc
+            .perform(post)
             .andExpect(MockMvcResultMatchers.status().isOk)
-            .andReturn().response.contentAsString
+            .andReturn()
+            .response.contentAsString
     }
 
     @Throws(Exception::class)
@@ -251,44 +313,57 @@ object RequestHelper {
             rsaRequestBody["parameters"] = ImmutableMap.of("key_length", length)
         }
         val content = serializeToString(rsaRequestBody)
-        val post = MockMvcRequestBuilders.post("/api/v1/data")
-            .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(content)
-        return mockMvc.perform(post)
+        val post =
+            MockMvcRequestBuilders
+                .post("/api/v1/data")
+                .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(content)
+        return mockMvc
+            .perform(post)
             .andExpect(MockMvcResultMatchers.status().isOk)
-            .andReturn().response.contentAsString
+            .andReturn()
+            .response.contentAsString
     }
 
     @Throws(Exception::class)
     @JvmStatic
-    fun generateCa(mockMvc: MockMvc, caName: String, token: String): String {
+    fun generateCa(
+        mockMvc: MockMvc,
+        caName: String,
+        token: String,
+    ): String {
         BouncyCastleFipsConfigurer.configure()
 
-        val caPost = MockMvcRequestBuilders.post("/api/v1/data")
-            .header("Authorization", "Bearer $token")
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-            //language=JSON
-            .content(
-                """{
-                "name" : "$caName",
-                "type" : "certificate",
-                "overwrite": true,
-                "parameters" : 
-                  {
-                    "common_name" : "federation",
-                    "is_ca" : true,
-                    "self_sign": true
-                  }
-              }
-                """.trimIndent(),
-            )
+        val caPost =
+            MockMvcRequestBuilders
+                .post("/api/v1/data")
+                .header("Authorization", "Bearer $token")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                //language=JSON
+                .content(
+                    """
+                    {
+                      "name" : "$caName",
+                      "type" : "certificate",
+                      "overwrite": true,
+                      "parameters" : 
+                        {
+                          "common_name" : "federation",
+                          "is_ca" : true,
+                          "self_sign": true
+                        }
+                    }
+                    """.trimIndent(),
+                )
 
-        return mockMvc.perform(caPost)
+        return mockMvc
+            .perform(caPost)
             .andExpect(MockMvcResultMatchers.status().isOk)
-            .andReturn().response.contentAsString
+            .andReturn()
+            .response.contentAsString
     }
 
     @JvmStatic
@@ -296,25 +371,26 @@ object RequestHelper {
         certName: String,
         caName: String,
         token: String,
-    ): MockHttpServletRequestBuilder {
-        return MockMvcRequestBuilders.post("/api/v1/data")
+    ): MockHttpServletRequestBuilder =
+        MockMvcRequestBuilders
+            .post("/api/v1/data")
             .header("Authorization", "Bearer $token")
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
             //language=JSON
             .content(
-                """{
-                "name" : "$certName",
-                "type" : "certificate",
-                "parameters" : 
-                  {
-                    "common_name" : "federation",
-                    "ca" : "$caName"
-                  }
-              }
+                """
+                {
+                  "name" : "$certName",
+                  "type" : "certificate",
+                  "parameters" : 
+                    {
+                      "common_name" : "federation",
+                      "ca" : "$caName"
+                    }
+                }
                 """.trimIndent(),
             )
-    }
 
     @Throws(Exception::class)
     @JvmStatic
@@ -327,7 +403,8 @@ object RequestHelper {
         BouncyCastleFipsConfigurer.configure()
 
         val certPost = createRequestForGenerateCertificate(certName, caName, token)
-        mockMvc.perform(certPost)
+        mockMvc
+            .perform(certPost)
             .andDo(MockMvcResultHandlers.print())
             .andExpect(MockMvcResultMatchers.status().isOk)
     }
@@ -341,24 +418,28 @@ object RequestHelper {
         expectedMessage: String,
         errCode: ResultMatcher?,
     ) {
-        val certPost = MockMvcRequestBuilders.post("/api/v1/data")
-            .header("Authorization", "Bearer $token")
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-            //language=JSON
-            .content(
-                """{
-                "name" : "$certName",
-                "type" : "certificate",
-                "parameters" : 
-                  {
-                    "common_name" : "federation",
-                    "ca" : "picard"
-                  }
-              }
-                """.trimIndent(),
-            )
-        mockMvc.perform(certPost)
+        val certPost =
+            MockMvcRequestBuilders
+                .post("/api/v1/data")
+                .header("Authorization", "Bearer $token")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                //language=JSON
+                .content(
+                    """
+                    {
+                      "name" : "$certName",
+                      "type" : "certificate",
+                      "parameters" : 
+                        {
+                          "common_name" : "federation",
+                          "ca" : "picard"
+                        }
+                    }
+                    """.trimIndent(),
+                )
+        mockMvc
+            .perform(certPost)
             .andDo(MockMvcResultHandlers.print())
             .andExpect(errCode!!)
             .andExpect(MockMvcResultMatchers.jsonPath("$.error", IsEqual.equalTo(expectedMessage)))
@@ -372,12 +453,15 @@ object RequestHelper {
         token: String,
         message: String,
     ) {
-        val certPost = MockMvcRequestBuilders.post("/api/v1/data")
-            .header("Authorization", "Bearer $token")
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON) //language=JSON
-            .content("{\"regenerate\":true,\"name\":\"$certName\"}")
-        mockMvc.perform(certPost)
+        val certPost =
+            MockMvcRequestBuilders
+                .post("/api/v1/data")
+                .header("Authorization", "Bearer $token")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON) //language=JSON
+                .content("{\"regenerate\":true,\"name\":\"$certName\"}")
+        mockMvc
+            .perform(certPost)
             .andDo(MockMvcResultHandlers.print())
             .andExpect(MockMvcResultMatchers.status().isNotFound)
             .andExpect(MockMvcResultMatchers.jsonPath("$.error", IsEqual.equalTo(message)))
@@ -392,13 +476,15 @@ object RequestHelper {
         granteeName: String,
         vararg permissions: String?,
     ) {
-        val post = createAddPermissionsRequest(
-            grantorToken,
-            credentialName,
-            granteeName,
-            *permissions,
-        )
-        mockMvc.perform(post)
+        val post =
+            createAddPermissionsRequest(
+                grantorToken,
+                credentialName,
+                granteeName,
+                *permissions,
+            )
+        mockMvc
+            .perform(post)
             .andExpect(MockMvcResultMatchers.status().isCreated)
     }
 
@@ -413,13 +499,15 @@ object RequestHelper {
         grantee: String,
         vararg permissions: String?,
     ) {
-        val post = createAddPermissionsRequest(
-            grantorToken,
-            credentialName,
-            grantee,
-            *permissions,
-        )
-        mockMvc.perform(post)
+        val post =
+            createAddPermissionsRequest(
+                grantorToken,
+                credentialName,
+                grantee,
+                *permissions,
+            )
+        mockMvc
+            .perform(post)
             .andExpect(MockMvcResultMatchers.status().`is`(status))
             .andExpect(MockMvcResultMatchers.content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
             .andExpect(MockMvcResultMatchers.jsonPath("$.error").value(message!!))
@@ -432,15 +520,17 @@ object RequestHelper {
         credentialName: String,
         requesterToken: String,
     ): PermissionsView {
-        val content = mockMvc.perform(
-            MockMvcRequestBuilders.get("/api/v1/permissions?credential_name=$credentialName")
-                .header("Authorization", "Bearer $requesterToken"),
-        )
-            .andExpect(MockMvcResultMatchers.status().isOk)
-            .andExpect(MockMvcResultMatchers.content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andReturn()
-            .response
-            .contentAsString
+        val content =
+            mockMvc
+                .perform(
+                    MockMvcRequestBuilders
+                        .get("/api/v1/permissions?credential_name=$credentialName")
+                        .header("Authorization", "Bearer $requesterToken"),
+                ).andExpect(MockMvcResultMatchers.status().isOk)
+                .andExpect(MockMvcResultMatchers.content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn()
+                .response
+                .contentAsString
         return deserialize(content, PermissionsView::class.java)
     }
 
@@ -453,14 +543,14 @@ object RequestHelper {
         credentialName: String?,
         requesterToken: String,
     ) {
-        mockMvc.perform(
-            MockMvcRequestBuilders.get(
-                "/api/v1/permissions" +
-                    if (credentialName == null) "" else "?credential_name=$credentialName",
-            )
-                .header("Authorization", "Bearer $requesterToken"),
-        )
-            .andExpect(MockMvcResultMatchers.status().`is`(status))
+        mockMvc
+            .perform(
+                MockMvcRequestBuilders
+                    .get(
+                        "/api/v1/permissions" +
+                            if (credentialName == null) "" else "?credential_name=$credentialName",
+                    ).header("Authorization", "Bearer $requesterToken"),
+            ).andExpect(MockMvcResultMatchers.status().`is`(status))
             .andExpect(MockMvcResultMatchers.jsonPath("$.error", IsEqual.equalTo(expectedErrorMessage)))
     }
 
@@ -510,13 +600,15 @@ object RequestHelper {
         grantorToken: String,
         grantee: String?,
     ) {
-        val result = mockMvc.perform(
-            MockMvcRequestBuilders.delete(
-                "/api/v1/permissions?" +
-                    (if (credentialName == null) "" else "credential_name=$credentialName") +
-                    if (grantee == null) "" else "&actor=$grantee",
-            ).header("Authorization", "Bearer $grantorToken"),
-        )
+        val result =
+            mockMvc.perform(
+                MockMvcRequestBuilders
+                    .delete(
+                        "/api/v1/permissions?" +
+                            (if (credentialName == null) "" else "credential_name=$credentialName") +
+                            if (grantee == null) "" else "&actor=$grantee",
+                    ).header("Authorization", "Bearer $grantorToken"),
+            )
         result.andExpect(MockMvcResultMatchers.status().`is`(status))
         if (expectedErrorMessage != null) {
             result.andExpect(MockMvcResultMatchers.jsonPath("$.error", IsEqual.equalTo(expectedErrorMessage)))
@@ -529,8 +621,9 @@ object RequestHelper {
         credentialName: String,
         grantee: String,
         vararg permissions: String?,
-    ): MockHttpServletRequestBuilder {
-        return MockMvcRequestBuilders.post("/api/v1/permissions")
+    ): MockHttpServletRequestBuilder =
+        MockMvcRequestBuilders
+            .post("/api/v1/permissions")
             .header("Authorization", "Bearer $grantorToken")
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
@@ -545,7 +638,6 @@ object RequestHelper {
                     "     }]" +
                     "}",
             )
-    }
 
     @Throws(Exception::class)
     @JvmStatic
@@ -557,49 +649,77 @@ object RequestHelper {
     ): String {
         BouncyCastleFipsConfigurer.configure()
 
-        val regenerateRequest = MockMvcRequestBuilders.post("/api/v1/certificates/$uuid/regenerate")
-            .header("Authorization", "Bearer $token")
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON) //language=JSON
-            .content("{\"set_as_transitional\" : $transitional}")
-        return mockMvc.perform(regenerateRequest)
+        val regenerateRequest =
+            MockMvcRequestBuilders
+                .post("/api/v1/certificates/$uuid/regenerate")
+                .header("Authorization", "Bearer $token")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON) //language=JSON
+                .content("{\"set_as_transitional\" : $transitional}")
+        return mockMvc
+            .perform(regenerateRequest)
             .andExpect(MockMvcResultMatchers.status().is2xxSuccessful)
-            .andReturn().response.contentAsString
+            .andReturn()
+            .response.contentAsString
     }
 
     @Throws(Exception::class)
     @JvmStatic
-    fun getCertificate(mockMvc: MockMvc, name: String, token: String): String {
-        val regenerateRequest = MockMvcRequestBuilders.get("/api/v1/certificates?name=$name")
-            .header("Authorization", "Bearer $token")
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-        return mockMvc.perform(regenerateRequest)
+    fun getCertificate(
+        mockMvc: MockMvc,
+        name: String,
+        token: String,
+    ): String {
+        val regenerateRequest =
+            MockMvcRequestBuilders
+                .get("/api/v1/certificates?name=$name")
+                .header("Authorization", "Bearer $token")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+        return mockMvc
+            .perform(regenerateRequest)
             .andExpect(MockMvcResultMatchers.status().is2xxSuccessful)
-            .andReturn().response.contentAsString
+            .andReturn()
+            .response.contentAsString
     }
 
     @Throws(Exception::class)
     @JvmStatic
-    fun getCertificateVersions(mockMvc: MockMvc, uuid: String, token: String): String {
-        val regenerateRequest = MockMvcRequestBuilders.get("/api/v1/certificates/$uuid/versions")
-            .header("Authorization", "Bearer $token")
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-        return mockMvc.perform(regenerateRequest)
+    fun getCertificateVersions(
+        mockMvc: MockMvc,
+        uuid: String,
+        token: String,
+    ): String {
+        val regenerateRequest =
+            MockMvcRequestBuilders
+                .get("/api/v1/certificates/$uuid/versions")
+                .header("Authorization", "Bearer $token")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+        return mockMvc
+            .perform(regenerateRequest)
             .andExpect(MockMvcResultMatchers.status().is2xxSuccessful)
-            .andReturn().response.contentAsString
+            .andReturn()
+            .response.contentAsString
     }
 
     @Throws(Exception::class)
     @JvmStatic
-    fun getCredential(mockMvc: MockMvc, name: String, token: String): String {
-        val regenerateRequest = MockMvcRequestBuilders.get("/api/v1/data?name=$name")
-            .header("Authorization", "Bearer $token")
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-        return mockMvc.perform(regenerateRequest)
+    fun getCredential(
+        mockMvc: MockMvc,
+        name: String,
+        token: String,
+    ): String {
+        val regenerateRequest =
+            MockMvcRequestBuilders
+                .get("/api/v1/data?name=$name")
+                .header("Authorization", "Bearer $token")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+        return mockMvc
+            .perform(regenerateRequest)
             .andExpect(MockMvcResultMatchers.status().is2xxSuccessful)
-            .andReturn().response.contentAsString
+            .andReturn()
+            .response.contentAsString
     }
 }

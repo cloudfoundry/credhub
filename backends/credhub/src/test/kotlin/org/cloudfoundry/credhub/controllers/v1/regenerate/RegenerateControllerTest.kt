@@ -35,7 +35,6 @@ import java.util.UUID
 
 @RunWith(SpringRunner::class)
 class RegenerateControllerTest {
-
     @Rule
     @JvmField
     val restDocumentation = JUnitRestDocumentation()
@@ -68,120 +67,128 @@ class RegenerateControllerTest {
     }
 
     @Test
-    fun POST__regenerate__returns_results() {
+    fun postRegenerateReturnsResults() {
         val randomUUID = UUID.randomUUID()
-        spyRegenerateHandler.handleRegenerate__returns_credentialView = CredentialView(
-            Instant.ofEpochSecond(1549053472L),
-            randomUUID,
-            "/some-name",
-            CredentialType.VALUE.type.lowercase(),
-            metadata,
-            StringCredentialValue("some-value"),
-        )
-
-        val actualResponse = mockMvc
-            .perform(
-                post("/api/v1/regenerate")
-                    .credHubAuthHeader()
-                    .accept(MediaType.APPLICATION_JSON)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                            "name": "/some-name",
-                            "metadata": { "some": "example metadata"}
-                        }
-                        """.trimIndent(),
-                    ),
+        spyRegenerateHandler.handleregenerateReturnsCredentialview =
+            CredentialView(
+                Instant.ofEpochSecond(1549053472L),
+                randomUUID,
+                "/some-name",
+                CredentialType.VALUE.type.lowercase(),
+                metadata,
+                StringCredentialValue("some-value"),
             )
-            .andExpect(status().isOk)
-            .andDo(
-                document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    PayloadDocumentation.requestFields(
-                        PayloadDocumentation.fieldWithPath("name")
-                            .description("The credential name to regenerate.")
-                            .type(JsonFieldType.STRING),
-                        PayloadDocumentation.fieldWithPath("metadata")
-                            .description("Additional metadata of the credential.")
-                            .optional(),
-                        PayloadDocumentation.fieldWithPath("metadata.*")
-                            .ignored(),
+
+        val actualResponse =
+            mockMvc
+                .perform(
+                    post("/api/v1/regenerate")
+                        .credHubAuthHeader()
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(
+                            """
+                            {
+                                "name": "/some-name",
+                                "metadata": { "some": "example metadata"}
+                            }
+                            """.trimIndent(),
+                        ),
+                ).andExpect(status().isOk)
+                .andDo(
+                    document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                        PayloadDocumentation.requestFields(
+                            PayloadDocumentation
+                                .fieldWithPath("name")
+                                .description("The credential name to regenerate.")
+                                .type(JsonFieldType.STRING),
+                            PayloadDocumentation
+                                .fieldWithPath("metadata")
+                                .description("Additional metadata of the credential.")
+                                .optional(),
+                            PayloadDocumentation
+                                .fieldWithPath("metadata.*")
+                                .ignored(),
+                        ),
                     ),
-                ),
-            ).andReturn().response
+                ).andReturn()
+                .response
 
         // language=json
         val expectedResponse =
             """
-                {
-                  "type": "value",
-                  "version_created_at": "2019-02-01T20:37:52Z",
-                  "id": "$randomUUID",
-                  "name": "/some-name",
-                  "metadata": { "description": "example metadata"},
-                  "value": "some-value"
-                }
+            {
+              "type": "value",
+              "version_created_at": "2019-02-01T20:37:52Z",
+              "id": "$randomUUID",
+              "name": "/some-name",
+              "metadata": { "description": "example metadata"},
+              "value": "some-value"
+            }
             """.trimIndent()
 
         JSONAssert.assertEquals(expectedResponse, actualResponse.contentAsString, true)
 
-        assertThat(spyRegenerateHandler.handleRegenerate__calledWith_credentialName, equalTo("/some-name"))
+        assertThat(spyRegenerateHandler.handleRegenerateCalledWithCredentialName, equalTo("/some-name"))
     }
 
     @Test
-    fun POST__bulkregenerate__returns_results() {
-        spyRegenerateHandler.handleBulkRegenerate__returns_bulkRegenerateResults = {
-            val bulkRegenerateResults = BulkRegenerateResults()
-            bulkRegenerateResults.setRegeneratedCredentials(
-                mutableSetOf(
-                    "/some-credential-name",
-                    "/some-other-credential-name",
-                ),
-            )
-
-            bulkRegenerateResults
-        }()
-
-        val actualResponse = mockMvc
-            .perform(
-                post("/api/v1/bulk-regenerate")
-                    .credHubAuthHeader()
-                    .accept(MediaType.APPLICATION_JSON)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                            "signed_by": "/some-ca"
-                        }
-                        """.trimIndent(),
+    fun postBulkregenerateReturnsResults() {
+        spyRegenerateHandler.handleBulkRegenerateReturnsBulkRegenerateResults =
+            {
+                val bulkRegenerateResults = BulkRegenerateResults()
+                bulkRegenerateResults.setRegeneratedCredentials(
+                    mutableSetOf(
+                        "/some-credential-name",
+                        "/some-other-credential-name",
                     ),
-            )
-            .andExpect(status().isOk)
-            .andDo(
-                document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    PayloadDocumentation.requestFields(
-                        PayloadDocumentation.fieldWithPath("signed_by")
-                            .description("The name of the CA that signs regenerated certificates.")
-                            .type(JsonFieldType.STRING),
+                )
+
+                bulkRegenerateResults
+            }()
+
+        val actualResponse =
+            mockMvc
+                .perform(
+                    post("/api/v1/bulk-regenerate")
+                        .credHubAuthHeader()
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(
+                            """
+                            {
+                                "signed_by": "/some-ca"
+                            }
+                            """.trimIndent(),
+                        ),
+                ).andExpect(status().isOk)
+                .andDo(
+                    document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                        PayloadDocumentation.requestFields(
+                            PayloadDocumentation
+                                .fieldWithPath("signed_by")
+                                .description("The name of the CA that signs regenerated certificates.")
+                                .type(JsonFieldType.STRING),
+                        ),
                     ),
-                ),
-            ).andReturn().response
+                ).andReturn()
+                .response
 
         // language=json
         val expectedResponse =
             """
-          {
-            "regenerated_credentials": [
-              "/some-credential-name",
-              "/some-other-credential-name"
-            ]
-          }
+            {
+              "regenerated_credentials": [
+                "/some-credential-name",
+                "/some-other-credential-name"
+              ]
+            }
             """.trimIndent()
 
         JSONAssert.assertEquals(expectedResponse, actualResponse.contentAsString, true)
 
-        assertThat(spyRegenerateHandler.handleBulkRegenerate__calledWith_signerName, equalTo("/some-ca"))
+        assertThat(spyRegenerateHandler.handleBulkRegenerateCalledWithSignerName, equalTo("/some-ca"))
     }
 }

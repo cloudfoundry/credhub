@@ -7,21 +7,16 @@ import javax.validation.constraints.NotNull
 
 @JsonAutoDetect
 class RegenerateRequest {
-
     @NotNull(message = ErrorMessages.MISSING_NAME)
     private lateinit var name: String
 
     private var metadata: JsonNode? = null
 
     constructor() {
-        /* this needs to be there for jackson to be happy */
+        // this needs to be there for jackson to be happy
     }
 
-    fun getName(): String {
-        return name
-    }
+    fun getName(): String = name
 
-    fun getMetadata(): JsonNode? {
-        return metadata
-    }
+    fun getMetadata(): JsonNode? = metadata
 }

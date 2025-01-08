@@ -54,7 +54,5 @@ class UserCredentialValue : CredentialValue {
             Objects.equals(salt, that.salt)
     }
 
-    override fun hashCode(): Int {
-        return Objects.hash(username, password, salt)
-    }
+    override fun hashCode(): Int = Objects.hash(username, password, salt)
 }

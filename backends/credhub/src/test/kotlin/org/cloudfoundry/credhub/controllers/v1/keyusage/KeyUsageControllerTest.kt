@@ -22,7 +22,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.security.Security
 
 class KeyUsageControllerTest {
-
     @Rule
     @JvmField
     val restDocumentation = JUnitRestDocumentation()
@@ -51,7 +50,7 @@ class KeyUsageControllerTest {
     }
 
     @Test
-    fun GET__keyusage__returns_map() {
+    fun getKeyusageReturnsMap() {
         // language=json
         val responseBody =
             """
@@ -64,19 +63,21 @@ class KeyUsageControllerTest {
         val objectMapper = ObjectMapper()
         val map = objectMapper.readValue(responseBody, Map::class.java) as Map<String, Integer>
         val longMap = map.mapValues { it.value.toLong() }
-        keyUsageHandler.getKeyUsage__returns_map = longMap
+        keyUsageHandler.keyusageReturnsMap = longMap
 
-        val mvcResult = mockMvc.perform(
-            get(KeyUsageController.ENDPOINT)
-                .contentType(MediaType.APPLICATION_JSON)
-                .credHubAuthHeader(),
-        ).andExpect(status().isOk)
-            .andExpect(MockMvcResultMatchers.content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-            .andDo(
-                document(
-                    CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                ),
-            ).andReturn()
+        val mvcResult =
+            mockMvc
+                .perform(
+                    get(KeyUsageController.ENDPOINT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .credHubAuthHeader(),
+                ).andExpect(status().isOk)
+                .andExpect(MockMvcResultMatchers.content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andDo(
+                    document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                    ),
+                ).andReturn()
 
         JSONAssert.assertEquals(mvcResult.response.contentAsString, responseBody, true)
     }

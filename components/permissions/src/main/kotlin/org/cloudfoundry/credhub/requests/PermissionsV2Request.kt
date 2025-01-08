@@ -12,7 +12,6 @@ import javax.validation.constraints.Pattern
 @JsonAutoDetect
 @Validated
 class PermissionsV2Request {
-
     companion object {
         const val HAS_NO_DOUBLE_SLASHES_AND_DOES_NOT_END_WITH_A_SLASH = "^(/|(?>(?:/?[^/]+))*)$"
         const val ONLY_VALID_CHARACTERS_IN_PATH = "^[a-zA-Z0-9-_/.:,()\\[\\]+]*(/\\*)?$"
@@ -34,7 +33,7 @@ class PermissionsV2Request {
     final lateinit var operations: MutableList<PermissionOperation>
 
     constructor() : super() {
-        /* this needs to be there for jackson to be happy */
+        // this needs to be there for jackson to be happy
     }
 
     constructor(path: String, actor: String, operations: MutableList<PermissionOperation>) : super() {
@@ -43,9 +42,7 @@ class PermissionsV2Request {
         this.operations = operations
     }
 
-    fun getPath(): String {
-        return path
-    }
+    fun getPath(): String = path
 
     fun setPath(path: String) {
         this.path = StringUtils.prependIfMissing(path, "/")

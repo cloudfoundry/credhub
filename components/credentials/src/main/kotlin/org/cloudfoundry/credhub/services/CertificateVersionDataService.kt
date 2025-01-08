@@ -5,7 +5,6 @@ import org.cloudfoundry.credhub.domain.CredentialVersion
 import java.util.UUID
 
 interface CertificateVersionDataService {
-
     fun findActive(caName: String): CredentialVersion?
 
     fun findByCredentialUUID(uuidString: String): CredentialVersion?

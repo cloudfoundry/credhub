@@ -6,7 +6,5 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class ManagementRegistryConfiguration {
     @Bean
-    fun getManagementRegistry(): ManagementRegistry {
-        return ManagementRegistry()
-    }
+    fun getManagementRegistry(): ManagementRegistry = ManagementRegistry()
 }

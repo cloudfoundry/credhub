@@ -45,7 +45,6 @@ import java.util.UUID
 import java.util.regex.Pattern
 
 class DefaultCredentialServiceTest {
-
     @Mock
     private lateinit var credentialVersionDataService: CredentialVersionDataService
 
@@ -90,13 +89,14 @@ class DefaultCredentialServiceTest {
         val userContextHolder = UserContextHolder()
         userContextHolder.userContext = userContext
 
-        this.subject = DefaultCredentialService(
-            credentialVersionDataService,
-            credentialFactory,
-            certificateAuthorityService,
-            credentialDataService,
-            auditRecord,
-        )
+        this.subject =
+            DefaultCredentialService(
+                credentialVersionDataService,
+                credentialFactory,
+                certificateAuthorityService,
+                credentialDataService,
+                auditRecord,
+            )
 
         generationParameters = mock<StringGenerationParameters>(StringGenerationParameters::class.java)
         credentialValue = mock<CredentialValue>(CredentialValue::class.java)
@@ -145,9 +145,10 @@ class DefaultCredentialServiceTest {
         `when`(request.type).thenReturn("user")
         `when`<CredentialVersion>(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredentialVersion)
 
-        Assertions.assertThatThrownBy {
-            this.subject.save(existingCredentialVersion, credentialValue, request)
-        }.isInstanceOf(ParameterizedValidationException::class.java)
+        Assertions
+            .assertThatThrownBy {
+                this.subject.save(existingCredentialVersion, credentialValue, request)
+            }.isInstanceOf(ParameterizedValidationException::class.java)
     }
 
     @Test
@@ -155,9 +156,10 @@ class DefaultCredentialServiceTest {
         `when`(request.type).thenReturn("user")
         `when`<CredentialVersion>(credentialVersionDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCertificateVersion)
 
-        Assertions.assertThatThrownBy {
-            this.subject.save(existingCertificateVersion, credentialValue, request)
-        }.isInstanceOf(ParameterizedValidationException::class.java)
+        Assertions
+            .assertThatThrownBy {
+                this.subject.save(existingCertificateVersion, credentialValue, request)
+            }.isInstanceOf(ParameterizedValidationException::class.java)
     }
 
     @Test
@@ -165,9 +167,10 @@ class DefaultCredentialServiceTest {
         `when`(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
             .thenReturn(true)
 
-        Assertions.assertThatThrownBy {
-            this.subject.findNByName(CREDENTIAL_NAME, -1)
-        }.isInstanceOf(InvalidQueryParameterException::class.java)
+        Assertions
+            .assertThatThrownBy {
+                this.subject.findNByName(CREDENTIAL_NAME, -1)
+            }.isInstanceOf(InvalidQueryParameterException::class.java)
             .hasMessage(ErrorMessages.INVALID_QUERY_PARAMETER)
     }
 
@@ -176,17 +179,19 @@ class DefaultCredentialServiceTest {
         `when`<CredentialVersion>(credentialVersionDataService.findByUuid(VERSION_UUID_STRING))
             .thenReturn(null)
 
-        Assertions.assertThatThrownBy {
-            this.subject.findVersionByUuid(VERSION_UUID_STRING)
-        }.isInstanceOf(EntryNotFoundException::class.java)
+        Assertions
+            .assertThatThrownBy {
+                this.subject.findVersionByUuid(VERSION_UUID_STRING)
+            }.isInstanceOf(EntryNotFoundException::class.java)
             .hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
     }
 
     @Test
     fun findByUuid_whenNoMatchingCredentialExists_throwsEntryNotFound() {
-        Assertions.assertThatThrownBy {
-            this.subject.findByUuid(UUID.randomUUID())
-        }.isInstanceOf(EntryNotFoundException::class.java)
+        Assertions
+            .assertThatThrownBy {
+                this.subject.findByUuid(UUID.randomUUID())
+            }.isInstanceOf(EntryNotFoundException::class.java)
             .hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
     }
 
@@ -198,11 +203,12 @@ class DefaultCredentialServiceTest {
         `when`<GenerationParameters>(request.generationParameters).thenReturn(stringGenerationParameters)
 
         val stringCredentialValue = StringCredentialValue("password")
-        val passwordCredentialVersion = PasswordCredentialVersion(
-            stringCredentialValue,
-            request.generationParameters as StringGenerationParameters,
-            encryptor,
-        )
+        val passwordCredentialVersion =
+            PasswordCredentialVersion(
+                stringCredentialValue,
+                request.generationParameters as StringGenerationParameters,
+                encryptor,
+            )
 
         `when`<CredentialVersion>(
             credentialFactory.makeNewCredentialVersion(
@@ -248,8 +254,9 @@ class DefaultCredentialServiceTest {
 
     @Test
     fun getCredentialVersion_whenTheVersionExists_returnsTheCredential() {
-        val credentialVersionFound = this.subject
-            .findVersionByUuid(VERSION_UUID_STRING)
+        val credentialVersionFound =
+            this.subject
+                .findVersionByUuid(VERSION_UUID_STRING)
 
         assertThat(credentialVersionFound).isEqualTo(existingCredentialVersion)
     }
@@ -263,8 +270,9 @@ class DefaultCredentialServiceTest {
         `when`(credentialVersionDataService.findAllCertificateCredentialsByCaName(CREDENTIAL_NAME))
             .thenReturn(expectedCertificates)
 
-        val foundCertificates = this.subject
-            .findAllCertificateCredentialsByCaName(CREDENTIAL_NAME)
+        val foundCertificates =
+            this.subject
+                .findAllCertificateCredentialsByCaName(CREDENTIAL_NAME)
 
         assertThat(foundCertificates).isEqualTo(expectedCertificates)
     }
@@ -278,11 +286,12 @@ class DefaultCredentialServiceTest {
         `when`(generateRequest.generationParameters).thenReturn(stringGenerationParameters)
 
         val stringCredentialValue = StringCredentialValue("password")
-        val passwordCredentialVersion = PasswordCredentialVersion(
-            stringCredentialValue,
-            stringGenerationParameters,
-            encryptor,
-        )
+        val passwordCredentialVersion =
+            PasswordCredentialVersion(
+                stringCredentialValue,
+                stringGenerationParameters,
+                encryptor,
+            )
 
         `when`(generateRequest.type).thenReturn("password")
         `when`(credentialVersionDataService.save(passwordCredentialVersion))
@@ -343,11 +352,12 @@ class DefaultCredentialServiceTest {
         `when`(request.generationParameters).thenReturn(stringGenerationParameters)
 
         val stringCredentialValue = StringCredentialValue("password")
-        val passwordCredentialVersion = PasswordCredentialVersion(
-            stringCredentialValue,
-            stringGenerationParameters,
-            encryptor,
-        )
+        val passwordCredentialVersion =
+            PasswordCredentialVersion(
+                stringCredentialValue,
+                stringGenerationParameters,
+                encryptor,
+            )
 
         `when`(request.type).thenReturn("password")
         `when`(credentialVersionDataService.save(passwordCredentialVersion))
@@ -395,8 +405,10 @@ class DefaultCredentialServiceTest {
         val resultCert = results[0] as CertificateCredentialVersion
 
         val allMatches = ArrayList<String>()
-        val m = Pattern.compile("BEGIN CERTIFICATE")
-            .matcher(resultCert.ca)
+        val m =
+            Pattern
+                .compile("BEGIN CERTIFICATE")
+                .matcher(resultCert.ca)
         while (m.find()) {
             allMatches.add(m.group())
         }
@@ -414,8 +426,10 @@ class DefaultCredentialServiceTest {
         val resultCert = results[0] as CertificateCredentialVersion
 
         val allMatches = ArrayList<String>()
-        val m = Pattern.compile("BEGIN CERTIFICATE")
-            .matcher(resultCert.ca)
+        val m =
+            Pattern
+                .compile("BEGIN CERTIFICATE")
+                .matcher(resultCert.ca)
         while (m.find()) {
             allMatches.add(m.group())
         }
@@ -433,8 +447,10 @@ class DefaultCredentialServiceTest {
         val resultCert = results[0] as CertificateCredentialVersion
 
         val allMatches = ArrayList<String>()
-        val m = Pattern.compile("BEGIN CERTIFICATE")
-            .matcher(resultCert.ca)
+        val m =
+            Pattern
+                .compile("BEGIN CERTIFICATE")
+                .matcher(resultCert.ca)
         while (m.find()) {
             allMatches.add(m.group())
         }
@@ -452,8 +468,10 @@ class DefaultCredentialServiceTest {
         val resultCert = results as CertificateCredentialVersion
 
         val allMatches = ArrayList<String>()
-        val m = Pattern.compile("BEGIN CERTIFICATE")
-            .matcher(resultCert.ca)
+        val m =
+            Pattern
+                .compile("BEGIN CERTIFICATE")
+                .matcher(resultCert.ca)
         while (m.find()) {
             allMatches.add(m.group())
         }
@@ -494,7 +512,12 @@ class DefaultCredentialServiceTest {
         `when`(credentialVersionDataService.save(certificateCredentialVersion))
             .thenReturn(savedCertificateCredentialVersion)
 
-        val returnedCertificateCredentialVersion = this.subject.save(originalCredentialVersion, certificateCredentialValue, generateRequest) as CertificateCredentialVersion
+        val returnedCertificateCredentialVersion =
+            this.subject.save(
+                originalCredentialVersion,
+                certificateCredentialValue,
+                generateRequest,
+            ) as CertificateCredentialVersion
         assertThat(returnedCertificateCredentialVersion.durationOverridden).isEqualTo(true)
         assertThat(returnedCertificateCredentialVersion.durationUsed).isEqualTo(1234)
     }

@@ -9,7 +9,6 @@ import javax.validation.constraints.NotEmpty
 
 @JsonAutoDetect
 class PermissionsRequest {
-
     @NotEmpty(message = ErrorMessages.MISSING_NAME)
     var credentialName: String? = null
         set(credentialName) {
@@ -22,7 +21,7 @@ class PermissionsRequest {
     var permissions: MutableList<PermissionEntry>? = null
 
     constructor() : super() {
-        /* this needs to be there for jackson to be happy */
+        // this needs to be there for jackson to be happy
     }
 
     constructor(credentialName: String?, permissions: MutableList<PermissionEntry>?) : super() {
@@ -47,10 +46,9 @@ class PermissionsRequest {
             .isEquals
     }
 
-    override fun hashCode(): Int {
-        return HashCodeBuilder(17, 37)
+    override fun hashCode(): Int =
+        HashCodeBuilder(17, 37)
             .append(credentialName)
             .append(permissions)
             .toHashCode()
-    }
 }

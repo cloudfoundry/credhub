@@ -53,9 +53,7 @@ open class CredentialView {
     }
 
     @JsonProperty("id")
-    fun getUuid(): String {
-        return if (uuid == null) "" else uuid.toString()
-    }
+    fun getUuid(): String = if (uuid == null) "" else uuid.toString()
 
     override fun equals(other: Any?): Boolean {
         if (this === other) {
@@ -73,15 +71,17 @@ open class CredentialView {
             value == that.value
     }
 
-    override fun hashCode(): Int {
-        return Objects.hash(versionCreatedAt, uuid, name, type, metadata, value)
-    }
+    override fun hashCode(): Int = Objects.hash(versionCreatedAt, uuid, name, type, metadata, value)
 
     companion object {
         @JvmOverloads
         @JvmStatic
-        fun fromEntity(credentialVersion: CredentialVersion?, concatenateCas: Boolean = false, includeGenerationInfo: Boolean = false): CredentialView {
-            return when (credentialVersion) {
+        fun fromEntity(
+            credentialVersion: CredentialVersion?,
+            concatenateCas: Boolean = false,
+            includeGenerationInfo: Boolean = false,
+        ): CredentialView =
+            when (credentialVersion) {
                 is ValueCredentialVersion -> {
                     ValueView((credentialVersion as ValueCredentialVersion?)!!)
                 }
@@ -111,6 +111,5 @@ open class CredentialView {
                     throw IllegalArgumentException()
                 }
             }
-        }
     }
 }

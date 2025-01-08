@@ -4,9 +4,8 @@ import org.springframework.http.HttpStatus
 
 class HttpUtils private constructor() {
     companion object {
-
-        fun getResultCode(statusCode: Int): String {
-            return if (statusCode < HttpStatus.OK.value()) {
+        fun getResultCode(statusCode: Int): String =
+            if (statusCode < HttpStatus.OK.value()) {
                 "info"
             } else if (statusCode < HttpStatus.MULTIPLE_CHOICES.value()) {
                 "success"
@@ -17,6 +16,5 @@ class HttpUtils private constructor() {
             } else {
                 "serverError"
             }
-        }
     }
 }

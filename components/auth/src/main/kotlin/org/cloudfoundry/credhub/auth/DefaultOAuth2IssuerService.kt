@@ -20,31 +20,36 @@ import java.util.HashMap
 @ConditionalOnProperty("security.oauth2.enabled")
 @Profile("prod", "dev", "!unit-test")
 class DefaultOAuth2IssuerService
-@Autowired
-@Throws(URISyntaxException::class, CertificateException::class, NoSuchAlgorithmException::class, KeyStoreException::class, KeyManagementException::class, IOException::class)
-internal constructor(
-    restTemplateFactory: RestTemplateFactory,
-    oAuthProperties: OAuthProperties,
-) : OAuth2IssuerService {
+    @Autowired
+    @Throws(
+        URISyntaxException::class,
+        CertificateException::class,
+        NoSuchAlgorithmException::class,
+        KeyStoreException::class,
+        KeyManagementException::class,
+        IOException::class,
+    )
+    internal constructor(
+        restTemplateFactory: RestTemplateFactory,
+        oAuthProperties: OAuthProperties,
+    ) : OAuth2IssuerService {
+        private val authServerUri: URI = oAuthProperties.issuerPath
+        private val restTemplate: RestTemplate =
+            restTemplateFactory
+                .createRestTemplate(oAuthProperties.trustStore!!, oAuthProperties.trustStorePassword!!)
 
-    private val authServerUri: URI = oAuthProperties.issuerPath
-    private val restTemplate: RestTemplate = restTemplateFactory
-        .createRestTemplate(oAuthProperties.trustStore!!, oAuthProperties.trustStorePassword!!)
+        private var issuer: String? = null
 
-    private var issuer: String? = null
+        override fun getIssuer(): String? = if (issuer != null) issuer else fetchIssuer()
 
-    override fun getIssuer(): String? {
-        return if (issuer != null) issuer else fetchIssuer()
+        fun fetchIssuer(): String? {
+            issuer =
+                restTemplate
+                    .getForEntity(
+                        authServerUri,
+                        HashMap::class.java,
+                    ).body!!["issuer"] as String
+
+            return issuer
+        }
     }
-
-    fun fetchIssuer(): String? {
-        issuer = restTemplate
-            .getForEntity(
-                authServerUri,
-                HashMap::class.java,
-            )
-            .body!!["issuer"] as String
-
-        return issuer
-    }
-}

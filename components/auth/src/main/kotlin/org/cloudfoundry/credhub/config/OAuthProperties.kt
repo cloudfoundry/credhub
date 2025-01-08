@@ -11,7 +11,6 @@ import java.net.URISyntaxException
 @ConfigurationProperties("auth-server")
 @ConditionalOnProperty("security.oauth2.enabled")
 class OAuthProperties {
-
     @Value("\${internal_url:#{null}}")
     private var internalUrl: String? = null
     var url: String? = null

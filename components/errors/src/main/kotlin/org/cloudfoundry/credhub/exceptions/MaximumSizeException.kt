@@ -1,3 +1,5 @@
 package org.cloudfoundry.credhub.exceptions
 
-class MaximumSizeException(message: String) : RuntimeException(message)
+class MaximumSizeException(
+    message: String,
+) : RuntimeException(message)

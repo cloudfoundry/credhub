@@ -17,47 +17,38 @@ import org.springframework.security.oauth2.provider.token.store.JwtTokenStore
 @Configuration
 @Profile("unit-test")
 class Oauth2TestConfiguration {
-
     @Bean
-    fun resourceServerProperties(): ResourceServerProperties {
-        return ResourceServerProperties()
-    }
+    fun resourceServerProperties(): ResourceServerProperties = ResourceServerProperties()
 
     @Bean
     @Throws(Exception::class)
-    fun jwtAccessTokenConverter(): JwtAccessTokenConverter {
-        return JwtAccessTokenConverter()
+    fun jwtAccessTokenConverter(): JwtAccessTokenConverter =
+        JwtAccessTokenConverter()
             .apply {
-                accessTokenConverter = DefaultAccessTokenConverter()
-                    .apply { setIncludeGrantType(true) }
+                accessTokenConverter =
+                    DefaultAccessTokenConverter()
+                        .apply { setIncludeGrantType(true) }
                 setVerifierKey(resourceServerProperties().jwt.keyValue)
                 afterPropertiesSet()
             }
-    }
 
     @Bean
-    fun tokenStore(jwtAccessTokenConverter: JwtAccessTokenConverter): TokenStore {
-        return JwtTokenStore(jwtAccessTokenConverter)
-    }
+    fun tokenStore(jwtAccessTokenConverter: JwtAccessTokenConverter): TokenStore = JwtTokenStore(jwtAccessTokenConverter)
 
     @Bean
-    fun resourceServerTokenServices(tokenStore: TokenStore): ResourceServerTokenServices {
-        return DefaultTokenServices().apply { setTokenStore(tokenStore) }
-    }
+    fun resourceServerTokenServices(tokenStore: TokenStore): ResourceServerTokenServices =
+        DefaultTokenServices().apply { setTokenStore(tokenStore) }
 
     @Bean
     fun authenticationManagerBuilder(): AuthenticationManagerBuilder {
-        val objectPostProcessor = object : ObjectPostProcessor<Any> {
-            override fun <O : Any> postProcess(dataObject: O): O {
-                return dataObject
+        val objectPostProcessor =
+            object : ObjectPostProcessor<Any> {
+                override fun <O : Any> postProcess(dataObject: O): O = dataObject
             }
-        }
         return AuthenticationManagerBuilder(objectPostProcessor)
             .parentAuthenticationManager(authenticationManager())
     }
 
     @Bean
-    fun authenticationManager(): AuthenticationManager {
-        return AuthenticationManager { authentication -> authentication }
-    }
+    fun authenticationManager(): AuthenticationManager = AuthenticationManager { authentication -> authentication }
 }

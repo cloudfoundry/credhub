@@ -35,7 +35,6 @@ import java.util.Arrays.asList
 
 @RunWith(JUnit4::class)
 class DefaultPermissionServiceTest {
-
     private var subject: DefaultPermissionService? = null
 
     private var userContext: UserContext? = null
@@ -70,8 +69,9 @@ class DefaultPermissionServiceTest {
         `when`(permissionDataService!!.getAllowedOperations(CREDENTIAL_NAME, USER_NAME))
             .thenReturn(expectedOperations)
 
-        val foundOperations = subject!!
-            .getAllowedOperationsForLogging(CREDENTIAL_NAME, USER_NAME)
+        val foundOperations =
+            subject!!
+                .getAllowedOperationsForLogging(CREDENTIAL_NAME, USER_NAME)
 
         assertThat<List<PermissionOperation>>(expectedOperations, equalTo(foundOperations))
     }
@@ -248,7 +248,6 @@ class DefaultPermissionServiceTest {
     }
 
     companion object {
-
         private val CREDENTIAL_NAME = "/test/credential"
         private val USER_NAME = "test-actor"
     }

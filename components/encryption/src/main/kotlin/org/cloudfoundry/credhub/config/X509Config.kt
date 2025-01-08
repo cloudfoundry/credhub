@@ -10,11 +10,10 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class X509Config {
     @Bean
-    fun x509ExtensionUtils(): X509ExtensionUtils {
-        return X509ExtensionUtils(
+    fun x509ExtensionUtils(): X509ExtensionUtils =
+        X509ExtensionUtils(
             JcaDigestCalculatorProviderBuilder().build().get(
                 AlgorithmIdentifier(OIWObjectIdentifiers.idSHA1),
             ),
         )
-    }
 }

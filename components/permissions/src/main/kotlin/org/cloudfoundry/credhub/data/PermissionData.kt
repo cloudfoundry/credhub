@@ -24,7 +24,6 @@ class PermissionData(
     @field:Column(nullable = false)
     var actor: String?,
 ) : AuditablePermissionData {
-
     @Id
     @Column(length = UuidConstants.UUID_BYTES, columnDefinition = "VARBINARY")
     @GeneratedValue(generator = "uuid2")
@@ -56,25 +55,15 @@ class PermissionData(
         enableOperations(operations)
     }
 
-    fun hasReadPermission(): Boolean {
-        return readPermission
-    }
+    fun hasReadPermission(): Boolean = readPermission
 
-    fun hasWritePermission(): Boolean {
-        return writePermission
-    }
+    fun hasWritePermission(): Boolean = writePermission
 
-    fun hasDeletePermission(): Boolean {
-        return deletePermission
-    }
+    fun hasDeletePermission(): Boolean = deletePermission
 
-    fun hasWriteAclPermission(): Boolean {
-        return writeAclPermission
-    }
+    fun hasWriteAclPermission(): Boolean = writeAclPermission
 
-    fun hasReadAclPermission(): Boolean {
-        return readAclPermission
-    }
+    fun hasReadAclPermission(): Boolean = readAclPermission
 
     fun hasPermission(requiredPermission: PermissionOperation): Boolean {
         when (requiredPermission) {
@@ -148,7 +137,6 @@ class PermissionData(
     }
 
     companion object {
-
         private val DEFAULT_DENY = false
     }
 }

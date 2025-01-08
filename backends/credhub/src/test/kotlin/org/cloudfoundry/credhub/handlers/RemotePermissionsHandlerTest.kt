@@ -20,13 +20,12 @@ import org.mockito.Mockito
 import org.mockito.Mockito.`when`
 import java.util.UUID
 
+private const val CREDENTIAL_NAME = "/test/credential"
+private const val USER = "test-user"
+private const val ACTOR = "test-actor"
+
 @RunWith(JUnit4::class)
 class RemotePermissionsHandlerTest {
-
-    private val CREDENTIAL_NAME = "/test/credential"
-    private val USER = "test-user"
-    private val ACTOR = "test-actor"
-
     private lateinit var subject: RemotePermissionsHandler
     private var client = Mockito.mock<RemoteBackendClient>(RemoteBackendClient::class.java)!!
     private val userContextHolder = Mockito.mock<UserContextHolder>(UserContextHolder::class.java)!!
@@ -51,8 +50,14 @@ class RemotePermissionsHandlerTest {
         request.setPath(CREDENTIAL_NAME)
         request.operations = operations
 
-        val response = PermissionsResponse.newBuilder().setActor(ACTOR).setPath(CREDENTIAL_NAME).setUuid(uuid.toString())
-            .addAllOperations(operationStrings).build()
+        val response =
+            PermissionsResponse
+                .newBuilder()
+                .setActor(ACTOR)
+                .setPath(CREDENTIAL_NAME)
+                .setUuid(uuid.toString())
+                .addAllOperations(operationStrings)
+                .build()
 
         `when`(client.writePermissionRequest(CREDENTIAL_NAME, ACTOR, operationStrings, USER))
             .thenReturn(response)
@@ -79,9 +84,10 @@ class RemotePermissionsHandlerTest {
         `when`(client.writePermissionRequest(CREDENTIAL_NAME, ACTOR, operationStrings, USER))
             .thenThrow(exception)
 
-        Assertions.assertThatThrownBy {
-            subject.writeV2Permissions(request)
-        }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
+        Assertions
+            .assertThatThrownBy {
+                subject.writeV2Permissions(request)
+            }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
     }
 
     @Test
@@ -90,8 +96,14 @@ class RemotePermissionsHandlerTest {
         val operationStrings = operations.map { o -> o.operation }.toMutableList()
         val uuid = UUID.randomUUID()
 
-        val response = PermissionsResponse.newBuilder().setActor(ACTOR).setPath(CREDENTIAL_NAME).setUuid(uuid.toString())
-            .addAllOperations(operationStrings).build()
+        val response =
+            PermissionsResponse
+                .newBuilder()
+                .setActor(ACTOR)
+                .setPath(CREDENTIAL_NAME)
+                .setUuid(uuid.toString())
+                .addAllOperations(operationStrings)
+                .build()
 
         `when`(client.patchPermissionRequest(uuid.toString(), operationStrings, USER))
             .thenReturn(response)
@@ -114,9 +126,10 @@ class RemotePermissionsHandlerTest {
         `when`(client.patchPermissionRequest(uuid.toString(), operationStrings, USER))
             .thenThrow(exception)
 
-        Assertions.assertThatThrownBy {
-            subject.patchPermissions(uuid.toString(), operations)
-        }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
+        Assertions
+            .assertThatThrownBy {
+                subject.patchPermissions(uuid.toString(), operations)
+            }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
     }
 
     @Test
@@ -130,8 +143,14 @@ class RemotePermissionsHandlerTest {
         request.setPath(CREDENTIAL_NAME)
         request.operations = operations
 
-        val response = PermissionsResponse.newBuilder().setActor(ACTOR).setPath(CREDENTIAL_NAME).setUuid(uuid.toString())
-            .addAllOperations(operationStrings).build()
+        val response =
+            PermissionsResponse
+                .newBuilder()
+                .setActor(ACTOR)
+                .setPath(CREDENTIAL_NAME)
+                .setUuid(uuid.toString())
+                .addAllOperations(operationStrings)
+                .build()
 
         `when`(client.putPermissionRequest(uuid.toString(), CREDENTIAL_NAME, ACTOR, operationStrings, USER))
             .thenReturn(response)
@@ -159,9 +178,10 @@ class RemotePermissionsHandlerTest {
         `when`(client.putPermissionRequest(uuid.toString(), CREDENTIAL_NAME, ACTOR, operationStrings, USER))
             .thenThrow(exception)
 
-        Assertions.assertThatThrownBy {
-            subject.putPermissions(uuid.toString(), request)
-        }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
+        Assertions
+            .assertThatThrownBy {
+                subject.putPermissions(uuid.toString(), request)
+            }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
     }
 
     @Test
@@ -170,8 +190,14 @@ class RemotePermissionsHandlerTest {
         val operationStrings = operations.map { o -> o.operation }.toMutableList()
         val uuid = UUID.randomUUID()
 
-        val response = PermissionsResponse.newBuilder().setActor(ACTOR).setPath(CREDENTIAL_NAME).setUuid(uuid.toString())
-            .addAllOperations(operationStrings).build()
+        val response =
+            PermissionsResponse
+                .newBuilder()
+                .setActor(ACTOR)
+                .setPath(CREDENTIAL_NAME)
+                .setUuid(uuid.toString())
+                .addAllOperations(operationStrings)
+                .build()
 
         `when`(client.findPermissionByPathAndActor(CREDENTIAL_NAME, ACTOR, USER))
             .thenReturn(response)
@@ -190,9 +216,10 @@ class RemotePermissionsHandlerTest {
         `when`(client.findPermissionByPathAndActor(CREDENTIAL_NAME, ACTOR, USER))
             .thenThrow(exception)
 
-        Assertions.assertThatThrownBy {
-            subject.findByPathAndActor(CREDENTIAL_NAME, ACTOR)
-        }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
+        Assertions
+            .assertThatThrownBy {
+                subject.findByPathAndActor(CREDENTIAL_NAME, ACTOR)
+            }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
     }
 
     @Test
@@ -201,8 +228,14 @@ class RemotePermissionsHandlerTest {
         val operationStrings = operations.map { o -> o.operation }.toMutableList()
         val uuid = UUID.randomUUID()
 
-        val response = PermissionsResponse.newBuilder().setActor(ACTOR).setPath(CREDENTIAL_NAME).setUuid(uuid.toString())
-            .addAllOperations(operationStrings).build()
+        val response =
+            PermissionsResponse
+                .newBuilder()
+                .setActor(ACTOR)
+                .setPath(CREDENTIAL_NAME)
+                .setUuid(uuid.toString())
+                .addAllOperations(operationStrings)
+                .build()
 
         `when`(client.getPermissionByUUID(uuid.toString(), USER))
             .thenReturn(response)
@@ -222,9 +255,10 @@ class RemotePermissionsHandlerTest {
         `when`(client.getPermissionByUUID(uuid.toString(), USER))
             .thenThrow(exception)
 
-        Assertions.assertThatThrownBy {
-            subject.getPermissions(uuid.toString())
-        }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
+        Assertions
+            .assertThatThrownBy {
+                subject.getPermissions(uuid.toString())
+            }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
     }
 
     @Test
@@ -233,8 +267,14 @@ class RemotePermissionsHandlerTest {
         val operationStrings = operations.map { o -> o.operation }.toMutableList()
         val uuid = UUID.randomUUID()
 
-        val response = PermissionsResponse.newBuilder().setActor(ACTOR).setPath(CREDENTIAL_NAME).setUuid(uuid.toString())
-            .addAllOperations(operationStrings).build()
+        val response =
+            PermissionsResponse
+                .newBuilder()
+                .setActor(ACTOR)
+                .setPath(CREDENTIAL_NAME)
+                .setUuid(uuid.toString())
+                .addAllOperations(operationStrings)
+                .build()
 
         `when`(client.deletePermissionByUUID(uuid.toString(), USER))
             .thenReturn(response)
@@ -254,8 +294,9 @@ class RemotePermissionsHandlerTest {
         `when`(client.deletePermissionByUUID(uuid.toString(), USER))
             .thenThrow(exception)
 
-        Assertions.assertThatThrownBy {
-            subject.deletePermissions(uuid.toString())
-        }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
+        Assertions
+            .assertThatThrownBy {
+                subject.deletePermissions(uuid.toString())
+            }.hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
     }
 }
