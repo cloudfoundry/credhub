@@ -9,21 +9,20 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.security.config.Customizer
 import org.springframework.security.config.annotation.ObjectPostProcessor
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
+import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer
 import org.springframework.security.core.authority.AuthorityUtils
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetailsService
-import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer
-import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter
-import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider
 import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter
 
 @ConditionalOnProperty("security.oauth2.enabled")
 @Configuration
-@EnableResourceServer
 @EnableWebSecurity
 class AuthConfiguration
     @Autowired
@@ -33,16 +32,17 @@ class AuthConfiguration
         private val preAuthenticationFailureFilter: PreAuthenticationFailureFilter,
         private val oAuth2ExtraValidationFilter: OAuth2ExtraValidationFilter,
         private val actuatorPortFilter: ActuatorPortFilter,
-    ) : ResourceServerConfigurerAdapter() {
+        private val oAuthProperties: OAuthProperties,
+    ) : WebSecurityConfigurerAdapter() {
         val preAuthenticatedAuthenticationProvider: PreAuthenticatedAuthenticationProvider
             @Bean
             get() = X509AuthenticationProvider()
 
-        override fun configure(resources: ResourceServerSecurityConfigurer) {
-            resources.resourceId(resourceServerProperties.resourceId)
-            resources.authenticationEntryPoint(oAuth2AuthenticationExceptionHandler)
-            resources.stateless(false)
-        }
+//        override fun configure(resources: ResourceServerSecurityConfigurer) {
+//            resources.resourceId(resourceServerProperties.resourceId)
+//            resources.authenticationEntryPoint(oAuth2AuthenticationExceptionHandler)
+//            resources.stateless(false)
+//        }
 
         @Throws(Exception::class)
         override fun configure(http: HttpSecurity) {
@@ -54,6 +54,15 @@ class AuthConfiguration
 
       The aggregate of all this is consumed in the final .access() method.
          */
+            http.oauth2ResourceServer { c: OAuth2ResourceServerConfigurer<HttpSecurity?> ->
+                c.jwt(
+                    Customizer<
+                        OAuth2ResourceServerConfigurer<HttpSecurity?>.JwtConfigurer,
+                    > { j: OAuth2ResourceServerConfigurer<HttpSecurity?>.JwtConfigurer ->
+                        j.jwkSetUri(oAuthProperties.jwkKeysPath)
+                    },
+                )
+            }
 
             http
                 .x509()
