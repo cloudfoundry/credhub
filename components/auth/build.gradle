@@ -34,10 +34,16 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.security:spring-security-web")
     implementation('org.springframework.boot:spring-boot-starter-security')
+
+    // Old oauth2 libs
     implementation("org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:${springSecurityOauth2AutoconfigureVersion}") {
         exclude(module: "bcprov-jdk15on")
     }
     implementation("org.springframework.security.oauth:spring-security-oauth2:${springSecurityOauth2Version}")
+    // New ouath2 libs
+    implementation("org.springframework.security:spring-security-oauth2-resource-server")
+    implementation("org.springframework.security:spring-security-oauth2-jose")
+
     testImplementation("org.springframework.security:spring-security-test")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("junit:junit")
