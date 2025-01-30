@@ -55,13 +55,9 @@ class AuthConfiguration
       The aggregate of all this is consumed in the final .access() method.
          */
             http.oauth2ResourceServer { c: OAuth2ResourceServerConfigurer<HttpSecurity?> ->
-                c.jwt(
-                    Customizer<
-                        OAuth2ResourceServerConfigurer<HttpSecurity?>.JwtConfigurer,
-                    > { j: OAuth2ResourceServerConfigurer<HttpSecurity?>.JwtConfigurer ->
-                        j.jwkSetUri(oAuthProperties.jwkKeysPath)
-                    },
-                )
+                c.jwt { j: OAuth2ResourceServerConfigurer<HttpSecurity?>.JwtConfigurer ->
+                    j.jwkSetUri(oAuthProperties.jwkKeysPath)
+                }
             }
 
             http
