@@ -12,6 +12,7 @@ import java.security.cert.X509Certificate
 class UserContextFactory {
     @Autowired(required = false)
 //    private val resourceServerTokenServices: ResourceServerTokenServices? = null
+
     /*
      * The "iat" and "exp" claims are parsed by Jackson as integers,
      * because JWT defines these as seconds since Epoch
