@@ -21,6 +21,7 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication
 import org.springframework.security.oauth2.provider.OAuth2Request
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
@@ -160,7 +161,7 @@ class UserContextFactoryTest {
     }
 
     private fun setupOAuthMock(grantType: String): OAuth2Authentication {
-        val authentication = mock(OAuth2Authentication::class.java)
+        val authentication = mock(JwtAuthenticationToken::class.java)
         val oauth2Request =
             spy(
                 OAuth2Request(
