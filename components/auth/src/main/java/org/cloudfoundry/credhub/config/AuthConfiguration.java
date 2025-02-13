@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authorization.AuthorityAuthorizationManager;
 import org.springframework.security.authorization.AuthorizationManagers;
+import org.springframework.security.config.annotation.ObjectPostProcessor;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -60,11 +61,20 @@ public class AuthConfiguration {
         http
                 .x509()
                 .subjectPrincipalRegex(VALID_MTLS_ID)
-                .userDetailsService(mtlsSUserDetailsService());
+                .userDetailsService(mtlsSUserDetailsService())
+                .withObjectPostProcessor(
+                        new ObjectPostProcessor<X509AuthenticationFilter>() {
+                            @Override
+                            public <O extends X509AuthenticationFilter> O postProcess(O filter) {
+                                filter.setContinueFilterChainOnUnsuccessfulAuthentication(false);
+                                return filter;
+                            }
+                        }
+                );
 
         http
                 .addFilterBefore(actuatorPortFilter, X509AuthenticationFilter.class)
-                .addFilterAfter(preAuthenticationFailureFilter, X509AuthenticationFilter.class)
+                .addFilterAfter(preAuthenticationFailureFilter, ActuatorPortFilter.class)
                 .addFilterAfter(oAuth2ExtraValidationFilter, PreAuthenticationFailureFilter.class)
                 .authenticationProvider(preAuthenticatedAuthenticationProvider());
 
@@ -76,12 +86,12 @@ public class AuthConfiguration {
                         .requestMatchers("/management").permitAll()
                         .requestMatchers("/**").access(
                                 AuthorizationManagers.anyOf(
+                                        // TODO: Use X509AuthenticationProvider.MTLS_USER instead of the literal.
+                                        AuthorityAuthorizationManager.hasRole("MTLS_USER"),
                                         AuthorizationManagers.allOf(
                                                 AuthorityAuthorizationManager.hasAuthority("SCOPE_credhub.read"),
-                                                AuthorityAuthorizationManager.hasAuthority("SCOPE_credhub.write")
-                                        ),
-                                        // TODO: Use X509AuthenticationProvider.MTLS_USER instead of the literal.
-                                        AuthorityAuthorizationManager.hasRole("MTLS_USER"))
+                                                AuthorityAuthorizationManager.hasAuthority("SCOPE_credhub.write"))
+                                        )
                                 )
                 )
                 .oauth2ResourceServer((oauth2) -> oauth2.jwt(withDefaults()))
