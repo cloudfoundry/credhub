@@ -86,8 +86,7 @@ public class AuthConfiguration {
                         .requestMatchers("/management").permitAll()
                         .requestMatchers("/**").access(
                                 AuthorizationManagers.anyOf(
-                                        // TODO: Use X509AuthenticationProvider.MTLS_USER instead of the literal.
-                                        AuthorityAuthorizationManager.hasRole("MTLS_USER"),
+                                        AuthorityAuthorizationManager.hasRole(X509AuthenticationProvider.Companion.getMTLS_USER()),
                                         AuthorizationManagers.allOf(
                                                 AuthorityAuthorizationManager.hasAuthority("SCOPE_credhub.read"),
                                                 AuthorityAuthorizationManager.hasAuthority("SCOPE_credhub.write"))
