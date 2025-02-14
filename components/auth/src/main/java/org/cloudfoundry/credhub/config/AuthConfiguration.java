@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.config;
 
+import java.net.URISyntaxException;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPublicKey;
@@ -107,7 +108,7 @@ public class AuthConfiguration {
     public JwtDecoder jwtDecoder(
             @Value("${security.oauth2.resource.jwt.key_value:#{null}}")
             String keyStr
-    ) throws Exception {
+    ) throws URISyntaxException, InvalidKeySpecException, NoSuchAlgorithmException {
         // 'jwt.key_value' property, which was part of old oauth2 lib is not
         // part of new lib. The property was primarily used for unit test.
         // To keep things compatible with older credhub versions, use the
