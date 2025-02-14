@@ -1,6 +1,11 @@
 package org.cloudfoundry.credhub.config;
 
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,9 +43,6 @@ import static org.springframework.security.config.Customizer.withDefaults;
 public class AuthConfiguration {
     private static final String VALID_MTLS_ID = "\\bOU=(app:[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[a-f0-9]{4}-[a-f0-9]{12})\\b";
     private static final Logger LOGGER = LogManager.getLogger(AuthConfiguration.class.getName());
-
-    @Value("${security.oauth2.resource.jwt.key_value}")
-    RSAPublicKey publicKey;
 
     @Autowired
     OAuthProperties oAuthProperties;
@@ -102,19 +104,33 @@ public class AuthConfiguration {
     }
 
     @Bean
-    JwtDecoder jwtDecoder() throws Exception {
-        LOGGER.info("in jwtDecoder");
-        return NimbusJwtDecoder.withPublicKey(publicKey).build();
+    public JwtDecoder jwtDecoder(
+            @Value("${security.oauth2.resource.jwt.key_value:#{null}}")
+            String keyStr
+    ) throws Exception {
+        // 'jwt.key_value' property, which was part of old oauth2 lib is not
+        // part of new lib. The property was primarily used for unit test.
+        // To keep things compatible with older credhub versions, use the
+        // property if it exists. If not, use the jwkKeysPath.
+        if (keyStr == null) {
+            return NimbusJwtDecoder
+                    .withJwkSetUri(oAuthProperties.getJwkKeysPath())
+                    .build();
+        }
+        return NimbusJwtDecoder.withPublicKey(strToRsaPublicKey(keyStr))
+                .build();
+    }
 
-// TODO: The code we want to use for UAA providing the public key
-//        String jwkKeysPath = "/token_keys";
-//        try {
-//            jwkKeysPath = oAuthProperties.getJwkKeysPath();
-//        } catch (URISyntaxException ex) {
-//            LOGGER.warn("Using default jwkKeysPath: {}", jwkKeysPath);
-//        }
-//
-//        return NimbusJwtDecoder.withJwkSetUri(jwkKeysPath).build();
+    private RSAPublicKey strToRsaPublicKey(String keyStr)
+            throws InvalidKeySpecException, NoSuchAlgorithmException {
+        String kyStrToDecode = keyStr
+                .replaceAll("\n", "")
+                .replaceFirst("-----BEGIN PUBLIC KEY-----", "")
+                .replaceFirst("-----END PUBLIC KEY-----", "");
+        byte[] data = Base64.getDecoder().decode((kyStrToDecode));
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(data);
+        KeyFactory factory = KeyFactory.getInstance("RSA");
+        return (RSAPublicKey) factory.generatePublic(spec);
     }
 
     private UserDetailsService mtlsSUserDetailsService() {
