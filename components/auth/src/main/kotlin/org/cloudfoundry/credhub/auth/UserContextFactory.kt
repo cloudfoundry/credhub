@@ -7,33 +7,20 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
 import org.springframework.stereotype.Component
 import java.security.cert.X509Certificate
+import java.time.Instant
 
 @Component
 class UserContextFactory {
     @Autowired(required = false)
-//    private val resourceServerTokenServices: ResourceServerTokenServices? = null
-
-    /*
-     * The "iat" and "exp" claims are parsed by Jackson as integers,
-     * because JWT defines these as seconds since Epoch
-     * (https://tools.ietf.org/html/rfc7519#section-2). That means it has a
-     * Year-2038 bug. To adapt to our local model, hoping JWT will some day be improved,
-     * this function returns a numeric value as long.
-     */
-    private fun claimValueAsLong(additionalInformation: Map<String, Any>): Long =
-        (additionalInformation["iat"] as Number).toLong()
 
     fun createUserContext(authentication: Authentication?): UserContext =
         if (authentication is PreAuthenticatedAuthenticationToken) {
             createUserContext(authentication)
         } else {
-            createUserContext(authentication as JwtAuthenticationToken, null)
+            createUserContext(authentication as JwtAuthenticationToken)
         }
 
-    fun createUserContext(
-        authentication: JwtAuthenticationToken,
-        maybeToken: String?,
-    ): UserContext {
+    fun createUserContext(authentication: JwtAuthenticationToken): UserContext {
         val jwt: Jwt = authentication.principal as Jwt
         val claims = jwt.claims
         val grantType = claims["grant_type"] as String
@@ -41,35 +28,10 @@ class UserContextFactory {
         val userId = claims["user_id"] as String?
         val userName = claims["user_name"] as String?
         val issuer = claims["iss"] as String?
-        val validFrom: Long = 0
-        val validUntil: Long = 0
+        val validFrom: Long = (claims["iat"] as Instant).toEpochMilli()
+        val validUntil: Long = (claims["exp"] as Instant).toEpochMilli()
         val scopes = claims["scope"] as List<*>
         val scope = scopes.joinToString(",")
-
-        // TODO: Will other tests fail without the below?
-//        var token = maybeToken
-//
-//        if (maybeToken == null) {
-//            val authDetails =
-//                authentication
-//                    .details as OAuth2AuthenticationDetails
-//            token = authDetails.tokenValue
-//        }
-
-//        val accessToken: OAuth2AccessToken?
-//        accessToken = resourceServerTokenServices!!.readAccessToken(token)
-//
-//        if (accessToken != null) {
-//            val scopes = accessToken.scope
-//            scope = scopes.joinToString(",")
-//
-//            val additionalInformation = accessToken.additionalInformation
-//            userName = additionalInformation["user_name"] as String?
-//            userId = additionalInformation["user_id"] as String?
-//            issuer = additionalInformation["iss"] as String?
-//            validFrom = claimValueAsLong(additionalInformation)
-//            validUntil = accessToken.expiration.toInstant().epochSecond
-//        }
 
         return UserContext(
             userId,
