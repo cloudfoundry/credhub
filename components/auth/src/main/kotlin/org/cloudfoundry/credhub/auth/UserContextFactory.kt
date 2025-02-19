@@ -28,8 +28,8 @@ class UserContextFactory {
         val userId = claims["user_id"] as String?
         val userName = claims["user_name"] as String?
         val issuer = claims["iss"] as String?
-        val validFrom: Long = (claims["iat"] as Instant).toEpochMilli()
-        val validUntil: Long = (claims["exp"] as Instant).toEpochMilli()
+        val validFrom: Long = (claims["iat"] as Instant).epochSecond
+        val validUntil: Long = (claims["exp"] as Instant).epochSecond
         val scopes = claims["scope"] as List<*>
         val scope = scopes.joinToString(",")
 
