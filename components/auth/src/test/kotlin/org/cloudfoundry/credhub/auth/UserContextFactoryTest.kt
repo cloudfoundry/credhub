@@ -163,8 +163,8 @@ class UserContextFactoryTest {
                 "user_name" to "TEST_USER_NAME",
                 "grant_type" to grantType,
                 "client_id" to "TEST_CLIENT_ID",
-                JwtClaimNames.IAT to Instant.ofEpochMilli(1413495264),
-                JwtClaimNames.EXP to Instant.ofEpochMilli(1413538464),
+                JwtClaimNames.IAT to Instant.ofEpochSecond(1413495264),
+                JwtClaimNames.EXP to Instant.ofEpochSecond(1413538464),
                 "scope" to scopeList,
             )
 
