@@ -53,7 +53,7 @@ class OAuth2ExtraValidationFilter
                     val token = authentication.principal as String
                     val accessToken = tokenStore.readAccessToken(token)
                     val additionalInformation = accessToken.additionalInformation
-                    val issuer = (additionalInformation as java.util.Map<String, Any>).getOrDefault("iss", "") as String
+                    val issuer = (additionalInformation as Map<String, Any>).getOrDefault("iss", "") as String
 
                     if (issuer != oAuth2IssuerService.getIssuer()) {
                         tokenStore.removeAccessToken(accessToken)
