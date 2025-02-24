@@ -81,7 +81,7 @@ class AuthConstants {
         const val USER_B_ACTOR_ID: String = "uaa-client:user-b"
 
         const val USER_B_TOKEN: String =
-            " eyJhbGciOiJSUzI1NiIsImtpZCI6ImxlZ2FjeS10b2tlbi1rZXkiLC" +
+            "eyJhbGciOiJSUzI1NiIsImtpZCI6ImxlZ2FjeS10b2tlbi1rZXkiLC" +
                 "J0eXAiOiJKV1QifQ.eyJqdGkiOiI0NWRjYTFiM2UzMGY0NDhj" +
                 "YjE5Y2U4YTVkYzRhMDdmYyIsInN1YiI6InVzZXItYiIsImF1dG" +
                 "hvcml0aWVzIjpbImNyZWRodWIud3JpdGUiLCJjcmVkaHViLnJlYWQ" +
