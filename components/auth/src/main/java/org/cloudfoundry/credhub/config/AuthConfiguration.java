@@ -1,13 +1,11 @@
 package org.cloudfoundry.credhub.config;
 
-import java.net.URISyntaxException;
-import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
-import java.security.interfaces.RSAPublicKey;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.X509EncodedKeySpec;
-import java.util.Base64;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.cloudfoundry.credhub.auth.ActuatorPortFilter;
+import org.cloudfoundry.credhub.auth.OAuth2IssuerService;
+import org.cloudfoundry.credhub.auth.PreAuthenticationFailureFilter;
+import org.cloudfoundry.credhub.auth.X509AuthenticationProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -24,17 +22,23 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.cloudfoundry.credhub.auth.ActuatorPortFilter;
-import org.cloudfoundry.credhub.auth.PreAuthenticationFailureFilter;
-import org.cloudfoundry.credhub.auth.X509AuthenticationProvider;
+import java.net.URISyntaxException;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
+import java.util.Objects;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
@@ -78,7 +82,7 @@ public class AuthConfiguration {
         http
                 .addFilterBefore(actuatorPortFilter, X509AuthenticationFilter.class)
                 .addFilterAfter(preAuthenticationFailureFilter, ActuatorPortFilter.class)
-                .addFilterAfter(oAuth2ExtraValidationFilter, PreAuthenticationFailureFilter.class)
+//                .addFilterAfter(oAuth2ExtraValidationFilter, PreAuthenticationFailureFilter.class)
                 .authenticationProvider(preAuthenticatedAuthenticationProvider());
 
         http
@@ -106,20 +110,31 @@ public class AuthConfiguration {
 
     @Bean
     public JwtDecoder jwtDecoder(
-            @Value("${security.oauth2.resource.jwt.key_value:#{null}}")
-            String keyStr
+            @Value("${security.oauth2.resource.jwt.key_value:#{null}}") String keyStr,
+            @Autowired OAuth2IssuerService oAuth2IssuerService
     ) throws URISyntaxException, InvalidKeySpecException, NoSuchAlgorithmException {
         // 'jwt.key_value' property, which was part of old oauth2 lib is not
         // part of new lib. The property was primarily used for unit test.
         // To keep things compatible with older credhub versions, use the
         // property if it exists. If not, use the jwkKeysPath.
+
+        NimbusJwtDecoder jwtDecoder;
+
         if (keyStr == null) {
-            return NimbusJwtDecoder
+            jwtDecoder = NimbusJwtDecoder
                     .withJwkSetUri(oAuthProperties.getJwkKeysPath())
                     .build();
+        } else {
+            jwtDecoder = NimbusJwtDecoder
+                    .withPublicKey(strToRsaPublicKey(keyStr))
+                    .build();
         }
-        return NimbusJwtDecoder.withPublicKey(strToRsaPublicKey(keyStr))
-                .build();
+
+        OAuth2TokenValidator<Jwt> withIssuer = JwtValidators
+                .createDefaultWithIssuer(Objects.requireNonNull(oAuth2IssuerService.getIssuer()));
+        jwtDecoder.setJwtValidator(withIssuer);
+
+        return jwtDecoder;
     }
 
     private RSAPublicKey strToRsaPublicKey(String keyStr)
