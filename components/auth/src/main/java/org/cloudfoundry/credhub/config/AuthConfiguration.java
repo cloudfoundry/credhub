@@ -1,11 +1,14 @@
 package org.cloudfoundry.credhub.config;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.cloudfoundry.credhub.auth.ActuatorPortFilter;
-import org.cloudfoundry.credhub.auth.OAuth2IssuerService;
-import org.cloudfoundry.credhub.auth.PreAuthenticationFailureFilter;
-import org.cloudfoundry.credhub.auth.X509AuthenticationProvider;
+import java.net.URISyntaxException;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
+import java.util.Objects;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -31,14 +34,12 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
 
-import java.net.URISyntaxException;
-import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
-import java.security.interfaces.RSAPublicKey;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.X509EncodedKeySpec;
-import java.util.Base64;
-import java.util.Objects;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.cloudfoundry.credhub.auth.ActuatorPortFilter;
+import org.cloudfoundry.credhub.auth.OAuth2IssuerService;
+import org.cloudfoundry.credhub.auth.PreAuthenticationFailureFilter;
+import org.cloudfoundry.credhub.auth.X509AuthenticationProvider;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
