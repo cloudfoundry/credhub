@@ -20,6 +20,8 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.http.MediaType
 import org.springframework.http.MediaType.APPLICATION_JSON
+import org.springframework.security.oauth2.jwt.JwtValidators
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers
 import org.springframework.security.web.FilterChainProxy
 import org.springframework.test.context.ActiveProfiles
@@ -40,12 +42,15 @@ import org.springframework.web.bind.annotation.RestController
 class OAuth2ExtraValidationFilterTest {
     @SpyBean
     private val oAuth2IssuerService: OAuth2IssuerService? = null
-    private var mockMvc: MockMvc? = null
 
+    private var mockMvc: MockMvc? = null
     private var spyController: SpyController? = null
 
     @Autowired
     private val springSecurityFilterChain: FilterChainProxy? = null
+
+    @Autowired
+    private var jwtDecoder: NimbusJwtDecoder? = null
 
     @Before
     @Throws(Exception::class)
@@ -57,13 +62,19 @@ class OAuth2ExtraValidationFilterTest {
                 .standaloneSetup(spyController!!)
                 .apply<StandaloneMockMvcBuilder>(SecurityMockMvcConfigurers.springSecurity(springSecurityFilterChain!!))
                 .build()
-        `when`<String>(oAuth2IssuerService!!.getIssuer()).thenReturn("https://example.com:8443/uaa/oauth/token")
     }
 
     @Test
     @Throws(Exception::class)
     fun whenGivenValidIssuer_returns200() {
-        `when`<String>(oAuth2IssuerService!!.getIssuer()).thenReturn("https://valid-uaa:8443/uaa/oauth/token")
+        // Replace jwtDecoder's JwtValidator with one created with the valid
+        // issuer URI.
+        jwtDecoder
+            ?.setJwtValidator(
+                JwtValidators.createDefaultWithIssuer(
+                    "https://valid-uaa:8443/uaa/oauth/token",
+                ),
+            )
 
         this.mockMvc!!
             .perform(
