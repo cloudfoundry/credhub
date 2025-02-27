@@ -27,7 +27,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -110,7 +109,7 @@ public class AuthConfiguration {
     }
 
     @Bean
-    public JwtDecoder jwtDecoder(
+    public NimbusJwtDecoder jwtDecoder(
             @Value("${security.oauth2.resource.jwt.key_value:#{null}}") String keyStr,
             @Autowired OAuth2IssuerService oAuth2IssuerService
     ) throws URISyntaxException, InvalidKeySpecException, NoSuchAlgorithmException {
