@@ -30,12 +30,8 @@ dependencies {
 
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:${springSecurityOauth2AutoconfigureVersion}") {
-        exclude(module: "bcprov-jdk15on")
-    }
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation('org.springframework.boot:spring-boot-starter-validation')
-
 
     implementation('com.fasterxml.jackson.module:jackson-module-kotlin')
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
@@ -45,7 +41,6 @@ dependencies {
     api("org.bouncycastle:bcpkix-fips:${bcpkixFipsVersion}")
 
     implementation("org.apache.commons:commons-lang3:${apacheCommonsLang3Version}")
-    implementation("commons-codec:commons-codec:${commonsCodecVersion}")
 }
 
 dependencyManagement {
