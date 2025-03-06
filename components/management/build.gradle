@@ -28,10 +28,6 @@ dependencies {
     implementation project(":components:errors")
 
     implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:${springSecurityOauth2AutoconfigureVersion}") {
-        exclude(module: "bcprov-jdk15on")
-    }
-    implementation("org.springframework.security.oauth:spring-security-oauth2:${springSecurityOauth2Version}")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("junit:junit")
     testImplementation project(path: ":components:test-support", configuration: "testOutput")
@@ -41,7 +37,6 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 
     implementation("org.apache.commons:commons-lang3:${apacheCommonsLang3Version}")
-    implementation("commons-codec:commons-codec:${commonsCodecVersion}")
 }
 
 dependencyManagement {

@@ -36,9 +36,6 @@ dependencies {
 
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:${springSecurityOauth2AutoconfigureVersion}") {
-        exclude(module: "bcprov-jdk15on")
-    }
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("junit:junit")
 
