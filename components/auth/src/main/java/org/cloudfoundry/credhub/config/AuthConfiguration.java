@@ -58,9 +58,6 @@ public class AuthConfiguration {
     @Autowired
     PreAuthenticationFailureFilter preAuthenticationFailureFilter;
 
-    @Autowired
-    OAuth2ExtraValidationFilter oAuth2ExtraValidationFilter;
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
          LOGGER.info("in securityFilterChain config");
@@ -82,7 +79,6 @@ public class AuthConfiguration {
         http
                 .addFilterBefore(actuatorPortFilter, X509AuthenticationFilter.class)
                 .addFilterAfter(preAuthenticationFailureFilter, ActuatorPortFilter.class)
-//                .addFilterAfter(oAuth2ExtraValidationFilter, PreAuthenticationFailureFilter.class)
                 .authenticationProvider(preAuthenticatedAuthenticationProvider());
 
         http
