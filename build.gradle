@@ -8,7 +8,7 @@ buildscript {
         asciiDoctorConvertPluginVersion = '4.0.4'
         bcpkixFipsVersion = '2.1.9'
         bcFipsVersion = '2.1.0'
-        commonsCodecVersion = '1.18.0' // remove this after deleting (now deprecated) spring-security-oauth2
+        commonsCodecVersion = '1.18.0'
         flywayVersion = '7.15.0'
         guavaVersion = '33.4.6-jre'
         h2Version = '1.4.200'
@@ -19,8 +19,6 @@ buildscript {
         postgresqlJdbcVersion = '42.7.5'
         springRestDocsVersion = '2.0.8.RELEASE'
         springBootVersion = '2.7.18'
-        springSecurityOauth2Version = '2.5.2.RELEASE'
-        springSecurityOauth2AutoconfigureVersion = '2.6.8'
         mariadbJdbcVersion = '2.7.12' // Bumping to v3 breaks some pipeline jobs, so pinning to v2 for now. v2 (current version) is stable and will be supported until about September 2025 (https://mariadb.com/kb/en/about-mariadb-connector-j/).
         snakeyamlVersion = '2.4'
         grpcVersion = '1.71.0'

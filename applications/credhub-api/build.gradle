@@ -50,10 +50,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.security:spring-security-web")
     implementation('org.springframework.boot:spring-boot-starter-security')
-    implementation("org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:${springSecurityOauth2AutoconfigureVersion}") {
-        exclude(module: "bcprov-jdk15on")
-    }
-    implementation("org.springframework.security.oauth:spring-security-oauth2:${springSecurityOauth2Version}")
 
     testImplementation project(path: ":components:test-support", configuration: "testOutput")
 
@@ -69,7 +65,6 @@ dependencies {
 
     implementation("com.google.guava:guava:${guavaVersion}")
     implementation("org.apache.commons:commons-lang3:${apacheCommonsLang3Version}")
-    implementation("commons-codec:commons-codec:${commonsCodecVersion}")
 
     implementation('com.fasterxml.jackson.module:jackson-module-kotlin')
     implementation("org.jetbrains.kotlin:kotlin-reflect")
