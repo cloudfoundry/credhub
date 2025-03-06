@@ -96,7 +96,7 @@ class OAuth2ExtraValidationFilterTest {
 
         this.mockMvc!!
             .perform(request)
-            .andExpect(status().isForbidden)
+            .andExpect(status().isUnauthorized)
 // TODO: Consider if needed
 //            .andExpect(jsonPath("$.error_description").value(ERROR_MESSAGE))
     }
@@ -113,7 +113,7 @@ class OAuth2ExtraValidationFilterTest {
         val response =
             this.mockMvc!!
                 .perform(request)
-                .andExpect(status().isForbidden)
+                .andExpect(status().isUnauthorized)
 // TODO: Consider if needed
 //                .andExpect(jsonPath("$.error_description").value(ERROR_MESSAGE))
                 .andReturn()
@@ -144,7 +144,7 @@ class OAuth2ExtraValidationFilterTest {
         val response =
             this.mockMvc!!
                 .perform(request)
-                .andExpect(status().isForbidden)
+                .andExpect(status().isUnauthorized)
 // TODO: Consider if needed
 //                .andExpect(
 //                    jsonPath(
@@ -181,7 +181,7 @@ class OAuth2ExtraValidationFilterTest {
         val response =
             this.mockMvc!!
                 .perform(request)
-                .andExpect(status().isForbidden)
+                .andExpect(status().isUnauthorized)
 // TODO: Consider if needed
 //                .andExpect(
 //                    jsonPath(
@@ -214,7 +214,7 @@ class OAuth2ExtraValidationFilterTest {
                     .header("Authorization", "Bearer $NULL_ISSUER_JWT")
                     .accept(APPLICATION_JSON)
                     .contentType(APPLICATION_JSON),
-            ).andExpect(status().isForbidden)
+            ).andExpect(status().isUnauthorized)
 // TODO: Consider if needed
 //            .andExpect(jsonPath("$.error_description").value(ERROR_MESSAGE))
     }
@@ -228,7 +228,7 @@ class OAuth2ExtraValidationFilterTest {
                     .header("Authorization", "Bearer $EMPTY_ISSUER_JWT")
                     .accept(APPLICATION_JSON)
                     .contentType(APPLICATION_JSON),
-            ).andExpect(status().isForbidden)
+            ).andExpect(status().isUnauthorized)
 // TODO: Consider if needed
 //            .andExpect(jsonPath("$.error_description").value(ERROR_MESSAGE))
     }
@@ -243,7 +243,7 @@ class OAuth2ExtraValidationFilterTest {
                     .header("Authorization", "Bearer $EXPIRED_TOKEN")
                     .accept(APPLICATION_JSON)
                     .contentType(APPLICATION_JSON),
-            ).andExpect(status().isForbidden)
+            ).andExpect(status().isUnauthorized)
 // TODO: Consider if needed
 //            .andExpect(jsonPath("$.error_description").value(EXPIRED_TOKEN_MESSAGE))
     }
