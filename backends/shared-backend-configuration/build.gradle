@@ -50,7 +50,6 @@ dependencies {
 
     // Other
     implementation("org.apache.httpcomponents:httpclient:${apacheHttpClientVersion}")
-    implementation("commons-codec:commons-codec:${commonsCodecVersion}")
 }
 
 dependencyManagement {
