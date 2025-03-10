@@ -120,7 +120,7 @@ class CertificatesControllerTest {
         // language=json
         val requestBody =
             """
-            {"set_as_transitional": true, "allow_transitional_parent_to_sign": true, "metadata": {"description": "example metadata"}}
+            {"set_as_transitional": true, "allow_transitional_parent_to_sign": true, "key_length": 2048, "metadata": {"description": "example metadata"}}
             """.trimIndent()
         certificateView = CertificateGenerationView(certificateCredentialVersion, false)
         (certificateView as CertificateGenerationView).durationOverridden = true
@@ -149,6 +149,11 @@ class CertificatesControllerTest {
                                     "Allows a transitional version of the parent CA to sign this certificate if the transitional version is the latest version",
                                 ).type(JsonFieldType.BOOLEAN)
                                 .optional(),
+                            fieldWithPath("key_length")
+                                .description(
+                                    "Set the key length for the regenerated certificate. If not provided, the key length will be the same as the original certificate.",
+                                ).type(JsonFieldType.NUMBER)
+                                .optional(),
                             fieldWithPath("metadata")
                                 .description("Additional metadata of the credential.")
                                 .optional(),
@@ -162,7 +167,7 @@ class CertificatesControllerTest {
                 ).andReturn()
 
         val expectedRequestBody =
-            CertificateRegenerateRequest(transitional = true, allowTransitionalParentToSign = true, metadata = metadata)
+            CertificateRegenerateRequest(transitional = true, allowTransitionalParentToSign = true, keyLength = 2048, metadata = metadata)
 
         assertThat(spyCertificatesHandler.handleregenerateCalledwithRequest).isEqualTo(expectedRequestBody)
         assertThat(spyCertificatesHandler.handleregenerateCalledwithCredentialuuid).isEqualTo(certificateId.toString())
