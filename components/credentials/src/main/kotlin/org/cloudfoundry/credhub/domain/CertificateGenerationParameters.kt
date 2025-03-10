@@ -12,6 +12,7 @@ import org.bouncycastle.asn1.x509.GeneralNamesBuilder
 import org.bouncycastle.asn1.x509.KeyPurposeId
 import org.bouncycastle.asn1.x509.KeyUsage
 import org.cloudfoundry.credhub.ErrorMessages
+import org.cloudfoundry.credhub.exceptions.InvalidKeyLengthCertificateException
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException
 import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters
 import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.Companion.CLIENT_AUTH
@@ -32,10 +33,12 @@ import org.cloudfoundry.credhub.requests.GenerationParameters
 import org.cloudfoundry.credhub.utils.CertificateReader
 import org.springframework.util.StringUtils
 import java.util.Objects
+import java.util.Arrays
 import javax.security.auth.x500.X500Principal
 
 class CertificateGenerationParameters : GenerationParameters {
-    val keyLength: Int
+    val validKeyLengths = Arrays.asList(2048, 3072, 4096)
+    var keyLength: Int
     var duration: Int
     val isSelfSigned: Boolean
     val caName: String?
@@ -76,7 +79,11 @@ class CertificateGenerationParameters : GenerationParameters {
         this.isCa = certificateReader.isCa
     }
 
-    override fun validate() {}
+    override fun validate() {
+        if (!validKeyLengths.contains(this.keyLength)) {
+            throw InvalidKeyLengthCertificateException()
+        }
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) {
