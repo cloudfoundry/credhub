@@ -14,6 +14,10 @@ class CertificateRegenerateRequest {
     @set:JsonProperty("allow_transitional_parent_to_sign")
     var allowTransitionalParentToSign: Boolean = false
 
+    @JsonProperty("key_length")
+    @set:JsonProperty("key_length")
+    var keyLength: Int? = null
+
     @JsonProperty("metadata")
     @set:JsonProperty("metadata")
     var metadata: JsonNode? = null
@@ -22,10 +26,11 @@ class CertificateRegenerateRequest {
         // this needs to be there for jackson to be happy
     }
 
-    constructor(transitional: Boolean, allowTransitionalParentToSign: Boolean, metadata: JsonNode?) : super() {
+    constructor(transitional: Boolean, allowTransitionalParentToSign: Boolean, keyLength: Int?, metadata: JsonNode?) : super() {
         this.isTransitional = transitional
         this.allowTransitionalParentToSign = allowTransitionalParentToSign
         this.metadata = metadata
+        this.keyLength = keyLength
     }
 
     override fun equals(other: Any?): Boolean {
@@ -36,6 +41,7 @@ class CertificateRegenerateRequest {
 
         if (isTransitional != other.isTransitional) return false
         if (allowTransitionalParentToSign != other.allowTransitionalParentToSign) return false
+        if (keyLength != other.keyLength) return false
 
         return true
     }

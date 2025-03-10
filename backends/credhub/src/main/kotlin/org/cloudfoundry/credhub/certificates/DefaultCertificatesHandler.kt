@@ -65,6 +65,9 @@ class DefaultCertificatesHandler(
         if (request.allowTransitionalParentToSign) {
             (generateRequest as CertificateGenerateRequest).setAllowTransitionalParentToSign(true)
         }
+        if (request.keyLength != null) {
+            (generateRequest as CertificateGenerateRequest).setKeyLength(request.keyLength!!)
+        }
 
         val credentialValue =
             credentialGenerator
