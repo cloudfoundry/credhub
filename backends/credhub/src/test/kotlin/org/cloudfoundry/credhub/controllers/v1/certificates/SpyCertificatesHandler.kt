@@ -1,6 +1,7 @@
 package org.cloudfoundry.credhub.controllers.v1.certificates
 
 import org.cloudfoundry.credhub.certificates.CertificatesHandler
+import org.cloudfoundry.credhub.exceptions.InvalidKeyLengthCertificateException
 import org.cloudfoundry.credhub.requests.CertificateRegenerateRequest
 import org.cloudfoundry.credhub.requests.CreateVersionRequest
 import org.cloudfoundry.credhub.requests.UpdateTransitionalVersionRequest
@@ -19,7 +20,7 @@ class SpyCertificatesHandler : CertificatesHandler {
     ): CredentialView {
         handleregenerateCalledwithCredentialuuid = credentialUuid
         handleregenerateCalledwithRequest = request
-
+        if (!listOf(1024,2048,4096).contains(request.keyLength)) throw InvalidKeyLengthCertificateException()
         return handleregenerateReturnsCredentialview
     }
 
