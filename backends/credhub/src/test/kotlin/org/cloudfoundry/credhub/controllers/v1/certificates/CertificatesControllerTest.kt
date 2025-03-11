@@ -199,6 +199,109 @@ class CertificatesControllerTest {
     }
 
     @Test
+    fun `postCertificatesUuidRegenerateReturnsCertificate generate a certificate with 4096 key length`() {
+        val expectedCertificateCredentialValue =
+                CertificateCredentialValue(
+                    TestConstants.TEST_CA_4096,
+                    TestConstants.TEST_CERTIFICATE_4096,
+                    TestConstants.TEST_PRIVATE_KEY_4096,
+                    name,
+                    false,
+                    false,
+                    true,
+                    true,
+                )
+
+        val expectedCertificateCredentialVersion = CertificateCredentialVersion(expectedCertificateCredentialValue, name, SpyEncryptor())
+        expectedCertificateCredentialVersion.versionCreatedAt = createdAt
+        expectedCertificateCredentialVersion.uuid = certificateId
+        expectedCertificateCredentialVersion.metadata = metadata
+        expectedCertificateCredentialVersion.expiryDate = certificateCredentialValue.expiryDate
+        expectedCertificateCredentialVersion.durationOverridden = true
+        expectedCertificateCredentialVersion.durationUsed = 1234
+
+        val expectedCertificateView = CertificateGenerationView(expectedCertificateCredentialVersion, false)
+
+        spyCertificatesHandler.handleregenerateReturnsCredentialview = expectedCertificateView
+
+        // language=json
+        val requestBody =
+            """
+            {"set_as_transitional": true, "allow_transitional_parent_to_sign": true, "key_length": 4096, "metadata": {"description": "example metadata"}}
+            """.trimIndent()
+
+        val mvcResult =
+            mockMvc
+                .perform(
+                    post("${CertificatesController.ENDPOINT}/{certificateId}/regenerate", certificateId.toString())
+                        .credHubAuthHeader()
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody),
+                ).andExpect(status().isOk)
+                .andDo(
+                    document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                        requestFields(
+                            fieldWithPath("set_as_transitional")
+                                .description("Set if certificate is transitional")
+                                .type(JsonFieldType.BOOLEAN)
+                                .optional(),
+                            fieldWithPath("allow_transitional_parent_to_sign")
+                                .description(
+                                    "Allows a transitional version of the parent CA to sign this certificate if the transitional version is the latest version",
+                                ).type(JsonFieldType.BOOLEAN)
+                                .optional(),
+                            fieldWithPath("key_length")
+                                .description(
+                                    "Set the key length for the regenerated certificate. If not provided, the key length will be the same as the original certificate.",
+                                ).type(JsonFieldType.NUMBER)
+                                .optional(),
+                            fieldWithPath("metadata")
+                                .description("Additional metadata of the credential.")
+                                .optional(),
+                            fieldWithPath("metadata.*")
+                                .ignored(),
+                        ),
+                        pathParameters(
+                            getCertificateIdPathParameter(),
+                        ),
+                    ),
+                ).andReturn()
+
+        val expectedRequestBody =
+            CertificateRegenerateRequest(transitional = true, allowTransitionalParentToSign = true, keyLength = 4096, metadata = metadata)
+
+        assertThat(spyCertificatesHandler.handleregenerateCalledwithRequest).isEqualTo(expectedRequestBody)
+        assertThat(spyCertificatesHandler.handleregenerateCalledwithCredentialuuid).isEqualTo(certificateId.toString())
+
+        // language=json
+        val expectedResponseBody =
+            """
+            {
+              "type": "${CredentialType.CERTIFICATE.type.lowercase()}",
+              "version_created_at": "${certificateView.versionCreatedAt}",
+              "id": "$certificateId",
+              "name": "$name",
+              "metadata": { "description": "example metadata"},
+              "transitional": true,
+              "generated": true,
+              "expiry_date": "${certificateCredentialValue.expiryDate}",
+              "certificate_authority": false,
+              "self_signed": false,
+              "duration_overridden": true,
+              "duration_used": 1234,
+              "value": {
+                "ca": "${TestConstants.TEST_CA_4096}",
+                "certificate": "${TestConstants.TEST_CERTIFICATE_4096}",
+                "private_key": "${TestConstants.TEST_PRIVATE_KEY_4096}"
+              }
+            }
+            """.trimIndent()
+        JSONAssert.assertEquals(mvcResult.response.contentAsString, expectedResponseBody, true)
+    }
+
+    @Test
     fun getCertificatesReturnsCertificates() {
         var caName = "/testCa"
         val certificateVersions =
