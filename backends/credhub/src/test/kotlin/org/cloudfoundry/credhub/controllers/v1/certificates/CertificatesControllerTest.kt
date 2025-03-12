@@ -184,6 +184,7 @@ class CertificatesControllerTest {
               "self_signed": false,
               "duration_overridden": true,
               "duration_used": 1234,
+              "key_length": 2048,
               "value": {
                 "ca": "${TestConstants.TEST_CA}",
                 "certificate": "${TestConstants.TEST_CERTIFICATE}",
@@ -330,6 +331,7 @@ class CertificatesControllerTest {
               "self_signed": false,
               "duration_overridden": true,
               "duration_used": 1234,
+              "key_length": 4096,
               "value": {
                 "ca": "${TestConstants.TEST_CA_4096}",
                 "certificate": "${TestConstants.TEST_CERTIFICATE_4096}",
