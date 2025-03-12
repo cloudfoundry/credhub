@@ -120,6 +120,7 @@ public class CertificateViewTest {
             + "\"metadata\":{\"name\":\"test\"},"
             + "\"duration_overridden\":true,"
             + "\"duration_used\":1234,"
+            + "\"key_length\":2048,"
             + "\"value\":{"
             + "\"ca\":\"" + CertificateStringConstants.SELF_SIGNED_CA_CERT + "\","
             + "\"certificate\":\"" + CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT + "\","
