@@ -20,7 +20,7 @@ class SpyCertificatesHandler : CertificatesHandler {
     ): CredentialView {
         handleregenerateCalledwithCredentialuuid = credentialUuid
         handleregenerateCalledwithRequest = request
-        if (!listOf(1024,2048,4096).contains(request.keyLength)) throw InvalidKeyLengthCertificateException()
+        if (!listOf(2048,3072,4096).contains(request.keyLength)) throw InvalidKeyLengthCertificateException()
         return handleregenerateReturnsCredentialview
     }
 
