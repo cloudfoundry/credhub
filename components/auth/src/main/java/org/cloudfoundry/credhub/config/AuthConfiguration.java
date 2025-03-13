@@ -39,6 +39,7 @@ import org.cloudfoundry.credhub.auth.ActuatorPortFilter;
 import org.cloudfoundry.credhub.auth.OAuth2IssuerService;
 import org.cloudfoundry.credhub.auth.PreAuthenticationFailureFilter;
 import org.cloudfoundry.credhub.auth.X509AuthenticationProvider;
+import org.cloudfoundry.credhub.config.auth.OAuth2AuthenticationExceptionHandler;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
@@ -96,7 +97,11 @@ public class AuthConfiguration {
                                         )
                                 )
                 )
-                .oauth2ResourceServer((oauth2) -> oauth2.jwt(withDefaults()))
+                .oauth2ResourceServer(
+                        (oauth2) ->
+                                oauth2.authenticationEntryPoint(
+                                        new OAuth2AuthenticationExceptionHandler())
+                                        .jwt(withDefaults()))
                 .httpBasic().disable()
                 .csrf().disable()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
