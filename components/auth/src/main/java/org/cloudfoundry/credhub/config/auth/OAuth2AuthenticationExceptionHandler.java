@@ -20,14 +20,14 @@ import com.nimbusds.jose.shaded.gson.JsonObject;
  */
 public class OAuth2AuthenticationExceptionHandler
         implements AuthenticationEntryPoint {
+    private BearerTokenAuthenticationEntryPoint btaep =
+            new BearerTokenAuthenticationEntryPoint();
 
     @Override
     public void commence(HttpServletRequest request,
                          HttpServletResponse response,
                          AuthenticationException authException)
             throws IOException {
-        BearerTokenAuthenticationEntryPoint btaep =
-                new BearerTokenAuthenticationEntryPoint();
         btaep.commence(request, response, authException);
 
         if (authException instanceof OAuth2AuthenticationException) {
