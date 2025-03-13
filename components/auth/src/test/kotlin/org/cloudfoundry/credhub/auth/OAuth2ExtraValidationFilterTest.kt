@@ -20,6 +20,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.http.MediaType
 import org.springframework.http.MediaType.APPLICATION_JSON
+import org.springframework.security.oauth2.core.OAuth2ErrorCodes
 import org.springframework.security.oauth2.jwt.JwtValidators
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers
@@ -28,6 +29,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.test.web.servlet.setup.StandaloneMockMvcBuilder
@@ -97,8 +99,7 @@ class OAuth2ExtraValidationFilterTest {
         this.mockMvc!!
             .perform(request)
             .andExpect(status().isUnauthorized)
-// TODO: Consider if needed
-//            .andExpect(jsonPath("$.error_description").value(ERROR_MESSAGE))
+            .andExpect(jsonPath("$.error").value(OAuth2ErrorCodes.INVALID_TOKEN))
     }
 
     @Test
@@ -114,21 +115,10 @@ class OAuth2ExtraValidationFilterTest {
             this.mockMvc!!
                 .perform(request)
                 .andExpect(status().isUnauthorized)
-// TODO: Consider if needed
-//                .andExpect(jsonPath("$.error_description").value(ERROR_MESSAGE))
+                .andExpect(jsonPath("$.error").value(OAuth2ErrorCodes.INVALID_TOKEN))
                 .andReturn()
                 .response
                 .contentAsString
-
-        // The response originally concatenated the error and the credential.
-        val expectedResponse =
-            "{\"error\":\"invalid_token\"," +
-                "\"error_description\":\"The request token identity zone does" +
-                " not match the UAA server authorized by CredHub. Please " +
-                "validate that your request token was issued by the UAA server" +
-                " authorized by CredHub and retry your request.\"}"
-
-//        assertThat(response, equalTo(expectedResponse))
         assertThat(spyController!!.getDataCount, equalTo(0))
     }
 
@@ -145,27 +135,10 @@ class OAuth2ExtraValidationFilterTest {
             this.mockMvc!!
                 .perform(request)
                 .andExpect(status().isUnauthorized)
-// TODO: Consider if needed
-//                .andExpect(
-//                    jsonPath(
-//                        "$.error_description",
-//                    ).value(
-//                        "The request token is malformed. Please validate that your request token was issued by the UAA server authorized by CredHub.",
-//                    ),
-//                )
+                .andExpect(jsonPath("$.error").value(OAuth2ErrorCodes.INVALID_TOKEN))
                 .andReturn()
                 .response
                 .contentAsString
-
-        // The response originally concatenated the error and the credential.
-// TODO: Consider if needed
-//        val expectedResponse =
-//            "{\"error\":\"invalid_token\"," +
-//                "\"error_description\":\"The request token is malformed. " +
-//                "Please validate that your request token was issued by the" +
-//                " UAA server authorized by CredHub.\"}"
-//
-//        assertThat(response, equalTo(expectedResponse))
         assertThat(spyController!!.getDataCount, equalTo(0))
     }
 
@@ -182,26 +155,10 @@ class OAuth2ExtraValidationFilterTest {
             this.mockMvc!!
                 .perform(request)
                 .andExpect(status().isUnauthorized)
-// TODO: Consider if needed
-//                .andExpect(
-//                    jsonPath(
-//                        "$.error_description",
-//                    ).value(
-//                        "The request token signature could not be verified. Please validate that your request token was issued by the UAA server authorized by CredHub.",
-//                    ),
-//                )
+                .andExpect(jsonPath("$.error").value(OAuth2ErrorCodes.INVALID_TOKEN))
                 .andReturn()
                 .response
                 .contentAsString
-
-        // The response originally concatenated the error and the credential.
-        val expectedResponse =
-            "{\"error\":\"invalid_token\",\"" +
-                "error_description\":\"The request token signature could not be" +
-                " verified. Please validate that your request token was issued" +
-                " by the UAA server authorized by CredHub.\"}"
-
-//        assertThat(response, equalTo(expectedResponse))
         assertThat(spyController!!.getDataCount, equalTo(0))
     }
 
@@ -215,8 +172,7 @@ class OAuth2ExtraValidationFilterTest {
                     .accept(APPLICATION_JSON)
                     .contentType(APPLICATION_JSON),
             ).andExpect(status().isUnauthorized)
-// TODO: Consider if needed
-//            .andExpect(jsonPath("$.error_description").value(ERROR_MESSAGE))
+            .andExpect(jsonPath("$.error").value(OAuth2ErrorCodes.INVALID_TOKEN))
     }
 
     @Test
@@ -229,8 +185,7 @@ class OAuth2ExtraValidationFilterTest {
                     .accept(APPLICATION_JSON)
                     .contentType(APPLICATION_JSON),
             ).andExpect(status().isUnauthorized)
-// TODO: Consider if needed
-//            .andExpect(jsonPath("$.error_description").value(ERROR_MESSAGE))
+            .andExpect(jsonPath("$.error").value(OAuth2ErrorCodes.INVALID_TOKEN))
     }
 
     @Test
@@ -244,8 +199,7 @@ class OAuth2ExtraValidationFilterTest {
                     .accept(APPLICATION_JSON)
                     .contentType(APPLICATION_JSON),
             ).andExpect(status().isUnauthorized)
-// TODO: Consider if needed
-//            .andExpect(jsonPath("$.error_description").value(EXPIRED_TOKEN_MESSAGE))
+            .andExpect(jsonPath("$.error").value(OAuth2ErrorCodes.INVALID_TOKEN))
     }
 
     @RestController
@@ -258,15 +212,5 @@ class OAuth2ExtraValidationFilterTest {
                 getDataCount += 1
                 return "some data"
             }
-    }
-
-    companion object {
-        private const val ERROR_MESSAGE =
-            "The request token identity zone does not match the UAA server" +
-                " authorized by CredHub. Please validate that your request" +
-                " token was issued by the UAA server authorized by CredHub" +
-                " and retry your request."
-
-        private const val EXPIRED_TOKEN_MESSAGE = "Access token expired"
     }
 }
