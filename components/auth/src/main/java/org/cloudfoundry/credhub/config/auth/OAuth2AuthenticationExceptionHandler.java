@@ -29,9 +29,6 @@ public class OAuth2AuthenticationExceptionHandler
                          AuthenticationException authException)
             throws IOException {
         btaep.commence(request, response, authException);
-        if (authException == null) {
-            return;
-        }
         var jsonObject = new JsonObject();
         if (authException instanceof OAuth2AuthenticationException) {
             OAuth2Error error = ((OAuth2AuthenticationException) authException).getError();
