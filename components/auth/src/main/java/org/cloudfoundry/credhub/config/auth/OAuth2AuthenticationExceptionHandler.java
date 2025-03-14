@@ -6,6 +6,7 @@ import java.io.PrintWriter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2Error;
@@ -34,7 +35,7 @@ public class OAuth2AuthenticationExceptionHandler
             OAuth2Error error = ((OAuth2AuthenticationException) authException).getError();
             jsonObject.addProperty("error", error.getErrorCode());
             jsonObject.addProperty("error_description", error.getDescription());
-        } else {
+        } else if (authException instanceof InsufficientAuthenticationException) {
             jsonObject.addProperty("error_description", authException.getMessage());
         }
         response.setContentType("application/json");
