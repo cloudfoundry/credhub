@@ -29,18 +29,21 @@ public class OAuth2AuthenticationExceptionHandler
                          AuthenticationException authException)
             throws IOException {
         btaep.commence(request, response, authException);
-
+        if (authException == null) {
+            return;
+        }
+        var jsonObject = new JsonObject();
         if (authException instanceof OAuth2AuthenticationException) {
-            OAuth2Error error = ((OAuth2AuthenticationException) authException)
-                    .getError();
-            response.setContentType("application/json");
-            var jsonObject = new JsonObject();
+            OAuth2Error error = ((OAuth2AuthenticationException) authException).getError();
             jsonObject.addProperty("error", error.getErrorCode());
             jsonObject.addProperty("error_description", error.getDescription());
-            try (PrintWriter writer = response.getWriter()) {
-                writer.write(jsonObject.toString());
-                writer.flush();
-            }
+        } else {
+            jsonObject.addProperty("error_description", authException.getMessage());
+        }
+        response.setContentType("application/json");
+        try (PrintWriter writer = response.getWriter()) {
+            writer.write(jsonObject.toString());
+            writer.flush();
         }
     }
 }
