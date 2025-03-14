@@ -11,16 +11,12 @@ import org.junit.Test
 import org.junit.jupiter.api.Assertions
 import org.junit.runner.RunWith
 import org.mockito.Mockito.mock
-import org.mockito.Mockito.spy
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.security.oauth2.common.OAuth2AccessToken
-import org.springframework.security.oauth2.provider.OAuth2Authentication
-import org.springframework.security.oauth2.provider.OAuth2Request
-import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails
-import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices
+import org.springframework.security.oauth2.jwt.Jwt
+import org.springframework.security.oauth2.jwt.JwtClaimNames
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
@@ -28,16 +24,11 @@ import java.security.Principal
 import java.security.cert.X509Certificate
 import java.time.Instant
 import java.util.Date
-import java.util.HashMap
-import java.util.HashSet
 
 @RunWith(SpringRunner::class)
 @ActiveProfiles(profiles = ["unit-test"], resolver = DatabaseProfileResolver::class)
 @SpringBootTest(classes = [CredhubTestApp::class])
 class UserContextFactoryTest {
-    @MockBean
-    private val tokenServicesMock: ResourceServerTokenServices? = null
-
     @Autowired
     private val subject: UserContextFactory? = null
 
@@ -62,7 +53,7 @@ class UserContextFactoryTest {
     fun fromAuthentication_handlesSuppliedToken() {
         val oauth2Authentication = setupOAuthMock("TEST_GRANT_TYPE")
 
-        val context = subject!!.createUserContext(oauth2Authentication, "tokenValue")
+        val context = subject!!.createUserContext(oauth2Authentication)
 
         assertThat<String>(context.userName, equalTo("TEST_USER_NAME"))
         assertThat<String>(context.issuer, containsString("TEST_UAA_URL"))
@@ -159,46 +150,27 @@ class UserContextFactoryTest {
         }
     }
 
-    private fun setupOAuthMock(grantType: String): OAuth2Authentication {
-        val authentication = mock(OAuth2Authentication::class.java)
-        val oauth2Request =
-            spy(
-                OAuth2Request(
-                    null,
-                    "TEST_CLIENT_ID",
-                    null,
-                    false,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                ),
+    private fun setupOAuthMock(grantType: String): JwtAuthenticationToken {
+        val authentication = mock(JwtAuthenticationToken::class.java)
+        val jwt = mock(Jwt::class.java)
+        val scopeList = listOf("scope1", "scope2")
+
+        val claims =
+            mapOf(
+                JwtClaimNames.SUB to "TEST_USER_ID",
+                JwtClaimNames.ISS to "TEST_UAA_URL",
+                "user_id" to "TEST_USER_ID",
+                "user_name" to "TEST_USER_NAME",
+                "grant_type" to grantType,
+                "client_id" to "TEST_CLIENT_ID",
+                JwtClaimNames.IAT to Instant.ofEpochSecond(1413495264),
+                JwtClaimNames.EXP to Instant.ofEpochSecond(1413538464),
+                "scope" to scopeList,
             )
-        val token = mock(OAuth2AccessToken::class.java)
-        val authDetails = mock(OAuth2AuthenticationDetails::class.java)
 
-        val additionalInformation = HashMap<String, Any>()
-        additionalInformation["user_id"] = "TEST_USER_ID"
-        additionalInformation["user_name"] = "TEST_USER_NAME"
-        additionalInformation["iss"] = "TEST_UAA_URL"
-        additionalInformation["iat"] = 1413495264
-
-        val scopes = HashSet<String>()
-        scopes.add("scope1")
-        scopes.add("scope2")
-
-        `when`(oauth2Request.grantType).thenReturn(grantType)
-        `when`(authentication.details).thenReturn(authDetails)
-        `when`(authDetails.tokenValue).thenReturn("tokenValue")
-
-        `when`(authentication.oAuth2Request).thenReturn(oauth2Request)
-        `when`(token.additionalInformation).thenReturn(additionalInformation)
-        `when`(token.expiration).thenReturn(Date.from(Instant.ofEpochSecond(1413538464)))
-        `when`(token.scope).thenReturn(scopes)
-
-        `when`(tokenServicesMock!!.readAccessToken("tokenValue")).thenReturn(token)
-
+        `when`(jwt.claims).thenReturn(claims)
+        `when`(jwt.subject).thenReturn("TEST_USER_ID")
+        `when`(authentication.principal).thenReturn(jwt)
         return authentication
     }
 
