@@ -1,13 +1,13 @@
-package org.cloudfoundry.credhub;
+package org.cloudfoundry.credhub.config.auth;
 
-import org.cloudfoundry.credhub.config.auth.OAuth2AuthenticationExceptionHandler;
-import org.junit.Before;
-import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2Error;
+
+import org.junit.Before;
+import org.junit.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -26,8 +26,8 @@ public class OAuth2AuthenticationExceptionHandlerTest {
 
     @Test
     public void testOAuth2AuthenticationExceptionHandling() throws Exception {
-        OAuth2Error error = new OAuth2Error
-                ("error", "error-description", "error-uri");
+        OAuth2Error error = new OAuth2Error(
+                "error", "error-description", "error-uri");
         OAuth2AuthenticationException oae =
                 new OAuth2AuthenticationException(error, "description");
 
