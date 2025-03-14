@@ -3,6 +3,7 @@ package org.cloudfoundry.credhub.helpers
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import org.cloudfoundry.credhub.generate.ExceptionHandlers
 import org.cloudfoundry.credhub.util.TimeModuleFactory
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
 import org.springframework.restdocs.JUnitRestDocumentation
@@ -40,6 +41,7 @@ class MockMvcFactory {
             val mockMvcBuilder =
                 MockMvcBuilders
                     .standaloneSetup(controller)
+                    .setControllerAdvice(ExceptionHandlers())
                     .setMessageConverters(getPreconfiguredJacksonConverter())
                     .alwaysDo<StandaloneMockMvcBuilder>(print())
                     .apply<StandaloneMockMvcBuilder>(

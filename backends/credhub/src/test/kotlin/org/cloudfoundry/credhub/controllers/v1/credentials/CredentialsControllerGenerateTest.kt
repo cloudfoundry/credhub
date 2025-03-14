@@ -422,6 +422,7 @@ class CredentialsControllerGenerateTest {
                 "generated": true,
                 "duration_overridden": true,
                 "duration_used": 1460,
+                "key_length": 2048,
                 "value": {
                   "ca": "${TestConstants.TEST_CA}",
                   "certificate": "${TestConstants.TEST_CERTIFICATE}",
