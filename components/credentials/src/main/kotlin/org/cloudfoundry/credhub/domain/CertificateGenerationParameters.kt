@@ -32,8 +32,8 @@ import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.
 import org.cloudfoundry.credhub.requests.GenerationParameters
 import org.cloudfoundry.credhub.utils.CertificateReader
 import org.springframework.util.StringUtils
-import java.util.Objects
 import java.util.Arrays
+import java.util.Objects
 import javax.security.auth.x500.X500Principal
 
 class CertificateGenerationParameters : GenerationParameters {

@@ -2,7 +2,7 @@ package org.cloudfoundry.credhub.controllers.v1.certificates
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.assertj.core.api.Assertions.*
+import org.assertj.core.api.Assertions.assertThat
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.certificates.CertificatesController
@@ -17,7 +17,11 @@ import org.cloudfoundry.credhub.requests.CertificateRegenerateRequest
 import org.cloudfoundry.credhub.requests.UpdateTransitionalVersionRequest
 import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer
 import org.cloudfoundry.credhub.utils.TestConstants
-import org.cloudfoundry.credhub.views.*
+import org.cloudfoundry.credhub.views.CertificateCredentialView
+import org.cloudfoundry.credhub.views.CertificateCredentialsView
+import org.cloudfoundry.credhub.views.CertificateGenerationView
+import org.cloudfoundry.credhub.views.CertificateVersionView
+import org.cloudfoundry.credhub.views.CertificateView
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Rule
@@ -206,22 +210,23 @@ class CertificatesControllerTest {
         certificateView = CertificateGenerationView(certificateCredentialVersion, false)
         spyCertificatesHandler.handleregenerateReturnsCredentialview = CredentialView()
 
-        var mvcResult = mockMvc
-            .perform(
-                post("${CertificatesController.ENDPOINT}/{certificateId}/regenerate", certificateId.toString())
-                    .credHubAuthHeader()
-                    .accept(MediaType.APPLICATION_JSON)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(requestBody))
-            .andExpect(status().isBadRequest)
-            .andReturn()
+        var mvcResult =
+            mockMvc
+                .perform(
+                    post("${CertificatesController.ENDPOINT}/{certificateId}/regenerate", certificateId.toString())
+                        .credHubAuthHeader()
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody),
+                ).andExpect(status().isBadRequest)
+                .andReturn()
 
         val expectedRequestBody =
             CertificateRegenerateRequest(
                 transitional = true,
                 allowTransitionalParentToSign = true,
                 keyLength = 4711,
-                metadata = metadata
+                metadata = metadata,
             )
 
         assertThat(spyCertificatesHandler.handleregenerateCalledwithRequest).isEqualTo(expectedRequestBody)
@@ -236,21 +241,19 @@ class CertificatesControllerTest {
         JSONAssert.assertEquals(mvcResult.response.contentAsString, expectedResponseBody, true)
     }
 
-
-
     @Test
     fun `postCertificatesUuidRegenerateReturnsCertificate generate a certificate with 4096 key length`() {
         val expectedCertificateCredentialValue =
-                CertificateCredentialValue(
-                    TestConstants.TEST_CA_4096,
-                    TestConstants.TEST_CERTIFICATE_4096,
-                    TestConstants.TEST_PRIVATE_KEY_4096,
-                    name,
-                    false,
-                    false,
-                    true,
-                    true,
-                )
+            CertificateCredentialValue(
+                TestConstants.TEST_CA_4096,
+                TestConstants.TEST_CERTIFICATE_4096,
+                TestConstants.TEST_PRIVATE_KEY_4096,
+                name,
+                false,
+                false,
+                true,
+                true,
+            )
 
         val expectedCertificateCredentialVersion = CertificateCredentialVersion(expectedCertificateCredentialValue, name, SpyEncryptor())
         expectedCertificateCredentialVersion.versionCreatedAt = createdAt
