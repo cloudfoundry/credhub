@@ -8,7 +8,25 @@ import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException
 import com.jayway.jsonpath.InvalidJsonException
 import org.apache.logging.log4j.LogManager
 import org.cloudfoundry.credhub.ErrorMessages
-import org.cloudfoundry.credhub.exceptions.*
+import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
+import org.cloudfoundry.credhub.exceptions.InvalidKeyLengthCertificateException
+import org.cloudfoundry.credhub.exceptions.InvalidModeException
+import org.cloudfoundry.credhub.exceptions.InvalidPermissionException
+import org.cloudfoundry.credhub.exceptions.InvalidPermissionOperationException
+import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException
+import org.cloudfoundry.credhub.exceptions.InvalidRemoteAddressException
+import org.cloudfoundry.credhub.exceptions.KeyNotFoundException
+import org.cloudfoundry.credhub.exceptions.MalformedCertificateException
+import org.cloudfoundry.credhub.exceptions.MalformedPrivateKeyException
+import org.cloudfoundry.credhub.exceptions.MaximumSizeException
+import org.cloudfoundry.credhub.exceptions.MissingCertificateException
+import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException
+import org.cloudfoundry.credhub.exceptions.PermissionAlreadyExistsException
+import org.cloudfoundry.credhub.exceptions.PermissionDoesNotExistException
+import org.cloudfoundry.credhub.exceptions.PermissionException
+import org.cloudfoundry.credhub.exceptions.PermissionInvalidPathAndActorException
+import org.cloudfoundry.credhub.exceptions.ReadOnlyException
+import org.cloudfoundry.credhub.exceptions.UnreadableCertificateException
 import org.cloudfoundry.credhub.views.ResponseError
 import org.springframework.core.Ordered.HIGHEST_PRECEDENCE
 import org.springframework.core.annotation.Order
@@ -232,7 +250,8 @@ class ExceptionHandlers {
 
     @ExceptionHandler(InvalidKeyLengthCertificateException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    fun handleInvalidKeyLengthCertificate(exception: InvalidKeyLengthCertificateException): ResponseError = constructError(exception.message)
+    fun handleInvalidKeyLengthCertificate(exception: InvalidKeyLengthCertificateException): ResponseError =
+        constructError(exception.message)
 
     private fun badRequestResponse(): ResponseError = constructError(ErrorMessages.BAD_REQUEST)
 

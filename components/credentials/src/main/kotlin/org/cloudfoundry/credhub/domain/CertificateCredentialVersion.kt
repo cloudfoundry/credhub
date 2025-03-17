@@ -82,8 +82,6 @@ class CertificateCredentialVersion(
     var keyLength: Int? = null
         get() = parsedCertificate.keyLength
 
-
-
     init {
         this.certificate = delegate.certificate
     }

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.domain.CertificateGenerationParameters
-import org.cloudfoundry.credhub.exceptions.InvalidKeyLengthCertificateException
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException
 
 class CertificateGenerateRequest : BaseCredentialGenerateRequest() {
@@ -51,6 +50,7 @@ class CertificateGenerateRequest : BaseCredentialGenerateRequest() {
     fun setAllowTransitionalParentToSign(allowTransitionalParentToSign: Boolean) {
         this.certificateGenerationParameters?.allowTransitionalParentToSign = allowTransitionalParentToSign
     }
+
     fun setKeyLength(keyLength: Int) {
         this.certificateGenerationParameters?.keyLength = keyLength
         this.certificateGenerationParameters?.validate()
