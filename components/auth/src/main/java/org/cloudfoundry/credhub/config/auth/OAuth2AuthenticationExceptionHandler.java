@@ -36,6 +36,7 @@ public class OAuth2AuthenticationExceptionHandler
             jsonObject.addProperty("error", error.getErrorCode());
             jsonObject.addProperty("error_description", error.getDescription());
         } else if (authException instanceof InsufficientAuthenticationException) {
+            jsonObject.addProperty("error", "invalid_token");
             jsonObject.addProperty("error_description", authException.getMessage());
         }
         response.setContentType("application/json");
