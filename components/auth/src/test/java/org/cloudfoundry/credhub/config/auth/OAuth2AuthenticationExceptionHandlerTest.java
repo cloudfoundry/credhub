@@ -47,7 +47,7 @@ public class OAuth2AuthenticationExceptionHandlerTest {
         exceptionHandler.commence(request, response, iae);
 
         assertEquals(
-                "{\"error\":\"invalid_token\",\"error_description\":\"Full authentication required\"}",
+                "{\"error\":\"access_denied\",\"error_description\":\"Full authentication required\"}",
                 response.getContentAsString());
     }
 }
