@@ -22,6 +22,7 @@ import org.cloudfoundry.credhub.views.CertificateCredentialsView
 import org.cloudfoundry.credhub.views.CertificateGenerationView
 import org.cloudfoundry.credhub.views.CertificateVersionView
 import org.cloudfoundry.credhub.views.CertificateView
+import org.cloudfoundry.credhub.views.CredentialView
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Rule
