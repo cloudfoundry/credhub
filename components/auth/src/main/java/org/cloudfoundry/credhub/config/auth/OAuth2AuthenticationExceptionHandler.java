@@ -10,6 +10,7 @@ import org.springframework.security.authentication.InsufficientAuthenticationExc
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2Error;
+import org.springframework.security.oauth2.core.OAuth2ErrorCodes;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
 import org.springframework.security.web.AuthenticationEntryPoint;
 
@@ -36,7 +37,7 @@ public class OAuth2AuthenticationExceptionHandler
             jsonObject.addProperty("error", error.getErrorCode());
             jsonObject.addProperty("error_description", error.getDescription());
         } else if (authException instanceof InsufficientAuthenticationException) {
-            jsonObject.addProperty("error", "invalid_token");
+            jsonObject.addProperty("error", OAuth2ErrorCodes.ACCESS_DENIED);
             jsonObject.addProperty("error_description", authException.getMessage());
         }
         response.setContentType("application/json");
