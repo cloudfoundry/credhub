@@ -9,6 +9,7 @@ import com.jayway.jsonpath.InvalidJsonException
 import org.apache.logging.log4j.LogManager
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
+import org.cloudfoundry.credhub.exceptions.InvalidKeyLengthCertificateException
 import org.cloudfoundry.credhub.exceptions.InvalidModeException
 import org.cloudfoundry.credhub.exceptions.InvalidPermissionException
 import org.cloudfoundry.credhub.exceptions.InvalidPermissionOperationException
@@ -246,6 +247,11 @@ class ExceptionHandlers {
         response.status = HttpStatus.BAD_REQUEST.value()
         return badRequestResponse()
     }
+
+    @ExceptionHandler(InvalidKeyLengthCertificateException::class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    fun handleInvalidKeyLengthCertificate(exception: InvalidKeyLengthCertificateException): ResponseError =
+        constructError(exception.message)
 
     private fun badRequestResponse(): ResponseError = constructError(ErrorMessages.BAD_REQUEST)
 

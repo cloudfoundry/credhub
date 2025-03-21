@@ -79,6 +79,9 @@ class CertificateCredentialVersion(
             (delegate as CertificateCredentialVersionData).generated = generated
         }
 
+    var keyLength: Int? = null
+        get() = parsedCertificate.keyLength
+
     init {
         this.certificate = delegate.certificate
     }

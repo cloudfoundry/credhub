@@ -50,4 +50,9 @@ class CertificateGenerateRequest : BaseCredentialGenerateRequest() {
     fun setAllowTransitionalParentToSign(allowTransitionalParentToSign: Boolean) {
         this.certificateGenerationParameters?.allowTransitionalParentToSign = allowTransitionalParentToSign
     }
+
+    fun setKeyLength(keyLength: Int) {
+        this.certificateGenerationParameters?.keyLength = keyLength
+        this.certificateGenerationParameters?.validate()
+    }
 }

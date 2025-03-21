@@ -22,6 +22,7 @@ import org.cloudfoundry.credhub.views.CertificateCredentialsView
 import org.cloudfoundry.credhub.views.CertificateGenerationView
 import org.cloudfoundry.credhub.views.CertificateVersionView
 import org.cloudfoundry.credhub.views.CertificateView
+import org.cloudfoundry.credhub.views.CredentialView
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Rule
@@ -120,7 +121,7 @@ class CertificatesControllerTest {
         // language=json
         val requestBody =
             """
-            {"set_as_transitional": true, "allow_transitional_parent_to_sign": true, "metadata": {"description": "example metadata"}}
+            {"set_as_transitional": true, "allow_transitional_parent_to_sign": true, "key_length": 2048, "metadata": {"description": "example metadata"}}
             """.trimIndent()
         certificateView = CertificateGenerationView(certificateCredentialVersion, false)
         (certificateView as CertificateGenerationView).durationOverridden = true
@@ -149,6 +150,11 @@ class CertificatesControllerTest {
                                     "Allows a transitional version of the parent CA to sign this certificate if the transitional version is the latest version",
                                 ).type(JsonFieldType.BOOLEAN)
                                 .optional(),
+                            fieldWithPath("key_length")
+                                .description(
+                                    "Set the key length for the regenerated certificate. If not provided, the key length will be the same as the original certificate.",
+                                ).type(JsonFieldType.NUMBER)
+                                .optional(),
                             fieldWithPath("metadata")
                                 .description("Additional metadata of the credential.")
                                 .optional(),
@@ -162,7 +168,7 @@ class CertificatesControllerTest {
                 ).andReturn()
 
         val expectedRequestBody =
-            CertificateRegenerateRequest(transitional = true, allowTransitionalParentToSign = true, metadata = metadata)
+            CertificateRegenerateRequest(transitional = true, allowTransitionalParentToSign = true, keyLength = 2048, metadata = metadata)
 
         assertThat(spyCertificatesHandler.handleregenerateCalledwithRequest).isEqualTo(expectedRequestBody)
         assertThat(spyCertificatesHandler.handleregenerateCalledwithCredentialuuid).isEqualTo(certificateId.toString())
@@ -183,10 +189,157 @@ class CertificatesControllerTest {
               "self_signed": false,
               "duration_overridden": true,
               "duration_used": 1234,
+              "key_length": 2048,
               "value": {
                 "ca": "${TestConstants.TEST_CA}",
                 "certificate": "${TestConstants.TEST_CERTIFICATE}",
                 "private_key": "${TestConstants.TEST_PRIVATE_KEY}"
+              }
+            }
+            """.trimIndent()
+        JSONAssert.assertEquals(mvcResult.response.contentAsString, expectedResponseBody, true)
+    }
+
+    @Test
+    fun `postCertificatesUuidRegenerateReturnsCertificate using invalid key size`() {
+        // language=json
+        val requestBody =
+            """
+            {"set_as_transitional": true, "allow_transitional_parent_to_sign": true, "key_length": 4711, "metadata": {"description": "example metadata"}}
+            """.trimIndent()
+
+        certificateView = CertificateGenerationView(certificateCredentialVersion, false)
+        spyCertificatesHandler.handleregenerateReturnsCredentialview = CredentialView()
+
+        var mvcResult =
+            mockMvc
+                .perform(
+                    post("${CertificatesController.ENDPOINT}/{certificateId}/regenerate", certificateId.toString())
+                        .credHubAuthHeader()
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody),
+                ).andExpect(status().isBadRequest)
+                .andReturn()
+
+        val expectedRequestBody =
+            CertificateRegenerateRequest(
+                transitional = true,
+                allowTransitionalParentToSign = true,
+                keyLength = 4711,
+                metadata = metadata,
+            )
+
+        assertThat(spyCertificatesHandler.handleregenerateCalledwithRequest).isEqualTo(expectedRequestBody)
+        assertThat(spyCertificatesHandler.handleregenerateCalledwithCredentialuuid).isEqualTo(certificateId.toString())
+
+        val expectedResponseBody =
+            """
+            {
+              "error": "The provided key length is not supported. Valid values include '2048', '3072' and '4096'."
+            }
+            """.trimIndent()
+        JSONAssert.assertEquals(mvcResult.response.contentAsString, expectedResponseBody, true)
+    }
+
+    @Test
+    fun `postCertificatesUuidRegenerateReturnsCertificate generate a certificate with 4096 key length`() {
+        val expectedCertificateCredentialValue =
+            CertificateCredentialValue(
+                TestConstants.TEST_CA_4096,
+                TestConstants.TEST_CERTIFICATE_4096,
+                TestConstants.TEST_PRIVATE_KEY_4096,
+                name,
+                false,
+                false,
+                true,
+                true,
+            )
+
+        val expectedCertificateCredentialVersion = CertificateCredentialVersion(expectedCertificateCredentialValue, name, SpyEncryptor())
+        expectedCertificateCredentialVersion.versionCreatedAt = createdAt
+        expectedCertificateCredentialVersion.uuid = certificateId
+        expectedCertificateCredentialVersion.metadata = metadata
+        expectedCertificateCredentialVersion.expiryDate = certificateCredentialValue.expiryDate
+        expectedCertificateCredentialVersion.durationOverridden = true
+        expectedCertificateCredentialVersion.durationUsed = 1234
+
+        val expectedCertificateView = CertificateGenerationView(expectedCertificateCredentialVersion, false)
+
+        spyCertificatesHandler.handleregenerateReturnsCredentialview = expectedCertificateView
+
+        // language=json
+        val requestBody =
+            """
+            {"set_as_transitional": true, "allow_transitional_parent_to_sign": true, "key_length": 4096, "metadata": {"description": "example metadata"}}
+            """.trimIndent()
+
+        val mvcResult =
+            mockMvc
+                .perform(
+                    post("${CertificatesController.ENDPOINT}/{certificateId}/regenerate", certificateId.toString())
+                        .credHubAuthHeader()
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody),
+                ).andExpect(status().isOk)
+                .andDo(
+                    document(
+                        CredHubRestDocs.DOCUMENT_IDENTIFIER,
+                        requestFields(
+                            fieldWithPath("set_as_transitional")
+                                .description("Set if certificate is transitional")
+                                .type(JsonFieldType.BOOLEAN)
+                                .optional(),
+                            fieldWithPath("allow_transitional_parent_to_sign")
+                                .description(
+                                    "Allows a transitional version of the parent CA to sign this certificate if the transitional version is the latest version",
+                                ).type(JsonFieldType.BOOLEAN)
+                                .optional(),
+                            fieldWithPath("key_length")
+                                .description(
+                                    "Set the key length for the regenerated certificate. If not provided, the key length will be the same as the original certificate.",
+                                ).type(JsonFieldType.NUMBER)
+                                .optional(),
+                            fieldWithPath("metadata")
+                                .description("Additional metadata of the credential.")
+                                .optional(),
+                            fieldWithPath("metadata.*")
+                                .ignored(),
+                        ),
+                        pathParameters(
+                            getCertificateIdPathParameter(),
+                        ),
+                    ),
+                ).andReturn()
+
+        val expectedRequestBody =
+            CertificateRegenerateRequest(transitional = true, allowTransitionalParentToSign = true, keyLength = 4096, metadata = metadata)
+
+        assertThat(spyCertificatesHandler.handleregenerateCalledwithRequest).isEqualTo(expectedRequestBody)
+        assertThat(spyCertificatesHandler.handleregenerateCalledwithCredentialuuid).isEqualTo(certificateId.toString())
+
+        // language=json
+        val expectedResponseBody =
+            """
+            {
+              "type": "${CredentialType.CERTIFICATE.type.lowercase()}",
+              "version_created_at": "${certificateView.versionCreatedAt}",
+              "id": "$certificateId",
+              "name": "$name",
+              "metadata": { "description": "example metadata"},
+              "transitional": true,
+              "generated": true,
+              "expiry_date": "${certificateCredentialValue.expiryDate}",
+              "certificate_authority": false,
+              "self_signed": false,
+              "duration_overridden": true,
+              "duration_used": 1234,
+              "key_length": 4096,
+              "value": {
+                "ca": "${TestConstants.TEST_CA_4096}",
+                "certificate": "${TestConstants.TEST_CERTIFICATE_4096}",
+                "private_key": "${TestConstants.TEST_PRIVATE_KEY_4096}"
               }
             }
             """.trimIndent()
