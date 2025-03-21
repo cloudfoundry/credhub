@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
+import java.util.Objects;
 
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
 import org.cloudfoundry.credhub.ErrorMessages;
@@ -22,6 +23,7 @@ import org.cloudfoundry.credhub.domain.CertificateVersionMetadata;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
+import org.cloudfoundry.credhub.exceptions.InvalidKeyLengthCertificateException;
 import org.cloudfoundry.credhub.exceptions.PermissionException;
 import org.cloudfoundry.credhub.generate.GenerationRequestGenerator;
 import org.cloudfoundry.credhub.generate.UniversalCredentialGenerator;
@@ -864,6 +866,82 @@ public class DefaultCertificatesHandlerTest {
     final CertificateRegenerateRequest regenerateRequest = new CertificateRegenerateRequest(true, true, null, null);
     subjectWithConcatenateCas.handleRegenerate(UUID_STRING, regenerateRequest);
 
+  }
+
+  @Test
+  public void handleRegenerate_whenKeyLengthNotNull_passesValueToCertificateService() {
+    final CertificateGenerationRequestParameters requestParameters = new CertificateGenerationRequestParameters();
+    final CertificateGenerationParameters parameters = new CertificateGenerationParameters(requestParameters);
+    final CertificateGenerateRequest generateRequest = new CertificateGenerateRequest();
+    generateRequest.setCertificateGenerationParameters(parameters);
+
+    final CertificateCredentialVersion certificate = mock(CertificateCredentialVersion.class);
+    final CertificateCredentialValue newValue = mock(CertificateCredentialValue.class);
+    final CertificateCredentialVersion credentialVersion = mock(CertificateCredentialVersion.class);
+
+    when(certificate.getName()).thenReturn("test");
+    when(credentialVersion.getCa()).thenReturn(TEST_CA);
+    when(credentialVersion.getTrustedCa()).thenReturn(TEST_TRUSTED_CA);
+
+    when(certificateService.findByCredentialUuid(UUID_STRING)).thenReturn(certificate);
+    when(generationRequestGenerator.createGenerateRequest(certificate))
+            .thenReturn(generateRequest);
+    when(universalCredentialGenerator.generate(generateRequest)).thenReturn(newValue);
+    when(certificateService.save(eq(certificate), any(), any()))
+            .then(
+                    invocation -> {
+                      Object[] args = invocation.getArguments();
+                      CertificateGenerateRequest req = (CertificateGenerateRequest) args[2];
+                      CertificateGenerationParameters params = (CertificateGenerationParameters) req.getGenerationParameters();
+                      assert params != null;
+                      return credentialVersion;
+                    }
+            );
+
+    final CertificateRegenerateRequest regenerateRequest = new CertificateRegenerateRequest(true, false, 3072, null);
+    subjectWithConcatenateCas.handleRegenerate(UUID_STRING, regenerateRequest);
+    assertEquals(3072, Objects.requireNonNull(regenerateRequest.getKeyLength()).intValue());
+  }
+
+
+  @Test
+  public void handleRegenerate_whenKeyLengthIsInvalid_throwException() {
+    final CertificateGenerationRequestParameters requestParameters = new CertificateGenerationRequestParameters();
+    final CertificateGenerationParameters parameters = new CertificateGenerationParameters(requestParameters);
+    final CertificateGenerateRequest generateRequest = new CertificateGenerateRequest();
+    generateRequest.setCertificateGenerationParameters(parameters);
+
+    final CertificateCredentialVersion certificate = mock(CertificateCredentialVersion.class);
+    final CertificateCredentialValue newValue = mock(CertificateCredentialValue.class);
+    final CertificateCredentialVersion credentialVersion = mock(CertificateCredentialVersion.class);
+
+    when(certificate.getName()).thenReturn("test");
+    when(credentialVersion.getCa()).thenReturn(TEST_CA);
+    when(credentialVersion.getTrustedCa()).thenReturn(TEST_TRUSTED_CA);
+
+    when(certificateService.findByCredentialUuid(UUID_STRING)).thenReturn(certificate);
+    when(generationRequestGenerator.createGenerateRequest(certificate))
+            .thenReturn(generateRequest);
+    when(universalCredentialGenerator.generate(generateRequest)).thenReturn(newValue);
+    when(certificateService.save(eq(certificate), any(), any()))
+            .then(
+                    invocation -> {
+                      Object[] args = invocation.getArguments();
+                      CertificateGenerateRequest req = (CertificateGenerateRequest) args[2];
+                      CertificateGenerationParameters params = (CertificateGenerationParameters) req.getGenerationParameters();
+                      assert params != null;
+                      return credentialVersion;
+                    }
+            );
+
+    final CertificateRegenerateRequest regenerateRequest = new CertificateRegenerateRequest(true, false, 4711, null);
+
+    try {
+      subjectWithConcatenateCas.handleRegenerate(UUID_STRING, regenerateRequest);
+      fail("should throw exception");
+    } catch (final InvalidKeyLengthCertificateException e) {
+      assertThat(e.getMessage(), IsEqual.equalTo(ErrorMessages.INVALID_KEY_LENGTH));
+    }
   }
 
   @Test
