@@ -2,7 +2,7 @@ package org.cloudfoundry.credhub.exceptions
 
 import com.google.common.collect.Lists
 import java.util.stream.Collectors
-import javax.validation.ValidationException
+import jakarta.validation.ValidationException
 
 open class ParameterizedValidationException
     @JvmOverloads
