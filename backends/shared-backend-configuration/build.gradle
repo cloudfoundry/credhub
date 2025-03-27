@@ -47,9 +47,8 @@ dependencies {
     implementation("com.h2database:h2:${h2Version}")
     implementation("org.mariadb.jdbc:mariadb-java-client:${mariadbJdbcVersion}")
 
-
     // Other
-    implementation("org.apache.httpcomponents:httpclient:${apacheHttpClientVersion}")
+    implementation("org.apache.httpcomponents.client5:httpclient5")
 }
 
 dependencyManagement {
