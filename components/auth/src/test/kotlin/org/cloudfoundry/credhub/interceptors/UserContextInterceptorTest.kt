@@ -16,7 +16,7 @@ import org.mockito.Mockito.`when`
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.security.core.Authentication
 import java.security.Principal
-import javax.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletRequest
 
 @RunWith(JUnit4::class)
 class UserContextInterceptorTest {
