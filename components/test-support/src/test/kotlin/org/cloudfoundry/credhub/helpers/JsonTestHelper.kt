@@ -9,8 +9,8 @@ import org.hamcrest.BaseMatcher
 import org.hamcrest.Description
 import org.hamcrest.Matcher
 import java.io.IOException
-import javax.validation.ConstraintViolation
-import javax.validation.Validation
+import jakarta.validation.ConstraintViolation
+import jakarta.validation.Validation
 
 class JsonTestHelper private constructor() {
     companion object {

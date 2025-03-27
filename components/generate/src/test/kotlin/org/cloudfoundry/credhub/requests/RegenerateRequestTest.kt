@@ -8,7 +8,7 @@ import org.hamcrest.Matchers
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
-import javax.validation.ConstraintViolation
+import jakarta.validation.ConstraintViolation
 
 @RunWith(JUnit4::class)
 class RegenerateRequestTest {

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.JsonProperty
 import org.apache.commons.lang3.StringUtils
 import org.cloudfoundry.credhub.ErrorMessages
-import javax.validation.constraints.NotNull
+import jakarta.validation.constraints.NotNull
 
 @JsonAutoDetect
 class BulkRegenerateRequest {
