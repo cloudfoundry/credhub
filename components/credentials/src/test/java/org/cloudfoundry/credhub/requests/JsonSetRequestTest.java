@@ -3,7 +3,7 @@ package org.cloudfoundry.credhub.requests;
 import java.io.IOException;
 import java.util.Set;
 
-import javax.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolation;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

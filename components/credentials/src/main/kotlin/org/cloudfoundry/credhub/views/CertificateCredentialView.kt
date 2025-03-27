@@ -2,7 +2,7 @@ package org.cloudfoundry.credhub.views
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import java.util.UUID
-import javax.validation.constraints.NotNull
+import jakarta.validation.constraints.NotNull
 
 class CertificateCredentialView {
     @get:JsonProperty("name")

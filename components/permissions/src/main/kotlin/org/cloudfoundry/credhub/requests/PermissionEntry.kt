@@ -8,7 +8,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.PermissionOperation
 import org.springframework.validation.annotation.Validated
-import javax.validation.constraints.NotEmpty
+import jakarta.validation.constraints.NotEmpty
 
 @JsonAutoDetect
 @Validated

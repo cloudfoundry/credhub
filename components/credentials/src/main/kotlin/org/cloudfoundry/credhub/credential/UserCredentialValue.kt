@@ -9,7 +9,7 @@ import org.cloudfoundry.credhub.CryptSaltFactory
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.utils.EmptyStringToNull
 import java.util.Objects
-import javax.validation.constraints.NotEmpty
+import jakarta.validation.constraints.NotEmpty
 
 class UserCredentialValue : CredentialValue {
     @JsonDeserialize(using = EmptyStringToNull::class)

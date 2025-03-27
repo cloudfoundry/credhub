@@ -5,7 +5,7 @@ import org.apache.commons.lang3.StringUtils.prependIfMissing
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
 import org.cloudfoundry.credhub.ErrorMessages
-import javax.validation.constraints.NotEmpty
+import jakarta.validation.constraints.NotEmpty
 
 @JsonAutoDetect
 class PermissionsRequest {
