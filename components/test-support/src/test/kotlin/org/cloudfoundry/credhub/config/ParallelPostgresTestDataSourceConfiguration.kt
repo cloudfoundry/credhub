@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Primary
 import org.springframework.context.annotation.Profile
 import org.springframework.jdbc.core.JdbcTemplate
 import java.sql.ResultSet
-import javax.sql.DataSource
+import jakarta.sql.DataSource
 
 @Profile("unit-test-postgres")
 @Configuration
