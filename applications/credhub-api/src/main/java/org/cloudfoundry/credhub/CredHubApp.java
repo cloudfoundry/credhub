@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub;
 
+import org.apache.coyote.ProtocolHandler;
 import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -10,6 +11,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 import org.apache.coyote.http11.AbstractHttp11Protocol;
 import org.cloudfoundry.credhub.config.CurrentTimeProviderConfig;
+
+import java.util.Arrays;
 
 @SpringBootApplication
 @EnableJpaAuditing(dateTimeProviderRef = CurrentTimeProviderConfig.CURRENT_TIME_PROVIDER)
@@ -23,7 +26,12 @@ public class CredHubApp {
   @Bean
   public WebServerFactoryCustomizer servletContainerCustomizer() {
     return (factory) -> ((TomcatServletWebServerFactory) factory)
-      .addConnectorCustomizers((connector) -> ((AbstractHttp11Protocol<?>) connector.getProtocolHandler())
-        .setUseServerCipherSuitesOrder(true));
+      .addConnectorCustomizers((connector) -> {
+        ProtocolHandler protocolHandler = connector.getProtocolHandler();
+        if (protocolHandler instanceof AbstractHttp11Protocol httpHandler) {
+          Arrays.stream(httpHandler.findSslHostConfigs())
+                  .forEach(sslHostConfig -> sslHostConfig.setHonorCipherOrder(true));
+        }
+      });
   }
 }
