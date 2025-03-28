@@ -34,7 +34,7 @@ import org.cloudfoundry.credhub.utils.CertificateReader
 import org.springframework.util.StringUtils
 import java.util.Arrays
 import java.util.Objects
-import jakarta.security.auth.x500.X500Principal
+import javax.security.auth.x500.X500Principal
 
 class CertificateGenerationParameters : GenerationParameters {
     val validKeyLengths = Arrays.asList(2048, 3072, 4096)
