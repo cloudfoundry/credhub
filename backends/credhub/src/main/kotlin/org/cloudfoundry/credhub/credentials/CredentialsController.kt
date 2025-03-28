@@ -36,7 +36,7 @@ import java.io.IOException
 @RestController
 @RequestMapping(
     path = [CredentialsController.ENDPOINT],
-    produces = [MediaType.APPLICATION_JSON_UTF8_VALUE],
+    produces = [MediaType.APPLICATION_JSON_VALUE],
 )
 class CredentialsController(
     private val credentialsHandler: CredentialsHandler,
