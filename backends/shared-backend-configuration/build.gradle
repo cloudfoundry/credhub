@@ -40,6 +40,8 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 
+    implementation("commons-codec:commons-codec:${commonsCodecVersion}")
+
     // DB
     implementation("org.flywaydb:flyway-core:${flywayVersion}")
     implementation("org.postgresql:postgresql:${postgresqlJdbcVersion}")
