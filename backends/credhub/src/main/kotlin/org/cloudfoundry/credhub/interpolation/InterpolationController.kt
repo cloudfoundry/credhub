@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping(path = [InterpolationController.ENDPOINT], produces = [MediaType.APPLICATION_JSON_UTF8_VALUE])
+@RequestMapping(path = [InterpolationController.ENDPOINT], produces = [MediaType.APPLICATION_JSON_VALUE])
 class InterpolationController(
     private val jsonInterpolationHandler: InterpolationHandler,
     private val auditRecord: CEFAuditRecord,

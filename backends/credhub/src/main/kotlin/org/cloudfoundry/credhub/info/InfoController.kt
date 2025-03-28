@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping(path = [InfoController.ENDPOINT], produces = [MediaType.APPLICATION_JSON_UTF8_VALUE])
+@RequestMapping(path = [InfoController.ENDPOINT], produces = [MediaType.APPLICATION_JSON_VALUE])
 class InfoController(
     @Value("\${auth-server.url:}") val uaaUrl: String,
 ) {

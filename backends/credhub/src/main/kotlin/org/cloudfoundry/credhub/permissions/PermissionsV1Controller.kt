@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @Profile("!remote")
 @RestController
-@RequestMapping(path = [PermissionsV1Controller.ENDPOINT], produces = [MediaType.APPLICATION_JSON_UTF8_VALUE])
+@RequestMapping(path = [PermissionsV1Controller.ENDPOINT], produces = [MediaType.APPLICATION_JSON_VALUE])
 class PermissionsV1Controller(
     private val permissionsHandler: PermissionsV1Handler,
     private val auditRecord: CEFAuditRecord,
@@ -40,7 +40,7 @@ class PermissionsV1Controller(
         return permissionsHandler.getPermissions(credentialNameWithLeadingSlash)
     }
 
-    @RequestMapping(method = [RequestMethod.POST], path = [""], consumes = [MediaType.APPLICATION_JSON_UTF8_VALUE])
+    @RequestMapping(method = [RequestMethod.POST], path = [""], consumes = [MediaType.APPLICATION_JSON_VALUE])
     @ResponseStatus(HttpStatus.CREATED)
     fun setAccessControlEntries(
         @Validated @RequestBody accessEntriesRequest: PermissionsRequest,
