@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Set;
 
 import jakarta.validation.ConstraintViolation;
-
 import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.credential.UserCredentialValue;
 import org.cloudfoundry.credhub.helpers.JsonTestHelper;
