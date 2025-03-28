@@ -1,11 +1,11 @@
 package org.cloudfoundry.credhub.requests
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect
+import jakarta.validation.constraints.NotEmpty
 import org.apache.commons.lang3.StringUtils.prependIfMissing
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
 import org.cloudfoundry.credhub.ErrorMessages
-import jakarta.validation.constraints.NotEmpty
 
 @JsonAutoDetect
 class PermissionsRequest {

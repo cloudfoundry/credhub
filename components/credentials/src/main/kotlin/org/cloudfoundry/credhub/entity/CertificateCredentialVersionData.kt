@@ -1,14 +1,14 @@
 package org.cloudfoundry.credhub.entity
 
-import org.apache.commons.lang3.StringUtils
-import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData.Companion.CREDENTIAL_DATABASE_TYPE
-import java.time.Instant
-import java.util.Objects
 import jakarta.persistence.Column
 import jakarta.persistence.DiscriminatorValue
 import jakarta.persistence.Entity
 import jakarta.persistence.PrimaryKeyJoinColumn
 import jakarta.persistence.SecondaryTable
+import org.apache.commons.lang3.StringUtils
+import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData.Companion.CREDENTIAL_DATABASE_TYPE
+import java.time.Instant
+import java.util.Objects
 
 @Entity
 @DiscriminatorValue(CREDENTIAL_DATABASE_TYPE)
