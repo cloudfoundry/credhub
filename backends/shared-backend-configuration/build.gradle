@@ -43,7 +43,7 @@ dependencies {
     implementation("commons-codec:commons-codec:${commonsCodecVersion}")
 
     // DB
-    implementation("org.flywaydb:flyway-core:${flywayVersion}")
+    implementation("org.flywaydb:flyway-core")
     implementation("org.postgresql:postgresql:${postgresqlJdbcVersion}")
 
     implementation("com.h2database:h2:${h2Version}")
