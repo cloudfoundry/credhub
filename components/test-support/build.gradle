@@ -53,7 +53,8 @@ configurations {
     testOutput.extendsFrom (testCompile)
 }
 
-task jarTest (type: Jar, dependsOn: testClasses) {
+tasks.register('jarTest', Jar) {
+    dependsOn testClasses
     from sourceSets.test.output
     archiveClassifier = 'test'
 }
