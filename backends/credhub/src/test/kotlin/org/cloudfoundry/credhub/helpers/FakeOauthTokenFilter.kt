@@ -1,7 +1,5 @@
 package org.cloudfoundry.credhub.helpers
 
-import java.io.IOException
-import java.util.regex.Pattern
 import jakarta.servlet.Filter
 import jakarta.servlet.FilterChain
 import jakarta.servlet.FilterConfig
@@ -9,6 +7,8 @@ import jakarta.servlet.ServletException
 import jakarta.servlet.ServletRequest
 import jakarta.servlet.ServletResponse
 import jakarta.servlet.http.HttpServletRequest
+import java.io.IOException
+import java.util.regex.Pattern
 
 class FakeOauthTokenFilter : Filter {
     @Throws(ServletException::class)

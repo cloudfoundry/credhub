@@ -1,10 +1,10 @@
 package org.cloudfoundry.credhub.requests
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import org.cloudfoundry.credhub.ErrorMessages
-import org.cloudfoundry.credhub.credential.CertificateCredentialValue
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotNull
+import org.cloudfoundry.credhub.ErrorMessages
+import org.cloudfoundry.credhub.credential.CertificateCredentialValue
 
 class CreateVersionRequest {
     @NotNull(message = ErrorMessages.MISSING_VALUE)

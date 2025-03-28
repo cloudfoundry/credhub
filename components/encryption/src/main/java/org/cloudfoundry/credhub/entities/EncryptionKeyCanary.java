@@ -1,15 +1,10 @@
 package org.cloudfoundry.credhub.entities;
 
-import java.util.UUID;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-
+import jakarta.persistence.*;
 import org.cloudfoundry.credhub.constants.EncryptionConstants;
 import org.hibernate.annotations.GenericGenerator;
+
+import java.util.UUID;
 
 import static org.cloudfoundry.credhub.constants.UuidConstants.UUID_BYTES;
 

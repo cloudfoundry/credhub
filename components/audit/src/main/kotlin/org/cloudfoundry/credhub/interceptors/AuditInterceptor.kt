@@ -1,5 +1,7 @@
 package org.cloudfoundry.credhub.interceptors
 
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 import org.apache.logging.log4j.LogManager
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.auth.UserContextFactory
@@ -7,8 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.lang.Nullable
 import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Component
-import jakarta.servlet.http.HttpServletRequest
-import jakarta.servlet.http.HttpServletResponse
 import org.springframework.web.servlet.HandlerInterceptor
 
 @Component

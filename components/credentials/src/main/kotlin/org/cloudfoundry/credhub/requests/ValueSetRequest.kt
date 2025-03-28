@@ -1,11 +1,11 @@
 package org.cloudfoundry.credhub.requests
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import jakarta.validation.Valid
+import jakarta.validation.constraints.NotNull
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.credential.StringCredentialValue
 import java.util.Objects
-import jakarta.validation.Valid
-import jakarta.validation.constraints.NotNull
 
 class ValueSetRequest : BaseCredentialSetRequest<StringCredentialValue?>() {
     @NotNull(message = ErrorMessages.MISSING_VALUE)

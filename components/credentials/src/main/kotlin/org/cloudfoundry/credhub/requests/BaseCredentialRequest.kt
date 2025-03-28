@@ -1,12 +1,12 @@
 package org.cloudfoundry.credhub.requests
 
 import com.fasterxml.jackson.databind.JsonNode
-import org.apache.commons.lang3.StringUtils
-import org.cloudfoundry.credhub.ErrorMessages
-import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException
 import jakarta.validation.Validation
 import jakarta.validation.constraints.NotEmpty
 import jakarta.validation.constraints.Pattern
+import org.apache.commons.lang3.StringUtils
+import org.cloudfoundry.credhub.ErrorMessages
+import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException
 
 abstract class BaseCredentialRequest {
     @NotEmpty(message = ErrorMessages.MISSING_NAME)

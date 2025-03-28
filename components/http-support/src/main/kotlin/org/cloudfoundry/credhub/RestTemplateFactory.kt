@@ -33,10 +33,17 @@ class RestTemplateFactory {
                 .loadTrustMaterial(trustStore, trustStorePassword.toCharArray())
                 .build()
         val socketFactory = SSLConnectionSocketFactory(sslContext)
-        val httpClient = HttpClientBuilder.create()
-            .setConnectionManager(PoolingHttpClientConnectionManagerBuilder.create()
-                .setSSLSocketFactory(socketFactory).build())
-            .build()
+
+        val httpClient =
+            HttpClientBuilder
+                .create()
+                .setConnectionManager(
+                    PoolingHttpClientConnectionManagerBuilder
+                        .create()
+                        .setSSLSocketFactory(socketFactory)
+                        .build(),
+                ).build()
+
         val requestFactory = HttpComponentsClientHttpRequestFactory(httpClient)
 
         return RestTemplate(requestFactory)
