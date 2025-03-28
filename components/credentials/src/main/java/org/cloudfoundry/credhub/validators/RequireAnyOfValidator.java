@@ -4,7 +4,6 @@ import java.lang.reflect.Field;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-
 import org.apache.commons.lang3.StringUtils;
 
 public class RequireAnyOfValidator implements ConstraintValidator<RequireAnyOf, Object> {
