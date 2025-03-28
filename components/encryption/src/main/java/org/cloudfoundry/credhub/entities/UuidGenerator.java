@@ -10,9 +10,9 @@ import org.hibernate.id.UUIDGenerator;
 public class UuidGenerator extends UUIDGenerator {
   @Override
   public Serializable generate(final SharedSessionContractImplementor session, final Object object) throws HibernateException {
-    final Serializable uuid = session.getEntityPersister(null, object)
+    final Serializable uuid = (Serializable) session.getEntityPersister(null, object)
       .getClassMetadata().getIdentifier(object, session);
 
-    return uuid != null ? uuid : super.generate(session, object);
+    return uuid != null ? uuid : (Serializable) super.generate(session, object);
   }
 }
