@@ -16,9 +16,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authorization.AuthorityAuthorizationManager;
 import org.springframework.security.authorization.AuthorizationManagers;
-import org.springframework.security.config.annotation.ObjectPostProcessor;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.User;
@@ -33,8 +33,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.cloudfoundry.credhub.auth.ActuatorPortFilter;
 import org.cloudfoundry.credhub.auth.OAuth2IssuerService;
 import org.cloudfoundry.credhub.auth.PreAuthenticationFailureFilter;
@@ -48,33 +46,30 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableWebSecurity
 public class AuthConfiguration {
     private static final String VALID_MTLS_ID = "\\bOU=(app:[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[a-f0-9]{4}-[a-f0-9]{12})\\b";
-    private static final Logger LOGGER = LogManager.getLogger(AuthConfiguration.class.getName());
+    private final OAuthProperties oAuthProperties;
+    private final ActuatorPortFilter actuatorPortFilter;
+    private final PreAuthenticationFailureFilter preAuthenticationFailureFilter;
 
-    @Autowired
-    OAuthProperties oAuthProperties;
-
-    @Autowired
-    ActuatorPortFilter actuatorPortFilter;
-
-    @Autowired
-    PreAuthenticationFailureFilter preAuthenticationFailureFilter;
+    public AuthConfiguration(OAuthProperties oauthProperties, ActuatorPortFilter actuatorPortFilter, PreAuthenticationFailureFilter preAuthenticationFailureFilter) {
+        this.oAuthProperties = oauthProperties;
+        this.actuatorPortFilter = actuatorPortFilter;
+        this.preAuthenticationFailureFilter = preAuthenticationFailureFilter;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-         LOGGER.info("in securityFilterChain config");
-
         http
-                .x509()
-                .subjectPrincipalRegex(VALID_MTLS_ID)
-                .userDetailsService(mtlsSUserDetailsService())
-                .withObjectPostProcessor(
-                        new ObjectPostProcessor<X509AuthenticationFilter>() {
+                .x509(x509 -> x509
+                        .subjectPrincipalRegex(VALID_MTLS_ID)
+                        .userDetailsService(mtlsSUserDetailsService())
+                        .withObjectPostProcessor(
+                                new org.springframework.security.config.ObjectPostProcessor<X509AuthenticationFilter>() {
                             @Override
                             public <O extends X509AuthenticationFilter> O postProcess(O filter) {
                                 filter.setContinueFilterChainOnUnsuccessfulAuthentication(false);
                                 return filter;
                             }
-                        }
+                        })
                 );
 
         http
@@ -102,9 +97,10 @@ public class AuthConfiguration {
                                 oauth2.authenticationEntryPoint(
                                         new OAuth2AuthenticationExceptionHandler())
                                         .jwt(withDefaults()))
-                .httpBasic().disable()
-                .csrf().disable()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return http.build();
     }

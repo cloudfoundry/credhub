@@ -51,7 +51,7 @@ class UserContextFactory {
         return UserContext(
             certificate.notBefore.toInstant().epochSecond,
             certificate.notAfter.toInstant().epochSecond,
-            certificate.subjectDN.name,
+            certificate.subjectX500Principal.name,
             UserContext.AUTH_METHOD_MUTUAL_TLS,
         )
     }
