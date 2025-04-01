@@ -1,13 +1,12 @@
 package org.cloudfoundry.credhub.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authorization.AuthorityAuthorizationManager;
-import org.springframework.security.config.annotation.ObjectPostProcessor;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.User;
@@ -26,25 +25,26 @@ import org.cloudfoundry.credhub.auth.X509AuthenticationProvider;
 @EnableWebSecurity
 public class AuthWithoutOAuthConfiguration {
     private static final String VALID_MTLS_ID = "\\bOU=(app:[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[a-f0-9]{4}-[a-f0-9]{12})\\b";
+    private final PreAuthenticationFailureFilter preAuthenticationFailureFilter;
 
-    @Autowired
-    PreAuthenticationFailureFilter preAuthenticationFailureFilter;
+    public AuthWithoutOAuthConfiguration(PreAuthenticationFailureFilter preAuthenticationFailureFilter) {
+        this.preAuthenticationFailureFilter = preAuthenticationFailureFilter;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
         http
-                .x509()
-                .subjectPrincipalRegex(VALID_MTLS_ID)
-                .userDetailsService(mtlsSUserDetailsService())
-                .withObjectPostProcessor(
-                        new ObjectPostProcessor<X509AuthenticationFilter>() {
+                .x509(x509 -> x509
+                        .subjectPrincipalRegex(VALID_MTLS_ID)
+                        .userDetailsService(mtlsSUserDetailsService())
+                        .withObjectPostProcessor(
+                                new org.springframework.security.config.ObjectPostProcessor<X509AuthenticationFilter>() {
                             @Override
                             public <O extends X509AuthenticationFilter> O postProcess(O filter) {
                                 filter.setContinueFilterChainOnUnsuccessfulAuthentication(false);
                                 return filter;
                             }
-                        }
+                        })
                 );
 
         http
@@ -60,9 +60,10 @@ public class AuthWithoutOAuthConfiguration {
                         .requestMatchers("/**").access(AuthorityAuthorizationManager
                                 .hasRole(X509AuthenticationProvider.Companion.getMTLS_USER()))
                 )
-                .httpBasic().disable()
-                .csrf().disable()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return http.build();
     }
