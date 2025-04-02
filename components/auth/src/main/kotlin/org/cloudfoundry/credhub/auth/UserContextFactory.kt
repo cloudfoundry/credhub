@@ -13,7 +13,9 @@ import java.time.Instant
 class UserContextFactory {
     @Autowired(required = false)
     fun createUserContext(authentication: Authentication?): UserContext =
-        if (authentication is PreAuthenticatedAuthenticationToken) {
+        if (authentication == null) {
+            UserContext()
+        } else if (authentication is PreAuthenticatedAuthenticationToken) {
             createUserContext(authentication)
         } else {
             createUserContext(authentication as JwtAuthenticationToken)
