@@ -9,8 +9,8 @@ import java.util.function.Consumer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -62,7 +62,7 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.core.IsCollectionContaining.hasItem;
+import static org.hamcrest.core.IsIterableContaining.hasItem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -94,7 +94,7 @@ public class DefaultCredentialVersionDataServiceTest {
   @Autowired
   private EncryptionKeySet keySet;
 
-  @MockBean
+  @MockitoBean
   private CurrentTimeProvider mockCurrentTimeProvider;
 
   @Autowired

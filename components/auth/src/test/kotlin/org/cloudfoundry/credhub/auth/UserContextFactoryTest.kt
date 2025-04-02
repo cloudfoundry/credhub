@@ -20,7 +20,6 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
-import java.security.Principal
 import java.security.cert.X509Certificate
 import java.time.Instant
 import java.util.Date
