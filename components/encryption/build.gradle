@@ -41,7 +41,7 @@ dependencies {
 
     implementation('com.fasterxml.jackson.module:jackson-module-kotlin')
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}")
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}")
 
     // DB
     testImplementation("org.flywaydb:flyway-core")
