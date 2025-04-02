@@ -80,8 +80,8 @@ dependencies {
     implementation("org.apache.commons:commons-lang3:${apacheCommonsLang3Version}")
     implementation("com.jayway.jsonpath:json-path:${jsonPathVersion}")
 
-    testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc:$springRestDocsVersion")
-    asciidoctorExtensions("org.springframework.restdocs:spring-restdocs-asciidoctor:$springRestDocsVersion")
+    testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc")
+    asciidoctorExtensions("org.springframework.restdocs:spring-restdocs-asciidoctor")
 }
 
 dependencyManagement {

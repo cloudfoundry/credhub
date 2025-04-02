@@ -41,7 +41,6 @@ import org.springframework.restdocs.payload.PayloadDocumentation.requestFields
 import org.springframework.restdocs.request.ParameterDescriptor
 import org.springframework.restdocs.request.RequestDocumentation.parameterWithName
 import org.springframework.restdocs.request.RequestDocumentation.pathParameters
-import org.springframework.restdocs.request.RequestDocumentation.requestParameters
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.security.Security
@@ -579,7 +578,7 @@ class CertificatesControllerTest {
                 .andDo(
                     document(
                         CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                        requestParameters(parameterWithName("name").description("The name of the certificate.")),
+                        queryParameters(parameterWithName("name").description("The name of the certificate.")),
                     ),
                 ).andReturn()
 
@@ -730,7 +729,7 @@ class CertificatesControllerTest {
                 .andDo(
                     document(
                         CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                        requestParameters(
+                        queryParameters(
                             parameterWithName("current")
                                 .description("Return current active version")
                                 .optional(),

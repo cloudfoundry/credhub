@@ -19,7 +19,7 @@ import org.springframework.restdocs.JUnitRestDocumentation
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete
 import org.springframework.restdocs.request.RequestDocumentation.parameterWithName
-import org.springframework.restdocs.request.RequestDocumentation.requestParameters
+import org.springframework.restdocs.request.RequestDocumentation.queryParameters
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.security.Security
@@ -71,7 +71,7 @@ class CredentialsControllerDeleteTest {
                 .andDo(
                     document(
                         CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                        requestParameters(
+                        queryParameters(
                             parameterWithName("name")
                                 .description("The credential name"),
                         ),
