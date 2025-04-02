@@ -35,7 +35,7 @@ dependencies {
 
     implementation('com.fasterxml.jackson.module:jackson-module-kotlin')
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}")
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}")
 
     api("org.bouncycastle:bc-fips:${bcFipsVersion}")
     api("org.bouncycastle:bcpkix-fips:${bcpkixFipsVersion}")
