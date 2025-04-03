@@ -1,4 +1,4 @@
-package org.cloudfoundry.credhub.config.auth;
+package org.cloudfoundry.credhub.auth;
 
 import java.io.IOException;
 import java.io.PrintWriter;

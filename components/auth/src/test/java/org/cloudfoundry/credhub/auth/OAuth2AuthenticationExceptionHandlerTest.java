@@ -1,4 +1,4 @@
-package org.cloudfoundry.credhub.config.auth;
+package org.cloudfoundry.credhub.auth;
 
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
