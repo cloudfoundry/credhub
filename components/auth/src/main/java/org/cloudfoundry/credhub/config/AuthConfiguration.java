@@ -36,10 +36,10 @@ import org.springframework.security.web.authentication.preauth.x509.X509Authenti
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.cloudfoundry.credhub.auth.ActuatorPortFilter;
+import org.cloudfoundry.credhub.auth.OAuth2AuthenticationExceptionHandler;
 import org.cloudfoundry.credhub.auth.OAuth2IssuerService;
 import org.cloudfoundry.credhub.auth.PreAuthenticationFailureFilter;
 import org.cloudfoundry.credhub.auth.X509AuthenticationProvider;
-import org.cloudfoundry.credhub.config.auth.OAuth2AuthenticationExceptionHandler;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
