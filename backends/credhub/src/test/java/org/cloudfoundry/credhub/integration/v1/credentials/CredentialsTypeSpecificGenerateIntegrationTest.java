@@ -9,9 +9,9 @@ import java.util.function.Consumer;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.context.junit4.rules.SpringClassRule;
 import org.springframework.test.context.junit4.rules.SpringMethodRule;
 import org.springframework.test.web.servlet.MockMvc;
@@ -215,21 +215,21 @@ public class CredentialsTypeSpecificGenerateIntegrationTest {
   public TestParameterizer parametizer;
   @Autowired
   private WebApplicationContext webApplicationContext;
-  @SpyBean
+  @MockitoSpyBean
   private CredentialVersionDataService credentialVersionDataService;
-  @MockBean
+  @MockitoBean
   private CurrentTimeProvider mockCurrentTimeProvider;
-  @MockBean
+  @MockitoBean
   private PasswordCredentialGenerator passwordGenerator;
-  @MockBean
+  @MockitoBean
   private CertificateGenerator certificateGenerator;
-  @MockBean
+  @MockitoBean
   private SshGenerator sshGenerator;
-  @MockBean
+  @MockitoBean
   private RsaGenerator rsaGenerator;
-  @MockBean
+  @MockitoBean
   private UserGenerator userGenerator;
-  @SpyBean
+  @MockitoSpyBean
   private ObjectMapper objectMapper;
   @Autowired
   private Encryptor encryptor;
