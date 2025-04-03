@@ -199,7 +199,7 @@ class OAuth2ExtraValidationFilterTest {
                     .accept(APPLICATION_JSON)
                     .contentType(APPLICATION_JSON),
             ).andExpect(status().isUnauthorized)
-            .andExpect(jsonPath("$.error").value(OAuth2ErrorCodes.INVALID_TOKEN))
+            .andExpect(jsonPath("$.error").value(CredHubJwtTimeValidator.ACCESS_TOKEN_EXPIRED))
     }
 
     @RestController
