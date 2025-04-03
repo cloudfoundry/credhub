@@ -25,9 +25,8 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.oauth2.core.OAuth2TokenValidator;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.jwt.JwtValidators;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
+import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
@@ -36,6 +35,7 @@ import org.springframework.security.web.authentication.preauth.x509.X509Authenti
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.cloudfoundry.credhub.auth.ActuatorPortFilter;
+import org.cloudfoundry.credhub.auth.CredHubJwtTimeValidator;
 import org.cloudfoundry.credhub.auth.OAuth2AuthenticationExceptionHandler;
 import org.cloudfoundry.credhub.auth.OAuth2IssuerService;
 import org.cloudfoundry.credhub.auth.PreAuthenticationFailureFilter;
@@ -114,13 +114,13 @@ public class AuthConfiguration {
             @Value("${security.oauth2.resource.jwt.key_value:#{null}}") String keyStr,
             @Autowired OAuth2IssuerService oAuth2IssuerService
     ) throws URISyntaxException, InvalidKeySpecException, NoSuchAlgorithmException {
+
+        NimbusJwtDecoder jwtDecoder;
+
         // 'jwt.key_value' property, which was part of old oauth2 lib is not
         // part of new lib. The property was primarily used for unit test.
         // To keep things compatible with older credhub versions, use the
         // property if it exists. If not, use the jwkKeysPath.
-
-        NimbusJwtDecoder jwtDecoder;
-
         if (keyStr == null) {
             jwtDecoder = NimbusJwtDecoder
                     .withJwkSetUri(oAuthProperties.getJwkKeysPath())
@@ -131,9 +131,10 @@ public class AuthConfiguration {
                     .build();
         }
 
-        OAuth2TokenValidator<Jwt> withIssuer = JwtValidators
-                .createDefaultWithIssuer(Objects.requireNonNull(oAuth2IssuerService.getIssuer()));
-        jwtDecoder.setJwtValidator(withIssuer);
+        jwtDecoder.setJwtValidator(new DelegatingOAuth2TokenValidator<>(
+                new CredHubJwtTimeValidator(),
+                new JwtIssuerValidator(Objects.requireNonNull(
+                        oAuth2IssuerService.getIssuer()))));
 
         return jwtDecoder;
     }
