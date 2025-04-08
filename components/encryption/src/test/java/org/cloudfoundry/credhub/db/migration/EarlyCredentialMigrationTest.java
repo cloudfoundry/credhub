@@ -53,6 +53,7 @@ public class EarlyCredentialMigrationTest {
       .target(MigrationVersion.fromVersion("4"))
       .dataSource(flyway.getConfiguration().getDataSource())
       .locations(flyway.getConfiguration().getLocations())
+      .cleanDisabled(false)
       .load();
 
     flywayV4.clean();
