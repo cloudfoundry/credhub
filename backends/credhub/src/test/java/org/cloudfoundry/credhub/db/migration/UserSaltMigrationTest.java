@@ -58,6 +58,7 @@ public class UserSaltMigrationTest {
       .target(MigrationVersion.fromVersion("40"))
       .dataSource(flyway.getConfiguration().getDataSource())
       .locations(flyway.getConfiguration().getLocations())
+      .cleanDisabled(false)
       .load();
 
     flywayV40.clean();
