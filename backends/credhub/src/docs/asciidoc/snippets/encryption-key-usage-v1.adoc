@@ -9,4 +9,4 @@ After initiating an encryption key rotation, you may validate the status of the 
 ---
 
 === Get Encryption Key Usage
-operation::GET__keyusage__returns_map[]
+operation::getKeyusageReturnsMap[]

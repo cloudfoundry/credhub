@@ -8,4 +8,4 @@ This request displays the server version.
 ---
 
 === Get Version
-operation::GET__version__returns_version[]
+operation::getVersionReturnsVersion[]

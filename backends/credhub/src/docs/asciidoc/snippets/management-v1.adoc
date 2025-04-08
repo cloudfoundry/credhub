@@ -8,9 +8,9 @@ This endpoint can toggle read only mode for the entire API.
 ---
 
 === Get Read Only Mode Status
-operation::GET__management_mode__returns_result[]
+operation::getManagementModeReturnsResult[]
 
 ---
 
 === Set Read Only Mode Status
-operation::POST__management_mode__returns_result[]
+operation::postManagementModeReturnsResult[]

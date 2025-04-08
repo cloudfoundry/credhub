@@ -11,9 +11,9 @@ Statically set certificates may be regenerated if they are self-signed or if the
 ---
 
 === Regenerate a Credential
-operation::POST__regenerate__returns_results[]
+operation::postRegenerateReturnsResults[]
 
 ---
 
 === Bulk Regenerate Credentials
-operation::POST__bulkregenerate__returns_results[]
+operation::postBulkregenerateReturnsResults[]

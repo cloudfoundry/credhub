@@ -19,21 +19,21 @@ The API response will include two fields:
 ---
 
 === Get All Certificates
-operation::GET__certificates__returns_certificates[]
+operation::getCertificatesReturnsCertificates[]
 
 Note: The certificate versions will be sorted in descending order of their creation date.
 
 ---
 
 === Get a Certificate By Name
-operation::GET__certificates_byName__returns_certificate[]
+operation::getCertificatesByNameReturnsCertificate[]
 
 Note: The certificate versions will be sorted in descending order of their creation date.
 
 ---
 
 === Regenerate a Certificate
-operation::POST__certificates_uuid_regenerate__returns_certificate[]
+operation::postCertificatesUuidRegenerateReturnsCertificate[]
 
 Note:
 
@@ -43,21 +43,12 @@ Note:
 ---
 
 === Update Transitional Version
-operation::PUT__updateTransitionalVersion__returns_certificate[]
+operation::putUpdateTransitionalVersionReturnsCertificate[]
 
 ---
 
 === Get All Versions of a Certificate
-operation::GET__certificateVersions__returns_certificates[]
+operation::getCertificateVersionsReturnsCertificates[]
 
 Note: The certificate versions will be sorted in descending order of their creation date.
 
----
-
-=== Create a Version of a Certificate
-operation::POST__certificateVersions__returns_certificate[]
-
----
-
-=== Delete a Version of a Certificate
-operation::DELETE__certificateVersion__returns_certificate[]
