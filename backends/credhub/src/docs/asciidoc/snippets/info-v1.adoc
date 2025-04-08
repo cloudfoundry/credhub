@@ -7,4 +7,4 @@ This endpoint returns the location of the UAA server that this API is registered
 Clients can authenticate with this UAA server.
 
 === Get Info
-operation::GET__info__returns_info[]
+operation::getInfoReturnsInfo[]

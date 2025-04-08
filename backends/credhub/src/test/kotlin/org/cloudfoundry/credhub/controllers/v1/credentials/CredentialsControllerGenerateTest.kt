@@ -514,7 +514,7 @@ class CredentialsControllerGenerateTest {
     }
 
     @Test
-    fun postGnerateSshReturnsSshCredential() {
+    fun postGenerateSshReturnsSshCredential() {
         spyCredentialsHandler.generatecredentialReturnsCredentialview =
             CredentialView(
                 Instant.ofEpochSecond(1549053472L),
