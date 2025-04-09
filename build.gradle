@@ -10,7 +10,7 @@ buildscript {
         bcFipsVersion = '2.1.0'
         commonsCodecVersion = '1.18.0'
         flywayVersion = '7.15.0'
-        guavaVersion = '33.4.6-jre'
+        guavaVersion = '33.4.7-jre'
         h2Version = '1.4.200'
         jsonPathVersion = '2.9.0'
         kotlinVersion = '2.1.20'
