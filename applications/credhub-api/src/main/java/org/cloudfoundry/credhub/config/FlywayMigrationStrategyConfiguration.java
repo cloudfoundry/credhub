@@ -5,6 +5,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.FlywayException;
+import org.flywaydb.database.postgresql.PostgreSQLConfigurationExtension;
+import org.flywaydb.database.postgresql.PostgreSQLDatabaseType;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
 import org.springframework.context.annotation.Bean;
@@ -23,6 +25,17 @@ public class FlywayMigrationStrategyConfiguration {
         return flyway -> {
             renameMigrationTableIfNeeded(flyway);
             repairIfNecessary(flyway);
+
+            if (flyway.getConfiguration().getDatabaseType() instanceof
+                    PostgreSQLDatabaseType) {
+                // For CREATE INDEX CONCURRENTLY. See
+                // https://documentation.red-gate.com/fd/flyway-postgresql-transactional-lock-setting-277579114.html.
+                flyway.getConfigurationExtension(
+                        PostgreSQLConfigurationExtension.class).setTransactionalLock(
+                        false);
+                LOGGER.trace("Set flyway.postgresql.transactional.lock to false.");
+            }
+
             runMigration(flyway);
         };
     }
