@@ -31,6 +31,8 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("junit:junit")
     testImplementation project(path: ":components:test-support", configuration: "testOutput")
+    testImplementation("org.flywaydb:flyway-core:${flywayVersion}")
+    testImplementation("org.flywaydb:flyway-database-postgresql:${flywayVersion}")
 
     implementation('com.fasterxml.jackson.module:jackson-module-kotlin')
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")

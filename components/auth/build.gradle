@@ -47,7 +47,8 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 
     // DB
-//    implementation("org.flywaydb:flyway-core:${flywayVersion}")
+    testImplementation("org.flywaydb:flyway-core:${flywayVersion}")
+    testImplementation("org.flywaydb:flyway-database-postgresql:${flywayVersion}")
     implementation("org.postgresql:postgresql:${postgresqlJdbcVersion}")
     implementation("org.mariadb.jdbc:mariadb-java-client:${mariadbJdbcVersion}")
     implementation("com.h2database:h2:${h2Version}")
