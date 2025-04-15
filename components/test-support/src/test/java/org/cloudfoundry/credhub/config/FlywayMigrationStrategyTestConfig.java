@@ -1,12 +1,13 @@
 package org.cloudfoundry.credhub.config;
 
+import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
 import org.flywaydb.core.api.CoreErrorCode;
 import org.flywaydb.core.api.FlywayException;
 import org.flywaydb.database.postgresql.PostgreSQLConfigurationExtension;
 import org.flywaydb.database.postgresql.PostgreSQLDatabaseType;
-import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class FlywayMigrationStrategyTestConfig {
@@ -24,14 +25,12 @@ public class FlywayMigrationStrategyTestConfig {
 
             try {
                 flyway.migrate();
-            }
-            catch (FlywayException e) {
+            } catch (FlywayException e) {
                 if (CoreErrorCode.DUPLICATE_VERSIONED_MIGRATION == e.getErrorCode()) {
                     // Some tests get this error because the db migration script
                     // folders are included in more than once in the classpath.
                     System.err.println(e.getMessage());
-                }
-                else {
+                } else {
                     throw e;
                 }
             }
