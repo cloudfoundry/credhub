@@ -9,7 +9,7 @@ buildscript {
         bcpkixFipsVersion = '2.1.9'
         bcFipsVersion = '2.1.0'
         commonsCodecVersion = '1.18.0'
-        flywayVersion = '10.20.1'
+        flywayVersion = '10.22.0'
         guavaVersion = '33.4.7-jre'
         h2Version = '1.4.200'
         jsonPathVersion = '2.9.0'
