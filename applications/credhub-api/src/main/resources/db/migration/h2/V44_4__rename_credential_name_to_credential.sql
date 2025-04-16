@@ -3,6 +3,9 @@ ALTER TABLE credential_version
   RENAME TO credential_uuid;
 
 ALTER TABLE credential_version
+  ALTER COLUMN credential_uuid BINARY(16) NOT NULL;
+
+ALTER TABLE credential_version
   DROP CONSTRAINT credential_name_uuid_fkey;
 
 ALTER TABLE credential_version

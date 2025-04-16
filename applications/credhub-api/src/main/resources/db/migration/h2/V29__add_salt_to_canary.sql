@@ -1,1 +1,1 @@
-ALTER TABLE encryption_key_canary ADD COLUMN salt BINARY(64);
+ALTER TABLE encryption_key_canary ADD COLUMN salt VARBINARY(64);
