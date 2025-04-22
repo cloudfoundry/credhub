@@ -8,7 +8,7 @@ updates:
   target-branch: main
   open-pull-requests-limit: 100
   ignore:
-  - dependency-name: "org.flywaydb:flyway-core"             ## the next major (v8)'s community edition drops support with MySQL 5.7, which CredHub still needs to support. Can bump to v8 once we solve this issue.
+  - dependency-name: "org.flywaydb:flyway-core" # Stay with 10.20.1 for now. Consider unpinning after spring-boot 3 migration.
     update-types: [ "version-update:semver-major" ]
   - dependency-name: "com.h2database:h2"                    ## can only bump to the next major (v2) after flyway is bumped to v8, see context: https://github.com/cloudfoundry/credhub/pull/259#issuecomment-1093414459
     update-types: [ "version-update:semver-major" ]
