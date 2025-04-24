@@ -3,12 +3,12 @@ package org.cloudfoundry.credhub.requests
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.common.collect.Lists
+import jakarta.validation.constraints.NotEmpty
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.PermissionOperation
 import org.springframework.validation.annotation.Validated
-import javax.validation.constraints.NotEmpty
 
 @JsonAutoDetect
 @Validated

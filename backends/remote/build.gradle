@@ -44,9 +44,10 @@ dependencies {
 
 
     // Other
-    implementation("org.apache.commons:commons-lang3:${apacheCommonsLang3Version}")
+    implementation("org.apache.commons:commons-lang3")
 
     //gRPC
+    implementation 'javax.annotation:javax.annotation-api:1.3.2'
     implementation "com.google.api.grpc:proto-google-common-protos:2.55.2"
     implementation "io.grpc:grpc-services:${grpcVersion}"
     implementation "io.grpc:grpc-protobuf:${grpcVersion}"

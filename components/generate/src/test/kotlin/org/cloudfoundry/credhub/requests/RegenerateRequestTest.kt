@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.requests
 
+import jakarta.validation.ConstraintViolation
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.helpers.JsonTestHelper.Companion.deserializeAndValidate
 import org.cloudfoundry.credhub.helpers.JsonTestHelper.Companion.hasViolationWithMessage
@@ -8,7 +9,6 @@ import org.hamcrest.Matchers
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
-import javax.validation.ConstraintViolation
 
 @RunWith(JUnit4::class)
 class RegenerateRequestTest {

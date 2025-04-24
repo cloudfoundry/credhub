@@ -2,9 +2,7 @@ import org.cloudfoundry.credhub.gradlebuild.DependenciesGraphPlugin
 
 buildscript {
     ext {
-        apacheCommonsLang3Version = '3.17.0'
         apacheCommonsIoVersion = '2.19.0'
-        apacheHttpClientVersion = '4.5.14'
         asciiDoctorConvertPluginVersion = '4.0.4'
         bcpkixFipsVersion = '2.1.9'
         bcFipsVersion = '2.1.0'
@@ -12,13 +10,10 @@ buildscript {
         flywayVersion = '11.8.0'
         guavaVersion = '33.4.8-jre'
         h2Version = '2.3.232'
-        jsonPathVersion = '2.9.0'
         kotlinVersion = '2.1.20'
         ktlintVersion = '1.5.0'
         passayVersion = '1.6.6'
-        postgresqlJdbcVersion = '42.7.5'
-        springRestDocsVersion = '2.0.8.RELEASE'
-        springBootVersion = '2.7.18'
+        springBootVersion = '3.4.4'
         mariadbJdbcVersion = '2.7.12' // Bumping to v3 breaks some pipeline jobs, so pinning to v2 for now. v2 (current version) is stable and will be supported until about September 2025 (https://mariadb.com/kb/en/about-mariadb-connector-j/).
         snakeyamlVersion = '2.4'
         grpcVersion = '1.72.0'
@@ -43,25 +38,6 @@ buildscript {
         classpath("org.bouncycastle:bc-fips:${bcFipsVersion}")
         classpath("org.bouncycastle:bcpkix-fips:${bcpkixFipsVersion}")
     }
-
-    // Versions we're overriding from the Spring Boot Bom (Dependabot does not issue PRs to bump these versions, so we need to manually bump them)
-
-    // spring-boot 2.7.18 has dependency to spring-framework 5.3.31, which has
-    // CVE-2024-22243. So, override that with spring-framework 5 latest patch
-    // version. This should be removed once spring-boot version is bumped.
-    ext["spring-framework.version"] = "5.3.39"
-    // spring-boot 2.7.18 provides spring-security 5.7.11, which has
-    // CVE-2024-22257. So, override that with spring-security 5.7 latest patch
-    // version. This should be removed once spring-boot version is bumped.
-    ext['spring-security.version'] = '5.8.16'
-
-    // spring-boot 2.7.18 has dependency to io.netty 4.1.101, which has
-    // CVE-2024-29025. So override it with the latest patch.
-    ext['netty.version'] = '4.1.119.Final'
-
-    // spring-boot 2.7.18 has dependency to tomcat-embed-core 9.0.83, which
-    // has multipe CVEs including CVE-2024-34750. So set it to latest 9.0.x.
-    ext["tomcat.version"] = '9.0.102'
 }
 
 plugins {
@@ -90,7 +66,10 @@ subprojects {
             implementation("org.yaml:snakeyaml:${snakeyamlVersion}")
             implementation("com.h2database:h2:${h2Version}")
             implementation("com.google.guava:guava:${guavaVersion}")
-            testImplementation("org.mockito:mockito-inline")
+            testImplementation("org.mockito:mockito-core")
+
+            // TODO: Remove once done with the migration.
+            runtimeOnly("org.springframework.boot:spring-boot-properties-migrator")
         }
     }
 }

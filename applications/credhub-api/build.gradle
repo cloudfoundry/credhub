@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        springCloudContractVersion = '3.1.10'
+        springCloudContractVersion = '4.2.1'
     }
     repositories {
         mavenCentral()
@@ -54,7 +54,7 @@ dependencies {
     testImplementation project(path: ":components:test-support", configuration: "testOutput")
 
     // DB
-    implementation("org.postgresql:postgresql:${postgresqlJdbcVersion}")
+    implementation("org.postgresql:postgresql")
     implementation("org.mariadb.jdbc:mariadb-java-client:${mariadbJdbcVersion}")
     implementation("org.flywaydb:flyway-core:${flywayVersion}")
     implementation("org.flywaydb:flyway-mysql:${flywayVersion}")
@@ -65,7 +65,7 @@ dependencies {
     api("org.bouncycastle:bcpkix-fips:${bcpkixFipsVersion}")
 
     implementation("com.google.guava:guava:${guavaVersion}")
-    implementation("org.apache.commons:commons-lang3:${apacheCommonsLang3Version}")
+    implementation("org.apache.commons:commons-lang3")
 
     implementation('com.fasterxml.jackson.module:jackson-module-kotlin')
     implementation("org.jetbrains.kotlin:kotlin-reflect")

@@ -62,7 +62,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 
     // DB
-    implementation("org.postgresql:postgresql:${postgresqlJdbcVersion}")
+    implementation("org.postgresql:postgresql")
     implementation("org.flywaydb:flyway-core:${flywayVersion}")
     implementation("org.flywaydb:flyway-mysql:${flywayVersion}")
     implementation("org.flywaydb:flyway-database-postgresql:${flywayVersion}")
@@ -78,11 +78,11 @@ dependencies {
     implementation "io.grpc:grpc-services:${grpcVersion}"
 
     implementation("com.google.guava:guava:${guavaVersion}")
-    implementation("org.apache.commons:commons-lang3:${apacheCommonsLang3Version}")
-    implementation("com.jayway.jsonpath:json-path:${jsonPathVersion}")
+    implementation("org.apache.commons:commons-lang3")
+    implementation("com.jayway.jsonpath:json-path")
 
-    testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc:$springRestDocsVersion")
-    asciidoctorExtensions("org.springframework.restdocs:spring-restdocs-asciidoctor:$springRestDocsVersion")
+    testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc")
+    asciidoctorExtensions("org.springframework.restdocs:spring-restdocs-asciidoctor")
 }
 
 dependencyManagement {

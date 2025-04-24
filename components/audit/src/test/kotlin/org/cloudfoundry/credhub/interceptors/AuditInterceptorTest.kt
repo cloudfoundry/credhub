@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.interceptors
 
+import jakarta.servlet.http.HttpServletRequest.CLIENT_CERT_AUTH
 import org.cloudfoundry.credhub.audit.AuditableCredentialVersion
 import org.cloudfoundry.credhub.audit.AuditablePermissionData
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
@@ -24,7 +25,6 @@ import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.security.core.Authentication
 import java.util.UUID
-import javax.servlet.http.HttpServletRequest.CLIENT_CERT_AUTH
 
 @RunWith(JUnit4::class)
 class AuditInterceptorTest {
