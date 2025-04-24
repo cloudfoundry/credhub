@@ -4,13 +4,13 @@ import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
+import jakarta.validation.ConstraintViolation
+import jakarta.validation.Validation
 import org.cloudfoundry.credhub.util.TimeModuleFactory
 import org.hamcrest.BaseMatcher
 import org.hamcrest.Description
 import org.hamcrest.Matcher
 import java.io.IOException
-import javax.validation.ConstraintViolation
-import javax.validation.Validation
 
 class JsonTestHelper private constructor() {
     companion object {

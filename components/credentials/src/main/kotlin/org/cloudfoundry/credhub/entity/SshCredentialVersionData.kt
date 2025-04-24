@@ -1,10 +1,10 @@
 package org.cloudfoundry.credhub.entity
 
-import javax.persistence.Column
-import javax.persistence.DiscriminatorValue
-import javax.persistence.Entity
-import javax.persistence.PrimaryKeyJoinColumn
-import javax.persistence.SecondaryTable
+import jakarta.persistence.Column
+import jakarta.persistence.DiscriminatorValue
+import jakarta.persistence.Entity
+import jakarta.persistence.PrimaryKeyJoinColumn
+import jakarta.persistence.SecondaryTable
 
 @Entity
 @DiscriminatorValue(SshCredentialVersionData.CREDENTIAL_TYPE)
