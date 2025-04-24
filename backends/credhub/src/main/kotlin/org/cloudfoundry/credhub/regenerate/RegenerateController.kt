@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.regenerate
 
+import jakarta.validation.Valid
 import org.cloudfoundry.credhub.exceptions.PermissionException
 import org.cloudfoundry.credhub.requests.BulkRegenerateRequest
 import org.cloudfoundry.credhub.requests.RegenerateRequest
@@ -13,7 +14,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
-import javax.validation.Valid
 
 @RestController
 class RegenerateController(

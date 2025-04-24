@@ -40,7 +40,7 @@ dependencies {
     api("org.bouncycastle:bc-fips:${bcFipsVersion}")
     api("org.bouncycastle:bcpkix-fips:${bcpkixFipsVersion}")
 
-    implementation("org.apache.commons:commons-lang3:${apacheCommonsLang3Version}")
+    implementation("org.apache.commons:commons-lang3")
 
     testImplementation("org.flywaydb:flyway-core:${flywayVersion}")
     testImplementation("org.flywaydb:flyway-database-postgresql:${flywayVersion}")

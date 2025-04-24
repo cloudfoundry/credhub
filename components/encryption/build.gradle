@@ -47,7 +47,7 @@ dependencies {
     testImplementation("org.flywaydb:flyway-core:${flywayVersion}")
     testImplementation("org.flywaydb:flyway-mysql:${flywayVersion}")
     testImplementation("org.flywaydb:flyway-database-postgresql:${flywayVersion}")
-    implementation("org.postgresql:postgresql:${postgresqlJdbcVersion}")
+    implementation("org.postgresql:postgresql")
     implementation("org.mariadb.jdbc:mariadb-java-client:${mariadbJdbcVersion}")
     implementation("com.h2database:h2:${h2Version}")
 
@@ -56,10 +56,11 @@ dependencies {
     api("org.bouncycastle:bc-fips:${bcFipsVersion}")
     api("org.bouncycastle:bcpkix-fips:${bcpkixFipsVersion}")
 
-    implementation("org.apache.commons:commons-lang3:${apacheCommonsLang3Version}")
+    implementation("org.apache.commons:commons-lang3")
     implementation("commons-codec:commons-codec:${commonsCodecVersion}")
 
     //gRPC
+    implementation 'javax.annotation:javax.annotation-api:1.3.2'
     implementation "com.google.api.grpc:proto-google-common-protos:2.55.0"
     implementation "io.grpc:grpc-services:${grpcVersion}"
     implementation "io.grpc:grpc-protobuf:${grpcVersion}"
