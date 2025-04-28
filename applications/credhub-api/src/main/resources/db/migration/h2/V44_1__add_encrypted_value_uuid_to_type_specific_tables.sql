@@ -1,5 +1,5 @@
 ALTER TABLE credential_version
-  ADD COLUMN encrypted_value_uuid BINARY(16);
+  ADD COLUMN encrypted_value_uuid VARBINARY(16);
 
 ALTER TABLE password_credential
   ADD COLUMN password_parameters_uuid BINARY(16);

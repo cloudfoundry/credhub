@@ -1,6 +1,6 @@
 CREATE CACHED TABLE encrypted_value (
-  uuid BINARY(16) NOT NULL PRIMARY KEY,
-  encryption_key_uuid BINARY(16) NOT NULL,
+  uuid VARBINARY(16) NOT NULL PRIMARY KEY,
+  encryption_key_uuid VARBINARY(16) NOT NULL,
   encrypted_value VARBINARY(7016) NOT NULL,
   nonce VARBINARY(16) NOT NULL,
   updated_at BIGINT NOT NULL

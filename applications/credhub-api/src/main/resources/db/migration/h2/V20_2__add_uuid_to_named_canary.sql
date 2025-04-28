@@ -1,4 +1,4 @@
-ALTER TABLE encryption_key_canary ALTER COLUMN uuid BINARY(16) NOT NULL;
+ALTER TABLE encryption_key_canary ALTER COLUMN uuid VARBINARY(16) NOT NULL;
 ALTER TABLE encryption_key_canary ADD PRIMARY KEY (uuid);
 ALTER TABLE encryption_key_canary DROP COLUMN id;
 ALTER TABLE encryption_key_canary DROP COLUMN name;
