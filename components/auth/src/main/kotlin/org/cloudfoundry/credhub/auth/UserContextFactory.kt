@@ -12,7 +12,7 @@ import java.time.Instant
 @Component
 class UserContextFactory {
     @Autowired(required = false)
-    fun createUserContext(authentication: Authentication?): UserContext =
+    fun createUserContext(authentication: Authentication): UserContext =
         if (authentication is PreAuthenticatedAuthenticationToken) {
             createUserContext(authentication)
         } else {
