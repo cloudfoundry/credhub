@@ -1,7 +1,7 @@
 auth-server:
   # Public dummy UAA for local development usage only!
   # Username/password: credhub/password
-  trust_store: src/test/resources/auth_server_trust_store.jks
+  trust_store:  applications/credhub-api/src/test/resources/auth_server_trust_store.jks
   trust_store_password: changeit
 
 encryption:
