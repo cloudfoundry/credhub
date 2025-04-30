@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.auth
 
+import org.apache.logging.log4j.LogManager
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.core.Authentication
 import org.springframework.security.oauth2.jwt.Jwt
@@ -12,14 +13,20 @@ import java.time.Instant
 @Component
 class UserContextFactory {
     @Autowired(required = false)
-    fun createUserContext(authentication: Authentication): UserContext =
-        if (authentication is PreAuthenticatedAuthenticationToken) {
-            createUserContext(authentication)
+    fun createUserContext(authentication: Authentication?): UserContext =
+        if (authentication == null) {
+            LOGGER.trace("authentication is null")
+            UserContext()
+        }
+        else if (authentication is PreAuthenticatedAuthenticationToken) {
+            LOGGER.trace("authentication is PreAuthenticatedAuthenticationToken")
+            createUserContext(authentication as PreAuthenticatedAuthenticationToken)
         } else {
+            LOGGER.trace("authentication is JwtAuthenticationToken")
             createUserContext(authentication as JwtAuthenticationToken)
         }
 
-    fun createUserContext(authentication: JwtAuthenticationToken): UserContext {
+    private fun createUserContext(authentication: JwtAuthenticationToken): UserContext {
         val jwt: Jwt = authentication.principal as Jwt
         val claims = jwt.claims
         val grantType = claims["grant_type"] as String
@@ -54,5 +61,9 @@ class UserContextFactory {
             certificate.subjectDN.name,
             UserContext.AUTH_METHOD_MUTUAL_TLS,
         )
+    }
+
+    companion object {
+        private val LOGGER = LogManager.getLogger(UserContextFactory::class.java)
     }
 }
