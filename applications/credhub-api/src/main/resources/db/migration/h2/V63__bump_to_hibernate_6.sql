@@ -5,7 +5,7 @@ alter table certificate_credential alter column uuid varbinary not null;
 alter table credential alter column uuid varbinary not null;
 alter table credential_version alter column uuid varbinary not null;
 alter table credential_version alter column credential_uuid varbinary not null;
-alter table credential_version alter column encrypted_value_uuid varbinary not null;
+alter table credential_version alter column encrypted_value_uuid varbinary;
 alter table encrypted_value alter column uuid varbinary not null;
 alter table encrypted_value alter column encryption_key_uuid varbinary not null;
 alter table encryption_key_canary alter column uuid varbinary not null;
