@@ -48,7 +48,8 @@ spring:
       maximum-pool-size: 4
       idle-timeout: 500
       minimum-idle: 2
-
+  flyway:
+    cleanDisabled: false
 #logging:
 #  level:
 #    org:
