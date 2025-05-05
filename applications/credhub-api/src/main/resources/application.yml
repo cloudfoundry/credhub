@@ -4,6 +4,11 @@ spring:
   profiles:
     group:
       "dev": "dev-remote-uaa"
+  jpa:
+    properties:
+      hibernate:
+        type:
+          preferred_instant_jdbc_type: TIMESTAMP
 
 management:
   endpoints:
