@@ -17,8 +17,7 @@ class UserContextFactory {
         if (authentication == null) {
             LOGGER.trace("authentication is null")
             UserContext()
-        }
-        else if (authentication is PreAuthenticatedAuthenticationToken) {
+        } else if (authentication is PreAuthenticatedAuthenticationToken) {
             LOGGER.trace("authentication is PreAuthenticatedAuthenticationToken")
             createUserContext(authentication as PreAuthenticatedAuthenticationToken)
         } else {
