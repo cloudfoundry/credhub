@@ -64,7 +64,7 @@ public class DefaultCertificateVersionDataServiceTest {
   public void findByCredentialUUID_ReturnsLatestNonTransitionalVersion_WhenThereAreTransitionalAndNonTransitionalVersions() {
     final UUID uuid = UUID.randomUUID();
     final String uuidString = uuid.toString();
-    final CredentialVersionData certificateEntity = mock(CredentialVersionData.class);
+    final CertificateCredentialVersionData certificateEntity = mock(CertificateCredentialVersionData.class);
     final CertificateCredentialVersion certificateCredentialVersion = mock(CertificateCredentialVersion.class);
 
     when(versionRepository.findLatestNonTransitionalCertificateVersion(uuid)).thenReturn(certificateEntity);
@@ -80,7 +80,7 @@ public class DefaultCertificateVersionDataServiceTest {
   public void findByCredentialUUID_ReturnsLatestTransitionalVersion_WhenThereAreOnlyTransitionalVersions() {
     final UUID uuid = UUID.randomUUID();
     final String uuidString = uuid.toString();
-    final CredentialVersionData certificateEntity = mock(CredentialVersionData.class);
+    final CertificateCredentialVersionData certificateEntity = mock(CertificateCredentialVersionData.class);
     final CertificateCredentialVersion certificateCredentialVersion = mock(CertificateCredentialVersion.class);
 
     when(versionRepository.findLatestNonTransitionalCertificateVersion(uuid)).thenReturn(null);
@@ -98,7 +98,7 @@ public class DefaultCertificateVersionDataServiceTest {
     final Credential certificate = mock(Credential.class);
 
     when(dataService.find("/some-ca-name")).thenReturn(certificate);
-    final CredentialVersionData certificateEntity = mock(CredentialVersionData.class);
+    final CertificateCredentialVersionData certificateEntity = mock(CertificateCredentialVersionData.class);
     when(versionRepository.findLatestNonTransitionalCertificateVersion(any())).thenReturn(certificateEntity);
 
     final CredentialVersion expectedVersion = mock(CredentialVersion.class);
@@ -115,10 +115,10 @@ public class DefaultCertificateVersionDataServiceTest {
 
     when(dataService.find("/some-cert-name")).thenReturn(certificate);
 
-    final CredentialVersionData activeCert = mock(CredentialVersionData.class);
+    final CertificateCredentialVersionData activeCert = mock(CertificateCredentialVersionData.class);
     when(versionRepository.findLatestNonTransitionalCertificateVersion(any())).thenReturn(activeCert);
 
-    final CredentialVersionData transitionalCert = mock(CredentialVersionData.class);
+    final CertificateCredentialVersionData transitionalCert = mock(CertificateCredentialVersionData.class);
     when(versionRepository.findTransitionalCertificateVersion(any())).thenReturn(transitionalCert);
 
     final CredentialVersion expectedActive = mock(CredentialVersion.class);

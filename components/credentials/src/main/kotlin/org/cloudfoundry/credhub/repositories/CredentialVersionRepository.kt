@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.repositories
 
+import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData
 import org.cloudfoundry.credhub.entity.CredentialVersionData
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
@@ -33,7 +34,7 @@ interface CredentialVersionRepository : JpaRepository<CredentialVersionData<*>?,
                 "limit 1",
         nativeQuery = true,
     )
-    fun findLatestNonTransitionalCertificateVersion(credentialUUID: UUID?): CredentialVersionData<*>?
+    fun findLatestNonTransitionalCertificateVersion(credentialUUID: UUID?): CertificateCredentialVersionData?
 
     @Query(
         value =
@@ -45,7 +46,7 @@ interface CredentialVersionRepository : JpaRepository<CredentialVersionData<*>?,
                 "limit 1",
         nativeQuery = true,
     )
-    fun findTransitionalCertificateVersion(credentialUUID: UUID?): CredentialVersionData<*>?
+    fun findTransitionalCertificateVersion(credentialUUID: UUID?): CertificateCredentialVersionData?
 
     @Query(
         value =
@@ -57,7 +58,7 @@ interface CredentialVersionRepository : JpaRepository<CredentialVersionData<*>?,
                 "order by version_created_at limit 1000 offset ?1",
         nativeQuery = true,
     )
-    fun findUpTo1000VersionsWithNullCertificateMetadata(offset: Int): List<CredentialVersionData<*>?>
+    fun findUpTo1000VersionsWithNullCertificateMetadata(offset: Int): List<CertificateCredentialVersionData?>
 
     @Query(
         value =
