@@ -415,7 +415,7 @@ class CredentialsControllerGenerateTest {
                 "id": $uuid,
                 "name": "/some-certificate-name",
                 "metadata": { "description": "example metadata"},
-                "transitional": false,
+                "is_transitional": false,
                 "expiry_date": "2020-09-03T18:30:11Z",
                 "certificate_authority": true,
                 "self_signed": false,
