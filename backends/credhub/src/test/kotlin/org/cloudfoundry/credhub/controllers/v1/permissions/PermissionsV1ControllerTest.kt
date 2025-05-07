@@ -171,8 +171,8 @@ class PermissionsV1ControllerTest {
             .perform(
                 delete(PermissionsV1Controller.ENDPOINT)
                     .credHubAuthHeader()
-                    .param("credential_name", "some-credential-name")
-                    .param("actor", "some-actor"),
+                    .queryParam("credential_name", "some-credential-name")
+                    .queryParam("actor", "some-actor"),
             ).andExpect(status().isNoContent)
             .andDo(
                 document(
