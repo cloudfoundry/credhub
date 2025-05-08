@@ -76,5 +76,7 @@ subprojects {
 
 // Override spring boot's kotllin version dependency
 ext['kotlin.version'] = '${kotlinVersion}'
+// note: setting hibernate to 6.5.x would "fix" it
+//ext['hibernate.version'] = '6.5.3.Final'
 
 assert JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_17)

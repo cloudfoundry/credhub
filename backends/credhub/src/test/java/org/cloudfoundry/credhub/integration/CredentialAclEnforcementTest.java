@@ -78,11 +78,13 @@ public class CredentialAclEnforcementTest {
       .build();
 
     generatePassword(CREDENTIAL_NAME);
-    uuid = generatePassword(CREDENTIAL_NAME);
-    grantPermissions(CREDENTIAL_NAME, USER_A_ACTOR_ID, "read", "read_acl");
+    // commenting out below to simplify test setup, to see what the simplest setup that could reproduce the test failure is
 
-    generatePassword(SECOND_CREDENTIAL_NAME);
-    grantPermissions(SECOND_CREDENTIAL_NAME, USER_A_ACTOR_ID, "read", "read_acl", "write");
+//    uuid = generatePassword(CREDENTIAL_NAME);
+//    grantPermissions(CREDENTIAL_NAME, USER_A_ACTOR_ID, "read", "read_acl");
+
+//    generatePassword(SECOND_CREDENTIAL_NAME);
+//    grantPermissions(SECOND_CREDENTIAL_NAME, USER_A_ACTOR_ID, "read", "read_acl", "write");
   }
 
   @Test
@@ -228,10 +230,15 @@ public class CredentialAclEnforcementTest {
     mockMvc.perform(deleteRequest)
       .andExpect(status().isNoContent());
 
-    final MockHttpServletRequestBuilder getRequest = get("/api/v1/data?name=" + CREDENTIAL_NAME)
-      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN);
-    mockMvc.perform(getRequest)
-      .andExpect(status().isNotFound());
+    // below will fail, so will any other similar operations, whether it's even related to CREDENTIAL_NAME
+    // this shows that at this point, the DB state is already in error, and no matter what subsequent operations
+    // you perform, you get the org.hibernate.TransientObjectException: persistent instance references an unsaved transient instance of 'org.cloudfoundry.credhub.entity.Credential' error
+    generatePassword(CREDENTIAL_NAME+"foo1");
+
+//    final MockHttpServletRequestBuilder getRequest = get("/api/v1/data?name=" + CREDENTIAL_NAME + "/peter")
+//      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN);
+//    mockMvc.perform(getRequest)
+//      .andExpect(status().isNotFound());
   }
 
   @Test
