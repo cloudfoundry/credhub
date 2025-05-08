@@ -18,6 +18,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.cloudfoundry.credhub.helpers.RequestHelper.generatePassword;
 import static org.cloudfoundry.credhub.utils.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -121,5 +122,7 @@ public class CredentialDeleteTest {
 
         mockMvc.perform(request)
                 .andExpect(status().isNoContent());
+
+        generatePassword(mockMvc, CREDENTIAL_NAME + "peter22", true, 20, ALL_PERMISSIONS_TOKEN);
     }
 }
