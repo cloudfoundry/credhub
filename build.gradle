@@ -76,5 +76,9 @@ subprojects {
 
 // Override spring boot's kotllin version dependency
 ext['kotlin.version'] = '${kotlinVersion}'
+// Override spring boot's hibernate version dependency
+// This is because in hibernate 6.6.x+, CredentialAclEnforcementTest.DELETE_whenTheUserHasPermissionToDeleteTheCredential_succeeds (https://github.com/cloudfoundry/credhub/blob/5f22e43bedd3f73623367c3e863a16294e9cff49/backends/credhub/src/test/java/org/cloudfoundry/credhub/integration/CredentialAclEnforcementTest.java#L224)
+// fails due to "org.hibernate.TransientObjectException". Hence, temporarily pin hiberate back to 6.5.3.Final to unblock a credhub release with spring boot 3.
+ext['hibernate.version'] = '6.5.3.Final'
 
 assert JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_17)
