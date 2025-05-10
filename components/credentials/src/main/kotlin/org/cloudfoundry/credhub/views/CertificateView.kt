@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.views
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonProperty
 import org.cloudfoundry.credhub.credential.CredentialValue
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
 import java.time.Instant
@@ -50,6 +51,7 @@ open class CertificateView : CredentialView {
             super.value = value
         }
 
+    @get:JsonProperty("transitional")
     val isTransitional: Boolean
         get() = version!!.isVersionTransitional
 

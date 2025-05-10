@@ -34,7 +34,7 @@ import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get
 import org.springframework.restdocs.request.RequestDocumentation.parameterWithName
 import org.springframework.restdocs.request.RequestDocumentation.pathParameters
-import org.springframework.restdocs.request.RequestDocumentation.requestParameters
+import org.springframework.restdocs.request.RequestDocumentation.queryParameters
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
@@ -552,7 +552,7 @@ class CredentialsControllerGetTest {
                 .andDo(
                     document(
                         CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                        requestParameters(
+                        queryParameters(
                             parameterWithName("name-like")
                                 .description("The credential name substring"),
                             parameterWithName("expires-within-days")
@@ -604,7 +604,7 @@ class CredentialsControllerGetTest {
                 .andDo(
                     document(
                         CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                        requestParameters(
+                        queryParameters(
                             parameterWithName("path")
                                 .description("The credential path"),
                             parameterWithName("expires-within-days")
@@ -662,7 +662,7 @@ class CredentialsControllerGetTest {
                 .andDo(
                     document(
                         CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                        requestParameters(
+                        queryParameters(
                             parameterWithName("name")
                                 .description("The name of the credential."),
                             parameterWithName("versions")

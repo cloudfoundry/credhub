@@ -43,11 +43,17 @@ spring:
   jpa:
     hibernate:
       ddl_auto: validate
+    properties:
+      hibernate:
+        type:
+          preferred_instant_jdbc_type: TIMESTAMP
   datasource:
     hikari:
       maximum-pool-size: 4
       idle-timeout: 500
       minimum-idle: 2
+  flyway:
+    cleanDisabled: false
 
 #logging:
 #  level:

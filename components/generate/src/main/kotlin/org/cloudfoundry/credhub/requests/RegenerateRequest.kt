@@ -2,8 +2,8 @@ package org.cloudfoundry.credhub.requests
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.databind.JsonNode
+import jakarta.validation.constraints.NotNull
 import org.cloudfoundry.credhub.ErrorMessages
-import javax.validation.constraints.NotNull
 
 @JsonAutoDetect
 class RegenerateRequest {

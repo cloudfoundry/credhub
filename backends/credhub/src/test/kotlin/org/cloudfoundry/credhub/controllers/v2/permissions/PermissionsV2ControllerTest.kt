@@ -27,7 +27,7 @@ import org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath
 import org.springframework.restdocs.payload.PayloadDocumentation.requestFields
 import org.springframework.restdocs.request.RequestDocumentation.parameterWithName
 import org.springframework.restdocs.request.RequestDocumentation.pathParameters
-import org.springframework.restdocs.request.RequestDocumentation.requestParameters
+import org.springframework.restdocs.request.RequestDocumentation.queryParameters
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -75,7 +75,7 @@ class PermissionsV2ControllerTest {
                 .andDo(
                     document(
                         CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                        requestParameters(
+                        queryParameters(
                             parameterWithName("path")
                                 .description(
                                     "The credential path. Can be either a path with an asterisk (*) at the end, or the full name of a credential.",

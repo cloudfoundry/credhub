@@ -1,7 +1,7 @@
 package org.cloudfoundry.credhub.util
 
+import jakarta.persistence.AttributeConverter
 import java.time.Instant
-import javax.persistence.AttributeConverter
 
 class InstantMillisecondsConverter : AttributeConverter<Instant, Long> {
     override fun convertToDatabaseColumn(attribute: Instant): Long? = attribute.toEpochMilli()

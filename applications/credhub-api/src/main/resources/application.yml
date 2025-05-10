@@ -4,15 +4,21 @@ spring:
   profiles:
     group:
       "dev": "dev-remote-uaa"
+  jpa:
+    properties:
+      hibernate:
+        type:
+          preferred_instant_jdbc_type: TIMESTAMP
 
 management:
   endpoints:
     web:
       base-path: /
-    enabled-by-default: false
+    access:
+      default: none
   endpoint:
     health:
-      enabled: true
+      access: unrestricted
   server:
     ssl:
       enabled: false

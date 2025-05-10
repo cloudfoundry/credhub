@@ -12,7 +12,7 @@ class ObjectMapperConfig {
     @Bean
     fun jacksonBuilder(javaTimeModule: Module): Jackson2ObjectMapperBuilder =
         Jackson2ObjectMapperBuilder().apply {
-            modules(javaTimeModule, KotlinModule() as Module?)
+            modules(javaTimeModule, KotlinModule.Builder().build() as Module?)
             failOnUnknownProperties(true)
             propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
         }

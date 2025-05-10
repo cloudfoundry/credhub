@@ -25,7 +25,7 @@ import org.springframework.restdocs.payload.FieldDescriptor
 import org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath
 import org.springframework.restdocs.payload.PayloadDocumentation.requestFields
 import org.springframework.restdocs.request.RequestDocumentation.parameterWithName
-import org.springframework.restdocs.request.RequestDocumentation.requestParameters
+import org.springframework.restdocs.request.RequestDocumentation.queryParameters
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -76,7 +76,7 @@ class PermissionsV1ControllerTest {
                 .andDo(
                     document(
                         CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                        requestParameters(
+                        queryParameters(
                             parameterWithName("credential_name")
                                 .description("The name of the credential to get permissions for."),
                         ),
@@ -171,13 +171,13 @@ class PermissionsV1ControllerTest {
             .perform(
                 delete(PermissionsV1Controller.ENDPOINT)
                     .credHubAuthHeader()
-                    .param("credential_name", "some-credential-name")
-                    .param("actor", "some-actor"),
+                    .queryParam("credential_name", "some-credential-name")
+                    .queryParam("actor", "some-actor"),
             ).andExpect(status().isNoContent)
             .andDo(
                 document(
                     CredHubRestDocs.DOCUMENT_IDENTIFIER,
-                    requestParameters(
+                    queryParameters(
                         parameterWithName("credential_name")
                             .description("The name of the credential to delete permissions for."),
                         parameterWithName("actor")

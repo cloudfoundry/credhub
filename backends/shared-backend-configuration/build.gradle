@@ -40,17 +40,19 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 
+    implementation("commons-codec:commons-codec:${commonsCodecVersion}")
+
     // DB
     implementation("org.flywaydb:flyway-core:${flywayVersion}")
     implementation("org.flywaydb:flyway-mysql:${flywayVersion}")
     implementation("org.flywaydb:flyway-database-postgresql:${flywayVersion}")
-    implementation("org.postgresql:postgresql:${postgresqlJdbcVersion}")
+    implementation("org.postgresql:postgresql")
     implementation("com.h2database:h2:${h2Version}")
     implementation("org.mariadb.jdbc:mariadb-java-client:${mariadbJdbcVersion}")
 
 
     // Other
-    implementation("org.apache.httpcomponents:httpclient:${apacheHttpClientVersion}")
+    implementation("org.apache.httpcomponents.client5:httpclient5")
 }
 
 dependencyManagement {

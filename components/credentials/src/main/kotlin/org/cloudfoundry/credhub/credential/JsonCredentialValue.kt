@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonValue
 import com.fasterxml.jackson.databind.JsonNode
+import jakarta.validation.constraints.NotNull
 import org.cloudfoundry.credhub.ErrorMessages
 import java.util.Objects
-import javax.validation.constraints.NotNull
 
 @JsonAutoDetect
 class JsonCredentialValue

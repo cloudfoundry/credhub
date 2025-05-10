@@ -2,7 +2,7 @@ package org.cloudfoundry.credhub.utils
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import javax.persistence.AttributeConverter
+import jakarta.persistence.AttributeConverter
 
 class JsonNodeConverter : AttributeConverter<JsonNode, String> {
     override fun convertToDatabaseColumn(attribute: JsonNode?): String = attribute.toString()

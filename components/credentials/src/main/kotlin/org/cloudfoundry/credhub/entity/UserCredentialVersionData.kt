@@ -1,16 +1,16 @@
 package org.cloudfoundry.credhub.entity
 
+import jakarta.persistence.CascadeType
+import jakarta.persistence.Column
+import jakarta.persistence.DiscriminatorValue
+import jakarta.persistence.Entity
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.OneToOne
+import jakarta.persistence.PrimaryKeyJoinColumn
+import jakarta.persistence.SecondaryTable
 import org.cloudfoundry.credhub.entities.EncryptedValue
 import org.hibernate.annotations.NotFound
 import org.hibernate.annotations.NotFoundAction
-import javax.persistence.CascadeType
-import javax.persistence.Column
-import javax.persistence.DiscriminatorValue
-import javax.persistence.Entity
-import javax.persistence.JoinColumn
-import javax.persistence.OneToOne
-import javax.persistence.PrimaryKeyJoinColumn
-import javax.persistence.SecondaryTable
 
 @Entity
 @DiscriminatorValue("user")

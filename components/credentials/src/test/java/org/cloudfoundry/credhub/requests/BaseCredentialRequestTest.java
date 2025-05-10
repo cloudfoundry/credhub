@@ -2,8 +2,7 @@ package org.cloudfoundry.credhub.requests;
 
 import java.util.Set;
 
-import javax.validation.ConstraintViolation;
-
+import jakarta.validation.ConstraintViolation;
 import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.helpers.JsonTestHelper;
