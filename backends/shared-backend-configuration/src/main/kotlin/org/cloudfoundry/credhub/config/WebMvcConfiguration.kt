@@ -24,6 +24,7 @@ class WebMvcConfiguration
 
         override fun configurePathMatch(configurer: PathMatchConfigurer) {
             configurer.setUseSuffixPatternMatch(false)
+            configurer.setUseTrailingSlashMatch(true)
         }
 
         override fun addInterceptors(registry: InterceptorRegistry) {
