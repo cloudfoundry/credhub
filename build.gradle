@@ -67,9 +67,6 @@ subprojects {
             implementation("com.h2database:h2:${h2Version}")
             implementation("com.google.guava:guava:${guavaVersion}")
             testImplementation("org.mockito:mockito-core")
-
-            // TODO: Remove once done with the migration.
-            runtimeOnly("org.springframework.boot:spring-boot-properties-migrator")
         }
     }
 }
