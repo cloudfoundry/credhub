@@ -8,18 +8,8 @@ updates:
   target-branch: main
   open-pull-requests-limit: 100
   ignore:
-  - dependency-name: "org.flywaydb:flyway-core" # Stay with 10.20.1 for now. Consider unpinning after spring-boot 3 migration.
-    update-types: [ "version-update:semver-major" ]
-  - dependency-name: "com.h2database:h2"                    ## can only bump to the next major (v2) after flyway is bumped to v8, see context: https://github.com/cloudfoundry/credhub/pull/259#issuecomment-1093414459
-    update-types: [ "version-update:semver-major" ]
   - dependency-name: "org.mariadb.jdbc:mariadb-java-client" ## version 3.0.3 of the driver drops support for Aurora - https://www.pivotaltracker.com/n/projects/2482247/stories/183282618
     update-types: ["version-update:semver-major"]
-  - dependency-name: "org.springframework.restdocs:spring-restdocs-mockmvc"  ## 3.0.0 bumps to Spring Framework 6.0.0 which requires Java 17. Bumps this after we take a Spring Boot version for the rest of the project that bumps to Spring Framework 6.0.0.
-    update-types: ["version-update:semver-major"]
-  - dependency-name: "org.springframework.restdocs:spring-restdocs-asciidoctor"  ## 3.0.0 bumps to Spring Framework 6.0.0 which requires Java 17. Bumps this after we take a Spring Boot version for the rest of the project that bumps to Spring Framework 6.0.0.
-    update-types: ["version-update:semver-major"]
-  - dependency-name: "org.springframework.boot:*"
-    update-types: [ "version-update:semver-major" ] # Bump this after we bump to Java 17, which v3 requires (and the current v2 will be supported until November 2023: https://spring.io/blog/2022/05/24/preparing-for-spring-boot-3-0)
   - dependency-name: "com.google.protobuf:protoc"
     update-types: [ "version-update:semver-major" ] # We need to stay with protobuf-java & protoc 3.25.x as the latest grpc still depends on protobuf-java & protoc 3.25.x https://github.com/grpc/grpc-java/issues/11015
   - dependency-name: "com.google.protobuf:protobuf-java"
