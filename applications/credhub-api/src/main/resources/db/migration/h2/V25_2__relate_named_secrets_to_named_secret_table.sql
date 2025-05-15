@@ -1,5 +1,5 @@
 ALTER TABLE named_secret
-  ADD COLUMN secret_name_uuid BINARY(16);
+  ADD COLUMN secret_name_uuid VARBINARY(16);
 
 UPDATE named_secret
   SET named_secret.secret_name_uuid = (
@@ -9,7 +9,7 @@ UPDATE named_secret
   );
 
 ALTER TABLE named_secret
-  ALTER COLUMN secret_name_uuid BINARY(16) NOT NULL;
+  ALTER COLUMN secret_name_uuid VARBINARY(16) NOT NULL;
 
 ALTER TABLE named_secret
   ADD CONSTRAINT secret_name_uuid_fkey
