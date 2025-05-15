@@ -51,7 +51,7 @@ dependencies {
     testImplementation("org.flywaydb:flyway-database-postgresql:${flywayVersion}")
     implementation("org.postgresql:postgresql")
     implementation("org.mariadb.jdbc:mariadb-java-client:${mariadbJdbcVersion}")
-    implementation("com.h2database:h2:${h2Version}")
+    implementation("com.h2database:h2")
 
     // Other
     api("org.bouncycastle:bc-fips:${bcFipsVersion}")
