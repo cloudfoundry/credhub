@@ -57,7 +57,7 @@ dependencies {
     api("org.bouncycastle:bcpkix-fips:${bcpkixFipsVersion}")
 
     implementation("org.apache.commons:commons-lang3")
-    implementation("commons-codec:commons-codec:${commonsCodecVersion}")
+    implementation("commons-codec:commons-codec")
 
     //gRPC
     implementation 'javax.annotation:javax.annotation-api:1.3.2'

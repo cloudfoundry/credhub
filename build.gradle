@@ -5,7 +5,6 @@ buildscript {
         asciiDoctorConvertPluginVersion = '4.0.4'
         bcpkixFipsVersion = '2.1.9'
         bcFipsVersion = '2.1.0'
-        commonsCodecVersion = '1.18.0'
         flywayVersion = '11.8.2'
         guavaVersion = '33.4.8-jre'
         kotlinVersion = '2.1.21'
@@ -13,7 +12,6 @@ buildscript {
         passayVersion = '1.6.6'
         springBootVersion = '3.4.5'
         mariadbJdbcVersion = '2.7.12' // Bumping to v3 breaks some pipeline jobs, so pinning to v2 for now. v2 (current version) is stable and will be supported until about September 2025 (https://mariadb.com/kb/en/about-mariadb-connector-j/).
-        snakeyamlVersion = '2.4'
         grpcVersion = '1.72.0'
         // We need to stay with protobuf-java & protoc 3.25.x as the latest
         // grpc still depends on protobuf-java & protoc 3.25.x. Once we
@@ -61,7 +59,7 @@ dependencyUpdates.resolutionStrategy = {
 subprojects {
     plugins.withType(JavaPlugin) {
         dependencies {
-            implementation("org.yaml:snakeyaml:${snakeyamlVersion}")
+            implementation("org.yaml:snakeyaml")
             implementation("com.h2database:h2")
             implementation("com.google.guava:guava:${guavaVersion}")
             testImplementation("org.mockito:mockito-core")
