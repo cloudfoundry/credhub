@@ -56,7 +56,6 @@ dependencies {
     // Other
     implementation("com.google.guava:guava:${guavaVersion}")
     implementation("org.apache.commons:commons-lang3")
-    implementation("commons-io:commons-io:${apacheCommonsIoVersion}")
 }
 
 dependencyManagement {
