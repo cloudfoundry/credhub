@@ -8,8 +8,8 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -82,7 +82,7 @@ public class EncryptionKeyRotatorTest {
   private WebApplicationContext webApplicationContext;
   @Autowired
   private CredentialVersionRepository credentialVersionRepository;
-  @SpyBean
+  @MockitoSpyBean
   private CredentialVersionDataService credentialVersionDataService;
   @Autowired
   private CredentialDataService credentialDataService;
@@ -93,11 +93,11 @@ public class EncryptionKeyRotatorTest {
   @Autowired
   private PasswordKeyProxyFactory passwordKeyProxyFactory;
   private InternalEncryptionService encryptionService;
-  @SpyBean
+  @MockitoSpyBean
   private EncryptionKeySet keySet;
   @Autowired
   private Encryptor encryptor;
-  @SpyBean
+  @MockitoSpyBean
   private EncryptionKeysConfiguration encryptionKeysConfiguration;
   private CertificateCredentialVersion credentialWithCurrentKey;
   private CredentialVersion credentialVersionWithOldKey;
