@@ -8,7 +8,6 @@ buildscript {
         commonsCodecVersion = '1.18.0'
         flywayVersion = '11.8.2'
         guavaVersion = '33.4.8-jre'
-        h2Version = '2.3.232'
         kotlinVersion = '2.1.21'
         ktlintVersion = '1.5.0'
         passayVersion = '1.6.6'
@@ -63,7 +62,7 @@ subprojects {
     plugins.withType(JavaPlugin) {
         dependencies {
             implementation("org.yaml:snakeyaml:${snakeyamlVersion}")
-            implementation("com.h2database:h2:${h2Version}")
+            implementation("com.h2database:h2")
             implementation("com.google.guava:guava:${guavaVersion}")
             testImplementation("org.mockito:mockito-core")
         }

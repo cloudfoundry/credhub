@@ -59,7 +59,7 @@ dependencies {
     implementation("org.flywaydb:flyway-core:${flywayVersion}")
     implementation("org.flywaydb:flyway-mysql:${flywayVersion}")
     implementation("org.flywaydb:flyway-database-postgresql:${flywayVersion}")
-    implementation("com.h2database:h2:${h2Version}")
+    implementation("com.h2database:h2")
 
     api("org.bouncycastle:bc-fips:${bcFipsVersion}")
     api("org.bouncycastle:bcpkix-fips:${bcpkixFipsVersion}")
