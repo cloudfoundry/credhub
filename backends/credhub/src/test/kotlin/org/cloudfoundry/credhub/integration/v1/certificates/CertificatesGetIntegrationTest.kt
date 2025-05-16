@@ -16,11 +16,11 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.doReturn
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.TestPropertySource
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
@@ -52,10 +52,10 @@ class CertificatesGetIntegrationTest {
     @MockitoSpyBean
     private val encryptor: Encryptor? = null
 
-    @MockBean
+    @MockitoBean
     private val certificateService: DefaultCertificateService? = null
 
-    @MockBean
+    @MockitoBean
     private val mockCurrentTimeProvider: CurrentTimeProvider? = null
 
     private var mockMvc: MockMvc? = null

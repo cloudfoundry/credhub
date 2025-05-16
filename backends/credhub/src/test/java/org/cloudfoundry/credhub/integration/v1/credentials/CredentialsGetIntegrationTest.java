@@ -9,9 +9,9 @@ import java.util.function.Consumer;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -85,7 +85,7 @@ public class CredentialsGetIntegrationTest {
   @MockitoSpyBean
   private CredentialVersionDataService credentialVersionDataService;
 
-  @MockBean
+  @MockitoBean
   private CurrentTimeProvider mockCurrentTimeProvider;
 
   private MockMvc mockMvc;
