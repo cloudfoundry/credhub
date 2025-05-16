@@ -5,10 +5,10 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import org.cloudfoundry.credhub.CredhubTestApp;
@@ -33,10 +33,10 @@ import static org.mockito.Mockito.when;
 @SpringBootTest(classes = CredhubTestApp.class)
 public class EncryptedValueDataServiceTest {
 
-  @MockBean
+  @MockitoBean
   private EncryptedValueRepository encryptedValueRepository;
 
-  @MockBean
+  @MockitoBean
   private Encryptor encryptor;
 
   private EncryptedValueDataService subject;
