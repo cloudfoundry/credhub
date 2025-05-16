@@ -486,11 +486,6 @@ public class CredentialsTypeSpecificSetIntegrationTest {
   }
 
   @Test
-  @Ignore("The way this test was implemented, i.e. mocking" +
-          " BaseCredentialSetRequest class to throw Exception, does not work" +
-          " with depedency versions after spring boot 3 migration. Likely" +
-          " need to implement actual content body that causes the exception to" +
-          " be thrown.")
   public void validationExceptionsAreReturnedAsErrorMessages() throws Exception {
     final MockHttpServletRequestBuilder request = put("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
@@ -499,12 +494,8 @@ public class CredentialsTypeSpecificSetIntegrationTest {
       .content("{" +
         "\"name\":\"" + CREDENTIAL_NAME + "\"," +
         "\"type\":\"" + parametizer.credentialType + "\"," +
-        "\"value\":" + parametizer.credentialValue +
+        "\"value\":" +  // Empty vaiue here will cause ParameterizedValidationException(ErrorMessages.BAD_REQUEST) to be thrown.
         "}");
-
-    final BaseCredentialSetRequest requestObject = mock(BaseCredentialSetRequest.class);
-    doThrow(new ParameterizedValidationException(ErrorMessages.BAD_REQUEST)).when(requestObject).validate();
-    doReturn(requestObject).when(objectMapper).readValue(any(InputStream.class), any(JavaType.class));
 
     mockMvc.perform(request)
       .andExpect(status().isBadRequest())
