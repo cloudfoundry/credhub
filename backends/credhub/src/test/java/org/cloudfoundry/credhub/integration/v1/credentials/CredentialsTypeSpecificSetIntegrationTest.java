@@ -1,7 +1,6 @@
 package org.cloudfoundry.credhub.integration.v1.credentials;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,12 +24,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import org.cloudfoundry.credhub.CredhubTestApp;
-import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.TestHelper;
 import org.cloudfoundry.credhub.credentials.DefaultCredentialsHandler;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
@@ -42,7 +39,6 @@ import org.cloudfoundry.credhub.domain.RsaCredentialVersion;
 import org.cloudfoundry.credhub.domain.SshCredentialVersion;
 import org.cloudfoundry.credhub.domain.UserCredentialVersion;
 import org.cloudfoundry.credhub.domain.ValueCredentialVersion;
-import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.requests.BaseCredentialSetRequest;
 import org.cloudfoundry.credhub.services.CredentialVersionDataService;
 import org.cloudfoundry.credhub.util.CurrentTimeProvider;
@@ -51,7 +47,6 @@ import org.cloudfoundry.credhub.utils.MultiJsonPathMatcher;
 import org.cloudfoundry.credhub.utils.TestConstants;
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -62,11 +57,8 @@ import static org.cloudfoundry.credhub.utils.AuthConstants.ALL_PERMISSIONS_TOKEN
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -486,11 +478,6 @@ public class CredentialsTypeSpecificSetIntegrationTest {
   }
 
   @Test
-  @Ignore("The way this test was implemented, i.e. mocking" +
-          " BaseCredentialSetRequest class to throw Exception, does not work" +
-          " with depedency versions after spring boot 3 migration. Likely" +
-          " need to implement actual content body that causes the exception to" +
-          " be thrown.")
   public void validationExceptionsAreReturnedAsErrorMessages() throws Exception {
     final MockHttpServletRequestBuilder request = put("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
@@ -499,12 +486,8 @@ public class CredentialsTypeSpecificSetIntegrationTest {
       .content("{" +
         "\"name\":\"" + CREDENTIAL_NAME + "\"," +
         "\"type\":\"" + parametizer.credentialType + "\"," +
-        "\"value\":" + parametizer.credentialValue +
+        "\"value\":" +  // Empty value here will cause ParameterizedValidationException(ErrorMessages.BAD_REQUEST) to be thrown.
         "}");
-
-    final BaseCredentialSetRequest requestObject = mock(BaseCredentialSetRequest.class);
-    doThrow(new ParameterizedValidationException(ErrorMessages.BAD_REQUEST)).when(requestObject).validate();
-    doReturn(requestObject).when(objectMapper).readValue(any(InputStream.class), any(JavaType.class));
 
     mockMvc.perform(request)
       .andExpect(status().isBadRequest())
