@@ -12,6 +12,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -221,6 +222,7 @@ public class CredentialAclEnforcementTest {
   }
 
   @Test
+  @Transactional(propagation = Propagation.NEVER) // excludes this test from @Transactional because @Transactional creates some side effects leading to `org.hibernate.TransientObjectException: persistent instance references an unsaved transient instance of 'org.cloudfoundry.credhub.entity.Credential'` error
   public void DELETE_whenTheUserHasPermissionToDeleteTheCredential_succeeds() throws Exception {
     final MockHttpServletRequestBuilder deleteRequest = delete(
       "/api/v1/data?name=" + CREDENTIAL_NAME)
@@ -228,17 +230,21 @@ public class CredentialAclEnforcementTest {
     mockMvc.perform(deleteRequest)
       .andExpect(status().isNoContent());
 
-    // The operation below fails with hibernate 6.6.x with the following
-    // exception:
-    // ```
-    // org.hibernate.TransientObjectException: persistent instance references
-    // an unsaved transient instance of 'org.cloudfoundry.credhub.entity.Credential'
-    // (save the transient instance before flushing)
-    // ```
-//    final MockHttpServletRequestBuilder getRequest = get("/api/v1/data?name=" + CREDENTIAL_NAME)
-//      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN);
-//    mockMvc.perform(getRequest)
-//      .andExpect(status().isNotFound());
+    final MockHttpServletRequestBuilder deleteRequest2 = delete(
+            "/api/v1/data?name=" + SECOND_CREDENTIAL_NAME)
+            .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN);
+    mockMvc.perform(deleteRequest2)
+            .andExpect(status().isNoContent());
+
+    final MockHttpServletRequestBuilder getRequest = get("/api/v1/data?name=" + CREDENTIAL_NAME)
+            .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN);
+    mockMvc.perform(getRequest)
+            .andExpect(status().isNotFound());
+
+    final MockHttpServletRequestBuilder getRequest2 = get("/api/v1/data?name=" + SECOND_CREDENTIAL_NAME)
+            .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN);
+    mockMvc.perform(getRequest2)
+            .andExpect(status().isNotFound());
   }
 
   @Test
