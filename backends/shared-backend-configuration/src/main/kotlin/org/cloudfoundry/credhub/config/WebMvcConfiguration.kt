@@ -6,7 +6,6 @@ import org.cloudfoundry.credhub.interceptors.UserContextInterceptor
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry
-import org.springframework.web.servlet.config.annotation.PathMatchConfigurer
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
 @Configuration
@@ -17,10 +16,6 @@ class WebMvcConfiguration
         private val userContextInterceptor: UserContextInterceptor,
         private val managementInterceptor: ManagementInterceptor,
     ) : WebMvcConfigurer {
-        override fun configurePathMatch(configurer: PathMatchConfigurer) {
-            configurer.setUseTrailingSlashMatch(true)
-        }
-
         override fun addInterceptors(registry: InterceptorRegistry) {
             registry.addInterceptor(auditInterceptor).excludePathPatterns(
                 "/info",
