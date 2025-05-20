@@ -5,7 +5,6 @@ import org.cloudfoundry.credhub.interceptors.AuditInterceptor
 import org.cloudfoundry.credhub.interceptors.UserContextInterceptor
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Configuration
-import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
@@ -18,12 +17,7 @@ class WebMvcConfiguration
         private val userContextInterceptor: UserContextInterceptor,
         private val managementInterceptor: ManagementInterceptor,
     ) : WebMvcConfigurer {
-        override fun configureContentNegotiation(configurer: ContentNegotiationConfigurer) {
-            configurer.favorPathExtension(false)
-        }
-
         override fun configurePathMatch(configurer: PathMatchConfigurer) {
-            configurer.setUseSuffixPatternMatch(false)
             configurer.setUseTrailingSlashMatch(true)
         }
 
