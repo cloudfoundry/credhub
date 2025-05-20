@@ -31,6 +31,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
+import org.springframework.web.filter.UrlHandlerFilter;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -79,6 +80,9 @@ public class AuthConfiguration {
 
         http
                 .addFilterBefore(actuatorPortFilter, X509AuthenticationFilter.class)
+                .addFilterBefore(
+                        UrlHandlerFilter.trailingSlashHandler("/**").wrapRequest().build(),
+                        ActuatorPortFilter.class)
                 .addFilterAfter(preAuthenticationFailureFilter, ActuatorPortFilter.class)
                 .authenticationProvider(preAuthenticatedAuthenticationProvider());
 
