@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authorization.AuthorityAuthorizationManager;
 import org.springframework.security.authorization.AuthorizationManagers;
-import org.springframework.security.config.annotation.ObjectPostProcessor;
+import org.springframework.security.config.ObjectPostProcessor;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -62,21 +62,22 @@ public class AuthConfiguration {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-         LOGGER.info("in securityFilterChain config");
+        LOGGER.info("In securityFilterChain config");
 
-        http
-                .x509()
-                .subjectPrincipalRegex(VALID_MTLS_ID)
-                .userDetailsService(mtlsSUserDetailsService())
-                .withObjectPostProcessor(
-                        new ObjectPostProcessor<X509AuthenticationFilter>() {
-                            @Override
-                            public <O extends X509AuthenticationFilter> O postProcess(O filter) {
-                                filter.setContinueFilterChainOnUnsuccessfulAuthentication(false);
-                                return filter;
+        http.x509(configurer -> {
+            configurer
+                    .subjectPrincipalRegex(VALID_MTLS_ID)
+                    .userDetailsService(mtlsSUserDetailsService())
+                    .withObjectPostProcessor(
+                            new ObjectPostProcessor<X509AuthenticationFilter>() {
+                                @Override
+                                public <O extends X509AuthenticationFilter> O postProcess(O filter) {
+                                    filter.setContinueFilterChainOnUnsuccessfulAuthentication(false);
+                                    return filter;
+                                }
                             }
-                        }
-                );
+                    );
+        });
 
         http
                 .addFilterBefore(actuatorPortFilter, X509AuthenticationFilter.class)
@@ -106,9 +107,15 @@ public class AuthConfiguration {
                                 oauth2.authenticationEntryPoint(
                                         new OAuth2AuthenticationExceptionHandler())
                                         .jwt(withDefaults()))
-                .httpBasic().disable()
-                .csrf().disable()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                .httpBasic(configurer -> {
+                    configurer.disable();
+                })
+                .csrf(configurer -> {
+                    configurer.disable();
+                })
+                .sessionManagement(configurer -> {
+                    configurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                });
 
         return http.build();
     }

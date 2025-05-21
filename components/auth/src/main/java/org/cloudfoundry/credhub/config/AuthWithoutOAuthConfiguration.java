@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authorization.AuthorityAuthorizationManager;
-import org.springframework.security.config.annotation.ObjectPostProcessor;
+import org.springframework.security.config.ObjectPostProcessor;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -17,6 +17,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
+import org.springframework.web.filter.UrlHandlerFilter;
 
 import org.cloudfoundry.credhub.auth.PreAuthenticationFailureFilter;
 import org.cloudfoundry.credhub.auth.X509AuthenticationProvider;
@@ -33,22 +34,26 @@ public class AuthWithoutOAuthConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-        http
-                .x509()
-                .subjectPrincipalRegex(VALID_MTLS_ID)
-                .userDetailsService(mtlsSUserDetailsService())
-                .withObjectPostProcessor(
-                        new ObjectPostProcessor<X509AuthenticationFilter>() {
-                            @Override
-                            public <O extends X509AuthenticationFilter> O postProcess(O filter) {
-                                filter.setContinueFilterChainOnUnsuccessfulAuthentication(false);
-                                return filter;
+        http.x509(configurer -> {
+            configurer
+                    .subjectPrincipalRegex(VALID_MTLS_ID)
+                    .userDetailsService(mtlsSUserDetailsService())
+                    .withObjectPostProcessor(
+                            new ObjectPostProcessor<X509AuthenticationFilter>() {
+                                @Override
+                                public <O extends X509AuthenticationFilter> O postProcess(O filter) {
+                                    filter.setContinueFilterChainOnUnsuccessfulAuthentication(false);
+                                    return filter;
+                                }
                             }
-                        }
-                );
+                    );
+        });
 
         http
                 .addFilterBefore(preAuthenticationFailureFilter, X509AuthenticationFilter.class)
+                .addFilterBefore(
+                        UrlHandlerFilter.trailingSlashHandler("/**").wrapRequest().build(),
+                        PreAuthenticationFailureFilter.class)
                 .authenticationProvider(preAuthenticatedAuthenticationProvider());
 
         http
@@ -60,9 +65,15 @@ public class AuthWithoutOAuthConfiguration {
                         .requestMatchers("/**").access(AuthorityAuthorizationManager
                                 .hasRole(X509AuthenticationProvider.Companion.getMTLS_USER()))
                 )
-                .httpBasic().disable()
-                .csrf().disable()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                .httpBasic(configurer -> {
+                    configurer.disable();
+                })
+                .csrf(configurer -> {
+                    configurer.disable();
+                })
+                .sessionManagement(configurer -> {
+                    configurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                });
 
         return http.build();
     }
