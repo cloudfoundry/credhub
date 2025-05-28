@@ -2,7 +2,7 @@ package org.cloudfoundry.credhub
 
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder
-import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory
+import org.apache.hc.client5.http.ssl.DefaultClientTlsStrategy
 import org.apache.hc.core5.ssl.SSLContextBuilder
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
 import org.springframework.stereotype.Component
@@ -32,14 +32,14 @@ class RestTemplateFactory {
             SSLContextBuilder()
                 .loadTrustMaterial(trustStore, trustStorePassword.toCharArray())
                 .build()
-        val socketFactory = SSLConnectionSocketFactory(sslContext)
+        val tlsStrategy = DefaultClientTlsStrategy(sslContext)
         val httpClient =
             HttpClientBuilder
                 .create()
                 .setConnectionManager(
                     PoolingHttpClientConnectionManagerBuilder
                         .create()
-                        .setSSLSocketFactory(socketFactory)
+                        .setTlsSocketStrategy(tlsStrategy)
                         .build(),
                 ).build()
         val requestFactory = HttpComponentsClientHttpRequestFactory(httpClient)
