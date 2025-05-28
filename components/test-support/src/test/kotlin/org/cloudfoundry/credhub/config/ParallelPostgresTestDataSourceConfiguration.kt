@@ -29,8 +29,8 @@ class ParallelPostgresTestDataSourceConfiguration {
             jdbcTemplate
                 .query(
                     "SELECT 1 FROM pg_database WHERE datname = ?;",
-                    arrayOf(workerDatabaseName),
                     { rs: ResultSet, _: Int -> rs.getBoolean(1) },
+                    arrayOf(workerDatabaseName),
                 ).size == 1
 
         if (!doesDatabaseExist) {
