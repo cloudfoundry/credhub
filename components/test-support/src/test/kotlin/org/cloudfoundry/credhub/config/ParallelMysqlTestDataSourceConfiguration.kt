@@ -29,7 +29,7 @@ class ParallelMysqlTestDataSourceConfiguration {
             jdbcTemplate
                 .query(
                     "SELECT 1 from INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = ?;",
-                    { rs: ResultSet, _: Int -> rs.getBoolean(1)},
+                    { rs: ResultSet, _: Int -> rs.getBoolean(1) },
                     arrayOf(workerDatabaseName),
                 ).size == 1
 
