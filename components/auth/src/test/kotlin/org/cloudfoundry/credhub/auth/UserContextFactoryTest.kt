@@ -20,10 +20,10 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
-import java.security.Principal
 import java.security.cert.X509Certificate
 import java.time.Instant
 import java.util.Date
+import javax.security.auth.x500.X500Principal
 
 @RunWith(SpringRunner::class)
 @ActiveProfiles(profiles = ["unit-test"], resolver = DatabaseProfileResolver::class)
@@ -176,10 +176,10 @@ class UserContextFactoryTest {
 
     private fun setupMtlsMock(): PreAuthenticatedAuthenticationToken {
         val certificate = mock(X509Certificate::class.java)
-        val principal = mock(Principal::class.java)
+        val principal = mock(X500Principal::class.java)
         val token = mock(PreAuthenticatedAuthenticationToken::class.java)
 
-        `when`(certificate.subjectDN).thenReturn(principal)
+        `when`(certificate.subjectX500Principal).thenReturn(principal)
         `when`(principal.name).thenReturn("CN=test_cn,OU=app:e054393e-c9c3-478b-9047-e6d05c307bf2")
 
         `when`(certificate.notAfter).thenReturn(Date.from(Instant.ofEpochSecond(1413538464L)))
