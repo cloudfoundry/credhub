@@ -207,7 +207,7 @@ class OAuth2ExtraValidationFilterTest {
         var getDataCount: Int = 0
 
         val data: String
-            @GetMapping(value = ["/api/v1/data"], produces = [MediaType.APPLICATION_JSON_UTF8_VALUE])
+            @GetMapping(value = ["/api/v1/data"], produces = [MediaType.APPLICATION_JSON_VALUE])
             get() {
                 getDataCount += 1
                 return "some data"
