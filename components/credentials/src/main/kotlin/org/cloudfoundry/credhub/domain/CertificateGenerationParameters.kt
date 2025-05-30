@@ -141,22 +141,22 @@ class CertificateGenerationParameters : GenerationParameters {
 
         val rdns = newArrayList<String>()
 
-        if (!StringUtils.isEmpty(params.locality)) {
+        if (StringUtils.hasLength(params.locality)) {
             rdns.add("L=" + params.locality!!)
         }
-        if (!StringUtils.isEmpty(params.organization)) {
+        if (StringUtils.hasLength(params.organization)) {
             rdns.add("O=" + params.organization!!)
         }
-        if (!StringUtils.isEmpty(params.state)) {
+        if (StringUtils.hasLength(params.state)) {
             rdns.add("ST=" + params.state!!)
         }
-        if (!StringUtils.isEmpty(params.country)) {
+        if (StringUtils.hasLength(params.country)) {
             rdns.add("C=" + params.country!!)
         }
-        if (!StringUtils.isEmpty(params.organizationUnit)) {
+        if (StringUtils.hasLength(params.organizationUnit)) {
             rdns.add("OU=" + params.organizationUnit!!)
         }
-        if (!StringUtils.isEmpty(params.commonName)) {
+        if (StringUtils.hasLength(params.commonName)) {
             rdns.add("CN=" + params.commonName!!)
         }
         return X500Principal(join(rdns, ","))
