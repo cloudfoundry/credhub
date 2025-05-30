@@ -19,7 +19,6 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.cloudfoundry.credhub.constants.EncryptionConstants;
 import org.cloudfoundry.credhub.constants.UuidConstants;
 import org.cloudfoundry.credhub.util.InstantMillisecondsConverter;
-import org.hibernate.annotations.GenericGenerator;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -33,7 +32,6 @@ public class EncryptedValue {
   @Id
   @Column(length = UuidConstants.UUID_BYTES, columnDefinition = "VARBINARY")
   @GeneratedValue(generator = "uuid2")
-  @GenericGenerator(name = "uuid2", strategy = "uuid2")
   private UUID uuid;
 
   @Convert(converter = InstantMillisecondsConverter.class)

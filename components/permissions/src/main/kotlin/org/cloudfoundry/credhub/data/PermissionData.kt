@@ -13,7 +13,6 @@ import org.cloudfoundry.credhub.PermissionOperation.WRITE
 import org.cloudfoundry.credhub.PermissionOperation.WRITE_ACL
 import org.cloudfoundry.credhub.audit.AuditablePermissionData
 import org.cloudfoundry.credhub.constants.UuidConstants
-import org.hibernate.annotations.GenericGenerator
 import java.util.UUID
 
 @Entity
@@ -27,7 +26,6 @@ class PermissionData(
     @Id
     @Column(length = UuidConstants.UUID_BYTES, columnDefinition = "VARBINARY")
     @GeneratedValue(generator = "uuid2")
-    @GenericGenerator(name = "uuid2", strategy = "uuid2")
     override var uuid: UUID? = null
 
     @Column(name = "read_permission", nullable = false)
