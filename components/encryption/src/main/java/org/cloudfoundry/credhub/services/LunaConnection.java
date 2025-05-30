@@ -26,7 +26,8 @@ public class LunaConnection {
   public LunaConnection(final EncryptionConfiguration lunaProviderConfiguration) throws Exception {
     super();
     this.lunaProviderConfiguration = lunaProviderConfiguration;
-    provider = (Provider) Class.forName("com.safenetinc.luna.provider.LunaProvider").newInstance();
+    provider = (Provider) Class.forName("com.safenetinc.luna.provider.LunaProvider")
+            .getDeclaredConstructor().newInstance();
     Security.addProvider(provider);
     lunaSlotManager = Class.forName("com.safenetinc.luna.LunaSlotManager")
       .getDeclaredMethod("getInstance").invoke(null);
