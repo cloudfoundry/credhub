@@ -20,7 +20,6 @@ import org.cloudfoundry.credhub.constants.UuidConstants
 import org.cloudfoundry.credhub.entities.EncryptedValue
 import org.cloudfoundry.credhub.util.InstantMillisecondsConverter
 import org.cloudfoundry.credhub.utils.JsonNodeConverter
-import org.hibernate.annotations.GenericGenerator
 import org.hibernate.annotations.NotFound
 import org.hibernate.annotations.NotFoundAction
 import org.springframework.data.annotation.CreatedDate
@@ -43,7 +42,6 @@ abstract class CredentialVersionData<Z : CredentialVersionData<Z>>(
     @Id
     @Column(length = UuidConstants.UUID_BYTES, columnDefinition = "VARBINARY")
     @GeneratedValue(generator = "uuid2")
-    @GenericGenerator(name = "uuid2", strategy = "uuid2")
     open var uuid: UUID? = null
 
     @OneToOne(cascade = [CascadeType.ALL])

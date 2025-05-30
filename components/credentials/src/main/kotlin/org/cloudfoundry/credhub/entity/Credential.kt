@@ -11,7 +11,6 @@ import jakarta.persistence.Table
 import org.apache.commons.codec.digest.DigestUtils
 import org.cloudfoundry.credhub.audit.AuditableCredential
 import org.cloudfoundry.credhub.constants.UuidConstants.Companion.UUID_BYTES
-import org.hibernate.annotations.GenericGenerator
 import java.util.UUID
 
 @Entity
@@ -20,7 +19,6 @@ class Credential : AuditableCredential {
     @Id
     @Column(length = UUID_BYTES, columnDefinition = "VARBINARY")
     @GeneratedValue(generator = "uuid2")
-    @GenericGenerator(name = "uuid2", strategy = "uuid2")
     override var uuid: UUID? = null
 
     @OneToMany(
