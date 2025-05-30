@@ -254,13 +254,15 @@ class DefaultCredentialVersionDataService
             val certificateResults =
                 jdbcTemplate.query<FindCredentialResult>(
                     query,
-                    arrayOf<Any>(escapedPath, expiresTimestamp),
-                ) { rowSet, _ ->
-                    val versionCreatedAt = Instant.ofEpochMilli(rowSet.getLong("version_created_at"))
-                    val name = rowSet.getString("name")
-                    val expiryDate = rowSet.getTimestamp("expiry_date").toInstant()
-                    FindCertificateResult(versionCreatedAt, name, expiryDate)
-                }
+                    { rowSet, _ ->
+                        val versionCreatedAt = Instant.ofEpochMilli(rowSet.getLong("version_created_at"))
+                        val name = rowSet.getString("name")
+                        val expiryDate = rowSet.getTimestamp("expiry_date").toInstant()
+                        FindCertificateResult(versionCreatedAt, name, expiryDate)
+                    },
+                    escapedPath,
+                    expiresTimestamp,
+                )
             return certificateResults
         }
 
@@ -284,12 +286,14 @@ class DefaultCredentialVersionDataService
                  order by version_created_at desc
                         """.trimMargin()
                     ),
-                    arrayOf<Any>(escapedNameLike, escapedNameLike),
-                ) { rowSet, _ ->
-                    val versionCreatedAt = Instant.ofEpochMilli(rowSet.getLong("version_created_at"))
-                    val name = rowSet.getString("name")
-                    FindCredentialResult(versionCreatedAt, name)
-                }
+                    { rowSet, _ ->
+                        val versionCreatedAt = Instant.ofEpochMilli(rowSet.getLong("version_created_at"))
+                        val name = rowSet.getString("name")
+                        FindCredentialResult(versionCreatedAt, name)
+                    },
+                    escapedNameLike,
+                    escapedNameLike,
+                )
             return credentialResults
         }
     }
