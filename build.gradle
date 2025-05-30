@@ -20,7 +20,7 @@ buildscript {
         // direct dependency to protobuf 3.25.x. We will need to bump protobuf
         // version to 4.x.x then.
         protoBufJavaVersion = '3.25.8'
-        protoCVersion = '3.25.7'
+        protoCVersion = '3.25.8'
     }
     repositories {
         mavenCentral()
