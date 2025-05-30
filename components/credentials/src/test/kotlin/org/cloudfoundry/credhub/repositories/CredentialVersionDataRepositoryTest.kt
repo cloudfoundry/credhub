@@ -51,7 +51,7 @@ class CredentialVersionDataRepositoryTest {
     @Test
     fun canSaveCertificatesOfLength7000WhichMeans7016ForGCM() {
         val encryptedValue = ByteArray(7016)
-        Arrays.fill(encryptedValue, 'A'.toByte())
+        Arrays.fill(encryptedValue, 'A'.code.toByte())
         val stringBuilder = StringBuilder(7000)
         Stream.generate { "a" }.limit(stringBuilder.capacity().toLong()).forEach { str: String? -> stringBuilder.append(str) }
         val credential = credentialRepository!!.save(Credential(name))
@@ -78,7 +78,7 @@ class CredentialVersionDataRepositoryTest {
     @Test
     fun canSaveStringsOfLength7000WhichMeans7016ForGCM() {
         val encryptedValue = ByteArray(7016)
-        Arrays.fill(encryptedValue, 'A'.toByte())
+        Arrays.fill(encryptedValue, 'A'.code.toByte())
         val stringBuilder = StringBuilder(7000)
         Stream.generate { "a" }.limit(stringBuilder.capacity().toLong()).forEach { str: String? -> stringBuilder.append(str) }
         val entity = ValueCredentialVersionData("test-credential")
