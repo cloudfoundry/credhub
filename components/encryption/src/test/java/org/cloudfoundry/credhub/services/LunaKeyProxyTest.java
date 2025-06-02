@@ -13,7 +13,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import static org.assertj.core.api.Java6Assertions.fail;
+import static org.assertj.core.api.Assertions.fail;
 import static org.cloudfoundry.credhub.services.EncryptionKeyCanaryMapper.CANARY_VALUE;
 import static org.cloudfoundry.credhub.services.EncryptionKeyCanaryMapper.DEPRECATED_CANARY_VALUE;
 import static org.hamcrest.MatcherAssert.assertThat;
