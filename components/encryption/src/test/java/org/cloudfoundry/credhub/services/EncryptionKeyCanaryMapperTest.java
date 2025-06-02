@@ -22,9 +22,7 @@ import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.entities.EncryptionKeyCanary;
 import org.cloudfoundry.credhub.util.TimedRetry;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.ArgumentCaptor;
@@ -32,12 +30,13 @@ import org.mockito.ArgumentCaptor;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.cloudfoundry.credhub.services.EncryptionKeyCanaryMapper.CANARY_VALUE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.arrayContainingInAnyOrder;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.core.IsIterableContaining.hasItem;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
@@ -49,9 +48,6 @@ import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
 public class EncryptionKeyCanaryMapperTest {
-
-  @Rule
-  public final ExpectedException exception = ExpectedException.none();
   private EncryptionKeyCanaryMapper subject;
   private EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
   private EncryptionKeySet keySet;
@@ -260,8 +256,8 @@ public class EncryptionKeyCanaryMapperTest {
     subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService,
       encryptionKeysConfiguration, timedRetry, providerFactory);
 
-    exception.expectMessage("Timed out waiting for active key canary to be created");
-    subject.mapUuidsToKeys(keySet);
+    assertThatThrownBy(() -> subject.mapUuidsToKeys(keySet))
+            .hasMessageMatching("Timed out waiting for active key canary to be created");
   }
 
   @Test
@@ -343,8 +339,8 @@ public class EncryptionKeyCanaryMapperTest {
     subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService,
       encryptionKeysConfiguration, timedRetry, providerFactory);
 
-    exception.expectMessage("No active key was found");
-    subject.mapUuidsToKeys(keySet);
+    assertThatThrownBy(() -> subject.mapUuidsToKeys(keySet))
+            .hasMessageMatching("No active key was found");
   }
 
   @Test
@@ -371,8 +367,9 @@ public class EncryptionKeyCanaryMapperTest {
     subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService,
       encryptionKeysConfiguration, timedRetry, providerFactory);
 
-    exception.expectMessage("javax.crypto.IllegalBlockSizeException: I don't know what 0x41 means and neither do you");
-    subject.mapUuidsToKeys(keySet);
+    assertThatThrownBy(() -> subject.mapUuidsToKeys(keySet))
+            .hasMessageMatching(
+                    "javax.crypto.IllegalBlockSizeException: I don't know what 0x41 means and neither do you");
   }
 
   @Test

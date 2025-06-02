@@ -94,7 +94,7 @@ public class EarlyCredentialMigrationTest {
         paramSource.addValue("updated_at", 0);
         paramSource.addValue("uuid", uuid);
 
-        final boolean isPostgres = environment.acceptsProfiles("unit-test-postgres");
+        final boolean isPostgres = environment.matchesProfiles("unit-test-postgres");
         final String sql = "INSERT INTO named_secret("
                 + (isPostgres ? "id, " : "")
                 + "type, encrypted_value, name, nonce, updated_at, uuid) values ("

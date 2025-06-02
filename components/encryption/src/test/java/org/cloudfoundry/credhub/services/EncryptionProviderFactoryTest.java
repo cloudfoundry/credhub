@@ -24,7 +24,7 @@ public class EncryptionProviderFactoryTest {
 
   @Before
   public void setUp() {
-    MockitoAnnotations.initMocks(this);
+    MockitoAnnotations.openMocks(this);
   }
 
   @Test
