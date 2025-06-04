@@ -154,8 +154,8 @@ public class SignedCertificateGeneratorTest {
   public void getSelfSigned_generatesACertificateWithTheRightValues() throws Exception {
     final X509Certificate generatedCertificate = subject.getSelfSigned(generatedCertificateKeyPair, certificateGenerationParameters);
 
-    assertThat(generatedCertificate.getIssuerDN().getName(), containsString("CN=my cert name"));
-    assertThat(generatedCertificate.getSubjectDN().toString(), containsString("CN=my cert name"));
+    assertThat(generatedCertificate.getIssuerX500Principal().getName(), containsString("CN=my cert name"));
+    assertThat(generatedCertificate.getSubjectX500Principal().toString(), containsString("CN=my cert name"));
     generatedCertificate.verify(generatedCertificateKeyPair.getPublic());
 
     final byte[] authorityKeyIdDer = generatedCertificate.getExtensionValue(Extension.authorityKeyIdentifier.getId());
@@ -174,13 +174,13 @@ public class SignedCertificateGeneratorTest {
       .getSignedByIssuer(generatedCertificateKeyPair, certificateGenerationParameters,
         certificateAuthorityWithSubjectKeyId, issuerKey.getPrivate());
 
-    assertThat(generatedCertificate.getIssuerDN().getName(), containsString("CN=ca DN"));
-    assertThat(generatedCertificate.getIssuerDN().getName(), containsString("O=credhub"));
+    assertThat(generatedCertificate.getIssuerX500Principal().getName(), containsString("CN=ca DN"));
+    assertThat(generatedCertificate.getIssuerX500Principal().getName(), containsString("O=credhub"));
 
     assertThat(generatedCertificate.getSerialNumber(), equalTo(BigInteger.valueOf(1337L)));
     assertThat(generatedCertificate.getNotBefore().toString(), equalTo(Date.from(now).toString()));
     assertThat(generatedCertificate.getNotAfter().toString(), equalTo(Date.from(later).toString()));
-    assertThat(generatedCertificate.getSubjectDN().toString(), containsString("CN=my cert name"));
+    assertThat(generatedCertificate.getSubjectX500Principal().toString(), containsString("CN=my cert name"));
     assertThat(generatedCertificate.getPublicKey(), equalTo(generatedCertificateKeyPair.getPublic()));
     assertThat(generatedCertificate.getSigAlgName(), equalTo("SHA256WITHRSA"));
     generatedCertificate.verify(issuerKey.getPublic());

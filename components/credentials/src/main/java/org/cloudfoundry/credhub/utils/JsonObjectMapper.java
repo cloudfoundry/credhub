@@ -5,10 +5,8 @@ import java.io.IOException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import org.cloudfoundry.credhub.util.TimeModuleFactory;
-
-import static com.fasterxml.jackson.databind.PropertyNamingStrategy.LOWER_CAMEL_CASE;
-import static com.fasterxml.jackson.databind.PropertyNamingStrategy.SNAKE_CASE;
 
 public class JsonObjectMapper {
 
@@ -18,7 +16,7 @@ public class JsonObjectMapper {
     super();
     snakeCaseMapper = new ObjectMapper()
       .registerModule(TimeModuleFactory.Companion.createTimeModule())
-      .setPropertyNamingStrategy(SNAKE_CASE);
+      .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
 
   }
 
@@ -32,7 +30,7 @@ public class JsonObjectMapper {
     } catch (final Exception e) {
       final ObjectMapper camelCaseMapper = new ObjectMapper()
         .registerModule(TimeModuleFactory.Companion.createTimeModule())
-        .setPropertyNamingStrategy(LOWER_CAMEL_CASE);
+        .setPropertyNamingStrategy(PropertyNamingStrategies.LOWER_CAMEL_CASE);
       return camelCaseMapper.readValue(stringValue, type);
     }
   }
