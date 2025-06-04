@@ -29,7 +29,7 @@ public class SshGenerator implements CredentialGenerator<SshCredentialValue> {
     try {
       final KeyPair keyPair = keyGenerator.generateKeyPair(params.getKeyLength());
       final String sshComment = params.getSshComment();
-      final String sshCommentMessage = StringUtils.isEmpty(sshComment) ? "" : " " + sshComment;
+      final String sshCommentMessage = StringUtils.hasLength(sshComment) ? " " + sshComment : "";
 
       final String publicKey =
         CertificateFormatter.derOf((RSAPublicKey) keyPair.getPublic()) + sshCommentMessage;

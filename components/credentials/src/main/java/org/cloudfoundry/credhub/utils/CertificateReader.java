@@ -81,7 +81,7 @@ public class CertificateReader {
   }
 
   public X500Principal getSubjectName() {
-    return new X500Principal(certificate.getSubjectDN().getName());
+    return new X500Principal(certificate.getSubjectX500Principal().getName());
   }
 
   public boolean isSignedByCa(final String caValue) {
@@ -109,9 +109,9 @@ public class CertificateReader {
   }
 
   public boolean isSelfSigned() {
-    final String issuerName = certificate.getIssuerDN().getName();
+    final String issuerName = certificate.getIssuerX500Principal().getName();
 
-    if (!issuerName.equals(certificate.getSubjectDN().getName())) {
+    if (!issuerName.equals(certificate.getSubjectX500Principal().getName())) {
       return false;
     } else {
       try {
