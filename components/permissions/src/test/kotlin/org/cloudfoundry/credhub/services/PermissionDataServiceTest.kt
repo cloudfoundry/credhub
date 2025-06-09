@@ -33,8 +33,8 @@ import org.hamcrest.Matchers.hasProperty
 import org.hamcrest.Matchers.not
 import org.hamcrest.collection.IsCollectionWithSize.hasSize
 import org.hamcrest.core.Is.`is`
-import org.hamcrest.core.IsCollectionContaining.hasItems
 import org.hamcrest.core.IsEqual.equalTo
+import org.hamcrest.core.IsIterableContaining.hasItems
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -518,7 +518,7 @@ class PermissionDataServiceTest {
         subject.savePermissionsWithLogging(listOf(PermissionEntry(HAN_SOLO, CREDENTIAL_NAME, newArrayList(READ_ACL, WRITE_ACL))))
     }
 
-    private fun randomCredentialPath(): String = "/" + RandomStringUtils.randomAlphanumeric(50)
+    private fun randomCredentialPath(): String = "/" + RandomStringUtils.insecure().nextAlphanumeric(50)
 
     companion object {
         private val CREDENTIAL_NAME = "/lightsaber"

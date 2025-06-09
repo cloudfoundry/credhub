@@ -39,7 +39,7 @@ import org.mockito.Mockito.never
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
-import org.mockito.MockitoAnnotations.initMocks
+import org.mockito.MockitoAnnotations.openMocks
 import java.util.Arrays
 import java.util.UUID
 import java.util.regex.Pattern
@@ -83,7 +83,7 @@ class DefaultCredentialServiceTest {
 
     @Before
     fun setUp() {
-        initMocks(this)
+        openMocks(this)
 
         userContext = mock<UserContext>(UserContext::class.java)
         val userContextHolder = UserContextHolder()
