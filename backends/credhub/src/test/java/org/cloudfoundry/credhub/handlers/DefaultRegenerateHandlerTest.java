@@ -48,7 +48,7 @@ import org.junit.runners.JUnit4;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Java6Assertions.fail;
+import static org.assertj.core.api.Assertions .fail;
 import static org.cloudfoundry.credhub.utils.TestConstants.TEST_CA;
 import static org.cloudfoundry.credhub.utils.TestConstants.TEST_TRUSTED_CA;
 import static org.hamcrest.Matchers.is;

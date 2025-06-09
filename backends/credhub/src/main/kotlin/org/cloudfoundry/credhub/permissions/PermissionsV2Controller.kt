@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping(
     path = [PermissionsV2Controller.ENDPOINT],
-    produces = [MediaType.APPLICATION_JSON_UTF8_VALUE],
+    produces = [MediaType.APPLICATION_JSON_VALUE],
 )
 class PermissionsV2Controller(
     private val permissionsHandler: PermissionsV2Handler,
@@ -30,7 +30,7 @@ class PermissionsV2Controller(
     @RequestMapping(
         method = [RequestMethod.POST],
         path = [""],
-        consumes = [MediaType.APPLICATION_JSON_UTF8_VALUE],
+        consumes = [MediaType.APPLICATION_JSON_VALUE],
     )
     @ResponseStatus(HttpStatus.CREATED)
     fun postPermissions(

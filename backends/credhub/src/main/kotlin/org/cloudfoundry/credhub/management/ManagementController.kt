@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping(
     path = [ManagementController.ENDPOINT],
-    produces = [MediaType.APPLICATION_JSON_UTF8_VALUE],
+    produces = [MediaType.APPLICATION_JSON_VALUE],
 )
 class ManagementController(
     private val managementService: ManagementService,
@@ -34,7 +34,7 @@ class ManagementController(
 
     @RequestMapping(
         method = [RequestMethod.POST],
-        produces = [MediaType.APPLICATION_JSON_UTF8_VALUE],
+        produces = [MediaType.APPLICATION_JSON_VALUE],
     )
     @ResponseStatus(HttpStatus.OK)
     fun updateManagementRegistry(

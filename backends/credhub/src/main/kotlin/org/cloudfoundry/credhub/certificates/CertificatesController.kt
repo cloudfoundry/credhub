@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping(path = [CertificatesController.ENDPOINT], produces = [MediaType.APPLICATION_JSON_UTF8_VALUE])
+@RequestMapping(path = [CertificatesController.ENDPOINT], produces = [MediaType.APPLICATION_JSON_VALUE])
 class CertificatesController(
     val certificatesHandler: CertificatesHandler,
     val auditRecord: CEFAuditRecord,

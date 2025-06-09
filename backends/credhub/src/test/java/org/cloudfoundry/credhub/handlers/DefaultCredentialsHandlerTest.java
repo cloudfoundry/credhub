@@ -55,7 +55,7 @@ import org.mockito.ArgumentCaptor;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Collections.EMPTY_SET;
 import static java.util.Collections.emptyList;
-import static org.assertj.core.api.Java6Assertions.fail;
+import static org.assertj.core.api.Assertions .fail;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.samePropertyValuesAs;

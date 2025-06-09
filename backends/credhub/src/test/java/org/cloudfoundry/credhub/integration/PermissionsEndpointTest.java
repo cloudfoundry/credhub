@@ -28,6 +28,7 @@ import static org.cloudfoundry.credhub.utils.AuthConstants.ALL_PERMISSIONS_TOKEN
 import static org.cloudfoundry.credhub.utils.AuthConstants.USER_A_ACTOR_ID;
 import static org.cloudfoundry.credhub.utils.AuthConstants.USER_A_TOKEN;
 import static org.cloudfoundry.credhub.utils.AuthConstants.USER_B_ACTOR_ID;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
@@ -35,7 +36,6 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.beans.SamePropertyValuesAs.samePropertyValuesAs;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
