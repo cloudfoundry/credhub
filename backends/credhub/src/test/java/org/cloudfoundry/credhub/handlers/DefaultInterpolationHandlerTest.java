@@ -30,7 +30,7 @@ import org.junit.runners.JUnit4;
 import org.mockito.internal.verification.VerificationModeFactory;
 
 import static java.util.Collections.singletonList;
-import static org.assertj.core.api.Java6Assertions.fail;
+import static org.assertj.core.api.Assertions.fail;
 import static org.cloudfoundry.credhub.helpers.JsonTestHelper.deserialize;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;

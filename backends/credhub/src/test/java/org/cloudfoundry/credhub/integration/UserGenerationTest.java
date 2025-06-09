@@ -33,7 +33,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.IsNot.not;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -102,7 +101,7 @@ public class UserGenerationTest {
     final MockHttpServletRequestBuilder setRequest = put("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
-      .contentType(APPLICATION_JSON_UTF8)
+      .contentType(APPLICATION_JSON)
       .content("{" +
         "\"type\":\"user\"," +
         "\"name\":\"" + credentialName1 + "\"," +
@@ -116,7 +115,7 @@ public class UserGenerationTest {
     final MockHttpServletRequestBuilder generateRequest = post("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
-      .contentType(APPLICATION_JSON_UTF8)
+      .contentType(APPLICATION_JSON)
       .content("{\"type\":\"user\",\"name\":\"" + credentialName1 + "\"}");
 
     final DocumentContext response = JsonPath.parse(mockMvc.perform(generateRequest).andExpect(status().isOk())
@@ -136,7 +135,7 @@ public class UserGenerationTest {
     final MockHttpServletRequestBuilder setRequest = put("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
-      .contentType(APPLICATION_JSON_UTF8)
+      .contentType(APPLICATION_JSON)
       .content("{" +
         "\"type\":\"user\"," +
         "\"name\":\"" + credentialName1 + "\"," +
@@ -150,7 +149,7 @@ public class UserGenerationTest {
     final MockHttpServletRequestBuilder generateRequest = post("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
-      .contentType(APPLICATION_JSON_UTF8)
+      .contentType(APPLICATION_JSON)
       .content("{" +
         "\"type\":\"user\"," +
         "\"name\":\"" + credentialName1 + "\"," +

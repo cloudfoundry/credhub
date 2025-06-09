@@ -33,7 +33,6 @@ import static org.cloudfoundry.credhub.utils.AuthConstants.USER_A_PATH;
 import static org.cloudfoundry.credhub.utils.AuthConstants.USER_A_TOKEN;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -165,7 +164,7 @@ public class CredentialAclEnforcementTest {
     final MockHttpServletRequestBuilder edit = put("/api/v1/data")
       .header("Authorization", "Bearer " + USER_A_TOKEN)
       .accept(APPLICATION_JSON)
-      .contentType(APPLICATION_JSON_UTF8)
+      .contentType(APPLICATION_JSON)
       // language=JSON
       .content("{\n"
         + "  \"name\" : \"" + CREDENTIAL_NAME + "\",\n"
@@ -187,7 +186,7 @@ public class CredentialAclEnforcementTest {
     final MockHttpServletRequestBuilder edit = post("/api/v1/data")
       .header("Authorization", "Bearer " + USER_A_TOKEN)
       .accept(APPLICATION_JSON)
-      .contentType(APPLICATION_JSON_UTF8)
+      .contentType(APPLICATION_JSON)
       // language=JSON
       .content("{\n"
         + "  \"name\" : \"" + CREDENTIAL_NAME + "\",\n"
@@ -208,7 +207,7 @@ public class CredentialAclEnforcementTest {
     final MockHttpServletRequestBuilder edit = post("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
-      .contentType(APPLICATION_JSON_UTF8)
+      .contentType(APPLICATION_JSON)
       // language=JSON
       .content("{\n"
         + "  \"name\" : \"" + CREDENTIAL_NAME + "\",\n"
@@ -338,7 +337,7 @@ public class CredentialAclEnforcementTest {
     final MockHttpServletRequestBuilder post = post("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
-      .contentType(APPLICATION_JSON_UTF8)
+      .contentType(APPLICATION_JSON)
       //language=JSON
       .content("{\n"
         + "  \"name\": \"" + credentialName + "\",\n"
@@ -359,7 +358,7 @@ public class CredentialAclEnforcementTest {
     final MockHttpServletRequestBuilder request = post("/api/v1/permissions")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
-      .contentType(APPLICATION_JSON_UTF8)
+      .contentType(APPLICATION_JSON)
       //language=JSON
       .content("{\n"
         + "  \"credential_name\": \"" + credentialName + "\",\n"

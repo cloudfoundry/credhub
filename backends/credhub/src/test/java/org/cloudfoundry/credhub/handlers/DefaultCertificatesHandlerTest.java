@@ -51,7 +51,7 @@ import org.junit.Test;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
-import static org.assertj.core.api.Java6Assertions.fail;
+import static org.assertj.core.api.Assertions.fail;
 import static org.cloudfoundry.credhub.utils.TestConstants.TEST_CA;
 import static org.cloudfoundry.credhub.utils.TestConstants.TEST_TRUSTED_CA;
 import static org.hamcrest.CoreMatchers.equalTo;

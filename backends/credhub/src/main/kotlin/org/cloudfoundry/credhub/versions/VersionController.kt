@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping(path = [VersionController.ENDPOINT], produces = [MediaType.APPLICATION_JSON_UTF8_VALUE])
+@RequestMapping(path = [VersionController.ENDPOINT], produces = [MediaType.APPLICATION_JSON_VALUE])
 class VersionController(
     val versionProvider: VersionProvider,
 ) {

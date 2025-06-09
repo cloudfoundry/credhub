@@ -27,13 +27,12 @@ import org.junit.runner.RunWith;
 
 import static org.cloudfoundry.credhub.TestHelper.mockOutCurrentTimeProvider;
 import static org.cloudfoundry.credhub.utils.AuthConstants.ALL_PERMISSIONS_TOKEN;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -116,7 +115,7 @@ public class GenerateModeTest {
         MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
                 .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
                 .accept(APPLICATION_JSON)
-                .contentType(APPLICATION_JSON_UTF8)
+                .contentType(APPLICATION_JSON)
                 .content("{" +
                         "\"type\":\"password\"," +
                         "\"name\":\"" + CREDENTIAL_NAME + "\"," +
@@ -136,7 +135,7 @@ public class GenerateModeTest {
         postRequest = post("/api/v1/data")
                 .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
                 .accept(APPLICATION_JSON)
-                .contentType(APPLICATION_JSON_UTF8)
+                .contentType(APPLICATION_JSON)
                 .content("{" +
                         "\"type\":\"password\"," +
                         "\"name\":\"" + CREDENTIAL_NAME + "\"," +
@@ -182,7 +181,7 @@ public class GenerateModeTest {
         final MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
                 .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
                 .accept(APPLICATION_JSON)
-                .contentType(APPLICATION_JSON_UTF8)
+                .contentType(APPLICATION_JSON)
                 .content("{" +
                         "\"type\":\"password\"," +
                         "\"name\":\"" + CREDENTIAL_NAME + "\"," +
@@ -207,7 +206,7 @@ public class GenerateModeTest {
         final MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
                 .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
                 .accept(APPLICATION_JSON)
-                .contentType(APPLICATION_JSON_UTF8)
+                .contentType(APPLICATION_JSON)
                 .content("{" +
                         "\"type\":\"password\"," +
                         "\"name\":\"" + CREDENTIAL_NAME + "\"," +
@@ -232,7 +231,7 @@ public class GenerateModeTest {
         MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
                 .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
                 .accept(APPLICATION_JSON)
-                .contentType(APPLICATION_JSON_UTF8)
+                .contentType(APPLICATION_JSON)
                 .content("{" +
                         "\"type\":\"password\"," +
                         "\"name\":\"" + CREDENTIAL_NAME + "\"," +
@@ -252,7 +251,7 @@ public class GenerateModeTest {
         postRequest = post("/api/v1/data")
                 .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
                 .accept(APPLICATION_JSON)
-                .contentType(APPLICATION_JSON_UTF8)
+                .contentType(APPLICATION_JSON)
                 .content("{" +
                         "\"type\":\"password\"," +
                         "\"name\":\"" + CREDENTIAL_NAME + "\"," +
@@ -278,7 +277,7 @@ public class GenerateModeTest {
         MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
                 .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
                 .accept(APPLICATION_JSON)
-                .contentType(APPLICATION_JSON_UTF8)
+                .contentType(APPLICATION_JSON)
                 .content("{" +
                         "\"type\":\"password\"," +
                         "\"name\":\"" + CREDENTIAL_NAME + "\"," +
@@ -298,7 +297,7 @@ public class GenerateModeTest {
         postRequest = post("/api/v1/data")
                 .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
                 .accept(APPLICATION_JSON)
-                .contentType(APPLICATION_JSON_UTF8)
+                .contentType(APPLICATION_JSON)
                 .content("{" +
                         "\"type\":\"password\"," +
                         "\"name\":\"" + CREDENTIAL_NAME + "\"," +
@@ -345,7 +344,7 @@ public class GenerateModeTest {
         MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
                 .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
                 .accept(APPLICATION_JSON)
-                .contentType(APPLICATION_JSON_UTF8)
+                .contentType(APPLICATION_JSON)
                 .content("{" +
                         "\"type\":\"certificate\"," +
                         "\"name\":\"" + CREDENTIAL_NAME + "\"," +
@@ -367,7 +366,7 @@ public class GenerateModeTest {
         postRequest = post("/api/v1/data")
                 .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
                 .accept(APPLICATION_JSON)
-                .contentType(APPLICATION_JSON_UTF8)
+                .contentType(APPLICATION_JSON)
                 .content("{" +
                         "\"type\":\"certificate\"," +
                         "\"name\":\"" + CREDENTIAL_NAME + "\"," +
@@ -394,7 +393,7 @@ public class GenerateModeTest {
         final MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
                 .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
                 .accept(APPLICATION_JSON)
-                .contentType(APPLICATION_JSON_UTF8)
+                .contentType(APPLICATION_JSON)
                 .content("{" +
                         "\"type\":\"password\"," +
                         "\"name\":\"" + CREDENTIAL_NAME + "\"," +

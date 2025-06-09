@@ -46,9 +46,9 @@ import static org.cloudfoundry.credhub.utils.TestConstants.OTHER_TEST_PRIVATE_KE
 import static org.cloudfoundry.credhub.utils.TestConstants.TEST_CA;
 import static org.cloudfoundry.credhub.utils.TestConstants.TEST_CERTIFICATE;
 import static org.cloudfoundry.credhub.utils.TestConstants.TEST_PRIVATE_KEY;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;

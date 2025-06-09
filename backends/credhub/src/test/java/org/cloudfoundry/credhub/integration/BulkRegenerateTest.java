@@ -39,7 +39,6 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -124,7 +123,7 @@ public class BulkRegenerateTest {
         final MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
                 .header("Authorization", "Bearer " + USER_A_TOKEN)
                 .accept(APPLICATION_JSON)
-                .contentType(APPLICATION_JSON_UTF8)
+                .contentType(APPLICATION_JSON)
                 //language=JSON
                 .content("{\"signed_by\" : \"" + caName + "\"}");
 
@@ -153,7 +152,7 @@ public class BulkRegenerateTest {
         final MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
                 .header("Authorization", "Bearer " + USER_A_TOKEN)
                 .accept(APPLICATION_JSON)
-                .contentType(APPLICATION_JSON_UTF8)
+                .contentType(APPLICATION_JSON)
                 //language=JSON
                 .content("{\"signed_by\" : \"" + caName + "\"}");
 
@@ -179,7 +178,7 @@ public class BulkRegenerateTest {
         final MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
                 .header("Authorization", "Bearer " + USER_A_TOKEN)
                 .accept(APPLICATION_JSON)
-                .contentType(APPLICATION_JSON_UTF8)
+                .contentType(APPLICATION_JSON)
                 //language=JSON
                 .content("{\"signed_by\" : \"" + caName + "\"}");
 
@@ -198,7 +197,7 @@ public class BulkRegenerateTest {
         final MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
                 .header("Authorization", "Bearer " + USER_A_TOKEN)
                 .accept(APPLICATION_JSON)
-                .contentType(APPLICATION_JSON_UTF8)
+                .contentType(APPLICATION_JSON)
                 //language=JSON
                 .content("{\"signed_by\" : \"" + caName + "\"}");
 
@@ -215,7 +214,7 @@ public class BulkRegenerateTest {
         final MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
                 .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
                 .accept(APPLICATION_JSON)
-                .contentType(APPLICATION_JSON_UTF8)
+                .contentType(APPLICATION_JSON)
                 //language=JSON
                 .content("{}");
 
@@ -237,7 +236,7 @@ public class BulkRegenerateTest {
         final MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
                 .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
                 .accept(APPLICATION_JSON)
-                .contentType(APPLICATION_JSON_UTF8)
+                .contentType(APPLICATION_JSON)
                 //language=JSON
                 .content("{\"signed_by\" : \"" + caName + "\"}");
 
@@ -267,7 +266,7 @@ public class BulkRegenerateTest {
         final MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
                 .header("Authorization", "Bearer " + USER_A_TOKEN)
                 .accept(APPLICATION_JSON)
-                .contentType(APPLICATION_JSON_UTF8)
+                .contentType(APPLICATION_JSON)
                 //language=JSON
                 .content("{\"signed_by\" : \"" + caName + "\"}");
 
@@ -284,7 +283,7 @@ public class BulkRegenerateTest {
         final MockHttpServletRequestBuilder getVersionsRequest = get("/api/v1/certificates/" + certificateId + "/versions")
                 .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
                 .accept(APPLICATION_JSON)
-                .contentType(APPLICATION_JSON_UTF8);
+                .contentType(APPLICATION_JSON);
 
         final String versions = this.mockMvc.perform(getVersionsRequest)
                 .andExpect(status().isOk())
@@ -301,7 +300,7 @@ public class BulkRegenerateTest {
         final MockHttpServletRequestBuilder request = post(API_V1_DATA_ENDPOINT)
                 .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
                 .accept(APPLICATION_JSON)
-                .contentType(APPLICATION_JSON_UTF8)
+                .contentType(APPLICATION_JSON)
                 //language=JSON
                 .content("{\n"
                         + "  \"name\" : \"" + caName + "\",\n"
@@ -322,7 +321,7 @@ public class BulkRegenerateTest {
                 .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
                 .accept(APPLICATION_JSON)
                 .accept(APPLICATION_JSON)
-                .contentType(APPLICATION_JSON_UTF8)
+                .contentType(APPLICATION_JSON)
                 //language=JSON
                 .content("{\n"
                         + "  \"name\" : \"" + certificateName + "\",\n"
@@ -352,7 +351,7 @@ public class BulkRegenerateTest {
         final MockHttpServletRequestBuilder request = post(API_V1_PERMISSION_ENDPOINT)
                 .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
                 .accept(APPLICATION_JSON)
-                .contentType(APPLICATION_JSON_UTF8)
+                .contentType(APPLICATION_JSON)
                 //language=JSON
                 .content("{\n"
                         + "  \"credential_name\": \"" + credentialName + "\",\n"

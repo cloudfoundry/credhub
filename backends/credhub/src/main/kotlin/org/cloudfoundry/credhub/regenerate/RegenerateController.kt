@@ -24,13 +24,13 @@ class RegenerateController(
         const val BULK_REGENERATE_ENDPOINT = "api/v1/bulk-regenerate"
     }
 
-    @PostMapping(path = [REGENERATE_ENDPOINT], produces = [MediaType.APPLICATION_JSON_UTF8_VALUE])
+    @PostMapping(path = [REGENERATE_ENDPOINT], produces = [MediaType.APPLICATION_JSON_VALUE])
     @ResponseStatus(HttpStatus.OK)
     fun regenerate(
         @RequestBody @Validated requestBody: RegenerateRequest,
     ): CredentialView = regenerateHandler.handleRegenerate(requestBody.getName(), requestBody.getMetadata())
 
-    @PostMapping(path = [BULK_REGENERATE_ENDPOINT], produces = [MediaType.APPLICATION_JSON_UTF8_VALUE])
+    @PostMapping(path = [BULK_REGENERATE_ENDPOINT], produces = [MediaType.APPLICATION_JSON_VALUE])
     @ResponseStatus(HttpStatus.OK)
     @Transactional(rollbackFor = [PermissionException::class])
     fun bulkRegenerate(
