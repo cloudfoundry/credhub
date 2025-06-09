@@ -13,8 +13,8 @@ import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers
 import org.hamcrest.Matchers.contains
 import org.hamcrest.Matchers.hasProperty
-import org.hamcrest.core.IsCollectionContaining.hasItems
 import org.hamcrest.core.IsEqual.equalTo
+import org.hamcrest.core.IsIterableContaining.hasItems
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
