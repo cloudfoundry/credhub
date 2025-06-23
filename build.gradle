@@ -7,7 +7,7 @@ buildscript {
         bcFipsVersion = '2.1.0'
         flywayVersion = '11.9.1'
         guavaVersion = '33.4.8-jre'
-        kotlinVersion = '2.1.21'
+        kotlinVersion = '2.2.0'
         ktlintVersion = '1.5.0'
         passayVersion = '1.6.6'
         springBootVersion = '3.5.3'
