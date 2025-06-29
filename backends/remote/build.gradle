@@ -48,7 +48,7 @@ dependencies {
 
     //gRPC
     implementation 'javax.annotation:javax.annotation-api:1.3.2'
-    implementation "com.google.api.grpc:proto-google-common-protos:2.58.2"
+    implementation "com.google.api.grpc:proto-google-common-protos:2.59.0"
     implementation "io.grpc:grpc-services:${grpcVersion}"
     implementation "io.grpc:grpc-protobuf:${grpcVersion}"
 
