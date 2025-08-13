@@ -121,7 +121,7 @@ class CertificatesControllerTest {
         // language=json
         val requestBody =
             """
-            {"set_as_transitional": true, "allow_transitional_parent_to_sign": true, "key_length": 2048, "metadata": {"description": "example metadata"}}
+            {"set_as_transitional": true, "allow_transitional_parent_to_sign": true, "key_length": 2048, "duration": 365, "metadata": {"description": "example metadata"}}
             """.trimIndent()
         certificateView = CertificateGenerationView(certificateCredentialVersion, false)
         (certificateView as CertificateGenerationView).durationOverridden = true
@@ -155,6 +155,11 @@ class CertificatesControllerTest {
                                     "Set the key length for the regenerated certificate. If not provided, the key length will be the same as the original certificate.",
                                 ).type(JsonFieldType.NUMBER)
                                 .optional(),
+                            fieldWithPath("duration")
+                                .description(
+                                    "Set the duration for the regenerated certificate. If not provided, the duration will be the same as the original certificate.",
+                                ).type(JsonFieldType.NUMBER)
+                                .optional(),
                             fieldWithPath("metadata")
                                 .description("Additional metadata of the credential.")
                                 .optional(),
@@ -168,7 +173,13 @@ class CertificatesControllerTest {
                 ).andReturn()
 
         val expectedRequestBody =
-            CertificateRegenerateRequest(transitional = true, allowTransitionalParentToSign = true, keyLength = 2048, metadata = metadata)
+            CertificateRegenerateRequest(
+                transitional = true,
+                allowTransitionalParentToSign = true,
+                keyLength = 2048,
+                duration = 365,
+                metadata = metadata,
+            )
 
         assertThat(spyCertificatesHandler.handleregenerateCalledwithRequest).isEqualTo(expectedRequestBody)
         assertThat(spyCertificatesHandler.handleregenerateCalledwithCredentialuuid).isEqualTo(certificateId.toString())
@@ -205,7 +216,7 @@ class CertificatesControllerTest {
         // language=json
         val requestBody =
             """
-            {"set_as_transitional": true, "allow_transitional_parent_to_sign": true, "key_length": 4711, "metadata": {"description": "example metadata"}}
+            {"set_as_transitional": true, "allow_transitional_parent_to_sign": true, "key_length": 4711, "duration": 1234, "metadata": {"description": "example metadata"}}
             """.trimIndent()
 
         certificateView = CertificateGenerationView(certificateCredentialVersion, false)
@@ -227,6 +238,7 @@ class CertificatesControllerTest {
                 transitional = true,
                 allowTransitionalParentToSign = true,
                 keyLength = 4711,
+                duration = 1234,
                 metadata = metadata,
             )
 
@@ -271,7 +283,7 @@ class CertificatesControllerTest {
         // language=json
         val requestBody =
             """
-            {"set_as_transitional": true, "allow_transitional_parent_to_sign": true, "key_length": 4096, "metadata": {"description": "example metadata"}}
+            {"set_as_transitional": true, "allow_transitional_parent_to_sign": true, "key_length": 4096, "duration": 365, "metadata": {"description": "example metadata"}}
             """.trimIndent()
 
         val mvcResult =
@@ -301,6 +313,11 @@ class CertificatesControllerTest {
                                     "Set the key length for the regenerated certificate. If not provided, the key length will be the same as the original certificate.",
                                 ).type(JsonFieldType.NUMBER)
                                 .optional(),
+                            fieldWithPath("duration")
+                                .description(
+                                    "Set the duration for the regenerated certificate. If not provided, the duration will be the same as the original certificate.",
+                                ).type(JsonFieldType.NUMBER)
+                                .optional(),
                             fieldWithPath("metadata")
                                 .description("Additional metadata of the credential.")
                                 .optional(),
@@ -314,7 +331,13 @@ class CertificatesControllerTest {
                 ).andReturn()
 
         val expectedRequestBody =
-            CertificateRegenerateRequest(transitional = true, allowTransitionalParentToSign = true, keyLength = 4096, metadata = metadata)
+            CertificateRegenerateRequest(
+                transitional = true,
+                allowTransitionalParentToSign = true,
+                keyLength = 4096,
+                duration = 365,
+                metadata = metadata,
+            )
 
         assertThat(spyCertificatesHandler.handleregenerateCalledwithRequest).isEqualTo(expectedRequestBody)
         assertThat(spyCertificatesHandler.handleregenerateCalledwithCredentialuuid).isEqualTo(certificateId.toString())
