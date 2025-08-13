@@ -68,6 +68,9 @@ class DefaultCertificatesHandler(
         if (request.keyLength != null) {
             (generateRequest as CertificateGenerateRequest).setKeyLength(request.keyLength!!)
         }
+        if (request.duration != null) {
+            (generateRequest as CertificateGenerateRequest).setDuration(request.duration!!)
+        }
 
         val credentialValue =
             credentialGenerator
