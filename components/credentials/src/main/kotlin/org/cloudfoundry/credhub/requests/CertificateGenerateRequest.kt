@@ -55,4 +55,9 @@ class CertificateGenerateRequest : BaseCredentialGenerateRequest() {
         this.certificateGenerationParameters?.keyLength = keyLength
         this.certificateGenerationParameters?.validate()
     }
+
+    fun setDuration(duration: Int) {
+        this.certificateGenerationParameters?.duration = duration
+        this.certificateGenerationParameters?.validate()
+    }
 }
