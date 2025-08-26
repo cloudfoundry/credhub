@@ -38,7 +38,7 @@ operation::postCertificatesUuidRegenerateReturnsCertificate[]
 Note:
 
 * If a certificate credential only has one version and it is marked as transitional the credential cannot be regenerated using this endpoint.
-* If the duration used to generate the currently active version of the certificate, or the duration provided via the respective field, is lower than the minimum duration, the regenerated certificate will use the minimum duration instead and the response will contain the `duration_overridden` flag set to true. The duration value used to regenerate the certificate is included in the `duration_used` field of the response.
+* If the duration is overridden by the minimum duration, the response will contain the `duration_overridden` flag set to true. It will also include the actual duration used to regenerate the certificate in the `duration_used` field.
 
 ---
 
