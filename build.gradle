@@ -12,7 +12,7 @@ buildscript {
         passayVersion = '1.6.6'
         springBootVersion = '3.5.4'
         mariadbJdbcVersion = '2.7.12' // Bumping to v3 breaks some pipeline jobs, so pinning to v2 for now. v2 (current version) is stable and will be supported until about September 2025 (https://mariadb.com/kb/en/about-mariadb-connector-j/).
-        grpcVersion = '1.74.0'
+        grpcVersion = '1.75.0'
         // We need to stay with protobuf-java & protoc 3.25.x as the latest
         // grpc still depends on protobuf-java & protoc 3.25.x. Once we
         // bump grpc to version that depnds on protobuf-java & protoc to 4.x.x,
