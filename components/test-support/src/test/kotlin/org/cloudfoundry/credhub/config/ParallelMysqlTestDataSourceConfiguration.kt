@@ -19,7 +19,7 @@ class ParallelMysqlTestDataSourceConfiguration {
         val tempDataSource =
             DataSourceBuilder
                 .create()
-                .url("jdbc:mariadb://localhost:3306?user=root")
+                .url("jdbc:aws-wrapper:mariadb://localhost:3306?user=root")
                 .build()
 
         val jdbcTemplate = JdbcTemplate(tempDataSource)
@@ -48,7 +48,7 @@ class ParallelMysqlTestDataSourceConfiguration {
         val dataSource =
             DataSourceBuilder
                 .create()
-                .url("jdbc:mariadb://localhost:3306/credhub_test_$workerId?user=root")
+                .url("jdbc:aws-wrapper:mariadb://localhost:3306/credhub_test_$workerId?user=root")
                 .build()
 
         return dataSource
