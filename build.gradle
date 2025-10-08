@@ -5,7 +5,7 @@ buildscript {
         asciiDoctorConvertPluginVersion = '4.0.5'
         bcpkixFipsVersion = '2.1.10'
         bcFipsVersion = '2.1.2'
-        flywayVersion = '11.13.2'
+        flywayVersion = '11.13.3'
         guavaVersion = '33.5.0-jre'
         kotlinVersion = '2.2.20'
         ktlintVersion = '1.5.0'
