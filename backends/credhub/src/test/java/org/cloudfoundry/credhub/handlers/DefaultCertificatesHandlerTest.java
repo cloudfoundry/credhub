@@ -970,6 +970,7 @@ public class DefaultCertificatesHandlerTest {
                       CertificateGenerateRequest req = (CertificateGenerateRequest) args[2];
                       CertificateGenerationParameters params = (CertificateGenerationParameters) req.getGenerationParameters();
                       assert params != null;
+                      assertEquals(4567, params.getDuration().intValue());
                       return credentialVersion;
                     }
             );
