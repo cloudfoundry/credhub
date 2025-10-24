@@ -69,8 +69,5 @@ subprojects {
 
 // Override spring boot's kotllin version dependency
 ext['kotlin.version'] = '${kotlinVersion}'
-// pin spring-data to its last working version due to a regression in the latest version provided by spring-boot, see: https://github.com/spring-projects/spring-data-jpa/issues/4015
-// the issue has been fixed, but the fix has not been released alongside with spring-boot yet; when it has, this pinning can be removed
-ext['spring-data-bom.version'] = '2025.0.3'
 
 assert JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_21)
