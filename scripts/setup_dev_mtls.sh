@@ -18,9 +18,10 @@ clean() {
 
 setup_tls_key_store() {
     cat > server.cnf <<EOF
-[v3_ca]
+[v3_cert]
 subjectKeyIdentifier=hash
 subjectAltName = @alt_names
+extendedKeyUsage = serverAuth
 
 [alt_names]
 DNS.1 = localhost
@@ -35,7 +36,7 @@ EOF
 
     echo "Generate server certificate signed by our CA"
     openssl x509 -req -in server.csr -sha384 -CA server_ca_cert.pem -CAkey server_ca_private.pem \
-        -CAcreateserial -out server.pem -extensions v3_ca -extfile server.cnf
+        -CAcreateserial -out server.pem -extensions v3_cert -extfile server.cnf
 
     echo "Create a .p12 file that contains both server cert and private key"
     openssl pkcs12 -export -in server.pem -inkey server_key.pem \
@@ -52,6 +53,11 @@ EOF
 
 generate_server_ca() {
     echo "Generating root CA for the server certificates into server_ca_cert.pem and server_ca_private.pem"
+  cat > server_ca.cnf <<EOF
+[v3_cert]
+extendedKeyUsage = serverAuth
+basicConstraints = critical,CA:TRUE
+EOF
     openssl req \
       -x509 \
       -newkey rsa:2048 \
@@ -60,6 +66,8 @@ generate_server_ca() {
       -nodes \
       -subj "/CN=credhub_server_ca" \
       -keyout server_ca_private.pem \
+      -extensions v3_cert \
+      -config server_ca.cnf \
       -out server_ca_cert.pem
 }
 
