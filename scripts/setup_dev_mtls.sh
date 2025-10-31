@@ -55,8 +55,11 @@ generate_server_ca() {
     echo "Generating root CA for the server certificates into server_ca_cert.pem and server_ca_private.pem"
   cat > server_ca.cnf <<EOF
 [v3_cert]
-extendedKeyUsage = serverAuth
+subjectKeyIdentifier=hash
+authorityKeyIdentifier=keyid:always,issuer
 basicConstraints = critical,CA:TRUE
+keyUsage = critical, digitalSignature, cRLSign, keyCertSign
+extendedKeyUsage = serverAuth
 EOF
     openssl req \
       -x509 \
