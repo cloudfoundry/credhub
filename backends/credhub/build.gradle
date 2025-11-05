@@ -1,8 +1,20 @@
 buildscript {
     repositories {
-        mavenCentral()
-        maven { url("https://repo.spring.io/plugins-release") }
-        maven { url("https://plugins.gradle.org/m2/") }
+        def artifactRepoUrl = System.getenv("ARTIFACTORY_URL")
+        if (artifactRepoUrl != null) {
+            maven {
+                url artifactRepoUrl
+                credentials {
+                    username = System.getenv("ARTIFACTORY_USER")
+                    password = System.getenv("ARTIFACTORY_PASS")
+                }
+            }
+        }
+        else {
+            mavenCentral()
+            maven { url("https://repo.spring.io/plugins-release") }
+            maven { url("https://plugins.gradle.org/m2/") }
+        }
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:$springBootVersion")
@@ -25,8 +37,20 @@ apply from: "${rootDir.toPath()}/pmd-config.gradle"
 apply plugin: "com.google.protobuf"
 
 repositories {
-    mavenCentral()
-    maven { url("https://plugins.gradle.org/m2/") }
+    def artifactRepoUrl = System.getenv("ARTIFACTORY_URL")
+    if (artifactRepoUrl != null) {
+        maven {
+            url artifactRepoUrl
+            credentials {
+                username = System.getenv("ARTIFACTORY_USER")
+                password = System.getenv("ARTIFACTORY_PASS")
+            }
+        }
+    }
+    else {
+        mavenCentral()
+        maven { url("https://plugins.gradle.org/m2/") }
+    }
 }
 
 configurations {

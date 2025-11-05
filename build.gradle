@@ -23,9 +23,21 @@ buildscript {
         protoCVersion = '3.25.8'
     }
     repositories {
-        mavenCentral()
-        maven { url("https://repo.spring.io/plugins-release") }
-        maven { url("https://plugins.gradle.org/m2/") }
+        def artifactRepoUrl = System.getenv("ARTIFACTORY_URL")
+        if (artifactRepoUrl != null) {
+            maven {
+                url artifactRepoUrl
+                credentials {
+                    username = System.getenv("ARTIFACTORY_USER")
+                    password = System.getenv("ARTIFACTORY_PASS")
+                }
+            }
+        }
+        else {
+            mavenCentral()
+            maven { url("https://repo.spring.io/plugins-release") }
+            maven { url("https://plugins.gradle.org/m2/") }
+        }
     }
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}")
