@@ -32,22 +32,6 @@ apply from: "${rootDir.toPath()}/ktlint.gradle"
 apply from: "${rootDir.toPath()}/checkstyle-config.gradle"
 apply from: "${rootDir.toPath()}/pmd-config.gradle"
 
-repositories {
-    def artifactRepoUrl = System.getenv("ARTIFACTORY_URL")
-    if (artifactRepoUrl != null) {
-        maven {
-            url artifactRepoUrl
-            credentials {
-                username = System.getenv("ARTIFACTORY_USER")
-                password = System.getenv("ARTIFACTORY_PASS")
-            }
-        }
-    }
-    else {
-        mavenCentral()
-    }
-}
-
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation('org.springframework.boot:spring-boot-starter-validation')
