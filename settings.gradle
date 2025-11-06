@@ -16,3 +16,22 @@ include "components:permissions"
 include "components:string-utilities"
 include "components:test-support"
 include "components:time-support"
+
+dependencyResolutionManagement {
+    repositories {
+        def artifactRepoUrl = System.getenv("ARTIFACTORY_URL")
+        if (artifactRepoUrl != null) {
+            maven {
+                url artifactRepoUrl
+                credentials {
+                    username = System.getenv("ARTIFACTORY_USER")
+                    password = System.getenv("ARTIFACTORY_PASS")
+                }
+            }
+        }
+        else {
+            mavenCentral()
+            gradlePluginPortal()
+        }
+    }
+}
