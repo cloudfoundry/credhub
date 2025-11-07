@@ -32,12 +32,11 @@ import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.
 import org.cloudfoundry.credhub.requests.GenerationParameters
 import org.cloudfoundry.credhub.utils.CertificateReader
 import org.springframework.util.StringUtils
-import java.util.Arrays
 import java.util.Objects
 import javax.security.auth.x500.X500Principal
 
 class CertificateGenerationParameters : GenerationParameters {
-    val validKeyLengths = Arrays.asList(2048, 3072, 4096)
+    val validKeyLengths = listOf(2048, 3072, 4096)
     var keyLength: Int
     var duration: Int
     val isSelfSigned: Boolean
@@ -114,7 +113,8 @@ class CertificateGenerationParameters : GenerationParameters {
 
     private fun buildKeyUsage(keyUsageList: CertificateGenerationRequestParameters): KeyUsage? {
         if (keyUsageList.keyUsage == null) {
-            return null
+            keyUsageList.keyUsage =
+                if (keyUsageList.isCa) arrayOf(KEY_CERT_SIGN, CRL_SIGN) else arrayOf(KEY_ENCIPHERMENT, DIGITAL_SIGNATURE)
         }
         var bitmask = 0
         for (keyUsage in keyUsageList.keyUsage!!) {
