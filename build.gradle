@@ -42,7 +42,7 @@ buildscript {
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}")
         classpath("org.jetbrains.kotlin:kotlin-allopen:${kotlinVersion}")
-        classpath("org.owasp:dependency-check-gradle:12.1.8")
+        classpath("org.owasp:dependency-check-gradle:12.1.9")
         classpath("org.bouncycastle:bc-fips:${bcFipsVersion}")
         classpath("org.bouncycastle:bcpkix-fips:${bcpkixFipsVersion}")
         classpath("org.springframework.boot:spring-boot-gradle-plugin:$springBootVersion")
