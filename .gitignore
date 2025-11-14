@@ -178,6 +178,7 @@ gradle-app.setting
 #ignore certificate configuration files
 applications/credhub-api/src/test/resources/client.cnf
 applications/credhub-api/src/test/resources/server.cnf
+applications/credhub-api/src/test/resources/server_ca.cnf
 
 # Ignore any key stores
 *.jks
