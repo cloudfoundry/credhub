@@ -49,8 +49,8 @@ spring:
           preferred_instant_jdbc_type: TIMESTAMP
   datasource:
     hikari:
-      maximum-pool-size: 4
-      idle-timeout: 500
+      maximum-pool-size: 6
+      idle-timeout: 10000
       minimum-idle: 2
   flyway:
     cleanDisabled: false
