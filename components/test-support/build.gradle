@@ -60,3 +60,7 @@ sourceSets {
         }
     }
 }
+
+test {
+    failOnNoDiscoveredTests = false
+}
