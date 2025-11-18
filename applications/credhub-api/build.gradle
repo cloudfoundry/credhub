@@ -15,8 +15,8 @@ buildscript {
         }
         else {
             mavenCentral()
-            maven { url("https://repo.spring.io/plugins-release") }
-            maven { url("https://plugins.gradle.org/m2/") }
+            maven { url = "https://repo.spring.io/plugins-release" }
+            maven { url = "https://plugins.gradle.org/m2/" }
         }
     }
     dependencies {
@@ -113,7 +113,7 @@ bootJar {
 test {
     testLogging {
         events "started", "passed", "failed", "skipped"
-        exceptionFormat "full"
+        exceptionFormat = "full"
     }
 
     systemProperties = System.properties

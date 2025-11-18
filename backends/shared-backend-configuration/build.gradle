@@ -63,7 +63,7 @@ sourceSets {
 test {
     testLogging {
         events "started", "passed", "failed", "skipped"
-        exceptionFormat "full"
+        exceptionFormat = "full"
     }
 
     systemProperties = System.properties
