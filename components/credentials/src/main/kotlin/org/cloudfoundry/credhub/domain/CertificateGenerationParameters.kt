@@ -112,12 +112,14 @@ class CertificateGenerationParameters : GenerationParameters {
         Objects.hash(keyLength, duration, isSelfSigned, caName, isCa, x500Principal, alternativeNames, extendedKeyUsage, keyUsage)
 
     private fun buildKeyUsage(keyUsageList: CertificateGenerationRequestParameters): KeyUsage? {
-        if (keyUsageList.keyUsage == null) {
-            keyUsageList.keyUsage =
+        val keyUsageArray =
+            if (keyUsageList.keyUsage == null) {
                 if (keyUsageList.isCa) arrayOf(KEY_CERT_SIGN, CRL_SIGN) else arrayOf(KEY_ENCIPHERMENT, DIGITAL_SIGNATURE)
-        }
+            } else {
+                keyUsageList.keyUsage!!
+            }
         var bitmask = 0
-        for (keyUsage in keyUsageList.keyUsage!!) {
+        for (keyUsage in keyUsageArray) {
             when (keyUsage) {
                 DIGITAL_SIGNATURE -> bitmask = bitmask or KeyUsage.digitalSignature
                 NON_REPUDIATION -> bitmask = bitmask or KeyUsage.nonRepudiation

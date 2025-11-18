@@ -700,20 +700,29 @@ class RemoteCredentialsHandler(
     }
 
     private fun getKeyUsageFromRequest(jsonNode: JsonNode): Array<String> {
-        val encodedBase64 = jsonNode.get("encoded").asText()
-        val encodedBytes = Base64.getDecoder().decode(encodedBase64)
-        val asn1 = ASN1Primitive.fromByteArray(encodedBytes)
-        val keyUsage = KeyUsage.getInstance(asn1)
-        val usages = mutableListOf<String>()
-        if (keyUsage.hasUsages(KeyUsage.digitalSignature)) usages += DIGITAL_SIGNATURE
-        if (keyUsage.hasUsages(KeyUsage.nonRepudiation)) usages += NON_REPUDIATION
-        if (keyUsage.hasUsages(KeyUsage.keyEncipherment)) usages += KEY_ENCIPHERMENT
-        if (keyUsage.hasUsages(KeyUsage.dataEncipherment)) usages += DATA_ENCIPHERMENT
-        if (keyUsage.hasUsages(KeyUsage.keyAgreement)) usages += KEY_AGREEMENT
-        if (keyUsage.hasUsages(KeyUsage.keyCertSign)) usages += KEY_CERT_SIGN
-        if (keyUsage.hasUsages(KeyUsage.cRLSign)) usages += CRL_SIGN
-        if (keyUsage.hasUsages(KeyUsage.encipherOnly)) usages += ENCIPHER_ONLY
-        if (keyUsage.hasUsages(KeyUsage.decipherOnly)) usages += DECIPHER_ONLY
-        return usages.toTypedArray()
+        try {
+            val encodedNode = jsonNode.get("encoded")
+            if (encodedNode == null || encodedNode.isNull) {
+                // "encoded" field missing or null
+                return emptyArray()
+            }
+            val encodedBase64 = encodedNode.asText()
+            val encodedBytes = Base64.getDecoder().decode(encodedBase64)
+            val asn1 = ASN1Primitive.fromByteArray(encodedBytes)
+            val keyUsage = KeyUsage.getInstance(asn1)
+            val usages = mutableListOf<String>()
+            if (keyUsage.hasUsages(KeyUsage.digitalSignature)) usages += DIGITAL_SIGNATURE
+            if (keyUsage.hasUsages(KeyUsage.nonRepudiation)) usages += NON_REPUDIATION
+            if (keyUsage.hasUsages(KeyUsage.keyEncipherment)) usages += KEY_ENCIPHERMENT
+            if (keyUsage.hasUsages(KeyUsage.dataEncipherment)) usages += DATA_ENCIPHERMENT
+            if (keyUsage.hasUsages(KeyUsage.keyAgreement)) usages += KEY_AGREEMENT
+            if (keyUsage.hasUsages(KeyUsage.keyCertSign)) usages += KEY_CERT_SIGN
+            if (keyUsage.hasUsages(KeyUsage.cRLSign)) usages += CRL_SIGN
+            if (keyUsage.hasUsages(KeyUsage.encipherOnly)) usages += ENCIPHER_ONLY
+            if (keyUsage.hasUsages(KeyUsage.decipherOnly)) usages += DECIPHER_ONLY
+            return usages.toTypedArray()
+        } catch (e: Exception) {
+            return emptyArray()
+        }
     }
 }
