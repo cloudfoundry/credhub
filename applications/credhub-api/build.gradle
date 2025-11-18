@@ -121,3 +121,10 @@ test {
     systemProperties["java.security.egd"] = System.getProperty("java.security.egd", "file:/dev/urandom")
     outputs.upToDateWhen { false }
 }
+
+// Configure contractTest task created by Spring Cloud Contract plugin
+tasks.withType(Test).configureEach {
+    if (name == 'contractTest') {
+        failOnNoDiscoveredTests = false
+    }
+}
