@@ -2,6 +2,11 @@ spring:
   datasource:
     username: root
     password:
-    url: jdbc:mariadb://localhost:3306/credhub_dev
+    url: jdbc:aws-wrapper:mariadb://localhost:3306/credhub_dev
   flyway:
     locations: classpath:/db/migration/common,classpath:/db/migration/mysql
+  jpa:
+    properties:
+      hibernate:
+        # Needed for hibernate to work with aws-wrapper driver.
+        dialect: org.hibernate.dialect.MariaDBDialect
