@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.protobuf.ByteString
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
+import org.bouncycastle.asn1.ASN1Primitive
+import org.bouncycastle.asn1.x509.KeyUsage
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.auth.UserContextHolder
 import org.cloudfoundry.credhub.constants.CredentialWriteMode.CONVERGE
@@ -29,6 +31,15 @@ import org.cloudfoundry.credhub.remote.grpc.SetResponse
 import org.cloudfoundry.credhub.requests.BaseCredentialGenerateRequest
 import org.cloudfoundry.credhub.requests.BaseCredentialSetRequest
 import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters
+import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.Companion.CRL_SIGN
+import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.Companion.DATA_ENCIPHERMENT
+import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.Companion.DECIPHER_ONLY
+import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.Companion.DIGITAL_SIGNATURE
+import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.Companion.ENCIPHER_ONLY
+import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.Companion.KEY_AGREEMENT
+import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.Companion.KEY_CERT_SIGN
+import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.Companion.KEY_ENCIPHERMENT
+import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.Companion.NON_REPUDIATION
 import org.cloudfoundry.credhub.requests.GenerationParameters
 import org.cloudfoundry.credhub.requests.RsaGenerationParameters
 import org.cloudfoundry.credhub.requests.SshGenerationParameters
@@ -39,6 +50,7 @@ import org.cloudfoundry.credhub.views.FindCredentialResult
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.time.Instant
+import java.util.Base64
 import java.util.UUID
 
 @Service
@@ -614,7 +626,13 @@ class RemoteCredentialsHandler(
                     generationRequestParameters.isCa = jsonNode["is_ca"].booleanValue()
                 }
                 if (jsonNode.hasNonNull("key_usage")) {
-                    generationRequestParameters.keyUsage = arrayOf(jsonNode["key_usage"].textValue())
+                    val keyUsage =
+                        if (jsonNode["key_usage"].isObject) {
+                            getKeyUsageFromRequest(jsonNode["key_usage"])
+                        } else {
+                            arrayOf(jsonNode["key_usage"].textValue())
+                        }
+                    generationRequestParameters.keyUsage = keyUsage
                 }
                 if (jsonNode.hasNonNull("extended_key_usage")) {
                     generationRequestParameters.extendedKeyUsage = arrayOf(jsonNode["extended_key_usage"].textValue())
@@ -679,5 +697,32 @@ class RemoteCredentialsHandler(
             return EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
         }
         return RuntimeException("Request failed with status code: ${e.status.code}")
+    }
+
+    private fun getKeyUsageFromRequest(jsonNode: JsonNode): Array<String> {
+        try {
+            val encodedNode = jsonNode.get("encoded")
+            if (encodedNode == null || encodedNode.isNull) {
+                // "encoded" field missing or null
+                return emptyArray()
+            }
+            val encodedBase64 = encodedNode.asText()
+            val encodedBytes = Base64.getDecoder().decode(encodedBase64)
+            val asn1 = ASN1Primitive.fromByteArray(encodedBytes)
+            val keyUsage = KeyUsage.getInstance(asn1)
+            val usages = mutableListOf<String>()
+            if (keyUsage.hasUsages(KeyUsage.digitalSignature)) usages += DIGITAL_SIGNATURE
+            if (keyUsage.hasUsages(KeyUsage.nonRepudiation)) usages += NON_REPUDIATION
+            if (keyUsage.hasUsages(KeyUsage.keyEncipherment)) usages += KEY_ENCIPHERMENT
+            if (keyUsage.hasUsages(KeyUsage.dataEncipherment)) usages += DATA_ENCIPHERMENT
+            if (keyUsage.hasUsages(KeyUsage.keyAgreement)) usages += KEY_AGREEMENT
+            if (keyUsage.hasUsages(KeyUsage.keyCertSign)) usages += KEY_CERT_SIGN
+            if (keyUsage.hasUsages(KeyUsage.cRLSign)) usages += CRL_SIGN
+            if (keyUsage.hasUsages(KeyUsage.encipherOnly)) usages += ENCIPHER_ONLY
+            if (keyUsage.hasUsages(KeyUsage.decipherOnly)) usages += DECIPHER_ONLY
+            return usages.toTypedArray()
+        } catch (e: Exception) {
+            return emptyArray()
+        }
     }
 }
