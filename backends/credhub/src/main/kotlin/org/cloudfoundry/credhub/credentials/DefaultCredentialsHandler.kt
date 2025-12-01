@@ -42,6 +42,7 @@ class DefaultCredentialsHandler(
     private val credentialGenerator: UniversalCredentialGenerator,
     @Value("\${security.authorization.acls.enabled}") private val enforcePermissions: Boolean,
     @Value("\${certificates.concatenate_cas:false}") var concatenateCas: Boolean,
+    @Value("\${certificates.use_default_key_usages:false}") var useDefaultKeyUsages: Boolean,
 ) : CredentialsHandler {
     override fun findStartingWithPath(
         path: String,
@@ -68,7 +69,8 @@ class DefaultCredentialsHandler(
                 if (req.generationRequestParameters?.isCa!!) {
                     generateRequest.generationRequestParameters?.caName = req.name
                     generateRequest.generationRequestParameters?.isSelfSigned = true
-                    val certificateGenerationParameters = CertificateGenerationParameters(generateRequest.generationRequestParameters!!)
+                    val certificateGenerationParameters =
+                        CertificateGenerationParameters(generateRequest.generationRequestParameters!!, useDefaultKeyUsages)
                     generateRequest.setCertificateGenerationParameters(certificateGenerationParameters)
                 }
             } else {

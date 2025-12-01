@@ -52,8 +52,11 @@ class CertificateGenerationParameters : GenerationParameters {
 
     var allowTransitionalParentToSign: Boolean = false
 
+    val useDefaultKeyUsages: Boolean
+
     constructor(generationParameters: CertificateGenerationRequestParameters) : super() {
 
+        this.useDefaultKeyUsages = false
         this.keyUsage = buildKeyUsage(generationParameters)
         this.x500Principal = buildDn(generationParameters)
         this.alternativeNames = buildAlternativeNames(generationParameters)
@@ -67,6 +70,7 @@ class CertificateGenerationParameters : GenerationParameters {
 
     constructor(certificateReader: CertificateReader, caName: String?) : super() {
 
+        this.useDefaultKeyUsages = false
         this.keyUsage = certificateReader.keyUsage
         this.x500Principal = certificateReader.subjectName
         this.alternativeNames = certificateReader.alternativeNames
@@ -76,6 +80,20 @@ class CertificateGenerationParameters : GenerationParameters {
         this.duration = certificateReader.durationDays
         this.keyLength = certificateReader.keyLength
         this.isCa = certificateReader.isCa
+    }
+
+    constructor(generationParameters: CertificateGenerationRequestParameters, useDefaultKeyUsages: Boolean) : super() {
+
+        this.useDefaultKeyUsages = useDefaultKeyUsages
+        this.keyUsage = buildKeyUsage(generationParameters)
+        this.x500Principal = buildDn(generationParameters)
+        this.alternativeNames = buildAlternativeNames(generationParameters)
+        this.extendedKeyUsage = buildExtendedKeyUsage(generationParameters)
+        this.caName = if (generationParameters.caName != null) prependIfMissing(generationParameters.caName, "/") else null
+        this.isSelfSigned = generationParameters.isSelfSigned
+        this.duration = generationParameters.duration
+        this.keyLength = generationParameters.keyLength
+        this.isCa = generationParameters.isCa
     }
 
     override fun validate() {
@@ -113,13 +131,13 @@ class CertificateGenerationParameters : GenerationParameters {
 
     private fun buildKeyUsage(keyUsageList: CertificateGenerationRequestParameters): KeyUsage? {
         val keyUsageArray =
-            if (keyUsageList.keyUsage == null) {
-                if (keyUsageList.isCa) arrayOf(KEY_CERT_SIGN, CRL_SIGN) else arrayOf(KEY_ENCIPHERMENT, DIGITAL_SIGNATURE)
-            } else {
-                keyUsageList.keyUsage!!
+            when {
+                keyUsageList.keyUsage != null -> keyUsageList.keyUsage
+                keyUsageList.isCa && useDefaultKeyUsages -> arrayOf(KEY_CERT_SIGN, CRL_SIGN)
+                else -> return null
             }
         var bitmask = 0
-        for (keyUsage in keyUsageArray) {
+        for (keyUsage in keyUsageArray!!) {
             when (keyUsage) {
                 DIGITAL_SIGNATURE -> bitmask = bitmask or KeyUsage.digitalSignature
                 NON_REPUDIATION -> bitmask = bitmask or KeyUsage.nonRepudiation

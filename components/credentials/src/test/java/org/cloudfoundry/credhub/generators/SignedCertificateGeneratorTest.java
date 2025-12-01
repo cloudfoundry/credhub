@@ -42,13 +42,12 @@ import org.cloudfoundry.credhub.utils.CertificateReader;
 import org.cloudfoundry.credhub.utils.PrivateKeyReader;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.bouncycastle.asn1.x509.KeyUsage.cRLSign;
-import static org.bouncycastle.asn1.x509.KeyUsage.digitalSignature;
 import static org.bouncycastle.asn1.x509.KeyUsage.keyCertSign;
-import static org.bouncycastle.asn1.x509.KeyUsage.keyEncipherment;
 import static org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils.parseExtensionValue;
 import static org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.CODE_SIGNING;
 import static org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.DIGITAL_SIGNATURE;
@@ -87,7 +86,6 @@ public class SignedCertificateGeneratorTest {
   private Instant now;
   private Instant later;
   private byte[] expectedSubjectKeyIdentifier;
-  private final byte[] expectedKeyUsage = new KeyUsage(digitalSignature | keyEncipherment).getBytes();
   private final byte[] expectedKeyUsageCa = new KeyUsage(keyCertSign | cRLSign).getBytes();
   @Autowired
   private JcaContentSignerBuilder jcaContentSignerBuilder;
@@ -276,9 +274,7 @@ public class SignedCertificateGeneratorTest {
       .getSignedByIssuer(generatedCertificateKeyPair, certificateGenerationParameters,
         certificateAuthorityWithSubjectKeyId, issuerKey.getPrivate());
 
-    final byte[] generatedKeyUsage = generatedCertificate.getExtensionValue(Extension.keyUsage.getId());
-    assertThat(generatedKeyUsage, notNullValue());
-    assertThat(Arrays.copyOfRange(generatedKeyUsage, 5, generatedKeyUsage.length), equalTo(expectedKeyUsageCa));
+    assertThat(generatedCertificate.getExtensionValue(Extension.keyUsage.getId()), nullValue());
 
     certificateGenerationParameters = parametersContainsExtensions();
 
@@ -297,9 +293,7 @@ public class SignedCertificateGeneratorTest {
       .getSignedByIssuer(generatedCertificateKeyPair, certificateGenerationParameters,
         certificateAuthorityWithSubjectKeyId, issuerKey.getPrivate());
 
-    final byte[] generatedKeyUsage = generatedCertificate.getExtensionValue(Extension.keyUsage.getId());
-    assertThat(generatedKeyUsage, notNullValue());
-    assertThat(Arrays.copyOfRange(generatedKeyUsage, 5, generatedKeyUsage.length), equalTo(expectedKeyUsageCa));
+    assertThat(generatedCertificate.getExtensionValue(Extension.keyUsage.getId()), nullValue());
 
     certificateGenerationParameters = parametersContainsExtensions();
 
@@ -338,6 +332,15 @@ public class SignedCertificateGeneratorTest {
 
     return new CertificateGenerationParameters(parameters);
   }
+  private CertificateGenerationParameters defaultCertificateParametersWithKeyUsages() {
+
+    final CertificateGenerationRequestParameters parameters = new CertificateGenerationRequestParameters();
+    parameters.setDuration(expectedDurationInDays);
+    parameters.setCommonName(expectedCertificateCommonName);
+    parameters.setCa(true);
+
+    return new CertificateGenerationParameters(parameters, true);
+  }
 
   private CertificateGenerationParameters parametersContainsExtensions() {
 
@@ -350,4 +353,48 @@ public class SignedCertificateGeneratorTest {
 
     return new CertificateGenerationParameters(parameters);
   }
+  private CertificateGenerationParameters parametersContainsExtensionsWithKeyUsages() {
+
+    final CertificateGenerationRequestParameters parameters = new CertificateGenerationRequestParameters();
+    parameters.setDuration(expectedDurationInDays);
+    parameters.setCommonName(expectedCertificateCommonName);
+    parameters.setAlternativeNames(alternateNames);
+    parameters.setKeyUsage(keyUsage);
+    parameters.setExtendedKeyUsage(extendedKeyUsage);
+
+    return new CertificateGenerationParameters(parameters, true);
+  }
+
+  @Nested
+  public class KeyUsageTest {
+
+    private CertificateGenerationParameters certificateGenerationParametersWithKeyUsages;
+
+    @BeforeEach
+    public void setUp() {
+      certificateGenerationParametersWithKeyUsages = defaultCertificateParametersWithKeyUsages();
+    }
+
+    @Test
+    public void getSignedByIssuer_setsKeyUsage_ifEnvVarPresent() throws Exception {
+      X509Certificate generatedCertificate = subject
+              .getSignedByIssuer(generatedCertificateKeyPair, certificateGenerationParametersWithKeyUsages,
+                      certificateAuthorityWithSubjectKeyId, issuerKey.getPrivate());
+
+      final byte[] generatedKeyUsage = generatedCertificate.getExtensionValue(Extension.keyUsage.getId());
+      assertThat(generatedKeyUsage, notNullValue());
+      assertThat(Arrays.copyOfRange(generatedKeyUsage, 5, generatedKeyUsage.length), equalTo(expectedKeyUsageCa));
+
+      certificateGenerationParametersWithKeyUsages = parametersContainsExtensionsWithKeyUsages();
+
+      generatedCertificate = subject
+              .getSignedByIssuer(generatedCertificateKeyPair, certificateGenerationParametersWithKeyUsages,
+                      certificateAuthorityWithSubjectKeyId, issuerKey.getPrivate());
+      final byte[] actualKeyUsage = generatedCertificate.getExtensionValue(Extension.keyUsage.getId());
+
+      assertThat(Arrays.copyOfRange(actualKeyUsage, 5, actualKeyUsage.length),
+              equalTo(certificateGenerationParametersWithKeyUsages.getKeyUsage().getBytes()));
+    }
+  }
+
 }

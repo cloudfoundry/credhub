@@ -114,6 +114,7 @@ public class DefaultCredentialsHandlerTest {
       certificateAuthorityService,
       universalCredentialGenerator,
       true,
+      false,
       false);
 
     subjectWithoutAcls = new DefaultCredentialsHandler(
@@ -123,6 +124,7 @@ public class DefaultCredentialsHandlerTest {
       userContextHolder,
       certificateAuthorityService,
       universalCredentialGenerator,
+      false,
       false,
       false);
 
@@ -134,7 +136,8 @@ public class DefaultCredentialsHandlerTest {
       certificateAuthorityService,
       universalCredentialGenerator,
       true,
-      true);
+      true,
+      false);
 
     generationParameters = new StringGenerationParameters();
     UserContext userContext = mock(UserContext.class);
