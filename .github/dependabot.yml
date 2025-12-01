@@ -16,7 +16,11 @@ updates:
     update-types: [ "version-update:semver-major" ] # We need to stay with protobuf-java & protoc 3.25.x as the latest grpc still depends on protobuf-java & protoc 3.25.x https://github.com/grpc/grpc-java/issues/11015
   - dependency-name: "org.springframework.boot:*"
     update-types: [ "version-update:semver-major" ] # for now stay on the more stable v3, which will be supported until June 2026: https://spring.io/projects/spring-boot#support)
-
+  - dependency-name: "org.springframework.cloud:spring-cloud-contract-gradle-plugin"
+    # Needs to stay with version 4 as version 5 is incompatible with
+    # spring-framework 6. Wait till bumping spring-boot to version 4, which
+    # depends on spring-framework 7.
+    update-types: [ "version-update:semver-major" ]
 - package-ecosystem: "github-actions"
   directory: "/"
   schedule:
