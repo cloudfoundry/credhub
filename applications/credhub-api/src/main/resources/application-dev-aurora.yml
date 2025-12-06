@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    username: ${AURORA_DB_USERNAME:root}
+    password: ${AURORA_DB_PASSWORD:}
+    url: jdbc:aws-wrapper:mariadb://${AURORA_DB_HOST_PORT:localhost:3306}/credhub_dev
+
+    hikari:
+      # TODO: Cursor-generated. Review.
+      # Connection pool settings optimized for Aurora
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      leak-detection-threshold: 60000
+  flyway:
+    locations: classpath:/db/migration/common,classpath:/db/migration/mysql
+  jpa:
+    properties:
+      hibernate:
+        # Needed for hibernate to work with aws-wrapper driver
+        dialect: org.hibernate.dialect.MariaDBDialect

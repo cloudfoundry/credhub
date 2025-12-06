@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    # Override these with environment variables for testing:
+    # AURORA_TEST_DB_URL, AURORA_TEST_DB_USERNAME, AURORA_TEST_DB_PASSWORD
+    username: ${AURORA_TEST_DB_USERNAME:root}
+    password: ${AURORA_TEST_DB_PASSWORD:}
+    url: jdbc:aws-wrapper:mariadb://${AURORA_DB_HOST:localhost}:${AURORA_DB_PORT:3306}/credhub_test
+  flyway:
+    locations: classpath:/db/migration/common,classpath:/db/migration/mysql
+  jpa:
+    properties:
+      hibernate:
+        # Needed for hibernate to work with aws-wrapper driver
+        dialect: org.hibernate.dialect.MariaDBDialect
