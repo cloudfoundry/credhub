@@ -37,6 +37,7 @@ dependencies {
     implementation("org.postgresql:postgresql")
     implementation("com.h2database:h2")
     implementation("org.mariadb.jdbc:mariadb-java-client:${mariadbJdbcVersion}")
+    runtimeOnly("software.amazon.jdbc:aws-advanced-jdbc-wrapper:${awsAdvancedJdbcVersion}")
 
 
     // Other
