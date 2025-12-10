@@ -1,0 +1,5 @@
+language: java
+jdk:
+  - openjdk21
+script:
+  - ./gradlew clean build
