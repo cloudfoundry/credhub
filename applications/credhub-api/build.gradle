@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        springCloudContractVersion = '4.3.0'
+        springCloudContractVersion = '5.0.1'
     }
     repositories {
         def artifactRepoUrl = System.getenv("ARTIFACTORY_URL")
