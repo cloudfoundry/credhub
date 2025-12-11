@@ -515,8 +515,8 @@ class RemoteCredentialsHandler(
                 if (jsonNode.hasNonNull("exclude_lower")) {
                     generationParameters.excludeLower = jsonNode["exclude_lower"].booleanValue()
                 }
-                if (jsonNode.hasNonNull("exlude_upper")) {
-                    generationParameters.excludeUpper = jsonNode["exlude_upper"].booleanValue()
+                if (jsonNode.hasNonNull("exclude_upper")) {
+                    generationParameters.excludeUpper = jsonNode["exclude_upper"].booleanValue()
                 }
                 if (jsonNode.hasNonNull("exclude_number")) {
                     generationParameters.excludeNumber = jsonNode["exclude_number"].booleanValue()
@@ -543,8 +543,8 @@ class RemoteCredentialsHandler(
                 if (jsonNode.hasNonNull("exclude_lower")) {
                     generationParameters.excludeLower = jsonNode["exclude_lower"].booleanValue()
                 }
-                if (jsonNode.hasNonNull("exlude_upper")) {
-                    generationParameters.excludeUpper = jsonNode["exlude_upper"].booleanValue()
+                if (jsonNode.hasNonNull("exclude_upper")) {
+                    generationParameters.excludeUpper = jsonNode["exclude_upper"].booleanValue()
                 }
                 if (jsonNode.hasNonNull("exclude_number")) {
                     generationParameters.excludeNumber = jsonNode["exclude_number"].booleanValue()

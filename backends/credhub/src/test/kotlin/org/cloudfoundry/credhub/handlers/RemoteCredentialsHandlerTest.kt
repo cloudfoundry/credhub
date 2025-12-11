@@ -1356,6 +1356,52 @@ class RemoteCredentialsHandlerTest {
     }
 
     @Test
+    fun generateUser_whenParsingGenerationParameters_preservesAllFields() {
+        val type = "user"
+        val uuid = UUID.randomUUID().toString()
+        val userCredential = UserCredentialValue("test-user", "test-password", "salt")
+
+        // Create generation parameters with ALL fields set
+        val originalGenerationParameters = StringGenerationParameters()
+        originalGenerationParameters.length = 15
+        originalGenerationParameters.username = "test-username"
+        originalGenerationParameters.excludeLower = false
+        originalGenerationParameters.excludeUpper = true
+        originalGenerationParameters.excludeNumber = true
+        originalGenerationParameters.includeSpecial = false
+
+        // Serialize to ByteString (as remote backend would)
+        val generationParamsByteString = subject.createByteStringFromGenerationParameters(type, originalGenerationParameters)
+
+        // Create a GetResponse with these generation parameters (simulating remote backend response)
+        val getResponse =
+            GetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setType(type)
+                .setData(subject.createByteStringFromData(type, userCredential))
+                .setId(uuid)
+                .setVersionCreatedAt(versionCreatedAt)
+                .setGenerationParameters(generationParamsByteString)
+                .build()
+
+        `when`(client.getByNameRequest(CREDENTIAL_NAME, USER)).thenReturn(getResponse)
+
+        // Create a new request with matching parameters
+        val userGenerateRequest = UserGenerateRequest()
+        userGenerateRequest.setGenerationParameters(originalGenerationParameters)
+        userGenerateRequest.name = CREDENTIAL_NAME
+        userGenerateRequest.type = type
+
+        // This should NOT regenerate because parameters match
+        val generateResponse = subject.generateCredential(userGenerateRequest)
+
+        // Verify the credential was not regenerated (existing one returned)
+        assertThat(generateResponse.getUuid()).isEqualTo(uuid)
+        assertThat((generateResponse.value as UserCredentialValue).username).isEqualTo("test-user")
+    }
+
+    @Test
     fun generatePassword_whenExistingPasswordGenerationParametersDontMatch_generateNewCredential() {
         val type = "password"
         val uuid = UUID.randomUUID().toString()
@@ -1528,6 +1574,52 @@ class RemoteCredentialsHandlerTest {
         val actualValue = (generateResponse.value as StringCredentialValue).stringCredential.toString()
 
         assertThat(actualValue).isEqualTo(originalPassword.stringCredential.toString())
+    }
+
+    @Test
+    fun generatePassword_whenParsingGenerationParameters_preservesAllFields() {
+        val type = "password"
+        val uuid = UUID.randomUUID().toString()
+        val password = StringCredentialValue("test-password")
+
+        // Create generation parameters with ALL fields set
+        val originalGenerationParameters = StringGenerationParameters()
+        originalGenerationParameters.length = 20
+        originalGenerationParameters.username = "test-user"
+        originalGenerationParameters.excludeLower = false
+        originalGenerationParameters.excludeUpper = true
+        originalGenerationParameters.excludeNumber = true
+        originalGenerationParameters.includeSpecial = true
+
+        // Serialize to ByteString (as remote backend would)
+        val generationParamsByteString = subject.createByteStringFromGenerationParameters(type, originalGenerationParameters)
+
+        // Create a GetResponse with these generation parameters (simulating remote backend response)
+        val getResponse =
+            GetResponse
+                .newBuilder()
+                .setName(CREDENTIAL_NAME)
+                .setType(type)
+                .setData(subject.createByteStringFromData(type, password))
+                .setId(uuid)
+                .setVersionCreatedAt(versionCreatedAt)
+                .setGenerationParameters(generationParamsByteString)
+                .build()
+
+        `when`(client.getByNameRequest(CREDENTIAL_NAME, USER)).thenReturn(getResponse)
+
+        // Create a new request with matching parameters
+        val passwordGenerateRequest = PasswordGenerateRequest()
+        passwordGenerateRequest.generationParameters = originalGenerationParameters
+        passwordGenerateRequest.name = CREDENTIAL_NAME
+        passwordGenerateRequest.type = type
+
+        // This should NOT regenerate because parameters match
+        val generateResponse = subject.generateCredential(passwordGenerateRequest)
+
+        // Verify the credential was not regenerated (existing one returned)
+        assertThat(generateResponse.getUuid()).isEqualTo(uuid)
+        assertThat((generateResponse.value as StringCredentialValue).stringCredential).isEqualTo("test-password")
     }
 
     @Test
