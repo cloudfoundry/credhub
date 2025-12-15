@@ -18,6 +18,8 @@ import org.cloudfoundry.credhub.generate.UniversalCredentialGenerator
 import org.cloudfoundry.credhub.requests.BaseCredentialGenerateRequest
 import org.cloudfoundry.credhub.requests.BaseCredentialSetRequest
 import org.cloudfoundry.credhub.requests.CertificateGenerateRequest
+import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.Companion.CRL_SIGN
+import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.Companion.KEY_CERT_SIGN
 import org.cloudfoundry.credhub.requests.CertificateSetRequest
 import org.cloudfoundry.credhub.services.CertificateAuthorityService
 import org.cloudfoundry.credhub.services.CredentialService
@@ -42,6 +44,7 @@ class DefaultCredentialsHandler(
     private val credentialGenerator: UniversalCredentialGenerator,
     @Value("\${security.authorization.acls.enabled}") private val enforcePermissions: Boolean,
     @Value("\${certificates.concatenate_cas:false}") var concatenateCas: Boolean,
+    @Value("\${certificates.enable_default_ca_key_usages:false}") var defaultCAKeyUsages: Boolean,
 ) : CredentialsHandler {
     override fun findStartingWithPath(
         path: String,
@@ -64,11 +67,17 @@ class DefaultCredentialsHandler(
         if (generateRequest.type == "certificate") {
             val req = generateRequest as CertificateGenerateRequest
             val caName = req.generationRequestParameters?.caName
+            val isCa = req.generationRequestParameters?.isCa ?: false
+            val noKeyUsages = req.generationRequestParameters?.keyUsage?.isEmpty() ?: true
+            if (isCa && noKeyUsages && defaultCAKeyUsages) {
+                req.generationRequestParameters?.keyUsage = arrayOf(KEY_CERT_SIGN, CRL_SIGN)
+            }
             if (caName == null) {
-                if (req.generationRequestParameters?.isCa!!) {
+                if (isCa) {
                     generateRequest.generationRequestParameters?.caName = req.name
                     generateRequest.generationRequestParameters?.isSelfSigned = true
-                    val certificateGenerationParameters = CertificateGenerationParameters(generateRequest.generationRequestParameters!!)
+                    val certificateGenerationParameters =
+                        CertificateGenerationParameters(generateRequest.generationRequestParameters!!)
                     generateRequest.setCertificateGenerationParameters(certificateGenerationParameters)
                 }
             } else {

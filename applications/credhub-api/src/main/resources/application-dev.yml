@@ -56,6 +56,7 @@ spring:
 
 certificates:
   concatenate_cas: true
+  enable_default_ca_key_usages: false
 
 backend:
   socket_file: "/tmp/socket/test.sock"

@@ -23,6 +23,7 @@ import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNamesBuilder;
+import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
@@ -41,12 +42,17 @@ import org.cloudfoundry.credhub.utils.CertificateReader;
 import org.cloudfoundry.credhub.utils.PrivateKeyReader;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import static org.bouncycastle.asn1.x509.KeyUsage.cRLSign;
+import static org.bouncycastle.asn1.x509.KeyUsage.keyCertSign;
 import static org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils.parseExtensionValue;
 import static org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.CODE_SIGNING;
+import static org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.CRL_SIGN;
 import static org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.DIGITAL_SIGNATURE;
+import static org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.KEY_CERT_SIGN;
 import static org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.KEY_ENCIPHERMENT;
 import static org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.SERVER_AUTH;
 import static org.cloudfoundry.credhub.utils.CertificateStringConstants.CERTSTRAP_GENERATED_CA_CERTIFICATE;
@@ -57,6 +63,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -68,6 +75,7 @@ public class SignedCertificateGeneratorTest {
   private final String caName = "CN=ca DN,O=credhub";
   private final String expectedCertificateCommonName = "my cert name";
   private final String[] alternateNames = {"alt1", "alt2"};
+  private final String[] caKeyUsage = {KEY_CERT_SIGN, CRL_SIGN};
   private final String[] keyUsage = {DIGITAL_SIGNATURE, KEY_ENCIPHERMENT};
   private final String[] extendedKeyUsage = {SERVER_AUTH, CODE_SIGNING};
   private SignedCertificateGenerator subject;
@@ -81,6 +89,7 @@ public class SignedCertificateGeneratorTest {
   private Instant now;
   private Instant later;
   private byte[] expectedSubjectKeyIdentifier;
+  private final byte[] expectedKeyUsageCa = new KeyUsage(keyCertSign | cRLSign).getBytes();
   @Autowired
   private JcaContentSignerBuilder jcaContentSignerBuilder;
 
@@ -326,6 +335,16 @@ public class SignedCertificateGeneratorTest {
 
     return new CertificateGenerationParameters(parameters);
   }
+  private CertificateGenerationParameters defaultCertificateParametersWithKeyUsages() {
+
+    final CertificateGenerationRequestParameters parameters = new CertificateGenerationRequestParameters();
+    parameters.setDuration(expectedDurationInDays);
+    parameters.setCommonName(expectedCertificateCommonName);
+    parameters.setKeyUsage(caKeyUsage);
+    parameters.setCa(true);
+
+    return new CertificateGenerationParameters(parameters);
+  }
 
   private CertificateGenerationParameters parametersContainsExtensions() {
 
@@ -338,4 +357,48 @@ public class SignedCertificateGeneratorTest {
 
     return new CertificateGenerationParameters(parameters);
   }
+  private CertificateGenerationParameters parametersContainsExtensionsWithKeyUsages() {
+
+    final CertificateGenerationRequestParameters parameters = new CertificateGenerationRequestParameters();
+    parameters.setDuration(expectedDurationInDays);
+    parameters.setCommonName(expectedCertificateCommonName);
+    parameters.setAlternativeNames(alternateNames);
+    parameters.setKeyUsage(keyUsage);
+    parameters.setExtendedKeyUsage(extendedKeyUsage);
+
+    return new CertificateGenerationParameters(parameters);
+  }
+
+  @Nested
+  public class KeyUsageTest {
+
+    private CertificateGenerationParameters certificateGenerationParametersWithKeyUsages;
+
+    @BeforeEach
+    public void setUp() {
+      certificateGenerationParametersWithKeyUsages = defaultCertificateParametersWithKeyUsages();
+    }
+
+    @Test
+    public void getSignedByIssuer_setsKeyUsage_ifEnvVarPresent() throws Exception {
+      X509Certificate generatedCertificate = subject
+              .getSignedByIssuer(generatedCertificateKeyPair, certificateGenerationParametersWithKeyUsages,
+                      certificateAuthorityWithSubjectKeyId, issuerKey.getPrivate());
+
+      final byte[] generatedKeyUsage = generatedCertificate.getExtensionValue(Extension.keyUsage.getId());
+      assertThat(generatedKeyUsage, notNullValue());
+      assertThat(Arrays.copyOfRange(generatedKeyUsage, 5, generatedKeyUsage.length), equalTo(expectedKeyUsageCa));
+
+      certificateGenerationParametersWithKeyUsages = parametersContainsExtensionsWithKeyUsages();
+
+      generatedCertificate = subject
+              .getSignedByIssuer(generatedCertificateKeyPair, certificateGenerationParametersWithKeyUsages,
+                      certificateAuthorityWithSubjectKeyId, issuerKey.getPrivate());
+      final byte[] actualKeyUsage = generatedCertificate.getExtensionValue(Extension.keyUsage.getId());
+
+      assertThat(Arrays.copyOfRange(actualKeyUsage, 5, actualKeyUsage.length),
+              equalTo(certificateGenerationParametersWithKeyUsages.getKeyUsage().getBytes()));
+    }
+  }
+
 }
