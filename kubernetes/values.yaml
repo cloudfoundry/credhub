@@ -6,6 +6,7 @@ encryption_password: changeit
 use_local_image: false
 load_balancer_ip: 35.196.203.226
 uaa_url: https://35.196.32.64:8443
+enable_default_ca_key_usages: false
 
 database:
  scheme: h2

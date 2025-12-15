@@ -56,6 +56,8 @@ import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Collections.EMPTY_SET;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions .fail;
+import static org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.CRL_SIGN;
+import static org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.KEY_CERT_SIGN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
@@ -81,6 +83,7 @@ public class DefaultCredentialsHandlerTest {
   private DefaultCredentialsHandler subjectWithAcls;
   private DefaultCredentialsHandler subjectWithoutAcls;
   private DefaultCredentialsHandler subjectWithAclsAndConcatenate;
+  private DefaultCredentialsHandler subjectWithDefaultCAKeyUsages;
   private DefaultCredentialService credentialService;
   private CEFAuditRecord auditRecord;
   private PermissionCheckingService permissionCheckingService;
@@ -114,6 +117,7 @@ public class DefaultCredentialsHandlerTest {
       certificateAuthorityService,
       universalCredentialGenerator,
       true,
+      false,
       false);
 
     subjectWithoutAcls = new DefaultCredentialsHandler(
@@ -123,6 +127,7 @@ public class DefaultCredentialsHandlerTest {
       userContextHolder,
       certificateAuthorityService,
       universalCredentialGenerator,
+      false,
       false,
       false);
 
@@ -134,6 +139,18 @@ public class DefaultCredentialsHandlerTest {
       certificateAuthorityService,
       universalCredentialGenerator,
       true,
+      true,
+      false);
+
+    subjectWithDefaultCAKeyUsages = new DefaultCredentialsHandler(
+      credentialService,
+      auditRecord,
+      permissionCheckingService,
+      userContextHolder,
+      certificateAuthorityService,
+      universalCredentialGenerator,
+      true,
+      false,
       true);
 
     generationParameters = new StringGenerationParameters();
@@ -1020,4 +1037,49 @@ public class DefaultCredentialsHandlerTest {
     verify(permissionCheckingService, times(0)).findAllPathsByActor(any());
   }
 
+  @Test
+  public void generateCredential_whenCertificateWithIsCaAndNoKeyUsagesAndDefaultCAKeyUsagesEnabled_setsDefaultKeyUsages() {
+    CertificateGenerationRequestParameters requestParameters = new CertificateGenerationRequestParameters();
+    requestParameters.setCa(true);
+    requestParameters.setKeyUsage(null);
+
+    CertificateGenerateRequest generateRequest = new CertificateGenerateRequest();
+    generateRequest.setRequestGenerationParameters(requestParameters);
+    generateRequest.setName(CREDENTIAL_NAME);
+    generateRequest.setType(CredentialType.CERTIFICATE.toString());
+
+    when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.WRITE))
+      .thenReturn(true);
+    when(credentialService.findActiveByName(CREDENTIAL_NAME))
+      .thenReturn(emptyList());
+
+    final CertificateCredentialValue generatedValue = new CertificateCredentialValue(
+      null,
+      TestConstants.TEST_CA,
+      TestConstants.TEST_PRIVATE_KEY,
+      null,
+      true,
+      false,
+      false,
+      false
+    );
+    final CertificateCredentialVersion credentialVersion = new CertificateCredentialVersion(CREDENTIAL_NAME);
+    credentialVersion.setCa(generatedValue.getCa());
+    credentialVersion.setEncryptor(encryptor);
+    credentialVersion.setCertificate(generatedValue.getCertificate());
+    credentialVersion.setPrivateKey(generatedValue.getPrivateKey());
+    credentialVersion.setUuid(UUID.randomUUID());
+    credentialVersion.getCredential().setUuid(UUID.randomUUID());
+    credentialVersion.setVersionCreatedAt(VERSION1_CREATED_AT);
+
+    when(universalCredentialGenerator.generate(any())).thenReturn(generatedValue);
+    when(credentialService.save(any(), any(), any())).thenReturn(credentialVersion);
+
+    subjectWithDefaultCAKeyUsages.generateCredential(generateRequest);
+
+    ArgumentCaptor<CertificateGenerateRequest> requestCaptor = ArgumentCaptor.forClass(CertificateGenerateRequest.class);
+    verify(universalCredentialGenerator).generate(requestCaptor.capture());
+    CertificateGenerationRequestParameters capturedParams = requestCaptor.getValue().getGenerationRequestParameters();
+    assertThat(capturedParams.getKeyUsage(), equalTo(new String[]{KEY_CERT_SIGN, CRL_SIGN}));
+  }
 }

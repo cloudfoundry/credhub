@@ -42,5 +42,6 @@ ENV SERVER_CA_PRIVATE_KEY_PATH="/etc/server_certs/server_ca_private.pem"
 ENV UAA_CA_PATH="/etc/trusted_cas/dev_uaa.pem"
 ENV UAA_URL="https://35.196.32.64:8443"
 ENV SUBJECT_ALTERNATIVE_NAMES="DNS:localhost, IP:127.0.0.1"
+ENV ENABLE_DEFAULT_CA_KEY_USAGES=false
 
 CMD /app/setup_trust_store.sh && /app/start_server.sh

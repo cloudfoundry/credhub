@@ -64,3 +64,4 @@ spring:
 
 certificates:
   concatenate_cas: true
+  enable_default_ca_key_usages: ${ENABLE_DEFAULT_CA_KEY_USAGES}
