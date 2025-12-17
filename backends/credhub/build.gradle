@@ -18,7 +18,7 @@ buildscript {
     }
     dependencies {
         classpath("org.asciidoctor.jvm.convert:org.asciidoctor.jvm.convert.gradle.plugin:${asciiDoctorConvertPluginVersion}")
-        classpath("com.google.protobuf:protobuf-gradle-plugin:0.9.5")
+        classpath("com.google.protobuf:protobuf-gradle-plugin:0.9.6")
     }
 }
 
