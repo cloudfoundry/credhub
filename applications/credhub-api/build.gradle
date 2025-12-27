@@ -63,6 +63,7 @@ dependencies {
     // DB
     implementation("org.postgresql:postgresql")
     implementation("org.mariadb.jdbc:mariadb-java-client:${mariadbJdbcVersion}")
+    runtimeOnly("software.amazon.jdbc:aws-advanced-jdbc-wrapper:${awsAdvancedJdbcVersion}")
     implementation("org.flywaydb:flyway-core:${flywayVersion}")
     implementation("org.flywaydb:flyway-mysql:${flywayVersion}")
     implementation("org.flywaydb:flyway-database-postgresql:${flywayVersion}")
