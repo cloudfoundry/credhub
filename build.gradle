@@ -10,7 +10,7 @@ buildscript {
         kotlinVersion = '2.2.21'
         ktlintVersion = '1.5.0'
         passayVersion = '1.6.6'
-        springBootVersion = '3.5.8'
+        springBootVersion = '3.5.9'
         mariadbJdbcVersion = '2.7.13' // Bumping to v3 breaks some pipeline jobs, so pinning to v2 for now. v2 (current version) is stable and will be supported until about September 2025 (https://mariadb.com/kb/en/about-mariadb-connector-j/).
         grpcVersion = '1.78.0'
         // We need to stay with protobuf-java & protoc 3.25.x as the latest
