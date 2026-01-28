@@ -36,7 +36,10 @@ import org.junit.runner.RunWith;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.bouncycastle.asn1.x509.KeyUsage.cRLSign;
+import static org.bouncycastle.asn1.x509.KeyUsage.digitalSignature;
 import static org.bouncycastle.asn1.x509.KeyUsage.keyCertSign;
+import static org.bouncycastle.asn1.x509.KeyUsage.keyEncipherment;
+import static org.cloudfoundry.credhub.helpers.RequestHelper.getCertificateId;
 import static org.cloudfoundry.credhub.utils.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -176,4 +179,124 @@ public class CertificateGenerateWitDefaultKeyUsagesTest {
     assertThat(generatedKeyUsageCert, nullValue());
   }
 
+  @Test
+  public void certificateRegeneration_shouldMaintainDefaultKeyUsages() throws Exception {
+    // Generate CA certificate with default key usages
+    final MockHttpServletRequestBuilder caPost = post("/api/v1/data")
+            .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{\n"
+                    + "  \"name\" : \"test-ca\",\n"
+                    + "  \"type\" : \"certificate\",\n"
+                    + "  \"parameters\" : {\n"
+                    + "    \"common_name\" : \"test-ca\",\n"
+                    + "    \"is_ca\" : true,\n"
+                    + "    \"duration\" : 365\n"
+                    + "  }\n"
+                    + "}");
+
+    final String caResult = mockMvc.perform(caPost)
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andReturn().getResponse().getContentAsString();
+
+    final JSONObject caResultJson = new JSONObject(caResult);
+    final String caCert = caResultJson.getJSONObject("value").getString("certificate");
+
+    final CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
+    final X509Certificate caCertPem = (X509Certificate) certificateFactory
+            .generateCertificate(new ByteArrayInputStream(caCert.getBytes(UTF_8)));
+
+    final byte[] caKeyUsageDer = caCertPem.getExtensionValue(Extension.keyUsage.getId());
+    assertThat(caKeyUsageDer, notNullValue());
+    assertThat(Arrays.copyOfRange(caKeyUsageDer, 5, caKeyUsageDer.length),
+               equalTo(new KeyUsage(keyCertSign | cRLSign).getBytes()));
+
+    final String certificateId = getCertificateId(mockMvc, "test-ca");
+
+    final MockHttpServletRequestBuilder regeneratePost = post("/api/v1/certificates/" + certificateId + "/regenerate")
+            .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{\n"
+                    + "  \"key_length\" : \"3072\"\n"
+                    + "}");
+
+    final String regenerateResult = mockMvc.perform(regeneratePost)
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andReturn().getResponse().getContentAsString();
+
+    final JSONObject regenerateResultJson = new JSONObject(regenerateResult);
+    final String regeneratedCaCert = regenerateResultJson.getJSONObject("value").getString("certificate");
+
+    // Verify regenerated CA still has the default key usages
+    final X509Certificate regeneratedCaCertPem = (X509Certificate) certificateFactory
+            .generateCertificate(new ByteArrayInputStream(regeneratedCaCert.getBytes(UTF_8)));
+    final byte[] regeneratedCaKeyUsageDer = regeneratedCaCertPem.getExtensionValue(Extension.keyUsage.getId());
+    assertThat(regeneratedCaKeyUsageDer, notNullValue());
+    assertThat(Arrays.copyOfRange(regeneratedCaKeyUsageDer, 5, regeneratedCaKeyUsageDer.length),
+               equalTo(new KeyUsage(keyCertSign | cRLSign).getBytes()));
+  }
+
+  @Test
+  public void certificateRegeneration_shouldRegenerateCaWithExistingKeyUsages() throws Exception {
+    final MockHttpServletRequestBuilder caPost = post("/api/v1/data")
+            .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{\n"
+                    + "  \"name\" : \"test-ca-with-key-usage\",\n"
+                    + "  \"type\" : \"certificate\",\n"
+                    + "  \"parameters\" : {\n"
+                    + "    \"common_name\" : \"test-ca-with-key-usage\",\n"
+                    + "    \"is_ca\" : true,\n"
+                    + "    \"duration\" : 365,\n"
+                    + "    \"key_usage\" : [\"digital_signature\", \"key_encipherment\"]\n"
+                    + "  }\n"
+                    + "}");
+
+    final String caResult = mockMvc.perform(caPost)
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andReturn().getResponse().getContentAsString();
+
+    final JSONObject caResultJson = new JSONObject(caResult);
+    final String caCert = caResultJson.getJSONObject("value").getString("certificate");
+
+    final CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
+    final X509Certificate caCertPem = (X509Certificate) certificateFactory
+            .generateCertificate(new ByteArrayInputStream(caCert.getBytes(UTF_8)));
+
+    final byte[] caKeyUsageDer = caCertPem.getExtensionValue(Extension.keyUsage.getId());
+    assertThat(caKeyUsageDer, notNullValue());
+    assertThat(Arrays.copyOfRange(caKeyUsageDer, 5, caKeyUsageDer.length),
+               equalTo(new KeyUsage(digitalSignature | keyEncipherment).getBytes()));
+
+    final String certificateId = getCertificateId(mockMvc, "test-ca-with-key-usage");
+
+    final MockHttpServletRequestBuilder regeneratePost = post("/api/v1/certificates/" + certificateId + "/regenerate")
+            .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{\n"
+                    + "  \"key_length\" : \"3072\"\n"
+                    + "}");
+
+    final String regenerateResult = mockMvc.perform(regeneratePost)
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andReturn().getResponse().getContentAsString();
+
+    final JSONObject regenerateResultJson = new JSONObject(regenerateResult);
+    final String regeneratedCaCert = regenerateResultJson.getJSONObject("value").getString("certificate");
+
+    final X509Certificate regeneratedCaCertPem = (X509Certificate) certificateFactory
+            .generateCertificate(new ByteArrayInputStream(regeneratedCaCert.getBytes(UTF_8)));
+    final byte[] regeneratedCaKeyUsageDer = regeneratedCaCertPem.getExtensionValue(Extension.keyUsage.getId());
+    assertThat(regeneratedCaKeyUsageDer, notNullValue());
+    assertThat(Arrays.copyOfRange(regeneratedCaKeyUsageDer, 5, regeneratedCaKeyUsageDer.length),
+               equalTo(new KeyUsage(digitalSignature | keyEncipherment).getBytes()));
+  }
 }
