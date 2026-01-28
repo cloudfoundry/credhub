@@ -12,11 +12,21 @@ import org.cloudfoundry.credhub.service.regeneratables.RsaCredentialRegeneratabl
 import org.cloudfoundry.credhub.service.regeneratables.SshCredentialRegeneratable
 import org.cloudfoundry.credhub.service.regeneratables.UserCredentialRegeneratable
 import org.springframework.stereotype.Component
-import java.util.function.Supplier
 
 @Component
-class GenerationRequestGenerator {
-    private val regeneratableTypeProducers: MutableMap<String, Supplier<Regeneratable>>
+class GenerationRequestGenerator(
+    private val certificateCredentialRegeneratable: CertificateCredentialRegeneratable,
+) {
+    private val regeneratableTypeProducers: MutableMap<String, () -> Regeneratable>
+
+    init {
+        regeneratableTypeProducers = HashMap()
+        regeneratableTypeProducers["password"] = { PasswordCredentialRegeneratable() }
+        regeneratableTypeProducers["user"] = { UserCredentialRegeneratable() }
+        regeneratableTypeProducers["ssh"] = { SshCredentialRegeneratable() }
+        regeneratableTypeProducers["rsa"] = { RsaCredentialRegeneratable() }
+        regeneratableTypeProducers["certificate"] = { certificateCredentialRegeneratable } // Use injected instance
+    }
 
     fun createGenerateRequest(credentialVersion: CredentialVersion?): BaseCredentialGenerateRequest {
         if (credentialVersion == null) {
@@ -24,17 +34,8 @@ class GenerationRequestGenerator {
         }
         val regeneratable =
             regeneratableTypeProducers
-                .getOrDefault(credentialVersion.getCredentialType(), Supplier<Regeneratable> { NotRegeneratable() })
-                .get()
+                .getOrDefault(credentialVersion.getCredentialType()) { NotRegeneratable() }
+                .invoke()
         return regeneratable.createGenerateRequest(credentialVersion)
-    }
-
-    init {
-        regeneratableTypeProducers = HashMap()
-        regeneratableTypeProducers["password"] = Supplier<Regeneratable> { PasswordCredentialRegeneratable() }
-        regeneratableTypeProducers["user"] = Supplier<Regeneratable> { UserCredentialRegeneratable() }
-        regeneratableTypeProducers["ssh"] = Supplier<Regeneratable> { SshCredentialRegeneratable() }
-        regeneratableTypeProducers["rsa"] = Supplier<Regeneratable> { RsaCredentialRegeneratable() }
-        regeneratableTypeProducers["certificate"] = Supplier<Regeneratable> { CertificateCredentialRegeneratable() }
     }
 }
