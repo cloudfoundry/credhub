@@ -18,6 +18,8 @@ import org.cloudfoundry.credhub.exceptions.PermissionException
 import org.cloudfoundry.credhub.generate.GenerationRequestGenerator
 import org.cloudfoundry.credhub.generate.UniversalCredentialGenerator
 import org.cloudfoundry.credhub.requests.CertificateGenerateRequest
+import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.Companion.CRL_SIGN
+import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.Companion.KEY_CERT_SIGN
 import org.cloudfoundry.credhub.requests.CertificateRegenerateRequest
 import org.cloudfoundry.credhub.requests.CreateVersionRequest
 import org.cloudfoundry.credhub.requests.UpdateTransitionalVersionRequest
@@ -46,6 +48,7 @@ class DefaultCertificatesHandler(
     private val userContextHolder: UserContextHolder,
     @Value("\${security.authorization.acls.enabled}") private val enforcePermissions: Boolean,
     @Value("\${certificates.concatenate_cas:false}") var concatenateCas: Boolean,
+    @Value("\${certificates.enable_default_ca_key_usages:false}") var defaultCAKeyUsages: Boolean,
 ) : CertificatesHandler {
     override fun handleRegenerate(
         credentialUuid: String,
@@ -70,6 +73,14 @@ class DefaultCertificatesHandler(
         }
         if (request.duration != null) {
             (generateRequest as CertificateGenerateRequest).setDuration(request.duration!!)
+        }
+        if (defaultCAKeyUsages && existingCredentialVersion.isCertificateAuthority) {
+            (generateRequest as CertificateGenerateRequest).setKeyUsage(
+                arrayOf(
+                    KEY_CERT_SIGN,
+                    CRL_SIGN,
+                ),
+            )
         }
 
         val credentialValue =
