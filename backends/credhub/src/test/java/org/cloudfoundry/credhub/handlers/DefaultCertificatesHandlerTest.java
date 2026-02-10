@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
 import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.PermissionOperation;
@@ -36,6 +37,7 @@ import org.cloudfoundry.credhub.requests.UpdateTransitionalVersionRequest;
 import org.cloudfoundry.credhub.services.DefaultCertificateService;
 import org.cloudfoundry.credhub.services.PermissionCheckingService;
 import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer;
+import org.cloudfoundry.credhub.utils.CertificateReader;
 import org.cloudfoundry.credhub.utils.TestConstants;
 import org.cloudfoundry.credhub.views.CertificateCredentialView;
 import org.cloudfoundry.credhub.views.CertificateCredentialsView;
@@ -52,7 +54,10 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.fail;
+import static org.bouncycastle.asn1.x509.KeyUsage.cRLSign;
+import static org.bouncycastle.asn1.x509.KeyUsage.keyCertSign;
 import static org.cloudfoundry.credhub.utils.TestConstants.TEST_CA;
+import static org.cloudfoundry.credhub.utils.TestConstants.TEST_CA_WITH_DEFAULT_KEY_USAGE;
 import static org.cloudfoundry.credhub.utils.TestConstants.TEST_TRUSTED_CA;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -77,6 +82,7 @@ public class DefaultCertificatesHandlerTest {
   private DefaultCertificatesHandler subjectWithoutAcls;
   private DefaultCertificatesHandler subjectWithConcatenateCas;
   private DefaultCertificatesHandler subjectWithoutConcatenateCas;
+  private DefaultCertificatesHandler subjectWithDefaultCAKeyUsages;
   private UniversalCredentialGenerator universalCredentialGenerator;
   private GenerationRequestGenerator generationRequestGenerator;
   private DefaultCertificateService certificateService;
@@ -110,6 +116,7 @@ public class DefaultCertificatesHandlerTest {
       permissionCheckingService,
       userContextHolder,
       true,
+      false,
       false
     );
     subjectWithoutAcls = new DefaultCertificatesHandler(
@@ -119,6 +126,7 @@ public class DefaultCertificatesHandlerTest {
       new CEFAuditRecord(),
       permissionCheckingService,
       userContextHolder,
+      false,
       false,
       false
     );
@@ -130,7 +138,8 @@ public class DefaultCertificatesHandlerTest {
       permissionCheckingService,
       userContextHolder,
       false,
-      true
+      true,
+      false
     );
     subjectWithoutConcatenateCas = new DefaultCertificatesHandler(
       certificateService,
@@ -140,7 +149,19 @@ public class DefaultCertificatesHandlerTest {
       permissionCheckingService,
       userContextHolder,
       false,
+      false,
       false
+    );
+    subjectWithDefaultCAKeyUsages = new DefaultCertificatesHandler(
+      certificateService,
+      universalCredentialGenerator,
+      generationRequestGenerator,
+      new CEFAuditRecord(),
+      permissionCheckingService,
+      userContextHolder,
+      false,
+      false,
+      true
     );
   }
 
@@ -977,6 +998,131 @@ public class DefaultCertificatesHandlerTest {
     final CertificateRegenerateRequest regenerateRequest = new CertificateRegenerateRequest(true, false, null, 4567, null);
     subjectWithConcatenateCas.handleRegenerate(UUID_STRING, regenerateRequest);
     assertEquals(4567, Objects.requireNonNull(regenerateRequest.getDuration()).intValue());
+  }
+
+  @Test
+  public void handleRegenerate_whenDefaultCAKeyUsageIsEnabled_andCertHasNoKeyUsages_setsDefaultKeyUsages() {
+    final CertificateCredentialVersion existingCert = mock(CertificateCredentialVersion.class);
+    final CertificateReader certReader = new CertificateReader(TEST_CA); // TEST_CA has no key usage extension
+    final CertificateGenerateRequest generateRequest = new CertificateGenerateRequest();
+
+    final CertificateGenerationParameters params = new CertificateGenerationParameters(certReader, null);
+    generateRequest.setCertificateGenerationParameters(params);
+
+    final CertificateCredentialValue newValue = mock(CertificateCredentialValue.class);
+    final CertificateCredentialVersion newVersion = mock(CertificateCredentialVersion.class);
+
+    when(existingCert.getName()).thenReturn("/test-ca");
+    when(existingCert.getCertificate()).thenReturn(TEST_CA);
+    when(existingCert.isCertificateAuthority()).thenReturn(true);
+    when(existingCert.getParsedCertificate()).thenReturn(certReader);
+
+    when(certificateService.findByCredentialUuid(UUID_STRING)).thenReturn(existingCert);
+    when(generationRequestGenerator.createGenerateRequest(existingCert)).thenReturn(generateRequest);
+    when(universalCredentialGenerator.generate(generateRequest)).thenReturn(newValue);
+    when(certificateService.save(eq(existingCert), any(), any())).thenReturn(newVersion);
+
+    final CertificateRegenerateRequest regenerateRequest = new CertificateRegenerateRequest(true, false, null, null, null);
+
+    subjectWithDefaultCAKeyUsages.handleRegenerate(UUID_STRING, regenerateRequest);
+
+    final CertificateGenerationParameters updatedParams = (CertificateGenerationParameters) generateRequest.getGenerationParameters();
+    assertThat(updatedParams.getKeyUsage(), IsEqual.equalTo(
+      new KeyUsage(
+        keyCertSign | cRLSign
+      )
+    ));
+  }
+
+  @Test
+  public void handleRegenerate_whenDefaultCAKeyUsageIsEnabled_andCertAlreadyHasKeyUsages_preservesExistingKeyUsages() {
+    final CertificateCredentialVersion existingCert = mock(CertificateCredentialVersion.class);
+    final CertificateReader certReader = new CertificateReader(TEST_CA_WITH_DEFAULT_KEY_USAGE); // Has key usages
+    final CertificateGenerateRequest generateRequest = new CertificateGenerateRequest();
+
+    final CertificateGenerationParameters params = new CertificateGenerationParameters(certReader, null);
+    final org.bouncycastle.asn1.x509.KeyUsage originalKeyUsage = params.getKeyUsage();
+    generateRequest.setCertificateGenerationParameters(params);
+
+    final CertificateCredentialValue newValue = mock(CertificateCredentialValue.class);
+    final CertificateCredentialVersion newVersion = mock(CertificateCredentialVersion.class);
+
+    when(existingCert.getName()).thenReturn("/test-ca");
+    when(existingCert.getCertificate()).thenReturn(TEST_CA_WITH_DEFAULT_KEY_USAGE);
+    when(existingCert.isCertificateAuthority()).thenReturn(true);
+    when(existingCert.getParsedCertificate()).thenReturn(certReader);
+
+    when(certificateService.findByCredentialUuid(UUID_STRING)).thenReturn(existingCert);
+    when(generationRequestGenerator.createGenerateRequest(existingCert)).thenReturn(generateRequest);
+    when(universalCredentialGenerator.generate(generateRequest)).thenReturn(newValue);
+    when(certificateService.save(eq(existingCert), any(), any())).thenReturn(newVersion);
+
+    final CertificateRegenerateRequest regenerateRequest = new CertificateRegenerateRequest(true, false, null, null, null);
+
+    subjectWithDefaultCAKeyUsages.handleRegenerate(UUID_STRING, regenerateRequest);
+
+    final CertificateGenerationParameters updatedParams = (CertificateGenerationParameters) generateRequest.getGenerationParameters();
+    assertThat(updatedParams.getKeyUsage(), IsEqual.equalTo(originalKeyUsage));
+  }
+
+  @Test
+  public void handleRegenerate_whenDefaultCAKeyUsageIsDisabled_doesNotSetKeyUsages() {
+    final CertificateCredentialVersion existingCert = mock(CertificateCredentialVersion.class);
+    final CertificateReader certReader = new CertificateReader(TEST_CA);
+    final CertificateGenerateRequest generateRequest = new CertificateGenerateRequest();
+
+    final CertificateGenerationParameters params = new CertificateGenerationParameters(certReader, null);
+    generateRequest.setCertificateGenerationParameters(params);
+
+    final CertificateCredentialValue newValue = mock(CertificateCredentialValue.class);
+    final CertificateCredentialVersion newVersion = mock(CertificateCredentialVersion.class);
+
+    when(existingCert.getName()).thenReturn("/test-ca");
+    when(existingCert.getCertificate()).thenReturn(TEST_CA);
+    when(existingCert.isCertificateAuthority()).thenReturn(true);
+    when(existingCert.getParsedCertificate()).thenReturn(certReader);
+
+    when(certificateService.findByCredentialUuid(UUID_STRING)).thenReturn(existingCert);
+    when(generationRequestGenerator.createGenerateRequest(existingCert)).thenReturn(generateRequest);
+    when(universalCredentialGenerator.generate(generateRequest)).thenReturn(newValue);
+    when(certificateService.save(eq(existingCert), any(), any())).thenReturn(newVersion);
+
+    final CertificateRegenerateRequest regenerateRequest = new CertificateRegenerateRequest(true, false, null, null, null);
+
+    subjectWithoutAcls.handleRegenerate(UUID_STRING, regenerateRequest);
+
+    final CertificateGenerationParameters updatedParams = (CertificateGenerationParameters) generateRequest.getGenerationParameters();
+    assertNull(updatedParams.getKeyUsage());
+  }
+
+  @Test
+  public void handleRegenerate_whenDefaultCAKeyUsageIsEnabled_butNotCA_doesNotSetKeyUsages() {
+    final CertificateCredentialVersion existingCert = mock(CertificateCredentialVersion.class);
+    final CertificateReader certReader = new CertificateReader(TEST_CA);
+    final CertificateGenerateRequest generateRequest = new CertificateGenerateRequest();
+
+    final CertificateGenerationParameters params = new CertificateGenerationParameters(certReader, null);
+    generateRequest.setCertificateGenerationParameters(params);
+
+    final CertificateCredentialValue newValue = mock(CertificateCredentialValue.class);
+    final CertificateCredentialVersion newVersion = mock(CertificateCredentialVersion.class);
+
+    when(existingCert.getName()).thenReturn("/test-cert");
+    when(existingCert.getCertificate()).thenReturn(TEST_CA);
+    when(existingCert.isCertificateAuthority()).thenReturn(false); // NOT a CA
+    when(existingCert.getParsedCertificate()).thenReturn(certReader);
+
+    when(certificateService.findByCredentialUuid(UUID_STRING)).thenReturn(existingCert);
+    when(generationRequestGenerator.createGenerateRequest(existingCert)).thenReturn(generateRequest);
+    when(universalCredentialGenerator.generate(generateRequest)).thenReturn(newValue);
+    when(certificateService.save(eq(existingCert), any(), any())).thenReturn(newVersion);
+
+    final CertificateRegenerateRequest regenerateRequest = new CertificateRegenerateRequest(true, false, null, null, null);
+
+    subjectWithDefaultCAKeyUsages.handleRegenerate(UUID_STRING, regenerateRequest);
+
+    final CertificateGenerationParameters updatedParams = (CertificateGenerationParameters) generateRequest.getGenerationParameters();
+    assertNull(updatedParams.getKeyUsage());
   }
 
   @Test
