@@ -10,10 +10,6 @@ updates:
   ignore:
   - dependency-name: "org.mariadb.jdbc:mariadb-java-client" ## version 3.0.3 of the driver drops support for Aurora - https://www.pivotaltracker.com/n/projects/2482247/stories/183282618
     update-types: ["version-update:semver-major"]
-  - dependency-name: "com.google.protobuf:protoc"
-    update-types: [ "version-update:semver-major" ] # We need to stay with protobuf-java & protoc 3.25.x as the latest grpc still depends on protobuf-java & protoc 3.25.x https://github.com/grpc/grpc-java/issues/11015
-  - dependency-name: "com.google.protobuf:protobuf-java"
-    update-types: [ "version-update:semver-major" ] # We need to stay with protobuf-java & protoc 3.25.x as the latest grpc still depends on protobuf-java & protoc 3.25.x https://github.com/grpc/grpc-java/issues/11015
   - dependency-name: "org.springframework.boot:*"
     update-types: [ "version-update:semver-major" ] # for now stay on the more stable v3, which will be supported until June 2026: https://spring.io/projects/spring-boot#support)
   - dependency-name: "org.springframework.cloud:spring-cloud-contract-gradle-plugin"

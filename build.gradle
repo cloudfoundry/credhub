@@ -13,14 +13,8 @@ buildscript {
         springBootVersion = '3.5.10'
         mariadbJdbcVersion = '2.7.13' // Bumping to v3 breaks some pipeline jobs, so pinning to v2 for now. v2 (current version) is stable and will be supported until about September 2025 (https://mariadb.com/kb/en/about-mariadb-connector-j/).
         grpcVersion = '1.79.0'
-        // We need to stay with protobuf-java & protoc 3.25.x as the latest
-        // grpc still depends on protobuf-java & protoc 3.25.x. Once we
-        // bump grpc to version that depnds on protobuf-java & protoc to 4.x.x,
-        // it is likely that we are going to get conflicts because we also have
-        // direct dependency to protobuf 3.25.x. We will need to bump protobuf
-        // version to 4.x.x then.
-        protoBufJavaVersion = '3.25.8'
-        protoCVersion = '3.25.8'
+        protoBufJavaVersion = '4.33.2'
+        protoCVersion = '4.33.2'
     }
     repositories {
         def artifactRepoUrl = System.getenv("ARTIFACTORY_URL")
