@@ -40,7 +40,7 @@ class CertificateGenerationParameters : GenerationParameters {
 
     val extendedKeyUsage: ExtendedKeyUsage?
 
-    val keyUsage: KeyUsage?
+    var keyUsage: KeyUsage?
 
     var allowTransitionalParentToSign: Boolean = false
 

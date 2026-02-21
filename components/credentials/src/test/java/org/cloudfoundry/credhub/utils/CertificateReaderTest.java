@@ -1,12 +1,27 @@
 package org.cloudfoundry.credhub.utils;
 
+import java.io.StringWriter;
+import java.math.BigInteger;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.Security;
+import java.util.Date;
 
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.BasicConstraints;
+import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.GeneralNamesBuilder;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.KeyUsage;
+import org.bouncycastle.cert.X509v3CertificateBuilder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
+import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.cloudfoundry.credhub.domain.CertificateGenerationParameters;
 import org.cloudfoundry.credhub.exceptions.MalformedCertificateException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -156,5 +171,131 @@ public class CertificateReaderTest {
     assertThat(certificateReader.getKeyUsage().hasUsages(KeyUsage.digitalSignature),
       equalTo(true));
     assertThat(certificateReader.getSubjectName().toString(), equalTo(distinguishedName));
+  }
+
+  @Test
+  public void regenerationConstructor_preservesDnsSans() throws Exception {
+    final GeneralNames expectedSans = new GeneralNames(
+      new GeneralName(GeneralName.dNSName, "SolarSystem"));
+
+    final CertificateReader reader = new CertificateReader(BIG_TEST_CERT);
+    final CertificateGenerationParameters params = new CertificateGenerationParameters(reader, null);
+
+    assertThat(params.getAlternativeNames(), equalTo(expectedSans));
+  }
+
+  @Test
+  public void regenerationConstructor_preservesIpAndDnsSans() throws Exception {
+    final String certPem = generateSelfSignedCert(
+      new GeneralName(GeneralName.iPAddress, "10.0.0.1"),
+      new GeneralName(GeneralName.dNSName, "example.com"),
+      new GeneralName(GeneralName.iPAddress, "192.168.1.100")
+    );
+
+    final GeneralNames expectedSans = new GeneralNamesBuilder()
+      .addName(new GeneralName(GeneralName.iPAddress, "10.0.0.1"))
+      .addName(new GeneralName(GeneralName.dNSName, "example.com"))
+      .addName(new GeneralName(GeneralName.iPAddress, "192.168.1.100"))
+      .build();
+
+    final CertificateReader reader = new CertificateReader(certPem);
+    final CertificateGenerationParameters params = new CertificateGenerationParameters(reader, null);
+
+    assertThat(params.getAlternativeNames(), equalTo(expectedSans));
+  }
+
+  @Test
+  public void regenerationConstructor_preservesNullSans() {
+    final CertificateReader reader = new CertificateReader(SIMPLE_SELF_SIGNED_TEST_CERT);
+    final CertificateGenerationParameters params = new CertificateGenerationParameters(reader, null);
+
+    assertThat(params.getAlternativeNames(), equalTo(null));
+  }
+
+  @Test
+  public void regenerationConstructor_preservesKeyUsage() throws Exception {
+    final KeyUsage expectedKeyUsage = new KeyUsage(KeyUsage.digitalSignature);
+
+    final CertificateReader reader = new CertificateReader(BIG_TEST_CERT);
+    final CertificateGenerationParameters params = new CertificateGenerationParameters(reader, null);
+
+    assertThat(params.getKeyUsage(), equalTo(expectedKeyUsage));
+  }
+
+  @Test
+  public void regenerationConstructor_preservesExtendedKeyUsage() {
+    final CertificateReader reader = new CertificateReader(BIG_TEST_CERT);
+    final CertificateGenerationParameters params = new CertificateGenerationParameters(reader, null);
+
+    assertThat(asList(params.getExtendedKeyUsage().getUsages()),
+      containsInAnyOrder(KeyPurposeId.id_kp_serverAuth, KeyPurposeId.id_kp_clientAuth));
+  }
+
+  @Test
+  public void regenerationConstructor_allowsKeyUsageOverride() throws Exception {
+    final String caCertPem = generateSelfSignedCaCert();
+    final CertificateReader reader = new CertificateReader(caCertPem);
+
+    assertThat("CA cert should have no key usage", reader.getKeyUsage(), equalTo(null));
+
+    final CertificateGenerationParameters params = new CertificateGenerationParameters(reader, null);
+    final KeyUsage defaultCaKeyUsage = new KeyUsage(KeyUsage.keyCertSign | KeyUsage.cRLSign);
+    params.setKeyUsage(defaultCaKeyUsage);
+
+    assertThat(params.getKeyUsage(), equalTo(defaultCaKeyUsage));
+  }
+
+  private static String generateSelfSignedCert(final GeneralName... sans) throws Exception {
+    final KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(
+      "RSA", BouncyCastleFipsProvider.PROVIDER_NAME);
+    keyPairGenerator.initialize(2048);
+    final KeyPair keyPair = keyPairGenerator.generateKeyPair();
+
+    final X500Name subject = new X500Name("CN=test");
+    final Date notBefore = new Date(System.currentTimeMillis() - 86400000L);
+    final Date notAfter = new Date(System.currentTimeMillis() + 86400000L);
+
+    final X509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(
+      subject, BigInteger.ONE, notBefore, notAfter, subject, keyPair.getPublic());
+
+    final GeneralNamesBuilder sanBuilder = new GeneralNamesBuilder();
+    for (final GeneralName san : sans) {
+      sanBuilder.addName(san);
+    }
+    certBuilder.addExtension(Extension.subjectAlternativeName, false, sanBuilder.build());
+
+    return signAndEncode(certBuilder, keyPair);
+  }
+
+  private static String generateSelfSignedCaCert() throws Exception {
+    final KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(
+      "RSA", BouncyCastleFipsProvider.PROVIDER_NAME);
+    keyPairGenerator.initialize(2048);
+    final KeyPair keyPair = keyPairGenerator.generateKeyPair();
+
+    final X500Name subject = new X500Name("CN=test-ca");
+    final Date notBefore = new Date(System.currentTimeMillis() - 86400000L);
+    final Date notAfter = new Date(System.currentTimeMillis() + 86400000L);
+
+    final X509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(
+      subject, BigInteger.ONE, notBefore, notAfter, subject, keyPair.getPublic());
+    certBuilder.addExtension(Extension.basicConstraints, true, new BasicConstraints(true));
+
+    return signAndEncode(certBuilder, keyPair);
+  }
+
+  private static String signAndEncode(final X509v3CertificateBuilder certBuilder, final KeyPair keyPair) throws Exception {
+    final var cert = new JcaX509CertificateConverter()
+      .setProvider(BouncyCastleFipsProvider.PROVIDER_NAME)
+      .getCertificate(certBuilder.build(
+        new JcaContentSignerBuilder("SHA256withRSA")
+          .setProvider(BouncyCastleFipsProvider.PROVIDER_NAME)
+          .build(keyPair.getPrivate())));
+
+    final StringWriter stringWriter = new StringWriter();
+    try (final JcaPEMWriter pemWriter = new JcaPEMWriter(stringWriter)) {
+      pemWriter.writeObject(cert);
+    }
+    return stringWriter.toString();
   }
 }
