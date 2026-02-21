@@ -11,20 +11,14 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.security.auth.x500.X500Principal;
 
-import org.bouncycastle.asn1.x500.RDN;
-import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.GeneralNames;
-import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
@@ -32,8 +26,6 @@ import org.bouncycastle.openssl.PEMParser;
 import org.cloudfoundry.credhub.exceptions.MalformedCertificateException;
 import org.cloudfoundry.credhub.exceptions.MissingCertificateException;
 import org.cloudfoundry.credhub.exceptions.UnreadableCertificateException;
-import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters;
-import org.jetbrains.annotations.Nullable;
 
 import static java.lang.Math.toIntExact;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -157,105 +149,5 @@ public class CertificateReader {
     return (X509Certificate) CertificateFactory
       .getInstance("X.509", BouncyCastleFipsProvider.PROVIDER_NAME)
       .generateCertificate(new ByteArrayInputStream(pemString.getBytes(UTF_8)));
-  }
-
-  public @Nullable String getCommonName() {
-    return getX500NameAttribute(BCStyle.CN);
-  }
-
-  public @Nullable String getOrganization() {
-    return getX500NameAttribute(BCStyle.O);
-  }
-
-  public @Nullable String getOrganizationUnit() {
-    return getX500NameAttribute(BCStyle.OU);
-  }
-
-  public @Nullable String getLocality() {
-    return getX500NameAttribute(BCStyle.L);
-  }
-
-  public @Nullable String getState() {
-    return getX500NameAttribute(BCStyle.ST);
-  }
-
-  public @Nullable String getCountry() {
-    return getX500NameAttribute(BCStyle.C);
-  }
-
-  public  @Nullable String[] getExtendedKeyUsageStrings() {
-    final ExtendedKeyUsage extendedKeyUsage = getExtendedKeyUsage();
-    if (extendedKeyUsage == null) {
-      return null;
-    }
-
-    final KeyPurposeId[] keyPurposeIds = extendedKeyUsage.getUsages();
-    final List<String> extendedKeyUsageList = new ArrayList<>();
-
-    for (final KeyPurposeId keyPurposeId : keyPurposeIds) {
-      if (keyPurposeId.equals(KeyPurposeId.id_kp_serverAuth)) {
-        extendedKeyUsageList.add(CertificateGenerationRequestParameters.SERVER_AUTH);
-      } else if (keyPurposeId.equals(KeyPurposeId.id_kp_clientAuth)) {
-        extendedKeyUsageList.add(CertificateGenerationRequestParameters.CLIENT_AUTH);
-      } else if (keyPurposeId.equals(KeyPurposeId.id_kp_codeSigning)) {
-        extendedKeyUsageList.add(CertificateGenerationRequestParameters.CODE_SIGNING);
-      } else if (keyPurposeId.equals(KeyPurposeId.id_kp_emailProtection)) {
-        extendedKeyUsageList.add(CertificateGenerationRequestParameters.EMAIL_PROTECTION);
-      } else if (keyPurposeId.equals(KeyPurposeId.id_kp_timeStamping)) {
-        extendedKeyUsageList.add(CertificateGenerationRequestParameters.TIMESTAMPING);
-      }
-    }
-
-    return extendedKeyUsageList.toArray(new String[0]);
-  }
-
-  public @Nullable String[] getKeyUsageStrings() {
-    final KeyUsage keyUsage = getKeyUsage();
-    if (keyUsage == null) {
-      return null;
-    }
-
-    final List<String> keyUsageList = new ArrayList<>();
-
-    if (keyUsage.hasUsages(KeyUsage.digitalSignature)) {
-      keyUsageList.add(CertificateGenerationRequestParameters.DIGITAL_SIGNATURE);
-    }
-    if (keyUsage.hasUsages(KeyUsage.nonRepudiation)) {
-      keyUsageList.add(CertificateGenerationRequestParameters.NON_REPUDIATION);
-    }
-    if (keyUsage.hasUsages(KeyUsage.keyEncipherment)) {
-      keyUsageList.add(CertificateGenerationRequestParameters.KEY_ENCIPHERMENT);
-    }
-    if (keyUsage.hasUsages(KeyUsage.dataEncipherment)) {
-      keyUsageList.add(CertificateGenerationRequestParameters.DATA_ENCIPHERMENT);
-    }
-    if (keyUsage.hasUsages(KeyUsage.keyAgreement)) {
-      keyUsageList.add(CertificateGenerationRequestParameters.KEY_AGREEMENT);
-    }
-    if (keyUsage.hasUsages(KeyUsage.keyCertSign)) {
-      keyUsageList.add(CertificateGenerationRequestParameters.KEY_CERT_SIGN);
-    }
-    if (keyUsage.hasUsages(KeyUsage.cRLSign)) {
-      keyUsageList.add(CertificateGenerationRequestParameters.CRL_SIGN);
-    }
-    if (keyUsage.hasUsages(KeyUsage.encipherOnly)) {
-      keyUsageList.add(CertificateGenerationRequestParameters.ENCIPHER_ONLY);
-    }
-    if (keyUsage.hasUsages(KeyUsage.decipherOnly)) {
-      keyUsageList.add(CertificateGenerationRequestParameters.DECIPHER_ONLY);
-    }
-
-    return keyUsageList.toArray(new String[0]);
-  }
-
-  private @Nullable String getX500NameAttribute(final org.bouncycastle.asn1.ASN1ObjectIdentifier attribute) {
-    final X500Name x500Name = new X500Name(certificate.getSubjectX500Principal().getName());
-    final RDN[] rdns = x500Name.getRDNs(attribute);
-
-    if (rdns.length == 0) {
-      return null;
-    }
-
-    return rdns[0].getFirst().getValue().toString();
   }
 }
