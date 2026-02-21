@@ -628,31 +628,5 @@ class TestConstants {
                 "6xCXz32y9vQHG76WYKBjGatP5OygNqk8v/8KFBO/fZszgFmrbGi5sUl2XrW0sQtp\n" +
                 "dJYEOgm6e8EO0Ve1uD/dFHfxcQIjt0uTzGjMJdYBm9EHl+bJz5JdTBp6aapaSQ==\n" +
                 "-----END RSA PRIVATE KEY-----\n"
-
-        const val TEST_CA_WITH_DEFAULT_KEY_USAGE: String =
-            "-----BEGIN CERTIFICATE-----\n" +
-                "MIIEGzCCAoOgAwIBAgIUTCn06/xEbAHM4pMdObKPFmVXtLQwDQYJKoZIhvcNAQEL\n" +
-                "BQAwFTETMBEGA1UEAxMKTXkgUm9vdCBDQTAeFw0yNjAxMjgxNDUzMzBaFw0zNjAx\n" +
-                "MjYxNDUzMzBaMBUxEzARBgNVBAMTCk15IFJvb3QgQ0EwggGiMA0GCSqGSIb3DQEB\n" +
-                "AQUAA4IBjwAwggGKAoIBgQCKlonuBSgy/5CL3lkcwrBYtQDgugX2RhzsvNPzzqMX\n" +
-                "rGXd3jcbz66Uy1aRdM1Xiw7mu9q1dkKGBBlvmYrFm3mQjTkbCXHa+rFbTyuMhAiy\n" +
-                "0qoEiJlTdVsBwO7Z4jLloODuZ1hHOQI+rL1gWeLB3V2/BKtobgg1ouvZtyBqHoL2\n" +
-                "wGWeHJCUonFIgpOrg/j+XR+z0GGRGkd7ovKeSF/kYdg/SQaGtmg4pWkhKsGSFJaz\n" +
-                "EXP1FX4+rlkNcGdxARNhsHewgwvflw9F2NTQ6cM7pn1fDEB6XFqu+gaT7iM+x2cg\n" +
-                "AY7WoQPjA8yKn56gvk+CRM/HNv2PYDYN996+V3T+gSKL3dsiCY98TSWZH03TTlco\n" +
-                "1M+iUKDc8mH3ifH52EENjMtJOKrhtweAg78t8+fLrxu+/A6hnwCEJmXAwD2bamg/\n" +
-                "1BRTiV01xF3WUVkbNRxKrcUnbWIHLFTwEDFsZ0dItXBHaGOUukWsbJEQNmhpIpZk\n" +
-                "KP2kAM/l2CbsM6US8qGFtgMCAwEAAaNjMGEwHQYDVR0OBBYEFPy0WtILdHVwvER1\n" +
-                "A/kFUWOQuPdFMA4GA1UdDwEB/wQEAwIBBjAfBgNVHSMEGDAWgBT8tFrSC3R1cLxE\n" +
-                "dQP5BVFjkLj3RTAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3DQEBCwUAA4IBgQAS\n" +
-                "hpAhPkadAdJELOYDogl7fbKU8LAO9UTMTKBK0QgPVXJLgSswWbebfgZofYHHy7wa\n" +
-                "P1r9LEoqPcGbXlfnUpGY6MwW450cmXv934xqSr9lNPM7zF57CUNrnnZw2INTS8NQ\n" +
-                "3xhSSt+DagQn9nuuhX16hGCO/OC/Bf4Don7akamAvRGoVVP5ppSYkyukTnpnypoQ\n" +
-                "KpA1MA4bQX7jmIQAXzD9BoVEahOZ2fXZqwAxBtbxlJ4kuWkOCqLyo3hJrPfJFVl/\n" +
-                "UFjnKJ429WqRd9RToU5rFaLhiwjvXJpUrirEBGyTn6UKfDRftdmIa1Jd25BhH0PZ\n" +
-                "N+AwZy6zgbPkm2E8s6fFvyXAKJm/XKZh2ABVguSoxhnkexYLGcJ7dsfNXZC84DdM\n" +
-                "so34gYtRgwrtV6GUpcDaSr4pwPzkjLjIrOzTEAX7UjJ92/Yrqf3hTs/Taso7BBvk\n" +
-                "mBQdyi36ka3lGnn0mfhxssU7UJe/PWJHeCHl1RNK8Cn6mi0Nu2MWsBovxMwJCaQ=\n" +
-                "-----END CERTIFICATE-----\n"
     }
 }
