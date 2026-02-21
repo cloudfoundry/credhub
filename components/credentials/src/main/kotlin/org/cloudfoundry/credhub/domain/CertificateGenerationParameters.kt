@@ -17,20 +17,12 @@ import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException
 import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters
 import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.Companion.CLIENT_AUTH
 import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.Companion.CODE_SIGNING
-import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.Companion.CRL_SIGN
-import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.Companion.DATA_ENCIPHERMENT
-import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.Companion.DECIPHER_ONLY
-import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.Companion.DIGITAL_SIGNATURE
 import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.Companion.EMAIL_PROTECTION
-import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.Companion.ENCIPHER_ONLY
-import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.Companion.KEY_AGREEMENT
-import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.Companion.KEY_CERT_SIGN
-import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.Companion.KEY_ENCIPHERMENT
-import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.Companion.NON_REPUDIATION
 import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.Companion.SERVER_AUTH
 import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.Companion.TIMESTAMPING
 import org.cloudfoundry.credhub.requests.GenerationParameters
 import org.cloudfoundry.credhub.utils.CertificateReader
+import org.cloudfoundry.credhub.utils.KeyUsageMapper
 import org.springframework.util.StringUtils
 import java.util.Objects
 import javax.security.auth.x500.X500Principal
@@ -48,7 +40,7 @@ class CertificateGenerationParameters : GenerationParameters {
 
     val extendedKeyUsage: ExtendedKeyUsage?
 
-    val keyUsage: KeyUsage?
+    var keyUsage: KeyUsage?
 
     var allowTransitionalParentToSign: Boolean = false
 
@@ -115,22 +107,7 @@ class CertificateGenerationParameters : GenerationParameters {
         if (keyUsageList.keyUsage == null) {
             return null
         }
-        var bitmask = 0
-        for (keyUsage in keyUsageList.keyUsage!!) {
-            when (keyUsage) {
-                DIGITAL_SIGNATURE -> bitmask = bitmask or KeyUsage.digitalSignature
-                NON_REPUDIATION -> bitmask = bitmask or KeyUsage.nonRepudiation
-                KEY_ENCIPHERMENT -> bitmask = bitmask or KeyUsage.keyEncipherment
-                DATA_ENCIPHERMENT -> bitmask = bitmask or KeyUsage.dataEncipherment
-                KEY_AGREEMENT -> bitmask = bitmask or KeyUsage.keyAgreement
-                KEY_CERT_SIGN -> bitmask = bitmask or KeyUsage.keyCertSign
-                CRL_SIGN -> bitmask = bitmask or KeyUsage.cRLSign
-                ENCIPHER_ONLY -> bitmask = bitmask or KeyUsage.encipherOnly
-                DECIPHER_ONLY -> bitmask = bitmask or KeyUsage.decipherOnly
-                else -> throw ParameterizedValidationException(ErrorMessages.INVALID_KEY_USAGE, keyUsage)
-            }
-        }
-        return KeyUsage(bitmask)
+        return KeyUsageMapper.mapKeyUsage(keyUsageList.keyUsage!!)
     }
 
     private fun buildDn(params: CertificateGenerationRequestParameters): X500Principal {
