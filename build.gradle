@@ -13,7 +13,7 @@ buildscript {
         springBootVersion = '3.5.11'
         mariadbJdbcVersion = '2.7.13' // Bumping to v3 breaks some pipeline jobs, so pinning to v2 for now. v2 (current version) is stable and will be supported until about September 2025 (https://mariadb.com/kb/en/about-mariadb-connector-j/).
         grpcVersion = '1.79.0'
-        protoBufJavaVersion = '4.33.2'
+        protoBufJavaVersion = '4.34.0'
         protoCVersion = '4.33.2'
     }
     repositories {
