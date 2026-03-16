@@ -15,6 +15,7 @@ buildscript {
         grpcVersion = '1.79.0'
         protoBufJavaVersion = '4.34.0'
         protoCVersion = '4.34.0'
+        jacksonBomVersion = '2.21.1'  // Overriding spring-boot's dependency because flayway 12.1.0 requires later jackson-bom version than spring-boot 3.5.11's
     }
     repositories {
         def artifactRepoUrl = System.getenv("ARTIFACTORY_URL")
@@ -74,7 +75,8 @@ subprojects {
     }
 }
 
-// Override spring boot's kotllin version dependency
+// Override spring boot's version dependencies
 ext['kotlin.version'] = '${kotlinVersion}'
+ext['jackson-bom.version'] = '${jacksonBomVersion}'
 
 assert JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_21)
