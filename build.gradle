@@ -12,7 +12,7 @@ buildscript {
         passayVersion = '1.6.6'
         springBootVersion = '3.5.11'
         mariadbJdbcVersion = '2.7.13' // Bumping to v3 breaks some pipeline jobs, so pinning to v2 for now. v2 (current version) is stable and will be supported until about September 2025 (https://mariadb.com/kb/en/about-mariadb-connector-j/).
-        grpcVersion = '1.79.0'
+        grpcVersion = '1.80.0'
         protoBufJavaVersion = '4.34.0'
         protoCVersion = '4.34.0'
         jacksonBomVersion = '2.21.1'  // Overriding spring-boot's dependency because flayway 12.1.0 requires later jackson-bom version than spring-boot 3.5.11's
