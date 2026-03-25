@@ -14,14 +14,14 @@ import org.cloudfoundry.credhub.views.BulkRegenerateResults
 import org.cloudfoundry.credhub.views.CredentialView
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.equalTo
+import org.junit.After
 import org.junit.Before
 import org.junit.BeforeClass
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.http.MediaType
-import org.springframework.restdocs.JUnitRestDocumentation
+import org.springframework.restdocs.ManualRestDocumentation
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
 import org.springframework.restdocs.payload.JsonFieldType
 import org.springframework.restdocs.payload.PayloadDocumentation
@@ -35,9 +35,7 @@ import java.util.UUID
 
 @RunWith(SpringRunner::class)
 class RegenerateControllerTest {
-    @Rule
-    @JvmField
-    val restDocumentation = JUnitRestDocumentation()
+    private val restDocumentation = ManualRestDocumentation()
 
     private lateinit var spyRegenerateHandler: SpyRegenerateHandler
     private lateinit var mockMvc: MockMvc
@@ -55,6 +53,7 @@ class RegenerateControllerTest {
 
     @Before
     fun beforeEach() {
+        restDocumentation.beforeTest(javaClass, javaClass.simpleName)
         spyRegenerateHandler = SpyRegenerateHandler()
         val regenerateController = RegenerateController(spyRegenerateHandler)
 
@@ -64,6 +63,11 @@ class RegenerateControllerTest {
         if (Security.getProvider(BouncyCastleFipsProvider.PROVIDER_NAME) == null) {
             Security.addProvider(BouncyCastleFipsProvider())
         }
+    }
+
+    @After
+    fun tearDown() {
+        restDocumentation.afterTest()
     }
 
     @Test

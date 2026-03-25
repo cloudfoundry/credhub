@@ -9,13 +9,13 @@ import org.cloudfoundry.credhub.helpers.MockMvcFactory
 import org.cloudfoundry.credhub.helpers.credHubAuthHeader
 import org.cloudfoundry.credhub.interpolation.InterpolationController
 import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer
+import org.junit.After
 import org.junit.Before
 import org.junit.BeforeClass
-import org.junit.Rule
 import org.junit.Test
 import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.http.MediaType
-import org.springframework.restdocs.JUnitRestDocumentation
+import org.springframework.restdocs.ManualRestDocumentation
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post
 import org.springframework.test.web.servlet.MockMvc
@@ -24,9 +24,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.security.Security
 
 class InterpolateControllerTest {
-    @Rule
-    @JvmField
-    val restDocumentation = JUnitRestDocumentation()
+    private val restDocumentation = ManualRestDocumentation()
 
     lateinit var mockMvc: MockMvc
     lateinit var spyInterpolationHandler: SpyInterpolationHandler
@@ -41,6 +39,7 @@ class InterpolateControllerTest {
 
     @Before
     fun setUp() {
+        restDocumentation.beforeTest(javaClass, javaClass.simpleName)
         spyInterpolationHandler = SpyInterpolationHandler()
 
         val interpolationController =
@@ -54,6 +53,11 @@ class InterpolateControllerTest {
         if (Security.getProvider(BouncyCastleFipsProvider.PROVIDER_NAME) == null) {
             Security.addProvider(BouncyCastleFipsProvider())
         }
+    }
+
+    @After
+    fun tearDown() {
+        restDocumentation.afterTest()
     }
 
     @Test

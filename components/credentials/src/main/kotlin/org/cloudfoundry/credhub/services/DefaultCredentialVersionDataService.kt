@@ -97,7 +97,7 @@ class DefaultCredentialVersionDataService
             )
             val results = jdbcTemplate.queryForList<String>(query, String::class.java, caName)
             results.remove(caName)
-            return results
+            return results.filterNotNull()
         }
 
         override fun findContainingName(name: String): List<FindCredentialResult> = findContainingName(name, "")
@@ -169,7 +169,10 @@ class DefaultCredentialVersionDataService
                         "LEFT JOIN encrypted_value ON credential_version.encrypted_value_uuid = encrypted_value.uuid " +
                         "GROUP BY encrypted_value.encryption_key_uuid"
                 ),
-            ) { rowSet, _ -> map.put(toUUID(rowSet.getObject("encryption_key_uuid")), rowSet.getLong("count")) }
+            ) { rowSet, _ ->
+                map[toUUID(rowSet.getObject("encryption_key_uuid"))] = rowSet.getLong("count")
+                0L
+            }
             return map
         }
 

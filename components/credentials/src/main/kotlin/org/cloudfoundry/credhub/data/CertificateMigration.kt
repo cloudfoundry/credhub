@@ -33,7 +33,7 @@ class CertificateMigration
                         }
                     }
                 }
-                credentialVersionRepository.saveAll(data)
+                credentialVersionRepository.saveAll(data.filterNotNull())
             }
         }
 

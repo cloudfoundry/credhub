@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        springCloudContractVersion = '4.3.3'
+        springCloudContractVersion = '5.0.0'
     }
     repositories {
         def artifactRepoUrl = System.getenv("ARTIFACTORY_URL")
@@ -91,6 +91,16 @@ dependencyManagement {
     imports {
         mavenBom("org.springframework.boot:spring-boot-dependencies:${springBootVersion}")
         mavenBom "org.springframework.cloud:spring-cloud-contract-dependencies:${springCloudContractVersion}"
+    }
+    dependencies {
+        // rest-assured 5.5.6 (shipped by Spring Cloud Contract 5.0.0) is incompatible with
+        // Spring Framework 7's MockHttpServletRequestBuilder.header() signature change; 5.5.7 fixes it.
+        dependencySet(group: 'io.rest-assured', version: '5.5.7') {
+            entry 'rest-assured'
+            entry 'spring-mock-mvc'
+            entry 'json-path'
+            entry 'xml-path'
+        }
     }
 }
 

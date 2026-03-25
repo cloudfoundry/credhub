@@ -1,4 +1,4 @@
 contracts {
     baseClassForTests = 'org.cloudfoundry.credhub.contracts.ContractBaseTest'
-    testFramework = "JUNIT"
+    testFramework = "JUNIT5"
 }
