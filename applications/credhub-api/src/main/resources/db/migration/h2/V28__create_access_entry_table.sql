@@ -1,4 +1,4 @@
-CREATE CACHED TABLE access_entry (
+CREATE TABLE access_entry (
   uuid BINARY(16) NOT NULL,
   secret_name_uuid BINARY(16) NOT NULL,
   actor VARCHAR_IGNORECASE(255) NOT NULL,

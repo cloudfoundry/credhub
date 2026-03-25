@@ -1,4 +1,4 @@
-CREATE CACHED TABLE user_secret (
+CREATE TABLE user_secret (
     uuid BINARY(16) NOT NULL PRIMARY KEY,
     username VARCHAR(7000),
     FOREIGN KEY (uuid)
