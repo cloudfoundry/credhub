@@ -1,4 +1,4 @@
-CREATE CACHED TABLE secret_name (
+CREATE TABLE secret_name (
   uuid BINARY(16) NOT NULL,
   name VARCHAR_IGNORECASE(255) NOT NULL
 );
