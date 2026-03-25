@@ -23,13 +23,13 @@ import org.cloudfoundry.credhub.views.CertificateGenerationView
 import org.cloudfoundry.credhub.views.CertificateVersionView
 import org.cloudfoundry.credhub.views.CertificateView
 import org.cloudfoundry.credhub.views.CredentialView
+import org.junit.After
 import org.junit.Before
 import org.junit.BeforeClass
-import org.junit.Rule
 import org.junit.Test
 import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.http.MediaType
-import org.springframework.restdocs.JUnitRestDocumentation
+import org.springframework.restdocs.ManualRestDocumentation
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get
@@ -50,9 +50,7 @@ import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 class CertificatesControllerTest {
-    @Rule
-    @JvmField
-    val restDocumentation = JUnitRestDocumentation()
+    private val restDocumentation = ManualRestDocumentation()
 
     lateinit var mockMvc: MockMvc
     private lateinit var spyCertificatesHandler: SpyCertificatesHandler
@@ -76,6 +74,7 @@ class CertificatesControllerTest {
 
     @Before
     fun setUp() {
+        restDocumentation.beforeTest(javaClass, javaClass.simpleName)
         spyCertificatesHandler = SpyCertificatesHandler()
 
         val certificateController =
@@ -114,6 +113,11 @@ class CertificatesControllerTest {
         certificateCredentialVersion.metadata = metadata
 
         certificateView = CertificateView(certificateCredentialVersion)
+    }
+
+    @After
+    fun tearDown() {
+        restDocumentation.afterTest()
     }
 
     @Test

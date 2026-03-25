@@ -1,17 +1,16 @@
 package org.cloudfoundry.credhub.contracts;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import io.restassured.module.mockmvc.RestAssuredMockMvc;
 import org.cloudfoundry.credhub.CredHubApp;
-import org.junit.Before;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 
@@ -20,15 +19,14 @@ import static org.springframework.security.test.web.servlet.setup.SecurityMockMv
   "unit-test",
   "stub-repositories",
 })
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = CredHubApp.class)
-@AutoConfigureMockMvc
 public abstract class ContractBaseTest {
 
   @Autowired
   public WebApplicationContext webApplicationContext;
 
-  @Before
+  @BeforeEach
   public void setUp() {
 
     RestAssuredMockMvc

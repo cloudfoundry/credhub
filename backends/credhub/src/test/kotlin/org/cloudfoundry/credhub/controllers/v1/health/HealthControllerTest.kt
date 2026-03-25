@@ -3,12 +3,12 @@ package org.cloudfoundry.credhub.controllers.v1.health
 import org.cloudfoundry.credhub.health.HealthController
 import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
+import org.junit.After
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.skyscreamer.jsonassert.JSONAssert
-import org.springframework.restdocs.JUnitRestDocumentation
+import org.springframework.restdocs.ManualRestDocumentation
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
@@ -20,15 +20,14 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 )
 @RunWith(SpringRunner::class)
 class HealthControllerTest {
-    @Rule
-    @JvmField
-    val restDocumentation = JUnitRestDocumentation()
+    private val restDocumentation = ManualRestDocumentation()
 
     private lateinit var mockMvc: MockMvc
     private lateinit var healthController: HealthController
 
     @Before
     fun setUp() {
+        restDocumentation.beforeTest(javaClass, javaClass.simpleName)
         healthController = HealthController()
 
         mockMvc =
@@ -37,6 +36,11 @@ class HealthControllerTest {
                 restDocumentation,
                 disableAuth = true,
             )
+    }
+
+    @After
+    fun tearDown() {
+        restDocumentation.afterTest()
     }
 
     @Test

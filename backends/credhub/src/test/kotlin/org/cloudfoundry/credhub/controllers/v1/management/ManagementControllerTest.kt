@@ -5,13 +5,13 @@ import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
 import org.cloudfoundry.credhub.helpers.credHubAuthHeader
 import org.cloudfoundry.credhub.management.ManagementController
+import org.junit.After
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.http.MediaType
-import org.springframework.restdocs.JUnitRestDocumentation
+import org.springframework.restdocs.ManualRestDocumentation
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post
@@ -24,19 +24,23 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 
 @RunWith(SpringRunner::class)
 class ManagementControllerTest {
-    @Rule
-    @JvmField
-    val restDocumentation = JUnitRestDocumentation()
+    private val restDocumentation = ManualRestDocumentation()
 
     lateinit var mockMvc: MockMvc
     lateinit var spyManagementService: SpyManagementService
 
     @Before
     fun setUp() {
+        restDocumentation.beforeTest(javaClass, javaClass.simpleName)
         spyManagementService = SpyManagementService()
 
         val managementController = ManagementController(spyManagementService)
         mockMvc = MockMvcFactory.newSpringRestDocMockMvc(managementController, restDocumentation)
+    }
+
+    @After
+    fun tearDown() {
+        restDocumentation.afterTest()
     }
 
     @Test

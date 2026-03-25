@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import java.util.UUID
 
-interface CredentialVersionRepository : JpaRepository<CredentialVersionData<*>?, UUID?> {
+interface CredentialVersionRepository : JpaRepository<CredentialVersionData<*>, UUID> {
     // These functions are automatically implemented by the JPA framework based on exact function names
     fun countByEncryptedCredentialValueEncryptionKeyUuidIn(encryptionKeyUuids: Collection<UUID?>?): Long?
 

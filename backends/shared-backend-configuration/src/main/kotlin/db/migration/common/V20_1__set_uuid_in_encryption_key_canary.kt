@@ -23,7 +23,7 @@ class V20_1__set_uuid_in_encryption_key_canary : BaseJavaMigration() {
             "select id from encryption_key_canary",
             Long::class.java
         )
-        for (id in canaryIds) {
+        for (id in canaryIds.filterNotNull()) {
             jdbcTemplate.update(
                 "update encryption_key_canary set uuid = ? where id = ?",
                 databaseName?.let { getParams(it, id) },

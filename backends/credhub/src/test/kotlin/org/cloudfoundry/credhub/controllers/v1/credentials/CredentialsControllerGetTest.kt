@@ -22,14 +22,14 @@ import org.cloudfoundry.credhub.utils.TestConstants
 import org.cloudfoundry.credhub.views.CredentialView
 import org.cloudfoundry.credhub.views.DataResponse
 import org.cloudfoundry.credhub.views.FindCredentialResult
+import org.junit.After
 import org.junit.Before
 import org.junit.BeforeClass
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.http.MediaType
-import org.springframework.restdocs.JUnitRestDocumentation
+import org.springframework.restdocs.ManualRestDocumentation
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get
 import org.springframework.restdocs.request.RequestDocumentation.parameterWithName
@@ -45,9 +45,7 @@ import java.util.UUID
 
 @RunWith(SpringRunner::class)
 class CredentialsControllerGetTest {
-    @Rule
-    @JvmField
-    val restDocumentation = JUnitRestDocumentation()
+    private val restDocumentation = ManualRestDocumentation()
     val uuid = UUID.randomUUID()
 
     lateinit var mockMvc: MockMvc
@@ -66,6 +64,7 @@ class CredentialsControllerGetTest {
 
     @Before
     fun setUp() {
+        restDocumentation.beforeTest(javaClass, javaClass.simpleName)
         spyCredentialsHandler = SpyCredentialsHandler()
         spyRegenerateHandler = SpyRegenerateHandler()
 
@@ -84,6 +83,11 @@ class CredentialsControllerGetTest {
         if (Security.getProvider(BouncyCastleFipsProvider.PROVIDER_NAME) == null) {
             Security.addProvider(BouncyCastleFipsProvider())
         }
+    }
+
+    @After
+    fun tearDown() {
+        restDocumentation.afterTest()
     }
 
     @Test

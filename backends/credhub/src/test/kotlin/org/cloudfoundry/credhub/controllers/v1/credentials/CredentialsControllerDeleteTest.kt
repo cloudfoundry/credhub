@@ -10,12 +10,12 @@ import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
 import org.cloudfoundry.credhub.helpers.credHubAuthHeader
 import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer
+import org.junit.After
 import org.junit.Before
 import org.junit.BeforeClass
-import org.junit.Rule
 import org.junit.Test
 import org.springframework.http.MediaType
-import org.springframework.restdocs.JUnitRestDocumentation
+import org.springframework.restdocs.ManualRestDocumentation
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete
 import org.springframework.restdocs.request.RequestDocumentation.parameterWithName
@@ -25,9 +25,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.security.Security
 
 class CredentialsControllerDeleteTest {
-    @Rule
-    @JvmField
-    val restDocumentation = JUnitRestDocumentation()
+    private val restDocumentation = ManualRestDocumentation()
 
     lateinit var mockMvc: MockMvc
     var spyCredentialsHandler: SpyCredentialsHandler = SpyCredentialsHandler()
@@ -44,6 +42,7 @@ class CredentialsControllerDeleteTest {
 
     @Before
     fun setUp() {
+        restDocumentation.beforeTest(javaClass, javaClass.simpleName)
         val credentialController =
             CredentialsController(
                 spyCredentialsHandler,
@@ -56,6 +55,11 @@ class CredentialsControllerDeleteTest {
         if (Security.getProvider(BouncyCastleFipsProvider.PROVIDER_NAME) == null) {
             Security.addProvider(BouncyCastleFipsProvider())
         }
+    }
+
+    @After
+    fun tearDown() {
+        restDocumentation.afterTest()
     }
 
     @Test

@@ -19,7 +19,6 @@ dependencies {
     testImplementation('org.springframework.boot:spring-boot-starter-validation')
 
     implementation('com.fasterxml.jackson.module:jackson-module-kotlin')
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 
     api("org.bouncycastle:bc-fips:${bcFipsVersion}")
@@ -38,7 +37,7 @@ dependencyManagement {
 }
 
 configurations {
-    testOutput.extendsFrom (testCompile)
+    testOutput.extendsFrom(testImplementation)
 }
 
 task jarTest (type: Jar, dependsOn: testClasses) {

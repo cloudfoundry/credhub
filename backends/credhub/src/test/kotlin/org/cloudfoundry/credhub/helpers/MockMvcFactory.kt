@@ -6,7 +6,7 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.cloudfoundry.credhub.generate.ExceptionHandlers
 import org.cloudfoundry.credhub.util.TimeModuleFactory
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
-import org.springframework.restdocs.JUnitRestDocumentation
+import org.springframework.restdocs.ManualRestDocumentation
 import org.springframework.restdocs.cli.CliDocumentation.curlRequest
 import org.springframework.restdocs.http.HttpDocumentation.httpRequest
 import org.springframework.restdocs.http.HttpDocumentation.httpResponse
@@ -35,7 +35,7 @@ class MockMvcFactory {
         @JvmStatic
         fun newSpringRestDocMockMvc(
             controller: Any,
-            restDocumentation: JUnitRestDocumentation,
+            restDocumentation: ManualRestDocumentation,
             disableAuth: Boolean = false,
         ): MockMvc {
             val mockMvcBuilder =
