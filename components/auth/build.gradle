@@ -15,7 +15,7 @@ dependencies {
     implementation project(":components:time-support")
     testImplementation project(path: ":components:test-support", configuration: "testOutput")
 
-    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.security:spring-security-web")
     implementation('org.springframework.boot:spring-boot-starter-security')
@@ -31,8 +31,8 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 
     // DB
-    testImplementation("org.flywaydb:flyway-core:${flywayVersion}")
-    testImplementation("org.flywaydb:flyway-database-postgresql:${flywayVersion}")
+    testImplementation("org.springframework.boot:spring-boot-starter-flyway")
+    testImplementation("org.flywaydb:flyway-database-postgresql")
     implementation("org.postgresql:postgresql")
     implementation("org.mariadb.jdbc:mariadb-java-client:${mariadbJdbcVersion}")
     implementation("com.h2database:h2")

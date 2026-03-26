@@ -12,7 +12,7 @@ apply from: "${rootDir.toPath()}/pmd-config.gradle"
 dependencies {
     implementation project(":components:errors")
 
-    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("junit:junit")

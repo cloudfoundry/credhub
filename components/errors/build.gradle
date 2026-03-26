@@ -10,7 +10,7 @@ apply from: "${rootDir.toPath()}/checkstyle-config.gradle"
 apply from: "${rootDir.toPath()}/pmd-config.gradle"
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation('org.springframework.boot:spring-boot-starter-validation')
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("junit:junit")

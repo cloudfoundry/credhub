@@ -12,12 +12,12 @@ apply from: "${rootDir.toPath()}/pmd-config.gradle"
 dependencies {
     implementation project(":components:errors")
 
-    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-webmvc")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("junit:junit")
     testImplementation project(path: ":components:test-support", configuration: "testOutput")
-    testImplementation("org.flywaydb:flyway-core:${flywayVersion}")
-    testImplementation("org.flywaydb:flyway-database-postgresql:${flywayVersion}")
+    testImplementation("org.springframework.boot:spring-boot-starter-flyway")
+    testImplementation("org.flywaydb:flyway-database-postgresql")
 
     implementation('com.fasterxml.jackson.module:jackson-module-kotlin')
     implementation("org.jetbrains.kotlin:kotlin-reflect")
