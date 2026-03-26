@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.controllers.v1.keyusage
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
@@ -19,6 +18,7 @@ import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import tools.jackson.databind.json.JsonMapper
 import java.security.Security
 
 class KeyUsageControllerTest {
@@ -64,7 +64,7 @@ class KeyUsageControllerTest {
               "unknown_keys": 1
             }
             """.trimIndent()
-        val objectMapper = ObjectMapper()
+        val objectMapper = JsonMapper.builder().build()
         val map = objectMapper.readValue(responseBody, Map::class.java) as Map<String, Integer>
         val longMap = map.mapValues { it.value.toLong() }
         keyUsageHandler.keyusageReturnsMap = longMap

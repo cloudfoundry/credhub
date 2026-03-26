@@ -1,8 +1,5 @@
 package org.cloudfoundry.credhub.utils;
 
-import java.io.IOException;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.cloudfoundry.credhub.requests.StringGenerationParameters;
 import org.junit.jupiter.api.Test;
 
@@ -12,7 +9,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 public class JsonObjectMapperTest {
 
   @Test
-  public void writeValueAsString_convertsObjectToSnakeCaseJson() throws JsonProcessingException {
+  public void writeValueAsString_convertsObjectToSnakeCaseJson() {
     final StringGenerationParameters generationParameters = new StringGenerationParameters();
     generationParameters.setExcludeLower(true);
     generationParameters.setIncludeSpecial(true);
@@ -25,7 +22,7 @@ public class JsonObjectMapperTest {
   }
 
   @Test
-  public void deserializeBackwardsCompatibleValue_supportsSnakeCaseDeserialization() throws IOException {
+  public void deserializeBackwardsCompatibleValue_supportsSnakeCaseDeserialization() {
     final String testSnakeCaseString = "{\"exclude_lower\":true,\"include_special\":true}";
 
     final StringGenerationParameters generationParameters = new StringGenerationParameters();
@@ -39,7 +36,7 @@ public class JsonObjectMapperTest {
   }
 
   @Test
-  public void deserializeBackwardsCompatibleValue_supportsCamelCaseDeserialization() throws IOException {
+  public void deserializeBackwardsCompatibleValue_supportsCamelCaseDeserialization() {
     final String testSnakeCaseString = "{\"excludeLower\":true,\"includeSpecial\":true}";
     final StringGenerationParameters generationParameters = new StringGenerationParameters();
     generationParameters.setExcludeLower(true);
@@ -52,7 +49,7 @@ public class JsonObjectMapperTest {
   }
 
   @Test
-  public void readValue_shouldConvertJsonStringsInSnakeCaseToObjects() throws IOException {
+  public void readValue_shouldConvertJsonStringsInSnakeCaseToObjects() {
     final String testSnakeCaseString = "{\"exclude_lower\":true,\"include_special\":true}";
     final StringGenerationParameters generationParameters = new StringGenerationParameters();
     generationParameters.setExcludeLower(true);

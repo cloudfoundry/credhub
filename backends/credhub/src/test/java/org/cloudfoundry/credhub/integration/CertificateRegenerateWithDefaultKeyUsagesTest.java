@@ -16,7 +16,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.KeyUsage;
@@ -31,6 +30,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
+import tools.jackson.databind.ObjectMapper;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.bouncycastle.asn1.x509.KeyUsage.cRLSign;

@@ -1,7 +1,5 @@
 package org.cloudfoundry.credhub.credentials
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.commons.lang3.StringUtils
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
@@ -31,6 +29,8 @@ import org.springframework.web.bind.annotation.RequestMethod.PUT
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.ObjectMapper
 import java.io.IOException
 
 @RestController

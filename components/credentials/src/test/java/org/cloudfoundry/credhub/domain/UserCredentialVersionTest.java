@@ -2,7 +2,6 @@ package org.cloudfoundry.credhub.domain;
 
 import java.util.UUID;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.entity.UserCredentialVersionData;
 import org.cloudfoundry.credhub.requests.StringGenerationParameters;
@@ -39,7 +38,7 @@ public class UserCredentialVersionTest {
   }
 
   @BeforeEach
-  public void beforeEach() throws JsonProcessingException {
+  public void beforeEach() {
     encryptor = mock(Encryptor.class);
 
      stringGenerationParameters = new StringGenerationParameters();

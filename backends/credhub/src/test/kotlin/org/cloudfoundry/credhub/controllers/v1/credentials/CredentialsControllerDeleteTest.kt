@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.controllers.v1.credentials
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
@@ -22,6 +21,7 @@ import org.springframework.restdocs.request.RequestDocumentation.parameterWithNa
 import org.springframework.restdocs.request.RequestDocumentation.queryParameters
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import tools.jackson.databind.json.JsonMapper
 import java.security.Security
 
 class CredentialsControllerDeleteTest {
@@ -30,7 +30,7 @@ class CredentialsControllerDeleteTest {
     lateinit var mockMvc: MockMvc
     var spyCredentialsHandler: SpyCredentialsHandler = SpyCredentialsHandler()
     var spyRegenerateHandler: SpyRegenerateHandler = SpyRegenerateHandler()
-    private val objectMapper: ObjectMapper = ObjectMapper()
+    private val objectMapper: JsonMapper = JsonMapper.builder().build()
 
     companion object {
         @BeforeClass

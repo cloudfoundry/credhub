@@ -1,16 +1,15 @@
 package org.cloudfoundry.credhub.helpers
 
-import com.fasterxml.jackson.core.JsonProcessingException
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import jakarta.validation.ConstraintViolation
 import jakarta.validation.Validation
 import org.cloudfoundry.credhub.util.TimeModuleFactory
 import org.hamcrest.BaseMatcher
 import org.hamcrest.Description
 import org.hamcrest.Matcher
-import java.io.IOException
+import tools.jackson.core.JacksonException
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.PropertyNamingStrategies
+import tools.jackson.databind.json.JsonMapper
 
 class JsonTestHelper private constructor() {
     companion object {
@@ -18,16 +17,18 @@ class JsonTestHelper private constructor() {
         private val VALIDATOR = Validation.buildDefaultValidatorFactory().validator
 
         @JvmStatic
-        fun createObjectMapper(): ObjectMapper =
-            ObjectMapper()
-                .registerModule(TimeModuleFactory.createTimeModule())
-                .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+        fun createObjectMapper(): JsonMapper =
+            JsonMapper
+                .builder()
+                .addModule(TimeModuleFactory.createTimeModule())
+                .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+                .build()
 
         @JvmStatic
         fun serialize(dataObject: Any): ByteArray? {
             try {
                 return OBJECT_MAPPER.writeValueAsBytes(dataObject)
-            } catch (e: JsonProcessingException) {
+            } catch (e: JacksonException) {
                 throw RuntimeException(e)
             }
         }
@@ -36,7 +37,7 @@ class JsonTestHelper private constructor() {
         fun serializeToString(dataObject: Any): String {
             try {
                 return OBJECT_MAPPER.writeValueAsString(dataObject)
-            } catch (e: JsonProcessingException) {
+            } catch (e: JacksonException) {
                 throw RuntimeException(e)
             }
         }
@@ -45,28 +46,15 @@ class JsonTestHelper private constructor() {
         fun <T> deserialize(
             json: ByteArray,
             klass: Class<T>,
-        ): T {
-            try {
-                return OBJECT_MAPPER.readValue(json, klass)
-            } catch (e: IOException) {
-                throw RuntimeException(e)
-            }
-        }
+        ): T = OBJECT_MAPPER.readValue(json, klass)
 
         @JvmStatic
         fun <T> deserialize(
             json: String,
             klass: Class<T>,
-        ): T {
-            try {
-                return deserializeChecked<T>(json, klass)
-            } catch (e: IOException) {
-                throw RuntimeException(e)
-            }
-        }
+        ): T = deserializeChecked(json, klass)
 
         @JvmStatic
-        @Throws(IOException::class)
         fun <T> deserializeChecked(
             json: String,
             klass: Class<T>,
@@ -80,12 +68,8 @@ class JsonTestHelper private constructor() {
             json: String,
             klass: Class<T>,
         ): Set<ConstraintViolation<T>> {
-            try {
-                val dataObject = OBJECT_MAPPER.readValue(json, klass)
-                return VALIDATOR.validate(dataObject)
-            } catch (e: IOException) {
-                throw RuntimeException(e)
-            }
+            val dataObject = OBJECT_MAPPER.readValue(json, klass)
+            return VALIDATOR.validate(dataObject)
         }
 
         @JvmStatic
@@ -93,12 +77,8 @@ class JsonTestHelper private constructor() {
             json: ByteArray,
             klass: Class<T>,
         ): Set<ConstraintViolation<T>> {
-            try {
-                val dataObject = OBJECT_MAPPER.readValue(json, klass)
-                return VALIDATOR.validate(dataObject)
-            } catch (e: IOException) {
-                throw RuntimeException(e)
-            }
+            val dataObject = OBJECT_MAPPER.readValue(json, klass)
+            return VALIDATOR.validate(dataObject)
         }
 
         @JvmStatic

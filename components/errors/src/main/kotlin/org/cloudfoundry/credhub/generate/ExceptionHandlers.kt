@@ -1,10 +1,5 @@
 package org.cloudfoundry.credhub.generate
 
-import com.fasterxml.jackson.core.JsonParseException
-import com.fasterxml.jackson.databind.JsonMappingException
-import com.fasterxml.jackson.databind.exc.InvalidFormatException
-import com.fasterxml.jackson.databind.exc.InvalidTypeIdException
-import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException
 import com.jayway.jsonpath.InvalidJsonException
 import jakarta.servlet.http.HttpServletResponse
 import org.apache.logging.log4j.LogManager
@@ -40,6 +35,11 @@ import org.springframework.web.bind.MissingServletRequestParameterException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import tools.jackson.core.exc.StreamReadException
+import tools.jackson.databind.DatabindException
+import tools.jackson.databind.exc.InvalidFormatException
+import tools.jackson.databind.exc.InvalidTypeIdException
+import tools.jackson.databind.exc.UnrecognizedPropertyException
 import java.io.InvalidObjectException
 import java.text.MessageFormat
 
@@ -62,11 +62,11 @@ class ExceptionHandlers {
     @ResponseStatus(HttpStatus.FORBIDDEN)
     fun handlePermissionException(error: PermissionException): ResponseError = constructError(error.message)
 
-    @ExceptionHandler(JsonMappingException::class)
+    @ExceptionHandler(DatabindException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    fun handleJsonMappingException(e: JsonMappingException): ResponseError {
+    fun handleJsonMappingException(e: DatabindException): ResponseError {
         for (reference in e.path) {
-            if ("operations" == reference.fieldName) {
+            if ("operations" == reference.getPropertyName()) {
                 return constructError(ErrorMessages.Permissions.INVALID_OPERATION)
             }
         }
@@ -97,9 +97,9 @@ class ExceptionHandlers {
         return constructError(ErrorMessages.INVALID_CONTENT_TYPE, errorMessage)
     }
 
-    @ExceptionHandler(JsonParseException::class)
+    @ExceptionHandler(StreamReadException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    fun handleJsonMappingException(e: JsonParseException): ResponseError = badRequestResponse()
+    fun handleJsonParseException(e: StreamReadException): ResponseError = badRequestResponse()
 
     @ExceptionHandler(ParameterizedValidationException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -151,7 +151,7 @@ class ExceptionHandlers {
         if (cause is UnrecognizedPropertyException) {
             return constructError(ErrorMessages.INVALID_JSON_KEY, cause.propertyName)
         } else if (cause is InvalidTypeIdException ||
-            cause is JsonMappingException &&
+            cause is DatabindException &&
             cause.message?.contains("missing property 'type'") == true
         ) {
             return constructError(ErrorMessages.INVALID_TYPE_WITH_SET_PROMPT)
@@ -224,22 +224,19 @@ class ExceptionHandlers {
         if (cause is UnrecognizedPropertyException) {
             return constructError(ErrorMessages.INVALID_JSON_KEY, cause.propertyName)
         } else if (cause is InvalidTypeIdException ||
-            cause is JsonMappingException &&
+            cause is DatabindException &&
             cause.message?.contains("missing property 'type'") == true
         ) {
             return constructError(ErrorMessages.INVALID_TYPE_WITH_SET_PROMPT)
-        } else if (cause is JsonMappingException) {
+        } else if (cause is DatabindException) {
             for (reference in cause.path) {
-                if ("operations" == reference.fieldName) {
+                if ("operations" == reference.getPropertyName()) {
                     return constructError(ErrorMessages.Permissions.INVALID_OPERATION)
                 }
             }
         } else if (cause is InvalidFormatException) {
-            for (
-            reference in cause
-                .path
-            ) {
-                if ("operations" == reference.fieldName) {
+            for (reference in cause.path) {
+                if ("operations" == reference.getPropertyName()) {
                     return constructError(ErrorMessages.Permissions.INVALID_OPERATION)
                 }
             }

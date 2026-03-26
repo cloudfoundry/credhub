@@ -74,7 +74,7 @@ dependencies {
     implementation("com.google.guava:guava:${guavaVersion}")
     implementation("org.apache.commons:commons-lang3")
 
-    implementation('com.fasterxml.jackson.module:jackson-module-kotlin')
+    implementation('tools.jackson.module:jackson-module-kotlin')
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 
     testImplementation("org.springframework.security:spring-security-test")

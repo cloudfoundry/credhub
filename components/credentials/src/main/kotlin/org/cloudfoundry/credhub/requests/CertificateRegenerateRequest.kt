@@ -2,7 +2,7 @@ package org.cloudfoundry.credhub.requests
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.databind.JsonNode
+import tools.jackson.databind.JsonNode
 
 @JsonAutoDetect
 class CertificateRegenerateRequest {

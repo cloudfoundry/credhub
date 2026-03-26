@@ -3,10 +3,10 @@ package org.cloudfoundry.credhub.credential
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.utils.EmptyStringToNull
 import org.cloudfoundry.credhub.validators.RequireAnyOf
+import tools.jackson.databind.annotation.JsonDeserialize
 import java.util.Objects
 
 @RequireAnyOf(message = ErrorMessages.MISSING_RSA_SSH_PARAMETERS, fields = ["publicKey", "privateKey"])

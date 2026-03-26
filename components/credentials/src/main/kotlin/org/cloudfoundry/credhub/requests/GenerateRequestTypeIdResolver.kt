@@ -1,15 +1,14 @@
 package org.cloudfoundry.credhub.requests
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import com.fasterxml.jackson.databind.DatabindContext
-import com.fasterxml.jackson.databind.JavaType
-import com.fasterxml.jackson.databind.jsontype.TypeIdResolver
 import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData
 import org.cloudfoundry.credhub.entity.PasswordCredentialVersionData
 import org.cloudfoundry.credhub.entity.RsaCredentialVersionData
 import org.cloudfoundry.credhub.entity.SshCredentialVersionData
 import org.cloudfoundry.credhub.entity.UserCredentialVersionData
-import java.io.IOException
+import tools.jackson.databind.DatabindContext
+import tools.jackson.databind.JavaType
+import tools.jackson.databind.jsontype.TypeIdResolver
 
 class GenerateRequestTypeIdResolver : TypeIdResolver {
     private var baseType: JavaType? = null
@@ -18,16 +17,19 @@ class GenerateRequestTypeIdResolver : TypeIdResolver {
         this.baseType = baseType
     }
 
-    override fun idFromValue(value: Any): String? = null
+    override fun idFromValue(
+        ctxt: DatabindContext,
+        value: Any,
+    ): String? = null
 
     override fun idFromValueAndType(
+        ctxt: DatabindContext,
         value: Any,
         suggestedType: Class<*>,
     ): String? = null
 
-    override fun idFromBaseType(): String? = null
+    override fun idFromBaseType(ctxt: DatabindContext): String? = null
 
-    @Throws(IOException::class)
     override fun typeFromId(
         context: DatabindContext,
         id: String,

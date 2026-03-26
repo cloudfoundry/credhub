@@ -1,17 +1,15 @@
 package org.cloudfoundry.credhub.domain;
 
-import java.io.IOException;
 import java.util.UUID;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.entity.JsonCredentialVersionData;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -29,17 +27,12 @@ public class JsonCredentialVersionTest {
   private JsonCredentialVersionData jsonCredentialData;
 
   @BeforeEach
-  public void beforeEach() throws JsonProcessingException {
+  public void beforeEach() {
     final String jsonString = "{\"simple\":\"just-a-string\",\"complex\":{\"key\":\"value\"}}";
-    final ObjectMapper objectMapper = new ObjectMapper();
-    final String serializedValue;
+    final JsonMapper objectMapper = JsonMapper.builder().build();
 
-    try {
-      value = objectMapper.readTree(jsonString);
-      serializedValue = objectMapper.writeValueAsString(value);
-    } catch (final IOException e) {
-      throw new RuntimeException(e);
-    }
+    value = objectMapper.readTree(jsonString);
+    final String serializedValue = objectMapper.writeValueAsString(value);
 
     final Encryptor encryptor = mock(Encryptor.class);
     final byte[] encryptedValue = "fake-encrypted-value".getBytes(UTF_8);

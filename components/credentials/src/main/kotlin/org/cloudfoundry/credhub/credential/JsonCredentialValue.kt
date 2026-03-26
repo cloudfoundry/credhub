@@ -3,9 +3,9 @@ package org.cloudfoundry.credhub.credential
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonValue
-import com.fasterxml.jackson.databind.JsonNode
 import jakarta.validation.constraints.NotNull
 import org.cloudfoundry.credhub.ErrorMessages
+import tools.jackson.databind.JsonNode
 import java.util.Objects
 
 @JsonAutoDetect

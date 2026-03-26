@@ -1,8 +1,8 @@
 package org.cloudfoundry.credhub.requests;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cloudfoundry.credhub.helpers.JsonTestHelper;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.ObjectMapper;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;

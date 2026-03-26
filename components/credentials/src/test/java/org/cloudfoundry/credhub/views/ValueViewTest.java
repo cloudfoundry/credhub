@@ -1,16 +1,16 @@
 package org.cloudfoundry.credhub.views;
 
-import java.io.IOException;
+
 import java.time.Instant;
 import java.util.UUID;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.cloudfoundry.credhub.domain.Encryptor;
 import org.cloudfoundry.credhub.domain.ValueCredentialVersion;
 import org.cloudfoundry.credhub.helpers.JsonTestHelper;
 import org.cloudfoundry.credhub.utils.JsonObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.JsonNode;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -36,18 +36,14 @@ public class ValueViewTest {
     entity.setEncryptor(encryptor);
     entity.setUuid(uuid);
     JsonObjectMapper objectMapper = new JsonObjectMapper();
-    try {
-      metadata = objectMapper.readTree("{\"name\":\"test\"}");
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    metadata = objectMapper.readTree("{\"name\":\"test\"}");
     entity.setMetadata(metadata);
     createdAt = Instant.now();
     entity.setVersionCreatedAt(createdAt);
   }
 
   @Test
-  public void itCanCreateViewFromEntity() throws IOException {
+  public void itCanCreateViewFromEntity() {
     final Instant createdAtWithoutMillis = Instant.ofEpochSecond(createdAt.getEpochSecond());
     final ValueView actual = (ValueView) ValueView.fromEntity(entity);
     assertThat(JsonTestHelper.serializeToString(actual), equalTo("{"

@@ -1,7 +1,5 @@
 package org.cloudfoundry.credhub.requests
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import jakarta.validation.ConstraintViolation
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.helpers.JsonTestHelper.Companion.deserializeAndValidate
@@ -14,6 +12,8 @@ import org.hamcrest.Matchers.contains
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.exc.InvalidFormatException
 import java.io.IOException
 
 @RunWith(JUnit4::class)

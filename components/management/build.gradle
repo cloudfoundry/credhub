@@ -19,7 +19,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-flyway")
     testImplementation("org.flywaydb:flyway-database-postgresql")
 
-    implementation('com.fasterxml.jackson.module:jackson-module-kotlin')
+    implementation('tools.jackson.module:jackson-module-kotlin')
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 
     implementation("org.apache.commons:commons-lang3")

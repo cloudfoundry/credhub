@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.controllers.v1.interpolate
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
@@ -21,6 +20,7 @@ import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.pos
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import tools.jackson.databind.json.JsonMapper
 import java.security.Security
 
 class InterpolateControllerTest {
@@ -78,7 +78,7 @@ class InterpolateControllerTest {
               ]
             }
             """.trimIndent()
-        val objectMapper = ObjectMapper()
+        val objectMapper = JsonMapper.builder().build()
 
         val map = objectMapper.readValue(responseBody, Map::class.java) as Map<String, Any>
         spyInterpolationHandler.interpolatecredhubreferencesReturnsMap = map

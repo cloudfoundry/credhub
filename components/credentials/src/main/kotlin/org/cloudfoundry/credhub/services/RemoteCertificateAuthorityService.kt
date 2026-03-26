@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.services
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.protobuf.ByteString
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
@@ -12,6 +11,7 @@ import org.cloudfoundry.credhub.remote.RemoteBackendClient
 import org.cloudfoundry.credhub.remote.grpc.GetResponse
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
+import tools.jackson.databind.ObjectMapper
 
 @Component
 @Profile("remote")

@@ -1,8 +1,8 @@
 package org.cloudfoundry.credhub.regenerate
 
-import com.fasterxml.jackson.databind.JsonNode
 import org.cloudfoundry.credhub.views.BulkRegenerateResults
 import org.cloudfoundry.credhub.views.CredentialView
+import tools.jackson.databind.JsonNode
 
 interface RegenerateHandler {
     fun handleRegenerate(

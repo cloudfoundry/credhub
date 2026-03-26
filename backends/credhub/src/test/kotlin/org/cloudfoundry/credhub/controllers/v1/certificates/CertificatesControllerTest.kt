@@ -1,7 +1,5 @@
 package org.cloudfoundry.credhub.controllers.v1.certificates
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
@@ -44,6 +42,8 @@ import org.springframework.restdocs.request.RequestDocumentation.pathParameters
 import org.springframework.restdocs.request.RequestDocumentation.queryParameters
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.json.JsonMapper
 import java.security.Security
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -61,7 +61,7 @@ class CertificatesControllerTest {
     private lateinit var createdAt: Instant
     private lateinit var certificateCredentialVersion: CertificateCredentialVersion
     private lateinit var certificateView: CertificateView
-    private val objectMapper: ObjectMapper = ObjectMapper()
+    private val objectMapper: JsonMapper = JsonMapper.builder().build()
     private lateinit var metadata: JsonNode
 
     companion object {

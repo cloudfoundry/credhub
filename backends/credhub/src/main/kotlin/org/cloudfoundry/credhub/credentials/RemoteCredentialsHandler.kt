@@ -1,7 +1,5 @@
 package org.cloudfoundry.credhub.credentials
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.protobuf.ByteString
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
@@ -38,6 +36,8 @@ import org.cloudfoundry.credhub.views.DataResponse
 import org.cloudfoundry.credhub.views.FindCredentialResult
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.ObjectMapper
 import java.time.Instant
 import java.util.UUID
 

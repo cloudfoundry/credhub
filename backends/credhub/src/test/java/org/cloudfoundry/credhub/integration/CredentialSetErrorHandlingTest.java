@@ -12,7 +12,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.ErrorMessages;
@@ -22,6 +21,7 @@ import org.cloudfoundry.credhub.utils.TestConstants;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import tools.jackson.databind.ObjectMapper;
 
 import static org.cloudfoundry.credhub.helpers.RequestHelper.setPassword;
 import static org.cloudfoundry.credhub.utils.AuthConstants.ALL_PERMISSIONS_TOKEN;

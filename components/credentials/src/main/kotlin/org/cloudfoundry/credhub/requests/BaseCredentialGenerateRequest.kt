@@ -2,12 +2,12 @@ package org.cloudfoundry.credhub.requests
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver
 import com.google.common.collect.Lists.newArrayList
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.constants.CredentialWriteMode
 import org.cloudfoundry.credhub.exceptions.InvalidModeException
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException
+import tools.jackson.databind.annotation.JsonTypeIdResolver
 import java.util.Arrays
 import java.util.Objects
 

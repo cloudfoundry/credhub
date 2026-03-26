@@ -1,17 +1,17 @@
 package org.cloudfoundry.credhub.views;
 
-import java.io.IOException;
+
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.cloudfoundry.credhub.domain.Encryptor;
 import org.cloudfoundry.credhub.domain.JsonCredentialVersion;
 import org.cloudfoundry.credhub.utils.JsonObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.JsonNode;
 
 import static org.cloudfoundry.credhub.helpers.JsonTestHelper.serializeToString;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -45,11 +45,7 @@ public class JsonViewTest {
     entity.setEncryptor(encryptor);
     entity.setUuid(uuid);
     JsonObjectMapper objectMapper = new JsonObjectMapper();
-    try {
-      metadata = objectMapper.readTree("{\"name\":\"test\"}");
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    metadata = objectMapper.readTree("{\"name\":\"test\"}");
     entity.setMetadata(metadata);
     when(encryptor.decrypt(any()))
       .thenReturn(serializedValue);
@@ -58,7 +54,7 @@ public class JsonViewTest {
   }
 
   @Test
-  public void itCanCreateViewFromEntity() throws IOException {
+  public void itCanCreateViewFromEntity() {
     final Instant createdAtWithoutMillis = Instant.ofEpochSecond(createdAt.getEpochSecond());
     final JsonView actual = (JsonView) JsonView.fromEntity(entity);
     assertThat(serializeToString(actual), equalTo("{"

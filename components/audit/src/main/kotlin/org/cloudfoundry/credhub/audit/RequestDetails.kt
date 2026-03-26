@@ -1,21 +1,16 @@
 package org.cloudfoundry.credhub.audit
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature.FAIL_ON_EMPTY_BEANS
-import java.io.IOException
+import tools.jackson.databind.SerializationFeature.FAIL_ON_EMPTY_BEANS
+import tools.jackson.databind.json.JsonMapper
 
 interface RequestDetails {
     fun toJSON(): String {
-        val result: String
-        try {
-            val mapper = ObjectMapper()
-            mapper.configure(FAIL_ON_EMPTY_BEANS, false)
-            result = mapper.writeValueAsString(this)
-        } catch (e: IOException) {
-            throw RuntimeException(e)
-        }
-
-        return result
+        val mapper =
+            JsonMapper
+                .builder()
+                .disable(FAIL_ON_EMPTY_BEANS)
+                .build()
+        return mapper.writeValueAsString(this)
     }
 
     fun operation(): OperationDeviceAction
