@@ -1,10 +1,9 @@
 package org.cloudfoundry.credhub.views;
 
-import java.io.IOException;
+
 import java.time.Instant;
 import java.util.UUID;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.Encryptor;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
@@ -13,6 +12,7 @@ import org.cloudfoundry.credhub.utils.JsonObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
+import tools.jackson.databind.JsonNode;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.cloudfoundry.credhub.TestHelper.getBouncyCastleFipsProvider;
@@ -58,11 +58,7 @@ public class CertificateViewTest {
     entity.setSelfSigned(false);
     entity.setGenerated(false);
     JsonObjectMapper objectMapper = new JsonObjectMapper();
-    try {
-      metadata = objectMapper.readTree("{\"name\":\"test\"}");
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    metadata = objectMapper.readTree("{\"name\":\"test\"}");
     entity.setMetadata(metadata);
     createdAt = Instant.now();
     entity.setVersionCreatedAt(createdAt);

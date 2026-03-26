@@ -3,11 +3,11 @@ package org.cloudfoundry.credhub.requests
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.constants.CredentialType
 import org.cloudfoundry.credhub.credential.CredentialValue
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException
+import tools.jackson.databind.annotation.JsonTypeIdResolver
 import java.util.Arrays
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type", visible = true)

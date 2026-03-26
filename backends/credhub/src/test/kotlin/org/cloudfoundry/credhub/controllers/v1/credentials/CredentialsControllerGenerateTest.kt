@@ -1,8 +1,5 @@
 package org.cloudfoundry.credhub.controllers.v1.credentials
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import org.assertj.core.api.Assertions.assertThat
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
@@ -49,6 +46,9 @@ import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.PropertyNamingStrategies
+import tools.jackson.databind.json.JsonMapper
 import java.security.Security
 import java.time.Instant
 import java.util.UUID
@@ -62,7 +62,11 @@ class CredentialsControllerGenerateTest {
     private val spyCredentialsHandler: SpyCredentialsHandler = SpyCredentialsHandler()
     private val spyRegenerateHandler: SpyRegenerateHandler = SpyRegenerateHandler()
 
-    private val objectMapper: ObjectMapper = ObjectMapper()
+    private val objectMapper: JsonMapper =
+        JsonMapper
+            .builder()
+            .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+            .build()
     lateinit var metadata: JsonNode
 
     companion object {
@@ -76,7 +80,6 @@ class CredentialsControllerGenerateTest {
     @Before
     fun setUp() {
         restDocumentation.beforeTest(javaClass, javaClass.simpleName)
-        objectMapper.propertyNamingStrategy = PropertyNamingStrategies.SNAKE_CASE
 
         val credentialController =
             CredentialsController(

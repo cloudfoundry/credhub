@@ -1,7 +1,5 @@
 package org.cloudfoundry.credhub.controllers.v1.credentials
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
@@ -46,6 +44,8 @@ import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.json.JsonMapper
 import java.security.Security
 import java.time.Instant
 import java.util.UUID
@@ -58,7 +58,7 @@ class CredentialsControllerSetTest {
     lateinit var mockMvc: MockMvc
     private var spyCredentialsHandler: SpyCredentialsHandler = SpyCredentialsHandler()
     private var spyRegenerateHandler: SpyRegenerateHandler = SpyRegenerateHandler()
-    private val objectMapper: ObjectMapper = ObjectMapper()
+    private val objectMapper: JsonMapper = JsonMapper.builder().build()
     lateinit var metadata: JsonNode
 
     companion object {
@@ -170,7 +170,7 @@ class CredentialsControllerSetTest {
                 CredentialType.JSON.type.lowercase(),
                 metadata,
                 JsonCredentialValue(
-                    ObjectMapper().readTree(
+                    JsonMapper.builder().build().readTree(
                         // language=json
                         """
                         {
@@ -219,7 +219,7 @@ class CredentialsControllerSetTest {
         val expectedValueSetRequest = JsonSetRequest()
         expectedValueSetRequest.value =
             JsonCredentialValue(
-                ObjectMapper().readTree(
+                JsonMapper.builder().build().readTree(
                     // language=json
                     """
                     {

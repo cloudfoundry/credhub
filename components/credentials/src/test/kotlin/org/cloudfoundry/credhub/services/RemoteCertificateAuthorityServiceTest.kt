@@ -1,7 +1,5 @@
 package org.cloudfoundry.credhub.services
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.google.protobuf.ByteString
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
@@ -20,6 +18,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
+import tools.jackson.databind.PropertyNamingStrategies
+import tools.jackson.databind.json.JsonMapper
 import java.util.UUID
 
 private const val CA_NAME = "/test/ca"
@@ -28,13 +28,15 @@ private const val USER = "test-user"
 class RemoteCertificateAuthorityServiceTest {
     private lateinit var subject: RemoteCertificateAuthorityService
     private val userContextHolder = mock(UserContextHolder::class.java)!!
-    private val objectMapper = ObjectMapper()
+    private val objectMapper =
+        JsonMapper
+            .builder()
+            .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+            .build()
     private var client = mock(RemoteBackendClient::class.java)!!
 
     @BeforeEach
     fun beforeEach() {
-        objectMapper.propertyNamingStrategy = PropertyNamingStrategies.SNAKE_CASE
-
         subject = RemoteCertificateAuthorityService(userContextHolder, objectMapper, client)
 
         val userContext = mock(UserContext::class.java)

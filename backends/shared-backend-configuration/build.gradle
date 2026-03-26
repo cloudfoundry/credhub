@@ -24,7 +24,7 @@ dependencies {
     testImplementation("org.springframework.security:spring-security-test")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 
-    implementation('com.fasterxml.jackson.module:jackson-module-kotlin')
+    implementation('tools.jackson.module:jackson-module-kotlin')
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 
     implementation("commons-codec:commons-codec")

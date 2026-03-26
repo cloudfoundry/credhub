@@ -1,6 +1,6 @@
 package org.cloudfoundry.credhub.domain;
 
-import java.io.IOException;
+
 
 import org.cloudfoundry.credhub.credential.UserCredentialValue;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
@@ -87,18 +87,14 @@ public class UserCredentialVersion extends CredentialVersion {
       return null;
     }
 
-    try {
-      final StringGenerationParameters generationParameters = jsonObjectMapper
-        .deserializeBackwardsCompatibleValue(parameterJson, StringGenerationParameters.class);
+    final StringGenerationParameters generationParameters = jsonObjectMapper
+      .deserializeBackwardsCompatibleValue(parameterJson, StringGenerationParameters.class);
 
-      final String password = this.password == null ? getPassword() : this.password;
+    final String password = this.password == null ? getPassword() : this.password;
 
-      generationParameters.setLength(password.length());
+    generationParameters.setLength(password.length());
 
-      return generationParameters;
-    } catch (final IOException e) {
-      throw new RuntimeException(e);
-    }
+    return generationParameters;
   }
 
   public void setGenerationParameters(final StringGenerationParameters generationParameters) {

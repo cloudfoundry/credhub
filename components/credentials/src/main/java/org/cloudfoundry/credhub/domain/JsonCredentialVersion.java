@@ -1,15 +1,12 @@
 package org.cloudfoundry.credhub.domain;
 
-import java.io.IOException;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.credential.JsonCredentialValue;
 import org.cloudfoundry.credhub.entity.JsonCredentialVersionData;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.requests.GenerationParameters;
 import org.cloudfoundry.credhub.utils.JsonObjectMapper;
+import tools.jackson.databind.JsonNode;
 
 public class JsonCredentialVersion extends CredentialVersion {
 
@@ -51,11 +48,7 @@ public class JsonCredentialVersion extends CredentialVersion {
   @Override
   public JsonNode getValue() {
     final String serializedValue = (String) super.getValue();
-    try {
-      return objectMapper.readTree(serializedValue);
-    } catch (final IOException e) {
-      throw new RuntimeException(e);
-    }
+    return objectMapper.readTree(serializedValue);
   }
 
   public void setValue(final JsonNode value) {
@@ -63,13 +56,8 @@ public class JsonCredentialVersion extends CredentialVersion {
       throw new ParameterizedValidationException(ErrorMessages.MISSING_VALUE);
     }
 
-    try {
-      final String serializedString = objectMapper.writeValueAsString(value);
-
-      super.setValue(serializedString);
-    } catch (final JsonProcessingException e) {
-      throw new RuntimeException(e);
-    }
+    final String serializedString = objectMapper.writeValueAsString(value);
+    super.setValue(serializedString);
   }
 
   @Override

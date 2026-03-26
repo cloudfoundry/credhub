@@ -1,12 +1,9 @@
 package org.cloudfoundry.credhub.handlers;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.PermissionOperation;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
@@ -28,6 +25,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.internal.verification.VerificationModeFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.fail;
@@ -280,36 +279,21 @@ public class DefaultInterpolationHandlerTest {
     when(jsonCredential1.getCredential()).thenReturn(mock(Credential.class));
     when(jsonCredential1.getName()).thenReturn("/cred1");
     final String credJson1 = "{\"secret1\":\"secret1-value\"}";
-    final JsonNode jsonNode1;
-    try {
-      jsonNode1 = new ObjectMapper().readTree(credJson1);
-    } catch (final IOException e) {
-      throw new RuntimeException(e);
-    }
+    final JsonNode jsonNode1 = new ObjectMapper().readTree(credJson1);
     doReturn(jsonNode1).when(jsonCredential1).getValue();
 
     final JsonCredentialVersion jsonCredential2 = mock(JsonCredentialVersion.class);
     when(jsonCredential2.getCredential()).thenReturn(mock(Credential.class));
     when(jsonCredential2.getName()).thenReturn("/cred2");
     final String credJson2 = "{\"secret2\":\"secret2-value\"}";
-    final JsonNode jsonNode2;
-    try {
-      jsonNode2 = new ObjectMapper().readTree(credJson2);
-    } catch (final IOException e) {
-      throw new RuntimeException(e);
-    }
+    final JsonNode jsonNode2 = new ObjectMapper().readTree(credJson2);
     doReturn(jsonNode2).when(jsonCredential2).getValue();
 
     final JsonCredentialVersion jsonCredential3 = mock(JsonCredentialVersion.class);
     when(jsonCredential3.getCredential()).thenReturn(mock(Credential.class));
     when(jsonCredential3.getName()).thenReturn("/cred3");
     final String credJson3 = "{\"secret3-1\":\"secret3-1-value\",\"secret3-2\":\"secret3-2-value\"}";
-    final JsonNode jsonNode3;
-    try {
-      jsonNode3 = new ObjectMapper().readTree(credJson3);
-    } catch (final IOException e) {
-      throw new RuntimeException(e);
-    }
+    final JsonNode jsonNode3 = new ObjectMapper().readTree(credJson3);
 
     when(permissionCheckingService.hasPermission(USER, "/cred1", PermissionOperation.READ))
       .thenReturn(true);
@@ -383,12 +367,7 @@ public class DefaultInterpolationHandlerTest {
     when(jsonCredential1.getCredential()).thenReturn(mock(Credential.class));
     when(jsonCredential1.getName()).thenReturn("/cred1");
     final String credJson1 = "{\"secret1\":\"secret1-value\"}";
-    final JsonNode jsonNode1;
-    try {
-      jsonNode1 = new ObjectMapper().readTree(credJson1);
-    } catch (final IOException e) {
-      throw new RuntimeException(e);
-    }
+    final JsonNode jsonNode1 = new ObjectMapper().readTree(credJson1);
     doReturn(jsonNode1).when(jsonCredential1).getValue();
 
     doReturn(singletonList(jsonCredential1)).when(credentialService).findNByName("/cred1", 1);

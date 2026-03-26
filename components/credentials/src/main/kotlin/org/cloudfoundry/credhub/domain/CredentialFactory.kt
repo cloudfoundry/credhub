@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.domain
 
-import com.fasterxml.jackson.databind.JsonNode
 import org.cloudfoundry.credhub.constants.CredentialType
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue
 import org.cloudfoundry.credhub.credential.CredentialValue
@@ -21,6 +20,7 @@ import org.cloudfoundry.credhub.requests.GenerationParameters
 import org.cloudfoundry.credhub.requests.StringGenerationParameters
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import tools.jackson.databind.JsonNode
 
 @Component
 class CredentialFactory

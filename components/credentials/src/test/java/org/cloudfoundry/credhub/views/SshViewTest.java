@@ -1,10 +1,9 @@
 package org.cloudfoundry.credhub.views;
 
-import java.io.IOException;
+
 import java.time.Instant;
 import java.util.UUID;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.cloudfoundry.credhub.domain.Encryptor;
 import org.cloudfoundry.credhub.domain.SshCredentialVersion;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
@@ -13,6 +12,7 @@ import org.cloudfoundry.credhub.utils.JsonObjectMapper;
 import org.cloudfoundry.credhub.utils.TestConstants;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.JsonNode;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -43,11 +43,7 @@ public class SshViewTest {
     entity.setPrivateKey(TestConstants.PRIVATE_KEY_4096);
     entity.setUuid(CREDENTIAL_UUID);
     JsonObjectMapper objectMapper = new JsonObjectMapper();
-    try {
-      metadata = objectMapper.readTree("{\"name\":\"test\"}");
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    metadata = objectMapper.readTree("{\"name\":\"test\"}");
     entity.setMetadata(metadata);
     createdAt = Instant.now();
     entity.setVersionCreatedAt(createdAt);

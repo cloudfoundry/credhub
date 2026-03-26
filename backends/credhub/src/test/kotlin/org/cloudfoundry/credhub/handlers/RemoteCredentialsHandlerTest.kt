@@ -1,7 +1,5 @@
 package org.cloudfoundry.credhub.handlers
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.google.protobuf.ByteString
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
@@ -54,6 +52,8 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
+import tools.jackson.databind.PropertyNamingStrategies
+import tools.jackson.databind.json.JsonMapper
 import java.security.Security
 import java.time.Instant
 import java.util.UUID
@@ -64,7 +64,11 @@ private const val USER = "test-user"
 @RunWith(JUnit4::class)
 class RemoteCredentialsHandlerTest {
     private val userContextHolder = mock(UserContextHolder::class.java)!!
-    private val objectMapper = ObjectMapper()
+    private val objectMapper =
+        JsonMapper
+            .builder()
+            .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+            .build()
     private var client = mock(RemoteBackendClient::class.java)!!
     private val credentialGenerator = mock(UniversalCredentialGenerator::class.java)!!
     private lateinit var subject: RemoteCredentialsHandler
@@ -83,8 +87,6 @@ class RemoteCredentialsHandlerTest {
         if (Security.getProvider(BouncyCastleFipsProvider.PROVIDER_NAME) == null) {
             Security.addProvider(BouncyCastleFipsProvider())
         }
-
-        objectMapper.propertyNamingStrategy = PropertyNamingStrategies.SNAKE_CASE
 
         subject =
             RemoteCredentialsHandler(

@@ -1,14 +1,13 @@
 package org.cloudfoundry.credhub.requests;
 
-import java.io.IOException;
 import java.util.Set;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.ConstraintViolation;
 import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.credential.JsonCredentialValue;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
 import static org.cloudfoundry.credhub.helpers.JsonTestHelper.deserialize;
 import static org.cloudfoundry.credhub.helpers.JsonTestHelper.deserializeAndValidate;
@@ -34,12 +33,7 @@ public class JsonSetRequestTest {
   @Test
   public void whenAllFieldsAreSet_shouldBeValid() {
     final String jsonString = "{\"foo\":\"bar\",\"nested\":{\"key\":3}}";
-    final JsonNode value;
-    try {
-      value = new ObjectMapper().readTree(jsonString);
-    } catch (final IOException e) {
-      throw new RuntimeException(e);
-    }
+    final JsonNode value = JsonMapper.builder().build().readTree(jsonString);
 
     final JsonSetRequest request = new JsonSetRequest();
     request.setName("some-name");

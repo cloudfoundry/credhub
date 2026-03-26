@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import org.apache.commons.lang3.StringUtils
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.utils.CertificateReader
@@ -16,6 +15,7 @@ import org.cloudfoundry.credhub.validators.RequireCertificateSignedByCA
 import org.cloudfoundry.credhub.validators.RequireValidCA
 import org.cloudfoundry.credhub.validators.RequireValidCertificate
 import org.cloudfoundry.credhub.validators.ValidCertificateLength
+import tools.jackson.databind.annotation.JsonDeserialize
 import java.time.Instant
 import java.util.Objects
 

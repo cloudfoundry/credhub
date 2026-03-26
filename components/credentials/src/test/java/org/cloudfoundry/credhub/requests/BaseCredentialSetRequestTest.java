@@ -1,33 +1,31 @@
 package org.cloudfoundry.credhub.requests;
 
-import java.io.IOException;
-
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
-import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.helpers.JsonTestHelper;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.DatabindException;
+import tools.jackson.databind.exc.InvalidTypeIdException;
+import tools.jackson.databind.exc.UnrecognizedPropertyException;
 
 import static org.cloudfoundry.credhub.helpers.JsonTestHelper.deserializeChecked;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class BaseCredentialSetRequestTest {
   @Test
-  public void whenTypeIsNotSet_throwsException() throws IOException {
+  public void whenTypeIsNotSet_throwsException() {
     final String json = "{" +
             "\"name\":\"some-name\"," +
             "\"value\":\"some-value\"," +
             "\"overwrite\":true" +
             "}";
 
-    assertThrows(JsonMappingException.class, () ->
+    assertThrows(DatabindException.class, () ->
             JsonTestHelper.deserializeChecked(json, BaseCredentialSetRequest.class)
     );
   }
 
   @Test
-  public void whenTypeIsEmptyString_throwsException() throws IOException {
+  public void whenTypeIsEmptyString_throwsException() {
     final String json = "{" +
             "\"name\":\"some-name\"," +
             "\"type\":\"\"," +
@@ -41,7 +39,7 @@ public class BaseCredentialSetRequestTest {
   }
 
   @Test
-  public void whenTypeIsUnknown_throwsException() throws IOException {
+  public void whenTypeIsUnknown_throwsException() {
     final String json = "{" +
                         "\"name\":\"some-name\"," +
                         "\"type\":\"moose\"," +
@@ -55,7 +53,7 @@ public class BaseCredentialSetRequestTest {
   }
 
   @Test
-  public void whenValueHasUnknownField_throwsException() throws IOException {
+  public void whenValueHasUnknownField_throwsException() {
     final String json = "{\n"
                         + "  \"name\": \"/example/certificate\",\n"
                         + "  \"type\": \"certificate\",\n"
@@ -71,7 +69,7 @@ public class BaseCredentialSetRequestTest {
 
 //  @Test(expected = ParameterizedValidationException.class)
   @Test
-  public void whenMetadataExceeds7000Characters_throwsException() throws IOException {
+  public void whenMetadataExceeds7000Characters_throwsException() {
     final String json = "{\n" +
                         "  \"name\": \"test\",\n" +
                         "  \"type\": \"value\",\n" +

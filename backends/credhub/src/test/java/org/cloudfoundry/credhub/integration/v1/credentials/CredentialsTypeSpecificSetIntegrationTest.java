@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.integration.v1.credentials;
 
-import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -23,9 +22,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.TestHelper;
@@ -52,6 +48,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.mockito.ArgumentCaptor;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import static org.cloudfoundry.credhub.utils.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -97,7 +96,7 @@ public class CredentialsTypeSpecificSetIntegrationTest {
                       .put("private_key", TestConstants.TEST_PRIVATE_KEY)
                       .build()
       );
-    } catch (JsonProcessingException e) {
+    } catch (JacksonException e) {
       throw new RuntimeException(e);
     }
   }
@@ -110,7 +109,7 @@ public class CredentialsTypeSpecificSetIntegrationTest {
           .put("public_key", TestConstants.SSH_PUBLIC_KEY_4096_WITH_COMMENT)
           .put("private_key", TestConstants.PRIVATE_KEY_4096)
           .build());
-    } catch (JsonProcessingException e) {
+    } catch (JacksonException e) {
       throw new RuntimeException(e);
     }
   }
@@ -123,7 +122,7 @@ public class CredentialsTypeSpecificSetIntegrationTest {
           .put("public_key", TestConstants.RSA_PUBLIC_KEY_4096)
           .put("private_key", TestConstants.PRIVATE_KEY_4096)
           .build());
-    } catch (JsonProcessingException e) {
+    } catch (JacksonException e) {
       throw new RuntimeException(e);
     }
   }
@@ -132,7 +131,7 @@ public class CredentialsTypeSpecificSetIntegrationTest {
   static {
     try {
       JSON_VALUE_JSON_STRING = new ObjectMapper().writeValueAsString(jsonValueMap);
-    } catch (JsonProcessingException e) {
+    } catch (JacksonException e) {
       throw new RuntimeException(e);
     }
   }
@@ -146,22 +145,12 @@ public class CredentialsTypeSpecificSetIntegrationTest {
           .put("username", USERNAME_VALUE)
           .put("password", PASSWORD_VALUE)
           .build());
-    } catch (JsonProcessingException e) {
+    } catch (JacksonException e) {
       throw new RuntimeException(e);
     }
   }
 
-  private static final JsonNode jsonNode;
-
-  static {
-    JsonNode tmp = null;
-    try {
-      tmp = new ObjectMapper().readTree(JSON_VALUE_JSON_STRING);
-    } catch (final IOException e) {
-      throw new RuntimeException(e);
-    }
-    jsonNode = tmp;
-  }
+  private static final JsonNode jsonNode = new ObjectMapper().readTree(JSON_VALUE_JSON_STRING);
 
   @Rule
   public final SpringMethodRule springMethodRule = new SpringMethodRule();

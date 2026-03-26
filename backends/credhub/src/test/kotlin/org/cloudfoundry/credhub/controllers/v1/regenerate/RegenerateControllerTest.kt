@@ -1,7 +1,5 @@
 package org.cloudfoundry.credhub.controllers.v1.regenerate
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.constants.CredentialType
 import org.cloudfoundry.credhub.credential.StringCredentialValue
@@ -29,6 +27,8 @@ import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.json.JsonMapper
 import java.security.Security
 import java.time.Instant
 import java.util.UUID
@@ -40,7 +40,7 @@ class RegenerateControllerTest {
     private lateinit var spyRegenerateHandler: SpyRegenerateHandler
     private lateinit var mockMvc: MockMvc
 
-    private val objectMapper: ObjectMapper = ObjectMapper()
+    private val objectMapper: JsonMapper = JsonMapper.builder().build()
     lateinit var metadata: JsonNode
 
     companion object {

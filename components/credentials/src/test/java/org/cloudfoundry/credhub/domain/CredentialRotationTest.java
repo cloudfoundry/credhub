@@ -2,7 +2,6 @@ package org.cloudfoundry.credhub.domain;
 
 import java.util.UUID;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData;
 import org.cloudfoundry.credhub.entity.CredentialVersionData;
@@ -14,6 +13,7 @@ import org.cloudfoundry.credhub.requests.StringGenerationParameters;
 import org.cloudfoundry.credhub.services.RetryingEncryptionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.ObjectMapper;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;

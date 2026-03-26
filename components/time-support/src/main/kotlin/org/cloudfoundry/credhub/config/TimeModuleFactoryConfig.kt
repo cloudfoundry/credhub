@@ -1,12 +1,12 @@
 package org.cloudfoundry.credhub.config
 
-import com.fasterxml.jackson.databind.Module
 import org.cloudfoundry.credhub.util.TimeModuleFactory
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import tools.jackson.databind.JacksonModule
 
 @Configuration
 class TimeModuleFactoryConfig {
     @Bean
-    fun javaTimeModule(): Module = TimeModuleFactory.createTimeModule()
+    fun javaTimeModule(): JacksonModule = TimeModuleFactory.createTimeModule()
 }

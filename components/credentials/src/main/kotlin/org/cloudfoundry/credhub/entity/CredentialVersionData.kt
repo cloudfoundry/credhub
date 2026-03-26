@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.entity
 
-import com.fasterxml.jackson.databind.JsonNode
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Convert
@@ -24,6 +23,7 @@ import org.hibernate.annotations.NotFound
 import org.hibernate.annotations.NotFoundAction
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
+import tools.jackson.databind.JsonNode
 import java.time.Instant
 import java.util.UUID
 

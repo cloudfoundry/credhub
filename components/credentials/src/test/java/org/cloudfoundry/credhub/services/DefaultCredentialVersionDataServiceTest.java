@@ -1,6 +1,6 @@
 package org.cloudfoundry.credhub.services;
 
-import java.io.IOException;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -14,7 +14,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.TestHelper;
@@ -47,6 +46,7 @@ import org.cloudfoundry.credhub.views.FindCredentialResult;
 import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.JsonNode;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -261,12 +261,7 @@ public class DefaultCredentialVersionDataServiceTest {
     final ValueCredentialVersionData valueCredentialData = new ValueCredentialVersionData("/my-credential");
     final ValueCredentialVersion credential = new ValueCredentialVersion(valueCredentialData);
 
-    JsonNode metadata = null;
-    try {
-      metadata = objectMapper.readTree("{\"name\":\"test\"}");
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    JsonNode metadata = objectMapper.readTree("{\"name\":\"test\"}");
     credential.setEncryptor(encryptor);
     credential.setMetadata(metadata);
     subject.save(credential);
@@ -661,12 +656,7 @@ public class DefaultCredentialVersionDataServiceTest {
     encryptedValue.setEncryptedValue(new byte[]{});
     encryptedValue.setNonce(new byte[]{});
 
-    JsonNode metadata = null;
-    try {
-      metadata = objectMapper.readTree("{\"name\":\"test\"}");
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+    JsonNode metadata = objectMapper.readTree("{\"name\":\"test\"}");
 
     final PasswordCredentialVersionData credentialObject = new PasswordCredentialVersionData(name);
     credentialObject.setMetadata(metadata);

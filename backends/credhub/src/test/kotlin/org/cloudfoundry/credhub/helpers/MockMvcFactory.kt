@@ -1,11 +1,8 @@
 package org.cloudfoundry.credhub.helpers
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.PropertyNamingStrategies
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.cloudfoundry.credhub.generate.ExceptionHandlers
 import org.cloudfoundry.credhub.util.TimeModuleFactory
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.restdocs.ManualRestDocumentation
 import org.springframework.restdocs.cli.CliDocumentation.curlRequest
 import org.springframework.restdocs.http.HttpDocumentation.httpRequest
@@ -17,19 +14,21 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.test.web.servlet.setup.StandaloneMockMvcBuilder
+import tools.jackson.databind.PropertyNamingStrategies
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.module.kotlin.KotlinModule
 
 class MockMvcFactory {
     companion object {
-        private fun getPreconfiguredJacksonConverter(): MappingJackson2HttpMessageConverter {
-            val converter = MappingJackson2HttpMessageConverter()
+        private fun getPreconfiguredJacksonConverter(): JacksonJsonHttpMessageConverter {
             val objectMapper =
-                ObjectMapper()
-                    .registerModule(TimeModuleFactory.createTimeModule())
-                    .registerKotlinModule()
-                    .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
-
-            converter.objectMapper = objectMapper
-            return converter
+                JsonMapper
+                    .builder()
+                    .addModule(TimeModuleFactory.createTimeModule())
+                    .addModule(KotlinModule.Builder().build())
+                    .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+                    .build()
+            return JacksonJsonHttpMessageConverter(objectMapper)
         }
 
         @JvmStatic

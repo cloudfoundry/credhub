@@ -1,11 +1,8 @@
 package org.cloudfoundry.credhub.domain;
 
-import java.io.IOException;
 import java.security.Security;
 import java.util.UUID;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
 import org.cloudfoundry.credhub.constants.CredentialType;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
@@ -22,6 +19,7 @@ import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.JsonNode;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.cloudfoundry.credhub.utils.CertificateStringConstants.SELF_SIGNED_CA_CERT;
@@ -40,13 +38,7 @@ public class CredentialFactoryTest {
   private static final JsonNode jsonNode;
 
   static {
-    JsonNode tmp = null;
-    try {
-      tmp = new JsonObjectMapper().readTree(jsonValueJsonString);
-    } catch (final IOException e) {
-      throw new RuntimeException(e);
-    }
-    jsonNode = tmp;
+    jsonNode = new JsonObjectMapper().readTree(jsonValueJsonString);
   }
 
   private CredentialFactory subject;
@@ -59,7 +51,7 @@ public class CredentialFactoryTest {
   }
 
   @BeforeEach
-  public void setup() throws JsonProcessingException {
+  public void setup() {
 
     if (Security.getProvider(BouncyCastleFipsProvider.PROVIDER_NAME) == null) {
       Security.addProvider(new BouncyCastleFipsProvider());

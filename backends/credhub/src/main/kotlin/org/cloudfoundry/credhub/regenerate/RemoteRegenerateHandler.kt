@@ -1,10 +1,10 @@
 package org.cloudfoundry.credhub.regenerate
 
-import com.fasterxml.jackson.databind.JsonNode
 import org.cloudfoundry.credhub.views.BulkRegenerateResults
 import org.cloudfoundry.credhub.views.CredentialView
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import tools.jackson.databind.JsonNode
 
 @Service
 @Profile("remote")
