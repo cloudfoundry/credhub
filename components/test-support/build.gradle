@@ -13,7 +13,7 @@ dependencies {
     implementation project(":components:errors")
     implementation project(":components:time-support")
 
-    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation('org.springframework.boot:spring-boot-starter-validation')
@@ -26,8 +26,8 @@ dependencies {
 
     implementation("org.apache.commons:commons-lang3")
 
-    testImplementation("org.flywaydb:flyway-core:${flywayVersion}")
-    testImplementation("org.flywaydb:flyway-database-postgresql:${flywayVersion}")
+    testImplementation("org.springframework.boot:spring-boot-starter-flyway")
+    testImplementation("org.flywaydb:flyway-database-postgresql")
 }
 
 dependencyManagement {

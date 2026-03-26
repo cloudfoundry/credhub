@@ -14,7 +14,7 @@ dependencies {
     implementation project(":components:errors")
     implementation project(":components:string-utilities")
 
-    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation('org.springframework.boot:spring-boot-starter-security')
     testImplementation("org.springframework.boot:spring-boot-starter-test")

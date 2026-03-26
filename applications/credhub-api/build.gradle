@@ -51,7 +51,7 @@ dependencies {
 
     testImplementation project(path: ":components:test-support", configuration: "testOutput")
 
-    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-log4j2")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
@@ -63,9 +63,9 @@ dependencies {
     // DB
     implementation("org.postgresql:postgresql")
     implementation("org.mariadb.jdbc:mariadb-java-client:${mariadbJdbcVersion}")
-    implementation("org.flywaydb:flyway-core:${flywayVersion}")
-    implementation("org.flywaydb:flyway-mysql:${flywayVersion}")
-    implementation("org.flywaydb:flyway-database-postgresql:${flywayVersion}")
+    implementation("org.springframework.boot:spring-boot-starter-flyway")
+    implementation("org.flywaydb:flyway-mysql")
+    implementation("org.flywaydb:flyway-database-postgresql")
     implementation("com.h2database:h2")
 
     api("org.bouncycastle:bc-fips:${bcFipsVersion}")
