@@ -178,7 +178,7 @@ class CertificatesControllerTest {
 
         val expectedRequestBody =
             CertificateRegenerateRequest(
-                transitional = true,
+                setAsTransitional = true,
                 allowTransitionalParentToSign = true,
                 keyLength = 2048,
                 duration = 365,
@@ -239,7 +239,7 @@ class CertificatesControllerTest {
 
         val expectedRequestBody =
             CertificateRegenerateRequest(
-                transitional = true,
+                setAsTransitional = true,
                 allowTransitionalParentToSign = true,
                 keyLength = 4711,
                 duration = 1234,
@@ -336,7 +336,7 @@ class CertificatesControllerTest {
 
         val expectedRequestBody =
             CertificateRegenerateRequest(
-                transitional = true,
+                setAsTransitional = true,
                 allowTransitionalParentToSign = true,
                 keyLength = 4096,
                 duration = 365,

@@ -13,7 +13,7 @@ class CreateVersionRequest {
     var value: CertificateCredentialValue? = null
 
     @JsonProperty("transitional")
-    var isTransitional: Boolean = false
+    var transitional: Boolean = false
 
     constructor() : super() {
         // this needs to be there for jackson to be happy
@@ -21,6 +21,6 @@ class CreateVersionRequest {
 
     constructor(value: CertificateCredentialValue, transitional: Boolean) : super() {
         this.value = value
-        this.isTransitional = transitional
+        this.transitional = transitional
     }
 }

@@ -62,7 +62,7 @@ class CertificatesController(
     ): CredentialView {
         val finalRequestBody = requestBody ?: CertificateRegenerateRequest()
         val certificate = RegenerateCertificate()
-        certificate.transitional = finalRequestBody.isTransitional
+        certificate.transitional = finalRequestBody.setAsTransitional
         auditRecord.requestDetails = certificate
 
         return certificatesHandler.handleRegenerate(certificateId, finalRequestBody)
