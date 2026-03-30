@@ -46,7 +46,7 @@ class RemotePermissionsHandler(
         val response: PermissionsResponse
         try {
             response =
-                client.putPermissionRequest(guid, permissionsRequest.getPath(), permissionsRequest.actor, operationStrings, requester!!)
+                client.putPermissionRequest(guid, permissionsRequest.path, permissionsRequest.actor, operationStrings, requester!!)
         } catch (e: StatusRuntimeException) {
             throw handleException(e)
         }
@@ -83,7 +83,7 @@ class RemotePermissionsHandler(
 
         val response: PermissionsResponse
         try {
-            response = client.writePermissionRequest(permissionsRequest.getPath(), permissionsRequest.actor, operationStrings, requester)
+            response = client.writePermissionRequest(permissionsRequest.path, permissionsRequest.actor, operationStrings, requester)
         } catch (e: StatusRuntimeException) {
             throw handleException(e)
         }

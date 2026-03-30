@@ -230,7 +230,7 @@ class PermissionDataServiceTest {
         operations.add(PermissionOperation.READ)
 
         val permission = PermissionsV2Request()
-        permission.setPath(pathName)
+        permission.path = pathName
         permission.actor = LUKE
         permission.operations = operations
 
@@ -268,7 +268,7 @@ class PermissionDataServiceTest {
         val newOperations = ArrayList<PermissionOperation>()
         newOperations.add(PermissionOperation.WRITE)
 
-        request.setPath(CREDENTIAL_NAME)
+        request.path = CREDENTIAL_NAME
         request.actor = LUKE
         request.operations = newOperations
 
@@ -312,7 +312,7 @@ class PermissionDataServiceTest {
         val operations = ArrayList<PermissionOperation>()
         operations.add(PermissionOperation.READ)
 
-        permission.setPath(path)
+        permission.path = path
         permission.actor = LUKE
         permission.operations = operations
 
@@ -332,7 +332,7 @@ class PermissionDataServiceTest {
         val operations = mutableListOf(PermissionOperation.READ)
 
         val credentialName = randomCredentialPath()
-        request.setPath(credentialName)
+        request.path = credentialName
         request.actor = LUKE
         request.operations = operations
 

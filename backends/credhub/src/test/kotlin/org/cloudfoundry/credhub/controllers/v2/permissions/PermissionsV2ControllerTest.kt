@@ -202,7 +202,7 @@ class PermissionsV2ControllerTest {
 
         val actualPermissionsV2Request = spyPermissionsV2Handler.writev2permissionsCalledwithPermissionrequest
         assertThat(actualPermissionsV2Request.actor).isEqualTo(expectedPermissionsV2Request.actor)
-        assertThat(actualPermissionsV2Request.getPath()).isEqualTo(expectedPermissionsV2Request.getPath())
+        assertThat(actualPermissionsV2Request.path).isEqualTo(expectedPermissionsV2Request.path)
 
         val actualResponseBody = mvcResult.response.contentAsString
 

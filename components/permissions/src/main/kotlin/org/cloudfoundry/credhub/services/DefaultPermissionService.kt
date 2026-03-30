@@ -139,7 +139,7 @@ class DefaultPermissionService
         override fun saveV2Permissions(permissionsRequest: PermissionsV2Request): PermissionData {
             val userContext = userContextHolder.userContext
             if (!permissionCheckingService
-                    .hasPermission(userContext?.actor!!, permissionsRequest.getPath(), PermissionOperation.WRITE_ACL)
+                    .hasPermission(userContext?.actor!!, permissionsRequest.path, PermissionOperation.WRITE_ACL)
             ) {
                 throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
             }

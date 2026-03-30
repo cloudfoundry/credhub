@@ -47,7 +47,7 @@ class RemotePermissionsHandlerTest {
 
         val request = PermissionsV2Request()
         request.actor = ACTOR
-        request.setPath(CREDENTIAL_NAME)
+        request.path = CREDENTIAL_NAME
         request.operations = operations
 
         val response =
@@ -76,7 +76,7 @@ class RemotePermissionsHandlerTest {
 
         val request = PermissionsV2Request()
         request.actor = ACTOR
-        request.setPath(CREDENTIAL_NAME)
+        request.path = CREDENTIAL_NAME
         request.operations = operations
 
         val exception = StatusRuntimeException(Status.NOT_FOUND)
@@ -140,7 +140,7 @@ class RemotePermissionsHandlerTest {
 
         val request = PermissionsV2Request()
         request.actor = ACTOR
-        request.setPath(CREDENTIAL_NAME)
+        request.path = CREDENTIAL_NAME
         request.operations = operations
 
         val response =
@@ -170,7 +170,7 @@ class RemotePermissionsHandlerTest {
 
         val request = PermissionsV2Request()
         request.actor = ACTOR
-        request.setPath(CREDENTIAL_NAME)
+        request.path = CREDENTIAL_NAME
         request.operations = operations
 
         val exception = StatusRuntimeException(Status.NOT_FOUND)
