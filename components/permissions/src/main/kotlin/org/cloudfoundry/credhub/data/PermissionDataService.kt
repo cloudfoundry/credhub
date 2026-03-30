@@ -223,7 +223,7 @@ class PermissionDataService
             }
 
             if (!(
-                    existingPermissionData.path == permissionsRequest.getPath() &&
+                    existingPermissionData.path == permissionsRequest.path &&
                         existingPermissionData.actor == permissionsRequest.actor
                 )
             ) {
@@ -232,7 +232,7 @@ class PermissionDataService
 
             val permissionData =
                 PermissionData(
-                    permissionsRequest.getPath(),
+                    permissionsRequest.path,
                     permissionsRequest.actor,
                     permissionsRequest.operations,
                 )
@@ -291,7 +291,7 @@ class PermissionDataService
         fun saveV2Permissions(permissionsRequest: PermissionsV2Request): PermissionData {
             val existingPermissionData =
                 permissionRepository.findByPathAndActor(
-                    permissionsRequest.getPath(),
+                    permissionsRequest.path,
                     permissionsRequest.actor,
                 )
 
@@ -300,7 +300,7 @@ class PermissionDataService
             }
 
             val record = PermissionData()
-            record.path = permissionsRequest.getPath()
+            record.path = permissionsRequest.path
             record.actor = permissionsRequest.actor
             record.enableOperations(permissionsRequest.operations)
 

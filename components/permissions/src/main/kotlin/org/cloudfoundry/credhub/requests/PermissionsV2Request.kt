@@ -24,7 +24,10 @@ class PermissionsV2Request {
         Pattern(regexp = ONLY_VALID_CHARACTERS_IN_PATH, message = ErrorMessages.Permissions.INVALID_CHARACTER_IN_PATH),
         Pattern(regexp = IS_NOT_EMPTY, message = ErrorMessages.Permissions.MISSING_PATH),
     )
-    private lateinit var path: String
+    var path: String = ""
+        set(value) {
+            field = StringUtils.prependIfMissing(value, "/")
+        }
 
     @NotEmpty(message = ErrorMessages.Permissions.MISSING_ACTOR)
     final lateinit var actor: String
@@ -32,19 +35,11 @@ class PermissionsV2Request {
     @NotEmpty(message = ErrorMessages.Permissions.MISSING_OPERATIONS)
     final lateinit var operations: MutableList<PermissionOperation>
 
-    constructor() : super() {
-        // this needs to be there for jackson to be happy
-    }
+    constructor() : super()
 
     constructor(path: String, actor: String, operations: MutableList<PermissionOperation>) : super() {
         this.path = path
         this.actor = actor
         this.operations = operations
-    }
-
-    fun getPath(): String = path
-
-    fun setPath(path: String) {
-        this.path = StringUtils.prependIfMissing(path, "/")
     }
 }
