@@ -4,16 +4,10 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
 
-class UpdateTransitionalVersionRequest {
+class UpdateTransitionalVersionRequest(
     @JsonProperty("version")
-    var versionUuid: String? = null
-
-    constructor() : super() {}
-
-    constructor(versionUuid: String) : super() {
-        this.versionUuid = versionUuid
-    }
-
+    var versionUuid: String? = null,
+) {
     override fun equals(other: Any?): Boolean {
         if (this === other) {
             return true

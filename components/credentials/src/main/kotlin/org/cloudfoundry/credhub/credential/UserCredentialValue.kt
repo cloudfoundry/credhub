@@ -3,6 +3,7 @@ package org.cloudfoundry.credhub.credential
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY
+import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import jakarta.validation.constraints.NotEmpty
 import org.apache.commons.codec.digest.Crypt
 import org.cloudfoundry.credhub.CryptSaltFactory
@@ -11,6 +12,7 @@ import org.cloudfoundry.credhub.utils.EmptyStringToNull
 import tools.jackson.databind.annotation.JsonDeserialize
 import java.util.Objects
 
+@JsonPropertyOrder("username", "password", "password_hash")
 class UserCredentialValue : CredentialValue {
     @JsonDeserialize(using = EmptyStringToNull::class)
     var username: String? = null

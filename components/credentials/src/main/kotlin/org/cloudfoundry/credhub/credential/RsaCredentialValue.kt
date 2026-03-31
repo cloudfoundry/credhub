@@ -1,6 +1,7 @@
 package org.cloudfoundry.credhub.credential
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect
+import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.utils.EmptyStringToNull
 import org.cloudfoundry.credhub.validators.RequireAnyOf
@@ -9,6 +10,7 @@ import java.util.Objects
 
 @RequireAnyOf(message = ErrorMessages.MISSING_RSA_SSH_PARAMETERS, fields = ["publicKey", "privateKey"])
 @JsonAutoDetect
+@JsonPropertyOrder("public_key", "private_key")
 class RsaCredentialValue : CredentialValue {
     @JsonDeserialize(using = EmptyStringToNull::class)
     var publicKey: String? = null

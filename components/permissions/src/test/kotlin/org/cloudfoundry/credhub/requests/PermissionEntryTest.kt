@@ -72,11 +72,7 @@ class PermissionEntryTest {
     @Throws(Throwable::class)
     fun validation_ensuresOperationsAreAllValid() {
         val json = ("{ \n\"actor\": \"$USER_A_ACTOR_ID\",\n\"operations\": [\"foo\", \"read\"],\n\"path\": \"$USER_A_PATH\"}")
-        try {
-            deserializeAndValidate<PermissionEntry>(json, PermissionEntry::class.java)
-        } catch (e: RuntimeException) {
-            throw e.cause!!
-        }
+        deserializeAndValidate<PermissionEntry>(json, PermissionEntry::class.java)
     }
 
     @Test

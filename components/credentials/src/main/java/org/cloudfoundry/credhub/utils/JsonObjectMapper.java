@@ -1,6 +1,7 @@
 package org.cloudfoundry.credhub.utils;
 
 import org.cloudfoundry.credhub.util.TimeModuleFactory;
+import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.PropertyNamingStrategies;
 import tools.jackson.databind.json.JsonMapper;
@@ -14,6 +15,7 @@ public class JsonObjectMapper {
     snakeCaseMapper = JsonMapper.builder()
       .addModule(TimeModuleFactory.Companion.createTimeModule())
       .propertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE)
+      .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true)
       .build();
   }
 
