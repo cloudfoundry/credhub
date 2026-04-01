@@ -7,15 +7,14 @@ import org.springframework.context.annotation.Configuration;
 import org.flywaydb.core.api.CoreErrorCode;
 import org.flywaydb.core.api.FlywayException;
 import org.flywaydb.database.postgresql.PostgreSQLConfigurationExtension;
-import org.flywaydb.database.postgresql.PostgreSQLDatabaseType;
 
 @Configuration
 public class FlywayMigrationStrategyTestConfig {
     @Bean
     public FlywayMigrationStrategy repairBeforeMigration() {
         return flyway -> {
-            if (flyway.getConfiguration().getDatabaseType() instanceof
-                    PostgreSQLDatabaseType) {
+            String url = flyway.getConfiguration().getUrl();
+            if (url != null && url.contains("postgresql")) {
                 // For CREATE INDEX CONCURRENTLY. See
                 // https://documentation.red-gate.com/fd/flyway-postgresql-transactional-lock-setting-277579114.html.
                 flyway.getConfigurationExtension(
