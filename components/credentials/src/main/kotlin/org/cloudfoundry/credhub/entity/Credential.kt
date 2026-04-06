@@ -17,7 +17,7 @@ import java.util.UUID
 @Table(name = "credential")
 class Credential : AuditableCredential {
     @Id
-    @Column(length = UUID_BYTES, columnDefinition = "VARBINARY")
+    @Column(length = UUID_BYTES)
     @GeneratedValue(generator = "uuid2")
     override var uuid: UUID? = null
 

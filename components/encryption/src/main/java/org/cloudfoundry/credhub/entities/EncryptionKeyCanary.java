@@ -16,12 +16,8 @@ import static org.cloudfoundry.credhub.constants.UuidConstants.UUID_BYTES;
 @Table(name = "encryption_key_canary")
 public class EncryptionKeyCanary {
 
-  // Use VARBINARY to make all 3 DB types happy.
-  // H2 doesn't distinguish between "binary" and "varbinary" - see
-  // https://hibernate.atlassian.net/browse/HHH-9835 and
-  // https://github.com/h2database/h2database/issues/345
   @Id
-  @Column(length = UUID_BYTES, columnDefinition = "VARBINARY")
+  @Column(length = UUID_BYTES)
   @GeneratedValue(generator = "uuid2")
   @GenericGenerator(name = "uuid2", strategy = "org.cloudfoundry.credhub.entities.UuidGenerator")
   private UUID uuid;

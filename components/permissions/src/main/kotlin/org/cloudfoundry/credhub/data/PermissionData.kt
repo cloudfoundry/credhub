@@ -24,7 +24,7 @@ class PermissionData(
     var actor: String?,
 ) : AuditablePermissionData {
     @Id
-    @Column(length = UuidConstants.UUID_BYTES, columnDefinition = "VARBINARY")
+    @Column(length = UuidConstants.UUID_BYTES)
     @GeneratedValue(generator = "uuid2")
     override var uuid: UUID? = null
 
