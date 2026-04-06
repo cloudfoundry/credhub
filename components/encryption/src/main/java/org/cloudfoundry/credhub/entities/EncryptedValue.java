@@ -30,7 +30,7 @@ public class EncryptedValue {
   public static final String TABLE_NAME = "encrypted_value";
 
   @Id
-  @Column(length = UuidConstants.UUID_BYTES, columnDefinition = "VARBINARY")
+  @Column(length = UuidConstants.UUID_BYTES)
   @GeneratedValue(generator = "uuid2")
   private UUID uuid;
 
@@ -42,7 +42,7 @@ public class EncryptedValue {
   //secrets are updated in place when encryption keys are rotated
   private Instant updatedAt;
 
-  @Column(length = UuidConstants.UUID_BYTES, columnDefinition = "VARBINARY")
+  @Column(length = UuidConstants.UUID_BYTES)
   private UUID encryptionKeyUuid;
 
   @Column(length = EncryptionConstants.ENCRYPTED_BYTES + EncryptionConstants.NONCE_SIZE, name = "encrypted_value", nullable = false)

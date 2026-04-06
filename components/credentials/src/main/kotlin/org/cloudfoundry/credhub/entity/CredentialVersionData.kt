@@ -35,12 +35,8 @@ import java.util.UUID
 abstract class CredentialVersionData<Z : CredentialVersionData<Z>>(
     credential: Credential?,
 ) {
-    // Use VARBINARY to make all 3 DB types happy.
-    // H2 doesn't distinguish between "binary" and "varbinary" - see
-    // https://hibernate.atlassian.net/browse/HHH-9835 and
-    // https://github.com/h2database/h2database/issues/345
     @Id
-    @Column(length = UuidConstants.UUID_BYTES, columnDefinition = "VARBINARY")
+    @Column(length = UuidConstants.UUID_BYTES)
     @GeneratedValue(generator = "uuid2")
     open var uuid: UUID? = null
 
