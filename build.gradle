@@ -6,7 +6,7 @@ buildscript {
         bcpkixFipsVersion = '2.1.10'
         bcFipsVersion = '2.1.2'
         flywayVersion = '12.4.0'
-        guavaVersion = '33.5.0-jre'
+        guavaVersion = '33.6.0-jre'
         kotlinVersion = '2.3.20'
         ktlintVersion = '1.5.0'
         passayVersion = '1.6.6'
