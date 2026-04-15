@@ -7,6 +7,7 @@ import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.FlywayException;
 import org.flywaydb.database.postgresql.PostgreSQLConfigurationExtension;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.boot.autoconfigure.flyway.FlywayConfigurationCustomizer;
 import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,21 +21,25 @@ public class FlywayMigrationStrategyConfiguration {
     private static final Logger LOGGER = LogManager.getLogger(FlywayMigrationStrategyConfiguration.class.getName());
 
     @Bean
-    public FlywayMigrationStrategy repairBeforeMigration() {
-        return flyway -> {
-            renameMigrationTableIfNeeded(flyway);
-            repairIfNecessary(flyway);
-
-            String url = flyway.getConfiguration().getUrl();
+    public FlywayConfigurationCustomizer postgresFlywayCustomizer() {
+        return configuration -> {
+            String url = configuration.getUrl();
             if (url != null && url.contains("postgresql")) {
                 // For CREATE INDEX CONCURRENTLY. See
                 // https://documentation.red-gate.com/fd/flyway-postgresql-transactional-lock-setting-277579114.html.
-                flyway.getConfigurationExtension(
+                configuration.getConfigurationExtension(
                         PostgreSQLConfigurationExtension.class).setTransactionalLock(
                         false);
                 LOGGER.trace("Set flyway.postgresql.transactional.lock to false.");
             }
+        };
+    }
 
+    @Bean
+    public FlywayMigrationStrategy repairBeforeMigration() {
+        return flyway -> {
+            renameMigrationTableIfNeeded(flyway);
+            repairIfNecessary(flyway);
             runMigration(flyway);
         };
     }
