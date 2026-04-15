@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.config;
 
+import org.springframework.boot.autoconfigure.flyway.FlywayConfigurationCustomizer;
 import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,18 +11,24 @@ import org.flywaydb.database.postgresql.PostgreSQLConfigurationExtension;
 
 @Configuration
 public class FlywayMigrationStrategyTestConfig {
+
     @Bean
-    public FlywayMigrationStrategy repairBeforeMigration() {
-        return flyway -> {
-            String url = flyway.getConfiguration().getUrl();
+    public FlywayConfigurationCustomizer postgresFlywayCustomizer() {
+        return configuration -> {
+            String url = configuration.getUrl();
             if (url != null && url.contains("postgresql")) {
                 // For CREATE INDEX CONCURRENTLY. See
                 // https://documentation.red-gate.com/fd/flyway-postgresql-transactional-lock-setting-277579114.html.
-                flyway.getConfigurationExtension(
+                configuration.getConfigurationExtension(
                         PostgreSQLConfigurationExtension.class).setTransactionalLock(
                         false);
             }
+        };
+    }
 
+    @Bean
+    public FlywayMigrationStrategy repairBeforeMigration() {
+        return flyway -> {
             try {
                 flyway.migrate();
             } catch (FlywayException e) {
