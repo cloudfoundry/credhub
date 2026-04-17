@@ -23,15 +23,12 @@ public class FlywayMigrationStrategyConfiguration {
     @Bean
     public FlywayConfigurationCustomizer postgresFlywayCustomizer() {
         return configuration -> {
-            String url = configuration.getUrl();
-            if (url != null && url.contains("postgresql")) {
-                // For CREATE INDEX CONCURRENTLY. See
-                // https://documentation.red-gate.com/fd/flyway-postgresql-transactional-lock-setting-277579114.html.
-                configuration.getConfigurationExtension(
-                        PostgreSQLConfigurationExtension.class).setTransactionalLock(
-                        false);
-                LOGGER.trace("Set flyway.postgresql.transactional.lock to false.");
-            }
+            // For CREATE INDEX CONCURRENTLY. See
+            // https://documentation.red-gate.com/fd/flyway-postgresql-transactional-lock-setting-277579114.html.
+            configuration.getConfigurationExtension(
+                    PostgreSQLConfigurationExtension.class).setTransactionalLock(
+                    false);
+            LOGGER.trace("Set flyway.postgresql.transactional.lock to false via customizer.");
         };
     }
 
