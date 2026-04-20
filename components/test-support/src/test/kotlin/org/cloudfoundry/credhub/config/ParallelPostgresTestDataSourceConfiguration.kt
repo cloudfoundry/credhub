@@ -1,13 +1,11 @@
 package org.cloudfoundry.credhub.config
 
-import com.zaxxer.hikari.HikariDataSource
 import org.springframework.boot.jdbc.DataSourceBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
 import org.springframework.context.annotation.Profile
 import org.springframework.jdbc.core.JdbcTemplate
-import org.springframework.jdbc.datasource.DriverManagerDataSource
 import java.sql.ResultSet
 import javax.sql.DataSource
 
@@ -19,9 +17,10 @@ class ParallelPostgresTestDataSourceConfiguration {
     private fun createTestDatabaseForWorker(workerId: String) {
         val workerDatabaseName = "credhub_test_$workerId"
         val tempDataSource =
-            DriverManagerDataSource(
-                "jdbc:postgresql://localhost:5432/credhub_test?user=pivotal&connectTimeout=10",
-            )
+            DataSourceBuilder
+                .create()
+                .url("jdbc:postgresql://localhost:5432/credhub_test?user=pivotal")
+                .build()
 
         val jdbcTemplate = JdbcTemplate(tempDataSource)
         val noDb =
@@ -34,6 +33,8 @@ class ParallelPostgresTestDataSourceConfiguration {
         if (noDb) {
             jdbcTemplate.execute("CREATE DATABASE $workerDatabaseName")
         }
+
+        tempDataSource.connection.close()
     }
 
     @Primary
@@ -46,13 +47,8 @@ class ParallelPostgresTestDataSourceConfiguration {
         val dataSource =
             DataSourceBuilder
                 .create()
-                .type(HikariDataSource::class.java)
-                .url("jdbc:postgresql://localhost:5432/credhub_test_$workerId?user=pivotal&connectTimeout=10")
+                .url("jdbc:postgresql://localhost:5432/credhub_test_$workerId?user=pivotal")
                 .build()
-
-        dataSource.maximumPoolSize = 5
-        dataSource.minimumIdle = 1
-        dataSource.connectionInitSql = "SET statement_timeout = '120s'"
 
         return dataSource
     }
