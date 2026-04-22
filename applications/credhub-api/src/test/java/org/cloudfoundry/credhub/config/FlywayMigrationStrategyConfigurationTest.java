@@ -70,6 +70,39 @@ public class FlywayMigrationStrategyConfigurationTest {
         verify(mockConnection, times(1)).close();
     }
 
+    @Test
+    public void updateSpringJdbcMigrationTypesIfNewTableExists() throws SQLException {
+        mockNewTableExistenceInDB(true);
+
+        instanceToTest.updateSpringJdbcMigrationTypes(mockFlyway);
+
+        verify(mockStatement, times(1)).execute(eq("UPDATE flyway_schema_history SET type = 'JDBC' WHERE type = 'SPRING_JDBC'"));
+        verify(mockConnection, times(1)).close();
+    }
+
+    @Test
+    public void doesNotUpdateSpringJdbcMigrationTypesIfNewTableDoesNotExist() throws SQLException {
+        mockNewTableExistenceInDB(false);
+
+        instanceToTest.updateSpringJdbcMigrationTypes(mockFlyway);
+
+        verify(mockStatement, times(0)).execute(anyString());
+        verify(mockConnection, times(1)).close();
+    }
+
+    @Test
+    public void repairBeforeMigrationCallsAllSteps() throws SQLException {
+        doNothing().when(instanceToTest).renameMigrationTableIfNeeded(any());
+        doNothing().when(instanceToTest).updateSpringJdbcMigrationTypes(any());
+        
+        instanceToTest.repairBeforeMigration().migrate(mockFlyway);
+        
+        verify(instanceToTest).renameMigrationTableIfNeeded(mockFlyway);
+        verify(instanceToTest).updateSpringJdbcMigrationTypes(mockFlyway);
+        verify(mockFlyway).validate();
+        verify(mockFlyway).migrate();
+    }
+
     @Test(expected = FlywayException.class)
     public void handlesGetConnectionException() throws SQLException {
         doThrow(SQLException.class).when(instanceToTest).getConnection(any());
