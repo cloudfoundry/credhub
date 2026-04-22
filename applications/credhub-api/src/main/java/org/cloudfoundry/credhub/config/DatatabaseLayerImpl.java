@@ -49,4 +49,19 @@ public class DatatabaseLayerImpl implements DatabaseLayer {
             );
         }
     }
+
+    @Override
+    public void updateSpringJdbcMigrationTypes() throws SQLException {
+        if (newFlywayMigrationTableExists()) {
+            LOGGER.info("Updating SPRING_JDBC migration types to JDBC in '{}'", NEW_HISTORY_TABLE_NAME);
+            try (Statement stmt = connection.createStatement()) {
+                stmt.execute(
+                        String.format(
+                                "UPDATE %s SET type = 'JDBC' WHERE type = 'SPRING_JDBC'",
+                                NEW_HISTORY_TABLE_NAME
+                        )
+                );
+            }
+        }
+    }
 }

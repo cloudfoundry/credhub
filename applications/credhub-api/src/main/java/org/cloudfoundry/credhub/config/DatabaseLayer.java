@@ -6,4 +6,5 @@ public interface DatabaseLayer {
     boolean oldFlywayMigrationTableExists() throws SQLException;
     boolean newFlywayMigrationTableExists() throws SQLException;
     void updateOldMigrationTableName() throws SQLException;
+    void updateSpringJdbcMigrationTypes() throws SQLException;
 }

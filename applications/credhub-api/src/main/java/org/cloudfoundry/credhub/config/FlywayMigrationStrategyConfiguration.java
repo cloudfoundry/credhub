@@ -36,6 +36,7 @@ public class FlywayMigrationStrategyConfiguration {
     public FlywayMigrationStrategy repairBeforeMigration() {
         return flyway -> {
             renameMigrationTableIfNeeded(flyway);
+            updateSpringJdbcMigrationTypes(flyway);
             repairIfNecessary(flyway);
             runMigration(flyway);
         };
@@ -52,6 +53,17 @@ public class FlywayMigrationStrategyConfiguration {
         } catch (SQLException ex) {
             LOGGER.fatal("Error renaming migration table.");
             throw new FlywayException("Error renaming migration table", ex);
+        }
+    }
+
+    @VisibleForTesting
+    void updateSpringJdbcMigrationTypes(@NotNull Flyway flyway) {
+        try (Connection connection = getConnection(flyway)) {
+            DatabaseLayer databaseLayer = new DatatabaseLayerImpl(connection);
+            databaseLayer.updateSpringJdbcMigrationTypes();
+        } catch (SQLException ex) {
+            LOGGER.fatal("Error updating SPRING_JDBC migration types.");
+            throw new FlywayException("Error updating SPRING_JDBC migration types", ex);
         }
     }
 
