@@ -187,3 +187,7 @@ applications/credhub-api/src/main/resources/application-dev-external-provider.ym
 application-*-generated.yml
 libs/
 jmeter.log
+
+### VS Code
+.kotlin/
+.vscode/
