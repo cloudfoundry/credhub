@@ -15,7 +15,6 @@ buildscript {
         grpcVersion = '1.80.0'
         protoBufJavaVersion = '4.34.1'
         protoCVersion = '4.34.1'
-        jacksonBomVersion = '2.21.1'  // Overriding spring-boot's dependency because flayway 12.1.0 requires later jackson-bom version than spring-boot 3.5.11's
         tomcatVersion = '10.1.54' // to override version in our current spring-boot version (v3.5.13); can remove this pinning once spring-boot is bumped to a version containing tomcat 10.1.54 or above (see current version: https://github.com/spring-projects/spring-boot/blob/v3.5.13/gradle.properties#L24)
     }
     repositories {
@@ -78,7 +77,6 @@ subprojects {
 
 // Override spring boot's version dependencies
 ext['kotlin.version'] = '${kotlinVersion}'
-ext['jackson-bom.version'] = '${jacksonBomVersion}'
 ext['tomcat.version'] = '${tomcatVersion}'
 
 assert JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_21)
