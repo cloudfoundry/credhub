@@ -2,6 +2,13 @@ ext {
     snippetsDir = file('build/generated-snippets')
 }
 
+// spring-restdocs-asciidoctor is built against AsciidoctorJ 3.x. The org.asciidoctor.jvm.convert plugin
+// still ships AsciidoctorJ 2.5.x for the worker unless overridden here; mixing them causes
+// AbstractMethodError in DefaultAttributesPreprocessor (Preprocessor.process signature mismatch).
+asciidoctorj {
+    version = '3.0.0'
+}
+
 test {
     outputs.dir snippetsDir
 }
