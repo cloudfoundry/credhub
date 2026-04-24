@@ -1,7 +1,7 @@
 package org.cloudfoundry.credhub.config;
 
-import org.springframework.boot.flyway.autoconfigure.FlywayMigrationStrategy;
 import org.springframework.boot.flyway.autoconfigure.FlywayConfigurationCustomizer;
+import org.springframework.boot.flyway.autoconfigure.FlywayMigrationStrategy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
