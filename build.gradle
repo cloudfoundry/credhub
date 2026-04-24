@@ -10,12 +10,11 @@ buildscript {
         kotlinVersion = '2.3.21'
         ktlintVersion = '1.5.0'
         passayVersion = '1.6.6'
-        springBootVersion = '4.0.4'
+        springBootVersion = '4.0.6'
         mariadbJdbcVersion = '2.7.13' // Bumping to v3 breaks some pipeline jobs, so pinning to v2 for now. v2 (current version) is stable and will be supported until about September 2025 (https://mariadb.com/kb/en/about-mariadb-connector-j/).
         grpcVersion = '1.80.0'
         protoBufJavaVersion = '4.34.1'
         protoCVersion = '4.34.1'
-        tomcatVersion = '10.1.54' // to override version in our current spring-boot version (v3.5.13); can remove this pinning once spring-boot is bumped to a version containing tomcat 10.1.54 or above (see current version: https://github.com/spring-projects/spring-boot/blob/v3.5.13/gradle.properties#L24)
     }
     repositories {
         def artifactRepoUrl = System.getenv("ARTIFACTORY_URL")
@@ -77,6 +76,5 @@ subprojects {
 
 // Override spring boot's version dependencies
 ext['kotlin.version'] = '${kotlinVersion}'
-ext['tomcat.version'] = '${tomcatVersion}'
 
 assert JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_21)
