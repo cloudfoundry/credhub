@@ -134,6 +134,9 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 
+# CursorJ plugin
+.cursorj/
+
 ### Intellij Patch ###
 *.iml
 
