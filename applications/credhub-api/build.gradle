@@ -95,7 +95,7 @@ dependencyManagement {
     dependencies {
         // rest-assured 5.5.6 (shipped by Spring Cloud Contract 5.0.0) is incompatible with
         // Spring Framework 7's MockHttpServletRequestBuilder.header() signature change; 5.5.7 fixes it.
-        dependencySet(group: 'io.rest-assured', version: '5.5.7') {
+        dependencySet(group: 'io.rest-assured', version: '6.0.0') {
             entry 'rest-assured'
             entry 'spring-mock-mvc'
             entry 'json-path'
