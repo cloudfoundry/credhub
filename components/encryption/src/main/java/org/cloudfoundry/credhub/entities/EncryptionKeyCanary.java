@@ -4,11 +4,9 @@ import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import org.cloudfoundry.credhub.constants.EncryptionConstants;
-import org.hibernate.annotations.GenericGenerator;
 
 import static org.cloudfoundry.credhub.constants.UuidConstants.UUID_BYTES;
 
@@ -18,8 +16,7 @@ public class EncryptionKeyCanary {
 
   @Id
   @Column(length = UUID_BYTES)
-  @GeneratedValue(generator = "uuid2")
-  @GenericGenerator(name = "uuid2", strategy = "org.cloudfoundry.credhub.entities.UuidGenerator")
+  @AssigningRandomUuid
   private UUID uuid;
 
   @Column(length = EncryptionConstants.ENCRYPTED_BYTES + EncryptionConstants.NONCE_SIZE, name = "encrypted_value")
