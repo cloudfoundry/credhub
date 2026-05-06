@@ -21,10 +21,10 @@ import org.cloudfoundry.credhub.views.CertificateGenerationView
 import org.cloudfoundry.credhub.views.CertificateVersionView
 import org.cloudfoundry.credhub.views.CertificateView
 import org.cloudfoundry.credhub.views.CredentialView
-import org.junit.After
-import org.junit.Before
-import org.junit.BeforeClass
-import org.junit.Test
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.http.MediaType
 import org.springframework.restdocs.ManualRestDocumentation
@@ -65,14 +65,14 @@ class CertificatesControllerTest {
     private lateinit var metadata: JsonNode
 
     companion object {
-        @BeforeClass
+        @BeforeAll
         @JvmStatic
         fun setUpAll() {
             BouncyCastleFipsConfigurer.configure()
         }
     }
 
-    @Before
+    @BeforeEach
     fun setUp() {
         restDocumentation.beforeTest(javaClass, javaClass.simpleName)
         spyCertificatesHandler = SpyCertificatesHandler()
@@ -115,7 +115,7 @@ class CertificatesControllerTest {
         certificateView = CertificateView(certificateCredentialVersion)
     }
 
-    @After
+    @AfterEach
     fun tearDown() {
         restDocumentation.afterTest()
     }

@@ -10,9 +10,9 @@ import org.cloudfoundry.credhub.helpers.credHubAuthHeader
 import org.cloudfoundry.credhub.permissions.PermissionsV2Controller
 import org.cloudfoundry.credhub.requests.PermissionsV2Request
 import org.cloudfoundry.credhub.views.PermissionsV2View
-import org.junit.After
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.http.MediaType
 import org.springframework.restdocs.ManualRestDocumentation
@@ -41,7 +41,7 @@ class PermissionsV2ControllerTest {
     lateinit var mockMvc: MockMvc
     lateinit var spyPermissionsV2Handler: SpyPermissionsV2Handler
 
-    @Before
+    @BeforeEach
     fun setUp() {
         restDocumentation.beforeTest(javaClass, javaClass.simpleName)
         spyPermissionsV2Handler = SpyPermissionsV2Handler()
@@ -50,7 +50,7 @@ class PermissionsV2ControllerTest {
         mockMvc = MockMvcFactory.newSpringRestDocMockMvc(permissionsV2Controller, restDocumentation)
     }
 
-    @After
+    @AfterEach
     fun tearDown() {
         restDocumentation.afterTest()
     }

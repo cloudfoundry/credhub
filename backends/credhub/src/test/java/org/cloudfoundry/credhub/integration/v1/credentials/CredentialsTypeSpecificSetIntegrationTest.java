@@ -12,8 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
-import org.springframework.test.context.junit4.rules.SpringClassRule;
-import org.springframework.test.context.junit4.rules.SpringMethodRule;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
@@ -41,12 +40,10 @@ import org.cloudfoundry.credhub.util.CurrentTimeProvider;
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.utils.MultiJsonPathMatcher;
 import org.cloudfoundry.credhub.utils.TestConstants;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
@@ -55,7 +52,7 @@ import tools.jackson.databind.ObjectMapper;
 import static org.cloudfoundry.credhub.utils.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
@@ -66,13 +63,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(Parameterized.class)
+@ExtendWith(SpringExtension.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredhubTestApp.class)
 @Transactional
 public class CredentialsTypeSpecificSetIntegrationTest {
-  @ClassRule
-  public static final SpringClassRule SPRING_CLASS_RULE = new SpringClassRule();
   private static final Instant FROZEN_TIME = Instant.ofEpochSecond(1400011001L);
   private static final String CREDENTIAL_NAME = "/my-namespace/subTree/credential-name";
   private static final ImmutableMap<String, Integer> nestedValue = ImmutableMap.<String, Integer>builder()
@@ -152,10 +147,6 @@ public class CredentialsTypeSpecificSetIntegrationTest {
 
   private static final JsonNode jsonNode = new ObjectMapper().readTree(JSON_VALUE_JSON_STRING);
 
-  @Rule
-  public final SpringMethodRule springMethodRule = new SpringMethodRule();
-  @Parameterized.Parameter
-  public TestParametizer parametizer;
   @Autowired
   private WebApplicationContext webApplicationContext;
   @MockitoSpyBean
@@ -170,11 +161,10 @@ public class CredentialsTypeSpecificSetIntegrationTest {
   private Encryptor encryptor;
   private MockMvc mockMvc;
 
-  @Parameterized.Parameters(name = "{0}")
-  public static Collection<Object> parameters() {
+  static Collection<TestParametizer> parameters() {
     final UUID credentialUuid = UUID.randomUUID();
 
-    final Collection<Object> params = new ArrayList<>();
+    final Collection<TestParametizer> params = new ArrayList<>();
 
     final TestParametizer valueParameters = new TestParametizer("value", "\"" + VALUE_VALUE + "\"") {
       @Override
@@ -371,7 +361,7 @@ public class CredentialsTypeSpecificSetIntegrationTest {
     return params;
   }
 
-  @Before
+  @BeforeEach
   public void setUp() {
     final Consumer<Long> fakeTimeSetter = TestHelper.mockOutCurrentTimeProvider(mockCurrentTimeProvider);
 
@@ -382,8 +372,9 @@ public class CredentialsTypeSpecificSetIntegrationTest {
       .build();
   }
 
-  @Test
-  public void settingACredential_shouldAcceptAnyCasingForType() throws Exception {
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("parameters")
+  public void settingACredential_shouldAcceptAnyCasingForType(TestParametizer parametizer) throws Exception {
     final MockHttpServletRequestBuilder request = put("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
@@ -413,8 +404,9 @@ public class CredentialsTypeSpecificSetIntegrationTest {
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON));
   }
 
-  @Test
-  public void settingACredential_returnsTheExpectedResponse() throws Exception {
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("parameters")
+  public void settingACredential_returnsTheExpectedResponse(TestParametizer parametizer) throws Exception {
     final MockHttpServletRequestBuilder request = put("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
@@ -442,8 +434,9 @@ public class CredentialsTypeSpecificSetIntegrationTest {
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON));
   }
 
-  @Test
-  public void settingACredential_expectsDataServiceToPersistTheCredential() throws Exception {
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("parameters")
+  public void settingACredential_expectsDataServiceToPersistTheCredential(TestParametizer parametizer) throws Exception {
     final MockHttpServletRequestBuilder request = put("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
@@ -466,8 +459,9 @@ public class CredentialsTypeSpecificSetIntegrationTest {
     parametizer.credentialAssertions(newCredentialVersion);
   }
 
-  @Test
-  public void validationExceptionsAreReturnedAsErrorMessages() throws Exception {
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("parameters")
+  public void validationExceptionsAreReturnedAsErrorMessages(TestParametizer parametizer) throws Exception {
     final MockHttpServletRequestBuilder request = put("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
@@ -483,8 +477,9 @@ public class CredentialsTypeSpecificSetIntegrationTest {
       .andExpect(content().json("{\"error\":\"The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.\"}"));
   }
 
-  @Test
-  public void updatingACredential_returnsTheExistingCredentialVersion() throws Exception {
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("parameters")
+  public void updatingACredential_returnsTheExistingCredentialVersion(TestParametizer parametizer) throws Exception {
     doReturn(parametizer.createCredential(encryptor)).when(credentialVersionDataService).findMostRecent(CREDENTIAL_NAME);
 
     final MockHttpServletRequestBuilder put = put("/api/v1/data")
@@ -514,8 +509,9 @@ public class CredentialsTypeSpecificSetIntegrationTest {
         "$.version_created_at", FROZEN_TIME.toString()));
   }
 
-  @Test
-  public void updatingACredential_persistsTheCredential() throws Exception {
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("parameters")
+  public void updatingACredential_persistsTheCredential(TestParametizer parametizer) throws Exception {
     doReturn(parametizer.createCredential(encryptor)).when(credentialVersionDataService).findMostRecent(CREDENTIAL_NAME);
 
     final MockHttpServletRequestBuilder put = put("/api/v1/data")

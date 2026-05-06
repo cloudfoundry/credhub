@@ -11,10 +11,8 @@ import org.cloudfoundry.credhub.constants.EncryptionConstants;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.entities.EncryptionKeyCanary;
 import org.cloudfoundry.credhub.utils.TestPasswordKeyProxyFactory;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
@@ -24,20 +22,19 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(JUnit4.class)
 public class PasswordBasedKeyProxyTest {
   private PasswordBasedKeyProxy subject;
   private String password;
 
   private PasswordEncryptionService encryptionService;
 
-  @Before
+  @BeforeEach
   public void beforeEach() throws Exception {
     password = "abcdefghijklmnopqrst";
     encryptionService = new PasswordEncryptionService(new TestPasswordKeyProxyFactory());

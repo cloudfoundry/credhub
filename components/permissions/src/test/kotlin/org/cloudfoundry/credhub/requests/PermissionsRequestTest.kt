@@ -15,11 +15,8 @@ import org.hamcrest.Matchers.contains
 import org.hamcrest.Matchers.hasProperty
 import org.hamcrest.core.IsEqual.equalTo
 import org.hamcrest.core.IsIterableContaining.hasItems
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
 class PermissionsRequestTest {
     @Test
     fun validation_allowsGoodJson() {

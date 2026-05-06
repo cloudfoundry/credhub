@@ -3,14 +3,14 @@ package org.cloudfoundry.credhub.controllers.v1.health
 import org.cloudfoundry.credhub.health.HealthController
 import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
-import org.junit.After
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.restdocs.ManualRestDocumentation
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
-import org.springframework.test.context.junit4.SpringRunner
+import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -18,14 +18,14 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 @Deprecated(
     message = "No longer needed after CredHub 2.2 because we have Spring Actuator",
 )
-@RunWith(SpringRunner::class)
+@ExtendWith(SpringExtension::class)
 class HealthControllerTest {
     private val restDocumentation = ManualRestDocumentation()
 
     private lateinit var mockMvc: MockMvc
     private lateinit var healthController: HealthController
 
-    @Before
+    @BeforeEach
     fun setUp() {
         restDocumentation.beforeTest(javaClass, javaClass.simpleName)
         healthController = HealthController()
@@ -38,7 +38,7 @@ class HealthControllerTest {
             )
     }
 
-    @After
+    @AfterEach
     fun tearDown() {
         restDocumentation.afterTest()
     }

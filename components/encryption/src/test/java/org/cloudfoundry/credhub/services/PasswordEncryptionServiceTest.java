@@ -2,14 +2,11 @@ package org.cloudfoundry.credhub.services;
 
 import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
 import org.cloudfoundry.credhub.utils.TestPasswordKeyProxyFactory;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-@RunWith(JUnit4.class)
 public class PasswordEncryptionServiceTest {
   @Test
   public void createsPasswordBasedKeyProxy() throws Exception {

@@ -2,19 +2,16 @@ package org.cloudfoundry.credhub.entities
 
 import org.cloudfoundry.credhub.PermissionOperation
 import org.cloudfoundry.credhub.data.PermissionData
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import java.util.Arrays
 
-@RunWith(JUnit4::class)
 class PermissionDataTest {
     private var permissionData: PermissionData? = null
 
-    @Before
+    @BeforeEach
     @Throws(Exception::class)
     fun setUp() {
         permissionData = PermissionData()

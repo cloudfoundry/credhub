@@ -70,6 +70,10 @@ subprojects {
             implementation("com.h2database:h2")
             implementation("com.google.guava:guava:${guavaVersion}")
             testImplementation("org.mockito:mockito-core")
+            testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+        }
+        tasks.withType(Test) {
+            useJUnitPlatform()
         }
     }
 }

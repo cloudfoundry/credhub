@@ -1,8 +1,5 @@
 package org.cloudfoundry.credhub.services
 
-import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertFalse
-import junit.framework.TestCase.assertTrue
 import org.cloudfoundry.credhub.PermissionOperation
 import org.cloudfoundry.credhub.PermissionOperation.DELETE
 import org.cloudfoundry.credhub.PermissionOperation.READ
@@ -14,23 +11,23 @@ import org.cloudfoundry.credhub.auth.UserContextHolder
 import org.cloudfoundry.credhub.data.PermissionDataService
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.equalTo
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.springframework.test.util.ReflectionTestUtils
 import java.util.UUID
 
-@RunWith(JUnit4::class)
 class DefaultPermissionCheckingServiceTest {
     private var subject: DefaultPermissionCheckingService? = null
 
     private var userContext: UserContext? = null
     private var permissionDataService: PermissionDataService? = null
 
-    @Before
+    @BeforeEach
     fun beforeEach() {
         userContext = mock(UserContext::class.java)
         `when`(userContext!!.actor).thenReturn("test-actor")

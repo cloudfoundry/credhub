@@ -9,9 +9,9 @@ import org.cloudfoundry.credhub.util.CurrentTimeProvider
 import org.cloudfoundry.credhub.utils.AuthConstants
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver
 import org.cloudfoundry.credhub.utils.TestConstants
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.doReturn
 import org.springframework.beans.factory.annotation.Autowired
@@ -22,7 +22,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
-import org.springframework.test.context.junit4.SpringRunner
+import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
@@ -38,7 +38,7 @@ import java.util.UUID
 private const val CREDENTIAL_NAME = "/my-namespace/controllerGetTest/credential-name"
 private const val CREDENTIAL_VALUE = "test value"
 
-@RunWith(SpringRunner::class)
+@ExtendWith(SpringExtension::class)
 @ActiveProfiles(value = ["unit-test", "unit-test-permissions"], resolver = DatabaseProfileResolver::class)
 @SpringBootTest(classes = [CredhubTestApp::class])
 @Transactional
@@ -60,7 +60,7 @@ class CertificatesGetConcatenateCasIntegrationTest {
 
     private var mockMvc: MockMvc? = null
 
-    @Before
+    @BeforeEach
     fun beforeEach() {
         val fakeTimeSetter = TestHelper.mockOutCurrentTimeProvider(mockCurrentTimeProvider!!)
 

@@ -9,10 +9,10 @@ import org.cloudfoundry.credhub.utils.AuthConstants
 import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver
 import org.cloudfoundry.credhub.utils.TestConstants
-import org.junit.Before
-import org.junit.BeforeClass
-import org.junit.Test
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -22,7 +22,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
-import org.springframework.test.context.junit4.SpringRunner
+import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
@@ -32,7 +32,7 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.WebApplicationContext
 import java.time.Instant
 
-@RunWith(SpringRunner::class)
+@ExtendWith(SpringExtension::class)
 @ActiveProfiles(value = ["unit-test", "unit-test-permissions"], resolver = DatabaseProfileResolver::class)
 @SpringBootTest(classes = [CredhubTestApp::class])
 @Transactional
@@ -52,14 +52,14 @@ class CredentialsPostIntegrationTest {
     private var mockMvc: MockMvc? = null
 
     companion object {
-        @BeforeClass
+        @BeforeAll
         @JvmStatic
         fun setUpAll() {
             BouncyCastleFipsConfigurer.configure()
         }
     }
 
-    @Before
+    @BeforeEach
     fun beforeEach() {
         val fakeTimeSetter = TestHelper.mockOutCurrentTimeProvider(mockCurrentTimeProvider!!)
 

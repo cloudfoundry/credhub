@@ -10,7 +10,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.entities.EncryptionKeyCanary;
@@ -18,14 +18,14 @@ import org.cloudfoundry.credhub.repositories.EncryptionKeyCanaryRepository;
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationVersion;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredhubTestApp.class)
 public class EarlyCredentialMigrationTest {
@@ -44,7 +44,7 @@ public class EarlyCredentialMigrationTest {
     private long id = 0;
     private List<EncryptionKeyCanary> canaries;
 
-    @Before
+    @BeforeEach
     public void beforeEach() {
         canaries = encryptionKeyCanaryRepository.findAll();
 
@@ -60,7 +60,7 @@ public class EarlyCredentialMigrationTest {
     flywayV4.migrate();
   }
 
-  @After
+  @AfterEach
   public void afterEach() {
     flyway.clean();
     flyway.migrate();

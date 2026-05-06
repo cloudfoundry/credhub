@@ -3,8 +3,8 @@ package org.cloudfoundry.credhub.audit
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.equalTo
 import org.hamcrest.Matchers.`is`
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.springframework.mock.web.MockHttpServletRequest
 import java.nio.charset.StandardCharsets.UTF_8
 
@@ -12,7 +12,7 @@ class CEFAuditRecordTest {
     private var auditRecord: CEFAuditRecord? = null
     private var httpRequest: MockHttpServletRequest? = null
 
-    @Before
+    @BeforeEach
     fun setUp() {
         this.auditRecord = CEFAuditRecord()
         this.httpRequest = MockHttpServletRequest()

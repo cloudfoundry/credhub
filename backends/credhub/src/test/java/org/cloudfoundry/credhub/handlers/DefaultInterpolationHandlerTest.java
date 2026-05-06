@@ -20,10 +20,8 @@ import org.cloudfoundry.credhub.services.DefaultCredentialService;
 import org.cloudfoundry.credhub.services.PermissionCheckingService;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.core.IsEqual;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.internal.verification.VerificationModeFactory;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -41,7 +39,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(JUnit4.class)
 public class DefaultInterpolationHandlerTest {
   private static final String UUID_STRING = UUID.randomUUID().toString();
   private static final String USER = "darth-sirius";
@@ -55,7 +52,7 @@ public class DefaultInterpolationHandlerTest {
   private PermissionCheckingService permissionCheckingService;
   private UserContextHolder userContextHolder;
 
-  @Before
+  @BeforeEach
   public void beforeEach() {
     credentialService = mock(DefaultCredentialService.class);
     auditRecord = mock(CEFAuditRecord.class);

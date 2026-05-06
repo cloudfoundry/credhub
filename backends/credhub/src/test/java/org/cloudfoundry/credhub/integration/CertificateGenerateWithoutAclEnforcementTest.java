@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,12 +14,11 @@ import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.helpers.RequestHelper;
 import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer;
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.Timeout;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.cloudfoundry.credhub.utils.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.cloudfoundry.credhub.utils.AuthConstants.NO_PERMISSIONS_TOKEN;
@@ -27,7 +26,8 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
+@Timeout(60)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredhubTestApp.class)
 @TestPropertySource(properties = "security.authorization.acls.enabled=false")
@@ -40,15 +40,13 @@ public class CertificateGenerateWithoutAclEnforcementTest {
   private WebApplicationContext webApplicationContext;
   private MockMvc mockMvc;
 
-  @Rule
-  public Timeout globalTimeout = Timeout.seconds(60);
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeAll() {
     BouncyCastleFipsConfigurer.configure();
   }
 
-  @Before
+  @BeforeEach
   public void beforeEach() throws Exception {
     mockMvc = MockMvcBuilders
       .webAppContextSetup(webApplicationContext)

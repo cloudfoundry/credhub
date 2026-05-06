@@ -11,7 +11,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
 import org.cloudfoundry.credhub.CredhubTestApp;
@@ -27,9 +27,9 @@ import org.cloudfoundry.credhub.services.DefaultCredentialService;
 import org.cloudfoundry.credhub.services.DefaultPermissionService;
 import org.cloudfoundry.credhub.services.PermissionInitializer;
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -38,7 +38,7 @@ import static org.hamcrest.Matchers.is;
 
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredhubTestApp.class)
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @Transactional
 public class PermissionInitializationTest {
 
@@ -58,7 +58,7 @@ public class PermissionInitializationTest {
   @Autowired
   private ApplicationEventPublisher applicationEventPublisher;
 
-  @Before
+  @BeforeEach
   public void beforeEach() throws Exception {
     final List<AuthorizationConfig.Permission> permissions = new ArrayList<>();
     final AuthorizationConfig.Permission permission = new AuthorizationConfig.Permission();

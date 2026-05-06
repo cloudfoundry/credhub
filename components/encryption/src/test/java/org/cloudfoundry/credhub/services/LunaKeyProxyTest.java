@@ -8,10 +8,8 @@ import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.entities.EncryptionKeyCanary;
 import org.cloudfoundry.credhub.utils.TestPasswordKeyProxyFactory;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.fail;
 import static org.cloudfoundry.credhub.services.EncryptionKeyCanaryMapper.CANARY_VALUE;
@@ -20,14 +18,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Mockito.mock;
 
-@RunWith(JUnit4.class)
 public class LunaKeyProxyTest {
   private LunaKeyProxy subject;
   private Key encryptionKey;
   private EncryptionKeyCanary canary;
   private EncryptionKeyCanary deprecatedCanary;
 
-  @Before
+  @BeforeEach
   public void beforeEach() throws Exception {
     final PasswordEncryptionService encryptionService = new PasswordEncryptionService(
       new TestPasswordKeyProxyFactory()

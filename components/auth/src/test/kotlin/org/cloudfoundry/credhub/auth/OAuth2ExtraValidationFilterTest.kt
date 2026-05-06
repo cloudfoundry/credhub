@@ -11,9 +11,9 @@ import org.cloudfoundry.credhub.utils.AuthConstants.Companion.VALID_ISSUER_JWT
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.core.IsEqual.equalTo
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -26,7 +26,7 @@ import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfig
 import org.springframework.security.web.FilterChainProxy
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
-import org.springframework.test.context.junit4.SpringRunner
+import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
@@ -37,7 +37,7 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
 
-@RunWith(SpringRunner::class)
+@ExtendWith(SpringExtension::class)
 @ActiveProfiles(value = ["unit-test"], resolver = DatabaseProfileResolver::class)
 @SpringBootTest(classes = [CredhubTestApp::class])
 @Transactional
@@ -54,7 +54,7 @@ class OAuth2ExtraValidationFilterTest {
     @Autowired
     private var jwtDecoder: NimbusJwtDecoder? = null
 
-    @Before
+    @BeforeEach
     @Throws(Exception::class)
     fun beforeEach() {
         spyController = SpyController()

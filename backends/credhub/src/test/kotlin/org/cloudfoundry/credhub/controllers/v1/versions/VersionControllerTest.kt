@@ -7,10 +7,10 @@ import org.cloudfoundry.credhub.helpers.credHubAuthHeader
 import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer
 import org.cloudfoundry.credhub.utils.VersionProvider
 import org.cloudfoundry.credhub.versions.VersionController
-import org.junit.After
-import org.junit.Before
-import org.junit.BeforeClass
-import org.junit.Test
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.http.MediaType
@@ -28,14 +28,14 @@ class VersionControllerTest {
     lateinit var versionProvider: VersionProvider
 
     companion object {
-        @BeforeClass
+        @BeforeAll
         @JvmStatic
         fun setUpAll() {
             BouncyCastleFipsConfigurer.configure()
         }
     }
 
-    @Before
+    @BeforeEach
     fun setUp() {
         restDocumentation.beforeTest(javaClass, javaClass.simpleName)
         versionProvider = Mockito.mock(VersionProvider::class.java)
@@ -49,7 +49,7 @@ class VersionControllerTest {
         }
     }
 
-    @After
+    @AfterEach
     fun tearDown() {
         restDocumentation.afterTest()
     }

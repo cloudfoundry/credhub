@@ -12,18 +12,18 @@ import org.cloudfoundry.credhub.views.BulkRegenerateResults
 import org.cloudfoundry.credhub.views.CredentialView
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.equalTo
-import org.junit.After
-import org.junit.Before
-import org.junit.BeforeClass
-import org.junit.Test
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.http.MediaType
 import org.springframework.restdocs.ManualRestDocumentation
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document
 import org.springframework.restdocs.payload.JsonFieldType
 import org.springframework.restdocs.payload.PayloadDocumentation
-import org.springframework.test.context.junit4.SpringRunner
+import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -33,7 +33,7 @@ import java.security.Security
 import java.time.Instant
 import java.util.UUID
 
-@RunWith(SpringRunner::class)
+@ExtendWith(SpringExtension::class)
 class RegenerateControllerTest {
     private val restDocumentation = ManualRestDocumentation()
 
@@ -44,14 +44,14 @@ class RegenerateControllerTest {
     lateinit var metadata: JsonNode
 
     companion object {
-        @BeforeClass
+        @BeforeAll
         @JvmStatic
         fun setUpAll() {
             BouncyCastleFipsConfigurer.configure()
         }
     }
 
-    @Before
+    @BeforeEach
     fun beforeEach() {
         restDocumentation.beforeTest(javaClass, javaClass.simpleName)
         spyRegenerateHandler = SpyRegenerateHandler()
@@ -65,7 +65,7 @@ class RegenerateControllerTest {
         }
     }
 
-    @After
+    @AfterEach
     fun tearDown() {
         restDocumentation.afterTest()
     }

@@ -9,14 +9,13 @@ import org.cloudfoundry.credhub.utils.CertificateReader
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.core.IsEqual
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertTrue
-import org.junit.Before
-import org.junit.BeforeClass
-import org.junit.Rule
-import org.junit.Test
-import org.junit.rules.Timeout
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
+import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.ApplicationContext
@@ -26,7 +25,7 @@ import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.TestPropertySource
-import org.springframework.test.context.junit4.SpringRunner
+import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
@@ -36,14 +35,16 @@ import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.WebApplicationContext
+import java.util.concurrent.TimeUnit
 
 private const val API_V1_REGENERATE_ENDPOINT = "/api/v1/regenerate"
 
-@RunWith(SpringRunner::class)
+@ExtendWith(SpringExtension::class)
 @ActiveProfiles(value = ["unit-test", "unit-test-permissions"], resolver = DatabaseProfileResolver::class)
 @SpringBootTest(classes = [CredhubTestApp::class])
 @Transactional
 @TestPropertySource(properties = ["certificates.concatenate_cas=true"])
+@Timeout(60, unit = TimeUnit.SECONDS)
 class RegenerateEndpointConcatenateCasIntegrationTest {
     @Autowired
     private val webApplicationContext: WebApplicationContext? = null
@@ -56,18 +57,15 @@ class RegenerateEndpointConcatenateCasIntegrationTest {
 
     private lateinit var mockMvc: MockMvc
 
-    @get:Rule
-    val globalTimeout: Timeout = Timeout.seconds(60)
-
     companion object {
-        @BeforeClass
+        @BeforeAll
         @JvmStatic
         fun setUpAll() {
             BouncyCastleFipsConfigurer.configure()
         }
     }
 
-    @Before
+    @BeforeEach
     fun beforeEach() {
         mockMvc =
             MockMvcBuilders

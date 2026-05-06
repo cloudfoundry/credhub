@@ -6,10 +6,8 @@ import javax.crypto.SecretKey;
 
 import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
 import org.cloudfoundry.credhub.util.TimedRetry;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -20,7 +18,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(JUnit4.class)
 public class LunaEncryptionServiceTest {
 
   private LunaEncryptionService subject;
@@ -28,7 +25,7 @@ public class LunaEncryptionServiceTest {
   private SecretKey aesKey;
   private TimedRetry timedRetry;
 
-  @Before
+  @BeforeEach
   @SuppressWarnings("Duplicates")
   public void setUp() throws Exception {
     connection = mock(LunaConnection.class);

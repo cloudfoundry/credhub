@@ -3,7 +3,7 @@ package org.cloudfoundry.credhub.integration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -14,18 +14,17 @@ import com.jayway.jsonpath.JsonPath;
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.json.JSONArray;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.Timeout;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.cloudfoundry.credhub.helpers.RequestHelper.generateCa;
 import static org.cloudfoundry.credhub.helpers.RequestHelper.getCertificateCredentialsByName;
 import static org.cloudfoundry.credhub.utils.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -35,7 +34,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
+@Timeout(60)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredhubTestApp.class)
 @Transactional
@@ -50,10 +50,8 @@ public class CertificateUpdateTransitionalVersionTest {
   private Object caCertificate;
   private String caCredentialUuid;
 
-  @Rule
-  public Timeout globalTimeout = Timeout.seconds(60);
 
-  @Before
+  @BeforeEach
   public void beforeEach() throws Exception {
     mockMvc = MockMvcBuilders
       .webAppContextSetup(webApplicationContext)

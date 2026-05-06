@@ -6,20 +6,19 @@ import org.cloudfoundry.credhub.ManagementRegistry
 import org.cloudfoundry.credhub.exceptions.InvalidRemoteAddressException
 import org.cloudfoundry.credhub.exceptions.ReadOnlyException
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver
-import org.hamcrest.MatcherAssert.assertThat
-import org.hamcrest.core.Is.`is`
-import org.junit.After
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.junit4.SpringRunner
+import org.springframework.test.context.junit.jupiter.SpringExtension
 
-@RunWith(SpringRunner::class)
+@ExtendWith(SpringExtension::class)
 @ActiveProfiles(value = ["unit-test"], resolver = DatabaseProfileResolver::class)
 @SpringBootTest(classes = [CredhubTestApp::class])
 class ManagementInterceptorTest {
@@ -30,7 +29,7 @@ class ManagementInterceptorTest {
     @Autowired
     private val managementRegistry: ManagementRegistry? = null
 
-    @Before
+    @BeforeEach
     fun setup() {
         subject = ManagementInterceptor(managementRegistry!!)
         request = MockHttpServletRequest()
@@ -39,18 +38,19 @@ class ManagementInterceptorTest {
         managementRegistry.readOnlyMode = false
     }
 
-    @After
+    @AfterEach
     fun tearDown() {
         managementRegistry!!.readOnlyMode = false
     }
 
-    @Test(expected = InvalidRemoteAddressException::class)
+    @Test
     fun preHandle_throwsAnExceptionWhenRemoteAddressDoesNotMatchLocalAddress() {
         request!!.remoteAddr = "10.0.0.1"
         request!!.localAddr = "127.0.0.1"
         request!!.requestURI = "/management"
-        subject!!.preHandle(request!!, response!!, Any())
-        assertThat(response!!.status, `is`(401))
+        assertThrows<InvalidRemoteAddressException> {
+            subject!!.preHandle(request!!, response!!, Any())
+        }
     }
 
     @Test
@@ -61,13 +61,14 @@ class ManagementInterceptorTest {
         subject!!.preHandle(request!!, response!!, Any())
     }
 
-    @Test(expected = ReadOnlyException::class)
+    @Test
     fun preHandle_throwsAnExceptionWhenTheRequestMethodIsNotGetInReadOnlyMode() {
         managementRegistry!!.readOnlyMode = true
         request!!.requestURI = "/api/v1/data"
         request!!.method = "POST"
-        subject!!.preHandle(request!!, response!!, Any())
-        assertThat(response!!.status, `is`(503))
+        assertThrows<ReadOnlyException> {
+            subject!!.preHandle(request!!, response!!, Any())
+        }
     }
 
     @Test

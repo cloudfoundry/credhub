@@ -2,8 +2,8 @@ package org.cloudfoundry.credhub.generate
 
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
 import org.cloudfoundry.credhub.views.ResponseError
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 
 class ExceptionHandlersTest {
     @Test

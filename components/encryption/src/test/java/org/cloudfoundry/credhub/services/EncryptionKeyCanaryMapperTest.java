@@ -21,10 +21,8 @@ import org.cloudfoundry.credhub.data.EncryptionKeyCanaryDataService;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.entities.EncryptionKeyCanary;
 import org.cloudfoundry.credhub.util.TimedRetry;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -46,7 +44,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(JUnit4.class)
 public class EncryptionKeyCanaryMapperTest {
   private EncryptionKeyCanaryMapper subject;
   private EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
@@ -75,7 +72,7 @@ public class EncryptionKeyCanaryMapperTest {
   private EncryptionKeysConfiguration encryptionKeysConfiguration;
   private EncryptionProviderFactory providerFactory;
 
-  @Before
+  @BeforeEach
   public void beforeEach() throws Exception {
     encryptionKeyCanaryDataService = mock(EncryptionKeyCanaryDataService.class);
     encryptionService = mock(InternalEncryptionService.class);

@@ -44,9 +44,9 @@ import org.cloudfoundry.credhub.views.CertificateVersionView;
 import org.cloudfoundry.credhub.views.CertificateView;
 import org.cloudfoundry.credhub.views.CredentialView;
 import org.hamcrest.core.IsEqual;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -56,8 +56,8 @@ import static org.cloudfoundry.credhub.utils.TestConstants.TEST_CA;
 import static org.cloudfoundry.credhub.utils.TestConstants.TEST_TRUSTED_CA;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -83,12 +83,12 @@ public class DefaultCertificatesHandlerTest {
   private PermissionCheckingService permissionCheckingService;
   private UserContextHolder userContextHolder;
 
-  @BeforeClass
+  @BeforeAll
   public static void setUpAll() {
     BouncyCastleFipsConfigurer.configure();
   }
 
-  @Before
+  @BeforeEach
   public void beforeEach() {
     if (Security.getProvider(BouncyCastleFipsProvider.PROVIDER_NAME) == null) {
       Security.addProvider(new BouncyCastleFipsProvider());

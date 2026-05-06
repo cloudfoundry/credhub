@@ -12,8 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
-import org.springframework.test.context.junit4.rules.SpringClassRule;
-import org.springframework.test.context.junit4.rules.SpringMethodRule;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
@@ -52,13 +51,11 @@ import org.cloudfoundry.credhub.util.CurrentTimeProvider;
 import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer;
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.utils.MultiJsonPathMatcher;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import tools.jackson.databind.ObjectMapper;
@@ -66,7 +63,7 @@ import tools.jackson.databind.ObjectMapper;
 import static org.cloudfoundry.credhub.utils.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
@@ -80,14 +77,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(Parameterized.class)
+@ExtendWith(SpringExtension.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredhubTestApp.class)
 @Transactional
 public class CredentialsTypeSpecificGenerateIntegrationTest {
-
-  @ClassRule
-  public static final SpringClassRule SPRING_CLASS_RULE = new SpringClassRule();
   private static final String RSA_PUBLIC_KEY =
     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3jegX4fdAWXKAH1OVme8"
       + "uqG/2lU/f6ABRoHSk3tyHnaiIpxOfaNqi4iD0InYgYbuS5+CwCfJuRdL9XPQQ58x"
@@ -209,10 +203,6 @@ public class CredentialsTypeSpecificGenerateIntegrationTest {
   private static final String FINGER_PRINT = "Px23DxgJx1+P7gAtzV7S2/cvWyRDn7GfCRvx7VUkzoY";
   private static final Instant FROZEN_TIME = Instant.ofEpochSecond(1400011001L);
   private static UUID credentialUuid;
-  @Rule
-  public final SpringMethodRule springMethodRule = new SpringMethodRule();
-  @Parameterized.Parameter
-  public TestParameterizer parametizer;
   @Autowired
   private WebApplicationContext webApplicationContext;
   @MockitoSpyBean
@@ -237,10 +227,9 @@ public class CredentialsTypeSpecificGenerateIntegrationTest {
   private CryptSaltFactory cryptSaltFactory;
   private MockMvc mockMvc;
 
-  @Parameterized.Parameters(name = "{0}")
-  public static Collection<Object> parameters() {
+  static Collection<TestParameterizer> parameters() {
     credentialUuid = UUID.randomUUID();
-    final Collection<Object> params = new ArrayList<>();
+    final Collection<TestParameterizer> params = new ArrayList<>();
 
     final TestParameterizer passwordParameters = new TestParameterizer("password", "{\"exclude_number\": true}") {
       @Override
@@ -400,12 +389,12 @@ public class CredentialsTypeSpecificGenerateIntegrationTest {
     return params;
   }
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeAll() {
     BouncyCastleFipsConfigurer.configure();
   }
 
-  @Before
+  @BeforeEach
   public void setup() {
     final String fakeSalt = cryptSaltFactory.generateSalt(FAKE_PASSWORD);
     final Consumer<Long> fakeTimeSetter = TestHelper.mockOutCurrentTimeProvider(mockCurrentTimeProvider);
@@ -433,9 +422,10 @@ public class CredentialsTypeSpecificGenerateIntegrationTest {
   }
 
 
-  @Test
-  public void generatingACredential_validatesTheRequestBody() throws Exception {
-    final MockHttpServletRequestBuilder request = createGenerateNewCredentialRequest();
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("parameters")
+  public void generatingACredential_validatesTheRequestBody(TestParameterizer parametizer) throws Exception {
+    final MockHttpServletRequestBuilder request = createGenerateNewCredentialRequest(parametizer);
 
     final DefaultCredentialGenerateRequest requestBody = mock(DefaultCredentialGenerateRequest.class);
 
@@ -448,8 +438,9 @@ public class CredentialsTypeSpecificGenerateIntegrationTest {
         "{\"error\":\"The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.\"}"));
   }
 
-  @Test
-  public void shouldAcceptAnyCasingForType() throws Exception {
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("parameters")
+  public void shouldAcceptAnyCasingForType(TestParameterizer parametizer) throws Exception {
     final MockHttpServletRequestBuilder request = post("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
@@ -471,10 +462,11 @@ public class CredentialsTypeSpecificGenerateIntegrationTest {
       );
   }
 
-  @Test
-  public void generatingANewCredential_shouldReturnGeneratedCredentialAndAskDataServiceToPersistTheCredential()
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("parameters")
+  public void generatingANewCredential_shouldReturnGeneratedCredentialAndAskDataServiceToPersistTheCredential(TestParameterizer parametizer)
     throws Exception {
-    final MockHttpServletRequestBuilder request = createGenerateNewCredentialRequest();
+    final MockHttpServletRequestBuilder request = createGenerateNewCredentialRequest(parametizer);
 
     final ResultActions response = mockMvc.perform(request);
 
@@ -494,10 +486,11 @@ public class CredentialsTypeSpecificGenerateIntegrationTest {
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON));
   }
 
-  @Test
-  public void generatingANewCredentialVersion_withOverwrite_shouldGenerateANewCredential() throws Exception {
-    beforeEachExistingCredential();
-    final MockHttpServletRequestBuilder request = beforeEachOverwriteSetToTrue();
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("parameters")
+  public void generatingANewCredentialVersion_withOverwrite_shouldGenerateANewCredential(TestParameterizer parametizer) throws Exception {
+    beforeEachExistingCredential(parametizer);
+    final MockHttpServletRequestBuilder request = beforeEachOverwriteSetToTrue(parametizer);
 
     final ResultActions response = mockMvc.perform(request);
 
@@ -517,10 +510,11 @@ public class CredentialsTypeSpecificGenerateIntegrationTest {
         "$.version_created_at", FROZEN_TIME.toString()));
   }
 
-  @Test
-  public void generatingANewCredentialVersion_withOverwrite_shouldPersistTheNewCredential() throws Exception {
-    beforeEachExistingCredential();
-    final MockHttpServletRequestBuilder request = beforeEachOverwriteSetToTrue();
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("parameters")
+  public void generatingANewCredentialVersion_withOverwrite_shouldPersistTheNewCredential(TestParameterizer parametizer) throws Exception {
+    beforeEachExistingCredential(parametizer);
+    final MockHttpServletRequestBuilder request = beforeEachOverwriteSetToTrue(parametizer);
 
     mockMvc.perform(request);
 
@@ -528,10 +522,11 @@ public class CredentialsTypeSpecificGenerateIntegrationTest {
     parametizer.credentialAssertions(credentialVersion);
   }
 
-  @Test
-  public void generatingANewCredentialVersion_withOverwriteFalse_returnsThePreviousVersion_whenParametersAreTheSame() throws Exception {
-    beforeEachExistingCredential();
-    final MockHttpServletRequestBuilder request = beforeEachOverwriteSetToFalse();
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("parameters")
+  public void generatingANewCredentialVersion_withOverwriteFalse_returnsThePreviousVersion_whenParametersAreTheSame(TestParameterizer parametizer) throws Exception {
+    beforeEachExistingCredential(parametizer);
+    final MockHttpServletRequestBuilder request = beforeEachOverwriteSetToFalse(parametizer);
 
     mockMvc.perform(request)
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -542,17 +537,18 @@ public class CredentialsTypeSpecificGenerateIntegrationTest {
         "$.version_created_at", FROZEN_TIME.minusSeconds(1).toString()));
   }
 
-  @Test
-  public void generatingANewCredentialVersion_withOverwriteFalse_doesNotPersistANewVersion_whenParametersAreTheSame() throws Exception {
-    beforeEachExistingCredential();
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("parameters")
+  public void generatingANewCredentialVersion_withOverwriteFalse_doesNotPersistANewVersion_whenParametersAreTheSame(TestParameterizer parametizer) throws Exception {
+    beforeEachExistingCredential(parametizer);
 
-    final MockHttpServletRequestBuilder request = beforeEachOverwriteSetToFalse();
+    final MockHttpServletRequestBuilder request = beforeEachOverwriteSetToFalse(parametizer);
     mockMvc.perform(request);
 
     verify(credentialVersionDataService, times(0)).save(any(CredentialVersion.class));
   }
 
-  private MockHttpServletRequestBuilder createGenerateNewCredentialRequest() {
+  private MockHttpServletRequestBuilder createGenerateNewCredentialRequest(TestParameterizer parametizer) {
     return post("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
@@ -565,7 +561,7 @@ public class CredentialsTypeSpecificGenerateIntegrationTest {
         "}");
   }
 
-  private void beforeEachExistingCredential() {
+  private void beforeEachExistingCredential(TestParameterizer parametizer) {
     CredentialVersion credentialVersion = parametizer.createCredential(encryptor);
     doReturn(Collections.singletonList(credentialVersion))
       .when(credentialVersionDataService)
@@ -575,7 +571,7 @@ public class CredentialsTypeSpecificGenerateIntegrationTest {
       .findMostRecent(CREDENTIAL_NAME);
   }
 
-  private MockHttpServletRequestBuilder beforeEachOverwriteSetToTrue() {
+  private MockHttpServletRequestBuilder beforeEachOverwriteSetToTrue(TestParameterizer parametizer) {
     return post("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)
@@ -588,7 +584,7 @@ public class CredentialsTypeSpecificGenerateIntegrationTest {
         "}");
   }
 
-  private MockHttpServletRequestBuilder beforeEachOverwriteSetToFalse() {
+  private MockHttpServletRequestBuilder beforeEachOverwriteSetToFalse(TestParameterizer parametizer) {
     return post("/api/v1/data")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
       .accept(APPLICATION_JSON)

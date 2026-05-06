@@ -11,11 +11,9 @@ import org.cloudfoundry.credhub.permissions.RemotePermissionsHandler
 import org.cloudfoundry.credhub.remote.RemoteBackendClient
 import org.cloudfoundry.credhub.remote.grpc.PermissionsResponse
 import org.cloudfoundry.credhub.requests.PermissionsV2Request
-import org.junit.Assert.assertEquals
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.Mockito.`when`
 import java.util.UUID
@@ -24,13 +22,12 @@ private const val CREDENTIAL_NAME = "/test/credential"
 private const val USER = "test-user"
 private const val ACTOR = "test-actor"
 
-@RunWith(JUnit4::class)
 class RemotePermissionsHandlerTest {
     private lateinit var subject: RemotePermissionsHandler
     private var client = Mockito.mock<RemoteBackendClient>(RemoteBackendClient::class.java)!!
     private val userContextHolder = Mockito.mock<UserContextHolder>(UserContextHolder::class.java)!!
 
-    @Before
+    @BeforeEach
     fun beforeEach() {
         subject = RemotePermissionsHandler(userContextHolder, client)
 

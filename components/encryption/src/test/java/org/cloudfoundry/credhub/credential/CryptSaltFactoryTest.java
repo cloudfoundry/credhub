@@ -1,15 +1,12 @@
 package org.cloudfoundry.credhub.credential;
 
 import org.cloudfoundry.credhub.CryptSaltFactory;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 
-@RunWith(JUnit4.class)
 public class CryptSaltFactoryTest {
   @Test
   public void generateSalt_returnsCorrectlyFormattedSalt() {

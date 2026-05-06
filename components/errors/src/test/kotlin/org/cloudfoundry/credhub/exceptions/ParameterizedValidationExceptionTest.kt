@@ -4,11 +4,8 @@ import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.array
 import org.hamcrest.core.IsEqual.equalTo
 import org.hamcrest.core.IsInstanceOf.instanceOf
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
 class ParameterizedValidationExceptionTest {
     @Test
     fun exception_extendValidationException() {

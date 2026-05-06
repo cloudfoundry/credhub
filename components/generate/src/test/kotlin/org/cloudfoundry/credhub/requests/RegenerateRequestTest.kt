@@ -6,11 +6,8 @@ import org.cloudfoundry.credhub.helpers.JsonTestHelper.Companion.deserializeAndV
 import org.cloudfoundry.credhub.helpers.JsonTestHelper.Companion.hasViolationWithMessage
 import org.hamcrest.MatcherAssert
 import org.hamcrest.Matchers
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
 class RegenerateRequestTest {
     @Test
     fun whenNameIsMissing__isInvalid() {

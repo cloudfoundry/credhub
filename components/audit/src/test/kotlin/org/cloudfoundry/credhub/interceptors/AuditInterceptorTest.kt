@@ -12,10 +12,8 @@ import org.cloudfoundry.credhub.utils.VersionProvider
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.equalTo
 import org.hamcrest.Matchers.`is`
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
@@ -26,7 +24,6 @@ import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.security.core.Authentication
 import java.util.UUID
 
-@RunWith(JUnit4::class)
 class AuditInterceptorTest {
     private var subject: AuditInterceptor? = null
     private var userContextFactory: UserContextFactory? = null
@@ -36,7 +33,7 @@ class AuditInterceptorTest {
     private var auditRecord: CEFAuditRecord? = null
     private var versionProvider: VersionProvider? = null
 
-    @Before
+    @BeforeEach
     fun setup() {
         versionProvider = mock(VersionProvider::class.java)
         `when`(versionProvider!!.currentVersion()).thenReturn("x.x.x")

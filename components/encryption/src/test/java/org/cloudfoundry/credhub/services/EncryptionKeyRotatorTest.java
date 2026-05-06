@@ -9,10 +9,8 @@ import org.springframework.data.domain.SliceImpl;
 
 import org.cloudfoundry.credhub.data.EncryptedValueDataService;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
@@ -20,7 +18,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(JUnit4.class)
 public class EncryptionKeyRotatorTest {
 
   private EncryptedValueDataService encryptedValueDataService;
@@ -33,7 +30,7 @@ public class EncryptionKeyRotatorTest {
   private List<UUID> inactiveCanaries;
   private EncryptionKeySet keySet;
 
-  @Before
+  @BeforeEach
   public void beforeEach() {
     oldUuid = UUID.randomUUID();
     final UUID activeUuid = UUID.randomUUID();
