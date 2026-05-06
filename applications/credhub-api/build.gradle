@@ -80,7 +80,6 @@ dependencies {
     testImplementation("org.springframework.security:spring-security-test")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation('org.springframework.cloud:spring-cloud-starter-contract-verifier')
-    testImplementation("junit:junit")
 }
 
 configurations.all {

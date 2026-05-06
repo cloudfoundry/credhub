@@ -4,15 +4,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.PermissionOperation;
 import org.cloudfoundry.credhub.services.PermissionCheckingService;
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.cloudfoundry.credhub.utils.AuthConstants.ALL_PERMISSIONS_ACTOR_ID;
 import static org.cloudfoundry.credhub.utils.AuthConstants.NO_PERMISSIONS_ACTOR_ID;
@@ -23,7 +23,7 @@ import static org.cloudfoundry.credhub.utils.AuthConstants.USER_B_PATH;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = CredhubTestApp.class)
 @ActiveProfiles(
         value = {

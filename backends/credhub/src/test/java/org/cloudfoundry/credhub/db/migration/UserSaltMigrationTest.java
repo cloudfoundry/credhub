@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
 import org.cloudfoundry.credhub.CredhubTestApp;
@@ -19,16 +19,16 @@ import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.utils.UuidUtil;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationVersion;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsEqual.equalTo;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ActiveProfiles(value = {"unit-test", }, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredhubTestApp.class)
 public class UserSaltMigrationTest {
@@ -43,7 +43,7 @@ public class UserSaltMigrationTest {
   private String databaseName;
   private List<EncryptionKeyCanary> canaries;
 
-  @Before
+  @BeforeEach
   public void beforeEach() throws Exception {
     canaries = encryptionKeyCanaryRepository.findAll();
 
@@ -65,7 +65,7 @@ public class UserSaltMigrationTest {
     flywayV40.migrate();
   }
 
-  @After
+  @AfterEach
   public void afterEach() {
     flyway.clean();
     flyway.migrate();

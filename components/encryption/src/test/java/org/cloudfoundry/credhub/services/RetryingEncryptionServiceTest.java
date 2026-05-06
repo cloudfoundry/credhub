@@ -8,17 +8,16 @@ import javax.crypto.IllegalBlockSizeException;
 
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.exceptions.KeyNotFoundException;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
@@ -30,7 +29,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(JUnit4.class)
 public class RetryingEncryptionServiceTest {
 
   private RetryingEncryptionService subject;
@@ -45,7 +43,7 @@ public class RetryingEncryptionServiceTest {
   private EncryptionKey firstActiveKey;
   private EncryptionKey secondActiveKey;
 
-  @Before
+  @BeforeEach
   public void beforeEach() {
     keySet = mock(EncryptionKeySet.class);
     encryptionService = mock(LunaEncryptionService.class);
@@ -390,12 +388,13 @@ public class RetryingEncryptionServiceTest {
     verify(keySet, times(1)).reload();
   }
 
-  @Test(expected = KeyNotFoundException.class)
+  @Test
   public void decrypt_whenTheEncryptionKeyCannotBeFound_throwsAnException() throws Exception {
     final UUID fakeUuid = UUID.randomUUID();
     reset(encryptionService);
     when(keySet.get(fakeUuid)).thenReturn(null);
-    subject.decrypt(new EncryptedValue(fakeUuid, "something we cant read".getBytes(UTF_8), "nonce".getBytes(UTF_8)));
+    assertThrows(KeyNotFoundException.class, () ->
+      subject.decrypt(new EncryptedValue(fakeUuid, "something we cant read".getBytes(UTF_8), "nonce".getBytes(UTF_8))));
   }
 
   @Test

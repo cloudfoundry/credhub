@@ -3,8 +3,8 @@ package org.cloudfoundry.credhub.utils
 import org.cloudfoundry.credhub.util.TimedRetry
 import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.MatcherAssert.assertThat
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import java.util.function.Supplier
 
 class TimedRetryTest {
@@ -16,7 +16,7 @@ class TimedRetryTest {
     private var durationInSeconds: Long = 0
     private var endTime: Long = 0
 
-    @Before
+    @BeforeEach
     @Throws(Exception::class)
     fun setup() {
         currentTimeProvider = FakeCurrentTimeProvider()

@@ -9,15 +9,15 @@ import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabas
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.entities.EncryptionKeyCanary;
 import org.cloudfoundry.credhub.repositories.EncryptionKeyCanaryRepository;
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -25,9 +25,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @AutoConfigureTestDatabase(replace = Replace.NONE)
 @SpringBootTest(classes = CredhubTestApp.class)
@@ -38,7 +38,7 @@ public class EncryptionKeyCanaryDataServiceTest {
 
   private EncryptionKeyCanaryDataService subject;
 
-  @Before
+  @BeforeEach
   public void beforeEach() {
     encryptionKeyCanaryRepository.deleteAllInBatch();
     subject = new EncryptionKeyCanaryDataService(encryptionKeyCanaryRepository);

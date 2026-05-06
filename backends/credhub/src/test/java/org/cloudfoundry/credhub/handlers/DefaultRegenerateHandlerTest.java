@@ -38,11 +38,9 @@ import org.cloudfoundry.credhub.views.CertificateValueView;
 import org.cloudfoundry.credhub.views.CredentialView;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.core.IsEqual;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
@@ -64,7 +62,6 @@ import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 
 
-@RunWith(JUnit4.class)
 public class DefaultRegenerateHandlerTest {
 
   private static final String SIGNER_NAME = "/signer_name";
@@ -84,11 +81,11 @@ public class DefaultRegenerateHandlerTest {
   private CredentialValue credValue;
   private PermissionCheckingService permissionCheckingService;
 
-  @BeforeClass
+  @BeforeAll
   public static void setUpAll() {
     BouncyCastleFipsConfigurer.configure();
   }
-  @Before
+  @BeforeEach
   public void beforeEach() {
     if (Security.getProvider(BouncyCastleFipsProvider.PROVIDER_NAME) == null) {
       Security.addProvider(new BouncyCastleFipsProvider());

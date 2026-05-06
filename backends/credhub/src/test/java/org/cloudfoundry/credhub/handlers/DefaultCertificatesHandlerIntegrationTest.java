@@ -10,23 +10,23 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.jdbc.support.MetaDataAccessException;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.certificates.DefaultCertificatesHandler;
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.views.CertificateCredentialsView;
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredhubTestApp.class)
 @Transactional
@@ -40,13 +40,14 @@ public class DefaultCertificatesHandlerIntegrationTest {
     @Autowired
     private Environment environment;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
-        Assume.assumeTrue(
-                "Test is for Postgres only",
-                environment.acceptsProfiles(Profiles.of("unit-test-postgres")));
-        Assume.assumeTrue("Test is for Postgres version higher than 10 because the SQL in this test is incompatible with postgres 10",
-                getDatabaseMajorVersion(jdbcTemplate) > 10);
+        Assumptions.assumeTrue(
+                environment.acceptsProfiles(Profiles.of("unit-test-postgres")),
+                "Test is for Postgres only");
+        Assumptions.assumeTrue(
+                getDatabaseMajorVersion(jdbcTemplate) > 10,
+                "Test is for Postgres version higher than 10 because the SQL in this test is incompatible with postgres 10");
 
 
         insertTestCredentialsIntoPostgres(65535 + 1);

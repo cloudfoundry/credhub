@@ -11,9 +11,9 @@ import org.cloudfoundry.credhub.permissions.PermissionsV1Controller
 import org.cloudfoundry.credhub.requests.PermissionEntry
 import org.cloudfoundry.credhub.requests.PermissionsRequest
 import org.cloudfoundry.credhub.views.PermissionsView
-import org.junit.After
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.http.MediaType
 import org.springframework.restdocs.ManualRestDocumentation
@@ -39,7 +39,7 @@ class PermissionsV1ControllerTest {
     lateinit var mockMvc: MockMvc
     lateinit var spyPermissionsV1Handler: SpyPermissionsV1Handler
 
-    @Before
+    @BeforeEach
     fun setUp() {
         restDocumentation.beforeTest(javaClass, javaClass.simpleName)
         spyPermissionsV1Handler = SpyPermissionsV1Handler()
@@ -48,7 +48,7 @@ class PermissionsV1ControllerTest {
         mockMvc = MockMvcFactory.newSpringRestDocMockMvc(permissionsV1Controller, restDocumentation)
     }
 
-    @After
+    @AfterEach
     fun tearDown() {
         restDocumentation.afterTest()
     }

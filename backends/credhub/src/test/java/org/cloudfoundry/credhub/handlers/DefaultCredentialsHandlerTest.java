@@ -46,10 +46,8 @@ import org.cloudfoundry.credhub.views.CredentialView;
 import org.cloudfoundry.credhub.views.DataResponse;
 import org.cloudfoundry.credhub.views.FindCredentialResult;
 import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -62,8 +60,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -72,7 +70,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(JUnit4.class)
 public class DefaultCredentialsHandlerTest {
   private static final String CREDENTIAL_NAME = "/test/credential";
   private static final Instant VERSION1_CREATED_AT = Instant.ofEpochMilli(555555555);
@@ -97,7 +94,7 @@ public class DefaultCredentialsHandlerTest {
 
   private Encryptor encryptor;
 
-  @Before
+  @BeforeEach
   public void beforeEach() {
     TestHelper.getBouncyCastleFipsProvider();
     encryptor = mock(Encryptor.class);

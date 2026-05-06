@@ -44,12 +44,10 @@ import org.cloudfoundry.credhub.requests.UserSetRequest
 import org.cloudfoundry.credhub.requests.ValueSetRequest
 import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer
 import org.cloudfoundry.credhub.utils.TestConstants
-import org.junit.Assert.assertEquals
-import org.junit.Before
-import org.junit.BeforeClass
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import tools.jackson.databind.PropertyNamingStrategies
@@ -61,7 +59,6 @@ import java.util.UUID
 private const val CREDENTIAL_NAME = "/test/credential"
 private const val USER = "test-user"
 
-@RunWith(JUnit4::class)
 class RemoteCredentialsHandlerTest {
     private val userContextHolder = mock(UserContextHolder::class.java)!!
     private val objectMapper =
@@ -75,14 +72,14 @@ class RemoteCredentialsHandlerTest {
     private lateinit var versionCreatedAt: String
 
     companion object {
-        @BeforeClass
+        @BeforeAll
         @JvmStatic
         fun setUpAll() {
             BouncyCastleFipsConfigurer.configure()
         }
     }
 
-    @Before
+    @BeforeEach
     fun beforeEach() {
         if (Security.getProvider(BouncyCastleFipsProvider.PROVIDER_NAME) == null) {
             Security.addProvider(BouncyCastleFipsProvider())

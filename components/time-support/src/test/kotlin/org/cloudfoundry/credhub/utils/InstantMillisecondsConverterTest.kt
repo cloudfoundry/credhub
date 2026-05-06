@@ -3,12 +3,9 @@ package org.cloudfoundry.credhub.utils
 import org.cloudfoundry.credhub.util.InstantMillisecondsConverter
 import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.MatcherAssert.assertThat
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.junit.jupiter.api.Test
 import java.time.Instant
 
-@RunWith(JUnit4::class)
 class InstantMillisecondsConverterTest {
     private var subject = InstantMillisecondsConverter()
 

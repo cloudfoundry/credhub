@@ -4,31 +4,25 @@ import java.util.UUID;
 
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.services.RetryingEncryptionService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.IsNull.nullValue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@RunWith(JUnit4.class)
 public class EncryptorTest {
 
   private Encryptor subject;
-
-  private byte[] encryptedValue;
-
-  private byte[] nonce;
   private UUID oldUuid;
   private UUID newUuid;
   private RetryingEncryptionService encryptionService;
 
-  @Before
+  @BeforeEach
   public void beforeEach() throws Exception {
     oldUuid = UUID.randomUUID();
     newUuid = UUID.randomUUID();
@@ -56,11 +50,11 @@ public class EncryptorTest {
     assertThat(result, equalTo(encrypted));
   }
 
-  @Test(expected = RuntimeException.class)
+  @Test
   public void encrypt_wrapsExceptions() throws Exception {
     when(encryptionService.encrypt(any())).thenThrow(new IllegalArgumentException());
 
-    subject.encrypt("some value");
+    assertThrows(RuntimeException.class, () -> subject.encrypt("some value"));
   }
 
   @Test
@@ -72,12 +66,14 @@ public class EncryptorTest {
     assertThat(result, equalTo(expected));
   }
 
-  @Test(expected = RuntimeException.class)
-  public void decrypt_failsToEncryptWhenGivenWrongKeyUuid() {
-    final EncryptedValue encryption = subject.encrypt("the expected clear text");
-    encryptedValue = encryption.getEncryptedValue();
-    nonce = encryption.getNonce();
+  @Test
+  public void decrypt_failsToEncryptWhenGivenWrongKeyUuid() throws Exception {
+    final EncryptedValue knownKeyValue = new EncryptedValue(newUuid, new byte[]{}, new byte[]{});
+    final EncryptedValue unknownKeyValue = new EncryptedValue(oldUuid, new byte[]{}, new byte[]{});
 
-    subject.decrypt(new EncryptedValue(oldUuid, encryptedValue, nonce));
+    when(encryptionService.decrypt(knownKeyValue)).thenReturn("decrypted");
+    when(encryptionService.decrypt(unknownKeyValue)).thenThrow(new RuntimeException("key not found: " + oldUuid));
+
+    assertThrows(RuntimeException.class, () -> subject.decrypt(new EncryptedValue(oldUuid, new byte[]{}, new byte[]{})));
   }
 }

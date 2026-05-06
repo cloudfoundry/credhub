@@ -1,7 +1,6 @@
 package org.cloudfoundry.credhub.services
 
 import com.google.common.collect.Lists.newArrayList
-import junit.framework.TestCase.assertFalse
 import org.apache.commons.lang3.RandomStringUtils
 import org.cloudfoundry.credhub.CredhubTestApp
 import org.cloudfoundry.credhub.ErrorMessages
@@ -35,16 +34,17 @@ import org.hamcrest.collection.IsCollectionWithSize.hasSize
 import org.hamcrest.core.Is.`is`
 import org.hamcrest.core.IsEqual.equalTo
 import org.hamcrest.core.IsIterableContaining.hasItems
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.junit4.SpringRunner
+import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.transaction.annotation.Transactional
 
-@RunWith(SpringRunner::class)
+@ExtendWith(SpringExtension::class)
 @ActiveProfiles(value = ["unit-test"], resolver = DatabaseProfileResolver::class)
 @SpringBootTest(classes = [CredhubTestApp::class])
 @Transactional
@@ -61,7 +61,7 @@ class PermissionDataServiceTest {
     private var aces: List<PermissionEntry>? = null
     private var credential: Credential? = null
 
-    @Before
+    @BeforeEach
     fun beforeEach() {
         seedDatabase()
     }

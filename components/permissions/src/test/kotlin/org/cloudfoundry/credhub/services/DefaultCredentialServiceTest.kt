@@ -29,8 +29,8 @@ import org.cloudfoundry.credhub.requests.GenerationParameters
 import org.cloudfoundry.credhub.requests.PermissionEntry
 import org.cloudfoundry.credhub.requests.StringGenerationParameters
 import org.cloudfoundry.credhub.utils.TestConstants
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
 import org.mockito.Mock
 import org.mockito.Mockito.any
@@ -81,7 +81,7 @@ class DefaultCredentialServiceTest {
     private lateinit var certificate: CertificateCredentialVersion
     private lateinit var certUuid: UUID
 
-    @Before
+    @BeforeEach
     fun setUp() {
         openMocks(this)
 

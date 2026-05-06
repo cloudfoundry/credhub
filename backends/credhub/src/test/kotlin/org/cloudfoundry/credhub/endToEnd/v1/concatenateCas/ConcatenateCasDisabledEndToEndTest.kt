@@ -8,38 +8,36 @@ import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver
 import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.MatcherAssert.assertThat
-import org.junit.Before
-import org.junit.Rule
-import org.junit.Test
-import org.junit.rules.Timeout
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
+import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.TestPropertySource
-import org.springframework.test.context.junit4.SpringRunner
+import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.WebApplicationContext
+import java.util.concurrent.TimeUnit
 
-@RunWith(SpringRunner::class)
+@ExtendWith(SpringExtension::class)
 @ActiveProfiles(value = ["unit-test"], resolver = DatabaseProfileResolver::class)
 @SpringBootTest(classes = [CredhubTestApp::class])
 @Transactional
 @TestPropertySource(properties = ["certificates.concatenate_cas=false"])
+@Timeout(60, unit = TimeUnit.SECONDS)
 class ConcatenateCasDisabledEndToEndTest {
     @Autowired
     private lateinit var webApplicationContext: WebApplicationContext
 
     private lateinit var mockMvc: MockMvc
 
-    @get:Rule
-    val globalTimeout: Timeout = Timeout.seconds(60)
-
-    @Before
+    @BeforeEach
     fun setUp() {
         BouncyCastleFipsConfigurer.configure()
         mockMvc =

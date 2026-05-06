@@ -5,8 +5,8 @@ import org.cloudfoundry.credhub.keyusage.DefaultKeyUsageHandler
 import org.cloudfoundry.credhub.services.EncryptionKey
 import org.cloudfoundry.credhub.services.EncryptionKeySet
 import org.cloudfoundry.credhub.services.SpyCredentialVersionDataService
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
 import java.util.UUID
@@ -16,7 +16,7 @@ class DefaultKeyUsageHandlerTest {
     lateinit var keySet: EncryptionKeySet
     lateinit var handler: DefaultKeyUsageHandler
 
-    @Before
+    @BeforeEach
     fun beforeEach() {
         credentialVersionDataService = SpyCredentialVersionDataService()
         keySet = mock(EncryptionKeySet::class.java)

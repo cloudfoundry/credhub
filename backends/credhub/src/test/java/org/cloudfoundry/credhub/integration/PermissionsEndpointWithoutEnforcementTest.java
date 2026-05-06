@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -17,9 +17,9 @@ import org.cloudfoundry.credhub.helpers.RequestHelper;
 import org.cloudfoundry.credhub.requests.PermissionEntry;
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.views.PermissionsView;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -41,7 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = CredhubTestApp.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @Transactional
@@ -55,7 +55,7 @@ public class PermissionsEndpointWithoutEnforcementTest {
   private final String credentialNameWithoutLeadingSlash = this.getClass().getSimpleName();
   private final String credentialName = "/" + credentialNameWithoutLeadingSlash;
 
-  @Before
+  @BeforeEach
   public void beforeEach() throws Exception {
     mockMvc = MockMvcBuilders
       .webAppContextSetup(webApplicationContext)

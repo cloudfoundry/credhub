@@ -13,8 +13,8 @@ import org.cloudfoundry.credhub.permissions.DefaultPermissionsV1Handler
 import org.cloudfoundry.credhub.requests.PermissionEntry
 import org.cloudfoundry.credhub.requests.PermissionsRequest
 import org.cloudfoundry.credhub.views.PermissionsView
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class DefaultPermissionsV1HandlerTest {
     private lateinit var credentialVersion: CredentialVersion
@@ -28,7 +28,7 @@ class DefaultPermissionsV1HandlerTest {
         private const val OTHER_ACTOR_NAME = "other-test-actor"
     }
 
-    @Before
+    @BeforeEach
     fun beforeEach() {
         credentialVersion =
             ValueCredentialVersion(

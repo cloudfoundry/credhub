@@ -4,10 +4,8 @@ import org.cloudfoundry.credhub.RestTemplateFactory
 import org.cloudfoundry.credhub.config.OAuthProperties
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.core.IsEqual.equalTo
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.springframework.http.HttpStatus
@@ -22,13 +20,12 @@ import java.security.NoSuchAlgorithmException
 import java.security.cert.CertificateException
 import java.util.HashMap
 
-@RunWith(JUnit4::class)
 class DefaultOAuth2IssuerServiceTest {
     private var subject: DefaultOAuth2IssuerService? = null
 
     private var restTemplate: RestTemplate? = null
 
-    @Before
+    @BeforeEach
     @Throws(
         URISyntaxException::class,
         CertificateException::class,

@@ -1,16 +1,14 @@
 package org.cloudfoundry.credhub.interceptors
 
 import jakarta.servlet.http.HttpServletRequest
-import junit.framework.TestCase.assertFalse
 import org.cloudfoundry.credhub.auth.UserContext
 import org.cloudfoundry.credhub.auth.UserContextFactory
 import org.cloudfoundry.credhub.auth.UserContextHolder
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.equalTo
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
@@ -18,7 +16,6 @@ import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.security.core.Authentication
 import java.security.Principal
 
-@RunWith(JUnit4::class)
 class UserContextInterceptorTest {
     private var subject: UserContextInterceptor? = null
     private var userContext: UserContext? = null
@@ -27,7 +24,7 @@ class UserContextInterceptorTest {
     private var request: HttpServletRequest? = null
     private var response: MockHttpServletResponse? = null
 
-    @Before
+    @BeforeEach
     fun setup() {
         userContextFactory = mock(UserContextFactory::class.java)
         userContext = mock(UserContext::class.java)

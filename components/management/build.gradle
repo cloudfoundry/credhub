@@ -14,7 +14,6 @@ dependencies {
 
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("junit:junit")
     testImplementation project(path: ":components:test-support", configuration: "testOutput")
     testImplementation("org.springframework.boot:spring-boot-starter-flyway")
     testImplementation("org.flywaydb:flyway-database-postgresql")

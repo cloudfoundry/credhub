@@ -9,14 +9,12 @@ import org.cloudfoundry.credhub.utils.AuthConstants.Companion.USER_A_PATH
 import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.contains
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import tools.jackson.databind.ObjectMapper
 import tools.jackson.databind.exc.InvalidFormatException
 import java.io.IOException
 
-@RunWith(JUnit4::class)
 class PermissionEntryTest {
     @Test
     @Throws(IOException::class)
@@ -68,11 +66,12 @@ class PermissionEntryTest {
         )
     }
 
-    @Test(expected = InvalidFormatException::class)
-    @Throws(Throwable::class)
+    @Test
     fun validation_ensuresOperationsAreAllValid() {
         val json = ("{ \n\"actor\": \"$USER_A_ACTOR_ID\",\n\"operations\": [\"foo\", \"read\"],\n\"path\": \"$USER_A_PATH\"}")
-        deserializeAndValidate<PermissionEntry>(json, PermissionEntry::class.java)
+        assertThrows<InvalidFormatException> {
+            deserializeAndValidate<PermissionEntry>(json, PermissionEntry::class.java)
+        }
     }
 
     @Test

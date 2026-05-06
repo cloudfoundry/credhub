@@ -12,21 +12,20 @@ import org.cloudfoundry.credhub.utils.CertificateReader
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.core.IsEqual.equalTo
-import org.junit.Assert
-import org.junit.Assert.assertNotNull
-import org.junit.Before
-import org.junit.BeforeClass
-import org.junit.Rule
-import org.junit.Test
-import org.junit.rules.Timeout
-import org.junit.runner.RunWith
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Timeout
+import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.TestPropertySource
-import org.springframework.test.context.junit4.SpringRunner
+import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -34,18 +33,17 @@ import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.WebApplicationContext
+import java.util.concurrent.TimeUnit
 
 private const val CA_NAME = "/test-ca"
 
-@RunWith(SpringRunner::class)
+@ExtendWith(SpringExtension::class)
 @ActiveProfiles(value = ["unit-test", "unit-test-permissions"], resolver = DatabaseProfileResolver::class)
 @SpringBootTest(classes = [CredhubTestApp::class])
 @Transactional
 @TestPropertySource(properties = ["certificates.concatenate_cas=false"])
+@Timeout(60, unit = TimeUnit.SECONDS)
 class CertificatesPostIntegrationTest {
-    @get:Rule
-    val globalTimeout: Timeout = Timeout.seconds(60)
-
     @Autowired
     private val webApplicationContext: WebApplicationContext? = null
 
@@ -54,14 +52,14 @@ class CertificatesPostIntegrationTest {
     private var caCredentialUuid: String = ""
 
     companion object {
-        @BeforeClass
+        @BeforeAll
         @JvmStatic
         fun setUpAll() {
             BouncyCastleFipsConfigurer.configure()
         }
     }
 
-    @Before
+    @BeforeEach
     @Throws(Exception::class)
     fun beforeEach() {
         mockMvc =
@@ -139,7 +137,7 @@ class CertificatesPostIntegrationTest {
             JsonPath
                 .parse(regenerateCertificateResponse)
                 .read<Boolean>("$.transitional")
-        Assert.assertTrue(caCertificateRegeneratedIsTransitional)
+        assertTrue(caCertificateRegeneratedIsTransitional)
 
         val certCredentialUuid = getCertificateId(mockMvc, certificateName)
         val regenerateLeafRequest =
@@ -161,6 +159,6 @@ class CertificatesPostIntegrationTest {
         assertThat<String>(leafCA, equalTo<String>(caCertificate!!))
         val leafCert = JsonPath.parse(response).read<String>("$.value.certificate")
         val reader = CertificateReader(leafCert)
-        Assert.assertTrue(reader.isSignedByCa(caCertificate))
+        assertTrue(reader.isSignedByCa(caCertificate))
     }
 }

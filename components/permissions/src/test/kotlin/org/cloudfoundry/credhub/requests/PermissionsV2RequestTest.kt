@@ -6,11 +6,8 @@ import org.hamcrest.MatcherAssert
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.collection.IsIterableContainingInOrder
 import org.hamcrest.core.IsEqual.equalTo
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.junit.jupiter.api.Test
 
-@RunWith(JUnit4::class)
 class PermissionsV2RequestTest {
     @Test
     fun whenPathEndsWithSlash_shouldBeInvalid() {

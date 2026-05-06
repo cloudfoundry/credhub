@@ -18,11 +18,9 @@ import org.cloudfoundry.credhub.requests.PermissionEntry
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.equalTo
 import org.hamcrest.core.IsEqual
-import org.junit.Assert.fail
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
+import org.junit.jupiter.api.Assertions.fail
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.ArgumentMatchers.eq
@@ -33,7 +31,6 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import java.util.Arrays.asList
 
-@RunWith(JUnit4::class)
 class DefaultPermissionServiceTest {
     private var subject: DefaultPermissionService? = null
 
@@ -46,7 +43,7 @@ class DefaultPermissionServiceTest {
 
     private fun <T> any(type: Class<T>): T = Mockito.any<T>(type)
 
-    @Before
+    @BeforeEach
     fun beforeEach() {
         userContext = mock(UserContext::class.java)
         `when`(userContext!!.actor).thenReturn(USER_NAME)
