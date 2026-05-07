@@ -859,7 +859,7 @@ class CertificatesControllerTest {
     }
 
     @Test
-    fun getCertificateVersionsReturnsCertificate() {
+    fun postCertificateVersionsReturnsCertificate() {
         val expectedCertificateCredentialValue =
             CertificateCredentialValue(
                 TestConstants.TEST_CA,
@@ -943,7 +943,7 @@ class CertificatesControllerTest {
     }
 
     @Test
-    fun deleteRertificateVersionReturnsCertificate() {
+    fun deleteCertificateVersionReturnsCertificate() {
         val versionId = UUID.randomUUID()
         spyCertificatesHandler.handledeleteversionrequestReturnsCertificateview = certificateView
 

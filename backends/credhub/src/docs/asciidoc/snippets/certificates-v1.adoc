@@ -52,3 +52,13 @@ operation::getCertificateVersionsReturnsCertificates[]
 
 Note: The certificate versions will be sorted in descending order of their creation date.
 
+---
+
+=== Create a Version of a Certificate
+operation::postCertificateVersionsReturnsCertificate[]
+
+---
+
+=== Delete a Version of a Certificate
+operation::deleteCertificateVersionReturnsCertificate[]
+
