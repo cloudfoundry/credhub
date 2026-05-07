@@ -165,7 +165,7 @@ public class CredentialSetErrorHandlingTest {
 
     final String expectedError = "The request does not include a valid type. Valid values include 'value', 'json', 'password', 'user', 'certificate', 'ssh' and 'rsa'.";
     mockMvc.perform(request)
-      .andExpect(status().isUnprocessableEntity())
+      .andExpect(status().isUnprocessableContent())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
       .andExpect(jsonPath("$.error").value(expectedError));
   }
@@ -184,7 +184,7 @@ public class CredentialSetErrorHandlingTest {
 
     final String expectedError = "The request does not include a valid type. Valid values include 'value', 'json', 'password', 'user', 'certificate', 'ssh' and 'rsa'.";
     mockMvc.perform(request)
-      .andExpect(status().isUnprocessableEntity())
+      .andExpect(status().isUnprocessableContent())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
       .andExpect(jsonPath("$.error").value(expectedError));
   }
@@ -203,7 +203,7 @@ public class CredentialSetErrorHandlingTest {
 
     final String expectedError = "The request does not include a valid type. Valid values include 'value', 'json', 'password', 'user', 'certificate', 'ssh' and 'rsa'.";
     mockMvc.perform(request)
-      .andExpect(status().isUnprocessableEntity())
+      .andExpect(status().isUnprocessableContent())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
       .andExpect(jsonPath("$.error").value(expectedError));
   }
@@ -241,7 +241,7 @@ public class CredentialSetErrorHandlingTest {
 
     final String expectedError = "The request includes an unrecognized parameter 'invalid_key'. Please update or remove this parameter and retry your request.";
     mockMvc.perform(request)
-      .andExpect(status().isUnprocessableEntity())
+      .andExpect(status().isUnprocessableContent())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
       .andExpect(jsonPath("$.error").value(expectedError));
   }
