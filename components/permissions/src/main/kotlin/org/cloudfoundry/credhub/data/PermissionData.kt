@@ -2,7 +2,6 @@ package org.cloudfoundry.credhub.data
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
-import jakarta.persistence.GeneratedValue
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import org.cloudfoundry.credhub.PermissionOperation
@@ -13,6 +12,7 @@ import org.cloudfoundry.credhub.PermissionOperation.WRITE
 import org.cloudfoundry.credhub.PermissionOperation.WRITE_ACL
 import org.cloudfoundry.credhub.audit.AuditablePermissionData
 import org.cloudfoundry.credhub.constants.UuidConstants
+import org.hibernate.annotations.UuidGenerator
 import java.util.UUID
 
 @Entity
@@ -25,7 +25,7 @@ class PermissionData(
 ) : AuditablePermissionData {
     @Id
     @Column(length = UuidConstants.UUID_BYTES)
-    @GeneratedValue(generator = "uuid2")
+    @UuidGenerator
     override var uuid: UUID? = null
 
     @Column(name = "read_permission", nullable = false)
