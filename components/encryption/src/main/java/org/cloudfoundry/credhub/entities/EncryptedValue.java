@@ -12,13 +12,13 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.cloudfoundry.credhub.constants.EncryptionConstants;
 import org.cloudfoundry.credhub.constants.UuidConstants;
 import org.cloudfoundry.credhub.util.InstantMillisecondsConverter;
+import org.hibernate.annotations.UuidGenerator;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -31,7 +31,7 @@ public class EncryptedValue {
 
   @Id
   @Column(length = UuidConstants.UUID_BYTES)
-  @GeneratedValue(generator = "uuid2")
+  @UuidGenerator
   private UUID uuid;
 
   @Convert(converter = InstantMillisecondsConverter.class)

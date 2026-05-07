@@ -7,7 +7,6 @@ import jakarta.persistence.DiscriminatorColumn
 import jakarta.persistence.DiscriminatorType
 import jakarta.persistence.Entity
 import jakarta.persistence.EntityListeners
-import jakarta.persistence.GeneratedValue
 import jakarta.persistence.Id
 import jakarta.persistence.Inheritance
 import jakarta.persistence.InheritanceType
@@ -21,6 +20,7 @@ import org.cloudfoundry.credhub.util.InstantMillisecondsConverter
 import org.cloudfoundry.credhub.utils.JsonNodeConverter
 import org.hibernate.annotations.NotFound
 import org.hibernate.annotations.NotFoundAction
+import org.hibernate.annotations.UuidGenerator
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import tools.jackson.databind.JsonNode
@@ -37,7 +37,7 @@ abstract class CredentialVersionData<Z : CredentialVersionData<Z>>(
 ) {
     @Id
     @Column(length = UuidConstants.UUID_BYTES)
-    @GeneratedValue(generator = "uuid2")
+    @UuidGenerator
     open var uuid: UUID? = null
 
     @OneToOne(cascade = [CascadeType.ALL])
