@@ -111,7 +111,7 @@ public class AddPermissionsV2EndToEndTest {
         + "  \"operations\": [\"bad_operation\"]\n"
         + "}");
 
-    mockMvc.perform(addPermissionRequest).andExpect(status().isUnprocessableEntity());
+    mockMvc.perform(addPermissionRequest).andExpect(status().isUnprocessableContent());
   }
 
   @Test
