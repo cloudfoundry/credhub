@@ -380,7 +380,7 @@ public class CredentialSetErrorHandlingTest {
 
     final String expectedError = "Value exceeds the maximum size.";
     mockMvc.perform(request)
-      .andExpect(status().isPayloadTooLarge())
+      .andExpect(status().isContentTooLarge())
       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
       .andExpect(jsonPath("$.error").value(expectedError));
   }
