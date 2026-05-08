@@ -8,6 +8,7 @@ import org.cloudfoundry.credhub.management.ManagementController
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInfo
 import org.junit.jupiter.api.extension.ExtendWith
 import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.http.MediaType
@@ -30,8 +31,8 @@ class ManagementControllerTest {
     lateinit var spyManagementService: SpyManagementService
 
     @BeforeEach
-    fun setUp() {
-        restDocumentation.beforeTest(javaClass, javaClass.simpleName)
+    fun setUp(testInfo: TestInfo) {
+        restDocumentation.beforeTest(javaClass, testInfo.testMethod.get().name)
         spyManagementService = SpyManagementService()
 
         val managementController = ManagementController(spyManagementService)

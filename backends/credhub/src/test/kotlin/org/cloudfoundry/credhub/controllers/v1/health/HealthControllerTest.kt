@@ -6,6 +6,7 @@ import org.cloudfoundry.credhub.helpers.MockMvcFactory
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInfo
 import org.junit.jupiter.api.extension.ExtendWith
 import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.restdocs.ManualRestDocumentation
@@ -26,8 +27,8 @@ class HealthControllerTest {
     private lateinit var healthController: HealthController
 
     @BeforeEach
-    fun setUp() {
-        restDocumentation.beforeTest(javaClass, javaClass.simpleName)
+    fun setUp(testInfo: TestInfo) {
+        restDocumentation.beforeTest(javaClass, testInfo.testMethod.get().name)
         healthController = HealthController()
 
         mockMvc =
