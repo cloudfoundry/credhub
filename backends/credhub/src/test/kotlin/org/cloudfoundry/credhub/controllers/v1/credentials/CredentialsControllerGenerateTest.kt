@@ -26,10 +26,10 @@ import org.cloudfoundry.credhub.utils.TestConstants
 import org.cloudfoundry.credhub.views.CertificateGenerationView
 import org.cloudfoundry.credhub.views.CredentialView
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.TestInfo
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInfo
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito

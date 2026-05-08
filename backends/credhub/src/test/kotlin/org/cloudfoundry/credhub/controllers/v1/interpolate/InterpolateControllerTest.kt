@@ -9,10 +9,10 @@ import org.cloudfoundry.credhub.helpers.credHubAuthHeader
 import org.cloudfoundry.credhub.interpolation.InterpolationController
 import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.TestInfo
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInfo
 import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.http.MediaType
 import org.springframework.restdocs.ManualRestDocumentation
