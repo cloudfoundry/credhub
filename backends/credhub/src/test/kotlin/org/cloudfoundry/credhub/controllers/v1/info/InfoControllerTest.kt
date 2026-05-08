@@ -7,6 +7,7 @@ import org.cloudfoundry.credhub.helpers.credHubAuthHeader
 import org.cloudfoundry.credhub.info.InfoController
 import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.TestInfo
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -38,8 +39,8 @@ class InfoControllerTest {
     }
 
     @BeforeEach
-    fun setUp() {
-        restDocumentation.beforeTest(javaClass, javaClass.simpleName)
+    fun setUp(testInfo: TestInfo) {
+        restDocumentation.beforeTest(javaClass, testInfo.testMethod.get().name)
         uaaUrl = "https://uaa.url.example.com"
 
         val infoController = InfoController(uaaUrl)

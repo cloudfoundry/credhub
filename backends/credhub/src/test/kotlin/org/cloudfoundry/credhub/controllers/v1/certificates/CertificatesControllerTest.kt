@@ -25,6 +25,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInfo
 import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.http.MediaType
 import org.springframework.restdocs.ManualRestDocumentation
@@ -73,8 +74,8 @@ class CertificatesControllerTest {
     }
 
     @BeforeEach
-    fun setUp() {
-        restDocumentation.beforeTest(javaClass, javaClass.simpleName)
+    fun setUp(testInfo: TestInfo) {
+        restDocumentation.beforeTest(javaClass, testInfo.testMethod.get().name)
         spyCertificatesHandler = SpyCertificatesHandler()
 
         val certificateController =

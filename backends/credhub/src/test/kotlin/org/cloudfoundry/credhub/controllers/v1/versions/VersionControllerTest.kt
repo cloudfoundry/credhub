@@ -8,6 +8,7 @@ import org.cloudfoundry.credhub.utils.BouncyCastleFipsConfigurer
 import org.cloudfoundry.credhub.utils.VersionProvider
 import org.cloudfoundry.credhub.versions.VersionController
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.TestInfo
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -36,8 +37,8 @@ class VersionControllerTest {
     }
 
     @BeforeEach
-    fun setUp() {
-        restDocumentation.beforeTest(javaClass, javaClass.simpleName)
+    fun setUp(testInfo: TestInfo) {
+        restDocumentation.beforeTest(javaClass, testInfo.testMethod.get().name)
         versionProvider = Mockito.mock(VersionProvider::class.java)
 
         val versionController = VersionController(versionProvider)

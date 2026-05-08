@@ -13,6 +13,7 @@ import org.cloudfoundry.credhub.views.PermissionsV2View
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInfo
 import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.http.MediaType
 import org.springframework.restdocs.ManualRestDocumentation
@@ -42,8 +43,8 @@ class PermissionsV2ControllerTest {
     lateinit var spyPermissionsV2Handler: SpyPermissionsV2Handler
 
     @BeforeEach
-    fun setUp() {
-        restDocumentation.beforeTest(javaClass, javaClass.simpleName)
+    fun setUp(testInfo: TestInfo) {
+        restDocumentation.beforeTest(javaClass, testInfo.testMethod.get().name)
         spyPermissionsV2Handler = SpyPermissionsV2Handler()
         val permissionsV2Controller = PermissionsV2Controller(spyPermissionsV2Handler)
 

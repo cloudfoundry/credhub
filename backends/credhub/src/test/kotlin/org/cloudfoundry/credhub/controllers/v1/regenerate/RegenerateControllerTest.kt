@@ -16,6 +16,7 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInfo
 import org.junit.jupiter.api.extension.ExtendWith
 import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.http.MediaType
@@ -52,8 +53,8 @@ class RegenerateControllerTest {
     }
 
     @BeforeEach
-    fun beforeEach() {
-        restDocumentation.beforeTest(javaClass, javaClass.simpleName)
+    fun beforeEach(testInfo: TestInfo) {
+        restDocumentation.beforeTest(javaClass, testInfo.testMethod.get().name)
         spyRegenerateHandler = SpyRegenerateHandler()
         val regenerateController = RegenerateController(spyRegenerateHandler)
 

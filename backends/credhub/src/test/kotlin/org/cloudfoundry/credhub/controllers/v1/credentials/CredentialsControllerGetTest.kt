@@ -21,6 +21,7 @@ import org.cloudfoundry.credhub.views.CredentialView
 import org.cloudfoundry.credhub.views.DataResponse
 import org.cloudfoundry.credhub.views.FindCredentialResult
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.TestInfo
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -63,8 +64,8 @@ class CredentialsControllerGetTest {
     }
 
     @BeforeEach
-    fun setUp() {
-        restDocumentation.beforeTest(javaClass, javaClass.simpleName)
+    fun setUp(testInfo: TestInfo) {
+        restDocumentation.beforeTest(javaClass, testInfo.testMethod.get().name)
         spyCredentialsHandler = SpyCredentialsHandler()
         spyRegenerateHandler = SpyRegenerateHandler()
 
