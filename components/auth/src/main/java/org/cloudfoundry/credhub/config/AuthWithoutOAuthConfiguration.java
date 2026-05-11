@@ -19,6 +19,7 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
 import org.springframework.web.filter.UrlHandlerFilter;
 
+import org.cloudfoundry.credhub.auth.MtlsX509PrincipalExtractor;
 import org.cloudfoundry.credhub.auth.PreAuthenticationFailureFilter;
 import org.cloudfoundry.credhub.auth.X509AuthenticationProvider;
 
@@ -26,7 +27,6 @@ import org.cloudfoundry.credhub.auth.X509AuthenticationProvider;
 @Configuration
 @EnableWebSecurity
 public class AuthWithoutOAuthConfiguration {
-    private static final String VALID_MTLS_ID = "\\bOU=(app:[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[a-f0-9]{4}-[a-f0-9]{12})\\b";
 
     @Autowired
     PreAuthenticationFailureFilter preAuthenticationFailureFilter;
@@ -36,7 +36,7 @@ public class AuthWithoutOAuthConfiguration {
 
         http.x509(configurer -> {
             configurer
-                    .subjectPrincipalRegex(VALID_MTLS_ID)
+                    .x509PrincipalExtractor(new MtlsX509PrincipalExtractor())
                     .userDetailsService(mtlsSUserDetailsService())
                     .withObjectPostProcessor(
                             new ObjectPostProcessor<X509AuthenticationFilter>() {

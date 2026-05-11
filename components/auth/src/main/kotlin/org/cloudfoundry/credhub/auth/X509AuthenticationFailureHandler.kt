@@ -26,12 +26,10 @@ class X509AuthenticationFailureHandler
             response: HttpServletResponse,
             exception: AuthenticationException,
         ) {
-            if (exception.message.toString().contains(INVALID_DN_MESSAGE)) {
-                writeUnauthorizedResponse(response, INVALID_MTLS_ID_RESPONSE)
-            }
-
             if (exception.message.toString().contains("Certificate does not contain: $CLIENT_AUTH_EXTENDED_KEY_USAGE")) {
                 writeUnauthorizedResponse(response, INVALID_CLIENT_AUTH_RESPONSE)
+            } else {
+                writeUnauthorizedResponse(response, INVALID_MTLS_ID_RESPONSE)
             }
         }
 
@@ -48,7 +46,6 @@ class X509AuthenticationFailureHandler
         }
 
         companion object {
-            private const val INVALID_DN_MESSAGE = "No matching pattern was found in subjectDN"
             private const val INVALID_MTLS_ID_RESPONSE = ErrorMessages.Auth.INVALID_MTLS_IDENTITY
             private const val INVALID_CLIENT_AUTH_RESPONSE = ErrorMessages.Auth.MTLS_NOT_CLIENT_AUTH
         }
