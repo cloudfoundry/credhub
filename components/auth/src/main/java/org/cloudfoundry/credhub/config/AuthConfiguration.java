@@ -37,6 +37,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.cloudfoundry.credhub.auth.ActuatorPortFilter;
 import org.cloudfoundry.credhub.auth.CredHubJwtTimeValidator;
+import org.cloudfoundry.credhub.auth.MtlsX509PrincipalExtractor;
 import org.cloudfoundry.credhub.auth.OAuth2AuthenticationExceptionHandler;
 import org.cloudfoundry.credhub.auth.OAuth2IssuerService;
 import org.cloudfoundry.credhub.auth.PreAuthenticationFailureFilter;
@@ -48,7 +49,6 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @Configuration
 @EnableWebSecurity
 public class AuthConfiguration {
-    private static final String VALID_MTLS_ID = "\\bOU=(app:[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[a-f0-9]{4}-[a-f0-9]{12})\\b";
     private static final Logger LOGGER = LogManager.getLogger(AuthConfiguration.class.getName());
 
     @Autowired
@@ -66,7 +66,7 @@ public class AuthConfiguration {
 
         http.x509(configurer -> {
             configurer
-                    .subjectPrincipalRegex(VALID_MTLS_ID)
+                    .x509PrincipalExtractor(new MtlsX509PrincipalExtractor())
                     .userDetailsService(mtlsSUserDetailsService())
                     .withObjectPostProcessor(
                             new ObjectPostProcessor<X509AuthenticationFilter>() {
