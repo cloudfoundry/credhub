@@ -13,7 +13,7 @@ class EmptyStringToNull : ValueDeserializer<String>() {
         context: DeserializationContext,
     ): String? {
         val node = jsonParser.readValueAsTree<JsonNode>()
-        if (node.asText().isEmpty()) {
+        if (node.asString().isEmpty()) {
             return null
         } else {
             return node.textValue()
