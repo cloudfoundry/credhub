@@ -270,10 +270,10 @@ class RemoteCredentialsHandler(
                 val jsonNode = objectMapper.readTree(jsonString)
 
                 CertificateCredentialValue(
-                    jsonNode["ca"]?.textValue(),
-                    jsonNode["certificate"]?.textValue(),
-                    jsonNode["private_key"]?.textValue(),
-                    jsonNode["ca_name"]?.textValue(),
+                    jsonNode["ca"]?.stringValue(),
+                    jsonNode["certificate"]?.stringValue(),
+                    jsonNode["private_key"]?.stringValue(),
+                    jsonNode["ca_name"]?.stringValue(),
                     jsonNode["certificate_authority"]?.booleanValue() ?: false,
                     jsonNode["self_signed"]?.booleanValue() ?: false,
                     jsonNode["generated"]?.booleanValue() ?: false,
@@ -289,26 +289,26 @@ class RemoteCredentialsHandler(
                 val jsonString = data.toStringUtf8()
                 val jsonNode = objectMapper.readTree(jsonString)
                 UserCredentialValue(
-                    jsonNode["username"]?.textValue()!!,
-                    jsonNode["password"]?.textValue()!!,
-                    jsonNode["salt"]?.textValue()!!,
+                    jsonNode["username"]?.stringValue()!!,
+                    jsonNode["password"]?.stringValue()!!,
+                    jsonNode["salt"]?.stringValue()!!,
                 )
             }
             "rsa" -> {
                 val jsonString = data.toStringUtf8()
                 val jsonNode = objectMapper.readTree(jsonString)
                 RsaCredentialValue(
-                    jsonNode["public_key"]?.textValue()!!,
-                    jsonNode["private_key"]?.textValue()!!,
+                    jsonNode["public_key"]?.stringValue()!!,
+                    jsonNode["private_key"]?.stringValue()!!,
                 )
             }
             "ssh" -> {
                 val jsonString = data.toStringUtf8()
                 val jsonNode = objectMapper.readTree(jsonString)
                 SshCredentialValue(
-                    jsonNode["public_key"]?.textValue(),
-                    jsonNode["private_key"]?.textValue(),
-                    jsonNode["public_key_fingerprint"]?.textValue(),
+                    jsonNode["public_key"]?.stringValue(),
+                    jsonNode["private_key"]?.stringValue(),
+                    jsonNode["public_key_fingerprint"]?.stringValue(),
                 )
             }
             else -> throw Exception()
@@ -510,7 +510,7 @@ class RemoteCredentialsHandler(
                     generationParameters.length = jsonNode["length"].intValue()
                 }
                 if (jsonNode.hasNonNull("username")) {
-                    generationParameters.username = jsonNode["username"].textValue()
+                    generationParameters.username = jsonNode["username"].stringValue()
                 }
                 if (jsonNode.hasNonNull("exclude_lower")) {
                     generationParameters.excludeLower = jsonNode["exclude_lower"].booleanValue()
@@ -538,7 +538,7 @@ class RemoteCredentialsHandler(
                     generationParameters.length = jsonNode["length"].intValue()
                 }
                 if (jsonNode.hasNonNull("username")) {
-                    generationParameters.username = jsonNode["username"].textValue()
+                    generationParameters.username = jsonNode["username"].stringValue()
                 }
                 if (jsonNode.hasNonNull("exclude_lower")) {
                     generationParameters.excludeLower = jsonNode["exclude_lower"].booleanValue()
@@ -565,7 +565,7 @@ class RemoteCredentialsHandler(
                     generationParameters.keyLength = jsonNode["key_length"].intValue()
                 }
                 if (jsonNode.hasNonNull("ssh_comment")) {
-                    generationParameters.sshComment = jsonNode["ssh_comment"].textValue()
+                    generationParameters.sshComment = jsonNode["ssh_comment"].stringValue()
                 }
 
                 generationParameters
@@ -593,31 +593,31 @@ class RemoteCredentialsHandler(
                 val generationRequestParameters = CertificateGenerationRequestParameters()
 
                 if (jsonNode.hasNonNull("organization")) {
-                    generationRequestParameters.organization = jsonNode["organization"].textValue()
+                    generationRequestParameters.organization = jsonNode["organization"].stringValue()
                 }
                 if (jsonNode.hasNonNull("state")) {
-                    generationRequestParameters.state = jsonNode["state"].textValue()
+                    generationRequestParameters.state = jsonNode["state"].stringValue()
                 }
                 if (jsonNode.hasNonNull("country")) {
-                    generationRequestParameters.country = jsonNode["country"].textValue()
+                    generationRequestParameters.country = jsonNode["country"].stringValue()
                 }
                 if (jsonNode.hasNonNull("common_name")) {
-                    generationRequestParameters.commonName = jsonNode["common_name"].textValue()
+                    generationRequestParameters.commonName = jsonNode["common_name"].stringValue()
                 }
                 if (jsonNode.hasNonNull("organization_unit")) {
-                    generationRequestParameters.organizationUnit = jsonNode["organization_unit"].textValue()
+                    generationRequestParameters.organizationUnit = jsonNode["organization_unit"].stringValue()
                 }
                 if (jsonNode.hasNonNull("locality")) {
-                    generationRequestParameters.locality = jsonNode["locality"].textValue()
+                    generationRequestParameters.locality = jsonNode["locality"].stringValue()
                 }
                 if (jsonNode.hasNonNull("is_ca")) {
                     generationRequestParameters.isCa = jsonNode["is_ca"].booleanValue()
                 }
                 if (jsonNode.hasNonNull("key_usage")) {
-                    generationRequestParameters.keyUsage = arrayOf(jsonNode["key_usage"].textValue())
+                    generationRequestParameters.keyUsage = arrayOf(jsonNode["key_usage"].stringValue())
                 }
                 if (jsonNode.hasNonNull("extended_key_usage")) {
-                    generationRequestParameters.extendedKeyUsage = arrayOf(jsonNode["extended_key_usage"].textValue())
+                    generationRequestParameters.extendedKeyUsage = arrayOf(jsonNode["extended_key_usage"].stringValue())
                 }
                 if (jsonNode.hasNonNull("alternative_names")) {
                     val altNames: MutableList<String> = ArrayList()
@@ -627,7 +627,7 @@ class RemoteCredentialsHandler(
                     generationRequestParameters.alternativeNames = altNames.toTypedArray()
                 }
                 if (jsonNode.hasNonNull("ca_name")) {
-                    generationRequestParameters.caName = jsonNode["ca_name"].textValue()
+                    generationRequestParameters.caName = jsonNode["ca_name"].stringValue()
                 }
                 if (jsonNode.hasNonNull("self_signed")) {
                     generationRequestParameters.isSelfSigned = jsonNode["self_signed"].booleanValue()

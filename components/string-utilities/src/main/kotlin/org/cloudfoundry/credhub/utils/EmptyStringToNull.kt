@@ -16,7 +16,7 @@ class EmptyStringToNull : ValueDeserializer<String>() {
         if (node.asText().isEmpty()) {
             return null
         } else {
-            return node.textValue()
+            return node.stringValue()
         }
     }
 }

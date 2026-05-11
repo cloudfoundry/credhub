@@ -204,7 +204,7 @@ public class EncryptionKeyRotatorTest {
     final String content = this.mockMvc.perform(post).andDo(print()).andExpect(status().isOk())
       .andReturn()
       .getResponse().getContentAsString();
-    final String originalPassword = parse(content).get("value").textValue();
+    final String originalPassword = parse(content).get("value").stringValue();
 
     final Credential credential = credentialDataService.find(passwordName);
 
@@ -254,7 +254,7 @@ public class EncryptionKeyRotatorTest {
 
     final String content = this.mockMvc.perform(post).andExpect(status().isOk()).andReturn()
       .getResponse().getContentAsString();
-    final String originalCert = parse(content).get("value").get("private_key").textValue();
+    final String originalCert = parse(content).get("value").get("private_key").stringValue();
 
     final Credential credential = credentialDataService.find(certificateName);
 
