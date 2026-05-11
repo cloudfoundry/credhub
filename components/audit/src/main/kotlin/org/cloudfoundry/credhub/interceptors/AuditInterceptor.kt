@@ -6,7 +6,6 @@ import org.apache.logging.log4j.LogManager
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.auth.UserContextFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.lang.Nullable
 import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Component
 import org.springframework.web.servlet.HandlerInterceptor
@@ -32,7 +31,7 @@ class AuditInterceptor
             request: HttpServletRequest,
             response: HttpServletResponse,
             handler: Any,
-            @Nullable exception: Exception?,
+            exception: Exception?,
         ) {
             val userAuth = request.userPrincipal ?: return
             val userContext = userContextFactory.createUserContext(userAuth as Authentication)
