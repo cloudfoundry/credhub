@@ -1,7 +1,7 @@
 package org.cloudfoundry.credhub.generators;
 
 import org.cloudfoundry.credhub.ErrorMessages;
-import org.passay.CharacterData;
+import org.passay.data.CharacterData;
 
 public enum CredHubCharacterData implements CharacterData {
   // reusing library string that indicates whether a validation failed

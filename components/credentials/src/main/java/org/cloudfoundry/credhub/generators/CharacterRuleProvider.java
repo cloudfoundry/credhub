@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.cloudfoundry.credhub.requests.StringGenerationParameters;
-import org.passay.CharacterRule;
-import org.passay.EnglishCharacterData;
+import org.passay.data.EnglishCharacterData;
+import org.passay.rule.CharacterRule;
 
 public final class CharacterRuleProvider {
 
