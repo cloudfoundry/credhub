@@ -1,11 +1,3 @@
-configurations {
-    ktlint
-}
-
-dependencies {
-    ktlint "com.pinterest.ktlint:ktlint-cli:${ktlintVersion}"
-}
-
 task ktlint(type: JavaExec, group: "verification") {
     description = "Check Kotlin code style."
     classpath = configurations.ktlint

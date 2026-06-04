@@ -7,7 +7,6 @@ buildscript {
         bcFipsVersion = '2.1.2'
         guavaVersion = '33.6.0-jre'
         kotlinVersion = '2.3.21'
-        ktlintVersion = '1.5.0'
         passayVersion = '2.0.0'
         springBootVersion = '4.0.6'
         mariadbJdbcVersion = '2.7.13' // Bumping to v3 breaks some pipeline jobs, so pinning to v2 for now. v2 (current version) is stable and will be supported until about September 2025 (https://mariadb.com/kb/en/about-mariadb-connector-j/).
@@ -61,6 +60,12 @@ dependencyUpdates.resolutionStrategy = {
 }
 
 subprojects {
+    configurations {
+        ktlint
+    }
+    dependencies {
+        ktlint "com.pinterest.ktlint:ktlint-cli:1.5.0"
+    }
     plugins.withType(JavaPlugin) {
         dependencies {
             implementation("org.yaml:snakeyaml")
