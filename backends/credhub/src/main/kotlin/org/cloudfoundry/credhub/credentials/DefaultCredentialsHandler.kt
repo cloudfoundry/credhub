@@ -89,15 +89,21 @@ class DefaultCredentialsHandler(
 
         val existingCredentialVersion =
             when {
-                activeVersionList.size > 1 && (activeVersionList[0] as CertificateCredentialVersion).isVersionTransitional ->
+                activeVersionList.size > 1 && (activeVersionList[0] as CertificateCredentialVersion).isVersionTransitional -> {
                     activeVersionList[1]
+                }
+
                 activeVersionList.isNotEmpty() &&
                     (
                         activeVersionList[0] !is CertificateCredentialVersion ||
                             !(activeVersionList[0] as CertificateCredentialVersion).isVersionTransitional
-                    ) ->
+                    ) -> {
                     activeVersionList[0]
-                else -> null
+                }
+
+                else -> {
+                    null
+                }
             }
 
         val value = credentialGenerator.generate(generateRequest)

@@ -87,9 +87,11 @@ open class CredentialView {
                 is ValueCredentialVersion -> {
                     ValueView((credentialVersion as ValueCredentialVersion?)!!)
                 }
+
                 is PasswordCredentialVersion -> {
                     PasswordView(credentialVersion)
                 }
+
                 is CertificateCredentialVersion -> {
                     if (includeGenerationInfo) {
                         CertificateGenerationView(credentialVersion, concatenateCas)
@@ -97,18 +99,23 @@ open class CredentialView {
                         CertificateView(credentialVersion, concatenateCas)
                     }
                 }
+
                 is SshCredentialVersion -> {
                     SshView(credentialVersion)
                 }
+
                 is RsaCredentialVersion -> {
                     RsaView(credentialVersion)
                 }
+
                 is JsonCredentialVersion -> {
                     JsonView((credentialVersion as JsonCredentialVersion?)!!)
                 }
+
                 is UserCredentialVersion -> {
                     UserView(credentialVersion)
                 }
+
                 else -> {
                     throw IllegalArgumentException()
                 }

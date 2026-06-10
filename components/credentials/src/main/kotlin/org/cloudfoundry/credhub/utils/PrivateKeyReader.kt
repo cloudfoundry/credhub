@@ -30,15 +30,20 @@ class PrivateKeyReader private constructor() {
                     is DecoderException, is PEMException -> {
                         throw MalformedPrivateKeyException("Keys must be PEM-encoded PKCS#1 or unencrypted PKCS#8 keys.")
                     }
-                    else -> throw ex
+
+                    else -> {
+                        throw ex
+                    }
                 }
             }
 
             return when (parsed) {
                 // PKCS1
                 is PEMKeyPair -> JcaPEMKeyConverter().getPrivateKey(parsed.privateKeyInfo)
+
                 // PKCS8
                 is PrivateKeyInfo -> JcaPEMKeyConverter().getPrivateKey(parsed)
+
                 else -> throw MalformedPrivateKeyException("Key file is not in PKCS#1 or unencrypted PKCS#8 format")
             } as? RSAPrivateKey ?: throw MalformedPrivateKeyException("Key file does not contain an RSA private key")
         }

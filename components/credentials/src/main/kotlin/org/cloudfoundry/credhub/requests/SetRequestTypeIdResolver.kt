@@ -41,13 +41,34 @@ class SetRequestTypeIdResolver : TypeIdResolver {
         val lowerCaseId = id.lowercase()
 
         when (lowerCaseId) {
-            CertificateCredentialVersionData.CREDENTIAL_TYPE -> subType = CertificateSetRequest::class.java
-            ValueCredentialVersionData.CREDENTIAL_TYPE -> subType = ValueSetRequest::class.java
-            JsonCredentialVersionData.CREDENTIAL_TYPE -> subType = JsonSetRequest::class.java
-            PasswordCredentialVersionData.CREDENTIAL_TYPE -> subType = PasswordSetRequest::class.java
-            RsaCredentialVersionData.CREDENTIAL_TYPE -> subType = RsaSetRequest::class.java
-            SshCredentialVersionData.CREDENTIAL_TYPE -> subType = SshSetRequest::class.java
-            UserCredentialVersionData.CREDENTIAL_TYPE -> subType = UserSetRequest::class.java
+            CertificateCredentialVersionData.CREDENTIAL_TYPE -> {
+                subType = CertificateSetRequest::class.java
+            }
+
+            ValueCredentialVersionData.CREDENTIAL_TYPE -> {
+                subType = ValueSetRequest::class.java
+            }
+
+            JsonCredentialVersionData.CREDENTIAL_TYPE -> {
+                subType = JsonSetRequest::class.java
+            }
+
+            PasswordCredentialVersionData.CREDENTIAL_TYPE -> {
+                subType = PasswordSetRequest::class.java
+            }
+
+            RsaCredentialVersionData.CREDENTIAL_TYPE -> {
+                subType = RsaSetRequest::class.java
+            }
+
+            SshCredentialVersionData.CREDENTIAL_TYPE -> {
+                subType = SshSetRequest::class.java
+            }
+
+            UserCredentialVersionData.CREDENTIAL_TYPE -> {
+                subType = UserSetRequest::class.java
+            }
+
             else -> {
                 val message = String.format("Could not resolve type id '%s' into a subtype of %s", lowerCaseId, baseType)
                 throw InvalidTypeIdException(null, message, baseType, lowerCaseId)
