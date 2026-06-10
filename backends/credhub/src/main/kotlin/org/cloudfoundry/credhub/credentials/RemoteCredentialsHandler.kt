@@ -263,8 +263,14 @@ class RemoteCredentialsHandler(
         data: ByteString,
     ): CredentialValue =
         when (type) {
-            "value" -> StringCredentialValue(data.toStringUtf8())
-            "password" -> StringCredentialValue(data.toStringUtf8())
+            "value" -> {
+                StringCredentialValue(data.toStringUtf8())
+            }
+
+            "password" -> {
+                StringCredentialValue(data.toStringUtf8())
+            }
+
             "certificate" -> {
                 val jsonString = data.toStringUtf8()
                 val jsonNode = objectMapper.readTree(jsonString)
@@ -280,11 +286,13 @@ class RemoteCredentialsHandler(
                     jsonNode["transitional"]?.booleanValue() ?: false,
                 )
             }
+
             "json" -> {
                 val jsonString = data.toStringUtf8()
                 val jsonNode = objectMapper.readTree(jsonString)
                 JsonCredentialValue(jsonNode)
             }
+
             "user" -> {
                 val jsonString = data.toStringUtf8()
                 val jsonNode = objectMapper.readTree(jsonString)
@@ -294,6 +302,7 @@ class RemoteCredentialsHandler(
                     jsonNode["salt"]?.stringValue()!!,
                 )
             }
+
             "rsa" -> {
                 val jsonString = data.toStringUtf8()
                 val jsonNode = objectMapper.readTree(jsonString)
@@ -302,6 +311,7 @@ class RemoteCredentialsHandler(
                     jsonNode["private_key"]?.stringValue()!!,
                 )
             }
+
             "ssh" -> {
                 val jsonString = data.toStringUtf8()
                 val jsonNode = objectMapper.readTree(jsonString)
@@ -311,7 +321,10 @@ class RemoteCredentialsHandler(
                     jsonNode["public_key_fingerprint"]?.stringValue(),
                 )
             }
-            else -> throw Exception()
+
+            else -> {
+                throw Exception()
+            }
         }
 
     internal fun createByteStringFromData(
@@ -349,12 +362,14 @@ class RemoteCredentialsHandler(
                     )
                 ByteString.copyFromUtf8(json)
             }
+
             "json" -> {
                 val jsonCredentialValue = data as JsonCredentialValue
                 val value: JsonNode = jsonCredentialValue.value
                 val valueString = value.toString()
                 ByteString.copyFromUtf8(valueString)
             }
+
             "user" -> {
                 val userCredentialValue = data as UserCredentialValue
 
@@ -368,6 +383,7 @@ class RemoteCredentialsHandler(
                     )
                 ByteString.copyFromUtf8(json)
             }
+
             "rsa" -> {
                 val rsaCredentialValue = data as RsaCredentialValue
 
@@ -380,6 +396,7 @@ class RemoteCredentialsHandler(
                     )
                 ByteString.copyFromUtf8(json)
             }
+
             "ssh" -> {
                 val sshCredentialValue = data as SshCredentialValue
 
@@ -393,7 +410,10 @@ class RemoteCredentialsHandler(
                     )
                 ByteString.copyFromUtf8(json)
             }
-            else -> throw Exception()
+
+            else -> {
+                throw Exception()
+            }
         }
 
     internal fun createByteStringFromGenerationParameters(
@@ -492,7 +512,9 @@ class RemoteCredentialsHandler(
                 ByteString.copyFromUtf8(json)
             }
 
-            else -> throw Exception()
+            else -> {
+                throw Exception()
+            }
         }
 
     private fun getGenerationParametersFromResponse(
@@ -642,7 +664,9 @@ class RemoteCredentialsHandler(
                 CertificateGenerationParameters(generationRequestParameters)
             }
 
-            else -> throw Exception()
+            else -> {
+                throw Exception()
+            }
         }
     }
 

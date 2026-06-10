@@ -37,11 +37,26 @@ class GenerateRequestTypeIdResolver : TypeIdResolver {
         var subType: Class<*> = DefaultCredentialGenerateRequest::class.java
 
         when (id.lowercase()) {
-            CertificateCredentialVersionData.CREDENTIAL_TYPE -> subType = CertificateGenerateRequest::class.java
-            PasswordCredentialVersionData.CREDENTIAL_TYPE -> subType = PasswordGenerateRequest::class.java
-            RsaCredentialVersionData.CREDENTIAL_TYPE -> subType = RsaGenerateRequest::class.java
-            SshCredentialVersionData.CREDENTIAL_TYPE -> subType = SshGenerateRequest::class.java
-            UserCredentialVersionData.CREDENTIAL_TYPE -> subType = UserGenerateRequest::class.java
+            CertificateCredentialVersionData.CREDENTIAL_TYPE -> {
+                subType = CertificateGenerateRequest::class.java
+            }
+
+            PasswordCredentialVersionData.CREDENTIAL_TYPE -> {
+                subType = PasswordGenerateRequest::class.java
+            }
+
+            RsaCredentialVersionData.CREDENTIAL_TYPE -> {
+                subType = RsaGenerateRequest::class.java
+            }
+
+            SshCredentialVersionData.CREDENTIAL_TYPE -> {
+                subType = SshGenerateRequest::class.java
+            }
+
+            UserCredentialVersionData.CREDENTIAL_TYPE -> {
+                subType = UserGenerateRequest::class.java
+            }
+
             else -> {
             }
         }

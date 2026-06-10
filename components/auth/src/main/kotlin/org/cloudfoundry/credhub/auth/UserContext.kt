@@ -34,9 +34,11 @@ class UserContext {
                     UAA_PASSWORD_GRANT_TYPE -> {
                         UAA_USER_ACTOR_PREFIX + ":" + this.userId
                     }
+
                     UAA_CLIENT_CREDENTIALS_GRANT_TYPE -> {
                         UAA_CLIENT_ACTOR_PREFIX + ":" + this.clientId
                     }
+
                     else -> {
                         throw UnsupportedGrantTypeException(this.grantType.toString())
                     }

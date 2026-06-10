@@ -118,7 +118,13 @@ class CertificateDataService
 
                     UUID(high, low)
                 }
-                o.javaClass == UUID::class.java -> o as UUID
-                else -> throw IllegalArgumentException("Expected byte[] or UUID type. Received " + o.javaClass.toString())
+
+                o.javaClass == UUID::class.java -> {
+                    o as UUID
+                }
+
+                else -> {
+                    throw IllegalArgumentException("Expected byte[] or UUID type. Received " + o.javaClass.toString())
+                }
             }
     }

@@ -151,8 +151,10 @@ class ExceptionHandlers {
         if (cause is UnrecognizedPropertyException) {
             return constructError(ErrorMessages.INVALID_JSON_KEY, cause.propertyName)
         } else if (cause is InvalidTypeIdException ||
-            cause is DatabindException &&
-            cause.message?.contains("missing property 'type'") == true
+            (
+                cause is DatabindException &&
+                    cause.message?.contains("missing property 'type'") == true
+            )
         ) {
             return constructError(ErrorMessages.INVALID_TYPE_WITH_SET_PROMPT)
         }
@@ -224,8 +226,10 @@ class ExceptionHandlers {
         if (cause is UnrecognizedPropertyException) {
             return constructError(ErrorMessages.INVALID_JSON_KEY, cause.propertyName)
         } else if (cause is InvalidTypeIdException ||
-            cause is DatabindException &&
-            cause.message?.contains("missing property 'type'") == true
+            (
+                cause is DatabindException &&
+                    cause.message?.contains("missing property 'type'") == true
+            )
         ) {
             return constructError(ErrorMessages.INVALID_TYPE_WITH_SET_PROMPT)
         } else if (cause is DatabindException) {

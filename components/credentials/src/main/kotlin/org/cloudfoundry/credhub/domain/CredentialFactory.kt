@@ -71,30 +71,50 @@ class CredentialFactory
         ): CredentialVersion {
             val credentialVersion =
                 when (type) {
-                    CredentialType.PASSWORD ->
+                    CredentialType.PASSWORD -> {
                         PasswordCredentialVersion(
                             credentialValue as StringCredentialValue?,
                             passwordGenerationParameters as StringGenerationParameters?,
                             encryptor,
                         )
-                    CredentialType.CERTIFICATE ->
+                    }
+
+                    CredentialType.CERTIFICATE -> {
                         CertificateCredentialVersion(
                             (credentialValue as CertificateCredentialValue?)!!,
                             name!!,
                             encryptor,
                         )
-                    CredentialType.VALUE -> ValueCredentialVersion(credentialValue as StringCredentialValue?, encryptor)
-                    CredentialType.RSA -> RsaCredentialVersion(credentialValue as RsaCredentialValue?, name!!, encryptor)
-                    CredentialType.SSH -> SshCredentialVersion(credentialValue as SshCredentialValue?, name!!, encryptor)
-                    CredentialType.JSON -> JsonCredentialVersion(credentialValue as JsonCredentialValue?, name!!, encryptor)
-                    CredentialType.USER ->
+                    }
+
+                    CredentialType.VALUE -> {
+                        ValueCredentialVersion(credentialValue as StringCredentialValue?, encryptor)
+                    }
+
+                    CredentialType.RSA -> {
+                        RsaCredentialVersion(credentialValue as RsaCredentialValue?, name!!, encryptor)
+                    }
+
+                    CredentialType.SSH -> {
+                        SshCredentialVersion(credentialValue as SshCredentialValue?, name!!, encryptor)
+                    }
+
+                    CredentialType.JSON -> {
+                        JsonCredentialVersion(credentialValue as JsonCredentialValue?, name!!, encryptor)
+                    }
+
+                    CredentialType.USER -> {
                         UserCredentialVersion(
                             credentialValue as UserCredentialValue?,
                             name!!,
                             passwordGenerationParameters as StringGenerationParameters?,
                             encryptor,
                         )
-                    else -> throw RuntimeException("Unrecognized type: $type")
+                    }
+
+                    else -> {
+                        throw RuntimeException("Unrecognized type: $type")
+                    }
                 }
             if (existingCredentialVersion == null) {
                 credentialVersion.createName(name!!)

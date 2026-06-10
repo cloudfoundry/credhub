@@ -319,11 +319,13 @@ class RemoteBackendClient(
                 channelType = EpollDomainSocketChannel::class.java
                 LOGGER.info("Using epoll for Netty transport.")
             }
+
             KQueue.isAvailable() -> {
                 group = KQueueEventLoopGroup()
                 channelType = KQueueDomainSocketChannel::class.java
                 LOGGER.info("Using KQueue for Netty transport.")
             }
+
             else -> {
                 throw RuntimeException("Unsupported OS '" + System.getProperty("os.name") + "', only Unix and Mac are supported")
             }

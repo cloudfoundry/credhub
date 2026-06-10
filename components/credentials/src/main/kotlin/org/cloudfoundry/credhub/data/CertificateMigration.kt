@@ -43,10 +43,13 @@ class CertificateMigration
         ) {
             var message = String.format("Unexpected exception reading certificate with name %s: %s", version.name, e.toString())
             when (e) {
-                is MalformedCertificateException ->
+                is MalformedCertificateException -> {
                     message = String.format("can't read certificate with name %s", version.name)
-                is MissingCertificateException ->
+                }
+
+                is MissingCertificateException -> {
                     message = String.format("missing certificate with name %s", version.name)
+                }
             }
             LOGGER.warn(message)
         }
