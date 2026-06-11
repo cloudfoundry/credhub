@@ -11,7 +11,7 @@ updates:
   - dependency-name: "org.mariadb.jdbc:mariadb-java-client" ## version 3.0.3 of the driver drops support for Aurora - https://www.pivotaltracker.com/n/projects/2482247/stories/183282618
     update-types: ["version-update:semver-major"]
   - dependency-name: "org.springframework.boot:*"
-    update-types: [ "version-update:semver-major" ] # Do major version bumps manually as it will almost certainly require major migration.
+    update-types: [ "version-update:semver-major", "version-update:semver-minor" ] # Do major/minor version bumps manually as it will almost certainly require major migration.
 - package-ecosystem: "github-actions"
   directory: "/"
   schedule:
