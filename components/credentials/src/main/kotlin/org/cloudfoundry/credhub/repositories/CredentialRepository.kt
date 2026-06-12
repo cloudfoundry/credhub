@@ -17,7 +17,7 @@ interface CredentialRepository : JpaRepository<Credential, UUID> {
             "select credential.uuid, credential.name, credential.name_lowercase, credential.checksum from certificate_credential " +
                 "left join credential_version on certificate_credential.uuid = credential_version.uuid " +
                 "join credential on credential.uuid = credential_version.credential_uuid " +
-                "where credential.uuid = ?1",
+                "where credential.uuid = ?1 limit 1",
         nativeQuery = true,
     )
     fun findCertificateByUuid(uuid: UUID?): Credential?
