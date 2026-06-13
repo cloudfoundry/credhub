@@ -108,9 +108,10 @@ class CertificateDataServiceTest {
         val credential = Credential(name)
         credentialDataService.save(credential)
 
+        val baseTime = Instant.now()
         for (certificateVersion in 0..10) {
             val certificateCredentialVersionData = CertificateCredentialVersionData(name)
-            certificateCredentialVersionData.expiryDate = Instant.now()
+            certificateCredentialVersionData.expiryDate = baseTime.plusSeconds(certificateVersion.toLong())
             certificateCredentialVersionData.credential = credential
             certificateCredentialVersionData.caName = caName
             credentialVersionDataService.save(certificateCredentialVersionData)
