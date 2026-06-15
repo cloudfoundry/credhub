@@ -4,6 +4,7 @@ import org.cloudfoundry.credhub.CredhubTestApp
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
 import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData
 import org.cloudfoundry.credhub.entity.Credential
+import org.cloudfoundry.credhub.repositories.CredentialVersionRepository
 import org.cloudfoundry.credhub.utils.DatabaseProfileResolver
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -27,6 +28,9 @@ class CertificateDataServiceTest {
 
     @Autowired
     private lateinit var credentialVersionDataService: CredentialVersionDataService
+
+    @Autowired
+    private lateinit var credentialVersionRepository: CredentialVersionRepository
 
     @Test
     fun `findAllValidMetadata when certificate is in 'names' returns certificates`() {
@@ -115,6 +119,12 @@ class CertificateDataServiceTest {
             certificateCredentialVersionData.credential = credential
             certificateCredentialVersionData.caName = caName
             credentialVersionDataService.save(certificateCredentialVersionData)
+            // @CreatedDate sets versionCreatedAt to Instant.now() on persist; all versions in
+            // this tight loop land on the same millisecond, making ORDER BY non-deterministic.
+            // Override with a staggered value and flush: because the entity is already managed
+            // (has a UUID), JPA issues an UPDATE and @PrePersist / @CreatedDate does not fire.
+            certificateCredentialVersionData.versionCreatedAt = baseTime.plusSeconds(certificateVersion.toLong())
+            credentialVersionRepository.saveAndFlush(certificateCredentialVersionData)
         }
 
         val result = subject.findAllValidMetadata(listOf(name))
