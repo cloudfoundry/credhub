@@ -9,7 +9,7 @@ buildscript {
         kotlinVersion = '2.4.0'
         passayVersion = '2.0.0'
         springBootVersion = '4.1.0'
-        mariadbJdbcVersion = '2.7.13' // Bumping to v3 breaks some pipeline jobs, so pinning to v2 for now. v2 (current version) is stable and will be supported until about September 2025 (https://mariadb.com/kb/en/about-mariadb-connector-j/).
+        mariadbJdbcVersion = '2.7.14' // Bumping to v3 breaks some pipeline jobs, so pinning to v2 for now. v2 (current version) is stable and will be supported until about September 2025 (https://mariadb.com/kb/en/about-mariadb-connector-j/).
         grpcVersion = '1.82.0'
         protobufVersion = '4.35.1'
     }
