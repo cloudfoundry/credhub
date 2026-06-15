@@ -132,6 +132,6 @@ asciidoctor.finalizedBy(buildAndCopyRestDocsIntoSpringStaticAssetLocation)
 
 protobuf {
     protoc {
-        artifact = "com.google.protobuf:protoc:${protoCVersion}"
+        artifact = "com.google.protobuf:protoc:${protobufVersion}"
     }
 }
