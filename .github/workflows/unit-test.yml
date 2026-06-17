@@ -16,6 +16,6 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: 'liberica'
-          java-version: '21'
+          java-version: '25'
       - name: Build and test with Gradle
         run: ./gradlew clean build
