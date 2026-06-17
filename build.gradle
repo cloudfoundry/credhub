@@ -82,4 +82,4 @@ subprojects {
 ext['kotlin.version'] = "${kotlinVersion}"
 ext['protobuf-java.version'] = "${protobufVersion}"
 
-assert JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_21)
+assert JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_25)
