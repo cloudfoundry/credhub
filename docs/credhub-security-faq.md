@@ -11,8 +11,8 @@ https://docs.pivotal.io/pivotalcf/2-6/security/index.html
 ## What cryptographic libraries are in place?
 
 * Java JCA/JCE
-* Java 21 javax.crypto
-* bouncycastle FIPS 1.0
+* Java 25 javax.crypto
+* bouncycastle FIPS 2
 * OpenSSL on the stemcell
 
 ## What reliability and availability characteristics exist?
