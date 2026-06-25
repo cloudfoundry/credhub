@@ -28,7 +28,7 @@ apply plugin: 'kotlin'
 apply plugin: 'kotlin-spring'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
-apply plugin: 'spring-cloud-contract'
+apply plugin: 'org.springframework.cloud.contract'
 apply from: "${rootDir.toPath()}/spring-cloud-contract-config.gradle"
 apply from: "${rootDir.toPath()}/kotlin.gradle"
 apply from: "${rootDir.toPath()}/ktlint.gradle"
