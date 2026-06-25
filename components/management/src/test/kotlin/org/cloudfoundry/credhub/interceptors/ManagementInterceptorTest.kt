@@ -94,4 +94,22 @@ class ManagementInterceptorTest {
         request!!.method = "POST"
         subject!!.preHandle(request!!, response!!, Any())
     }
+
+    @Test
+    fun preHandle_throwsExceptionForEncodedManagementPathFromRemoteAddress() {
+        request!!.remoteAddr = "10.0.0.1"
+        request!!.localAddr = "127.0.0.1"
+        request!!.requestURI = "/%6Danagement"
+        assertThrows<InvalidRemoteAddressException> {
+            subject!!.preHandle(request!!, response!!, Any())
+        }
+    }
+
+    @Test
+    fun preHandle_encodedInterpolatePathIsExemptFromReadOnlyMode() {
+        managementRegistry!!.readOnlyMode = true
+        request!!.requestURI = "/%69nterpolate"
+        request!!.method = "POST"
+        subject!!.preHandle(request!!, response!!, Any())
+    }
 }
