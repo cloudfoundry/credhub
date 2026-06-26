@@ -74,6 +74,11 @@ subprojects {
         }
         tasks.withType(Test) {
             useJUnitPlatform()
+            // Apply a default per-test-method timeout to every test that doesn't already have
+            // @Timeout. This converts a silent hang into a FAILED test with a stack trace,
+            // regardless of which database profile is active. Tests that legitimately need longer
+            // must declare an explicit @Timeout(N) annotation.
+            systemProperty 'junit.jupiter.execution.timeout.default', '60 s'
         }
     }
 }
