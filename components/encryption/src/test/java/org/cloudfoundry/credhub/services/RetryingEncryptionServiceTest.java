@@ -2,6 +2,8 @@ package org.cloudfoundry.credhub.services;
 
 import java.security.ProviderException;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.crypto.IllegalBlockSizeException;
@@ -221,7 +223,7 @@ public class RetryingEncryptionServiceTest {
 
   @Test
   public void whenUsingTwoThreads_wontRetryTwice() throws Exception {
-    final Object lock = new Object();
+    final CountDownLatch latch = new CountDownLatch(1);
     final Thread firstThread = new Thread("first") {
       @Override
       public void run() {
@@ -243,7 +245,7 @@ public class RetryingEncryptionServiceTest {
       }
     };
 
-    subject = new RacingRetryingEncryptionServiceForTest(firstThread, secondThread, lock);
+    subject = new RacingRetryingEncryptionServiceForTest(firstThread, secondThread, latch);
     when(keySet.getActive())
       .thenReturn(firstActiveKey);
     when(firstActiveKey.encrypt(anyString()))
@@ -413,7 +415,7 @@ public class RetryingEncryptionServiceTest {
 
   @Test
   public void usingTwoThread_wontRetryTwice() throws Exception {
-    final Object lock = new Object();
+    final CountDownLatch latch = new CountDownLatch(1);
     final Thread firstThread = new Thread("first") {
       @Override
       public void run() {
@@ -435,7 +437,7 @@ public class RetryingEncryptionServiceTest {
       }
     };
 
-    subject = new RacingRetryingEncryptionServiceForTest(firstThread, secondThread, lock);
+    subject = new RacingRetryingEncryptionServiceForTest(firstThread, secondThread, latch);
 
     when(keySet.get(activeKeyUuid))
       .thenReturn(firstActiveKey);
@@ -462,13 +464,13 @@ public class RetryingEncryptionServiceTest {
 
     private final Thread firstThread;
     private final Thread secondThread;
-    private final Object lock;
+    private final CountDownLatch latch;
 
-    RacingRetryingEncryptionServiceForTest(final Thread firstThread, final Thread secondThread, final Object lock) {
+    RacingRetryingEncryptionServiceForTest(final Thread firstThread, final Thread secondThread, final CountDownLatch latch) {
       super(RetryingEncryptionServiceTest.this.keySet);
       this.firstThread = firstThread;
       this.secondThread = secondThread;
-      this.lock = lock;
+      this.latch = latch;
     }
 
     @Override
@@ -476,14 +478,10 @@ public class RetryingEncryptionServiceTest {
       try {
         if (Thread.currentThread().equals(firstThread)) {
           secondThread.start();
-          synchronized (lock) {
-            lock.wait(); // pause the first thread
-          }
+          latch.await(10, TimeUnit.SECONDS); // pause the first thread until secondThread signals
           Thread.sleep(10); // give thread two a chance to get all the way through the retry
         } else {
-          synchronized (lock) {
-            lock.notify(); // unpause the first thread
-          }
+          latch.countDown(); // unpause the first thread
         }
       } catch (final Exception e) {
         //do nothing
