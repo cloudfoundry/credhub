@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -245,7 +246,8 @@ public class RetryingEncryptionServiceTest {
       }
     };
 
-    subject = new RacingRetryingEncryptionServiceForTest(firstThread, secondThread, latch);
+    final RacingRetryingEncryptionServiceForTest racingSubject = new RacingRetryingEncryptionServiceForTest(firstThread, secondThread, latch);
+    subject = racingSubject;
     when(keySet.getActive())
       .thenReturn(firstActiveKey);
     when(firstActiveKey.encrypt(anyString()))
@@ -258,6 +260,7 @@ public class RetryingEncryptionServiceTest {
     firstThread.join();
     secondThread.join();
 
+    assertTrue(racingSubject.latchSignalled, "secondThread did not signal the latch within the timeout period");
     verify(keySet, times(1)).reload();
   }
 
@@ -437,7 +440,8 @@ public class RetryingEncryptionServiceTest {
       }
     };
 
-    subject = new RacingRetryingEncryptionServiceForTest(firstThread, secondThread, latch);
+    final RacingRetryingEncryptionServiceForTest racingSubject = new RacingRetryingEncryptionServiceForTest(firstThread, secondThread, latch);
+    subject = racingSubject;
 
     when(keySet.get(activeKeyUuid))
       .thenReturn(firstActiveKey);
@@ -457,6 +461,7 @@ public class RetryingEncryptionServiceTest {
     firstThread.join();
     secondThread.join();
 
+    assertTrue(racingSubject.latchSignalled, "secondThread did not signal the latch within the timeout period");
     verify(keySet, times(1)).reload();
   }
 
@@ -465,6 +470,7 @@ public class RetryingEncryptionServiceTest {
     private final Thread firstThread;
     private final Thread secondThread;
     private final CountDownLatch latch;
+    volatile boolean latchSignalled = true;
 
     RacingRetryingEncryptionServiceForTest(final Thread firstThread, final Thread secondThread, final CountDownLatch latch) {
       super(RetryingEncryptionServiceTest.this.keySet);
@@ -478,7 +484,7 @@ public class RetryingEncryptionServiceTest {
       try {
         if (Thread.currentThread().equals(firstThread)) {
           secondThread.start();
-          latch.await(10, TimeUnit.SECONDS); // pause the first thread until secondThread signals
+          latchSignalled = latch.await(10, TimeUnit.SECONDS); // pause the first thread until secondThread signals
           Thread.sleep(10); // give thread two a chance to get all the way through the retry
         } else {
           latch.countDown(); // unpause the first thread
