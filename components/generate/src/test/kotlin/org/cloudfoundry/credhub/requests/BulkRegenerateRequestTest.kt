@@ -5,6 +5,8 @@ import org.cloudfoundry.credhub.helpers.JsonTestHelper
 import org.hamcrest.MatcherAssert
 import org.hamcrest.Matchers
 import org.junit.jupiter.api.Test
+import tools.jackson.databind.ObjectMapper
+import kotlin.test.assertEquals
 
 class BulkRegenerateRequestTest {
     @Test
@@ -16,5 +18,22 @@ class BulkRegenerateRequestTest {
             )
 
         MatcherAssert.assertThat(violations, Matchers.contains(JsonTestHelper.hasViolationWithMessage(ErrorMessages.MISSING_SIGNED_BY)))
+    }
+
+    @Test
+    fun whenDurationProvided_deserializesDurationAndPrependsSignedBy() {
+        val request =
+            ObjectMapper().readValue(
+                """
+                {
+                  "signed_by": "some-ca",
+                  "duration": 730
+                }
+                """.trimIndent(),
+                BulkRegenerateRequest::class.java,
+            )
+
+        assertEquals("/some-ca", request.signedBy)
+        assertEquals(730, request.duration)
     }
 }

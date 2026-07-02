@@ -323,10 +323,34 @@ public class DefaultRegenerateHandlerTest {
     request.setCertificateGenerationParameters(generationParams);
     when(request.getGenerationParameters()).thenReturn(generationParams);
 
-    subjectWithAclsDisabled.handleBulkRegenerate(signedBy);
+    subjectWithAclsDisabled.handleBulkRegenerate(signedBy, null);
     verify(cefAuditRecord, times(1)).setRequestDetails(bulkRegenerateCredential);
     verify(cefAuditRecord, times(certificateCredentials.size())).addVersion(any(CredentialVersion.class));
     verify(cefAuditRecord, times(certificateCredentials.size())).addResource(any(Credential.class));
+  }
+
+  @Test
+  public void handleBulkRegenerate_whenDurationProvided_setsDurationOnGenerateRequest() {
+    final String signedBy = "fooCA";
+    final int duration = 730;
+    final String certificateName = "foo";
+    final CredentialVersion credVersion = new CertificateCredentialVersion(certificateName);
+    credVersion.setCredential(new Credential(certificateName));
+
+    when(credentialService.findAllCertificateCredentialsByCaName(signedBy)).thenReturn(newArrayList(certificateName));
+    when(credentialService.findMostRecent(certificateName)).thenReturn(credVersion);
+
+    final CertificateGenerateRequest request = mock(CertificateGenerateRequest.class);
+    final CertificateGenerationParameters generationParams = mock(CertificateGenerationParameters.class);
+    when(generationParams.isCa()).thenReturn(false);
+    when(request.getGenerationParameters()).thenReturn(generationParams);
+    when(generationRequestGenerator.createGenerateRequest(credVersion)).thenReturn(request);
+    when(credentialGenerator.generate(request)).thenReturn(credValue);
+    when(credentialService.save(credVersion, credValue, request)).thenReturn(credVersion);
+
+    subjectWithAclsDisabled.handleBulkRegenerate(signedBy, duration);
+
+    verify(request, times(1)).setDuration(duration);
   }
 
   @Test
@@ -417,7 +441,7 @@ public class DefaultRegenerateHandlerTest {
     when(generationRequestGenerator.createGenerateRequest(existingCredentialVersion3)).thenReturn(generateRequest3);
     when(generationRequestGenerator.createGenerateRequest(existingCredentialVersion4)).thenReturn(generateRequest4);
 
-    final BulkRegenerateResults bulkRegenerateResults = subjectWithAclsEnabled.handleBulkRegenerate(SIGNER_NAME);
+    final BulkRegenerateResults bulkRegenerateResults = subjectWithAclsEnabled.handleBulkRegenerate(SIGNER_NAME, null);
 
     Set<String> regeneratedCredentials = bulkRegenerateResults.getRegeneratedCredentials();
     assertThat(regeneratedCredentials.size()).isEqualTo(4);
@@ -476,7 +500,7 @@ public class DefaultRegenerateHandlerTest {
       .thenReturn(true);
 
     try {
-      subjectWithAclsEnabled.handleBulkRegenerate(SIGNER_NAME);
+      subjectWithAclsEnabled.handleBulkRegenerate(SIGNER_NAME, null);
       fail("should throw exception");
     } catch (final PermissionException e) {
       MatcherAssert.assertThat(e.getMessage(), IsEqual.equalTo(ErrorMessages.Credential.INVALID_ACCESS));
@@ -575,7 +599,7 @@ public class DefaultRegenerateHandlerTest {
     when(generationRequestGenerator.createGenerateRequest(existingCredentialVersion3)).thenReturn(generateRequest3);
     when(generationRequestGenerator.createGenerateRequest(existingCredentialVersion4)).thenReturn(generateRequest4);
 
-    final BulkRegenerateResults bulkRegenerateResults = subjectWithAclsDisabled.handleBulkRegenerate(SIGNER_NAME);
+    final BulkRegenerateResults bulkRegenerateResults = subjectWithAclsDisabled.handleBulkRegenerate(SIGNER_NAME, null);
 
     Set<String> regeneratedCredentials = bulkRegenerateResults.getRegeneratedCredentials();
     assertThat(regeneratedCredentials.size()).isEqualTo(4);

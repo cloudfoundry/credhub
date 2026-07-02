@@ -11,11 +11,14 @@ class BulkRegenerateRequest {
             field = if (value != null) StringUtils.prependIfMissing(value, "/") else null
         }
 
+    var duration: Int? = null
+
     constructor() : super() {
         // this needs to be there for jackson to be happy
     }
 
-    constructor(signedBy: String?) : super() {
+    constructor(signedBy: String?, duration: Int? = null) : super() {
         this.signedBy = signedBy
+        this.duration = duration
     }
 }

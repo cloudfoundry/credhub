@@ -11,12 +11,13 @@ class V35_1__migrate_operation_audit_record_table : BaseJavaMigration() {
     @Throws(Exception::class)
     override fun migrate(context: Context) {
         val jdbcTemplate = JdbcTemplate(SingleConnectionDataSource(context.connection, true))
-        val databaseName = jdbcTemplate
-            .dataSource
-            ?.getConnection()
-            ?.metaData
-            ?.databaseProductName
-            ?.lowercase()
+        val databaseName =
+            jdbcTemplate
+                .dataSource
+                ?.getConnection()
+                ?.metaData
+                ?.databaseProductName
+                ?.lowercase()
         val operationAuditRecordIds = jdbcTemplate.queryForList("select id from operation_audit_record", Long::class.java)
         for (id in operationAuditRecordIds) {
             val requestUuid = UuidUtil.makeUuid(databaseName)
@@ -63,7 +64,8 @@ class V35_1__migrate_operation_audit_record_table : BaseJavaMigration() {
                     "from operation_audit_record " +
                     "as record " +
                     "where id = ?",
-                arrayOf(requestUuid, id), intArrayOf(Types.VARBINARY, Types.BIGINT)
+                arrayOf(requestUuid, id),
+                intArrayOf(Types.VARBINARY, Types.BIGINT),
             )
             jdbcTemplate.update(
                 "insert into event_audit_record (" +
@@ -85,7 +87,8 @@ class V35_1__migrate_operation_audit_record_table : BaseJavaMigration() {
                     "from operation_audit_record " +
                     "as record " +
                     "where id = ?",
-                arrayOf(eventUuid, requestUuid, id), intArrayOf(Types.VARBINARY, Types.VARBINARY, Types.BIGINT)
+                arrayOf(eventUuid, requestUuid, id),
+                intArrayOf(Types.VARBINARY, Types.VARBINARY, Types.BIGINT),
             )
         }
     }

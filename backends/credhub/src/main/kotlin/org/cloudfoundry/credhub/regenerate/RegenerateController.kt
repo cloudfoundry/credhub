@@ -35,5 +35,5 @@ class RegenerateController(
     @Transactional(rollbackFor = [PermissionException::class])
     fun bulkRegenerate(
         @RequestBody @Valid requestBody: BulkRegenerateRequest,
-    ): BulkRegenerateResults = regenerateHandler.handleBulkRegenerate(requestBody.signedBy!!)
+    ): BulkRegenerateResults = regenerateHandler.handleBulkRegenerate(requestBody.signedBy!!, requestBody.duration)
 }
