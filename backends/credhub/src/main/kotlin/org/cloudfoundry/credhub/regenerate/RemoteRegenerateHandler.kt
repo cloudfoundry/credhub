@@ -16,7 +16,10 @@ class RemoteRegenerateHandler : RegenerateHandler {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun handleBulkRegenerate(signerName: String): BulkRegenerateResults {
+    override fun handleBulkRegenerate(
+        signerName: String,
+        duration: Int?,
+    ): BulkRegenerateResults {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 }

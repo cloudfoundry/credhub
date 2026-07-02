@@ -11,17 +11,21 @@ class V25_1__add_secret_name_relation : BaseJavaMigration() {
     @Throws(Exception::class)
     override fun migrate(context: Context) {
         val jdbcTemplate = JdbcTemplate(SingleConnectionDataSource(context.connection, true))
-        val databaseName = jdbcTemplate
-            .dataSource
-            ?.getConnection()
-            ?.metaData
-            ?.databaseProductName
-            ?.lowercase()
-        val names = jdbcTemplate
-            .queryForList("select distinct(name) from named_secret", String::class.java)
+        val databaseName =
+            jdbcTemplate
+                .dataSource
+                ?.getConnection()
+                ?.metaData
+                ?.databaseProductName
+                ?.lowercase()
+        val names =
+            jdbcTemplate
+                .queryForList("select distinct(name) from named_secret", String::class.java)
         for (name in names) {
             jdbcTemplate.update(
-                "insert into secret_name (uuid, name) values (?, ?)", arrayOf(UuidUtil.makeUuid(databaseName), name), intArrayOf(Types.VARBINARY, Types.VARCHAR)
+                "insert into secret_name (uuid, name) values (?, ?)",
+                arrayOf(UuidUtil.makeUuid(databaseName), name),
+                intArrayOf(Types.VARBINARY, Types.VARCHAR),
             )
         }
     }

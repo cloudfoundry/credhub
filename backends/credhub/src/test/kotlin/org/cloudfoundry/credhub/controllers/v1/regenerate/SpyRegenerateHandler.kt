@@ -21,10 +21,15 @@ class SpyRegenerateHandler : RegenerateHandler {
     }
 
     var handleBulkRegenerateCalledWithSignerName: String? = null
+    var handleBulkRegenerateCalledWithDuration: Int? = null
     lateinit var handleBulkRegenerateReturnsBulkRegenerateResults: BulkRegenerateResults
 
-    override fun handleBulkRegenerate(signerName: String): BulkRegenerateResults {
+    override fun handleBulkRegenerate(
+        signerName: String,
+        duration: Int?,
+    ): BulkRegenerateResults {
         handleBulkRegenerateCalledWithSignerName = signerName
+        handleBulkRegenerateCalledWithDuration = duration
 
         return handleBulkRegenerateReturnsBulkRegenerateResults
     }
