@@ -163,7 +163,8 @@ class RegenerateControllerTest {
                         .content(
                             """
                             {
-                                "signed_by": "/some-ca"
+                                "signed_by": "/some-ca",
+                                "duration": 730
                             }
                             """.trimIndent(),
                         ),
@@ -176,6 +177,12 @@ class RegenerateControllerTest {
                                 .fieldWithPath("signed_by")
                                 .description("The name of the CA that signs regenerated certificates.")
                                 .type(JsonFieldType.STRING),
+                            PayloadDocumentation
+                                .fieldWithPath("duration")
+                                .description(
+                                    "Set the duration for regenerated certificates in days. If not provided, the duration remains unchanged.",
+                                ).optional()
+                                .type(JsonFieldType.NUMBER),
                         ),
                     ),
                 ).andReturn()
@@ -195,5 +202,6 @@ class RegenerateControllerTest {
         JSONAssert.assertEquals(expectedResponse, actualResponse.contentAsString, true)
 
         assertThat(spyRegenerateHandler.handleBulkRegenerateCalledWithSignerName, equalTo("/some-ca"))
+        assertThat(spyRegenerateHandler.handleBulkRegenerateCalledWithDuration, equalTo(730))
     }
 }

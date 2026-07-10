@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.requests
 
 import jakarta.validation.ConstraintViolation
 import org.cloudfoundry.credhub.ErrorMessages
+import org.cloudfoundry.credhub.helpers.JsonTestHelper
 import org.cloudfoundry.credhub.helpers.JsonTestHelper.Companion.deserializeAndValidate
 import org.cloudfoundry.credhub.helpers.JsonTestHelper.Companion.hasViolationWithMessage
 import org.cloudfoundry.credhub.utils.AuthConstants.Companion.USER_A_ACTOR_ID
@@ -11,7 +12,6 @@ import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.contains
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import tools.jackson.databind.ObjectMapper
 import tools.jackson.databind.exc.InvalidFormatException
 import java.io.IOException
 
@@ -20,7 +20,7 @@ class PermissionEntryTest {
     @Throws(IOException::class)
     fun validation_allowsGoodJson() {
         val json = ("{ \n\"actor\": \"$USER_A_ACTOR_ID\",\n\"operations\": [\"read\"],\n\"path\": \"$USER_A_PATH\"}")
-        val om = ObjectMapper()
+        val om = JsonTestHelper.createObjectMapper()
         val permissionEntry = om.readValue(json, PermissionEntry::class.java)
         assertThat(permissionEntry.actor, equalTo(USER_A_ACTOR_ID))
         assertThat(permissionEntry.path, equalTo(USER_A_PATH))

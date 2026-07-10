@@ -71,7 +71,10 @@ class DefaultRegenerateHandler(
         return CredentialView.fromEntity(credentialVersion, concatenateCas, true)
     }
 
-    override fun handleBulkRegenerate(signerName: String): BulkRegenerateResults {
+    override fun handleBulkRegenerate(
+        signerName: String,
+        duration: Int?,
+    ): BulkRegenerateResults {
         auditRecord.requestDetails = BulkRegenerateCredential(signerName)
 
         verifyRegeneratePermissions(signerName)
@@ -79,7 +82,7 @@ class DefaultRegenerateHandler(
         val results = BulkRegenerateResults()
         val certificateSet = TreeSet(String.CASE_INSENSITIVE_ORDER)
 
-        certificateSet.addAll(regenerateCertificatesSignedByCA(signerName))
+        certificateSet.addAll(regenerateCertificatesSignedByCA(signerName, duration))
         results.setRegeneratedCredentials(certificateSet)
         return results
     }
@@ -102,25 +105,34 @@ class DefaultRegenerateHandler(
             }
     }
 
-    private fun regenerateCertificatesSignedByCA(signerName: String): Collection<String> {
+    private fun regenerateCertificatesSignedByCA(
+        signerName: String,
+        duration: Int?,
+    ): Collection<String> {
         val results = TreeSet(String.CASE_INSENSITIVE_ORDER)
         val certificateNames = TreeSet(String.CASE_INSENSITIVE_ORDER)
 
         certificateNames.addAll(credentialService.findAllCertificateCredentialsByCaName(signerName))
         certificateNames
             .stream()
-            .map { name -> this.regenerateCertificateAndDirectChildren(name) }
+            .map { name -> this.regenerateCertificateAndDirectChildren(name, duration) }
             .forEach { results.addAll(it) }
 
         return results
     }
 
-    private fun regenerateCertificateAndDirectChildren(credentialName: String): Set<String> {
+    private fun regenerateCertificateAndDirectChildren(
+        credentialName: String,
+        duration: Int?,
+    ): Set<String> {
         val results = TreeSet(String.CASE_INSENSITIVE_ORDER)
         val existingCredentialVersion = credentialService.findMostRecent(credentialName)
         val generateRequest =
             generationRequestGenerator
                 .createGenerateRequest(existingCredentialVersion) as CertificateGenerateRequest
+        if (duration != null) {
+            generateRequest.setDuration(duration)
+        }
         val newCredentialValue = credentialGenerator.generate(generateRequest)
 
         auditRecord.addVersion(existingCredentialVersion)
@@ -138,7 +150,7 @@ class DefaultRegenerateHandler(
             generateRequest
                 .generationParameters as CertificateGenerationParameters
         if (generationParameters.isCa) {
-            results.addAll(this.regenerateCertificatesSignedByCA(generateRequest.name!!))
+            results.addAll(this.regenerateCertificatesSignedByCA(generateRequest.name!!, duration))
         }
         return results
     }

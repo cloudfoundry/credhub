@@ -10,5 +10,8 @@ interface RegenerateHandler {
         credentialMetadata: JsonNode?,
     ): CredentialView
 
-    fun handleBulkRegenerate(signerName: String): BulkRegenerateResults
+    fun handleBulkRegenerate(
+        signerName: String,
+        duration: Int?,
+    ): BulkRegenerateResults
 }
