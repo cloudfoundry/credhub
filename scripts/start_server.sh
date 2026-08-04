@@ -15,4 +15,8 @@ exec "$DIR/gradlew" \
   -Djdk.tls.ephemeralDHKeySize=4096 \
   -Djdk.tls.namedGroups="secp384r1" \
   -Djavax.net.ssl.trustStore=src/test/resources/auth_server_trust_store.jks \
-  -Djavax.net.ssl.trustStorePassword=changeit "$@"
+  -Djavax.net.ssl.trustStorePassword=changeit \
+  -Djava.library.path=/Users/hs031209/tmp/luna-hsm-client-7.4/jsp/64 \
+  -PlunaJar=/Users/hs031209/tmp/lunaclient-min-7.4.0/jsp/LunaProvider.jar \
+  "$@"
+ 

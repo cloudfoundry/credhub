@@ -109,6 +109,9 @@ bootRun {
     } else if (project.hasProperty("debug") && project.debug) {
         jvmArgs = ["-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005"]
     }
+    if (project.hasProperty("lunaJar")) {
+        classpath += files(project.lunaJar)
+    }
     systemProperties = System.properties
     systemProperties["spring.profiles.active"] = System.getProperty("spring.profiles.active", "dev, dev-h2")
 }
