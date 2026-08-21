@@ -5,7 +5,7 @@ buildscript {
         asciiDoctorConvertPluginVersion = '4.0.5'
         bcpkixFipsVersion = '2.1.12'
         bcFipsVersion = '2.1.3'
-        guavaVersion = '33.6.0-jre'
+        guavaVersion = '33.7.1-jre'
         kotlinVersion = '2.4.10'
         passayVersion = '2.0.0'
         springBootVersion = '4.1.0'
