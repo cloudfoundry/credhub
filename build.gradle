@@ -12,7 +12,6 @@ buildscript {
         mariadbJdbcVersion = '2.7.15' // Bumping to v3 breaks some pipeline jobs, so pinning to v2 for now. v2 (current version) is stable and will be supported until about September 2025 (https://mariadb.com/kb/en/about-mariadb-connector-j/).
         grpcVersion = '1.83.0'
         protobufVersion = '4.36.0'
-        httpcore5Version = '5.4.3' // spring-boot 4.1.0 has this pinned at 5.4.2.  5.4.3 fixes CVE-2026-54399.  Can remove this on future spring-boot update.
     }
     repositories {
         def artifactRepoUrl = System.getenv("ARTIFACTORY_URL")
@@ -83,6 +82,5 @@ subprojects {
 // Override spring boot's version dependencies
 ext['kotlin.version'] = "${kotlinVersion}"
 ext['protobuf-java.version'] = "${protobufVersion}"
-ext['httpcore5.version'] = "${httpcore5Version}"
 
 assert JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_25)
