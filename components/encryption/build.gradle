@@ -122,6 +122,10 @@ protobuf {
 }
 
 test {
+    useJUnitPlatform {
+        excludeTags 'luna-hsm', 'luna-hsm-disruptive'
+    }
+
     testLogging {
         events "started", "passed", "failed", "skipped"
         exceptionFormat = "full"
@@ -132,3 +136,56 @@ test {
     systemProperties["java.security.egd"] = System.getProperty("java.security.egd", "file:/dev/urandom")
     outputs.upToDateWhen { false }
 }
+
+def lunaHsmClasspath = sourceSets.test.runtimeClasspath + files(System.getenv('LUNA_PROVIDER_JAR') ?: [])
+
+tasks.register('lunaHsmCompatTest', Test) {
+    description = 'Runs Luna HSM compatibility tests against an active HSM partition'
+    group = 'verification'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = lunaHsmClasspath
+
+    useJUnitPlatform {
+        includeTags 'luna-hsm'
+    }
+
+    testLogging {
+        events "started", "passed", "failed", "skipped"
+        exceptionFormat = "full"
+    }
+
+    systemProperties = System.properties
+    systemProperties["spring.profiles.active"] = System.getProperty("spring.profiles.active", "unit-test-h2")
+    systemProperties["java.security.egd"] = System.getProperty("java.security.egd", "file:/dev/urandom")
+    if (System.getenv('LUNA_NATIVE_LIB_DIR')) {
+        systemProperty 'java.library.path', System.getenv('LUNA_NATIVE_LIB_DIR')
+    }
+
+    outputs.upToDateWhen { false }
+}
+
+tasks.register('lunaHsmDisruptiveTest', Test) {
+    description = 'Runs Luna HSM disruptive tests (session logout/reconnect) against an active HSM partition'
+    group = 'verification'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = lunaHsmClasspath
+
+    useJUnitPlatform {
+        includeTags 'luna-hsm-disruptive'
+    }
+
+    testLogging {
+        events "started", "passed", "failed", "skipped"
+        exceptionFormat = "full"
+    }
+
+    systemProperties = System.properties
+    systemProperties["spring.profiles.active"] = System.getProperty("spring.profiles.active", "unit-test-h2")
+    systemProperties["java.security.egd"] = System.getProperty("java.security.egd", "file:/dev/urandom")
+    if (System.getenv('LUNA_NATIVE_LIB_DIR')) {
+        systemProperty 'java.library.path', System.getenv('LUNA_NATIVE_LIB_DIR')
+    }
+
+    outputs.upToDateWhen { false }
+}
+
