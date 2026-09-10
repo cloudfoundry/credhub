@@ -60,6 +60,17 @@ subprojects {
     dependencies {
         ktlint "com.pinterest.ktlint:ktlint-cli:1.8.0"
     }
+    // Prevent Spring Boot's dependency-management plugin (which imports kotlin-bom via
+    // spring-boot-dependencies) from forcing ktlint's internal compiler dependencies
+    // (such as kotlin-compiler-embeddable) to match the project's kotlinVersion.
+    // Ktlint CLI must run with its own bundled/requested dependency versions.
+    afterEvaluate {
+        configurations.ktlint.resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+            if (details.requested.version) {
+                details.useVersion(details.requested.version)
+            }
+        }
+    }
     plugins.withType(JavaPlugin) {
         dependencies {
             implementation("org.yaml:snakeyaml")
