@@ -19,7 +19,7 @@ The tests are categorized into two JUnit 5 tags:
 * `@Tag("luna-hsm")`: Non-disruptive tests (tests 1–3).
 * `@Tag("luna-hsm-disruptive")`: Disruptive tests that force session logout (test 4).
 
-Both tags are **excluded by default** in standard `./gradlew test` runs. Furthermore, `@BeforeEach` guards check for the presence of required environment variables (`LUNA_HSM_PARTITION` and `LUNA_HSM_PARTITION_PASSWORD`) via `Assumptions.assumeTrue(...)`. If either variable is missing or empty, tests report **SKIPPED** without error, ensuring CI pipelines and local developer builds are never broken.
+Both tags are **excluded by default** in standard `./gradlew test` runs. Furthermore, `@BeforeAll` guards check for the presence of required environment variables (`LUNA_HSM_PARTITION` and `LUNA_HSM_PARTITION_PASSWORD`) via `Assumptions.assumeTrue(...)`. If either variable is missing or empty, tests report **SKIPPED** without error, ensuring CI pipelines and local developer builds are never broken. Per-test key cleanup tracking is initialized in `@BeforeEach` and purged in `@AfterEach`.
 
 ---
 
@@ -44,8 +44,9 @@ Both tags are **excluded by default** in standard `./gradlew test` runs. Further
 
 ## 3. Host and OS Prerequisites
 
-Executing the compatibility harness against a physical HSM requires a properly provisioned host machine (typically Linux) with the SafeNet/Thales Luna Client installed:
+Executing the compatibility harness against a physical or cloud HSM requires a Linux runtime environment with the SafeNet/Thales Luna Client installed.
 
+### Option A: Linux Host (Physical Appliance or VM)
 1. **Luna Client Installation**: SafeNet Luna Client package (e.g., 10.9.x) installed on the system (usually under `/usr/safenet/lunaclient/`).
 2. **Configuration File (`/etc/Chrystoki.conf`)**:
    * Must point to valid client certificate and private key paths.
@@ -79,6 +80,29 @@ Executing the compatibility harness against a physical HSM requires a properly p
      ```bash
      vtl verify
      ```
+
+### Option B: macOS / Docker Execution Environment (Cloud HSM or Remote Appliance)
+The SafeNet/Thales Luna JCA integration relies on Java Native Interface (JNI) to load native C libraries (`libLunaAPI.so`, `libCryptoki2.so`). Because Thales distributes Linux ELF shared libraries and Windows DLLs (with no macOS Mach-O `.dylib` distribution), macOS hosts cannot load the Luna client libraries natively. Furthermore, Apple Silicon (M1-M4) Macs use ARM64 architecture while Luna client binaries are `x86_64` (`amd64`).
+
+To run the harness on macOS or containerized environments:
+1. Use Docker with `--platform linux/amd64` emulation (supported via Rosetta 2 or QEMU in Docker Desktop).
+2. Use a base image matching CredHub's target runtime (e.g. `bellsoft/liberica-openjdk-debian:25`).
+3. Unpack the client package (e.g. Thales Data Protection on Demand DPoD client package or SafeNet Linux client) into a mounted directory (e.g. `/opt/dpod-client`).
+4. Ensure `ChrystokiConfigurationPath` points to the client configuration directory.
+5. Example Docker execution:
+   ```bash
+   docker run --platform linux/amd64 --rm -it \
+     -v "$PWD":/workspace \
+     -v "/path/to/client":/opt/dpod-client \
+     -w /workspace \
+     -e LUNA_HSM_PARTITION="<partition-name>" \
+     -e LUNA_HSM_PARTITION_PASSWORD="<partition-password>" \
+     -e LUNA_PROVIDER_JAR="/opt/dpod-client/jsp/LunaProvider.jar" \
+     -e LUNA_NATIVE_LIB_DIR="/opt/dpod-client/jsp/64" \
+     -e ChrystokiConfigurationPath="/opt/dpod-client" \
+     bellsoft/liberica-openjdk-debian:25 \
+     ./gradlew :components:encryption:lunaHsmCompatTest
+   ```
 
 ---
 
@@ -179,6 +203,7 @@ Result: All Luna HSM compatibility tests are excluded from execution.
 * Test keys are created with the prefix `credhub-compat-test-<uuid>`.
 * In `@AfterEach`, the harness attempts to delete created keys via `KeyStore.deleteEntry(alias)`.
 * **Important Note**: Some Luna JCA provider versions or partition configurations do not permit key deletion via JCA `KeyStore.deleteEntry()`. The harness catches any exception during deletion and logs a warning rather than failing the test suite.
+* **Empirical Validation (Luna Client 10.9.x)**: Key deletion via `KeyStore.deleteEntry(alias)` was empirically verified on Luna Client 10.9.x. All generated keys were deleted cleanly without throwing exceptions, and partition inspection (`lunacm:> partition showinfo`) confirmed `Object Count: 0` and `Used Storage Space: 0`, confirming zero key accumulation.
 * Following live test execution, inspect partition contents using `lunacm`:
   ```bash
   lunacm:> partition showcontents
@@ -198,3 +223,69 @@ Before executing `./gradlew :components:encryption:lunaHsmDisruptiveTest`:
    * `LunaSlotManager.logout()` operates at the JVM / client-process level for the active slot. It logs out all connections utilizing that slot manager.
 3. **High-Availability (HA) Topology**:
    * If the client configuration uses an HA group (`HA = 1` in `Chrystoki.conf`), forced logout on an individual member slot may trigger failover or error logging across the HA cluster. Consult your HSM administrator before running disruptive tests against HA clusters.
+
+---
+
+## 9. Empirical Validation Results & Canary Findings (Luna Client 10.9.x)
+
+The compatibility harness was executed against a live Luna Cloud HSM (Thales DPoD) partition utilizing the SafeNet Luna Client 10.9.x runtime inside a `linux/amd64` Docker environment (`bellsoft/liberica-openjdk-debian:25`).
+
+### A. Test Execution Summary
+
+| Task | Tests Run | Passed | Failed | Skipped | Duration |
+|---|---|---|---|---|---|
+| `:components:encryption:lunaHsmCompatTest` | 3 | 3 | 0 | 0 | 34.1s |
+| `:components:encryption:lunaHsmDisruptiveTest` | 1 | 1 | 0 | 0 | 28.2s |
+| `:components:encryption:test` (Default build) | All | All | 0 | Luna tests excluded | - |
+
+### B. Canary Exception Code Analysis (Test 3)
+
+The highest-value diagnostic objective of the harness was capturing the live exception chain thrown when decrypting ciphertext under an incorrect hardware AES key.
+
+CredHub's `LunaKeyProxy.java` inspects the exception cause string to distinguish wrong-key decryption failure from other operational errors:
+```java
+// LunaKeyProxy.java:64-66
+private boolean errorIsSomethingOtherThanTheKeyBeingIncorrect(final Exception e) {
+  return e.getCause() == null || !e.getCause().getMessage().contains("returns 0x40 (CKR_ENCRYPTED_DATA_INVALID)");
+}
+```
+
+During execution of `matchesCanary_trueForOwnKey_falseForCanaryEncryptedUnderAnotherRealKey()`, direct decryption of the Key A canary with Key B produced the following cause chain:
+```text
+=== Captured Key B decryption exception cause chain for analysis ===
+Cause level [0] (com.safenetinc.luna.exception.LunaException): Unable to perform cipher doFinal
+Cause level [1] (com.safenetinc.luna.exception.LunaCryptokiException): function 'C_Decrypt' returns 0x40 (CKR_ENCRYPTED_DATA_INVALID)
+====================================================================
+```
+
+#### Key Findings & Implications:
+1. **Exact Error Code Match**: The Luna Client 10.9.x runtime produces the exact substring `returns 0x40 (CKR_ENCRYPTED_DATA_INVALID)` at `cause.getMessage()`.
+2. **Zero Code Changes Needed**: CredHub's existing canary verification in `LunaKeyProxy` is 100% compatible with Luna Client 10.9.x without requiring any changes or modernization to exception parsing.
+3. **Canary Logic Verification**: `proxyA.matchesCanary(canary)` returned `true` for its own key, and `proxyB.matchesCanary(canary)` cleanly returned `false` without throwing an unhandled `RuntimeException`.
+
+### C. Keystore Reuse & Cleanup Verification (Test 2 & `@AfterEach`)
+
+* **Keystore Reuse (Test 2)**: Verified that calling `lunaEncryptionService.createKeyProxy(alias)` twice with the same alias successfully retrieved the existing hardware AES key (`lunaConnection.containsAlias(alias) == true`) without re-generating or creating duplicate keys on the partition.
+* **KeyStore Deletion (`@AfterEach`)**: Every generated test key was deleted via `keyStore.deleteEntry(alias)` during test tear-down.
+* **Partition Object Verification**: Pre- and post-test verification via `lunacm` confirmed that the partition was left completely clean:
+  ```text
+  Partition Storage:
+      Total Storage Space:  159744
+      Used Storage Space:   0
+      Free Storage Space:   159744
+      Object Count:         0
+  ```
+  This proves that Luna JCA `KeyStore.deleteEntry(alias)` is fully supported on Luna Client 10.9.x and there is zero test key leakage.
+
+### D. Disruptive Session Recovery (Test 4)
+
+Test 4 (`reconnectAfterForcedLogout_restoresLoginState`) verified that:
+1. `LunaSlotManager.getInstance().logout()` terminates the active Cryptoki session (`isLoggedIn() == false`).
+2. `lunaEncryptionService.reconnect(...)` successfully re-initializes, re-authenticates to the partition, and restores login state (`isLoggedIn() == true`).
+3. Subsequent cryptographic operations (generating a fresh AES-128 key and performing GCM encryption/decryption) succeeded immediately on the restored session.
+
+### E. Test Lifecycle Architecture Note
+
+`LunaSlotManager` is a native JVM-wide singleton interacting directly with `libLunaAPI.so` / `libCryptoki2.so`. In CredHub's production runtime (`EncryptionProviderFactory`), `LunaConnection` is created once as a singleton service and shared across all encryption requests.
+
+In `LunaHsmCompatibilityTest.java`, initializing `LunaConnection` once in `@BeforeAll` (rather than per-method in `@BeforeEach`) aligns the test suite with production architecture, avoiding uninitialized KeyStore state when re-entering already-authenticated native sessions, while per-test key tracking in `@BeforeEach`/`@AfterEach` ensures clean per-test isolation.

@@ -18,6 +18,7 @@ import org.cloudfoundry.credhub.util.TimedRetry;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -35,12 +36,12 @@ public class LunaHsmCompatibilityTest {
   private static final String KEY_ALIAS_PREFIX = "credhub-compat-test-";
   private static final String LUNA_SLOT_MANAGER_CLASS = "com.safenetinc.luna.LunaSlotManager";
 
-  private LunaConnection lunaConnection;
-  private LunaEncryptionService lunaEncryptionService;
+  private static LunaConnection lunaConnection;
+  private static LunaEncryptionService lunaEncryptionService;
   private List<String> createdKeyAliases;
 
-  @BeforeEach
-  public void setUp() throws Exception {
+  @BeforeAll
+  public static void setUpAll() throws Exception {
     final String partition = System.getenv("LUNA_HSM_PARTITION");
     final String partitionPassword = System.getenv("LUNA_HSM_PARTITION_PASSWORD");
 
@@ -51,7 +52,6 @@ public class LunaHsmCompatibilityTest {
         + "Skipping Luna HSM tests."
     );
 
-    createdKeyAliases = new ArrayList<>();
     final EncryptionConfiguration configuration = new EncryptionConfiguration();
     configuration.setPartition(partition);
     configuration.setPartitionPassword(partitionPassword);
@@ -59,6 +59,11 @@ public class LunaHsmCompatibilityTest {
     lunaConnection = new LunaConnection(configuration);
     final TimedRetry timedRetry = new TimedRetry(new CurrentTimeProvider());
     lunaEncryptionService = new LunaEncryptionService(lunaConnection, true, timedRetry);
+  }
+
+  @BeforeEach
+  public void setUp() {
+    createdKeyAliases = new ArrayList<>();
   }
 
   @AfterEach
