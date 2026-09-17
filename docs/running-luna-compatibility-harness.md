@@ -34,8 +34,11 @@ Both tags are **excluded by default** in standard `./gradlew test` runs. Further
 * **ALWAYS** verify connectivity and credentials out-of-band using `lunacm` before invoking Gradle:
   ```bash
   lunacm
-  lunacm:> partition login -partition <PARTITION_NAME> -password <PARTITION_PASSWORD>
-  lunacm:> partition logout
+  lunacm:> slot list
+  lunacm:> slot set -slot <slot_id>
+  lunacm:> role login -name co -password <CO_PASSWORD>
+  lunacm:> partition showinfo
+  lunacm:> role logout
   lunacm:> exit
   ```
 * If `lunacm` authentication fails, resolve the credential issue with your HSM administrator. Do **NOT** retry repeatedly.
