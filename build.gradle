@@ -3,7 +3,7 @@ import org.cloudfoundry.credhub.gradlebuild.DependenciesGraphPlugin
 buildscript {
     ext {
         asciiDoctorConvertPluginVersion = '4.0.5'
-        bcpkixFipsVersion = '2.1.12'
+        bcpkixFipsVersion = '2.1.13'
         bcFipsVersion = '2.1.3'
         guavaVersion = '33.7.1-jre'
         kotlinVersion = '2.4.20'
