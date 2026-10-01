@@ -12,6 +12,8 @@ updates:
     update-types: ["version-update:semver-major"]
   - dependency-name: "org.springframework.boot:*"
     update-types: [ "version-update:semver-major" ] # Do major version bumps manually as it will almost certainly require major migration.
+  - dependency-name: "tools.jackson:*"
+    update-types: ["version-update:semver-major", "version-update:semver-minor"] # 3.2.x is incompatible with Spring Boot 4.1.1 (requires jackson-annotations 2.22+). Restrict to 3.1.x patch bumps.
 - package-ecosystem: "github-actions"
   directory: "/"
   schedule:
