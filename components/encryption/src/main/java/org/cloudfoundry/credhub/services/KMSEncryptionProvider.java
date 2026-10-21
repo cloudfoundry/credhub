@@ -75,7 +75,8 @@ public class KMSEncryptionProvider implements EncryptionProvider {
     try {
       response = blockingStub.encrypt(request);
     } catch (final StatusRuntimeException e) {
-      LOGGER.error("Error for request: " + request.getPlain(), e);
+      // KMS error descriptions and causes can also contain credential data.
+      LOGGER.error("KMS encryption failed with status {}", e.getStatus().getCode());
       throw e;
     }
     return new EncryptedValue(key.getUuid(), response.getCipher().toByteArray(), new byte[]{});
@@ -91,7 +92,7 @@ public class KMSEncryptionProvider implements EncryptionProvider {
       if (e.getStatus().getCode() == Status.Code.INVALID_ARGUMENT) {
         throw new AEADBadTagException(e.getMessage());
       }
-      LOGGER.error("Error for request: " + request.getCipher(), e);
+      LOGGER.error("KMS decryption failed with status {}", e.getStatus().getCode());
       throw e;
     }
 
