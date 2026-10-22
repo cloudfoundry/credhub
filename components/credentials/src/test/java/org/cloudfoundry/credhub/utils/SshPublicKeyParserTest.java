@@ -1,6 +1,12 @@
 package org.cloudfoundry.credhub.utils;
 
+import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.Base64;
+
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -13,6 +19,64 @@ public class SshPublicKeyParserTest {
     + "/TAGbrKX7QlHc0TLjjkIIA/fAiD7NFOBaQVaSWvL+SBfgBRbxQ4QXluPF9uOX6XkcgXkn524SrqBR"
     + "5BBT01WIzEreZzmGlZQMWR1wnO7j7ogubinwulZkVLf/ufX68I2+6sIlFELelKcFMbzgOshcQj6o/"
     + "XaswSMUH4UR";
+
+  // Offsets of the type, exponent, and modulus length prefixes in validSshPublicKey.
+  @ParameterizedTest
+  @ValueSource(ints = {0, 11, 18, })
+  public void rejectsNegativeFieldLengths(final int fieldOffset) {
+    assertInvalidFieldLength(fieldOffset, -1);
+    assertInvalidFieldLength(fieldOffset, Integer.MIN_VALUE);
+  }
+
+  @ParameterizedTest
+  @ValueSource(ints = {0, 11, 18, })
+  public void rejectsFieldLengthsLargerThanRemainingInput(final int fieldOffset) {
+    final byte[] key = decodedValidKey();
+    assertInvalidFieldLength(fieldOffset, key.length - fieldOffset - Integer.BYTES + 1);
+  }
+
+  @ParameterizedTest
+  @ValueSource(ints = {0, 11, 18, })
+  public void rejectsFieldLengthsThatWouldExhaustTheHeap(final int fieldOffset) {
+    assertInvalidFieldLength(fieldOffset, Integer.MAX_VALUE);
+  }
+
+  @ParameterizedTest
+  @ValueSource(ints = {0, 11, 18, })
+  public void rejectsTruncatedFieldLengthPrefixes(final int fieldOffset) {
+    assertInvalidKey(Arrays.copyOf(decodedValidKey(), fieldOffset + Integer.BYTES - 1));
+  }
+
+  @Test
+  public void acceptsAFieldWhenItsLengthEqualsTheRemainingInput() {
+    final int fieldLength = 64 * 1024 + 1;
+    final byte[] key = Arrays.copyOf(decodedValidKey(), 18 + Integer.BYTES + fieldLength);
+    ByteBuffer.wrap(key).putInt(18, fieldLength);
+    final SshPublicKeyParser parser = new SshPublicKeyParser();
+    parser.setPublicKey("ssh-rsa " + Base64.getEncoder().encodeToString(key) + " comment");
+
+    assertThat(parser.getComment(), equalTo("comment"));
+    assertThat(parser.getKeyLength(), equalTo(fieldLength * Byte.SIZE - 8));
+  }
+
+  private byte[] decodedValidKey() {
+    return Base64.getDecoder().decode(validSshPublicKey.split(" ")[1]);
+  }
+
+  private void assertInvalidFieldLength(final int fieldOffset, final int fieldLength) {
+    final byte[] key = decodedValidKey();
+    ByteBuffer.wrap(key).putInt(fieldOffset, fieldLength);
+    assertInvalidKey(key);
+  }
+
+  private void assertInvalidKey(final byte[] key) {
+    final SshPublicKeyParser parser = new SshPublicKeyParser();
+    parser.setPublicKey("ssh-rsa " + Base64.getEncoder().encodeToString(key) + " comment");
+
+    assertThat(parser.getFingerprint(), equalTo(null));
+    assertThat(parser.getComment(), equalTo(null));
+    assertThat(parser.getKeyLength(), equalTo(0));
+  }
 
   @Test
   public void returnNullIfPublicKeyIsNull() {
