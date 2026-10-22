@@ -77,7 +77,7 @@ public class KMSEncryptionProvider implements EncryptionProvider {
     } catch (final StatusRuntimeException e) {
       // KMS error descriptions and causes can also contain credential data.
       LOGGER.error("KMS encryption failed with status {}", e.getStatus().getCode());
-      throw e;
+      throw Status.fromCode(e.getStatus().getCode()).withDescription("KMS encryption failed").asRuntimeException();
     }
     return new EncryptedValue(key.getUuid(), response.getCipher().toByteArray(), new byte[]{});
   }
@@ -90,10 +90,10 @@ public class KMSEncryptionProvider implements EncryptionProvider {
       response = blockingStub.decrypt(request);
     } catch (final StatusRuntimeException e) {
       if (e.getStatus().getCode() == Status.Code.INVALID_ARGUMENT) {
-        throw new AEADBadTagException(e.getMessage());
+        throw new AEADBadTagException("KMS decryption failed: invalid ciphertext");
       }
       LOGGER.error("KMS decryption failed with status {}", e.getStatus().getCode());
-      throw e;
+      throw Status.fromCode(e.getStatus().getCode()).withDescription("KMS decryption failed").asRuntimeException();
     }
 
     return response.getPlain().toString(CHARSET);
