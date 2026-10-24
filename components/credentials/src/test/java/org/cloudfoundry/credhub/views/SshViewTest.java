@@ -4,6 +4,7 @@ package org.cloudfoundry.credhub.views;
 import java.time.Instant;
 import java.util.UUID;
 
+import org.cloudfoundry.credhub.credential.SshCredentialValue;
 import org.cloudfoundry.credhub.domain.Encryptor;
 import org.cloudfoundry.credhub.domain.SshCredentialVersion;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
@@ -70,6 +71,20 @@ public class SshViewTest {
 
     final String json = JsonTestHelper.serializeToString(subject);
     assertThat(json.replaceAll("\\\\n", "\n"), equalTo(expected));
+  }
+
+  @Test
+  public void createsAViewForAStoredKeyWithAnOversizedLengthPrefix() {
+    // The decoded body contains only a length prefix of Integer.MAX_VALUE, with no field data.
+    entity.setPublicKey("ssh-rsa f////w==");
+
+    // Rendering a stored credential calculates its fingerprint through SshPublicKeyParser.
+    // The remaining-input check must reject the length before attempting a huge allocation.
+    final SshCredentialValue value = (SshCredentialValue) SshView.fromEntity(entity).getValue();
+
+    // The existing exception handler clears the fingerprint while preserving the stored key.
+    assertThat(value.getPublicKey(), equalTo("ssh-rsa f////w=="));
+    assertThat(value.getPublicKeyFingerprint(), equalTo(null));
   }
 
   @Test
