@@ -109,7 +109,7 @@ public class SshPublicKeyParser {
 
   private byte[] readIntAsBytesFrom(final DataInputStream dataStream) throws IOException {
     final int length = dataStream.readInt();
-    if (length > dataStream.available()) {
+    if (length < 0 || length > dataStream.available()) {
       throw new IllegalArgumentException("Invalid SSH public key field length");
     }
     final byte[] buf = new byte[length];
