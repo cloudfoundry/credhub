@@ -51,6 +51,7 @@ import org.junit.jupiter.api.Test;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.fail;
 import static org.cloudfoundry.credhub.utils.TestConstants.TEST_CA;
 import static org.cloudfoundry.credhub.utils.TestConstants.TEST_TRUSTED_CA;
@@ -553,6 +554,9 @@ public class DefaultCertificatesHandlerTest {
     when(certificateService.findSignedCertificates(certificateName))
       .thenReturn(childCertNames);
 
+    when(permissionCheckingService.findAllPathsByActor(USER))
+      .thenReturn(new HashSet<>(asList(certificateName, "certName1", "certName2")));
+
     final CertificateCredentialsView certificateCredentialsView = subjectWithAcls.handleGetByNameRequest(certificateName);
 
     assertThat(certificateCredentialsView.getCertificates().size(), equalTo(1));
@@ -573,6 +577,49 @@ public class DefaultCertificatesHandlerTest {
     assertThat(actualTransitionalVersion.getSelfSigned(), equalTo(false));
     assertThat(actualTransitionalVersion.getTransitional(), equalTo(true));
     assertThat(actualTransitionalVersion.getCertificateAuthority(), equalTo(true));
+  }
+
+  @Test
+  public void handleGetByNameRequest_whenAclsEnabled_onlyReturnsSignedCertificatesUserCanRead() {
+    final String caName = "/platform/root-ca";
+    stubGetByNameForCa(caName, asList("/team-a/cert", "/team-b/cert", "/team-c/db-tls"));
+
+    when(permissionCheckingService.findAllPathsByActor(USER))
+      .thenReturn(new HashSet<>(asList(caName, "/team-a/*")));
+
+    final CertificateCredentialsView certificateCredentialsView = subjectWithAcls.handleGetByNameRequest(caName);
+
+    assertThat(certificateCredentialsView.getCertificates().get(0).getSigns(), equalTo(singletonList("/team-a/cert")));
+  }
+
+  @Test
+  public void handleGetByNameRequest_whenUserHasRootWildcard_returnsAllSignedCertificates() {
+    final String caName = "/platform/root-ca";
+    final List<String> childCertNames = asList("/team-a/cert", "/team-b/cert");
+    stubGetByNameForCa(caName, childCertNames);
+
+    when(permissionCheckingService.findAllPathsByActor(USER))
+      .thenReturn(new HashSet<>(singletonList("/*")));
+
+    final CertificateCredentialsView certificateCredentialsView = subjectWithAcls.handleGetByNameRequest(caName);
+
+    assertThat(certificateCredentialsView.getCertificates().get(0).getSigns(), equalTo(childCertNames));
+  }
+
+  private void stubGetByNameForCa(final String caName, final List<String> childCertNames) {
+    final UUID uuid = UUID.randomUUID();
+    final Credential credential = mock(Credential.class);
+    when(credential.getUuid()).thenReturn(uuid);
+    when(credential.getName()).thenReturn(caName);
+
+    when(certificateService.getByName(caName))
+      .thenReturn(singletonList(credential));
+    when(permissionCheckingService.hasPermission(USER, caName, PermissionOperation.READ))
+      .thenReturn(true);
+    when(certificateService.findAllValidMetadata(singletonList(caName)))
+      .thenReturn(singletonList(new CertificateMetadata(uuid, caName, caName, emptyList())));
+    when(certificateService.findSignedCertificates(caName))
+      .thenReturn(childCertNames);
   }
 
   @Test
@@ -651,6 +698,7 @@ public class DefaultCertificatesHandlerTest {
       .thenReturn(childCertNames);
 
     CertificateCredentialsView certificateCredentialsView = subjectWithoutAcls.handleGetByNameRequest(certificateName);
+    verify(permissionCheckingService, times(0)).findAllPathsByActor(any());
     verify(permissionCheckingService, times(0)).hasPermission(any(), anyString(), any());
 
     assertThat(certificateCredentialsView.getCertificates().size(), equalTo(1));
