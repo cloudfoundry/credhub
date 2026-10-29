@@ -25,11 +25,11 @@ public class CertificateLengthValidator implements ConstraintValidator<ValidCert
         final Field field = value.getClass().getDeclaredField(fieldName);
         field.setAccessible(true);
 
-        if (StringUtils.isEmpty((String) field.get(value))) {
-          return true;
+        final String certificate = (String) field.get(value);
+        if (StringUtils.isEmpty(certificate)) {
+          continue;
         }
 
-        final String certificate = (String) field.get(value);
         if (certificate.getBytes(UTF_8).length > 7000) {
           return false;
         }

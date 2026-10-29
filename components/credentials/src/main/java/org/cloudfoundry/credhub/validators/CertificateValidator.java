@@ -28,14 +28,12 @@ public class CertificateValidator implements ConstraintValidator<RequireValidCer
         final Field field = value.getClass().getDeclaredField(fieldName);
         field.setAccessible(true);
 
-        if (StringUtils.isEmpty((String) field.get(value))) {
-          return true;
+        final String certificate = (String) field.get(value);
+        if (StringUtils.isEmpty(certificate)) {
+          continue;
         }
 
-        final String certificate = (String) field.get(value);
         new CertificateReader(certificate);
-
-        return true;
       } catch (final MalformedCertificateException e) {
         throw e;
       } catch (final NoSuchFieldException | IllegalAccessException e) {

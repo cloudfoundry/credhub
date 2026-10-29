@@ -343,6 +343,53 @@ public class CertificateSetRequestTest {
   }
 
   @Test
+  public void whenCAValueIsLongerThan7000CharsAndCertificateIsOmitted_isInvalid() {
+    final int repetitionCount = 7001 - TEST_CA.length();
+    final String setJson = JSONObject.toJSONString(
+      ImmutableMap.<String, String>builder()
+        .put("ca", TEST_CA + StringUtils.repeat("a", repetitionCount))
+        .put("private_key", TEST_PRIVATE_KEY)
+        .build()
+    );
+
+    final String json = "{\n"
+      + "  \"name\": \"/example/certificate\",\n"
+      + "  \"type\": \"certificate\",\n"
+      + "  \"value\": " + setJson
+      + "}";
+    final Set<ConstraintViolation<CertificateSetRequest>> violations = deserializeAndValidate(
+      json,
+      CertificateSetRequest.class
+    );
+
+    assertThat(violations, hasItem(hasViolationWithMessage(ErrorMessages.INVALID_CERTIFICATE_LENGTH)));
+  }
+
+  @Test
+  public void whenCAValueIsLongerThan7000CharsAndCertificateIsEmpty_isInvalid() {
+    final int repetitionCount = 7001 - TEST_CA.length();
+    final String setJson = JSONObject.toJSONString(
+      ImmutableMap.<String, String>builder()
+        .put("ca", TEST_CA + StringUtils.repeat("a", repetitionCount))
+        .put("certificate", "")
+        .put("private_key", TEST_PRIVATE_KEY)
+        .build()
+    );
+
+    final String json = "{\n"
+      + "  \"name\": \"/example/certificate\",\n"
+      + "  \"type\": \"certificate\",\n"
+      + "  \"value\": " + setJson
+      + "}";
+    final Set<ConstraintViolation<CertificateSetRequest>> violations = deserializeAndValidate(
+      json,
+      CertificateSetRequest.class
+    );
+
+    assertThat(violations, hasItem(hasViolationWithMessage(ErrorMessages.INVALID_CERTIFICATE_LENGTH)));
+  }
+
+  @Test
   public void whenCAValueIsInvalidX509Certificate_isInvalid() {
     final String setJson = JSONObject.toJSONString(
       ImmutableMap.<String, String>builder()
