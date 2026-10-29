@@ -216,7 +216,8 @@ class DefaultCertificatesHandler(
             if (getAllRequest) {
                 signedCertificates = caMapping.getOrDefault(certificateMetadata.name, mutableListOf())
             } else {
-                signedCertificates = certificateService.findSignedCertificates(certificateMetadata.name!!)
+                signedCertificates =
+                    filterNamesByPermissions(certificateService.findSignedCertificates(certificateMetadata.name!!))
             }
             CertificateCredentialView(
                 certificateMetadata.name,
@@ -304,5 +305,21 @@ class DefaultCertificatesHandler(
             }
         }
         return filteredCredentials
+    }
+
+    private fun filterNamesByPermissions(unfilteredNames: List<String>): List<String> {
+        if (!enforcePermissions) {
+            return unfilteredNames
+        }
+        val actor = userContextHolder.userContext?.actor
+        val paths = permissionCheckingService.findAllPathsByActor(actor.toString())
+
+        if (paths.contains("/*")) return unfilteredNames
+        if (paths.isEmpty()) return ArrayList()
+
+        return unfilteredNames.filter { name ->
+            paths.contains(name) ||
+                (1 until name.length).any { i -> name[i] == '/' && paths.contains(name.substring(0, i) + "/*") }
+        }
     }
 }
