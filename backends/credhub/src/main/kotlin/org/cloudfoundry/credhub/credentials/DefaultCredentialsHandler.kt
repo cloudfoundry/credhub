@@ -226,8 +226,8 @@ class DefaultCredentialsHandler(
         if (!enforcePermissions) {
             return unfilteredResult
         }
-        val actor = userContextHolder.userContext?.actor
-        val paths = permissionCheckingService.findAllPathsByActor(actor.toString())
+        val actor = userContextHolder.userContext?.actor!!
+        val paths = permissionCheckingService.findAllPathsByActor(actor)
 
         if (paths.contains("/*")) return unfilteredResult
         if (paths.isEmpty()) return ArrayList()
