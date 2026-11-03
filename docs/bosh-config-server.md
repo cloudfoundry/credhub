@@ -64,4 +64,4 @@ The process to enable the config server integration is documented [here.][1] You
 
 [1]:https://github.com/pivotal-cf/credhub-release/blob/master/docs/bosh-install-with-credhub.md
 [2]:https://github.com/pivotal-cf/credhub-release/tree/master/sample-manifests
-[3]:https://github.com/cloudfoundry/bosh-deployment/blob/master/credhub.yml
+[3]:https://github.com/cloudfoundry/bosh-deployment/blob/main/credhub.yml
