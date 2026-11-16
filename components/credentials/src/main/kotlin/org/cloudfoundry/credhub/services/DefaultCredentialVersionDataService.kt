@@ -92,7 +92,7 @@ class DefaultCredentialVersionDataService
                 """select distinct credential.name from credential,
             credential_version, certificate_credential where credential.uuid=credential_version.credential_uuid
             and credential_version.uuid=certificate_credential.uuid and
-            lower(certificate_credential.ca_name) like lower(?)
+            lower(certificate_credential.ca_name) = lower(?)
                 """.trimMargin()
             )
             val results = jdbcTemplate.queryForList<String>(query, String::class.java, caName)
