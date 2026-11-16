@@ -179,8 +179,8 @@ class CertificateGenerationRequestParameters {
             Pattern
                 .compile("^\\*?(?>(?:\\.[a-zA-Z0-9\\-]+))*$")
 
-        private val TEN_YEARS = 3650
-        private val ONE_DAY = 1
+        const val TEN_YEARS = 3650
+        const val ONE_DAY = 1
 
         private fun validateParameterLength(
             parameterArray: Array<String>?,

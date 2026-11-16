@@ -4,7 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.domain.CertificateGenerationParameters
+import org.cloudfoundry.credhub.exceptions.InvalidDurationCertificateException
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException
+import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.Companion.ONE_DAY
+import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters.Companion.TEN_YEARS
 
 class CertificateGenerateRequest : BaseCredentialGenerateRequest() {
     @JsonProperty("parameters")
@@ -57,6 +60,9 @@ class CertificateGenerateRequest : BaseCredentialGenerateRequest() {
     }
 
     fun setDuration(duration: Int) {
+        if (duration < ONE_DAY || duration > TEN_YEARS) {
+            throw InvalidDurationCertificateException()
+        }
         this.certificateGenerationParameters?.duration = duration
         this.certificateGenerationParameters?.validate()
     }
