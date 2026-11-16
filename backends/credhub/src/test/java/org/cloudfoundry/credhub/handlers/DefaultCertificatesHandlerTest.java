@@ -23,6 +23,7 @@ import org.cloudfoundry.credhub.domain.CertificateVersionMetadata;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
+import org.cloudfoundry.credhub.exceptions.InvalidDurationCertificateException;
 import org.cloudfoundry.credhub.exceptions.InvalidKeyLengthCertificateException;
 import org.cloudfoundry.credhub.exceptions.PermissionException;
 import org.cloudfoundry.credhub.generate.GenerationRequestGenerator;
@@ -47,6 +48,8 @@ import org.hamcrest.core.IsEqual;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -974,9 +977,35 @@ public class DefaultCertificatesHandlerTest {
                     }
             );
 
-    final CertificateRegenerateRequest regenerateRequest = new CertificateRegenerateRequest(true, false, null, 4567, null);
+    final CertificateRegenerateRequest regenerateRequest = new CertificateRegenerateRequest(true, false, null, 3650, null);
     subjectWithConcatenateCas.handleRegenerate(UUID_STRING, regenerateRequest);
-    assertEquals(4567, Objects.requireNonNull(regenerateRequest.getDuration()).intValue());
+    assertEquals(3650, Objects.requireNonNull(regenerateRequest.getDuration()).intValue());
+  }
+
+  @ParameterizedTest
+  @ValueSource(ints = {0, -1, 3651, 36500, })
+  public void handleRegenerate_whenDurationIsOutOfRange_throwsAndDoesNotGenerateOrSave(final int duration) {
+    final CertificateGenerationRequestParameters requestParameters = new CertificateGenerationRequestParameters();
+    final CertificateGenerationParameters parameters = new CertificateGenerationParameters(requestParameters);
+    final CertificateGenerateRequest generateRequest = new CertificateGenerateRequest();
+    generateRequest.setCertificateGenerationParameters(parameters);
+
+    final CertificateCredentialVersion certificate = mock(CertificateCredentialVersion.class);
+    when(certificate.getName()).thenReturn("test");
+    when(certificateService.findByCredentialUuid(UUID_STRING)).thenReturn(certificate);
+    when(generationRequestGenerator.createGenerateRequest(certificate))
+            .thenReturn(generateRequest);
+
+    final CertificateRegenerateRequest regenerateRequest = new CertificateRegenerateRequest(false, false, null, duration, null);
+
+    try {
+      subjectWithConcatenateCas.handleRegenerate(UUID_STRING, regenerateRequest);
+      fail("should throw exception");
+    } catch (final InvalidDurationCertificateException e) {
+      assertThat(e.getMessage(), IsEqual.equalTo(ErrorMessages.INVALID_DURATION));
+    }
+    verify(universalCredentialGenerator, never()).generate(any());
+    verify(certificateService, never()).save(any(), any(), any());
   }
 
   @Test
