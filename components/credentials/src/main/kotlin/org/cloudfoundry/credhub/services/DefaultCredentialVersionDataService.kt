@@ -96,8 +96,7 @@ class DefaultCredentialVersionDataService
                 """.trimMargin()
             )
             val results = jdbcTemplate.queryForList<String>(query, String::class.java, caName)
-            results.remove(caName)
-            return results.filterNotNull()
+            return results.filterNotNull().filterNot { it.equals(caName, ignoreCase = true) }
         }
 
         override fun findContainingName(name: String): List<FindCredentialResult> = findContainingName(name, "")

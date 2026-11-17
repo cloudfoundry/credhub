@@ -749,6 +749,15 @@ public class DefaultCredentialVersionDataServiceTest {
     assertThat(subject.findAllCertificateCredentialsByCaName("/%"), empty());
   }
 
+  @Test
+  public void findAllCertificateCredentialsByCaName_excludesTheCaItselfRegardlessOfCase() {
+    saveCertificateByCa(2000000000123L, "/Team-A/CA", "/Team-A/CA");
+    saveCertificateByCa(2000000000125L, "/team-a/cert", "/Team-A/CA");
+
+    assertThat(subject.findAllCertificateCredentialsByCaName("/Team-A/CA"), contains(equalTo("/team-a/cert")));
+    assertThat(subject.findAllCertificateCredentialsByCaName("/team-a/ca"), contains(equalTo("/team-a/cert")));
+  }
+
   private PasswordCredentialVersion savePassword(final long timeMillis, final String name, final UUID canaryUuid) {
     fakeTimeSetter.accept(timeMillis);
     Credential credential = credentialDataService.find(name);
